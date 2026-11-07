@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
@@ -940,17 +941,24 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     protected function ensureOrderForCursorPagination($shouldReverse = false): Collection
     {
+        $reverse = fn (?array $orders) => array_map(fn (array $order) => isset($order['direction'])
+            ? [...$order, 'direction' => $order['direction'] === 'asc' ? 'desc' : 'asc']
+            : $order, $orders ?? []);
+
         if ($shouldReverse) {
-            $this->query->orders = array_map(fn (array $order) => isset($order['direction'])
-                ? [...$order, 'direction' => $order['direction'] === 'asc' ? 'desc' : 'asc']
-                : $order, $this->query->orders ?? []);
+            $this->query->orders = $reverse($this->query->orders);
+            $this->query->unionOrders = $reverse($this->query->unionOrders);
         }
 
-        return collect($this->query->orders)
-            ->map(function (array $order) {
+        // A unioned query is ordered by the combined result’s columns, as in Laravel
+        $isUnion = ! empty($this->query->unionOrders);
+
+        return collect($isUnion ? $this->query->unionOrders : $this->query->orders)
+            ->map(function (array $order) use ($isUnion) {
                 $column = $order['column'] ?? null;
 
-                if (! isset($order['direction']) || ! is_string($column)) {
+                // Laravel compares unioned queries’ cursors by column name, so they can’t be ordered by a custom field
+                if (! isset($order['direction']) || ! is_string($column) || ($isUnion && $this->resolveColumn($column) instanceof Expression)) {
                     throw new InvalidArgumentException(sprintf(
                         'Cursor pagination needs the query to be ordered by columns, but it’s ordered by `%s`.',
                         $column instanceof Expression ? $column->getValue($this->query->getGrammar()) : ($order['sql'] ?? $column),
@@ -964,20 +972,37 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     /**
      * Returns the column a cursor parameter refers to, so an order by a select alias compares against what the alias
-     * selects, as Laravel’s does. Other orders are already resolved to their columns.
+     * selects, as Laravel’s does, and an order by a unioned query’s column compares against that column in each of
+     * its queries. Other orders are already resolved to their columns.
      *
      * @param  mixed  $builder
      */
     protected function getOriginalColumnNameForCursorPagination($builder, string $parameter): string
     {
+        $grammar = $this->query->getGrammar();
+
         foreach (($this->queryBeforePrepare ?? $this->query)->columns ?? [] as $column) {
-            if (! is_string($column) || ! preg_match('/^(.+)\s+as\s+(.+)$/i', $column, $match) || trim($match[2]) !== $parameter) {
+            $isExpression = $column instanceof Expression;
+            $sql = $isExpression ? (string) $column->getValue($grammar) : $column;
+
+            if (! is_string($sql) || ! preg_match('/^(.+)\s+as\s+(.+)$/is', trim($sql), $match) || trim($match[2], " \t\n\"`[]") !== $parameter) {
                 continue;
+            }
+
+            // Raw SQL is used as written, as Laravel does
+            if ($isExpression) {
+                return trim($match[1]);
             }
 
             $column = $this->resolveColumn(trim($match[1]));
 
-            return $column instanceof Expression ? (string) $column->getValue($this->query->getGrammar()) : $column;
+            return $column instanceof Expression ? (string) $column->getValue($grammar) : $column;
+        }
+
+        if (! empty($this->query->unionOrders)) {
+            $column = $this->resolveColumn($parameter);
+
+            return $column instanceof Expression ? $parameter : $column;
         }
 
         return $parameter;
@@ -1017,7 +1042,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         try {
             $query->applyBeforeQueryCallbacks();
         } catch (QueryAbortedException) {
-            if (in_array('**', $query->query->columns ?? [], true)) {
+            // Resolve the select if the query didn’t get that far, so its columns aren’t ambiguous
+            if ($query->selectsDefaultColumns === null) {
                 $query->applySelectParams();
             }
 
@@ -1763,15 +1789,20 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         $baseline->applyBeforeQueryCallbacks();
-        // The nested query’s wheres are all that’s kept, so it can’t add a join or change one’s type
-        $joinKey = fn (JoinClause $join) => sprintf('%s %s', $join->type, $join->table instanceof Expression ? $join->table->getValue($this->query->getGrammar()) : $join->table);
+        // The nested query’s wheres are all that’s kept, so it can’t add a join or change one’s type or conditions
+        $joinKey = function (JoinClause $join): string {
+            $query = $this->query->newQuery()->from('nested');
+            $query->joins = [$join];
+
+            return $query->toSql().' '.Json::encode($join->getBindings());
+        };
         $baselineJoins = array_map($joinKey, $baseline->query->joins ?? []);
 
         foreach ($nested->query->joins ?? [] as $join) {
             if (! in_array($joinKey($join), $baselineJoins, true)) {
                 throw new InvalidArgumentException(sprintf(
                     'A param set in a nested where() closure joins `%s`, which a nested condition can’t add or change. Set that param on the outer query instead.',
-                    Str::after($joinKey($join), ' '),
+                    $join->table instanceof Expression ? $join->table->getValue($this->query->getGrammar()) : $join->table,
                 ));
             }
         }

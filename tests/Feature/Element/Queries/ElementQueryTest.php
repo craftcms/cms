@@ -199,6 +199,7 @@ it('uses element queries as subqueries', function () {
         ->and($query()->whereIn('elements.id', entryQuery()->section('nonexistent')->select('elements.id'))->ids())->toBe([])
         ->and(DB::table(Table::ELEMENTS)->whereIn('id', $subquery()->toBase())->orderBy('id')->pluck('id')->all())->toBe([$a, $b])
         ->and(entryQuery()->typeId([])->select('elements.id')->where('elements.id', $a)->orWhere('elements.id', $b)->toBase()->pluck('id')->all())->toBe([])
+        ->and(entryQuery()->typeId([])->select('id')->toBase()->get()->all())->toBe([])
         ->and(array_keys($query()->select(['elements.id', 'title'])->asArray()->one()))->toBe(['id', 'title'])
         ->and($query()->select(['enabled'])->groupBy('enabled')->reorder('enabled')->asArray()->get())->toHaveCount(1);
 });
@@ -221,11 +222,17 @@ it('cursor paginates elements by date columns', function () {
 
     $aliasQuery = fn () => entryQuery()->id($ids->all())->select('elements.id as entryId')->asArray()->orderBy('entryId');
     $aliasPage = $aliasQuery()->cursorPaginate(1, cursor: $aliasQuery()->cursorPaginate(1)->nextCursor());
+    $rawAliasQuery = fn () => entryQuery()->id($ids->all())->selectRaw('elements.id as entry_key')->asArray()->orderBy('entry_key');
+    $rawAliasPage = $rawAliasQuery()->cursorPaginate(1, cursor: $rawAliasQuery()->cursorPaginate(1)->nextCursor());
+    $unionQuery = fn () => entryQuery()->id($ids[0])->union(entryQuery()->id([$ids[1], $ids[2]]))->orderByDesc('id');
+    $unionPage = $unionQuery()->cursorPaginate(2);
 
     expect($page->first())->toBeInstanceOf(Entry::class)
         ->and($pages)->toBe([$ids[1], $ids[2], $ids[0]])
         ->and($query()->cursorPaginate(1, cursor: $page->previousCursor())->pluck('id')->all())->toBe([$ids[2]])
         ->and(collect($aliasPage->items())->map(fn (array $row) => (int) $row['entryId'])->all())->toBe([$ids->sort()->values()[1]])
+        ->and(collect($rawAliasPage->items())->map(fn (array $row) => (int) $row['entry_key'])->all())->toBe([$ids->sort()->values()[1]])
+        ->and($unionQuery()->cursorPaginate(2, cursor: $unionPage->nextCursor())->pluck('id')->all())->toBe([$ids->sort()->values()[0]])
         ->and(fn () => entryQuery()->id($ids->all())->fixedOrder()->cursorPaginate(1))->toThrow(InvalidArgumentException::class)
         ->and(fn () => entryQuery()->id($ids->all())->orderByRaw('elements.id desc')->cursorPaginate(1))->toThrow(InvalidArgumentException::class);
 });
@@ -291,6 +298,7 @@ it('passes element queries to where() closures', function () {
         ->and(fn () => $query()->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->ref('news/slug'))->ids())->toThrow(InvalidArgumentException::class)
         ->and($query()->drafts(null)->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->drafts(true))->ids())->toBe([])
         ->and(fn () => $query()->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->draftCreator(1))->ids())->toThrow(InvalidArgumentException::class)
+        ->and(fn () => $query()->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->structureId(1))->ids())->toThrow(InvalidArgumentException::class)
         ->and($query()->whereNot(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$blockedEditor, $viewer])
         ->and($query()->where('elements.id', $viewer)->orWhere(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$editor, $viewer]);
 });
