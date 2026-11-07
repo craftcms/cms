@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => '看起来您正尝试载入模板文件夹外的模板。',
     'Low' => '低',
     'MCP Settings' => 'MCP 设置',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP 服务器',
     'MCP settings saved.' => 'MCP 设置已保存。',
     'MCP' => 'MCP',
