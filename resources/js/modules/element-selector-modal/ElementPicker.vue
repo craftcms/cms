@@ -62,9 +62,7 @@
   }
 
   function onIncludeSubfoldersChange(event: Event) {
-    index.setIncludeSubfolders(
-      Boolean((event.target as {checked?: boolean} | null)?.checked)
-    );
+    index.setIncludeSubfolders((event.target as HTMLInputElement).checked);
   }
 
   // Reached only by a double-click the item behavior let through, after it
@@ -146,7 +144,7 @@
           <craft-checkbox
             class="modal-element-index__subfolders mt-sm"
             .checked="index.includeSubfolders.value"
-            @model-value-changed="onIncludeSubfoldersChange"
+            @change="onIncludeSubfoldersChange"
           >
             <label slot="label">{{ t('Search in subfolders') }}</label>
           </craft-checkbox>

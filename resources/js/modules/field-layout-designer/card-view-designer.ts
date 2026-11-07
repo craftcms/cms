@@ -355,7 +355,7 @@ export class CardViewDesigner extends Base {
 
   updateCardViewConfig(): void {
     this.designer.updateConfig((config: any) => {
-      config.cardView = this.$libraryContainer.modelValue;
+      config.cardView = this.$libraryContainer.value;
       return config;
     });
   }
@@ -483,7 +483,7 @@ export class CardViewDesigner extends Base {
   }
 
   thumbSources(): string[] {
-    return this.$thumbSources?.modelValue ?? [];
+    return this.$thumbSources?.value ?? [];
   }
 
   manageThumbnails(): void {

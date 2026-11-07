@@ -25,7 +25,7 @@ class PermissionTree extends ViewComponent
     protected array $permissionKeys = [];
 
     /** @var list<string> */
-    protected array $modelValue = [];
+    protected array $value = [];
 
     /** @var list<string> */
     protected array $lockedPermissions = [];
@@ -55,10 +55,10 @@ class PermissionTree extends ViewComponent
         return $this;
     }
 
-    /** @param list<string> $modelValue */
-    public function modelValue(array $modelValue): static
+    /** @param list<string> $value */
+    public function value(array $value): static
     {
-        $this->modelValue = array_values($modelValue);
+        $this->value = array_values($value);
 
         return $this;
     }
@@ -83,7 +83,7 @@ class PermissionTree extends ViewComponent
     {
         return [
             'groups' => Json::encode($this->groups),
-            'model-value' => Json::encode($this->modelValue),
+            'value' => Json::encode($this->value),
             'locked-permissions' => Json::encode($this->lockedPermissions),
             'name' => $this->isDisabled() ? null : $this->name,
             'disabled' => $this->isDisabled(),
@@ -101,7 +101,7 @@ class PermissionTree extends ViewComponent
             'data-permission-tree-input' => true,
         ]);
 
-        foreach ($this->modelValue as $permission) {
+        foreach ($this->value as $permission) {
             if (! in_array($permission, $this->permissionKeys, true)) {
                 continue;
             }

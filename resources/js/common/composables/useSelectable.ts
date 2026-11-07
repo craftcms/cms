@@ -169,11 +169,9 @@ export function useSelectable<Id extends SelectableId = SelectableId>(
   /**
    * A checkbox reporting its new state.
    *
-   * Two things make this different from {@link select}. Lion's `craft-checkbox`
-   * re-fires `model-value-changed` on programmatic `.checked` updates too, so a
-   * value that already matches is ignored rather than pointlessly moving the
-   * anchor. And modifier keys never reach that event, so `shiftKey` has to be
-   * captured from the native click and handed in for range selection to work.
+   * Unlike {@link select}, a value that already matches is ignored rather than
+   * moving the anchor. Modifier keys never reach a `change` event, so `shiftKey`
+   * has to be captured from the native click and handed in for ranges to work.
    */
   function setChecked(id: Id, checked: boolean, {shiftKey = false} = {}): void {
     if (!canWrite(id)) return;
@@ -189,8 +187,7 @@ export function useSelectable<Id extends SelectableId = SelectableId>(
 
   /**
    * A select-all checkbox reporting a new state. Like {@link setChecked}, a
-   * value that already matches is ignored, so Lion's programmatic re-fires
-   * don't churn the whole list.
+   * value that already matches is ignored.
    */
   function toggleAll(checked: boolean): void {
     if (!canWrite() || checked === allSelected.value) return;

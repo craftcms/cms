@@ -357,7 +357,7 @@ describe('serializeFormInputs', () => {
         'fake-rich-select',
         class extends HTMLElement {
           name = 'volume';
-          serializedValue = '11';
+          value = '11';
         }
       );
     }
@@ -367,14 +367,14 @@ describe('serializeFormInputs', () => {
     );
   });
 
-  test('expands array serializedValues into repeated params', async () => {
+  test('expands array values into repeated params', async () => {
     const {serializeFormInputs} = await freshImport();
     if (!customElements.get('fake-multi-select')) {
       customElements.define(
         'fake-multi-select',
         class extends HTMLElement {
           name = 'kinds[]';
-          serializedValue = ['image', 'video'];
+          value = ['image', 'video'];
         }
       );
     }
@@ -384,14 +384,15 @@ describe('serializeFormInputs', () => {
     );
   });
 
-  test('applies choice semantics to hosts with a Lion choice modelValue', async () => {
+  test('applies choice semantics to hosts with a checked property', async () => {
     const {serializeFormInputs} = await freshImport();
     if (!customElements.get('fake-choice')) {
       customElements.define(
         'fake-choice',
         class extends HTMLElement {
           name = '';
-          modelValue = {value: '', checked: false};
+          value = '';
+          checked = false;
         }
       );
     }
@@ -403,13 +404,15 @@ describe('serializeFormInputs', () => {
     `;
     const on = document.getElementById('on') as HTMLElement & {
       name: string;
-      modelValue: {value: string; checked: boolean};
+      value: string;
+      checked: boolean;
     };
     const off = document.getElementById('off') as typeof on;
     on.name = 'agree';
-    on.modelValue = {value: '1', checked: true};
+    on.value = '1';
+    on.checked = true;
     off.name = 'decline';
-    off.modelValue = {value: '1', checked: false};
+    off.value = '1';
 
     expect(serializeFormInputs(document.getElementById('host')!)).toBe(
       'agree=1'
@@ -424,7 +427,7 @@ describe('serializeFormInputs', () => {
         class extends HTMLElement {
           name = 'muted';
           disabled = true;
-          serializedValue = 'x';
+          value = 'x';
         }
       );
     }
@@ -434,20 +437,20 @@ describe('serializeFormInputs', () => {
 
   test('does not double-count hosts whose light DOM posts natively', async () => {
     const {serializeFormInputs} = await freshImport();
-    if (!customElements.get('fake-lion-input')) {
+    if (!customElements.get('fake-native-host')) {
       customElements.define(
-        'fake-lion-input',
+        'fake-native-host',
         class extends HTMLElement {
           name = 'title';
-          serializedValue = 'from-host';
+          value = 'from-host';
         }
       );
     }
     document.body.innerHTML = `
       <div id="host">
-        <fake-lion-input>
+        <fake-native-host>
           <input slot="input" name="title" value="from-input">
-        </fake-lion-input>
+        </fake-native-host>
       </div>
     `;
     expect(serializeFormInputs(document.getElementById('host')!)).toBe(

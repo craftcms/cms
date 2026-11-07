@@ -370,7 +370,7 @@
               <craft-checkbox
                 v-for="scope in group.scopes"
                 :key="scope.value"
-                .choiceValue="scope.value"
+                .value="scope.value"
                 :disabled="!!editing"
               >
                 <label slot="label">{{ scope.label }}</label>

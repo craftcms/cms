@@ -259,25 +259,15 @@ class CraftLinkField extends LitElement {
     update: (checked: boolean) => Partial<LinkAttributes>
   ): (event: Event) => void {
     return (event) => {
-      if (
-        !(event.target instanceof HTMLElement) ||
-        this.isInitialization(event)
-      ) {
-        return;
-      }
       // SAFETY: this handler is registered only on craft-switch controls.
-      const {checked} = event.target as HTMLElementTagNameMap['craft-switch'];
+      const {checked} =
+        event.currentTarget as HTMLElementTagNameMap['craft-switch'];
       this.linkAttributes = {
         ...this.linkAttributes,
-        ...update(Boolean(checked)),
+        ...update(checked),
       };
       this.change('discrete');
     };
-  }
-
-  /** A switch fires `model-value-changed` once as it sets up; that isn't an edit. */
-  private isInitialization(event: Event): boolean {
-    return event instanceof CustomEvent && Boolean(event.detail?.initialize);
   }
 
   private async chooseElement(event: Event): Promise<void> {
@@ -658,7 +648,7 @@ class CraftLinkField extends LitElement {
             label=${t('Open in a new tab')}
             .checked=${this.linkAttributes.target === '_blank'}
             .disabled=${this.disabled}
-            @model-value-changed=${this.handleSwitch((checked) => ({
+            @change=${this.handleSwitch((checked) => ({
               target: checked ? '_blank' : '',
             }))}
           ></craft-switch>
@@ -689,7 +679,7 @@ class CraftLinkField extends LitElement {
             label=${t('Download')}
             .checked=${this.linkAttributes.download}
             .disabled=${this.disabled}
-            @model-value-changed=${this.handleSwitch((download) => ({
+            @change=${this.handleSwitch((download) => ({
               download,
             }))}
           ></craft-switch>

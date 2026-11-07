@@ -46,9 +46,7 @@
   });
 
   function setIncludeSubfolders(event: Event) {
-    const includeSubfolders = Boolean(
-      (event.target as {checked?: boolean} | null)?.checked
-    );
+    const includeSubfolders = (event.target as HTMLInputElement).checked;
     const url = new URL(window.location.href);
     url.searchParams.delete(pageParam());
     if (includeSubfolders) {
@@ -149,7 +147,7 @@
           v-if="page.props.search && page.props.canSearchSubfolders"
           class="mt-md"
           .checked="page.props.includeSubfolders"
-          @model-value-changed="setIncludeSubfolders"
+          @change="setIncludeSubfolders"
         >
           <label slot="label">{{ t('Search in subfolders') }}</label>
         </craft-checkbox>

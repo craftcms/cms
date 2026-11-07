@@ -12,8 +12,8 @@ import type CraftCheckboxGroup from './checkbox-group.js';
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `checkbox-group.ts` surfaces it here without touching this file.
  *
- * Lion's own `label` and `help-text` are slots here, so they are set through
- * the `label-slot` and `help-text-slot` args rather than as attributes.
+ * `label` and `help-text` are slots as well as attributes, so the slots are
+ * set through the `label-slot` and `help-text-slot` args.
  */
 const {args, argTypes} = getStorybookHelpers<CraftCheckboxGroup>(
   'craft-checkbox-group'
@@ -26,22 +26,19 @@ const meta = {
   component: 'craft-checkbox-group',
   args: {...args, name: 'scientists[]', 'label-slot': 'Scientists'},
   argTypes,
-  // The options are written out rather than generated: each one carries a
-  // `choiceValue`, which is a property rather than an attribute, so it cannot
-  // be expressed in a slot's markup string.
   render: (args) => html`
     <craft-checkbox-group
       name="${args.name ?? ''}"
       ?disabled="${args.disabled}"
     >
       <label slot="label">${args['label-slot']}</label>
-      <craft-checkbox .choiceValue="${'curie'}">
+      <craft-checkbox value="${'curie'}">
         <label slot="label">Marie Curie</label>
       </craft-checkbox>
-      <craft-checkbox .choiceValue="${'lovelace'}" checked>
+      <craft-checkbox value="${'lovelace'}" checked>
         <label slot="label">Ada Lovelace</label>
       </craft-checkbox>
-      <craft-checkbox .choiceValue="${'hopper'}">
+      <craft-checkbox value="${'hopper'}">
         <label slot="label">Grace Hopper</label>
       </craft-checkbox>
     </craft-checkbox-group>
