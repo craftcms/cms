@@ -85,7 +85,7 @@ export const Multiple: Story = {
       clearable
       show-all-on-empty
       .options=${countries}
-      .modelValue=${['us', 'ca']}
+      .value=${['us', 'ca']}
     ></craft-combobox>`,
 };
 

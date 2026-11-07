@@ -7,7 +7,7 @@ const {openSlideout} = vi.hoisted(() => ({openSlideout: vi.fn()}));
 
 vi.mock('@/common/slideouts', () => ({openSlideout}));
 
-// `craft-select-color` renders a form-associated `craft-select-rich`, which
+// `craft-select-color` is a form-associated `craft-select-rich`, which
 // calls attachInternals(), which happy-dom doesn't implement. Same stub
 // UiRenderer.test.ts uses, kept for the whole file because the element
 // renders after the test that creates it returns.
@@ -239,16 +239,9 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
     document.querySelector<HTMLElement & {value: string}>(
       `[data-ui-control-path='["${key}"]']`
     )!;
-  // A Lion select: it takes its value as `modelValue`, once its options have
-  // registered.
-  const color = control('color') as unknown as {
-    modelValue: string;
-    registrationComplete: Promise<void>;
-  };
   control('name').value = 'Article';
-  color.modelValue = 'rose';
+  control('color').value = 'rose';
   control('icon').value = 'newspaper';
-  await color.registrationComplete;
 
   // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
   const designer = Object.create(
@@ -273,7 +266,7 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
   expect(chip.querySelector('craft-icon')).toBeNull();
   expect(chip.textContent).toBe('Title');
 
-  color.modelValue = '';
+  control('color').value = '';
   control('icon').value = '';
   designer.syncPreviewAppearance();
 
@@ -282,7 +275,7 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
   expect(header.querySelector('craft-icon')).toBeNull();
   expect(header.textContent).toBe('Article');
 
-  color.modelValue = '__blank__';
+  control('color').value = '__blank__';
   designer.syncPreviewAppearance();
 
   expect(card.hasAttribute('data-color')).toBe(false);

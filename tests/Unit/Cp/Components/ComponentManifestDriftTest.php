@@ -197,6 +197,13 @@ function cpDriftWcOnlyAllowlist(): array
         // How far a textarea grows before it scrolls is a client-side limit;
         // server-rendered textareas use the default.
         'craft-textarea' => ['max-rows'],
+        // `opened` and `focused` are runtime state. `invalid` follows a
+        // validation response, which the client renders.
+        'craft-combobox' => ['invalid', 'opened', 'focused'],
+        // The server checks the selected option rather than setting `value`.
+        // `opened` is runtime state, and the builder has no required or
+        // invalid state to pass on.
+        'craft-select-rich' => ['required', 'invalid', 'opened', 'value'],
     ];
 }
 

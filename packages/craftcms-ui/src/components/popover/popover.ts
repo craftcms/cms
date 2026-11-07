@@ -68,39 +68,6 @@ const fitAvailableBlockSize: Partial<Modifier<'fitAvailableBlockSize', {}>> = {
 };
 
 /**
- * Whether the Escape now being pressed belongs to an open overlay built on the
- * older overlay controller (an `_overlayCtrl` host). Those close on the same
- * keyup but keep their record of it to themselves, so this is judged on
- * keydown, while they're still open.
- */
-let escapeOwnedElsewhere = false;
-
-if (typeof window !== 'undefined') {
-  window.addEventListener(
-    'keydown',
-    (event) => {
-      if (event.key !== 'Escape') {
-        return;
-      }
-
-      escapeOwnedElsewhere = event
-        .composedPath()
-        .some(
-          (node) =>
-            (node as {_overlayCtrl?: {isShown?: boolean}})._overlayCtrl
-              ?.isShown === true
-        );
-    },
-    true
-  );
-  window.addEventListener('keyup', (event) => {
-    if (event.key === 'Escape') {
-      escapeOwnedElsewhere = false;
-    }
-  });
-}
-
-/**
  * @summary A non-modal popover.
  *
  * Overlays content on top of the page without affecting document flow.
@@ -470,13 +437,23 @@ export default class CraftPopover extends LitElement {
     this.#request(!this.opened);
   };
 
+  /** Whether a control inside the popover acted on the last Escape keydown. */
+  #escapeHandledInside = false;
+
   /**
    * The popover closes on Escape's keyup, so its keydown would otherwise reach
    * an ancestor's own Escape handling, such as a panel that closes on it.
-   * Marking it handled leaves the key to the popover alone.
+   * Marking it handled leaves the key to the popover alone — unless something
+   * inside, such as a combobox closing its list, already took it.
    */
   #claimEscape = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && this.opened) {
+    if (event.key !== 'Escape') {
+      return;
+    }
+
+    this.#escapeHandledInside = event.defaultPrevented;
+
+    if (this.opened) {
       event.preventDefault();
     }
   };
@@ -491,7 +468,8 @@ export default class CraftPopover extends LitElement {
       return;
     }
 
-    if (escapeOwnedElsewhere) {
+    if (this.#escapeHandledInside) {
+      this.#escapeHandledInside = false;
       claimEscape(event);
       return;
     }

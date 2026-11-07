@@ -52,15 +52,13 @@ describe('craft-option', () => {
     ).toBeTruthy();
   });
 
-  /**
-   * The value is Lion's `choiceValue`, a property rather than an attribute, so
-   * an option can carry a value that is not a string.
-   */
-  it('carries its value as choiceValue', async () => {
-    const element = await createOption();
-
-    element.choiceValue = 'blog';
+  it('carries its value as choiceValue, from the choice-value attribute too', async () => {
+    const element = await createOption({'choice-value': 'blog'});
 
     expect(element.choiceValue).toBe('blog');
+
+    element.choiceValue = 'news';
+
+    expect(element.choiceValue).toBe('news');
   });
 });

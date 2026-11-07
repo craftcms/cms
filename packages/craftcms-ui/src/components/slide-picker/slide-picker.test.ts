@@ -4,12 +4,12 @@ import './slide-picker.js';
 
 async function createSlidePicker(
   props: Partial<
-    Pick<CraftSlidePicker, 'min' | 'max' | 'step' | 'modelValue' | 'name'>
+    Pick<CraftSlidePicker, 'min' | 'max' | 'step' | 'value' | 'name'>
   > = {},
   parent: HTMLElement = document.body
 ): Promise<CraftSlidePicker> {
   const element = document.createElement('craft-slide-picker');
-  Object.assign(element, {min: 0, max: 100, step: 10, modelValue: 0, ...props});
+  Object.assign(element, {min: 0, max: 100, step: 10, value: 0, ...props});
   parent.append(element);
   await element.updateComplete;
   await slider(element).updateComplete;
@@ -55,7 +55,7 @@ describe('craft-slide-picker', () => {
       min: 0,
       max: 100,
       step: 25,
-      modelValue: 50,
+      value: 50,
     });
 
     const active = segments(element).filter((s) =>
@@ -84,7 +84,7 @@ describe('craft-slide-picker', () => {
     segments(element)[3]!.click(); // 0, 10, 20, 30 -> 30
     await settle(element);
 
-    expect(element.modelValue).toBe(30);
+    expect(element.value).toBe(30);
     expect(order).toEqual(['input', 'change']);
   });
 
@@ -94,7 +94,7 @@ describe('craft-slide-picker', () => {
     element.addEventListener('input', handler as EventListener);
     element.addEventListener('change', handler as EventListener);
 
-    element.modelValue = 40;
+    element.value = 40;
     await settle(element);
 
     expect(handler).not.toHaveBeenCalled();
@@ -107,20 +107,20 @@ describe('craft-slide-picker', () => {
     document.body.append(element);
     await settle(element);
 
-    expect(element.modelValue).toBe(20);
+    expect(element.value).toBe(20);
   });
 
   it('starts at the minimum when its value isn’t a number', async () => {
-    document.body.innerHTML = `<craft-slide-picker min="20" max="100" step="20" model-value="wide"></craft-slide-picker>`;
+    document.body.innerHTML = `<craft-slide-picker min="20" max="100" step="20" value="wide"></craft-slide-picker>`;
     const element = document.querySelector('craft-slide-picker')!;
     await settle(element);
 
-    expect(element.modelValue).toBe(20);
+    expect(element.value).toBe(20);
     expect(slider(element).getAttribute('aria-valuenow')).toBe('20');
   });
 
   it('leaves the keys alone while read-only, so they still scroll the page', async () => {
-    const element = await createSlidePicker({modelValue: 50});
+    const element = await createSlidePicker({value: 50});
     element.readOnly = true;
     await settle(element);
 
@@ -135,35 +135,35 @@ describe('craft-slide-picker', () => {
   });
 
   it('clamps out-of-range values and snaps off-step values', async () => {
-    const clamped = await createSlidePicker({modelValue: 250});
-    expect(clamped.modelValue).toBe(100);
+    const clamped = await createSlidePicker({value: 250});
+    expect(clamped.value).toBe(100);
 
-    const snapped = await createSlidePicker({modelValue: 23});
-    expect(snapped.modelValue).toBe(20);
+    const snapped = await createSlidePicker({value: 23});
+    expect(snapped.value).toBe(20);
   });
 
   it('moves the value with the keyboard and emits each change', async () => {
-    const element = await createSlidePicker({modelValue: 50});
+    const element = await createSlidePicker({value: 50});
     const handler = vi.fn();
     element.addEventListener('change', handler as EventListener);
 
     press(element, 'ArrowUp');
     await settle(element);
-    expect(element.modelValue).toBe(60);
+    expect(element.value).toBe(60);
 
     press(element, 'Home');
     await settle(element);
-    expect(element.modelValue).toBe(0);
+    expect(element.value).toBe(0);
 
     press(element, 'End');
     await settle(element);
-    expect(element.modelValue).toBe(100);
+    expect(element.value).toBe(100);
 
     expect(handler).toHaveBeenCalledTimes(3);
   });
 
   it('ignores input while read-only, but stays in the Tab order', async () => {
-    const element = await createSlidePicker({modelValue: 50});
+    const element = await createSlidePicker({value: 50});
     element.readOnly = true;
     await settle(element);
 
@@ -174,7 +174,7 @@ describe('craft-slide-picker', () => {
     press(element, 'ArrowUp');
     await settle(element);
 
-    expect(element.modelValue).toBe(50);
+    expect(element.value).toBe(50);
     expect(handler).not.toHaveBeenCalled();
     expect(slider(element).getAttribute('tabindex')).toBe('0');
     expect(slider(element).getAttribute('aria-readonly')).toBe('true');
@@ -185,7 +185,7 @@ describe('craft-slide-picker', () => {
       min: 0,
       max: 100,
       step: 25,
-      modelValue: 50,
+      value: 50,
     });
     const s = slider(element);
 
@@ -197,7 +197,7 @@ describe('craft-slide-picker', () => {
   });
 
   it('ignores input while disabled', async () => {
-    const element = await createSlidePicker({modelValue: 50});
+    const element = await createSlidePicker({value: 50});
     element.disabled = true;
     await settle(element);
 
@@ -207,7 +207,7 @@ describe('craft-slide-picker', () => {
     segments(element)[0]!.click();
     await settle(element);
 
-    expect(element.modelValue).toBe(50);
+    expect(element.value).toBe(50);
     expect(handler).not.toHaveBeenCalled();
     expect(slider(element).getAttribute('tabindex')).toBe('-1');
     expect(slider(element).getAttribute('aria-disabled')).toBe('true');
@@ -218,7 +218,7 @@ describe('craft-slide-picker', () => {
     [' columns', '50 columns'],
     ['%', '50%'],
   ])('announces value-unit %j as %j', async (valueUnit, expected) => {
-    const element = await createSlidePicker({modelValue: 50});
+    const element = await createSlidePicker({value: 50});
     element.valueUnit = valueUnit;
     await settle(element);
 
@@ -226,7 +226,7 @@ describe('craft-slide-picker', () => {
   });
 
   it('announces the value as valueLabel formats it', async () => {
-    const element = await createSlidePicker({modelValue: 50});
+    const element = await createSlidePicker({value: 50});
     element.valueLabel = (value) => `${value} columns`;
     await settle(element);
 
@@ -236,7 +236,7 @@ describe('craft-slide-picker', () => {
 
 describe('craft-slide-picker in a form', () => {
   async function createInForm(
-    props: Partial<Pick<CraftSlidePicker, 'name' | 'modelValue'>> = {}
+    props: Partial<Pick<CraftSlidePicker, 'name' | 'value'>> = {}
   ): Promise<{form: HTMLFormElement; element: CraftSlidePicker}> {
     const form = document.createElement('form');
     document.body.append(form);
@@ -246,7 +246,7 @@ describe('craft-slide-picker in a form', () => {
   }
 
   it('posts its value under its name', async () => {
-    const {form} = await createInForm({name: 'columns', modelValue: 30});
+    const {form} = await createInForm({name: 'columns', value: 30});
 
     expect(new FormData(form).get('columns')).toBe('30');
   });
@@ -261,7 +261,7 @@ describe('craft-slide-picker in a form', () => {
   });
 
   it('posts nothing without a name', async () => {
-    const {form} = await createInForm({modelValue: 30});
+    const {form} = await createInForm({value: 30});
 
     expect([...new FormData(form).keys()]).toEqual([]);
   });
@@ -269,7 +269,7 @@ describe('craft-slide-picker in a form', () => {
   it('posts nothing while disabled', async () => {
     const {form, element} = await createInForm({
       name: 'columns',
-      modelValue: 30,
+      value: 30,
     });
     element.disabled = true;
     await settle(element);
@@ -280,17 +280,17 @@ describe('craft-slide-picker in a form', () => {
   it('puts back the value it started with when the form is reset', async () => {
     const {form, element} = await createInForm({
       name: 'columns',
-      modelValue: 30,
+      value: 30,
     });
 
     segments(element)[8]!.click(); // -> 80
     await settle(element);
-    expect(element.modelValue).toBe(80);
+    expect(element.value).toBe(80);
 
     form.reset();
     await settle(element);
 
-    expect(element.modelValue).toBe(30);
+    expect(element.value).toBe(30);
     expect(new FormData(form).get('columns')).toBe('30');
   });
 });

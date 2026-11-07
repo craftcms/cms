@@ -570,7 +570,7 @@
 
       var self = this;
       this.$container.on('change', function () {
-        self.setValue(self.$container[0].modelValue);
+        self.setValue(self.$container[0].value);
       });
     }
 
@@ -619,7 +619,7 @@
         return;
       }
 
-      this.$container[0].modelValue = this.value;
+      this.$container[0].value = this.value;
       this.$buttons = this.$container.find('.slide-picker__segment');
 
       if (triggerEvent !== false) {

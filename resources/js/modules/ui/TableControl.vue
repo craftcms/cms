@@ -315,7 +315,7 @@
     if (!control) return;
     // Prefer the control's own input (e.g. a color picker's text input over its
     // swatch, or a combobox's textbox over its clear button), unless it's
-    // hidden, as with icon pickers. A combobox slots a wrapper around its input.
+    // hidden, as with icon pickers. Some controls slot a wrapper around their input.
     const slotted = control.hasAttribute('hidden-input')
       ? null
       : control.querySelector<HTMLElement>(':scope > [slot="input"]');
