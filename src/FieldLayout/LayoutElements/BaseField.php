@@ -568,8 +568,8 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * Returns the “Copy value” and “Paste value” actions, for a field whose control can be both read and written.
      *
-     * “Paste value” is only offered on an editable field, and stays hidden until a value copied from another field of
-     * the same type is on the clipboard, which only the browser knows — see `FieldNode.vue`.
+     * “Paste value” is only offered on an editable field, and stays hidden until the clipboard holds a value the
+     * field’s control takes, which only the browser knows — see `FieldNode.vue`.
      *
      * @return list<array<string, mixed>>
      */
@@ -579,7 +579,6 @@ abstract class BaseField extends FieldLayoutElement
             return [];
         }
 
-        $detail = ['fieldType' => $this->valueClipboardType()];
         $actions = [[
             'icon' => 'clone-dashed',
             'color' => Color::Fuchsia,
@@ -587,7 +586,6 @@ abstract class BaseField extends FieldLayoutElement
             'action' => [
                 'type' => 'event',
                 'name' => 'craft:copy-field-value',
-                'detail' => $detail,
             ],
         ]];
 
@@ -599,21 +597,12 @@ abstract class BaseField extends FieldLayoutElement
                 'action' => [
                     'type' => 'event',
                     'name' => 'craft:paste-field-value',
-                    'detail' => $detail,
                 ],
                 'hidden' => true,
             ];
         }
 
         return $actions;
-    }
-
-    /**
-     * Returns what kind of value the field holds, so a value copied from it is only offered to fields of the same type.
-     */
-    protected function valueClipboardType(): string
-    {
-        return static::class;
     }
 
     /**

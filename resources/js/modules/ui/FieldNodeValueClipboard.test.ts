@@ -17,11 +17,9 @@ const ElementsControl = defineComponent({
 
 function fieldNode(
   handle: string,
-  fieldType: string,
+  valueScope: string,
   elements: {id: number; label: string}[] = []
 ): UiNodePayload {
-  const detail = {fieldType};
-
   return {
     type: 'Field',
     component: 'craft:field',
@@ -36,6 +34,7 @@ function fieldNode(
       readable: true,
       writable: true,
       valueProps: ['elements'],
+      valueScope,
     },
     children: [
       {
@@ -48,12 +47,12 @@ function fieldNode(
             {
               type: 'button',
               label: 'Copy value',
-              action: {type: 'event', name: 'craft:copy-field-value', detail},
+              action: {type: 'event', name: 'craft:copy-field-value'},
             },
             {
               type: 'button',
               label: 'Paste value',
-              action: {type: 'event', name: 'craft:paste-field-value', detail},
+              action: {type: 'event', name: 'craft:paste-field-value'},
               hidden: true,
             },
           ],
@@ -123,7 +122,7 @@ describe('FieldNode value clipboard', () => {
     )!;
   }
 
-  it('pastes a copied value, with the props it draws it with, into fields of the same type', async () => {
+  it('pastes a copied value, with the props it draws it with, into fields in the same value scope', async () => {
     const values = reactive<UiValues>({
       fields: {source: [7, 9], target: [], other: []},
     });
@@ -131,12 +130,12 @@ describe('FieldNode value clipboard', () => {
     mount(
       values,
       [
-        fieldNode('source', 'Entries', [
+        fieldNode('source', 'related-entries', [
           {id: 7, label: 'Apples'},
           {id: 9, label: 'Pears'},
         ]),
-        fieldNode('target', 'Entries'),
-        fieldNode('other', 'Categories'),
+        fieldNode('target', 'related-entries'),
+        fieldNode('other', 'featured-entries'),
       ],
       changed
     );
@@ -152,8 +151,8 @@ describe('FieldNode value clipboard', () => {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
     expect(stored).toMatchObject({
       value: [7, 9],
-      fieldType: 'Entries',
       component: 'craft:element-select',
+      valueScope: 'related-entries',
       label: 'source',
       preview: 'Apples, Pears',
     });

@@ -17,6 +17,7 @@ use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
+use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
@@ -217,7 +218,17 @@ class Link extends Field implements InlineEditableFieldInterface, InputSchemaFie
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        return $this->linkResolver()->control($context->path, $context->value);
+        $control = $this->linkResolver()->control($context->path, $context->value);
+
+        // Links to elements are limited to the elements the field’s link types can select, so a field that can link
+        // to them only takes values copied from itself.
+        foreach ($this->getLinkTypes() as $linkType) {
+            if ($linkType instanceof BaseElementLinkType) {
+                return $control->valueScope($this->uid ?? static::class);
+            }
+        }
+
+        return $control;
     }
 
     /**

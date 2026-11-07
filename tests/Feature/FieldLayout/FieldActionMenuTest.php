@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Events\FieldActionMenuItemsResolving;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
@@ -88,20 +90,24 @@ it('offers to copy and paste the value of a field whose control can be read and 
     expect($items['Copy value']['action'])->toBe([
         'type' => 'event',
         'name' => 'craft:copy-field-value',
-        'detail' => ['fieldType' => PlainText::class],
     ])
         ->and($items['Copy value'])->not->toHaveKey('hidden')
         ->and($items['Paste value']['action'])->toBe([
             'type' => 'event',
             'name' => 'craft:paste-field-value',
-            'detail' => ['fieldType' => PlainText::class],
         ])
-        // Shown by the browser once a value from a field of the same type is copied
+        // Shown by the browser once a value the field’s control takes is copied
         ->and($items['Paste value']['hidden'])->toBeTrue();
+});
 
-    $titleItems = collect(fieldActionNodes(new TitleField)[0]->props()['items'])->keyBy('label');
+it('only lets a relation field take values copied from itself', function () {
+    $context = new FieldContext(['fields', 'related']);
+    $related = new Entries(['uid' => 'related-uid', 'handle' => 'related', 'name' => 'Related']);
+    $featured = new Entries(['uid' => 'featured-uid', 'handle' => 'featured', 'name' => 'Featured']);
 
-    expect($titleItems['Copy value']['action']['detail'])->toBe(['fieldType' => TitleField::class]);
+    expect($related->uiControl($context)->getValueScope())->toBe('related-uid')
+        ->and($featured->uiControl($context)->getValueScope())->toBe('featured-uid')
+        ->and(new PlainText(['uid' => 'body-uid'])->uiControl($context)->getValueScope())->toBeNull();
 });
 
 it('only offers to paste a value into an editable field', function () {

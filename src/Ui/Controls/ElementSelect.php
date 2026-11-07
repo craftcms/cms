@@ -127,6 +127,13 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
         return ['elements'];
     }
 
+    /** Elements are only copied between controls that select the same element type, unless a narrower scope is set. */
+    #[Override]
+    public function getValueScope(): ?string
+    {
+        return parent::getValueScope() ?? $this->elementType;
+    }
+
     public function component(): string
     {
         return 'craft:element-select';

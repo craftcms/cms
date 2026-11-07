@@ -1,0 +1,129 @@
+import {describe, expect, it} from 'vite-plus/test';
+import type {UiControlPayload, UiValue} from './types';
+import {acceptsValue} from './valueAccess';
+
+function control(
+  component: string,
+  props: Record<string, unknown> = {},
+  extra: Partial<UiControlPayload<object>> = {}
+): UiControlPayload<object> {
+  return {
+    type: 'Control',
+    component,
+    path: ['fields', 'target'],
+    deltaGroup: ['fields', 'target'],
+    mode: 'editable',
+    props,
+    readable: true,
+    writable: true,
+    ...extra,
+  } as UiControlPayload<object>;
+}
+
+function takes(
+  target: UiControlPayload<object>,
+  value: UiValue,
+  origin: Partial<UiControlPayload<object>> = {}
+): boolean {
+  return acceptsValue(
+    target,
+    {component: target.component, valueScope: target.valueScope, ...origin},
+    {value}
+  );
+}
+
+describe('acceptsValue', () => {
+  it('takes values only from the same kind of control, in the same value scope', () => {
+    const relations = control('craft:element-select', {}, {valueScope: 'a'});
+
+    expect(takes(relations, [1])).toBe(true);
+    expect(takes(relations, [1], {valueScope: 'b'})).toBe(false);
+    expect(takes(relations, [1], {valueScope: undefined})).toBe(false);
+    expect(takes(relations, [1], {component: 'craft:combobox'})).toBe(false);
+    expect(
+      takes({...relations, mode: 'readOnly'} as UiControlPayload<object>, [1])
+    ).toBe(false);
+    expect(takes({...relations, writable: undefined}, [1])).toBe(false);
+  });
+
+  it('keeps line breaks and overlong text out of text inputs', () => {
+    const text = control('craft:text', {maxLength: 3});
+
+    expect(takes(text, 'abc')).toBe(true);
+    // Counted in characters, not UTF-16 code units
+    expect(takes(text, 'ab😀')).toBe(true);
+    expect(takes(text, 'abcd')).toBe(false);
+    expect(takes(control('craft:text'), 'one\ntwo')).toBe(false);
+    expect(takes(control('craft:text', {inputType: 'email'}), 'ada')).toBe(
+      false
+    );
+    expect(
+      takes(control('craft:text', {inputType: 'email'}), 'ada@example.com')
+    ).toBe(true);
+    expect(takes(control('craft:textarea'), 'one\ntwo')).toBe(true);
+    expect(
+      takes(control('craft:textarea', {singleLine: true}), 'one\ntwo')
+    ).toBe(false);
+    expect(takes(control('craft:textarea', {maxLength: 3}), 'abcd')).toBe(
+      false
+    );
+  });
+
+  it('keeps numbers within their bounds', () => {
+    const number = control('craft:number', {min: 1, max: 10});
+
+    expect(takes(number, '10')).toBe(true);
+    expect(takes(number, 11)).toBe(false);
+    expect(takes(number, 0)).toBe(false);
+    expect(takes(number, 'ten')).toBe(false);
+    expect(takes(number, '')).toBe(true);
+    expect(takes(control('craft:money', {min: 5}), {value: '4'})).toBe(false);
+    expect(takes(control('craft:money', {min: 5}), {value: '5'})).toBe(true);
+  });
+
+  it('takes only the options a choice offers', () => {
+    const options = [
+      {label: 'Red', value: 'red'},
+      {label: 'Blue', value: 'blue'},
+    ];
+
+    expect(takes(control('craft:choice', {options}), 'red')).toBe(true);
+    expect(takes(control('craft:choice', {options}), 'green')).toBe(false);
+    expect(takes(control('craft:choice', {options}), ['red', 'blue'])).toBe(
+      false
+    );
+    expect(
+      takes(control('craft:choice', {options, multiple: true}), ['red', 'blue'])
+    ).toBe(true);
+    expect(
+      takes(control('craft:choice', {options, allowCustom: true}), 'green')
+    ).toBe(true);
+  });
+
+  it('keeps relations within their limit', () => {
+    expect(takes(control('craft:element-select', {limit: 1}), [7])).toBe(true);
+    expect(takes(control('craft:element-select', {limit: 1}), [7, 9])).toBe(
+      false
+    );
+  });
+
+  it('takes only rows that fit the table’s columns', () => {
+    const table = control('craft:table', {
+      columns: {
+        col1: {type: 'singleline'},
+        col2: {type: 'checkbox'},
+        col3: {
+          type: 'select',
+          options: [{label: 'Small', value: 's'}],
+        },
+      },
+      maxRows: 2,
+    });
+
+    expect(takes(table, [{col1: 'Apples', col2: true, col3: 's'}])).toBe(true);
+    expect(takes(table, [{col1: 'Apples', col2: 'yes'}])).toBe(false);
+    expect(takes(table, [{col3: 'm'}])).toBe(false);
+    expect(takes(table, [{col4: 'Pears'}])).toBe(false);
+    expect(takes(table, [{}, {}, {}])).toBe(false);
+  });
+});

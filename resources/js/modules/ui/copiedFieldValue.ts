@@ -17,10 +17,10 @@ import type {UiControlPayload} from './types';
 import type {UiValueSnapshot} from './valueAccess';
 
 export interface CopiedFieldValue extends UiValueSnapshot {
-  /** The type of the field it was copied from, which a paste target must share. */
-  fieldType: string;
   /** The component of the control it was read from, which a paste target must share. */
   component: string;
+  /** The value scope of the control it was read from, which a paste target must share. */
+  valueScope?: string;
   /** The label of the field it was copied from. */
   label: string | null;
   /** The value as text, for the card. */

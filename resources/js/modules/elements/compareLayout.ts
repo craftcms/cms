@@ -6,7 +6,7 @@ import type {
   UiValues,
 } from '@/modules/ui/types';
 import {
-  acceptsValueFrom,
+  acceptsValue,
   readControlValue,
   type UiValueSnapshot,
 } from '@/modules/ui/valueAccess';
@@ -380,9 +380,8 @@ export function editedFields(
 
 /**
  * The older version's value of a field, read to copy into the newer one, when
- * the newer one can be edited, both are the same kind of control, the older
- * one's value can be read and the newer one's written, and the value isn't
- * the newer one's already.
+ * the older one's value can be read, the newer one takes it (see
+ * `acceptsValue()`), and it isn't the newer one's already.
  *
  * @param current The newer field's value as it stands, as a canonical string,
  *   when it's been edited since `to` was rendered.
@@ -404,11 +403,7 @@ export function copyableValue(
     (node) => layoutUid(node) === row.toUid
   )?.control;
 
-  if (
-    !fromControl ||
-    !toControl ||
-    !acceptsValueFrom(toControl, fromControl.component)
-  ) {
+  if (!fromControl || !toControl) {
     return undefined;
   }
 
@@ -416,6 +411,7 @@ export function copyableValue(
 
   if (
     !snapshot ||
+    !acceptsValue(toControl, fromControl, snapshot) ||
     canonical(snapshot.value) ===
       (current ?? canonical(valueAt(to.values, toControl.path)))
   ) {

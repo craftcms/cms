@@ -44,7 +44,7 @@
   } from './runtime';
   import {useUiRenderer} from './renderer/context';
   import {
-    acceptsValueFrom,
+    acceptsValue,
     controlForSnapshot,
     readControlValue,
   } from './valueAccess';
@@ -79,14 +79,9 @@
   const COPY_VALUE_EVENT = 'craft:copy-field-value';
   const PASTE_VALUE_EVENT = 'craft:paste-field-value';
 
-  type FieldValueActionDetail = {
-    trigger?: unknown;
-    fieldType?: string;
-  };
-
   type FieldActionItem = {
     hidden?: boolean;
-    action?: {name?: string; detail?: FieldValueActionDetail};
+    action?: {name?: string};
   };
 
   type GenerateValueResponse = {
@@ -174,18 +169,13 @@
   const copiedValue = useCopiedFieldValue();
 
   /**
-   * Whether the clipboard holds a value this field can take: one copied from
-   * a field of the same type, which the control takes on the same terms as
-   * the Compare screen's copy arrows.
+   * Whether the clipboard holds a value this field's control takes, on the
+   * same terms as the Compare screen's copy arrows.
    */
-  function canPaste(fieldType: string | undefined): boolean {
+  function canPaste(): boolean {
     const copied = copiedValue.value;
 
-    return (
-      copied !== null &&
-      copied.fieldType === fieldType &&
-      acceptsValueFrom(control.value, copied.component)
-    );
+    return copied !== null && acceptsValue(control.value, copied, copied);
   }
 
   /**
@@ -212,10 +202,7 @@
           return [];
         }
 
-        if (
-          name === PASTE_VALUE_EVENT &&
-          canPaste(item.action?.detail?.fieldType)
-        ) {
+        if (name === PASTE_VALUE_EVENT && canPaste()) {
           return [{...item, hidden: false}];
         }
 
@@ -435,9 +422,7 @@
   }
 
   useEventListener(window, COPY_VALUE_EVENT, (event: Event) => {
-    const detail = (event as CustomEvent<FieldValueActionDetail>).detail;
-
-    if (!triggeredHere(detail) || !detail.fieldType) {
+    if (!triggeredHere((event as CustomEvent<{trigger?: unknown}>).detail)) {
       return;
     }
 
@@ -452,18 +437,18 @@
 
     copyFieldValue({
       ...snapshot,
-      fieldType: detail.fieldType,
       component: control.value.component,
+      valueScope: control.value.valueScope,
       label: resolvedNode.value.props.label ?? null,
       preview: fieldValuePreview(control.value, snapshot),
     });
   });
 
   useEventListener(window, PASTE_VALUE_EVENT, (event: Event) => {
-    const detail = (event as CustomEvent<FieldValueActionDetail>).detail;
+    const detail = (event as CustomEvent<{trigger?: unknown}>).detail;
     const copied = copiedValue.value;
 
-    if (!triggeredHere(detail) || !copied || !canPaste(detail.fieldType)) {
+    if (!triggeredHere(detail) || !copied || !canPaste()) {
       return;
     }
 
