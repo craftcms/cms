@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Wygląda na to, że starasz się załadować szablon spoza katalogu szablonów.',
     'Low' => 'Niska',
     'MCP Settings' => 'Ustawienia MCP',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'Serwer MCP',
     'MCP settings saved.' => 'Ustawienia MCP zapisane.',
     'MCP' => 'MCP',
