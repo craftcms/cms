@@ -277,6 +277,93 @@ describe('fieldValueFormats', () => {
     );
   });
 
+  const control = (component: string, props: object = {}) => ({
+    type: 'Control',
+    component,
+    path: ['fields', 'field'],
+    deltaGroup: ['fields', 'field'],
+    mode: 'editable' as const,
+    props,
+  });
+
+  it('puts a link on the clipboard as its URL, linked from its label in HTML', () => {
+    const link = control('craft:link');
+
+    expect(
+      fieldValueFormats(link, {
+        value: {
+          value: 'https://craftcms.com/docs',
+          urlSuffix: '#intro',
+          label: 'Docs & guides',
+          type: 'url',
+        },
+      })
+    ).toEqual({
+      text: 'https://craftcms.com/docs#intro',
+      html: '<a href="https://craftcms.com/docs#intro">Docs &amp; guides</a>',
+    });
+    // Addresses without their scheme or query, labeled with them when there's no label
+    expect(
+      fieldValueFormats(link, {
+        value: {value: 'mailto:hi@example.com?subject=Hi', type: 'email'},
+      })
+    ).toEqual({
+      text: 'hi@example.com',
+      html: '<a href="mailto:hi@example.com?subject=Hi">hi@example.com</a>',
+    });
+    // Element links are reference tags, so only their labels go on the clipboard
+    expect(
+      fieldValueFormats(link, {
+        value: {
+          value: '{entry:12@1:url}',
+          type: 'entry',
+          defaultLabel: 'About',
+        },
+      })
+    ).toEqual({text: 'About', html: null});
+    expect(
+      fieldValueFormats(link, {
+        value: {value: 'javascript:alert(1)', type: 'url', label: 'Run'},
+      }).html
+    ).toBeNull();
+  });
+
+  it('puts an amount on the clipboard with its currency, read in its locale', () => {
+    expect(
+      fieldValueFormats(
+        control('craft:money', {currency: 'USD', locale: 'en-US'}),
+        {value: {value: '1,999', locale: 'en-US'}}
+      ).text
+    ).toBe('$1,999.00');
+    expect(
+      fieldValueFormats(
+        control('craft:money', {currency: 'EUR', locale: 'en-US'}),
+        {value: {value: '1.999,5', locale: 'de-DE'}}
+      ).text
+    ).toBe('1.999,50\u00a0€');
+  });
+
+  it('puts a date on the clipboard as the user’s locale writes it, unconverted', () => {
+    const date = (props: object, value: UiValues) =>
+      fieldValueFormats(control('craft:date-time', props), {value}).text;
+
+    expect(
+      date(
+        {locale: 'en-US'},
+        {date: '2026-11-13', time: '23:30', timezone: 'Pacific/Auckland'}
+      )
+    ).toMatch(/^Nov 13, 2026, 11:30\sPM$/u);
+    expect(
+      date(
+        {locale: 'en-US', showTimeZone: true},
+        {date: '2026-11-13', time: '00:15', timezone: 'Pacific/Auckland'}
+      )
+    ).toMatch(/^Nov 13, 2026, 12:15\sAM \(Pacific\/Auckland\)$/u);
+    expect(date({locale: 'de_DE'}, {date: '2026-01-02', time: null})).toBe(
+      '02.01.2026'
+    );
+  });
+
   it('keeps options’ labels apart, with their icons and colors', () => {
     const choice = (multiple: boolean) => ({
       type: 'Choice',

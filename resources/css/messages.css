@@ -296,7 +296,26 @@
 
 .cp-messages .copied-notification-text {
   overflow-wrap: anywhere;
-  white-space: pre-line;
+  white-space: pre-wrap;
+}
+
+/* A copied link's label, above its URL, each on one line. */
+.cp-messages .copied-field-value-link {
+  white-space: nowrap;
+}
+
+.cp-messages .copied-field-value-link-url {
+  color: var(--c-text-quiet);
+  font-size: var(--c-text-sm);
+}
+
+/* Copied code, such as JSON or Markdown, with its indentation, and long
+   lines running off the card's edge. */
+.cp-messages .copied-field-value-code {
+  margin: 0;
+  font-family: var(--c-font-mono);
+  font-size: var(--c-text-sm);
+  white-space: pre;
 }
 
 /* Copied elements' chips, and a copied value's items, such as selected

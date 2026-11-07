@@ -9,6 +9,7 @@ import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/indicator/indicator';
 import {t} from '@craftcms/ui/utilities/translate';
 import {iconSvg} from '@/common/craft/icon-svg';
+import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 import {
   chipRow,
   renderChips,
@@ -27,6 +28,9 @@ export type UiValuePreview = (
 
 /** The most rows a table preview shows. */
 const TABLE_PREVIEW_ROWS = 5;
+
+/** The most lines a code preview highlights, well past what the card shows. */
+const CODE_PREVIEW_LINES = 40;
 
 /**
  * Relations, as the chips of the elements they relate, as copied elements
@@ -178,12 +182,74 @@ const list: UiValuePreview = ({items}) =>
       )
     : null;
 
+/**
+ * Links, as their label above their URL, or address, from the HTML link and
+ * the text they were copied to the clipboard as. Links to elements, which
+ * go on the clipboard as their labels alone, show their text.
+ */
+const link: UiValuePreview = ({html, text}) => {
+  const template = document.createElement('template');
+  template.innerHTML = html ?? '';
+  const label = template.content.querySelector('a')?.textContent?.trim();
+
+  if (!label || !text) {
+    return null;
+  }
+
+  const preview = document.createElement('div');
+  preview.className = 'copied-field-value-link';
+  const labelLine = document.createElement('div');
+  labelLine.textContent = label;
+  preview.append(labelLine);
+
+  // A link without a label of its own is labeled with its URL.
+  if (label !== text) {
+    const urlLine = document.createElement('div');
+    urlLine.className = 'copied-field-value-link-url';
+    urlLine.textContent = text;
+    preview.append(urlLine);
+  }
+
+  return preview;
+};
+
+/** Code, such as JSON or Markdown, color-coded as code blocks are. */
+function code(language: string): UiValuePreview {
+  return ({text}) => {
+    if (!text.trim()) {
+      return null;
+    }
+
+    const preview = document.createElement('pre');
+    preview.className = 'th-code copied-field-value-code';
+    const element = document.createElement('code');
+    element.dataset.language = language;
+    element.textContent = text
+      .split('\n')
+      .slice(0, CODE_PREVIEW_LINES)
+      .join('\n');
+    preview.append(element);
+    highlightCodeBlocks(preview);
+
+    return preview;
+  };
+}
+
+const json = code('json');
+
 const previews = new Map<string, UiValuePreview>([
   ['craft:element-select', elementChips],
   ['craft:table', table],
   ['craft:color', color],
   ['craft:color-select', paletteColor],
   ['craft:icon-picker', icon],
+  ['craft:link', link],
+  ['craft:markdown', code('markdown')],
+  // JSON fields' textareas, which only take values copied from JSON fields
+  [
+    'craft:textarea',
+    (copied) => (copied.valueScope === 'json' ? json(copied) : null),
+  ],
 ]);
 
 /**

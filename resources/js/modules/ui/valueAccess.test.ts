@@ -79,6 +79,12 @@ describe('acceptsValue', () => {
     expect(takes(number, '')).toBe(true);
     expect(takes(control('craft:money', {min: 5}), {value: '4'})).toBe(false);
     expect(takes(control('craft:money', {min: 5}), {value: '5'})).toBe(true);
+    // Amounts are formatted for their locale.
+    const money = control('craft:money', {min: 1000, max: 2000});
+    expect(takes(money, {value: '1,999.50', locale: 'en-US'})).toBe(true);
+    expect(takes(money, {value: '1.999,50', locale: 'de-DE'})).toBe(true);
+    expect(takes(money, {value: '2,000.01', locale: 'en-US'})).toBe(false);
+    expect(takes(money, {value: '1,9x9', locale: 'en-US'})).toBe(false);
   });
 
   it('takes only the options a choice offers', () => {

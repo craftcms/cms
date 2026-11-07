@@ -190,6 +190,45 @@ describe('renderValuePreview', () => {
     ).toBeNull();
   });
 
+  it('draws links as their label above their URL', async () => {
+    const preview = (await renderValuePreview(
+      copied({
+        component: 'craft:link',
+        text: 'https://craftcms.com',
+        html: '<a href="https://craftcms.com">Craft &amp; co</a>',
+      })
+    )) as HTMLElement;
+
+    expect([...preview.children].map((line) => line.textContent)).toEqual([
+      'Craft & co',
+      'https://craftcms.com',
+    ]);
+    // Element links have no URL to show
+    expect(
+      await renderValuePreview(
+        copied({component: 'craft:link', text: 'About', html: null})
+      )
+    ).toBeNull();
+  });
+
+  it('color-codes JSON and Markdown, keeping their indentation', async () => {
+    const text = '{\n  "name": "Craft"\n}';
+    const json = (await renderValuePreview(
+      copied({component: 'craft:textarea', valueScope: 'json', text})
+    )) as HTMLElement;
+    const markdown = (await renderValuePreview(
+      copied({component: 'craft:markdown', text: '# Hi\n\n`code`'})
+    )) as HTMLElement;
+
+    expect(json.textContent).toBe(text);
+    expect(json.querySelector('.th-string')!.textContent).toBe('"Craft"');
+    expect(markdown.querySelector('.th-heading')).not.toBeNull();
+    // Other textareas show their text
+    expect(
+      await renderValuePreview(copied({component: 'craft:textarea', text}))
+    ).toBeNull();
+  });
+
   it('lets a component register its own preview', async () => {
     const node = document.createElement('span');
     registerValuePreview('craft:test-preview', ({value}) => {

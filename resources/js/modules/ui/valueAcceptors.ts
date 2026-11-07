@@ -8,6 +8,7 @@
  * relation field can select, is settled by the controls' value scopes.
  */
 
+import {moneyAmount} from './money';
 import type {UiControlPayload, UiValue, UiValues} from './types';
 import type {UiValueAcceptor} from './valueAccess';
 
@@ -252,9 +253,17 @@ const money: UiValueAcceptor = (control, {value}) => {
     return true;
   }
 
+  // Amounts are formatted for the locale they were entered in, such as `1,999`.
+  const locale = isRecord(value) ? value.locale : propsOf(control).locale;
+  const number = isScalar(amount)
+    ? moneyAmount(
+        String(amount),
+        typeof locale === 'string' ? locale : undefined
+      )
+    : null;
   const {min, max} = propsOf(control);
 
-  return isNumeric(amount) && withinBounds(amount as Scalar, min, max);
+  return number !== null && withinBounds(number, min, max);
 };
 
 /** Whether a table cell's value is one its column's input can hold. */

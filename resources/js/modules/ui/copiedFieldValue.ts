@@ -23,6 +23,7 @@ import {
 } from '@/common/craft/system-clipboard';
 import {prefixedKey} from '@/common/composables/useStorage';
 import {CopiedNotification} from '@/modules/messages/copied-notification';
+import {formatMoney} from './money';
 import type {UiControlPayload} from './types';
 import type {UiValueSnapshot} from './valueAccess';
 import {renderValuePreview} from './valuePreviews';
@@ -142,9 +143,19 @@ export function fieldValueFormats(
     return tableFormats(snapshot.value, columns as Record<string, TableColumn>);
   }
 
+  const {value} = snapshot;
+
+  switch (control.component) {
+    case 'craft:link':
+      return linkFormats(value);
+    case 'craft:money':
+      return {text: moneyText(value, control.props), html: null};
+    case 'craft:date-time':
+      return {text: dateTimeText(value, control.props), html: null};
+  }
+
   const labels = optionLabels(control.props);
   const options = optionItems(control.props);
-  const {value} = snapshot;
   const item = (entry: unknown): CopiedValueItem | null => {
     const option = isScalar(entry) ? options?.get(String(entry)) : undefined;
     const label = option?.label ?? valueText(entry, labels);
@@ -199,6 +210,109 @@ function tableFormats(
         : '') +
       `<tbody>${cells.map((row) => htmlRow('td', row)).join('')}</tbody></table>`,
   };
+}
+
+/** URL schemes a copied link is linked with in HTML. */
+const LINKABLE_URL = /^(https?|mailto|tel|sms):/i;
+
+/**
+ * A link as its URL, or for `mailto:`, `tel:`, and `sms:` links the address
+ * or number, and in HTML, linked from its label. Links to elements, whose
+ * values are reference tags, are their labels alone.
+ */
+function linkFormats(value: unknown): FieldValueFormats {
+  const {
+    value: url,
+    label,
+    defaultLabel,
+    urlSuffix,
+  } = (value ?? {}) as Record<string, unknown>;
+  const text = (part: unknown) => (typeof part === 'string' ? part.trim() : '');
+  const name = text(label) || text(defaultLabel);
+
+  if (!LINKABLE_URL.test(text(url))) {
+    return {text: name, html: null};
+  }
+
+  const href = text(url) + text(urlSuffix);
+  const address = linkAddress(href);
+
+  return {
+    text: address,
+    html: `<a href="${escapeHtml(href)}">${escapeHtml(name || address)}</a>`,
+  };
+}
+
+/** A URL, or a `mailto:`, `tel:`, or `sms:` link's address or number. */
+function linkAddress(href: string): string {
+  return /^https?:/i.test(href)
+    ? href
+    : href.replace(/^[a-z]+:/i, '').replace(/[?#].*$/, '');
+}
+
+/** An amount with its currency, such as `$1,999.00`. */
+function moneyText(value: unknown, props: object): string {
+  const {currency, locale} = props as {currency?: string; locale?: string};
+  const {value: amount, locale: amountLocale} = (
+    value && typeof value === 'object' ? value : {value}
+  ) as {value?: unknown; locale?: unknown};
+
+  if (typeof amount !== 'string' && typeof amount !== 'number') {
+    return '';
+  }
+
+  return formatMoney(
+    String(amount),
+    currency,
+    typeof amountLocale === 'string' ? amountLocale : locale
+  );
+}
+
+/**
+ * A date and time as the user's locale writes them, such as
+ * `Nov 13, 2026, 2:30 PM`, followed by its time zone where the control
+ * shows one.
+ */
+function dateTimeText(value: unknown, props: object): string {
+  const {date, time, timezone} = (value ?? {}) as Record<string, unknown>;
+  const {locale, showTimeZone} = props as {
+    locale?: string;
+    showTimeZone?: boolean;
+  };
+  const dateParts =
+    typeof date === 'string' ? date.match(/^(\d{4})-(\d{2})-(\d{2})$/) : null;
+  const timeParts =
+    typeof time === 'string' ? time.match(/^(\d{2}):(\d{2})/) : null;
+
+  if (!dateParts && !timeParts) {
+    return valueText(value, null);
+  }
+
+  // The wall-clock date and time, formatted as they are, not converted.
+  const wallClock = new Date(
+    Date.UTC(
+      dateParts ? Number(dateParts[1]) : 2000,
+      dateParts ? Number(dateParts[2]) - 1 : 0,
+      dateParts ? Number(dateParts[3]) : 1,
+      timeParts ? Number(timeParts[1]) : 0,
+      timeParts ? Number(timeParts[2]) : 0
+    )
+  );
+  let text: string;
+
+  try {
+    text = new Intl.DateTimeFormat(locale?.replace(/_/g, '-'), {
+      timeZone: 'UTC',
+      dateStyle: dateParts ? 'medium' : undefined,
+      timeStyle: timeParts ? 'short' : undefined,
+    }).format(wallClock);
+  } catch {
+    return valueText(value, null);
+  }
+
+  return showTimeZone && typeof timezone === 'string' && timezone
+    ? `${text} (${timezone})`
+    : text;
 }
 
 /** A cell for tab-separated text, quoted the way spreadsheets read it. */
