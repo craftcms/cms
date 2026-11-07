@@ -144,6 +144,12 @@ class OAuth extends Component
      */
     public function authenticate(ServerRequestInterface $request, string $resource, array $requiredScopes = [], ?array &$scopes = null): User
     {
+        // Reject requests without a bearer token before loading the keys, so clients still get the challenge that
+        // tells them how to sign in when the keys are missing or invalid.
+        if (!preg_match('/^\s*Bearer\s+\S/i', $request->getHeader('authorization')[0] ?? '')) {
+            throw OAuthServerException::accessDenied('Missing "Bearer" token');
+        }
+
         $request = $this->resourceServer($resource)->validateAuthenticatedRequest($request);
         $granted = $request->getAttribute('oauth_scopes', []);
         // Personal access tokens can grant scopes for several resources, so only this resource’s scopes count here.

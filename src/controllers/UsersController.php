@@ -1569,6 +1569,9 @@ JS);
         $response = $this->asEditUserScreen($user, self::SCREEN_TOKENS);
 
         if (!Craft::$app->getOAuth()->hasKeys()) {
+            $response->errorSummaryTemplate('_includes/oauth-keys-missing', [
+                'heading' => Craft::t('app', 'Tokens can’t be created until Craft has OAuth signing keys.'),
+            ]);
             $response->contentTemplate('users/_tokens-setup');
             return $response;
         }
