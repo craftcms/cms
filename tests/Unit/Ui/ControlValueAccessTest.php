@@ -54,7 +54,7 @@ it('copies values only between controls in the same value scope', function () {
 });
 
 it('reads a relation field’s element presentations along with its value', function () {
-    expect(ElementSelect::make('hero')->valueProps())->toBe(['elements']);
+    expect(ElementSelect::make('hero')->valueProps())->toBe(['elements', 'elementType']);
 });
 
 it('still says a control with nested UIs can be read and written once it’s been prepared for a comparison', function () {

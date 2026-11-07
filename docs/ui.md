@@ -349,6 +349,32 @@ Resolution rejects unregistered types and non-JSON-safe properties. Either rende
 registered component is missing, its loader fails, or rendering throws. Do not catch these failures and submit a partial
 UI.
 
+### Copying and pasting field values
+
+Fields whose Control can be both read and written get "Copy value" and "Paste value" actions. A value can only be pasted
+into a Control drawn by the same component, in the same value scope (`Control::valueScope()`, which relation fields set
+to their field's UID). A Control component can narrow that further, and change how its copied values are previewed in
+the "copied" card, which shows their text by default:
+
+```ts
+Cp.booting((cp) => {
+  // Whether `control` takes this copied value, such as one that fits its max length.
+  cp.$ui.registerValueAcceptor('my-plugin:slug', (control, {value}) =>
+    typeof value === 'string' && value.length <= control.props.maxLength,
+  )
+
+  // A node to show in place of the value's text, or `null` to show the text.
+  // It's only for looking at: it can't take focus, and screen readers read the text.
+  cp.$ui.registerValuePreview('my-plugin:slug', ({value}) => {
+    const code = document.createElement('code')
+    code.textContent = String(value)
+    return code
+  })
+})
+```
+
+A preview may return a promise. If it throws or rejects, the card shows the value's text.
+
 ## Modes, errors, and refresh
 
 Controls resolve to `editable`, `readOnly`, or `disabled` mode. Read-only and disabled Controls display canonical values

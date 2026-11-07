@@ -460,16 +460,14 @@
     snapshot.value ??= value.value ?? null;
     const {text, html} = fieldValueFormats(control.value, snapshot);
 
-    copyFieldValue(
-      {
-        ...snapshot,
-        component: control.value.component,
-        valueScope: control.value.valueScope,
-        label: resolvedNode.value.props.label ?? null,
-        text,
-      },
-      html
-    );
+    copyFieldValue({
+      ...snapshot,
+      component: control.value.component,
+      valueScope: control.value.valueScope,
+      label: resolvedNode.value.props.label ?? null,
+      text,
+      html,
+    });
   });
 
   useEventListener(window, PASTE_VALUE_EVENT, (event: Event) => {

@@ -252,14 +252,41 @@
   }
 }
 
-/* A copied field value's preview, a few lines of it. */
-.cp-messages .copied-field-value {
+/* A copied field value's text, a few lines of it, unless its control draws
+   a preview of it instead (see `valuePreviews.ts`). */
+.cp-messages .copied-field-value:not(.copied-field-value--preview) {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
   overflow: hidden;
   overflow-wrap: anywhere;
   white-space: pre-line;
+}
+
+.cp-messages .copied-field-value-preview {
+  overflow: hidden;
+}
+
+/* A copied table's first rows, with long cells cut short. */
+.cp-messages .copied-field-value-table {
+  border-collapse: collapse;
+  font-size: var(--c-text-sm);
+
+  th,
+  td {
+    max-width: 12em;
+    padding-block: calc(var(--c-spacing) * 0.5);
+    padding-inline: var(--c-spacing);
+    overflow: hidden;
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  th {
+    font-weight: 600;
+  }
 }
 
 /* Chips stacked like copied elements, with the first one in front, such as

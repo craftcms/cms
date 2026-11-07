@@ -5,8 +5,8 @@
  * HTML where that says more, such as a table, for other apps to paste. The
  * value itself is kept in localStorage, so it outlasts the page and is shared
  * with other tabs, which are told about each change. While it's there, a
- * "copied" card previews it, like the element clipboard's, and fields that
- * take it offer to paste it.
+ * "copied" card previews it, like the element clipboard's (see
+ * `valuePreviews.ts`), and fields that take it offer to paste it.
  *
  * Nothing is read back from the system clipboard. Pasting there only pastes
  * the stored value when the clipboard still holds the text it was copied as,
@@ -22,6 +22,7 @@ import {prefixedKey} from '@/common/composables/useStorage';
 import {Notification} from '@/modules/messages/notification';
 import type {UiControlPayload} from './types';
 import type {UiValueSnapshot} from './valueAccess';
+import {renderValuePreview} from './valuePreviews';
 
 export interface CopiedFieldValue extends UiValueSnapshot {
   /** The component of the control it was read from, which a paste target must share. */
@@ -32,6 +33,8 @@ export interface CopiedFieldValue extends UiValueSnapshot {
   label: string | null;
   /** The value as text, as it was put on the system clipboard. */
   text: string;
+  /** The value as HTML, as it was put on the system clipboard, if it was. */
+  html?: string | null;
 }
 
 /** A value as other apps take it from the clipboard. */
@@ -60,11 +63,8 @@ export function useCopiedFieldValue(): Readonly<
  * Puts a value on the clipboard, replacing what was there. Called while the
  * user's click is being handled, which the system clipboard needs.
  */
-export function copyFieldValue(
-  value: CopiedFieldValue,
-  html: string | null = null
-): void {
-  writeSystemClipboard(value.text, html);
+export function copyFieldValue(value: CopiedFieldValue): void {
+  writeSystemClipboard(value.text, value.html ?? null);
   write(value);
   copied.value = value;
   show(value);
@@ -267,6 +267,8 @@ function optionLabels(props: object): Map<string, string> | null {
 
 /** The "copied" card, with the value's preview and a Cancel button that clears it. */
 class CopiedFieldValueNotification extends Notification {
+  readonly #value: CopiedFieldValue;
+
   constructor(value: CopiedFieldValue, animate: boolean) {
     super(
       'notice',
@@ -281,15 +283,42 @@ class CopiedFieldValueNotification extends Notification {
       }
     );
 
-    if (value.text) {
-      const preview = document.createElement('div');
-      preview.className = 'copied-field-value';
-      preview.textContent =
-        value.text.length > PREVIEW_LENGTH
-          ? `${value.text.slice(0, PREVIEW_LENGTH)}…`
-          : value.text;
-      this.settings.details = preview;
+    this.#value = value;
+  }
+
+  /**
+   * The value's preview, when its control has one, or else its text. A
+   * preview is only for looking at, so screen readers read the text with it.
+   */
+  override async getDetails(): Promise<HTMLElement | null> {
+    const {text} = this.#value;
+    const preview = await renderValuePreview(this.#value);
+    const container = document.createElement('div');
+    container.className = 'copied-field-value';
+    const textElement = document.createElement('span');
+    textElement.textContent =
+      text.length > PREVIEW_LENGTH ? `${text.slice(0, PREVIEW_LENGTH)}…` : text;
+
+    if (!preview) {
+      if (!text) {
+        return null;
+      }
+
+      container.append(textElement);
+
+      return container;
     }
+
+    const visual = document.createElement('div');
+    visual.className = 'copied-field-value-preview';
+    // Neither focusable nor read out, so it can't hold up the card either.
+    visual.inert = true;
+    visual.append(preview);
+    textElement.className = 'sr-only';
+    container.classList.add('copied-field-value--preview');
+    container.append(visual, textElement);
+
+    return container;
   }
 
   override createCloseButton(): HTMLElement {
