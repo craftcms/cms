@@ -1,12 +1,13 @@
 /**
- * The default message display: messages drawn by `Craft.cp.displayNotification()`
- * (`Craft.CP.Notification` in `CP.js`), plus the "Entry copied." card
- * `Craft.cp.copyElements()` shows.
+ * The default message display: the cards `showMessage()` and
+ * `Craft.cp.displayNotification()` show (`Notification`, in
+ * `modules/messages/notification.ts`), plus the "Entry copied." card
+ * `copyElements()` shows.
  *
  * Modelled on Sonner: the newest sits nearest the screen edge with the others
  * stacked behind it, and the stack spreads out while it's hovered, pressed or
  * holds focus (the "Skip to messages" link moves focus to it).
- * `Craft.cp.updateNotificationStack()` sets the custom properties below.
+ * `<cp-messages>`'s `updateStack()` sets the custom properties below.
  *
  * The container is the `<cp-messages id="messages">` element, which the Twig
  * layout and the Inertia root view both render. Its `position` attribute holds
@@ -235,7 +236,20 @@
     pointer-events: none;
   }
 
-  /* `CP.js` offsets each chip after the first and sets its `--overlay-opacity`. */
+  /* A `craft-chip` host is `display: contents`, so each one gets a box to
+     stack, and a fill to cover the chips behind it, as chips have none of
+     their own. */
+  .copied-element-chip {
+    position: relative;
+    display: flex;
+    inline-size: fit-content;
+    max-inline-size: 100%;
+    border-radius: var(--c-radius-md);
+    background-color: var(--c-surface-overlay);
+  }
+
+  /* `copied-elements-notification.ts` offsets each chip after the first and
+     sets its `--overlay-opacity`. */
   .copied-element-chip:not(:first-child) {
     position: absolute;
 
@@ -244,6 +258,7 @@
       position: absolute;
       inset: -1px;
       display: block;
+      border-radius: inherit;
       background-color: color-mix(
         var(--c-surface-overlay) calc(var(--overlay-opacity, 0) * 100%),
         transparent
