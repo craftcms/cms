@@ -1,4 +1,5 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
+import {userEvent} from 'vite-plus/test/browser';
 import '../../styles/cp.css';
 import '../button/button.js';
 import '../icon/icon.js';
@@ -92,4 +93,36 @@ it('fires craft-hide and craft-show on itself as its slotted content toggles', a
 
   expect(onHost).toEqual(['craft-hide', 'craft-show']);
   expect(bubbled).toEqual([]);
+});
+
+it('toggles from the keyboard, leaving focus on the invoker', async () => {
+  document.body.innerHTML = `
+    <craft-disclosure label="Details">
+      <div slot="content"><a href="#inside">Inside</a></div>
+    </craft-disclosure>
+    <a href="#after">After</a>`;
+  const disclosure =
+    document.querySelector<CraftDisclosure>('craft-disclosure')!;
+  await disclosure.updateComplete;
+  await settle();
+
+  const invoker = disclosure.querySelector<HTMLElement>('[slot="invoker"]')!;
+  invoker.focus();
+
+  await userEvent.keyboard('{Enter}');
+  await expect.poll(() => disclosure.opened).toBe(true);
+  expect(invoker.matches(':focus-within, :focus')).toBe(true);
+
+  // The expanded content follows the invoker in the Tab order.
+  await userEvent.keyboard('{Tab}');
+  expect(document.activeElement?.textContent).toBe('Inside');
+
+  invoker.focus();
+  await userEvent.keyboard(' ');
+  await expect.poll(() => disclosure.opened).toBe(false);
+  expect(invoker.matches(':focus-within, :focus')).toBe(true);
+
+  // Collapsed content leaves the Tab order.
+  await userEvent.keyboard('{Tab}');
+  expect(document.activeElement?.textContent).toBe('After');
 });

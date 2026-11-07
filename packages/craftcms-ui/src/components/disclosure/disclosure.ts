@@ -1,7 +1,7 @@
-import {LionCollapsible} from '@lion/ui/collapsible.js';
-import {css, html, type PropertyValues} from 'lit';
+import {css, html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import type {WindowWithCraft} from '@src/types/globals';
+import {uniqueId} from '@src/utilities/unique-id.js';
 import CraftButton from '../button/button.js';
 
 const CHEVRONS = [
@@ -14,8 +14,8 @@ const CHEVRONS = [
 /**
  * @summary A trigger that shows and hides content, in either of two modes:
  *
- * **Slotted (collapsible) mode** — Lion's collapsible convention: a
- * `slot="invoker"` trigger and `slot="content"` collapsible content. Without a
+ * **Slotted (collapsible) mode** — a `slot="invoker"` trigger and
+ * `slot="content"` collapsible content. Without a
  * slotted invoker, renders a default one from the `label` attribute:
  *
  *     <craft-button type="button" variant="plain" flush icon="chevron-right" icon-position="suffix">${label}</craft-button>
@@ -41,22 +41,25 @@ const CHEVRONS = [
  * @fires craft-hide - The content was collapsed, in either mode. Doesn't
  *   bubble, so listen on the disclosure itself.
  */
-export default class CraftDisclosure extends LionCollapsible {
-  static override get styles() {
-    return [
-      ...super.styles,
-      css`
-        ::slotted([slot='content']) {
-          margin-block-start: var(--c-spacing-lg);
-        }
+export default class CraftDisclosure extends LitElement {
+  static override styles = css`
+    :host {
+      display: block;
+    }
 
-        :host(:not([appearance='plain'])) ::slotted([slot='content']) {
-          padding-inline-start: var(--c-spacing-lg);
-          border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
-        }
-      `,
-    ];
-  }
+    ::slotted([slot='content']) {
+      overflow: hidden;
+      margin-block-start: var(--c-spacing-lg);
+    }
+
+    :host(:not([appearance='plain'])) ::slotted([slot='content']) {
+      padding-inline-start: var(--c-spacing-lg);
+      border-inline-start: 1px solid var(--c-color-neutral-border-quiet);
+    }
+  `;
+
+  /** Whether the content is shown (slotted mode). */
+  @property({type: Boolean, reflect: true}) opened = false;
 
   /** Text for the default invoker button (slotted mode). */
   @property() label = '';
@@ -89,9 +92,34 @@ export default class CraftDisclosure extends LionCollapsible {
    */
   private __announcedOpened: boolean | null = null;
 
-  constructor() {
-    super();
-    this.addEventListener('opened-changed', this.__announceOpenedChange);
+  /** Shows the content (slotted mode). */
+  show() {
+    this.opened = true;
+  }
+
+  /** Hides the content (slotted mode). */
+  hide() {
+    this.opened = false;
+  }
+
+  /** Flips the content between shown and hidden (slotted mode). */
+  toggle = () => {
+    this.opened = !this.opened;
+  };
+
+  private get __invoker(): HTMLElement | undefined {
+    return this.__slotted('invoker');
+  }
+
+  private get __content(): HTMLElement | undefined {
+    return this.__slotted('content');
+  }
+
+  private __slotted(slot: string): HTMLElement | undefined {
+    return Array.from(this.children).find(
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child.slot === slot
+    );
   }
 
   /** The external element named by the trigger's `aria-controls`. */
@@ -115,21 +143,18 @@ export default class CraftDisclosure extends LionCollapsible {
       ':scope > button[type="button"][aria-controls]:not([slot])'
     );
 
-    if (!this.__externalTrigger) {
-      // Lion wires the click listener and aria state onto the slotted invoker
-      // during connect, so the default one has to exist in the light DOM first.
-      this.__ensureDefaultInvoker();
-    }
-
     super.connectedCallback();
 
     if (this.__externalTrigger) {
       this.__setupExternalMode();
+    } else {
+      this.__setupSlottedMode();
     }
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+    this.__invoker?.removeEventListener('click', this.toggle);
 
     if (this.__externalTrigger) {
       // Leave the target visible when the disclosure goes away (parity with
@@ -153,8 +178,10 @@ export default class CraftDisclosure extends LionCollapsible {
       this.__defaultInvoker.setAttribute('size', this.size);
     }
 
-    if (changedProperties.has('opened')) {
+    if (changedProperties.has('opened') && !this.__externalTrigger) {
+      this.__syncSlottedState();
       this.__syncInvokerChevron();
+      this.__announceOpenedChange();
     }
 
     if (changedProperties.has('state') && this.__externalTrigger) {
@@ -166,12 +193,8 @@ export default class CraftDisclosure extends LionCollapsible {
     }
   }
 
-  /** Lion's `opened-changed`, reported as the public events in slotted mode. */
-  private __announceOpenedChange = () => {
-    if (this.__externalTrigger) {
-      return;
-    }
-
+  /** Reports a slotted-mode change of `opened` as the public events. */
+  private __announceOpenedChange() {
     const opened = Boolean(this.opened);
     const previous = this.__announcedOpened;
     this.__announcedOpened = opened;
@@ -179,10 +202,36 @@ export default class CraftDisclosure extends LionCollapsible {
     if (previous !== null && previous !== opened) {
       this.dispatchEvent(new CustomEvent(opened ? 'craft-show' : 'craft-hide'));
     }
-  };
+  }
+
+  private __setupSlottedMode() {
+    this.__ensureDefaultInvoker();
+
+    const invoker = this.__invoker;
+    const content = this.__content;
+
+    if (content) {
+      content.id ||= uniqueId('collapsible-content');
+    }
+
+    if (invoker) {
+      invoker.addEventListener('click', this.toggle);
+
+      if (content) {
+        invoker.setAttribute('aria-controls', content.id);
+      }
+    }
+
+    this.__syncSlottedState();
+  }
+
+  private __syncSlottedState() {
+    this.__invoker?.setAttribute('aria-expanded', String(Boolean(this.opened)));
+    this.__content?.style.setProperty('display', this.opened ? '' : 'none');
+  }
 
   private __ensureDefaultInvoker() {
-    if (this._invokerNode) {
+    if (this.__invoker) {
       return;
     }
 
@@ -206,7 +255,7 @@ export default class CraftDisclosure extends LionCollapsible {
    * property and `craft-button` doesn't reflect it.
    */
   private __syncInvokerChevron() {
-    const invoker = this._invokerNode;
+    const invoker = this.__invoker;
 
     if (!(invoker instanceof CraftButton) || !invoker.icon) {
       return;

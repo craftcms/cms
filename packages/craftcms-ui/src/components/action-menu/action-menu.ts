@@ -1,8 +1,8 @@
 import {css, html, type PropertyValues, render} from 'lit';
 import {property, queryAssignedElements} from 'lit/decorators.js';
 import type CraftActionItem from '@src/components/action-item/action-item';
-import {uuid} from '@lion/ui/core.js';
 import {t} from '@src/utilities/translate';
+import {uniqueId} from '@src/utilities/unique-id.js';
 import {Variant} from '@src/constants/variants';
 import CraftPopover from '../popover/popover.js';
 import type {
@@ -154,7 +154,7 @@ export default class CraftActionMenu extends CraftPopover {
   @queryAssignedElements({slot: 'content'})
   protected contentNodes!: HTMLElement[];
 
-  private uid: string = uuid();
+  private uid: string = uniqueId();
 
   /** Generated light-DOM invoker (data-driven mode only). */
   private _generatedInvoker: HTMLElement | null = null;

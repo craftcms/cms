@@ -5,7 +5,7 @@ No documented pattern fits. It's nested lists of `craft-checkbox` controls, grou
 **Not for:**
 
 - A flat set of options. Use `craft-checkbox-group`.
-- A parent checkbox that stands for its children, with a mixed state. Use `craft-checkbox-indeterminate`.
+- A single "select all" over a flat set of options. Use `craft-checkbox-select` with `all-label`.
 
 ## Requirements
 
