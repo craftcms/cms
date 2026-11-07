@@ -28,10 +28,10 @@
     type ApplyAssistantProposalDetail,
   } from '@/modules/ai/assistant/context';
   import UiNodeList from './UiNodeList.vue';
+  import {isCopiedText, pastesInto} from '@/common/craft/system-clipboard';
   import {
     copyFieldValue,
     fieldValueFormats,
-    isCopiedText,
     useCopiedFieldValue,
     type CopiedFieldValue,
   } from './copiedFieldValue';
@@ -80,28 +80,6 @@
    */
   const COPY_VALUE_EVENT = 'craft:copy-field-value';
   const PASTE_VALUE_EVENT = 'craft:paste-field-value';
-
-  /** Inputs that don't take typed text, so a paste on them is the field's. */
-  const NON_TEXT_INPUT_TYPES = new Set([
-    'button',
-    'checkbox',
-    'color',
-    'file',
-    'image',
-    'radio',
-    'range',
-    'reset',
-    'submit',
-  ]);
-
-  function takesText(element: HTMLElement): boolean {
-    return (
-      element.isContentEditable ||
-      element instanceof HTMLTextAreaElement ||
-      (element instanceof HTMLInputElement &&
-        !NON_TEXT_INPUT_TYPES.has(element.type))
-    );
-  }
 
   type FieldActionItem = {
     hidden?: boolean;
@@ -489,8 +467,11 @@
     if (
       event.defaultPrevented ||
       !copied ||
-      !pastesIntoField(event) ||
-      !isCopiedText(copied, event.clipboardData?.getData('text/plain') ?? '') ||
+      !pastesInto(event, field.value) ||
+      !isCopiedText(
+        copied.text,
+        event.clipboardData?.getData('text/plain') ?? ''
+      ) ||
       !canPaste()
     ) {
       return;
@@ -499,27 +480,6 @@
     event.preventDefault();
     pasteValue(copied);
   });
-
-  /**
-   * Whether a paste lands on this field itself, rather than on something text
-   * is typed into, which pastes text as usual, or on a field nested in it.
-   */
-  function pastesIntoField(event: Event): boolean {
-    for (const target of event.composedPath()) {
-      if (target === field.value) {
-        return true;
-      }
-
-      if (
-        target instanceof HTMLElement &&
-        (target.localName === 'craft-field' || takesText(target))
-      ) {
-        return false;
-      }
-    }
-
-    return false;
-  }
 
   function pasteValue(copied: CopiedFieldValue): void {
     // Each field gets its own copy, so editing one doesn't change another.

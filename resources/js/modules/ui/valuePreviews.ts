@@ -9,7 +9,10 @@ import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/indicator/indicator';
 import {t} from '@craftcms/ui/utilities/translate';
 import {iconSvg} from '@/common/craft/icon-svg';
-import {renderChips} from '@/modules/elements/copied-elements-notification';
+import {
+  chipRow,
+  renderChips,
+} from '@/modules/elements/copied-elements-notification';
 import type {CopiedFieldValue, CopiedValueItem} from './copiedFieldValue';
 
 /**
@@ -26,8 +29,8 @@ export type UiValuePreview = (
 const TABLE_PREVIEW_ROWS = 5;
 
 /**
- * Relations, as the chips of the elements they relate, laid out like a
- * list's badges.
+ * Relations, as the chips of the elements they relate, as copied elements
+ * show them.
  */
 const elementChips: UiValuePreview = async ({props}) => {
   const elements = props?.elements;
@@ -49,15 +52,7 @@ const elementChips: UiValuePreview = async ({props}) => {
     })
   );
 
-  if (!chips) {
-    return null;
-  }
-
-  const preview = document.createElement('div');
-  preview.className = 'copied-field-value-chips';
-  preview.append(...chips.values());
-
-  return preview;
+  return chips ? chipRow(chips.values()) : null;
 };
 
 /** Tables, as the first rows of the HTML table they were copied to the clipboard as. */

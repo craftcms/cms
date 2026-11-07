@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
   import {computed, nextTick, reactive, ref, useId, watch} from 'vue';
@@ -477,6 +478,11 @@
     },
     container: dropZone,
     fallbackFocus: addButton,
+  });
+
+  usePasteElementsShortcut(dropZone, {
+    canPaste: () => pasteable.candidates.value.length > 0,
+    paste: () => pasteable.paste(),
   });
 
   // ───────────────────────────── chip actions ─────────────────────────────

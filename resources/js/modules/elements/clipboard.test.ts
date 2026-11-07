@@ -30,6 +30,9 @@ const {Card} = vi.hoisted(() => {
     loaded = false;
     closed = false;
     shown = false;
+    clipboardFormats: {text: string; html: string | null} | null = null;
+    loadedFormats: Promise<{text: string; html: string | null} | null>;
+    #resolveFormats!: (formats: {text: string; html: string | null}) => void;
     #onShow: Array<() => void> = [];
 
     constructor(
@@ -37,6 +40,9 @@ const {Card} = vi.hoisted(() => {
       public onCancel: () => void
     ) {
       Card.last = this;
+      this.loadedFormats = new Promise((resolve) => {
+        this.#resolveFormats = resolve;
+      });
     }
 
     show() {
@@ -47,8 +53,13 @@ const {Card} = vi.hoisted(() => {
       this.#onShow.push(handler);
     }
 
-    load(elements = this.elementInfo) {
+    load(
+      elements = this.elementInfo,
+      formats: {text: string; html: string | null} = {text: 'Entry', html: null}
+    ) {
       this.elementInfo = elements;
+      this.clipboardFormats = formats;
+      this.#resolveFormats(formats);
       this.loaded = true;
       this.#onShow.forEach((handler) => handler());
     }
@@ -114,6 +125,64 @@ describe('the element clipboard', () => {
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toEqual([entry]);
     expect(Card.last?.shown).toBe(true);
     expect(broadcasts.sent).toEqual([{event: 'copyElements'}]);
+  });
+
+  it('puts the elements’ titles on the system clipboard as it’s copied, once they’re loaded', async () => {
+    const items: Record<string, Promise<Blob>>[] = [];
+    vi.stubGlobal(
+      'ClipboardItem',
+      class {
+        constructor(record: Record<string, Promise<Blob>>) {
+          items.push(record);
+        }
+      }
+    );
+    const write = vi.fn(async () => {});
+    vi.stubGlobal('navigator', {clipboard: {write}});
+    clipboard.installClipboard();
+    clipboard.copyElements([entry]);
+
+    expect(write).toHaveBeenCalledOnce();
+    expect(clipboard.isCopiedElementsText('Apples\nPears')).toBe(false);
+
+    Card.last!.load([entry], {
+      text: 'Apples\nPears',
+      html: '<a href="https://example.com/apples">Apples</a><br>Pears',
+    });
+
+    await expect(
+      items[0]!['text/plain']!.then((blob) => blob.text())
+    ).resolves.toBe('Apples\nPears');
+    await expect(
+      items[0]!['text/html']!.then((blob) => blob.text())
+    ).resolves.toBe('<a href="https://example.com/apples">Apples</a><br>Pears');
+    expect(clipboard.isCopiedElementsText('Apples\r\nPears\r\n')).toBe(true);
+    expect(clipboard.isCopiedElementsText('Apples')).toBe(false);
+  });
+
+  it('keeps one thing on the clipboard: elements or a field value', async () => {
+    const values = await import('@/modules/ui/copiedFieldValue');
+    const value = {
+      value: 'Hi',
+      component: 'craft:text',
+      label: 'Title',
+      text: 'Hi',
+    };
+    clipboard.installClipboard();
+    values.installFieldValueClipboard();
+
+    values.copyFieldValue(value);
+    clipboard.copyElements([entry]);
+
+    expect(values.useCopiedFieldValue().value).toBeNull();
+    expect(localStorage.getItem('Craft-test.copiedFieldValue')).toBeNull();
+
+    const card = Card.last!;
+    values.copyFieldValue(value);
+
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(card.closed).toBe(true);
+    expect(values.useCopiedFieldValue().value).toEqual(value);
   });
 
   it('tells listeners about the elements once the card has filled them in', () => {

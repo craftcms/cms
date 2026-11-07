@@ -2,15 +2,11 @@
  * The control panel's field value clipboard.
  *
  * A value copied from a field goes on the system clipboard as text, and as
- * HTML where that says more, such as a table, for other apps to paste. The
- * value itself is kept in localStorage, so it outlasts the page and is shared
- * with other tabs, which are told about each change. While it's there, a
- * "copied" card previews it, like the element clipboard's (see
+ * HTML where that says more, such as a table, for other apps to paste (see
+ * `system-clipboard.ts`). The value itself is kept in localStorage, so it
+ * outlasts the page and is shared with other tabs, which are told about each
+ * change. While it's there, a "copied" card previews it (see
  * `valuePreviews.ts`), and fields that take it offer to paste it.
- *
- * Nothing is read back from the system clipboard. Pasting there only pastes
- * the stored value when the clipboard still holds the text it was copied as,
- * so another page can't put a value in a field.
  */
 
 import {ConfigService} from '@craftcms/ui/services/Config';
@@ -18,8 +14,15 @@ import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
 import {t} from '@craftcms/ui/utilities/translate';
 import {shallowRef, type ShallowRef} from 'vue';
 import {broadcast, onBroadcast} from '@/common/craft/broadcast';
+import {
+  claimClipboard,
+  elementFormats,
+  onClipboardClaimed,
+  writeSystemClipboard,
+  type ClipboardFormats,
+} from '@/common/craft/system-clipboard';
 import {prefixedKey} from '@/common/composables/useStorage';
-import {Notification} from '@/modules/messages/notification';
+import {CopiedNotification} from '@/modules/messages/copied-notification';
 import type {UiControlPayload} from './types';
 import type {UiValueSnapshot} from './valueAccess';
 import {renderValuePreview} from './valuePreviews';
@@ -51,18 +54,14 @@ export interface CopiedValueItem {
   color?: string | null;
 }
 
-/** A value as other apps take it from the clipboard. */
-export interface FieldValueFormats {
-  text: string;
-  /** Only when it says more than the text does. */
-  html: string | null;
+/** A value as other apps take it from the clipboard, and its items. */
+export interface FieldValueFormats extends ClipboardFormats {
   /** The value's items, when it's a list or one of a control's options. */
   items?: CopiedValueItem[] | null;
 }
 
 const STORAGE_KEY = 'copiedFieldValue';
 const BROADCAST_EVENT = 'copyFieldValue';
-const PREVIEW_LENGTH = 500;
 
 const copied = shallowRef<CopiedFieldValue | null>(null);
 let card: CopiedFieldValueNotification | null = null;
@@ -80,7 +79,8 @@ export function useCopiedFieldValue(): Readonly<
  * user's click is being handled, which the system clipboard needs.
  */
 export function copyFieldValue(value: CopiedFieldValue): void {
-  writeSystemClipboard(value.text, value.html ?? null);
+  claimClipboard('fieldValue');
+  writeSystemClipboard({text: value.text, html: value.html ?? null});
   write(value);
   copied.value = value;
   show(value);
@@ -94,7 +94,10 @@ export function clearCopiedFieldValue(): void {
   broadcast({event: BROADCAST_EVENT});
 }
 
-/** Shows what's on the clipboard, and keeps up with other tabs. */
+/**
+ * Shows what's on the clipboard, keeps up with other tabs, and clears it when
+ * elements are copied.
+ */
 export function installFieldValueClipboard(): void {
   if (installed) {
     return;
@@ -102,6 +105,11 @@ export function installFieldValueClipboard(): void {
 
   installed = true;
   copied.value = read();
+  onClipboardClaimed((owner) => {
+    if (owner !== 'fieldValue' && copied.value) {
+      clearCopiedFieldValue();
+    }
+  });
   onBroadcast(BROADCAST_EVENT, () => {
     copied.value = read();
     show(copied.value);
@@ -110,17 +118,6 @@ export function installFieldValueClipboard(): void {
   if (copied.value && ConfigService.getInstance().get('userId')) {
     show(copied.value, false);
   }
-}
-
-/**
- * Whether text pasted from the system clipboard is what `copied` was copied
- * as, give or take the line endings other apps and systems use.
- */
-export function isCopiedText(copied: CopiedFieldValue, text: string): boolean {
-  const normalize = (value: string) =>
-    value.replace(/\r\n?/g, '\n').replace(/\n+$/, '');
-
-  return copied.text !== '' && normalize(text) === normalize(copied.text);
 }
 
 /**
@@ -207,31 +204,6 @@ function tableFormats(
 /** A cell for tab-separated text, quoted the way spreadsheets read it. */
 function tsvCell(text: string): string {
   return /[\t\n"]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-}
-
-function elementFormats(elements: unknown[]): FieldValueFormats {
-  const presentations = elements.flatMap((element) => {
-    const {label, url} = (element ?? {}) as {label?: unknown; url?: unknown};
-
-    return typeof label === 'string' && label
-      ? [{label, url: typeof url === 'string' ? url : null}]
-      : [];
-  });
-
-  return {
-    text: presentations.map(({label}) => label).join('\n'),
-    // Front-end URLs only: an element's edit URL would give away the control
-    // panel's address wherever it's pasted.
-    html: presentations.some(({url}) => url)
-      ? presentations
-          .map(({label, url}) =>
-            url
-              ? `<a href="${escapeHtml(url)}">${escapeHtml(label)}</a>`
-              : escapeHtml(label)
-          )
-          .join('<br>')
-      : null,
-  };
 }
 
 function valueText(
@@ -322,82 +294,26 @@ function optionLabels(props: object): Map<string, string> | null {
     : null;
 }
 
-/** The "copied" card, with the value's preview and a Cancel button that clears it. */
-class CopiedFieldValueNotification extends Notification {
+/** The "copied" card, with the value's preview. */
+class CopiedFieldValueNotification extends CopiedNotification {
   readonly #value: CopiedFieldValue;
 
   constructor(value: CopiedFieldValue, animate: boolean) {
     super(
-      'notice',
       value.label
         ? t('“{name}” value copied.', {name: value.label})
         : t('Value copied.'),
-      {
-        icon: 'clone-dashed',
-        persist: true,
-        class: 'copied-elements-notification copied-field-value-notification',
-        animate,
-      }
+      {animate}
     );
 
     this.#value = value;
   }
 
-  /**
-   * The value's preview, when its control has one, or else its text. A
-   * preview is only for looking at, so screen readers read the text with it.
-   * Either one runs off the card's edges when it's too big for it, and fades
-   * out as it reaches them.
-   */
   override async getDetails(): Promise<HTMLElement | null> {
-    const {text} = this.#value;
-    const preview = await renderValuePreview(this.#value);
-
-    if (!preview && !text) {
-      return null;
-    }
-
-    const container = document.createElement('div');
-    container.className = 'copied-field-value';
-    const content = document.createElement('div');
-    const textElement = document.createElement('span');
-    textElement.textContent =
-      text.length > PREVIEW_LENGTH ? `${text.slice(0, PREVIEW_LENGTH)}…` : text;
-
-    if (preview) {
-      content.className = 'copied-field-value-preview';
-      // Neither focusable nor read out, so it can't hold up the card either.
-      content.inert = true;
-      content.append(preview);
-      textElement.className = 'sr-only';
-      container.append(content, textElement);
-    } else {
-      content.className = 'copied-field-value-text';
-      content.append(textElement);
-      container.append(content);
-    }
-
-    // Fade out only the edges the value actually runs off. The content's
-    // size changes as a preview's chips or images load.
-    const observer = new ResizeObserver(() => {
-      container.toggleAttribute(
-        'data-overflow-block',
-        container.scrollHeight > container.clientHeight + 1
-      );
-      container.toggleAttribute(
-        'data-overflow-inline',
-        container.scrollWidth > container.clientWidth + 1
-      );
-    });
-    observer.observe(container);
-    observer.observe(content);
-    this.on('close', () => observer.disconnect());
-
-    return container;
-  }
-
-  override createCloseButton(): HTMLElement {
-    return Notification.createIconButton(t('Cancel'));
+    return this.copiedDetails(
+      await renderValuePreview(this.#value),
+      this.#value.text
+    );
   }
 
   override handleCloseButtonClick(): void {
@@ -414,29 +330,6 @@ function show(value: CopiedFieldValue | null, animate = true): void {
     card = new CopiedFieldValueNotification(value, animate);
     void card.show();
   }
-}
-
-function writeSystemClipboard(text: string, html: string | null): void {
-  const clipboard = navigator.clipboard as Clipboard | undefined;
-
-  // An empty value would only empty the clipboard.
-  if (!clipboard || text === '') {
-    return;
-  }
-
-  const written =
-    html !== null && typeof ClipboardItem !== 'undefined'
-      ? clipboard.write([
-          new ClipboardItem({
-            'text/plain': new Blob([text], {type: 'text/plain'}),
-            'text/html': new Blob([html], {type: 'text/html'}),
-          }),
-        ])
-      : clipboard.writeText(text);
-
-  written.catch(() => {
-    // The value can still be pasted with the “Paste value” action.
-  });
 }
 
 function read(): CopiedFieldValue | null {

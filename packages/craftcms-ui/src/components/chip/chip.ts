@@ -133,12 +133,13 @@ export default class CraftChip extends LitElement {
    * is tight enough for a chip in a table cell, `large` suits one standing on
    * its own. `small` is also as tall as a small suffix button, so adding one
    * doesn't change its height; `auto` has the same padding without that
-   * minimum, for a chip as compact as its content allows.
+   * minimum, for a chip as compact as its content allows. `xsmall` is as tall
+   * as a labeled badge, with its smaller text, for a chip set among badges.
    *
    * Left unset, it follows `thumb-size`: `small` for `sm`, `medium` for `md`,
    * and `large` from `lg` up. Without either, it's `small`.
    */
-  @property() size: SizeValue | 'auto' | null = null;
+  @property() size: SizeValue | 'xsmall' | 'auto' | null = null;
 
   /**
    * The size of the thumbnail in the prefix, overriding the one `size` gives
@@ -150,7 +151,7 @@ export default class CraftChip extends LitElement {
   thumbSize: ChipThumbSizeValue | null = null;
 
   /** The size the chip renders at: its own, or the one its thumbnail suits. */
-  get #size(): SizeValue | 'auto' {
+  get #size(): SizeValue | 'xsmall' | 'auto' {
     return (
       this.size ??
       (this.thumbSize ? sizeForThumbSize[this.thumbSize] : null) ??
@@ -217,6 +218,9 @@ export default class CraftChip extends LitElement {
    */
   @property({type: Boolean, reflect: true, attribute: 'full-width'})
   fullWidth: boolean = false;
+
+  /** Rounds the chip's ends fully, like a badge's, and its thumbnail with them. */
+  @property({type: Boolean, reflect: true}) rounded: boolean = false;
 
   /** Whether the chip is selected. Only meaningful alongside `selectable`. */
   @property({type: Boolean, reflect: true}) selected: boolean = false;
@@ -443,6 +447,7 @@ export default class CraftChip extends LitElement {
         part="chip"
         class="${classMap({
           'cp-chip': true,
+          'cp-chip--xsmall': this.#size === 'xsmall',
           'cp-chip--small': this.#size === 'small',
           'cp-chip--medium': this.#size === 'medium',
           'cp-chip--large': this.#size === 'large',
@@ -455,6 +460,7 @@ export default class CraftChip extends LitElement {
           'cp-chip--align-start': this.alignItems === 'start',
           'cp-chip--align-end': this.alignItems === 'end',
           'cp-chip--plain': this.appearance === Appearance.Plain,
+          'cp-chip--rounded': this.rounded,
           'cp-chip--selectable': this.selectable,
           'cp-chip--show-thumb': this.showThumb,
           'cp-chip--show-status': this.showStatus,

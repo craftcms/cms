@@ -208,9 +208,11 @@
   }
 }
 
-/* The copied-element card: a gradient frame and the copied elements' chips,
-   stacked with each one behind the last. */
-.cp-messages .copied-elements-notification {
+/* A "copied" card: a gradient frame around a preview of what's copied, which
+   runs under the Cancel button, and off the card's right and bottom edges
+   when it's too big for the card, fading out as it reaches them.
+   `copied-notification.ts` says which edges it runs off. */
+.cp-messages .copied-notification {
   padding: 2px;
   background: linear-gradient(
     135deg,
@@ -227,50 +229,9 @@
     border-radius: var(--c-radius-sm);
     background-color: var(--c-surface-overlay);
   }
-
-  .copied-elements {
-    position: relative;
-    margin-block-end: calc(var(--c-spacing) * -2.5);
-    padding-block-end: calc(var(--c-spacing) * 2.5);
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  /* A `craft-chip` host is `display: contents`, so each one gets a box to
-     stack, and a fill to cover the chips behind it, as chips have none of
-     their own. */
-  .copied-element-chip {
-    position: relative;
-    display: flex;
-    inline-size: fit-content;
-    max-inline-size: 100%;
-    border-radius: var(--c-radius-md);
-    background-color: var(--c-surface-overlay);
-  }
-
-  /* `copied-elements-notification.ts` offsets each chip after the first and
-     sets its `--overlay-opacity`. */
-  .copied-element-chip:not(:first-child) {
-    position: absolute;
-
-    &::after {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      display: block;
-      border-radius: inherit;
-      background-color: color-mix(
-        var(--c-surface-overlay) calc(var(--overlay-opacity, 0) * 100%),
-        transparent
-      );
-    }
-  }
 }
 
-/* A copied field value runs under the Cancel button, and off the card's
-   right and bottom edges when it's too big for the card, fading out as it
-   reaches them. `copiedFieldValue.ts` says which edges it runs off. */
-.cp-messages .copied-field-value-notification:has(.copied-field-value) {
+.cp-messages .copied-notification:has(.copied-notification-value) {
   .notification-inner {
     display: grid;
     grid-template-columns: calc(20rem / 16) 1fr auto;
@@ -304,7 +265,7 @@
 
 /* Content that fits keeps the card's padding; content that doesn't runs
    through it to the edge. */
-.cp-messages .copied-field-value {
+.cp-messages .copied-notification-value {
   --fade-inline: linear-gradient(#000, #000);
   --fade-block: linear-gradient(#000, #000);
 
@@ -333,21 +294,14 @@
   }
 }
 
-.cp-messages .copied-field-value-text {
+.cp-messages .copied-notification-text {
   overflow-wrap: anywhere;
   white-space: pre-line;
 }
 
-/* A copied relation's chips, laid out like a list's badges. */
-.cp-messages .copied-field-value-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: calc(var(--c-spacing) * 1.5);
-}
-
-/* A copied list's items, such as selected options, or a color or an icon,
-   as badges. */
-.cp-messages .copied-field-value-badges {
+/* Copied elements' chips, and a copied value's items, such as selected
+   options, or a color or an icon, as badges, side by side. */
+.cp-messages :is(.copied-chips, .copied-field-value-badges) {
   display: flex;
   flex-wrap: wrap;
   gap: calc(var(--c-spacing) * 1.5);

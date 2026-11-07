@@ -59,12 +59,13 @@ describe('renderValuePreview', () => {
       ),
     });
     expect(
-      [...preview.querySelectorAll('.copied-field-value-chips > .chip')].map(
+      [...preview.querySelectorAll('.copied-chips > .chip')].map(
         (chip) => chip.textContent
       )
     ).toEqual(['Apples']);
-    // Laid out like a list's badges, not stacked like copied elements
-    expect(preview.querySelector('.copied-element-chip')).toBeNull();
+    const chip = preview.querySelector('.chip')!;
+    expect(chip.getAttribute('size')).toBe('xsmall');
+    expect(chip.hasAttribute('rounded')).toBe(true);
   });
 
   it('draws a table’s first rows, without its headings', async () => {
@@ -220,7 +221,7 @@ describe('the copied card', () => {
 
     return vi.waitFor(() => {
       const details = document.querySelector<HTMLElement>(
-        '.copied-field-value'
+        '.copied-notification-value'
       );
       expect(details).not.toBeNull();
 
@@ -235,7 +236,7 @@ describe('the copied card', () => {
       html: '<table><tbody><tr><td>Apples</td></tr></tbody></table>',
     });
     const preview = details.querySelector<HTMLElement>(
-      '.copied-field-value-preview'
+      '.copied-notification-preview'
     )!;
 
     expect(preview.inert).toBe(true);
@@ -246,7 +247,7 @@ describe('the copied card', () => {
   it('shows the text when there’s no preview', async () => {
     const details = await card({component: 'craft:text', text: 'Hello'});
 
-    expect(details.querySelector('.copied-field-value-preview')).toBeNull();
+    expect(details.querySelector('.copied-notification-preview')).toBeNull();
     expect(details.textContent).toBe('Hello');
   });
 });
