@@ -323,6 +323,10 @@ class Yii2ServiceProvider extends ServiceProvider
             return $exception;
         }
 
+        if ($exception->getPrevious() instanceof YiiHttpException) {
+            return $exception->getPrevious();
+        }
+
         if ($exception->getStatusCode() === 404) {
             return new YiiNotFoundHttpException($exception->getMessage(), $exception->getCode(), $exception);
         }
