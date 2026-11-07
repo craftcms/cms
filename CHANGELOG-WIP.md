@@ -124,6 +124,7 @@
 - Table field columns are now configured with cell settings forms rather than JSON option inputs.
 - Table fields now have a “Link” column type, with the same settings as Link fields. Link cells return `CraftCms\Cms\Field\Data\LinkData` objects, and Table fields now track the elements they link to. ([#16009](https://github.com/craftcms/cms/discussions/16009), [#19998](https://github.com/craftcms/cms/pull/19998))
 - Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Table fields’ Lightswitch, Checkbox, and Dropdown columns now take values pasted from a spreadsheet, and spreadsheet cells containing line breaks or tabs are pasted into a single cell.
 - Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Added support for configuring field layout field instruction positions.
