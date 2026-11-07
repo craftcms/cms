@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'يبدو أنك تقوم بمحاولة تحميل قالب خارج مجلد القالب .',
     'Low' => 'منخفضة',
     'MCP Settings' => 'إعدادات MCP',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'خادم MCP',
     'MCP settings saved.' => 'تم حفظ إعدادات MCP.',
     'MCP' => 'MCP',
