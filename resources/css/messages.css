@@ -1,12 +1,13 @@
 /**
- * The default message display: messages drawn by `Craft.cp.displayNotification()`
- * (`Craft.CP.Notification` in `CP.js`), plus the "Entry copied." card
- * `Craft.cp.copyElements()` shows.
+ * The default message display: the cards `showMessage()` and
+ * `Craft.cp.displayNotification()` show (`Notification`, in
+ * `modules/messages/notification.ts`), plus the "Entry copied." card
+ * `copyElements()` shows.
  *
  * Modelled on Sonner: the newest sits nearest the screen edge with the others
  * stacked behind it, and the stack spreads out while it's hovered, pressed or
  * holds focus (the "Skip to messages" link moves focus to it).
- * `Craft.cp.updateNotificationStack()` sets the custom properties below.
+ * `<cp-messages>`'s `updateStack()` sets the custom properties below.
  *
  * The container is the `<cp-messages id="messages">` element, which the Twig
  * layout and the Inertia root view both render. Its `position` attribute holds
