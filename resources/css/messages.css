@@ -252,6 +252,16 @@
   }
 }
 
+/* A copied field value's preview, a few lines of it. */
+.cp-messages .copied-field-value {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
 /* Chips stacked like copied elements, with the first one in front, such as
    the images an upload looks like a copy of. `craft-upload-duplicates-notification`
    offsets each chip after the first and sets its `--overlay-opacity`. */

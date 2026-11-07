@@ -9,6 +9,7 @@
 import {cloneRaw} from './renderer/uiTree';
 import {valueAt} from './runtime';
 import type {UiControlPayload, UiValue, UiValues} from './types';
+import {builtInValueAcceptors} from './valueAcceptors';
 
 /** A control's value as it was read, with the props it draws it with. */
 export interface UiValueSnapshot {
@@ -45,6 +46,58 @@ export function readControlValue(
       Object.fromEntries(names.map((name) => [name, props[name]])) as UiValues
     ),
   };
+}
+
+/**
+ * Decides whether a control takes a value read from another control of its
+ * kind, from the value itself: whether it fits the control's length limit or
+ * options, say. Registered for the control's component.
+ */
+export type UiValueAcceptor = (
+  control: UiControlPayload<object>,
+  snapshot: UiValueSnapshot
+) => boolean;
+
+/** The control a value was read from. */
+export type UiValueOrigin = Pick<
+  UiControlPayload<object>,
+  'component' | 'valueScope'
+>;
+
+const acceptors = new Map<string, UiValueAcceptor>(
+  Object.entries(builtInValueAcceptors)
+);
+
+/**
+ * Lets the controls drawn by `component` decide which values they take,
+ * replacing any acceptor registered for it before. Without one, a control
+ * takes any value read from a control of its kind.
+ */
+export function registerValueAcceptor(
+  component: string,
+  acceptor: UiValueAcceptor
+): void {
+  acceptors.set(component, acceptor);
+}
+
+/**
+ * Whether `control` can be given a value read from `origin`: it's the same
+ * kind of control, in the same value scope (the field a relation field's
+ * value comes from, say), it can be edited and given a value from outside,
+ * and it takes the value itself.
+ */
+export function acceptsValue(
+  control: UiControlPayload<object>,
+  origin: UiValueOrigin,
+  snapshot: UiValueSnapshot
+): boolean {
+  return (
+    control.component === origin.component &&
+    (control.valueScope ?? null) === (origin.valueScope ?? null) &&
+    control.mode === 'editable' &&
+    Boolean(control.writable) &&
+    (acceptors.get(control.component)?.(control, snapshot) ?? true)
+  );
 }
 
 /**
