@@ -28,6 +28,7 @@
 - Fixed a bug where authenticated GraphQL requests didn’t respect field layout conditions. Fields that are hidden from the user are now excluded from the schema, or resolve to `null` when their conditions are element-specific. Fields the user can’t edit are now excluded from mutation arguments, or result in an error when set if their conditions are element-specific. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where field values submitted for nested entries, Content Block fields, and addresses could be saved even if the user wasn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where MCP tools returned empty arrays for CKEditor field values.
+- Fixed a bug where the `elements_list`, `drafts_list`, `revisions_list`, `search_query`, and `craft_query` MCP tools returned only element metadata when `fields` was `null`, rather than all non-nested custom fields.
 - Added `craft\base\McpOutputFieldInterface`, which fields can implement to control how their values are returned by MCP tools.
 - Added `craft\mcp\McpOutputContext`.
 - MCP `fields` arguments now accept dot paths, such as `blocks.innerBlocks`, which include nested fields of nested elements as summaries.

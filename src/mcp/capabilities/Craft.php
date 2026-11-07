@@ -21,6 +21,7 @@ use craft\models\Volume;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Schema\ToolAnnotations;
+use Mcp\Server\RequestContext;
 
 /**
  * @since 5.12.0
@@ -109,13 +110,14 @@ class Craft
     )]
     #[PublicMcp]
     public function query(
+        RequestContext $context,
         string $type,
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
         #[Schema(definition: ElementSerializer::FieldsSchema)]
         ?array $fields = [],
     ): array {
-        return $this->query->query($type, $criteria, $fields);
+        return $this->query->query($type, $criteria, ElementSerializer::fieldsArgument($context, $fields));
     }
 
     /** @return array<string, mixed> */
