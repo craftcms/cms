@@ -77,6 +77,10 @@ describe('acceptsValue', () => {
     expect(takes(number, 0)).toBe(false);
     expect(takes(number, 'ten')).toBe(false);
     expect(takes(number, '')).toBe(true);
+    // Bounds set as strings are still numbers
+    const stringBounds = control('craft:number', {min: '1', max: '10'});
+    expect(takes(stringBounds, 5)).toBe(true);
+    expect(takes(stringBounds, '20')).toBe(false);
     expect(takes(control('craft:money', {min: 5}), {value: '4'})).toBe(false);
     expect(takes(control('craft:money', {min: 5}), {value: '5'})).toBe(true);
     // Amounts are formatted for their locale.
@@ -104,6 +108,47 @@ describe('acceptsValue', () => {
     expect(
       takes(control('craft:choice', {options, allowCustom: true}), 'green')
     ).toBe(true);
+    // One option isn't a list of them, and the reverse
+    expect(
+      takes(control('craft:choice', {options, multiple: true}), 'red')
+    ).toBe(false);
+    expect(takes(control('craft:choice', {options}), ['red'])).toBe(false);
+    expect(
+      takes(
+        control('craft:choice', {options, multiple: true, allValue: '*'}),
+        '*'
+      )
+    ).toBe(true);
+  });
+
+  it('takes as many combobox choices as there are, in the shape it holds', () => {
+    const options = [
+      {label: 'Red', value: 'red'},
+      {label: 'Blue', value: 'blue'},
+    ];
+    // `limit` caps the options listed at once, not how many can be chosen.
+    const multiple = control('craft:combobox', {
+      options,
+      multiple: true,
+      limit: 1,
+      requireOptionMatch: true,
+    });
+
+    expect(takes(multiple, ['red', 'blue'])).toBe(true);
+    expect(takes(multiple, 'red')).toBe(false);
+    expect(takes(multiple, ['green'])).toBe(false);
+    expect(takes(control('craft:combobox', {options}), ['red'])).toBe(false);
+  });
+
+  it('keeps dates within their bounds', () => {
+    const date = control('craft:date-time', {
+      min: '2026-01-01',
+      max: '2026-12-31',
+    });
+
+    expect(takes(date, {date: '2026-11-13', time: '14:30'})).toBe(true);
+    expect(takes(date, {date: '2027-01-01', time: '14:30'})).toBe(false);
+    expect(takes(date, {date: '', time: ''})).toBe(true);
   });
 
   it('keeps relations within their limit', () => {
@@ -122,6 +167,7 @@ describe('acceptsValue', () => {
           type: 'select',
           options: [{label: 'Small', value: 's'}],
         },
+        col4: {type: 'money'},
       },
       maxRows: 2,
     });
@@ -130,8 +176,18 @@ describe('acceptsValue', () => {
     // As a Table field holds them, with each cell under its column's handle too
     expect(takes(table, [{col1: 'Apples', event: 'Apples'}])).toBe(true);
     expect(takes(table, [{col1: 'Apples', col2: 'yes'}])).toBe(false);
+    // Amounts are held with their locale
+    expect(
+      takes(table, [
+        {col4: {value: '1.999,50', locale: 'de-DE'}},
+        {col4: {value: null, locale: 'en-US'}},
+      ])
+    ).toBe(true);
+    expect(takes(table, [{col4: {value: 'lots', locale: 'en-US'}}])).toBe(
+      false
+    );
     expect(takes(table, [{col3: 'm'}])).toBe(false);
-    expect(takes(table, [{col4: 'Pears'}])).toBe(false);
+    expect(takes(table, [{col5: 'Pears'}])).toBe(false);
     expect(takes(table, [{}, {}, {}])).toBe(false);
   });
 });

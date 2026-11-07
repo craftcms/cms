@@ -59,16 +59,19 @@ function fitsLength(text: string, maxLength: unknown): boolean {
 
 /**
  * Whether `value` is between `min` and `max`: as numbers when they're
- * numbers, and as strings when they're strings, like dates and times are.
+ * numbers, or numeric strings beside a numeric value, and as strings
+ * otherwise, like dates and times are.
  */
 function withinBounds(value: Scalar, min: unknown, max: unknown): boolean {
   return [min, max].every((bound, index) => {
-    const order =
-      typeof bound === 'number'
-        ? Number(value) - bound
-        : typeof bound === 'string' && bound !== ''
-          ? String(value).localeCompare(bound)
-          : null;
+    const numeric =
+      typeof bound === 'number' ||
+      (isNumeric(bound as UiValue) && isNumeric(value));
+    const order = numeric
+      ? Number(value) - Number(bound)
+      : typeof bound === 'string' && bound !== ''
+        ? String(value).localeCompare(bound)
+        : null;
 
     return order === null || (index === 0 ? order >= 0 : order <= 0);
   });
@@ -111,19 +114,22 @@ function optionValues(options: unknown): Set<string> {
   );
 }
 
+/**
+ * Whether a choice has the shape a control holds: a list of values when it
+ * takes several, and one value otherwise.
+ */
+function fitsShape(value: UiValue, multiple: unknown): boolean {
+  return Array.isArray(value)
+    ? Boolean(multiple) && value.every(isScalar)
+    : !multiple && isScalar(value);
+}
+
 /** Whether a choice of `values` fits the options a control offers. */
-function fitsOptions(
-  value: UiValue,
-  options: unknown,
-  {multiple, limit}: {multiple?: boolean; limit?: unknown}
-): boolean {
-  const values = Array.isArray(value) ? value : [value];
+function fitsOptions(value: UiValue, options: unknown): boolean {
   const offered = optionValues(options);
 
-  return (
-    (multiple || values.length <= 1) &&
-    (typeof limit !== 'number' || values.length <= limit) &&
-    values.every((item) => isScalar(item) && offered.has(String(item)))
+  return (Array.isArray(value) ? value : [value]).every(
+    (item) => isScalar(item) && offered.has(String(item))
   );
 }
 
@@ -171,33 +177,42 @@ const choice: UiValueAcceptor = (control, {value}) => {
   }
 
   // Options added by hand can be added here too.
-  if (allowCustom) {
-    const values = Array.isArray(value) ? value : [value];
-
-    return (multiple || values.length === 1) && values.every(isScalar);
-  }
-
-  return fitsOptions(value, options, {multiple: Boolean(multiple)});
+  return (
+    fitsShape(value, multiple) &&
+    (Boolean(allowCustom) || fitsOptions(value, options))
+  );
 };
 
+/**
+ * Comboboxes' `limit` caps the options they list at once, not how many can
+ * be chosen, so it doesn't apply here.
+ */
 const combobox: UiValueAcceptor = (control, {value}) => {
-  const {options, multiple, limit, requireOptionMatch} = propsOf(control);
+  const {options, multiple, requireOptionMatch} = propsOf(control);
 
+  return (
+    isBlank(value) ||
+    (fitsShape(value, multiple) &&
+      (!requireOptionMatch || fitsOptions(value, options)))
+  );
+};
+
+/** Dates and times, checked against the control's earliest and latest dates. */
+const dateTime: UiValueAcceptor = (control, {value}) => {
   if (isBlank(value)) {
     return true;
   }
 
-  if (!requireOptionMatch) {
-    const values = Array.isArray(value) ? value : [value];
-
-    return (
-      (Boolean(multiple) || values.length === 1) &&
-      (typeof limit !== 'number' || values.length <= limit) &&
-      values.every(isScalar)
-    );
+  if (!isRecord(value)) {
+    return false;
   }
 
-  return fitsOptions(value, options, {multiple: Boolean(multiple), limit});
+  const {date} = value;
+  const {min, max} = propsOf(control);
+
+  return (
+    isBlank(date) || (typeof date === 'string' && withinBounds(date, min, max))
+  );
 };
 
 const colorSelect: UiValueAcceptor = (control, {value}) => {
@@ -282,8 +297,21 @@ function fitsColumn(
     case 'select':
       return isScalar(cell) && optionValues(column.options).has(String(cell));
     case 'number':
-    case 'money':
       return isNumeric(cell);
+    // Amounts are held with the locale they're formatted for.
+    case 'money': {
+      const amount = isRecord(cell) ? cell.value : cell;
+      const locale = isRecord(cell) ? cell.locale : undefined;
+
+      return (
+        isBlank(amount) ||
+        (isScalar(amount) &&
+          moneyAmount(
+            String(amount),
+            typeof locale === 'string' ? locale : undefined
+          ) !== null)
+      );
+    }
     case 'singleline':
     case 'email':
     case 'url':
@@ -345,6 +373,7 @@ export const builtInValueAcceptors: Record<string, UiValueAcceptor> = {
   'craft:range': number,
   'craft:date': text,
   'craft:time': text,
+  'craft:date-time': dateTime,
   'craft:slug': text,
   'craft:textarea': textarea,
   'craft:markdown': markdown,

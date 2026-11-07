@@ -186,6 +186,34 @@ describe('FieldNode value clipboard', () => {
     expect((values.fields as {source: number[]}).source).toEqual([7, 9]);
   });
 
+  it('copies relations as they’re selected now, not as the server last drew them', async () => {
+    // Since the server drew it, Apples was removed and Plums moved first
+    const values = reactive<UiValues>({fields: {source: [11, 9]}});
+    mount(
+      values,
+      [
+        fieldNode('source', 'related-entries', [
+          {id: 7, label: 'Apples'},
+          {id: 9, label: 'Pears'},
+          {id: 11, label: 'Plums'},
+        ]),
+      ],
+      vi.fn()
+    );
+    await vi.waitFor(() =>
+      expect(actionItem('source', 'Copy value')).toBeTruthy()
+    );
+
+    actionItem('source', 'Copy value').click();
+    await nextTick();
+
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+    expect(stored.text).toBe('Plums\nPears');
+    expect(
+      stored.props.elements.map((element: {id: number}) => element.id)
+    ).toEqual([11, 9]);
+  });
+
   it('pastes the copied value with Ctrl/Cmd+V while the clipboard still holds its text', async () => {
     const values = reactive<UiValues>({fields: {source: [7, 9], target: []}});
     const changed = vi.fn<(change: UiChange) => void>();
@@ -256,7 +284,13 @@ describe('fieldValueFormats', () => {
             col2: {
               heading: 'Size',
               type: 'select',
-              options: [{label: 'Small', value: 's'}],
+              // Grouped, as Table columns keep them
+              options: [
+                {
+                  optgroup: 'Sizes',
+                  options: [{label: 'Small', value: 's'}],
+                },
+              ],
             },
           },
         },
@@ -264,18 +298,18 @@ describe('fieldValueFormats', () => {
       {
         value: [
           {col1: 'Opening <talk>', col2: 's', event: 'Opening <talk>'},
-          {col1: 'Two\tlines "quoted"', col2: ''},
+          {col1: '  Two\tlines "quoted"', col2: ''},
         ],
       }
     );
 
     expect(formats.text).toBe(
-      'Opening <talk>\tSmall\n"Two\tlines ""quoted"""\t'
+      'Opening <talk>\tSmall\n"  Two\tlines ""quoted"""\t'
     );
     expect(formats.html).toBe(
       '<table><thead><tr><th>Event</th><th>Size</th></tr></thead><tbody>' +
         '<tr><td>Opening &lt;talk&gt;</td><td>Small</td></tr>' +
-        '<tr><td>Two\tlines &quot;quoted&quot;</td><td></td></tr></tbody></table>'
+        '<tr><td>  Two\tlines &quot;quoted&quot;</td><td></td></tr></tbody></table>'
     );
   });
 

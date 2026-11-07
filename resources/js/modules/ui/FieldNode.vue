@@ -442,6 +442,29 @@
     // A value that was never set reads as the control's empty value.
     snapshot.value ??= value.value ?? null;
 
+    // Relations are drawn from the elements the server last rendered, which
+    // can include ones removed since, or be in another order.
+    const elements = snapshot.props?.elements;
+
+    if (Array.isArray(elements)) {
+      const selected = snapshot.value;
+      const ids = Array.isArray(selected)
+        ? selected
+        : selected === null || selected === ''
+          ? []
+          : [selected];
+      const byId = new Map(
+        elements.map((element) => [
+          String((element as {id?: unknown} | null)?.id),
+          element,
+        ])
+      );
+      snapshot.props = {
+        ...snapshot.props,
+        elements: ids.flatMap((id) => byId.get(String(id)) ?? []),
+      };
+    }
+
     const copied: CopiedFieldValue = {
       ...snapshot,
       component: control.value.component,

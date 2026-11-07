@@ -333,7 +333,7 @@ function valueText(
   }
 
   if (typeof value === 'string' || typeof value === 'number') {
-    return options?.get(String(value)) ?? String(value).trim();
+    return options?.get(String(value)) ?? String(value);
   }
 
   if (typeof value !== 'object') {
@@ -367,7 +367,10 @@ function isScalar(value: unknown): value is string | number | boolean {
   return ['string', 'number', 'boolean'].includes(typeof value);
 }
 
-/** A choice control's options, with their icons and colors, by value. */
+/**
+ * A choice control's options, with their icons and colors, by value,
+ * including those within option groups.
+ */
 function optionItems(props: object): Map<string, CopiedValueItem> | null {
   const options = (props as {options?: unknown}).options;
 
@@ -375,28 +378,33 @@ function optionItems(props: object): Map<string, CopiedValueItem> | null {
     return null;
   }
 
-  return new Map(
-    options.flatMap(
-      (option: {
-        value?: unknown;
-        label?: unknown;
-        icon?: unknown;
-        color?: unknown;
-      }) =>
-        option && typeof option.label === 'string' && isScalar(option.value)
-          ? [
-              [
-                String(option.value),
-                {
-                  label: option.label,
-                  icon: typeof option.icon === 'string' ? option.icon : null,
-                  color: typeof option.color === 'string' ? option.color : null,
-                },
-              ] as const,
-            ]
-          : []
-    )
-  );
+  const items = new Map<string, CopiedValueItem>();
+  const collect = (list: unknown[]): void => {
+    for (const option of list as {
+      value?: unknown;
+      label?: unknown;
+      icon?: unknown;
+      color?: unknown;
+      options?: unknown;
+    }[]) {
+      if (!option || typeof option !== 'object') {
+        continue;
+      }
+
+      if (option.options && typeof option.options === 'object') {
+        collect(Object.values(option.options));
+      } else if (typeof option.label === 'string' && isScalar(option.value)) {
+        items.set(String(option.value), {
+          label: option.label,
+          icon: typeof option.icon === 'string' ? option.icon : null,
+          color: typeof option.color === 'string' ? option.color : null,
+        });
+      }
+    }
+  };
+  collect(options);
+
+  return items;
 }
 
 /** A choice control's option labels, by value. */
