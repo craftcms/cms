@@ -989,9 +989,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 continue;
             }
 
-            // Raw SQL is used as written, as Laravel does
+            // Raw SQL is used as written. The parentheses make Laravel compare against it as an expression, rather
+            // than quote it as a column name, which would quote and prefix its identifiers again.
             if ($isExpression) {
-                return trim($match[1]);
+                return '('.trim($match[1]).')';
             }
 
             $column = $this->resolveColumn(trim($match[1]));

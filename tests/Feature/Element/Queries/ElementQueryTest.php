@@ -222,7 +222,7 @@ it('cursor paginates elements by date columns', function () {
 
     $aliasQuery = fn () => entryQuery()->id($ids->all())->select('elements.id as entryId')->asArray()->orderBy('entryId');
     $aliasPage = $aliasQuery()->cursorPaginate(1, cursor: $aliasQuery()->cursorPaginate(1)->nextCursor());
-    $rawAliasQuery = fn () => entryQuery()->id($ids->all())->selectRaw('elements.id as entry_key')->asArray()->orderBy('entry_key');
+    $rawAliasQuery = fn () => entryQuery()->id($ids->all())->selectRaw(DB::getQueryGrammar()->wrap('elements.id').' as entry_key')->asArray()->orderBy('entry_key');
     $rawAliasPage = $rawAliasQuery()->cursorPaginate(1, cursor: $rawAliasQuery()->cursorPaginate(1)->nextCursor());
     $unionQuery = fn () => entryQuery()->id($ids[0])->union(entryQuery()->id([$ids[1], $ids[2]]))->orderByDesc('id');
     $unionPage = $unionQuery()->cursorPaginate(2);
