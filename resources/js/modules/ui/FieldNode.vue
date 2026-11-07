@@ -30,8 +30,10 @@
   import UiNodeList from './UiNodeList.vue';
   import {
     copyFieldValue,
-    fieldValuePreview,
+    fieldValueFormats,
+    isCopiedText,
     useCopiedFieldValue,
+    type CopiedFieldValue,
   } from './copiedFieldValue';
   import {UiFieldOutletsKey} from './fieldOutlets';
   import {
@@ -78,6 +80,28 @@
    */
   const COPY_VALUE_EVENT = 'craft:copy-field-value';
   const PASTE_VALUE_EVENT = 'craft:paste-field-value';
+
+  /** Inputs that don't take typed text, so a paste on them is the field's. */
+  const NON_TEXT_INPUT_TYPES = new Set([
+    'button',
+    'checkbox',
+    'color',
+    'file',
+    'image',
+    'radio',
+    'range',
+    'reset',
+    'submit',
+  ]);
+
+  function takesText(element: HTMLElement): boolean {
+    return (
+      element.isContentEditable ||
+      element instanceof HTMLTextAreaElement ||
+      (element instanceof HTMLInputElement &&
+        !NON_TEXT_INPUT_TYPES.has(element.type))
+    );
+  }
 
   type FieldActionItem = {
     hidden?: boolean;
@@ -434,24 +458,74 @@
 
     // A value that was never set reads as the control's empty value.
     snapshot.value ??= value.value ?? null;
+    const {text, html} = fieldValueFormats(control.value, snapshot);
 
-    copyFieldValue({
-      ...snapshot,
-      component: control.value.component,
-      valueScope: control.value.valueScope,
-      label: resolvedNode.value.props.label ?? null,
-      preview: fieldValuePreview(control.value, snapshot),
-    });
+    copyFieldValue(
+      {
+        ...snapshot,
+        component: control.value.component,
+        valueScope: control.value.valueScope,
+        label: resolvedNode.value.props.label ?? null,
+        text,
+      },
+      html
+    );
   });
 
   useEventListener(window, PASTE_VALUE_EVENT, (event: Event) => {
     const detail = (event as CustomEvent<{trigger?: unknown}>).detail;
     const copied = copiedValue.value;
 
-    if (!triggeredHere(detail) || !copied || !canPaste()) {
+    if (triggeredHere(detail) && copied && canPaste()) {
+      pasteValue(copied);
+    }
+  });
+
+  /**
+   * Pastes the copied value when Ctrl/Cmd+V is pressed within the field,
+   * outside anything text is typed into, and the system clipboard still holds
+   * the text it was copied as. What's pasted is the stored value, never
+   * what's on the clipboard.
+   */
+  useEventListener(field, 'paste', (event: ClipboardEvent) => {
+    const copied = copiedValue.value;
+
+    if (
+      event.defaultPrevented ||
+      !copied ||
+      !pastesIntoField(event) ||
+      !isCopiedText(copied, event.clipboardData?.getData('text/plain') ?? '') ||
+      !canPaste()
+    ) {
       return;
     }
 
+    event.preventDefault();
+    pasteValue(copied);
+  });
+
+  /**
+   * Whether a paste lands on this field itself, rather than on something text
+   * is typed into, which pastes text as usual, or on a field nested in it.
+   */
+  function pastesIntoField(event: Event): boolean {
+    for (const target of event.composedPath()) {
+      if (target === field.value) {
+        return true;
+      }
+
+      if (
+        target instanceof HTMLElement &&
+        (target.localName === 'craft-field' || takesText(target))
+      ) {
+        return false;
+      }
+    }
+
+    return false;
+  }
+
+  function pasteValue(copied: CopiedFieldValue): void {
     // Each field gets its own copy, so editing one doesn't change another.
     const snapshot = structuredClone({
       value: copied.value,
@@ -463,7 +537,7 @@
       controlForSnapshot(control.value, snapshot)
     );
     announce(t('Value pasted.'));
-  });
+  }
 
   const generating = shallowRef(false);
 

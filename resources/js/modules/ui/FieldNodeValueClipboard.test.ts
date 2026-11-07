@@ -3,7 +3,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {stubUiRenderer} from './renderer/context.test-support';
 import ActionMenuNode from './ActionMenuNode.vue';
 import FieldNode from './FieldNode.vue';
-import {clearCopiedFieldValue} from './copiedFieldValue';
+import {clearCopiedFieldValue, fieldValueFormats} from './copiedFieldValue';
 import type {UiChange, UiNodePayload, UiValues} from './types';
 
 const STORAGE_KEY = 'Craft-test.copiedFieldValue';
@@ -11,7 +11,11 @@ const STORAGE_KEY = 'Craft-test.copiedFieldValue';
 const ElementsControl = defineComponent({
   props: ['value'],
   render() {
-    return h('output', {'data-elements-control': ''}, String(this.value));
+    return h('div', [
+      h('output', {'data-elements-control': ''}, String(this.value)),
+      // Something text is typed into, such as a search box
+      h('input', {type: 'search'}),
+    ]);
   },
 });
 
@@ -154,7 +158,7 @@ describe('FieldNode value clipboard', () => {
       component: 'craft:element-select',
       valueScope: 'related-entries',
       label: 'source',
-      preview: 'Apples, Pears',
+      text: 'Apples\nPears',
     });
     await vi.waitFor(() =>
       expect(actionItem('target', 'Paste value').hidden).toBe(false)
@@ -178,5 +182,98 @@ describe('FieldNode value clipboard', () => {
     // Each field gets its own copy of the value
     (values.fields as {target: number[]}).target.push(11);
     expect((values.fields as {source: number[]}).source).toEqual([7, 9]);
+  });
+
+  it('pastes the copied value with Ctrl/Cmd+V while the clipboard still holds its text', async () => {
+    const values = reactive<UiValues>({fields: {source: [7, 9], target: []}});
+    const changed = vi.fn<(change: UiChange) => void>();
+    mount(
+      values,
+      [
+        fieldNode('source', 'related-entries', [
+          {id: 7, label: 'Apples'},
+          {id: 9, label: 'Pears'},
+        ]),
+        fieldNode('target', 'related-entries'),
+      ],
+      changed
+    );
+    await vi.waitFor(() =>
+      expect(actionItem('source', 'Copy value')).toBeTruthy()
+    );
+    actionItem('source', 'Copy value').click();
+    await nextTick();
+
+    const target = [...container.querySelectorAll('craft-field')][1]!;
+    function paste(on: Element, text: string): Event {
+      const event = new Event('paste', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+      });
+      Object.defineProperty(event, 'clipboardData', {
+        value: {getData: (type: string) => (type === 'text/plain' ? text : '')},
+      });
+      on.dispatchEvent(event);
+
+      return event;
+    }
+
+    // Something else was copied since
+    expect(
+      paste(target.querySelector('output')!, 'Apples').defaultPrevented
+    ).toBe(false);
+    // Text typed into the field pastes as text
+    expect(
+      paste(target.querySelector('input')!, 'Apples\nPears').defaultPrevented
+    ).toBe(false);
+    expect(changed).not.toHaveBeenCalled();
+
+    // Line endings can change on the way through the clipboard
+    expect(
+      paste(target.querySelector('output')!, 'Apples\r\nPears\r\n')
+        .defaultPrevented
+    ).toBe(true);
+    expect(values.fields).toEqual({source: [7, 9], target: [7, 9]});
+    expect(changed).toHaveBeenCalledOnce();
+  });
+});
+
+describe('fieldValueFormats', () => {
+  it('puts a table on the clipboard as rows spreadsheets split into cells', () => {
+    const formats = fieldValueFormats(
+      {
+        type: 'Table',
+        component: 'craft:table',
+        path: ['fields', 'programme'],
+        deltaGroup: ['fields', 'programme'],
+        mode: 'editable',
+        props: {
+          columns: {
+            col1: {heading: 'Event', type: 'singleline'},
+            col2: {
+              heading: 'Size',
+              type: 'select',
+              options: [{label: 'Small', value: 's'}],
+            },
+          },
+        },
+      },
+      {
+        value: [
+          {col1: 'Opening <talk>', col2: 's', event: 'Opening <talk>'},
+          {col1: 'Two\tlines "quoted"', col2: ''},
+        ],
+      }
+    );
+
+    expect(formats.text).toBe(
+      'Opening <talk>\tSmall\n"Two\tlines ""quoted"""\t'
+    );
+    expect(formats.html).toBe(
+      '<table><thead><tr><th>Event</th><th>Size</th></tr></thead><tbody>' +
+        '<tr><td>Opening &lt;talk&gt;</td><td>Small</td></tr>' +
+        '<tr><td>Two\tlines &quot;quoted&quot;</td><td></td></tr></tbody></table>'
+    );
   });
 });
