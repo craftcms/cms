@@ -88,6 +88,11 @@ function fitsInputType(text: string, inputType: unknown): boolean {
       return /^[^\s@]+@[^\s@]+$/.test(text);
     case 'url':
       return URL.canParse(text);
+    // As date and time inputs hold them, such as `2026-11-13` and `14:30`
+    case 'date':
+      return /^\d{4}-\d{2}-\d{2}$/.test(text);
+    case 'time':
+      return /^\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(text);
     default:
       return true;
   }
@@ -316,6 +321,9 @@ function fitsColumn(
     case 'email':
     case 'url':
       return isScalar(cell) && isSingleLine(String(cell));
+    case 'date':
+    case 'time':
+      return isScalar(cell) && fitsInputType(String(cell), column.type);
     default:
       return true;
   }

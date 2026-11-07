@@ -168,6 +168,8 @@ describe('acceptsValue', () => {
           options: [{label: 'Small', value: 's'}],
         },
         col4: {type: 'money'},
+        col5: {type: 'date'},
+        col6: {type: 'time'},
       },
       maxRows: 2,
     });
@@ -187,7 +189,11 @@ describe('acceptsValue', () => {
       false
     );
     expect(takes(table, [{col3: 'm'}])).toBe(false);
-    expect(takes(table, [{col5: 'Pears'}])).toBe(false);
+    // Dates and times as their inputs hold them
+    expect(takes(table, [{col5: '2026-11-13', col6: '14:30'}])).toBe(true);
+    expect(takes(table, [{col5: 'not-a-date'}])).toBe(false);
+    expect(takes(table, [{col6: '2:30 PM'}])).toBe(false);
+    expect(takes(table, [{col7: 'Pears'}])).toBe(false);
     expect(takes(table, [{}, {}, {}])).toBe(false);
   });
 });

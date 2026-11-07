@@ -86,6 +86,17 @@ describe('renderValuePreview', () => {
     ).toEqual(['Row 1', 'Row 2', 'Row 3', 'Row 4', 'Row 5']);
   });
 
+  it('draws only a stored table’s text, which any script on the site could change', async () => {
+    const preview = (await renderValuePreview(
+      copied({
+        component: 'craft:table',
+        html: '<table><tbody><tr><td><b>Bold</b><img src="x" onerror="alert(1)"></td></tr></tbody></table>',
+      })
+    )) as HTMLTableElement;
+
+    expect(preview.querySelector('td')!.innerHTML).toBe('Bold');
+  });
+
   it('shows the text instead when a preview can’t be drawn', async () => {
     registerValuePreview('craft:test-broken', () => {
       throw new Error('Nope');

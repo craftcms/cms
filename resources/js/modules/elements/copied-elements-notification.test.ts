@@ -77,3 +77,21 @@ it('cancels the copy when none of the elements exist anymore', async () => {
   expect(cancel).toHaveBeenCalledOnce();
   await expect(card.loadedFormats).resolves.toBeNull();
 });
+
+it('keeps the copy, without titles for the system clipboard, when the chips can’t be loaded', async () => {
+  post.mockRejectedValue(new Error('Offline'));
+  const cancel = vi.fn();
+  const elements = [{type: 'Entry', id: 7, siteId: 1}];
+  const card = new CopiedElementsNotification(elements, cancel, {
+    animate: false,
+  });
+  await card.show();
+
+  expect(cancel).not.toHaveBeenCalled();
+  expect(card.loaded).toBe(true);
+  expect(card.elementInfo).toEqual(elements);
+  expect(document.querySelector('.notification-message')?.textContent).toMatch(
+    /copied\.$/
+  );
+  await expect(card.loadedFormats).resolves.toBeNull();
+});

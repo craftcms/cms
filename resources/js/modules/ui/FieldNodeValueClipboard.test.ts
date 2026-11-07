@@ -357,6 +357,17 @@ describe('fieldValueFormats', () => {
         },
       })
     ).toEqual({text: 'About', html: null});
+    // Other URLs keep their destination, unlinked
+    expect(
+      fieldValueFormats(link, {
+        value: {
+          value: '/about',
+          urlSuffix: '#team',
+          label: 'About us',
+          type: 'url',
+        },
+      })
+    ).toEqual({text: '/about#team', html: null});
     expect(
       fieldValueFormats(link, {
         value: {value: 'javascript:alert(1)', type: 'url', label: 'Run'},
@@ -398,6 +409,14 @@ describe('fieldValueFormats', () => {
     expect(date({locale: 'de_DE'}, {date: '2026-01-02', time: null})).toBe(
       '02.01.2026'
     );
+    // Only the parts the field shows, though values hold both
+    const both = {date: '2026-11-13', time: '23:30', timezone: 'UTC'};
+    expect(date({locale: 'en-US', showDate: true, showTime: false}, both)).toBe(
+      'Nov 13, 2026'
+    );
+    expect(
+      date({locale: 'en-US', showDate: false, showTime: true}, both)
+    ).toMatch(/^11:30\sPM$/u);
   });
 
   it('keeps options’ labels apart, with their icons and colors', () => {

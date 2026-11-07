@@ -257,6 +257,34 @@ describe('the element clipboard', () => {
   });
 });
 
+describe('the field value clipboard', () => {
+  it('only shows a copied value to the user who copied it', async () => {
+    const value = {
+      value: 'Hi',
+      component: 'craft:text',
+      label: 'Title',
+      text: 'Hi',
+    };
+    (await import('@/modules/ui/copiedFieldValue')).copyFieldValue(value);
+
+    /** Loads the page again, with `userId` signed in. */
+    const signIn = async (userId: number) => {
+      vi.resetModules();
+      const {ConfigService} = await import('@craftcms/ui/services/Config');
+      ConfigService.getInstance().initialize({userId});
+      const values = await import('@/modules/ui/copiedFieldValue');
+      values.installFieldValueClipboard();
+
+      return values.useCopiedFieldValue().value;
+    };
+
+    expect(await signIn(1)).toEqual(value);
+    // Someone else signs in, in the same browser
+    expect(await signIn(2)).toBeNull();
+    expect(localStorage.getItem('Craft-test.copiedFieldValue')).toBeNull();
+  });
+});
+
 describe('Craft.cp', () => {
   it('copies legacy element markup through the clipboard', () => {
     vi.stubGlobal('jQuery', $);

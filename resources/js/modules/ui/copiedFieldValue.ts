@@ -229,12 +229,19 @@ function linkFormats(value: unknown): FieldValueFormats {
   } = (value ?? {}) as Record<string, unknown>;
   const text = (part: unknown) => (typeof part === 'string' ? part.trim() : '');
   const name = text(label) || text(defaultLabel);
+  const href = text(url) + text(urlSuffix);
 
-  if (!LINKABLE_URL.test(text(url))) {
+  // Reference tags, which element links hold, mean nothing outside Craft.
+  if (text(url).startsWith('{')) {
     return {text: name, html: null};
   }
 
-  const href = text(url) + text(urlSuffix);
+  // Other URLs, such as `/about` or `#top`, keep their destination, but only
+  // these schemes are linked.
+  if (!LINKABLE_URL.test(href)) {
+    return {text: href, html: null};
+  }
+
   const address = linkAddress(href);
 
   return {
@@ -275,14 +282,21 @@ function moneyText(value: unknown, props: object): string {
  */
 function dateTimeText(value: unknown, props: object): string {
   const {date, time, timezone} = (value ?? {}) as Record<string, unknown>;
-  const {locale, showTimeZone} = props as {
+  const {locale, showDate, showTime, showTimeZone} = props as {
     locale?: string;
+    showDate?: boolean;
+    showTime?: boolean;
     showTimeZone?: boolean;
   };
+  // Values hold a date and a time even when the field hides one of them.
   const dateParts =
-    typeof date === 'string' ? date.match(/^(\d{4})-(\d{2})-(\d{2})$/) : null;
+    showDate !== false && typeof date === 'string'
+      ? date.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+      : null;
   const timeParts =
-    typeof time === 'string' ? time.match(/^(\d{2}):(\d{2})/) : null;
+    showTime !== false && typeof time === 'string'
+      ? time.match(/^(\d{2}):(\d{2})/)
+      : null;
 
   if (!dateParts && !timeParts) {
     return valueText(value, null);
@@ -454,11 +468,28 @@ function show(value: CopiedFieldValue | null, animate = true): void {
   }
 }
 
+/**
+ * The copied value, if the signed-in user copied it. It outlasts their
+ * session, so it's dropped once someone else, or no one, is signed in.
+ */
 function read(): CopiedFieldValue | null {
   try {
-    const value = localStorage.getItem(prefixedKey(STORAGE_KEY));
+    const stored = localStorage.getItem(prefixedKey(STORAGE_KEY));
 
-    return value ? (JSON.parse(value) as CopiedFieldValue) : null;
+    if (!stored) {
+      return null;
+    }
+
+    const {userId, ...value} = JSON.parse(stored) as CopiedFieldValue & {
+      userId?: unknown;
+    };
+
+    if (userId !== ConfigService.getInstance().get('userId')) {
+      localStorage.removeItem(prefixedKey(STORAGE_KEY));
+      return null;
+    }
+
+    return value;
   } catch {
     return null;
   }
@@ -467,7 +498,13 @@ function read(): CopiedFieldValue | null {
 function write(value: CopiedFieldValue | null): void {
   try {
     if (value) {
-      localStorage.setItem(prefixedKey(STORAGE_KEY), JSON.stringify(value));
+      localStorage.setItem(
+        prefixedKey(STORAGE_KEY),
+        JSON.stringify({
+          ...value,
+          userId: ConfigService.getInstance().get('userId'),
+        })
+      );
     } else {
       localStorage.removeItem(prefixedKey(STORAGE_KEY));
     }

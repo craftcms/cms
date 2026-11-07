@@ -79,7 +79,17 @@ export class CopiedElementsNotification extends CopiedNotification {
   }
 
   override async getDetails(): Promise<HTMLElement | null> {
-    const chips = await renderChips(this.elementInfo);
+    let chips: Map<CopiedElementInfo, HTMLElement> | null;
+
+    try {
+      chips = await renderChips(this.elementInfo);
+    } catch {
+      // Offline, say. The elements stay copied, to paste within the control
+      // panel, but there are no titles for the system clipboard.
+      this.loaded = true;
+      this.#resolveFormats(null);
+      return null;
+    }
 
     // None of them exist anymore
     if (!chips) {

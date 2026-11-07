@@ -60,25 +60,39 @@ const elementChips: UiValuePreview = async ({props}) => {
   return chips ? chipRow(chips.values()) : null;
 };
 
-/** Tables, as the first rows of the HTML table they were copied to the clipboard as. */
+/**
+ * Tables, as the first rows of the HTML table they were copied to the
+ * clipboard as. The stored HTML could have been changed by any script on the
+ * site, so only its cells' text is drawn, in a table of our own.
+ */
 const table: UiValuePreview = ({html}) => {
   if (!html) {
     return null;
   }
 
+  // Parsed in a template, where nothing in it loads or runs.
   const template = document.createElement('template');
   template.innerHTML = html;
-  const preview = template.content.querySelector('table');
+  const source = template.content.querySelector('table');
 
-  if (!preview) {
+  if (!source) {
     return null;
   }
 
+  const preview = document.createElement('table');
   preview.className = 'copied-field-value-table';
-  preview.querySelector('thead')?.remove();
-  [...preview.querySelectorAll('tbody > tr')]
-    .slice(TABLE_PREVIEW_ROWS)
-    .forEach((row) => row.remove());
+  const body = preview.createTBody();
+
+  for (const row of [...source.querySelectorAll('tbody > tr')].slice(
+    0,
+    TABLE_PREVIEW_ROWS
+  )) {
+    const copy = body.insertRow();
+
+    for (const cell of row.querySelectorAll('td')) {
+      copy.insertCell().textContent = cell.textContent;
+    }
+  }
 
   return preview;
 };
