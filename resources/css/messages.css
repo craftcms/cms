@@ -247,7 +247,8 @@
     background-color: var(--c-surface-overlay);
   }
 
-  /* `CP.js` offsets each chip after the first and sets its `--overlay-opacity`. */
+  /* `copied-elements-notification.ts` offsets each chip after the first and
+     sets its `--overlay-opacity`. */
   .copied-element-chip:not(:first-child) {
     position: absolute;
 
