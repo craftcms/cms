@@ -11,7 +11,6 @@ use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
 use craft\fields\Assets as AssetsField;
 use craft\mcp\AssetUploads as McpAssetUploads;
-use craft\mcp\attributes\RequiresHttp;
 use craft\mcp\Authorization;
 use craft\mcp\ElementResourceLinks;
 use craft\mcp\elements\adapters\AssetAdapter;
@@ -313,7 +312,6 @@ readonly class Assets
         name: 'assets_upload_url',
         description: 'Gets a single-use URL for uploading a local or large file. Send the raw file bytes as the body of a PUT request to upload_url before expires_at (for example, curl -T ./photo.jpg "<upload_url>"), then pass {"upload_id": "...", "file_name": "photo.jpg"} as the file for assets_create or assets_replace. The file name is required, since it can’t be derived from the upload. Requires permission to save assets in at least one volume.',
     )]
-    #[RequiresHttp]
     public function uploadUrl(): array
     {
         return $this->mcpAssetUploads->createUpload($this->actor->user(), $this->settings->url($this->settings->route));

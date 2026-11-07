@@ -11,6 +11,7 @@ use craft\fieldlayoutelements\CustomField;
 use craft\fields\Assets as AssetsField;
 use craft\fields\PlainText;
 use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
 use craft\mcp\AssetUploads;
 use craft\mcp\ServerFactory;
 use craft\models\FieldLayout;
@@ -126,6 +127,30 @@ class AssetFieldUploadTest extends TestCase
         }
     }
 
+    public function testUploadUrlsWorkOverStdio(): void
+    {
+        // Agents may not be able to give the stdio server a path it can read, such as when it runs in a container
+        $upload = $this->callTool('assets_upload_url', []);
+        // The server saved the fixtures' pending config changes and released their lock within the test transaction,
+        // so take it again, or fixture cleanup will find the config stale once the transaction is rolled back
+        Craft::$app->getProjectConfig()->acquireLock();
+
+        self::assertFalse($upload['isError'] ?? true, json_encode($upload));
+        $upload = $upload['structuredContent'];
+        self::assertTrue(UrlHelper::isAbsoluteUrl($upload['upload_url']), $upload['upload_url']);
+        parse_str((string)parse_url($upload['upload_url'], PHP_URL_QUERY), $query);
+        $token = $query[Craft::$app->getConfig()->getGeneral()->tokenParam];
+        self::assertSame(['mcp/upload', ['uploadId' => $upload['upload_id']]], Craft::$app->getTokens()->getTokenRoute($token));
+
+        $uploads = Craft::$app->get('mcp')->getCapabilityContainer()->get(AssetUploads::class);
+        $stream = fopen($this->file, 'rb');
+        $uploads->receiveUpload($upload['upload_id'], $stream);
+        fclose($stream);
+
+        $contents = $uploads->consumeFile(['upload_id' => $upload['upload_id']], 'uploaded.png', static fn(string $path): string => file_get_contents($path));
+        self::assertSame(file_get_contents($this->file), $contents);
+    }
+
     /** @dataProvider restrictedPaths */
     public function testRejectsPathsWhereVolumesCannotLive(string $path): void
     {
@@ -155,6 +180,11 @@ class AssetFieldUploadTest extends TestCase
 
     private function createAsset(array $arguments): array
     {
+        return $this->callTool('assets_create', $arguments);
+    }
+
+    private function callTool(string $name, array $arguments): array
+    {
         $input = fopen('php://memory', 'r+');
         foreach ([
             ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
@@ -163,7 +193,7 @@ class AssetFieldUploadTest extends TestCase
                 'clientInfo' => ['name' => 'asset-field-upload-test', 'version' => '1.0'],
             ]],
             ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
-            ['jsonrpc' => '2.0', 'id' => 'create', 'method' => 'tools/call', 'params' => ['name' => 'assets_create', 'arguments' => $arguments]],
+            ['jsonrpc' => '2.0', 'id' => 'call', 'method' => 'tools/call', 'params' => ['name' => $name, 'arguments' => $arguments]],
         ] as $message) {
             fwrite($input, json_encode($message) . "\n");
         }
@@ -174,12 +204,12 @@ class AssetFieldUploadTest extends TestCase
 
         foreach (array_filter(explode("\n", (string)file_get_contents($outputPath))) as $line) {
             $response = json_decode($line, true);
-            if (($response['id'] ?? null) === 'create') {
+            if (($response['id'] ?? null) === 'call') {
                 unlink($outputPath);
                 return $response['result'] ?? $response;
             }
         }
 
-        self::fail('assets_create returned no response.');
+        self::fail("$name returned no response.");
     }
 }
