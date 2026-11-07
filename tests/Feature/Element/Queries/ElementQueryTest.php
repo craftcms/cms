@@ -250,7 +250,7 @@ it('resolves mapped columns and custom fields in where clauses and groupBy', fun
         ->and($query()->where('num', '>', 7)->ids())->toBe([$beta, $gamma, $empty])
         ->and($query()->whereAny(['title', 'teaser'], 'like', 'Gamma%')->ids())->toBe([$gamma])
         ->and($query()->whereNull('teaser')->ids())->toBe([$empty])
-        ->and($query()->where(fn ($query) => $query->where('num', 5)->orWhere('teaser', 'Beta'))->ids())->toBe([$alpha, $beta])
+        ->and($query()->where(fn (Illuminate\Contracts\Database\Query\Builder $query) => $query->where('num', 5)->orWhere('teaser', 'Beta'))->ids())->toBe([$alpha, $beta])
         ->and($query()->whereColumn('dateCreated', '<=', 'dateUpdated')->count())->toBe(4)
         ->and($query()->groupBy('num')->reorder('num')->pluck('num')->map(fn ($num) => (int) $num)->all())->toBe([5, 10, 20]);
 });
@@ -277,11 +277,11 @@ it('passes element queries to where() closures', function () {
     ElementModel::whereKey($admin)->update(['enabled' => false]);
     $query = fn () => entryQuery()->id([$admin, $editor, $blockedEditor, $viewer])->orderBy('elements.id');
 
-    expect($query()->status(null)->where(fn ($q) => $q->role('admin'))->orWhere(fn ($q) => $q->role('editor')->num(0))->ids())->toBe([$admin, $editor])
-        ->and($query()->where(fn ($q) => $q->role('admin'))->ids())->toBe([])
+    expect($query()->status(null)->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->role('admin'))->orWhere(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->role('editor')->num(0))->ids())->toBe([$admin, $editor])
+        ->and($query()->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->role('admin'))->ids())->toBe([])
         ->and($query()->whereNot(fn ($q) => $q->role('editor'))->ids())->toBe([$viewer])
-        ->and($query()->where('elements.id', $editor)->orWhere(fn ($q) => $q->sectionId($viewerSectionId))->ids())->toBe([$editor, $viewer])
-        ->and(fn () => $query()->where(fn ($q) => $q->ref('news/slug'))->ids())->toThrow(InvalidArgumentException::class)
+        ->and($query()->where('elements.id', $editor)->orWhere(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->sectionId($viewerSectionId))->ids())->toBe([$editor, $viewer])
+        ->and(fn () => $query()->where(fn (Illuminate\Contracts\Database\Query\Builder $q) => $q->ref('news/slug'))->ids())->toThrow(InvalidArgumentException::class)
         ->and($query()->whereNot(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$blockedEditor, $viewer])
         ->and($query()->where('elements.id', $viewer)->orWhere(fn (Builder $q) => $q->where('elements.id', $editor))->ids())->toBe([$editor, $viewer]);
 });

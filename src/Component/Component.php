@@ -56,6 +56,14 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
      *
      * @var array<class-string, array<string, object|callable>>
      */
+    protected static array $macrosByClass = [];
+
+    /**
+     * Every registered macro by name, in the format of Laravel’s `Macroable`, for tools that read it, such as
+     * Larastan. Macros are looked up in [[$macrosByClass]].
+     *
+     * @var array<string, object|callable>
+     */
     protected static $macros = [];
 
     /** @param array<string, mixed>|object $config */
@@ -148,7 +156,8 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
      */
     public static function macro($name, $macro)
     {
-        static::$macros[static::class][$name] = $macro;
+        static::$macrosByClass[static::class][$name] = $macro;
+        static::$macros[$name] = $macro;
     }
 
     /**
@@ -169,11 +178,13 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
      */
     public static function flushMacros()
     {
-        static::$macros = array_filter(
-            static::$macros,
+        static::$macrosByClass = array_filter(
+            static::$macrosByClass,
             fn (string $class) => ! is_a($class, static::class, true),
             ARRAY_FILTER_USE_KEY,
         );
+
+        static::$macros = array_merge(...array_values(static::$macrosByClass));
     }
 
     /**
@@ -230,8 +241,8 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
     protected static function findMacro(string $name): object|callable|null
     {
         for ($class = static::class; $class !== false; $class = get_parent_class($class)) {
-            if (isset(static::$macros[$class][$name])) {
-                return static::$macros[$class][$name];
+            if (isset(static::$macrosByClass[$class][$name])) {
+                return static::$macrosByClass[$class][$name];
             }
         }
 
