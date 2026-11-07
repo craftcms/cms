@@ -2948,8 +2948,9 @@ JS;
             $parentId = $this->ancestors()
                 ->ancestorDist(1)
                 ->status(null)
-                ->select(['elements.id'])
-                ->value('id');
+                ->limit(1)
+                ->pluck('elements.id')
+                ->first();
             if ($parentId) {
                 $data['parentId'] = $parentId;
             }
