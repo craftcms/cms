@@ -1,7 +1,8 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId} from 'vue';
+  import {computed, nextTick, reactive, ref, useId, watch} from 'vue';
+  import {tryOnScopeDispose} from '@vueuse/core';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
@@ -15,6 +16,7 @@
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
+  import {onElementChanged} from '@/modules/elements/element-instances';
   import type {
     ElementPresentation,
     ElementSelectProps,
@@ -113,14 +115,117 @@
     return Number(value);
   }
 
+  /**
+   * Elements refetched since the server last rendered the field, because they
+   * were saved, here or in another tab. They draw over the field's props until
+   * the next server render brings its own.
+   */
+  const refreshed = reactive(new Map<number, ElementPresentation>());
+  /** The latest refetch of each element; older answers are discarded. */
+  const latestRefetch = new Map<number, object>();
+  watch(
+    () => props.control.props.elements,
+    () => {
+      refreshed.clear();
+      latestRefetch.clear();
+    }
+  );
+  // An element that leaves the selection loses its refetched presentation,
+  // which would otherwise outlive saves it no longer hears about.
+  watch(ids, (current) => {
+    [...refreshed.keys(), ...latestRefetch.keys()]
+      .filter((id) => !current.includes(id))
+      .forEach((id) => {
+        refreshed.delete(id);
+        latestRefetch.delete(id);
+      });
+  });
+
+  const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]';
+
+  /**
+   * Applies a refetch without losing keyboard focus. Card parts are compiled
+   * as templates, so new markup remounts them, and a focused link inside goes
+   * with it; focus moves to its counterpart unless it went somewhere else.
+   */
+  async function keepingFocus(apply: () => void): Promise<void> {
+    const root = dropZone.value;
+    const focused = document.activeElement;
+    const index =
+      root && focused && root.contains(focused)
+        ? [...root.querySelectorAll(FOCUSABLE)].indexOf(focused)
+        : -1;
+
+    apply();
+
+    if (index === -1) {
+      return;
+    }
+
+    await nextTick();
+    const active = document.activeElement;
+    if (focused!.isConnected || (active && active !== document.body)) {
+      return;
+    }
+    root!.querySelectorAll<HTMLElement>(FOCUSABLE)[index]?.focus();
+  }
+
   function presentation(value: number | string): ElementPresentation {
     const id = elementId(value);
 
     return (
+      refreshed.get(id) ??
       providedPresentations.value.get(id) ??
       presentations.get(id) ?? {id, label: String(id)}
     );
   }
+
+  /** Refetches the given elements, or all of them, grouped by site. */
+  async function refreshPresentations(changed: number[] | null): Promise<void> {
+    const bySite = new Map<number | null, number[]>();
+    (changed ?? ids.value)
+      .filter((id) => ids.value.includes(id))
+      .forEach((id) => {
+        const siteId =
+          Number(
+            presentation(id).siteId ?? props.control.props.criteria.siteId
+          ) || null;
+        bySite.set(siteId, [...(bySite.get(siteId) ?? []), id]);
+      });
+
+    await Promise.all(
+      [...bySite.entries()].map(async ([siteId, elementIds]) => {
+        const request = {};
+        elementIds.forEach((id) => latestRefetch.set(id, request));
+        const {data} = await actionClient.post<{
+          elements?: ElementPresentation[];
+        }>('relational-fields/structured-elements', {
+          elementType: props.control.props.elementType,
+          elementIds,
+          siteId,
+          viewMode: viewMode.value,
+          thumbSize: props.control.props.thumbSize ?? null,
+        });
+
+        await keepingFocus(() =>
+          data.elements?.forEach((fresh) => {
+            if (latestRefetch.get(fresh.id) === request) {
+              refreshed.set(fresh.id, fresh);
+            }
+          })
+        );
+      })
+    );
+  }
+
+  tryOnScopeDispose(
+    onElementChanged(
+      (id) => {
+        refreshPresentations(id === null ? null : [id]).catch(() => {});
+      },
+      {includeSelf: true}
+    )
+  );
 
   // ───────────────────────────── selection ─────────────────────────────
 

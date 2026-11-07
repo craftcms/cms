@@ -205,6 +205,28 @@ describe('responses', () => {
 
     expect(response.status).toBe(409);
   });
+
+  it('relays X-Craft-Broadcast messages as craft:broadcast events, even from failed requests', async () => {
+    const messages = [
+      {event: 'saveElement', id: 12},
+      {event: 'deleteDraft', canonicalId: 12, draftId: 3},
+    ];
+    const relayed: unknown[] = [];
+    const listener = (event: Event) =>
+      relayed.push((event as CustomEvent).detail);
+    window.addEventListener('craft:broadcast', listener);
+    respond('{"message":"Nope"}', {
+      status: 422,
+      headers: {'X-Craft-Broadcast': JSON.stringify(messages)},
+    });
+
+    await createHttpClient()
+      .post('/save', {})
+      .catch(() => {});
+    window.removeEventListener('craft:broadcast', listener);
+
+    expect(relayed).toEqual(messages);
+  });
 });
 
 describe('cancellation', () => {

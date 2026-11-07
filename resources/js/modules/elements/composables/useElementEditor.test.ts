@@ -37,10 +37,8 @@ const messages = vi.hoisted(() => ({
 }));
 const broadcasts = vi.hoisted(() => ({
   handlers: new Map<string, Set<(message: any) => void>>(),
-  sent: [] as unknown[],
 }));
 vi.mock('@/common/craft/broadcast', () => ({
-  broadcast: (message: unknown) => broadcasts.sent.push(message),
   onBroadcast: (event: string, handler: (message: any) => void) => {
     const handlers = broadcasts.handlers.get(event) ?? new Set();
     handlers.add(handler);
@@ -2754,7 +2752,7 @@ describe('useElementEditor', () => {
       root.remove();
     });
 
-    it('announces a finished save to the rest of the CP', async () => {
+    it('refreshes previews after a finished save', async () => {
       stubSaveRequest(() =>
         Promise.resolve({
           data: {message: 'Entry saved.', element: {id: 12}},
@@ -2766,7 +2764,6 @@ describe('useElementEditor', () => {
 
       await vi.waitFor(() => expect(messages.showSuccess).toHaveBeenCalled());
       expect(messages.showSuccess.mock.calls[0]![0]).toBe('Entry saved.');
-      expect(broadcasts.sent).toContainEqual({event: 'saveElement', id: 12});
       expect(refreshPreviews).toHaveBeenCalled();
     });
   });

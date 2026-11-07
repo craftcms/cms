@@ -109,10 +109,106 @@ describe('useElementAutosave', () => {
 
     const {autosave} = mount();
 
+    autosave.schedule();
     await autosave.save();
 
     expect(autosave.status.value).toBe('failed');
     expect(autosave.error.value).toBe('Nope.');
+    expect(autosave.hasPendingChanges.value).toBe(true);
+  });
+
+  it('acknowledges only the edits a save carried', async () => {
+    const release: Array<() => void> = [];
+    postSpy.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          release.push(() => resolve({data: {draftId: 7}}));
+        })
+    );
+    const {autosave} = mount();
+
+    autosave.schedule();
+    const first = autosave.save();
+    autosave.schedule();
+    release[0]!();
+    await first;
+
+    expect(autosave.status.value).toBe('saved');
+    expect(autosave.hasPendingChanges.value).toBe(true);
+
+    const second = autosave.save();
+    release[1]!();
+    await second;
+
+    expect(postSpy).toHaveBeenCalledTimes(2);
+    expect(autosave.hasPendingChanges.value).toBe(false);
+  });
+
+  it.each(['resolves', 'rejects'] as const)(
+    'drops a canceled save and the save queued behind it (request %s late)',
+    async (outcome) => {
+      let settle!: () => void;
+      postSpy.mockImplementation(
+        () =>
+          new Promise((resolve, reject) => {
+            settle = () =>
+              outcome === 'resolves'
+                ? resolve({data: {draftId: 7, ui: {nodes: []}}})
+                : reject({isHttpError: true, response: {status: 500}});
+          })
+      );
+      const onSaved = vi.fn();
+      const {autosave} = mount({onSaved});
+
+      autosave.schedule();
+      const saving = autosave.save();
+      void autosave.save();
+      autosave.cancel();
+
+      expect(postSpy.mock.calls[0]![2].signal.aborted).toBe(true);
+      expect(autosave.status.value).toBe('idle');
+
+      settle();
+      await saving;
+
+      expect(postSpy).toHaveBeenCalledTimes(1);
+      expect(autosave.status.value).toBe('idle');
+      expect(autosave.httpStatus.value).toBeNull();
+      expect(autosave.draftId.value).toBeNull();
+      expect(autosave.ui.value).toBeNull();
+      expect(onSaved).not.toHaveBeenCalled();
+      expect(autosave.hasPendingChanges.value).toBe(true);
+    }
+  );
+
+  it('holds a save requested after a cancel until the canceled one settles', async () => {
+    const settle: Array<() => void> = [];
+    postSpy.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          settle.push(() => resolve({data: {draftId: 7}}));
+        })
+    );
+    const {autosave} = mount();
+
+    void autosave.save();
+    autosave.cancel();
+    const next = autosave.save();
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
+
+    settle[0]!();
+    await nextTick();
+    await nextTick();
+
+    expect(postSpy).toHaveBeenCalledTimes(2);
+    expect(postSpy.mock.calls[1]![2].signal.aborted).toBe(false);
+
+    settle[1]!();
+    await next;
+
+    expect(autosave.status.value).toBe('saved');
+    expect(autosave.draftId.value).toBe(7);
   });
 
   it('does nothing when disabled', async () => {
@@ -220,13 +316,19 @@ describe('useElementAutosave', () => {
     expect(postSpy).not.toHaveBeenCalled();
   });
 
-  it('skips scheduling while suspended', async () => {
-    const {autosave} = mount();
+  it('skips scheduling while suspended, and resumes afterwards', async () => {
+    const {autosave} = mount({debounceMs: {discrete: 5}});
 
     autosave.suspend(() => autosave.schedule());
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     expect(postSpy).not.toHaveBeenCalled();
+    expect(autosave.hasPendingChanges.value).toBe(false);
+
+    autosave.schedule();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(postSpy).toHaveBeenCalledTimes(1);
   });
 
   it('keeps sending provisional while editing a provisional draft', async () => {

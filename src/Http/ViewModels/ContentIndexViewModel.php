@@ -1578,11 +1578,15 @@ abstract class ContentIndexViewModel extends ViewModel
      * Rendered once per cell: rendering resolves the chip's thumbnail URLs,
      * which can queue transforms or fire `ThumbUrlResolving` handlers.
      *
+     * The chip isn't refreshed in place when its element is saved: the index
+     * compiles it as a Vue template, and reloads its rows itself.
+     *
      * @param  array<string, mixed>  $config  Additional {@see ElementHtml::elementChipHtml()} config
      */
     protected function chipHtml(ElementInterface $element, array $config = []): string
     {
         return app(ElementHtml::class)->elementChipHtml($element, [
+            'autoReload' => false,
             'context' => static::RENDER_CONTEXT,
             'appearance' => 'plain',
             'thumbSize' => $this->thumbSize(),

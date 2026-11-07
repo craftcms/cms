@@ -41,5 +41,5 @@ it('keeps a user without admin rights out of the settings', function () {
         ->assertMissing('nav[aria-label="Primary"] >> role=link[name="Settings"]')
         ->assertMissing('nav[aria-label="Primary"] >> role=link[name="Users"]');
 
-    visit('/'.Cms::config()->cpTrigger.'/settings')->assertSee('403');
+    visit('/'.Cms::config()->cpTrigger.'/settings')->assertSee('User is not permitted to perform this action.');
 });
