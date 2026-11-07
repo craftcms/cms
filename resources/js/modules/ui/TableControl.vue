@@ -387,7 +387,8 @@
     switch (props.control.props.columns[key]!.type) {
       case 'number':
         return trimmed === '' ||
-          /^-?(\d+(\.\d+)?|\.\d+)(e[-+]?\d+)?$/i.test(trimmed)
+          (/^-?(\d+(\.\d+)?|\.\d+)(e[-+]?\d+)?$/i.test(trimmed) &&
+            Number.isFinite(Number(trimmed)))
           ? trimmed
           : undefined;
       case 'checkbox':

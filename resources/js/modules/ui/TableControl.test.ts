@@ -491,7 +491,7 @@ describe('Vue table rows', () => {
     expect(submitted.get('rows[1][quantity]')).toBe('7');
     expect(submitted.get('rows[2][title]')).toBe('Figs');
 
-    paste('stocked', 2, 'yes\tSmall');
+    paste('quantity', 2, '1e309\tyes\tSmall');
     await settle();
 
     expect((mutation.value.rows as UiValues[])[2]).toEqual({
