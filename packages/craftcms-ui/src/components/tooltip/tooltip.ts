@@ -3,6 +3,7 @@ import {property} from 'lit/decorators.js';
 import {LionTooltip} from '@lion/ui/tooltip.js';
 import {withHoverInteraction} from '../../utilities/overlay-hover.js';
 import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
+import {claimEscape} from '../../utilities/overlay-escape.js';
 import {viewportEscapingModifiers} from '../../utilities/overlay-position.js';
 import {
   lowerOverlay,
@@ -54,6 +55,9 @@ export default class CraftTooltip extends LionTooltip {
 
   /** The invoker the click listener is bound to, which `for` can change. */
   #clickInvoker: HTMLElement | null = null;
+
+  /** The invoker the Escape listener is bound to. */
+  #escapeInvoker: HTMLElement | null = null;
 
   constructor() {
     super();
@@ -179,12 +183,39 @@ export default class CraftTooltip extends LionTooltip {
   override _setupOpenCloseListeners() {
     super._setupOpenCloseListeners();
     this.#bindInvokerClick();
+    this.#bindInvokerEscape();
   }
 
   // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
   override _teardownOpenCloseListeners() {
     super._teardownOpenCloseListeners();
     this.#unbindInvokerClick();
+    this.#unbindInvokerEscape();
+  }
+
+  /**
+   * Claims an Escape that closes the tooltip, so a popover around it stays
+   * open. Captured, so it runs while the tooltip is still open.
+   */
+  #onInvokerEscape = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && this.opened) {
+      claimEscape(event);
+    }
+  };
+
+  #bindInvokerEscape() {
+    this.#unbindInvokerEscape();
+    this.#escapeInvoker = this._overlayInvokerNode ?? null;
+    this.#escapeInvoker?.addEventListener('keyup', this.#onInvokerEscape, true);
+  }
+
+  #unbindInvokerEscape() {
+    this.#escapeInvoker?.removeEventListener(
+      'keyup',
+      this.#onInvokerEscape,
+      true
+    );
+    this.#escapeInvoker = null;
   }
 
   #bindInvokerClick() {
@@ -240,6 +271,7 @@ export default class CraftTooltip extends LionTooltip {
       visibilityTriggerFunction,
     });
     this.#bindInvokerClick();
+    this.#bindInvokerEscape();
   }
 
   /**

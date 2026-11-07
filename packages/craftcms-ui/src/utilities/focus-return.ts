@@ -59,7 +59,7 @@ function closestComposed(el: Element, selector: string): HTMLElement | null {
 
 /**
  * The button that opens `menu`, in the same order as
- * `CraftPopover._overlayInvokerNode`: one linked with `anchor` (or a virtual
+ * `CraftPopover.invoker`: one linked with `anchor` (or a virtual
  * anchor's `contextElement`) or `for`, which sits outside the menu, then a
  * slotted invoker.
  */
