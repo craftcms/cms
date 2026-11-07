@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Похоже, вы пытаетесь загрузить шаблон не из папки шаблонов.',
     'Low' => 'Низко',
     'MCP Settings' => 'Настройки MCP',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP-сервер',
     'MCP settings saved.' => 'Настройки MCP сохранены.',
     'MCP' => 'MCP',
