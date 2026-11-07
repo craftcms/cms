@@ -1718,6 +1718,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $config = parent::__set_state($stateData);
 
+        // The parent can’t restore this private property on subclasses
+        $config->middlewareSettings = $stateData['middlewareSettings'] ?? [];
+
         foreach ($config->middlewareSettings as $setting => $value) {
             $config->applyMiddlewareSetting($setting, $value);
         }

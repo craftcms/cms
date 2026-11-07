@@ -232,12 +232,7 @@ it('turns CSRF protection back on when a later setting enables it', function(): 
     expect(app(PreventRequestForgery::class)->getExcludedPaths())->toContain('webhooks/*')->not->toContain('*');
 });
 
-it('applies middleware settings again when a cached config is restored', function(): void {
-    $config = new GeneralConfigCompatibility()->convert([
-        'enableCsrfProtection' => false,
-        'trustedHosts' => ['10.0.0.1'],
-        'secureHeaders' => ['X-Forwarded-For'],
-    ]);
+it('applies middleware settings again when a cached config is restored', function(GeneralConfig $config): void {
     $state = var_export($config, true);
 
     PreventRequestForgery::flushState();
@@ -247,7 +242,21 @@ it('applies middleware settings again when a cached config is restored', functio
 
     expect(app(PreventRequestForgery::class)->getExcludedPaths())->toContain('*')
         ->and(proxiedClient())->toBe(['203.0.113.5', 'localhost']);
-});
+})->with([
+    'array config' => fn() => new GeneralConfigCompatibility()->convert([
+        'enableCsrfProtection' => false,
+        'trustedHosts' => ['10.0.0.1'],
+        'secureHeaders' => ['X-Forwarded-For'],
+    ]),
+    'config subclass' => fn() => GeneralConfigSubclass::create()
+        ->enableCsrfProtection(false)
+        ->trustedHosts(['10.0.0.1'])
+        ->secureHeaders(['X-Forwarded-For']),
+]);
+
+class GeneralConfigSubclass extends GeneralConfig
+{
+}
 
 /**
  * @return array{string|null, string} The client IP and host of a request forwarded by 10.0.0.1, as Laravel’s trusted
