@@ -1221,6 +1221,7 @@
 - Fixed a bug where text and number controls with `autofocus()` weren’t focused when they were shown after the page loaded, such as in modals and slideouts. They also no longer autofocus on mobile browsers, or for users who have disabled autofocus. ([#20373](https://github.com/craftcms/cms/pull/20373))
 - Fixed a bug where Assets fields’ thumbnail tiles could overflow into the next field when the field’s column was too narrow for the thumbnail size. ([#20392](https://github.com/craftcms/cms/issues/20392))
 - Fixed a bug where relational fields’ “Add” and “Upload files” buttons overlapped when the field was too narrow for them. ([#20423](https://github.com/craftcms/cms/pull/20423))
+- Fixed a bug where HTTP errors thrown by legacy plugin controllers through the Yii adapter, such as `yii\web\ForbiddenHttpException` and `yii\web\BadRequestHttpException`, returned a 500 response rather than their own status code. ([#20457](https://github.com/craftcms/cms/pull/20457))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
