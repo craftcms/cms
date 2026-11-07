@@ -5,7 +5,11 @@ import type {
   UiProperties,
   UiValues,
 } from '@/modules/ui/types';
-import {readControlValue, type UiValueSnapshot} from '@/modules/ui/valueAccess';
+import {
+  acceptsValueFrom,
+  readControlValue,
+  type UiValueSnapshot,
+} from '@/modules/ui/valueAccess';
 
 export type CompareSide = 'from' | 'to';
 
@@ -403,9 +407,7 @@ export function copyableValue(
   if (
     !fromControl ||
     !toControl ||
-    toControl.mode !== 'editable' ||
-    fromControl.component !== toControl.component ||
-    !toControl.writable
+    !acceptsValueFrom(toControl, fromControl.component)
   ) {
     return undefined;
   }

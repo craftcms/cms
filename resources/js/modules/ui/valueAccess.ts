@@ -48,6 +48,22 @@ export function readControlValue(
 }
 
 /**
+ * Whether `control` can take a value read from a control drawn by
+ * `component`: it's the same kind of control, it can be edited, and it says
+ * it can be given a value from outside.
+ */
+export function acceptsValueFrom(
+  control: UiControlPayload<object>,
+  component: string
+): boolean {
+  return (
+    control.component === component &&
+    control.mode === 'editable' &&
+    Boolean(control.writable)
+  );
+}
+
+/**
  * The control redefined with the props a snapshot brings, for writing it, or
  * `undefined` when it brings none and the control stays as it is.
  */

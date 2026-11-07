@@ -43,7 +43,11 @@
     controlValueAt,
   } from './runtime';
   import {useUiRenderer} from './renderer/context';
-  import {controlForSnapshot, readControlValue} from './valueAccess';
+  import {
+    acceptsValueFrom,
+    controlForSnapshot,
+    readControlValue,
+  } from './valueAccess';
   import type {
     UiChange,
     UiChangeKind,
@@ -169,16 +173,18 @@
   const override = computed(() => overrides[control.value.path.join('.')]);
   const copiedValue = useCopiedFieldValue();
 
-  /** Whether the clipboard holds a value this field can take. */
+  /**
+   * Whether the clipboard holds a value this field can take: one copied from
+   * a field of the same type, which the control takes on the same terms as
+   * the Compare screen's copy arrows.
+   */
   function canPaste(fieldType: string | undefined): boolean {
     const copied = copiedValue.value;
 
     return (
       copied !== null &&
       copied.fieldType === fieldType &&
-      copied.component === control.value.component &&
-      control.value.mode === 'editable' &&
-      Boolean(control.value.writable)
+      acceptsValueFrom(control.value, copied.component)
     );
   }
 
