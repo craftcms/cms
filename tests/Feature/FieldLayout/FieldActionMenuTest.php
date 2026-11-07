@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Field\Events\FieldActionMenuItemsResolving;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
@@ -45,14 +46,13 @@ it('gives a native field a copy-attribute action menu', function () {
         ->and($nodes[0])->toBeInstanceOf(ActionMenu::class)
         ->and($nodes[0]->uid())->toBe('field-actions:title:menu');
 
-    $items = $nodes[0]->props()['items'];
+    $item = collect($nodes[0]->props()['items'])->firstWhere('label', 'Copy attribute name');
 
-    expect($items[0]['label'])->toBe('Copy attribute name')
-        ->and($items[0]['action'])->toBe([
-            'type' => 'event',
-            'name' => 'craft:copy-text-prompt',
-            'detail' => ['label' => 'Attribute Name', 'value' => 'title'],
-        ]);
+    expect($item['action'])->toBe([
+        'type' => 'event',
+        'name' => 'craft:copy-text-prompt',
+        'detail' => ['label' => 'Attribute Name', 'value' => 'title'],
+    ]);
 });
 
 it('gives a custom field the Field settings item alongside Copy field handle', function () {
@@ -72,11 +72,52 @@ it('gives a custom field the Field settings item alongside Copy field handle', f
         ]);
 });
 
-it('shows no action menu to a non-admin', function () {
+it('shows a non-admin only the value actions', function () {
     $user = UserModel::factory()->createElement(['admin' => false]);
     actingAs($user);
 
-    expect(fieldActionNodes(customTextField()))->toBe([]);
+    $nodes = fieldActionNodes(customTextField());
+
+    expect($nodes)->toHaveCount(1)
+        ->and(array_column($nodes[0]->props()['items'], 'label'))->toBe(['Copy value', 'Paste value']);
+});
+
+it('offers to copy and paste the value of a field whose control can be read and written', function () {
+    $items = collect(fieldActionNodes(customTextField())[0]->props()['items'])->keyBy('label');
+
+    expect($items['Copy value']['action'])->toBe([
+        'type' => 'event',
+        'name' => 'craft:copy-field-value',
+        'detail' => ['fieldType' => PlainText::class],
+    ])
+        ->and($items['Copy value'])->not->toHaveKey('hidden')
+        ->and($items['Paste value']['action'])->toBe([
+            'type' => 'event',
+            'name' => 'craft:paste-field-value',
+            'detail' => ['fieldType' => PlainText::class],
+        ])
+        // Shown by the browser once a value from a field of the same type is copied
+        ->and($items['Paste value']['hidden'])->toBeTrue();
+
+    $titleItems = collect(fieldActionNodes(new TitleField)[0]->props()['items'])->keyBy('label');
+
+    expect($titleItems['Copy value']['action']['detail'])->toBe(['fieldType' => TitleField::class]);
+});
+
+it('only offers to paste a value into an editable field', function () {
+    $labels = array_column(fieldActionNodes(customTextField(), ControlMode::ReadOnly)[0]->props()['items'], 'label');
+
+    expect($labels)->toContain('Copy value')
+        ->not->toContain('Paste value');
+});
+
+it('offers no value actions for a field whose control can’t be read and written', function () {
+    $field = new CustomField(new MissingField(['id' => 1, 'handle' => 'gone', 'name' => 'Gone', 'expectedType' => 'Foo\\Bar']));
+    $labels = array_column(fieldActionNodes($field)[0]->props()['items'], 'label');
+
+    expect($labels)->toContain('Copy field handle')
+        ->not->toContain('Copy value')
+        ->not->toContain('Paste value');
 });
 
 it('swaps Copy field handle for the inline chip when the preference is on', function () {

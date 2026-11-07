@@ -19,6 +19,7 @@
     type CompareFieldChangesDetail,
   } from './FieldChangesModal.vue';
   import {revealElement} from '@/common/utils/dom';
+  import {announce} from '@/common/announcer';
   import {assistantApi} from '@/bootstrap/assistant';
   import {addElementField} from '@/modules/ai/assistant/element-context';
   import {
@@ -27,6 +28,11 @@
     type ApplyAssistantProposalDetail,
   } from '@/modules/ai/assistant/context';
   import UiNodeList from './UiNodeList.vue';
+  import {
+    copyFieldValue,
+    fieldValuePreview,
+    useCopiedFieldValue,
+  } from './copiedFieldValue';
   import {UiFieldOutletsKey} from './fieldOutlets';
   import {
     FieldActionItems,
@@ -37,6 +43,7 @@
     controlValueAt,
   } from './runtime';
   import {useUiRenderer} from './renderer/context';
+  import {controlForSnapshot, readControlValue} from './valueAccess';
   import type {
     UiChange,
     UiChangeKind,
@@ -57,6 +64,25 @@
     trigger?: unknown;
     url: string;
     params: Record<string, unknown>;
+  };
+
+  /**
+   * Field actions that copy the field's value to the clipboard, and paste a
+   * value copied from a field of the same type, for a field whose control
+   * says it can be read and written. The server sends the paste action
+   * hidden; it's shown while there's something on the clipboard to paste.
+   */
+  const COPY_VALUE_EVENT = 'craft:copy-field-value';
+  const PASTE_VALUE_EVENT = 'craft:paste-field-value';
+
+  type FieldValueActionDetail = {
+    trigger?: unknown;
+    fieldType?: string;
+  };
+
+  type FieldActionItem = {
+    hidden?: boolean;
+    action?: {name?: string; detail?: FieldValueActionDetail};
   };
 
   type GenerateValueResponse = {
@@ -141,16 +167,28 @@
     return component;
   });
   const override = computed(() => overrides[control.value.path.join('.')]);
+  const copiedValue = useCopiedFieldValue();
+
+  /** Whether the clipboard holds a value this field can take. */
+  function canPaste(fieldType: string | undefined): boolean {
+    const copied = copiedValue.value;
+
+    return (
+      copied !== null &&
+      copied.fieldType === fieldType &&
+      copied.component === control.value.component &&
+      control.value.mode === 'editable' &&
+      Boolean(control.value.writable)
+    );
+  }
+
   /**
    * The field's action menus, without the ones that generate its value when
-   * its control doesn't say it can be given one from outside.
+   * its control doesn't say it can be given one from outside, and with the
+   * paste action shown when there's a value it can take.
    */
   const actions = computed(() => {
     const children = resolvedNode.value.children ?? [];
-
-    if (control.value.writable) {
-      return children;
-    }
 
     return children.flatMap((child) => {
       if (child.component !== 'craft:action-menu') {
@@ -159,11 +197,31 @@
 
       // SAFETY: an action menu node's props are its menu's, not a field's.
       const {items = []} = child.props as unknown as {
-        items?: {action?: {name?: string}}[];
+        items?: FieldActionItem[];
       };
-      const kept = items.filter(
-        (item) => item.action?.name !== GENERATE_VALUE_EVENT
-      );
+      const kept = items.flatMap((item) => {
+        const name = item.action?.name;
+
+        if (name === GENERATE_VALUE_EVENT && !control.value.writable) {
+          return [];
+        }
+
+        if (
+          name === PASTE_VALUE_EVENT &&
+          canPaste(item.action?.detail?.fieldType)
+        ) {
+          return [{...item, hidden: false}];
+        }
+
+        return [item];
+      });
+
+      if (
+        kept.length === items.length &&
+        kept.every((item, i) => item === items[i])
+      ) {
+        return [child];
+      }
 
       return kept.length
         ? [{...child, props: {...child.props, items: kept}}]
@@ -361,6 +419,60 @@
       }
     }
   );
+
+  /** Whether a field action was chosen from this field's own menu. */
+  function triggeredHere(detail: {trigger?: unknown} | undefined): boolean {
+    return (
+      detail?.trigger instanceof HTMLElement &&
+      detail.trigger.closest('craft-field') === field.value
+    );
+  }
+
+  useEventListener(window, COPY_VALUE_EVENT, (event: Event) => {
+    const detail = (event as CustomEvent<FieldValueActionDetail>).detail;
+
+    if (!triggeredHere(detail) || !detail.fieldType) {
+      return;
+    }
+
+    const snapshot = readControlValue(control.value, props.values);
+
+    if (!snapshot) {
+      return;
+    }
+
+    // A value that was never set reads as the control's empty value.
+    snapshot.value ??= value.value ?? null;
+
+    copyFieldValue({
+      ...snapshot,
+      fieldType: detail.fieldType,
+      component: control.value.component,
+      label: resolvedNode.value.props.label ?? null,
+      preview: fieldValuePreview(control.value, snapshot),
+    });
+  });
+
+  useEventListener(window, PASTE_VALUE_EVENT, (event: Event) => {
+    const detail = (event as CustomEvent<FieldValueActionDetail>).detail;
+    const copied = copiedValue.value;
+
+    if (!triggeredHere(detail) || !copied || !canPaste(detail.fieldType)) {
+      return;
+    }
+
+    // Each field gets its own copy, so editing one doesn't change another.
+    const snapshot = structuredClone({
+      value: copied.value,
+      props: copied.props,
+    });
+    setValue(
+      snapshot.value,
+      'discrete',
+      controlForSnapshot(control.value, snapshot)
+    );
+    announce(t('Value pasted.'));
+  });
 
   const generating = shallowRef(false);
 

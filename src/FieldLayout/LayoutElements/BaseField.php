@@ -18,6 +18,7 @@ use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -27,6 +28,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\Controls\Checkbox;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
@@ -502,7 +505,7 @@ abstract class BaseField extends FieldLayoutElement
         $nodes = [];
         $uidPrefix = $this->uiActionsUid($control);
 
-        $items = $this->hasVisibleHeading($context) ? $this->resolveActionMenuItems($context) : [];
+        $items = $this->hasVisibleHeading($context) ? $this->resolveActionMenuItems($context, $control) : [];
         if ($items !== []) {
             $nodes[] = ActionMenu::make("$uidPrefix:menu", $items)
                 ->label(t('Field actions'));
@@ -533,9 +536,10 @@ abstract class BaseField extends FieldLayoutElement
      * Collects the field's action menu items, giving plugins a chance to amend
      * them.
      *
+     * @param  Control|null  $control  The field's control, which decides whether its value can be copied and pasted
      * @return list<array<string, mixed>>
      */
-    protected function resolveActionMenuItems(FieldLayoutElementContext $context): array
+    protected function resolveActionMenuItems(FieldLayoutElementContext $context, ?Control $control = null): array
     {
         event($event = new FieldLayoutComponentActionMenuItemsResolving(
             fieldLayoutComponent: $this,
@@ -546,6 +550,7 @@ abstract class BaseField extends FieldLayoutElement
 
         $coreActions = array_values(array_filter([
             $this->compareChangesAction($context),
+            ...$this->valueClipboardActions($context, $control),
             $this->aiAssistantAction($context),
         ]));
 
@@ -558,6 +563,57 @@ abstract class BaseField extends FieldLayoutElement
             ...($event->items === [] ? [] : [['type' => 'hr']]),
             ...$event->items,
         ];
+    }
+
+    /**
+     * Returns the “Copy value” and “Paste value” actions, for a field whose control can be both read and written.
+     *
+     * “Paste value” is only offered on an editable field, and stays hidden until a value copied from another field of
+     * the same type is on the clipboard, which only the browser knows — see `FieldNode.vue`.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function valueClipboardActions(FieldLayoutElementContext $context, ?Control $control): array
+    {
+        if (! $control instanceof ReadableValueControl || ! $control instanceof WritableValueControl) {
+            return [];
+        }
+
+        $detail = ['fieldType' => $this->valueClipboardType()];
+        $actions = [[
+            'icon' => 'clone-dashed',
+            'color' => Color::Fuchsia,
+            'label' => t('Copy value'),
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:copy-field-value',
+                'detail' => $detail,
+            ],
+        ]];
+
+        if ($context->mode === ControlMode::Editable && $context->ui->mode === ControlMode::Editable) {
+            $actions[] = [
+                'icon' => 'duplicate',
+                'color' => Color::Fuchsia,
+                'label' => t('Paste value'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:paste-field-value',
+                    'detail' => $detail,
+                ],
+                'hidden' => true,
+            ];
+        }
+
+        return $actions;
+    }
+
+    /**
+     * Returns what kind of value the field holds, so a value copied from it is only offered to fields of the same type.
+     */
+    protected function valueClipboardType(): string
+    {
+        return static::class;
     }
 
     /**

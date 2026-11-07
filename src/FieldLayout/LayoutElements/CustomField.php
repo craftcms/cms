@@ -1001,6 +1001,16 @@ class CustomField extends BaseField
         return $field->getTranslationDescription($element);
     }
 
+    #[Override]
+    protected function valueClipboardType(): string
+    {
+        try {
+            return $this->getField()::class;
+        } catch (FieldNotFoundException) {
+            return parent::valueClipboardType();
+        }
+    }
+
     /** @return list<array<string, mixed>> */
     #[Override]
     protected function actionMenuItemsForContext(FieldLayoutElementContext $context): array
