@@ -185,7 +185,11 @@ it('plucks and aggregates mapped columns and custom fields', function () {
         ->and($query()->max('dateCreated'))->not->toBeNull()
         ->and($query()->addSelect(['secondId' => entryQuery()->id($second->id)->select('elements.id')->limit(1)])->pluck('secondId')->all())->toBe([$second->id, $second->id])
         ->and($query()->selectRaw('? + 1 as bound', [6])->pluck('bound')->map(fn ($value) => (int) $value)->all())->toBe([7, 7])
-        ->and($query()->addSelect('title as heading')->pluck('heading')->all())->toBe(['First', 'Second']);
+        ->and($query()->addSelect('title as heading')->pluck('heading')->all())->toBe(['First', 'Second'])
+        ->and(entryQuery()->id([$first->id, $second->id])->addSelect('title as heading')->orderByDesc('heading')->ids())->toBe([$second->id, $first->id])
+        ->and(entryQuery()->id([$first->id, $second->id])->addSelect('title as heading')->orderByDesc('heading')->pluck('title')->all())->toBe(['Second', 'First'])
+        ->and(entryQuery()->revisions()->status(null)->orderByDesc('revisionNum')->ids())
+        ->toBe(collect(entryQuery()->revisions()->status(null)->orderByDesc('revisionNum')->all())->pluck('id')->all());
 });
 
 it('uses element queries as subqueries', function () {

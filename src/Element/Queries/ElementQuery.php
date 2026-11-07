@@ -747,12 +747,13 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         // Select only the plucked columns, the selected expressions such as subqueries, and any added column the plucked
-        // ones name by alias, unless the query selects its own columns
+        // ones or the orders name by alias, unless the query selects its own columns
         $query = clone $this->query;
+        $aliases = array_filter([$column, $key, ...array_column($query->orders ?? [], 'column')], is_string(...));
         $query->columns = $this->selectsDefaultColumns ? array_values(array_filter(
             $this->selectedColumns,
             fn (mixed $selected) => ($selected instanceof Expression && ! $selected instanceof Alias) || array_any(
-                array_filter([$column, $key], is_string(...)),
+                $aliases,
                 fn (string $name) => $this->columnHasAlias($query, $selected, $name),
             ),
         )) : $query->columns;
