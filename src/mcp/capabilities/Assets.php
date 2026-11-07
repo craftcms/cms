@@ -10,6 +10,7 @@ use craft\elements\conditions\ElementCondition;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
 use craft\fields\Assets as AssetsField;
+use craft\helpers\UrlHelper;
 use craft\mcp\AssetUploads as McpAssetUploads;
 use craft\mcp\Authorization;
 use craft\mcp\ElementResourceLinks;
@@ -314,7 +315,19 @@ readonly class Assets
     )]
     public function uploadUrl(): array
     {
-        return $this->mcpAssetUploads->createUpload($this->actor->user(), $this->settings->url($this->settings->route));
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return $this->mcpAssetUploads->createUpload($this->actor->user(), $this->settings->url($this->settings->route));
+        }
+
+        // Console URLs are built without a host or the site's subdirectory, so the stdio server uses the site's base
+        // URL. The token routes the upload, whatever the path.
+        $baseUrl = UrlHelper::baseSiteUrl();
+
+        if (!UrlHelper::isAbsoluteUrl($baseUrl)) {
+            throw new ToolCallException('Upload URLs over stdio require the site to have an absolute base URL.');
+        }
+
+        return $this->mcpAssetUploads->createUpload($this->actor->user(), $baseUrl);
     }
 
     /**

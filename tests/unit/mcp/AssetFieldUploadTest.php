@@ -11,7 +11,6 @@ use craft\fieldlayoutelements\CustomField;
 use craft\fields\Assets as AssetsField;
 use craft\fields\PlainText;
 use craft\helpers\FileHelper;
-use craft\helpers\UrlHelper;
 use craft\mcp\AssetUploads;
 use craft\mcp\ServerFactory;
 use craft\models\FieldLayout;
@@ -129,17 +128,35 @@ class AssetFieldUploadTest extends TestCase
 
     public function testUploadUrlsWorkOverStdio(): void
     {
-        // Agents may not be able to give the stdio server a path it can read, such as when it runs in a container
-        $upload = $this->callTool('assets_upload_url', []);
-        // The server saved the fixtures' pending config changes and released their lock within the test transaction,
-        // so take it again, or fixture cleanup will find the config stale once the transaction is rolled back
-        Craft::$app->getProjectConfig()->acquireLock();
+        // Agents may not be able to give the stdio server a path it can read, such as when it runs in a container.
+        // Console URLs lack a host and subdirectory, so the URL must come from the site's base URL.
+        $general = Craft::$app->getConfig()->getGeneral();
+        $site = Craft::$app->getSites()->getCurrentSite();
+        $omitScriptName = $general->omitScriptNameInUrls;
+        $baseUrl = $site->getBaseUrl(false);
+        $general->omitScriptNameInUrls = false;
+
+        try {
+            $site->setBaseUrl('/');
+            $result = $this->callTool('assets_upload_url', []);
+            self::assertTrue($result['isError'] ?? false, json_encode($result));
+            self::assertStringContainsString('absolute base URL', $result['content'][0]['text']);
+
+            $site->setBaseUrl('https://example.test/craft/');
+            $upload = $this->callTool('assets_upload_url', []);
+        } finally {
+            $general->omitScriptNameInUrls = $omitScriptName;
+            $site->setBaseUrl($baseUrl);
+            // The server saved the fixtures' pending config changes and released their lock within the test
+            // transaction, so take it again, or fixture cleanup will find the config stale once it's rolled back
+            Craft::$app->getProjectConfig()->acquireLock();
+        }
 
         self::assertFalse($upload['isError'] ?? true, json_encode($upload));
         $upload = $upload['structuredContent'];
-        self::assertTrue(UrlHelper::isAbsoluteUrl($upload['upload_url']), $upload['upload_url']);
+        self::assertStringStartsWith('https://example.test/craft/?', $upload['upload_url']);
         parse_str((string)parse_url($upload['upload_url'], PHP_URL_QUERY), $query);
-        $token = $query[Craft::$app->getConfig()->getGeneral()->tokenParam];
+        $token = $query[$general->tokenParam];
         self::assertSame(['mcp/upload', ['uploadId' => $upload['upload_id']]], Craft::$app->getTokens()->getTokenRoute($token));
 
         $uploads = Craft::$app->get('mcp')->getCapabilityContainer()->get(AssetUploads::class);

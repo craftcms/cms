@@ -53,8 +53,8 @@ class McpController extends Controller
         }
 
         // The public server and discovery only live on the front end, as with their routes in Settings::requestRoute(),
-        // and not on the control panel’s own host
-        if ($action->id !== 'authenticated' && ($this->request->getIsCpRequest() || $settings->isCpHostRequest())) {
+        // and not on the control panel’s own host. Upload URLs use the authenticated server’s endpoint, wherever it is.
+        if (!in_array($action->id, ['authenticated', 'upload'], true) && ($this->request->getIsCpRequest() || $settings->isCpHostRequest())) {
             throw new NotFoundHttpException();
         }
 
