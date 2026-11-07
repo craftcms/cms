@@ -110,7 +110,7 @@ describe('acceptsValue', () => {
   it('takes only rows that fit the table’s columns', () => {
     const table = control('craft:table', {
       columns: {
-        col1: {type: 'singleline'},
+        col1: {type: 'singleline', handle: 'event'},
         col2: {type: 'checkbox'},
         col3: {
           type: 'select',
@@ -121,6 +121,8 @@ describe('acceptsValue', () => {
     });
 
     expect(takes(table, [{col1: 'Apples', col2: true, col3: 's'}])).toBe(true);
+    // As a Table field holds them, with each cell under its column's handle too
+    expect(takes(table, [{col1: 'Apples', event: 'Apples'}])).toBe(true);
     expect(takes(table, [{col1: 'Apples', col2: 'yes'}])).toBe(false);
     expect(takes(table, [{col3: 'm'}])).toBe(false);
     expect(takes(table, [{col4: 'Pears'}])).toBe(false);

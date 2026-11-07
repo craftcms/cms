@@ -300,12 +300,19 @@ const table: UiValueAcceptor = (control, {value}) => {
   }
 
   const {columns, keyed, maxRows, includeRowId} = propsOf(control) as {
-    columns?: Record<string, {type?: unknown; options?: unknown}>;
+    columns?: Record<
+      string,
+      {type?: unknown; options?: unknown; handle?: unknown}
+    >;
     keyed?: boolean;
     maxRows?: number;
     includeRowId?: boolean | string;
   };
   const rowIdKey = typeof includeRowId === 'string' ? includeRowId : 'rowId';
+  // Table fields' rows hold each cell under its column's handle too.
+  const handles = new Set(
+    Object.values(columns ?? {}).map((column) => column.handle)
+  );
 
   return (
     // A keyed table holds its rows by key, and others in a list.
@@ -317,7 +324,7 @@ const table: UiValueAcceptor = (control, {value}) => {
         Object.entries(row).every(([key, cell]) =>
           columns?.[key]
             ? fitsColumn(cell, columns[key])
-            : Boolean(includeRowId) && key === rowIdKey
+            : handles.has(key) || (Boolean(includeRowId) && key === rowIdKey)
         )
     )
   );
