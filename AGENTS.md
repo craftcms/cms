@@ -25,6 +25,16 @@ treat it as sensitive.
 - Never include a real site's `cpTrigger` or control panel URL in pull request
   descriptions, commit messages, changelog entries, issue comments, or other
   public text. Use a placeholder such as `{cpTrigger}`.
+- Don't worry about revealing the `cpTrigger` on the front end when
+  `headlessMode` is enabled.
+
+## Permissions
+
+- Every user with the `accessCp` permission has basic read-only access to all
+  elements, as that permission's description notes: through element selector
+  modals, chips, cards, and other means. Don't flag or add `view` permission
+  checks on control panel endpoints that only show element content to them.
+  Saving, deleting, and other changes still need the element's own permissions.
 
 ## Migrations
 
