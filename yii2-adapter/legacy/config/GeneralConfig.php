@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use Illuminate\Support\Facades\Context;
 use InvalidArgumentException;
+use ReflectionProperty;
 use RuntimeException;
 use yii\base\InvalidConfigException;
 
@@ -53,6 +54,12 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     ];
 
     public const string EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /**
+     * @var array<string, mixed> Middleware settings applied by the fluent methods, which a cached config applies again
+     * when it’s restored
+     */
+    private array $middlewareSettings = [];
 
     /**
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
@@ -1022,9 +1029,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->enableCsrfProtection = $value;
 
-        if ($value === false) {
-            PreventRequestForgery::except(['*']);
-        }
+        $this->applyMiddlewareSetting('enableCsrfProtection', $value);
 
         return $this;
     }
@@ -1368,7 +1373,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
             }
         }
 
-        TrustProxies::withHeaders($bitmask);
+        $this->applyMiddlewareSetting('secureHeaders', $bitmask);
 
         return $this;
     }
@@ -1473,7 +1478,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this->trustedHosts = $value;
 
         if (!empty($value)) {
-            TrustProxies::at($value);
+            $this->applyMiddlewareSetting('trustedHosts', $value);
         }
 
         return $this;
@@ -1704,6 +1709,23 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
+     * Restores a cached config, and applies the middleware settings its fluent methods applied again, as Laravel’s
+     * middleware doesn’t keep them between requests.
+     *
+     * @param array<string, mixed> $stateData
+     */
+    public static function __set_state(array $stateData): static
+    {
+        $config = parent::__set_state($stateData);
+
+        foreach ($config->middlewareSettings as $setting => $value) {
+            $config->applyMiddlewareSetting($setting, $value);
+        }
+
+        return $config;
+    }
+
+    /**
      * Marks when settings can start changing Laravel’s state immediately.
      *
      * @internal
@@ -1729,6 +1751,28 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         } else {
             $app->booting($callback);
         }
+    }
+
+    /**
+     * Applies a setting to Laravel’s middleware, and remembers it so a cached config can apply it again.
+     */
+    private function applyMiddlewareSetting(string $setting, mixed $value): void
+    {
+        $this->middlewareSettings[$setting] = $value;
+
+        $this->whenBooting(function() use ($setting, $value): void {
+            if ($setting === 'trustedHosts') {
+                TrustProxies::at($value);
+            } elseif ($setting === 'secureHeaders') {
+                TrustProxies::withHeaders($value);
+            } elseif ($value === false) {
+                PreventRequestForgery::except(['*']);
+            } else {
+                // Undo a previous `enableCsrfProtection(false)`, which PreventRequestForgery has no method for
+                $neverVerify = new ReflectionProperty(PreventRequestForgery::class, 'neverVerify');
+                $neverVerify->setValue(null, array_values(array_diff($neverVerify->getValue(), ['*'])));
+            }
+        });
     }
 
     /**

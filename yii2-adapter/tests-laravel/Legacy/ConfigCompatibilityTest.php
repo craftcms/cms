@@ -8,6 +8,9 @@ use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\Middleware\TrustProxies;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Context;
 
@@ -196,13 +199,15 @@ it('lets application type array overlays replace base settings before they are a
     }, 'web']],
 ]);
 
-it('does not restore an unset transform generation setting as an override', function(): void {
+it('does not restore unset deprecated settings as overrides', function(): void {
     $config = new GeneralConfigCompatibility()->convert([]);
+    TrustProxies::at('*');
 
     eval('$restored = ' . var_export($config, true) . ';');
 
     expect($restored)->toBeInstanceOf(GeneralConfig::class)
-        ->and(Context::hasHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse();
+        ->and(Context::hasHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
+        ->and(proxiedClient())->toBe(['203.0.113.5', 'forwarded.test']);
 });
 
 it('accepts null deprecated settings in array general configs', function(): void {
@@ -214,3 +219,53 @@ it('accepts null deprecated settings in array general configs', function(): void
     expect($config->generateTransformsBeforePageLoad)->toBeNull()
         ->and($config->trustedHosts)->toBeNull();
 });
+
+it('turns CSRF protection back on when a later setting enables it', function(): void {
+    PreventRequestForgery::except('webhooks/*');
+
+    $config = GeneralConfig::create()->enableCsrfProtection(false);
+
+    expect(app(PreventRequestForgery::class)->getExcludedPaths())->toContain('*');
+
+    $config->enableCsrfProtection(true);
+
+    expect(app(PreventRequestForgery::class)->getExcludedPaths())->toContain('webhooks/*')->not->toContain('*');
+});
+
+it('applies middleware settings again when a cached config is restored', function(): void {
+    $config = new GeneralConfigCompatibility()->convert([
+        'enableCsrfProtection' => false,
+        'trustedHosts' => ['10.0.0.1'],
+        'secureHeaders' => ['X-Forwarded-For'],
+    ]);
+    $state = var_export($config, true);
+
+    PreventRequestForgery::flushState();
+    TrustProxies::flushState();
+
+    eval('$restored = ' . $state . ';');
+
+    expect(app(PreventRequestForgery::class)->getExcludedPaths())->toContain('*')
+        ->and(proxiedClient())->toBe(['203.0.113.5', 'localhost']);
+});
+
+/**
+ * @return array{string|null, string} The client IP and host of a request forwarded by 10.0.0.1, as Laravel’s trusted
+ * proxies middleware sees them
+ */
+function proxiedClient(): array
+{
+    $request = Request::create('http://localhost/', server: [
+        'REMOTE_ADDR' => '10.0.0.1',
+        'HTTP_X_FORWARDED_FOR' => '203.0.113.5',
+        'HTTP_X_FORWARDED_HOST' => 'forwarded.test',
+    ]);
+
+    try {
+        app(TrustProxies::class)->handle($request, fn() => null);
+
+        return [$request->getClientIp(), $request->getHost()];
+    } finally {
+        Request::setTrustedProxies([], -1);
+    }
+}
