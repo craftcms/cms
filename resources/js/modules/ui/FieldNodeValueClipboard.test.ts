@@ -148,6 +148,8 @@ describe('FieldNode value clipboard', () => {
     );
 
     expect(actionItem('target', 'Paste value').hidden).toBe(true);
+    // Blank fields have nothing to copy
+    expect(actionItem('target', 'Copy value')).toBeUndefined();
 
     actionItem('source', 'Copy value').click();
     await nextTick();

@@ -182,8 +182,9 @@
 
   /**
    * The field's action menus, without the ones that generate its value when
-   * its control doesn't say it can be given one from outside, and with the
-   * paste action shown when there's a value it can take.
+   * its control doesn't say it can be given one from outside, or the copy
+   * action while it's blank, and with the paste action shown when there's a
+   * value it can take.
    */
   const actions = computed(() => {
     const children = resolvedNode.value.children ?? [];
@@ -201,6 +202,10 @@
         const name = item.action?.name;
 
         if (name === GENERATE_VALUE_EVENT && !control.value.writable) {
+          return [];
+        }
+
+        if (name === COPY_VALUE_EVENT && !copyableValue()) {
           return [];
         }
 
@@ -423,27 +428,41 @@
     );
   }
 
-  useEventListener(window, COPY_VALUE_EVENT, (event: Event) => {
-    if (!triggeredHere((event as CustomEvent<{trigger?: unknown}>).detail)) {
-      return;
-    }
-
+  /**
+   * The field's value as it's copied, or `null` when it can't be read, or
+   * it's blank, with no text to copy.
+   */
+  function copyableValue(): CopiedFieldValue | null {
     const snapshot = readControlValue(control.value, props.values);
 
     if (!snapshot) {
-      return;
+      return null;
     }
 
     // A value that was never set reads as the control's empty value.
     snapshot.value ??= value.value ?? null;
 
-    copyFieldValue({
+    const copied: CopiedFieldValue = {
       ...snapshot,
       component: control.value.component,
       valueScope: control.value.valueScope,
       label: resolvedNode.value.props.label ?? null,
       ...fieldValueFormats(control.value, snapshot),
-    });
+    };
+
+    return copied.text.trim() ? copied : null;
+  }
+
+  useEventListener(window, COPY_VALUE_EVENT, (event: Event) => {
+    if (!triggeredHere((event as CustomEvent<{trigger?: unknown}>).detail)) {
+      return;
+    }
+
+    const copied = copyableValue();
+
+    if (copied) {
+      copyFieldValue(copied);
+    }
   });
 
   useEventListener(window, PASTE_VALUE_EVENT, (event: Event) => {
