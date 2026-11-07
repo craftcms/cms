@@ -53,8 +53,9 @@ trait QueriesStatuses
             }
 
             // only set archived=false if 'archived' doesn't show up in the status param
-            // (applyStatus() will normalize $elementQuery->status to an array if applicable)
-            if (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status)) {
+            // (applyStatus() will normalize $elementQuery->status to an array if applicable),
+            // and leave it to the query a nested condition is nested in
+            if (! $elementQuery->isNestedCondition && (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status))) {
                 $elementQuery->whereBool('elements.archived', false);
             }
         });
@@ -149,7 +150,7 @@ trait QueriesStatuses
             return;
         }
 
-        $query->where(function (Builder $q) use ($elementQuery, $statuses, $glue) {
+        $query->whereNested(function (Builder $q) use ($elementQuery, $statuses, $glue) {
             foreach ($statuses as $status) {
                 if ($glue === 'not') {
                     $q->whereNot($elementQuery->placeholderCondition($elementQuery->statusCondition($status)));

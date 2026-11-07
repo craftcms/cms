@@ -206,6 +206,8 @@
 - The “Assets” settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Removed the `isSystemLive` config setting and the `craft:on` and `craft:off` commands. Laravel maintenance mode should be used instead.
+- Removed the `allowedGraphqlOrigins`, `enableBasicHttpAuth`, `enableTwigSandbox`, `omitScriptNameInUrls`, `pathParam`, `permissionsPolicyHeader`, `purgeStaleUserSessionDuration`, `requireMatchingUserAgentForSession`, `requireUserAgentAndIpForSession`, `useFileLocks`, and `usePathInfo` config settings, which no longer have any effect.
+- Craft 5 config settings that were deprecated or removed are still accepted when the Yii adapter is installed, including from array-based general configs and environment variables, and log a deprecation warning when they’re set.
 
 ### Development
 
@@ -256,10 +258,14 @@
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
 - Deprecated the `elevatedSessionDuration` general config setting. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
   - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
-- Deprecated the `errorTemplatePrefix` general config setting. Configure [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
+- Deprecated the `errorTemplatePrefix` general config setting. Error templates now go in an `errors/` folder within the site templates, such as `errors/404.twig`, `errors/_404.twig`, or `errors/404.blade.php`, with `errors/offline` and `errors/error` as fallbacks, and a site’s own template folder takes precedence, such as `resources/views/siteHandle/errors/404.twig`. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Deprecated the `testToEmailAddress` general config setting. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
 - Deprecated the `blowfishHashCost` general config setting in favor of Laravel's `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
+- Deprecated the `defaultCookieDomain`, `phpSessionName`, `sameSiteCookieValue`, `useSecureCookies`, and `userSessionDuration` general config settings. Laravel’s `session` config should be used instead.
+- Deprecated the `rememberedUserSessionDuration` and `verificationCodeDuration` general config settings. Laravel’s `auth.guards.craft.remember` and `auth.passwords.craft.expire` config values should be used instead.
+- Deprecated the `secureHeaders`, `secureProtocolHeaders`, and `trustedHosts` general config settings. [Laravel’s trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) should be configured instead.
+- Deprecated the `devMode` and `securityKey` general config settings. Laravel’s `app.debug` and `app.key` config values should be used instead.
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
 - Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
 - Deprecated `asset.setTransform()`. `asset.transform()` should be used instead. With the Yii adapter installed, `setTransform()` still works on assets returned by Assets fields and asset queries, but the transform only applies to the asset’s URL, not its width, height, or `getImg()` output. ([#20191](https://github.com/craftcms/cms/pull/20191))
@@ -996,6 +1002,8 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Element source headings can now have a `handle`, which gives their control panel navigation items stable IDs. ([#20247](https://github.com/craftcms/cms/pull/20247))
 
 #### Element Queries
+- Added `CraftCms\Cms\Element\Element::query()`. Static calls to element classes that aren’t macros, such as `Entry::section('news')`, return a new element query, as they do on Eloquent models. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Added `CraftCms\Cms\Element\Queries\ElementQuery::toBase()`, which returns a base query builder with the query’s params applied. Element queries can be passed to Laravel query builder methods that take a subquery, such as `whereIn()`, `whereExists()`, and `joinSub()`. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Deprecated `craft\elements\db\ElementRelationParamParser`. `CraftCms\Cms\Database\ElementRelationParamFilter` should be used instead.
 - Deprecated `craft\elements\db\NestedElementQueryInterface`. `CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface` should be used instead.
 - Deprecated `craft\elements\db\NestedElementQueryTrait`. `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements` should be used instead.
@@ -1226,6 +1234,7 @@ Moved the following controllers:
 
 #### Routes
 - Deprecated `craft\services\Routes`. `CraftCms\Cms\Route\Routes` should be used instead.
+- Added `CraftCms\Cms\Route\RedirectRule` and `CraftCms\Cms\Route\Events\Redirecting`, the Laravel equivalents of `craft\web\RedirectRule` and `craft\web\ErrorHandler::EVENT_BEFORE_REDIRECT`, which still work. ([#20448](https://github.com/craftcms/cms/pull/20448))
 
 #### Search
 - Added `CraftCms\Cms\Support\Facades\Search`.

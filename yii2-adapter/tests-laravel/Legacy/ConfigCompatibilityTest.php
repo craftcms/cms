@@ -49,7 +49,7 @@ it('maps renamed general config settings in the adapter', function(): void {
 it('supports moved deprecated config settings', function(): void {
     $config = GeneralConfig::create();
 
-    expect($config->generateTransformsBeforePageLoad)->toBeFalse();
+    expect($config->generateTransformsBeforePageLoad)->toBeNull();
 
     $config
         ->defaultCookieDomain('.example.test')
@@ -63,9 +63,10 @@ it('supports moved deprecated config settings', function(): void {
         ->firstWhere('key', 'generalConfig.generateTransformsBeforePageLoad');
 
     expect($config->defaultCookieDomain)->toBe('.example.test')
+        ->and(config('session.domain'))->toBe('.example.test')
         ->and($config->generateTransformsBeforePageLoad)->toBeFalse()
         ->and(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
-        ->and($deprecation?->message)->toBe('generateTransformsBeforePageLoad is deprecated. Configure immediate generation on the Craft asset transformer instead.')
+        ->and($deprecation?->message)->toBe('The `generateTransformsBeforePageLoad` config setting is deprecated. Configure immediate generation on the Craft asset transformer instead.')
         ->and($config->rememberedUserSessionDuration)->toBe(7200)
         ->and($config->verificationCodeDuration)->toBe(1800);
 });
@@ -131,6 +132,85 @@ it('loads a legacy general config without logging deprecations for settings it l
 
     expect($config)->toBeInstanceOf(GeneralConfig::class)
         ->and($config->cpTrigger)->toBe('control')
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key')->filter(fn(string $key) => str_starts_with($key, 'generalConfig.')))
+        ->toBeEmpty();
+});
+
+it('logs a deprecation for each deprecated config setting that is set', function(string $method, mixed $value): void {
+    GeneralConfig::create()->{$method}($value);
+
+    expect(collect(Deprecator::getRequestLogs())->firstWhere('key', "generalConfig.$method")?->message)
+        ->toStartWith("The `$method` config setting is deprecated.");
+})->with(function(): iterable {
+    $samples = [
+        'bool' => true,
+        'int' => 13,
+        'string' => 'value',
+        'array' => [],
+        'mixed' => 3600,
+    ];
+
+    foreach (new ReflectionClass(GeneralConfig::class)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        if ($method->getAttributes(Deprecated::class) === [] || $method->name === 'tempAssetUploadFs') {
+            continue;
+        }
+
+        $type = $method->getParameters()[0]->getType();
+        $types = $type instanceof ReflectionUnionType ? $type->getTypes() : [$type];
+        $name = collect($types)->map(fn(ReflectionNamedType $type) => $type->getName())->first(fn(string $name) => isset($samples[$name]));
+
+        yield $method->name => [$method->name, $samples[$name]];
+    }
+});
+
+it('applies array general configs through the legacy settings', function(): void {
+    $config = new GeneralConfigCompatibility()->convert([
+        'cpTrigger' => 'control',
+        'defaultCookieDomain' => '.example.test',
+        'usePathInfo' => true,
+    ]);
+
+    expect($config)->toBeInstanceOf(GeneralConfig::class)
+        ->and($config->cpTrigger)->toBe('control')
+        ->and($config->defaultCookieDomain)->toBe('.example.test')
         ->and(collect(Deprecator::getRequestLogs())->pluck('key'))
-        ->not->toContain('generalConfig.isSystemLive', 'generalConfig.generateTransformsBeforePageLoad');
+        ->toContain('generalConfig.defaultCookieDomain', 'generalConfig.usePathInfo');
+});
+
+it('maps the renamed temp asset upload setting', function(): void {
+    expect(GeneralConfig::create()->tempAssetUploadFs('uploads')->tempAssetUploadDisk)->toBe('uploads');
+});
+
+it('lets application type array overlays replace base settings before they are applied', function(mixed $overlay): void {
+    $config = new GeneralConfigCompatibility()->convert(['extraAllowedFileExtensions' => ['foo']], $overlay);
+
+    expect($config->allowedFileExtensions)->not->toContain('foo');
+})->with([
+    'array' => [['extraAllowedFileExtensions' => []]],
+    'closure' => [fn() => fn() => ['extraAllowedFileExtensions' => []]],
+    'callable array' => [fn() => [new class() {
+        public function web(): array
+        {
+            return ['extraAllowedFileExtensions' => []];
+        }
+    }, 'web']],
+]);
+
+it('does not restore an unset transform generation setting as an override', function(): void {
+    $config = new GeneralConfigCompatibility()->convert([]);
+
+    eval('$restored = ' . var_export($config, true) . ';');
+
+    expect($restored)->toBeInstanceOf(GeneralConfig::class)
+        ->and(Context::hasHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse();
+});
+
+it('accepts null deprecated settings in array general configs', function(): void {
+    $config = new GeneralConfigCompatibility()->convert([
+        'generateTransformsBeforePageLoad' => null,
+        'trustedHosts' => null,
+    ]);
+
+    expect($config->generateTransformsBeforePageLoad)->toBeNull()
+        ->and($config->trustedHosts)->toBeNull();
 });
