@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Zdá se, že se snažíte načíst šablonu mimo adresář šablon.',
     'Low' => 'Nízké',
     'MCP Settings' => 'Nastavení MCP',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'Server MCP',
     'MCP settings saved.' => 'Nastavení MCP bylo uloženo.',
     'MCP' => 'MCP',
