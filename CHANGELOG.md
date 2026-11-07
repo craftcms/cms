@@ -177,6 +177,7 @@
 - Added `CraftCms\Cms\Element\Element::showSitesField()`, `sitesFieldHtml()`, and `sitesNodes()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Added `CraftCms\Cms\Ui\Controls\ElementSites`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Element details panels’ content is no longer padded by the details pane. Panels registered via `Cp.$elementDetailsPanels` with a `component` should set their own padding, using `--cp-container-padding` for the inline padding. ([#19919](https://github.com/craftcms/cms/pull/19919))
+- Element chips and cards now update when their elements are saved or their drafts are deleted, on any open control panel page, including the page where the change was made. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - `Craft.createElementEditor()` now opens the element editor in a Vue slideout on control panel pages that have them, rather than in the legacy `Craft.ElementEditorSlideout`. It returns an object with the legacy slideout’s `submit`, `load` and `close` events, `close()` method, and `elementEditor` `update` event. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - `elements/save-draft` action responses now include a `canDeleteForSite` key. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Deprecated `Cp.$elementDetailsTabs`, its `tabs` property, and the `ElementDetailsTab*` types. `Cp.$elementDetailsPanels`, its `panels` property, and the `ElementDetailsPanel*` types should be used instead.
@@ -712,6 +713,9 @@
 - Nested elements now have a `$touchOwnersOnSave` property.
 - `CraftCms\Cms\Element\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `CraftCms\Cms\Support\Str::lower()`, `::title()`, and `::upper()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Element saves and draft deletions made during control panel requests, including plugins’, are now announced to every open control panel tab, so their chips, cards, and editors update without client-side `broadcast()` calls. ([#20419](https://github.com/craftcms/cms/pull/20419))
+- Messages queued with `session()->broadcastToJs()` now reach every open control panel tab, sent with the next page after a redirect, or in an `X-Craft-Broadcast` header on action responses. ([#20419](https://github.com/craftcms/cms/pull/20419))
+- `Craft.refreshElementInstances()` now refreshes `craft-chip` and `craft-card` instances too. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - Removed the `plugin-store/craft-data` and `plugin-store/save-plugin-license-keys` actions.
 - Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `Craft.AuthManager` and `Craft.cp.authManager`, which no longer had a remaining session time to act on. ([#20085](https://github.com/craftcms/cms/pull/20085))

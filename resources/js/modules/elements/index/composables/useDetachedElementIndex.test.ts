@@ -312,6 +312,36 @@ it('selects every result, counting pages not loaded, less those deselected', asy
   expect(selectAll.count.value).toBe(0);
 });
 
+it('reloads rows saved in another tab in place, once inline editing ends', async () => {
+  vi.stubGlobal('Craft', {systemUid: 'test'});
+  const response = deferred<ContentIndexData>();
+  const fetch = vi.fn().mockReturnValueOnce(response.promise);
+  scope = effectScope();
+  const index = scope.run(() =>
+    useDetachedElementIndex({
+      initial: indexData(1),
+      fetch,
+      inlineEditing: {load: vi.fn(), save: vi.fn()},
+    })
+  )!;
+  const otherTab = new BroadcastChannel('CraftCMS:');
+  index.view.inlineEditing!.active.value = true;
+
+  otherTab.postMessage({event: 'saveElement', id: 1});
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  expect(fetch).not.toHaveBeenCalled();
+
+  index.view.inlineEditing!.active.value = false;
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+  // Without the loading state, the rows aren't swapped for placeholders.
+  expect(index.view.loading.value).toBe(false);
+  response.resolve(indexData(2));
+  await vi.waitFor(() =>
+    expect(index.view.elementIndex.data.map(({id}) => id)).toEqual([2])
+  );
+  otherTab.close();
+});
+
 function deferred<Value>() {
   let resolve!: (value: Value) => void;
   let reject!: (reason?: unknown) => void;
