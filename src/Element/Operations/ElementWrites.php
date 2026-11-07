@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Operations;
 
+use Carbon\CarbonInterface;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
@@ -32,6 +33,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Search\Search;
@@ -40,14 +42,19 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Translation\Locale;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -115,9 +122,16 @@ readonly class ElementWrites
             }
             $generatedFieldValues = [];
             $updated = false;
+            $language = $siteElement->getSite()->getLanguage();
 
             foreach ($generatedFields as $field) {
-                $value = renderObjectTemplate($field['template'] ?? '', $siteElement, escaperStrategy: 'html');
+                $template = $field['template'] ?? '';
+                $value = I18N::withLocale($language, $language, fn () => renderObjectTemplate(
+                    $template,
+                    $siteElement,
+                    $this->generatedFieldDateVariables($siteElement, $template),
+                    escaperStrategy: 'html',
+                ));
                 $value = normalizeValue($value) ?? '';
 
                 if ($value !== ($content[$field['uid']] ?? '')) {
@@ -139,6 +153,48 @@ readonly class ElementWrites
             }
             $siteElement->setGeneratedFieldValues($generatedFieldValues);
         }
+    }
+
+    /**
+     * Returns the date values that a generated field template references, set to print
+     * in the current locale the way element cards show them.
+     *
+     * Passed as object template variables, they take precedence over the element’s own
+     * values for `{foo}` shorthand, while filters like `|date` still get a date.
+     *
+     * @return array<string, CarbonInterface>
+     */
+    private function generatedFieldDateVariables(ElementInterface $element, string $template): array
+    {
+        $variables = [];
+        $isReferenced = fn (string $name): bool => (bool) preg_match(sprintf('/\b%s\b/', preg_quote($name, '/')), $template);
+        $formatDatetime = fn (DateTimeInterface $date): string => I18N::getFormatter()->asDatetime($date, Locale::LENGTH_SHORT);
+
+        foreach ($element->attributes() as $attribute) {
+            if (
+                $isReferenced($attribute) &&
+                Typecast::isDateTimeProperty($element::class, $attribute) &&
+                ($value = $element->$attribute ?? null) instanceof DateTimeInterface
+            ) {
+                $variables[$attribute] = Date::instance($value)->settings(['toStringFormat' => $formatDatetime]);
+            }
+        }
+
+        foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            if (
+                ! isset($variables[$field->handle]) &&
+                $isReferenced($field->handle) &&
+                ($value = $element->getFieldValue($field->handle)) instanceof DateTimeInterface
+            ) {
+                $variables[$field->handle] = Date::instance($value)->settings([
+                    'toStringFormat' => $field instanceof PreviewableFieldInterface
+                        ? fn (DateTimeInterface $date): string => $field->getPreviewHtml($date, $element)
+                        : $formatDatetime,
+                ]);
+            }
+        }
+
+        return $variables;
     }
 
     public function saveElement(
