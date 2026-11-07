@@ -1062,6 +1062,7 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => '다음 템플릿 폴더 밖에서 템플릿 로드를 시도한 것으로 보입니다.',
     'Low' => '낮음',
     'MCP Settings' => 'MCP 설정',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP 서버',
     'MCP settings saved.' => 'MCP 설정이 저장되었습니다.',
     'MCP' => 'MCP',
