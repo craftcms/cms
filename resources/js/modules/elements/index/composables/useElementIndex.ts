@@ -558,14 +558,20 @@ export function useElementIndex(options: UseElementIndexOptions) {
 
   // Rows saved in another tab are reloaded, once for all the rows saved
   // together. Saves in this one refresh the index where they happen, such as
-  // after a quick edit.
+  // after a quick edit. While rows are edited inline, the reload waits until
+  // editing ends, so it doesn't redraw the inputs over unsaved changes.
   let reloadQueued = false;
+  let reloadAfterEditing = false;
   tryOnScopeDispose(
     onElementChanged((id) => {
       const shown =
         id === null ||
         elementIndex.data?.some((row) => Number(row.id) === id) === true;
       if (!shown || reloadQueued) return;
+      if (inlineEditingActive.value) {
+        reloadAfterEditing = true;
+        return;
+      }
       reloadQueued = true;
       queueMicrotask(() => {
         reloadQueued = false;
@@ -573,6 +579,11 @@ export function useElementIndex(options: UseElementIndexOptions) {
       });
     })
   );
+  watch(inlineEditingActive, (active) => {
+    if (active || !reloadAfterEditing) return;
+    reloadAfterEditing = false;
+    void refresh();
+  });
 
   const processing = computed(
     () => loading.value || pending.value || Boolean(toValue(options.busy))
