@@ -180,6 +180,7 @@ describe('renderValuePreview', () => {
 
     expect(iconSvg).toHaveBeenCalledWith('star');
     expect(preview.querySelector('craft-icon')!.firstChild).toBe(svg);
+    expect(svg.getAttribute('fill')).toBe('currentColor');
     expect(preview.textContent).toBe('star');
 
     vi.mocked(iconSvg).mockRejectedValueOnce(new Error('Offline'));

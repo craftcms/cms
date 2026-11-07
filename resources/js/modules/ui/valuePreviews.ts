@@ -146,7 +146,9 @@ const icon: UiValuePreview = async ({value}) => {
     return null;
   }
 
-  // `<craft-icon>` sizes the SVG it's given, and makes it decorative.
+  // `<craft-icon>` sizes the SVG it's given, and makes it decorative. Filled
+  // with the badge's icon color, as `<craft-icon>` fills the icons it loads.
+  svg.setAttribute('fill', 'currentColor');
   const element = document.createElement('craft-icon');
   element.append(svg);
 

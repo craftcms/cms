@@ -58,6 +58,20 @@ export default css`
     block-size: var(--c-size-control-xs);
   }
 
+  /*
+   * Icons take --c-badge-icon-color, which the dark theme (and a black badge)
+   * sets to white, so they read clearly against a neutral badge. Tinted
+   * badges keep icons in their tint, and an icon with a color of its own,
+   * such as an option's, keeps it.
+   */
+  ::slotted(craft-icon) {
+    color: var(--c-badge-icon-color, currentColor);
+  }
+
+  ${tintedHost()} ::slotted(craft-icon) {
+    color: inherit;
+  }
+
   .badge__label--text {
     display: block;
     text-box: trim-both cap alphabetic;
