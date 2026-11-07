@@ -1,93 +1,82 @@
 import {describe, expect, it} from 'vite-plus/test';
-import {withHoverInteraction} from './overlay-hover.js';
+import {watchHover} from './overlay-hover.js';
 
-function createController(disabledInvoker = false) {
-  const invokerNode = document.createElement('button');
-  const contentNode = document.createElement('div');
+function setup({delayIn = 0, delayOut = 0} = {}) {
+  const invoker = document.createElement('button');
+  const content = document.createElement('div');
   const calls: string[] = [];
-
-  const controller = Object.assign(new EventTarget(), {
-    invokerNode,
-    contentNode,
+  const watcher = watchHover({
+    invoker,
+    content,
+    delayIn,
+    delayOut,
     show: () => void calls.push('show'),
     hide: () => void calls.push('hide'),
-    _hasDisabledInvoker: () => disabledInvoker,
   });
 
-  return {controller, calls, invokerNode};
+  return {invoker, content, calls, watcher};
 }
 
 const after = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-describe('withHoverInteraction', () => {
+describe('watchHover', () => {
   it('shows after the in delay when the invoker is hovered', async () => {
-    const {controller, calls, invokerNode} = createController();
-    const {init} = withHoverInteraction({
-      delayIn: 20,
-      delayOut: 0,
-    }).visibilityTriggerFunction({controller});
+    const {calls, invoker} = setup({delayIn: 20});
 
-    init();
-    invokerNode.dispatchEvent(new MouseEvent('mouseenter'));
+    invoker.dispatchEvent(new MouseEvent('mouseenter'));
     await after(50);
 
     expect(calls).toEqual(['show']);
   });
 
-  it('cancels a pending show when torn down mid-hover', async () => {
-    const {controller, calls, invokerNode} = createController();
-    const {init, teardown} = withHoverInteraction({
-      delayIn: 20,
-      delayOut: 0,
-    }).visibilityTriggerFunction({controller});
+  it('stays shown while the pointer moves onto the content', async () => {
+    const {calls, invoker, content} = setup({delayOut: 20});
 
-    init();
-    invokerNode.dispatchEvent(new MouseEvent('mouseenter'));
-    teardown();
+    invoker.dispatchEvent(new MouseEvent('mouseenter'));
+    await after(5);
+    invoker.dispatchEvent(new MouseEvent('mouseleave'));
+    content.dispatchEvent(new MouseEvent('mouseenter'));
+    await after(50);
+
+    expect(calls).toEqual(['show', 'show']);
+  });
+
+  it('cancels a pending show when torn down mid-hover', async () => {
+    const {calls, invoker, watcher} = setup({delayIn: 20});
+
+    invoker.dispatchEvent(new MouseEvent('mouseenter'));
+    watcher.teardown();
     await after(50);
 
     expect(calls).toEqual([]);
   });
 
   it('cancels a pending hide when torn down mid-leave', async () => {
-    const {controller, calls, invokerNode} = createController();
-    const {init, teardown} = withHoverInteraction({
-      delayIn: 0,
-      delayOut: 20,
-    }).visibilityTriggerFunction({controller});
+    const {calls, invoker, watcher} = setup({delayOut: 20});
 
-    init();
-    invokerNode.dispatchEvent(new MouseEvent('mouseleave'));
-    teardown();
+    invoker.dispatchEvent(new MouseEvent('mouseleave'));
+    watcher.teardown();
     await after(50);
 
     expect(calls).toEqual([]);
   });
 
   it('does not show while the invoker is disabled', async () => {
-    const {controller, calls, invokerNode} = createController(true);
-    const {init} = withHoverInteraction({
-      delayIn: 0,
-      delayOut: 20,
-    }).visibilityTriggerFunction({controller});
+    const {calls, invoker} = setup({delayOut: 20});
+    invoker.disabled = true;
 
-    init();
-    invokerNode.dispatchEvent(new MouseEvent('mouseenter'));
+    invoker.dispatchEvent(new MouseEvent('mouseenter'));
     await after(50);
 
     expect(calls).toEqual(['hide']);
   });
 
   it('shows while a disabled invoker stays focusable', async () => {
-    const {controller, calls, invokerNode} = createController(true);
-    Object.assign(invokerNode, {focusableWhenDisabled: true});
-    const {init} = withHoverInteraction({
-      delayIn: 0,
-      delayOut: 20,
-    }).visibilityTriggerFunction({controller});
+    const {calls, invoker} = setup({delayOut: 20});
+    invoker.setAttribute('aria-disabled', 'true');
+    Object.assign(invoker, {focusableWhenDisabled: true});
 
-    init();
-    invokerNode.dispatchEvent(new MouseEvent('mouseenter'));
+    invoker.dispatchEvent(new MouseEvent('mouseenter'));
     await after(50);
 
     expect(calls).toEqual(['show']);
