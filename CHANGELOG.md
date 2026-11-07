@@ -27,6 +27,10 @@
 - Fixed a bug where MCP tools returned empty arrays for CKEditor field values.
 - Added `craft\base\McpOutputFieldInterface`, which fields can implement to control how their values are returned by MCP tools.
 - Added `craft\mcp\McpOutputContext`.
+- MCP `fields` arguments now accept dot paths, such as `blocks.innerBlocks`, which include nested fields of nested elements as summaries.
+- MCP tools now return users’ addresses when `addresses` is included in `fields`.
+- Added `craft\mcp\elements\ElementAdapterRegistry::supports()`.
+- Added `craft\mcp\serializers\ElementSerializer::serializeNestedValue()` and `summarize()`.
 - Fixed a bug where entries and assets could be deleted for the only site they exist in, via the `elements/delete-for-site` action or the “Delete for site” element action.
 - Fixed a bug where “Delete for this site” could be offered for an entry’s provisional draft when the canonical entry only existed in that site.
 - Fixed a bug where “New entry” buttons could offer entry types or sections that `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES` had excluded, resulting in a 400 error. ([#20322](https://github.com/craftcms/cms/issues/20322))
