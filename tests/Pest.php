@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Composer\InstalledVersions;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Mcp\Public\Access;
@@ -18,11 +19,31 @@ use Illuminate\Routing\RouteCollection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Pest\Browser\Api\AwaitableWebpage;
+use Pest\Browser\Playwright\Playwright;
+use Pest\Browser\Playwright\Servers\PlaywrightNpmServer;
+use Pest\Browser\ServerManager;
+use Pest\Browser\Support\PackageJsonDirectory;
+use Pest\Browser\Support\Port;
 use PHPUnit\Framework\Assert;
 
 uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
 uses(BrowserTestCase::class)->in('Browser');
+
+// pest-plugin-browser 5.2.0 and earlier start the Playwright server with `sh -c` and no `exec`, so stopping it at the
+// end of the run ends only the shell. Node keeps running, along with any copy of Pest's output pipe it inherited, so
+// `pest | tail` never returns. Starting it with `exec` makes the shell and the server one process. Remove this once
+// a release includes the fix (https://github.com/pestphp/pest-plugin-browser/pull/281); a fixed release adds its own
+// `exec`, and `exec exec` fails.
+if (PHP_OS_FAMILY !== 'Windows' && version_compare(InstalledVersions::getVersion('pestphp/pest-plugin-browser') ?? '', '5.2.0.0', '<=')) {
+    (fn () => $this->playwright ??= PlaywrightNpmServer::create(
+        PackageJsonDirectory::find(),
+        'exec ./node_modules/.bin/playwright run-server --host %s --port %d --mode launchServer',
+        Playwright::host() ?? ServerManager::DEFAULT_HOST,
+        Port::find(),
+        'Listening on',
+    ))->call(ServerManager::instance());
+}
 
 // MCP routes follow the MCP settings, and tests start from cached routes registered before any settings existed.
 pest()->beforeEach(fn () => enableMcp())->in('Feature/Mcp');
