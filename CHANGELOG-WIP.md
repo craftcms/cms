@@ -255,7 +255,7 @@
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
 - Deprecated the `elevatedSessionDuration` general config setting. The `auth.password_timeout` config value should be used instead. To disable password confirmation (elevated sessions), you now set this value to `-1` instead of `0`.
   - Elevated sessions now work through [Laravel's password confirmation](https://laravel.com/docs/12.x/authentication#password-confirmation) system.
-- Deprecated the `errorTemplatePrefix` general config setting. Configure [Laravel's custom error pages](https://laravel.com/docs/13.x/errors#custom-http-error-pages) instead.
+- Deprecated the `errorTemplatePrefix` general config setting. Error templates now go in an `errors/` folder within the site templates, such as `errors/404.twig`, `errors/_404.twig`, or `errors/404.blade.php`, with `errors/offline` and `errors/error` as fallbacks, and a site’s own template folder takes precedence, such as `resources/views/siteHandle/errors/404.twig`. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Deprecated the `testToEmailAddress` general config setting. `Illuminate\Support\Facades\Mail::alwaysTo()` should be used instead.
 - Deprecated the `blowfishHashCost` general config setting in favor of Laravel's `hashing.bcrypt.rounds` config or the `BCRYPT_ROUNDS` environment variable.
 - Deprecated the `csrfTokenName`, `enableCsrfCookie`, and `enableCsrfProtection` general config settings. ([#18806](https://github.com/craftcms/cms/pull/18806))
@@ -1225,6 +1225,7 @@ Moved the following controllers:
 
 #### Routes
 - Deprecated `craft\services\Routes`. `CraftCms\Cms\Route\Routes` should be used instead.
+- Added `CraftCms\Cms\Route\RedirectRule` and `CraftCms\Cms\Route\Events\Redirecting`, the Laravel equivalents of `craft\web\RedirectRule` and `craft\web\ErrorHandler::EVENT_BEFORE_REDIRECT`, which still work. ([#20448](https://github.com/craftcms/cms/pull/20448))
 
 #### Search
 - Added `CraftCms\Cms\Support\Facades\Search`.

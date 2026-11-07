@@ -649,6 +649,7 @@
 - Section and Matrix site settings now have a single “Route To” setting, in place of separate Route Type and Route settings. Namespaced controller actions and values that match a named route are saved as routes, and anything else is saved as a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - “Route To” settings now suggest the app’s named routes and controller actions, as well as templates. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Matrix fields’ Site Settings tables now have a narrow Site column, and give the Entry URI Format and Route To columns equal widths, as Sections’ do.
+- Site error pages are rendered from an `errors/` folder within the site templates again, such as `resources/views/errors/404.twig`, `errors/_404.twig`, or `errors/404.blade.php`, with `errors/offline` and `errors/error` as fallbacks, and a site’s own template folder takes precedence, such as `resources/views/siteHandle/errors/404.twig`. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Added `CraftCms\Cms\Route\ElementRoute::isRoute()`, which determines whether an element site settings destination refers to a route or a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added `CraftCms\Cms\Cp\SelectOptions::getRouteSuggestions()`, which returns the app’s named routes and controller actions, optionally limited to those that accept a given element type. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added `CraftCms\Cms\Element\Data\ElementSiteSettings::destinationColumn()`, which replaces `routeColumn()`. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -662,6 +663,7 @@
 - Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
 
 ### Extensibility
+- Added `CraftCms\Cms\Route\RedirectRule` and `CraftCms\Cms\Route\Events\Redirecting`, which apply and customize `config/redirects.php` rules. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Added `CraftCms\Cms\User\Elements\User::photoColors()`, which returns the two colors of a user’s default photo’s gradient.
 - Added `CraftCms\Cms\Translation\Locale::getLanguageTag()`, and the `Craft.formattingLocale` JavaScript variable, which hold the formatting locale as a BCP 47 language tag for `Intl` APIs. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Utility\Utility::subpageTitle()`, which titles a utility’s subpages and gives them a breadcrumb back to the utility. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -745,6 +747,10 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where site error templates weren’t rendered, and unknown site URLs returned an empty 404 response. ([#20448](https://github.com/craftcms/cms/pull/20448))
+- Fixed a bug where `config/redirects.php` rules weren’t applied. ([#20448](https://github.com/craftcms/cms/pull/20448))
+- Fixed a bug where the “Show full exception views when Dev Mode is disabled” user preference had no effect. ([#20448](https://github.com/craftcms/cms/pull/20448))
+- Fixed a bug where errors thrown while rendering Twig templates, such as `TypeError`s, pointed at the compiled template rather than the template’s source. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Fixed a bug where users with an authenticator app or recovery codes couldn’t sign in to the control panel, because the verification step showed an empty pane.
 - Fixed a bug where the control panel could error after updating Craft, when Laravel’s compiled Blade views were newer than the updated views they were compiled from. Compiled views are now cleared after updates, and the Caches utility has a “Compiled views” option. ([#20366](https://github.com/craftcms/cms/issues/20366), [#20374](https://github.com/craftcms/cms/pull/20374))
 - Fixed a bug where elements couldn’t be selected, edited inline, or reordered on element indexes when the `allowAdminChanges` config setting was disabled, and the “Changes to these settings aren’t permitted in this environment.” notice was shown on screens other than settings, and twice on the Settings and Sites index pages. ([#20339](https://github.com/craftcms/cms/issues/20339), [#20340](https://github.com/craftcms/cms/issues/20340), [#20344](https://github.com/craftcms/cms/issues/20344), [#20364](https://github.com/craftcms/cms/pull/20364))
