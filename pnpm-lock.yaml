@@ -205,9 +205,6 @@ settings:
 
 catalogs:
   default:
-    '@lion/ui':
-      specifier: ^0.16.1
-      version: 0.16.1
     '@simplewebauthn/browser':
       specifier: ^13.3.0
       version: 13.3.0
@@ -349,9 +346,6 @@ importers:
       '@inertiajs/vue3':
         specifier: ^3.0.3
         version: 3.0.3(axios@1.17.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2))(vue@3.5.33(typescript@6.0.3))
-      '@lion/ui':
-        specifier: 'catalog:'
-        version: 0.16.1
       '@simplewebauthn/browser':
         specifier: 'catalog:'
         version: 13.3.0
@@ -759,12 +753,6 @@ importers:
       '@custom-elements-manifest/analyzer':
         specifier: ^0.11.0
         version: 0.11.0(@emnapi/core@1.11.0)(@emnapi/runtime@1.11.0)
-      '@lion/ui':
-        specifier: 'catalog:'
-        version: 0.16.1
-      '@open-wc/dedupe-mixin':
-        specifier: ^2.0.1
-        version: 2.0.1
       '@shoelace-style/shoelace':
         specifier: ^2.20.1
         version: 2.20.1(@floating-ui/utils@0.2.11)(@types/react@19.2.15)
@@ -1683,9 +1671,6 @@ packages:
   '@braidai/lang@1.1.2':
     resolution: {integrity: sha512-qBcknbBufNHlui137Hft8xauQMTZDKdophmLFv05r2eNmdIv/MlPuP4TdUknHG68UdWLgVZwgxVe735HzJNIwA==}
 
-  '@bundled-es-modules/message-format@6.2.4':
-    resolution: {integrity: sha512-NBaIEUCzSjLZjrsmSOh8PJLqQjSpXVuekIOuUT8tt4N/FdtAavWsC1YinIqIrbRnkBqV90OxgKzsxhFCzETQBw==}
-
   '@cacheable/memory@2.0.7':
     resolution: {integrity: sha512-RbxnxAMf89Tp1dLhXMS7ceft/PGsDl1Ip7T20z5nZ+pwIAsQ1p2izPjVG69oCLv/jfQ7HDPHTWK0c9rcAWXN3A==}
 
@@ -2232,9 +2217,6 @@ packages:
   '@lezer/lr@1.4.10':
     resolution: {integrity: sha512-rnCpTIBafOx4mRp43xOxDJbFipJm/c0cia/V5TiGlhmMa+wsSdoGmUN3w5Bqrks/09Q/D4tNAmWaT8p6NRi77A==}
 
-  '@lion/ui@0.16.1':
-    resolution: {integrity: sha512-dv9iZNJo7/Yi6EV/Q0ffbrT4yCV6xX2AWlizSvN4gGiUoAS0qC4I7Q6vdpTmeU/Lj/q5dF075oLjX4GuesMj4g==}
-
   '@lit-labs/ssr-dom-shim@1.4.0':
     resolution: {integrity: sha512-ficsEARKnmmW5njugNYKipTm4SFnbik7CXtoencDZzmzo/dQ+2Q0bgkzJuoJP20Aj0F+izzJjOqsnkd6F/o1bw==}
 
@@ -2292,12 +2274,6 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
-
-  '@open-wc/dedupe-mixin@2.0.1':
-    resolution: {integrity: sha512-+R4VxvceUxHAUJXJQipkkoV9fy10vNo+OnUnGKZnVmcwxMl460KLzytnUM4S35SI073R0yZQp9ra0MbPUwVcEA==}
-
-  '@open-wc/scoped-elements@3.0.6':
-    resolution: {integrity: sha512-w1ayJaUUmBw8tALtqQ6cBueld+op+bufujzbrOdH0uCTXnSQkONYZzOH+9jyQ8auVgKLqcxZ8oU6SzfqQhQkPg==}
 
   '@oxc-parser/binding-android-arm-eabi@0.127.0':
     resolution: {integrity: sha512-0LC7ye4hvqbIKxAzThzvswgHLFu2AURKzYLeSVvLdu2TBOYWQDmHnTqPLeA597BcUCxiLqLsS4CJ5uoI5WYWCQ==}
@@ -4677,14 +4653,6 @@ packages:
   apca-w3@0.1.9:
     resolution: {integrity: sha512-Zrf6AeBeQjNe/fxK7U1jCo5zfdjDl6T4/kdw5Xlky3G7u+EJTZkyItjMYQGtwf9pkftsINxcYyOpuLkzKf1ITQ==}
 
-  aproba@2.1.0:
-    resolution: {integrity: sha512-tLIEcj5GuR2RSTnxNKdkK0dJ/GrC7P38sUkiDmDuHfsHmbagTFAxDVIBltoklXEVIQ/f14IL8IMJ5pn9Hez1Ew==}
-
-  are-we-there-yet@3.0.1:
-    resolution: {integrity: sha512-QZW4EDmGwlYur0Yyf/b2uGucHQMa8aFUP7eu9ddR73vvhFyt4V0Vl3QHPcTNJ8l6qYOBdxgXdnBXQrHilfRQBg==}
-    engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
-    deprecated: This package is no longer supported.
-
   arg@5.0.2:
     resolution: {integrity: sha512-PYjyFOLKQ9y57JvQ6QLo8dAgNqswh8M1RMJYdQduT6xbWSgK36P/Z/v+p888pM69jMMfS8Xd8F6I1kQ/I9HUGg==}
 
@@ -4786,10 +4754,6 @@ packages:
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
-
-  awesome-phonenumber@6.12.0:
-    resolution: {integrity: sha512-17Ts/ceWeWXzWZqTIRKA48y3+OyxYsAXYzuxYCn4n0+By+W0dcHk3fHszW6lLxAlCZt3VmVKY6n9AxOCU84qNw==}
-    engines: {node: '>=18'}
 
   axe-core@4.11.0:
     resolution: {integrity: sha512-ilYanEU8vxxBexpJd8cWM4ElSQq4QctCLKih0TSfjIfCQTeyH/6zVrmIJfLPrKTKJRbiG+cfnZbQIjAlJmF1jQ==}
@@ -6662,9 +6626,6 @@ packages:
 
   humanize-duration@3.33.2:
     resolution: {integrity: sha512-K7Ny/ULO1hDm2nnhvAY+SJV1skxFb61fd073SG1IWJl+D44ULrruCuTyjHKjBVVcSuTlnY99DKtgEG39CM5QOQ==}
-
-  ibantools@4.5.1:
-    resolution: {integrity: sha512-DfKQpLlFq9yEUIEnFuCJzss3XavD7iHZTU5PyqXiAJ+rmaMp+NFP3hboumHKuK8nZjuOJg93WemTzcQ5b9jOZA==}
 
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
@@ -9092,9 +9053,6 @@ packages:
   simple-get@4.0.1:
     resolution: {integrity: sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA==}
 
-  singleton-manager@1.8.0:
-    resolution: {integrity: sha512-1M3qImeT5j74a/GtRwM8Q+JOMwhiNRE/uJtIu+U6LBgbRvl9reoeFbQ+ZALR0CwCqg2hhwmLAGZ9KuxefuIWlA==}
-
   sirv@3.0.2:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
     engines: {node: '>=18'}
@@ -9164,10 +9122,6 @@ packages:
   spdy@4.0.2:
     resolution: {integrity: sha512-r46gZQZQV+Kl9oItvl1JZZqJKGr+oEkB08A6BzkiR7593/7IbtuncXHd2YoYeTsG4157ZssMu9KYvUHLcjcDoA==}
     engines: {node: '>=6.0.0'}
-
-  ssri@9.0.1:
-    resolution: {integrity: sha512-o57Wcn66jMQvfHG1FlYbWeZWW/dHZhJXjpIcTfXldXEk5nz5lStPo3mK0OJQfGR3RbZUlbISexbljkJzuEj/8Q==}
-    engines: {node: ^12.13.0 || ^14.15.0 || >=16.0.0}
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
@@ -11149,8 +11103,6 @@ snapshots:
 
   '@braidai/lang@1.1.2': {}
 
-  '@bundled-es-modules/message-format@6.2.4': {}
-
   '@cacheable/memory@2.0.7':
     dependencies:
       '@cacheable/utils': 2.3.3
@@ -11718,18 +11670,6 @@ snapshots:
     dependencies:
       '@lezer/common': 1.5.2
 
-  '@lion/ui@0.16.1':
-    dependencies:
-      '@bundled-es-modules/message-format': 6.2.4
-      '@open-wc/dedupe-mixin': 2.0.1
-      '@open-wc/scoped-elements': 3.0.6
-      '@popperjs/core': 2.11.8
-      autosize: 6.0.1
-      awesome-phonenumber: 6.12.0
-      ibantools: 4.5.1
-      lit: 3.3.2
-      singleton-manager: 1.8.0
-
   '@lit-labs/ssr-dom-shim@1.4.0': {}
 
   '@lit/react@1.0.8(@types/react@19.2.15)':
@@ -11792,13 +11732,6 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
-
-  '@open-wc/dedupe-mixin@2.0.1': {}
-
-  '@open-wc/scoped-elements@3.0.6':
-    dependencies:
-      '@open-wc/dedupe-mixin': 2.0.1
-      lit: 3.3.2
 
   '@oxc-parser/binding-android-arm-eabi@0.127.0':
     optional: true
@@ -13946,13 +13879,6 @@ snapshots:
     dependencies:
       colorparsley: 0.1.8
 
-  aproba@2.1.0: {}
-
-  are-we-there-yet@3.0.1:
-    dependencies:
-      delegates: 1.0.0
-      readable-stream: 3.6.2
-
   arg@5.0.2: {}
 
   argparse@2.0.1: {}
@@ -14039,8 +13965,6 @@ snapshots:
   available-typed-arrays@1.0.7:
     dependencies:
       possible-typed-array-names: 1.1.0
-
-  awesome-phonenumber@6.12.0: {}
 
   axe-core@4.11.0: {}
 
@@ -15965,8 +15889,6 @@ snapshots:
   human-signals@2.1.0: {}
 
   humanize-duration@3.33.2: {}
-
-  ibantools@4.5.1: {}
 
   iconv-lite@0.4.24:
     dependencies:
@@ -18710,8 +18632,6 @@ snapshots:
       simple-concat: 1.0.1
     optional: true
 
-  singleton-manager@1.8.0: {}
-
   sirv@3.0.2:
     dependencies:
       '@polka/url': 1.0.0-next.29
@@ -18791,10 +18711,6 @@ snapshots:
       spdy-transport: 3.0.0(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
-
-  ssri@9.0.1:
-    dependencies:
-      minipass: 3.3.6
 
   stackback@0.0.2: {}
 

@@ -2,7 +2,8 @@ import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import type CraftField from './field.js';
-import {LionField} from '@lion/ui/form-core.js';
+import {LitElement} from 'lit';
+import {FormControl} from '@src/mixins/FormControl';
 import './field.js';
 import '../textarea/textarea.js';
 import '../input/input.js';
@@ -28,7 +29,7 @@ it('labels nested native controls', async () => {
   );
 });
 
-class TestSlider extends LionField {
+class TestSlider extends FormControl(LitElement) {
   override get slots() {
     return {
       ...super.slots,
@@ -44,7 +45,7 @@ class TestSlider extends LionField {
 }
 customElements.define('test-slider', TestSlider);
 
-it('hands its label and descriptions to a custom control built on LionField', async () => {
+it('hands its label and descriptions to a custom control built on FormControl', async () => {
   document.body.innerHTML =
     '<craft-field label="Card width" help-text="How many columns the card spans."><test-slider slot="input"></test-slider><ul slot="feedback"><li>Card width must be at least 2 columns.</li></ul></craft-field>';
   const field = document.querySelector('craft-field')!;

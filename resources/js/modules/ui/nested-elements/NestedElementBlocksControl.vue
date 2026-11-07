@@ -122,7 +122,7 @@
    * Rebuilds the field whenever the block list changes.
    *
    * Heavy-handed, and deliberately so: a block can hold a control that
-   * relocates its own light DOM — a Lion overlay behind an action menu, say —
+   * restructures its own light DOM — an action menu, say —
    * and patching the list around one of those throws `insertBefore` on null,
    * which takes the whole ui down. Tearing the field down and building it
    * again is the way past that until those controls can survive a patch.
