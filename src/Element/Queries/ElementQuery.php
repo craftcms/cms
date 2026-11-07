@@ -1693,6 +1693,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * in a nested condition, as Eloquent passes a model query. A closure whose first parameter is typed as
      * the base query builder receives one instead.
      *
+     * Params apply when the query is prepared, like Eloquent’s global scopes, so in a closure they’re always
+     * combined with AND, after the closure’s own conditions, even when an `orWhere()` follows them. To match
+     * either of two sets of params, give each its own closure:
+     * `->where(fn ($q) => $q->section('news'))->orWhere(fn ($q) => $q->featured(true))`.
+     *
      * @param  Closure|string|array<array-key, mixed>|Expression  $column
      */
     public function where($column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): static
