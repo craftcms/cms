@@ -338,52 +338,19 @@
   white-space: pre-line;
 }
 
-/* A copied color's swatch, or icon, beside its value. */
-.cp-messages .copied-field-value-labelled {
-  display: inline-flex;
-  gap: var(--c-spacing-md);
-  align-items: center;
-
-  craft-indicator {
-    --size: 1.25em;
-  }
-
-  craft-icon {
-    font-size: calc(24rem / 16);
-  }
-}
-
-/* A copied relation's chips, laid out like a list's pills. */
+/* A copied relation's chips, laid out like a list's badges. */
 .cp-messages .copied-field-value-chips {
   display: flex;
   flex-wrap: wrap;
   gap: calc(var(--c-spacing) * 1.5);
 }
 
-/* A copied list's items, such as selected options, as pills. */
-.cp-messages .copied-field-value-list {
+/* A copied list's items, such as selected options, or a color or an icon,
+   as badges. */
+.cp-messages .copied-field-value-badges {
   display: flex;
   flex-wrap: wrap;
   gap: calc(var(--c-spacing) * 1.5);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--c-text-sm);
-
-  li {
-    display: inline-flex;
-    gap: calc(var(--c-spacing) * 1.5);
-    align-items: center;
-    max-width: 100%;
-    padding-block: calc(var(--c-spacing) * 0.5);
-    padding-inline: calc(var(--c-spacing) * 2.5);
-    overflow: hidden;
-    border: 1px solid var(--c-color-neutral-border-quiet);
-    border-radius: var(--c-radius-full);
-    background-color: var(--c-color-neutral-fill-quiet);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
 }
 
 /* A copied table's first rows, with long cells cut short. */

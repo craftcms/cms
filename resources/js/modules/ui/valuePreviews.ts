@@ -4,6 +4,7 @@
  * stored copy whenever the card is shown, on any page or tab.
  */
 
+import '@craftcms/ui/components/badge/badge';
 import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/indicator/indicator';
 import {t} from '@craftcms/ui/utilities/translate';
@@ -26,7 +27,7 @@ const TABLE_PREVIEW_ROWS = 5;
 
 /**
  * Relations, as the chips of the elements they relate, laid out like a
- * list's pills.
+ * list's badges.
  */
 const elementChips: UiValuePreview = async ({props}) => {
   const elements = props?.elements;
@@ -93,28 +94,51 @@ function swatch(color: string): HTMLElement {
   return indicator;
 }
 
-/** A swatch, or an icon, beside a label. */
-function labelled(marker: Node, label: string): HTMLElement {
-  const preview = document.createElement('span');
-  preview.className = 'copied-field-value-labelled';
-  const text = document.createElement('span');
-  text.textContent = label;
-  preview.append(marker, text);
+/** Badges, each with its label after a swatch or an icon, if it has one. */
+function badges(
+  entries: {label: string; marker: Element | null}[]
+): HTMLElement {
+  const preview = document.createElement('div');
+  preview.className = 'copied-field-value-badges';
+  preview.append(
+    ...entries.map(({label, marker}) => {
+      const badge = document.createElement('craft-badge');
+      badge.setAttribute('fill', 'gray');
+
+      if (marker) {
+        marker.slot = 'prefix';
+        badge.append(marker);
+      } else {
+        badge.toggleAttribute('no-prefix', true);
+      }
+
+      badge.append(label);
+
+      return badge;
+    })
+  );
 
   return preview;
 }
 
-/** Colors, as their swatch and value. */
+/** Colors, as a badge with their swatch and value. */
 const color: UiValuePreview = ({value}) =>
-  typeof value === 'string' && value ? labelled(swatch(value), value) : null;
-
-/** Palette colors, as their swatch and name, as the palette shows them. */
-const paletteColor: UiValuePreview = ({value}) =>
-  typeof value === 'string' && value && value !== 'transparent'
-    ? labelled(swatch(value), t(value.charAt(0).toUpperCase() + value.slice(1)))
+  typeof value === 'string' && value
+    ? badges([{label: value, marker: swatch(value)}])
     : null;
 
-/** Icons, as the icon and its name. */
+/** Palette colors, as a badge with their swatch and name, as the palette shows them. */
+const paletteColor: UiValuePreview = ({value}) =>
+  typeof value === 'string' && value && value !== 'transparent'
+    ? badges([
+        {
+          label: t(value.charAt(0).toUpperCase() + value.slice(1)),
+          marker: swatch(value),
+        },
+      ])
+    : null;
+
+/** Icons, as a badge with the icon and its name. */
 const icon: UiValuePreview = async ({value}) => {
   const svg = typeof value === 'string' && value ? await iconSvg(value) : null;
 
@@ -126,7 +150,7 @@ const icon: UiValuePreview = async ({value}) => {
   const element = document.createElement('craft-icon');
   element.append(svg);
 
-  return labelled(element, value as string);
+  return badges([{label: value as string, marker: element}]);
 };
 
 /**
@@ -149,33 +173,15 @@ function itemMarker({icon, color}: CopiedValueItem): HTMLElement | null {
 }
 
 /**
- * Lists, such as several selected options, and options, as a pill for each
+ * Lists, such as several selected options, and options, as a badge for each
  * item, with its icon or color.
  */
-const list: UiValuePreview = ({items}) => {
-  if (!items?.length) {
-    return null;
-  }
-
-  const preview = document.createElement('ul');
-  preview.className = 'copied-field-value-list';
-  preview.append(
-    ...items.map((item) => {
-      const pill = document.createElement('li');
-      const marker = itemMarker(item);
-
-      if (marker) {
-        pill.append(marker);
-      }
-
-      pill.append(item.label);
-
-      return pill;
-    })
-  );
-
-  return preview;
-};
+const list: UiValuePreview = ({items}) =>
+  items?.length
+    ? badges(
+        items.map((item) => ({label: item.label, marker: itemMarker(item)}))
+      )
+    : null;
 
 const previews = new Map<string, UiValuePreview>([
   ['craft:element-select', elementChips],

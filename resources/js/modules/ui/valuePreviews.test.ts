@@ -63,7 +63,7 @@ describe('renderValuePreview', () => {
         (chip) => chip.textContent
       )
     ).toEqual(['Apples']);
-    // Laid out like a list's pills, not stacked like copied elements
+    // Laid out like a list's badges, not stacked like copied elements
     expect(preview.querySelector('.copied-element-chip')).toBeNull();
   });
 
@@ -107,7 +107,7 @@ describe('renderValuePreview', () => {
     );
   });
 
-  it('draws a list, such as selected options, as pills with their icons or colors', async () => {
+  it('draws a list, such as selected options, as badges with their icons or colors', async () => {
     const preview = (await renderValuePreview(
       copied({
         component: 'craft:choice',
@@ -119,22 +119,28 @@ describe('renderValuePreview', () => {
         ],
       })
     )) as HTMLElement;
-    const pills = [...preview.querySelectorAll('li')];
+    const badges = [...preview.querySelectorAll('craft-badge')];
 
-    expect(pills.map((li) => li.textContent)).toEqual([
+    expect(badges.map((badge) => badge.textContent)).toEqual([
       'Red, green',
       'Blue',
       'Teal',
     ]);
     // The icon tinted with the color, or else the color as a dot
-    const icon = pills[0]!.querySelector('craft-icon')!;
+    const icon = badges[0]!.querySelector<HTMLElement>(
+      'craft-icon[slot="prefix"]'
+    )!;
     expect(icon.getAttribute('name')).toBe('fire');
     expect(icon.style.color).toBe('#b91c1c');
-    expect(pills[0]!.querySelector('craft-indicator')).toBeNull();
+    expect(badges[0]!.querySelector('craft-indicator')).toBeNull();
     expect(
-      pills[1]!.querySelector('craft-indicator')!.getAttribute('fill')
+      badges[1]!
+        .querySelector('craft-indicator[slot="prefix"]')!
+        .getAttribute('fill')
     ).toBe('#1d4ed8');
-    expect(pills[2]!.children).toHaveLength(0);
+    // No icon or color, so not the badge's own gray dot either
+    expect(badges[2]!.children).toHaveLength(0);
+    expect(badges[2]!.hasAttribute('no-prefix')).toBe(true);
     expect(
       await renderValuePreview(copied({component: 'craft:choice', items: []}))
     ).toBeNull();
