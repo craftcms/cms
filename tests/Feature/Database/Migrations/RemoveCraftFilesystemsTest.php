@@ -234,7 +234,7 @@ test('suggests equivalent disk configs for plugin filesystems without exposing c
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
 
     expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
-        ->toContain(<<<'PHP'
+        ->toContain(str_replace("\r\n", "\n", <<<'PHP'
                     'azureAssets' => [
                         // Set AZURE_ASSETS_CONNECTION_STRING in .env to the previous filesystem's value.
                         // Install with: composer require azure-oss/storage-blob-laravel
@@ -244,8 +244,8 @@ test('suggests equivalent disk configs for plugin filesystems without exposing c
                         'prefix' => 'media',
                         'url' => 'https://cdn.example.test',
                     ],
-            PHP)
-        ->toContain(<<<'PHP'
+            PHP))
+        ->toContain(str_replace("\r\n", "\n", <<<'PHP'
                     's3Assets' => [
                         // Set S3_ASSETS_SECRET in .env to the previous filesystem's value.
                         'driver' => 's3',
@@ -255,8 +255,8 @@ test('suggests equivalent disk configs for plugin filesystems without exposing c
                         'bucket' => 'craft-bucket',
                         'visibility' => 'private',
                     ],
-            PHP)
-        ->toContain(<<<'PHP'
+            PHP))
+        ->toContain(str_replace("\r\n", "\n", <<<'PHP'
                     'gcsAssets' => [
                         // Set GCS_ASSETS_KEY_FILE in .env to the previous filesystem's value.
                         // Install with: composer require spatie/laravel-google-cloud-storage
@@ -269,7 +269,7 @@ test('suggests equivalent disk configs for plugin filesystems without exposing c
                         'storage_api_uri' => 'https://gcs-cdn.example.test',
                         'visibility' => 'public',
                     ],
-            PHP)
+            PHP))
         ->not->toContain('inline-azure-secret')
         ->not->toContain('inline-gcs-secret')
         ->not->toContain('inline-s3-secret'));
