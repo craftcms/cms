@@ -56,3 +56,48 @@ it('does nothing if the table doesn’t exist', function () {
 
     expect(Schema::hasTable('archivetest_items_old'))->toBeFalse();
 });
+
+it('keeps archived names within the database’s length limit, including the table prefix', function () {
+    $connection = DB::connection();
+    $originalPrefix = $connection->getTablePrefix();
+    $connection->setTablePrefix(str_repeat('p', 44).'_');
+
+    $archivedNames = match ($connection->getDriverName()) {
+        'mysql', 'mariadb' => ['archivetest_ite_old', 'archivetest_it_old1', 'archivetest_gro_old', 'archivetest_gr_old1'],
+        'pgsql' => ['archivetest_it_old', 'archivetest_i_old1', 'archivetest_gr_old', 'archivetest_g_old1'],
+        default => ['archivetest_items_old', 'archivetest_items_old1', 'archivetest_groups_old', 'archivetest_groups_old1'],
+    };
+
+    try {
+        $migration = new class extends Migration {};
+
+        for ($i = 1; $i <= 3; $i++) {
+            foreach (['archivetest_items', 'archivetest_groups'] as $table) {
+                $migration->archiveTableIfExists($table);
+            }
+
+            Schema::create('archivetest_groups', function (Blueprint $table) {
+                $table->id();
+            });
+
+            Schema::create('archivetest_items', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('groupId')->nullable()->constrained('archivetest_groups', indexName: 'items_group_fk');
+                $table->string('name')->unique('items_name_unique');
+                $table->index(['groupId', 'name'], 'items_group_name_index');
+            });
+
+            DB::table('archivetest_items')->insert(['name' => "Item $i"]);
+        }
+
+        expect(DB::table($archivedNames[0])->value('name'))->toBe('Item 1')
+            ->and(DB::table($archivedNames[1])->value('name'))->toBe('Item 2')
+            ->and(DB::table('archivetest_items')->value('name'))->toBe('Item 3');
+    } finally {
+        foreach ([...$archivedNames, 'archivetest_items', 'archivetest_groups'] as $table) {
+            Schema::dropIfExists($table);
+        }
+
+        $connection->setTablePrefix($originalPrefix);
+    }
+});

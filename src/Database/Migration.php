@@ -11,6 +11,7 @@ use Illuminate\Database\Migrations\Migration as LaravelMigration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\NullOutput;
@@ -49,6 +50,11 @@ abstract class Migration extends LaravelMigration
      *
      * The archived table's indexes, and its `id` sequence on PostgreSQL, are renamed along with it, and its foreign
      * keys are dropped on MySQL, since those names must be unique across the database.
+     *
+     * Names are kept within the database's identifier length limit, including the table prefix: the table name is
+     * shortened before its `_old` suffix, and longer index and sequence names end with a hash of the full name.
+     *
+     * @throws RuntimeException if the table prefix leaves no room for the archived table's name
      */
     public function archiveTableIfExists(string $table): void
     {
@@ -56,13 +62,29 @@ abstract class Migration extends LaravelMigration
             return;
         }
 
-        $newName = "{$table}_old";
-
-        for ($i = 1; Schema::hasTable($newName); $i++) {
-            $newName = "{$table}_old$i";
-        }
-
         $driver = DB::getDriverName();
+        $prefix = DB::getTablePrefix();
+        $maxLength = match ($driver) {
+            'mysql', 'mariadb' => 64,
+            'pgsql' => 63,
+            default => null,
+        };
+
+        $i = 0;
+
+        do {
+            $suffix = $i === 0 ? '_old' : "_old$i";
+            $i++;
+            $baseLength = $maxLength === null
+                ? strlen($table)
+                : min(strlen($table), $maxLength - strlen($prefix) - strlen($suffix));
+
+            if ($baseLength < 1) {
+                throw new RuntimeException("The `{$prefix}{$table}` table can’t be archived, because its table prefix leaves no room for an `{$suffix}` suffix.");
+            }
+
+            $newName = substr($table, 0, $baseLength).$suffix;
+        } while (Schema::hasTable($newName));
 
         if (in_array($driver, ['mysql', 'mariadb'], true)) {
             Schema::table($table, function (Blueprint $blueprint) use ($table) {
@@ -74,19 +96,18 @@ abstract class Migration extends LaravelMigration
 
         Schema::rename($table, $newName);
 
-        $prefix = DB::getTablePrefix();
         $rawTable = $prefix.$table;
         $rawNewName = $prefix.$newName;
 
-        Schema::table($newName, function (Blueprint $blueprint) use ($newName, $rawTable, $rawNewName) {
+        Schema::table($newName, function (Blueprint $blueprint) use ($newName, $rawTable, $rawNewName, $maxLength) {
             foreach (Schema::getIndexes($newName) as $index) {
                 if (strtolower($index['name']) === 'primary') {
                     continue;
                 }
 
-                $blueprint->renameIndex($index['name'], str_starts_with($index['name'], "{$rawTable}_")
+                $blueprint->renameIndex($index['name'], $this->limitObjectName(str_starts_with($index['name'], "{$rawTable}_")
                     ? $rawNewName.substr($index['name'], strlen($rawTable))
-                    : "{$rawNewName}_{$index['name']}");
+                    : "{$rawNewName}_{$index['name']}", $maxLength));
             }
         });
 
@@ -94,8 +115,20 @@ abstract class Migration extends LaravelMigration
             DB::statement(sprintf(
                 'alter sequence %s rename to %s',
                 $sequence,
-                DB::getQueryGrammar()->wrapTable("{$newName}_id_seq"),
+                DB::getQueryGrammar()->wrap($this->limitObjectName("{$rawNewName}_id_seq", $maxLength)),
             ));
         }
+    }
+
+    /**
+     * Shortens a database object name to the given length, ending it with a hash of the full name so it stays unique.
+     */
+    private function limitObjectName(string $name, ?int $maxLength): string
+    {
+        if ($maxLength === null || strlen($name) <= $maxLength) {
+            return $name;
+        }
+
+        return substr($name, 0, $maxLength - 9).'_'.substr(md5($name), 0, 8);
     }
 }
