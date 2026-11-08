@@ -105,6 +105,9 @@
 
   const sideKeys = ['from', 'to'] as const;
 
+  const root = useTemplateRef<HTMLElement>('root');
+  const panels = useTemplateRef<HTMLElement>('panels');
+
   /** Whether each side has unsaved edits, as its editor's “Edited” badge shows. */
   const edited = reactive<Record<CompareSide, boolean>>({
     from: false,
@@ -520,6 +523,20 @@
     ])
   ) as Record<CompareSide, () => ((event: KeyboardEvent) => void) | null>;
 
+  /**
+   * Before a side saves, which reloads the page, the other side autosaves what
+   * it hasn't yet. Changes it can't save that way are only thrown away once
+   * the user says so.
+   */
+  const beforeSave = Object.fromEntries(
+    sideKeys.map((side) => [
+      side,
+      async () =>
+        (await (editors[otherSide(side)]?.settleChanges() ?? true)) ||
+        window.confirm(t('Any changes will be lost if you leave this page.')),
+    ])
+  ) as Record<CompareSide, () => Promise<boolean>>;
+
   // The page's form submits for the side being edited, and each side's own
   // footer, rather than the page's, holds its Save button.
   useAppLayout(() => {
@@ -578,8 +595,6 @@
     to: (uid) => cells.get(cellKey('to', uid)),
   };
 
-  const root = useTemplateRef<HTMLElement>('root');
-  const panels = useTemplateRef<HTMLElement>('panels');
   type FooterPart = 'notices' | 'actions';
 
   /** Where each editable side's footer goes, under its side, by part and side. */
@@ -1042,6 +1057,8 @@
           :root="panels"
           :footer-targets="footerTargets[key]"
           :save-shortcut-target="saveShortcutTargets[key]"
+          :before-save="beforeSave[key]"
+          :field-id-scope="`compare-${key}`"
           @edited="edited[key] = $event"
           @errors="erroredUids[key] = $event"
           @edits="editedValues[key] = $event"

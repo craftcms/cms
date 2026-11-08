@@ -23,6 +23,8 @@
     root: HTMLElement | null;
     footerTargets: {notices: HTMLElement | null; actions: HTMLElement | null};
     saveShortcutTarget?: () => ((event: KeyboardEvent) => void) | null;
+    beforeSave?: () => Promise<boolean>;
+    fieldIdScope: string;
   }>();
 
   const emit = defineEmits<{
@@ -44,6 +46,7 @@
     save: (options?: FormSaveOptions) => form.value?.save(options),
     saveForShortcut: (event: KeyboardEvent) =>
       form.value?.saveForShortcut(event),
+    settleChanges: async () => (await form.value?.settleChanges()) ?? true,
     /** The editor's Inertia form, once it's rendered. */
     form: () => form.value?.form ?? null,
     nestedOwnerEditor: () => form.value?.nestedOwnerEditor ?? null,
@@ -59,6 +62,8 @@
     :root="root"
     :footer-targets="footerTargets"
     :save-shortcut-target="saveShortcutTarget"
+    :before-save="beforeSave"
+    :field-id-scope="fieldIdScope"
     @edited="emit('edited', $event)"
     @errors="emit('errors', $event)"
     @layout="emit('layout', $event)"

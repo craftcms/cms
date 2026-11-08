@@ -41,6 +41,8 @@
     FieldLabelSrOnly,
     uiChangeFromEvent,
     fieldId,
+    scopedId,
+    UiFieldIdScope,
     pathsMatch,
     controlValueAt,
   } from './runtime';
@@ -359,6 +361,7 @@
   });
 
   const assistantEditor = inject(AssistantEditorKey, null);
+  const fieldIdScope = inject(UiFieldIdScope, undefined);
 
   // Adds this field to the AI assistant's context, and opens the assistant.
   useEventListener(window, 'craft:add-to-ai-assistant', (event: Event) => {
@@ -572,7 +575,7 @@
 <template>
   <craft-field
     ref="field"
-    :id="resolvedNode.props.id ?? fieldId(control.path)"
+    :id="resolvedNode.props.id ?? scopedId(fieldIdScope, fieldId(control.path))"
     .translatable="Boolean(resolvedNode.props.translatable)"
     .fieldset="Boolean(resolvedNode.props.fieldset)"
     :translation-description="resolvedNode.props.translationDescription"

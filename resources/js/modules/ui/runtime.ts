@@ -46,6 +46,13 @@ export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
 export const UiTableRefresh: InjectionKey<() => void> =
   Symbol('UiTableRefresh');
 
+/**
+ * A prefix for the ids of the fields and tab panels rendered within, for a form
+ * shown beside another form with the same layout, such as the Compare screen's
+ * two editors, so each id stays its own. See {@link scopedId}.
+ */
+export const UiFieldIdScope: InjectionKey<string> = Symbol('UiFieldIdScope');
+
 class ServerError extends Validator {
   static override validatorName = 'ServerError';
 
@@ -151,6 +158,11 @@ export function fieldId(path: string[]): string {
   );
 
   return `ui-${encoded.join('-')}`;
+}
+
+/** An id within a {@link UiFieldIdScope}, when there is one. */
+export function scopedId(scope: string | undefined, id: string): string {
+  return scope ? `${scope}-${id}` : id;
 }
 
 /** The id of the control's own input, which sits inside that field. */

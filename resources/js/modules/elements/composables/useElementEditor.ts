@@ -30,6 +30,7 @@ import {
   type ScreenPageProps,
 } from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
+import type {FormSaveOptions} from '@/common/types';
 import type {UiChangeKind, UiPayload, UiValues} from '@/modules/ui/types';
 import type {
   ElementActionBehavior,
@@ -285,6 +286,12 @@ interface Options {
    * the first to get it handles it.
    */
   saveShortcutTarget?: () => ((event: KeyboardEvent) => void) | null;
+  /**
+   * Runs before each submission, which goes ahead when it resolves true: so
+   * another editor on the page, which the submission reloads, can save its
+   * own changes first.
+   */
+  beforeSave?: () => Promise<boolean>;
 }
 
 /**
@@ -300,6 +307,7 @@ export function useElementEditor({
   root,
   transform,
   saveShortcutTarget,
+  beforeSave,
 }: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
@@ -896,7 +904,7 @@ export function useElementEditor({
     }
   }
 
-  const {save} = useSettingsSave(
+  const {save: submit} = useSettingsSave(
     form,
     () => ({
       url:
@@ -919,6 +927,7 @@ export function useElementEditor({
         }
       },
       hasShiftSaveShortcut: () =>
+        Boolean(saveShortcutTarget?.()) ||
         props.editorActions.menu.some(
           (item) => item.shortcut && item.shift && !item.disabled
         ),
@@ -1034,6 +1043,29 @@ export function useElementEditor({
       },
     }
   );
+
+  function save(options?: FormSaveOptions): void {
+    if (!beforeSave) {
+      submit(options);
+
+      return;
+    }
+
+    void beforeSave().then((proceed) => proceed && submit(options));
+  }
+
+  /**
+   * Autosaves the edits still waiting to be, and reports whether every edit is
+   * saved, so another editor on the page can submit, and reload this one,
+   * without losing them.
+   */
+  async function settleChanges(): Promise<boolean> {
+    if (autosave.hasPendingChanges.value) {
+      await autosave.save();
+    }
+
+    return !hasUnsavedChanges();
+  }
 
   function canSaveForShortcut(): boolean {
     return !props.readOnly && !releaseDraftLocked.value;
@@ -1404,6 +1436,7 @@ export function useElementEditor({
     nestedOwnerEditor,
     refreshUi,
     saveForShortcut,
+    settleChanges,
     refreshLayout,
     formValues,
     save,

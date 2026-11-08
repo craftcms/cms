@@ -36,6 +36,7 @@
     canonical,
     nodeHasErrors,
     pathsMatch,
+    UiFieldIdScope,
     valueAt,
   } from '@/modules/ui/runtime';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
@@ -59,6 +60,10 @@
     footerTargets: {notices: HTMLElement | null; actions: HTMLElement | null};
     /** The other side's editor, while Cmd/Ctrl+S should save it instead. */
     saveShortcutTarget?: () => ((event: KeyboardEvent) => void) | null;
+    /** Runs before each submission, which goes ahead when it resolves true. */
+    beforeSave?: () => Promise<boolean>;
+    /** Prefixes the fields' ids, so they stay apart from the other side's. */
+    fieldIdScope: string;
   }>();
 
   const emit = defineEmits<{
@@ -85,7 +90,10 @@
     saveData: () => ({...props.editor.saveParams}),
     root: () => props.root ?? contentEl.value,
     saveShortcutTarget: () => props.saveShortcutTarget?.() ?? null,
+    beforeSave: props.beforeSave,
   });
+
+  provide(UiFieldIdScope, props.fieldIdScope);
 
   const {
     autosave,
@@ -97,6 +105,7 @@
     renderer,
     save,
     saveForShortcut,
+    settleChanges,
     uiPayload,
     values,
     releaseDraftLocked,
@@ -244,6 +253,7 @@
     copyValue,
     save,
     saveForShortcut,
+    settleChanges,
     form,
     nestedOwnerEditor: editor.nestedOwnerEditor,
   });

@@ -2248,6 +2248,42 @@ describe('useElementEditor', () => {
     vi.useRealTimers();
   });
 
+  it('holds a save until beforeSave settles the edits still on the autosave debounce', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    // The way the Compare screen waits for its other side to settle its edits.
+    let allow!: (proceed: boolean) => void;
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')}),
+      null,
+      {
+        beforeSave: () =>
+          new Promise<boolean>((resolve) => {
+            allow = resolve;
+          }),
+      }
+    );
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    await typeTitle('Edited title');
+    editor.save();
+    await nextTick();
+
+    expect(save.calls()).toBe(0);
+    expect(await editor.settleChanges()).toBe(true);
+    expect(postSpy).toHaveBeenCalledOnce();
+    expect(postSpy.mock.calls[0]![1]).toMatchObject({title: 'Edited title'});
+
+    allow(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(save.calls()).toBe(1);
+  });
+
   it('starts a workflow draft when Save beats the autosave debounce', async () => {
     vi.useFakeTimers();
 

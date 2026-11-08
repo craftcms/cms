@@ -848,6 +848,24 @@ it('compares two separate entries, each by its own versions', function () {
         });
 });
 
+it('flags every differing value between two separate entries in two sites, as neither is the other’s translation', function () {
+    $a = comparedEntry(['summary' => 'Opens in March', 'tagline' => 'Drawing as light']);
+    $b = comparedEntry(['summary' => 'Opens in March', 'tagline' => 'Drawing as light']);
+    $translation = Entry::find()->id($b->id)->siteId($this->secondarySite->id)->status(null)->one();
+    $translation->setFieldValues(['summary' => 'Ouvre en mai']);
+    expect(Elements::saveElement($translation))->toBeTrue();
+
+    get(Url::urlWithParams(route('craft.cp.elements.compare-elements', ['fromId' => $a->id, 'toId' => $b->id]), [
+        'siteId' => $translation->siteId,
+        'fromSiteId' => $a->siteId,
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => expect(changedFields($page, 'to'))->toMatchArray([
+            'Summary' => true,
+            'Tagline' => false,
+        ]));
+});
+
 it('closes a comparison of two entries on the newer one’s edit page, without a control panel page to return to', function () {
     $a = comparedEntry(['summary' => 'Opens in March']);
     $b = comparedEntry(['summary' => 'Opens in May']);

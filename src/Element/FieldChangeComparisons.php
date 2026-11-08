@@ -319,7 +319,8 @@ readonly class FieldChangeComparisons
             return true;
         }
 
-        $otherSite = $from->siteId !== $to->siteId;
+        // Two separate elements' values are compared as they are, in whichever sites.
+        $otherSite = $from->siteId !== $to->siteId && $from->getCanonicalId() === $to->getCanonicalId();
 
         if ($otherSite && $from->id === $to->id && ! ($toNode->props['translatable'] ?? false)) {
             return false;
