@@ -45,32 +45,42 @@
     return props.elements.filter(({elementType}) => elementType === type);
   }
 
-  /** The cache of each type of element shown, which is drawn the same way. */
+  /**
+   * The cache of each type of element shown, which is drawn the same way.
+   * The chat doesn’t seed it: what it’s shown is trimmed for the chat, and a
+   * relation field drawing the same element needs all of it.
+   */
   const caches = new Map(
     [
       ...new Set(props.elements.flatMap(({elementType}) => elementType ?? [])),
-    ].map((type) => {
-      const cache = useElementPresentations(
-        () => ({elementType: type, viewMode: props.view}),
-        () =>
-          ofType(type).map(({id, siteId}) => ({
-            id,
-            siteId: Number(siteId) || null,
-          }))
-      );
-      cache.seed(ofType(type), null);
-
-      return [type, cache];
-    })
+    ].map(
+      (type) =>
+        [
+          type,
+          useElementPresentations(
+            () => ({elementType: type, viewMode: props.view}),
+            () =>
+              ofType(type).map(({id, siteId}) => ({
+                id,
+                siteId: Number(siteId) || null,
+              }))
+          ),
+        ] as const
+    )
   );
 
-  /** Each element as it’s cached now, or as the call showed it. */
+  /**
+   * Each element as it’s cached now, or as the call showed it. Without its
+   * structure level, which would nest chips under the ones shown before them.
+   */
   const shown = computed(() =>
     props.elements.map(
-      (element): ShownElement =>
-        (element.elementType &&
+      (element): ShownElement => ({
+        ...((element.elementType &&
           caches.get(element.elementType)?.get(element.id, element.siteId)) ||
-        element
+          element),
+        level: undefined,
+      })
     )
   );
 

@@ -1,6 +1,12 @@
 import {actionClient, ConfigService} from '@craftcms/ui';
 import type {ActionMenuItemButton} from '@craftcms/ui/components/action-menu/action-menu.types';
-import {createApp, nextTick, shallowRef, type ShallowRef} from 'vue';
+import {
+  createApp,
+  effectScope,
+  nextTick,
+  shallowRef,
+  type ShallowRef,
+} from 'vue';
 import {
   afterEach,
   beforeEach,
@@ -13,9 +19,12 @@ import {
 import type {ConnectionAdapter} from '@tanstack/ai-vue';
 import {assistantApi} from '@/bootstrap/assistant';
 import {broadcast} from '@/common/craft/broadcast';
+import {useElementPresentations} from '@/modules/elements/element-presentations';
 import {AssistantRequestError} from './assistant';
 import {registerAssistantEditor} from './context';
 import AssistantChat from './AssistantChat.vue';
+
+const ENTRY = 'CraftCms\\Cms\\Entry\\Elements\\Entry';
 
 const chat = vi.hoisted(() => ({
   sendMessage: vi.fn(),
@@ -570,7 +579,7 @@ describe('AssistantChat', () => {
               view: 'cards',
               elements: [
                 {
-                  elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+                  elementType: ENTRY,
                   id: 4,
                   siteId: 1,
                   label: 'Lighthouses',
@@ -593,6 +602,88 @@ describe('AssistantChat', () => {
       'relational-fields/structured-elements',
       expect.objectContaining({elementIds: [4], siteId: 1, viewMode: 'cards'})
     );
+  });
+
+  it('keeps the chips show_elements returned flat when they’re refetched with structure levels', async () => {
+    const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
+      data: {
+        elements: [
+          {id: 4, siteId: 1, label: 'News', level: 1},
+          {id: 5, siteId: 1, label: 'Events', level: 2},
+        ],
+      },
+    } as never);
+    onTestFinished(() => post.mockRestore());
+    const shown = (id: number, label: string) => ({
+      elementType: ENTRY,
+      id,
+      siteId: 1,
+      label,
+    });
+    chat.messages.value = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'tool-call',
+            id: 'call_1',
+            name: 'show_elements',
+            arguments: '{}',
+            state: 'input-complete',
+            output: JSON.stringify({
+              view: 'list',
+              elements: [shown(4, 'News'), shown(5, 'Events')],
+            }),
+          },
+        ],
+      },
+    ];
+    await flush();
+
+    broadcast({event: 'saveElement', id: 4});
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(post).toHaveBeenCalled());
+    await flush();
+
+    expect(container.querySelector('.element-chips__children')).toBeNull();
+    expect(container.querySelectorAll('craft-chip')).toHaveLength(2);
+  });
+
+  it('leaves what a relation field draws for the elements show_elements returned to the field', async () => {
+    chat.messages.value = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'tool-call',
+            id: 'call_1',
+            name: 'show_elements',
+            arguments: '{}',
+            state: 'input-complete',
+            output: JSON.stringify({
+              view: 'list',
+              elements: [
+                {elementType: ENTRY, id: 4, siteId: 1, label: 'Lighthouses'},
+              ],
+            }),
+          },
+        ],
+      },
+    ];
+    await flush();
+
+    const scope = effectScope();
+    onTestFinished(() => scope.stop());
+    const field = scope.run(() =>
+      useElementPresentations({elementType: ENTRY, viewMode: 'list'}, [
+        {id: 4, siteId: 1},
+      ])
+    )!;
+    field.seed([{id: 4, siteId: 1, label: 'Lighthouses', canEdit: true}], 1);
+
+    expect(field.get(4, 1)?.canEdit).toBe(true);
   });
 
   async function askQuestion(): Promise<void> {
