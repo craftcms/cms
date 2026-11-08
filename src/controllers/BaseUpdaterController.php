@@ -68,8 +68,14 @@ abstract class BaseUpdaterController extends Controller
         }
 
         if ($action->id !== 'index') {
-            if (($data = $this->request->getValidatedBodyParam('data')) === null) {
+            $data = $this->request->getBodyParam('data');
+            if (!is_string($data)) {
                 throw new BadRequestHttpException();
+            }
+
+            $data = Craft::$app->getSecurity()->validateData($data, $this->_dataKey());
+            if ($data === false) {
+                throw new BadRequestHttpException('Request contained invalid updater data.');
             }
 
             $this->data = Json::decode($data);
@@ -608,7 +614,25 @@ abstract class BaseUpdaterController extends Controller
      */
     private function _hashedData(): string
     {
-        return Craft::$app->getSecurity()->hashData(Json::encode($this->data));
+        return Craft::$app->getSecurity()->hashData(Json::encode($this->data), $this->_dataKey());
+    }
+
+    /**
+     * Returns the key used to sign updater data.
+     *
+     * The key is derived from the security key and this controller’s ID, so values signed with
+     * `hashData()` elsewhere (e.g. via the `|hash` filter) can’t be passed off as updater data,
+     * and updater data from one controller can’t be replayed to another.
+     *
+     * @return string
+     */
+    private function _dataKey(): string
+    {
+        return Craft::$app->getSecurity()->hkdf(
+            'sha256',
+            Craft::$app->getConfig()->getGeneral()->securityKey,
+            info: "craft-updater:$this->id",
+        );
     }
 
     /**

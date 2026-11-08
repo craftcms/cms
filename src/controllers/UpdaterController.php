@@ -16,6 +16,7 @@ use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
@@ -47,6 +48,16 @@ class UpdaterController extends BaseUpdaterController
         if ($action->id === 'index' && $this->request->getBodyParam('install') !== null) {
             // Only users with performUpdates permission can install new versions
             $this->requirePermission('performUpdates');
+        }
+
+        if (
+            in_array($action->id, [self::ACTION_COMPOSER_INSTALL, self::ACTION_REVERT], true) &&
+            (
+                !Craft::$app->getConfig()->getGeneral()->allowUpdates ||
+                !Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            )
+        ) {
+            throw new ForbiddenHttpException('Updates are disabled.');
         }
 
         return true;
