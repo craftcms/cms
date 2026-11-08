@@ -78,6 +78,7 @@ use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
 use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
 use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
+use CraftCms\Yii2Adapter\Mail\LegacyTransportCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
 use CraftCms\Yii2Adapter\SystemMessage\LegacySystemMessages;
@@ -144,6 +145,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $event->config['transformSubpath'] = $event->volume->getTransformSubpath(false, false);
         });
         new FilesystemCompatibility()->register($this->app);
+        new LegacyTransportCompatibility()->register($this->app);
         $this->app->singleton(AssetFileKinds::class, LegacyAssetFileKinds::class);
         $this->app->singleton(Settings::class, LegacySettings::class);
         $this->app->singleton(MenuHtml::class, LegacyMenuHtml::class);
