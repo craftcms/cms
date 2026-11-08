@@ -65,7 +65,7 @@ readonly class AdminInstructions
             - Set siteId for localized content. Propagation can affect other sites; elements_restore restores across supported sites.
 
             Read:
-            - List or get by type and identifier; reads need no writable field schema. fields: [] returns metadata, null returns all non-nested custom fields, and handles select fields. Nested fields expand one level, with at most 100 nested elements total per record; query larger collections separately.
+            - List or get by type and identifier; reads need no writable field schema. fields: [] returns metadata, null returns all non-nested custom fields, and handles select fields. Nested fields expand one level; add dot paths, such as blocks.innerBlocks, to include nested fields of nested elements as {type, id, status} summaries, and fetch them by ID for more. User addresses are included with fields: ["addresses"]. At most 100 nested elements are returned per record; query larger collections separately.
             - Queries default to status filters. Use status: null for all statuses and {"trashed": true, "status": null} for soft-deleted content.
             - Element queries default to limit 100, capped at 500; search_query defaults to 25 per type. elements_list, drafts_list, and revisions_list return nextOffset; search_query returns it in pagination keyed by reference handle or class. Keep filters and a stable order with an ID tie-breaker; pass nextOffset as criteria.offset until null for every requested type. Permission filtering can leave empty pages; count is the visible page size. Follow nextCursor for MCP capability lists.
 

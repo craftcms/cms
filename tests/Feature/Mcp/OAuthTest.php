@@ -212,6 +212,18 @@ it('keeps OAuth on the control panel’s own domain without a control panel trig
     }
 });
 
+it('challenges requests without access tokens when the OAuth signing keys are missing', function (array $headers): void {
+    config()->set('passport.private_key');
+    config()->set('passport.public_key');
+
+    $this->postJson(route('craft.mcp.server'), McpRequest::payload('initialize'), [...McpRequest::headers('initialize'), ...$headers])
+        ->assertUnauthorized()
+        ->assertHeader('WWW-Authenticate');
+})->with([
+    'no authorization' => [[]],
+    'basic authorization' => [['Authorization' => 'Basic dXNlcjpwYXNz']],
+]);
+
 it('serves the endpoint and OAuth metadata from current settings when routes are cached', function (): void {
     // Cache routes from before MCP was enabled, then boot again, as the next request would
     $routes = new RouteCollection;

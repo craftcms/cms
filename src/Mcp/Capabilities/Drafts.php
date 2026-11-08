@@ -29,6 +29,7 @@ use Mcp\Capability\Attribute\Schema;
 use Mcp\Capability\Discovery\SchemaValidator;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\ToolAnnotations;
+use Mcp\Server\RequestContext;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
@@ -83,6 +84,7 @@ readonly class Drafts
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
+        RequestContext $context,
         #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
@@ -97,6 +99,7 @@ readonly class Drafts
         bool $unpublished = false,
     ): array {
         $actor = $this->actor->user();
+        $fields = ElementSerializer::fieldsArgument($context, $fields);
         $query = $this->elementQueries->make($type)
             ->drafts()
             ->provisionalDrafts(null)

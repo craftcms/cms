@@ -193,6 +193,11 @@
 - The `configuration_update` MCP tool accepts field settings in the form that `configuration_get` returns them, such as Matrix fields’ entry types. ([#20406](https://github.com/craftcms/cms/issues/20406))
 - MCP tools now return CKEditor field values, rather than empty arrays. Fields can implement `CraftCms\Cms\Field\Contracts\McpOutputFieldInterface` to control how their values are returned by MCP tools.
 - MCP clients can now sign in when the control panel has its own domain and no `cpTrigger`. ([#20353](https://github.com/craftcms/cms/issues/20353))
+- MCP `fields` arguments accept dot paths, such as `blocks.innerBlocks`, which include nested fields of nested elements as `{type, id, status}` summaries. ([#20415](https://github.com/craftcms/cms/pull/20415))
+- MCP tools return users’ addresses when `addresses` is included in `fields`. ([#20415](https://github.com/craftcms/cms/pull/20415))
+- The `elements_list`, `drafts_list`, `revisions_list`, `search_query`, and `craft_query` MCP tools return all non-nested custom fields when `fields` is `null`. ([#20463](https://github.com/craftcms/cms/pull/20463))
+- The `asset_folders_list` MCP tool accepts `null` for `criteria.parentId`, which lists volumes’ root folders. ([#20464](https://github.com/craftcms/cms/pull/20464))
+- The authenticated MCP server returns an OAuth challenge to requests without an access token when OAuth signing keys haven’t been set up, so MCP clients can tell that it requires signing in, and Settings → MCP explains how to set up the keys. ([#20455](https://github.com/craftcms/cms/pull/20455))
 
 #### General
 - Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.
