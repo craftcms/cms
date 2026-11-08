@@ -180,6 +180,24 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     super.modelValue = value;
   }
 
+  /**
+   * Lion's `modelValue` falls back to the typed text when no option is
+   * checked, but its `serializedValue` only reads a checked option, so it is
+   * empty while typed text merely matches one. Serializers that read it (the
+   * legacy HTML bridge's, for one) then dropped a typed value.
+   */
+  override get serializedValue(): string {
+    return this.multipleChoice ||
+      this.requireOptionMatch ||
+      typeof this.modelValue !== 'string'
+      ? super.serializedValue
+      : this.modelValue;
+  }
+
+  override set serializedValue(value: string) {
+    super.serializedValue = value;
+  }
+
   constructor() {
     super();
     // Configure validators on construction.

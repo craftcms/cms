@@ -10,8 +10,9 @@
  * Chips and cards Vue draws from data (`ElementChips`, `ElementCards`, and
  * server HTML compiled as a Vue template, like the element index's title
  * cells) carry no `data-settings`: patching their DOM would leave Vue holding
- * nodes it no longer recognizes, so their owners refetch with
- * {@link onElementChanged} instead.
+ * nodes it no longer recognizes, so their owners refetch instead: relation
+ * fields through the shared cache in `element-presentations.ts`, and others
+ * with {@link onElementChanged}.
  */
 
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';

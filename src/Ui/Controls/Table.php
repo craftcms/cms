@@ -302,6 +302,10 @@ class Table extends Control implements ReadableValueControl, WritableValueContro
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
+            // JSON objects lose the order of integer-like keys, so send it separately
+            'rowOrder' => $this->keyed && is_array($value) && array_any(array_keys($value), fn ($key) => is_int($key))
+                ? array_map(strval(...), array_keys($value))
+                : null,
             'hiddenRows' => $this->hiddenRows ?: null,
             'defaultValues' => $this->rowDefaults(),
             'addRowLabel' => $this->addRowLabel,

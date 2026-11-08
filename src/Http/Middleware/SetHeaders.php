@@ -9,7 +9,6 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\ResponseHeaders;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
@@ -26,25 +25,21 @@ class SetHeaders
     {
         $response = $next($request);
 
-        if (! $response instanceof Response) {
-            if ($response instanceof SymfonyResponse) {
-                $this->setPoweredByHeader($response);
-            }
-
+        if (! $response instanceof SymfonyResponse) {
             return $response;
         }
 
         $hasPreviewParam = $request->previewParam() !== null;
 
         if ($request->isCpRequest() || $request->isActionRequest() || $hasPreviewParam || $this->responseHeaders->noCache) {
-            $response->setNoCacheHeaders();
+            $this->setNoCacheHeaders($response);
         } elseif ($this->responseHeaders->duration !== null) {
             if ($this->responseHeaders->duration <= 0) {
-                $response->setNoCacheHeaders();
+                $this->setNoCacheHeaders($response);
             } else {
+                $response->headers->set('Pragma', 'cache', $this->responseHeaders->replace);
                 $response
                     ->setExpires(now()->addSeconds($this->responseHeaders->duration))
-                    ->header('Pragma', 'cache', $this->responseHeaders->replace)
                     ->setPublic()
                     ->setMaxAge($this->responseHeaders->duration);
             }
@@ -74,12 +69,19 @@ class SetHeaders
         }
 
         foreach ($this->responseHeaders->headers as $header) {
-            $response->header($header['header'], $header['value'], $header['replace']);
+            $response->headers->set($header['header'], $header['value'], $header['replace']);
         }
 
         $this->setPoweredByHeader($response);
 
         return $response;
+    }
+
+    private function setNoCacheHeaders(SymfonyResponse $response): void
+    {
+        $response->headers->set('Expires', '0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     private function setPoweredByHeader(SymfonyResponse $response): void
