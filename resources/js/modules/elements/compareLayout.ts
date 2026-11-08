@@ -225,12 +225,15 @@ const uidKey = (side: CompareSide) =>
  * longer shows, as a condition hides it, leaves its row with only the other
  * side's field, if any, and one it newly shows takes the other side's row for
  * the same field, or a new row after the field before it. Whether a newly
- * paired field changed isn't known until the page reloads.
+ * paired field changed isn't known until the page reloads. `counterparts` names
+ * the other side's field by its own UID, where the two differ, as fields of
+ * two separate elements' layouts can.
  */
 export function liveRows(
   rows: CompareRow[],
   ui: UiPayload,
-  side: CompareSide = 'to'
+  side: CompareSide = 'to',
+  counterparts: Record<string, string> = {}
 ): CompareRow[] {
   const own = uidKey(side);
   const other = uidKey(otherSide(side));
@@ -250,7 +253,7 @@ export function liveRows(
 
     if (index < 0) {
       index = result.findIndex(
-        (row) => row[own] === null && row[other] === uid
+        (row) => row[own] === null && row[other] === (counterparts[uid] ?? uid)
       );
 
       if (index >= 0) {

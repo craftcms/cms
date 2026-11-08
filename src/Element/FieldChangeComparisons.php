@@ -172,7 +172,10 @@ readonly class FieldChangeComparisons
      * as two read-only forms whose fields are in the same order: the newer version’s, followed by fields only the older
      * version has. Changed fields are badged on the sides {@see self::badgedSides()} picks, and no field has a status.
      *
-     * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>, badged: array{from: bool, to: bool}}
+     * The `counterparts` pair each side's fields with the other side's by the same rules as the rows, by their layout
+     * element UIDs, wherever those differ, so a field a condition shows only once the page has loaded finds its row.
+     *
+     * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>, badged: array{from: bool, to: bool}, counterparts: array{from: array<string, string>, to: array<string, string>}}
      */
     public function compareElements(ElementInterface $from, ElementInterface $to): array
     {
@@ -241,7 +244,29 @@ readonly class FieldChangeComparisons
             'to' => $this->pane($toPayload, $paneNodes['to']),
             'rows' => $rows,
             'badged' => $badged,
+            'counterparts' => ['from' => $this->counterparts($from, $to), 'to' => $this->counterparts($to, $from)],
         ];
+    }
+
+    /**
+     * Returns the UIDs of the fields in one element's layout, conditional ones included, by which the other element's
+     * layout has the same field under another UID.
+     *
+     * @return array<string, string>
+     */
+    private function counterparts(ElementInterface $element, ElementInterface $other): array
+    {
+        $counterparts = [];
+
+        foreach ($element->getFieldLayout()?->getElementsByType(BaseField::class) ?? [] as $layoutElement) {
+            $match = $this->previews->matchingLayoutElement($other, $layoutElement);
+
+            if ($match && $match->uid !== $layoutElement->uid) {
+                $counterparts[(string) $layoutElement->uid] = (string) $match->uid;
+            }
+        }
+
+        return $counterparts;
     }
 
     /**

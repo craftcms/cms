@@ -88,6 +88,11 @@
      * changes, when one did, and otherwise both.
      */
     badged: Record<CompareSide, boolean>;
+    /**
+     * Each side's fields' UIDs in the other side's layout, where they differ,
+     * which pair a field a condition newly shows with the other side's.
+     */
+    counterparts: Record<CompareSide, Record<string, string>>;
     /** Where closing the screen goes. */
     closeUrl: string | null;
     /** The element's chip, as server-rendered HTML, for the heading: B's, of two elements. */
@@ -200,7 +205,9 @@
   const serverRows = computed(() =>
     sideKeys.reduce(
       (rows, side) =>
-        liveUis[side] ? liveRows(rows, sideUis.value[side], side) : rows,
+        liveUis[side]
+          ? liveRows(rows, sideUis.value[side], side, props.counterparts[side])
+          : rows,
       props.rows
     )
   );

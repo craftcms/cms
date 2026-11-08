@@ -1051,7 +1051,19 @@ export function useElementEditor({
       return;
     }
 
-    void beforeSave().then((proceed) => proceed && submit(options));
+    // The action owns only the submission it was chosen for, which its caller
+    // stops waiting for on the next tick, well before `beforeSave` settles.
+    const action = pendingAction.value;
+
+    void beforeSave().then((proceed) => {
+      if (!proceed) {
+        return;
+      }
+
+      pendingAction.value = action;
+      submit(options);
+      void nextTick(() => (pendingAction.value = null));
+    });
   }
 
   /**

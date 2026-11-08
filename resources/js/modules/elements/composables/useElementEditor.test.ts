@@ -2248,7 +2248,7 @@ describe('useElementEditor', () => {
     vi.useRealTimers();
   });
 
-  it('holds a save until beforeSave settles the edits still on the autosave debounce', async () => {
+  it('holds a save, and the action it was for, until beforeSave settles the edits still on the autosave debounce', async () => {
     vi.useFakeTimers();
     onTestFinished(() => {
       vi.useRealTimers();
@@ -2270,7 +2270,12 @@ describe('useElementEditor', () => {
     onTestFinished(save.restore);
 
     await typeTitle('Edited title');
-    editor.save();
+    editor.submitAction({
+      label: 'Save and add another',
+      actionUrl: '/actions/entries/save-and-add-another',
+      params: {addAnother: 1},
+      redirect: null,
+    });
     await nextTick();
 
     expect(save.calls()).toBe(0);
@@ -2282,6 +2287,8 @@ describe('useElementEditor', () => {
     await vi.advanceTimersByTimeAsync(0);
 
     expect(save.calls()).toBe(1);
+    expect(save.last().url).toBe('/actions/entries/save-and-add-another');
+    expect(save.last().data).toMatchObject({addAnother: 1});
   });
 
   it('starts a workflow draft when Save beats the autosave debounce', async () => {

@@ -116,6 +116,7 @@ readonly class CompareElementsController
                 ], ['from' => 'from', 'to' => 'to']),
                 // The sides that badge their changed fields.
                 'badged' => $comparison['badged'],
+                'counterparts' => $comparison['counterparts'],
                 'rows' => array_map(
                     fn (FieldComparisonRow $row): array => $row->toArray(),
                     $comparison['rows'],

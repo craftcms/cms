@@ -866,6 +866,32 @@ it('flags every differing value between two separate entries in two sites, as ne
         ]));
 });
 
+it('pairs the fields two entry types share, by their own layouts’ UIDs, for a condition to show later', function () {
+    $a = comparedEntry(['summary' => 'Opens in March']);
+    $summaryField = $this->summaryField;
+    $otherType = EntryType::factory()
+        ->withFieldLayout(FieldLayout::factory()->state(function (array $attributes) use ($summaryField) {
+            $layout = FieldLayoutConfig::make($attributes['type']);
+            $layout->tab('Content', fn (FieldLayoutTab $tab) => $tab->add(new CustomField(config: ['fieldUid' => $summaryField->uid])));
+
+            return ['config' => $layout->getConfig()];
+        }))
+        ->create(['hasTitleField' => true]);
+    EntryTypes::refreshEntryTypes();
+    $section = Section::factory()->withEntryTypes($otherType)->create(['handle' => 'talks']);
+    $b = EntryModel::factory()->forSection($section)->forEntryType($otherType)->createElement(['title' => 'Shadow and Form']);
+    $summaryUid = fn (Entry $entry): string => collect($entry->getFieldLayout()->getElementsByType(CustomField::class))
+        ->first(fn (CustomField $element) => $element->getField()->handle === 'summary')->uid;
+
+    expect($summaryUid($a))->not->toBe($summaryUid($b));
+
+    get(route('craft.cp.elements.compare-elements', ['fromId' => $a->id, 'toId' => $b->id]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('counterparts.from', [$summaryUid($a) => $summaryUid($b)])
+            ->where('counterparts.to', [$summaryUid($b) => $summaryUid($a)]));
+});
+
 it('closes a comparison of two entries on the newer one’s edit page, without a control panel page to return to', function () {
     $a = comparedEntry(['summary' => 'Opens in March']);
     $b = comparedEntry(['summary' => 'Opens in May']);

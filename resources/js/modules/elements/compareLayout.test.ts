@@ -271,6 +271,20 @@ describe('liveRows', () => {
     ]);
   });
 
+  it('pairs a newly shown field with the other side’s, under another UID in that side’s layout', () => {
+    expect(
+      liveRows(
+        [changedRow('title', 'title', false), changedRow(null, 'venue', true)],
+        form([tab('content', 'Content', ['title', 'location'])]),
+        'from',
+        {location: 'venue'}
+      )
+    ).toEqual([
+      changedRow('title', 'title', false),
+      changedRow('location', 'venue', null),
+    ]);
+  });
+
   it('adds a row for a newly shown field the older version doesn’t have, after the field before it', () => {
     expect(
       liveRows(
