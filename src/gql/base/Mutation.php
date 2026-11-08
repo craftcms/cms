@@ -8,6 +8,7 @@
 namespace craft\gql\base;
 
 use craft\base\FieldInterface;
+use craft\helpers\Gql as GqlHelper;
 
 /**
  * Class Mutation
@@ -36,7 +37,7 @@ abstract class Mutation
     {
         $fieldList = [];
 
-        foreach ($contentFields as $contentField) {
+        foreach (GqlHelper::filterMutableFields($contentFields) as $contentField) {
             $contentFieldType = $contentField->getContentGqlMutationArgumentType();
             $handle = $contentField->handle;
             $fieldList[$handle] = $contentFieldType;

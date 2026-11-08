@@ -20,6 +20,7 @@ use craft\test\TestCase;
 use Exception;
 use UnitTester;
 use yii\base\NotSupportedException;
+use yii\mutex\FileMutex;
 use yii\mutex\Mutex as YiiMutex;
 
 /**
@@ -236,6 +237,21 @@ class ProjectConfigTest extends TestCase
 
         $paths = array_values(array_intersect(array_merge(...$persisted), ['some.path', 'other.path']));
         self::assertSame(['some.path', 'other.path'], $paths);
+    }
+
+    public function testSavingModifiedConfigDataReleasesLockWithoutChanges(): void
+    {
+        $mutexPath = Craft::$app->getPath()->getTempPath() . '/mutex-' . StringHelper::randomString(8);
+        Craft::$app->set('mutex', new FileMutex(['mutexPath' => $mutexPath]));
+        $otherProcess = new FileMutex(['mutexPath' => $mutexPath, 'autoRelease' => false]);
+        $pc = $this->getProjectConfig();
+
+        $pc->acquireLock();
+        self::assertFalse($otherProcess->acquire(ProjectConfig::MUTEX_NAME));
+
+        $pc->saveModifiedConfigData();
+        self::assertTrue($otherProcess->acquire(ProjectConfig::MUTEX_NAME));
+        $otherProcess->release(ProjectConfig::MUTEX_NAME);
     }
 
     public function testApplyingConfigChangesDoesNotExposePartialElementSourcesToSectionHandlers(): void

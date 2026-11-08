@@ -1,0 +1,8 @@
+{# Explains how to set up OAuth signing keys, in the pane above the content that validation errors use #}
+<div class="error-summary">
+  <div>
+    <span class="notification-icon warning" data-icon="alert" aria-label="{{ 'Warning'|t('app') }}" role="img"></span>
+    <h2>{{ heading }}</h2>
+  </div>
+  <p>{{ 'Run `php craft oauth/generate-keys`, or set the `CRAFT_OAUTH_PRIVATE_KEY` and `CRAFT_OAUTH_PUBLIC_KEY` environment variables to PEM-encoded keys or key file paths.'|t('app')|md(inlineOnly=true) }}</p>
+</div>

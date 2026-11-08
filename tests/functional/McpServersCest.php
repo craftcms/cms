@@ -75,6 +75,23 @@ class McpServersCest
         $I->seeInSource('mcp/auth');
     }
 
+    public function testRequestsWithoutTokensAreChallengedWithoutOAuthKeys(FunctionalTester $I): void
+    {
+        $this->settings(['enabled' => true, 'route' => '/mcp', 'authorizationRoute' => '/mcp/auth']);
+        $config = Craft::$app->getConfig()->getOAuth();
+        $config->privateKey = '@storage/missing-oauth-private.key';
+        $config->publicKey = '@storage/missing-oauth-public.key';
+
+        foreach ([null, 'Basic dXNlcjpwYXNz'] as $authorization) {
+            $authorization === null ? $I->deleteHeader('Authorization') : $I->haveHttpHeader('Authorization', $authorization);
+            $I->sendAjaxPostRequest('/mcp/auth');
+            $I->seeResponseCodeIs(401);
+            $I->assertStringContainsString('/.well-known/oauth-protected-resource/mcp/auth"', Craft::$app->getResponse()->getHeaders()->get('WWW-Authenticate'));
+        }
+
+        $config->privateKey = $config->publicKey = null;
+    }
+
     public function testDisabledServers(FunctionalTester $I): void
     {
         $this->settings(['enabled' => false, 'publicEnabled' => false]);

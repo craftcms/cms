@@ -1555,7 +1555,15 @@ JS, [
 
         // Get the new owner and make sure it's a derivative element,
         // and that its canonical element is the nested element's primary owner
-        $owner = $elementsService->getElementById($this->_newOwnerId, siteId: $element->siteId);
+        // (look in all sites, since non-localized nested elements like addresses always have the primary site ID,
+        // which the owner might not be saved in)
+        $owner = $elementsService->getElementById($this->_newOwnerId, siteId: '*', criteria: [
+            'preferSites' => array_filter([$this->_siteId, $element->siteId]),
+            'unique' => true,
+        ]);
+        if (!$owner) {
+            throw new BadRequestHttpException("Invalid owner ID: $this->_newOwnerId");
+        }
         if ($owner->getIsCanonical()) {
             throw new BadRequestHttpException('The owner element must be a derivative.');
         }
@@ -1889,6 +1897,10 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
         }
 
+        if (!ElementHelper::isMultiSite($element)) {
+            throw new BadRequestHttpException('Elements can’t be deleted for the only site they exist in.');
+        }
+
         if ($element->isProvisionalDraft) {
             $canonical = $element->getCanonical();
 
@@ -1898,6 +1910,10 @@ JS, [
 
             if ($canonical && !$elementsService->canDeleteForSite($canonical)) {
                 throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
+            }
+
+            if ($canonical && !ElementHelper::isMultiSite($canonical)) {
+                throw new BadRequestHttpException('Elements can’t be deleted for the only site they exist in.');
             }
         } else {
             $canonical = null;

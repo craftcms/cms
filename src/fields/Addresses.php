@@ -36,6 +36,7 @@ use craft\gql\interfaces\elements\Address as AddressGqlInterface;
 use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\input\Addresses as AddressesInput;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -527,14 +528,15 @@ class Addresses extends Field implements
             }
 
             if (isset($addressData['fields'])) {
-                foreach ($addressData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        if ($fromRequest) {
-                            $address->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                        } else {
+                if ($fromRequest) {
+                    // Respect field layout conditions
+                    ElementHelper::setNestedFieldValuesFromRequest($address, $addressData['fields']);
+                } else {
+                    foreach ($addressData['fields'] as $fieldHandle => $fieldValue) {
+                        try {
                             $address->setFieldValue($fieldHandle, $fieldValue);
+                        } catch (InvalidFieldException) {
                         }
-                    } catch (InvalidFieldException) {
                     }
                 }
             }

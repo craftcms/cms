@@ -1569,6 +1569,9 @@ JS);
         $response = $this->asEditUserScreen($user, self::SCREEN_TOKENS);
 
         if (!Craft::$app->getOAuth()->hasKeys()) {
+            $response->errorSummaryTemplate('_includes/oauth-keys-missing', [
+                'heading' => Craft::t('app', 'Tokens can’t be created until Craft has OAuth signing keys.'),
+            ]);
             $response->contentTemplate('users/_tokens-setup');
             return $response;
         }
@@ -1631,6 +1634,7 @@ JS, ['users/token-modal']);
             }
         } else {
             $this->requireElevatedSession();
+            $this->requireOAuthKeys();
         }
 
         $response = $this->asCpModal()->contentTemplate('users/_token', [
@@ -1656,6 +1660,7 @@ JS, ['users/token-modal']);
         $this->requirePostRequest();
         $this->requireCpRequest();
         $this->requireElevatedSession();
+        $this->requireOAuthKeys();
         $user = static::currentUser();
 
         $name = trim($this->request->getBodyParam('name', ''));
@@ -1711,6 +1716,13 @@ JS, ['users/token-modal']);
         }
 
         return $this->asSuccess(Craft::t('app', 'Token saved.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
+    }
+
+    private function requireOAuthKeys(): void
+    {
+        if (!Craft::$app->getOAuth()->hasKeys()) {
+            throw new BadRequestHttpException(Craft::t('app', 'Tokens can’t be created until Craft has OAuth signing keys.'));
+        }
     }
 
     private function tokenNameError(string $name): ?string

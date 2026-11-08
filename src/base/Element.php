@@ -1006,6 +1006,16 @@ abstract class Element extends Component implements ElementInterface, AllowableI
     }
 
     /**
+     * Forgets the memoized sources of every element type.
+     *
+     * @internal
+     */
+    public static function forgetSources(): void
+    {
+        self::$sources = [];
+    }
+
+    /**
      * @inheritdoc
      */
     public static function sources(string $context): array
@@ -3902,7 +3912,7 @@ abstract class Element extends Component implements ElementInterface, AllowableI
         }
 
         // Fire an 'authorizeDeleteForSite' event
-        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
+        if ($this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
             $event = new AuthorizationCheckEvent($user);
             $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
             return $event->authorized;
@@ -4323,7 +4333,11 @@ JS, [
         $canDeleteCanonicalForSite = $elementsService->canDeleteForSite($canonical, $user);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
-            (($isCurrent && $canDeleteCanonicalForSite) || ($canDeleteDraft && $isNewSite)) &&
+            (
+                // Deleting a provisional draft for the site deletes the canonical element for it too
+                ($isCurrent && $canDeleteCanonicalForSite && ($canonical === $this || $isNewSite || ElementHelper::isMultiSite($canonical))) ||
+                ($canDeleteDraft && $isNewSite)
+            ) &&
             $elementsService->canDeleteForSite($this, $user)
         );
 

@@ -99,7 +99,7 @@ class ProjectConfig extends Component
     public const ASSOC_KEY = '__assoc__';
 
     /**
-     * @see _acquireLock()
+     * @see acquireLock()
      * @see _releaseLock()
      * @since 3.7.35
      */
@@ -385,7 +385,7 @@ class ProjectConfig extends Component
 
     /**
      * @var bool Whether a mutex lock was acquired for this request
-     * @see _acquireLock()
+     * @see acquireLock()
      * @see _releaseLock()
      */
     private bool $_locked = false;
@@ -570,7 +570,7 @@ class ProjectConfig extends Component
         }
 
         if ($valueHasChanged) {
-            $this->_acquireLock();
+            $this->acquireLock();
         }
 
         $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message, true);
@@ -621,7 +621,7 @@ class ProjectConfig extends Component
      */
     public function applyExternalChanges(): void
     {
-        $this->_acquireLock();
+        $this->acquireLock();
 
         // Disable read/write splitting for the remainder of this request
         Craft::$app->getDb()->enableReplicas = false;
@@ -893,6 +893,9 @@ class ProjectConfig extends Component
                     'changes' => $deltaChanges,
                 ]);
             }
+        } else {
+            // Nothing changed after the lock was acquired, e.g. via acquireLock()
+            $this->_releaseLock();
         }
     }
 
@@ -1233,7 +1236,7 @@ class ProjectConfig extends Component
      */
     public function rebuild(): void
     {
-        $this->_acquireLock();
+        $this->acquireLock();
         $this->reset();
 
         $this->muteEvents = true;
@@ -2225,12 +2228,15 @@ class ProjectConfig extends Component
 
     /**
      * Acquires a mutex lock on the project config, and then ensures that we’ve actually got the latest
-     * and greatest version of it.
+     * and greatest version of it. The lock is held until modified config data is saved.
+     *
+     * Call it before reading values that a change depends on, so no other process can change them in between.
      *
      * @throws BusyResourceException if a lock could not be acquired
      * @throws StaleResourceException if the loaded project config is out-of-date
+     * @since 5.12.1
      */
-    private function _acquireLock(): void
+    public function acquireLock(): void
     {
         if ($this->_locked) {
             return;

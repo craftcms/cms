@@ -231,8 +231,11 @@ class UserPermissions extends Component
         // Lowercase the permissions
         $permissions = array_map('strtolower', $permissions);
 
-        // Filter out any orphaned permissions
-        $permissions = $this->_filterOrphanedPermissions($permissions);
+        // Filter out any orphaned permissions, keeping stored ones that aren't registered right now
+        $permissions = array_merge(
+            $this->_filterOrphanedPermissions($permissions),
+            $this->_storedUnregisteredPermissions($permissions, $this->getPermissionsByGroupId($groupId)),
+        );
 
         // Sort ascending
         sort($permissions);
@@ -340,6 +343,11 @@ class UserPermissions extends Component
     {
         Craft::$app->requireEdition(CmsEdition::Pro);
 
+        $storedPermissions = $this->_createUserPermissionsQuery()
+            ->innerJoin(['p_u' => Table::USERPERMISSIONS_USERS], '[[p_u.permissionId]] = [[p.id]]')
+            ->where(['p_u.userId' => $userId])
+            ->column();
+
         // Delete any existing user permissions
         Db::delete(Table::USERPERMISSIONS_USERS, [
             'userId' => $userId,
@@ -350,7 +358,10 @@ class UserPermissions extends Component
 
         // Filter out any orphaned permissions
         $groupPermissions = $this->getGroupPermissionsByUserId($userId);
-        $permissions = $this->_filterOrphanedPermissions($permissions, $groupPermissions);
+        $permissions = array_merge(
+            $this->_filterOrphanedPermissions($permissions, $groupPermissions),
+            $this->_storedUnregisteredPermissions($permissions, $storedPermissions),
+        );
 
         if (!empty($permissions)) {
             $userPermissionVals = [];
@@ -880,6 +891,24 @@ class UserPermissions extends Component
         }
 
         return $filteredPermissions;
+    }
+
+    /**
+     * Returns the posted permissions that aren’t registered right now but are already stored, such as those of a
+     * plugin that only registers its permissions for control panel requests, so saving doesn’t drop them.
+     *
+     * @param string[] $postedPermissions Lowercase posted permissions
+     * @param string[] $storedPermissions
+     * @return string[]
+     */
+    private function _storedUnregisteredPermissions(array $postedPermissions, array $storedPermissions): array
+    {
+        $storedPermissions = array_map('strtolower', $storedPermissions);
+
+        return array_values(array_unique(array_filter(
+            $postedPermissions,
+            fn(string $permission) => !$this->validatePermission($permission) && in_array($permission, $storedPermissions, true),
+        )));
     }
 
     /**
