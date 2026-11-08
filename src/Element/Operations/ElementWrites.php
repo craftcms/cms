@@ -160,19 +160,21 @@ readonly class ElementWrites
      * in the current locale the way element cards show them.
      *
      * Passed as object template variables, they take precedence over the element’s own
-     * values for `{foo}` shorthand, while filters like `|date` still get a date.
+     * values for `{foo}` shorthand, while filters like `|date` still get a date. Field
+     * previews are reduced to plain text, since the template escapes its output.
      *
      * @return array<string, CarbonInterface>
      */
     private function generatedFieldDateVariables(ElementInterface $element, string $template): array
     {
         $variables = [];
-        $isReferenced = fn (string $name): bool => (bool) preg_match(sprintf('/\b%s\b/', preg_quote($name, '/')), $template);
+        preg_match_all('/\w+/', $template, $matches);
+        $words = array_flip($matches[0]);
         $formatDatetime = fn (DateTimeInterface $date): string => I18N::getFormatter()->asDatetime($date, Locale::LENGTH_SHORT);
 
         foreach ($element->attributes() as $attribute) {
             if (
-                $isReferenced($attribute) &&
+                isset($words[$attribute]) &&
                 Typecast::isDateTimeProperty($element::class, $attribute) &&
                 ($value = $element->$attribute ?? null) instanceof DateTimeInterface
             ) {
@@ -183,12 +185,12 @@ readonly class ElementWrites
         foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
             if (
                 ! isset($variables[$field->handle]) &&
-                $isReferenced($field->handle) &&
+                isset($words[$field->handle]) &&
                 ($value = $element->getFieldValue($field->handle)) instanceof DateTimeInterface
             ) {
                 $variables[$field->handle] = Date::instance($value)->settings([
                     'toStringFormat' => $field instanceof PreviewableFieldInterface
-                        ? fn (DateTimeInterface $date): string => $field->getPreviewHtml($date, $element)
+                        ? fn (DateTimeInterface $date): string => Html::decode(strip_tags($field->getPreviewHtml($date, $element)))
                         : $formatDatetime,
                 ]);
             }
