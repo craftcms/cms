@@ -18,6 +18,22 @@ it('records the caller of a plugin API that logs through the legacy deprecator',
         ->and($log->line)->toBe($line);
 });
 
+it('records the line of a top-level call to the legacy deprecator', function() {
+    $file = sys_get_temp_dir() . '/craft-legacy-deprecator-test-' . uniqid() . '.php';
+    File::put($file, "<?php\n\nCraft::\$app->getDeprecator()->log('top-level', 'Top-level code is deprecated.');\n");
+
+    try {
+        require $file;
+
+        $log = collect(Deprecator::getRequestLogs())->firstWhere('key', 'top-level');
+
+        expect(realpath($log->file))->toBe(realpath($file))
+            ->and($log->line)->toBe(3);
+    } finally {
+        File::delete($file);
+    }
+});
+
 it('records the template line of a plugin API that logs through the legacy deprecator', function() {
     $tempDir = sys_get_temp_dir() . '/craft-legacy-deprecator-test-' . uniqid();
     File::ensureDirectoryExists($tempDir);

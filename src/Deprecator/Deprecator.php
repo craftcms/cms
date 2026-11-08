@@ -178,6 +178,11 @@ class Deprecator
             $t++;
         }
 
+        // Logged from top-level code, outside any function: that code is the origin
+        if (! isset($traces[$t]) || in_array($traces[$t]['function'] ?? null, ['include', 'include_once', 'require', 'require_once'], true)) {
+            $t--;
+        }
+
         // $traces[$t] is now the deprecated code. Skip the frames that dispatched the call to it on behalf of the actual caller.
         while (isset($traces[$t + 1]) && $this->isDispatchFrame($traces[$t + 1])) {
             $t++;
