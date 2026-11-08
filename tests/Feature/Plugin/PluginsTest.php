@@ -6,6 +6,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\ConfigServiceProvider;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Events\PluginInstalled;
 use CraftCms\Cms\Plugin\Events\PluginInstalling;
@@ -302,6 +303,45 @@ it('cannot uninstall a plugin that is not enabled', function () {
 
     $this->plugins->uninstallPlugin('test-plugin');
 })->throws(InvalidPluginException::class, 'Uninstalling disabled plugins is not allowed.');
+
+it('can force uninstall a plugin whose package was removed', function () {
+    DB::table(Table::PLUGINS)->insert([
+        'handle' => 'removed-plugin',
+        'version' => '1.0.0',
+        'schemaVersion' => '1.0.0',
+        'installDate' => now(),
+        'dateCreated' => now(),
+        'dateUpdated' => now(),
+        'uid' => Str::uuid(),
+    ]);
+
+    DB::table(Table::MIGRATIONS)->insert([
+        'track' => 'plugin:removed-plugin',
+        'migration' => 'm000000_000000_removed_plugin',
+        'batch' => 1,
+    ]);
+
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_PLUGINS.'.removed-plugin', [
+        'edition' => 'standard',
+        'enabled' => true,
+        'schemaVersion' => '1.0.0',
+    ]);
+
+    app()->forgetInstance(Plugins::class);
+    $plugins = app(Plugins::class);
+
+    expect($plugins->isPluginInstalled('removed-plugin'))->toBeTrue()
+        ->and($plugins->getPlugin('removed-plugin'))->toBeNull();
+
+    expect(fn () => $plugins->uninstallPlugin('removed-plugin'))
+        ->toThrow(InvalidPluginException::class);
+
+    expect($plugins->uninstallPlugin('removed-plugin', force: true))->toBeTrue()
+        ->and($plugins->isPluginInstalled('removed-plugin'))->toBeFalse()
+        ->and(DB::table(Table::PLUGINS)->where('handle', 'removed-plugin')->exists())->toBeFalse()
+        ->and(DB::table(Table::MIGRATIONS)->where('track', 'plugin:removed-plugin')->exists())->toBeFalse()
+        ->and(app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS.'.removed-plugin'))->toBeNull();
+});
 
 it('cannot switch to an edition that doesnt exist', function () {
     expect($this->plugins->getPlugin('test-plugin')->edition)->toBe('standard');

@@ -17,6 +17,7 @@ return [
     'allowedFilters' => [
         'abs',
         'address',
+        'anchors',
         'append',
         'ascii',
         'base64_encode',

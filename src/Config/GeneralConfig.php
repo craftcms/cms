@@ -415,6 +415,36 @@ class GeneralConfig extends BaseConfig
     public bool $allowUppercaseInSlug = false;
 
     /**
+     * @var AnchorsConfig Settings for the anchor links that the `|anchors` Twig filter and `@anchors` GraphQL directive add to headings.
+     *
+     * Supported settings:
+     *
+     * - `anchorClass` – The class name that should be given to named anchors. (Default is `null`.)
+     * - `anchorLinkPosition` – Where anchor links should be positioned within headings, relative to the heading text (`'before'` or `'after'`). (Default is `'after'`.)
+     * - `anchorLinkClass` – The class name that should be given to anchor links. (Default is `'anchor'`.)
+     * - `anchorLinkText` – The visible text that anchor links should have. (Default is `'#'`.)
+     * - `anchorLinkTitleText` – The title and `aria-label` text that anchor links should have, translated with the `site` category. `{heading}` is replaced with the heading text. (Default is `'Direct link to {heading}'`.)
+     * - `useAdditionalTagToAnchorTo` – Whether to render an empty `<span>` with the anchor `id` before each heading, rather than adding the `id` to the heading itself. (Default is `true`.)
+     *
+     * ::: code
+     * ```php Static Config
+     * ->anchors(\CraftCms\Cms\Config\AnchorsConfig::create()
+     *     ->anchorLinkText('¶')
+     *     ->useAdditionalTagToAnchorTo(false)
+     * )
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ANCHORS='{"anchorLinkText":"¶","useAdditionalTagToAnchorTo":false}'
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public AnchorsConfig $anchors;
+
+    /**
      * @var bool Whether element queries should automatically lazy eager-load relations for the other elements in their result set during site requests.
      *
      * ::: code
@@ -3268,6 +3298,7 @@ class GeneralConfig extends BaseConfig
 
     public function __construct()
     {
+        $this->anchors = AnchorsConfig::create();
         $this->mcp = McpConfig::create();
 
         // (Re-)normalize everything.
@@ -3585,6 +3616,29 @@ class GeneralConfig extends BaseConfig
     public function allowUppercaseInSlug(bool $value = true): self
     {
         $this->allowUppercaseInSlug = $value;
+
+        return $this;
+    }
+
+    /**
+     * Settings for the anchor links that the `|anchors` Twig filter and `@anchors` GraphQL directive add to headings.
+     *
+     * ```php
+     * ->anchors(\CraftCms\Cms\Config\AnchorsConfig::create()
+     *     ->anchorLinkText('¶')
+     * )
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $anchors
+     *
+     * @param  AnchorsConfig|array<string, mixed>|string  $value
+     */
+    public function anchors(AnchorsConfig|array|string $value): self
+    {
+        $this->anchors = $value instanceof AnchorsConfig ? $value : AnchorsConfig::fromConfig($value);
 
         return $this;
     }
