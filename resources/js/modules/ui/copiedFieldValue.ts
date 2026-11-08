@@ -298,8 +298,14 @@ function dateTimeText(value: unknown, props: object): string {
       ? time.match(/^(\d{2}):(\d{2})/)
       : null;
 
+  // The parts the field shows, as they're held, so a cleared field has
+  // nothing to copy.
+  const shownText = [showDate !== false && date, showTime !== false && time]
+    .filter((part) => typeof part === 'string' && part)
+    .join(' ');
+
   if (!dateParts && !timeParts) {
-    return valueText(value, null);
+    return shownText;
   }
 
   // The wall-clock date and time, formatted as they are, not converted.
@@ -321,7 +327,7 @@ function dateTimeText(value: unknown, props: object): string {
       timeStyle: timeParts ? 'short' : undefined,
     }).format(wallClock);
   } catch {
-    return valueText(value, null);
+    return shownText;
   }
 
   return showTimeZone && typeof timezone === 'string' && timezone

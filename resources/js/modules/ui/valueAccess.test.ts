@@ -170,6 +170,9 @@ describe('acceptsValue', () => {
         col4: {type: 'money'},
         col5: {type: 'date'},
         col6: {type: 'time'},
+        col8: {type: 'number', min: 0, max: 10},
+        col9: {type: 'email'},
+        col10: {type: 'multiline'},
       },
       maxRows: 2,
     });
@@ -194,6 +197,14 @@ describe('acceptsValue', () => {
     expect(takes(table, [{col5: 'not-a-date'}])).toBe(false);
     expect(takes(table, [{col6: '2:30 PM'}])).toBe(false);
     expect(takes(table, [{col7: 'Pears'}])).toBe(false);
+    // Numbers within their column's bounds, emails as emails, and text as text
+    expect(takes(table, [{col8: 10, col9: 'hi@example.com'}])).toBe(true);
+    expect(takes(table, [{col8: 20}])).toBe(false);
+    expect(takes(table, [{col9: 'not-an-email'}])).toBe(false);
+    expect(takes(table, [{col10: 'Two\nlines'}])).toBe(true);
+    expect(takes(table, [{col10: {value: '1,999', locale: 'en-US'}}])).toBe(
+      false
+    );
     expect(takes(table, [{}, {}, {}])).toBe(false);
   });
 });

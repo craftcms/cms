@@ -126,7 +126,7 @@ describe('FieldNode value clipboard', () => {
     )!;
   }
 
-  it('pastes a copied value, with the props it draws it with, into fields in the same value scope', async () => {
+  it('pastes a copied value alone, without the props it was stored with, into fields in the same value scope', async () => {
     const values = reactive<UiValues>({
       fields: {source: [7, 9], target: [], other: []},
     });
@@ -174,12 +174,8 @@ describe('FieldNode value clipboard', () => {
     expect(changed).toHaveBeenCalledOnce();
     const change = changed.mock.calls[0]![0];
     expect(change.path).toEqual(['fields', 'target']);
-    expect(change.control?.props).toMatchObject({
-      elements: [
-        {id: 7, label: 'Apples'},
-        {id: 9, label: 'Pears'},
-      ],
-    });
+    // Any script on the site could have changed the stored props
+    expect(change.control).toBeUndefined();
 
     // Each field gets its own copy of the value
     (values.fields as {target: number[]}).target.push(11);
@@ -417,6 +413,13 @@ describe('fieldValueFormats', () => {
     expect(
       date({locale: 'en-US', showDate: false, showTime: true}, both)
     ).toMatch(/^11:30\sPM$/u);
+    // A cleared field keeps its hidden part, which isn't copied
+    expect(
+      date(
+        {locale: 'en-US', showDate: true, showTime: false},
+        {date: '', time: '23:30', timezone: 'UTC'}
+      )
+    ).toBe('');
   });
 
   it('keeps options’ labels apart, with their icons and colors', () => {

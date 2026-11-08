@@ -45,11 +45,7 @@
     controlValueAt,
   } from './runtime';
   import {useUiRenderer} from './renderer/context';
-  import {
-    acceptsValue,
-    controlForSnapshot,
-    readControlValue,
-  } from './valueAccess';
+  import {acceptsValue, readControlValue} from './valueAccess';
   import type {
     UiChange,
     UiChangeKind,
@@ -523,17 +519,14 @@
     pasteValue(copied);
   });
 
+  /**
+   * Pastes the copied value alone. The props it was copied with stay behind:
+   * any script on the site could have changed them in storage, so the control
+   * draws the value itself, as relation fields fetch the elements' chips.
+   */
   function pasteValue(copied: CopiedFieldValue): void {
     // Each field gets its own copy, so editing one doesn't change another.
-    const snapshot = structuredClone({
-      value: copied.value,
-      props: copied.props,
-    });
-    setValue(
-      snapshot.value,
-      'discrete',
-      controlForSnapshot(control.value, snapshot)
-    );
+    setValue(structuredClone(copied.value));
     announce(t('Value pasted.'));
   }
 

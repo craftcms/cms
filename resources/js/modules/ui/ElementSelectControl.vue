@@ -246,6 +246,29 @@
   const viewMode = computed(() => props.control.props.viewMode);
 
   /**
+   * Elements selected without a presentation, such as ones pasted in, which
+   * come as IDs alone, are fetched, so they draw as themselves rather than as
+   * their IDs. Each is fetched once until the server renders the field again.
+   */
+  watch(
+    ids,
+    (current) => {
+      const missing = current.filter(
+        (id) =>
+          !refreshed.has(id) &&
+          !providedPresentations.value.has(id) &&
+          !presentations.has(id) &&
+          !latestRefetch.has(id)
+      );
+
+      if (missing.length) {
+        refreshPresentations(missing).catch(() => {});
+      }
+    },
+    {immediate: true}
+  );
+
+  /**
    * What the card and thumb bodies draw, in the field's current order.
    *
    * Built from `value` rather than `control.props.elements` for the same reason

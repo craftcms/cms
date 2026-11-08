@@ -289,7 +289,7 @@ const money: UiValueAcceptor = (control, {value}) => {
 /** Whether a table cell's value is one its column's input can hold. */
 function fitsColumn(
   cell: UiValue,
-  column: {type?: unknown; options?: unknown}
+  column: {type?: unknown; options?: unknown; min?: unknown; max?: unknown}
 ): boolean {
   if (isBlank(cell)) {
     return true;
@@ -300,9 +300,12 @@ function fitsColumn(
     case 'lightswitch':
       return [true, false, '1', 1, 0].includes(cell as never);
     case 'select':
+    case 'radio':
       return isScalar(cell) && optionValues(column.options).has(String(cell));
     case 'number':
-      return isNumeric(cell);
+      return (
+        isNumeric(cell) && withinBounds(cell as Scalar, column.min, column.max)
+      );
     // Amounts are held with the locale they're formatted for.
     case 'money': {
       const amount = isRecord(cell) ? cell.value : cell;
@@ -318,9 +321,17 @@ function fitsColumn(
       );
     }
     case 'singleline':
+      return isScalar(cell) && isSingleLine(String(cell));
     case 'email':
     case 'url':
-      return isScalar(cell) && isSingleLine(String(cell));
+      return (
+        isScalar(cell) &&
+        isSingleLine(String(cell)) &&
+        fitsInputType(String(cell), column.type)
+      );
+    // Text, not a structured value such as a Money cell's amount and locale
+    case 'multiline':
+      return isScalar(cell);
     case 'date':
     case 'time':
       return isScalar(cell) && fitsInputType(String(cell), column.type);
