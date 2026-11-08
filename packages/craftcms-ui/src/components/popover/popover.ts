@@ -240,6 +240,8 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     this.#layeredCtrl.addEventListener('hide', this.#lower);
     this.#layeredCtrl.addEventListener('hide', this.#returnFocus);
     this.#layeredCtrl.addEventListener('hide', this.#passOnEscape);
+    this.#layeredCtrl.addEventListener('before-show', this.#noteOpening);
+    this.#layeredCtrl.addEventListener('show', this.#closeIfClosedWhileOpening);
   }
 
   override _teardownOverlayCtrl() {
@@ -260,6 +262,11 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     this.#layeredCtrl?.removeEventListener('hide', this.#lower);
     this.#layeredCtrl?.removeEventListener('hide', this.#returnFocus);
     this.#layeredCtrl?.removeEventListener('hide', this.#passOnEscape);
+    this.#layeredCtrl?.removeEventListener('before-show', this.#noteOpening);
+    this.#layeredCtrl?.removeEventListener(
+      'show',
+      this.#closeIfClosedWhileOpening
+    );
     this.#layeredCtrl = null;
 
     super._teardownOverlayCtrl();
@@ -318,6 +325,41 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
     (
       this._overlayCtrl as unknown as {__escKeyHandlerCalled: boolean}
     ).__escKeyHandlerCalled = true;
+  };
+
+  /** Whether Lion's `show()` is still running. */
+  #opening = false;
+
+  /** Whether the popover was closed while {@link #opening}. */
+  #closedWhileOpening = false;
+
+  /**
+   * Lion only sets `opened` once `show()` finishes, so until then a visible
+   * popover reads as closed and closing it does nothing. Choosing a menu item
+   * right after opening the menu does that.
+   */
+  #noteOpening = (event: Event): void => {
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    this.#opening = true;
+    this.#closedWhileOpening = false;
+    if (!this.opened) {
+      void this._setOpenedWithoutPropertyEffects(true);
+    }
+  };
+
+  /**
+   * Lion's `show()` sets `opened` back to true once it finishes, even when the
+   * popover was closed in the meantime, so close it again.
+   */
+  #closeIfClosedWhileOpening = (): void => {
+    this.#opening = false;
+    if (this.#closedWhileOpening) {
+      this.#closedWhileOpening = false;
+      this.opened = false;
+    }
   };
 
   #raise = () => raiseOverlay(this);
@@ -447,6 +489,10 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
 
   protected override updated(changed: PropertyValues) {
     super.updated(changed);
+
+    if (changed.has('opened') && !this.opened && this.#opening) {
+      this.#closedWhileOpening = true;
+    }
 
     if (!this._overlayCtrl) {
       return;

@@ -183,6 +183,26 @@ it('returns focus to the invoker, and stays closed, when Enter inside it calls h
   expect(document.activeElement).toBe(invoker);
 });
 
+it('stays closed when it is closed while still opening', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const invoker = popover.querySelector<CraftButton>('craft-button')!;
+  await invoker.updateComplete;
+
+  invoker.click();
+  await popover.updateComplete;
+  popover.opened = false;
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  expect(popover.opened).toBe(false);
+  expect(popover.querySelector('button')!.checkVisibility()).toBe(false);
+});
+
 it('returns focus to the invoker when Escape closes it from its slotted content', async () => {
   document.body.innerHTML = `
     <craft-popover>
