@@ -780,6 +780,7 @@
 - Fixed a bug where Craft 5 config settings that were deprecated or removed were ignored when set from an array-based general config with the Yii adapter installed.
 - Fixed a bug where deprecated config settings didn’t log deprecation warnings when they were set from environment variables or after the application had booted.
 - Fixed an error that occurred when a Craft 5 general config called `enableBasicHttpAuth()` or `tempAssetUploadFs()` with the Yii adapter installed.
+- Fixed a bug where editable tables in Yii adapter plugin fields, such as those rendered with `craft\helpers\Cp::editableTableFieldHtml()`, showed no rows in element editors, and saving the element cleared them. ([#20478](https://github.com/craftcms/cms/pull/20478))
 - Fixed a bug where CSRF protection stayed off when the `enableCsrfProtection` config setting was set to `false` and then back to `true`, such as with a `CRAFT_ENABLE_CSRF_PROTECTION` environment variable, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
 - Fixed a bug where the `enableCsrfProtection`, `secureHeaders`, and `trustedHosts` config settings had no effect when Laravel’s config was cached, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
 - Fixed a bug where `craft:plugin:install` and `craft:plugin:uninstall` reported success when a Yii adapter plugin’s `Install` migration failed, leaving the plugin installed without its tables. ([#20458](https://github.com/craftcms/cms/pull/20458))
