@@ -426,6 +426,7 @@ return [
     'Logo' => 'โลโก้',
     'MCP' => 'MCP',
     'MCP Settings' => 'การตั้งค่า MCP',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'เซิร์ฟเวอร์ MCP',
     'MCP settings saved.' => 'บันทึกการตั้งค่า MCP แล้ว',
     'Main content' => 'เนื้อหาหลัก',
