@@ -25,6 +25,7 @@ use CraftCms\Cms\Filesystem\Uploads;
 use CraftCms\Cms\Mcp\Capabilities\Assets;
 use CraftCms\Cms\Mcp\StdioTransport;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
@@ -399,7 +400,7 @@ it('creates assets from local project files through the stdio server', function 
 it('prepares uploads over stdio that clients transfer with the upload’s own credential', function (): void {
     $serve = function (string $tool, array $arguments): array {
         $input = fopen('php://memory', 'r+');
-        fwrite($input, implode('', array_map(static fn (array $message): string => json_encode($message).PHP_EOL, [
+        fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
             ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
                 'protocolVersion' => '2025-11-25',
                 'capabilities' => (object) [],
@@ -413,7 +414,7 @@ it('prepares uploads over stdio that clients transfer with the upload’s own cr
         app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen($outputPath, 'w')));
         $this->artisan('craft:mcp:serve', ['--user' => User::query()->firstOrFail()->username])->assertSuccessful();
         $response = collect(file($outputPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
-            ->map(static fn (string $line): array => json_decode($line, true))
+            ->map(static fn (string $line): array => Json::decode($line))
             ->firstWhere('id', 'call');
         unlink($outputPath);
 
