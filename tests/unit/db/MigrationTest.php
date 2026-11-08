@@ -37,7 +37,7 @@ class MigrationTest extends TestCase
                 'id' => $migration->primaryKey(),
                 'title' => $migration->string(),
             ]);
-            $migration->insert('{{%migrationtest_articles}}', ['title' => $title], false);
+            $migration->insert('{{%migrationtest_articles}}', ['title' => $title]);
         }
 
         $migration->archiveTableIfExists('{{%migrationtest_articles}}');
