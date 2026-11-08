@@ -28,7 +28,7 @@ readonly class AssetFolders
             'id' => ['type' => 'integer'],
             'uid' => ['type' => 'string', 'format' => 'uuid'],
             'volumeId' => ['type' => 'integer'],
-            'parentId' => ['type' => ['integer', 'null'], 'description' => 'Parent folder ID, or null for volumes’ root folders. List a volume’s top-level folders with its root folder’s ID.'],
+            'parentId' => ['type' => ['integer', 'null'], 'description' => 'Parent folder ID, or null for root folders: one per volume, across all volumes unless volumeId is also given. A volume’s top-level folders have its root folder’s ID as their parentId.'],
             'name' => ['type' => 'string', 'description' => 'Folder name.'],
             'path' => ['type' => 'string', 'description' => 'Folder path.'],
             'offset' => ['type' => 'integer', 'minimum' => 0, 'description' => 'Number of folders to skip.'],
