@@ -53,6 +53,15 @@ it('copies values only between controls in the same value scope', function () {
         ->and(ElementSelect::make('hero')->elementType(Entry::class)->getValueScope())->toBe(Entry::class);
 });
 
+it('scopes tables to their money columns’ currencies', function () {
+    $table = fn (array $columns) => Table::make('rows')->columns($columns)->getValueScope();
+
+    expect($table(['col1' => ['type' => 'singleline']]))->toBeNull()
+        ->and($table(['col1' => ['type' => 'money', 'currency' => 'EUR']]))
+        ->not->toBe($table(['col1' => ['type' => 'money']]))
+        ->toBe($table(['col2' => ['type' => 'singleline'], 'col1' => ['type' => 'money', 'currency' => 'EUR']]));
+});
+
 it('reads a relation field’s element presentations along with its value', function () {
     expect(ElementSelect::make('hero')->valueProps())->toBe(['elements', 'elementType']);
 });

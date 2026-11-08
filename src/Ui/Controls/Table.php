@@ -208,6 +208,26 @@ class Table extends Control implements ReadableValueControl, WritableValueContro
         return $ui;
     }
 
+    /**
+     * Tables with money columns are scoped to those columns' currencies, so an amount is never
+     * pasted into a column that would read it in another currency.
+     */
+    #[\Override]
+    public function getValueScope(): ?string
+    {
+        $currencies = [];
+
+        foreach ($this->columns as $key => $column) {
+            if (($column['type'] ?? null) === 'money') {
+                $currencies[$key] = $column['currency'] ?? 'USD';
+            }
+        }
+
+        ksort($currencies);
+
+        return parent::getValueScope() ?? ($currencies ? 'money:'.http_build_query($currencies) : null);
+    }
+
     #[\Override]
     public function nestsUis(): bool
     {

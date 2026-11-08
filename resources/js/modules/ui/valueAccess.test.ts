@@ -247,6 +247,8 @@ describe('acceptsValue', () => {
     );
     expect(takes(table, [{col13: '#ff0000'}])).toBe(true);
     expect(takes(table, [{col13: '#ff000080'}])).toBe(false);
+    expect(takes(table, [{col13: '#f00'}, {col13: '#ff0000ff'}])).toBe(true);
+    expect(takes(table, [{col13: 'red'}])).toBe(false);
     expect(takes(table, [{col14: 'Hello'}])).toBe(false);
     expect(takes(table, [{}, {}, {}])).toBe(false);
   });

@@ -242,14 +242,28 @@ const colorSelect: UiValueAcceptor = (control, {value}) => {
   );
 };
 
-/** Whether `value` is a color, translucent only where `alpha` allows it. */
+/**
+ * Whether `value` is a hex color, translucent only where `alpha` allows it,
+ * as the server's `ColorRule` checks it.
+ */
 function fitsColor(value: UiValue, alpha: unknown): boolean {
-  return (
-    isBlank(value) ||
-    (typeof value === 'string' &&
-      // Without an alpha channel, a translucent color can't be entered.
-      (Boolean(alpha) || !/^#?(?:[0-9a-f]{4}|[0-9a-f]{8})$/i.test(value)))
-  );
+  if (isBlank(value)) {
+    return true;
+  }
+
+  const hex =
+    typeof value === 'string'
+      ? /^#?([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(value)?.[1]
+      : undefined;
+
+  if (!hex) {
+    return false;
+  }
+
+  // Shorthand colors are expanded, and a fully opaque alpha channel dropped.
+  const full = hex.length <= 4 ? [...hex].map((c) => c + c).join('') : hex;
+
+  return full.length === 6 || Boolean(alpha) || /ff$/i.test(full);
 }
 
 const color: UiValueAcceptor = (control, {value}) =>
