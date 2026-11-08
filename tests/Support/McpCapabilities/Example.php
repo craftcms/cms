@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Tests\Support\McpCapabilities;
 
 use CraftCms\Cms\Mcp\Attributes\PublicMcp;
+use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\Settings;
 use Mcp\Capability\Attribute\McpPrompt;
@@ -32,6 +33,13 @@ readonly class Example
     public function manage(): string
     {
         return 'Managed example';
+    }
+
+    #[McpTool(name: 'example_http')]
+    #[RequiresHttp]
+    public function http(): string
+    {
+        return 'HTTP only';
     }
 
     #[McpResource(uri: 'example://welcome', name: 'example-welcome', title: 'Welcome message')]
