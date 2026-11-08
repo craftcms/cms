@@ -151,7 +151,6 @@ it('records the template line of a deprecated API called from Twig', function (s
     $tempDir = sys_get_temp_dir().'/craft-deprecator-test-'.uniqid();
     File::ensureDirectoryExists($tempDir);
     File::put("$tempDir/caller.twig", "Line one\n\n{% set q = query %}\n{% do $call %}\n");
-    $template = realpath("$tempDir/caller.twig");
     Aliases::set('@templates', $tempDir);
 
     $query = Entry::find();
@@ -159,15 +158,15 @@ it('records the template line of a deprecated API called from Twig', function (s
 
     try {
         app(TemplateManager::class)->renderTemplate('caller', ['query' => $query], TemplateMode::Site);
+
+        $log = Arr::first($this->deprecator->getRequestLogs());
+
+        expect($log->key)->toBe($key)
+            ->and(realpath($log->file))->toBe(realpath("$tempDir/caller.twig"))
+            ->and($log->line)->toBe(4);
     } finally {
         File::deleteDirectory($tempDir);
     }
-
-    $log = Arr::first($this->deprecator->getRequestLogs());
-
-    expect($log->key)->toBe($key)
-        ->and($log->file)->toBe($template)
-        ->and($log->line)->toBe(4);
 })->with([
     'Twig function' => ["svg('<svg></svg>', class='foo')", 'svg()-class'],
     'method call' => ["q.orderBy({title: 'asc'})", 'CraftCms\\Cms\\Element\\Queries\\EntryQuery::orderBy'],

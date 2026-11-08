@@ -22,19 +22,18 @@ it('records the template line of a plugin API that logs through the legacy depre
     $tempDir = sys_get_temp_dir() . '/craft-legacy-deprecator-test-' . uniqid();
     File::ensureDirectoryExists($tempDir);
     File::put("$tempDir/caller.twig", "Line one\n\n{% do plugin.legacyMethod() %}\n");
-    $template = realpath("$tempDir/caller.twig");
     Aliases::set('@templates', $tempDir);
 
     try {
         app(TemplateManager::class)->renderTemplate('caller', ['plugin' => new DeprecatorCompatibilityTestPlugin()], TemplateMode::Site);
+
+        $log = collect(Deprecator::getRequestLogs())->firstWhere('key', 'plugin-legacyMethod');
+
+        expect(realpath($log->file))->toBe(realpath("$tempDir/caller.twig"))
+            ->and($log->line)->toBe(3);
     } finally {
         File::deleteDirectory($tempDir);
     }
-
-    $log = collect(Deprecator::getRequestLogs())->firstWhere('key', 'plugin-legacyMethod');
-
-    expect($log->file)->toBe($template)
-        ->and($log->line)->toBe(3);
 });
 
 class DeprecatorCompatibilityTestPlugin
