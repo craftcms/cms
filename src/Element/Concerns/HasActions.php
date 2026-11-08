@@ -69,7 +69,8 @@ trait HasActions
             $isDuplicate = fn ($action) => $action === Duplicate::class
                 || $action instanceof Duplicate
                 || (is_array($action) && ($action['type'] ?? null) === Duplicate::class);
-            $lastDuplicate = $actions->keys()->filter(fn (int $key) => $isDuplicate($actions[$key]))->last();
+            // By position, not key: element types can key their actions.
+            $lastDuplicate = $actions->values()->filter($isDuplicate)->keys()->last();
             $actions->splice($lastDuplicate === null ? 0 : $lastDuplicate + 1, 0, [ClientAction::compare()]);
         }
 

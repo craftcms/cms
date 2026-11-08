@@ -168,6 +168,20 @@ it('serializes registered download actions for native form submission', function
         ->and($download['action']['body']['elementAction'])->toBe($downloadAction::class);
 });
 
+it('puts compare after the duplicate actions an element type defines by key', function () {
+    $elementType = new class extends Entry
+    {
+        protected static function defineActions(string $source): array
+        {
+            return ['status' => SetStatus::class, 'duplicate' => Duplicate::class, 'delete' => Delete::class];
+        }
+    };
+
+    $ids = array_map(fn ($action) => $action instanceof ClientAction ? $action->key : $action, array_values($elementType::actions('*')));
+
+    expect($ids)->toBe(['view', 'edit', SetStatus::class, Duplicate::class, 'compare', Delete::class]);
+});
+
 it('puts restore first for trashed queries', function () {
     $actions = $this->elementActions->availableActions(Entry::class, '*', Entry::find()->trashed());
 
