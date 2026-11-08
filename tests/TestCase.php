@@ -32,6 +32,7 @@ use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Testing\CachedState;
@@ -289,8 +290,7 @@ class TestCase extends Orchestra
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
         File::cleanDirectory(storage_path('logs'));
 
-        $app->useEnvironmentPath(__DIR__);
-        $app->bootstrapWith([LoadEnvironmentVariables::class]);
+        $this->loadEnvironmentVariables($app);
 
         tap($app->make(ConfigRepository::class), function (ConfigRepository $config) {
             $config->set('inertia.pages.paths', [__DIR__.'/../resources/js/pages']);
@@ -353,5 +353,16 @@ class TestCase extends Orchestra
 
             DB::setDefaultConnection($connection);
         });
+    }
+
+    /**
+     * Loads `tests/.env`, which configures the test database connection.
+     *
+     * The variables stay in the process environment for the rest of the run.
+     */
+    protected function loadEnvironmentVariables(Application $app): void
+    {
+        $app->useEnvironmentPath(__DIR__);
+        $app->bootstrapWith([LoadEnvironmentVariables::class]);
     }
 }
