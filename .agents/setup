@@ -141,6 +141,12 @@ step 'Install adapter PHP dependencies' composer --working-dir=yii2-adapter inst
 if [[ -n ${CRAFT_FONTAWESOME_TOKEN:-} ]]; then
     pnpm config set '//npm.fontawesome.com/:_authToken' "$CRAFT_FONTAWESOME_TOKEN"
 fi
+# An npm install (5.x's setup runs `npm ci`) leaves a flat tree that pnpm keeps
+# beside its own links. Tools resolve those stale copies first; webpack-cli then
+# loads an older webpack and terser, which rewrites the committed xregexp bundle.
+if [[ -f node_modules/.package-lock.json ]]; then
+    step 'Remove npm-installed dependencies' rm -rf node_modules packages/*/node_modules
+fi
 step 'Install frontend dependencies' pnpm install --prefer-offline --frozen-lockfile --trust-lockfile
 # pnpm remembers skipped optional dependencies from an unauthenticated install.
 if [[ -n ${CRAFT_FONTAWESOME_TOKEN:-} && ! -f node_modules/@awesome.me/kit-ddaed3f5c5/icons/metadata/icons.json ]]; then
