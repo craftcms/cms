@@ -99,7 +99,7 @@ it('picks the color from the palette when custom colors aren’t allowed', funct
         'palette' => [['color' => '#E5422B', 'label' => 'Craft red'], ['color' => '#2563eb', 'label' => '']],
     ]);
     $control = $field->uiControl(new FieldContext('color', 'E5422B'));
-    $context = new UiContext(namespace: 'fields', values: ['fields' => ['color' => 'E5422B']]);
+    $context = new UiContext(namespace: 'fields', values: ['fields' => ['color' => 'E5422B']], errors: ['color' => ['Color is invalid.']]);
     $payload = app(UiResolver::class)->resolve(Ui::make([UiField::make('Color', $control)]), $context);
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
     $select = $crawler->filter('craft-select-color');
@@ -109,6 +109,7 @@ it('picks the color from the palette when custom colors aren’t allowed', funct
         ->and($select->attr('colors'))->toBe('["#e5422b","#2563eb"]')
         ->and($select->attr('labels'))->toBe('{"#e5422b":"Craft red"}')
         ->and($select->attr('model-value'))->toBe('#e5422b')
+        ->and($select->attr('aria-invalid'))->toBe('true')
         ->and($crawler->filter('craft-input-color'))->toHaveCount(0);
 });
 

@@ -36,6 +36,8 @@ class SelectColor extends ViewComponent
 
     protected bool $readOnly = false;
 
+    protected bool $invalid = false;
+
     protected ?string $describedBy = null;
 
     protected ?string $labelledBy = null;
@@ -136,6 +138,16 @@ class SelectColor extends ViewComponent
         return $this;
     }
 
+    /**
+     * Marks the value as having failed validation, such as on the server.
+     */
+    public function invalid(bool $invalid = true): static
+    {
+        $this->invalid = $invalid;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -150,6 +162,7 @@ class SelectColor extends ViewComponent
             'labels' => $this->labels !== [] ? Json::encode($this->labels) : null,
             'required' => $this->required,
             'readonly' => $this->readOnly,
+            'aria-invalid' => $this->invalid ? 'true' : null,
             'disabled' => $this->isDisabled(),
             'described-by' => $this->describedBy,
             'labelled-by' => $this->labelledBy,

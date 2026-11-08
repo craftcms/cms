@@ -49,6 +49,7 @@ class Color extends Control implements ReadableValueControl, WritableValueContro
                 ->disabled($attributes['name'] === null)
                 ->readOnly($attributes['readonly'])
                 ->required($attributes['required'])
+                ->invalid(($attributes['aria']['invalid'] ?? null) === 'true')
                 ->describedBy($attributes['aria']['describedby'] ?? null)
                 ->toHtml();
         }
