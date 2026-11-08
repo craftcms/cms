@@ -203,6 +203,7 @@ describe('acceptsValue', () => {
         col12: {type: 'link', types: ['url']},
         col13: {type: 'color'},
         col14: {heading: 'Custom'},
+        col15: {type: 'link'},
       },
       maxRows: 2,
     });
@@ -226,10 +227,18 @@ describe('acceptsValue', () => {
     expect(takes(table, [{col5: '2026-11-13', col6: '14:30'}])).toBe(true);
     expect(takes(table, [{col5: 'not-a-date'}])).toBe(false);
     expect(takes(table, [{col6: '2:30 PM'}])).toBe(false);
+    expect(takes(table, [{col5: '2024-02-29', col6: '23:59:59'}])).toBe(true);
+    expect(takes(table, [{col5: '2026-02-29'}])).toBe(false);
+    expect(takes(table, [{col5: '2026-13-01'}])).toBe(false);
+    expect(takes(table, [{col6: '99:99'}])).toBe(false);
     expect(takes(table, [{col7: 'Pears'}])).toBe(false);
     // Numbers within their column's bounds, emails as emails, and text as text
     expect(takes(table, [{col8: 10, col9: 'hi@example.com'}])).toBe(true);
     expect(takes(table, [{col8: 20}])).toBe(false);
+    expect(takes(table, [{col8: '1.5e0'}, {col8: '.5'}])).toBe(true);
+    for (const number of ['0x10', 'Infinity', '1e309', ' 5']) {
+      expect(takes(table, [{col8: number}])).toBe(false);
+    }
     expect(takes(table, [{col9: 'not-an-email'}])).toBe(false);
     expect(takes(table, [{col10: 'Two\nlines'}])).toBe(true);
     expect(takes(table, [{col10: {value: '1,999', locale: 'en-US'}}])).toBe(
@@ -250,6 +259,10 @@ describe('acceptsValue', () => {
     expect(takes(table, [{col13: '#f00'}, {col13: '#ff0000ff'}])).toBe(true);
     expect(takes(table, [{col13: 'red'}])).toBe(false);
     expect(takes(table, [{col14: 'Hello'}])).toBe(false);
+    // A link column that offers no types takes no links
+    expect(
+      takes(table, [{col15: {type: 'url', value: 'https://craftcms.com'}}])
+    ).toBe(false);
     expect(takes(table, [{}, {}, {}])).toBe(false);
   });
 

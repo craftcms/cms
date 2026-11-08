@@ -41,11 +41,15 @@ function isScalar(value: UiValue | undefined): value is Scalar {
   return typeof value === 'string' || typeof value === 'number';
 }
 
+/**
+ * Whether `value` is a finite decimal number, as a number input can hold it,
+ * not hex or `Infinity`, which `Number()` would also read.
+ */
 function isNumeric(value: UiValue | undefined): boolean {
   return (
     isScalar(value) &&
-    String(value).trim() !== '' &&
-    !Number.isNaN(Number(value))
+    /^-?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i.test(String(value)) &&
+    Number.isFinite(Number(value))
   );
 }
 
@@ -88,11 +92,27 @@ function fitsInputType(text: string, inputType: unknown): boolean {
       return /^[^\s@]+@[^\s@]+$/.test(text);
     case 'url':
       return URL.canParse(text);
-    // As date and time inputs hold them, such as `2026-11-13` and `14:30`
-    case 'date':
-      return /^\d{4}-\d{2}-\d{2}$/.test(text);
-    case 'time':
-      return /^\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(text);
+    // Real dates and times, as date and time inputs hold them, such as
+    // `2026-11-13` and `14:30`
+    case 'date': {
+      const [, year, month, day] = (
+        /^(\d{4})-(\d{2})-(\d{2})$/.exec(text) ?? []
+      ).map(Number);
+      const leap = year! % 4 === 0 && (year! % 100 !== 0 || year! % 400 === 0);
+      const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+      return year! >= 1 && day! >= 1 && day! <= (days[month! - 1] ?? 0);
+    }
+    case 'time': {
+      const match = /^(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/.exec(text);
+
+      return (
+        match !== null &&
+        Number(match[1]) < 24 &&
+        Number(match[2]) < 60 &&
+        Number(match[3] ?? 0) < 60
+      );
+    }
     default:
       return true;
   }
@@ -395,8 +415,8 @@ function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
         isRecord(cell) &&
         (isBlank(cell.value) ||
           (typeof cell.value === 'string' &&
-            (!Array.isArray(column.types) ||
-              column.types.includes(cell.type as never))))
+            Array.isArray(column.types) &&
+            column.types.includes(cell.type as never)))
       );
     // Columns with controls of their own, whose values can't be checked here
     default:

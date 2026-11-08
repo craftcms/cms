@@ -62,6 +62,12 @@ it('scopes tables to their money columns’ currencies', function () {
         ->toBe($table(['col2' => ['type' => 'singleline'], 'col1' => ['type' => 'money', 'currency' => 'EUR']]));
 });
 
+it('lists table columns’ options as their cells offer them', function () {
+    $columns = Table::make('rows')->columns(['size' => ['type' => 'select', 'options' => ['s' => 'Small']]])->props()['columns'];
+
+    expect(array_column($columns['size']['options'], 'value'))->toBe(['s']);
+});
+
 it('reads a relation field’s element presentations along with its value', function () {
     expect(ElementSelect::make('hero')->valueProps())->toBe(['elements', 'elementType']);
 });

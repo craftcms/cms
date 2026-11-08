@@ -217,7 +217,7 @@ class Table extends Control implements ReadableValueControl, WritableValueContro
     {
         $currencies = [];
 
-        foreach ($this->columns as $key => $column) {
+        foreach (array_map($this->columnProps(...), $this->columns) as $key => $column) {
             if (($column['type'] ?? null) === 'money') {
                 $currencies[$key] = $column['currency'] ?? 'USD';
             }
@@ -304,9 +304,21 @@ class Table extends Control implements ReadableValueControl, WritableValueContro
      */
     private function columnProps(array $column): array
     {
-        // Columns without a control or a type are single-line text, as TableColumn::control() draws them.
-        if (! isset($column['control'])) {
+        if (isset($column['control'])) {
+            // A column drawn by a control of its own, such as a Table field's cell, takes the settings pasted
+            // cells are checked against from that control, wherever the column configured them.
+            $controlProps = $column['control']->props();
+            if (isset($controlProps['types'])) {
+                $controlProps['types'] = array_column($controlProps['types'], 'id');
+            }
+            $column = [...$column, ...Arr::only($controlProps, ['options', 'types', 'currency', 'min', 'max', 'alpha'])];
+        } else {
+            // Columns without a control or a type are single-line text, as TableColumn::control() draws them.
             $column['type'] ??= 'singleline';
+
+            if (in_array($column['type'], ['select', 'radio'], true)) {
+                $column['options'] = TableColumn::options($column['options'] ?? []);
+            }
         }
 
         if (isset($column['info']) && ! isset($column['infoHtml'])) {

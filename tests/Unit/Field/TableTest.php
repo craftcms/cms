@@ -135,6 +135,24 @@ it('validates optional built-in cell values and reports their table paths', func
     'empty money' => ['money', ['value' => '', 'locale' => 'nl-BE'], true],
 ]);
 
+it('describes columns by their cells’ own settings, which pasted rows are checked against', function () {
+    $control = fn (string $currency) => new Table([
+        'name' => 'Rows',
+        'handle' => 'rows',
+        'columns' => [
+            'price' => ['heading' => 'Price', 'handle' => 'price', 'type' => 'money', 'settings' => ['currency' => $currency]],
+            'link' => ['heading' => 'Link', 'handle' => 'link', 'type' => 'link', 'settings' => ['types' => ['url', 'email']]],
+            'size' => ['heading' => 'Size', 'handle' => 'size', 'type' => 'select', 'options' => ['s' => 'Small']],
+        ],
+    ])->uiControl(new FieldContext('rows'));
+    $columns = $control('EUR')->props()['columns'];
+
+    expect($columns['price']['currency'])->toBe('EUR')
+        ->and($columns['link']['types'])->toBe(['url', 'email'])
+        ->and(array_column($columns['size']['options'], 'value'))->toBe(['s'])
+        ->and($control('EUR')->getValueScope())->not->toBe($control('USD')->getValueScope());
+});
+
 it('round-trips money cells through localized row forms and scalar storage', function (?string $amount, ?string $expected) {
     I18N::withLocale('en-US', 'nl-BE', function () use ($amount, $expected): void {
         $field = new Table([

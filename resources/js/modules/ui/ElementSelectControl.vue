@@ -185,6 +185,9 @@
   watch(
     ids,
     (current) => {
+      // One that leaves loses its cached presentation, so it's fetched again
+      // if it comes back.
+      loaded.forEach((id) => current.includes(id) || loaded.delete(id));
       const missing = current.filter(
         (id) =>
           !loaded.has(id) &&
