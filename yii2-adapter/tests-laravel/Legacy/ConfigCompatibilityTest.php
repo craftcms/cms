@@ -8,6 +8,8 @@ use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
@@ -127,6 +129,40 @@ it('converts callable general config and application type overlays', function():
     expect($config)->toBeInstanceOf(GeneralConfig::class)
         ->and($config->cpTrigger)->toBe('console');
 });
+
+it('merges application type overlays loaded from config files into the base general config', function(string $general): void {
+    $originalConfigPath = $this->app->configPath();
+    $configPath = sys_get_temp_dir() . '/craft-config-' . bin2hex(random_bytes(8));
+    $craftConfigPath = "$configPath/craft";
+    mkdir($craftConfigPath, recursive: true);
+    file_put_contents("$craftConfigPath/general.php", "<?php return $general;");
+    file_put_contents("$craftConfigPath/general.console.php", "<?php return ['cpTrigger' => 'console'];");
+    file_put_contents("$craftConfigPath/general.web.php", "<?php return ['pageTrigger' => 'web-page'];");
+
+    try {
+        $loaded = new Application($configPath)->useConfigPath($configPath);
+        new LoadConfiguration()->bootstrap($loaded);
+        Config::set('craft.general', $loaded['config']->get('craft.general'));
+        $this->app->useConfigPath($configPath);
+
+        new GeneralConfigCompatibility()->register($this->app);
+
+        $config = Config::get('craft.general');
+
+        expect($config)->toBeInstanceOf(GeneralConfig::class)
+            ->and($config->cpTrigger)->toBe('console')
+            ->and($config->pageTrigger)->toBe('base-page');
+    } finally {
+        $this->app->useConfigPath($originalConfigPath);
+        array_map(unlink(...), glob("$craftConfigPath/*.php"));
+        rmdir($craftConfigPath);
+        rmdir($configPath);
+    }
+})->with([
+    'array' => ["['cpTrigger' => 'base', 'pageTrigger' => 'base-page']"],
+    'fluent' => ['\craft\config\GeneralConfig::create()->cpTrigger("base")->pageTrigger("base-page")'],
+    'callable' => ['fn(\craft\config\GeneralConfig $config) => $config->cpTrigger("base")->pageTrigger("base-page")'],
+]);
 
 it('applies a deprecated anchors.php config file unless the general config sets anchors', function(array $general, string $expectedText): void {
     $config = new GeneralConfigCompatibility()->applyAnchorsConfig(

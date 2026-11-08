@@ -7,11 +7,49 @@ namespace CraftCms\Yii2Adapter\Config;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Support\Facades\Config;
 
 readonly class GeneralConfigCompatibility
 {
+    /**
+     * Replaces `craft.general` with a config object, applying the application type overlay and any leftover `anchors.php` file.
+     */
+    public function register(Application $app): void
+    {
+        $appType = $app->runningInConsole() ? 'console' : 'web';
+
+        Config::set('craft.general', $this->applyAnchorsConfig(
+            $this->convert(
+                $this->baseConfig($app, Config::get('craft.general', [])),
+                Config::get("craft.general.{$appType}"),
+            ),
+            Config::get('craft.anchors'),
+        ));
+    }
+
+    /**
+     * Returns the `general.php` config without the application type overlays.
+     *
+     * Laravel's config loader stores `general.web.php` and `general.console.php` inside `craft.general`,
+     * replacing a `general.php` that returns a config object or a callable, so the file is loaded again.
+     */
+    private function baseConfig(Application $app, mixed $config): mixed
+    {
+        if (!is_array($config) || !Arr::hasAny($config, ['web', 'console'])) {
+            return $config;
+        }
+
+        $path = $app->configPath('craft/general.php');
+
+        return is_file($path)
+            ? (static fn() => require $path)()
+            : Arr::except($config, ['web', 'console']);
+    }
+
     /**
      * Converts a Craft 5 general config to a config object.
      *
