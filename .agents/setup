@@ -8,9 +8,11 @@ TIMEFORMAT='Finished in %3R seconds'
 # After a push to 5.x, Amp also prepares cms-6.x project orbs, but checks out
 # the 5.x tip on the local 6.x branch. Running this setup there leaves 5.x
 # dependencies and agent guidance behind in 6.x orbs, so skip it; 6.x's setup
-# runs once a thread checks out 6.x.
-if [[ ${AMP_PROJECT_ID:-} == 4369cc4f-7f5f-41d0-b7a3-a6f6e17966dd ||
-    $(git symbolic-ref --quiet --short HEAD || true) == 6.x ]]; then
+# runs once a thread checks out 6.x. Only 6.x has yii2-adapter/, so this
+# guard does nothing if a 5.x merge carries it into 6.x's setup.
+if [[ ! -d yii2-adapter ]] &&
+    [[ ${AMP_PROJECT_ID:-} == 4369cc4f-7f5f-41d0-b7a3-a6f6e17966dd ||
+        $(git symbolic-ref --quiet --short HEAD || true) == 6.x ]]; then
     echo 'Skipping Craft 5 setup in a cms-6.x orb.'
     exit 0
 fi
