@@ -5,6 +5,7 @@
 - Renamed Craft’s MCP tools to use snake_case names, such as `elements_list` instead of `elements.list` and `craft_query` instead of `craft-query`, because VS Code, claude.ai, and other MCP clients reject or rename tools with dots in their names. Public MCP server approvals are updated automatically. Plugins should name their MCP tools the same way, such as `my_plugin_orders_list`. ([#20351](https://github.com/craftcms/cms/issues/20351))
 - The `assets_create` and `assets_replace` MCP tools now accept base64-encoded file data, local file paths (stdio server only, limited to project directories where a local volume could be located), and files sent to single-use upload URLs from the new `assets_upload_url` MCP tool, in addition to download URLs. Download URLs no longer require a `file_id`, follow up to 3 redirects, and are validated against SSRF via craftcms/url-validator.
 - The `assets_create` MCP tool can now upload files to an Assets field’s default upload location, via its new `fieldId` and `elementId` arguments.
+- The `assets_upload_url` MCP tool is now available over stdio (`mcp/serve`), for local files the server can’t read by path, such as when it runs in a container. Over stdio, upload URLs use the site’s base URL, which must be absolute.
 - The `configuration_get`, `configuration_list`, `configuration_create`, and `configuration_update` MCP tools now return each record’s revision, and `configuration_update` and `configuration_delete` accept it as `expectedRevision`, failing without changing anything if the record has changed since it was read. Without `expectedRevision`, they can still overwrite changes made since the read. ([#20440](https://github.com/craftcms/cms/pull/20440))
 - Added `craft\services\ProjectConfig::acquireLock()`. ([#20440](https://github.com/craftcms/cms/pull/20440))
 - Added the `user_permissions_user_update` and `user_permissions_group_update` MCP tools, which add and remove specific permissions without resending complete lists. ([#20434](https://github.com/craftcms/cms/pull/20434))
@@ -29,6 +30,7 @@
 - Fixed a bug where field values submitted for nested entries, Content Block fields, and addresses could be saved even if the user wasn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where MCP tools returned empty arrays for CKEditor field values.
 - Fixed a bug where the `elements_list`, `drafts_list`, `revisions_list`, `search_query`, and `craft_query` MCP tools returned only element metadata when `fields` was `null`, rather than all non-nested custom fields.
+- Fixed a bug where upload URLs from the `assets_upload_url` MCP tool returned 404 errors when the authenticated MCP server’s endpoint was within the control panel.
 - Added `craft\base\McpOutputFieldInterface`, which fields can implement to control how their values are returned by MCP tools.
 - Added `craft\mcp\McpOutputContext`.
 - MCP `fields` arguments now accept dot paths, such as `blocks.innerBlocks`, which include nested fields of nested elements as summaries.

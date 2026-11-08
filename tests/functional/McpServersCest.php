@@ -116,6 +116,18 @@ class McpServersCest
         $I->dontSeeResponseCodeIs(403);
     }
 
+    public function testUploadUrlsWorkOnControlPanelEndpoints(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $this->settings(['enabled' => true, 'route' => "/$general->cpTrigger/mcp", 'authorizationRoute' => "/$general->cpTrigger/mcp"]);
+
+        // Upload URLs use the authenticated server's endpoint, and their token routes them to the upload action,
+        // which rejects this unreserved upload rather than the request 404ing
+        $token = Craft::$app->getTokens()->createToken(['mcp/upload', ['uploadId' => StringHelper::UUID()]]);
+        $I->sendAjaxPostRequest("/$general->cpTrigger/mcp?$general->tokenParam=$token");
+        $I->seeResponseCodeIs(400);
+    }
+
     public function testSiteEndpointsDoNotRequireControlPanelAccess(FunctionalTester $I): void
     {
         $this->settings(['enabled' => true, 'route' => '/mcp']);

@@ -10,8 +10,8 @@ use craft\elements\conditions\ElementCondition;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
 use craft\fields\Assets as AssetsField;
+use craft\helpers\UrlHelper;
 use craft\mcp\AssetUploads as McpAssetUploads;
-use craft\mcp\attributes\RequiresHttp;
 use craft\mcp\Authorization;
 use craft\mcp\ElementResourceLinks;
 use craft\mcp\elements\adapters\AssetAdapter;
@@ -313,10 +313,27 @@ readonly class Assets
         name: 'assets_upload_url',
         description: 'Gets a single-use URL for uploading a local or large file. Send the raw file bytes as the body of a PUT request to upload_url before expires_at (for example, curl -T ./photo.jpg "<upload_url>"), then pass {"upload_id": "...", "file_name": "photo.jpg"} as the file for assets_create or assets_replace. The file name is required, since it can’t be derived from the upload. Requires permission to save assets in at least one volume.',
     )]
-    #[RequiresHttp]
     public function uploadUrl(): array
     {
-        return $this->mcpAssetUploads->createUpload($this->actor->user(), $this->settings->url($this->settings->route));
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return $this->mcpAssetUploads->createUpload($this->actor->user(), $this->settings->url($this->settings->route));
+        }
+
+        // Console URLs are built without a host or the site's subdirectory, so the stdio server uses the site's base
+        // URL. The token routes the upload whatever the path, but the path can't be the base URL itself, since nginx
+        // only serves directory indexes for GET, HEAD, and POST requests. With rewrites, an action path reaches the
+        // front controller even when the base URL has a path of its own, such as a language prefix. Without them,
+        // the base URL must be the web root, where the front controller is.
+        $baseUrl = UrlHelper::baseSiteUrl();
+
+        if (!UrlHelper::isAbsoluteUrl($baseUrl)) {
+            throw new ToolCallException('Upload URLs over stdio require the site to have an absolute base URL.');
+        }
+
+        $general = Craft::$app->getConfig()->getGeneral();
+        $path = $general->omitScriptNameInUrls ? "$general->actionTrigger/mcp/upload" : 'index.php';
+
+        return $this->mcpAssetUploads->createUpload($this->actor->user(), rtrim($baseUrl, '/') . "/$path");
     }
 
     /**
