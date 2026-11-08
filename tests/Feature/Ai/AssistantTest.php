@@ -220,7 +220,7 @@ it('shows the elements the user can view as chips, which only the chat gets, lea
 
     foreach ([$streamed, $reloaded] as $shown) {
         expect($shown['elements'])->toHaveCount(1)
-            ->and($shown['elements'][0])->toMatchArray(['id' => $entry->id, 'label' => 'Lighthouses', 'cpEditUrl' => $entry->getCpEditUrl()])
+            ->and($shown['elements'][0])->toMatchArray(['elementType' => Entry::class, 'id' => $entry->id, 'label' => 'Lighthouses', 'cpEditUrl' => $entry->getCpEditUrl()])
             ->and($shown['elements'][0]['actions'])->not->toBeEmpty();
     }
 

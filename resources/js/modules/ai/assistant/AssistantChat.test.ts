@@ -1,9 +1,18 @@
-import {ConfigService} from '@craftcms/ui';
+import {actionClient, ConfigService} from '@craftcms/ui';
 import type {ActionMenuItemButton} from '@craftcms/ui/components/action-menu/action-menu.types';
 import {createApp, nextTick, shallowRef, type ShallowRef} from 'vue';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vite-plus/test';
 import type {ConnectionAdapter} from '@tanstack/ai-vue';
 import {assistantApi} from '@/bootstrap/assistant';
+import {broadcast} from '@/common/craft/broadcast';
 import {AssistantRequestError} from './assistant';
 import {registerAssistantEditor} from './context';
 import AssistantChat from './AssistantChat.vue';
@@ -529,6 +538,61 @@ describe('AssistantChat', () => {
         .querySelector('craft-action-menu craft-button')
         ?.getAttribute('aria-label')
     ).toBe('Actions for Lighthouses');
+  });
+
+  it('redraws the cards show_elements returned when their elements are saved', async () => {
+    const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
+      data: {
+        elements: [
+          {
+            id: 4,
+            siteId: 1,
+            label: 'Lighthouses of Maine',
+            cardHeaderHtml:
+              '<a href="/admin/entries/4">Lighthouses of Maine</a>',
+          },
+        ],
+      },
+    } as never);
+    onTestFinished(() => post.mockRestore());
+    chat.messages.value = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'tool-call',
+            id: 'call_1',
+            name: 'show_elements',
+            arguments: '{}',
+            state: 'input-complete',
+            output: JSON.stringify({
+              view: 'cards',
+              elements: [
+                {
+                  elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+                  id: 4,
+                  siteId: 1,
+                  label: 'Lighthouses',
+                  cardHeaderHtml: '<a href="/admin/entries/4">Lighthouses</a>',
+                },
+              ],
+            }),
+          },
+        ],
+      },
+    ];
+    await flush();
+
+    broadcast({event: 'saveElement', id: 4});
+    await vi.waitFor(() =>
+      expect(container.textContent).toContain('Lighthouses of Maine')
+    );
+
+    expect(post).toHaveBeenCalledWith(
+      'relational-fields/structured-elements',
+      expect.objectContaining({elementIds: [4], siteId: 1, viewMode: 'cards'})
+    );
   });
 
   async function askQuestion(): Promise<void> {

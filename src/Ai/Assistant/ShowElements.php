@@ -111,7 +111,8 @@ readonly class ShowElements implements Tool
 
     /**
      * Returns a result of the tool for the chat to show: each element with its card or chip, as the element select
-     * control sends them, as of now. Elements the user can no longer view are left out.
+     * control sends them, as of now, with its class, which the chat refetches it by once it’s saved, as relation fields
+     * do. Elements the user can no longer view are left out.
      */
     public function forDisplay(string $result): string
     {
@@ -129,7 +130,10 @@ readonly class ShowElements implements Tool
             $found = is_array($item) ? $this->elements->find($item) : null;
 
             if ($found !== null) {
-                $shown[] = Arr::only(ElementSelect::presentation($found[1], $mode), self::VIEW_KEYS[$view]);
+                $shown[] = [
+                    'elementType' => $found[1]::class,
+                    ...Arr::only(ElementSelect::presentation($found[1], $mode), self::VIEW_KEYS[$view]),
+                ];
             }
         }
 
