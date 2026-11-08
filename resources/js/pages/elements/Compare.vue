@@ -46,6 +46,7 @@
     withServerTabFields,
     readOnlyPane,
     sideIcons,
+    sideLetters,
     type CompareRow,
     type CompareSide,
     type CompareTab,
@@ -263,13 +264,24 @@
     version: props.from.label === props.to.label,
   }));
 
-  /** What tells a side apart from the other in the names of its copy buttons. */
-  function sideName(side: CompareSide): string {
+  /** What tells a side apart from the other: its version, or its site. */
+  function sideLabel(side: CompareSide): string {
     const {label, siteName} = props[side];
 
     return sharedLabels.value.version && !sharedLabels.value.site && siteName
       ? siteName
       : label;
+  }
+
+  /**
+   * Whether the sides go by their letters, A and B, as neither their versions
+   * nor their sites tell them apart: two elements with the same title, say.
+   */
+  const lettered = computed(() => sideLabel('from') === sideLabel('to'));
+
+  /** What names a side in the names of the other side's copy buttons. */
+  function sideName(side: CompareSide): string {
+    return lettered.value ? sideLetters[side] : sideLabel(side);
   }
 
   const tabs = computed(() =>
@@ -857,6 +869,7 @@
           :site-menu="side.siteMenu"
           :edited="side.edited || edited[key]"
           :shared="sharedLabels"
+          :lettered="lettered"
         />
         <template v-if="key === 'from' && reverseUrl">
           <CpButtonLink

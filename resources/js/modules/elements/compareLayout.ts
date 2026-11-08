@@ -282,6 +282,9 @@ export const sideIcons: Record<CompareSide, string> = {
   to: 'circle-b',
 };
 
+/** The letters those icons show, which name the sides when nothing else tells them apart. */
+export const sideLetters: Record<CompareSide, string> = {from: 'A', to: 'B'};
+
 /**
  * A read-only side's form, badged where `changed` says its fields changed as
  * the comparison stands, and without their “Compare changes” action, which the

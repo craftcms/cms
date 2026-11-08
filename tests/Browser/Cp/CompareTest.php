@@ -115,8 +115,8 @@ it('compares a draft with the current entry from the Versions panel', function (
         ->click('role=button[name="Versions"]')
         ->click('role=link[name="Compare changes Extended run"]')
         ->assertSee('Compare “Light and Line”')
-        ->assertValue('role=group[name=/Compared with/] >> role=textbox[name=/^Summary/]', 'Opens in March')
-        ->assertValue('role=group[name=/Showing/] >> role=textbox[name=/^Summary/]', 'Opens in May');
+        ->assertValue('role=group[name=/compared with/i] >> role=textbox[name=/^Summary/]', 'Opens in March')
+        ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in May');
 
     assertNoJavaScriptErrors($page);
 });
@@ -127,13 +127,13 @@ it('copies a field’s value from the older version, and undoes it', function ()
     $page = visitCompare($draft)
         ->click('role=button[name="Copy Summary from Current"]')
         ->assertSee('Field value copied.')
-        ->assertValue('role=group[name=/Showing/] >> role=textbox[name=/^Summary/]', 'Opens in March')
+        ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in March')
         ->assertMissing('role=button[name="Copy Summary from Current"]');
 
     expect(eventually($page, fn () => savedDraft($draft)?->getFieldValue('summary'), 'Opens in March'))->toBe('Opens in March');
 
     $page->click('role=button[name="Undo"]')
-        ->assertValue('role=group[name=/Showing/] >> role=textbox[name=/^Summary/]', 'Opens in May')
+        ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in May')
         ->assertVisible('role=button[name="Copy Summary from Current"]')
         ->assertDontSee('Field value copied.');
 
@@ -145,8 +145,8 @@ it('copies a field’s value from the older version, and undoes it', function ()
 it('offers no copy once a table is edited back to the older version’s value, after its edit autosaved', function () {
     // The user's unsaved edits, compared with the current entry, which they don't differ from yet.
     $draft = Drafts::createDraft($this->entry, auth()->id(), provisional: true);
-    $cell = 'role=group[name=/Showing/] >> role=group[name=/^Programme/] >> role=textbox[name=/Event/]';
-    $copy = 'role=button[name="Copy Programme from Current"]';
+    $cell = 'role=group[name=/showing/i] >> role=group[name=/^Programme/] >> role=textbox[name=/Event/]';
+    $copy = 'role=button[name="Copy Programme from A"]';
 
     $page = visit(route('craft.cp.elements.compare', ['id' => $this->entry->id], false))
         ->assertPresent('main[id]')
@@ -171,7 +171,7 @@ it('copies a field’s value from the newer version into the older one, which is
     $page = visitCompare($draft)
         ->click('role=button[name="Copy Summary from Extended run"]')
         ->assertSee('Field value copied.')
-        ->assertValue('role=group[name=/Compared with/] >> role=textbox[name=/^Summary/]', 'Opens in May')
+        ->assertValue('role=group[name=/compared with/i] >> role=textbox[name=/^Summary/]', 'Opens in May')
         ->assertMissing('role=button[name="Copy Summary from Extended run"]')
         ->assertMissing('role=button[name="Copy Summary from Current"]');
 
@@ -196,10 +196,26 @@ it('compares two entries chosen in their index', function () {
         ->click('#main >> role=button[name="Actions"] >> nth=-1')
         ->click('role=link[name="Compare"]')
         ->assertSee('Compare Light and Line with Shadow and Form')
-        ->assertValue('role=group[name=/Compared with/] >> role=textbox[name=/^Summary/]', 'Opens in March')
-        ->assertValue('role=group[name=/Showing/] >> role=textbox[name=/^Summary/]', 'Opens in June')
+        ->assertValue('role=group[name=/compared with/i] >> role=textbox[name=/^Summary/]', 'Opens in March')
+        ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in June')
         ->assertVisible('role=button[name="Copy Summary from Light and Line"]')
         ->assertVisible('role=button[name="Copy Summary from Shadow and Form"]');
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('names the sides by their letters when two entries share a title', function () {
+    $other = Entry::factory()->forSection($this->section)->forEntryType($this->entryType)
+        ->createElement(['title' => 'Light and Line']);
+    $other->setFieldValue('summary', 'Opens in June');
+    expect(Elements::saveElement($other))->toBeTrue();
+
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $this->entry->id, 'toId' => $other->id], false))
+        ->assertPresent('main[id]')
+        ->assertPresent('role=heading[name=/^A, compared with: Light and Line/]')
+        ->assertPresent('role=heading[name=/^B, showing: Light and Line/]')
+        ->assertVisible('role=button[name="Copy Summary from A"]')
+        ->assertVisible('role=button[name="Copy Summary from B"]');
 
     assertNoJavaScriptErrors($page);
 });
