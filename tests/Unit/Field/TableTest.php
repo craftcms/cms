@@ -458,3 +458,12 @@ class ScaledTableCell extends TableCell
         return Type::float();
     }
 }
+
+it('only takes copied values from its own field when its rows are static', function () {
+    $columns = ['col1' => ['heading' => 'Label', 'handle' => 'label', 'type' => 'singleline']];
+    $scope = fn (array $config) => new Table(['uid' => 'table-uid', 'columns' => $columns, ...$config])
+        ->uiControl(new FieldContext('details'))->getValueScope();
+
+    expect($scope(['staticRows' => true, 'defaults' => [['col1' => 'A']]]))->toBe('table-uid')
+        ->and($scope([]))->toBeNull();
+});

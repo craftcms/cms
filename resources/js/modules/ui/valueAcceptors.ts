@@ -231,12 +231,18 @@ const colorSelect: UiValueAcceptor = (control, {value}) => {
   );
 };
 
+/** Whether `value` is a color, translucent only where `alpha` allows it. */
+function fitsColor(value: UiValue, alpha: unknown): boolean {
+  return (
+    isBlank(value) ||
+    (typeof value === 'string' &&
+      // Without an alpha channel, a translucent color can't be entered.
+      (Boolean(alpha) || !/^#?(?:[0-9a-f]{4}|[0-9a-f]{8})$/i.test(value)))
+  );
+}
+
 const color: UiValueAcceptor = (control, {value}) =>
-  isBlank(value) ||
-  (typeof value === 'string' &&
-    // Without an alpha channel, a translucent color can't be entered.
-    (Boolean(propsOf(control).alpha) ||
-      !/^#?(?:[0-9a-f]{4}|[0-9a-f]{8})$/i.test(value)));
+  fitsColor(value, propsOf(control).alpha);
 
 const elementSelect: UiValueAcceptor = (control, {value}) => {
   const {limit, single} = propsOf(control);
@@ -287,12 +293,25 @@ const money: UiValueAcceptor = (control, {value}) => {
 };
 
 /** Whether a table cell's value is one its column's input can hold. */
-function fitsColumn(
-  cell: UiValue,
-  column: {type?: unknown; options?: unknown; min?: unknown; max?: unknown}
-): boolean {
+type ColumnProps = {
+  type?: unknown;
+  options?: unknown;
+  min?: unknown;
+  max?: unknown;
+  html?: unknown;
+  alpha?: unknown;
+  types?: unknown;
+};
+
+function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
   if (isBlank(cell)) {
     return true;
+  }
+
+  // HTML columns draw their cells as markup, which only the server can be
+  // trusted to write.
+  if (column.type === 'html' || column.html) {
+    return false;
   }
 
   switch (column.type) {
@@ -335,12 +354,45 @@ function fitsColumn(
     case 'date':
     case 'time':
       return isScalar(cell) && fitsInputType(String(cell), column.type);
+    case 'heading':
+    case 'hidden':
+    case 'icon':
+    case 'autosuggest':
+    case 'template':
+      return isScalar(cell) && isSingleLine(String(cell));
+    case 'color':
+      return fitsColor(cell, column.alpha);
+    // A link, of a type the column offers
+    case 'link':
+      return (
+        isRecord(cell) &&
+        (isBlank(cell.value) ||
+          (typeof cell.value === 'string' &&
+            (!Array.isArray(column.types) ||
+              column.types.includes(cell.type as never))))
+      );
+    // Columns with controls of their own, whose values can't be checked here
     default:
-      return true;
+      return false;
   }
 }
 
 const table: UiValueAcceptor = (control, {value}) => {
+  const {columns, keyed, minRows, maxRows, includeRowId} = propsOf(control) as {
+    columns?: Record<string, ColumnProps & {handle?: unknown}>;
+    keyed?: boolean;
+    minRows?: number;
+    maxRows?: number;
+    includeRowId?: boolean | string;
+  };
+  const rowCount =
+    isRecord(value) || Array.isArray(value) ? Object.keys(value).length : 0;
+
+  // Rows can't be deleted below the minimum, so they can't be pasted below it.
+  if (typeof minRows === 'number' && rowCount < minRows) {
+    return false;
+  }
+
   if (isBlank(value)) {
     return true;
   }
@@ -355,15 +407,6 @@ const table: UiValueAcceptor = (control, {value}) => {
     return true;
   }
 
-  const {columns, keyed, maxRows, includeRowId} = propsOf(control) as {
-    columns?: Record<
-      string,
-      {type?: unknown; options?: unknown; handle?: unknown}
-    >;
-    keyed?: boolean;
-    maxRows?: number;
-    includeRowId?: boolean | string;
-  };
   const rowIdKey = typeof includeRowId === 'string' ? includeRowId : 'rowId';
   // Table fields' rows hold each cell under its column's handle too.
   const handles = new Set(

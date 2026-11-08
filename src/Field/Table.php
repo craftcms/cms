@@ -132,6 +132,8 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
             ->includeRowId($this->staticRows)
             ->minRows($this->minRows)
             ->maxRows($this->maxRows)
+            // Static rows are this field's own, so its values only fit it.
+            ->valueScope($this->staticRows ? ($this->uid ?? static::class) : null)
             ->value($value);
 
         return $missing ? $control->mode(ControlMode::ReadOnly) : $control;

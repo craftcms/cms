@@ -61,11 +61,22 @@ it('still says a control with nested UIs can be read and written once it’s bee
     $payload = app(UiResolver::class)->resolve(Ui::make([
         Field::make('Rows', Table::make('rows')->columns([
             'name' => ['heading' => 'Name', 'control' => Text::make('name')],
-        ])->value([['name' => 'Ada']])),
+        ])->valueScope('guests')->value([['name' => 'Ada']])),
     ]), new UiContext(namespace: 'fields'));
 
     $table = app(FieldPreviews::class)->withoutActionMenus($payload->nodes[0])->control;
 
     expect($table->uis)->not->toBeEmpty()
-        ->and([$table->readable, $table->writable])->toBe([true, true]);
+        ->and([$table->readable, $table->writable])->toBe([true, true])
+        ->and($table->valueScope)->toBe('guests');
+});
+
+it('tells copied table values which columns hold single-line text, and which have controls of their own', function () {
+    $columns = Table::make('rows')->columns([
+        'name' => ['heading' => 'Name'],
+        'size' => ['heading' => 'Size', 'control' => Number::make('size')],
+    ])->props()['columns'];
+
+    expect($columns['name']['type'])->toBe('singleline')
+        ->and($columns['size'])->not->toHaveKey('type');
 });

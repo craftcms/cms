@@ -87,6 +87,14 @@ describe('acceptsValue', () => {
     const money = control('craft:money', {min: 1000, max: 2000});
     expect(takes(money, {value: '1,999.50', locale: 'en-US'})).toBe(true);
     expect(takes(money, {value: '1.999,50', locale: 'de-DE'})).toBe(true);
+    // With the locale's own digits, minus signs, and direction marks
+    expect(takes(money, {value: '\u061c١٬٩٩٩٫٥٠', locale: 'ar-EG'})).toBe(true);
+    expect(
+      takes(control('craft:money', {max: -1000}), {
+        value: '\u22121\u00a0999,50',
+        locale: 'sv-SE',
+      })
+    ).toBe(true);
     expect(takes(money, {value: '2,000.01', locale: 'en-US'})).toBe(false);
     expect(takes(money, {value: '1,9x9', locale: 'en-US'})).toBe(false);
   });
@@ -173,6 +181,10 @@ describe('acceptsValue', () => {
         col8: {type: 'number', min: 0, max: 10},
         col9: {type: 'email'},
         col10: {type: 'multiline'},
+        col11: {type: 'html'},
+        col12: {type: 'link', types: ['url']},
+        col13: {type: 'color'},
+        col14: {heading: 'Custom'},
       },
       maxRows: 2,
     });
@@ -205,6 +217,31 @@ describe('acceptsValue', () => {
     expect(takes(table, [{col10: {value: '1,999', locale: 'en-US'}}])).toBe(
       false
     );
+    // Markup isn't pasted, links are links of the types offered, colors are
+    // opaque without an alpha channel, and custom controls' values are left
+    expect(takes(table, [{col11: '<img src=x onerror=alert(1)>'}])).toBe(false);
+    expect(
+      takes(table, [{col12: {type: 'url', value: 'https://craftcms.com'}}])
+    ).toBe(true);
+    expect(takes(table, [{col12: 'Hello'}])).toBe(false);
+    expect(takes(table, [{col12: {type: 'entry', value: '{entry:1}'}}])).toBe(
+      false
+    );
+    expect(takes(table, [{col13: '#ff0000'}])).toBe(true);
+    expect(takes(table, [{col13: '#ff000080'}])).toBe(false);
+    expect(takes(table, [{col14: 'Hello'}])).toBe(false);
     expect(takes(table, [{}, {}, {}])).toBe(false);
+  });
+
+  it('takes no fewer rows than a table must have', () => {
+    const table = control('craft:table', {
+      columns: {col1: {type: 'singleline'}},
+      minRows: 2,
+    });
+
+    expect(takes(table, [{col1: 'A'}, {col1: 'B'}])).toBe(true);
+    expect(takes(table, [{col1: 'A'}])).toBe(false);
+    expect(takes(table, [])).toBe(false);
+    expect(takes(table, null)).toBe(false);
   });
 });

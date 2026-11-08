@@ -15,28 +15,46 @@ function intlLocale(locale: string | undefined): string | undefined {
 export function moneyAmount(text: string, locale?: string): number | null {
   let group = ',';
   let decimal = '.';
+  let minus = '-';
+  let digits = [...'0123456789'];
 
   try {
-    for (const part of new Intl.NumberFormat(intlLocale(locale)).formatToParts(
-      12345.6
-    )) {
+    const format = new Intl.NumberFormat(intlLocale(locale));
+
+    for (const part of format.formatToParts(-12345.6)) {
       if (part.type === 'group') {
         group = part.value;
       } else if (part.type === 'decimal') {
         decimal = part.value;
+      } else if (part.type === 'minusSign') {
+        minus = part.value;
       }
     }
+
+    // The locale's own digits, such as Arabic-Indic ones.
+    digits = Array.from({length: 10}, (_, digit) => format.format(digit));
   } catch {
     // An unknown locale reads as plain digits, with a dot before the decimals.
   }
 
   // Spaces are dropped along with the group separators, as some locales
-  // group with a no-break space, which is easy to type as a plain one.
-  const normalized = text
-    .replace(/\s/g, '')
-    .split(group)
-    .join('')
-    .replace(decimal, '.');
+  // group with a no-break space, which is easy to type as a plain one, and
+  // so are the marks that set the text's direction.
+  const normalized = [
+    ...text
+      .replace(/[\s\u061c\u200e\u200f]/gu, '')
+      .split(group)
+      .join('')
+      .replace(decimal, '.')
+      .replace(minus, '-')
+      .replace('\u2212', '-'),
+  ]
+    .map((char) => {
+      const digit = digits.indexOf(char);
+
+      return digit === -1 ? char : String(digit);
+    })
+    .join('');
 
   if (normalized === '' || !/^-?(\d+\.?\d*|\.\d+)$/.test(normalized)) {
     return null;

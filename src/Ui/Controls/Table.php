@@ -284,6 +284,11 @@ class Table extends Control implements ReadableValueControl, WritableValueContro
      */
     private function columnProps(array $column): array
     {
+        // Columns without a control or a type are single-line text, as TableColumn::control() draws them.
+        if (! isset($column['control'])) {
+            $column['type'] ??= 'singleline';
+        }
+
         if (isset($column['info']) && ! isset($column['infoHtml'])) {
             $column['infoHtml'] = Markdown::parseParagraph((string) $column['info']);
         }
