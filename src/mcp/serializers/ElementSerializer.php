@@ -18,6 +18,8 @@ use craft\mcp\McpActor;
 use craft\mcp\McpOutputContext;
 use Illuminate\Support\Arr;
 use Mcp\Exception\ToolCallException;
+use Mcp\Schema\Request\CallToolRequest;
+use Mcp\Server\RequestContext;
 
 /**
  * @since 5.12.0
@@ -49,6 +51,24 @@ class ElementSerializer extends \yii\base\Component
         private ?ElementAdapterRegistry $adapters = null,
     ) {
         parent::__construct($config);
+    }
+
+    /**
+     * Returns the `fields` argument of a tool whose `fields` parameter defaults to `[]`.
+     *
+     * The MCP SDK passes a parameter’s default value in place of an explicit `null`, so this checks the request for
+     * one, which requests all non-nested fields.
+     *
+     * @param list<string>|null $fields
+     * @return list<string>|null
+     * @internal
+     */
+    public static function fieldsArgument(RequestContext $context, ?array $fields): ?array
+    {
+        $request = $context->getRequest();
+        assert($request instanceof CallToolRequest);
+
+        return array_key_exists('fields', $request->arguments) && $request->arguments['fields'] === null ? null : $fields;
     }
 
     /**
