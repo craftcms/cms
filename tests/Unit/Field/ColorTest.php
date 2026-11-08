@@ -5,6 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\Field\Color;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiResolver;
@@ -89,6 +91,25 @@ it('offers opacity in the color picker only when custom alpha is allowed', funct
 
     expect($control->props()['alpha'] ?? false)->toBeFalse()
         ->and($control->inputSchema()['pattern'])->toBe('^#[0-9a-fA-F]{6}$');
+});
+
+it('picks the color from the palette when custom colors aren’t allowed', function () {
+    $field = new Color([
+        'allowCustomColors' => false,
+        'palette' => [['color' => '#E5422B', 'label' => 'Craft red'], ['color' => '#2563eb', 'label' => '']],
+    ]);
+    $control = $field->uiControl(new FieldContext('color', 'E5422B'));
+    $context = new UiContext(namespace: 'fields', values: ['fields' => ['color' => 'E5422B']]);
+    $payload = app(UiResolver::class)->resolve(Ui::make([UiField::make('Color', $control)]), $context);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+    $select = $crawler->filter('craft-select-color');
+
+    expect($control->props())->toMatchArray(['custom' => false, 'presetLabels' => ['#e5422b' => 'Craft red']])
+        ->and($control->inputSchema())->toBe(['type' => 'string', 'enum' => ['#e5422b', '#2563eb']])
+        ->and($select->attr('colors'))->toBe('["#e5422b","#2563eb"]')
+        ->and($select->attr('labels'))->toBe('{"#e5422b":"Craft red"}')
+        ->and($select->attr('model-value'))->toBe('#e5422b')
+        ->and($crawler->filter('craft-input-color'))->toHaveCount(0);
 });
 
 it('normalizes translucent palette colors', function () {

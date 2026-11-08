@@ -29,6 +29,9 @@ class SelectColor extends ViewComponent
     /** @var list<string>|null */
     protected ?array $colors = null;
 
+    /** @var array<string, string> */
+    protected array $labels = [];
+
     protected bool $required = false;
 
     protected bool $readOnly = false;
@@ -78,11 +81,24 @@ class SelectColor extends ViewComponent
     }
 
     /**
-     * @param  list<string>|null  $colors
+     * @param  list<string>|null  $colors  Palette color names, or hex colors such as `#e5422b`.
      */
     public function colors(?array $colors): static
     {
         $this->colors = $colors;
+
+        return $this;
+    }
+
+    /**
+     * Names for the colors, by color. Palette colors are otherwise named after
+     * themselves, and hex colors by their values.
+     *
+     * @param  array<string, string>  $labels
+     */
+    public function labels(array $labels): static
+    {
+        $this->labels = $labels;
 
         return $this;
     }
@@ -131,6 +147,7 @@ class SelectColor extends ViewComponent
             'allow-transparent' => $this->allowTransparent,
             'blank-label' => $this->blankLabel,
             'colors' => $this->colors !== null ? Json::encode($this->colors) : null,
+            'labels' => $this->labels !== [] ? Json::encode($this->labels) : null,
             'required' => $this->required,
             'readonly' => $this->readOnly,
             'disabled' => $this->isDisabled(),
