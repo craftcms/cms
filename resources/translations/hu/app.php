@@ -426,6 +426,7 @@ return [
     'Logo' => 'Logó',
     'MCP' => 'MCP',
     'MCP Settings' => 'MCP-beállítások',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP-szerver',
     'MCP settings saved.' => 'MCP-beállítások mentve.',
     'Main content' => 'Fő tartalom',
