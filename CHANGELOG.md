@@ -784,6 +784,7 @@
 - Fixed a bug where the `enableCsrfProtection`, `secureHeaders`, and `trustedHosts` config settings had no effect when Laravel’s config was cached, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
 - Fixed a bug where `craft:plugin:install` and `craft:plugin:uninstall` reported success when a Yii adapter plugin’s `Install` migration failed, leaving the plugin installed without its tables. ([#20458](https://github.com/craftcms/cms/pull/20458))
 - Fixed errors when Yii adapter migrations called `addForeignKey()`, `dropTableIfExists()`, or `archiveTableIfExists()` on SQLite. ([#20458](https://github.com/craftcms/cms/pull/20458))
+- Fixed a bug where Yii adapter plugin fields’ `init()` methods weren’t called, so fields that set default settings there didn’t get them. ([#20480](https://github.com/craftcms/cms/pull/20480))
 - Fixed a bug where menus and other popovers could reopen, away from their button, when they were closed right after being opened, such as by choosing “Move down” from a reorder menu straight away.
 - Fixed a bug where Yii adapter components that use environment variables in their settings, such as filesystems, saved the variables’ values instead of their `$VARIABLE` references, which wrote secrets to the project config. ([#20470](https://github.com/craftcms/cms/pull/20470))
 - Fixed a bug where users with an authenticator app or recovery codes couldn’t sign in to the control panel, because the verification step showed an empty pane.
