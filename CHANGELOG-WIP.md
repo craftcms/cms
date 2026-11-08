@@ -887,7 +887,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Added the `craft:refresh-previews` window event, which refreshes any open Live Preview, for code that can’t import `@craftcms/cp`. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Deprecated the `cancelToken` request option for `Craft.sendActionRequest()` and `Craft.sendApiRequest()`. `signal` should be used instead.
 - Removed `Cp.$axios`.
-- `Craft.Preview` is now only available when `craftcms/yii2-adapter` is installed, as a shim over Live Preview that fires Craft 5’s event names. Constructing it no longer creates a preview; `open()` goes to the element’s standalone preview page instead. `getActivePreview()` from `@craftcms/cp` should be used instead. ([#19964](https://github.com/craftcms/cms/pull/19964))
+- `Craft.Preview` is now only available when `craftcms/yii2-adapter` is installed, as a shim over Live Preview that fires Craft 5’s event names. Its `elementEditor` only has `getPreviewToken()`. Constructing it no longer creates a preview; `open()` goes to the element’s standalone preview page instead. `getActivePreview()` from `@craftcms/cp` should be used instead. ([#19964](https://github.com/craftcms/cms/pull/19964), [#20494](https://github.com/craftcms/cms/pull/20494))
 - Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))
 - Removed the classic (pre-3.2) `Craft.LivePreview` control panel JavaScript class, which Craft hasn’t used since 3.2. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Removed the `Craft.ImageUpload` control panel JavaScript class.
