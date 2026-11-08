@@ -184,7 +184,11 @@ export default class CraftActionMenu extends CraftPopover {
   private readonly _onItemClick = (event: Event): void => {
     const item = event.currentTarget as CraftActionItem;
 
-    this.opened = false;
+    if (this._isOpening) {
+      void this.hide();
+    } else {
+      this.opened = false;
+    }
 
     // In data-driven mode the 'craft-select' event is dispatched from _renderItem
     // (which has access to the descriptor). For slot-based mode this is the

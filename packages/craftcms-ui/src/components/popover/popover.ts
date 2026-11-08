@@ -330,29 +330,28 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   /** Whether Lion's `show()` is still running. */
   #opening = false;
 
+  /**
+   * Whether the popover is still opening. `opened` only turns true once it has
+   * finished, so until then setting it to false does nothing; use `hide()`.
+   */
+  protected get _isOpening(): boolean {
+    return this.#opening;
+  }
+
   /** Whether the popover was closed while {@link #opening}. */
   #closedWhileOpening = false;
 
-  /**
-   * Lion only sets `opened` once `show()` finishes, so until then a visible
-   * popover reads as closed and closing it does nothing. Choosing a menu item
-   * right after opening the menu does that.
-   */
   #noteOpening = (event: Event): void => {
-    if (event.defaultPrevented) {
-      return;
-    }
-
-    this.#opening = true;
-    this.#closedWhileOpening = false;
-    if (!this.opened) {
-      void this._setOpenedWithoutPropertyEffects(true);
+    if (!event.defaultPrevented) {
+      this.#opening = true;
+      this.#closedWhileOpening = false;
     }
   };
 
   /**
-   * Lion's `show()` sets `opened` back to true once it finishes, even when the
-   * popover was closed in the meantime, so close it again.
+   * Lion's `show()` sets `opened` once it finishes, even when `hide()` closed
+   * the popover in the meantime, which would show it again. Choosing a menu
+   * item right after opening the menu does that.
    */
   #closeIfClosedWhileOpening = (): void => {
     this.#opening = false;
@@ -490,10 +489,6 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   protected override updated(changed: PropertyValues) {
     super.updated(changed);
 
-    if (changed.has('opened') && !this.opened && this.#opening) {
-      this.#closedWhileOpening = true;
-    }
-
     if (!this._overlayCtrl) {
       return;
     }
@@ -538,6 +533,10 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
    */
 
   async hide(): Promise<void> {
+    if (this.#opening) {
+      this.#closedWhileOpening = true;
+    }
+
     this.opened = false;
     await this.updateComplete;
     await this.close();

@@ -131,6 +131,27 @@ describe('when disabled', () => {
   });
 });
 
+it('stays closed when an item is chosen while it is still opening', async () => {
+  const menu = await renderMenu(`
+    <craft-action-menu>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-action-item>First</craft-action-item>
+      </div>
+    </craft-action-menu>
+  `);
+  const invoker = menu.querySelector<CraftButton>('craft-button')!;
+  const item = menu.querySelector<HTMLElement>('craft-action-item')!;
+  await invoker.updateComplete;
+
+  invoker.click();
+  item.click();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  expect(menu.opened).toBe(false);
+  expect(item.checkVisibility()).toBe(false);
+});
+
 it('closes on Escape from an item and returns focus to the invoker', async () => {
   const menu = await renderMenu(`
     <craft-action-menu>
