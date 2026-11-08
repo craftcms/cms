@@ -1,45 +1,25 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
+  import {usePage} from '@inertiajs/vue3';
   import {computed} from 'vue';
-  import type {Plugin} from '../types';
+  import type {Plugin, PluginStoreContext} from '../types';
 
   const {plugin} = defineProps<{plugin: Plugin}>();
+  const page = usePage<{context: PluginStoreContext}>();
 
-  const modes = computed(() => {
-    const require = `composer require "${plugin.packageName}:^${plugin.version}" -w`;
+  const command = computed(() => {
+    const {craftExecutable, composerExecutable} = page.props.context;
 
-    return [
-      {
-        label: 'Shell',
-        command: `${require} && php craft plugin/install ${plugin.handle}`,
-      },
-      {
-        label: 'DDEV',
-        command: `ddev ${require} && ddev craft plugin/install ${plugin.handle}`,
-      },
-    ];
+    return `${composerExecutable} require "${plugin.packageName}:^${plugin.version}" -w && ${craftExecutable} plugin/install ${plugin.handle}`;
   });
 </script>
 
 <template>
-  <craft-tabs size="small" :label="t('Installation Instructions')">
-    <template v-for="mode in modes" :key="mode.label">
-      <craft-tab slot="tab">{{ mode.label }}</craft-tab>
-      <div slot="panel" class="install-commands__panel">
-        <craft-input-copy
-          :label="t('{name} installation instructions', {name: mode.label})"
-          label-sr-only
-          readonly
-          class="font-mono"
-          :value="mode.command"
-        ></craft-input-copy>
-      </div>
-    </template>
-  </craft-tabs>
+  <craft-input-copy
+    :label="t('Installation Instructions')"
+    label-sr-only
+    readonly
+    class="font-mono"
+    :value="command"
+  ></craft-input-copy>
 </template>
-
-<style scoped>
-  .install-commands__panel {
-    padding-block-start: var(--c-spacing-sm);
-  }
-</style>
