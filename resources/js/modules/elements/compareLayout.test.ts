@@ -11,7 +11,7 @@ import {
   tabsWithErrors,
   withServerTabFields,
   withoutCompareAction,
-  withoutCompareActions,
+  readOnlyPane,
   type CompareRow,
 } from './compareLayout';
 
@@ -375,16 +375,25 @@ describe('withoutCompareAction', () => {
     ).toEqual([{type: 'group', items: [copy]}]);
   });
 
-  it('drops it from every field of a side’s form, in tabs or not', () => {
-    const ui = withoutCompareActions(
+  it('drops it from every field of a read-only side’s form, in tabs or not, which it badges as the comparison stands', () => {
+    const field = (layoutUid: string, labelBadge: string | null) => {
+      const node = withMenu([compare, copy]);
+
+      return {...node, props: {...node.props, layoutUid, labelBadge}};
+    };
+    const ui = readOnlyPane(
       form([
-        withMenu([compare, copy]),
-        {...tab('visit', 'Visit', []), children: [withMenu([compare, copy])]},
-      ])
+        field('summary', 'Changed'),
+        {...tab('visit', 'Visit', []), children: [field('venue', null)]},
+      ]),
+      {summary: false, venue: true}
     );
+    const venue = ui.nodes[1]!.children![0]!;
 
     expect(menuItems(ui.nodes[0]!)).toEqual([copy]);
-    expect(menuItems(ui.nodes[1]!.children![0]!)).toEqual([copy]);
+    expect(menuItems(venue)).toEqual([copy]);
+    expect(ui.nodes[0]!.props.labelBadge).toBeNull();
+    expect(venue.props.labelBadge).toBe('Changed');
   });
 
   it('drops the action menu when that was all it had, keeping the field’s other actions', () => {

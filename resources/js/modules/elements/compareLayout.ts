@@ -1,3 +1,4 @@
+import {t} from '@craftcms/ui/utilities/translate';
 import {canonical, valueAt} from '@/modules/ui/runtime';
 import type {
   UiNodePayload,
@@ -282,14 +283,24 @@ export const sideIcons: Record<CompareSide, string> = {
 };
 
 /**
- * A side's form without its fields' “Compare changes” action, which the
+ * A read-only side's form, badged where `changed` says its fields changed as
+ * the comparison stands, and without their “Compare changes” action, which the
  * screen already is.
  */
-export function withoutCompareActions(ui: UiPayload): UiPayload {
+export function readOnlyPane(
+  ui: UiPayload,
+  changed: Record<string, boolean | null>
+): UiPayload {
   const strip = (nodes: UiNodePayload[]): UiNodePayload[] =>
     nodes.map((node) =>
       node.control
-        ? withoutCompareAction(node)
+        ? withoutCompareAction({
+            ...node,
+            props: {
+              ...node.props,
+              labelBadge: changed[layoutUid(node)] ? t('Changed') : null,
+            },
+          })
         : {...node, children: node.children && strip(node.children)}
     );
 

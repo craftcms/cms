@@ -44,7 +44,7 @@
     tabsWithChanges,
     tabsWithErrors,
     withServerTabFields,
-    withoutCompareActions,
+    readOnlyPane,
     sideIcons,
     type CompareRow,
     type CompareSide,
@@ -272,12 +272,6 @@
       : label;
   }
 
-  /** Each read-only side's form, without the fields' “Compare changes” action. */
-  const sideForms = computed(() => ({
-    from: withoutCompareActions(props.from.ui),
-    to: withoutCompareActions(props.to.ui),
-  }));
-
   const tabs = computed(() =>
     compareTabs(sideUis.value.from, sideUis.value.to, compareRows.value)
   );
@@ -466,7 +460,7 @@
     return {from: edits('from'), to: edits('to')};
   });
 
-  /** Each editable side's badged fields, by layout UID: the changes when it's badged, and its own edits either way. */
+  /** Each side's badged fields, by layout UID: the changes when it's badged, and its own edits either way. */
   const badges = computed(() => {
     const sideBadges = (side: CompareSide) =>
       Object.fromEntries(
@@ -487,6 +481,12 @@
 
     return {from: sideBadges('from'), to: sideBadges('to')};
   });
+
+  /** Each read-only side's form, badged as the comparison stands. */
+  const sideForms = computed(() => ({
+    from: readOnlyPane(props.from.ui, badges.value.from),
+    to: readOnlyPane(props.to.ui, badges.value.to),
+  }));
 
   /**
    * The side being edited: the last one focused that can be, or failing that,

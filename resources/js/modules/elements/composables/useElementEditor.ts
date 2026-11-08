@@ -1076,7 +1076,8 @@ export function useElementEditor({
       await autosave.save();
     }
 
-    return !hasUnsavedChanges();
+    // An edit made while that save was in flight is still waiting for its own.
+    return !autosave.hasPendingChanges.value && !hasUnsavedChanges();
   }
 
   function canSaveForShortcut(): boolean {

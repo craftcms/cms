@@ -2291,6 +2291,31 @@ describe('useElementEditor', () => {
     expect(save.last().data).toMatchObject({addAnother: 1});
   });
 
+  it('doesn’t report its edits settled while one made during their autosave is still pending', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    let respond!: () => void;
+    postSpy.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          respond = () => resolve({data: {draftId: 7}});
+        })
+    );
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
+    );
+
+    await typeTitle('Edited title');
+    const settled = editor.settleChanges();
+    await typeTitle('Edited title again');
+    respond();
+
+    expect(await settled).toBe(false);
+  });
+
   it('starts a workflow draft when Save beats the autosave debounce', async () => {
     vi.useFakeTimers();
 
