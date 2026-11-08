@@ -256,6 +256,7 @@
 #### Migrations
 - Craft and Yii's migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
 - The `php craft fields:merge` and `php craft entry-types:merge` commands will now generate Laravel migrations.
+- Added `CraftCms\Cms\Database\Migration::archiveTableIfExists()`, the native equivalent of `craft\db\Migration::archiveTableIfExists()`. It also renames the archived table’s indexes and PostgreSQL sequence, and drops its foreign keys on MySQL, so install migrations can create the table again.
 
 #### Deprecations
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
