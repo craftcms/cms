@@ -98,7 +98,15 @@ function fitsInputType(text: string, inputType: unknown): boolean {
   }
 }
 
-/** The values of a list of options, flattening any option groups. */
+/** Whether `value` could be an option's value, which can be true or false. */
+function isOptionValue(value: UiValue | undefined): value is Scalar | boolean {
+  return isScalar(value) || typeof value === 'boolean';
+}
+
+/**
+ * The values of a list of options that can be chosen, flattening any option
+ * groups and leaving out disabled options.
+ */
 function optionValues(options: unknown): Set<string> {
   const list = Array.isArray(options)
     ? options
@@ -107,14 +115,17 @@ function optionValues(options: unknown): Set<string> {
       : [];
 
   return new Set(
-    list.flatMap((option: {value?: unknown; options?: unknown}) =>
-      option && typeof option === 'object'
-        ? 'options' in option
-          ? [...optionValues(option.options)]
-          : option.value === undefined || option.value === null
-            ? []
-            : [String(option.value as Scalar)]
-        : []
+    list.flatMap(
+      (option: {value?: unknown; options?: unknown; disabled?: unknown}) =>
+        option && typeof option === 'object'
+          ? 'options' in option
+            ? [...optionValues(option.options)]
+            : option.value === undefined ||
+                option.value === null ||
+                option.disabled === true
+              ? []
+              : [String(option.value as Scalar)]
+          : []
     )
   );
 }
@@ -125,8 +136,8 @@ function optionValues(options: unknown): Set<string> {
  */
 function fitsShape(value: UiValue, multiple: unknown): boolean {
   return Array.isArray(value)
-    ? Boolean(multiple) && value.every(isScalar)
-    : !multiple && isScalar(value);
+    ? Boolean(multiple) && value.every(isOptionValue)
+    : !multiple && isOptionValue(value);
 }
 
 /** Whether a choice of `values` fits the options a control offers. */
@@ -134,7 +145,7 @@ function fitsOptions(value: UiValue, options: unknown): boolean {
   const offered = optionValues(options);
 
   return (Array.isArray(value) ? value : [value]).every(
-    (item) => isScalar(item) && offered.has(String(item))
+    (item) => isOptionValue(item) && offered.has(String(item))
   );
 }
 
@@ -320,7 +331,9 @@ function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
       return [true, false, '1', 1, 0].includes(cell as never);
     case 'select':
     case 'radio':
-      return isScalar(cell) && optionValues(column.options).has(String(cell));
+      return (
+        isOptionValue(cell) && optionValues(column.options).has(String(cell))
+      );
     case 'number':
       return (
         isNumeric(cell) && withinBounds(cell as Scalar, column.min, column.max)

@@ -127,6 +127,24 @@ describe('acceptsValue', () => {
         '*'
       )
     ).toBe(true);
+    // Options can be true or false, but disabled ones can't be chosen
+    const toggles = [
+      {label: 'On', value: true},
+      {label: 'Off', value: false, disabled: true},
+    ];
+    expect(takes(control('craft:choice', {options: toggles}), true)).toBe(true);
+    expect(takes(control('craft:choice', {options: toggles}), false)).toBe(
+      false
+    );
+    expect(
+      takes(
+        control('craft:choice', {
+          options: [...options, {label: 'Gray', value: 'gray', disabled: true}],
+          multiple: true,
+        }),
+        ['red', 'gray']
+      )
+    ).toBe(false);
   });
 
   it('takes as many combobox choices as there are, in the shape it holds', () => {
