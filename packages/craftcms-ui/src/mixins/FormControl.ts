@@ -222,10 +222,13 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     }
 
     #slotted(name: string): HTMLElement | undefined {
-      return Array.from(this.children).find(
-        (child): child is HTMLElement =>
-          child instanceof HTMLElement && child.slot === name
-      );
+      for (const child of this.children) {
+        if (child instanceof HTMLElement && child.slot === name) {
+          return child;
+        }
+      }
+
+      return undefined;
     }
 
     override connectedCallback() {
