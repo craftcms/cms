@@ -43,6 +43,7 @@ use craft\fields\Url;
 use craft\fields\Users;
 use craft\models\FieldLayout as LegacyFieldLayout;
 use craft\models\FieldLayoutForm;
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -67,6 +68,7 @@ use CraftCms\Yii2Adapter\Ui\Controls\LegacyHtmlControl;
 use CraftCms\Yii2Adapter\Ui\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 use CraftCms\Yii2Adapter\Ui\Nodes\LegacyHtmlField;
+use DateTime;
 use Mockery;
 use Override;
 use Symfony\Component\DomCrawler\Crawler;
@@ -268,6 +270,25 @@ it('round-trips zero, one, and multiple named roots through a flat map', functio
         ['settings' => ['apiKey' => 'secret'], 'features' => ['sync', 'drafts']],
     ],
 ]);
+
+it('reads editable table rows from their UI payload', function() {
+    $legacyHtml = app(LegacyHtml::class);
+    $html = '<input type="hidden" name="fields[hours]" value="">' . FormFields::editableTableHtml([
+        'name' => 'fields[hours]',
+        'cols' => [
+            'day' => ['heading' => '', 'type' => 'heading'],
+            'open' => ['heading' => 'Open', 'type' => 'time'],
+        ],
+        'rows' => [
+            2 => ['day' => 'Tuesday', 'open' => ['value' => new DateTime('2026-01-06 08:15')]],
+            0 => ['day' => 'Sunday', 'open' => ['value' => null]],
+        ],
+        'staticRows' => true,
+    ]);
+
+    expect($legacyHtml->expand($legacyHtml->parse($html)))
+        ->toBe(['fields' => ['hours' => [2 => ['open' => '08:15'], 0 => ['open' => '']]]]);
+});
 
 it('maps legacy field modes to their established hooks', function(LegacyHtmlMode $mode, string $expected, ControlMode $controlMode) {
     $field = new LegacyHookField();
