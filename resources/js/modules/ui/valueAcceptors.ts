@@ -264,11 +264,21 @@ function normalizedHex(value: unknown): string | null {
   return full.endsWith('ff') && full.length === 8 ? full.slice(0, 6) : full;
 }
 
-/** Whether two values are the same hex color, however each is written. */
-export function sameColor(a: unknown, b: unknown): boolean {
-  const hex = normalizedHex(a);
+/**
+ * `value` as `ColorRule::normalizeColor()` stores it: its hex digits, or
+ * `transparent`. `null` when it's neither.
+ */
+function normalizedColor(value: unknown): string | null {
+  return typeof value === 'string' && value.toLowerCase() === 'transparent'
+    ? 'transparent'
+    : normalizedHex(value);
+}
 
-  return hex !== null && hex === normalizedHex(b);
+/** Whether two values are the same color, however each is written. */
+export function sameColor(a: unknown, b: unknown): boolean {
+  const color = normalizedColor(a);
+
+  return color !== null && color === normalizedColor(b);
 }
 
 /**

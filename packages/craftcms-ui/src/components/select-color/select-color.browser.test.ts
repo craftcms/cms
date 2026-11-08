@@ -175,8 +175,8 @@ it('names each option by its color in text', async () => {
   expect(names).toEqual(['No color', 'Red', 'Craft red', '#2563eb']);
 });
 
-it('fills a hex color’s swatch with that color, and selects it by its value', async () => {
-  document.body.innerHTML = `<craft-select-color label="Color" colors='["#e5422b","#2563eb"]' model-value="#2563eb"></craft-select-color>`;
+it('fills hex colors’ swatches, checkers a transparent one, and selects a hex color by its value', async () => {
+  document.body.innerHTML = `<craft-select-color label="Color" colors='["#e5422b","#2563eb","transparent"]' model-value="#2563eb"></craft-select-color>`;
   const select =
     document.querySelector<CraftSelectColor>('craft-select-color')!;
   await select.registrationComplete;
@@ -192,6 +192,9 @@ it('fills a hex color’s swatch with that color, and selects it by its value', 
   );
   expect(getComputedStyle(swatch('#2563eb')).backgroundColor).toBe(
     'rgb(37, 99, 235)'
+  );
+  expect(getComputedStyle(swatch('transparent')).backgroundImage).toContain(
+    'linear-gradient'
   );
   expect(select.modelValue).toBe('#2563eb');
 });

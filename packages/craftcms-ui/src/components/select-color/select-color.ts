@@ -93,9 +93,10 @@ export default class CraftSelectColor extends HostAriaReferences(
 
   /**
    * Renders a color swatch for the given color value. The special `__blank__`
-   * value (the "Transparent" option) reuses the checkerboard treatment so it
-   * reads as "no color". Other swatches match the header of a card in that
-   * color, fill and border alike.
+   * value (the "Transparent" option) and a `transparent` color reuse the
+   * checkerboard treatment so they read as "no color". Hex colors fill their
+   * swatch. Other swatches match the header of a card in that color, fill and
+   * border alike.
    *
    * Structural styling is applied inline (rather than via the component's
    * scoped stylesheet) so the rendered node stays self-contained when Lion's
@@ -105,7 +106,7 @@ export default class CraftSelectColor extends HostAriaReferences(
    * boundary, so they still resolve in the invoker.
    */
   protected _swatchTemplate(color: string) {
-    const isTransparent = color === '__blank__';
+    const isTransparent = color === '__blank__' || color === 'transparent';
     // Every swatch casts a slight shadow and has an edge in its card header's
     // border color (see --c-select-color-swatch-edge for no color's). The dark
     // theme rings them too (see --c-select-color-swatch-ring).
@@ -149,11 +150,11 @@ export default class CraftSelectColor extends HostAriaReferences(
 
   /**
    * The border color of a card header in the given color, mirroring the
-   * card's own exceptions for black and white. A hex color, which has no
-   * card, takes the no-color swatch's edge.
+   * card's own exceptions for black and white. A hex color or
+   * `transparent`, which has no card, takes the no-color swatch's edge.
    */
   protected _swatchBorder(color: string): string {
-    if (isHex(color)) {
+    if (isHex(color) || color === 'transparent') {
       return this._swatchBorder('__blank__');
     }
 
