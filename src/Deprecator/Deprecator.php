@@ -161,13 +161,14 @@ class Deprecator
      * Returns the file and line number that should be associated with the error.
      *
      * That's where the deprecated code was called from: a template line, or else a PHP file and line.
+     * Wrappers that forward to [[log()]] can pass their own backtrace and forward the result as `$file` and `$line`.
      *
-     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results leading up to [[log()]]
+     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results whose first frame is the logging call
      * @return array{0: string, 1: ?int} [file, line]
      */
-    private function findOrigin(array $traces): array
+    public function findOrigin(array $traces): array
     {
-        // Frame 0 is log() itself; skip the facade that forwarded the call, if any
+        // Frame 0 is the logging call; skip the facade that forwarded it, if any
         $t = 1;
         while (
             isset($traces[$t]['class'], $traces[$t]['function']) &&
