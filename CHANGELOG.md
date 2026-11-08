@@ -1239,6 +1239,7 @@
 - Fixed a bug where HTTP errors thrown by legacy plugin controllers through the Yii adapter, such as `yii\web\ForbiddenHttpException` and `yii\web\BadRequestHttpException`, returned a 500 response rather than their own status code. ([#20457](https://github.com/craftcms/cms/pull/20457))
 - Fixed a bug where `craft.app.session.hasFlash()`, `getFlash()`, and `getAllFlashes()` didn’t return messages flashed to the Laravel session on site requests, with the Yii adapter installed. ([#20472](https://github.com/craftcms/cms/pull/20472))
 - Fixed a bug where values cached through the Yii adapter with a Craft 6 cache dependency, such as element cache info, were never read back, so legacy plugins like Element API never got a cache hit. ([#20481](https://github.com/craftcms/cms/pull/20481))
+- Fixed a bug where headers and cache settings set with `CraftCms\Cms\Support\Facades\ResponseHeaders`, such as with the `{% header %}` and `{% expires %}` tags, weren’t applied to JSON, redirect, and file responses. ([#20482](https://github.com/craftcms/cms/pull/20482))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
