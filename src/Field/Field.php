@@ -869,14 +869,15 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return $value->serialize();
         }
 
+        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
+        // (before the "arrayable" check, since Carbon dates have a toArray() method)
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
+            return DateTimeHelper::toIso8601($value);
+        }
+
         // If it's "arrayable", convert to array
         if (is_object($value) && method_exists($value, 'toArray')) {
             return $value->toArray();
-        }
-
-        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
-            return DateTimeHelper::toIso8601($value);
         }
 
         return $value;

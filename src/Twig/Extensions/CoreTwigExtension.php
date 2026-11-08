@@ -263,6 +263,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('default', $this->defaultFilter(...), ['node_class' => DefaultFilter::class]),
             new TwigFilter('filesize', $this->filesizeFilter(...)),
             new TwigFilter('float', 'floatval'),
+            new TwigFilter('hexdec', 'hexdec'),
             new TwigFilter('integer', 'intval'),
             new TwigFilter('json_encode', $this->jsonEncodeFilter(...)),
             new TwigFilter('json_decode', Json::decode(...)),

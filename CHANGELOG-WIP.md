@@ -229,9 +229,12 @@
 - Element queries’ `orderBy()`, `select()`, and `groupBy()` now quote strings as column names, except `rand()` and `random()`, which use the database’s random function on MySQL, PostgreSQL, and SQLite alike. Any other SQL expression must be passed with `expression()` in Twig or `DB::raw()` in PHP; strings containing `(` throw an exception explaining this. ([#20190](https://github.com/craftcms/cms/pull/20190))
 - Element save requests no longer enable the element when no status is posted. Craft 5 resolved the status as `enabled ?? (setEnabled ? true : null)`, so a POST carrying none of `enabled`, `setEnabled`, or `enabledForSite` force-enabled the element, and posting `setEnabled=0` was how a request opted out of that. A posted status now decides on its own, and a save that doesn’t carry one leaves the element’s status untouched — which is what lets partial/delta saves keep a disabled element disabled. The `setEnabled` param has nothing left to suppress and is ignored.
 - Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on the `pageTrigger` general config setting.
+- Added the `|hexdec` Twig filter, which converts a hexadecimal string to a decimal number. It replaces the Hexdec plugin, which can be uninstalled.
+- Added the `|anchors` Twig filter and `@anchors` GraphQL directive, which add linkable anchors to HTML headings, and the `anchors` config setting. They replace the Anchors plugin, which keeps working with the Yii adapter installed. To switch to core, uninstall the plugin, then remove its `craftcms/anchors` package. With the Yii adapter installed, the plugin’s `config/craft/anchors.php` file and `craft\anchors\Plugin::getInstance()->parser` API keep working afterward, but are deprecated.
 - Added `|sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
 - Renamed the `|money` Twig filter’s `formatLocale` argument to `locale`.
 - Added the `{% render %}` Twig tag. `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Dates can now be output and passed to filters such as `|date` within the Twig sandbox.
 - Templates can now choose white or black text for legibility over an image or one of its edges, with `asset.analysis.colors.textColor()`, which also gives the text’s contrast ratio. ([#20103](https://github.com/craftcms/cms/pull/20103))
 
 #### GraphQL
@@ -255,6 +258,7 @@
 #### Migrations
 - Craft and Yii's migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
 - The `php craft fields:merge` and `php craft entry-types:merge` commands will now generate Laravel migrations.
+- Added `CraftCms\Cms\Database\Migration::archiveTableIfExists()`, the native equivalent of `craft\db\Migration::archiveTableIfExists()`. It also renames the archived table’s indexes and PostgreSQL sequence, and drops its foreign keys on MySQL, so install migrations can create the table again.
 
 #### Deprecations
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))

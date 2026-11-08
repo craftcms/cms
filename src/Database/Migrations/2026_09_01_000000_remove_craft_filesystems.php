@@ -204,8 +204,7 @@ return new class extends Migration
                 'url' => $this->urlExpression($filesystem, $settings),
             ],
             'craft\googlecloud\Fs' => [
-                '// Install with: composer require spatie/laravel-google-cloud-storage',
-                "// This driver ignores volume subpaths. Give each volume with a subpath its own disk, with the subpath appended to path_prefix, and clear the volume's subpath.",
+                '// Install with: composer require spatie/laravel-google-cloud-storage:^2.4.2',
                 'driver' => "'gcs'",
                 'project_id' => $this->configExpression($settings['projectId'] ?? null),
                 'key_file' => ($keyFile = $this->credentialExpression($handle, 'KEY_FILE', $settings['keyFileContents'] ?? null, $credentials)) !== null

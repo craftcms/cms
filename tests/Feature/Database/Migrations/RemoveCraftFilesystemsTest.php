@@ -259,8 +259,7 @@ test('suggests equivalent disk configs for plugin filesystems without exposing c
         ->toContain(str_replace("\r\n", "\n", <<<'PHP'
                     'gcsAssets' => [
                         // Set GCS_ASSETS_KEY_FILE in .env to the previous filesystem's value.
-                        // Install with: composer require spatie/laravel-google-cloud-storage
-                        // This driver ignores volume subpaths. Give each volume with a subpath its own disk, with the subpath appended to path_prefix, and clear the volume's subpath.
+                        // Install with: composer require spatie/laravel-google-cloud-storage:^2.4.2
                         'driver' => 'gcs',
                         'project_id' => 'craft-project',
                         'key_file' => json_decode((string) env('GCS_ASSETS_KEY_FILE'), true),

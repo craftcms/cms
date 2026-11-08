@@ -667,6 +667,47 @@ describe('Vue table rows', () => {
     expect(new FormData(form).get('rows[row7][title]')).toBe('Alpha');
   });
 
+  it('keeps the server’s row order for keyed rows with integer keys, through edits and reordering', async () => {
+    const {mutation} = await mountTable(
+      true,
+      undefined,
+      {rowOrder: ['2', '0', '1']},
+      {rows: {2: {title: 'Tue'}, 0: {title: 'Sun'}, 1: {title: 'Mon'}}}
+    );
+    const submittedOrder = () =>
+      [...new FormData(form).entries()].filter(([name]) => name !== 'rows');
+    expect(submittedOrder()).toEqual([
+      ['rows[2][title]', 'Tue'],
+      ['rows[0][title]', 'Sun'],
+      ['rows[1][title]', 'Mon'],
+    ]);
+
+    const input = form.querySelector<HTMLInputElement>(
+      'input[name="rows[0][title]"]'
+    )!;
+    input.value = 'Sunday';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle();
+    expect(submittedOrder().map(([name]) => name)).toEqual([
+      'rows[2][title]',
+      'rows[0][title]',
+      'rows[1][title]',
+    ]);
+
+    reorder(2, 'up');
+    await settle();
+    expect(submittedOrder()).toEqual([
+      ['rows[2][title]', 'Tue'],
+      ['rows[1][title]', 'Mon'],
+      ['rows[0][title]', 'Sunday'],
+    ]);
+    expect(mutation.value.rows).toEqual({
+      0: {title: 'Sunday'},
+      1: {title: 'Mon'},
+      2: {title: 'Tue'},
+    });
+  });
+
   it.each([false, true])(
     'keeps hidden rows mounted and submitted when visible rows change (keyed: %s)',
     async (keyed) => {
