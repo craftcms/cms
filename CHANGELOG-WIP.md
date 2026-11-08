@@ -209,6 +209,7 @@
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for login, password reset, and two-step verification requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
 - Environment variable and alias settings fields now show suggestions after typing `$` or `@`.
+- Terminal commands shown in the control panel and console output for the current environment now use the local development environment’s wrappers: `ddev craft` and `ddev composer` in DDEV, and `valet php craft` and `valet composer` for Laravel Valet sites isolated to a PHP version. This includes the Plugin Store’s installation instructions, which no longer have separate “Shell” and “DDEV” tabs, and the OAuth signing key instructions on the **Settings** → **MCP** and **My Account** → **Tokens** screens. ([#20492](https://github.com/craftcms/cms/pull/20492))
 - The “Assets” settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Removed the `isSystemLive` config setting. Laravel maintenance mode should be used instead. With the Yii adapter installed, the deprecated `craft:on` and `craft:off` commands still work, and run `up` and `down`.
@@ -229,6 +230,7 @@
 - Craft now registers several Blade directives, bringing near feature parity with Twig templating. ([#19148](https://github.com/craftcms/cms/pull/19148))
 - Improved Twig attribute access on Eloquent models to resolve missing and null attributes, casts, accessors, and relations through Eloquent property access, while preserving explicit method calls. ([#20165](https://github.com/craftcms/cms/pull/20165))
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
+- Added the `craftCommand()` Twig function, which returns a Craft console command as it should be run for the current environment, such as `ddev craft`. ([#20492](https://github.com/craftcms/cms/pull/20492))
 - Elements no longer include custom field values when iterated over. ([#19004](https://github.com/craftcms/cms/issues/19004))
 - Element queries’ `orderBy()`, `select()`, and `groupBy()` now quote strings as column names, except `rand()` and `random()`, which use the database’s random function on MySQL, PostgreSQL, and SQLite alike. Any other SQL expression must be passed with `expression()` in Twig or `DB::raw()` in PHP; strings containing `(` throw an exception explaining this. ([#20190](https://github.com/craftcms/cms/pull/20190))
 - Element save requests no longer enable the element when no status is posted. Craft 5 resolved the status as `enabled ?? (setEnabled ? true : null)`, so a POST carrying none of `enabled`, `setEnabled`, or `enabledForSite` force-enabled the element, and posting `setEnabled=0` was how a request opted out of that. A posted status now decides on its own, and a save that doesn’t carry one leaves the element’s status untouched — which is what lets partial/delta saves keep a disabled element disabled. The `setEnabled` param has nothing left to suppress and is ignored.
@@ -531,6 +533,10 @@
   - `App:licensingIssues()` --> `app(\CraftCms\Cms\License\License::class)->issues()`
   - `App:licenseShunCookieName()` --> `app(\CraftCms\Cms\License\License::class)->shunCookieName()`
   - `App:licensingIssuesHash()` --> `app(\CraftCms\Cms\License\License::class)->issuesHash()`
+  - #### Terminal commands
+  - `App:isDdev()` --> `app(\CraftCms\Cms\Console\TerminalCommands::class)->environment() === 'ddev'`
+  - `App:craftCommand()` --> `app(\CraftCms\Cms\Console\TerminalCommands::class)->craft()`
+  - `App:composerCommand()` --> `app(\CraftCms\Cms\Console\TerminalCommands::class)->composer()`
   -
 - Deprecated `Craft::createGuzzleClient()`. `Illuminate\Support\Facades\Http::create()` should be used instead.
 - Deprecated `craft\helpers\FileHelper`. `CraftCms\Cms\Support\File` should be used instead.
@@ -548,6 +554,7 @@
 - Deprecated `craft\errors\DeprecationException`. `CraftCms\Cms\Deprecator\Exceptions\DeprecationException` should be used instead.
 
 #### Console commands
+- Added `CraftCms\Cms\Console\TerminalCommands`, which returns Craft and Composer commands as they should be run for the current environment, such as `ddev craft` in DDEV. ([#20492](https://github.com/craftcms/cms/pull/20492))
 - Added `php craft twig:cache` - Precompile Twig views
 - Added `php craft twig:clear` - Clear precompiled Twig views
 - Added `php craft project-config:check` - Check project config schema compatibility without applying changes
