@@ -49,7 +49,16 @@ beforeEach(async () => {
   await expectOpenDialogs(['Edit Image']);
 });
 
-afterEach(() => {
+afterEach(async () => {
+  const editor = document.querySelector<CraftDialog>('.image-editor-dialog');
+
+  if (editor) {
+    editor.opened = false;
+    await vi.waitFor(() =>
+      expect(document.querySelector('.image-editor-dialog')).toBeNull()
+    );
+  }
+
   document.body.innerHTML = '';
   vi.unstubAllGlobals();
   vi.clearAllMocks();
