@@ -20,34 +20,43 @@ readonly class GeneralConfigCompatibility
      */
     public function register(Application $app): void
     {
-        $appType = $app->runningInConsole() ? 'console' : 'web';
+        [$config, $overlay] = $this->loadConfig($app, $app->runningInConsole() ? 'console' : 'web');
 
         Config::set('craft.general', $this->applyAnchorsConfig(
-            $this->convert(
-                $this->baseConfig($app, Config::get('craft.general', [])),
-                Config::get("craft.general.{$appType}"),
-            ),
+            $this->convert($config, $overlay),
             Config::get('craft.anchors'),
         ));
     }
 
     /**
-     * Returns the `general.php` config without the application type overlays.
+     * Returns the `general.php` config and its application type overlay.
      *
      * Laravel's config loader stores `general.web.php` and `general.console.php` inside `craft.general`,
-     * replacing a `general.php` that returns a config object or a callable, so the file is loaded again.
+     * replacing a `general.php` that returns a config object or a callable, so both files are loaded again.
+     * The overlay loads after the base, so settings with side effects, such as `enableCsrfProtection`, still end on the overlay's value.
+     *
+     * @return array{mixed, mixed}
      */
-    private function baseConfig(Application $app, mixed $config): mixed
+    private function loadConfig(Application $app, string $appType): array
     {
-        if (!is_array($config) || !Arr::hasAny($config, ['web', 'console'])) {
-            return $config;
-        }
-
+        $config = Config::get('craft.general', []);
+        $overlay = Config::get("craft.general.{$appType}");
         $path = $app->configPath('craft/general.php');
 
-        return is_file($path)
-            ? (static fn() => require $path)()
-            : Arr::except($config, ['web', 'console']);
+        if (!is_array($config) || !Arr::hasAny($config, ['web', 'console'])) {
+            return [$config, $overlay];
+        }
+
+        if (!is_file($path)) {
+            return [Arr::except($config, ['web', 'console']), $overlay];
+        }
+
+        $overlayPath = $app->configPath("craft/general.{$appType}.php");
+
+        return [
+            (static fn() => require $path)(),
+            is_file($overlayPath) ? (static fn() => require $overlayPath)() : $overlay,
+        ];
     }
 
     /**
