@@ -426,6 +426,7 @@ return [
     'Logo' => 'Logo',
     'MCP' => 'MCP',
     'MCP Settings' => 'Impostazioni MCP',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'Server MCP',
     'MCP settings saved.' => 'Impostazioni MCP salvate.',
     'Main content' => 'Contenuto principale',
