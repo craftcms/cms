@@ -45,6 +45,7 @@ return [
         'float',
         'format',
         'group',
+        'hexdec',
         'id',
         'index',
         'indexOf',
