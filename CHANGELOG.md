@@ -307,6 +307,7 @@
 - Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Link cells in Table fields now truncate long URLs, so columns keep their configured widths.
+- Table fields’ Lightswitch, Checkbox, and Dropdown columns now take values pasted from a spreadsheet: yes/no words such as “TRUE” and “no”, and options’ values or labels. Pasted values a column can’t take, such as text in a Number column, are skipped rather than clearing the cell.
 - Read-only Markdown fields’ values can now be focused, selected, and scrolled, rather than being disabled. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - The Markdown field’s default toolbar now only includes bold, italic, code, list, link, and preview buttons. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
@@ -763,6 +764,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where spreadsheet cells containing line breaks or tabs were split across several Table field cells when pasted, with their quotes left in.
 - Fixed a bug where site error templates weren’t rendered, and unknown site URLs returned an empty 404 response. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Fixed a bug where `config/redirects.php` rules weren’t applied. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Fixed a bug where the “Show full exception views when Dev Mode is disabled” user preference had no effect. ([#20448](https://github.com/craftcms/cms/pull/20448))
@@ -780,6 +782,10 @@
 - Fixed a bug where Craft 5 config settings that were deprecated or removed were ignored when set from an array-based general config with the Yii adapter installed.
 - Fixed a bug where deprecated config settings didn’t log deprecation warnings when they were set from environment variables or after the application had booted.
 - Fixed an error that occurred when a Craft 5 general config called `enableBasicHttpAuth()` or `tempAssetUploadFs()` with the Yii adapter installed.
+- Fixed a bug where CSRF protection stayed off when the `enableCsrfProtection` config setting was set to `false` and then back to `true`, such as with a `CRAFT_ENABLE_CSRF_PROTECTION` environment variable, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
+- Fixed a bug where the `enableCsrfProtection`, `secureHeaders`, and `trustedHosts` config settings had no effect when Laravel’s config was cached, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
+- Fixed a bug where `craft:plugin:install` and `craft:plugin:uninstall` reported success when a Yii adapter plugin’s `Install` migration failed, leaving the plugin installed without its tables. ([#20458](https://github.com/craftcms/cms/pull/20458))
+- Fixed errors when Yii adapter migrations called `addForeignKey()`, `dropTableIfExists()`, or `archiveTableIfExists()` on SQLite. ([#20458](https://github.com/craftcms/cms/pull/20458))
 - Fixed a bug where users with an authenticator app or recovery codes couldn’t sign in to the control panel, because the verification step showed an empty pane.
 - Fixed a bug where the control panel could error after updating Craft, when Laravel’s compiled Blade views were newer than the updated views they were compiled from. Compiled views are now cleared after updates, and the Caches utility has a “Compiled views” option. ([#20366](https://github.com/craftcms/cms/issues/20366), [#20374](https://github.com/craftcms/cms/pull/20374))
 - Fixed a bug where elements couldn’t be selected, edited inline, or reordered on element indexes when the `allowAdminChanges` config setting was disabled, and the “Changes to these settings aren’t permitted in this environment.” notice was shown on screens other than settings, and twice on the Settings and Sites index pages. ([#20339](https://github.com/craftcms/cms/issues/20339), [#20340](https://github.com/craftcms/cms/issues/20340), [#20344](https://github.com/craftcms/cms/issues/20344), [#20364](https://github.com/craftcms/cms/pull/20364))
@@ -1226,6 +1232,7 @@
 - Fixed a bug where text and number controls with `autofocus()` weren’t focused when they were shown after the page loaded, such as in modals and slideouts. They also no longer autofocus on mobile browsers, or for users who have disabled autofocus. ([#20373](https://github.com/craftcms/cms/pull/20373))
 - Fixed a bug where Assets fields’ thumbnail tiles could overflow into the next field when the field’s column was too narrow for the thumbnail size. ([#20392](https://github.com/craftcms/cms/issues/20392))
 - Fixed a bug where relational fields’ “Add” and “Upload files” buttons overlapped when the field was too narrow for them. ([#20423](https://github.com/craftcms/cms/pull/20423))
+- Fixed a bug where HTTP errors thrown by legacy plugin controllers through the Yii adapter, such as `yii\web\ForbiddenHttpException` and `yii\web\BadRequestHttpException`, returned a 500 response rather than their own status code. ([#20457](https://github.com/craftcms/cms/pull/20457))
 - Fixed a bug where Money fields’ inputs held their minimum and maximum amounts in the currency’s minor units, such as cents. ([#20449](https://github.com/craftcms/cms/pull/20449))
 
 ## 6.0.0-alpha.20 - 2026-10-07

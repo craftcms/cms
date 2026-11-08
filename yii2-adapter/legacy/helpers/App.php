@@ -16,6 +16,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
+use craft\db\sqlite\Schema as SqliteSchema;
 use craft\db\Table;
 use craft\mail\Mailer;
 use craft\mail\Message;
@@ -44,7 +45,6 @@ use InvalidArgumentException;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\db\Exception as DbException;
-use yii\db\sqlite\Schema as SqliteSchema;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
@@ -659,7 +659,6 @@ class App
                 'defaultSchema' => $dbConfig->schema,
             ];
         } else {
-            // SQLite or other: use Yii2's built-in schema support
             $schemaConfig = [
                 'class' => SqliteSchema::class,
             ];
