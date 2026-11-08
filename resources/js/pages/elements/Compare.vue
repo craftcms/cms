@@ -1,23 +1,25 @@
 <script setup lang="ts">
   /**
    * Two versions of an entry side by side: a draft and the current entry, two
-   * revisions, or the entry in two sites. The screen lays out a row for each
-   * field, within the newer version's tabs. Each side still renders its own
-   * form, out of sight, and each of its fields renders in the field's row, so
-   * the page reads and tabs through the rows in order. When the newer version
-   * can be edited, its form is its editor. Like Live Preview, the screen
-   * takes over the whole window until it's closed.
+   * revisions, or the entry in two sites. Or two separate entries. The screen
+   * lays out a row for each field, within the newer version's tabs. Each side
+   * still renders its own form, out of sight, and each of its fields renders
+   * in the field's row, so the page reads and tabs through the rows in order.
+   * When a side can be edited, its form is its editor, and either side's
+   * value of a field can be copied into the other's. Like Live Preview, the
+   * screen takes over the whole window until it's closed.
    */
   import '@craftcms/ui/components/empty/empty';
   import '@craftcms/ui/components/indicator/indicator';
   import {router} from '@inertiajs/vue3';
-  import {useElementSize} from '@vueuse/core';
+  import {useElementSize, useEventListener} from '@vueuse/core';
   import {ButtonVariant, create, t} from '@craftcms/ui';
   import {
     computed,
     nextTick,
     onBeforeUnmount,
     onMounted,
+    reactive,
     shallowReactive,
     shallowRef,
     useTemplateRef,
@@ -26,6 +28,7 @@
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import type {ActionItems} from '@/common/types';
+  import {useAppLayout} from '@/common/composables/useAppLayout';
   import CompareEditor from '@/modules/elements/components/CompareEditor.vue';
   import CompareVersionHeader from '@/modules/elements/components/CompareVersionHeader.vue';
   import {useFullScreenPanel} from '@/modules/elements/composables/useFullScreenPanel';
@@ -37,6 +40,7 @@
     layoutUid,
     rememberValues,
     liveRows,
+    otherSide,
     tabsWithChanges,
     tabsWithErrors,
     withServerTabFields,
@@ -47,6 +51,10 @@
     type CompareTab,
   } from '@/modules/elements/compareLayout';
   import {showNotice, type CpNotification} from '@/modules/messages/messages';
+  import {
+    NESTED_OWNER_EDITOR_REQUEST,
+    type NestedOwnerEditorRequest,
+  } from '@/modules/elements/nested-owner';
   import type {UiFieldOutlets} from '@/modules/ui/fieldOutlets';
   import type {UiValueSnapshot} from '@/modules/ui/valueAccess';
   import NestedEntryLinks from '@/modules/ui/NestedEntryLinks.vue';
@@ -80,9 +88,12 @@
      * changes, when one did, and otherwise both.
      */
     badged: Record<CompareSide, boolean>;
-    editUrl: string | null;
-    /** The element's chip, as server-rendered HTML, for the heading. */
+    /** Where closing the screen goes. */
+    closeUrl: string | null;
+    /** The element's chip, as server-rendered HTML, for the heading: B's, of two elements. */
     elementChip: string;
+    /** A's chip, when the screen compares two separate elements. */
+    fromElementChip?: string | null;
     /** The same comparison with the two sides swapped. */
     reverseUrl: string | null;
     title: string;
@@ -92,13 +103,57 @@
   provideUiValueGroup();
   provideUiPreview();
 
-  /** Whether the editable side has unsaved edits, as the editor's “Edited” badge shows. */
-  const edited = shallowRef(false);
+  const sideKeys = ['from', 'to'] as const;
 
-  /** The layout UIDs of the editable side's fields with errors. */
-  const erroredUids = shallowRef<string[]>([]);
-  /** The fields edited on this screen: each one's value, as a canonical string, by layout UID. */
-  const editedValues = shallowRef<Record<string, string>>({});
+  /** Whether each side has unsaved edits, as its editor's “Edited” badge shows. */
+  const edited = reactive<Record<CompareSide, boolean>>({
+    from: false,
+    to: false,
+  });
+
+  /** The layout UIDs of each side's fields with errors. */
+  const erroredUids = shallowReactive<Record<CompareSide, string[]>>({
+    from: [],
+    to: [],
+  });
+
+  /** The fields edited on this screen on each side: each one's value, as a canonical string, by layout UID. */
+  const editedValues = shallowReactive<
+    Record<CompareSide, Record<string, string>>
+  >({from: {}, to: {}});
+
+  /** Each editable side's form as it stands, once its editor reports it. */
+  const liveUis = shallowReactive<Record<CompareSide, UiPayload | null>>({
+    from: null,
+    to: null,
+  });
+
+  /** Each editable side's values as they stand, once its editor reports them. */
+  const liveValues = shallowReactive<Record<CompareSide, UiValues | null>>({
+    from: null,
+    to: null,
+  });
+
+  /** Whether each side can't be edited for now, as while it's in review. */
+  const editorLocked = reactive<Record<CompareSide, boolean>>({
+    from: false,
+    to: false,
+  });
+
+  /** Each side's editor, while it has one. */
+  const editors = shallowReactive<
+    Record<CompareSide, InstanceType<typeof CompareEditor> | null>
+  >({from: null, to: null});
+
+  /** The ref for a side's editor, the same function each render. */
+  const editorRefs = Object.fromEntries(
+    sideKeys.map((side) => [
+      side,
+      (instance: unknown) => {
+        editors[side] = instance as InstanceType<typeof CompareEditor> | null;
+      },
+    ])
+  ) as Record<CompareSide, (instance: unknown) => void>;
 
   /** Each of a side's fields' values as the page loaded them, as canonical strings, by layout UID. */
   function loadedValues(ui: UiPayload): Map<string, string> {
@@ -108,78 +163,104 @@
     return values;
   }
 
-  /** The older version's value of each of its fields. */
-  const fromValues = computed(() => loadedValues(props.from.ui));
-
   /**
-   * The newer version's value of each of its fields as the page loaded it,
-   * which is what a field holds when it isn't among the `editedValues`. The
-   * editor's own form moves on as it autosaves, so it can't say that.
+   * Each side's value of each of its fields as the page loaded it, which is
+   * what a field holds when it isn't among the `editedValues`. An editor's own
+   * form moves on as it autosaves, so it can't say that.
    */
-  const toLoadedValues = computed(() => loadedValues(props.to.ui));
+  const loaded = computed(() => ({
+    from: loadedValues(props.from.ui),
+    to: loadedValues(props.to.ui),
+  }));
 
-  /**
-   * Whether each field edited on this screen differs from the older version's,
-   * whatever the server found when the page loaded: a field edited to match,
-   * as by copying it across, no longer counts as changed.
-   */
-  const editedChanged = computed(
-    () =>
-      new Map(
-        serverRows().flatMap((row) =>
-          row.toUid !== null && row.toUid in editedValues.value
-            ? [
-                [
-                  row.toUid,
-                  row.fromUid === null ||
-                    editedValues.value[row.toUid] !==
-                      fromValues.value.get(row.fromUid),
-                ] as [string, boolean],
-              ]
-            : []
-        )
-      )
-  );
+  /** A side's value of a field as it stands, as a canonical string. */
+  const currentValue = (side: CompareSide, uid: string): string | undefined =>
+    editedValues[side][uid] ?? loaded.value[side].get(uid);
 
   const sides = computed(() => [
     {key: 'from' as const, side: props.from},
     {key: 'to' as const, side: props.to},
   ]);
 
-  /** The editable side's form as it stands, once its editor reports it. */
-  const liveToUi = shallowRef<UiPayload | null>(null);
-  /** Whether the newer version can't be edited for now, as while it's in review. */
-  const editorLocked = shallowRef(false);
-  /** The newer version's editor, in a list as it's rendered in a loop over the sides. */
-  const editor =
-    useTemplateRef<Array<InstanceType<typeof CompareEditor>>>('editor');
+  /** Each side's form: its editor's as it stands, or the server's. */
+  const sideUis = computed<Record<CompareSide, UiPayload>>(() => {
+    const ui = (side: CompareSide) => {
+      const live = liveUis[side];
 
-  /** The newer version's form: the editor's as it stands, or the server's. */
-  const toUi = computed(() =>
-    liveToUi.value
-      ? withServerTabFields(liveToUi.value, props.to.ui)
-      : props.to.ui
+      return live ? withServerTabFields(live, props[side].ui) : props[side].ui;
+    };
+
+    return {from: ui('from'), to: ui('to')};
+  });
+
+  /** The rows as the server compared them, following each editable side's form as it changes. */
+  const serverRows = computed(() =>
+    sideKeys.reduce(
+      (rows, side) =>
+        liveUis[side] ? liveRows(rows, sideUis.value[side], side) : rows,
+      props.rows
+    )
   );
 
-  /** The comparison's rows, following conditions as the editable side changes. */
-  /** The rows as the server compared them, following the newer version's form as it changes. */
-  function serverRows(): CompareRow[] {
-    return liveToUi.value ? liveRows(props.rows, toUi.value) : props.rows;
-  }
+  /**
+   * Whether each row with a field edited on this screen differs between the
+   * sides, by row index, whatever the server found when the page loaded: a
+   * field edited to match, as by copying it across, no longer counts as
+   * changed.
+   */
+  const editedChanged = computed(
+    () =>
+      new Map(
+        serverRows.value.flatMap((row, index) =>
+          (row.fromUid !== null && row.fromUid in editedValues.from) ||
+          (row.toUid !== null && row.toUid in editedValues.to)
+            ? [
+                [
+                  index,
+                  row.fromUid === null ||
+                    row.toUid === null ||
+                    currentValue('from', row.fromUid) !==
+                      currentValue('to', row.toUid),
+                ] as [number, boolean],
+              ]
+            : []
+        )
+      )
+  );
 
   const compareRows = computed(() =>
-    serverRows().map((row) =>
-      row.toUid !== null && editedChanged.value.has(row.toUid)
-        ? {...row, changed: editedChanged.value.get(row.toUid)!}
+    serverRows.value.map((row, index) =>
+      editedChanged.value.has(index)
+        ? {...row, changed: editedChanged.value.get(index)!}
         : row
     )
   );
+
+  /** Whether a side edited a row's field on this screen, leaving it changed. */
+  const editedHere = (side: CompareSide, index: number): boolean => {
+    const uid = rowUid(index, side);
+
+    return (
+      uid !== null &&
+      uid in editedValues[side] &&
+      editedChanged.value.get(index) === true
+    );
+  };
 
   /** Which of the two labels each side shows is the same on both, which give way first when space is short. */
   const sharedLabels = computed(() => ({
     site: props.from.siteName === props.to.siteName,
     version: props.from.label === props.to.label,
   }));
+
+  /** What tells a side apart from the other in the names of its copy buttons. */
+  function sideName(side: CompareSide): string {
+    const {label, siteName} = props[side];
+
+    return sharedLabels.value.version && !sharedLabels.value.site && siteName
+      ? siteName
+      : label;
+  }
 
   /** Each read-only side's form, without the fields' “Compare changes” action. */
   const sideForms = computed(() => ({
@@ -188,7 +269,7 @@
   }));
 
   const tabs = computed(() =>
-    compareTabs(props.from.ui, toUi.value, compareRows.value)
+    compareTabs(sideUis.value.from, sideUis.value.to, compareRows.value)
   );
 
   /** The tab the screen shows, by key, which stays selected as tabs come and go. */
@@ -207,29 +288,47 @@
       )?.key
   );
 
-  /** The tabs holding a field with errors, which are marked as the editor's tabs are. */
-  const erroredTabs = computed(() =>
-    tabsWithErrors(tabs.value, compareRows.value, erroredUids.value)
-  );
+  /** The tabs holding a field with errors on each side, which are marked as the editor's tabs are. */
+  const erroredTabs = computed(() => ({
+    from: tabsWithErrors(
+      tabs.value,
+      compareRows.value.map((row) => ({...row, toUid: row.fromUid})),
+      erroredUids.from
+    ),
+    to: tabsWithErrors(tabs.value, compareRows.value, erroredUids.to),
+  }));
+
+  /** Whether a side can be edited here, for now. */
+  const editable = (side: CompareSide): boolean =>
+    Boolean(props[side].editor) && !editorLocked[side];
+
+  /** A side's form, with its values as they stand, to copy from. */
+  function valuesUi(side: CompareSide): UiPayload {
+    const values = liveValues[side];
+
+    return liveUis[side] && values
+      ? {...sideUis.value[side], values}
+      : sideUis.value[side];
+  }
 
   /**
-   * The older version's value for each changed row whose field the newer
-   * version can take it as it is, by row index, while the newer one is being
-   * edited here.
+   * The other side's value for each changed row whose field a side can take
+   * it as it is, by row index, while the side is being edited here.
    */
-  const copyValues = computed(
-    () =>
+  const copyValues = computed(() => {
+    const from = valuesUi('from');
+    const to = valuesUi('to');
+    const copyable = (into: CompareSide) =>
       new Map(
-        props.to.editor && !editorLocked.value
+        editable(into)
           ? compareRows.value.flatMap((row, index) => {
+              const uid = rowUid(index, into);
               const value = copyableValue(
                 row,
-                props.from.ui,
-                toUi.value,
-                row.toUid === null
-                  ? undefined
-                  : (editedValues.value[row.toUid] ??
-                      toLoadedValues.value.get(row.toUid))
+                from,
+                to,
+                uid === null ? undefined : currentValue(into, uid),
+                into
               );
 
               return value === undefined
@@ -237,33 +336,41 @@
                 : [[index, value] as [number, UiValueSnapshot]];
             })
           : []
-      )
-  );
+      );
 
-  function fieldLabel(rowIndex: number): string {
-    const uid = compareRows.value[rowIndex]?.toUid;
-    const label = fieldNodes(toUi.value.nodes).find(
+    return {from: copyable('from'), to: copyable('to')};
+  });
+
+  function fieldLabel(rowIndex: number, side: CompareSide): string {
+    const uid = rowUid(rowIndex, side);
+    const label = fieldNodes(sideUis.value[side].nodes).find(
       (node) => layoutUid(node) === uid
     )?.props.label;
 
     return typeof label === 'string' ? label : '';
   }
 
-  /** Copies the older version's value for a row into the newer version's field. */
-  function copyFromOlder(rowIndex: number): void {
-    const uid = compareRows.value[rowIndex]?.toUid;
+  /** The name of the button that copies a row's value into a side. */
+  function copyLabel(rowIndex: number, into: CompareSide): string {
+    return t('Copy {field} from {version}', {
+      field: fieldLabel(rowIndex, into),
+      version: sideName(otherSide(into)),
+    });
+  }
 
-    if (!uid || !copyValues.value.has(rowIndex)) {
+  /** Copies the other side's value for a row into a side's field. */
+  function copyInto(rowIndex: number, into: CompareSide): void {
+    const uid = rowUid(rowIndex, into);
+    const snapshot = copyValues.value[into].get(rowIndex);
+
+    if (!uid || !snapshot) {
       return;
     }
 
-    const copied = editor.value?.[0]?.copyValue(
-      uid,
-      copyValues.value.get(rowIndex)!
-    );
+    const copied = editors[into]?.copyValue(uid, snapshot);
 
     if (copied) {
-      announceCopy(uid, copied.previous);
+      announceCopy(into, uid, copied.previous);
     }
   }
 
@@ -273,6 +380,7 @@
    * throws away anything entered after the copy.
    */
   let undoOffer: {
+    side: CompareSide;
     uid: string;
     value: string | undefined;
     notice: CpNotification | null;
@@ -287,7 +395,11 @@
    * Says a field's value was copied, offering to put back what it had before,
    * when that could be read.
    */
-  function announceCopy(uid: string, previous: UiValueSnapshot | null): void {
+  function announceCopy(
+    side: CompareSide,
+    uid: string,
+    previous: UiValueSnapshot | null
+  ): void {
     closeUndoOffer();
 
     if (!previous) {
@@ -297,8 +409,9 @@
 
     const undoButton = create('craft-button', {type: 'button'}, t('Undo'));
     const offer = {
+      side,
       uid,
-      value: editedValues.value[uid],
+      value: editedValues[side][uid],
       notice: showNotice(t('Field value copied.'), {details: undoButton}),
     };
     undoOffer = offer;
@@ -309,12 +422,15 @@
       }
 
       closeUndoOffer();
-      editor.value?.[0]?.copyValue(uid, previous);
+      editors[side]?.copyValue(uid, previous);
     });
   }
 
-  watch(editedValues, (values) => {
-    if (undoOffer && values[undoOffer.uid] !== undoOffer.value) {
+  watch([() => editedValues.from, () => editedValues.to], () => {
+    if (
+      undoOffer &&
+      editedValues[undoOffer.side][undoOffer.uid] !== undoOffer.value
+    ) {
       closeUndoOffer();
     }
   });
@@ -326,37 +442,96 @@
     tabsWithChanges(tabs.value, compareRows.value)
   );
 
+  /** The tabs holding a field edited on this screen, on each side, which are marked on that side whichever side the rest are. */
+  const editedTabs = computed(() => {
+    const edits = (side: CompareSide) =>
+      tabsWithChanges(
+        tabs.value,
+        compareRows.value.map((row, index) => ({
+          ...row,
+          changed: editedHere(side, index),
+        }))
+      );
+
+    return {from: edits('from'), to: edits('to')};
+  });
+
+  /** Each editable side's badged fields, by layout UID: the changes when it's badged, and its own edits either way. */
+  const badges = computed(() => {
+    const sideBadges = (side: CompareSide) =>
+      Object.fromEntries(
+        compareRows.value.flatMap((row, index) => {
+          const uid = rowUid(index, side);
+
+          if (uid === null) {
+            return [];
+          }
+
+          if (props.badged[side]) {
+            return [[uid, row.changed]];
+          }
+
+          return editedHere(side, index) ? [[uid, true]] : [];
+        })
+      );
+
+    return {from: sideBadges('from'), to: sideBadges('to')};
+  });
+
   /**
-   * The tabs holding a field edited on this screen. Edits are the newer
-   * side's own, so they're marked there whichever side the rest are.
+   * The side being edited: the last one focused that can be, or failing that,
+   * the newer version, or else the older one. The page's form and Cmd/Ctrl+S
+   * save it.
    */
-  const editedTabs = computed(() =>
-    tabsWithChanges(
-      tabs.value,
-      compareRows.value.map((row) => ({
-        ...row,
-        changed:
-          row.toUid !== null && editedChanged.value.get(row.toUid) === true,
-      }))
-    )
+  const focusedSide = shallowRef<CompareSide | null>(null);
+  const activeSide = computed<CompareSide | null>(
+    () =>
+      [focusedSide.value, 'to' as const, 'from' as const].find(
+        (side): side is CompareSide => side !== null && Boolean(editors[side])
+      ) ?? null
   );
 
-  /** The newer side's badged fields: the changes when it's badged, and its own edits either way. */
-  const toBadges = computed(() =>
-    props.badged.to
-      ? changedByUid.value
-      : Object.fromEntries(
-          [...editedChanged.value].filter(([, changed]) => changed)
-        )
+  useEventListener(
+    () => root.value,
+    'focusin',
+    (event: FocusEvent) => {
+      const side = (event.target as Element | null)?.closest<HTMLElement>(
+        '[data-compare-side]'
+      )?.dataset.compareSide;
+
+      if (side === 'from' || side === 'to') {
+        focusedSide.value = side;
+      }
+    }
   );
 
-  const changedByUid = computed(() =>
-    Object.fromEntries(
-      compareRows.value.flatMap((row) =>
-        row.toUid ? [[row.toUid, row.changed]] : []
-      )
-    )
-  );
+  /** The editor Cmd/Ctrl+S saves, for a side's editor that isn't it. */
+  const saveShortcutTargets = Object.fromEntries(
+    sideKeys.map((side) => [
+      side,
+      () => {
+        const active = activeSide.value;
+        const editor = active && active !== side ? editors[active] : null;
+
+        return editor
+          ? (event: KeyboardEvent) => editor.saveForShortcut(event)
+          : null;
+      },
+    ])
+  ) as Record<CompareSide, () => ((event: KeyboardEvent) => void) | null>;
+
+  // The page's form submits for the side being edited, and each side's own
+  // footer, rather than the page's, holds its Save button.
+  useAppLayout(() => {
+    const editor = activeSide.value ? editors[activeSide.value] : null;
+
+    return {
+      form: editor?.form() ?? null,
+      onSave: editor ? (options) => editor.save(options) : undefined,
+      handlesReadOnly: true,
+      hideFooter: true,
+    };
+  });
 
   /** Each row's cell for each side, which the side's field renders into. */
   const cells = shallowReactive(new Map<string, HTMLElement>());
@@ -405,17 +580,68 @@
 
   const root = useTemplateRef<HTMLElement>('root');
   const panels = useTemplateRef<HTMLElement>('panels');
-  /** Where the editable version's footer goes, under its side. */
-  const footerNotices = useTemplateRef<HTMLElement>('footerNotices');
-  const footerActions = useTemplateRef<HTMLElement>('footerActions');
+  type FooterPart = 'notices' | 'actions';
+
+  /** Where each editable side's footer goes, under its side, by part and side. */
+  const footerCells = shallowReactive<Record<string, HTMLElement | null>>({});
+
+  /**
+   * The ref for a side's footer cell, the same function each render. Vue
+   * calls it on every render, so it only stores an element that's new.
+   */
+  const footerRefs = Object.fromEntries(
+    (['notices', 'actions'] as const).map((part) => [
+      part,
+      Object.fromEntries(
+        sideKeys.map((side) => [
+          side,
+          (element: unknown) => {
+            footerCells[`${part}:${side}`] =
+              element instanceof HTMLElement ? element : null;
+          },
+        ])
+      ),
+    ])
+  ) as Record<FooterPart, Record<CompareSide, (element: unknown) => void>>;
+
+  const footerTarget = (side: CompareSide) => ({
+    notices: footerCells[`notices:${side}`] ?? null,
+    actions: footerCells[`actions:${side}`] ?? null,
+  });
+
   const footerTargets = computed(() => ({
-    notices: footerNotices.value,
-    actions: footerActions.value,
+    from: footerTarget('from'),
+    to: footerTarget('to'),
   }));
 
+  /**
+   * A nested element field's request for the editor it's in, which is the
+   * editor of the side its cell is on: both editors hear requests from
+   * anywhere on the screen, as their fields share its rows.
+   */
+  useEventListener(
+    () => panels.value,
+    NESTED_OWNER_EDITOR_REQUEST,
+    (event: NestedOwnerEditorRequest) => {
+      const side = (event.target as Element | null)?.closest<HTMLElement>(
+        '.compare__cell[data-compare-side]'
+      )?.dataset.compareSide;
+      const owner =
+        side === 'from' || side === 'to'
+          ? editors[side]?.nestedOwnerEditor()
+          : null;
+
+      if (owner) {
+        event.detail.editor = owner;
+        event.stopPropagation();
+      }
+    },
+    {capture: true}
+  );
+
   useFullScreenPanel(root, () => {
-    if (props.editUrl) {
-      router.visit(props.editUrl);
+    if (props.closeUrl) {
+      router.visit(props.closeUrl);
     }
   });
   const headers = useTemplateRef<HTMLElement>('headers');
@@ -567,17 +793,27 @@
   <div ref="root" class="compare">
     <LayoutSlot name="title">
       <h1
-        v-if="elementChip"
+        v-if="elementChip && fromElementChip"
+        class="compare__heading text-xl"
+        v-html="
+          t('Compare {from} with {to}', {
+            from: fromElementChip,
+            to: elementChip,
+          })
+        "
+      ></h1>
+      <h1
+        v-else-if="elementChip"
         class="compare__heading text-xl"
         v-html="t('Compare {element}', {element: elementChip})"
       ></h1>
       <h1 v-else class="text-xl">{{ title }}</h1>
     </LayoutSlot>
 
-    <LayoutSlot v-if="editUrl" name="content-actions">
+    <LayoutSlot v-if="closeUrl" name="content-actions">
       <CpButtonLink
         id="compare-close"
-        :href="editUrl"
+        :href="closeUrl"
         icon=""
         size="small"
         flush="inline-end"
@@ -597,7 +833,7 @@
           :site-name="side.siteName"
           :version-menu="side.versionMenu"
           :site-menu="side.siteMenu"
-          :edited="side.edited || (key === 'to' && edited)"
+          :edited="side.edited || edited[key]"
           :shared="sharedLabels"
         />
         <template v-if="key === 'from' && reverseUrl">
@@ -660,7 +896,7 @@
               v-if="
                 tab.sides[key] &&
                 ((badged[key] && changedTabs.has(tab.key)) ||
-                  (key === 'to' && editedTabs.has(tab.key)))
+                  editedTabs[key].has(tab.key))
               "
               slot="suffix"
               class="compare__tab-changed"
@@ -671,7 +907,7 @@
               ></craft-indicator>
             </span>
             <craft-icon
-              v-if="key === 'to' && erroredTabs.has(tab.key)"
+              v-if="erroredTabs[key].has(tab.key)"
               name="circle-exclamation"
               :label="t('Errors')"
               slot="suffix"
@@ -718,6 +954,7 @@
             :ref="cellRef(key, rowUid(rowIndex, key))"
             class="compare__cell"
             :class="`compare__cell--${key}`"
+            :data-compare-side="key"
             role="group"
             :aria-labelledby="`compare-${key}-title`"
           >
@@ -732,27 +969,26 @@
               {{ t('Not in this version') }}
             </p>
           </div>
-          <span v-if="copyValues.has(rowIndex)" class="compare__copy">
-            <craft-button
-              :id="`compare-copy-${rowIndex}`"
-              type="button"
-              variant="outline"
-              size="xsmall"
-              icon="arrow-right"
-              :aria-label="
-                t('Copy {field} from {version}', {
-                  field: fieldLabel(rowIndex),
-                  version: from.label,
-                })
-              "
-              @click="copyFromOlder(rowIndex)"
-            ></craft-button>
-            <craft-tooltip :for="`compare-copy-${rowIndex}`">{{
-              t('Copy {field} from {version}', {
-                field: fieldLabel(rowIndex),
-                version: from.label,
-              })
-            }}</craft-tooltip>
+          <span
+            v-if="copyValues.to.has(rowIndex) || copyValues.from.has(rowIndex)"
+            class="compare__copy"
+          >
+            <template v-for="into in sideKeys" :key="into">
+              <template v-if="copyValues[into].has(rowIndex)">
+                <craft-button
+                  :id="`compare-copy-${into}-${rowIndex}`"
+                  type="button"
+                  variant="outline"
+                  size="xsmall"
+                  :icon="into === 'to' ? 'arrow-right' : 'arrow-left'"
+                  :aria-label="copyLabel(rowIndex, into)"
+                  @click="copyInto(rowIndex, into)"
+                ></craft-button>
+                <craft-tooltip :for="`compare-copy-${into}-${rowIndex}`">{{
+                  copyLabel(rowIndex, into)
+                }}</craft-tooltip>
+              </template>
+            </template>
           </span>
         </div>
       </section>
@@ -760,34 +996,58 @@
     </div>
 
     <div class="compare__footer">
-      <!-- Empty, it takes no room. The notices' region stays, so they're
-           announced when they arrive, as the page's own notices are. They're
-           the editable version's, so they keep to its side. -->
+      <!-- Empty, they take no room. The notices' regions stay, so they're
+           announced when they arrive, as the page's own notices are. Each
+           side's notices keep to its side. -->
       <div class="compare__footer-notices">
         <div
-          ref="footerNotices"
+          v-for="{key} in sides"
+          :key="key"
+          :ref="footerRefs.notices[key]"
           class="compare__footer-notices-cell"
+          :class="`compare__footer-notices-cell--${key}`"
           role="status"
         ></div>
       </div>
-      <div ref="footerActions" class="compare__footer-actions"></div>
+      <div class="compare__footer-actions">
+        <div
+          v-for="{key, side} in sides"
+          :key="key"
+          :ref="footerRefs.actions[key]"
+          class="compare__footer-actions-cell"
+          :class="`compare__footer-actions-cell--${key}`"
+          :data-compare-side="key"
+          :role="side.editor ? 'group' : undefined"
+          :aria-labelledby="side.editor ? `compare-${key}-title` : undefined"
+        >
+          <!-- Tells stacked sides' buttons apart. Decorative: the group is
+               named by its side's heading. -->
+          <craft-icon
+            :name="sideIcons[key]"
+            class="compare__side-icon"
+            aria-hidden="true"
+          ></craft-icon>
+        </div>
+      </div>
     </div>
 
     <div ref="forms" hidden>
       <div v-for="{key, side} in sides" :key="key" :data-compare-side="key">
         <CompareEditor
-          v-if="key === 'to' && side.editor"
-          ref="editor"
+          v-if="side.editor"
+          :ref="editorRefs[key]"
           :editor="side.editor"
-          :changed="toBadges"
-          :field-outlets="fieldOutlets.to"
+          :changed="badges[key]"
+          :field-outlets="fieldOutlets[key]"
           :root="panels"
-          :footer-targets="footerTargets"
-          @edited="edited = $event"
-          @errors="erroredUids = $event"
-          @edits="editedValues = $event"
-          @locked="editorLocked = $event"
-          @layout="liveToUi = $event"
+          :footer-targets="footerTargets[key]"
+          :save-shortcut-target="saveShortcutTargets[key]"
+          @edited="edited[key] = $event"
+          @errors="erroredUids[key] = $event"
+          @edits="editedValues[key] = $event"
+          @locked="editorLocked[key] = $event"
+          @layout="liveUis[key] = $event"
+          @values="liveValues[key] = $event"
         />
         <UiRenderer
           v-else-if="side.ui.nodes.length"
@@ -893,6 +1153,7 @@
 
   .compare__copy {
     display: none;
+    gap: var(--c-spacing-md);
     border-radius: var(--c-radius-md);
     background-color: var(--c-surface-default);
   }
@@ -917,16 +1178,33 @@
     z-index: var(--c-layer-sticky);
   }
 
-  /* Only the clicks on the editable side's notices are their own. */
-  .compare__footer-notices {
+  /* Only the clicks on the editable sides' notices are their own. */
+  .compare__footer-notices,
+  .compare__footer-actions {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     pointer-events: none;
   }
 
-  .compare__footer-notices-cell {
+  .compare__footer-notices-cell,
+  .compare__footer-actions-cell {
     min-width: 0;
     pointer-events: auto;
+  }
+
+  .compare__footer-actions:has(.compare-footer__actions) {
+    border-block-start: 1px solid var(--c-color-border-quiet);
+    background-color: color-mix(
+      in oklab,
+      var(--c-surface-default) 70%,
+      transparent
+    );
+    backdrop-filter: blur(var(--blur-md, 12px));
+    pointer-events: auto;
+  }
+
+  .compare__footer-actions-cell:not(:has(.compare-footer__actions)) {
+    display: none;
   }
 
   .compare__row + .compare__row {
@@ -1046,6 +1324,29 @@
     .compare__copy craft-button::part(prefix) {
       rotate: 90deg;
     }
+
+    .compare__footer-actions-cell {
+      display: grid;
+      grid-template-columns: var(--compare-side-icon-column) minmax(0, 1fr);
+      align-items: center;
+      column-gap: var(--c-spacing-sm);
+      padding-inline-start: var(--compare-cell-padding-inline);
+      --compare-side-icon-column: calc(var(--c-size-icon-md) * 1.25);
+    }
+
+    .compare__footer-actions-cell > .compare__side-icon {
+      display: inline-flex;
+      font-size: var(--c-size-icon-md);
+    }
+
+    .compare__footer-actions-cell :deep(.compare-footer__actions) {
+      padding-inline-start: 0;
+    }
+
+    .compare__footer-actions-cell
+      + .compare__footer-actions-cell:has(.compare-footer__actions) {
+      border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+    }
   }
 
   @container compare (width >= 48rem) {
@@ -1071,6 +1372,7 @@
       inset-block-start: 50%;
       inset-inline-start: 50%;
       display: flex;
+      flex-direction: column;
       translate: -50% -50%;
     }
 
@@ -1079,13 +1381,19 @@
       scale: -1 1;
     }
 
-    .compare__footer-notices {
+    .compare__footer-notices,
+    .compare__footer-actions {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .compare__footer-notices-cell {
+    .compare__footer-notices-cell--to,
+    .compare__footer-actions-cell--to {
       grid-column: 2;
       border-inline-start: 1px solid var(--compare-hairline);
+    }
+
+    .compare__footer-actions-cell:not(:has(.compare-footer__actions)) {
+      display: block;
     }
 
     .compare__row + .compare__row {

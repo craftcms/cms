@@ -130,7 +130,10 @@ it('serializes standard selection capabilities for page bulk actions', function 
 
     expect($items['copy']['selectionAttribute'])->toBe('copyable')
         ->and($items[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
-        ->and($items[Delete::class]['selectionAttribute'])->toBe('deletable');
+        ->and($items[Delete::class]['selectionAttribute'])->toBe('deletable')
+        ->and($items['compare']['selectionAttribute'])->toBe('comparable')
+        ->and($items['compare']['selectionCount'])->toBe(2)
+        ->and($items['compare']['action'])->toBe(['type' => 'event', 'name' => 'craft:compare-elements']);
 });
 
 it('serializes registered download actions for native form submission', function () {

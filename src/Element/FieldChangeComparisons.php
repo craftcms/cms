@@ -168,9 +168,9 @@ readonly class FieldChangeComparisons
     }
 
     /**
-     * Compares every field in two versions of an element, which can be in different sites, as two read-only forms
-     * whose fields are in the same order: the newer version’s, followed by fields only the older version has. Changed
-     * fields are badged on the sides {@see self::badgedSides()} picks, and no field has a status.
+     * Compares every field in two versions of an element, which can be in different sites, or in two separate elements,
+     * as two read-only forms whose fields are in the same order: the newer version’s, followed by fields only the older
+     * version has. Changed fields are badged on the sides {@see self::badgedSides()} picks, and no field has a status.
      *
      * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>, badged: array{from: bool, to: bool}}
      */
@@ -252,11 +252,16 @@ readonly class FieldChangeComparisons
      * - Of a revision and the current element, the current element.
      * - Of a draft and the current element or a revision, the draft.
      * - Of the user’s unsaved edits and the current element or a revision, the edits.
+     * - Of two separate elements, both.
      *
      * @return array{from: bool, to: bool}
      */
     public function badgedSides(ElementInterface $from, ElementInterface $to): array
     {
+        if ($from->getCanonicalId() !== $to->getCanonicalId()) {
+            return ['from' => true, 'to' => true];
+        }
+
         $kind = fn (ElementInterface $element): string => match (true) {
             $element->getIsRevision() => 'revision',
             $element->isProvisionalDraft => 'edits',

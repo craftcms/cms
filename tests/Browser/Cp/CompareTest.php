@@ -43,9 +43,10 @@ beforeEach(function () {
             new CustomField(config: ['fieldUid' => $programme->uid]),
         ]))
         ->create(['name' => 'Exhibition', 'handle' => 'exhibition']);
+    $this->entryType = $type;
     EntryTypes::refreshEntryTypes();
 
-    $section = Section::factory()
+    $section = $this->section = Section::factory()
         ->withEntryTypes($type)
         ->create(['name' => 'Exhibitions', 'handle' => 'exhibitions', 'enableVersioning' => true]);
 
@@ -160,6 +161,45 @@ it('offers no copy once a table is edited back to the older version’s value, a
         ->assertValue($cell, 'Opening talk')
         ->assertDontSee('Changed')
         ->assertMissing($copy);
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('copies a field’s value from the newer version into the older one, which is edited too', function () {
+    $draft = compareDraft('Opens in May');
+
+    $page = visitCompare($draft)
+        ->click('role=button[name="Copy Summary from Extended run"]')
+        ->assertSee('Field value copied.')
+        ->assertValue('role=group[name=/Compared with/] >> role=textbox[name=/^Summary/]', 'Opens in May')
+        ->assertMissing('role=button[name="Copy Summary from Extended run"]')
+        ->assertMissing('role=button[name="Copy Summary from Current"]');
+
+    $edits = fn () => EntryElement::find()->provisionalDrafts()->draftOf($this->entry)->status(null)->one()?->getFieldValue('summary');
+
+    expect(eventually($page, $edits, 'Opens in May'))->toBe('Opens in May');
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('compares two entries chosen in their index', function () {
+    $other = Entry::factory()->forSection($this->section)->forEntryType($this->entryType)
+        ->createElement(['title' => 'Shadow and Form']);
+    $other->setFieldValue('summary', 'Opens in June');
+    expect(Elements::saveElement($other))->toBeTrue();
+
+    $page = visitCp('content/entries/exhibitions')
+        ->click('#main >> role=checkbox[name="Select Light and Line"]')
+        ->click('#main >> role=button[name="Actions"] >> nth=-1')
+        ->assertMissing('role=link[name="Compare"]')
+        ->click('#main >> role=checkbox[name="Select Shadow and Form"]')
+        ->click('#main >> role=button[name="Actions"] >> nth=-1')
+        ->click('role=link[name="Compare"]')
+        ->assertSee('Compare Light and Line with Shadow and Form')
+        ->assertValue('role=group[name=/Compared with/] >> role=textbox[name=/^Summary/]', 'Opens in March')
+        ->assertValue('role=group[name=/Showing/] >> role=textbox[name=/^Summary/]', 'Opens in June')
+        ->assertVisible('role=button[name="Copy Summary from Light and Line"]')
+        ->assertVisible('role=button[name="Copy Summary from Shadow and Form"]');
 
     assertNoJavaScriptErrors($page);
 });

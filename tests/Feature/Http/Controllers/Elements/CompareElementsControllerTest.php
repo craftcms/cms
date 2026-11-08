@@ -757,3 +757,115 @@ it('lists only the versions and sites the user can view in each side’s menus',
             ->where('to.siteName', null)
             ->where('to.siteMenu', []));
 });
+
+it('edits each side the user can save', function () {
+    $entry = comparedEntry(['summary' => 'Opens in March']);
+    $draft = app(Drafts::class)->createDraft($entry, auth()->id(), 'Extended run');
+    $revision = Entry::find()->revisionOf($entry)->status(null)->one();
+
+    get(compareScreenUrl($entry, ['draftId' => $draft->draftId]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('from.editor.canonicalId', $entry->id)
+            ->where('from.editor.draftId', null)
+            ->where('to.editor.draftId', $draft->draftId));
+    app()->forgetScopedInstances();
+
+    get(compareScreenUrl($entry, ['draftId' => $draft->draftId, 'from' => "revision-$revision->revisionId"]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('from.editor', null)
+            ->where('to.editor.draftId', $draft->draftId));
+});
+
+it('checks whether the user can save each side on its own', function () {
+    $entry = comparedEntry(['summary' => 'Opens in March']);
+    $user = UserModel::factory()
+        ->withPermissions([
+            'accessCp',
+            sprintf('editSite:%s', Site::query()->where('primary', true)->value('uid')),
+            "viewEntries:{$this->section->uid}",
+            "viewPeerEntries:{$this->section->uid}",
+        ])
+        ->createElement(['admin' => false]);
+    $draft = app(Drafts::class)->createDraft($entry, $user->id, 'Mine');
+
+    actingAs($user);
+
+    get(compareScreenUrl($entry, ['draftId' => $draft->draftId]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('from.editor', null)
+            ->where('to.editor.draftId', $draft->draftId));
+});
+
+it('edits the current entry on only one side when it’s in two sites', function () {
+    $entry = comparedEntry(['summary' => 'Opens in March']);
+    $translation = Entry::find()->id($entry->id)->siteId($this->secondarySite->id)->status(null)->one();
+
+    // Each side would create its own unsaved edits, and the second would replace the first.
+    get(compareScreenUrl($entry, ['siteId' => $translation->siteId, 'fromSiteId' => $entry->siteId]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('from.editor', null)
+            ->where('to.editor.siteId', $translation->siteId));
+});
+
+it('compares two separate entries, each by its own versions', function () {
+    $a = comparedEntry(['summary' => 'Opens in March']);
+    $b = comparedEntry(['summary' => 'Opens in May']);
+    $b->title = 'Shadow and Form';
+    expect(Elements::saveElement($b))->toBeTrue();
+    $draft = app(Drafts::class)->createDraft($b, auth()->id(), 'Extended run');
+    url()->forceScheme('https');
+    $returnUrl = Url::cpUrl('content/entries');
+
+    get(Url::urlWithParams(route('craft.cp.elements.compare-elements', ['fromId' => $a->id, 'toId' => $b->id]), ['returnUrl' => $returnUrl]))
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) use ($a, $b, $draft, $returnUrl) {
+            $page
+                ->component('elements/Compare')
+                ->where('title', 'Compare “Light and Line” with “Shadow and Form”')
+                ->where('fromElementChip', fn (string $html) => str_contains($html, 'Light and Line'))
+                ->where('elementChip', fn (string $html) => str_contains($html, 'Shadow and Form'))
+                ->where('from.label', 'Light and Line')
+                ->where('to.label', 'Shadow and Form')
+                ->where('from.ui.values', fn ($values) => collect($values)->flatten()->contains('Opens in March'))
+                ->where('to.ui.values', fn ($values) => collect($values)->flatten()->contains('Opens in May'))
+                ->where('badged', ['from' => true, 'to' => true])
+                ->where('from.editor.canonicalId', $a->id)
+                ->where('to.editor.canonicalId', $b->id)
+                ->where('closeUrl', $returnUrl)
+                ->where('reverseUrl', fn (string $url) => str_contains($url, "/compare/$b->id/$a->id"));
+
+            $props = $page->toArray()['props'];
+
+            expect(changedFields($page, 'to'))->toMatchArray(['Summary' => true, 'Tagline' => false])
+                ->and(compareMenuLink($props['to']['versionMenu'], 'Extended run')['href'])
+                ->toContain("/compare/$a->id/$b->id?draftId=$draft->draftId")
+                ->and(collect($props['from']['versionMenu'])->flatMap(fn (array $group) => $group['items'])->pluck('label')->all())
+                ->not->toContain('Extended run');
+        });
+});
+
+it('closes a comparison of two entries on the newer one’s edit page, without a control panel page to return to', function () {
+    $a = comparedEntry(['summary' => 'Opens in March']);
+    $b = comparedEntry(['summary' => 'Opens in May']);
+
+    get(Url::urlWithParams(route('craft.cp.elements.compare-elements', ['fromId' => $a->id, 'toId' => $b->id]), ['returnUrl' => 'https://elsewhere.example/']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('closeUrl', $b->getCpEditUrl()));
+});
+
+it('forbids comparing with an entry the user can’t view', function () {
+    $a = comparedEntry(['summary' => 'Opens in March']);
+    $b = comparedEntry(['summary' => 'Opens in May']);
+    $user = UserModel::factory()
+        ->withPermissions(['accessCp', sprintf('editSite:%s', Site::query()->where('primary', true)->value('uid'))])
+        ->createElement(['admin' => false]);
+    $draft = app(Drafts::class)->createDraft($b, $user->id);
+
+    actingAs($user);
+
+    get(route('craft.cp.elements.compare-elements', ['fromId' => $a->id, 'toId' => $draft->id]))->assertForbidden();
+});

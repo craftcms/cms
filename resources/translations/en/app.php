@@ -1309,6 +1309,7 @@ return [
     'Column headers with buttons are sortable' => 'Column headers with buttons are sortable',
     'Columns' => 'Columns',
     'Compare {element}' => 'Compare {element}',
+    'Compare {from} with {to}' => 'Compare {from} with {to}',
     'Compatibility' => 'Compatibility',
     'Compiled classes' => 'Compiled classes',
     'Compiled templates' => 'Compiled templates',

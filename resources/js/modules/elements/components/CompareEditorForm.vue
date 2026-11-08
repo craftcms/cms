@@ -1,6 +1,6 @@
 <script setup lang="ts">
   /**
-   * The editable side of the Compare screen: the version's own editor, with
+   * An editable side of the Compare screen: the version's own editor, with
    * its autosave, drafts and Save button, showing just the fields the
    * comparison lists, in its order and within their tabs, with sidebar tabs
    * shown as ordinary ones. Changed fields are badged rather than marked with
@@ -13,8 +13,8 @@
   import {computed, nextTick, provide, useTemplateRef, watch} from 'vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import {firstFocusableWithin} from '@/common/utils/dom';
+  import {ButtonVariant} from '@craftcms/ui';
   import FormActions from '@/common/components/FormActions.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
@@ -57,6 +57,8 @@
     root: HTMLElement | null;
     /** Where the version's footer goes: why it's locked, then its Save button. */
     footerTargets: {notices: HTMLElement | null; actions: HTMLElement | null};
+    /** The other side's editor, while Cmd/Ctrl+S should save it instead. */
+    saveShortcutTarget?: () => ((event: KeyboardEvent) => void) | null;
   }>();
 
   const emit = defineEmits<{
@@ -73,6 +75,8 @@
     (event: 'edits', values: Record<string, string>): void;
     /** Whether the version can't be edited for now, as while it's in review. */
     (event: 'locked', locked: boolean): void;
+    /** The form's values as they stand, as each edit changes them. */
+    (event: 'values', values: UiValues): void;
   }>();
 
   const contentEl = useTemplateRef<HTMLElement>('content');
@@ -80,6 +84,7 @@
   const editor = useElementEditor({
     saveData: () => ({...props.editor.saveParams}),
     root: () => props.root ?? contentEl.value,
+    saveShortcutTarget: () => props.saveShortcutTarget?.() ?? null,
   });
 
   const {
@@ -91,7 +96,9 @@
     refreshLayout,
     renderer,
     save,
+    saveForShortcut,
     uiPayload,
+    values,
     releaseDraftLocked,
     startEditingDraft,
     updatePayload,
@@ -202,6 +209,8 @@
 
   watch(locked, (isLocked) => emit('locked', isLocked), {immediate: true});
 
+  watch(values, (current) => emit('values', current), {immediate: true});
+
   /**
    * Gives a field a value read from elsewhere, such as the other version's, as
    * if it were entered there. Returns what the field had before, to write back
@@ -231,15 +240,24 @@
     return {previous};
   }
 
-  defineExpose({copyValue});
+  defineExpose({
+    copyValue,
+    save,
+    saveForShortcut,
+    form,
+    nestedOwnerEditor: editor.nestedOwnerEditor,
+  });
 
   /** Unlocks the draft's fields, and moves focus to the first one. */
   async function startEditing(): Promise<void> {
     startEditingDraft();
     await nextTick();
 
-    if (props.root) {
-      firstFocusableWithin(props.root)?.focus();
+    const first = fieldNodes(pane.value?.nodes ?? [])[0];
+    const outlet = first ? props.fieldOutlets(layoutUid(first)) : undefined;
+
+    if (outlet) {
+      firstFocusableWithin(outlet)?.focus();
     }
   }
 
@@ -254,16 +272,6 @@
   const hasActions = computed(
     () => !locked.value || autosave.status.value !== 'idle'
   );
-
-  // The page's form still submits through `onSave`, but the screen's own
-  // footer, rather than the page's, holds the Save button, on the side it saves.
-  useAppLayout(() => ({
-    form,
-    onSave: locked.value ? undefined : save,
-    saveDisabled: locked.value,
-    handlesReadOnly: true,
-    hideFooter: true,
-  }));
 </script>
 
 <template>
@@ -293,12 +301,25 @@
     :to="footerTargets.actions"
   >
     <div class="compare-footer__actions">
+      <!-- The Save button saves this side, whichever side the page's form
+           would submit for. -->
       <FormActions
         :form="form"
-        :submit-label="payload.editorActions.primary.label"
         :read-only="payload.readOnly"
         :save-disabled="locked"
-      />
+      >
+        <template #primary-action>
+          <craft-button
+            type="button"
+            :variant="ButtonVariant.Primary"
+            .loading="form.processing"
+            .disabled="form.processing"
+            @click="save()"
+          >
+            {{ payload.editorActions.primary.label ?? t('Save') }}
+          </craft-button>
+        </template>
+      </FormActions>
       <AutosaveMessage
         v-if="autosave.status.value !== 'idle'"
         :status="autosave.status.value"
@@ -326,12 +347,7 @@
 </template>
 
 <style scoped>
-  /*
-   * Matches the page shell's footer, frosted over the fields it floats over,
-   * across both sides, with its buttons on the side they save.
-   */
   .compare-footer__actions {
-    position: relative;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -339,28 +355,5 @@
     min-height: var(--cp-footer-height);
     padding-block: var(--c-spacing-md);
     padding-inline: var(--cp-container-padding);
-    border-block-start: 1px solid var(--c-color-border-quiet);
-    background-color: color-mix(
-      in oklab,
-      var(--c-surface-default) 70%,
-      transparent
-    );
-    backdrop-filter: blur(var(--blur-md, 12px));
-  }
-
-  @container compare (width >= 48rem) {
-    .compare-footer__actions {
-      padding-inline-start: calc(50% + 1px + var(--cp-container-padding));
-    }
-
-    /* The hairline runs on through, below the footer's top border. */
-    .compare-footer__actions::before {
-      content: '';
-      position: absolute;
-      inset-block: 1px 0;
-      inset-inline-start: 50%;
-      border-inline-start: 1px solid var(--compare-hairline);
-      pointer-events: none;
-    }
   }
 </style>

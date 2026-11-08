@@ -278,6 +278,13 @@ interface Options {
    * nested elements from here, so the nested element fields inside hear it.
    */
   root?: () => HTMLElement | null | undefined;
+  /**
+   * Another editor on the page that should take Cmd/Ctrl+S instead, such as
+   * the other side of the Compare screen's while it's the one being edited:
+   * its `saveForShortcut()`. Every editor's shortcut hears the press, and
+   * the first to get it handles it.
+   */
+  saveShortcutTarget?: () => ((event: KeyboardEvent) => void) | null;
 }
 
 /**
@@ -288,7 +295,12 @@ interface Options {
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
-export function useElementEditor({saveData, root, transform}: Options = {}) {
+export function useElementEditor({
+  saveData,
+  root,
+  transform,
+  saveShortcutTarget,
+}: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
   // resolves to the panel's own props there, and to `usePage()` on a full page.
@@ -896,20 +908,14 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     }),
     {
       keyboardShortcutEnabled: () =>
-        !props.readOnly && !releaseDraftLocked.value,
-      // Cmd/Ctrl + Shift + S submits the Save menu's shortcut action that
-      // takes Shift, such as “Save and add another”, as clicking it would.
+        Boolean(saveShortcutTarget?.()) || canSaveForShortcut(),
       onSaveShortcut: (event) => {
-        const action = event.shiftKey
-          ? props.editorActions.menu.find(
-              (item) => item.shortcut && item.shift && !item.disabled
-            )
-          : undefined;
+        const target = saveShortcutTarget?.();
 
-        if (action) {
-          submitAction(action);
-        } else if (!event.shiftKey) {
-          save({redirect: false});
+        if (target) {
+          target(event);
+        } else {
+          saveForShortcut(event);
         }
       },
       hasShiftSaveShortcut: () =>
@@ -1028,6 +1034,33 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       },
     }
   );
+
+  function canSaveForShortcut(): boolean {
+    return !props.readOnly && !releaseDraftLocked.value;
+  }
+
+  /**
+   * Saves as Cmd/Ctrl+S does, when the element can be saved. Cmd/Ctrl +
+   * Shift + S submits the Save menu's shortcut action that takes Shift, such
+   * as “Save and add another”, as clicking it would.
+   */
+  function saveForShortcut(event: KeyboardEvent): void {
+    if (!canSaveForShortcut()) {
+      return;
+    }
+
+    const action = event.shiftKey
+      ? props.editorActions.menu.find(
+          (item) => item.shortcut && item.shift && !item.disabled
+        )
+      : undefined;
+
+    if (action) {
+      submitAction(action);
+    } else if (!event.shiftKey) {
+      save({redirect: false});
+    }
+  }
 
   function savedDraftId(result: unknown): number | null {
     const response = result as
@@ -1370,6 +1403,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     renderer,
     nestedOwnerEditor,
     refreshUi,
+    saveForShortcut,
     refreshLayout,
     formValues,
     save,
