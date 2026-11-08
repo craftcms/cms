@@ -445,9 +445,9 @@
     fullscreen
     .opened="opened"
     :label="t('Edit Image')"
-    @craft-after-show="editor.start"
-    @craft-before-hide="onBeforeHide"
-    @craft-hide="onDialogHide"
+    @craft-after-show.self="editor.start"
+    @craft-before-hide.self="onBeforeHide"
+    @craft-hide.self="onDialogHide"
   >
     <div class="flex flex-col h-full">
       <div class="image-editor">
@@ -806,16 +806,16 @@
     </div>
   </craft-dialog>
 
-  <!-- A sibling rather than a child: its lifecycle events bubble, and the
-    editor's own dialog would take them for its own. -->
+  <!-- A sibling rather than a child, so its lifecycle events don't bubble
+    through the editor's dialog. -->
   <craft-dialog
     data-theme="dark"
     :label="
       confirming === 'reset' ? t('Reset to original') : t('Discard changes')
     "
     .opened="confirmOpen"
-    @craft-hide="confirmOpen = false"
-    @craft-after-hide="onConfirmationHidden"
+    @craft-hide.self="confirmOpen = false"
+    @craft-after-hide.self="onConfirmationHidden"
   >
     <p class="m-0">
       {{

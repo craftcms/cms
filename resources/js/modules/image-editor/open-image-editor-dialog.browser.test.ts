@@ -1,9 +1,14 @@
-import {afterEach, expect, it, vi} from 'vite-plus/test';
+import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {ref} from 'vue';
 import '@craftcms/ui/components/dialog/dialog';
 import '@craftcms/ui/components/button/button';
+import '@craftcms/ui/components/tabs/tabs';
+import '@craftcms/ui/components/tab/tab';
+import '@craftcms/ui/components/tooltip/tooltip';
 import type CraftDialog from '@craftcms/ui/components/dialog/dialog';
 import {openImageEditorDialog} from './open-image-editor-dialog';
+
+const reset = vi.hoisted(() => vi.fn());
 
 vi.mock('./useImageEditor', () => ({
   useImageEditor: () => ({
@@ -22,44 +27,13 @@ vi.mock('./useImageEditor', () => ({
     cursor: ref('default'),
     setUiAdapter: () => {},
     start: () => {},
+    reset,
   }),
 }));
 
-afterEach(() => {
-  document.body.innerHTML = '';
-  vi.unstubAllGlobals();
-});
+const nativeConfirm = vi.fn(() => false);
 
-function openDialogs(): CraftDialog[] {
-  return [...document.querySelectorAll<CraftDialog>('craft-dialog')].filter(
-    (dialog) => dialog.opened
-  );
-}
-
-async function settle(): Promise<void> {
-  for (let i = 0; i < 5; i++) {
-    await new Promise((resolve) => setTimeout(resolve));
-  }
-}
-
-function clickButton(label: string): void {
-  const dialog = openDialogs().at(-1)!;
-  const button = [...dialog.querySelectorAll('craft-button')].find(
-    (candidate) => candidate.textContent?.trim() === label
-  );
-
-  (button as HTMLElement).click();
-}
-
-function requestEditorClose(): void {
-  document
-    .querySelector<CraftDialog>('craft-dialog[fullscreen]')!
-    .shadowRoot!.querySelector<HTMLElement>('[part="close"]')!
-    .click();
-}
-
-it('confirms closing an edited image in a dialog of its own', async () => {
-  const nativeConfirm = vi.fn(() => false);
+beforeEach(async () => {
   vi.stubGlobal('confirm', nativeConfirm);
 
   await openImageEditorDialog({
@@ -72,27 +46,97 @@ it('confirms closing an edited image in a dialog of its own', async () => {
     allowDegreeFractions: false,
     orientation: 'ltr',
   });
-  await settle();
+  await expectOpenDialogs(['Edit Image']);
+});
 
+afterEach(() => {
+  document.body.innerHTML = '';
+  vi.unstubAllGlobals();
+  vi.clearAllMocks();
+});
+
+function openDialogLabels(): string[] {
+  return [...document.querySelectorAll<CraftDialog>('craft-dialog')]
+    .filter((dialog) => dialog.opened)
+    .map((dialog) => dialog.label);
+}
+
+async function expectOpenDialogs(labels: string[]): Promise<void> {
+  await vi.waitFor(() => expect(openDialogLabels()).toEqual(labels));
+}
+
+function clickButton(label: string, within: ParentNode): void {
+  const button = [...within.querySelectorAll('craft-button')].find(
+    (candidate) => candidate.textContent?.trim() === label
+  );
+
+  (button as HTMLElement).click();
+}
+
+function editorDialog(): CraftDialog {
+  return document.querySelector<CraftDialog>('.image-editor-dialog')!;
+}
+
+function confirmationDialog(): CraftDialog {
+  return document.querySelector<CraftDialog>('craft-dialog:not([fullscreen])')!;
+}
+
+function requestEditorClose(): void {
+  editorDialog()
+    .shadowRoot!.querySelector<HTMLElement>('[part="close"]')!
+    .click();
+}
+
+it('confirms closing an edited image in a dialog of its own', async () => {
   requestEditorClose();
-  await settle();
+  await expectOpenDialogs(['Edit Image', 'Discard changes']);
 
   expect(nativeConfirm).not.toHaveBeenCalled();
-  expect(openDialogs().map((dialog) => dialog.label)).toEqual([
-    'Edit Image',
-    'Discard changes',
-  ]);
 
-  clickButton('Cancel');
-  await settle();
-
-  expect(openDialogs().map((dialog) => dialog.label)).toEqual(['Edit Image']);
+  clickButton('Cancel', confirmationDialog());
+  await expectOpenDialogs(['Edit Image']);
 
   requestEditorClose();
-  await settle();
-  clickButton('Discard changes');
-  await settle();
+  await expectOpenDialogs(['Edit Image', 'Discard changes']);
+  clickButton('Discard changes', confirmationDialog());
 
-  expect(openDialogs()).toEqual([]);
-  expect(document.querySelector('craft-dialog')).toBeNull();
+  await vi.waitFor(() =>
+    expect(document.querySelector('craft-dialog')).toBeNull()
+  );
+});
+
+it('keeps the editor open when one of its tooltips hides', async () => {
+  const tooltip = editorDialog().querySelector<HTMLElement & {opened: boolean}>(
+    'craft-tooltip'
+  )!;
+  const hidden = new Promise((resolve) =>
+    tooltip.addEventListener('craft-after-hide', resolve, {once: true})
+  );
+
+  tooltip.opened = true;
+  await vi.waitFor(() => expect(tooltip.opened).toBe(true));
+  tooltip.opened = false;
+  await hidden;
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(openDialogLabels()).toEqual(['Edit Image']);
+  expect(nativeConfirm).not.toHaveBeenCalled();
+});
+
+it('resets the image after confirming, and keeps focus in the editor', async () => {
+  clickButton('Reset to original', editorDialog());
+  await expectOpenDialogs(['Edit Image', 'Reset to original']);
+
+  expect(nativeConfirm).not.toHaveBeenCalled();
+  expect(reset).not.toHaveBeenCalled();
+
+  clickButton('Reset to original', confirmationDialog());
+  await expectOpenDialogs(['Edit Image']);
+
+  await vi.waitFor(() => {
+    expect(reset).toHaveBeenCalledOnce();
+    expect(document.activeElement).toBe(
+      editorDialog().querySelector('craft-tab[selected]')
+    );
+  });
 });

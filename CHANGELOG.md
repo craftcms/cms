@@ -760,6 +760,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where the image editor closed without asking, losing unsaved changes, when the tooltip on its Undo or Redo button closed. ([#20466](https://github.com/craftcms/cms/pull/20466))
 - Fixed a bug where spreadsheet cells containing line breaks or tabs were split across several Table field cells when pasted, with their quotes left in.
 - Fixed a bug where site error templates weren’t rendered, and unknown site URLs returned an empty 404 response. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Fixed a bug where `config/redirects.php` rules weren’t applied. ([#20448](https://github.com/craftcms/cms/pull/20448))

@@ -46,13 +46,13 @@ export async function openImageEditorDialog(
       }),
   });
 
-  // Torn down once the dialog has finished closing, so its exit transition and
-  // focus return aren't cut short. The editor's confirmation closes inside the
-  // same host while the editor stays open.
+  // Torn down once the editor's dialog has finished closing, so its exit
+  // transition and focus return aren't cut short. Its confirmation and tooltips
+  // fire the same event from inside the host while the editor stays open.
   host.addEventListener(
     'craft-after-hide',
-    () => {
-      if (open.value) {
+    (event) => {
+      if (!(event.target as Element).matches('.image-editor-dialog')) {
         return;
       }
 
