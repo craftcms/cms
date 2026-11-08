@@ -220,24 +220,37 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
     }
 
     #onToggle = (event: Event): void => {
-      const option = this.choices.find(
-        (candidate) => candidate._inputNode === event.target
-      );
+      const target = event.target as Element;
+      const option = target.closest(
+        choice
+      ) as unknown as ChoiceInputInterface | null;
 
-      if (!option) {
+      if (
+        option?._inputNode !== target ||
+        (option as unknown as Element).parentElement?.closest(
+          this.localName
+        ) !== this
+      ) {
         return;
       }
 
       this.#requested = undefined;
+      option._syncFromControl();
 
-      for (const other of this.choices) {
-        if (!multiple && option.checked && other !== option) {
-          other.checked = false;
+      // Checking a radio unchecks the others without telling them.
+      if (!multiple && option.checked) {
+        for (const other of this.choices) {
+          if (other !== option) {
+            other.checked = false;
+            other._syncFromControl();
+          }
         }
-        other._syncFromControl();
       }
 
-      this.requestUpdate('value');
+      // Reading the value walks every choice, so do it once per toggle.
+      if (event.type === 'change') {
+        this.requestUpdate('value');
+      }
     };
   }
 
