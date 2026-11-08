@@ -320,15 +320,20 @@ readonly class Assets
         }
 
         // Console URLs are built without a host or the site's subdirectory, so the stdio server uses the site's base
-        // URL. The token routes the upload, whatever the path, but it names the front controller, since nginx only
-        // serves directory indexes for GET, HEAD, and POST requests.
+        // URL. The token routes the upload whatever the path, but the path can't be the base URL itself, since nginx
+        // only serves directory indexes for GET, HEAD, and POST requests. With rewrites, an action path reaches the
+        // front controller even when the base URL has a path of its own, such as a language prefix. Without them,
+        // the base URL must be the web root, where the front controller is.
         $baseUrl = UrlHelper::baseSiteUrl();
 
         if (!UrlHelper::isAbsoluteUrl($baseUrl)) {
             throw new ToolCallException('Upload URLs over stdio require the site to have an absolute base URL.');
         }
 
-        return $this->mcpAssetUploads->createUpload($this->actor->user(), rtrim($baseUrl, '/') . '/index.php');
+        $general = Craft::$app->getConfig()->getGeneral();
+        $path = $general->omitScriptNameInUrls ? "$general->actionTrigger/mcp/upload" : 'index.php';
+
+        return $this->mcpAssetUploads->createUpload($this->actor->user(), rtrim($baseUrl, '/') . "/$path");
     }
 
     /**

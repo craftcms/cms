@@ -144,6 +144,11 @@ class AssetFieldUploadTest extends TestCase
 
             $site->setBaseUrl('https://example.test/craft/');
             $upload = $this->callTool('assets_upload_url', []);
+
+            // With rewrites, a language prefix in the base URL can't be mistaken for the front controller's directory
+            $general->omitScriptNameInUrls = true;
+            $site->setBaseUrl('https://example.test/craft/nl/');
+            $rewritten = $this->callTool('assets_upload_url', []);
         } finally {
             $general->omitScriptNameInUrls = $omitScriptName;
             $site->setBaseUrl($baseUrl);
@@ -152,6 +157,8 @@ class AssetFieldUploadTest extends TestCase
             Craft::$app->getProjectConfig()->acquireLock();
         }
 
+        self::assertFalse($rewritten['isError'] ?? true, json_encode($rewritten));
+        self::assertSame("/craft/nl/$general->actionTrigger/mcp/upload", parse_url($rewritten['structuredContent']['upload_url'], PHP_URL_PATH));
         self::assertFalse($upload['isError'] ?? true, json_encode($upload));
         $upload = $upload['structuredContent'];
         // The scheme follows useSslOnTokenizedUrls
