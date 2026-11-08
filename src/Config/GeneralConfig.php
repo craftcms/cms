@@ -94,11 +94,14 @@ class GeneralConfig extends BaseConfig
      * Set this to `craft` to use Craft’s dedicated guard and user provider. If this is `null`, Craft will continue using Laravel’s default guard.
      * Configure <config5:authPasswordBroker> as well if Craft should use a separate password broker.
      *
-     * This setting has no fluent method, so set it with an environment variable.
-     *
-     * ```shell
+     * ::: code
+     * ```php Static Config
+     * ->authGuard('craft')
+     * ```
+     * ```shell Environment Override
      * CRAFT_AUTH_GUARD=craft
      * ```
+     * :::
      *
      * @group Security
      *
@@ -112,11 +115,14 @@ class GeneralConfig extends BaseConfig
      * If this is `null`, Craft will continue using Laravel’s default password broker. To isolate password resets, define a separate broker, provider,
      * and token table in `config/auth.php`, and set this to the broker name.
      *
-     * This setting has no fluent method, so set it with an environment variable.
-     *
-     * ```shell
+     * ::: code
+     * ```php Static Config
+     * ->authPasswordBroker('craft')
+     * ```
+     * ```shell Environment Override
      * CRAFT_AUTH_PASSWORD_BROKER=craft
      * ```
+     * :::
      *
      * @group Security
      *
@@ -2715,11 +2721,16 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether a `Content-Length` header should be sent with responses.
      *
-     * This only affects template responses rendered through the Yii2 adapter. It has no fluent method, so set it with an environment variable.
+     * This only affects template responses rendered through the Yii2 adapter.
      *
-     * ```shell
+     * ::: code
+     * ```php Static Config
+     * ->sendContentLengthHeader(true)
+     * ```
+     * ```shell Environment Override
      * CRAFT_SEND_CONTENT_LENGTH_HEADER=true
      * ```
+     * :::
      *
      * @group System
      *
@@ -3611,6 +3622,44 @@ class GeneralConfig extends BaseConfig
     public function anchors(AnchorsConfig|array|string $value): self
     {
         $this->anchors = $value instanceof AnchorsConfig ? $value : AnchorsConfig::fromConfig($value);
+
+        return $this;
+    }
+
+    /**
+     * The Laravel authentication guard Craft should use.
+     *
+     * ```php
+     * ->authGuard('craft')
+     * ```
+     *
+     * @group Security
+     *
+     * @since 6.0.0
+     * @see $authGuard
+     */
+    public function authGuard(?string $value): self
+    {
+        $this->authGuard = $value;
+
+        return $this;
+    }
+
+    /**
+     * The Laravel password broker Craft should use.
+     *
+     * ```php
+     * ->authPasswordBroker('craft')
+     * ```
+     *
+     * @group Security
+     *
+     * @since 6.0.0
+     * @see $authPasswordBroker
+     */
+    public function authPasswordBroker(?string $value): self
+    {
+        $this->authPasswordBroker = $value;
 
         return $this;
     }
@@ -5986,6 +6035,25 @@ class GeneralConfig extends BaseConfig
     public function sanitizeSvgUploads(bool $value = true): self
     {
         $this->sanitizeSvgUploads = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether a `Content-Length` header should be sent with responses.
+     *
+     * ```php
+     * ->sendContentLengthHeader(true)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $sendContentLengthHeader
+     */
+    public function sendContentLengthHeader(bool $value = true): self
+    {
+        $this->sendContentLengthHeader = $value;
 
         return $this;
     }
