@@ -204,6 +204,7 @@ describe('acceptsValue', () => {
         col13: {type: 'color'},
         col14: {heading: 'Custom'},
         col15: {type: 'link'},
+        col16: {type: 'money', min: 0, max: 100},
       },
       maxRows: 2,
     });
@@ -219,6 +220,16 @@ describe('acceptsValue', () => {
         {col4: {value: null, locale: 'en-US'}},
       ])
     ).toBe(true);
+    // Within their column's bounds
+    expect(
+      takes(table, [
+        {col16: {value: '99.50', locale: 'en-US'}},
+        {col16: {value: null, locale: 'en-US'}},
+      ])
+    ).toBe(true);
+    expect(takes(table, [{col16: {value: '150', locale: 'en-US'}}])).toBe(
+      false
+    );
     expect(takes(table, [{col4: {value: 'lots', locale: 'en-US'}}])).toBe(
       false
     );

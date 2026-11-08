@@ -377,14 +377,18 @@ function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
       const amount = isRecord(cell) ? cell.value : cell;
       const locale = isRecord(cell) ? cell.locale : undefined;
 
-      return (
-        isBlank(amount) ||
-        (isScalar(amount) &&
-          moneyAmount(
+      if (isBlank(amount)) {
+        return true;
+      }
+
+      const number = isScalar(amount)
+        ? moneyAmount(
             String(amount),
             typeof locale === 'string' ? locale : undefined
-          ) !== null)
-      );
+          )
+        : null;
+
+      return number !== null && withinBounds(number, column.min, column.max);
     }
     case 'singleline':
       return isScalar(cell) && isSingleLine(String(cell));
