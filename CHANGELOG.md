@@ -777,6 +777,7 @@
 - Fixed an error when using `groupBy()` with a custom `select()` on element queries on PostgreSQL. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Fixed an error when selecting a custom field with element queries’ `select()` on SQLite. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Fixed a bug where macros registered on one element query, element, or component class, such as `EntryQuery` or a field type, were available on all of them, and macros registered on `Element` didn’t apply to users. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed a bug where Carbon dates passed to `CraftCms\Cms\Field\Field::serializeValue()` were serialized as arrays rather than ISO-8601 strings, so Yii adapter plugin fields that stored dates couldn’t load them back. ([#20477](https://github.com/craftcms/cms/pull/20477))
 - Fixed a bug where Craft 5 config settings that were deprecated or removed were ignored when set from an array-based general config with the Yii adapter installed.
 - Fixed a bug where deprecated config settings didn’t log deprecation warnings when they were set from environment variables or after the application had booted.
 - Fixed an error that occurred when a Craft 5 general config called `enableBasicHttpAuth()` or `tempAssetUploadFs()` with the Yii adapter installed.
