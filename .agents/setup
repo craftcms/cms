@@ -165,12 +165,16 @@ fi
 step 'Copy icons' composer copy-icons
 
 # Snapshots from before the Craft 5 worktree was dropped still carry it and its
-# agent guidance; remove both so agents don't use a stale 5.x checkout.
+# agent guidance; remove both so agents don't use a stale 5.x checkout. Orbs
+# that ran 5.x's setup also carry its "Craft 5 orb" guidance (PHP 8.2,
+# Codeception), so drop each section up to the next top-level heading.
 if [[ -d ../cms-5.x ]]; then
     git worktree remove --force ../cms-5.x
 fi
 if [[ -f ~/.config/amp/AGENTS.md ]]; then
-    sed -i '/^# Craft 5 worktree$/,$d' ~/.config/amp/AGENTS.md
+    awk '/^# Craft 5 (worktree|orb)$/ { skip = 1; next } /^# / { skip = 0 } !skip' \
+        ~/.config/amp/AGENTS.md > "$scratch/AGENTS.md"
+    cat "$scratch/AGENTS.md" > ~/.config/amp/AGENTS.md
 fi
 
 # The browser download is network-bound, so overlap it with the CPU-bound
