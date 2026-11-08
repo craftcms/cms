@@ -320,14 +320,15 @@ readonly class Assets
         }
 
         // Console URLs are built without a host or the site's subdirectory, so the stdio server uses the site's base
-        // URL. The token routes the upload, whatever the path.
+        // URL. The token routes the upload, whatever the path, but it names the front controller, since nginx only
+        // serves directory indexes for GET, HEAD, and POST requests.
         $baseUrl = UrlHelper::baseSiteUrl();
 
         if (!UrlHelper::isAbsoluteUrl($baseUrl)) {
             throw new ToolCallException('Upload URLs over stdio require the site to have an absolute base URL.');
         }
 
-        return $this->mcpAssetUploads->createUpload($this->actor->user(), $baseUrl);
+        return $this->mcpAssetUploads->createUpload($this->actor->user(), rtrim($baseUrl, '/') . '/index.php');
     }
 
     /**
