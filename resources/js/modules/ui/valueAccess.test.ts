@@ -205,6 +205,7 @@ describe('acceptsValue', () => {
         col14: {heading: 'Custom'},
         col15: {type: 'link'},
         col16: {type: 'money', min: 0, max: 100},
+        col17: {type: 'checkbox', radioMode: true},
       },
       maxRows: 2,
     });
@@ -274,6 +275,9 @@ describe('acceptsValue', () => {
     expect(
       takes(table, [{col15: {type: 'url', value: 'https://craftcms.com'}}])
     ).toBe(false);
+    // A radio-mode column is checked in one row at most
+    expect(takes(table, [{col17: true}, {col17: false}])).toBe(true);
+    expect(takes(table, [{col17: true}, {col17: '1'}])).toBe(false);
     expect(takes(table, [{}, {}, {}])).toBe(false);
   });
 

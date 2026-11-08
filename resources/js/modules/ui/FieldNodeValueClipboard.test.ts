@@ -116,14 +116,16 @@ describe('FieldNode value clipboard', () => {
     app.mount(container);
   }
 
-  function actionItem(handle: string, label: string): HTMLElement {
-    const field = [...container.querySelectorAll('craft-field')].find(
-      (candidate) => candidate.textContent?.includes(handle)
+  function field(handle: string): Element {
+    return [...container.querySelectorAll('craft-field')].find((candidate) =>
+      candidate.textContent?.includes(handle)
     )!;
+  }
 
-    return [...field.querySelectorAll<HTMLElement>('craft-action-item')].find(
-      (item) => item.textContent?.trim() === label
-    )!;
+  function actionItem(handle: string, label: string): HTMLElement {
+    return [
+      ...field(handle).querySelectorAll<HTMLElement>('craft-action-item'),
+    ].find((item) => item.textContent?.trim() === label)!;
   }
 
   it('pastes a copied value alone, without the props it was stored with, into fields in the same value scope', async () => {
@@ -147,9 +149,9 @@ describe('FieldNode value clipboard', () => {
       expect(actionItem('source', 'Copy value')).toBeTruthy()
     );
 
-    expect(actionItem('target', 'Paste value').hidden).toBe(true);
-    // Blank fields have nothing to copy
-    expect(actionItem('target', 'Copy value')).toBeUndefined();
+    // Blank fields have nothing to copy, and with nothing to paste either,
+    // no menu that would open empty
+    expect(field('target').querySelector('craft-action-menu')).toBeNull();
 
     actionItem('source', 'Copy value').click();
     await nextTick();
@@ -165,7 +167,8 @@ describe('FieldNode value clipboard', () => {
     await vi.waitFor(() =>
       expect(actionItem('target', 'Paste value').hidden).toBe(false)
     );
-    expect(actionItem('other', 'Paste value').hidden).toBe(true);
+    expect(actionItem('target', 'Copy value')).toBeUndefined();
+    expect(field('other').querySelector('craft-action-menu')).toBeNull();
 
     actionItem('target', 'Paste value').click();
     await nextTick();

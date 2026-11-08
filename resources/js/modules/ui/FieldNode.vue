@@ -78,9 +78,14 @@
   const PASTE_VALUE_EVENT = 'craft:paste-field-value';
 
   type FieldActionItem = {
+    type?: string;
     hidden?: boolean;
     action?: {name?: string};
   };
+
+  function isShownAction(item: FieldActionItem): boolean {
+    return item.type !== 'hr' && !item.hidden;
+  }
 
   type GenerateValueResponse = {
     value: UiValue;
@@ -194,7 +199,7 @@
       const {items = []} = child.props as unknown as {
         items?: FieldActionItem[];
       };
-      const kept = items.flatMap((item) => {
+      const filtered = items.flatMap((item) => {
         const name = item.action?.name;
 
         if (name === GENERATE_VALUE_EVENT && !control.value.writable) {
@@ -211,6 +216,13 @@
 
         return [item];
       });
+      // A separator with nothing shown on one side of it separates nothing.
+      const kept = filtered.filter(
+        (item, index) =>
+          item.type !== 'hr' ||
+          (filtered.slice(0, index).some(isShownAction) &&
+            filtered.slice(index + 1).some(isShownAction))
+      );
 
       if (
         kept.length === items.length &&
@@ -219,7 +231,8 @@
         return [child];
       }
 
-      return kept.length
+      // A menu of hidden items would open empty.
+      return kept.some(isShownAction)
         ? [{...child, props: {...child.props, items: kept}}]
         : [];
     });

@@ -346,6 +346,7 @@ type ColumnProps = {
   html?: unknown;
   alpha?: unknown;
   types?: unknown;
+  radioMode?: unknown;
 };
 
 function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
@@ -467,6 +468,14 @@ const table: UiValueAcceptor = (control, {value}) => {
   return (
     // A keyed table holds its rows by key, and others in a list.
     Array.isArray(value) !== Boolean(keyed) &&
+    // A radio-mode column is checked in one row at most.
+    Object.entries(columns ?? {}).every(
+      ([key, column]) =>
+        !column.radioMode ||
+        rows.filter(
+          (row) => isRecord(row) && [true, '1', 1].includes(row[key] as never)
+        ).length <= 1
+    ) &&
     (typeof maxRows !== 'number' || rows.length <= maxRows) &&
     rows.every(
       (row) =>
