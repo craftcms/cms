@@ -150,7 +150,7 @@ it('records the PHP caller of a deprecated API', function () {
 it('records the template line of a deprecated API called from Twig', function (string $call, string $key) {
     $tempDir = sys_get_temp_dir().'/craft-deprecator-test-'.uniqid();
     File::ensureDirectoryExists($tempDir);
-    File::put("$tempDir/caller.twig", "Line one\n\n{% set q = query %}\n{% do $call %}\n");
+    File::put("$tempDir/caller.twig", "Line one\n\n{% set q = query %}\n{% do $call %}\n{% set after = 1 %}\nLine six\n");
     Aliases::set('@templates', $tempDir);
 
     $query = Entry::find();

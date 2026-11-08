@@ -257,8 +257,8 @@ class Deprecator
             return null;
         }
 
-        // getDebugInfo() goes upward, so the first code line that's <= the trace line will be the match
-        return array_find($template->getDebugInfo(), fn ($codeLine) => $codeLine <= $actualCodeLine);
+        // getDebugInfo() maps compiled code lines to template lines, going upward, so the first code line that's <= the trace line will be the match
+        return array_find($template->getDebugInfo(), fn ($templateLine, $codeLine) => $codeLine <= $actualCodeLine);
     }
 
     /**
