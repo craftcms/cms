@@ -2,8 +2,15 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
+use CraftCms\Cms\View\TemplateManager;
+use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 beforeEach(function () {
@@ -17,7 +24,7 @@ beforeEach(function () {
 });
 
 it('has a working facade', function () {
-    expect(CraftCms\Cms\Support\Facades\Deprecator::getTotalLogs())->toBe(0);
+    expect(DeprecatorFacade::getTotalLogs())->toBe(0);
 });
 
 it('can log deprecations to the log', function () {
@@ -128,3 +135,41 @@ it('serializes logs without passing through raw HTML', function () {
     expect($serialized['message'])->toBe('Use <code>bar</code> &lt;img src=x onerror=alert(1)&gt;')
         ->and($serialized['origin'])->toBe('/path/<b>file</b>.php:12');
 });
+
+it('records the PHP caller of a deprecated API', function () {
+    Arr::toArray('a,b');
+    $line = __LINE__ - 1;
+
+    $log = Arr::first($this->deprecator->getRequestLogs());
+
+    expect($log->key)->toBe('Arr::toArray(string)')
+        ->and($log->file)->toBe(__FILE__)
+        ->and($log->line)->toBe($line);
+});
+
+it('records the template line of a deprecated API called from Twig', function (string $call, string $key) {
+    $tempDir = sys_get_temp_dir().'/craft-deprecator-test-'.uniqid();
+    File::ensureDirectoryExists($tempDir);
+    File::put("$tempDir/caller.twig", "Line one\n\n{% set q = query %}\n{% do $call %}\n");
+    $template = realpath("$tempDir/caller.twig");
+    Aliases::set('@templates', $tempDir);
+
+    $query = Entry::find();
+    $query->macro('legacyMethod', fn () => DeprecatorFacade::log('legacyMethod', 'legacyMethod() is deprecated.'));
+
+    try {
+        app(TemplateManager::class)->renderTemplate('caller', ['query' => $query], TemplateMode::Site);
+    } finally {
+        File::deleteDirectory($tempDir);
+    }
+
+    $log = Arr::first($this->deprecator->getRequestLogs());
+
+    expect($log->key)->toBe($key)
+        ->and($log->file)->toBe($template)
+        ->and($log->line)->toBe(4);
+})->with([
+    'Twig function' => ["svg('<svg></svg>', class='foo')", 'svg()-class'],
+    'method call' => ["q.orderBy({title: 'asc'})", 'CraftCms\\Cms\\Element\\Queries\\EntryQuery::orderBy'],
+    'macro' => ['q.legacyMethod()', 'legacyMethod'],
+]);
