@@ -46,7 +46,8 @@
     .page-screen { --cp-debug-bar-height: 48px !important; }
     .cp-content__details-pane { --cp-debug-bar-height: 24px !important; }
     .cp-sidebar__footer { --cp-debug-bar-height: 0px !important; }
-    #messages { translate: 24px -24px; }
+    #messages { --cp-messages-inset: calc(var(--c-spacing-md) + 24px); }
+    @media (width < calc(600rem / 16)) { #messages { --cp-messages-inset: calc(16rem / 16 + 24px); } }
     .live-preview { inset: 24px !important; width: auto !important; height: auto !important; overflow: hidden !important; transform: translateZ(0); }
     body:has(> .live-preview:not([style*="display: none"])) > #app { visibility: hidden !important; }
     :is(craft-dialog, craft-element-selector-modal)[fullscreen] {
@@ -59,7 +60,8 @@
     html, body { background: var(--shot-bg) !important; background-image: none !important; }
     body * { visibility: hidden !important; }
     ${feature}, :is(${feature}) * { visibility: visible !important; }
-    craft-dialog::part(dialog)::backdrop { background: transparent !important; }
+    craft-dialog::part(dialog)::backdrop, craft-element-selector-modal::part(dialog)::backdrop,
+    craft-dialog::part(backdrop), craft-element-selector-modal::part(backdrop) { background: transparent !important; }
   `;
 
   function apply() {
