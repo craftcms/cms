@@ -946,6 +946,17 @@ it('links review notifications to the workflow panel', function () {
         ->and($notification->data['url'])->toEndWith('#workflow');
 });
 
+it('names untitled drafts in review notifications', function () {
+    $this->draft->title = null;
+    expect(Elements::saveElement($this->draft, runValidation: false, updateSearchIndex: false))->toBeTrue();
+    $group = reviewerGroup([$this->reviewers[0]]);
+    workflowFor($this->entry, [userReviewStage('Review', $group)]);
+    submitAs($this->workflows, $this->draft, $this->author);
+
+    expect($this->reviewers[0]->notifications()->latest()->firstOrFail()->data['message'])
+        ->toBe('“Untitled entry” is awaiting your approval in Review.');
+});
+
 it('requests user review after an asynchronous stage advances', function () {
     app(WorkflowStageTypes::class)->register(TestAutomatedWorkflowStage::class);
     $group = reviewerGroup([$this->reviewers[0]]);
