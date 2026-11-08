@@ -110,6 +110,9 @@ class Combobox extends Control implements ReadableValueControl, WritableValueCon
         return $this;
     }
 
+    /**
+     * Sets how many matching options are listed at once. More can still be selected by filtering.
+     */
     public function limit(?int $limit): static
     {
         if ($limit !== null && $limit < 1) {
@@ -175,7 +178,7 @@ class Combobox extends Control implements ReadableValueControl, WritableValueCon
             default => ['type' => 'string', 'examples' => array_column($choices, 'const')],
         };
 
-        return $this->multiple ? Arr::whereNotNull(['type' => 'array', 'items' => $schema, 'maxItems' => $this->limit]) : $schema;
+        return $this->multiple ? ['type' => 'array', 'items' => $schema] : $schema;
     }
 
     #[\Override]
