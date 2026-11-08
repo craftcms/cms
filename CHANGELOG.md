@@ -283,6 +283,7 @@
 - The control panel no longer loads Fabric.js. `craft\web\assets\fabric\FabricAsset` is now deprecated and doesn’t register Fabric.js, so plugins that rely on it should bundle it themselves. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - `CraftCms\Cms\Asset\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the requested site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deprecated `Craft.AssetImageEditor`. `Craft.openAssetImageEditor()` should be used instead. Constructing it now opens the image editor dialog, and only its `onSave` setting is supported. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- The upgrade error for filesystems without a matching Laravel disk now suggests an equivalent disk for Amazon S3, Google Cloud Storage, Azure Blob Storage, DigitalOcean Spaces, Linode Object Storage, and Cloudflare R2 filesystems, and references their credentials with `env()` rather than printing them. ([#20471](https://github.com/craftcms/cms/pull/20471))
 - Removed `CraftCms\Cms\Asset\Elements\Asset::$keptFile`, and the `assets` table’s `keptFile` column. `$trashedFileExists` should be used instead. ([#20093](https://github.com/craftcms/cms/pull/20093))
 - Fixed a bug where files uploaded to Assets fields when saving an element, such as from front-end forms, weren’t held to the `maxUploadFileSize` config setting, and were left behind as assets when the element couldn’t be saved because a file wasn’t allowed in the field.
 
@@ -764,7 +765,11 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where autosuggest fields saved an empty value when the typed text matched a suggestion without choosing it, such as an email address matching an environment variable’s value. ([#20476](https://github.com/craftcms/cms/pull/20476))
+- Fixed an error when force-uninstalling a plugin whose package had already been removed, such as with `craft:plugin:uninstall --force`, which left its install record behind. ([#20475](https://github.com/craftcms/cms/pull/20475))
+- Fixed a bug where workflow notifications showed an empty title (“”) for untitled drafts, such as new entries submitted for review before they had a title. ([#20465](https://github.com/craftcms/cms/pull/20465))
 - Fixed a bug where spreadsheet cells containing line breaks or tabs were split across several Table field cells when pasted, with their quotes left in.
+- Fixed a bug where editable tables keyed by number, such as Yii adapter plugin fields’ tables, listed their rows in numeric order rather than their own order. ([#20479](https://github.com/craftcms/cms/pull/20479))
 - Fixed a bug where site error templates weren’t rendered, and unknown site URLs returned an empty 404 response. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Fixed a bug where `config/redirects.php` rules weren’t applied. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Fixed a bug where the “Show full exception views when Dev Mode is disabled” user preference had no effect. ([#20448](https://github.com/craftcms/cms/pull/20448))
@@ -779,13 +784,18 @@
 - Fixed an error when using `groupBy()` with a custom `select()` on element queries on PostgreSQL. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Fixed an error when selecting a custom field with element queries’ `select()` on SQLite. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Fixed a bug where macros registered on one element query, element, or component class, such as `EntryQuery` or a field type, were available on all of them, and macros registered on `Element` didn’t apply to users. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed a bug where Carbon dates passed to `CraftCms\Cms\Field\Field::serializeValue()` were serialized as arrays rather than ISO-8601 strings, so Yii adapter plugin fields that stored dates couldn’t load them back. ([#20477](https://github.com/craftcms/cms/pull/20477))
 - Fixed a bug where Craft 5 config settings that were deprecated or removed were ignored when set from an array-based general config with the Yii adapter installed.
 - Fixed a bug where deprecated config settings didn’t log deprecation warnings when they were set from environment variables or after the application had booted.
 - Fixed an error that occurred when a Craft 5 general config called `enableBasicHttpAuth()` or `tempAssetUploadFs()` with the Yii adapter installed.
+- Fixed a bug where editable tables in Yii adapter plugin fields, such as those rendered with `craft\helpers\Cp::editableTableFieldHtml()`, showed no rows in element editors, and saving the element cleared them. ([#20478](https://github.com/craftcms/cms/pull/20478))
 - Fixed a bug where CSRF protection stayed off when the `enableCsrfProtection` config setting was set to `false` and then back to `true`, such as with a `CRAFT_ENABLE_CSRF_PROTECTION` environment variable, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
 - Fixed a bug where the `enableCsrfProtection`, `secureHeaders`, and `trustedHosts` config settings had no effect when Laravel’s config was cached, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
 - Fixed a bug where `craft:plugin:install` and `craft:plugin:uninstall` reported success when a Yii adapter plugin’s `Install` migration failed, leaving the plugin installed without its tables. ([#20458](https://github.com/craftcms/cms/pull/20458))
 - Fixed errors when Yii adapter migrations called `addForeignKey()`, `dropTableIfExists()`, or `archiveTableIfExists()` on SQLite. ([#20458](https://github.com/craftcms/cms/pull/20458))
+- Fixed a bug where Yii adapter plugin fields’ `init()` methods weren’t called, so fields that set default settings there didn’t get them. ([#20480](https://github.com/craftcms/cms/pull/20480))
+- Fixed a bug where menus and other popovers could reopen, away from their button, when they were closed right after being opened, such as by choosing “Move down” from a reorder menu straight away.
+- Fixed a bug where Yii adapter components that use environment variables in their settings, such as filesystems, saved the variables’ values instead of their `$VARIABLE` references, which wrote secrets to the project config. ([#20470](https://github.com/craftcms/cms/pull/20470))
 - Fixed a bug where users with an authenticator app or recovery codes couldn’t sign in to the control panel, because the verification step showed an empty pane.
 - Fixed a bug where the control panel could error after updating Craft, when Laravel’s compiled Blade views were newer than the updated views they were compiled from. Compiled views are now cleared after updates, and the Caches utility has a “Compiled views” option. ([#20366](https://github.com/craftcms/cms/issues/20366), [#20374](https://github.com/craftcms/cms/pull/20374))
 - Fixed a bug where elements couldn’t be selected, edited inline, or reordered on element indexes when the `allowAdminChanges` config setting was disabled, and the “Changes to these settings aren’t permitted in this environment.” notice was shown on screens other than settings, and twice on the Settings and Sites index pages. ([#20339](https://github.com/craftcms/cms/issues/20339), [#20340](https://github.com/craftcms/cms/issues/20340), [#20344](https://github.com/craftcms/cms/issues/20344), [#20364](https://github.com/craftcms/cms/pull/20364))
@@ -1233,6 +1243,9 @@
 - Fixed a bug where Assets fields’ thumbnail tiles could overflow into the next field when the field’s column was too narrow for the thumbnail size. ([#20392](https://github.com/craftcms/cms/issues/20392))
 - Fixed a bug where relational fields’ “Add” and “Upload files” buttons overlapped when the field was too narrow for them. ([#20423](https://github.com/craftcms/cms/pull/20423))
 - Fixed a bug where HTTP errors thrown by legacy plugin controllers through the Yii adapter, such as `yii\web\ForbiddenHttpException` and `yii\web\BadRequestHttpException`, returned a 500 response rather than their own status code. ([#20457](https://github.com/craftcms/cms/pull/20457))
+- Fixed a bug where `craft.app.session.hasFlash()`, `getFlash()`, and `getAllFlashes()` didn’t return messages flashed to the Laravel session on site requests, with the Yii adapter installed. ([#20472](https://github.com/craftcms/cms/pull/20472))
+- Fixed a bug where values cached through the Yii adapter with a Craft 6 cache dependency, such as element cache info, were never read back, so legacy plugins like Element API never got a cache hit. ([#20481](https://github.com/craftcms/cms/pull/20481))
+- Fixed a bug where headers and cache settings set with `CraftCms\Cms\Support\Facades\ResponseHeaders`, such as with the `{% header %}` and `{% expires %}` tags, weren’t applied to JSON, redirect, and file responses. ([#20482](https://github.com/craftcms/cms/pull/20482))
 - Fixed a bug where Money fields’ inputs held their minimum and maximum amounts in the currency’s minor units, such as cents. ([#20449](https://github.com/craftcms/cms/pull/20449))
 
 ## 6.0.0-alpha.20 - 2026-10-07

@@ -200,6 +200,7 @@
         "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
         "Ai": "CraftCms\\Cms\\Support\\Facades\\Ai",
+        "Anchors": "CraftCms\\Cms\\Support\\Facades\\Anchors",
         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
         "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",

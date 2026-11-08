@@ -2,6 +2,7 @@ import {beforeEach, expect, it} from 'vite-plus/test';
 import type CraftCombobox from './combobox.js';
 import './combobox.js';
 import '../../styles/cp.css';
+import {serializeFormInputsAsObject} from '../../utilities/dom.js';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -77,6 +78,32 @@ it('posts a value its markup carried, with the options as markup too', async () 
 
   expect(control.modelValue).toBe('@webroot/cache/blitz');
   expect(entries(form)).toEqual([['folderPath', '@webroot/cache/blitz']]);
+});
+
+it('serializes typed text that matches an option without choosing it', async () => {
+  // The legacy HTML bridge reads values with `serializeFormInputsAsObject`,
+  // not `FormData`. Typed text that only matched an env var's keywords used to
+  // serialize as empty, so the field saved blank.
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {control, form} = await fixture((c) => {
+    c.requireOptionMatch = false;
+    c.options = [
+      {
+        label: '$TO_EMAIL',
+        value: '$TO_EMAIL',
+        data: {hint: 'sales@example.com', keywords: 'sales@example.com'},
+      },
+    ];
+  });
+  const input = control.querySelector('input')!;
+
+  await userEvent.click(input);
+  await userEvent.type(input, 'sales@example');
+
+  expect(control.querySelector('craft-option')).not.toBeNull();
+  expect(serializeFormInputsAsObject(form)).toEqual({
+    apiVersion: 'sales@example',
+  });
 });
 
 it('posts nothing while disabled', async () => {

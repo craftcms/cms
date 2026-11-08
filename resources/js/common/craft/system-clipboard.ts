@@ -55,6 +55,16 @@ export function writeSystemClipboard(
     return;
   }
 
+  // Without `ClipboardItem`, text can only be written while the click is
+  // being handled, so formats still on their way aren't written at all.
+  if (typeof ClipboardItem === 'undefined') {
+    if (!(formats instanceof Promise) && formats.text) {
+      clipboard.writeText(formats.text).catch(ignoreFailedWrite);
+    }
+
+    return;
+  }
+
   const ready = Promise.resolve(formats).then((value) => {
     // An empty value would only empty the clipboard.
     if (!value?.text) {
@@ -64,26 +74,25 @@ export function writeSystemClipboard(
     return value;
   });
 
-  const written =
-    typeof ClipboardItem !== 'undefined'
-      ? clipboard.write([
-          new ClipboardItem({
-            'text/plain': ready.then(
-              ({text}) => new Blob([text], {type: 'text/plain'})
-            ),
-            'text/html': ready.then(
-              ({text, html}) =>
-                new Blob([html ?? escapeHtml(text).replace(/\n/g, '<br>')], {
-                  type: 'text/html',
-                })
-            ),
-          }),
-        ])
-      : ready.then(({text}) => clipboard.writeText(text));
+  clipboard
+    .write([
+      new ClipboardItem({
+        'text/plain': ready.then(
+          ({text}) => new Blob([text], {type: 'text/plain'})
+        ),
+        'text/html': ready.then(
+          ({text, html}) =>
+            new Blob([html ?? escapeHtml(text).replace(/\n/g, '<br>')], {
+              type: 'text/html',
+            })
+        ),
+      }),
+    ])
+    .catch(ignoreFailedWrite);
+}
 
-  written.catch(() => {
-    // It can still be pasted within the control panel from its paste buttons.
-  });
+function ignoreFailedWrite(): void {
+  // It can still be pasted within the control panel from its paste buttons.
 }
 
 /**

@@ -527,12 +527,14 @@ describe('ElementSelectControl', () => {
 
   it('fetches elements it’s given without their presentations, such as pasted ones', async () => {
     const value = ref<number[] | number | null>([5]);
+    // One render from the server throughout, as a paste brings none
+    const rendered = control();
     container = document.createElement('div');
     document.body.append(container);
     app = createApp({
       render: () =>
         h(ElementSelectControl, {
-          control: control(),
+          control: rendered,
           value: value.value,
           editable: true,
         }),
@@ -552,6 +554,15 @@ describe('ElementSelectControl', () => {
     expect(stub.post).toHaveBeenCalledOnce();
     expect(stub.post.mock.calls[0]![1]).toMatchObject({elementIds: [8]});
     expect(container.textContent).toContain('Some entry');
+
+    // Removed and pasted back, it's fetched again.
+    value.value = [5];
+    await nextTick();
+    value.value = [5, 8];
+    await vi.waitFor(() => expect(stub.post).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() =>
+      expect(container!.textContent).toContain('Pasted entry')
+    );
   });
 
   it('keeps focus on a card’s link when its refetched card remounts', async () => {

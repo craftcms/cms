@@ -169,6 +169,79 @@ return new class extends Migration
             return $this->localDiskConfig($handle, $filesystem, $settings);
         }
 
+        $credentials = [];
+        $config = match ($type) {
+            'craft\awss3\Fs' => [
+                'driver' => "'s3'",
+                'key' => $this->credentialExpression($handle, 'KEY_ID', $settings['keyId'] ?? null, $credentials),
+                'secret' => $this->credentialExpression($handle, 'SECRET', $settings['secret'] ?? null, $credentials),
+                'region' => $this->configExpression($settings['region'] ?? null),
+                'bucket' => $this->configExpression($settings['bucket'] ?? null),
+                'root' => $this->configExpression($settings['subfolder'] ?? null),
+                'url' => $this->urlExpression($filesystem, $settings),
+                'visibility' => ($settings['makeUploadsPublic'] ?? true) ? "'public'" : "'private'",
+            ],
+            'vaersaagod\dospaces\Fs', 'mwikala\linodes3\Fs' => [
+                'driver' => "'s3'",
+                'key' => $this->credentialExpression($handle, 'KEY_ID', $settings['keyId'] ?? null, $credentials),
+                'secret' => $this->credentialExpression($handle, 'SECRET', $settings['secret'] ?? null, $credentials),
+                'region' => $this->configExpression($settings['region'] ?? null),
+                'bucket' => $this->configExpression($settings['bucket'] ?? null),
+                'endpoint' => $this->configExpression($settings['endpoint'] ?? null),
+                'root' => $this->configExpression($settings['subfolder'] ?? null),
+                'url' => $this->urlExpression($filesystem, $settings),
+            ],
+            'jrrdnx\cloudflarer2\Fs' => [
+                'driver' => "'s3'",
+                'key' => $this->credentialExpression($handle, 'KEY_ID', $settings['keyId'] ?? null, $credentials),
+                'secret' => $this->credentialExpression($handle, 'SECRET', $settings['secret'] ?? null, $credentials),
+                'region' => $this->configExpression($settings['region'] ?? 'auto'),
+                'bucket' => $this->configExpression(($settings['bucketSelectionMode'] ?? null) === 'manual' ? ($settings['manualBucket'] ?? null) : ($settings['bucket'] ?? null)),
+                'endpoint' => ($accountId = $this->configExpression($settings['accountId'] ?? null)) !== null
+                    ? "sprintf('https://%s.r2.cloudflarestorage.com', $accountId)"
+                    : null,
+                'root' => $this->configExpression($settings['subfolder'] ?? null),
+                'url' => $this->urlExpression($filesystem, $settings),
+            ],
+            'craft\googlecloud\Fs' => [
+                '// Install with: composer require spatie/laravel-google-cloud-storage:^2.4.2',
+                'driver' => "'gcs'",
+                'project_id' => $this->configExpression($settings['projectId'] ?? null),
+                'key_file' => ($keyFile = $this->credentialExpression($handle, 'KEY_FILE', $settings['keyFileContents'] ?? null, $credentials)) !== null
+                    ? "json_decode((string) $keyFile, true)"
+                    : null,
+                'bucket' => $this->configExpression($settings['bucket'] ?? null),
+                'path_prefix' => $this->configExpression($settings['subfolder'] ?? null),
+                'storage_api_uri' => $this->urlExpression($filesystem, $settings),
+                'visibility' => $this->configExpression($settings['visibility'] ?? null) ?? ($this->hasUrls($filesystem) ? "'public'" : "'private'"),
+            ],
+            'craft\azureblob\Fs' => [
+                '// Install with: composer require azure-oss/storage-blob-laravel',
+                'driver' => "'azure-storage-blob'",
+                'connection_string' => $this->credentialExpression($handle, 'CONNECTION_STRING', $settings['connectionString'] ?? null, $credentials),
+                'container' => $this->configExpression($settings['container'] ?? null),
+                'prefix' => $this->configExpression($settings['subfolder'] ?? null),
+                'url' => $this->urlExpression($filesystem, $settings),
+            ],
+            default => null,
+        };
+
+        if ($config !== null) {
+            $lines = ["'$handle' => ["];
+
+            foreach ($credentials as $name) {
+                $lines[] = "    // Set $name in .env to the previous filesystem's value.";
+            }
+
+            foreach (array_filter($config, fn (?string $expression) => $expression !== null) as $key => $expression) {
+                $lines[] = is_int($key) ? "    $expression" : "    '$key' => $expression,";
+            }
+
+            $lines[] = '],';
+
+            return implode("\n", $lines);
+        }
+
         $typeLabel = is_string($type) && $type !== '' ? $type : 'unknown';
 
         return "'$handle' => [\n".
@@ -213,6 +286,60 @@ return new class extends Migration
         $escaped = str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
 
         return "'$key' => '$escaped',";
+    }
+
+    /**
+     * Renders a setting as a PHP expression: `env()` for a `$ENV_VAR` reference, otherwise the parsed literal.
+     */
+    private function configExpression(mixed $value): ?string
+    {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        if (preg_match('/^\$(\w+)$/', $value, $match)) {
+            return "env('$match[1]')";
+        }
+
+        $parsed = (string) Env::parse($value);
+
+        return "'".str_replace(['\\', "'"], ['\\\\', "\\'"], $parsed)."'";
+    }
+
+    /**
+     * Renders a credential as an `env()` call, so the error message never contains its value.
+     *
+     * @param  string[]  $credentials  Environment variable names the user must set
+     */
+    private function credentialExpression(string $handle, string $suffix, mixed $value, array &$credentials): ?string
+    {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        if (preg_match('/^\$(\w+)$/', $value, $match)) {
+            return "env('$match[1]')";
+        }
+
+        $name = Str::of($handle)->snake()->upper()->append("_$suffix")->toString();
+        $credentials[] = $name;
+
+        return "env('$name')";
+    }
+
+    /**
+     * @param  array<string, mixed>  $filesystem
+     * @param  array<string, mixed>  $settings
+     */
+    private function urlExpression(array $filesystem, array $settings): ?string
+    {
+        if (! $this->hasUrls($filesystem)) {
+            return null;
+        }
+
+        $url = $settings['url'] ?? $filesystem['url'] ?? null;
+
+        return $this->configExpression(is_string($url) ? rtrim($url, '/') : null);
     }
 
     private function diskName(mixed $reference): ?string

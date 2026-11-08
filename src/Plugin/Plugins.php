@@ -613,7 +613,9 @@ class Plugins
                 throw new InvalidPluginException($handle);
             }
 
-            event(new PluginUninstalling($plugin));
+            if ($plugin) {
+                event(new PluginUninstalling($plugin));
+            }
 
             DB::beginTransaction();
             try {
@@ -660,9 +662,8 @@ class Plugins
 
             if ($plugin) {
                 $plugin->removeAssets();
+                event(new PluginUninstalled($plugin));
             }
-
-            event(new PluginUninstalled($plugin));
 
             return true;
         } finally {

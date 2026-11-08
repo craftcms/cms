@@ -160,6 +160,27 @@ describe('the element clipboard', () => {
     expect(clipboard.isCopiedElementsText('Apples')).toBe(false);
   });
 
+  it('only writes text that’s ready while the click is handled, in browsers without ClipboardItem', async () => {
+    vi.stubGlobal('ClipboardItem', undefined);
+    const writeText = vi.fn(async () => {});
+    vi.stubGlobal('navigator', {clipboard: {writeText}});
+    clipboard.installClipboard();
+
+    // Elements' titles load after the click, so they'd be refused
+    clipboard.copyElements([entry]);
+    Card.last!.load([entry], {text: 'Apples', html: null});
+    await Promise.resolve();
+    expect(writeText).not.toHaveBeenCalled();
+
+    (await import('@/modules/ui/copiedFieldValue')).copyFieldValue({
+      value: 'Hi',
+      component: 'craft:text',
+      label: 'Title',
+      text: 'Hi',
+    });
+    expect(writeText).toHaveBeenCalledExactlyOnceWith('Hi');
+  });
+
   it('keeps one thing on the clipboard: elements or a field value', async () => {
     const values = await import('@/modules/ui/copiedFieldValue');
     const value = {

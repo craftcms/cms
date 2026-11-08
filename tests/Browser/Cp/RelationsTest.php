@@ -86,6 +86,7 @@ it('reorders and removes related entries', function () {
         ->click('role=group[name="Related"] >> craft-chip:has-text("Alpha") >> role=button[name="Reorder"]')
         ->click('role=button[name="Move down"]')
         ->assertSeeIn('role=group[name="Related"] >> craft-chip >> nth=0', 'Bravo')
+        ->assertMissing('role=button[name="Move down"]')
         ->click('role=group[name="Related"] >> craft-chip:has-text("Charlie") >> role=button[name="Actions"]')
         ->click('role=button[name="Remove"]')
         ->assertMissing('role=group[name="Related"] >> role=checkbox[name="Select Charlie"]')

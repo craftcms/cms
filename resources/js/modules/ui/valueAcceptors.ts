@@ -41,11 +41,15 @@ function isScalar(value: UiValue | undefined): value is Scalar {
   return typeof value === 'string' || typeof value === 'number';
 }
 
+/**
+ * Whether `value` is a finite decimal number, as a number input can hold it,
+ * not hex or `Infinity`, which `Number()` would also read.
+ */
 function isNumeric(value: UiValue | undefined): boolean {
   return (
     isScalar(value) &&
-    String(value).trim() !== '' &&
-    !Number.isNaN(Number(value))
+    /^-?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i.test(String(value)) &&
+    Number.isFinite(Number(value))
   );
 }
 
@@ -88,17 +92,41 @@ function fitsInputType(text: string, inputType: unknown): boolean {
       return /^[^\s@]+@[^\s@]+$/.test(text);
     case 'url':
       return URL.canParse(text);
-    // As date and time inputs hold them, such as `2026-11-13` and `14:30`
-    case 'date':
-      return /^\d{4}-\d{2}-\d{2}$/.test(text);
-    case 'time':
-      return /^\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(text);
+    // Real dates and times, as date and time inputs hold them, such as
+    // `2026-11-13` and `14:30`
+    case 'date': {
+      const [, year, month, day] = (
+        /^(\d{4})-(\d{2})-(\d{2})$/.exec(text) ?? []
+      ).map(Number);
+      const leap = year! % 4 === 0 && (year! % 100 !== 0 || year! % 400 === 0);
+      const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+      return year! >= 1 && day! >= 1 && day! <= (days[month! - 1] ?? 0);
+    }
+    case 'time': {
+      const match = /^(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/.exec(text);
+
+      return (
+        match !== null &&
+        Number(match[1]) < 24 &&
+        Number(match[2]) < 60 &&
+        Number(match[3] ?? 0) < 60
+      );
+    }
     default:
       return true;
   }
 }
 
-/** The values of a list of options, flattening any option groups. */
+/** Whether `value` could be an option's value, which can be true or false. */
+function isOptionValue(value: UiValue | undefined): value is Scalar | boolean {
+  return isScalar(value) || typeof value === 'boolean';
+}
+
+/**
+ * The values of a list of options that can be chosen, flattening any option
+ * groups and leaving out disabled options.
+ */
 function optionValues(options: unknown): Set<string> {
   const list = Array.isArray(options)
     ? options
@@ -107,14 +135,17 @@ function optionValues(options: unknown): Set<string> {
       : [];
 
   return new Set(
-    list.flatMap((option: {value?: unknown; options?: unknown}) =>
-      option && typeof option === 'object'
-        ? 'options' in option
-          ? [...optionValues(option.options)]
-          : option.value === undefined || option.value === null
-            ? []
-            : [String(option.value as Scalar)]
-        : []
+    list.flatMap(
+      (option: {value?: unknown; options?: unknown; disabled?: unknown}) =>
+        option && typeof option === 'object'
+          ? 'options' in option
+            ? [...optionValues(option.options)]
+            : option.value === undefined ||
+                option.value === null ||
+                option.disabled === true
+              ? []
+              : [String(option.value as Scalar)]
+          : []
     )
   );
 }
@@ -125,8 +156,8 @@ function optionValues(options: unknown): Set<string> {
  */
 function fitsShape(value: UiValue, multiple: unknown): boolean {
   return Array.isArray(value)
-    ? Boolean(multiple) && value.every(isScalar)
-    : !multiple && isScalar(value);
+    ? Boolean(multiple) && value.every(isOptionValue)
+    : !multiple && isOptionValue(value);
 }
 
 /** Whether a choice of `values` fits the options a control offers. */
@@ -134,7 +165,7 @@ function fitsOptions(value: UiValue, options: unknown): boolean {
   const offered = optionValues(options);
 
   return (Array.isArray(value) ? value : [value]).every(
-    (item) => isScalar(item) && offered.has(String(item))
+    (item) => isOptionValue(item) && offered.has(String(item))
   );
 }
 
@@ -231,14 +262,28 @@ const colorSelect: UiValueAcceptor = (control, {value}) => {
   );
 };
 
-/** Whether `value` is a color, translucent only where `alpha` allows it. */
+/**
+ * Whether `value` is a hex color, translucent only where `alpha` allows it,
+ * as the server's `ColorRule` checks it.
+ */
 function fitsColor(value: UiValue, alpha: unknown): boolean {
-  return (
-    isBlank(value) ||
-    (typeof value === 'string' &&
-      // Without an alpha channel, a translucent color can't be entered.
-      (Boolean(alpha) || !/^#?(?:[0-9a-f]{4}|[0-9a-f]{8})$/i.test(value)))
-  );
+  if (isBlank(value)) {
+    return true;
+  }
+
+  const hex =
+    typeof value === 'string'
+      ? /^#?([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(value)?.[1]
+      : undefined;
+
+  if (!hex) {
+    return false;
+  }
+
+  // Shorthand colors are expanded, and a fully opaque alpha channel dropped.
+  const full = hex.length <= 4 ? [...hex].map((c) => c + c).join('') : hex;
+
+  return full.length === 6 || Boolean(alpha) || /ff$/i.test(full);
 }
 
 const color: UiValueAcceptor = (control, {value}) =>
@@ -320,7 +365,9 @@ function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
       return [true, false, '1', 1, 0].includes(cell as never);
     case 'select':
     case 'radio':
-      return isScalar(cell) && optionValues(column.options).has(String(cell));
+      return (
+        isOptionValue(cell) && optionValues(column.options).has(String(cell))
+      );
     case 'number':
       return (
         isNumeric(cell) && withinBounds(cell as Scalar, column.min, column.max)
@@ -368,8 +415,8 @@ function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
         isRecord(cell) &&
         (isBlank(cell.value) ||
           (typeof cell.value === 'string' &&
-            (!Array.isArray(column.types) ||
-              column.types.includes(cell.type as never))))
+            Array.isArray(column.types) &&
+            column.types.includes(cell.type as never)))
       );
     // Columns with controls of their own, whose values can't be checked here
     default:

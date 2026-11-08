@@ -89,7 +89,7 @@
 - Asset indexes can now show “Image Type”, “Colors”, “Creator”, “Credit”, “Copyright”, “Date Taken”, “Camera”, and “Embedded Keywords” columns and card attributes. Asset indexes’ “Location” column and card attribute, which show an asset’s folder, are now “Folder”. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Images uploaded straight to a remote filesystem, such as an S3 bucket, are no longer downloaded to be sampled, and uploads staged on an S3 disk are copied into their volume within S3 when the disks share credentials and an endpoint. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Asset conditions, such as for index filters and Assets fields’ sources, now have an “Orientation” rule, which filters images by whether they’re landscape, portrait, or square. Images whose width and height differ by up to 2% count as square. ([#20114](https://github.com/craftcms/cms/pull/20114))
-- Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured, which suggests an equivalent disk for Local, Amazon S3, Google Cloud Storage, Azure Blob Storage, DigitalOcean Spaces, Linode Object Storage, and Cloudflare R2 filesystems. ([#19650](https://github.com/craftcms/cms/pull/19650), [#20471](https://github.com/craftcms/cms/pull/20471))
 - Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
 - Packages can now register asset transformers in code, via `CraftCms\Cms\Asset\AssetTransformerRegistry::register()`. Registered transformers have fixed names, handles, and drivers, can’t be deleted, and supply default settings that can be overridden in project config. The `craft` transformer is now registered the same way, and removing its project config entry restores its default settings. ([#20411](https://github.com/craftcms/cms/pull/20411))
 - Added support for the libvips image driver via the optional `intervention/image-driver-vips` package.
@@ -229,9 +229,12 @@
 - Element queries’ `orderBy()`, `select()`, and `groupBy()` now quote strings as column names, except `rand()` and `random()`, which use the database’s random function on MySQL, PostgreSQL, and SQLite alike. Any other SQL expression must be passed with `expression()` in Twig or `DB::raw()` in PHP; strings containing `(` throw an exception explaining this. ([#20190](https://github.com/craftcms/cms/pull/20190))
 - Element save requests no longer enable the element when no status is posted. Craft 5 resolved the status as `enabled ?? (setEnabled ? true : null)`, so a POST carrying none of `enabled`, `setEnabled`, or `enabledForSite` force-enabled the element, and posting `setEnabled=0` was how a request opted out of that. A posted status now decides on its own, and a save that doesn’t carry one leaves the element’s status untouched — which is what lets partial/delta saves keep a disabled element disabled. The `setEnabled` param has nothing left to suppress and is ignored.
 - Updated Twig `{% paginate %}` queries to use Laravel paginators and generate query-string pagination URLs based on the `pageTrigger` general config setting.
+- Added the `|hexdec` Twig filter, which converts a hexadecimal string to a decimal number. It replaces the Hexdec plugin, which can be uninstalled.
+- Added the `|anchors` Twig filter and `@anchors` GraphQL directive, which add linkable anchors to HTML headings, and the `anchors` config setting. They replace the Anchors plugin, which keeps working with the Yii adapter installed. To switch to core, uninstall the plugin, then remove its `craftcms/anchors` package. With the Yii adapter installed, the plugin’s `config/craft/anchors.php` file and `craft\anchors\Plugin::getInstance()->parser` API keep working afterward, but are deprecated.
 - Added `|sanitize` Twig filter for sanitizing HTML with `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizers`.
 - Renamed the `|money` Twig filter’s `formatLocale` argument to `locale`.
 - Added the `{% render %}` Twig tag. `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
+- Dates can now be output and passed to filters such as `|date` within the Twig sandbox.
 - Templates can now choose white or black text for legibility over an image or one of its edges, with `asset.analysis.colors.textColor()`, which also gives the text’s contrast ratio. ([#20103](https://github.com/craftcms/cms/pull/20103))
 
 #### GraphQL
@@ -255,6 +258,7 @@
 #### Migrations
 - Craft and Yii's migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
 - The `php craft fields:merge` and `php craft entry-types:merge` commands will now generate Laravel migrations.
+- Added `CraftCms\Cms\Database\Migration::archiveTableIfExists()`, the native equivalent of `craft\db\Migration::archiveTableIfExists()`. It also renames the archived table’s indexes and PostgreSQL sequence, and drops its foreign keys on MySQL, so install migrations can create the table again.
 
 #### Deprecations
 - Deprecated support for categories, global sets, and tags. ([#18009](https://github.com/craftcms/cms/pull/18009))
