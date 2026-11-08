@@ -145,6 +145,7 @@
 
 ### Mail
 - Removed legacy `projectConfig.email` mail settings and mail transport adapter configuration in favor of Laravel's `mail` config and drivers.
+- With the Yii adapter installed, email is still sent through the mail transport adapter saved in the project config, including ones provided by plugins such as Mailgun and Postmark, until a Laravel mailer is selected in Settings → Email, set with `MAIL_MAILER`, or made the default in `config/mail.php`. It’s available as the `craft-transport` mailer, and logs a deprecation warning. ([#20502](https://github.com/craftcms/cms/pull/20502))
 
 ### Accessibility
 - Links to other sites now show an external-link icon and tell screen readers that they open in a new window. ([#20306](https://github.com/craftcms/cms/pull/20306))
