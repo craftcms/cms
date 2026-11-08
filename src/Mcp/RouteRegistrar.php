@@ -115,9 +115,10 @@ readonly class RouteRegistrar
         }
 
         // Stdio clients have no access token, and may run Craft without the HTTP server, so their upload sessions get
-        // action routes that authenticate each session by its own credential.
+        // action routes that authenticate each session by its own credential. Their last segment differs from the
+        // HTTP server's `uploads`, so the two never overlap, even with an empty action trigger.
         $this->router->allowDuringMaintenance()
-            ->prefix($this->routes->joinRoutePrefix([$this->routes->actionTriggerRoutePrefix(), 'mcp/uploads']))
+            ->prefix($this->routes->joinRoutePrefix([$this->routes->actionTriggerRoutePrefix(), 'mcp/upload-sessions']))
             ->name('craft.mcp.stdio.uploads.')
             ->middleware([
                 ForgetTriggerParameters::class,

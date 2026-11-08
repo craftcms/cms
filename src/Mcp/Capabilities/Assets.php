@@ -34,7 +34,6 @@ use CraftCms\Cms\Mcp\StdioTransport;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
-use CraftCms\Cms\Support\Url;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -216,8 +215,10 @@ readonly class Assets
         $actor = $this->actor->user();
 
         // Over stdio, URLs are built from `app.url`, as there's no request to take the host from
-        if ($this->isStdio() && ! Url::isAbsoluteUrl((string) config('app.url'))) {
-            throw new ToolCallException('Uploads over stdio require an absolute site URL. Set the APP_URL environment variable, then restart the MCP server.');
+        $appUrl = parse_url((string) config('app.url')) ?: [];
+
+        if ($this->isStdio() && (! in_array(strtolower($appUrl['scheme'] ?? ''), ['http', 'https'], true) || ($appUrl['host'] ?? '') === '')) {
+            throw new ToolCallException('Uploads over stdio require an absolute HTTP or HTTPS site URL. Set the APP_URL environment variable, then restart the MCP server.');
         }
 
         if ($assetId !== null) {
