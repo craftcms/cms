@@ -66,6 +66,7 @@
 - Entries and assets can no longer be deleted for the only site they exist in, via the `elements/delete-for-site` action or the “Delete for site” element action, and “Delete for this site” is no longer offered for provisional drafts whose canonical entry only exists in that site.
 - Field values submitted for nested entries, Content Block fields, and addresses are now ignored if the user isn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed an error that occurred when editing an address within a draft, if the owner element wasn’t saved in the primary site. ([#20413](https://github.com/craftcms/cms/issues/20413))
+- United Kingdom administrative areas (counties) now come from `commerceguys/addressing`, and are stored by their ISO codes rather than their names. Existing UK addresses are migrated automatically, and Administrative Area condition rules that reference county names are normalized to the new codes. ([#19488](https://github.com/craftcms/cms/pull/19488))
 
 #### Entries
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
@@ -631,6 +632,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 
 #### Addresses
 - Added `CraftCms\Cms\Support\Facades\Addresses`.
+- `CraftCms\Cms\Address\Addresses::getUsedFields()` and `getUsedSubdivisionFields()` remove duplicate fields added by event handlers. ([#19488](https://github.com/craftcms/cms/pull/19488))
 
 #### AI
 - Added `CraftCms\Cms\Ai\Task` and `CraftCms\Cms\Ai\AiTasks`, for registering AI tasks. ([#20006](https://github.com/craftcms/cms/pull/20006))
