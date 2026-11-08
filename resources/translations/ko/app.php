@@ -426,6 +426,7 @@ return [
     'Logo' => '로고',
     'MCP' => 'MCP',
     'MCP Settings' => 'MCP 설정',
+    'MCP clients can’t sign in until Craft has OAuth signing keys.' => 'MCP clients can’t sign in until Craft has OAuth signing keys.',
     'MCP server' => 'MCP 서버',
     'MCP settings saved.' => 'MCP 설정이 저장되었습니다.',
     'Main content' => '주요 콘텐츠',
