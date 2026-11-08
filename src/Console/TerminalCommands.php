@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Console;
 
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Http\Request;
 
@@ -96,6 +97,9 @@ class TerminalCommands
      *
      * Valet’s front controller defines `VALET_HOME_PATH`, and `valet isolate` starts the site’s Nginx config with an
      * `ISOLATED_PHP_VERSION` comment, which is how `valet isolated` lists isolated sites.
+     *
+     * A site’s config also serves its `www.` and other subdomains, so the most specific config for the host applies,
+     * as it does in Nginx: `Nginx/www.example.test`, then `Nginx/example.test`.
      */
     private function isIsolatedValetSite(): bool
     {
@@ -109,16 +113,20 @@ class TerminalCommands
             return false;
         }
 
-        $config = @fopen(constant('VALET_HOME_PATH')."/Nginx/$host", 'rb');
+        for ($site = $host; str_contains($site, '.'); $site = Str::after($site, '.')) {
+            $config = @fopen(constant('VALET_HOME_PATH')."/Nginx/$site", 'rb');
 
-        if ($config === false) {
-            return false;
+            if ($config === false) {
+                continue;
+            }
+
+            try {
+                return str_starts_with((string) fgets($config), '# ISOLATED_PHP_VERSION=');
+            } finally {
+                fclose($config);
+            }
         }
 
-        try {
-            return str_starts_with((string) fgets($config), '# ISOLATED_PHP_VERSION=');
-        } finally {
-            fclose($config);
-        }
+        return false;
     }
 }

@@ -6,8 +6,17 @@ use CraftCms\Cms\Console\TerminalCommands;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 
+beforeEach(function () {
+    $this->isDdevProject = Illuminate\Support\Facades\Request::server('IS_DDEV_PROJECT') ?? null;
+    $_SERVER['IS_DDEV_PROJECT'] = 'false';
+});
+
 afterEach(function () {
-    unset($_SERVER['IS_DDEV_PROJECT']);
+    if ($this->isDdevProject === null) {
+        unset($_SERVER['IS_DDEV_PROJECT']);
+    } else {
+        $_SERVER['IS_DDEV_PROJECT'] = $this->isDdevProject;
+    }
 });
 
 it('uses the plain commands outside of local development environments', function () {
@@ -35,6 +44,7 @@ it('uses Valet’s wrappers for Valet sites isolated to a PHP version', function
     $home = sys_get_temp_dir().'/craft-valet-'.uniqid();
     File::ensureDirectoryExists("$home/Nginx");
     File::put("$home/Nginx/isolated.test", "# ISOLATED_PHP_VERSION=php@8.4\nserver {}\n");
+    File::put("$home/Nginx/api.isolated.test", "server {}\n");
     File::put("$home/Nginx/secure.test", "server {}\n");
     defined('VALET_HOME_PATH') || define('VALET_HOME_PATH', $home);
     $commands = app(TerminalCommands::class);
@@ -46,6 +56,9 @@ it('uses Valet’s wrappers for Valet sites isolated to a PHP version', function
 
     try {
         expect($commandsFor('isolated.test'))->toBe(['valet php craft update all', 'valet composer install'])
+            ->and($commandsFor('www.isolated.test'))->toBe(['valet php craft update all', 'valet composer install'])
+            ->and($commandsFor('a.b.isolated.test'))->toBe(['valet php craft update all', 'valet composer install'])
+            ->and($commandsFor('v1.api.isolated.test'))->toBe(['php craft update all', 'composer install'])
             ->and($commandsFor('secure.test'))->toBe(['php craft update all', 'composer install'])
             ->and($commandsFor('unconfigured.test'))->toBe(['php craft update all', 'composer install']);
 

@@ -4,7 +4,11 @@
   import {computed} from 'vue';
   import type {Plugin, PluginStoreContext} from '../types';
 
-  const {plugin} = defineProps<{plugin: Plugin}>();
+  const {plugin, labelSrOnly = false} = defineProps<{
+    plugin: Plugin;
+    /** Hides the label visually, for when a parent already shows one. */
+    labelSrOnly?: boolean;
+  }>();
   const page = usePage<{context: PluginStoreContext}>();
 
   const command = computed(() => {
@@ -17,9 +21,9 @@
 <template>
   <craft-input-copy
     :label="t('Installation Instructions')"
-    label-sr-only
+    :label-sr-only="labelSrOnly || undefined"
     readonly
-    class="font-mono"
+    monospace
     :value="command"
   ></craft-input-copy>
 </template>
