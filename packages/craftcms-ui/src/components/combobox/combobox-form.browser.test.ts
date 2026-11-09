@@ -104,6 +104,40 @@ it('serializes typed text that matches an option without choosing it', async () 
   });
 });
 
+it('carries the new value in the form by the time input and change fire', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {control, form} = await fixture((c) => {
+    c.setAttribute('value', '2026-01');
+    c.requireOptionMatch = false;
+    c.clearable = true;
+    c.showAllOnEmpty = true;
+  });
+  const seen: string[] = [];
+  for (const type of ['input', 'change']) {
+    control.addEventListener(type, () =>
+      seen.push(`${type}:${new FormData(form).get('apiVersion')}`)
+    );
+  }
+  const input = control.querySelector('input')!;
+
+  await userEvent.click(input);
+  await userEvent.keyboard('{ArrowDown}');
+  [
+    ...control.querySelectorAll<HTMLElement & {choiceValue: string}>(
+      'craft-option'
+    ),
+  ]
+    .find((option) => option.choiceValue === '2026-04')!
+    .click();
+  expect(seen.splice(0)).toEqual(['input:2026-04', 'change:2026-04']);
+
+  await userEvent.keyboard('{Control>}a{/Control}x');
+  expect(seen.splice(0)).toEqual(['input:x']);
+
+  control.shadowRoot!.querySelector<HTMLElement>('.clear')!.click();
+  expect(seen.splice(0)).toEqual(['input:', 'change:']);
+});
+
 it('posts nothing while disabled', async () => {
   const {control, form} = await fixture((c) => {
     c.setAttribute('value', '2026-01');

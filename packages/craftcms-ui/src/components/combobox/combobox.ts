@@ -580,6 +580,7 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
         : undefined
     );
 
+    this.#syncForm();
     emitInput(this);
   };
 
@@ -761,6 +762,7 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     this.value = value;
     this.#filtering = false;
     this.#syncTextbox();
+    this.#syncForm();
     emitInput(this, PICKED);
     this.#commit();
   }
@@ -772,6 +774,7 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     }
 
     this.#committedValue = this.value;
+    this.#syncForm();
     emitChange(this);
   }
 
@@ -847,6 +850,7 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     this.#syncTextbox();
     this.#renderOptions();
     this._inputNode?.focus();
+    this.#syncForm();
     emitInput(this);
     this.#commit();
   };
