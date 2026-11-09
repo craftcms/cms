@@ -777,6 +777,7 @@
 - Updated Font Awesome to v7. Parts of some icons now extend a little beyond their icon’s box, rather than being clipped. ([#20520](https://github.com/craftcms/cms/pull/20520))
 
 ### Bug Fixes
+- Fixed a bug where `craft:up` listed pending content migrations alongside Craft and plugin migrations, and backed up the database despite `--noBackup`, because `craft:migrate:all` ignored its deprecated `--noContent` and `--noBackup` options. ([#20538](https://github.com/craftcms/cms/pull/20538))
 - Fixed a bug where field layout forms created through the Yii adapter, such as with `craft\models\FieldLayout::createForm()`, didn’t show the element’s validation errors, including nested Matrix entries’ errors. ([#20518](https://github.com/craftcms/cms/pull/20518))
 - Fixed a bug where custom field params were ignored on asset queries for subclasses of `Asset`, and on category and tag queries without a group, such as `craft\elements\Asset::find()->myField('value')` with the Yii adapter. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a validation error when saving Color fields created with `presets` or `defaultColor`. ([#20513](https://github.com/craftcms/cms/pull/20513))
