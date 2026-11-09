@@ -192,7 +192,7 @@ export default class CraftTooltip extends LitElement {
         popover=${supportsPopover ? 'manual' : nothing}
       >
         <div class="overlay-position">
-          <slot name="content"></slot>
+          <slot name="content" @slotchange=${this.#onContentSlotChange}></slot>
         </div>
       </div>
     `;
@@ -200,6 +200,33 @@ export default class CraftTooltip extends LitElement {
 
   #onInvokerSlotChange = (): void => {
     if (this.#isSetUp && this.invoker !== this.#invoker?.node) {
+      this.#bind();
+    }
+  };
+
+  /**
+   * Takes up a `slot="content"` child that replaced the content, and refers
+   * the invoker to it in place of the old one.
+   */
+  #onContentSlotChange = (): void => {
+    const content = Array.from(this.children).find(
+      (child) => child instanceof HTMLElement && child.slot === 'content'
+    );
+
+    // Only a supplied element takes over. Content that was just removed, as
+    // when `textContent` is set, is left alone: happy-dom fires `slotchange`
+    // during the removal, and wrapping then would be removed in turn.
+    if (!content || !this.isConnected || content === this.#contentWrapper) {
+      return;
+    }
+
+    this.#unbind();
+    this.#contentWrapper?.removeEventListener('keyup', this.#onEscape, true);
+    this.#contentWrapper = null;
+    this.#contentId = uniqueId('tooltip');
+    this.#ensureContentWrapper();
+
+    if (this.#isSetUp) {
       this.#bind();
     }
   };

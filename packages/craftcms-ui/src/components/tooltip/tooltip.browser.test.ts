@@ -459,3 +459,51 @@ it('stays open when before-closed is canceled, on hover out, Escape or hide()', 
 
   expect(requests).toBe(3);
 });
+
+async function renderWithSuppliedContent(): Promise<{
+  invoker: HTMLButtonElement;
+  replacement: HTMLElement;
+  tooltip: CraftTooltip;
+}> {
+  document.body.innerHTML = `
+    <button id="invoker" type="button">Info</button>
+    <craft-tooltip for="invoker" placement="right"><div slot="content" id="own">Help</div></craft-tooltip>
+    <p style="margin-top: 200px">Elsewhere</p>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.updateComplete;
+  await after(0);
+  const replacement = document.createElement('div');
+  replacement.slot = 'content';
+  replacement.id = 'replacement';
+  replacement.textContent = 'New help';
+
+  document.querySelector('#own')!.replaceWith(replacement);
+  await after(50);
+
+  return {
+    invoker: document.querySelector('button')!,
+    replacement,
+    tooltip,
+  };
+}
+
+it('points its invoker at a slot="content" child that replaces the supplied one', async () => {
+  const {invoker, replacement} = await renderWithSuppliedContent();
+
+  expect(invoker.getAttribute('aria-describedby')).toBe('replacement');
+  expect(replacement.getAttribute('role')).toBe('tooltip');
+});
+
+it('hides once the pointer leaves a slot="content" child that replaced the supplied one', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {replacement, tooltip} = await renderWithSuppliedContent();
+  await tooltip.show();
+  await after(50);
+
+  await userEvent.hover(replacement);
+  await after(50);
+  await userEvent.hover(document.querySelector('p')!);
+  await after(100);
+
+  expect(tooltip.opened).toBe(false);
+});
