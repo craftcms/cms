@@ -16,6 +16,8 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\NestedUiPayload;
+use CraftCms\Cms\Ui\NodePayload;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -97,6 +99,12 @@ readonly class CompareElementsController
         $sameCurrent = $from->getIsCanonical() && $to->getIsCanonical() && $from->id === $to->id;
 
         $comparison = $this->comparisons->compareElements($from, $to);
+        $editors = ['to' => $this->editor($request, $to, $hasEdits['to'])];
+        // Fields whose input HTML comes from `getInputHtml()` get the same ids in each editor, which their labels and
+        // scripts would find in A's, so with those on both sides, only B's side is edited.
+        $editors['from'] = $sameCurrent || ($editors['to'] && $this->hasLegacyHtml($comparison['from']->nodes) && $this->hasLegacyHtml($comparison['to']->nodes))
+            ? null
+            : $this->editor($request, $from, $hasEdits['from']);
         $chip = fn (ElementInterface $element): string => app(PreviewHtml::class)->elementPreviewHtml([$element], showStatus: false);
 
         return new CpScreenResponse()
@@ -112,7 +120,7 @@ readonly class CompareElementsController
                 ...array_map(fn (string $key): array => [
                     ...$this->side($key, $sides[$key], $state, $versions[$key], $hasEdits, $pair, $returnUrl),
                     'ui' => $comparison[$key],
-                    'editor' => $key === 'from' && $sameCurrent ? null : $this->editor($request, $sides[$key], $hasEdits[$key]),
+                    'editor' => $editors[$key],
                 ], ['from' => 'from', 'to' => 'to']),
                 // The sides that badge their changed fields.
                 'badged' => $comparison['badged'],
@@ -156,6 +164,18 @@ readonly class CompareElementsController
         event($event = new ElementEditorPayloadResolving($element, $viewModel->toArray(), 'main-form'));
 
         return $event->data;
+    }
+
+    /**
+     * Whether any of the nodes, or those nested in them, is a field whose input HTML is rendered the legacy way.
+     *
+     * @param  list<NodePayload>  $nodes
+     */
+    private function hasLegacyHtml(array $nodes): bool
+    {
+        return array_any($nodes, fn ($node) => str_starts_with($node->control->component ?? '', 'craft-legacy:') ||
+        $this->hasLegacyHtml($node->children ?? []) ||
+        array_any($node->control->uis ?? [], fn (NestedUiPayload $ui): bool => $this->hasLegacyHtml($ui->nodes)));
     }
 
     /**
