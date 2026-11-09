@@ -143,8 +143,6 @@ class ImportPlans
                 }
             }
 
-            $registeredImportPlans = new LaravelCollection($registeredImportPlans)->all();
-
             $this->importPlans = new LaravelCollection($dbImportPlans + $registeredImportPlans)
                 ->keyBy(fn (ImportPlanData $item, $key) => $item->handle ?? $key);
         }
@@ -433,10 +431,9 @@ class ImportPlans
     /**
      * Returns an import plan model for a given UID
      */
-    private function _getImportPlanModel(string $uid, bool $withTrashed = false): ImportPlanModel
+    private function _getImportPlanModel(string $uid): ImportPlanModel
     {
-        return ImportPlanModel::withTrashed($withTrashed)
-            ->where('uid', $uid)
+        return ImportPlanModel::where('uid', $uid)
             ->first() ?? new ImportPlanModel;
     }
 

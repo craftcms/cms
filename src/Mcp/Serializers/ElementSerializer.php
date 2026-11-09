@@ -9,11 +9,17 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\McpOutputFieldInterface;
+use CraftCms\Cms\Mcp\Elements\ElementAdapterRegistry;
 use CraftCms\Cms\Mcp\Events\ElementSerializing;
 use CraftCms\Cms\Mcp\McpActor;
+use CraftCms\Cms\Mcp\McpOutputContext;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 use Mcp\Exception\ToolCallException;
+use Mcp\Schema\Request\CallToolRequest;
+use Mcp\Server\RequestContext;
 
 /**
  * @since 6.0.0
@@ -23,17 +29,51 @@ class ElementSerializer
     public const array FieldsSchema = [
         'type' => ['array', 'null'],
         'items' => ['type' => 'string'],
-        'description' => 'Custom-field handles. [] returns metadata; null returns all non-nested fields.',
+        'description' => 'Custom-field handles. [] returns metadata; null returns all non-nested fields. Dot paths, such as "blocks.innerBlocks", also include nested fields of nested elements as summaries ({type, id, status}).',
     ];
 
     private const int MaxNestedElements = 100;
 
-    public function __construct(private readonly McpActor $actor) {}
+    private const string NestedOmit = 'omit';
+
+    private const string NestedExpand = 'expand';
+
+    private const string NestedSummarize = 'summarize';
+
+    /**
+     * Nested elements that can still be serialized within the current top-level element.
+     */
+    private ?int $remaining = null;
+
+    public function __construct(
+        private readonly McpActor $actor,
+        private readonly ElementAdapterRegistry $adapters,
+    ) {}
+
+    /**
+     * Returns the `fields` argument of a tool whose `fields` parameter defaults to `[]`.
+     *
+     * The MCP SDK passes a parameter’s default value in place of an explicit `null`, so this checks the request for
+     * one, which requests all non-nested fields.
+     *
+     * @param  list<string>|null  $fields
+     * @return list<string>|null
+     *
+     * @internal
+     */
+    public static function fieldsArgument(RequestContext $context, ?array $fields): ?array
+    {
+        $request = $context->getRequest();
+        assert($request instanceof CallToolRequest);
+
+        return array_key_exists('fields', $request->arguments) && $request->arguments['fields'] === null ? null : $fields;
+    }
 
     /**
      * @param  array<string, mixed>|null  $data
      * @param  list<string>|null  $fields
-     * @param  Closure(ElementInterface): ?array<string, mixed>|null  $serializeNested
+     * @param  Closure(ElementInterface, list<string>, bool): ?array<string, mixed>|null  $serializeNested
+     * @param  list<string>  $nestedPaths
      * @return array<string, mixed>
      */
     public function serialize(
@@ -43,31 +83,111 @@ class ElementSerializer
         bool $filterNulls = true,
         ?array $fields = null,
         ?Closure $serializeNested = null,
+        array $nestedPaths = [],
+    ): array {
+        return $this->withBudget(fn (): array => $this->serializeInternal($element, $data, $public, $filterNulls, $fields, $serializeNested, $nestedPaths));
+    }
+
+    /**
+     * Serializes the nested elements within a value, such as an element type’s native nested field.
+     *
+     * Elements are summarized as `{type, id, status}`, or fully serialized if their element type
+     * can’t be fetched through MCP. Elements the user can’t view are omitted.
+     *
+     * @param  list<string>  $paths
+     * @param  Closure(ElementInterface, list<string>, bool): ?array<string, mixed>|null  $serializeNested
+     */
+    public function serializeNestedValue(
+        mixed $value,
+        array $paths = [],
+        bool $public = false,
+        ?Closure $serializeNested = null,
+    ): mixed {
+        $serializeNested ??= $this->defaultNestedSerializer($public);
+
+        return $this->withBudget(fn (): mixed => $this->resolveNested($value, self::NestedSummarize, $paths, $serializeNested));
+    }
+
+    /**
+     * Returns a summary of an element.
+     *
+     * @return array{type: class-string<ElementInterface>, id: int|null, status: string|null}
+     */
+    public function summarize(ElementInterface $element): array
+    {
+        return [
+            'type' => $element::class,
+            'id' => $element->getId(),
+            'status' => $element->getStatus(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $data
+     * @param  list<string>|null  $fields
+     * @param  list<string>  $nestedPaths
+     * @return array<string, mixed>
+     */
+    private function serializeInternal(
+        ElementInterface $element,
+        ?array $data,
+        bool $public,
+        bool $filterNulls,
+        ?array $fields,
+        ?Closure $serializeNested,
+        array $nestedPaths,
     ): array {
         $data ??= ['type' => $element::class, ...$element->toArray($element->attributes())];
-        $remaining = self::MaxNestedElements;
-        $serializeNested ??= fn (ElementInterface $nested): ?array => ! $public && Gate::forUser($this->actor->user())->allows('view', $nested)
-            ? $this->serialize($nested)
-            : null;
+        $serializeNested ??= $this->defaultNestedSerializer($public);
+        $requested = $fields !== null ? $this->parsePaths($fields) : null;
+        $nested = $this->parsePaths($nestedPaths);
 
         $layout = $element->getFieldLayout();
         // The fields the user can see in the element’s form, as its layout’s conditions allow.
         $customFields = $public ? $layout?->getCustomFields() : $layout?->getVisibleCustomFields($element);
 
         foreach ($customFields ?? [] as $field) {
-            if ($fields !== null && ! in_array($field->handle, $fields, true)) {
+            $handle = $field->handle;
+
+            if ($requested !== null && ! isset($requested[$handle])) {
                 continue;
             }
 
-            if ($fields === null && $field instanceof ElementContainerFieldInterface) {
+            $value = $element->getFieldValue($handle);
+
+            // Nested elements are expanded for requested fields, summarized for requested dot paths, and omitted otherwise
+            $mode = match (true) {
+                $requested !== null => self::NestedExpand,
+                isset($nested[$handle]) => self::NestedSummarize,
+                default => self::NestedOmit,
+            };
+
+            if ($field instanceof McpOutputFieldInterface) {
+                $value = $field->getMcpValue($value, $element, new McpOutputContext(
+                    public: $public,
+                    requested: $mode !== self::NestedOmit,
+                ));
+            } elseif (! $field instanceof ElementContainerFieldInterface || ! $this->isNestedValue($value)) {
+                // Container fields like CKEditor can hold nested elements without their value being elements
+                $data += [$handle => $field->serializeValue($value, $element)];
+
                 continue;
             }
 
-            $value = $field instanceof ElementContainerFieldInterface
-                ? $this->nestedValue($element->getFieldValue($field->handle), $remaining, $serializeNested)
-                : $field->serializeValue($element->getFieldValue($field->handle), $element);
+            if ($mode === self::NestedOmit && $this->isNestedValue($value)) {
+                continue;
+            }
 
-            $data += [$field->handle => $value];
+            $hidden = false;
+            $resolved = $this->resolveNested($value, $mode, $requested[$handle] ?? $nested[$handle] ?? [], $serializeNested, $hidden);
+            $data += [$handle => $hidden ? null : $resolved];
+        }
+
+        // Users’ addresses are a native field, so they’re only included when requested, directly or via a dot path
+        $addressPaths = $requested !== null ? ($requested['addresses'] ?? null) : ($nested['addresses'] ?? null);
+
+        if (! $public && $element instanceof User && $addressPaths !== null && ! array_key_exists('addresses', $data)) {
+            $data['addresses'] = $this->resolveNested($element->getAddresses(), self::NestedSummarize, $addressPaths, $serializeNested);
         }
 
         $event = new ElementSerializing(
@@ -82,28 +202,153 @@ class ElementSerializer
     }
 
     /**
-     * @param  Closure(ElementInterface): ?array<string, mixed>  $serializeNested
+     * Runs a callback with a nested element budget shared by everything it serializes.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    private function withBudget(callable $callback): mixed
+    {
+        if ($this->remaining !== null) {
+            return $callback();
+        }
+
+        $this->remaining = self::MaxNestedElements;
+
+        try {
+            return $callback();
+        } finally {
+            $this->remaining = null;
+        }
+    }
+
+    /**
+     * Returns the default callback for serializing a nested element the user can view.
+     */
+    private function defaultNestedSerializer(bool $public): Closure
+    {
+        return fn (ElementInterface $nested, array $paths = [], bool $summary = false): ?array => ! $public && Gate::forUser($this->actor->user())->allows('view', $nested)
+            ? ($summary ? $this->summarize($nested) : $this->serialize($nested, nestedPaths: $paths))
+            : null;
+    }
+
+    /**
+     * Groups dot paths by their first handle, mapping each handle to its child paths.
+     *
+     * @param  list<string>  $paths
+     * @return array<string, list<string>>
+     */
+    private function parsePaths(array $paths): array
+    {
+        $parsed = [];
+
+        foreach ($paths as $path) {
+            [$handle, $child] = array_pad(explode('.', $path, 2), 2, null);
+            $parsed[$handle] ??= [];
+
+            if ($child !== null && $child !== '') {
+                $parsed[$handle][] = $child;
+            }
+        }
+
+        return $parsed;
+    }
+
+    /**
+     * Returns whether a field value holds nested elements.
+     */
+    private function isNestedValue(mixed $value): bool
+    {
+        return $value instanceof ElementInterface
+            || $value instanceof ElementQueryInterface
+            || $value instanceof ElementCollection;
+    }
+
+    /**
+     * Resolves nested elements within a value, including within arrays.
+     *
+     * Elements that resolve to `null` (because they aren’t visible) are removed from lists,
+     * along with any array within a list that contains one, so nothing reveals where they were.
+     *
+     * @param  list<string>  $paths
+     */
+    private function resolveNested(mixed $value, string $mode, array $paths, Closure $serializeNested, bool &$hidden = false): mixed
+    {
+        if ($this->isNestedValue($value)) {
+            $resolved = $this->nestedValue($value, $mode === self::NestedSummarize, $paths, $serializeNested);
+            $hidden = $resolved === null && $value instanceof ElementInterface;
+
+            return $resolved;
+        }
+
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        $isList = array_is_list($value);
+        // A list of only arrays and elements keeps its visible items; any other array, such as ['marker', $element],
+        // is removed along with its hidden elements
+        $isCollection = $isList && ! array_filter($value, fn (mixed $item): bool => ! is_array($item) && ! $this->isNestedValue($item));
+        $resolved = [];
+
+        foreach ($value as $key => $item) {
+            $itemHidden = false;
+            $result = null;
+
+            if ($mode === self::NestedOmit && $this->isNestedValue($item)) {
+                // Omitted elements are still checked, so hidden ones remove the arrays that contain them too
+                $itemHidden = $item instanceof ElementInterface && $serializeNested($item, [], true) === null;
+
+                if (! $itemHidden) {
+                    continue;
+                }
+            } else {
+                $result = $this->resolveNested($item, $mode, $paths, $serializeNested, $itemHidden);
+            }
+
+            if ($itemHidden) {
+                // Drop it from a collection, or mark this array as hidden so its parent list drops it
+                if (! $isCollection) {
+                    $hidden = true;
+                }
+
+                continue;
+            }
+
+            $resolved[$key] = $result;
+        }
+
+        return $isList ? array_values($resolved) : $resolved;
+    }
+
+    /**
+     * Serializes nested elements, summarizing those that can be fetched through MCP when requested.
+     *
+     * @param  list<string>  $paths
      * @return array<array-key, mixed>|null
      */
-    private function nestedValue(mixed $value, int &$remaining, Closure $serializeNested): ?array
+    private function nestedValue(mixed $value, bool $summarize, array $paths, Closure $serializeNested): ?array
     {
         $single = $value instanceof ElementInterface;
         $elements = match (true) {
             $single => [$value],
-            $value instanceof ElementQueryInterface => (clone $value)->limit($remaining + 1)->all(),
-            $value instanceof ElementCollection => $value->take($remaining + 1)->all(),
+            $value instanceof ElementQueryInterface => (clone $value)->limit($this->remaining + 1)->all(),
+            $value instanceof ElementCollection => $value->take($this->remaining + 1)->all(),
             default => [],
         };
 
-        if (count($elements) > $remaining) {
+        if (count($elements) > $this->remaining) {
             throw new ToolCallException('Too many nested elements to expand. Query the nested elements separately with pagination.');
         }
 
-        $remaining -= count($elements);
+        $this->remaining -= count($elements);
         $data = [];
 
         foreach ($elements as $element) {
-            $serialized = $serializeNested($element);
+            $summary = $summarize && $element instanceof ElementInterface && $this->adapters->supports($element::class);
+            $serialized = $serializeNested($element, $paths, $summary);
 
             if ($serialized !== null) {
                 $data[] = $serialized;

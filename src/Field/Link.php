@@ -12,12 +12,12 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Conditions\LinkFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
+use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
@@ -46,7 +46,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
+class Link extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, TracksReferencesFieldInterface
 {
     use ProvidesLinkField;
 
@@ -218,7 +218,17 @@ class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        return $this->linkResolver()->control($context->path, $context->value);
+        $control = $this->linkResolver()->control($context->path, $context->value);
+
+        // Links to elements are limited to the elements the field’s link types can select, so a field that can link
+        // to them only takes values copied from itself.
+        foreach ($this->getLinkTypes() as $linkType) {
+            if ($linkType instanceof BaseElementLinkType) {
+                return $control->valueScope($this->uid ?? static::class);
+            }
+        }
+
+        return $control;
     }
 
     /**

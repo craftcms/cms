@@ -232,7 +232,8 @@ class ImportPlansController
 
     private function stepUiPayload(?BaseImporter $importer, ?int $batchSize): StepUiPayload
     {
-        $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false);
+        $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false)
+            ?? BaseImporter::dataTypeError($importer?->source, $importer?->dataType);
 
         return new StepUiPayload(
             ui: new ImportPlanStepUiViewModel(
@@ -278,20 +279,7 @@ class ImportPlansController
      */
     public function validateStep(): JsonResponse
     {
-        $data = $this->request->validate([
-            'step' => ['required', 'array'],
-            'step.uid' => ['nullable', 'string', 'max:36'],
-            'step.type' => ['nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
-            'step.source' => ['nullable', 'string'],
-            'step.transformer' => ['nullable', 'string'],
-            'step.batchSize' => ['nullable', 'integer'],
-            'step.settings' => ['nullable', 'array'],
-        ]);
-
-        $step = $data['step'];
-        $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
-
-        $errors = ImportPlanData::stepErrors($step);
+        $errors = ImportPlanData::stepErrors($this->validatedDraftStep(requireType: false));
 
         if (! empty($errors)) {
             throw ValidationException::withMessages($errors);
@@ -465,25 +453,35 @@ class ImportPlansController
      */
     private function draftImporter(bool $requireType = true): ?BaseImporter
     {
-        $data = $this->request->validate([
-            'step' => ['required', 'array'],
-            'step.uid' => ['nullable', 'string', 'max:36'],
-            'step.type' => [$requireType ? 'required' : 'nullable', 'nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
-            'step.source' => ['nullable', 'string'],
-            'step.transformer' => ['nullable', 'string'],
-            'step.batchSize' => ['nullable', 'integer'],
-            'step.settings' => ['nullable', 'array'],
-        ]);
-
-        $step = $data['step'];
+        $step = $this->validatedDraftStep($requireType);
 
         if (empty($step['type'])) {
             return null;
         }
 
+        return ImportPlans::createImporter($step);
+    }
+
+    /**
+     * Validates the posted draft step and returns it with its settings decoded.
+     *
+     * @return array<string, mixed>
+     */
+    private function validatedDraftStep(bool $requireType): array
+    {
+        $step = $this->request->validate([
+            'step' => ['required', 'array'],
+            'step.uid' => ['nullable', 'string', 'max:36'],
+            'step.type' => [$requireType ? 'required' : 'nullable', 'string', Rule::in($this->importService->getAllImporterTypes())],
+            'step.source' => ['nullable', 'string'],
+            'step.transformer' => ['nullable', 'string'],
+            'step.batchSize' => ['nullable', 'integer'],
+            'step.settings' => ['nullable', 'array'],
+        ])['step'];
+
         $step['settings'] = ImportHelper::decodeRecursive($step['settings'] ?? []);
 
-        return ImportPlans::createImporter($step);
+        return $step;
     }
 
     /**
@@ -508,6 +506,23 @@ class ImportPlansController
 
     public function duplicate(): Response
     {
+        $importPlan = $this->editableImportPlanFromRequest('duplicated');
+
+        if (! $this->importsService->duplicateImportPlan($importPlan)) {
+            return $this->asFailure(t('Couldn’t duplicate import plan.'));
+        }
+
+        return $this->asSuccess(t('“{name}” duplicated.', [
+            'name' => $importPlan->name,
+        ]));
+    }
+
+    /**
+     * Returns the editable import plan whose uid was posted, aborting if there isn't one.
+     * `$action` names what's being done to the plan (e.g. “deleted”), for the error message.
+     */
+    private function editableImportPlanFromRequest(string $action): ImportPlanData
+    {
         $uid = $this->request->input('uid');
 
         if (! $uid) {
@@ -519,15 +534,9 @@ class ImportPlansController
         $importPlan = $this->importsService->getImportPlanByUid($uid);
 
         abort_if(is_null($importPlan), 404, "Invalid import plan UID: $uid");
-        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable, so it can’t be duplicated via the Control Panel: $uid");
+        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable, so it can’t be $action via the Control Panel: $uid");
 
-        if (! $this->importsService->duplicateImportPlan($importPlan)) {
-            return $this->asFailure(t('Couldn’t duplicate import plan.'));
-        }
-
-        return $this->asSuccess(t('“{name}” duplicated.', [
-            'name' => $importPlan->name,
-        ]));
+        return $importPlan;
     }
 
     public function reorder(): Response
@@ -547,18 +556,7 @@ class ImportPlansController
 
     public function destroy(): Response
     {
-        $uid = $this->request->input('uid');
-
-        if (! $uid) {
-            throw ValidationException::withMessages([
-                'id' => t('uid is required.'),
-            ]);
-        }
-
-        $importPlan = $this->importsService->getImportPlanByUid($uid);
-
-        abort_if(is_null($importPlan), 404, "Invalid import plan UID: $uid");
-        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable, so it can’t be deleted via the Control Panel: $uid");
+        $importPlan = $this->editableImportPlanFromRequest('deleted');
 
         $this->importsService->deleteImportPlan($importPlan);
 

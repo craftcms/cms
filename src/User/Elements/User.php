@@ -92,7 +92,6 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Traits\Macroable;
 use LogicException;
 use Override;
 use Stringable;
@@ -132,7 +131,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     use ConfirmsPasswords;
     use HasNames;
     use LegacyConstants;
-    use Macroable;
     use Notifiable;
 
     public const string GQL_TYPE_NAME = 'User';
@@ -376,7 +374,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
-    #[Importable('groups', 'User Groups')]
+    #[Importable('groups', 'User Groups', isList: true)]
     private ?array $_groups = null;
 
     private ?bool $_hasSsoIdentity = null;

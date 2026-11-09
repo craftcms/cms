@@ -88,19 +88,64 @@ rejected.
 - the alias is defined;
 - the value isn't some other scheme (`data:`, `phar://`, …), a dotfile, or inside a restricted
   directory;
-- a local file exists and is readable, its extension is a registered data type, and its contents
-  match that type (CSV also accepts content detected as `txt`). Content type detection only
-  looks at the first few MB, so a large JSON file detected as `text/plain` still passes if it
-  starts with `[` or `{` (after an optional BOM; `startsLikeJson()`).
+- a local file exists and is readable, its extension is claimed by a registered data type, and its
+  contents match one of the data types claiming it. Content type detection only looks at the first
+  few MB and has no signature for CSV, so content detected as `text/plain` passes if a claiming data
+  type's `matches()` accepts the start of the file (e.g. a large JSON file starting with `[` or `{`).
+
+### Data types and their settings
+
+A data type claims one or more extensions (`extensions()`); the built-in CSV type claims `csv`, `tsv`
+and `txt`. When more than one data type claims a file's extension, each one's `matches()` is given
+the first 4 KB of the file (`Import::getSample()`), which it only inspects with string checks: the
+file has already passed the checks above, and the chosen type still parses the whole file.
+
+- If one of them matches, the file is read as that one.
+- If none match, the source is rejected.
+- If more than one matches, the step must choose one in its `dataType` setting (a data type class).
+  The step's UI shows a required **Data Type** field listing only those that match, and
+  `BaseImporter::dataTypeError()` (also part of the `source` rule) reports a missing choice, or a
+  saved one the contents no longer match. A remote file is checked once it's downloaded.
+
+A URL whose extension no data type claims gets its data type from the response's `Content-Type`,
+unless `dataType` names one: the step's UI shows an optional **Data Type** field ("Detect from
+response") for it, and the download is then read as that data type and must match it.
+
+`BaseImporter::resolvedDataType()` returns the data type a source is definitely read as, or null while
+that's still open. Only then do a data type's own settings apply: a data type declares them with
+`settingsUi()` (fields, shown under the source once it's resolved) and `getSettingsRules()`
+(validation, keyed by setting name), and receives them in `format()` and `getHeadings()`. The step
+holds them in `dataTypeSettings`, a flat object such as `{type: …\Csv, delimiter: tab}`, where the
+reserved `type` key records the data type they were made for. Settings made for another data type are
+ignored, so they reset when the resolved data type changes, and only the keys the data type's rules
+name are passed on. They're validated when the step is (`settings.dataTypeSettings.<name>`) and again
+before the file is read.
+
+CSV's `delimiter` setting (**Column Delimiter**) is one of `comma`, `tab`, `semicolon` or `pipe`
+(`Csv::DELIMITERS`), and defaults to `tab` for `.tsv` files and `comma` for any other. Its
+`listSeparator` setting (**List Separator**) is any string, such as `|` or `-|-`; empty means no splitting.
+
+### List values
+
+A field or attribute that takes more than one value passes its incoming value through
+`BaseImporter::listValue()`. A string is split by the `splitList()` of the data type the source is
+definitely read as, with that data type's settings; anything else, or a string the data type doesn't
+split (`splitList()` returns null), is left as it is. CSV splits on its list separator, trimming the
+values and dropping empty ones; JSON and XML have real arrays, so they never split. The callers are
+`BaseRelationField::normalizeValueForImport()` (Entries, Users, Assets, Categories, Tags),
+`BaseOptionsField::normalizeValueForImport()` for multi-value option fields (Checkboxes,
+Multi-select), and `ElementTransformer` for properties marked `#[Importable(..., isList: true)]`
+(`authorIds`, User `groups`). A value can't contain the separator, as there's no escaping.
 
 URLs are checked with `BaseImporter::urlValidator()`, which rejects URLs resolving to private IP
 addresses unless the host is listed in the `allowedPrivateHosts` general config setting
 (exact hostnames or `*.` wildcards). Loopback, link-local and cloud metadata addresses are always
 rejected. The download
 (`downloadFile()`) pins the connection to the validated IPs to guard against SSRF and DNS
-rebinding, and doesn't follow redirects. A remote file's data type comes from the response's
-`Content-Type`, falling back to the URL path's extension, and its contents are then checked like
-a local file's.
+rebinding, and doesn't follow redirects. A remote file's data type comes from the URL path's
+extension, falling back to the response's `Content-Type` (the extension comes first, as generic
+types like `text/plain` map to extensions other data types claim), and its contents are then
+checked like a local file's.
 
 Registered plans are validated every time they're loaded, so their URLs are checked without
 resolving the hostname (`resolveHost: false`); the import job validates the step fully before
@@ -108,6 +153,32 @@ downloading. `withLocalFile(Closure $callback)` hands a local path to one-off ca
 mapping), downloading a remote source to a temp file and deleting it afterwards.
 
 ---
+
+
+### Relation fields
+
+A relation field's incoming values are element IDs unless its `matchBy` mapping setting (**Match related
+elements by**, held in the step's `fieldSettings`) names another attribute. Fields declare their own
+mapping settings with `FieldInterface::importMappingSettings()`, listed ahead of their import handler's;
+relation fields offer `matchBy` when `importMatchAttributes()` has more than ID:
+
+- Entries: ID, Title, Slug.
+- Users: ID, Username, Email.
+- Assets: ID or file (the default, where a plain string is a file to upload), Title, Filename. Matching
+  by title or filename only relates existing assets: the lookup turns the values into IDs before
+  `AssetsFieldImportHandler` runs, so nothing is uploaded and its `fileConflict` setting doesn't apply.
+- Other relation fields: ID, plus Title if the element type `hasTitles()`.
+
+Values are looked up with the element query param of the same name, so title, username and email
+matches ignore case, and each value is taken literally (commas, `*` and operators are escaped). The
+lookup covers the sources the field is configured with (`importSourceKeys()`: its sources, or for an
+Assets field restricted to one location, that location), with its selection condition (referencing
+the element being imported), its selection criteria and target site, and the index's base criteria (canonical elements and saved unpublished drafts, so no revisions, drafts
+of published elements, or nested entries). Unlike the element selector's `getInputSources()`, the
+sources aren't narrowed to what the current user may view, as an import usually runs without a user
+(queue jobs, the CLI); Assets fields also look in the subfolders of their volume and folder sources. A value matching several elements gets the live one with
+the lowest ID, or failing that, the one with the lowest ID in any status. A value matching nothing is
+skipped and logged as a warning. The related elements keep the incoming order. Lookups aren't cached.
 
 ## 3. Running an import plan
 
@@ -267,7 +338,7 @@ is accepted and expanded). Behavior:
 - **Not** marked clearable + value empty → the key is `unset()` entirely, so the
   existing value is left untouched.
 
-"Empty" means null, whitespace-only string, or `[]`.
+"Empty" means null, a whitespace-only string, or an empty array (Laravel's `blank()`).
 
 ---
 
@@ -414,6 +485,11 @@ Implementors: `TitleField`, `CustomField`, `FullNameField`, `UsernameField`,
 `getMappingUiPrefix()`, `validateMapping()`, `canKeepMissingNestedElements()`,
 `setKeepMissingNestedElements()`. Used by `Matrix`, `Addresses`, `ContentBlock`.
 Matrix and Addresses can keep missing nested elements; ContentBlock can't (single block).
+
+Element importers validate `map`, `matchCriteria` and `clearableItems` against the field layout
+(`ImportHelper::validateMappingTree()`), passing each container field's branch to its
+`validateMapping()`. Matrix rejects entry types the field doesn't allow, keyed by uid or handle, at
+any depth. Addresses and ContentBlock don't check their nested fields yet.
 
 `FieldInterface::normalizeValueForImport($value, $importer, $rootOwner, $importSettings)` — base returns
 the value unchanged. Overridden by `BaseRelationField` (returns `[]` rather than null so
@@ -608,10 +684,10 @@ defined one.
 One command per importer, each extending the abstract `CraftCms\Cms\Import\Commands\ImportCommand`:
 
 ```
-craft:import:entries {source} [--site=] [--transformer=] [--match-criteria=] [--section=] [--entry-type=]
-craft:import:assets {source} [--site=] [--transformer=] [--match-criteria=] [--volume=]
-craft:import:users {source} [--site=] [--transformer=] [--match-criteria=]
-craft:import:system-messages {source} [--transformer=] [--match-criteria=]
+craft:import:entries {source} [--site=] [--transformer=] [--match-criteria=] [--data-type=] [--data-type-settings=] [--section=] [--entry-type=]
+craft:import:assets {source} [--site=] [--transformer=] [--match-criteria=] [--data-type=] [--data-type-settings=] [--volume=]
+craft:import:users {source} [--site=] [--transformer=] [--match-criteria=] [--data-type=] [--data-type-settings=]
+craft:import:system-messages {source} [--transformer=] [--match-criteria=] [--data-type=] [--data-type-settings=]
 ```
 
 Aliases: `import/entries`, `import/assets`, `import/users`, `import/system-messages`. `{source}` is an
@@ -637,9 +713,14 @@ No command takes a `--map`, so CLI mapping is the transformer's job.
 
 Registries (register from a service provider's `boot()`; see `Component\TypeRegistry`):
 
-- `Import\DataTypes\DataTypes` — `$dataTypes->register(MyType::class);` (extension-keyed).
-  Built-ins: json, csv, xml. A data type implements three **static** methods,
-  `extension()`, `format()` and `getHeadings()`. To replace a built-in, `remove()` it first.
+- `Import\DataTypes\DataTypes` — `$dataTypes->register(MyType::class);`.
+  Built-ins: JSON (`json`), CSV (`csv`, `tsv`, `txt`), XML (`xml`). A data type implements eight
+  **static** methods: `displayName()`, `extensions()`, `matches()`, `settingsUi()`, `getSettingsRules()`,
+  `splitList()`, `format()` and `getHeadings()`. It may claim extensions another data type claims, and may add its own
+  settings (see "Data types and their settings" in §2).
+  To replace a built-in, `remove()` it first. `DataTypes::sampleStart()` (a sample without its BOM
+  and leading whitespace) and `DataTypes::dottedHeadings()` (a heading per dot-notation key of
+  nested data) are there to reuse in `matches()` and `getHeadings()`.
 - `Import\ImporterTypes` — `$importerTypes->register(MyImporter::class);`. Registering a new
   importable element type or model means contributing a concrete `ElementImporter` or
   `ModelImporter` subclass that implements `targetClass()`.
@@ -656,6 +737,8 @@ Registries (register from a service provider's `boot()`; see `Component\TypeRegi
 - Transformers: extend `ElementTransformer` (or the per-type one) and override
   `transform()`; or implement `additionalMatchCriteria()`. Transformers can also be
   given as a class string.
+  `ElementTransformer::fieldLayoutFor()` picks the layout an item's fields are matched against
+  (`EntryTransformer` falls back to the incoming entry type's).
   `ElementTransformer` also supports convention-based `normalize{PropName}()` methods, and
   auto-matches incoming keys that don't match exactly (`ImportHelper::prepKeyForAutoMatching()`,
   e.g. `Plain Text` / `plain_text` → `plainText`).

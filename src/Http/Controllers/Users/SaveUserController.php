@@ -387,12 +387,6 @@ readonly class SaveUserController
             return $this->redirectUserToCp($user) ?? $this->redirectUserAfterAccountActivation($user);
         }
 
-        // Tell all browser windows about the draft deletion
-        session()->broadcastToJs([
-            'event' => 'saveElement',
-            'id' => $user->id,
-        ]);
-
         return $this->redirectToPostedUrl($user, $request->isCpRequest()
             ? Url::cpUrl($user->getIsCurrent() ? 'myaccount' : "users/$user->id")
             : null);

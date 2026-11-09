@@ -42,6 +42,9 @@
   const errors = shallowRef<UiPayload['errors']>([]);
   const renderer = ref<{
     currentValues(): UiPayload['values'];
+    setValues(
+      changes: {path: string[]; value: unknown; refreshable?: boolean}[]
+    ): void;
   } | null>(null);
 
   /** The step as it currently stands, including mapping the form doesn't render. */
@@ -123,8 +126,9 @@
   let latestRefresh = 0;
 
   /**
-   * The data source `canMap` was last checked against. The source doesn't change the form, so
-   * it isn't reactive; leaving its field checks it instead, rather than on every keystroke.
+   * The data source `canMap` was last checked against. The source isn't reactive, so it isn't
+   * checked on every keystroke; leaving its field refreshes the form instead, as the source
+   * decides which data type fields it shows.
    */
   let checkedSource = context.step.source;
   const checkingMap = ref(false);
@@ -247,11 +251,16 @@
 
     const request = ++latestRefresh;
     const canMapRequest = ++latestCanMap;
+    const check = step.value.source !== checkedSource ? ++latestCheck : null;
     const type = step.value.type;
     checkedSource = step.value.source;
 
     if (type !== formType.value) {
       loadingType.value = true;
+    }
+
+    if (check !== null) {
+      checkingMap.value = true;
     }
 
     try {
@@ -275,6 +284,10 @@
       if (request === latestRefresh) {
         loadingType.value = false;
       }
+
+      if (check === latestCheck) {
+        checkingMap.value = false;
+      }
     }
   }
 
@@ -295,6 +308,14 @@
     syncFromForm();
 
     if (step.value.source === checkedSource) {
+      return;
+    }
+
+    if (payload.value.refreshable && renderer.value) {
+      renderer.value.setValues([
+        {path: ['source'], value: step.value.source, refreshable: true},
+      ]);
+
       return;
     }
 

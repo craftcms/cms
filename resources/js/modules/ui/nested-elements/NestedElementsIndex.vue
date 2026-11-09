@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {useEventListener} from '@vueuse/core';
   import {
@@ -158,6 +159,11 @@
     busy,
     error,
     ownerId: preparedOwnerId,
+  });
+
+  usePasteElementsShortcut(container, {
+    canPaste: () => operations.canPaste.value,
+    paste: () => operations.paste(),
   });
   const actions = useNestedElementActions({
     elements,

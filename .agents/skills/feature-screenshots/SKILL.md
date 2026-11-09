@@ -1,6 +1,6 @@
 ---
 name: feature-screenshots
-description: "Use when taking screenshots of a control panel feature for a PR, changelog, docs or announcement: a palette, modal, menu, card, field, or any other piece of UI. Covers isolating the feature, transparent PNGs with real shadows, focused crops, consistent sizes across a set, and adding them to a PR as a gallery."
+description: "Use when taking screenshots of a control panel feature for a PR, changelog, docs or announcement: a palette, modal, menu, card, field, or any other piece of UI. Covers isolating the feature, transparent PNGs with real shadows, focused crops, full-page shots, consistent sizes across a set, and adding them to a PR as a gallery."
 ---
 
 # Feature Screenshots
@@ -16,92 +16,123 @@ feature's edges:
   page. Crop to the feature with the same padding on all four sides, and hide
   the neighboring UI and text inside that padding.
 
-Both use the same setup and isolation. `scripts/` holds the capture, matte
-and preview helpers.
+Both use the same setup and isolation. `scripts/` holds the page helper
+(`shot.js`) and the capture, matte and preview helpers.
 
 ## Setup
 
 Use Chrome with the Claude in Chrome tools, and `screencapture` (macOS), which
 captures at the display's pixel density, so Retina shots come out at 2×.
 
-1. Size the window so its page area is a consistent 16:9, e.g. 1408×792 on a
+1. Load the page helper: paste all of `scripts/shot.js` into the page as one
+   JavaScript call, with your options on its last line. It defines
+   `__shot.set()`, `__shot.ready()` and `__shot.off()`, and titles the tab
+   `SCREENSHOT-TARGET` for the scripts. Inertia visits keep it, but a full
+   page load drops it; restore it and its options after every one:
+
+   ```js
+   (0, eval)(localStorage.__shotCode)
+   ```
+
+2. Size the window so its page area is a consistent 16:9, e.g. 1408×792 on a
    display that caps the window at 939 points tall. Every shot in a set uses
-   the same page size, so the feature lands in the same place each time.
-2. Get the page's screen origin from the page; `capture.sh` takes screen
-   points:
+   the same page size, so the feature lands in the same place each time. The
+   extension's `resize_window` may not change the page size; set the bounds
+   with AppleScript instead, after `scripts/activate.sh` makes the tab's
+   window window 1:
 
-   ```js
-   [screenX, screenY + outerHeight - innerHeight]
+   ```bash
+   osascript -e 'tell application "Google Chrome" to set bounds of window 1 to {0, 25, 1408, 900}'
    ```
 
-3. Capture every shot in both themes, light and dark, so it matches the
-   reader's own GitHub theme. Switch the page's theme without touching the
-   person's preference:
+   Then read `innerWidth` and `innerHeight`, and adjust the bounds by the
+   difference until they match. Chrome's “started debugging this browser” bar
+   takes about 56 points.
+3. Get the page's screen origin; `capture.sh` takes screen points. Run
+   `scripts/activate.sh` first: the extension's tab can sit behind another
+   tab in its window, and switching to it can change `innerHeight`. Then read
+   `innerHeight` from `__shot.ready()`, and pass it to `origin.sh`, which
+   takes the window's position from Chrome and prints `x y`:
 
-   ```js
-   const original = document.documentElement.dataset.theme;
-   document.documentElement.dataset.theme = 'dark';  // or 'light'
+   ```bash
+   scripts/origin.sh <innerHeight>
    ```
 
-   Set `light` explicitly rather than deleting the attribute, which falls back
-   to the person's own theme. Put `original` back when you're done.
+   Don't take it from the page's own `screenX`/`screenY`: in fullscreen or on
+   another display, they report the wrong position. The debugging bar can
+   also appear after a JavaScript call and push the page down, which an
+   earlier `innerHeight` doesn't reflect. Before the first capture, check
+   the page's position with a full-screen `screencapture -x`, and adjust. For
+   a transparent PNG, a generous region absorbs the shift, since `matte.sh`
+   trims to the feature.
 
-   Colors transition when the theme changes, so wait about 800ms before
-   reading a background color for `__iso()` or capturing. Read too soon, and
-   the shot comes out with the other theme's background.
-
-   Keep the page size, crop and padding the same in both, and name the files
-   `…-light.png` and `…-dark.png`.
-4. Show real, representative content: a seeded entry or asset, a search that
+4. Pick the theme with `__shot.set({theme: 'dark'})` (or `'light'`). It
+   changes only the page, never the person's preference, and holds the theme
+   against the control panel, which reapplies the preference while a page
+   renders and on Inertia visits. Set it once the page has settled. Colors
+   transition when the theme changes, so wait about 800ms before capturing.
+   - **For a PR**, capture every shot in both themes, so it matches the
+     reader's own GitHub theme. Keep the page size, crop and padding the same
+     in both, and name the files `…-light.png` and `…-dark.png`.
+   - **For a blog post, docs or marketing**, each shot uses one theme.
+     Alternate them across a set, and show front-end previews, such as Live
+     Preview, in light.
+5. Show real, representative content: a seeded entry or asset, a search that
    returns a good mix of results.
+
+Call `__shot.ready()` right before every capture. It reapplies the theme,
+style and tab title, blurs focus rings (unless the `keepFocus` option is set),
+and dispatches a `resize` so open popovers reposition.
 
 Never confirm a destructive action to get a shot. Opening a confirmation is
 fine, but leave it with Cancel, Back or Escape. Before typing, check from the
 page that the intended input has focus, so keystrokes can't land in a field
 and change content.
 
-## Isolating the feature
+Avoid actions that can open a native `confirm()` or `alert()`. One blocks all
+input from the extension, so its clicks time out after about 30 seconds. When
+a click times out, look with a full `screencapture -x`. If dismissing the
+dialog is harmless, press Escape (Cancel) or Return through Chrome:
 
-Hide everything but the feature with a style tag, and mark the tab so the
-capture script can bring its window to the front:
-
-```js
-window.__iso = (bg) => {
-  let s = document.getElementById('shot-isolate');
-  if (!s) {
-    s = document.createElement('style');
-    s.id = 'shot-isolate';
-    s.textContent = `
-      html, body { background: var(--shot-bg) !important; background-image: none !important; }
-      body * { visibility: hidden !important; }
-      FEATURE, FEATURE * { visibility: visible !important; }
-      input, textarea { caret-color: transparent !important; }
-    `;
-    document.head.append(s);
-  }
-  document.documentElement.style.setProperty('--shot-bg', bg);
-  window.__title ??= document.title;
-  document.title = 'SCREENSHOT-TARGET';
-};
-window.__unIso = () => {
-  document.getElementById('shot-isolate')?.remove();
-  document.documentElement.style.removeProperty('--shot-bg');
-  if (window.__title) document.title = window.__title;
-};
+```bash
+osascript -e 'tell application "Google Chrome" to activate' \
+  -e 'tell application "System Events" to key code 53' # Escape; `keystroke return` for Return
 ```
 
-Replace `FEATURE` with the feature's outermost element.
+### Before each capture
+
+- No widows in visible text. Narrow panes cause them; closing the details
+  pane widens the content.
+- No truncated labels where a wider column or shorter content avoids them.
+- No “Untitled entry” or other test records, and dates that read naturally.
+- No focus rings unless they're the point, including inside preview iframes;
+  `__shot.ready()` blurs those too.
+- The pointer parked outside the capture region (see below).
+- The same window size as the rest of the set.
+
+## Isolating the feature
+
+Hide everything but the feature, over a background color:
+
+```js
+__shot.set({feature: '.command-palette', bg: '#000'});
+```
+
+`feature` is a selector for the feature's outermost element; `bg` is any CSS
+color, such as `'var(--c-surface-default)'`. Set `feature: null` to show the
+page again.
 
 - `visibility` inherits into shadow roots, and popovers and tooltips lifted
   into the top layer stay inside their DOM subtree. So a menu or tooltip that
   belongs to the feature stays visible.
-- A dialog's `::backdrop` is not hidden by this. Clear it too, e.g.
-  `craft-dialog::part(dialog)::backdrop { background: transparent !important; }`.
-- Hiding the caret keeps two captures of the same state identical.
-- Blur any focus ring that isn't part of what you're showing
-  (`document.activeElement.blur()`), such as a view heading focused on open.
+- The helper clears dialog backdrops and hides the caret, which keeps two
+  captures of the same state identical.
 - A tooltip or menu that extends past the feature's edges gets cut off by the
   crop. Leave it out, or capture a larger region.
+- For a state that only shows on hover, such as a nav flyout, set the
+  component's state instead of hovering, since hovering draws the
+  extension's cursor: `navItem.flyoutOpen = true` on a `craft-nav-item`.
+- For one-off rules, pass `css`: `__shot.set({css: '…'})`.
 
 ### Keep the extension's overlays out
 
@@ -110,8 +141,9 @@ around the page's edges and its own cursor where the last click or hover
 was. Neither is in the page's DOM, so CSS can't hide them, and
 `screencapture -x` records both: it only leaves out the system cursor.
 
-- Hover somewhere outside the capture region before capturing, unless you're
-  showing a hover state. Clicking or hovering moves the drawn cursor there.
+- Before every capture, hover somewhere outside the capture region, such as
+  the inset margin's bottom-right corner, unless you're showing a hover
+  state. Clicking or hovering moves the drawn cursor there.
 - Keep the capture region about 24px clear of the window's edges. For a
   feature that sits against an edge, such as a slideout, a sidebar or the
   header, move it in for the shot and capture it there:
@@ -120,26 +152,16 @@ was. Neither is in the page's DOM, so CSS can't hide them, and
   feature.style.translate = '-24px 24px'; // a slideout against the top and right edges
   ```
 
-- For a full-page shot, inset the whole app, with the page's background
-  around it, and capture the inset area:
+- For a full-page shot, inset the whole page by 24px with
+  `__shot.set({inset: true})`, and capture the inset area: the page origin
+  plus 24, `innerWidth - 48` by `innerHeight - 48`. The page's own fixed
+  elements move in with it, and the helper also fits what sizes itself from
+  the window or lives outside `#app`: the sidebar and details pane, toasts,
+  Live Preview, and fullscreen dialogs. A component that measures the window
+  itself, such as the image editor, still overflows; check the shot's edges.
 
-  ```js
-  const inset = document.createElement('style');
-  inset.id = 'shot-inset';
-  inset.textContent = `
-    html { background: var(--shot-bg) !important; }
-    #app { position: fixed !important; inset: 24px !important; overflow: hidden !important; transform: translateZ(0); }
-  `;
-  document.documentElement.style.setProperty('--shot-bg', getComputedStyle(document.body).backgroundColor);
-  document.head.append(inset);
-  ```
-
-  `transform` makes `#app` the containing block for the page's own fixed
-  elements, so they move in with it. The inset area is the capture region,
-  and its margin is a good place to park the pointer.
-
-Call `__unIso()` when done, undo any inset or `translate`, and close any tabs
-you opened.
+Call `__shot.off()` when done, which restores the title and theme, undo any
+`translate`, and close any tabs you opened.
 
 ## Transparent PNG
 
@@ -149,13 +171,15 @@ the difference. Shadows come out as real partial transparency.
 
 1. Find the feature's rect from the page, and choose a capture region around
    it with room for the whole shadow, which can extend 20–40px below.
-2. `__iso('#000')`, then capture:
+2. `__shot.set({feature: '…', bg: '#000'})` and `__shot.ready()`, then
+   capture:
 
    ```bash
    scripts/capture.sh black.png <x> <y> <w> <h>
    ```
 
-3. `__iso('#fff')`, and capture the same region to `white.png`.
+3. `__shot.set({bg: '#fff'})` and `__shot.ready()`, and capture the same
+   region to `white.png`.
 4. Combine them:
 
    ```bash
@@ -179,12 +203,51 @@ the difference. Shadows come out as real partial transparency.
 
 ## Focused crop
 
-1. `__iso(bg)` with the color the feature normally sits on, e.g. the page's
-   `--c-surface-default`, read from the page in each theme.
+1. Isolate the feature over the color it normally sits on, e.g.
+   `bg: 'var(--c-surface-default)'`, which follows the theme.
 2. Add the same padding to all four sides of the feature's rect. Around 24 CSS
    pixels suits most features; use the same value across a set.
 3. Capture that region once with `capture.sh`. Nothing but the feature
    remains inside the padding.
+
+## Phone-width shots
+
+Chrome won't size a window as narrow as a phone. Overlay a same-origin iframe
+of the page at phone width instead: media and container queries respond to
+the iframe's own width, so it lays out as it would on a phone.
+
+```js
+const frame = document.createElement('iframe');
+frame.id = 'shot-phone';
+frame.src = location.href;
+Object.assign(frame.style, {
+  position: 'fixed', left: '509px', top: '48px', width: '390px',
+  height: '680px', border: '0', zIndex: '2147483647',
+  borderRadius: '28px',
+  boxShadow: '0 0 0 1px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.18)',
+});
+document.body.append(frame);
+await new Promise((resolve) => (frame.onload = resolve));
+frame.contentDocument.documentElement.dataset.theme = 'light'; // or 'dark'
+```
+
+- Isolate it with `#shot-phone` as the feature, and capture it as a
+  transparent PNG, so the rounded corners and shadow read as a phone screen.
+- Scroll and query inside it through `frame.contentDocument`.
+- Keep the iframe and its shadow about 24px clear of the window's edges.
+- Remove it when you're done.
+
+## Thumbnails
+
+For a thumbnail at a fixed size, such as 2000×1200 for a post, crop the shot
+to that aspect ratio, then scale it. `sips` does both, where ImageMagick
+isn't installed. Its sizes and offsets take height first; from a 2720×1496
+shot:
+
+```bash
+sips -c 1440 2400 --cropOffset 28 160 shot.png --out thumb.png # H W, then Y X
+sips -z 1200 2000 thumb.png
+```
 
 ## Adding them to a PR
 

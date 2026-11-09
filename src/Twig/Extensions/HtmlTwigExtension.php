@@ -10,6 +10,7 @@ use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Anchors;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
@@ -33,6 +34,7 @@ class HtmlTwigExtension extends AbstractExtension
     public function getFilters(): array
     {
         return [
+            new TwigFilter('anchors', $this->anchorsFilter(...), ['is_safe' => ['html']]),
             new TwigFilter('append', $this->appendFilter(...), ['is_safe' => ['html']]),
             new TwigFilter('attr', $this->attrFilter(...), ['is_safe' => ['html']]),
             new TwigFilter('explodeClass', Html::explodeClass(...)),
@@ -137,6 +139,12 @@ class HtmlTwigExtension extends AbstractExtension
 
             return $tag;
         }
+    }
+
+    /** @param string|list<string> $tags */
+    public function anchorsFilter(mixed $html, array|string $tags = 'h1,h2,h3', ?string $language = null, bool $lowercase = false): string
+    {
+        return Anchors::parseHtml((string) $html, $tags, $language, $lowercase);
     }
 
     public function appendFilter(string $tag, string $html, ?string $ifExists = null): string

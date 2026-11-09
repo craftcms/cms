@@ -88,9 +88,9 @@ export const Appearances: Story = {
   `,
 };
 
-/** The `title` attribute is the shorthand for the `title` slot. */
+/** The `label` attribute is the shorthand for the `title` slot. */
 export const WithTitle: Story = {
-  args: {variant: 'info', title: 'Site-specific content'},
+  args: {variant: 'info', label: 'Site-specific content'},
 };
 
 /** Setting `icon` replaces whatever icon the variant would have supplied. */

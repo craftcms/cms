@@ -12,6 +12,10 @@ export interface PluginStoreContext {
   allowUpdates: boolean;
   cmsLicenseKey: string | null;
   craftIdEndpoint: string;
+  /** How the `craft` executable is run in this environment, such as `php craft` or `ddev craft`. */
+  craftExecutable: string;
+  /** How Composer is run in this environment, such as `composer` or `ddev composer`. */
+  composerExecutable: string;
 }
 
 export interface PluginEditionFeature {

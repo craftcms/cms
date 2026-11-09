@@ -10,6 +10,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\MissingComponentInterface;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\AddressQuery;
@@ -263,6 +264,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('default', $this->defaultFilter(...), ['node_class' => DefaultFilter::class]),
             new TwigFilter('filesize', $this->filesizeFilter(...)),
             new TwigFilter('float', 'floatval'),
+            new TwigFilter('hexdec', 'hexdec'),
             new TwigFilter('integer', 'intval'),
             new TwigFilter('json_encode', $this->jsonEncodeFilter(...)),
             new TwigFilter('json_decode', Json::decode(...)),
@@ -290,6 +292,7 @@ class CoreTwigExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('configure', Typecast::configure(...)),
             new TwigFunction('cpUrl', Url::cpUrl(...)),
             new TwigFunction('craftAsset', craftAsset(...)),
+            new TwigFunction('craftCommand', fn (string $command): string => app(TerminalCommands::class)->craft($command)),
             new TwigFunction('create', $this->createFunction(...)),
             new TwigFunction('dump', $this->dumpFunction(...), ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
             new TwigFunction('dd', dd(...)),

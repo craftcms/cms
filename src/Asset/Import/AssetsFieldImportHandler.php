@@ -8,10 +8,8 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\ImportFileConflict;
-use CraftCms\Cms\Asset\Exceptions\AssetDisallowedExtensionException;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Validation\AssetRules;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -106,7 +104,7 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
                 label: t('What should happen when an incoming file matches an existing one?'),
                 options: ImportFileConflict::asOptions(),
                 default: ImportFileConflict::UseExisting->value,
-                instructions: t('Incoming files are matched against existing assets by filename, within the folder they’d be uploaded to.'),
+                instructions: t('Incoming files are matched against existing assets by filename, within the folder they’d be uploaded to. Only applies when related assets are matched by ID or file.'),
             ),
         ];
     }
@@ -121,12 +119,6 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
     private function importedAssetIds(AssetsField $field, array $items, ImportFileConflict $conflict, BaseImporter $importer, VolumeFolder $folder): array
     {
         $urlValidator = $importer::urlValidator();
-
-        // a temp folder means the real upload location can’t be resolved until the element is saved,
-        // so there’s nothing to match against; the new assets get moved there after the save
-        if ($folder->volumeId === null && $conflict !== ImportFileConflict::KeepBoth) {
-            // ImportLog::info("The {$field->name} field’s upload location can’t be resolved before the element is saved, so incoming files will be added as new assets.");
-        }
 
         $assetIds = [];
 
@@ -162,11 +154,10 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
         try {
             // without an extension, the file has to be fetched to find out what it is
             if (pathinfo($filename, PATHINFO_EXTENSION) === '') {
-                [$tempPath, $extension] = AssetsHelper::fetchImportFile($urlValidator, $source, $filename, $allowLocalPath);
-                $filename .= ".$extension";
+                [$tempPath, $filename] = AssetsHelper::fetchImportFile($urlValidator, $source, $filename, $allowLocalPath);
             }
 
-            $this->ensureAllowed($field, $filename);
+            AssetsHelper::ensureImportExtensionAllowed($filename, $field->getAllowedExtensions());
 
             $existingAsset = $conflict === ImportFileConflict::KeepBoth ? null : $this->findExistingAsset($filename, $folder);
 
@@ -256,26 +247,6 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
 
             return $this->findExistingAsset($filename, $folder)->id ?? $item;
         }, $items);
-    }
-
-    /**
-     * Ensures an imported file’s extension is allowed, both site-wide and by the field.
-     *
-     * @throws AssetDisallowedExtensionException if it isn’t
-     */
-    private function ensureAllowed(AssetsField $field, string $filename): void
-    {
-        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        $allowedExtensions = $field->getAllowedExtensions();
-
-        if (
-            ! in_array($extension, Cms::config()->allowedFileExtensions, true) ||
-            (! empty($allowedExtensions) && ! in_array($extension, $allowedExtensions, true))
-        ) {
-            throw new AssetDisallowedExtensionException(t('“{filename}” is not allowed in this field.', [
-                'filename' => $filename,
-            ]));
-        }
     }
 
     /**

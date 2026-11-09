@@ -39,6 +39,7 @@ class AssetTransformerEditViewModel extends ViewModel
         private readonly UiResolver $uiResolver,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
+        private readonly bool $registered = false,
     ) {}
 
     public function ui(): UiPayload
@@ -52,7 +53,7 @@ class AssetTransformerEditViewModel extends ViewModel
             'settings' => $this->transformer->settings,
         ];
         $mode = $this->readOnly ? ControlMode::ReadOnly : ControlMode::Editable;
-        $identityMode = $this->transformer->handle === 'craft' ? ControlMode::ReadOnly : ControlMode::Editable;
+        $identityMode = $this->registered ? ControlMode::ReadOnly : ControlMode::Editable;
         $handle = Handle::make('handle')->mode($identityMode);
 
         if ($this->transformer->uid === null) {

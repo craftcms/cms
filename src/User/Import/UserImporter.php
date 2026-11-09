@@ -9,7 +9,6 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -61,8 +60,7 @@ class UserImporter extends ElementImporter
     #[Override]
     public function resolveDefaultFieldLayout(): void
     {
-        $fieldLayout = Fields::getLayoutByType(User::class, false);
-        $this->fieldLayout($fieldLayout ? $fieldLayout->uid : User::class);
+        $this->fieldLayout(Users::getFieldLayout());
     }
 
     #[Override]
@@ -137,15 +135,7 @@ class UserImporter extends ElementImporter
         $tempPath = null;
 
         try {
-            [$tempPath, $extension] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $filename, ! self::isRemoteSource($this->source));
-
-            // without an extension, the fetched file's type decides it, and the temp file needs it too to be saved as a photo
-            if (pathinfo($filename, PATHINFO_EXTENSION) === '') {
-                $filename .= ".$extension";
-                $typedTempPath = sprintf('%s/%s.%s', pathinfo($tempPath, PATHINFO_DIRNAME), pathinfo($tempPath, PATHINFO_FILENAME), $extension);
-                File::move($tempPath, $typedTempPath);
-                $tempPath = $typedTempPath;
-            }
+            [$tempPath, $filename] = AssetsHelper::fetchImportFile(static::urlValidator(), $source, $filename, ! self::isRemoteSource($this->source));
 
             Users::saveUserPhoto($tempPath, $user, $filename);
         } catch (Throwable $e) {
@@ -163,23 +153,13 @@ class UserImporter extends ElementImporter
      * @param  string|array<mixed>|null  $groupsData
      * @return UserGroup[]
      */
-    private function prepareUserGroups(null|string|array $groupsData = null): array
+    private function prepareUserGroups(null|string|array $groupsData): array
     {
-        if (empty($groupsData)) {
-            return [];
-        }
-
-        $incomingGroups = [];
-
-        // normalize incoming groups
-        if (is_array($groupsData)) {
-            foreach ($groupsData as $item) {
-                $incomingGroups[] = UserGroups::resolveGroup($item);
-            }
-        } else {
-            $incomingGroups[] = UserGroups::resolveGroup($groupsData);
-        }
-
-        return array_unique(array_filter($incomingGroups));
+        return collect(Arr::wrap($groupsData))
+            ->map(fn ($group) => UserGroups::resolveGroup($group))
+            ->filter()
+            ->unique('id')
+            ->values()
+            ->all();
     }
 }

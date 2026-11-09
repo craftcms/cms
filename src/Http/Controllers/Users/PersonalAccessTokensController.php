@@ -53,6 +53,8 @@ readonly class PersonalAccessTokensController
             abort(401);
         }
 
+        abort_unless($this->tokens->hasKeys(), 400, t('Tokens can’t be created until Craft has OAuth signing keys.'));
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'scopes' => ['required', 'array', 'list'],

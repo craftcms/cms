@@ -9,7 +9,7 @@
 
 <template>
   <MetaStat :label="t('Installation Instructions')">
-    <InstallCommands :plugin="plugin" />
+    <InstallCommands :plugin="plugin" label-sr-only />
     <p class="install-instructions__help">
       {{
         t(

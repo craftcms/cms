@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Events\ElementSourcesResolving;
 use CraftCms\Cms\Element\Exporters\Raw;
+use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -1521,6 +1522,48 @@ it('keeps every source in the navigation on a single-site install', function () 
                     : [$item['label']]);
 
             expect($labels)->toContain($section->name);
+
+            return true;
+        });
+});
+
+it('links a custom source limited to one section by its key, not the section’s URL', function () {
+    Section::factory()->create(['type' => SectionType::Single, 'handle' => 'home']);
+    $siteSettings = Section::factory()->create(['type' => SectionType::Single, 'handle' => 'siteSettings']);
+
+    $condition = EntryElement::createCondition();
+    $rule = $condition->createConditionRule(SectionConditionRule::class);
+    $rule->operator = 'in';
+    $rule->values = [$siteSettings->uid];
+    $condition->addConditionRule($rule);
+
+    app(ElementSources::class)->saveSources(EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles'],
+        [
+            'type' => ElementSources::TYPE_CUSTOM,
+            'key' => 'custom:settings',
+            'label' => 'Settings',
+            'condition' => $condition->getConfig(),
+        ],
+    ]);
+
+    $expected = Url::cpUrl('content/entries', ['source' => 'custom:settings']);
+
+    get("/{$this->cpTrigger}/content/entries/singles")
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) use ($expected) {
+            $props = $page->toArray()['props'];
+            $sidebar = collect($props['craft']['nav'])
+                ->flatMap(fn (array $item): array => $item['group'] ? $item['subnav'] : [$item])
+                ->firstWhere('label', 'Entries')['subnav'];
+
+            foreach ([$sidebar, $props['sourceNavItems']] as $items) {
+                $item = collect($items)
+                    ->flatMap(fn (array $item): array => $item['group'] ? $item['subnav'] : [$item])
+                    ->firstWhere('label', 'Settings');
+
+                expect($item['href'])->toBe($expected);
+            }
 
             return true;
         });

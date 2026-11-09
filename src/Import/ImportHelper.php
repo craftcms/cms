@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
@@ -25,12 +26,13 @@ use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
+use Illuminate\Validation\Validator;
 
 use function CraftCms\Cms\renderSandboxedObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
- * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed, trait: class-string|null, icon?: string, defaultValueInput?: array{type: string}|null}
+ * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, isList: bool, defaultValue: mixed, trait: class-string|null, icon?: string, defaultValueInput?: array{type: string}|null}
  * @phpstan-type MappedNode array{data: array<mixed>, consumed: list<int|string>}
  * @phpstan-type MappingSource array{value: array<mixed>, basePath: string, consumed: list<string>}
  * @phpstan-type MappedScalar array{value: mixed, consumed: string|null}
@@ -83,6 +85,40 @@ class ImportHelper
         }
 
         return self::$autoMatchingKeys[$key] = Arr::join($fragments, '.');
+    }
+
+    /**
+     * Returns an item's keys prepared for auto-matching, indexed by the original key.
+     *
+     * @param  array<array-key, mixed>  $item
+     * @return array<array-key, string>
+     */
+    public static function autoMatchingKeys(array $item): array
+    {
+        $keys = array_keys($item);
+
+        return array_combine($keys, array_map(fn ($key) => self::prepKeyForAutoMatching((string) $key), $keys));
+    }
+
+    /**
+     * Returns the item key to read a handle's value from: the handle itself when the item has it
+     * (as mapped, or already named that way), otherwise the first incoming key that auto-matches it.
+     * An exact match is removed from `$incomingKeys` so it can't be auto-matched to another handle.
+     *
+     * @param  array<array-key, mixed>  $item
+     * @param  array<array-key, string>  $incomingKeys  from autoMatchingKeys()
+     */
+    public static function autoMatchedKey(string $handle, array $item, array &$incomingKeys): int|string|null
+    {
+        if (array_key_exists($handle, $item)) {
+            unset($incomingKeys[$handle]);
+
+            return $handle;
+        }
+
+        $key = array_search(self::prepKeyForAutoMatching($handle), $incomingKeys, true);
+
+        return $key === false ? null : $key;
     }
 
     /**
@@ -167,6 +203,7 @@ class ImportHelper
                 'canBeMatchCriteria' => $arguments[4] ?? $arguments['canBeMatchCriteria'] ?? true,
                 'canBeCleared' => $arguments[5] ?? $arguments['canBeCleared'] ?? true,
                 'canBeSet' => $arguments[6] ?? $arguments['canBeSet'] ?? true,
+                'isList' => $arguments[7] ?? $arguments['isList'] ?? false,
                 'defaultValue' => $property->getDefaultValue(),
                 'trait' => self::declaringTrait($property->getDeclaringClass(), $property->getName()),
                 'icon' => self::propertyIcon($property),
@@ -239,16 +276,7 @@ class ImportHelper
      */
     public static function getImportableContainerProperties(BaseImporter $importer): array
     {
-        $importableProperties = self::getImportableProperties($importer);
-        $importableContainerProperties = [];
-
-        foreach ($importableProperties as $property) {
-            if ($property['isContainer']) {
-                $importableContainerProperties[] = $property;
-            }
-        }
-
-        return $importableContainerProperties;
+        return array_values(array_filter(self::getImportableProperties($importer), fn ($property) => $property['isContainer']));
     }
 
     /**
@@ -462,6 +490,33 @@ class ImportHelper
     }
 
     /**
+     * Validates one level of a mapping tree, passing each container field’s branch to the field’s `validateMapping()`.
+     * Keys can be layout element uids (as saved from the mapping screen) or field handles.
+     *
+     * @param  array<mixed>  $tree
+     */
+    public static function validateMappingTree(array $tree, ?FieldLayout $fieldLayout, string $attribute, Closure $fail, Validator $validator): void
+    {
+        if (! $fieldLayout) {
+            return;
+        }
+
+        foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+            $field = $layoutElement->getField();
+
+            if (! $field instanceof ImportableElementContainerFieldInterface) {
+                continue;
+            }
+
+            foreach (array_filter([$layoutElement->uid, $layoutElement->attribute()]) as $key) {
+                if (is_array($tree[$key] ?? null)) {
+                    $field->validateMapping($tree[$key], "$attribute.$key", $fail, $validator, ['field' => $field]);
+                }
+            }
+        }
+    }
+
+    /**
      * Rebuilds raw import data into the shape described by the map.
      *
      * @param  array<mixed>  $map
@@ -645,25 +700,17 @@ class ImportHelper
         // If any direct scalar rule points exactly to the resolved source path, that scalar is
         // consuming the source container as its whole value — not iterating over its items.
         // Return null so mapNode processes this rule as a flat dict instead.
-        $sourceAbsPath = self::pathJoin($currentBasePath, $sourceRelativePath);
-        foreach ($rule as $ruleValue) {
-            if (is_string($ruleValue) && $ruleValue === $sourceAbsPath) {
-                return null;
-            }
+        $absolutePath = self::pathJoin($currentBasePath, $sourceRelativePath);
+        if (in_array($absolutePath, $rule, true)) {
+            return null;
         }
 
         // Try the current data first, then fall back to the root data.
-        if (is_array($currentData) && $source = self::getArrayAtPath($currentData, $sourceRelativePath, self::pathJoin($currentBasePath, $sourceRelativePath), $sourceKey)) {
+        if (is_array($currentData) && $source = self::getArrayAtPath($currentData, $sourceRelativePath, $absolutePath, $sourceKey)) {
             return $source;
         }
 
-        $absolutePath = self::pathJoin($currentBasePath, $sourceRelativePath);
-
-        if ($source = self::getArrayAtPath($rootData, $absolutePath, $absolutePath, $sourceKey)) {
-            return $source;
-        }
-
-        return null;
+        return self::getArrayAtPath($rootData, $absolutePath, $absolutePath, $sourceKey);
     }
 
     /**

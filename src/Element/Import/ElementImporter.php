@@ -31,6 +31,7 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
@@ -236,7 +237,13 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public static function getSettingsRules(): array
     {
+        $validateMap = fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateMap($value, $attribute, $fail, $validator);
+
         return array_merge(parent::getSettingsRules(), [
+            // matchCriteria and clearableItems are keyed like the map
+            'settings.map' => ['array', $validateMap],
+            'settings.matchCriteria' => ['nullable', 'array', $validateMap],
+            'settings.clearableItems' => ['nullable', 'array', $validateMap],
             'settings.fieldLayout' => fn ($attribute, $value, Closure $fail, Validator $validator) => static::validateFieldLayout($value, $attribute, $fail, $validator),
             'settings.site' => ['required', new SiteRule],
             'settings.keepMissingNestedElements' => ['nullable', 'array'],
@@ -258,7 +265,7 @@ abstract class ElementImporter extends BaseImporter
     {
         $data = parent::toArrayData();
         $data['settings']['site'] = $this->site?->handle;
-        $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
+        $data['settings']['fieldLayout'] = $this->fieldLayout;
         $data['settings']['keepMissingNestedElements'] = $this->keepMissingNestedElements;
         $data['settings']['fieldSettings'] = $this->fieldSettings;
         $data['settings']['matchMode'] = $this->matchMode->value;
@@ -298,15 +305,30 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public static function validateMap(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
     {
+        if (! is_array($value)) {
+            return true;
+        }
+
         // in case of an element importer, the $params might contain the field this map partial is for
-        // if $params is empty, then we're validating the whole map
+        // if $params is empty, then we're validating the whole map against the importer's field layout
         if (! empty($params['field'])) {
             $field = $params['field'];
 
             if ($field instanceof ImportableElementContainerFieldInterface) {
                 $field->validateMapping($value, $attribute, $fail, $validator, $params);
             }
+
+            return true;
         }
+
+        $fieldLayout = $validator->getData()['settings']['fieldLayout'] ?? null;
+
+        // a missing or unknown field layout is reported by the fieldLayout rule
+        if (! is_string($fieldLayout) && ! is_int($fieldLayout)) {
+            return true;
+        }
+
+        ImportHelper::validateMappingTree($value, self::normalizeFieldLayout($fieldLayout), $attribute, $fail, $validator);
 
         return true;
     }
@@ -374,28 +396,22 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public function getDestinationCols(): array
     {
-        $propertyCols = [];
+        // attribute mapping - get all importable properties that apply to the current settings,
+        // except those that are not supposed to be available for UI mapping
+        $props = array_filter($this->getAvailableProperties(), fn ($prop) => empty($prop['excludeFromUiMapping']));
 
-        // attribute mapping - get all importable properties that apply to the current settings
-        $props = $this->getAvailableProperties();
-
-        // exclude all those that are not supposed to be available for UI mapping
-        $props = array_filter($props, fn ($prop) => ! isset($prop['excludeFromUiMapping']) || $prop['excludeFromUiMapping'] === false);
-
-        if (! empty($props)) {
-            $propertyCols = array_values(array_map(fn ($prop) => MappingColumn::make(
-                handle: $prop['name'],
-                label: $prop['label'],
-                isContainer: $prop['isContainer'],
-                canBeMatchCriteria: $prop['canBeMatchCriteria'],
-                canBeCleared: $prop['canBeCleared'],
-                canBeSet: $prop['canBeSet'],
-                isProperty: true,
-                // properties declared outside ImportHelper may carry no icon
-                icon: $prop['icon'] ?? null,
-                defaultValueInput: $prop['defaultValueInput'] ?? null,
-            ), $props));
-        }
+        $propertyCols = array_values(array_map(fn ($prop) => MappingColumn::make(
+            handle: $prop['name'],
+            label: $prop['label'],
+            isContainer: $prop['isContainer'],
+            canBeMatchCriteria: $prop['canBeMatchCriteria'],
+            canBeCleared: $prop['canBeCleared'],
+            canBeSet: $prop['canBeSet'],
+            isProperty: true,
+            // properties declared outside ImportHelper may carry no icon
+            icon: $prop['icon'] ?? null,
+            defaultValueInput: $prop['defaultValueInput'] ?? null,
+        ), $props));
 
         if ($this->fieldLayout === null) {
             return $propertyCols;
@@ -431,6 +447,7 @@ abstract class ElementImporter extends BaseImporter
                 'canBeMatchCriteria' => false,
                 'canBeCleared' => false,
                 'canBeSet' => true,
+                'isList' => false,
                 'icon' => Lightswitch::icon(),
                 'defaultValue' => false,
                 'trait' => null,
@@ -459,7 +476,7 @@ abstract class ElementImporter extends BaseImporter
             return [];
         }
 
-        return $this->withLocalFile(fn (string $filePath) => Import::getDataHeadings($filePath));
+        return $this->withLocalFile(fn (string $filePath) => Import::getDataHeadings($filePath, $this));
     }
 
     #[Override]
@@ -494,13 +511,13 @@ abstract class ElementImporter extends BaseImporter
         // get a list of container properties
         $containerProps = ImportHelper::getImportableContainerProperties($this);
         // and deduce attributes from those
-        $containerAttributes = collect($containerProps)->map(fn ($prop) => $prop['name'])->all();
+        $containerAttributes = array_column($containerProps, 'name');
 
         // $fieldHandles has custom and native fields - basically all field layout elements
         $fieldHandles = array_diff(array_keys($item), $attributeHandles, $containerAttributes, ImportHelper::RESERVED_DATA_KEYS);
 
-        $attributes = array_filter($item, fn ($key) => in_array($key, $attributeHandles), ARRAY_FILTER_USE_KEY);
-        $fields = array_filter($item, fn ($key) => in_array($key, $fieldHandles), ARRAY_FILTER_USE_KEY);
+        $attributes = Arr::only($item, $attributeHandles);
+        $fields = Arr::only($item, $fieldHandles);
 
         // If any container property has data present in $item, treat the element as changed
         // (there's no cheap/reliable way to diff this,
@@ -554,7 +571,8 @@ abstract class ElementImporter extends BaseImporter
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         }
 
-        $restoreKeepFlagFields = $this->enableKeepMissingNestedElements($element);
+        $fieldLayout = $element->getFieldLayout();
+        $restoreKeepFlagFields = $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
 
         try {
             $saved = $createDraft
@@ -639,19 +657,6 @@ abstract class ElementImporter extends BaseImporter
     public static function isElementImporter(): bool
     {
         return true;
-    }
-
-    /**
-     * Enables keeping missing nested elements for any container field opted in via
-     * `keepMissingNestedElements`, returning the fields that should be restored after the save.
-     *
-     * @return ImportableElementContainerFieldInterface[]
-     */
-    private function enableKeepMissingNestedElements(ElementInterface $element): array
-    {
-        $fieldLayout = $element->getFieldLayout();
-
-        return $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
     }
 
     /**
@@ -863,10 +868,13 @@ abstract class ElementImporter extends BaseImporter
                 ->drafts(null)
                 ->draftOf(false)
                 ->status(null)
-                ->orderBy(new Expression('CASE WHEN elements.draftId IS NULL THEN 0 ELSE 1 END'));
+                ->orderBy(new Expression(sprintf(
+                    'CASE WHEN %s IS NULL THEN 0 ELSE 1 END',
+                    DB::connection()->getQueryGrammar()->wrap('elements.draftId'),
+                )));
 
             // give element a chance to adjust the query
-            $this->prepareRootElementImportQuery($element, $query);
+            $query = $this->prepareRootElementImportQuery($element, $query);
 
             // by now the match criteria from various sources (ui, config, transformer) should have been merged,
             // and the values from incoming data should have been applied to it

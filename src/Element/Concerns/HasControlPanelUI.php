@@ -26,6 +26,7 @@ use CraftCms\Cms\Element\Events\ElementInlineAttributeInputHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
@@ -400,7 +401,11 @@ JS, [
         $canDeleteDraft = $isDraft && ! $this->isProvisionalDraft && Gate::check('delete', $this);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
-            (($isCurrent && Gate::check('deleteForSite', $canonical)) || ($canDeleteDraft && $isNewSite)) &&
+            (
+                // Deleting a provisional draft for the site deletes the canonical element for it too
+                ($isCurrent && Gate::check('deleteForSite', $canonical) && ($canonical === $this || $isNewSite || ElementHelper::isMultiSite($canonical))) ||
+                ($canDeleteDraft && $isNewSite)
+            ) &&
             Gate::check('deleteForSite', $this)
         );
 
@@ -600,7 +605,11 @@ JS, [
         $canDeleteCanonicalForSite = Gate::check('deleteForSite', $canonical);
         $canDeleteForSite = (
             ElementHelper::isMultiSite($this) &&
-            (($isCurrent && $canDeleteCanonicalForSite) || ($canDeleteDraft && $isNewSite)) &&
+            (
+                // Deleting a provisional draft for the site deletes the canonical element for it too
+                ($isCurrent && $canDeleteCanonicalForSite && ($canonical === $this || $isNewSite || ElementHelper::isMultiSite($canonical))) ||
+                ($canDeleteDraft && $isNewSite)
+            ) &&
             Gate::check('deleteForSite', $this)
         );
 
@@ -1251,21 +1260,23 @@ JS, [
         $isDraft = $this->getIsDraft();
         $canonicalId = $this->getCanonicalId();
 
-        // Sites that were added to a draft can be deleted from it again
-        if ($isDraft && Gate::check('deleteForSite', $this)) {
+        // Sites that were added to a draft, which the current entry doesn't have, and can be deleted from it again
+        if ($isDraft) {
             $canonicalSiteIds = $this->getIsUnpublishedDraft()
                 ? []
                 : DB::table(Table::ELEMENTS_SITES)
                     ->where('elementId', $canonicalId)
                     ->pluck('siteId')
                     ->all();
-            $newSiteIds = $sites
+            $draftOnlySiteIds = $sites
                 ->map(fn (Site $site) => $site->id)
                 ->reject(fn (int $siteId) => $siteId === $this->siteId || in_array($siteId, $canonicalSiteIds))
                 ->all();
         } else {
-            $newSiteIds = [];
+            $draftOnlySiteIds = [];
         }
+
+        $newSiteIds = $draftOnlySiteIds && Gate::check('deleteForSite', $this) ? $draftOnlySiteIds : [];
 
         $sites = $sites->sortBy(fn (Site $site) => $site->id === $this->siteId ? 0 : 1)->values();
 
@@ -1293,6 +1304,10 @@ JS, [
                                 : null,
                             'current' => $site->id === $this->siteId,
                             'removable' => in_array($site->id, $newSiteIds, true),
+                            // Sites only this draft has aren't in the current entry to compare with.
+                            'compareUrl' => $site->id !== $this->siteId && ! in_array($site->id, $draftOnlySiteIds, true)
+                                ? app(FieldChangeComparisons::class)->siteCompareUrl($this, $site->id)
+                                : null,
                         ])->all())
                         ->additionalSites(array_map(fn (array $site) => [
                             'id' => $site['siteId'],

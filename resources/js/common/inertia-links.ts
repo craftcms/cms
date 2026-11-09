@@ -44,7 +44,7 @@ export function visitControlPanelLink(event: MouseEvent): void {
         (target.hasAttribute('download') ||
           target.getAttribute('data-inertia') === 'false' ||
           target.matches(
-            // Vue and legacy slideouts, dialogs, and Garnish modals. Not `role="dialog"`, which popovers have too.
+            // Vue and legacy slideouts, dialogs, and Garnish modals. Not `role="dialog"` alone, which non-modal popups such as `craft-combobox`'s carry too.
             '[data-slideout-id], [data-slideout], dialog, craft-dialog, [aria-modal="true"]'
           ))
     )

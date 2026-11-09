@@ -6,7 +6,8 @@
    */
   import '@craftcms/ui/components/spinner/spinner';
   import {actionClient, isHttpError, t} from '@craftcms/ui';
-  import {computed, shallowRef, watch} from 'vue';
+  import {useElementSize} from '@vueuse/core';
+  import {computed, shallowRef, useTemplateRef, watch} from 'vue';
   import CompareFieldChangesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CompareFieldChangesController';
   import Modal from '@/common/components/Modal.vue';
   import ChangeComparison from './ChangeComparison.vue';
@@ -43,6 +44,25 @@
   const comparison = shallowRef<FieldChangeComparison>();
   const error = shallowRef<string>();
   let request = 0;
+
+  const {width} = useElementSize(useTemplateRef('content'));
+
+  /** Whether both versions are previewed, each with its own label. */
+  const previewed = computed(() =>
+    Boolean(
+      !error.value &&
+      comparison.value?.preview?.current &&
+      !comparison.value.diff &&
+      !comparison.value.unchanged
+    )
+  );
+
+  /**
+   * Whether the previews are side by side, split by a hairline under a header
+   * row of their labels. Narrower than `ChangeComparison`'s breakpoint, they
+   * stack instead.
+   */
+  const ruled = computed(() => previewed.value && width.value >= 500);
 
   const title = computed(() =>
     props.detail?.label
@@ -113,7 +133,7 @@
     width="2xl"
     @close="emit('close')"
   >
-    <craft-pane :label="title">
+    <craft-pane :label="title" :class="{'field-changes--ruled': ruled}">
       <craft-button
         slot="header-actions"
         type="button"
@@ -125,7 +145,7 @@
         @click="emit('close')"
       ></craft-button>
 
-      <div class="field-changes" data-field-changes-modal>
+      <div ref="content" class="field-changes" data-field-changes-modal>
         <p class="sr-only" role="status">{{ status }}</p>
         <p v-if="error" class="field-changes__message" role="alert">
           {{ error }}
@@ -134,7 +154,14 @@
           <craft-spinner visible :label="t('Loading')"></craft-spinner>
         </div>
         <template v-else>
-          <p v-if="comparison.hasBase" class="field-changes__versions">
+          <div v-if="ruled" class="field-changes__heads" aria-hidden="true">
+            <span>{{ comparison.fromLabel }}</span>
+            <span>{{ comparison.toLabel }}</span>
+          </div>
+          <p
+            v-else-if="comparison.hasBase && !previewed"
+            class="field-changes__versions"
+          >
             <span class="field-changes__from" aria-hidden="true">{{
               comparison.fromLabel
             }}</span>
@@ -149,7 +176,6 @@
               })
             }}</span>
           </p>
-
           <p v-if="comparison.unchanged" class="field-changes__message">
             {{
               t('{from} and {to} have the same value.', {
@@ -174,6 +200,7 @@
               :to-label="comparison.toLabel"
               :label="detail?.label ?? undefined"
               collapse
+              :ruled="ruled"
             />
           </template>
         </template>
@@ -218,5 +245,29 @@
 
   .field-changes__to {
     text-decoration: underline;
+  }
+
+  .field-changes__heads {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: calc(var(--cp-container-padding) * 2 + 1px);
+    margin-block-start: calc(var(--c-spacing-lg) * -1);
+    margin-inline: calc(var(--c-spacing-lg) * -1);
+    box-sizing: content-box;
+    min-block-size: var(--c-size-control-sm);
+    align-items: center;
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-lg);
+    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    background: var(--c-surface-raised);
+    font-weight: 600;
+  }
+
+  .field-changes--ruled::part(body) {
+    background: linear-gradient(
+        var(--c-color-neutral-border-quiet),
+        var(--c-color-neutral-border-quiet)
+      )
+      center / 1px 100% no-repeat;
   }
 </style>

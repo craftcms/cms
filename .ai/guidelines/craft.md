@@ -18,6 +18,7 @@ All UI — PHP view components, Twig templates, Vue components, and the Lit web 
 ## Commands
 
 - Use `composer fix-cs`, `composer phpstan`, and `composer ci` for repository-wide PHP checks.
+- Run JavaScript tooling through pnpm (`pnpm vp test run …`, `pnpm vp run build:ui`). The repo requires pnpm, so `npm` and `npx` fail with `EBADDEVENGINES`.
 - Pass `--no-interaction` to Artisan commands.
 
 ## Routes
@@ -40,16 +41,55 @@ Some files contain Unicode characters in comments and strings. If a text edit fa
 - Run `composer ci` before creating a pull request.
 - Prefix the title with the origin version branch, such as `[6.x]` or `[5.x]`.
 - Use a `### Description` section and add `### Related issues` only when applicable. Do not add validation summaries.
+- Copilot's pull request review can arrive as a formal review, or only as ordinary comments on the conversation tab. When waiting for or checking a Copilot review, look at reviews (`gh api repos/craftcms/cms/pulls/<number>/reviews`), inline review comments (`.../pulls/<number>/comments`), and conversation comments (`gh api repos/craftcms/cms/issues/<number>/comments`). Don't conclude Copilot hasn't responded from reviews alone.
+- When asked to watch for a Copilot review, schedule checks of all three until it arrives. Don't rely on a GitHub event subscription alone; it doesn't report every Copilot response.
+- Read each Copilot review's full body. Findings can appear only there, such as under "previously missed issues", even when the summary says there are no open issues. The summary line can also raise concerns, such as "Needs a closer look" with no open issues; investigate each one like a finding.
 
 - When the branch already identifies a Linear issue, reference the related GitHub issue instead of repeating the Linear identifier.
 
+## Control panel trigger
+
+Sites can use a custom `cpTrigger` to keep their control panel URL private, so
+treat it as sensitive.
+
+- Never reveal the `cpTrigger`, or control panel URLs that contain it, on the
+  front end: in site responses, discovery metadata (such as `.well-known/*`),
+  response headers, redirects, error messages, or anything else served to
+  visitors who haven't already reached the control panel. Use site or action
+  URLs instead.
+- Never include a real site's `cpTrigger` or control panel URL in pull request
+  descriptions, commit messages, changelog entries, issue comments, or other
+  public text. Use a placeholder such as `{cpTrigger}`.
+- Don't worry about revealing the `cpTrigger` on the front end when
+  `headlessMode` is enabled.
+
+## Permissions
+
+- Every user with the `accessCp` permission has basic read-only access to all
+  elements, as that permission's description notes: through element selector
+  modals, chips, cards, and other means. Don't flag or add `view` permission
+  checks on control panel endpoints that only show element content to them.
+  Saving, deleting, and other changes still need the element's own permissions.
+
 ## CI skip markers
 
+Decide this for every commit before you make it, including commits in a
+worktree or on another branch. Once a commit is pushed, the marker can't be
+added without rewriting history.
+
 For commits touching only genuinely inconsequential, nonfunctional files, put
-`[ci skip]` at the end of the extended commit message (the commit body). Judge
-eligibility by the actual effect, not filenames alone. Code, dependencies,
-executable configuration, workflows, and behavior-changing generated artifacts
-are not eligible.
+`[ci skip]` on its own line at the end of the extended commit message (the
+commit body), before trailers such as `Co-Authored-By`. Judge eligibility by
+the actual effect, not filenames alone. Code, dependencies, executable
+configuration, workflows, and behavior-changing generated artifacts are not
+eligible.
+
+Commits that are usually eligible:
+
+- Release notes only: `CHANGELOG.md` and `CHANGELOG-WIP.md`.
+- Documentation and code comments only.
+- Agent instructions, rules and skills only: `AGENTS.md`, `.ai/`, `.agents/`
+  and `.claude/`, including scripts that only agents run.
 
 Skip markers can leave required checks pending and do not establish green CI.
 Never use them to evade required checks, merged-result verification, or merge
@@ -57,8 +97,11 @@ queues. The merge safeguards below still apply.
 
 ## Merging pull requests
 
-When explicitly instructed to merge a PR, resolve conflicts in the final merge
-commit into the PR's actual target branch if every conflict is either:
+When explicitly instructed to merge a PR, follow the path below. It also applies
+when there are no conflicts, such as when GitHub only blocks the merge because
+the current head's required checks are missing after `[ci skip]` commits.
+Resolve conflicts in the final merge commit into the PR's actual target branch
+if every conflict is either:
 
 - Inconsequential and nonfunctional, such as overlapping `CHANGELOG.md` entries.
 - A generated build artifact that can be regenerated from merged sources with
@@ -77,21 +120,25 @@ For this path:
 1. Fetch the latest PR head and actual target branch. Confirm that the PR head
    has passed all required CI, or use earlier successful required CI for agent
    pre-merge verification only if the tested commit is an ancestor of the current
-   PR head, every subsequent PR commit ends its body with `[ci skip]`, and
+   PR head, every subsequent PR commit ends its body with `[ci skip]` (before any
+   trailers), and
    inspection of every subsequent commit plus the complete cumulative diff from
    the tested commit to the current head confirms genuinely nonfunctional-only
    changes under the eligibility rules above. Required approvals must remain
    satisfied for the current PR state. When using inherited CI, report both the
    tested SHA and current-head SHA; never claim the current head itself passed.
    Check the target's branch protections, required merged-result checks, and
-   merge queue requirements before pushing. CI inheritance cannot override
-   GitHub's head-check requirements or any other protection. With explicit
+   merge queue requirements before pushing. When inherited CI is valid under
+   these conditions, nothing relevant has changed since the tested commit, so do
+   not wait for or trigger a rerun of the head's required checks. With explicit
    authorization to merge the PR and only conflicts eligible under this policy, an
    ordinary push of the final target-based merge commit may use the credential's
-   existing bypass permission solely for the PR-only rule, after the CI
-   verification and current-state approval checks above. Never bypass failed or
-   pending required checks, fresh merged-result checks, merge queues, or any
-   other protection. Do not use an administrative override. If another
+   existing bypass permission for the PR-only rule and for the required status
+   checks that the inherited CI covers, after the CI verification and
+   current-state approval checks above. Never bypass failed required checks,
+   required checks that inherited CI doesn't cover, fresh merged-result checks,
+   merge queues, or any other protection. Do not use an administrative override,
+   such as `gh pr merge --admin`. If another
    protection prevents this path or compliance is unclear, stop and ask how to
    proceed.
 2. Use a clean worktree based on the fetched target commit, then run
@@ -124,7 +171,7 @@ For this path:
 
 - Take a test's expected result from an independent oracle: measure the real output (what's rendered, returned, or stored) rather than recomputing it with the model or simplifications the code itself relies on. An oracle that shares the code's assumptions agrees with it whenever those assumptions are wrong.
 - Choose inputs that could make the test fail: extremes, and inputs where the code's assumptions break, such as data that's missing, stale, or doesn't match what it describes.
-- Watch every new test go red once: weaken the code it guards, confirm the failure, then restore it.
+- Watch every new test go red once: weaken the code it guards, confirm the failure, then restore it. A red browser test leaves a failure screenshot in its `__screenshots__/` folder; delete it once the test passes again.
 
 ## Working through tasks
 

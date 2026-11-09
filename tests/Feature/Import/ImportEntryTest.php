@@ -8,6 +8,7 @@ use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\LayoutElements\Heading;
 use CraftCms\Cms\Import\Enums\MatchMode;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportHelper;
@@ -237,4 +238,15 @@ describe('an empty match value', function () {
 
         expect(($this->titles)())->toBe(['Untouched', 'New one']);
     });
+});
+
+it('imports into a field layout that has UI elements', function () {
+    $type = ImportFixtures::entryTypeWithTitle([new Heading(['heading' => 'Details'])], ['name' => 'With Heading', 'handle' => 'withHeading']);
+    $section = Section::factory()->withEntryTypes($type)->create(['minAuthors' => 0]);
+
+    $this->import->importItem((clone $this->importer)->section($section->uid)->entryType($type->uid), [
+        'title' => 'entry with heading',
+    ]);
+
+    expect(EntryElement::find()->title('entry with heading')->one())->not->toBeNull();
 });

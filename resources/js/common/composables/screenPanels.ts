@@ -10,12 +10,15 @@ import {
 } from 'vue';
 import type {DetailsPanel} from '@/common/components/detailsPanels';
 
+/** What takes focus as a panel opens, in place of what the panel would focus itself. */
+export type PanelFocusTarget = () => HTMLElement | null | undefined;
+
 /**
  * Opens and closes panels for the screen's details column, which carries it
  * out once it's mounted.
  */
 export interface ScreenPanelsController {
-  open(panelId: string, withFocus: boolean): void;
+  open(panelId: string, withFocus: boolean, focus?: PanelFocusTarget): void;
   close(panelId: string, returnFocus: boolean): void;
 }
 
@@ -44,8 +47,14 @@ export interface ScreenPanels {
   /**
    * Opens a panel once it’s in the column. Focus moves into it, unless the
    * caller keeps it where it is, such as when a panel is restored on load.
+   * `focus` names something in the panel to focus instead of its heading,
+   * such as a field the caller sent the person there to fill in. When it
+   * finds nothing, the panel's own focus applies.
    */
-  open(panelId: string, options?: {withFocus?: boolean}): void;
+  open(
+    panelId: string,
+    options?: {withFocus?: boolean; focus?: PanelFocusTarget}
+  ): void;
   /**
    * Folds the column, if the panel is the open one. Focus goes to the panel’s
    * trigger, unless the caller keeps it, such as a button that toggles it.
@@ -94,7 +103,11 @@ export function createScreenPanels(): ScreenPanels {
   const sections = shallowReactive(new Map<string, HTMLElement>());
   let controller: ScreenPanelsController | null = null;
   /** A panel to open once the column is mounted and lists it. */
-  let pendingOpen: {panelId: string; withFocus: boolean} | null = null;
+  let pendingOpen: {
+    panelId: string;
+    withFocus: boolean;
+    focus?: PanelFocusTarget;
+  } | null = null;
   /**
    * Whether the open panel was opened on purpose: by the person, the URL
    * hash, or a request, rather than by default.
@@ -153,9 +166,9 @@ export function createScreenPanels(): ScreenPanels {
 
   function flushPendingOpen(): void {
     if (controller && pendingOpen && registered.has(pendingOpen.panelId)) {
-      const {panelId, withFocus} = pendingOpen;
+      const {panelId, withFocus, focus} = pendingOpen;
       pendingOpen = null;
-      controller.open(panelId, withFocus);
+      controller.open(panelId, withFocus, focus);
     }
   }
 
@@ -178,8 +191,8 @@ export function createScreenPanels(): ScreenPanels {
       registered.delete(panelId);
     },
 
-    open(panelId, {withFocus = true} = {}) {
-      pendingOpen = {panelId, withFocus};
+    open(panelId, {withFocus = true, focus} = {}) {
+      pendingOpen = {panelId, withFocus, focus};
       flushPendingOpen();
     },
 

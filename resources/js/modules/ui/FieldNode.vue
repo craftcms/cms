@@ -15,12 +15,11 @@
     useTemplateRef,
     watch,
   } from 'vue';
-  import CopyElementValuesController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/CopyElementValuesController';
-  import CrossSiteCopyModal from './CrossSiteCopyModal.vue';
   import FieldChangesModal, {
     type CompareFieldChangesDetail,
   } from './FieldChangesModal.vue';
   import {revealElement} from '@/common/utils/dom';
+  import {announce} from '@/common/announcer';
   import {assistantApi} from '@/bootstrap/assistant';
   import {addElementField} from '@/modules/ai/assistant/element-context';
   import {
@@ -29,6 +28,15 @@
     type ApplyAssistantProposalDetail,
   } from '@/modules/ai/assistant/context';
   import UiNodeList from './UiNodeList.vue';
+  import type {ActionItems} from '@/common/types';
+  import {isCopiedText, pastesInto} from '@/common/craft/system-clipboard';
+  import {
+    copyFieldValue,
+    fieldValueFormats,
+    useCopiedFieldValue,
+    type CopiedFieldValue,
+  } from './copiedFieldValue';
+  import {UiFieldOutletsKey} from './fieldOutlets';
   import {
     FieldActionItems,
     FieldLabelSrOnly,
@@ -38,6 +46,7 @@
     controlValueAt,
   } from './runtime';
   import {useUiRenderer} from './renderer/context';
+  import {acceptsValue, readControlValue} from './valueAccess';
   import type {
     UiChange,
     UiChangeKind,
@@ -47,36 +56,41 @@
     UiValue,
   } from './types';
 
-  type CrossSiteCopyDetail = {
-    trigger?: unknown;
-    elementType: string;
-    elementId: number;
-    draftId: number | null;
-    siteId: number;
-    layoutElementUid: string;
-    label?: string | null;
-    siteIds: number[];
-  };
-
   /**
    * A field action that generates the field’s value on the server, such as
-   * alt text written by AI. The value fills the field without being saved.
+   * alt text written by AI. The value fills the field without being saved,
+   * for a field whose control says it can be given one from outside.
    */
+  const GENERATE_VALUE_EVENT = 'craft:generate-field-value';
+
   type GenerateValueDetail = {
     trigger?: unknown;
     url: string;
     params: Record<string, unknown>;
   };
 
+  /**
+   * Field actions that copy the field's value to the clipboard, and paste a
+   * value copied from a field of the same type, for a field whose control
+   * says it can be read and written. The server sends the paste action
+   * hidden; it's shown while there's something on the clipboard to paste.
+   */
+  const COPY_VALUE_EVENT = 'craft:copy-field-value';
+  const PASTE_VALUE_EVENT = 'craft:paste-field-value';
+
+  type FieldActionItem = {
+    type?: string;
+    hidden?: boolean;
+    action?: {name?: string};
+  };
+
+  function isShownAction(item: FieldActionItem): boolean {
+    return item.type !== 'hr' && !item.hidden;
+  }
+
   type GenerateValueResponse = {
     value: UiValue;
     message?: string;
-  };
-
-  type CrossSiteCopyResponse = {
-    message: string;
-    field: UiNodePayload<FieldNodeProps>;
-    values: UiPayload['values'];
   };
 
   type FieldNodeProps = {
@@ -108,6 +122,8 @@
     width?: number;
     status?: string;
     statusLabel?: string;
+    /** A short badge right after the label, like the read-only one. */
+    labelBadge?: string | null;
     hasActions?: boolean;
     /** Hidden from view; the control still resolves and still holds its value. */
     hidden?: boolean;
@@ -154,9 +170,78 @@
     return component;
   });
   const override = computed(() => overrides[control.value.path.join('.')]);
-  const actions = computed(() => resolvedNode.value.children ?? []);
+  const copiedValue = useCopiedFieldValue();
+  /** How the field's control rewrites its menu, if it does (see FieldActionItems). */
+  const actionItemsResolver = shallowRef<
+    ((items: ActionItems) => ActionItems) | undefined
+  >();
+  provide(FieldActionItems, actionItemsResolver);
 
-  provide(FieldActionItems, shallowRef());
+  /**
+   * Whether the clipboard holds a value this field's control takes, on the
+   * same terms as the Compare screen's copy arrows.
+   */
+  function canPaste(): boolean {
+    const copied = copiedValue.value;
+
+    return copied !== null && acceptsValue(control.value, copied, copied);
+  }
+
+  /**
+   * The field's action menus, without the ones that generate its value when
+   * its control doesn't say it can be given one from outside, or the copy
+   * action while it's blank, and with the paste action shown when there's a
+   * value it can take.
+   */
+  const actions = computed(() => {
+    const children = resolvedNode.value.children ?? [];
+
+    return children.flatMap((child) => {
+      if (child.component !== 'craft:action-menu') {
+        return [child];
+      }
+
+      // SAFETY: an action menu node's props are its menu's, not a field's.
+      const {items = []} = child.props as unknown as {
+        items?: FieldActionItem[];
+      };
+      const filtered = items.flatMap((item) => {
+        const name = item.action?.name;
+
+        if (name === GENERATE_VALUE_EVENT && !control.value.writable) {
+          return [];
+        }
+
+        if (name === COPY_VALUE_EVENT && !copyableValue()) {
+          return [];
+        }
+
+        if (name === PASTE_VALUE_EVENT && canPaste()) {
+          return [{...item, hidden: false}];
+        }
+
+        return [item];
+      });
+
+      // A menu of hidden items would open empty, as the field's control
+      // leaves them: it may show some, as a Matrix does its selection's.
+      const resolved = (actionItemsResolver.value?.(
+        filtered as unknown as ActionItems
+      ) ?? filtered) as FieldActionItem[];
+      if (!resolved.some(isShownAction)) {
+        return [];
+      }
+
+      return filtered.length === items.length &&
+        filtered.every((item, i) => item === items[i])
+        ? [child]
+        : [{...child, props: {...child.props, items: filtered}}];
+    });
+  });
+
+  // A nested UI's fields stay in its control, even when they share layout UIDs
+  // with the form's own fields.
+  provide(UiFieldOutletsKey, null);
 
   onErrorCaptured((error) => {
     invalidate(
@@ -273,27 +358,6 @@
   }
 
   const field = useTemplateRef<HTMLElement>('field');
-  const copyDetail = shallowRef<CrossSiteCopyDetail>();
-  const copySites = shallowRef<Array<{id: number; name: string}>>([]);
-  const copying = shallowRef(false);
-
-  useEventListener(window, 'craft:copy-value-from-site', (event: Event) => {
-    const detail = (event as CustomEvent<CrossSiteCopyDetail>).detail;
-
-    if (
-      !detail ||
-      !(detail.trigger instanceof HTMLElement) ||
-      detail.trigger.closest('craft-field') !== field.value
-    ) {
-      return;
-    }
-
-    copyDetail.value = detail;
-    copySites.value = Craft.sites.filter((site) =>
-      detail.siteIds.includes(site.id)
-    );
-  });
-
   const compareDetail = shallowRef<CompareFieldChangesDetail>();
 
   useEventListener(window, 'craft:compare-field-changes', (event: Event) => {
@@ -365,85 +429,157 @@
     }
   );
 
-  const generating = shallowRef(false);
+  /** Whether a field action was chosen from this field's own menu. */
+  function triggeredHere(detail: {trigger?: unknown} | undefined): boolean {
+    return (
+      detail?.trigger instanceof HTMLElement &&
+      detail.trigger.closest('craft-field') === field.value
+    );
+  }
 
-  useEventListener(
-    window,
-    'craft:generate-field-value',
-    async (event: Event) => {
-      const detail = (event as CustomEvent<GenerateValueDetail>).detail;
+  /**
+   * The field's value as it's copied, or `null` when it can't be read, or
+   * it's blank, with no text to copy.
+   */
+  function copyableValue(): CopiedFieldValue | null {
+    const snapshot = readControlValue(control.value, props.values);
 
-      if (
-        !detail ||
-        !(detail.trigger instanceof HTMLElement) ||
-        detail.trigger.closest('craft-field') !== field.value ||
-        generating.value
-      ) {
-        return;
-      }
-
-      generating.value = true;
-
-      try {
-        const {data} = await actionClient.post<GenerateValueResponse>(
-          detail.url,
-          detail.params
-        );
-
-        setValue(data.value);
-
-        if (data.message) {
-          showNotice(data.message);
-        }
-      } catch (error) {
-        const message = isHttpError<{message?: string}>(error)
-          ? error.response?.data?.message
-          : undefined;
-        showError(message ?? t('Couldn’t generate a value for this field.'));
-      } finally {
-        generating.value = false;
-      }
+    if (!snapshot) {
+      return null;
     }
-  );
 
-  async function copyValue(fromSiteId: number): Promise<void> {
-    const detail = copyDetail.value;
+    // A value that was never set reads as the control's empty value.
+    snapshot.value ??= value.value ?? null;
 
-    if (!detail) {
+    // Relations are drawn from the elements the server last rendered, which
+    // can include ones removed since, or be in another order.
+    const elements = snapshot.props?.elements;
+
+    if (Array.isArray(elements)) {
+      const selected = snapshot.value;
+      const ids = Array.isArray(selected)
+        ? selected
+        : selected === null || selected === ''
+          ? []
+          : [selected];
+      const byId = new Map(
+        elements.map((element) => [
+          String((element as {id?: unknown} | null)?.id),
+          element,
+        ])
+      );
+      snapshot.props = {
+        ...snapshot.props,
+        elements: ids.flatMap((id) => byId.get(String(id)) ?? []),
+      };
+    }
+
+    const copied: CopiedFieldValue = {
+      ...snapshot,
+      component: control.value.component,
+      valueScope: control.value.valueScope,
+      label: resolvedNode.value.props.label ?? null,
+      ...fieldValueFormats(control.value, snapshot),
+    };
+
+    return copied.text.trim() ? copied : null;
+  }
+
+  useEventListener(window, COPY_VALUE_EVENT, (event: Event) => {
+    if (!triggeredHere((event as CustomEvent<{trigger?: unknown}>).detail)) {
       return;
     }
 
-    copying.value = true;
+    const copied = copyableValue();
+
+    if (copied) {
+      copyFieldValue(copied);
+    }
+  });
+
+  useEventListener(window, PASTE_VALUE_EVENT, (event: Event) => {
+    const detail = (event as CustomEvent<{trigger?: unknown}>).detail;
+    const copied = copiedValue.value;
+
+    if (triggeredHere(detail) && copied && canPaste()) {
+      pasteValue(copied);
+    }
+  });
+
+  /**
+   * Pastes the copied value when Ctrl/Cmd+V is pressed within the field,
+   * outside anything text is typed into, and the system clipboard still holds
+   * the text it was copied as. What's pasted is the stored value, never
+   * what's on the clipboard.
+   */
+  useEventListener(field, 'paste', (event: ClipboardEvent) => {
+    const copied = copiedValue.value;
+
+    if (
+      event.defaultPrevented ||
+      !copied ||
+      !pastesInto(event, field.value) ||
+      !isCopiedText(
+        copied.text,
+        event.clipboardData?.getData('text/plain') ?? ''
+      ) ||
+      !canPaste()
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    pasteValue(copied);
+  });
+
+  /**
+   * Pastes the copied value alone. The props it was copied with stay behind:
+   * any script on the site could have changed them in storage, so the control
+   * draws the value itself, as relation fields fetch the elements' chips.
+   */
+  function pasteValue(copied: CopiedFieldValue): void {
+    // Each field gets its own copy, so editing one doesn't change another.
+    setValue(structuredClone(copied.value));
+    announce(t('Value pasted.'));
+  }
+
+  const generating = shallowRef(false);
+
+  useEventListener(window, GENERATE_VALUE_EVENT, async (event: Event) => {
+    const detail = (event as CustomEvent<GenerateValueDetail>).detail;
+
+    if (
+      !detail ||
+      !(detail.trigger instanceof HTMLElement) ||
+      detail.trigger.closest('craft-field') !== field.value ||
+      !control.value.writable ||
+      generating.value
+    ) {
+      return;
+    }
+
+    generating.value = true;
 
     try {
-      const {data} = await actionClient.post<CrossSiteCopyResponse>(
-        CopyElementValuesController.url(),
-        {
-          elementType: detail.elementType,
-          elementId: detail.elementId,
-          draftId: detail.draftId,
-          siteId: detail.siteId,
-          layoutElementUid: detail.layoutElementUid,
-          fromSiteId,
-          namespace: props.scope.join('.') || null,
-        }
+      const {data} = await actionClient.post<GenerateValueResponse>(
+        detail.url,
+        detail.params
       );
 
-      resolvedNode.value = data.field;
-      setValue(controlValueAt(data.values, data.field.control!));
-      copyDetail.value = undefined;
-      showNotice(data.message);
+      setValue(data.value);
+
+      if (data.message) {
+        showNotice(data.message);
+      }
     } catch (error) {
       const message = isHttpError<{message?: string}>(error)
         ? error.response?.data?.message
         : undefined;
-      showError(
-        message ?? t('Couldn’t copy the field value from the selected site.')
-      );
+      showError(message ?? t('Couldn’t generate a value for this field.'));
     } finally {
-      copying.value = false;
+      generating.value = false;
     }
-  }
+  });
 </script>
 
 <template>
@@ -508,6 +644,12 @@
       slot="heading-suffix"
       v-html="resolvedNode.props.headingSuffix"
     />
+    <span
+      v-if="resolvedNode.props.labelBadge"
+      slot="label-badge"
+      class="field-node__label-badge"
+      >{{ resolvedNode.props.labelBadge }}</span
+    >
     <div v-if="actions.length" slot="actions">
       <UiNodeList
         :nodes="actions"
@@ -569,16 +711,16 @@
       <li v-for="error in controlErrors" :key="error">{{ error }}</li>
     </ul>
   </craft-field>
-  <CrossSiteCopyModal
-    :active="Boolean(copyDetail)"
-    :label="copyDetail?.label"
-    :sites="copySites"
-    :loading="copying"
-    @close="copyDetail = undefined"
-    @submit="copyValue"
-  />
   <FieldChangesModal
     :detail="compareDetail"
     @close="compareDetail = undefined"
   />
 </template>
+
+<style scoped>
+  .field-node__label-badge {
+    background-color: var(--c-color-violet-fill-quiet);
+    color: var(--c-color-violet-on-quiet);
+    border-color: var(--c-color-violet-border-quiet);
+  }
+</style>

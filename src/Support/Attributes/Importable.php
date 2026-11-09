@@ -20,5 +20,7 @@ readonly class Importable
         public bool $canBeMatchCriteria = true,
         public bool $canBeCleared = true,
         public bool $canBeSet = true,
+        /** Whether the property takes a list of values, so a list-holding string is split into them (see `BaseImporter::listValue()`). */
+        public bool $isList = false,
     ) {}
 }

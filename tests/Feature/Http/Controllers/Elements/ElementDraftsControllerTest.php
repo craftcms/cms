@@ -19,12 +19,14 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
+use CraftCms\Cms\Http\Middleware\SendBroadcasts;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
@@ -738,7 +740,7 @@ describe('apply', function () {
         /** @var Entry $draft */
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Existing Draft');
 
-        postJson(action([ElementDraftsController::class, 'apply']), [
+        $response = postJson(action([ElementDraftsController::class, 'apply']), [
             'elementType' => Entry::class,
             'draftId' => $draft->draftId,
             'siteId' => $draft->siteId,
@@ -746,6 +748,11 @@ describe('apply', function () {
             'slug' => 'applied-draft-title',
         ])->assertOk()
             ->assertJsonPath('message', t('Draft applied.'));
+
+        expect(Json::decode($response->headers->get(SendBroadcasts::HEADER)))->toEqualCanonicalizing([
+            ['event' => 'saveElement', 'id' => $entry->id],
+            ['event' => 'deleteDraft', 'canonicalId' => $entry->id, 'draftId' => $draft->draftId],
+        ]);
 
         /** @var Entry $canonical */
         $canonical = Entry::find()

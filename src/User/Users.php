@@ -447,6 +447,14 @@ class Users
     }
 
     /**
+     * Returns the user field layout.
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        return app(Fields::class)->getLayoutByType(User::class);
+    }
+
+    /**
      * Returns the user photo volume.
      *
      * @throws VolumeException if no user photo volume is set, or it's set to an invalid volume UID

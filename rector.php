@@ -8,6 +8,7 @@ use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Property\RemoveDefaultValueFromAssignedPropertyRector;
 use Rector\DeadCode\Rector\PropertyProperty\RemoveNullPropertyInitializationRector;
 use Rector\Php55\Rector\String_\StringClassNameToClassConstantRector;
+use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\Php74\Rector\Property\RestoreDefaultNullToNullableTypePropertyRector;
 use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
@@ -54,6 +55,10 @@ return RectorConfig::configure()
         ArrayToFirstClassCallableRector::class => [
             // the array callable is deliberately not a Closure, to test that non-Closure callables are rejected
             __DIR__.'/tests/Unit/Twig/Extensions/ArrayTwigExtensionTest.php',
+        ],
+        RemoveExtraParametersRector::class => [
+            // forwards route middleware parameters to host StartSession subclasses whose handle() accepts more than Laravel's
+            __DIR__.'/src/Http/Middleware/StartLazySession.php',
         ],
         ClosureToArrowFunctionRector::class => [
             // constant expressions allow closures but not arrow functions

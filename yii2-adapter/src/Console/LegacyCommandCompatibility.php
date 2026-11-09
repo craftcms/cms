@@ -76,8 +76,8 @@ readonly class LegacyCommandCompatibility
                 ));
 
                 // Add with slash for backwards compatibility
-                $signatureWithSlash = Str::replaceFirst(':', '/', $signature);
-                $nameWithSlash = Str::replaceFirst(':', '/', $artisanName);
+                $nameWithSlash = $command['name'];
+                $signatureWithSlash = $nameWithSlash . Str::after($signature, $artisanName);
                 $artisan->resolve(new LegacyCraftCommand(
                     app: $app,
                     signature: "craft:{$signatureWithSlash}",

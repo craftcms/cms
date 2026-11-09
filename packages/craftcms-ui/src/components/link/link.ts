@@ -276,7 +276,6 @@ export default class CraftLink extends LitElement {
     return html`
       ${this.anchor
         ? html`<craft-popover
-            label=${kind.heading}
             placement="bottom-start"
             @craft-show=${this.#onDetailsToggle}
             @craft-hide=${this.#onDetailsToggle}

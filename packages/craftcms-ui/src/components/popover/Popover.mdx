@@ -41,7 +41,7 @@ Lion supplies the overlay behavior, including dismissal and the wiring between i
 
 Make the invoker a real button — a `<button>` or `craft-button`. The popover accepts any element as its invoker, but only a button is focusable and activates with Enter and Space.
 
-Set `label` to name the panel.
+The panel follows the [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/) pattern: it isn't a dialog or a menu, and it has no name of its own. The invoker's `aria-expanded` tells assistive technology that it's open, so name the invoker for what the panel holds.
 
 With `without-invoker-aria`, the popover leaves `aria-expanded` off its invoker, so put that state on the control that actually opens it.
 

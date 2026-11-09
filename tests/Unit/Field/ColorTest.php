@@ -98,6 +98,16 @@ it('normalizes translucent palette colors', function () {
         ->and($field->normalizeValue('#ff000088', null)->label)->toBe('Red');
 });
 
+it('accepts palettes converted from presets', function () {
+    $field = new Color(['name' => 'Color', 'handle' => 'color', 'presets' => ['#ff0000', '#00ff00'], 'defaultColor' => '#00ff00']);
+
+    expect($field->validate())->toBeTrue()
+        ->and($field->palette)->toBe([
+            ['color' => '#ff0000', 'label' => null, 'default' => false],
+            ['color' => '#00ff00', 'label' => null, 'default' => true],
+        ]);
+});
+
 it('shows the custom opacity setting only when custom colors are allowed', function (bool $allowCustomColors) {
     $context = new UiContext(namespace: 'settings');
     $payload = app(UiResolver::class)->resolve(new Color(['allowCustomColors' => $allowCustomColors])->settingsUi($context), $context);

@@ -10,9 +10,11 @@ use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportHelper;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
+use Illuminate\Support\Facades\Validator;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -707,4 +709,37 @@ describe('raw grouped/flat data through the full pipeline', function () {
             ],
         ],
     ]);
+});
+
+it('rejects a saved map that references an entry type the matrix field doesn’t allow', function () {
+    $fieldLayoutUid = $this->entryType->fieldLayout->uid;
+    $matrixElementUid = Fields::getLayoutByUid($fieldLayoutUid)->getCustomFieldElements()[0]->uid;
+
+    $errors = Validator::make(
+        ['settings' => ['fieldLayout' => $fieldLayoutUid, 'map' => [$matrixElementUid => ['notAllowed' => ['title' => 'title']]]]],
+        ['settings.map' => EntryImporter::getSettingsRules()['settings.map']],
+    )->errors();
+
+    expect($errors->has("settings.map.$matrixElementUid"))->toBeTrue();
+});
+
+it('accepts a handle-keyed map for the matrix field’s entry types', function () {
+    $errors = Validator::make(
+        ['settings' => ['fieldLayout' => $this->entryType->fieldLayout->uid, 'map' => ['myMatrix' => ['firstEt' => ['title' => 'title']]]]],
+        ['settings.map' => EntryImporter::getSettingsRules()['settings.map']],
+    )->errors();
+
+    expect($errors->isEmpty())->toBeTrue();
+});
+
+it('rejects a disallowed entry type in a matrix field nested in another', function () {
+    $errors = Validator::make(
+        ['settings' => [
+            'fieldLayout' => $this->entryType->fieldLayout->uid,
+            'map' => ['myMatrix' => ['thirdEt' => ['fields' => ['myNestedMatrix' => ['thirdEt' => ['title' => 'title']]]]]],
+        ]],
+        ['settings.map' => EntryImporter::getSettingsRules()['settings.map']],
+    )->errors();
+
+    expect($errors->has('settings.map.myMatrix.thirdEt.fields.myNestedMatrix'))->toBeTrue();
 });

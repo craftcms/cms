@@ -16,6 +16,7 @@ use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\ImportStep;
 use CraftCms\Cms\Import\Data\MappingColumn;
 use CraftCms\Cms\Import\Data\SourceColumn;
+use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
@@ -53,7 +54,7 @@ abstract class BaseImporter
 {
     public protected(set) ?string $source = null;
 
-    public protected(set) string|BaseTransformer|null $transformer = null;
+    public protected(set) ?BaseTransformer $transformer = null;
 
     public protected(set) ?int $batchSize = null;
 
@@ -117,7 +118,26 @@ abstract class BaseImporter
      */
     public protected(set) ?array $defaultValues = null;
 
+    /**
+     * @var class-string<DataTypeInterface>|null The data type to read the source as, when more than one data type
+     *                                           claims its extension and its contents match more than one of them,
+     *                                           or when it's a URL whose extension isn't claimed by any.
+     */
+    public protected(set) ?string $dataType = null;
+
+    /**
+     * @var array<string, mixed> The settings the source's data type reads it with, keyed by setting name (see
+     *                           `DataTypeInterface::getSettingsRules()`). The reserved `type` key holds the data type
+     *                           they were made for; settings made for another data type are ignored.
+     */
+    public protected(set) array $dataTypeSettings = [];
+
     public ?string $uid = null;
+
+    /**
+     * @var array<string, class-string<DataTypeInterface>|null> The data types sources are definitely read as, keyed by source and chosen data type.
+     */
+    private array $resolvedDataTypes = [];
 
     /**
      * @var list<Closure> Callbacks to run once the item being imported has been imported.
@@ -293,6 +313,73 @@ abstract class BaseImporter
     }
 
     /**
+     * Sets the data type to read the source as, when its contents could be read as more than one.
+     *
+     * @param  class-string<DataTypeInterface>|null  $dataType
+     */
+    public function dataType(?string $dataType): self
+    {
+        $this->dataType = $dataType ?: null;
+
+        return $this;
+    }
+
+    /**
+     * Sets the settings the source's data type reads it with.
+     *
+     * @param  array<string, mixed>|string|null  $settings  The settings, or a JSON object of them.
+     */
+    public function dataTypeSettings(array|string|null $settings): self
+    {
+        if (is_string($settings)) {
+            $settings = JsonSupport::decode($settings);
+        }
+
+        $this->dataTypeSettings = is_array($settings) ? $settings : [];
+
+        return $this;
+    }
+
+    /**
+     * Returns a value for a field or attribute that takes more than one value: a string split into the values it
+     * holds, if the data type the source is definitely read as splits it (e.g. CSV with a list separator), or else
+     * the value as it is.
+     */
+    public function listValue(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        // resolving it can read the start of the file, so it's only done once per source and choice
+        $key = "$this->source\0$this->dataType";
+
+        if (! array_key_exists($key, $this->resolvedDataTypes)) {
+            $this->resolvedDataTypes[$key] = self::resolvedDataType($this->source, $this->dataType);
+        }
+
+        $dataType = $this->resolvedDataTypes[$key];
+
+        if ($dataType === null) {
+            return $value;
+        }
+
+        return $dataType::splitList($value, $this->dataTypeSettingsFor($dataType)) ?? $value;
+    }
+
+    /**
+     * Returns the settings a data type reads the source with: those named by its `getSettingsRules()`, unless
+     * they were made for another data type.
+     *
+     * @param  class-string<DataTypeInterface>  $dataType
+     * @return array<string, mixed>
+     */
+    public function dataTypeSettingsFor(string $dataType): array
+    {
+        return self::settingsForDataType($this->dataTypeSettings, $dataType);
+    }
+
+    /**
      * Sets the field/attribute handles that should be cleared on import when no data is provided
      * for them or the provided value is empty, and returns the current instance.
      *
@@ -328,13 +415,14 @@ abstract class BaseImporter
                 'required',
                 'string',
                 'max:2048',
-                function (string $attribute, mixed $value, Closure $fail) use ($resolveHost) {
+                function (string $attribute, mixed $value, Closure $fail, Validator $validator) use ($resolveHost) {
                     // a non-string value is reported by the `string` rule
                     if (! is_string($value)) {
                         return;
                     }
 
-                    $error = self::sourceError($value, $resolveHost);
+                    $dataType = $validator->getData()['settings']['dataType'] ?? null;
+                    $error = self::sourceError($value, $resolveHost) ?? self::dataTypeError($value, is_string($dataType) ? $dataType : null);
 
                     if ($error !== null) {
                         $fail($error);
@@ -358,7 +446,7 @@ abstract class BaseImporter
      */
     protected static function settingNames(): array
     {
-        return ['map', 'matchCriteria', 'clearableItems', 'defaultValues', 'templates'];
+        return ['map', 'matchCriteria', 'clearableItems', 'defaultValues', 'templates', 'dataType', 'dataTypeSettings'];
     }
 
     /**
@@ -379,6 +467,12 @@ abstract class BaseImporter
                 'array',
                 fn (string $attribute, mixed $value, Closure $fail, Validator $validator) => self::validateTemplates($value, $validator),
             ],
+            'settings.dataType' => ['nullable', 'string', 'in:'.implode(',', Import::getAllDataTypes())],
+            'settings.dataTypeSettings' => [
+                'nullable',
+                'array',
+                fn (string $attribute, mixed $value, Closure $fail, Validator $validator) => self::validateDataTypeSettings($value, $validator),
+            ],
         ];
     }
 
@@ -397,17 +491,7 @@ abstract class BaseImporter
      */
     public function toImportStep(): ImportStep
     {
-        $data = $this->toArrayData();
-
-        return new ImportStep(
-            uid: $data['uid'],
-            type: $data['type'],
-            source: $data['source'],
-            transformer: $data['transformer'],
-            batchSize: $data['batchSize'],
-            enabled: $data['enabled'],
-            settings: $data['settings'],
-        );
+        return new ImportStep(...$this->toArrayData());
     }
 
     /**
@@ -421,7 +505,7 @@ abstract class BaseImporter
             'uid' => $this->uid,
             'type' => static::class,
             'source' => $this->source,
-            'transformer' => $this->transformer instanceof BaseTransformer ? $this->transformer::class : $this->transformer,
+            'transformer' => $this->transformerAsString(),
             'batchSize' => $this->batchSize,
             'enabled' => $this->enabled,
             'settings' => [
@@ -430,6 +514,8 @@ abstract class BaseImporter
                 'clearableItems' => $this->clearableItems,
                 'defaultValues' => $this->defaultValues,
                 'templates' => $this->templates,
+                'dataType' => $this->dataType,
+                'dataTypeSettings' => $this->dataTypeSettings,
             ],
         ];
     }
@@ -514,6 +600,124 @@ abstract class BaseImporter
     }
 
     /**
+     * Returns an error message if a local source that `sourceError()` accepts can't be read as a single data type,
+     * or null if it can. A remote source's data type is only checked once it's downloaded.
+     *
+     * @param  string|null  $source  The source alias, path or URL to check.
+     * @param  class-string<DataTypeInterface>|null  $dataType  The data type chosen to read the source as, if any.
+     */
+    public static function dataTypeError(?string $source, ?string $dataType): ?string
+    {
+        if (self::sourceError($source, resolveHost: false) !== null || self::isRemoteSource($source)) {
+            return null;
+        }
+
+        return Import::getDataTypeError((string) self::resolvedSourcePath($source), $dataType);
+    }
+
+    /**
+     * Returns the data types a source could be read as: for a local file, those its extension and contents allow;
+     * for a URL, those its extension allows. Empty if the source can't be used, and null for a URL whose extension
+     * no data type claims, as its data type is only known from the response.
+     *
+     * @param  string|null  $source  The source alias, path or URL.
+     * @return list<class-string<DataTypeInterface>>|null
+     */
+    public static function sourceDataTypes(?string $source): ?array
+    {
+        if (self::sourceError($source, resolveHost: false) !== null) {
+            return [];
+        }
+
+        $sourcePath = (string) self::resolvedSourcePath($source);
+
+        if (! Url::isValidUrl($sourcePath)) {
+            return Import::getDataTypeCandidates($sourcePath);
+        }
+
+        return Import::getDataTypesForExtension((string) parse_url($sourcePath, PHP_URL_PATH)) ?: null;
+    }
+
+    /**
+     * Returns the data type a source is definitely read as, or null while that's still open: when more than one data
+     * type could read it and none of them is chosen, or a URL's data type is left to its response.
+     *
+     * @param  string|null  $source  The source alias, path or URL.
+     * @param  class-string<DataTypeInterface>|null  $dataType  The data type chosen to read the source as, if any.
+     * @return class-string<DataTypeInterface>|null
+     */
+    public static function resolvedDataType(?string $source, ?string $dataType): ?string
+    {
+        $dataTypes = self::sourceDataTypes($source);
+
+        // a URL whose extension no data type claims is only definitely read as a chosen data type
+        if ($dataTypes === null) {
+            return in_array($dataType, Import::getAllDataTypes(), true) ? $dataType : null;
+        }
+
+        // the source can't be used
+        if ($dataTypes === []) {
+            return null;
+        }
+
+        $sourcePath = (string) self::resolvedSourcePath($source);
+        $claimingTypes = Import::getDataTypesForExtension(Url::isValidUrl($sourcePath) ? (string) parse_url($sourcePath, PHP_URL_PATH) : $sourcePath);
+
+        // a choice only counts when more than one data type claims the extension, and then only if the contents match it
+        if ($dataType !== null && count($claimingTypes) > 1) {
+            return in_array($dataType, $dataTypes, true) ? $dataType : null;
+        }
+
+        return count($dataTypes) === 1 ? $dataTypes[0] : null;
+    }
+
+    /**
+     * Returns the settings in `$settings` that a data type reads a source with: those named by its
+     * `getSettingsRules()`, unless they were made for another data type.
+     *
+     * @param  array<string, mixed>  $settings
+     * @param  class-string<DataTypeInterface>  $dataType
+     * @return array<string, mixed>
+     */
+    private static function settingsForDataType(array $settings, string $dataType): array
+    {
+        if (($settings['type'] ?? $dataType) !== $dataType) {
+            return [];
+        }
+
+        return Arr::only($settings, array_keys($dataType::getSettingsRules()));
+    }
+
+    /**
+     * Validates a step's data type settings against the rules of the data type its source is definitely read as,
+     * reporting each error under the setting's own key. Nothing is checked while the data type is still open.
+     */
+    private static function validateDataTypeSettings(mixed $value, Validator $validator): void
+    {
+        $data = $validator->getData();
+        $dataType = $data['settings']['dataType'] ?? null;
+        $source = $data['source'] ?? null;
+
+        if (! is_array($value) || ! is_string($source) || ($dataType !== null && ! is_string($dataType))) {
+            return;
+        }
+
+        $resolvedDataType = self::resolvedDataType($source, $dataType);
+
+        if ($resolvedDataType === null) {
+            return;
+        }
+
+        $settingsValidator = ValidatorFacade::make(self::settingsForDataType($value, $resolvedDataType), $resolvedDataType::getSettingsRules());
+
+        foreach ($settingsValidator->errors()->messages() as $setting => $messages) {
+            foreach ($messages as $message) {
+                $validator->errors()->add("settings.dataTypeSettings.$setting", $message);
+            }
+        }
+    }
+
+    /**
      * Returns whether the given source value resolves to a URL.
      *
      * @param  string|null  $source  The source alias, path or URL to check.
@@ -546,7 +750,10 @@ abstract class BaseImporter
             throw new InvalidArgumentException(t('Unable to download the file from “{url}”.', ['url' => $url]), previous: $e);
         }
 
-        $dataType = self::getDataTypeFromContentType($response->header('Content-Type'), $url);
+        // a URL whose extension no data type claims is read as the data type chosen for it, if there is one
+        $dataType = Import::getDataTypeFromExtension((string) parse_url($url, PHP_URL_PATH)) === null && in_array($this->dataType, Import::getAllDataTypes(), true)
+            ? strtolower($this->dataType::extensions()[0])
+            : self::getDataTypeFromContentType($response->header('Content-Type'), $url);
 
         if ($dataType === null) {
             @unlink($tempPath);
@@ -602,13 +809,13 @@ abstract class BaseImporter
         }
 
         return t('Only files of these types are allowed: {fileTypes}.', [
-            'fileTypes' => implode(', ', array_keys(Import::getAllDataTypes())),
+            'fileTypes' => implode(', ', Import::getDataTypeExtensions()),
         ]);
     }
 
     /**
-     * Returns an error message if a local source's contents don't match the data type of its extension, or null if they do
-     * (or if the extension isn't a data type, which `getExtensionError()` reports).
+     * Returns an error message if a local source's contents don't match any data type that claims its extension,
+     * or null if they do (or if the extension isn't a data type, which `getExtensionError()` reports).
      */
     private static function getContentError(string $sourcePath, ?string $url = null): ?string
     {
@@ -618,17 +825,21 @@ abstract class BaseImporter
             return null;
         }
 
-        // CSV has no signature, so its contents are often detected as plain text
-        $allowedExtensions = $dataType === 'csv' ? ['csv', 'txt'] : [$dataType];
+        $candidates = Import::getDataTypeCandidates($sourcePath);
+        $contentsMatch = false;
 
-        $contentsMatch = ValidatorFacade::make(
-            ['source' => new File($sourcePath)],
-            ['source' => ['mimes:'.implode(',', $allowedExtensions)]],
-        )->passes();
+        if ($candidates !== []) {
+            $contentsMatch = ValidatorFacade::make(
+                ['source' => new File($sourcePath)],
+                ['source' => ['mimes:'.implode(',', array_merge(...array_map(fn (string $type) => $type::extensions(), $candidates)))]],
+            )->passes();
 
-        // the contents are only detected as JSON within the first few MB, so a larger JSON file is reported as plain text
-        if (! $contentsMatch && $dataType === 'json' && new File($sourcePath)->getMimeType() === 'text/plain') {
-            $contentsMatch = self::startsLikeJson($sourcePath);
+            // plain text has no signature to detect, and JSON is only detected within the first few MB,
+            // so plain text is checked against the data types themselves
+            if (! $contentsMatch && new File($sourcePath)->getMimeType() === 'text/plain') {
+                $sample = Import::getSample($sourcePath);
+                $contentsMatch = array_any($candidates, fn (string $type) => $type::matches($sample));
+            }
         }
 
         if (! $contentsMatch) {
@@ -642,46 +853,32 @@ abstract class BaseImporter
     }
 
     /**
-     * Returns whether the file's first non-whitespace character (after an optional UTF-8 BOM) opens a JSON array or object.
-     */
-    private static function startsLikeJson(string $path): bool
-    {
-        $handle = @fopen($path, 'rb');
-
-        if ($handle === false) {
-            return false;
-        }
-
-        $start = fread($handle, 4096);
-        fclose($handle);
-
-        if ($start === false) {
-            return false;
-        }
-
-        $start = ltrim(str_starts_with($start, "\xEF\xBB\xBF") ? substr($start, 3) : $start);
-
-        return str_starts_with($start, '[') || str_starts_with($start, '{');
-    }
-
-    /**
-     * Returns the data type of a remote source, based on the response's content type, falling back to the URL path's extension,
-     * or null if neither is one of the available data types.
+     * Returns the data type (extension) of a remote source, based on the URL path's extension, falling back to the
+     * response's content type, or null if neither is one of the available data types.
+     *
+     * The URL's extension comes first, as generic content types (such as `text/plain`) map to extensions that
+     * other data types claim.
      */
     private static function getDataTypeFromContentType(string $contentType, string $url): ?string
     {
-        $dataTypes = Import::getAllDataTypes();
+        $dataType = Import::getDataTypeFromExtension((string) parse_url($url, PHP_URL_PATH));
+
+        if ($dataType !== null) {
+            return $dataType;
+        }
+
+        $extensions = Import::getDataTypeExtensions();
         $mimeType = strtolower(trim(explode(';', $contentType)[0]));
 
         if ($mimeType !== '') {
             foreach (MimeTypes::getDefault()->getExtensions($mimeType) as $extension) {
-                if (isset($dataTypes[$extension])) {
+                if (in_array($extension, $extensions, true)) {
                     return $extension;
                 }
             }
         }
 
-        return Import::getDataTypeFromExtension((string) parse_url($url, PHP_URL_PATH));
+        return null;
     }
 
     /**
@@ -726,20 +923,12 @@ abstract class BaseImporter
      * @param  Closure  $fail  The callback function to invoke when validation fails.
      * @param  Validator  $validator  The validator instance performing the validation.
      */
-    public static function validateTransformer(mixed $value, string $attribute, Closure $fail, Validator $validator): bool
+    public static function validateTransformer(mixed $value, string $attribute, Closure $fail, Validator $validator): void
     {
-        // if it's empty - that's fine (we'll probably use the default ElementTransformer)
-        if (empty($value)) {
-            return true;
-        }
-
-        if (self::normalizeTransformer($value) === null) {
+        // empty is fine (the importer's default transformer is used)
+        if (! empty($value) && self::normalizeTransformer($value) === null) {
             $fail($attribute, t('Transformer has to be empty or a valid transformer class.'));
-
-            return false;
         }
-
-        return true;
     }
 
     /**
@@ -1059,7 +1248,7 @@ abstract class BaseImporter
      */
     public function transformerAsString(): ?string
     {
-        return $this->transformer instanceof BaseTransformer ? $this->transformer::class : null;
+        return $this->transformer ? $this->transformer::class : null;
     }
 
     public static function isElementImporter(): bool
@@ -1072,19 +1261,6 @@ abstract class BaseImporter
      */
     public function usesDefaultTransformer(): bool
     {
-        $currentTransformer = $this->transformer;
-        $defaultTransformer = static::getDefaultTransformer();
-
-        // if they're simply the same - they're the same
-        if ($currentTransformer === $defaultTransformer) {
-            return true;
-        }
-
-        // if the current transformer is an object and the class matches the default one - they're the same
-        if ($currentTransformer instanceof BaseTransformer && $currentTransformer::class === $defaultTransformer) {
-            return true;
-        }
-
-        return false;
+        return $this->transformerAsString() === static::getDefaultTransformer();
     }
 }

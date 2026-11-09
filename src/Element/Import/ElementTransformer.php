@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Import;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
-use CraftCms\Cms\Support\Facades\EntryTypes;
 
 /**
  * @since 6.0.0
@@ -64,52 +65,29 @@ class ElementTransformer extends BaseTransformer
         // so all the UI-based mapping is taken into consideration;
         // we now want to compose an array of key-value pairs where the keys are the properties that are available on the element
         // and the values are the raw values from the incoming data;
-        $incomingKeys = array_combine(array_keys($item), array_keys($item));
-        $incomingKeys = array_map(fn ($key) => ImportHelper::prepKeyForAutoMatching((string) $key), $incomingKeys);
+        $incomingKeys = ImportHelper::autoMatchingKeys($item);
 
         foreach ($this->props as $prop) {
-            // if it exists, then it was either mapped like this or the "correct" key already existed in the incoming data
-            // use it and remove it from a list of keys we can mess with in the next step
-            if (array_key_exists((string) $prop['name'], $item)) {
-                $array[$prop['name']] = $this->normalizePropertyValue($item[$prop['name']], $prop, $element);
-                unset($incomingKeys[$prop['name']]);
-                // otherwise attempt to match auto-magically
-            } elseif (($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $prop['name']), $incomingKeys, true)) !== false) {
-                $array[$prop['name']] = $this->normalizePropertyValue($item[$key], $prop, $element);
+            if (($key = ImportHelper::autoMatchedKey((string) $prop['name'], $item, $incomingKeys)) !== null) {
+                $array[$prop['name']] = $this->normalizePropertyValue($item[$key], $prop, $element, $importer);
             }
         }
 
         // include all custom fields
-        $fieldLayout = $element->getFieldLayout();
-        // if we don't have a field layout here, it means we're creating a new element and the field layout isn't set yet
-        if (! $fieldLayout) {
-            // if we have a typeId, try to get the field layout from the entry type - this is the case for Entry element
-            if (isset($array['typeId'])) {
-                $entryType = EntryTypes::getEntryTypeById((int) $array['typeId']);
-                if ($entryType) {
-                    $fieldLayout = $entryType->getFieldLayout();
-                }
-            }
-        }
+        $fieldLayout = $this->fieldLayoutFor($element, $array);
 
         // now, we should have a layout, so we can get all the field handles
         if ($fieldLayout) {
             $fieldHandles = $this->fieldHandles[$fieldLayout->uid ?? spl_object_id($fieldLayout)] ??= array_filter(
                 array_map(
-                    fn ($fieldLayoutElement) => $fieldLayoutElement->attribute(),
-                    $fieldLayout->getAllElements()
+                    fn (BaseField $fieldLayoutElement) => $fieldLayoutElement->attribute(),
+                    $fieldLayout->getElementsByType(BaseField::class)
                 )
             );
 
             // and this is where auto-magical mapping happens between what's in the incoming data and in the field layout element handles
             foreach ($fieldHandles as $fieldHandle) {
-                // if it exists, then it was either mapped like this or the "correct" key already existed in the incoming data
-                // use it and remove it from a list of keys we can mess with in the next step
-                if (array_key_exists((string) $fieldHandle, $item)) {
-                    $array[$fieldHandle] = $item[$fieldHandle];
-                    unset($incomingKeys[$fieldHandle]);
-                    // otherwise attempt to match auto-magically
-                } elseif (($key = array_search(ImportHelper::prepKeyForAutoMatching((string) $fieldHandle), $incomingKeys, true)) !== false) {
+                if (($key = ImportHelper::autoMatchedKey((string) $fieldHandle, $item, $incomingKeys)) !== null) {
                     $array[$fieldHandle] = $item[$key];
                 }
             }
@@ -119,13 +97,28 @@ class ElementTransformer extends BaseTransformer
     }
 
     /**
+     * Returns the field layout whose fields the item is mapped onto.
+     *
+     * @param  array<string, mixed>  $properties  The item's normalized property values.
+     */
+    protected function fieldLayoutFor(ElementInterface $element, array $properties): ?FieldLayout
+    {
+        return $element->getFieldLayout();
+    }
+
+    /**
      * Calls a `normalize{PropName}()` method on a raw property value if one is defined on the transformer, else returns the raw or default value.
+     * A property that takes a list gets a list-holding string split into its values first.
      *
      * @param  array<string, mixed>  $prop
      */
-    private function normalizePropertyValue(mixed $rawValue, array $prop, ElementInterface $element): mixed
+    private function normalizePropertyValue(mixed $rawValue, array $prop, ElementInterface $element, BaseImporter $importer): mixed
     {
         if ($rawValue !== null) {
+            if ($prop['isList'] ?? false) {
+                $rawValue = $importer->listValue($rawValue);
+            }
+
             if (method_exists($this, 'normalize'.ucfirst((string) $prop['name']))) {
                 return $this->{'normalize'.ucfirst((string) $prop['name'])}($rawValue, $element);
             }

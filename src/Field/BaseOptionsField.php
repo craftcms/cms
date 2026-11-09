@@ -10,7 +10,6 @@ use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Conditions\OptionsFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\InputOptionsResolving;
 use CraftCms\Cms\Gql\Arguments\OptionField as OptionFieldArguments;
 use CraftCms\Cms\Gql\Resolvers\OptionField as OptionFieldResolver;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -55,7 +55,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
+abstract class BaseOptionsField extends Field implements DefaultableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {
     /**
      * @var bool Whether the field should support multiple selections
@@ -447,6 +447,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     public function getDefaultValue(): array|string|null
     {
         return $this->defaultValue();
+    }
+
+    #[Override]
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed
+    {
+        return static::$multi ? $importer->listValue($value) : $value;
     }
 
     #[Override]

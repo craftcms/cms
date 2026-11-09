@@ -158,6 +158,27 @@ it('deletes the site-specific asset data when an asset is deleted for a site', f
         ->and(DB::table(Table::ASSETS_SITES)->where('assetId', $asset->id)->where('siteId', $this->secondSite->id)->exists())->toBeFalse();
 });
 
+it('only deletes assets for a site via the Delete for Site action when they exist in another site', function () {
+    $asset = assetPropagationAsset(assetPropagationVolume(PropagationMethod::Custom));
+
+    expect(ElementHelper::isMultiSite($asset))->toBeFalse();
+
+    new DeleteForSite(['elementType' => Asset::class])->performAction(Asset::find()->id($asset->id)->siteId($this->primarySite->id));
+
+    expect(Assets::getAssetById($asset->id, $this->primarySite->id))->not->toBeNull();
+
+    $asset->setEnabledForSite([
+        $this->primarySite->id => true,
+        $this->secondSite->id => true,
+    ]);
+    expect(Elements::saveElement($asset))->toBeTrue();
+
+    new DeleteForSite(['elementType' => Asset::class])->performAction(Asset::find()->id($asset->id)->siteId($this->secondSite->id));
+
+    expect(assetPropagationSiteIds($asset))->toBe([$this->primarySite->id])
+        ->and(Assets::getAssetById($asset->id, $this->primarySite->id))->not->toBeNull();
+});
+
 it('resaves assets when a volume is switched to save assets to all sites', function () {
     $volume = new Volume([
         'name' => 'Test Volume',

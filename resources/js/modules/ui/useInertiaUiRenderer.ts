@@ -1,6 +1,7 @@
 import type {InertiaForm} from '@inertiajs/vue3';
 import {computed, shallowRef, toValue, watch, type MaybeRefOrGetter} from 'vue';
 import type {UiChangeKind, UiPayload, UiValue} from './types';
+import type {UiValueSnapshot} from './valueAccess';
 import {pathsMatch, visitControls} from './runtime';
 import {cloneRaw} from './renderer/uiTree';
 
@@ -15,6 +16,10 @@ export interface UiRendererInstance {
   setValues(
     changes: {path: string[]; value: UiValue; refreshable?: boolean}[]
   ): void;
+  /** The value of the control at a path, when it says it can be read. */
+  readValue(path: string[]): UiValueSnapshot | null;
+  /** Gives the control at a path a value read from elsewhere, when it says it can take one. */
+  writeValue(path: string[], snapshot: UiValueSnapshot): boolean;
 }
 
 interface Options<T extends object, Key extends Extract<keyof T, string>> {
