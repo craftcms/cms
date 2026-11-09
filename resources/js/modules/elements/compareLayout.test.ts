@@ -285,6 +285,29 @@ describe('liveRows', () => {
     ]);
   });
 
+  it('marks a newly paired field changed as its values differ', () => {
+    const differs = (fromUid: string, toUid: string) =>
+      fromUid === 'location' && toUid === 'venue';
+
+    expect(
+      liveRows(
+        [
+          changedRow('title', 'title', false),
+          changedRow(null, 'venue', true),
+          changedRow(null, 'summary', true),
+        ],
+        form([tab('content', 'Content', ['title', 'location', 'summary'])]),
+        'from',
+        {location: 'venue'},
+        differs
+      )
+    ).toEqual([
+      changedRow('title', 'title', false),
+      changedRow('location', 'venue', true),
+      changedRow('summary', 'summary', false),
+    ]);
+  });
+
   it('adds a row for a newly shown field the older version doesn’t have, after the field before it', () => {
     expect(
       liveRows(

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -16,6 +18,7 @@ use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User;
 use Pest\Browser\Api\AwaitableWebpage;
 
@@ -235,6 +238,48 @@ it('saves the side a value was copied into with Cmd/Ctrl+S', function () {
     $saved = fn () => EntryElement::find()->id($this->entry->id)->status(null)->one()?->getFieldValue('summary');
 
     expect(eventually($page, $saved, 'Opens in June'))->toBe('Opens in June');
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('marks a field a condition shows on the page changed when it differs from the other side’s', function () {
+    $venue = Field::factory()->create(['name' => 'Venue', 'handle' => 'venue', 'type' => PlainText::class]);
+    Fields::refreshFields();
+
+    // Venue shows only on tours.
+    $type = EntryType::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([
+            new EntryTitleField,
+            new CustomField(config: [
+                'fieldUid' => $venue->uid,
+                'elementCondition' => [
+                    'class' => ElementCondition::class,
+                    'elementType' => EntryElement::class,
+                    'conditionRules' => [[
+                        'class' => TitleConditionRule::class,
+                        'uid' => (string) Str::uuid(),
+                        'operator' => '**',
+                        'value' => 'Tour',
+                    ]],
+                ],
+            ]),
+        ]))
+        ->create(['name' => 'Event', 'handle' => 'event']);
+    EntryTypes::refreshEntryTypes();
+    $section = Section::factory()->withEntryTypes($type)->create(['name' => 'Events', 'handle' => 'events']);
+    $entries = array_map(function (array $values) use ($section, $type): EntryElement {
+        $entry = Entry::factory()->forSection($section)->forEntryType($type)->createElement(['title' => $values[0]]);
+        $entry->setFieldValue('venue', $values[1]);
+        expect(Elements::saveElement($entry))->toBeTrue();
+
+        return $entry;
+    }, [['Light and Line', 'Hall A'], ['Tour of Light', 'Hall B']]);
+
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $entries[0]->id, 'toId' => $entries[1]->id], false))
+        ->assertPresent('main[id]')
+        ->assertMissing('role=group[name=/compared with/i] >> role=textbox[name=/^Venue/]')
+        ->append('role=group[name=/compared with/i] >> role=textbox[name=/^Title/] >> visible=true', ' Tour')
+        ->assertVisible('.compare__row--changed >> role=group[name=/compared with/i] >> role=textbox[name=/^Venue/]');
 
     assertNoJavaScriptErrors($page);
 });

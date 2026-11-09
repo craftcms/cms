@@ -182,9 +182,30 @@
     to: loadedValues(props.to.ui),
   }));
 
+  /**
+   * Each editable side's values of the fields its editor's form shows, which
+   * include those a condition showed only once the page had loaded, as the
+   * editor measures their edits from them. Not its values as they stand, which
+   * the badges these rows give its form change.
+   */
+  const shownValues = computed(() => ({
+    from: liveUis.from ? loadedValues(liveUis.from) : new Map<string, string>(),
+    to: liveUis.to ? loadedValues(liveUis.to) : new Map<string, string>(),
+  }));
+
   /** A side's value of a field as it stands, as a canonical string. */
   const currentValue = (side: CompareSide, uid: string): string | undefined =>
-    editedValues[side][uid] ?? loaded.value[side].get(uid);
+    editedValues[side][uid] ??
+    loaded.value[side].get(uid) ??
+    shownValues.value[side].get(uid);
+
+  /** Whether a pair of fields' values differ, or `null` when either can't be read. */
+  function valuesDiffer(fromUid: string, toUid: string): boolean | null {
+    const from = currentValue('from', fromUid);
+    const to = currentValue('to', toUid);
+
+    return from === undefined || to === undefined ? null : from !== to;
+  }
 
   const sides = computed(() => [
     {key: 'from' as const, side: props.from},
@@ -207,7 +228,13 @@
     sideKeys.reduce(
       (rows, side) =>
         liveUis[side]
-          ? liveRows(rows, sideUis.value[side], side, props.counterparts[side])
+          ? liveRows(
+              rows,
+              sideUis.value[side],
+              side,
+              props.counterparts[side],
+              valuesDiffer
+            )
           : rows,
       props.rows
     )
