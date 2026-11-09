@@ -23,6 +23,7 @@ use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
+use craft\web\ServiceUnavailableHttpException;
 use PDOException;
 use Throwable;
 use yii\base\Exception;
@@ -55,6 +56,11 @@ class InstallController extends Controller
         // The web-based installer is only available in Dev Mode
         if (!$this->devMode()) {
             throw new NotFoundHttpException('Craft can only be installed from the web when Dev Mode is enabled.');
+        }
+
+        // Don’t mistake a database that can’t be reached for one that Craft isn’t installed in
+        if (Craft::$app->getConfig()->getDb()->database && !Craft::$app->getIsDbConnectionValid()) {
+            throw new ServiceUnavailableHttpException('Craft can’t connect to the database.');
         }
 
         if (!parent::beforeAction($action)) {
