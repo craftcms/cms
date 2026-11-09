@@ -397,15 +397,10 @@ it('validates and applies asset selector volume settings', function () {
         'showUnpermittedVolumes' => true,
     ]);
 
-    $assetSourceKeys = fn (): array => $this->assetSourceKeys();
-    $assetSelectionCriteria = fn (): array => $this->assetSelectionCriteria();
-
     $field->validate();
 
     expect($field->errors()->toArray())->toBe([])
-        ->and(Arr::pluck($field->volumeOptions(), 'value'))->toContain($volume->uid)
-        ->and($assetSourceKeys->call($field))->toBe(["volume:$volume->uid"])
-        ->and($assetSelectionCriteria->call($field))->toBe(['uploaderId' => null]);
+        ->and(Arr::pluck($field->volumeOptions(), 'value'))->toContain($volume->uid);
 
     $invalidField = new MarkdownField([
         'name' => 'Body',
@@ -452,7 +447,7 @@ it('respects an explicit asset selection condition', function () {
         ->and($rules[0]->value)->toBeFalse();
 });
 
-it('warns and resolves no asset sources when no volumes exist', function () {
+it('accepts the asset toolbar button when no volumes exist', function () {
     Volumes::shouldReceive('getAllVolumes')
         ->andReturn(collect());
     Volumes::shouldReceive('getAllVolumeIds')
@@ -463,10 +458,8 @@ it('warns and resolves no asset sources when no volumes exist', function () {
         'handle' => 'body',
         'toolbarButtons' => [MarkdownField::TOOLBAR_ASSET],
     ]);
-    $assetSourceKeys = fn (): array => $this->assetSourceKeys();
 
-    expect($assetSourceKeys->call($field))->toBe([])
-        ->and($field->validate())->toBeTrue();
+    expect($field->validate())->toBeTrue();
 });
 
 it('normalizes values without trimming markdown-significant whitespace', function () {

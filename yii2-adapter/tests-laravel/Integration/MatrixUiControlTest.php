@@ -6,28 +6,40 @@ use craft\elements\GlobalSet;
 use craft\fields\Matrix as LegacyMatrix;
 use craft\records\GlobalSet as GlobalSetRecord;
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\FieldLayout\FieldLayoutForm;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
+use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
 
 uses(DatabaseTestCase::class);
 
-beforeEach(function() {
+beforeEach(function () {
     $this->actingAs(User::factory()->admin()->create());
 });
 
-it('preserves owner-specific Matrix creation choices while rendering existing excluded types', function() {
+it('preserves owner-specific Matrix creation choices while rendering existing excluded types', function () {
     $types = EntryTypeModel::factory()->withFieldLayout()->count(3)->sequence(
         ['name' => 'Existing', 'handle' => 'existing', 'hasTitleField' => true],
         ['name' => 'First choice', 'handle' => 'firstChoice'],
@@ -43,12 +55,14 @@ it('preserves owner-specific Matrix creation choices while rendering existing ex
     expect(Elements::saveElement($owner))->toBeTrue();
     $owner = Entry::find()->id($model->id)->one();
     $field = Fields::getFieldByHandle('blocks');
-    \Illuminate\Support\Facades\Event::listen(\CraftCms\Cms\Field\Events\EntryTypesForFieldResolving::class, function($event) use ($owner) {
+    Event::listen(EntryTypesForFieldResolving::class, function ($event) use ($owner) {
         if ($event->element?->id === $owner->id) {
             $event->entryTypes = [$event->entryTypes[2], $event->entryTypes[1]];
         }
     });
-    $html = $field->getInputHtml($owner->getFieldValue('blocks'), $owner);
+    $context = new UiContext;
+    $control = $field->uiControl(new FieldContext(['fields', 'blocks'], $owner->getFieldValue('blocks'), $owner, $context));
+    $html = app(UiHtmlRenderer::class)->render(app(UiResolver::class)->resolve(Ui::make([UiField::make()->control($control)]), $context));
     $ui = json_decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
     $control = $ui['nodes'][0]['control'];
 
@@ -58,7 +72,7 @@ it('preserves owner-specific Matrix creation choices while rendering existing ex
         ->and($html)->toContain('Existing content');
 });
 
-it('renders legacy Matrix content read-only without granting editing permissions', function(string $viewMode) {
+it('renders legacy Matrix content read-only without granting editing permissions', function (string $viewMode) {
     $entryType = EntryTypeModel::factory()->create([
         'name' => 'Card',
         'handle' => 'card',
@@ -114,7 +128,35 @@ it('renders legacy Matrix content read-only without granting editing permissions
     'index' => LegacyMatrix::VIEW_MODE_INDEX,
 ]);
 
-it('refreshes native Matrix controls after deletion in Global Set content forms', function(bool $insideBlock, string $viewMode, bool $plugin = false) {
+it('shows nested entry validation errors in legacy field layout forms', function (string $fieldType) {
+    $entryType = EntryTypeModel::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([new EntryTitleField(['required' => true])]))
+        ->create(['name' => 'Card', 'handle' => 'card', 'hasTitleField' => true]);
+    $owner = EntryModel::factory()
+        ->withField('blocks', $fieldType, ['viewMode' => LegacyMatrix::VIEW_MODE_BLOCKS, 'entryTypes' => [$entryType->id]])
+        ->createElementWithFields()
+        ->element;
+    $uid = Str::uuid()->toString();
+    $owner->setFieldValue('blocks', ['entries' => ["uid:$uid" => ['type' => 'card', 'title' => '']], 'sortOrder' => [$uid]]);
+    $owner->setScenario(ElementRules::SCENARIO_LIVE);
+
+    expect(Elements::saveElement($owner))->toBeFalse();
+
+    // On the block's own Title field, rather than the form's error list.
+    $html = FieldLayoutForm::fromLayout($owner->getFieldLayout(), $owner)->render();
+    $ui = Json::decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'));
+
+    expect($ui['errors'])->toBe([[
+        'path' => ['fields', 'blocks', 'entries', $uid, 'title'],
+        'messages' => ['The title field is required.'],
+    ]])
+        ->and($ui['globalErrors'])->toBe([]);
+})->with([
+    'Matrix' => LegacyMatrix::class,
+    'plugin Matrix' => PluginMatrixUiField::class,
+]);
+
+it('refreshes native Matrix controls after deletion in Global Set content forms', function (bool $insideBlock, string $viewMode, bool $plugin = false) {
     $this->artisan('craft:add-global-sets-support', ['--no-interaction' => true])->assertSuccessful();
     $entryType = EntryTypeModel::factory()->withFieldLayout()->create([
         'name' => 'Card',
@@ -146,7 +188,7 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
 
     $global = new GlobalSet(['name' => 'Site content', 'handle' => 'siteContent', 'fieldLayoutId' => $layout->id]);
     expect(Elements::saveElement($global))->toBeTrue();
-    $record = new GlobalSetRecord();
+    $record = new GlobalSetRecord;
     $record->id = $global->id;
     $record->uid = $global->uid;
     $record->name = $global->name;
@@ -172,13 +214,9 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
         $blocksUi = json_decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
         $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($blocksUi['nodes']), RecursiveIteratorIterator::SELF_FIRST);
         $control = collect(iterator_to_array($nodes, false))->first(
-            fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
+            fn (mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
         );
         $scope = ['fields', 'blocks', 'entries', $owner->uid];
-        if ($plugin) {
-            $host = new Crawler($control['props']['fragment']['html'])->filter('craft-nested-elements-control');
-            $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
-        }
     } else {
         $host = new Crawler($html)->filter('craft-nested-elements-control');
         $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
@@ -208,16 +246,9 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
     $response->assertSuccessful();
     $nodes = new RecursiveIteratorIterator(new RecursiveArrayIterator($response->json('ui.nodes')), RecursiveIteratorIterator::SELF_FIRST);
     $refreshed = collect(iterator_to_array($nodes, false))->first(
-        fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
+        fn (mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
     );
     expect($refreshed)->not->toBeNull();
-    if ($plugin) {
-        $refreshed = json_decode(
-            new Crawler($refreshed['props']['fragment']['html'])->filter('craft-nested-elements-control')->attr('data-control'),
-            true,
-            flags: JSON_THROW_ON_ERROR,
-        );
-    }
     $items = $viewMode === LegacyMatrix::VIEW_MODE_INDEX ? $refreshed['props']['index']['initial']['data'] : $refreshed['props']['cards'];
     expect($items)->toBeEmpty();
 })->with([
@@ -229,6 +260,4 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
     'plugin index inside blocks' => [true, LegacyMatrix::VIEW_MODE_INDEX, true],
 ]);
 
-class PluginMatrixUiField extends LegacyMatrix
-{
-}
+class PluginMatrixUiField extends LegacyMatrix {}

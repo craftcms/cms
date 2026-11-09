@@ -1119,6 +1119,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 - Deprecated `craft\fields\Users`. `CraftCms\Cms\Field\Users` should be used instead.
 - Deprecated `craft\services\Fields`. `CraftCms\Cms\Field\Fields` should be used instead.
 - Deprecated `craft\base\CrossSiteCopyableFieldInterface`, which no longer has any effect. Field values are copied between sites on the Compare screen, for fields whose UI controls implement `CraftCms\Cms\Ui\Contracts\ReadableValueControl` and `CraftCms\Cms\Ui\Contracts\WritableValueControl`. ([#20384](https://github.com/craftcms/cms/pull/20384))
+- Craft’s field types, other than relation fields, no longer implement Craft 5’s `inputHtml()` methods, and link types no longer have an `inputHtml()` method. Built-in fields render through `uiControl()`, so calling `getInputHtml()` or `getInlineInputHtml()` on them through the Yii adapter no longer returns their input. Plugin fields that extend a built-in field type render its UI control in element edit forms, unless they implement their own `inputHtml()`, `getInputHtml()`, or `getInlineInputHtml()`. ([#20518](https://github.com/craftcms/cms/pull/20518))
 
 #### GQL
 - Deprecated `\craft\records\GqlSchema`. `\CraftCms\Cms\Gql\Models\GqlSchema` should be used instead.
