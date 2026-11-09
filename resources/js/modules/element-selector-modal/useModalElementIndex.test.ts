@@ -2,6 +2,7 @@ import {effectScope, nextTick} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
 import {indexData} from '@/modules/elements/index/fixtures/indexData';
+import {prefixedKey} from '@/common/composables/useStorage';
 import {useModalElementIndex} from './useModalElementIndex';
 
 const post = vi.hoisted(() => vi.fn());
@@ -239,6 +240,40 @@ describe('double-clicking', () => {
       true
     );
     expect(index.view.selection.selectedIds.value).toEqual([]);
+  });
+
+  it('selects nothing when read-only', () => {
+    scope = effectScope();
+    const index = scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData(),
+        params: {elementType: 'Asset'},
+        readOnly: true,
+      })
+    )!;
+
+    expect(dblClick(index, index.view.elementIndex.data[1]!).handled).toBe(
+      true
+    );
+    expect(index.view.selection.selectedIds.value).toEqual([]);
+  });
+
+  it('saves its view settings under the storage key it is given', () => {
+    localStorage.clear();
+    scope = effectScope();
+    scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData(),
+        params: {elementType: 'Asset'},
+        storageKey: 'commerce-user-completed-orders',
+      })
+    );
+
+    expect(
+      localStorage.getItem(prefixedKey('commerce-user-completed-orders'))
+    ).not.toBeNull();
   });
 
   it('chooses nothing from a control inside an asset', () => {

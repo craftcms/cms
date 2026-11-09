@@ -258,3 +258,38 @@ it('excludes the target IDs supplied by replacement modals', function () {
 
     expect(array_column($response->json('props.data'), 'id'))->toBe([$replacement->id]);
 });
+
+describe('read-only indexes', function () {
+    it('links table titles to their elements', function () {
+        $titles = collect(($this->postBody)([
+            'elementType' => User::class,
+            'readOnly' => true,
+        ])->json('props.data'))->pluck('title');
+
+        expect($titles)->not->toBeEmpty();
+        $titles->each(fn (string $title) => expect($title)->toContain('CpLink'));
+    });
+
+    it('hands thumbs the url to navigate to', function () {
+        $thumbs = collect(($this->postBody)([
+            'elementType' => User::class,
+            'viewMode' => 'thumbs',
+            'readOnly' => true,
+        ])->json('props.data'));
+
+        expect($thumbs)->not->toBeEmpty();
+        $thumbs->each(fn (array $thumb) => expect($thumb['url'])->not->toBeNull());
+    });
+
+    it('narrows the elements by the requested criteria', function () {
+        $user = UserModel::factory()->createElement();
+
+        $props = ($this->postBody)([
+            'elementType' => User::class,
+            'readOnly' => true,
+            'criteria' => ['id' => $user->id],
+        ])->json('props');
+
+        expect($props['pagination']['total'])->toBe(1);
+    });
+});

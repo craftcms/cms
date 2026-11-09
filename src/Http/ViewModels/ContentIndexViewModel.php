@@ -1661,7 +1661,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
             ...$this->baseRowData($element),
-            'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL && ! $element->trashed
+            'url' => $this->linksToElements() && ! $element->trashed
                 ? $this->editUrl($element)
                 : null,
             'thumbHtml' => $element->getThumbHtml($this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit),
@@ -1783,6 +1783,15 @@ abstract class ContentIndexViewModel extends ViewModel
                     ->all(),
             ] : []),
         ];
+    }
+
+    /**
+     * Whether titles and thumbnails link to their elements. A modal's don't,
+     * since a click there selects.
+     */
+    protected function linksToElements(): bool
+    {
+        return static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL;
     }
 
     protected function editUrl(ElementInterface $element): ?string

@@ -45,6 +45,7 @@
 - Added releases, which group saved drafts of entries and other top-level elements so they can be scheduled and published together, atomically. A release’s drafts can be stepped through in a Live Preview–style view, opened from the release screen’s Preview button, with warnings on any drafts that are blocking the release, and edited beside their preview. Drafts in a release can be queried with the `releaseId` element query param and GraphQL argument, and the “Query for releases” GraphQL schema permission adds `releases` and `release` queries.
 
 ### Elements
+- Added the `ReadOnlyElementIndex` component to `@craftcms/cp`, which embeds an element index in a screen from `criteria`, without selection. It requests `element-selector-modals/body` with `readOnly: true`, which links each element to its edit page.
 - Added Markdown comments to element activity timelines, with support for editing, removing, structured user mentions, syntax-highlighted code blocks, and email notifications.
 - Element index searches now update results as users type. ([#19754](https://github.com/craftcms/cms/pull/19754))
 - Clicking anywhere on an element index table row or card (other than an interactive control) now selects it. ([#19351](https://github.com/craftcms/cms/pull/19351))
