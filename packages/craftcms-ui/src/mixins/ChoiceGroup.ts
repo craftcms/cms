@@ -214,10 +214,25 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
     }
 
     #disable(option: ChoiceInputInterface): void {
-      if (!option.disabled) {
+      if (!this.#disabledOnItsOwn(option)) {
         option.disabled = true;
         this.#disabledByGroup.add(option);
       }
+    }
+
+    /**
+     * Whether a choice is disabled itself. One that hasn't upgraded yet hasn't
+     * taken on its markup's state, so that's read from the markup.
+     */
+    #disabledOnItsOwn(option: ChoiceInputInterface): boolean {
+      const element = option as unknown as Element;
+      const control = element.querySelector(':scope > [slot="input"]');
+
+      return (
+        option.disabled ||
+        element.hasAttribute('disabled') ||
+        (control instanceof HTMLInputElement && control.disabled)
+      );
     }
 
     #apply(options: ChoiceInputInterface[], values: string[]): void {
