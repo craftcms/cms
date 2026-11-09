@@ -11,7 +11,6 @@ import {property} from 'lit/decorators.js';
 // Registers <craft-callout> and <craft-visually-hidden> for the notices.
 import '../components/callout/callout.js';
 import '../components/visually-hidden/visually-hidden.js';
-import {HasSlotController} from '@src/utilities/slot';
 import {t} from '@src/utilities/translate';
 import {uniqueId} from '@src/utilities/unique-id.js';
 
@@ -240,10 +239,16 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     #hasHelpText = false;
 
-    #hasNoticeSlot = new HasSlotController(this, ...NOTICES);
+    #notices = new Set<NoticeKind>();
 
-    // Slotted label and help text can change outside of Lit.
+    /** Whether a label, help text or notice template has rendered. */
+    #rendersChrome = false;
+
+    // Slotted label, help text and notices can change outside of Lit. Only
+    // watched once the chrome renders, which choice inputs never do.
     #observer = new MutationObserver(() => this.#syncChrome());
+
+    #observing = false;
 
     #hostReferences: Record<HostReference, HTMLElement[]> = {
       labelledBy: [],
@@ -307,11 +312,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       this._labelNode?.addEventListener('click', this.#onLabelClick);
       this.addEventListener('focusin', this.#onFocusChange);
       this.addEventListener('focusout', this.#onFocusChange);
-      this.#observer.observe(this, {
-        childList: true,
-        subtree: true,
-        characterData: true,
-      });
+      this.#observe();
       this.#syncChrome();
       this.#adoptHostReference('labelledBy');
       this.#adoptHostReference('describedBy');
@@ -320,6 +321,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     override disconnectedCallback() {
       super.disconnectedCallback();
       this.#observer.disconnect();
+      this.#observing = false;
       this.#feedbackObserver.disconnect();
       this._labelNode?.removeEventListener('click', this.#onLabelClick);
       this.removeEventListener('focusin', this.#onFocusChange);
@@ -338,11 +340,13 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       super.willUpdate(changed);
       this.#hasLabel = this.#hasContent(this.label, 'label');
       this.#hasHelpText = this.#hasContent(this.helpText, 'help-text');
+      this.#notices = this.#slottedNotices();
     }
 
     protected override updated(changed: PropertyValues) {
       super.updated(changed);
       this.#renderTemplateSlots();
+      this.#observe();
       this.#syncChrome();
 
       for (const kind of NOTICES) {
@@ -384,10 +388,34 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       );
     }
 
+    #slottedNotices(): Set<NoticeKind> {
+      return new Set(NOTICES.filter((kind) => this.#slotted(kind)));
+    }
+
+    #observe(): void {
+      if (this.#rendersChrome && !this.#observing && this.isConnected) {
+        this.#observing = true;
+        this.#observer.observe(this, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributeFilter: ['slot'],
+        });
+      }
+    }
+
     #syncChrome(): void {
+      if (!this.#rendersChrome) {
+        return;
+      }
+
+      const notices = this.#slottedNotices();
+
       if (
         this.#hasContent(this.label, 'label') !== this.#hasLabel ||
-        this.#hasContent(this.helpText, 'help-text') !== this.#hasHelpText
+        this.#hasContent(this.helpText, 'help-text') !== this.#hasHelpText ||
+        notices.size !== this.#notices.size ||
+        [...notices].some((kind) => !this.#notices.has(kind))
       ) {
         this.requestUpdate();
       }
@@ -637,6 +665,8 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     /** The `label` slot, when there is a label. */
     protected _labelTemplate(): unknown {
+      this.#rendersChrome = true;
+
       if (!this.#hasLabel) {
         return nothing;
       }
@@ -650,6 +680,8 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     /** The `help-text` slot, when there is help text. */
     protected _helpTextTemplate(): unknown {
+      this.#rendersChrome = true;
+
       if (!this.#hasHelpText) {
         return nothing;
       }
@@ -740,7 +772,9 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
      * a visually hidden prefix. Skipped when nothing is slotted.
      */
     protected _noticeTemplate(kind: NoticeKind): unknown {
-      if (!this.#hasNoticeSlot.test(kind)) {
+      this.#rendersChrome = true;
+
+      if (!this.#notices.has(kind)) {
         return nothing;
       }
 

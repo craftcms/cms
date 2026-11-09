@@ -129,6 +129,9 @@ export const FormAssociated = <T extends Constructor<LitElement>>(Base: T) => {
     /** Holds the hidden inputs, in a slot the shadow root doesn't render. */
     #inputs?: HTMLElement;
 
+    /** What the hidden inputs last posted, so an unchanged value is skipped. */
+    #posted?: string;
+
     @property({reflect: true}) name = '';
     @property({type: Boolean, reflect: true}) disabled = false;
 
@@ -198,9 +201,16 @@ export const FormAssociated = <T extends Constructor<LitElement>>(Base: T) => {
     protected _syncFormValue(): void {
       const value = this.name && !this.disabled ? this._formValue() : null;
 
-      if (value === null && !this.#inputs) {
+      const posted = JSON.stringify([this.name, value]);
+
+      if (
+        (value === null && !this.#inputs) ||
+        (posted === this.#posted && this.#inputs?.parentNode === this)
+      ) {
         return;
       }
+
+      this.#posted = posted;
 
       if (!this.#inputs) {
         this.#inputs = document.createElement('span');
