@@ -27,7 +27,7 @@ use PDOException;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -52,9 +52,9 @@ class InstallController extends Controller
      */
     public function beforeAction($action): bool
     {
-        // Return a 404 if Craft is already installed
-        if (!App::devMode() && Craft::$app->getIsInstalled()) {
-            throw new BadRequestHttpException('Craft is already installed');
+        // The web-based installer is only available in Dev Mode
+        if (!$this->devMode()) {
+            throw new NotFoundHttpException('Craft can only be installed from the web when Dev Mode is enabled.');
         }
 
         if (!parent::beforeAction($action)) {
@@ -331,6 +331,17 @@ class InstallController extends Controller
         }
 
         return $this->asSuccess();
+    }
+
+    /**
+     * Returns whether Dev Mode is enabled.
+     *
+     * @return bool
+     * @internal
+     */
+    protected function devMode(): bool
+    {
+        return App::devMode();
     }
 
     /**
