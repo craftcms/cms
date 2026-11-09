@@ -11,21 +11,17 @@ import {ifDefined} from 'lit/directives/if-defined.js';
 import '../tooltip/tooltip.js';
 import '../button/button.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
-import {FieldNotices} from '@src/mixins/FieldNotices';
-import {FormControl} from '@src/mixins/FormControl';
+import {FormControl, type AriaReferenceConfig} from '@src/mixins/FormControl';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import styles from './field.styles.js';
 import {HasSlotController} from '@src/utilities/slot';
 import {t} from '@src/utilities/translate';
 
 type FormControlTarget = HTMLElement & {
-  addToAriaLabelledBy(
-    element: HTMLElement,
-    config?: {idPrefix?: string; reorder?: boolean}
-  ): void;
+  addToAriaLabelledBy(element: HTMLElement, config?: AriaReferenceConfig): void;
   addToAriaDescribedBy(
     element: HTMLElement,
-    config?: {idPrefix?: string; reorder?: boolean}
+    config?: AriaReferenceConfig
   ): void;
 };
 
@@ -53,7 +49,7 @@ type FormControlTarget = HTMLElement & {
  * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
  *   field settings menus), rendered as a group at the end of the heading.
  */
-export default class CraftField extends FieldNotices(FormControl(LitElement)) {
+export default class CraftField extends FormControl(LitElement) {
   static override styles = [visuallyHiddenStyles, baseFieldStyles, styles];
 
   /** Renders the required indicator inside the label. */
@@ -246,7 +242,7 @@ export default class CraftField extends FieldNotices(FormControl(LitElement)) {
    */
   override addToAriaLabelledBy(
     element: HTMLElement,
-    customConfig: {idPrefix?: string; reorder?: boolean} = {}
+    customConfig: AriaReferenceConfig = {}
   ): void {
     const control = this.__formControlTarget();
     if (control) {
@@ -271,7 +267,7 @@ export default class CraftField extends FieldNotices(FormControl(LitElement)) {
    */
   override addToAriaDescribedBy(
     element: HTMLElement,
-    customConfig: {idPrefix?: string; reorder?: boolean} = {}
+    customConfig: AriaReferenceConfig = {}
   ): void {
     const control = this.__formControlTarget();
     if (control) {

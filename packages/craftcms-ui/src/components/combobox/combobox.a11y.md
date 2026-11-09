@@ -2,7 +2,7 @@
 
 Follows the WAI-ARIA APG [Combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/) pattern, as in the [Editable Combobox With List Autocomplete](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/) example: typing filters a listbox popup (`aria-autocomplete="list"`), and in single-choice mode the first match becomes active automatically (automatic selection). By default the value must be one of the options; with `requireOptionMatch` set to `false` the field also accepts free text. `multiple-choice` switches to manual selection and shows each selected value as a removable token before the textbox, which the APG example doesn't cover.
 
-Shares `HasLabel` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. Options are `craft-option`; see `option.a11y.md`.
+Shares `FormControl` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. Options are `craft-option`; see `option.a11y.md`.
 
 **Not for:**
 

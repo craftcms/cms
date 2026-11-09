@@ -2,8 +2,6 @@ import {LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {FormAssociated} from '@src/mixins/FormAssociated';
 import {FormControl, formControlStyles} from '@src/mixins/FormControl';
-import {HasLabel} from '@src/mixins/HasLabel';
-import {HostAriaReferences} from '@src/mixins/HostAriaReferences';
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import type CraftSlidePickerSlider from './slide-picker-slider.js';
 import './slide-picker-slider.js';
@@ -47,8 +45,8 @@ import styles from './slide-picker.styles.js';
  * to the hovered one, previewing a value. Defaults to
  * `--c-color-neutral-fill-normal`.
  */
-export default class CraftSlidePicker extends HostAriaReferences(
-  FormAssociated(HasLabel(FormControl(LitElement)))
+export default class CraftSlidePicker extends FormAssociated(
+  FormControl(LitElement)
 ) {
   static override styles = [formControlStyles, styles];
 

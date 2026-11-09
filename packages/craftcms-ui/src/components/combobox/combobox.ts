@@ -11,7 +11,6 @@ import './combobox-token.js';
 import '../icon/icon.js';
 import '../indicator/indicator.js';
 import '../button/button.js';
-import {HasLabel} from '@src/mixins/HasLabel';
 import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
 import {FormControl} from '@src/mixins/FormControl';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
@@ -144,7 +143,7 @@ interface EntryRun {
  * @fires change - Emitted when the value is committed: an option is selected,
  *   or the field is left after typing.
  */
-export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
+export default class CraftCombobox extends FormControl(LitElement) {
   /** Lets the combobox post its value with its form, through `ElementInternals`. */
   static formAssociated = true;
 

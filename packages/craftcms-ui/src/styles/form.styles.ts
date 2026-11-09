@@ -100,7 +100,7 @@ export const baseFieldStyles = css`
   }
 
   /* The label and help text only render when there's something to show
-     (see HasLabel and craft-field), so the spacing can be unconditional. */
+     (see FormControl and craft-field), so the spacing can be unconditional. */
   .form-field__label {
     margin-block-end: var(
       --c-field-label-margin-block-end,
@@ -123,7 +123,7 @@ export const baseFieldStyles = css`
     margin-block: var(--c-spacing-xs, 0.3125rem) 0;
   }
 
-  /* Tip/warning notices (see FieldNotices) */
+  /* Tip/warning notices (see FormControl) */
   .field-notice {
     --c-callout-icon-padding-inline: 0;
     --c-callout-text-padding-inline: var(--c-spacing-sm) 0;

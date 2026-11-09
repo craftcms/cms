@@ -8,7 +8,11 @@ import {
   type TemplateResult,
 } from 'lit';
 import {property} from 'lit/decorators.js';
+// Registers <craft-callout> and <craft-visually-hidden> for the notices.
+import '../components/callout/callout.js';
+import '../components/visually-hidden/visually-hidden.js';
 import {HasSlotController} from '@src/utilities/slot';
+import {t} from '@src/utilities/translate';
 import {uniqueId} from '@src/utilities/unique-id.js';
 
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,11 +25,10 @@ type Constructor<T = object> = new (...args: any[]) => T;
  */
 export type SlotFactory = () => Node | TemplateResult | undefined;
 
-/**
- * `reorder` is accepted for callers that also target older controls; references
- * are always kept in the order they were added.
- */
-export type AriaReferenceConfig = {idPrefix?: string; reorder?: boolean};
+/** References are kept in the order they were added. */
+export type AriaReferenceConfig = {idPrefix?: string};
+
+type NoticeKind = 'tip' | 'warning';
 
 /** The mixin's surface, as a type: Lit's pattern for typing protected members. */
 export declare class FormControlInterface {
@@ -34,6 +37,8 @@ export declare class FormControlInterface {
   labelSrOnly: boolean;
   readOnly: boolean;
   disabled: boolean;
+  labelledBy: string | null;
+  describedBy: string | null;
   readonly _inputId: string;
   get _inputNode(): HTMLElement | undefined;
   get _labelNode(): HTMLElement | undefined;
@@ -61,6 +66,7 @@ export declare class FormControlInterface {
   protected _inputGroupSuffixTemplate(): unknown;
   protected _inputGroupAfterTemplate(): unknown;
   protected _feedbackTemplate(): unknown;
+  protected _noticeTemplate(kind: NoticeKind): unknown;
 }
 
 /** The chrome's own layout, for subclasses that compose their styles. */
@@ -120,12 +126,25 @@ export const formControlStyles = css`
 /** Light-DOM slot children that can join the control's name or description. */
 const ADDITIONAL_SLOTS = ['prefix', 'suffix', 'before', 'after'];
 
+const NOTICES = ['tip', 'warning'] as const;
+
+const HOST_REFERENCES = {
+  labelledBy: ['addToAriaLabelledBy', 'removeFromAriaLabelledBy'],
+  describedBy: ['addToAriaDescribedBy', 'removeFromAriaDescribedBy'],
+} as const;
+
+type HostReference = keyof typeof HOST_REFERENCES;
+
 /**
  * The field chrome shared by the CP's form controls: a label, help text and
  * feedback around a slotted control (`slot="input"`), with the label and help
  * text generated in the light DOM from `label` and `help-text` so they can be
  * referenced by id, and `aria-labelledby`/`aria-describedby` kept on the
  * control.
+ *
+ * The label and help text render only when there's something to show, so
+ * `baseFieldStyles` can space them unconditionally. `tip` and `warning` slot
+ * content renders as field notices just ahead of the feedback.
  *
  * Subclasses pick their control by adding an `input` entry to `slots`, or by
  * expecting the consumer to slot one, and arrange the chrome by overriding the
@@ -174,6 +193,18 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     /** Whether the control is disabled. */
     @property({type: Boolean, reflect: true}) disabled = false;
 
+    /**
+     * Ids of elements elsewhere that label the control, such as a table
+     * column heading. They aren't `aria-labelledby` because the host isn't the
+     * control; the ids are resolved and written onto the control along with
+     * its own label. The elements need to be in the tree when the control
+     * connects or the property changes.
+     */
+    @property({attribute: 'labelled-by'}) labelledBy: string | null = null;
+
+    /** Ids of elements elsewhere that describe the control. See `labelledBy`. */
+    @property({attribute: 'described-by'}) describedBy: string | null = null;
+
     #label?: string;
 
     #helpText?: string;
@@ -204,6 +235,20 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     /** Re-renders the chrome when a prefix or suffix comes or goes. */
     #hasAffix = new HasSlotController(this, 'prefix', 'suffix');
+
+    #hasLabel = false;
+
+    #hasHelpText = false;
+
+    #hasNoticeSlot = new HasSlotController(this, ...NOTICES);
+
+    // Slotted label and help text can change outside of Lit.
+    #observer = new MutationObserver(() => this.#syncChrome());
+
+    #hostReferences: Record<HostReference, HTMLElement[]> = {
+      labelledBy: [],
+      describedBy: [],
+    };
 
     /**
      * Light-DOM content created for slots the consumer didn't fill. Subclasses
@@ -258,10 +303,19 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       this._labelNode?.addEventListener('click', this.#onLabelClick);
       this.addEventListener('focusin', this.#onFocusChange);
       this.addEventListener('focusout', this.#onFocusChange);
+      this.#observer.observe(this, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+      this.#syncChrome();
+      this.#adoptHostReference('labelledBy');
+      this.#adoptHostReference('describedBy');
     }
 
     override disconnectedCallback() {
       super.disconnectedCallback();
+      this.#observer.disconnect();
       this.#feedbackObserver.disconnect();
       this._labelNode?.removeEventListener('click', this.#onLabelClick);
       this.removeEventListener('focusin', this.#onFocusChange);
@@ -276,9 +330,30 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       );
     };
 
+    protected override willUpdate(changed: PropertyValues) {
+      super.willUpdate(changed);
+      this.#hasLabel = this.#hasContent(this.label, 'label');
+      this.#hasHelpText = this.#hasContent(this.helpText, 'help-text');
+    }
+
     protected override updated(changed: PropertyValues) {
       super.updated(changed);
       this.#renderTemplateSlots();
+      this.#syncChrome();
+
+      for (const kind of NOTICES) {
+        const node = this.#slotted(kind);
+        // Only a notice that renders describes the control.
+        if (node && this.renderRoot.querySelector(`slot[name="${kind}"]`)) {
+          this.addToAriaDescribedBy(node, {idPrefix: kind});
+        }
+      }
+
+      for (const reference of ['labelledBy', 'describedBy'] as const) {
+        if (changed.has(reference)) {
+          this.#adoptHostReference(reference);
+        }
+      }
 
       if (
         changed.has('label') &&
@@ -297,6 +372,46 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       }
 
       this._reflectAriaReferences();
+    }
+
+    #hasContent(text: string, slot: string): boolean {
+      return (
+        text.trim() !== '' || (this.#slotted(slot)?.childElementCount ?? 0) > 0
+      );
+    }
+
+    #syncChrome(): void {
+      if (
+        this.#hasContent(this.label, 'label') !== this.#hasLabel ||
+        this.#hasContent(this.helpText, 'help-text') !== this.#hasHelpText
+      ) {
+        this.requestUpdate();
+      }
+    }
+
+    #adoptHostReference(reference: HostReference): void {
+      const [add, remove] = HOST_REFERENCES[reference];
+      // A disconnected element's root may lack getElementById;
+      // connectedCallback() adopts again.
+      const root = this.getRootNode() as Document | ShadowRoot;
+      if (typeof root.getElementById !== 'function') {
+        return;
+      }
+      const elements = (this[reference] ?? '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((id) => root.getElementById(id))
+        .filter((element): element is HTMLElement => element !== null);
+
+      for (const element of this.#hostReferences[reference]) {
+        if (!elements.includes(element)) {
+          this[remove](element);
+        }
+      }
+      for (const element of elements) {
+        this[add](element);
+      }
+      this.#hostReferences[reference] = elements;
     }
 
     #createSlots(): void {
@@ -508,6 +623,10 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     }
 
     protected _labelTemplate(): unknown {
+      if (!this.#hasLabel) {
+        return nothing;
+      }
+
       return html`
         <div class="form-field__label">
           <slot name="label"></slot>
@@ -516,6 +635,10 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     }
 
     protected _helpTextTemplate(): unknown {
+      if (!this.#hasHelpText) {
+        return nothing;
+      }
+
       return html`
         <small class="form-field__help-text">
           <slot name="help-text"></slot>
@@ -581,11 +704,39 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       `;
     }
 
+    /** Field notices, then the feedback. */
     protected _feedbackTemplate(): unknown {
       return html`
+        ${this._noticeTemplate('tip')} ${this._noticeTemplate('warning')}
         <div class="form-field__feedback">
           <slot name="feedback"></slot>
         </div>
+      `;
+    }
+
+    /**
+     * A tip or warning notice, mirroring `forms/field-notice.blade.php`, with
+     * a visually hidden prefix. Skipped when nothing is slotted.
+     */
+    protected _noticeTemplate(kind: NoticeKind): unknown {
+      if (!this.#hasNoticeSlot.test(kind)) {
+        return nothing;
+      }
+
+      const isTip = kind === 'tip';
+
+      return html`
+        <craft-callout
+          class="field-notice"
+          variant=${isTip ? 'info' : 'warning'}
+          appearance="plain"
+          padding="none"
+        >
+          <craft-visually-hidden>
+            ${isTip ? t('Tip:') : t('Warning:')}
+          </craft-visually-hidden>
+          <slot name=${kind}></slot>
+        </craft-callout>
       `;
     }
   }

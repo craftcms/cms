@@ -1,7 +1,6 @@
 import {html, nothing, render, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {colors as paletteColors} from '@src/constants/colors';
-import {HostAriaReferences} from '@src/mixins/HostAriaReferences';
 import {t} from '@src/utilities/translate';
 import CraftSelectRich from '../select-rich/select-rich.js';
 import styles from './select-color.styles.js';
@@ -47,9 +46,7 @@ function isHex(color: string): boolean {
  * @cssproperty [--c-select-color-swatch-ring=transparent] - Ring around every
  *   swatch. The dark theme sets a faint one.
  */
-export default class CraftSelectColor extends HostAriaReferences(
-  CraftSelectRich
-) {
+export default class CraftSelectColor extends CraftSelectRich {
   static override styles = [...CraftSelectRich.styles, styles];
 
   /**

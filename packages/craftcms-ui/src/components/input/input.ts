@@ -2,7 +2,6 @@ import {inputStyles} from '@src/styles/form.styles';
 import styles from './input.styles.js';
 import {LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
-import {HasLabel} from '@src/mixins/HasLabel';
 import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
 import {NativeField} from '@src/mixins/NativeField';
 
@@ -32,7 +31,7 @@ import {NativeField} from '@src/mixins/NativeField';
  * @slot before - Content outside the control, before it.
  * @slot after - Content outside the control, after it.
  */
-export default class CraftInput extends HasLabel(NativeField(LitElement)) {
+export default class CraftInput extends NativeField(LitElement) {
   static override styles = [formControlStyles, inputStyles, styles];
 
   /** The native input's type. Leaves the control's own when unset. */

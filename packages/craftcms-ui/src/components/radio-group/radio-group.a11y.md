@@ -2,7 +2,7 @@
 
 Follows the WAI-ARIA APG [Radio Group](https://www.w3.org/WAI/ARIA/apg/patterns/radio/) pattern. The options are `craft-radio`s, covered by `radio.a11y.md`. With `appearance` set, the radios are drawn as buttons or cards, separate or joined, but either way they keep the pattern's roles and keyboard behavior.
 
-The group adds `role="radiogroup"` and the label, help text and feedback wiring through the `ChoiceGroup` mixin. The keyboard behavior comes from the browser: each option is a native `<input type="radio">`, and radios that share a `name` form one group. Browsers don't group radios that have no `name`, so a group without one keeps only one option selected, and gives its radios the same single Tab stop and arrow keys itself. `HasLabel` only reflects `has-label` for spacing; see `input.a11y.md`.
+The group adds `role="radiogroup"` and the label, help text and feedback wiring through the `ChoiceGroup` mixin. The keyboard behavior comes from the browser: each option is a native `<input type="radio">`, and radios that share a `name` form one group. Browsers don't group radios that have no `name`, so a group without one keeps only one option selected, and gives its radios the same single Tab stop and arrow keys itself.
 
 **Not for:**
 

@@ -6,7 +6,6 @@ import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
 import {emitChange} from '@src/utilities/form-events';
-import {HasLabel} from '@src/mixins/HasLabel';
 import {ChoiceInput, choiceInputStyles} from '@src/mixins/ChoiceInput';
 
 function splitIds(value: string | null): string[] {
@@ -38,7 +37,7 @@ function escapeCssId(id: string): string {
  * @fires {Event} change - When the user toggles it, or it's turned on, off
  *   or indeterminate without muting.
  */
-export default class CraftSwitch extends HasLabel(ChoiceInput(LitElement)) {
+export default class CraftSwitch extends ChoiceInput(LitElement) {
   static override styles = [...choiceInputStyles, baseFieldStyles, styles];
 
   /** Size of the control. */

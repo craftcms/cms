@@ -5,7 +5,6 @@ import CraftOption from '../option/option.js';
 import './select-invoker.js';
 import type CraftSelectInvoker from './select-invoker.js';
 import '../icon/icon.js';
-import {HasLabel} from '@src/mixins/HasLabel';
 import {FormAssociated} from '@src/mixins/FormAssociated';
 import {
   FormControl,
@@ -56,7 +55,7 @@ import {uniqueId} from '@src/utilities/unique-id';
  * @since 1.0
  */
 export default class CraftSelectRich extends FormAssociated(
-  HasLabel(FormControl(LitElement))
+  FormControl(LitElement)
 ) {
   static override styles = [formControlStyles, layerStyles, styles];
 

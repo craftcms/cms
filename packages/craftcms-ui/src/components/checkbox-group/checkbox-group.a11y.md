@@ -1,6 +1,6 @@
 # `craft-checkbox-group` accessibility
 
-Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/) pattern for a set of checkboxes: a `role="group"` container named by a visible label. Each box follows `checkbox.a11y.md`. The `ChoiceGroup` mixin wires the group's label, help text and feedback to the host. `HasLabel` only reflects a `has-label` attribute for spacing; see `input.a11y.md`. Inside `craft-field`, the field draws the label and instructions; see `field.a11y.md`.
+Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/) pattern for a set of checkboxes: a `role="group"` container named by a visible label. Each box follows `checkbox.a11y.md`. The `ChoiceGroup` mixin wires the group's label, help text and feedback to the host. Inside `craft-field`, the field draws the label and instructions; see `field.a11y.md`.
 
 **Not for:**
 

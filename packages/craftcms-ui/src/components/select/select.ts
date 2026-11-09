@@ -3,7 +3,6 @@ import {html, LitElement} from 'lit';
 import '../option/option.js';
 import '../icon/icon.js';
 import {property} from 'lit/decorators.js';
-import {HasLabel} from '@src/mixins/HasLabel';
 import {formControlStyles} from '@src/mixins/FormControl';
 import {NativeField} from '@src/mixins/NativeField';
 
@@ -24,7 +23,7 @@ import {NativeField} from '@src/mixins/NativeField';
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
  */
-export default class CraftSelect extends HasLabel(NativeField(LitElement)) {
+export default class CraftSelect extends NativeField(LitElement) {
   static override styles = [formControlStyles, styles];
 
   override get _inputNode(): HTMLSelectElement | undefined {

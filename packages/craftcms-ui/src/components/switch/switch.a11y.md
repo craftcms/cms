@@ -2,7 +2,7 @@
 
 Follows the WAI-ARIA APG [Switch](https://www.w3.org/WAI/ARIA/apg/patterns/switch/) pattern.
 
-Shares `HasLabel` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. The control itself is `craft-switch-button`; see `switch-button.a11y.md` for its role, state and visuals.
+Shares `FormControl` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. The control itself is `craft-switch-button`; see `switch-button.a11y.md` for its role, state and visuals.
 
 **Not for:**
 

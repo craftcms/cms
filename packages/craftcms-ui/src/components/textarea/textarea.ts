@@ -3,7 +3,6 @@ import {inputStyles} from '../../styles/form.styles.js';
 import {css, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import autosize from 'autosize';
-import {HasLabel} from '@src/mixins/HasLabel';
 import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
 import {NativeField} from '@src/mixins/NativeField';
 
@@ -20,7 +19,7 @@ import {NativeField} from '@src/mixins/NativeField';
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
  */
-export default class CraftTextarea extends HasLabel(NativeField(LitElement)) {
+export default class CraftTextarea extends NativeField(LitElement) {
   static override styles = [
     formControlStyles,
     css`

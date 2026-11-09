@@ -3,7 +3,6 @@ import {ChoiceGroup} from '@src/mixins/ChoiceGroup';
 import {formControlStyles} from '@src/mixins/FormControl';
 import {css, html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
-import {HasLabel} from '@src/mixins/HasLabel';
 
 export type RadioGroupAppearance =
   | 'buttons'
@@ -47,9 +46,10 @@ export type RadioGroupAppearance =
  * @fires {Event} input - When the user selects an option.
  * @fires {Event} change - When the user selects an option.
  */
-export default class CraftRadioGroup extends HasLabel(
-  ChoiceGroup(LitElement, {choice: 'craft-radio', multiple: false})
-) {
+export default class CraftRadioGroup extends ChoiceGroup(LitElement, {
+  choice: 'craft-radio',
+  multiple: false,
+}) {
   /** The value of the checked radio, or empty when none is. Setting it checks that radio. */
   declare value: string;
 

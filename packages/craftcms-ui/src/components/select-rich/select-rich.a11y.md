@@ -2,7 +2,7 @@
 
 Follows the WAI-ARIA APG [Select-Only Combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-select-only/) example, with the deviations recorded below. The field is the `role="combobox"` element. It keeps focus while the listbox is open and tracks the highlighted option with `aria-activedescendant`.
 
-Shares `HasLabel` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. The options are `craft-option` elements; see `option.a11y.md`.
+Shares `FormControl` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. The options are `craft-option` elements; see `option.a11y.md`.
 
 **Not for:**
 

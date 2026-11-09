@@ -2,7 +2,6 @@ import {css, LitElement} from 'lit';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import {ChoiceGroup} from '@src/mixins/ChoiceGroup';
 import {formControlStyles} from '@src/mixins/FormControl';
-import {HasLabel} from '@src/mixins/HasLabel';
 
 /**
  * @summary A group of checkboxes sharing one name, for a choice where any
@@ -22,9 +21,10 @@ import {HasLabel} from '@src/mixins/HasLabel';
  * @fires {Event} input - When the user checks or unchecks an option.
  * @fires {Event} change - When the user checks or unchecks an option.
  */
-export default class CraftCheckboxGroup extends HasLabel(
-  ChoiceGroup(LitElement, {choice: 'craft-checkbox', multiple: true})
-) {
+export default class CraftCheckboxGroup extends ChoiceGroup(LitElement, {
+  choice: 'craft-checkbox',
+  multiple: true,
+}) {
   /** The values of the checked checkboxes, in order. Setting it checks those and clears the rest. */
   declare value: string[];
 
