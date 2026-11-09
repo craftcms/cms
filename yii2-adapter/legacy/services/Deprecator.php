@@ -63,7 +63,13 @@ class Deprecator extends Component
      */
     public function log(string $key, string $message, ?string $file = null, ?int $line = null): void
     {
-        app(DeprecatorService::class)->log($key, $message, $file, $line);
+        $deprecator = app(DeprecatorService::class);
+
+        if ($file === null) {
+            [$file, $line] = $deprecator->findOrigin(debug_backtrace());
+        }
+
+        $deprecator->log($key, $message, $file, $line);
     }
 
     /**
