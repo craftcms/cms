@@ -744,6 +744,32 @@ describe('visual', () => {
     );
   });
 
+  it.each([false, true])(
+    'draws the error border around the field while invalid (multiple choice: %s)',
+    async (multipleChoice) => {
+      const {control, input, surface} = await fixture((c) => {
+        c.multipleChoice = multipleChoice;
+        c.invalid = true;
+      });
+      const border = multipleChoice
+        ? control.shadowRoot!.querySelector('.input-group__input')!
+        : input.closest('.form-control')!;
+      const danger = document.createElement('div');
+      danger.style.borderColor = 'var(--c-color-danger-border-loud)';
+      surface.append(danger);
+
+      expect(getComputedStyle(border).borderTopColor).toBe(
+        getComputedStyle(danger).borderTopColor
+      );
+
+      control.invalid = false;
+      await control.updateComplete;
+      expect(getComputedStyle(border).borderTopColor).not.toBe(
+        getComputedStyle(danger).borderTopColor
+      );
+    }
+  );
+
   it('keeps the textbox border and popup border in forced colors mode', async () => {
     await cdp().send('Emulation.setEmulatedMedia', {
       features: [{name: 'forced-colors', value: 'active'}],

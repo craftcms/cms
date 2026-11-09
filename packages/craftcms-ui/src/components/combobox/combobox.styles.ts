@@ -110,7 +110,7 @@ export default css`
     outline-offset: var(--c-focus-outline-offset);
   }
 
-  :host([multiple-choice][has-feedback-for='error']) .input-group__input {
+  :host([multiple-choice][invalid]) .input-group__input {
     border-color: var(--c-color-danger-border-loud);
   }
 
