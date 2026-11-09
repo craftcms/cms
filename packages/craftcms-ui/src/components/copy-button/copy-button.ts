@@ -1,6 +1,7 @@
 import {t} from '@src/utilities/translate';
 import {property, query, state} from 'lit/decorators.js';
 import {html, LitElement, nothing} from 'lit';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import type {CSSResultGroup} from 'lit';
 import styles from './copy-button.styles.js';
 import '../tooltip/tooltip.js';
@@ -64,6 +65,12 @@ export default class CraftCopyButton extends LitElement {
   tooltipLabel: string | null = null;
 
   /**
+   * Hides the tooltip until something is copied, for a button whose label
+   * already says what it does. The copy outcome is still shown in it.
+   */
+  @property({type: Boolean, attribute: 'hide-tooltip'}) hideTooltip = false;
+
+  /**
    * Name of the icon shown until the value is copied, replacing the default
    * copy icon. The success and error icons still replace it after a copy.
    */
@@ -74,6 +81,12 @@ export default class CraftCopyButton extends LitElement {
 
   /** The button's visual style. */
   @property({reflect: true}) variant: ButtonVariant = ButtonVariant.Plain;
+
+  /**
+   * Pulls the button out by the space around its content, as on
+   * `craft-button`, so its icon lines up with the text beside it.
+   */
+  @property({reflect: true}) flush?: string;
 
   /**
    * Copies `value` to the clipboard and shows the outcome. Resolves once the
@@ -119,7 +132,12 @@ export default class CraftCopyButton extends LitElement {
     clearTimeout(this.#restTimer);
     this.status = status;
     await this.updateComplete;
-    this.tooltipEl?.repositionOverlay();
+
+    if (this.hideTooltip) {
+      await this.tooltipEl?.show();
+    } else {
+      this.tooltipEl?.repositionOverlay();
+    }
 
     this.#restTimer = setTimeout(() => {
       this.status = 'rest';
@@ -159,6 +177,8 @@ export default class CraftCopyButton extends LitElement {
   get #tooltipText(): string {
     if (this.status === 'success') return t('Copied');
     if (this.status === 'error') return t('Copy failed');
+    // A hidden tooltip still describes the button, so it's left empty.
+    if (this.hideTooltip) return '';
     return this.tooltipLabel || t('Copy');
   }
 
@@ -177,13 +197,18 @@ export default class CraftCopyButton extends LitElement {
   override render() {
     // An icon-only button is left empty, so craft-button squares it off.
     return html`
-      <craft-tooltip for="${this.id}">${this.#tooltipText}</craft-tooltip>
+      <craft-tooltip
+        for="${this.id}"
+        trigger="${this.hideTooltip ? 'manual' : 'hover focus'}"
+        >${this.#tooltipText}</craft-tooltip
+      >
       <craft-button
         type="button"
         id="${this.id}"
         part="button"
         size="${this.size}"
         variant="${this.variant}"
+        flush=${ifDefined(this.flush)}
         icon="${this.status === 'success' || this.status === 'error'
           ? STATUS_ICONS[this.status]
           : (this.icon ?? STATUS_ICONS[this.status])}"

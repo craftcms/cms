@@ -135,7 +135,7 @@
                       <form method="post" action="{{ action.url }}">
                         {{ csrfInput() }}
                         {{ hiddenInput('key', action.key) }}
-                        <craft-button type="submit" variant="outline" icon="wrench">
+                        <craft-button type="submit" variant="plain" flush="inline-start" icon="wrench">
                           {{ 'Fix this'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
                         </craft-button>
                       </form>
@@ -145,19 +145,19 @@
                         {{ hiddenInput('return', 'utilities/yii2-loose-ends') }}
                         {{ hiddenInput("install[#{action.handle}]", "^#{action.version}") }}
                         {{ hiddenInput("packageNames[#{action.handle}]", action.packageName) }}
-                        <craft-button type="submit" variant="outline" icon="up">
+                        <craft-button type="submit" variant="plain" flush="inline-start" icon="up">
                           {{ 'Update to {version}'|t('yii2-adapter', {version: action.version}) }}<span class="sr-only"> {{ srTitle }}</span>
                         </craft-button>
                       </form>
                     {% elseif (action.type ?? null) == 'prompt' %}
-                      <craft-copy-button value="{{ action.prompt }}" variant="outline" size="medium" icon="robot">
+                      <craft-copy-button value="{{ action.prompt }}" variant="plain" flush="inline-start" size="medium" icon="robot" hide-tooltip>
                         {{ 'Copy prompt'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
                       </craft-copy-button>
                     {% endif %}
                     {% if item.resolveUrl %}
                       <form method="post" action="{{ item.resolveUrl }}">
                         {{ csrfInput() }}
-                        <craft-button type="submit" variant="outline" icon="circle-check">
+                        <craft-button type="submit" variant="plain"{% if not action %} flush="inline-start"{% endif %} icon="circle-check">
                           {{ 'Mark resolved'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
                         </craft-button>
                       </form>
