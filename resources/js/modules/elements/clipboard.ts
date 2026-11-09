@@ -1,11 +1,14 @@
 /**
  * The control panel's element clipboard.
  *
- * Copied elements are kept in localStorage, so they outlast the page and are
- * shared with other tabs, which are told about each change. The "copied" card
- * ({@link CopiedElementsNotification}) also fills in each element's chip data
- * (where an entry's `entryTypeId` comes from) and drops elements that no
- * longer exist; listeners hear about the elements once it has.
+ * Copied elements go on the system clipboard as their titles, and as links
+ * to their pages, as relation fields' values do (see `system-clipboard.ts`).
+ * The elements themselves are kept in localStorage, so they outlast the page
+ * and are shared with other tabs, which are told about each change. The
+ * "copied" card ({@link CopiedElementsNotification}) also fills in each
+ * element's chip data (where an entry's `entryTypeId` comes from) and drops
+ * elements that no longer exist; listeners hear about the elements once it
+ * has.
  */
 
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
@@ -13,6 +16,12 @@ import {isHttpError} from '@craftcms/ui/utilities/api/http';
 import {ConfigService} from '@craftcms/ui/services/Config';
 import {t} from '@craftcms/ui/utilities/translate';
 import {broadcast, onBroadcast} from '@/common/craft/broadcast';
+import {
+  claimClipboard,
+  isCopiedText,
+  onClipboardClaimed,
+  writeSystemClipboard,
+} from '@/common/craft/system-clipboard';
 import {elementTypeName} from '@/common/craft/element-types';
 import {uppercaseFirst} from '@/common/craft/strings';
 import {prefixedKey} from '@/common/composables/useStorage';
@@ -58,10 +67,22 @@ const listeners = new Set<CopiedElementsListener>();
 let card: CopiedElementsNotification | null = null;
 let installed = false;
 
-/** Puts elements on the clipboard, replacing what was there. */
+/**
+ * Puts elements on the clipboard, replacing what was there. Called while the
+ * user's click is being handled, which the system clipboard needs.
+ */
 export function copyElements(elements: CopiedElementInfo[]): void {
+  if (elements.length) {
+    claimClipboard('elements');
+  }
+
   write(elements);
   show(elements);
+
+  if (card) {
+    writeSystemClipboard(card.loadedFormats);
+  }
+
   broadcast({event: BROADCAST_EVENT});
 }
 
@@ -72,6 +93,16 @@ export function clearCopiedElements(): void {
 /** The copied elements, once the card has filled them in. */
 export function getCopiedElements(): CopiedElementInfo[] {
   return card?.loaded ? card.elementInfo : [];
+}
+
+/**
+ * Whether text pasted from the system clipboard is what the copied elements
+ * were copied as, once the card has loaded them.
+ */
+export function isCopiedElementsText(text: string): boolean {
+  const formats = card?.loaded ? card.clipboardFormats : null;
+
+  return formats !== null && isCopiedText(formats.text, text);
 }
 
 /**
@@ -149,6 +180,11 @@ export function installClipboard(): void {
   installed = true;
   installLegacyShim();
   onBroadcast(BROADCAST_EVENT, () => show(read()));
+  onClipboardClaimed((owner) => {
+    if (owner !== 'elements' && read().length) {
+      clearCopiedElements();
+    }
+  });
 
   if (ConfigService.getInstance().get('userId')) {
     const elements = read();

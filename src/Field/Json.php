@@ -95,6 +95,8 @@ class Json extends Field implements MergeableFieldInterface
         return Textarea::make($context->path)
             ->rows(12)
             ->monospace()
+            // Only JSON is pasted in, as copied from another JSON field.
+            ->valueScope('json')
             ->value($value);
     }
 

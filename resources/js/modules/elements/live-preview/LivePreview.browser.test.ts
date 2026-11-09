@@ -30,7 +30,6 @@ const payload: ElementPreview = {
   paramValue: 'param',
   siteTokenParam: 'siteToken',
   siteToken: null,
-  iframeResizerOptions: false,
 };
 
 let app: App | undefined;

@@ -8,7 +8,6 @@ use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\DatepickerI18nAsset;
 use CraftCms\Cms\View\LegacyAssets\GarnishAsset;
-use CraftCms\Cms\View\LegacyAssets\IframeResizerAsset;
 use CraftCms\Cms\View\LegacyAssets\JqueryPaymentAsset;
 use CraftCms\Cms\View\LegacyAssets\JqueryUiAsset;
 use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
@@ -35,7 +34,6 @@ class CraftJsAsset implements LegacyAssetInterface
         DatepickerI18nAsset::class,
         PicturefillAsset::class,
         SelectizeAsset::class,
-        IframeResizerAsset::class,
     ];
 
     public function register(HtmlStack $htmlStack): void

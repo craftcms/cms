@@ -288,6 +288,9 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
             ->thumbSize($this->thumbSize)
             ->maintainHierarchy($this->maintainHierarchy)
             ->branchLimit($this->branchLimit)
+            // Which elements can be selected can depend on the field’s settings, such as its selectable element
+            // condition, so values are only copied between instances of this field.
+            ->valueScope($this->uid ?? static::class)
             ->value($value);
     }
 

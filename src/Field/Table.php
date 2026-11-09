@@ -132,9 +132,21 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
             ->includeRowId($this->staticRows)
             ->minRows($this->minRows)
             ->maxRows($this->maxRows)
+            // Static rows are this field's own, and links to elements are limited to the elements its Link
+            // columns can select, so its values only fit it.
+            ->valueScope($this->staticRows || $this->linksToElements($columns) ? ($this->uid ?? static::class) : null)
             ->value($value);
 
         return $missing ? $control->mode(ControlMode::ReadOnly) : $control;
+    }
+
+    /** @param array<string, array<string, mixed>> $columns */
+    private function linksToElements(array $columns): bool
+    {
+        return array_any($columns, fn (array $column): bool => array_any(
+            $column['control']->props()['types'] ?? [],
+            fn (mixed $type): bool => ($type['kind'] ?? null) === 'element',
+        ));
     }
 
     /**

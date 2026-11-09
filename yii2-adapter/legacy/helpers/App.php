@@ -31,6 +31,7 @@ use craft\web\View;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Email\Data\EmailSettings;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
@@ -770,29 +771,22 @@ class App
             );
         }
 
-        $fromEmail = data_get(config('mail'), 'from.address');
-        $fromName = data_get(config('mail'), 'from.name');
-        $replyTo = data_get(config('mail'), 'reply_to.address');
-
-        if (!is_string($fromEmail) || $fromEmail === '') {
-            $fromEmail = Env::get('FROM_EMAIL_ADDRESS');
-        }
-
-        if (!is_string($fromName) || $fromName === '') {
-            $fromName = Env::get('FROM_EMAIL_NAME');
-        }
-
-        if (!is_string($replyTo) || $replyTo === '') {
-            $replyTo = null;
-        }
+        $emailSettings = $settings
+            ? new EmailSettings(
+                fromEmail: $settings->fromEmail,
+                fromName: $settings->fromName,
+                replyToEmail: $settings->replyToEmail,
+            )
+            : EmailSettings::fromProjectConfig();
+        $resolved = $emailSettings->resolveForSite();
 
         return [
             'class' => Mailer::class,
             'messageClass' => Message::class,
-            'from' => ($fromEmail && is_string($fromEmail)) ? [
-                $fromEmail => is_string($fromName) ? $fromName : null,
+            'from' => $resolved->fromEmail ? [
+                $resolved->fromEmail => $resolved->fromName,
             ] : [],
-            'replyTo' => $replyTo,
+            'replyTo' => $resolved->replyToEmail ?: null,
             'template' => null,
             'siteOverrides' => [],
             'transport' => app('mail.manager')->mailer()->getSymfonyTransport(),

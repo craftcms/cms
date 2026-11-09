@@ -13,6 +13,7 @@ import {configureIcons} from './icons.js';
 import {installSessionTimeout} from '@/modules/auth/session-timeout';
 import {installClipboard} from '@/modules/elements/clipboard';
 import {installElementInstanceRefresh} from '@/modules/elements/element-instances';
+import {installFieldValueClipboard} from '@/modules/ui/copiedFieldValue';
 import {installAnnouncer} from '@/common/announcer';
 import {observeFieldToggles} from '@/modules/field-toggle/observe';
 import {answerElevatedSessionRequests} from '@/modules/auth/elevated-session';
@@ -147,6 +148,7 @@ const Cp = {
     installAnnouncer();
     installClipboard();
     installElementInstanceRefresh();
+    installFieldValueClipboard();
     observeFieldToggles();
     answerElevatedSessionRequests();
     relayBroadcastEvents();

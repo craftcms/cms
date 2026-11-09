@@ -27,6 +27,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving;
 use CraftCms\Cms\Gql\AssetTransformContext;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
@@ -65,6 +66,7 @@ use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Database\Migrator;
 use CraftCms\Yii2Adapter\Element\LegacyElementEditorScreen;
 use CraftCms\Yii2Adapter\Field\MatrixBlockHtml;
+use CraftCms\Yii2Adapter\FieldLayout\LegacyLayoutElementHtml;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Gql\LegacyGql;
 use CraftCms\Yii2Adapter\Gql\LegacyGqlArguments;
@@ -101,10 +103,14 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Override;
 use PDOException;
+use ReflectionMethod;
+use ReflectionObject;
+use ReflectionProperty;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 use yii\base\Application as YiiApplication;
+use yii\base\Behavior;
 use yii\base\ExitException;
 use yii\web\HttpException as YiiHttpException;
 use yii\web\NotFoundHttpException as YiiNotFoundHttpException;
@@ -343,6 +349,7 @@ class Yii2ServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(ElementEditorPayloadResolving::class, LegacyElementEditorScreen::class);
+        Event::listen(FieldLayoutElementControlResolving::class, LegacyLayoutElementHtml::class);
 
         $kernel = $this->app->make(HttpKernel::class);
         $middleware = array_values(array_filter(
@@ -440,7 +447,36 @@ class Yii2ServiceProvider extends ServiceProvider
             foreach (array_keys($legacyVariable->getComponents()) as $name) {
                 CraftVariable::macro($name, fn() => $legacyVariable->get($name));
             }
+
+            foreach ($legacyVariable->getBehaviors() as $behavior) {
+                $this->registerCraftVariableBehavior($behavior);
+            }
         });
+    }
+
+    /**
+     * Exposes the public properties and methods of a behavior attached to the legacy `craft` variable,
+     * such as `craft.commerce` or `craft.shopifyProducts()`.
+     */
+    private function registerCraftVariableBehavior(Behavior $behavior): void
+    {
+        $reflection = new ReflectionObject($behavior);
+
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            $name = $property->getName();
+
+            if (!$property->isStatic() && !property_exists(Behavior::class, $name)) {
+                CraftVariable::macro($name, fn() => $behavior->$name);
+            }
+        }
+
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            $name = $method->getName();
+
+            if (!$method->isStatic() && !method_exists(Behavior::class, $name)) {
+                CraftVariable::macro($name, fn(mixed ...$args) => $behavior->$name(...$args));
+            }
+        }
     }
 
     /**

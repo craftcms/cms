@@ -70,6 +70,7 @@ export type UiControlPayload<Props extends object = UiProperties> = Omit<
   | 'readable'
   | 'writable'
   | 'valueProps'
+  | 'valueScope'
 > & {
   props: Props;
   uis?: NestedUiPayload[];
@@ -90,6 +91,11 @@ export type UiControlPayload<Props extends object = UiProperties> = Omit<
   writable?: boolean;
   /** The props the control draws its value with, read along with it. Shipped only when there are any. */
   valueProps?: string[];
+  /**
+   * Values are only copied between controls with the same value scope.
+   * Shipped only when the control has one.
+   */
+  valueScope?: string;
 };
 
 export type UiNodePayload<

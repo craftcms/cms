@@ -149,6 +149,7 @@
 - Element revision listings now use the control panel’s standard table, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Edit pages for elements without statuses, such as assets, no longer show a status badge or “Status” metadata, except for drafts. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Element edit pages’ “View” button is now on the right side of the toolbar, beside the action menu.
+- Removed the `useIframeResizer` and `previewIframeResizerOptions` config settings. Live Preview no longer uses iFrame Resizer. The previewed page always scrolls within its iframe.
 - Activity timeline day headings now show the date as a badge, and the Workflow details panel’s review panes are no longer outlined. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Details for the issues that block an element’s deletion now list the related elements as chips, rather than an embedded element index.
 - Comments in the Activity and Workflow details panels, and Ask AI’s messages and replies, are now styled the same, with syntax-highlighted code blocks on a dark background, and inline code in red. ([#20246](https://github.com/craftcms/cms/pull/20246))
@@ -301,6 +302,7 @@
 - Collapsed Matrix blocks are now remembered per site, like their enabled status. Blocks that were already collapsed stay collapsed on every site until they’re expanded there. ([#20119](https://github.com/craftcms/cms/pull/20119))
 - Double-clicking an element in a relational field’s card or thumbnail view now opens its slideout, as it does in list views.
 - Relational fields now have a “Paste” button when the clipboard holds elements one of their sources would list. Pasting relates the copied elements and clears the clipboard.
+- Copied elements are now put on the system clipboard as their titles, and links to their URLs in apps that take rich text, like copied relational field values. The “Copied” notification now matches copied field values’, with the elements’ chips side by side, and copying elements replaces a copied field value, and the reverse. Pressing <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>V</kbd> within a relational or nested element field that can take the copied elements pastes them, as long as the clipboard still holds what was copied. ([#20449](https://github.com/craftcms/cms/pull/20449))
 - Relational fields now have a “Thumb Size” setting, like element index View menus, with “Small”, “Medium”, and “Large” options for the List and Inline list view modes, plus “XL” and “2XL” for the Thumbs view mode. ([#20257](https://github.com/craftcms/cms/pull/20257))
 - Table fields now have a “Link” column type, with the same settings as Link fields. Link cells return `CraftCms\Cms\Field\Data\LinkData` objects, and Table fields now track the elements they link to. ([#16009](https://github.com/craftcms/cms/discussions/16009), [#19998](https://github.com/craftcms/cms/pull/19998))
 - Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
@@ -324,6 +326,7 @@
 
 - Relational fields’ elements are no longer shown on white tiles, unless the element has a color of its own, so they take the colors around them.
 - Removed the “Copy value from site” field action. Field values can be copied between sites from the Compare screen instead. ([#20384](https://github.com/craftcms/cms/pull/20384))
+- Fields whose values can be copied between versions on the Compare screen, such as text, number, date, option, relation, Link, Table, and Color fields, now have a “Copy value” action while they have a value, which copies the field’s value to the clipboard and shows a preview of it, such as the related elements’ chips, the table’s first rows, the selected options with their icons and colors, a color’s swatch, the icon, or color-coded JSON and Markdown. Other apps get it as text, with tables as rows that spreadsheets split into cells, links as their URLs (linked from their labels in apps that take rich text), amounts with their currency, and dates as the user’s locale writes them. Fields that can take the copied value then have a “Paste value” action, which fills them with it. Values are only pasted into fields that could have been given them by hand, such as text within the field’s length limit and without line breaks for single-line fields, or options the field has, and relations only into the same field, such as on another entry. Pressing <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>V</kbd> within a field that takes the value, outside its text inputs, pastes it too, as long as the clipboard still holds what was copied. ([#20449](https://github.com/craftcms/cms/pull/20449))
 ### Color Fields
 - Color fields now support translucent colors. Authors can choose translucent palette colors, and set custom colors’ opacity when the field allows it, via the color picker in browsers that support it or by entering an 8-digit hex value. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
 - Color fields’ palette colors can now have an alpha channel, by entering an 8-digit hex value or via the color picker in browsers that support it. ([#8983](https://github.com/craftcms/cms/discussions/8983), [#20274](https://github.com/craftcms/cms/pull/20274))
@@ -500,6 +503,7 @@
 ### UI Components
 - Added the `cp-radio` and `cp-checkbox` classes, which draw native radio buttons and checkboxes like `<craft-radio>` and `<craft-checkbox>` draw theirs.
 - Added the `craft:ui-value-change` DOM event and `Cp.$ui.active()` for plugins to observe canonical values from Craft 6 UI-rendered fields. ([#19920](https://github.com/craftcms/cms/discussions/19920))
+- Added `CraftCms\Cms\Ui\Controls\Control::valueScope()`, and `Cp.$ui.registerValueAcceptor()` and `Cp.$ui.registerValuePreview()`, which let UI controls limit which copied field values they take, and draw the previews of values copied from them. ([#20449](https://github.com/craftcms/cms/pull/20449))
 - Added `CraftCms\Cms\Asset\Elements\Asset::getCardCoverUrl()`. ([#20148](https://github.com/craftcms/cms/pull/20148))
 - Added the `cover-src` and `luminance` attributes to `craft-card`, which make it a cover card. ([#20148](https://github.com/craftcms/cms/pull/20148))
 - Added `CraftCms\Cms\Cp\Enums\Theme::resolveFor()`. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -564,6 +568,8 @@
 - Added the `thumb-size` attribute to `<craft-chip>`, which sizes its thumbnail independently of the chip (`sm`, `md`, `lg`, `xl`, or `2xl`). Chips without a `size` now take the size that suits their `thumb-size`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Added the `prefix-placement` attribute to `<craft-chip>`. Set to `block-start`, a chip stacks its thumbnail or icon above its label, with its checkbox and suffix along the top. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Added the `select-disabled` attribute to `<craft-chip>`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
+- Added the `xsmall` size and the `rounded` attribute to `<craft-chip>`. Extra-small chips are as tall as labeled badges, and rounded chips have fully rounded ends, like badges. ([#20449](https://github.com/craftcms/cms/pull/20449))
+- Added the `--c-badge-icon-color` CSS custom property to `<craft-badge>`. Icons in neutral badges are now white in the dark theme and in black badges. ([#20449](https://github.com/craftcms/cms/pull/20449))
 - Added `CraftCms\Cms\Cp\Enums\ChipThumbSize` and `CraftCms\Cms\Cp\Html\ElementHtml::CHIP_SIZE_MEDIUM`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Added the `thumbSize` config option to `CraftCms\Cms\Cp\Html\ElementHtml::chipHtml()` and `elementChipHtml()`. ([#20083](https://github.com/craftcms/cms/discussions/20083), [#20124](https://github.com/craftcms/cms/pull/20124))
 - Added `CraftCms\Cms\Ui\Nodes\Group::outlet()`, which renders a group in a named outlet elsewhere in the form when the form is rendered by Vue, such as the field layout designer’s Appearance tab (`field-layout-designer.appearance`). ([#20001](https://github.com/craftcms/cms/pull/20001))
@@ -691,6 +697,7 @@
 - Added `CraftCms\Cms\Translation\Locale::languageId()`.
 - Added `CraftCms\Cms\Plugin\Plugins::hasPluginIcon()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Added `CraftCms\Cms\Cp\Data\ElementCardParts` and `CraftCms\Cms\Cp\Html\ElementHtml::elementCardPartsHtml()`. ([#20335](https://github.com/craftcms/cms/pull/20335))
+- Added `CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving`, which is fired when a field layout field has no UI control of its own, so a listener can provide one. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Added `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager::config()`, which returns the `Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig` for a sanitizer defined as an array, so it can be extended. ([#20328](https://github.com/craftcms/cms/pull/20328))
 - Renamed `CraftCms\Cms\Cp\Events\ElementCardHtmlResolving` to `ElementCardPartsResolving`. It’s now fired for every element card, including cards rendered by the card component’s slots, such as those in Matrix fields, relation fields, element indexes, and CKEditor fields, and its `$html` property has been replaced by `$parts`, which listeners can modify to change the card wherever it’s shown. ([#20335](https://github.com/craftcms/cms/pull/20335))
 - `craft\helpers\Cp::EVENT_DEFINE_ELEMENT_CARD_HTML` handlers now apply to every element card when the Yii adapter is installed, as they did in Craft 5. Changes they make to the card’s HTML are split back into the card’s parts. ([#20335](https://github.com/craftcms/cms/pull/20335))
@@ -698,7 +705,8 @@
 - `CraftCms\Cms\Element\Element::attributes()` no longer includes elements’ internal state, such as `forceSave`, `siteSettingsId`, and `trackDraftChanges`, so it’s left out of MCP tools’ results, element responses, and exports. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - `craft\web\assets\pluginstore\PluginStoreAsset` is now deprecated and does nothing.
-- Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
+- The control panel no longer loads iFrame Resizer. `craft\web\assets\iframeresizer\IframeResizerAsset` and `craft\web\assets\iframeresizer\ContentWindowAsset` are now deprecated and don’t register it, so plugins that rely on it should bundle it themselves. `@craftcms/webpack` no longer treats `iframe-resizer` as an external.
+- Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact. Their `{% js %}` code and jQuery ready callbacks, such as `$(function () {…})`, run once the screen is in the page.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - `CraftCms\Cms\Element\Element::searchableAttributes()` is now `final`. `defineSearchableAttributes()` should be overridden instead, including by element types extending `craft\base\Element` through the Yii adapter.
@@ -719,6 +727,7 @@
 - Messages queued with `session()->broadcastToJs()` now reach every open control panel tab, sent with the next page after a redirect, or in an `X-Craft-Broadcast` header on action responses. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - `Craft.refreshElementInstances()` now refreshes `craft-chip` and `craft-card` instances too. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - Removed the `plugin-store/craft-data` and `plugin-store/save-plugin-license-keys` actions.
+- Removed `Craft.previewIframeResizerOptions`.
 - Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `Craft.AuthManager` and `Craft.cp.authManager`, which no longer had a remaining session time to act on. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Removed the `users/login-modal` action and the `_special/login-modal` template. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -761,6 +770,11 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where custom field params were ignored on asset queries for subclasses of `Asset`, and on category and tag queries without a group, such as `craft\elements\Asset::find()->myField('value')` with the Yii adapter. ([#20513](https://github.com/craftcms/cms/pull/20513))
+- Fixed a validation error when saving Color fields created with `presets` or `defaultColor`. ([#20513](https://github.com/craftcms/cms/pull/20513))
+- Fixed a bug where `{% paginate %}` and `@craftPaginate` ignored queries’ `limit()` param, showing 15 results per page, and requests for a page past the last one showed no results. Queries’ `limit()` param sets the page size again, defaulting to 100, and out-of-range pages show the last page. ([#20511](https://github.com/craftcms/cms/pull/20511))
+- Fixed an error during application boot when the `aliases` general config setting contained a `null` path. Null paths now remove existing aliases. ([#20510](https://github.com/craftcms/cms/pull/20510))
+- Fixed a bug where field layout elements from plugins that only implement Craft 5’s `inputHtml()` or `formHtml()`, such as Shopify’s Variants, Options, Media, and Metafields elements, weren’t shown in element edit screens, with the Yii adapter installed. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Fixed a bug where class-level Yii element event handlers attached to `craft\base\Element` or `craft\base\ElementInterface`, such as `afterSave` and `afterDelete` handlers, weren’t called, and handlers attached to native element classes were called several times. ([#20494](https://github.com/craftcms/cms/pull/20494))
 - Fixed a bug where `EVENT_AFTER_REQUEST` handlers and `Craft::$app->onAfterRequest()` callbacks weren’t called after console commands, and `onAfterRequest()` callbacks added by queued jobs weren’t called. They’re now called once the job that added them finishes. ([#20494](https://github.com/craftcms/cms/pull/20494))
 - Fixed a bug where autosuggest fields saved an empty value when the typed text matched a suggestion without choosing it, such as an email address matching an environment variable’s value. ([#20476](https://github.com/craftcms/cms/pull/20476))
@@ -1258,6 +1272,10 @@
 - Fixed a bug where values cached through the Yii adapter with a Craft 6 cache dependency, such as element cache info, were never read back, so legacy plugins like Element API never got a cache hit. ([#20481](https://github.com/craftcms/cms/pull/20481))
 - Fixed a bug where headers and cache settings set with `CraftCms\Cms\Support\Facades\ResponseHeaders`, such as with the `{% header %}` and `{% expires %}` tags, weren’t applied to JSON, redirect, and file responses. ([#20482](https://github.com/craftcms/cms/pull/20482))
 - Fixed a bug where `Craft::$app->mailer` sent email through Laravel’s default mailer rather than the mailer chosen in Settings → Email, with the Yii adapter installed. ([#20488](https://github.com/craftcms/cms/pull/20488))
+- Fixed a bug where Yii adapter plugin commands with nested routes, such as `php craft feed-me/feeds/queue`, weren’t found when called with slashes. ([#20507](https://github.com/craftcms/cms/pull/20507))
+- Fixed an error that occurred when a Yii adapter plugin called `getAttributes()` on a native element. ([#20507](https://github.com/craftcms/cms/pull/20507))
+- Fixed an error that occurred when a Yii adapter plugin listed tag groups or global sets on a project without tags or global sets. ([#20507](https://github.com/craftcms/cms/pull/20507))
+- Fixed a bug where Money fields’ inputs held their minimum and maximum amounts in the currency’s minor units, such as cents. ([#20449](https://github.com/craftcms/cms/pull/20449))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

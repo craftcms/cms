@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -548,7 +549,9 @@ class Globals extends Component
     private function _allSets(int $siteId): MemoizableArray
     {
         if (!isset($this->_allGlobalSets[$siteId])) {
-            $this->_allGlobalSets[$siteId] = new MemoizableArray(GlobalSet::find()->siteId($siteId)->all());
+            $this->_allGlobalSets[$siteId] = new MemoizableArray(
+                DeprecatedConcepts::supportsGlobalSets() ? GlobalSet::find()->siteId($siteId)->all() : [],
+            );
         }
 
         return $this->_allGlobalSets[$siteId];

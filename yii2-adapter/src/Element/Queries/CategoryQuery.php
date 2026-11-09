@@ -209,6 +209,6 @@ class CategoryQuery extends ElementQuery
             return collect($fieldLayouts);
         }
 
-        return collect();
+        return parent::fieldLayouts();
     }
 }

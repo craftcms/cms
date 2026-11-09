@@ -207,11 +207,15 @@ kbd {
 /*
   A file or folder icon standing in for a chip's thumbnail is drawn at 24px,
   which suits a small chip. In larger chips it grows with the thumbnail, which
-  the chip's thumbnail slot sizes through --c-thumbnail-size. The icon's own
-  size utility reads --c-thumb-icon-size, so the size set here wins over it.
+  the chip's thumbnail slot sizes through --c-thumbnail-size, and in smaller
+  ones it shrinks to fit it. The icon's own size utility reads
+  --c-thumb-icon-size, so the size set here wins over it.
 */
 craft-chip > [slot='thumbnail'] {
-  --c-thumb-icon-size: max(24px, var(--c-thumbnail-size) * 0.6);
+  --c-thumb-icon-size: min(
+    var(--c-thumbnail-size),
+    max(24px, var(--c-thumbnail-size) * 0.6)
+  );
 }
 
 craft-chip > [slot='thumbnail'] > .thumb svg {

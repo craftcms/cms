@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Facades\I18N;
 use Money\Currency;
@@ -124,3 +125,16 @@ test('conditions compare exact amounts in the currency units', function (?string
     ['100', '=', '100', '', true, 'JPY'],
     ['1001', '=', '1.001', '', true, 'KWD'],
 ]);
+
+test('the UI control takes its bounds in major units', function () {
+    $field = new Money([
+        'currency' => 'USD',
+        'min' => ['locale' => 'en', 'value' => '10'],
+        'max' => ['locale' => 'en', 'value' => '99.50'],
+    ]);
+
+    $props = $field->uiControl(new FieldContext('price'))->props();
+
+    expect($props['min'])->toBe(10.0)
+        ->and($props['max'])->toBe(99.5);
+});

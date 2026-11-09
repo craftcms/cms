@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import {useEventListener} from '@vueuse/core';
   import {computed, inject, ref, shallowRef, watch} from 'vue';
   import {useSelectable} from '@/common/composables/useSelectable';
@@ -75,6 +76,11 @@
     controlPath: controlContext.path,
     container,
     markModified: controlContext.markModified,
+  });
+
+  usePasteElementsShortcut(container, {
+    canPaste: () => operations.canPaste.value,
+    paste: () => operations.paste(),
   });
   watch(cards, () => selection.prune());
 

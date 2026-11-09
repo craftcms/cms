@@ -107,5 +107,4 @@ allowBuilds:
   contextify: false
   core-js: false
   core-js-pure: false
-  iframe-resizer: false
   swiper: false
