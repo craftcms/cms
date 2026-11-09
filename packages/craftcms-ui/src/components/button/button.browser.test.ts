@@ -982,6 +982,16 @@ describe('in a form', () => {
       '<button type="submit" form="f">Draft</button><form id="f"><input name="a"><input name="b"><craft-button type="submit">Save</craft-button></form>',
       'button',
     ],
+    [
+      'its submit button before a native one in a disabled fieldset',
+      '<form id="f"><input name="a"><input name="b"><craft-button type="submit">Save</craft-button><fieldset disabled><button type="submit">Draft</button></fieldset></form>',
+      'craft-button',
+    ],
+    [
+      'a native submit button after the form, before its own',
+      '<form id="f"><input name="a"><input name="b"></form><button type="submit" form="f">Draft</button><craft-button type="submit" form="f">Save</craft-button>',
+      'button',
+    ],
   ])(
     'lets Enter in a field click %s, as the first submit button',
     async (_, markup, expected) => {

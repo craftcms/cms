@@ -232,9 +232,11 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
    * is disabled, as a disabled default button blocks implicit submission.
    *
    * Enter clicks the form's first submit button, so the submitter goes right
-   * before the first native one that follows that `craft-button`, or at the
-   * end of the form when none does. It isn't put beside the `craft-button`
-   * itself, which may sit in a `craft-button-group` that lays out every child.
+   * before the first native one that follows that `craft-button`, outside any
+   * fieldset that could disable that one alone, or at the end of the form when
+   * none follows. It's taken out when a native one comes first instead. It
+   * isn't put beside the `craft-button` itself, which may sit in a
+   * `craft-button-group` that lays out every child.
    */
   static #updateImplicitSubmitter(
     form: HTMLFormElement,
@@ -257,22 +259,35 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
 
     if (
       native &&
-      first.compareDocumentPosition(native) & Node.DOCUMENT_POSITION_FOLLOWING
+      !(
+        first.compareDocumentPosition(native) & Node.DOCUMENT_POSITION_FOLLOWING
+      )
     ) {
-      const id = native.getAttribute('form');
-      if (id === null) {
-        entry.button.removeAttribute('form');
-      } else {
-        entry.button.setAttribute('form', id);
+      entry.button.remove();
+      return;
+    }
+
+    let anchor: Element | undefined = native;
+    for (
+      let fieldset = native?.parentElement?.closest('fieldset');
+      fieldset && !fieldset.contains(first);
+      fieldset = fieldset.parentElement?.closest('fieldset')
+    ) {
+      anchor = fieldset;
+    }
+
+    if (anchor) {
+      if (entry.button.nextElementSibling !== anchor) {
+        anchor.before(entry.button);
       }
-      if (entry.button.nextElementSibling !== native) {
-        native.before(entry.button);
-      }
-    } else {
+    } else if (form.lastElementChild !== entry.button) {
+      form.append(entry.button);
+    }
+
+    if (form.contains(entry.button)) {
       entry.button.removeAttribute('form');
-      if (form.lastElementChild !== entry.button) {
-        form.append(entry.button);
-      }
+    } else {
+      entry.button.setAttribute('form', form.id);
     }
   }
 
