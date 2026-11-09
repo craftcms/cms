@@ -405,3 +405,57 @@ it('stays hidden when shown while for names no element', async () => {
     tooltip.querySelector<HTMLElement>('[slot="content"]')!.checkVisibility()
   ).toBe(false);
 });
+
+it('stays closed when before-opened is canceled, on hover or show()', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {invoker, tooltip} = await render();
+  tooltip.addEventListener('before-opened', (event) => event.preventDefault());
+
+  await userEvent.hover(invoker);
+  await after(300);
+
+  expect(tooltip.opened).toBe(false);
+
+  await tooltip.show();
+  await after(50);
+
+  expect(tooltip.opened).toBe(false);
+  expect(
+    tooltip.querySelector<HTMLElement>('[slot="content"]')!.checkVisibility()
+  ).toBe(false);
+});
+
+it('stays open when before-closed is canceled, on hover out, Escape or hide()', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {invoker, elsewhere, tooltip} = await render();
+  await tooltip.show();
+  let requests = 0;
+  tooltip.addEventListener('before-closed', (event) => {
+    requests++;
+    event.preventDefault();
+  });
+
+  await userEvent.hover(invoker);
+  await after(300);
+  await userEvent.hover(elsewhere);
+  await after(100);
+
+  expect(tooltip.opened).toBe(true);
+
+  invoker.dispatchEvent(
+    new KeyboardEvent('keyup', {key: 'Escape', bubbles: true})
+  );
+  await tooltip.updateComplete;
+
+  expect(tooltip.opened).toBe(true);
+
+  await tooltip.hide();
+
+  expect(tooltip.opened).toBe(true);
+  expect(requests).toBe(3);
+
+  tooltip.opened = false;
+  await tooltip.updateComplete;
+
+  expect(requests).toBe(3);
+});
