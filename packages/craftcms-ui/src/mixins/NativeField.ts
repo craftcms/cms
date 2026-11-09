@@ -55,7 +55,10 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
     /** Whether the control has focus. */
     @property({type: Boolean, reflect: true}) focused = false;
 
-    /** Held until the control exists. */
+    /**
+     * Held until the host is connected with its control, since a `<select>`
+     * rendered in the same template may not have its options yet.
+     */
     #pendingValue?: string;
 
     /** Whether host properties have been pushed onto the control yet. */
@@ -68,14 +71,18 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
     /** The control's value. */
     @property({attribute: false})
     get value(): string {
-      return this._inputNode?.value ?? this.#pendingValue ?? '';
+      const control = this._inputNode;
+
+      return control && this.isConnected
+        ? control.value
+        : (this.#pendingValue ?? control?.value ?? '');
     }
 
     set value(value: string) {
       const old = this.value;
       const control = this._inputNode;
 
-      if (!control) {
+      if (!control || !this.isConnected) {
         this.#pendingValue = value;
       } else if (control.value !== value) {
         this.#setValueKeepingCaret(control, value);

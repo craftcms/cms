@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {html, render} from 'lit';
 
 import './select.js';
 import type CraftSelect from './select.js';
@@ -64,6 +65,25 @@ describe('craft-select', () => {
     native(element).dispatchEvent(new Event('change', {bubbles: true}));
     await element.updateComplete;
 
+    expect(element.value).toBe('en-US');
+  });
+
+  it('selects a value set before its options are rendered', async () => {
+    const languages = ['fr-FR', 'en-US'];
+    render(
+      html`<craft-select .value=${'en-US'}>
+        <select slot="input">
+          ${languages.map(
+            (language) => html`<option value=${language}>${language}</option>`
+          )}
+        </select>
+      </craft-select>`,
+      document.body
+    );
+    const element = document.querySelector('craft-select')!;
+    await element.updateComplete;
+
+    expect(native(element).value).toBe('en-US');
     expect(element.value).toBe('en-US');
   });
 
