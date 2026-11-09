@@ -227,8 +227,12 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
       return;
     }
 
-    this.#filtering = false;
+    // Typed text that stays in the textbox goes on filtering the options.
+    const text = this._inputNode?.value;
     this.#syncTextbox();
+    if (this._inputNode?.value !== text) {
+      this.#filtering = false;
+    }
     this.requestUpdate('value', old);
   }
 

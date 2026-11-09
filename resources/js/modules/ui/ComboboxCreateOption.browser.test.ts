@@ -106,7 +106,7 @@ it('opens the create screen when its option is selected by keyboard', async () =
 });
 
 it('doesn’t open the create screen when its label is typed', async () => {
-  const {combobox} = await fixture();
+  const {combobox, selection, changes} = await fixture();
   combobox.querySelector('input')!.focus();
   await userEvent.keyboard('{Control>}a{/Control}');
   await userEvent.keyboard('Create category');
@@ -114,6 +114,22 @@ it('doesn’t open the create screen when its label is typed', async () => {
   expect(slideout.openSlideout).not.toHaveBeenCalled();
   expect(combobox.querySelector('input')!.value).toBe('Create category');
   await expect.element(page.getByRole('listbox')).toBeVisible();
+  await combobox.updateComplete;
+  expect(
+    [...combobox.querySelectorAll('craft-option')].map((option) =>
+      option.textContent?.trim()
+    )
+  ).toEqual(['Create category']);
+
+  await userEvent.keyboard('{Tab}');
+  await vi.waitFor(() => expect(combobox.opened).toBe(false));
+  expect(selection.value).toBe('Create category');
+  expect(changes.mock.calls.map(([value]) => value)).not.toContain('__add__');
+  expect(new FormData(container as HTMLFormElement).getAll('category')).toEqual(
+    ['Create category']
+  );
+  expect(combobox.querySelector('input')!.value).toBe('Create category');
+  expect(slideout.openSlideout).not.toHaveBeenCalled();
 });
 
 it.each([false, true])(

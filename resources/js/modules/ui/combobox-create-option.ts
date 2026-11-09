@@ -58,7 +58,7 @@ function insertBefore(
  * Opens the slideout for a "create" option when one was just picked, and puts
  * the previous value back. Call it from the combobox's `input` listener; the
  * value is restored before the combobox commits, so no `change` follows.
- * Typing the option's label doesn't pick it.
+ * Typing the option's label doesn't pick it: the typed text stays the value.
  */
 export function handleCreateOption(
   event: Event,
@@ -71,6 +71,12 @@ export function handleCreateOption(
     !(event instanceof InputEvent) ||
     event.inputType !== 'insertReplacementText'
   ) {
+    if (
+      typeof combobox.value === 'string' &&
+      createOption(options, combobox.value)
+    ) {
+      combobox.value = combobox.querySelector('input')?.value ?? '';
+    }
     return false;
   }
 
