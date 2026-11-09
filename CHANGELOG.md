@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Removed `getTriggerHtml()` and `getTriggerId()` from `CraftCms\Cms\Element\Contracts\ElementActionInterface` and `CraftCms\Cms\Element\Actions\ElementAction`. The legacy element index’s triggers for the built-in element actions are now provided by the Yii2 adapter, and `craft\base\ElementAction` still has both methods, for element actions that render their own trigger.
 - Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
 - Fixed a bug where asset indexing included the default asset transformer’s volume directories. ([#20589](https://github.com/craftcms/cms/pull/20589))
 

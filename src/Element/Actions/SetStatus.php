@@ -9,13 +9,11 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
@@ -43,28 +41,6 @@ class SetStatus extends ElementAction
         return [
             'status' => ['required', Rule::in([self::ENABLED, self::DISABLED])],
         ];
-    }
-
-    public function getTriggerHtml(): ?string
-    {
-        HtmlStack::jsWithVars(fn ($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        validateSelection: (selectedItems, elementIndex) => {
-            for (let i = 0; i < selectedItems.length; i++) {
-                const element = selectedItems.eq(i).find('.element');
-                if (!Garnish.hasAttr(element, 'data-savable') || Garnish.hasAttr(element, 'data-disallow-status')) {
-                    return false;
-                }
-            }
-            return true;
-        },
-    })
-})();
-JS, [static::class]);
-
-        return template('_components/elementactions/SetStatus/trigger');
     }
 
     #[\Override]

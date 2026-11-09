@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Element\Actions;
 
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
@@ -46,31 +45,6 @@ class Restore extends ElementAction
     public function getTriggerLabel(): string
     {
         return t('Restore');
-    }
-
-    public function getTriggerHtml(): ?string
-    {
-        // Only enable for restorable/savable elements
-        HtmlStack::jsWithVars(fn ($type, $attribute) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        validateSelection: (selectedItems, elementIndex) => {
-            for (let i = 0; i < selectedItems.length; i++) {
-                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), $attribute)) {
-                    return false;
-                }
-            }
-            return true;
-        },
-    })
-})();
-JS, [
-            static::class,
-            $this->restorableElementsOnly ? 'data-restorable' : 'data-savable',
-        ]);
-
-        return '<div class="btn formsubmit">'.$this->getTriggerLabel().'</div>';
     }
 
     #[\Override]

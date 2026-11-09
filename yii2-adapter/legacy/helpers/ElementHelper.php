@@ -17,6 +17,7 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Users;
+use CraftCms\Yii2Adapter\Element\LegacyElementActions;
 use Illuminate\Support\Facades\Context;
 
 use Illuminate\Support\HtmlString;
@@ -566,7 +567,7 @@ class ElementHelper
      */
     public static function actionConfig(ElementActionInterface $action): array
     {
-        return LaravelElementHelper::actionConfig($action);
+        return app(LegacyElementActions::class)->actionConfig($action);
     }
 
     /**

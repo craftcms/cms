@@ -6,7 +6,6 @@ namespace CraftCms\Cms\User\Actions;
 
 use CraftCms\Cms\Element\Actions\ElementAction;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Users;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
@@ -25,35 +24,6 @@ class UnsuspendUsers extends ElementAction
     public function getTriggerLabel(): string
     {
         return t('Unsuspend');
-    }
-
-    public function getTriggerHtml(): ?string
-    {
-        HtmlStack::jsWithVars(fn ($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        bulk: true,
-        validateSelection: (selectedItems, elementIndex) => {
-            for (let i = 0; i < selectedItems.length; i++) {
-                const \$element = selectedItems.eq(i).find('.element');
-                if (
-                    !Garnish.hasAttr(\$element, 'data-can-suspend') ||
-                    !Garnish.hasAttr(\$element, 'data-suspended')
-                ) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    })
-})();
-JS, [
-            static::class,
-        ]);
-
-        return null;
     }
 
     #[Override]
