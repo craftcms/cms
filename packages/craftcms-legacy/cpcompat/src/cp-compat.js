@@ -713,7 +713,7 @@
       },
 
       get showing() {
-        return !!(this.$el && this.$el[0] && this.$el[0].opened);
+        return !!(this.$el && this.$el[0] && this.$el[0].open);
       },
 
       show: function () {
