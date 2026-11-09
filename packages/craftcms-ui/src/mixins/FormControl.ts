@@ -493,8 +493,11 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       }
     }
 
-    #onLabelClick = (): void => {
-      this._onLabelClick();
+    // A canceled click doesn't activate a native label either.
+    #onLabelClick = (event: Event): void => {
+      if (!event.defaultPrevented) {
+        this._onLabelClick();
+      }
     };
 
     /**

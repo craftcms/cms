@@ -167,6 +167,38 @@ it('exposes translation help on keyboard focus and dismisses it with Escape', as
 });
 
 it.each([
+  ['an input', '<input slot="input" type="text">'],
+  [
+    'a craft-input',
+    '<craft-input slot="input"><input slot="input"></craft-input>',
+  ],
+])(
+  'keeps focus on the translation help when it is activated in a label for %s',
+  async (_case, control) => {
+    const field = document.createElement('craft-field');
+    field.label = 'Title';
+    field.translatable = true;
+    field.innerHTML = control;
+    document.body.append(field);
+    await field.updateComplete;
+    const indicator = field.querySelector('craft-tooltip craft-button')!;
+
+    await userEvent.click(indicator);
+    expect(document.activeElement).toBe(indicator);
+
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard(' ');
+    expect(document.activeElement).toBe(indicator);
+
+    const label = field._labelNode!;
+    await userEvent.click(label, {
+      position: {x: 1, y: label.getBoundingClientRect().height / 2},
+    });
+    await expect.element(field.querySelector('input')!).toHaveFocus();
+  }
+);
+
+it.each([
   ['a textarea', '<textarea slot="input" maxlength="100"></textarea>'],
   [
     'a craft-textarea',

@@ -656,6 +656,8 @@ export default class CraftField extends FormControl(LitElement) {
       button.icon = 'language';
       button.className = 't9n-indicator prevent-autofocus';
       button.setAttribute('aria-label', this.translationDescription);
+      // Keeps the label it sits in from moving focus to the control.
+      button.addEventListener('click', (event) => event.preventDefault());
 
       tooltip.append(button);
       labelNode.append(tooltip);
