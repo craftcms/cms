@@ -1070,6 +1070,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
   - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
 
 #### Fields
+- Added `CraftCms\Cms\Field\Contracts\FieldInterface::uiErrors()`, which fields that show nested elements’ fields, such as Matrix and Content Block fields, can use to show the nested elements’ validation errors on those fields in the element editor. ([#20522](https://github.com/craftcms/cms/pull/20522))
 - Updated field index pagination to return Laravel-style pagination metadata and use the configured `pageTrigger` query parameter.
 - Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.
 - Removed `craft\controllers\MatrixController`. `CraftCms\Cms\Http\Controllers\MatrixController` should be used instead.
