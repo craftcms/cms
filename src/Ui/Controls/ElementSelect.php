@@ -20,7 +20,6 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
 use CraftCms\Cms\Ui\Contracts\WritableValueControl;
@@ -105,7 +104,8 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             'condition' => isset($control->props['selectionCondition'])
                 ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
                 : null,
-            'referenceElement' => self::referenceElementFromProps($control->props['referenceElement'] ?? null),
+            // The modal only needs the reference element's IDs, so pass them through rather than loading it again
+            'jsSettings' => $control->props['referenceElement'] ?? [],
             // Sent by AssetSelect, as the Vue control passes it to the selector modal
             'modalSettings' => isset($control->props['showFolders'])
                 ? ['indexSettings' => ['showFolders' => (bool) $control->props['showFolders']]]
@@ -123,20 +123,6 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             'useCustomElement' => true,
             'customElement' => $control->props['customElement'],
         ]));
-    }
-
-    /** @param array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null $reference */
-    private static function referenceElementFromProps(?array $reference): ?ElementInterface
-    {
-        if ($reference === null) {
-            return null;
-        }
-
-        return Elements::getElementById(
-            $reference['referenceElementId'],
-            siteId: $reference['referenceElementSiteId'],
-            criteria: array_filter(['ownerId' => $reference['referenceElementOwnerId']]),
-        );
     }
 
     /**

@@ -65,6 +65,8 @@ export function createAssetController(
           ...assetReferenceElement,
           criteria: assetCriteria,
           hideOnSelect: true,
+          // Lets the chooser list folders so subfolders can be browsed
+          indexSettings: {showFolders: true},
           modalTitle: t('Choose an asset'),
           multiSelect: false,
           onSelect: (assets: AssetInfo[]) => {
