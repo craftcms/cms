@@ -2,7 +2,7 @@
 
 Follows the WAI-ARIA APG [Radio Group](https://www.w3.org/WAI/ARIA/apg/patterns/radio/) pattern. The options are `craft-radio`s, covered by `radio.a11y.md`. With `appearance` set, the radios are drawn as buttons or cards, separate or joined, but either way they keep the pattern's roles and keyboard behavior.
 
-The group adds `role="radiogroup"` and the label, help text and feedback wiring through the `ChoiceGroup` mixin. The keyboard behavior comes from the browser: each option is a native `<input type="radio">`, and radios that share a `name` form one group. A group without a `name` still keeps only one option selected. `HasLabel` only reflects `has-label` for spacing; see `input.a11y.md`.
+The group adds `role="radiogroup"` and the label, help text and feedback wiring through the `ChoiceGroup` mixin. The keyboard behavior comes from the browser: each option is a native `<input type="radio">`, and radios that share a `name` form one group. Browsers don't group radios that have no `name`, so a group without one keeps only one option selected, and gives its radios the same single Tab stop and arrow keys itself. `HasLabel` only reflects `has-label` for spacing; see `input.a11y.md`.
 
 **Not for:**
 
@@ -24,9 +24,9 @@ The group adds `role="radiogroup"` and the label, help text and feedback wiring 
 
 ### Keyboard and focus
 
-- [ ] The group is one Tab stop: Tab moves to the checked option, or to the first option when none is checked, and the next Tab leaves the group. Per WCAG 2.1.1 (Keyboard) and 2.4.3 (Focus Order). Not yet verified.
-- [ ] Arrow keys move focus to the next or previous option and select it, wrapping at both ends and skipping disabled options. Per WCAG 2.1.1 (Keyboard). Not yet verified.
-- [ ] Space selects the focused option when none is checked. Per WCAG 2.1.1 (Keyboard). Not yet verified.
+- [x] The group is one Tab stop: Tab moves to the checked option, or to the first option when none is checked, and the next Tab leaves the group. Per WCAG 2.1.1 (Keyboard) and 2.4.3 (Focus Order). Verified by `makes each group one Tab stop whose arrow keys select its next enabled option, when its radios %s` in `radio-group.browser.test.ts`.
+- [x] Arrow keys move focus to the next or previous option and select it, wrapping at both ends and skipping disabled options. Per WCAG 2.1.1 (Keyboard). Verified by `makes each group one Tab stop whose arrow keys select its next enabled option, when its radios %s` in `radio-group.browser.test.ts`.
+- [x] Space selects the focused option when none is checked. Per WCAG 2.1.1 (Keyboard). Verified by `makes each group one Tab stop whose arrow keys select its next enabled option, when its radios %s` in `radio-group.browser.test.ts`.
 - [x] With `appearance="card-group"`, the visual order of the cards matches the DOM order that the arrow keys follow, including once they wrap. Per WCAG 1.3.2 (Meaningful Sequence) and 2.4.3 (Focus Order). Verified by `lays wrapped cards out in the order the arrow keys follow` in `radio-group.browser.test.ts`.
 - [x] With `appearance="card-group"`, the focused option shows a focus ring around its card. Per WCAG 2.4.7 (Focus Visible). Verified by `draws the focus ring around the focused card` in `radio-group.browser.test.ts`.
 - [x] With `appearance="card-group"`, clicking an option's illustration selects it. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `selects an option when its illustration is clicked` in `radio-group.browser.test.ts`.

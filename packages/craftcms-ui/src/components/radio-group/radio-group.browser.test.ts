@@ -86,6 +86,62 @@ it('moves the selection with the arrow keys', async () => {
   expect(inputs).not.toContain(document.activeElement);
 });
 
+it.each([
+  ['share a name', ' name="size"', ' name="color"'],
+  ['have no name', '', ''],
+])(
+  'makes each group one Tab stop whose arrow keys select its next enabled option, when its radios %s',
+  async (_, sizeName, colorName) => {
+    document.body.innerHTML = `
+      <button>Before</button>
+      <craft-radio-group label="Size"${sizeName}>
+        <craft-radio value="s" label="Small"></craft-radio>
+        <craft-radio value="m" label="Medium" disabled></craft-radio>
+        <craft-radio value="l" label="Large" checked></craft-radio>
+      </craft-radio-group>
+      <craft-radio-group label="Color"${colorName}>
+        <craft-radio value="r" label="Red"></craft-radio>
+        <craft-radio value="g" label="Green"></craft-radio>
+      </craft-radio-group>
+      <button>After</button>`;
+    const [size, color] = document.querySelectorAll('craft-radio-group');
+    const [before, after] = document.querySelectorAll('button');
+    await Promise.all([size!.updateComplete, color!.updateComplete]);
+    await settle();
+    const [s, , l, r, g] = document.querySelectorAll('input');
+    before!.focus();
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(l);
+
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(s);
+    expect(size!.value).toBe('s');
+
+    await userEvent.keyboard('{ArrowRight}');
+    expect(document.activeElement).toBe(l);
+    expect(size!.value).toBe('l');
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(r);
+    expect(color!.value).toBe('');
+
+    await userEvent.keyboard(' ');
+    expect(color!.value).toBe('r');
+
+    await userEvent.keyboard('{ArrowUp}');
+    expect(document.activeElement).toBe(g);
+    expect([size!.value, color!.value]).toEqual(['l', 'g']);
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(after);
+
+    await settle();
+    await userEvent.tab({shift: true});
+    expect(document.activeElement).toBe(g);
+  }
+);
+
 it('draws the focus ring around the focused button', async () => {
   const {radios, inputs} = await render();
 

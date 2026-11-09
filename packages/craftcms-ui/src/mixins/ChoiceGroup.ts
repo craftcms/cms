@@ -6,6 +6,14 @@ import type {ChoiceInputInterface} from './ChoiceInput';
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
 
+/** How far each arrow key moves through the options, in DOM order. */
+const ARROW_STEPS: Record<string, number> = {
+  ArrowDown: 1,
+  ArrowRight: 1,
+  ArrowUp: -1,
+  ArrowLeft: -1,
+};
+
 export type ChoiceGroupOptions = {
   /** The tag of the choices the group holds. */
   choice: string;
@@ -31,7 +39,9 @@ export declare class ChoiceGroupInterface extends FormControlInterface {
  * code is silent.
  *
  * A group without a `name` takes the one its server-rendered inputs already
- * have, so the markup keeps posting the way it did.
+ * have, so the markup keeps posting the way it did. Radios with no name at all
+ * aren't grouped by the browser, so the group makes them one Tab stop and moves
+ * the selection with the arrow keys itself.
  */
 export const ChoiceGroup = <T extends Constructor<LitElement>>(
   Base: T,
@@ -60,7 +70,13 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
     /** Choices the group disabled, which it enables again with itself. */
     #disabledByGroup = new WeakSet<ChoiceInputInterface>();
 
-    #observer = new MutationObserver(() => this.#refreshChoices());
+    /** Inputs given a `tabindex` to make unnamed radios one Tab stop. */
+    #tabStopInputs = new WeakSet<HTMLElement>();
+
+    #observer = new MutationObserver(() => {
+      this.#refreshChoices();
+      this.#syncTabStops();
+    });
 
     /** The choices in the group, leaving out those of a group nested in it. */
     get choices(): ChoiceInputInterface[] {
@@ -113,7 +129,15 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       // reads the value.
       this.addEventListener('input', this.#onToggle, true);
       this.addEventListener('change', this.#onToggle, true);
-      this.#observer.observe(this, {childList: true, subtree: true});
+      this.addEventListener('keydown', this.#onKeyDown);
+      // Radios reflect `checked` and `disabled`, which move the Tab stop.
+      this.#observer.observe(this, {
+        childList: true,
+        subtree: true,
+        ...(multiple
+          ? {}
+          : {attributes: true, attributeFilter: ['checked', 'disabled']}),
+      });
       this.#known = new Set();
       this.#refreshChoices();
     }
@@ -122,6 +146,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       super.disconnectedCallback();
       this.removeEventListener('input', this.#onToggle, true);
       this.removeEventListener('change', this.#onToggle, true);
+      this.removeEventListener('keydown', this.#onKeyDown);
       this.#observer.disconnect();
     }
 
@@ -162,6 +187,8 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       if (changed.has('invalid')) {
         toggle('aria-invalid', this.invalid);
       }
+
+      this.#syncTabStops();
     }
 
     protected override _inputGroupTemplate(): unknown {
@@ -234,18 +261,91 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       this.requestUpdate('value');
     }
 
-    #onToggle = (event: Event): void => {
-      const target = event.target as Element;
-      const option = target.closest(
+    /** The choice of this group whose control is `target`. */
+    #choiceOf(target: EventTarget | null): ChoiceInputInterface | undefined {
+      const option = (target as Element).closest(
         choice
       ) as unknown as ChoiceInputInterface | null;
 
-      if (
-        option?._inputNode !== target ||
+      return option?._inputNode === target &&
         (option as unknown as Element).parentElement?.closest(
           this.localName
-        ) !== this
+        ) === this
+        ? option
+        : undefined;
+    }
+
+    /**
+     * Leaves only the checked radio, or the first enabled one, in the Tab
+     * order, as the browser does for radios that share a name.
+     */
+    #syncTabStops(): void {
+      if (multiple) {
+        return;
+      }
+
+      const options = this.choices;
+      const stop = this.name
+        ? undefined
+        : (options.find((option) => option.checked && !option.disabled) ??
+          options.find((option) => !option.disabled));
+
+      for (const option of options) {
+        const input = option._inputNode;
+
+        if (!input) {
+          continue;
+        } else if (!this.name) {
+          input.tabIndex = option === stop ? 0 : -1;
+          this.#tabStopInputs.add(input);
+        } else if (this.#tabStopInputs.delete(input)) {
+          input.removeAttribute('tabindex');
+        }
+      }
+    }
+
+    /** Moves the selection between unnamed radios, as between named ones. */
+    #onKeyDown = (event: KeyboardEvent): void => {
+      const step = ARROW_STEPS[event.key];
+      const option = this.#choiceOf(event.target);
+
+      if (
+        multiple ||
+        this.name ||
+        !step ||
+        !option ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey
       ) {
+        return;
+      }
+
+      const options = this.choices.filter((other) => !other.disabled);
+      const mirrored =
+        event.key !== 'ArrowDown' &&
+        event.key !== 'ArrowUp' &&
+        getComputedStyle(this).direction === 'rtl';
+      const next = options.at(
+        (options.indexOf(option) + (mirrored ? -step : step)) % options.length
+      );
+
+      if (!next) {
+        return;
+      }
+
+      event.preventDefault();
+      next._inputNode?.focus();
+
+      if (!next.checked) {
+        next._inputNode?.click();
+      }
+    };
+
+    #onToggle = (event: Event): void => {
+      const option = this.#choiceOf(event.target);
+
+      if (!option) {
         return;
       }
 
