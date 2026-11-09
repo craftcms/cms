@@ -455,6 +455,16 @@ const table: UiValueAcceptor = (control, {value}) => {
 
   const rows: UiValue[] = Object.values(value);
 
+  // Objects list integer-like keys in ascending order, so a keyed table's own
+  // row order can't be copied with its rows, and pasting them would reorder
+  // them.
+  if (
+    !Array.isArray(value) &&
+    Object.keys(value).filter((key) => /^(?:0|[1-9]\d*)$/.test(key)).length > 1
+  ) {
+    return false;
+  }
+
   if (rows.length === 0) {
     return true;
   }
