@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Kötelező',
     'Requirements' => 'Követelmények',
     'Requires PHP {version}' => 'PHP {version} szükséges',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'A(z) {name} bejegyzéseinek újramentése',
     'Resaving {type} entries' => '{type} bejegyzés újramentése.',
     'Resaving {type}' => '{type} újramentése',
