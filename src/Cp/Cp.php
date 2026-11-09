@@ -401,7 +401,6 @@ readonly class Cp
             'slideoutPosition' => $currentUser->getPreference('slideoutPosition')
                 ?? $generalConfig->accessibilityDefaults['slideoutPosition']
                     ?? 'end',
-            'previewIframeResizerOptions' => self::previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int) $primarySite->id : null,
             'primarySiteLanguage' => $primarySite?->getLanguage(),
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
@@ -469,21 +468,6 @@ readonly class Cp
             ]),
             'protocol' => $parsed['scheme'],
         ]);
-    }
-
-    /** @return array<string, mixed>|null|false */
-    private static function previewIframeResizerOptions(GeneralConfig $generalConfig): array|null|false
-    {
-        if (! $generalConfig->useIframeResizer) {
-            return false;
-        }
-
-        // Treat false as [] as well now that useIframeResizer exists
-        if (empty($generalConfig->previewIframeResizerOptions)) {
-            return null;
-        }
-
-        return $generalConfig->previewIframeResizerOptions;
     }
 
     /** @return list<array{handle: string, id: int, uid: string, name: string}> */

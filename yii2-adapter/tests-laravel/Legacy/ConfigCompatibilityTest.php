@@ -8,6 +8,9 @@ use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
+use Illuminate\Container\Container;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
@@ -126,6 +129,46 @@ it('converts callable general config and application type overlays', function():
 
     expect($config)->toBeInstanceOf(GeneralConfig::class)
         ->and($config->cpTrigger)->toBe('console');
+});
+
+it('merges application type overlays loaded from config files into the base general config', function(string $general): void {
+    $config = registerGeneralConfigFiles([
+        'general' => $general,
+        'general.console' => "['cpTrigger' => 'console']",
+        'general.web' => "['pageTrigger' => 'web-page']",
+    ]);
+
+    expect($config)->toBeInstanceOf(GeneralConfig::class)
+        ->and($config->cpTrigger)->toBe('console')
+        ->and($config->pageTrigger)->toBe('base-page');
+})->with([
+    'array' => ["['cpTrigger' => 'base', 'pageTrigger' => 'base-page']"],
+    'fluent' => ['\craft\config\GeneralConfig::create()->cpTrigger("base")->pageTrigger("base-page")'],
+    'callable' => ['fn(\craft\config\GeneralConfig $config) => $config->cpTrigger("base")->pageTrigger("base-page")'],
+]);
+
+it('applies fluent application type overlay settings after the base general config', function(string $general): void {
+    $config = registerGeneralConfigFiles([
+        'general' => $general,
+        'general.console' => '\craft\config\GeneralConfig::create()->cpTrigger("console")->enableCsrfProtection(true)',
+    ]);
+
+    expect($config->cpTrigger)->toBe('console')
+        ->and($config->enableCsrfProtection)->toBeTrue()
+        ->and(app(PreventRequestForgery::class)->getExcludedPaths())->not->toContain('*');
+})->with([
+    'fluent' => ['\craft\config\GeneralConfig::create()->cpTrigger("base")->enableCsrfProtection(false)'],
+    'callable' => ['fn(\craft\config\GeneralConfig $config) => $config->cpTrigger("base")->enableCsrfProtection(false)'],
+]);
+
+it('applies multi-environment application type overlays to a fluent base general config', function(): void {
+    $config = registerGeneralConfigFiles([
+        'general' => '\craft\config\GeneralConfig::create()->cpTrigger("base")->pageTrigger("base-page")',
+        'general.console' => "['*' => ['pageTrigger' => 'console-page']]",
+    ]);
+
+    expect($config->cpTrigger)->toBe('base')
+        ->and($config->pageTrigger)->toBe('console-page');
 });
 
 it('applies a deprecated anchors.php config file unless the general config sets anchors', function(array $general, string $expectedText): void {
@@ -290,5 +333,40 @@ function proxiedClient(): array
         return [$request->getClientIp(), $request->getHost()];
     } finally {
         Request::setTrustedProxies([], -1);
+    }
+}
+
+/**
+ * Loads `config/craft` files with Laravel's config loader, then registers the general config as the adapter does.
+ *
+ * @param array<string, string> $files PHP expressions returned by each file, keyed by file name
+ */
+function registerGeneralConfigFiles(array $files): object
+{
+    $app = app();
+    $originalConfigPath = $app->configPath();
+    $configPath = sys_get_temp_dir() . '/craft-config-' . bin2hex(random_bytes(8));
+    mkdir("$configPath/craft", recursive: true);
+
+    foreach ($files as $name => $expression) {
+        file_put_contents("$configPath/craft/$name.php", "<?php return $expression;");
+    }
+
+    try {
+        $loaded = new Application($configPath)->useConfigPath($configPath);
+        new LoadConfiguration()->bootstrap($loaded);
+        Container::setInstance($app);
+        Config::set('craft.general', $loaded['config']->get('craft.general'));
+        $app->useConfigPath($configPath);
+
+        new MultiEnvironmentConfigCompatibility()->register($app);
+        new GeneralConfigCompatibility()->register($app);
+
+        return Config::get('craft.general');
+    } finally {
+        $app->useConfigPath($originalConfigPath);
+        array_map(unlink(...), glob("$configPath/craft/*.php"));
+        rmdir("$configPath/craft");
+        rmdir($configPath);
     }
 }

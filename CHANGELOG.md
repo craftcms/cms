@@ -149,6 +149,7 @@
 - Element revision listings now use the control panel’s standard table, with a choice of page sizes. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Edit pages for elements without statuses, such as assets, no longer show a status badge or “Status” metadata, except for drafts. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Element edit pages’ “View” button is now on the right side of the toolbar, beside the action menu.
+- Removed the `useIframeResizer` and `previewIframeResizerOptions` config settings. Live Preview no longer uses iFrame Resizer. The previewed page always scrolls within its iframe.
 - Activity timeline day headings now show the date as a badge, and the Workflow details panel’s review panes are no longer outlined. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Details for the issues that block an element’s deletion now list the related elements as chips, rather than an embedded element index.
 - Comments in the Activity and Workflow details panels, and Ask AI’s messages and replies, are now styled the same, with syntax-highlighted code blocks on a dark background, and inline code in red. ([#20246](https://github.com/craftcms/cms/pull/20246))
@@ -322,6 +323,7 @@
 - Added `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::defaultTip()` and `defaultWarning()`.
 - `CraftCms\Cms\Field\Contracts\TableCellInterface::serializeValue()` can now return arrays. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Removed `CraftCms\Cms\Field\BaseRelationField::$inputTemplate` and `$settingsTemplate`. Relation fields that extend the Yii adapter’s base relation field classes can still set them; other relation fields that set `$inputTemplate` now throw an exception, and should override `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()` instead. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Craft’s field types, other than relation fields, no longer implement Craft 5’s `inputHtml()` methods, and link types no longer have an `inputHtml()` method. Built-in fields render through `uiControl()`, so calling `getInputHtml()` or `getInlineInputHtml()` on them through the Yii adapter no longer returns their input. Plugin fields that extend a built-in field type render its UI control in element edit forms, unless they implement their own `inputHtml()`, `getInputHtml()`, or `getInlineInputHtml()`. ([#20518](https://github.com/craftcms/cms/pull/20518))
 
 - Relational fields’ elements are no longer shown on white tiles, unless the element has a color of its own, so they take the colors around them.
 - Removed the “Copy value from site” field action. Field values can be copied between sites from the Compare screen instead. ([#20384](https://github.com/craftcms/cms/pull/20384))
@@ -704,6 +706,7 @@
 - `CraftCms\Cms\Element\Element::attributes()` no longer includes elements’ internal state, such as `forceSave`, `siteSettingsId`, and `trackDraftChanges`, so it’s left out of MCP tools’ results, element responses, and exports. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - `craft\web\assets\pluginstore\PluginStoreAsset` is now deprecated and does nothing.
+- The control panel no longer loads iFrame Resizer. `craft\web\assets\iframeresizer\IframeResizerAsset` and `craft\web\assets\iframeresizer\ContentWindowAsset` are now deprecated and don’t register it, so plugins that rely on it should bundle it themselves. `@craftcms/webpack` no longer treats `iframe-resizer` as an external.
 - Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact. Their `{% js %}` code and jQuery ready callbacks, such as `$(function () {…})`, run once the screen is in the page.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
@@ -725,6 +728,7 @@
 - Messages queued with `session()->broadcastToJs()` now reach every open control panel tab, sent with the next page after a redirect, or in an `X-Craft-Broadcast` header on action responses. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - `Craft.refreshElementInstances()` now refreshes `craft-chip` and `craft-card` instances too. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - Removed the `plugin-store/craft-data` and `plugin-store/save-plugin-license-keys` actions.
+- Removed `Craft.previewIframeResizerOptions`.
 - Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `Craft.AuthManager` and `Craft.cp.authManager`, which no longer had a remaining session time to act on. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Removed the `users/login-modal` action and the `_special/login-modal` template. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -769,6 +773,7 @@
 ### Bug Fixes
 - Fixed a bug where Markdown fields’ “Available Volumes”, “Show unpermitted volumes”, “Selectable Assets Condition”, and “Upload Volume” settings had no effect in element editors, so the toolbar never showed the Asset button and pasted or dropped files weren’t uploaded. ([#20521](https://github.com/craftcms/cms/pull/20521))
 - Fixed a bug where relation fields’ “Selectable {type} Condition” settings, Assets fields’ “Restrict assets to a single location”, “Allow subfolders”, and “Show unpermitted volumes” settings, and Entries fields’ “Show unpermitted sections” setting had no effect when selecting elements in element editors. ([#20521](https://github.com/craftcms/cms/pull/20521))
+- Fixed a bug where field layout forms created through the Yii adapter, such as with `craft\models\FieldLayout::createForm()`, didn’t show the element’s validation errors, including nested Matrix entries’ errors. ([#20518](https://github.com/craftcms/cms/pull/20518))
 - Fixed a bug where custom field params were ignored on asset queries for subclasses of `Asset`, and on category and tag queries without a group, such as `craft\elements\Asset::find()->myField('value')` with the Yii adapter. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a validation error when saving Color fields created with `presets` or `defaultColor`. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a bug where `{% paginate %}` and `@craftPaginate` ignored queries’ `limit()` param, showing 15 results per page, and requests for a page past the last one showed no results. Queries’ `limit()` param sets the page size again, defaulting to 100, and out-of-range pages show the last page. ([#20511](https://github.com/craftcms/cms/pull/20511))
