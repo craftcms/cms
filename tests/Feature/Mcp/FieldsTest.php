@@ -8,6 +8,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use Laravel\Passport\Passport;
@@ -60,7 +61,7 @@ it('manages fields through MCP while preserving omitted attributes and merging s
         ->and($updated['settings']['placeholder'])->toBe('Start writing')
         ->and($updated['settings']['charLimit'])->toBe(120)
         ->and($fetched['name'])->toBe('Introduction')
-        ->and(json_decode($resource, true)['field']['id'])->toBe($created['id'])
+        ->and(Json::decode($resource)['field']['id'])->toBe($created['id'])
         ->and($deleted)->toBe(['type' => 'fields', 'deleted' => true])
         ->and(Fields::getFieldById($created['id']))->toBeNull();
 });

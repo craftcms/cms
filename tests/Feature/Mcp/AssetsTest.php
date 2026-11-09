@@ -364,7 +364,7 @@ it('creates assets from local project files through the stdio server', function 
     File::ensureDirectoryExists($directory);
     File::put("$directory/local.txt", 'Local content');
     $input = fopen('php://memory', 'r+');
-    fwrite($input, implode('', array_map(static fn (array $message): string => json_encode($message).PHP_EOL, [
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
         ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25',
             'capabilities' => (object) [],
@@ -387,7 +387,7 @@ it('creates assets from local project files through the stdio server', function 
     }
 
     $response = collect(file($outputPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
-        ->map(static fn (string $line): array => json_decode($line, true))
+        ->map(static fn (string $line): array => Json::decode($line))
         ->firstWhere('id', 'create');
     unlink($outputPath);
     $asset = Asset::findOne($response['result']['structuredContent']['asset']['id'] ?? null);
