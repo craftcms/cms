@@ -15,5 +15,6 @@ Route::middleware(['web', 'craft', 'craft.cp'])
     ->group(__DIR__.'/cp.php');
 
 Route::middleware(['web', 'craft', 'craft.web'])
+    ->withLazySession()
     ->name('craft.')
     ->group(__DIR__.'/web.php');
