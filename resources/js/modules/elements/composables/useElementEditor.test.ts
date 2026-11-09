@@ -1289,6 +1289,32 @@ describe('useElementEditor', () => {
     expect(editor.activity.isStale.value).toBe(true);
   });
 
+  it('refreshes once for nested fields that hear of the same saves elsewhere', async () => {
+    postSpy.mockImplementation(async () => ({
+      data: {ui: fieldLayout('Original title')},
+    }));
+    const {editor} = mount(payload({ui: fieldLayout('Original title')}));
+    postSpy.mockClear();
+
+    const fieldHears = () =>
+      new Promise<void>((resolve) =>
+        setTimeout(
+          () =>
+            void editor.nestedOwnerEditor.refresh!({
+              changedElsewhere: true,
+            }).then(resolve),
+          50
+        )
+      );
+    await Promise.all([fieldHears(), fieldHears()]);
+
+    expect(
+      postSpy.mock.calls.filter(([url]) =>
+        String(url).includes('update-field-layout')
+      )
+    ).toHaveLength(1);
+  });
+
   it('doesn’t report a discarded draft as someone else’s edit', async () => {
     // The provisional draft and the canonical element have different
     // `dateUpdated`s, and polls report whichever one they're asked about.

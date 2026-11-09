@@ -1191,6 +1191,10 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   async function refreshAfterNestedChange({
     changedElsewhere = false,
   }: NestedOwnerRefreshOptions = {}): Promise<void> {
+    if (changedElsewhere) {
+      return refreshForChangesElsewhere();
+    }
+
     const response = await refreshUi();
 
     if (!changedElsewhere && response && 'updatedTimestamp' in response) {
@@ -1200,6 +1204,24 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
           (response.canonicalUpdatedTimestamp as number | null) ?? null,
       });
     }
+  }
+
+  /**
+   * The refresh that nested fields asking about the same saves elsewhere
+   * share, until it's sent. Each field hears of a save on its own, a turn
+   * apart, so one turn is waited for.
+   */
+  let refreshForElsewhere: Promise<void> | null = null;
+
+  function refreshForChangesElsewhere(): Promise<void> {
+    refreshForElsewhere ??= new Promise((resolve) => setTimeout(resolve))
+      .then(() => {
+        refreshForElsewhere = null;
+        return refreshUi();
+      })
+      .then(() => undefined);
+
+    return refreshForElsewhere;
   }
 
   /**

@@ -3,6 +3,7 @@
   import {tryOnScopeDispose, useEventListener} from '@vueuse/core';
   import {computed, inject, ref, shallowRef, watch} from 'vue';
   import {useSelectable} from '@/common/composables/useSelectable';
+  import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
   import {onElementChanged} from '@/modules/elements/element-instances';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import NestedElementsCards from './NestedElementsCards.vue';
@@ -84,6 +85,12 @@
     paste: () => operations.paste(),
   });
   watch(cards, () => selection.prune());
+
+  // A focused link in a card that's redrawn, such as one renamed in another
+  // tab, keeps focus.
+  useFocusThroughRedraw(container, cards, () =>
+    cards.value.map(({id}) => id).join()
+  );
 
   // Cards saved in another tab are redrawn by their owner, once for all the
   // cards saved together. Changes made here refresh it where they happen, as
