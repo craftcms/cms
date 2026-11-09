@@ -8,6 +8,7 @@ use Composer\InstalledVersions;
 use Craft;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
+use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\web\twig\variables\Rebrand;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\TerminalCommands;
@@ -23,7 +24,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Database\DeprecatedTable;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
+use CraftCms\Yii2Adapter\Mail\LegacyTransportCompatibility;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PhpToken;
@@ -69,6 +72,7 @@ class LooseEndsChecks
             ...$this->configFiles(),
             ...$this->generalConfigSettings(),
             ...$this->legacyEnvVars(),
+            ...$this->mailTransport(),
             ...$this->projectLayout(),
             ...$this->database(),
             ...$this->content(),
@@ -302,6 +306,32 @@ class LooseEndsChecks
                 t('Craft 5 environment variables are set.', category: 'yii2-adapter'),
                 t('Rename each one to its Laravel equivalent. Craft 5 added an underscore to the end of the table prefix, but `DB_PREFIX` is used as is, so include it there.', category: 'yii2-adapter'),
                 detail: collect($vars)->map(fn(string $new, string $old) => "`$old` → `$new`")->join(', '),
+            ),
+        ];
+    }
+
+    /**
+     * Finds a Craft 5 mail transport adapter that email is still sent through.
+     *
+     * @return list<Finding>
+     */
+    public function mailTransport(): array
+    {
+        $type = app(ProjectConfig::class)->get('email.transportType');
+
+        if (!is_string($type) || $type === '' || Config::get('mail.default') !== LegacyTransportCompatibility::MAILER) {
+            return [];
+        }
+
+        return [
+            $this->finding(
+                'config.mail-transport',
+                Section::Config,
+                Severity::Breaks,
+                t('Email is sent through the “{name}” transport adapter saved in the project config.', [
+                    'name' => is_subclass_of($type, TransportAdapterInterface::class) ? $type::displayName() : $type,
+                ], 'yii2-adapter'),
+                t('Choose a mailer in Settings → Email, or set `MAIL_MAILER`.', category: 'yii2-adapter'),
             ),
         ];
     }

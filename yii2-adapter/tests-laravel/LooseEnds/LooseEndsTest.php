@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Composer\InstalledVersions;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
+use craft\mail\transportadapters\Smtp;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
@@ -14,8 +16,10 @@ use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Yii2Adapter\LooseEnds\LooseEndsChecks;
 use CraftCms\Yii2Adapter\LooseEnds\LooseEndsStore;
 use CraftCms\Yii2Adapter\LooseEnds\LooseEndsUtility;
+use CraftCms\Yii2Adapter\Mail\LegacyTransportCompatibility;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -171,6 +175,30 @@ it('reports a Craft 5 table prefix when `DB_PREFIX` is empty, with the underscor
     }
 
     expect($detail)->toContain('`CRAFT_DB_TABLE_PREFIX` → `DB_PREFIX=craft_`');
+});
+
+it('reports a Craft 5 mail transport adapter until a Laravel mailer is chosen', function(): void {
+    $mailMailer = getenv('MAIL_MAILER');
+    putenv('MAIL_MAILER');
+    unset($_ENV['MAIL_MAILER'], $_SERVER['MAIL_MAILER']);
+    Config::set('mail.default', 'log');
+    ProjectConfig::set('email', ['transportType' => Smtp::class, 'transportSettings' => ['host' => 'mail.example.test']]);
+
+    try {
+        new LegacyTransportCompatibility()->register(app());
+        $title = app(LooseEndsChecks::class)->mailTransport()[0]->title ?? null;
+
+        Config::set('mail.default', 'smtp');
+        $afterChoosing = app(LooseEndsChecks::class)->mailTransport();
+    } finally {
+        if ($mailMailer !== false) {
+            putenv("MAIL_MAILER=$mailMailer");
+            $_ENV['MAIL_MAILER'] = $_SERVER['MAIL_MAILER'] = $mailMailer;
+        }
+    }
+
+    expect($title)->toBe('Email is sent through the “SMTP” transport adapter saved in the project config.')
+        ->and($afterChoosing)->toBe([]);
 });
 
 it('shows the removal steps once nothing depends on the adapter', function(): void {

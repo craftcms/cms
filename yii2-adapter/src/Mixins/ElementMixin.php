@@ -17,6 +17,8 @@ class ElementMixin
     public function getAttributes(): Closure
     {
         return function(?array $names = null, array $except = []): array {
+            LegacyUsage::record(__METHOD__, 'Elements’ `getAttributes()` method has been deprecated. Read the attributes directly, or use `toArray()`, instead.');
+
             /**
              * @var Element $this
              *
