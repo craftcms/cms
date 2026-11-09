@@ -538,7 +538,7 @@
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     background-color: transparent;
-    color: inherit;
+    color: var(--color-slate-700);
     font-size: var(--c-text-base);
     cursor: pointer;
   }
@@ -549,6 +549,7 @@
 
   .details-panels__trigger:not([aria-expanded='true']):hover {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
+    color: inherit;
   }
 
   .details-panels__trigger[aria-expanded='true'] {

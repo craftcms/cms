@@ -208,6 +208,13 @@ export default css`
     align-items: center;
     aspect-ratio: 1;
     width: 100%;
+    color: var(--c-nav-item-icon-color, inherit);
+  }
+
+  /* A selected or hovered row's icon takes the row's own color. */
+  :host([active]) .nav-item__prefix,
+  .nav-item:not(.nav-item--static):hover .nav-item__prefix {
+    color: inherit;
   }
 
   .nav-item__suffix {
@@ -413,14 +420,14 @@ export default css`
      * size. craft-button[icon][size=small] shrinks its contents to 0.8em and
      * craft-icon shrinks again by the same, which would leave the chevron a
      * fifth smaller than the icon it replaces — so cancel the button's share
-     * and keep the icon's.
+     * and keep the icon's, which follows --c-icon-size when that's set.
      */
     craft-button {
       font-size: 1em;
     }
 
     craft-icon {
-      font-size: 0.8em;
+      font-size: var(--c-icon-size, 0.8em);
     }
   }
 
