@@ -60,7 +60,7 @@ class UserImporter extends ElementImporter
     #[Override]
     public function resolveDefaultFieldLayout(): void
     {
-        $this->fieldLayout(User::class);
+        $this->fieldLayout(Users::getFieldLayout());
     }
 
     #[Override]
