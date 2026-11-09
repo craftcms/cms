@@ -346,3 +346,15 @@ it('formats dates that title formats print in the site’s locale', function () 
     expect(Elements::saveElement($entry))->toBeTrue()
         ->and($entry->title)->toBe('09.10.2026, 10:00 PDT | 28.02.2027 | 04.03.2026, 05:06 | 2026');
 });
+
+it('formats dates that UI label formats print in the current locale', function () {
+    app()->setLocale('de');
+    $entry = Entry::factory()
+        ->withField('startDate', Date::class, ['showTime' => true])
+        ->createElementWithFields()->element;
+    $entry->getType()->uiLabelFormat = '{startDate} | {postDate} | {startDate|date("Y")}';
+    $entry->postDate = new DateTime('2026-03-04 05:06:00');
+    $entry->setFieldValue('startDate', new DateTime('2026-10-09 10:00:00'));
+
+    expect($entry->getUiLabel())->toBe('09.10.2026, 10:00 PDT | 04.03.2026, 05:06 | 2026');
+});

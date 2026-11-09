@@ -1161,7 +1161,8 @@ abstract class ContentIndexViewModel extends ViewModel
             // through to a visible source rather than list a hidden one.
             if (
                 $resolved[0] !== null &&
-                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $siteId))
+                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $siteId)) &&
+                $this->allowsSource($resolved[0])
             ) {
                 return $resolved;
             }
@@ -1174,10 +1175,20 @@ abstract class ContentIndexViewModel extends ViewModel
         $sources = array_filter($this->sourceCandidates($siteId), fn (array $source): bool => isset($source['key'])
             && ($source['type'] ?? null) !== ElementSources::TYPE_HEADING
             && ! ($source['disabled'] ?? false));
-        $source = ($requestedSource === null ? array_find($sources, fn (array $source): bool => $source['key'] === '*') : null)
+        // A nested source, such as an asset subfolder, is requested by its own key, which only the listed sources
+        // can resolve to its full key path.
+        $source = array_find($sources, fn (array $source): bool => $source['key'] === ($requestedSource ?? '*'))
             ?? array_first($sources);
 
         return [$source['keyPath'] ?? $source['key'] ?? null, $source];
+    }
+
+    /**
+     * Whether a requested source key can be opened, for indexes that only allow some of their sources.
+     */
+    protected function allowsSource(string $sourceKey): bool
+    {
+        return true;
     }
 
     /** @return list<array<string, mixed>> */
@@ -1325,6 +1336,9 @@ abstract class ContentIndexViewModel extends ViewModel
                 ? $this->request->collapsedElementIds()
                 : [],
         )['query'];
+
+        // Applied on top of the filters, which the user can change, so they can't widen what's selectable
+        $this->request->selectionCondition()?->modifyQuery($query);
 
         // Ahead of the source's own criteria, which shouldn't get to override
         // the site the user picked (the legacy index drops `criteria.siteId`

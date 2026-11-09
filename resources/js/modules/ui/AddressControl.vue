@@ -165,6 +165,7 @@
         ? changedValue.administrativeArea
         : undefined,
       locality: changedField === 'locality' ? changedValue.locality : undefined,
+      belongsToCurrentUser: props.control.props.belongsToCurrentUser,
     };
   }
 
@@ -227,6 +228,8 @@
           @model-value-changed="change(field, $event, 'discrete')"
         >
           <select slot="input" :autocomplete="field.autocomplete">
+            <!-- Without it, an empty value shows, and saves, the first option. -->
+            <option value="">{{ field.required ? t('Select…') : '' }}</option>
             <option
               v-for="(label, optionValue) in field.options"
               :key="optionValue"

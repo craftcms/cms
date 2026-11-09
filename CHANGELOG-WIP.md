@@ -95,6 +95,7 @@
 - Asset indexes can now show “Image Type”, “Colors”, “Creator”, “Credit”, “Copyright”, “Date Taken”, “Camera”, and “Embedded Keywords” columns and card attributes. Asset indexes’ “Location” column and card attribute, which show an asset’s folder, are now “Folder”. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Images uploaded straight to a remote filesystem, such as an S3 bucket, are no longer downloaded to be sampled, and uploads staged on an S3 disk are copied into their volume within S3 when the disks share credentials and an endpoint. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Asset conditions, such as for index filters and Assets fields’ sources, now have an “Orientation” rule, which filters images by whether they’re landscape, portrait, or square. Images whose width and height differ by up to 2% count as square. ([#20114](https://github.com/craftcms/cms/pull/20114))
+- Assets fields’ selector modals now list Temporary Uploads after the field’s restricted location, including when it’s a subfolder. ([#20521](https://github.com/craftcms/cms/pull/20521))
 - Removed Craft-managed filesystems and their control panel settings. Volumes and Craft asset transformers now reference Laravel filesystem disks configured in `config/filesystems.php`, and each defines whether its assets have public URLs. Existing filesystem references are migrated to matching disks automatically, with an actionable error if a disk isn’t configured, which suggests an equivalent disk for Local, Amazon S3, Google Cloud Storage, Azure Blob Storage, DigitalOcean Spaces, Linode Object Storage, and Cloudflare R2 filesystems. ([#19650](https://github.com/craftcms/cms/pull/19650), [#20471](https://github.com/craftcms/cms/pull/20471))
 - Added configurable asset transformers, which can be managed from Settings → Assets → Asset Transformers and assigned to asset volumes by handle.
 - Packages can now register asset transformers in code, via `CraftCms\Cms\Asset\AssetTransformerRegistry::register()`. Registered transformers have fixed names, handles, and drivers, can’t be deleted, and supply default settings that can be overridden in project config. The `craft` transformer is now registered the same way, and removing its project config entry restores its default settings. ([#20411](https://github.com/craftcms/cms/pull/20411))
@@ -136,7 +137,7 @@
 - Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Added support for configuring field layout field instruction positions.
 - Field layouts with a card view designer now show it and the content tab designer in “Content” and “Appearance” tabs, with Generated Fields in the Content tab. ([#20001](https://github.com/craftcms/cms/pull/20001)), ([#20003](https://github.com/craftcms/cms/pull/20003))
-- Generated fields and entry title formats now show dates in their site’s locale, the way element cards show them, when their template outputs a date directly, such as `{postDate}` or a Date field’s `{startDate}`. Filters still get the date, so `{startDate|date('Y')}` works as before. Generated fields are now also rendered in their site’s language, like entry title formats. ([#20467](https://github.com/craftcms/cms/pull/20467), [#20526](https://github.com/craftcms/cms/pull/20526))
+- Generated fields and entry title formats now show dates in their site’s locale, the way element cards show them, when their template outputs a date directly, such as `{postDate}` or a Date field’s `{startDate}`. Entry types’ UI label formats now show those dates the same way, in the user’s locale. Filters still get the date, so `{startDate|date('Y')}` works as before. Generated fields are now also rendered in their site’s language, like entry title formats. ([#20467](https://github.com/craftcms/cms/pull/20467), [#20526](https://github.com/craftcms/cms/pull/20526), [#20527](https://github.com/craftcms/cms/pull/20527))
 - Entry types’ Icon and Color settings are now in their field layout designer’s Appearance tab, above Card Attributes. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Card view designers’ previews now reflect the owner’s color, icon, and name, such as an entry type’s, as they’re edited. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Entry type and user group descriptions, fields’ default instructions, tips, and warnings, and field layout elements’ instructions, tips, and warnings now have Markdown inputs. ([#20001](https://github.com/craftcms/cms/pull/20001))
@@ -162,6 +163,7 @@
 - Added a “Skip to messages” link, and errors are now announced to screen readers immediately.
 - Action menu buttons no longer announce a menu pop-up.
 - Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- The current user’s own First Name and Last Name fields, and the Full Name, First Name, Last Name, and Organization fields of their own addresses, now have `autocomplete` tokens, so browsers and password managers can fill them in. ([#20407](https://github.com/craftcms/cms/pull/20407))
 
 ### Administration
 
@@ -394,6 +396,7 @@
 - Added `CraftCms\Cms\Ui\Controls\Checkbox`.
 - Added `CraftCms\Cms\Ui\Controls\FieldSelect`.
 - Added `CraftCms\Cms\Ui\Controls\ConditionBuilder::fieldLayouts()`.
+- Added `CraftCms\Cms\Ui\Controls\Choice::autocomplete()`, which sets a select’s `autocomplete` attribute. ([#20407](https://github.com/craftcms/cms/pull/20407))
 - Added `CraftCms\Cms\Cp\Components\Field::actions()`.
 - Added `CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving`, which is fired when a field layout field has no UI control of its own, so a listener can provide one. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Added `CraftCms\Cms\Cp\Components\ElementSelect` and `CraftCms\Cms\Cp\Components\SelectRich`, available as the `element-select` and `select-rich` `ui()` components. ([#20275](https://github.com/craftcms/cms/pull/20275))
@@ -1070,7 +1073,9 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
   - `CraftCms\Cms\Entry\Commands\MergeEntryTypesCommand`
 
 #### Fields
+- Added `CraftCms\Cms\Field\Contracts\FieldInterface::uiErrors()`, which fields that show nested elements’ fields, such as Matrix and Content Block fields, can use to show the nested elements’ validation errors on those fields in the element editor. ([#20522](https://github.com/craftcms/cms/pull/20522))
 - Updated field index pagination to return Laravel-style pagination metadata and use the configured `pageTrigger` query parameter.
+- Added `CraftCms\Cms\Field\Concerns\ProvidesAssetSettings`, which gives fields that select or upload assets, such as rich text editors, the Markdown field’s “Available Volumes”, “Show unpermitted volumes”, “Selectable Assets Condition”, and “Upload Volume” settings, and resolves them into the asset sources, selection condition, and upload folder for the field’s input. ([#20521](https://github.com/craftcms/cms/pull/20521))
 - Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.
 - Removed `craft\controllers\MatrixController`. `CraftCms\Cms\Http\Controllers\MatrixController` should be used instead.
 - Removed `craft\controllers\RelationalFieldsController`. `CraftCms\Cms\Http\Controllers\RelationalFieldsController` should be used instead.

@@ -1446,7 +1446,11 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $entryType = $this->getType();
 
         if ($entryType->uiLabelFormat && $entryType->uiLabelFormat !== '{title}') {
-            $uiLabel = renderObjectTemplate($entryType->uiLabelFormat, $this);
+            $uiLabel = renderObjectTemplate(
+                $entryType->uiLabelFormat,
+                $this,
+                ElementHelper::objectTemplateDateVariables($this, $entryType->uiLabelFormat),
+            );
 
             if ($uiLabel !== '') {
                 return $uiLabel;

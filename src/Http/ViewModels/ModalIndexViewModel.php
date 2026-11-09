@@ -199,9 +199,16 @@ class ModalIndexViewModel extends ContentIndexViewModel
             && $this->canSearchSubfolders();
     }
 
-    /** Whether the folder on screen has subfolders for a search to reach. */
+    /**
+     * Whether the folder on screen has subfolders for a search to reach. Not when the opener hides folders, such as
+     * an Assets field restricted to a single folder.
+     */
     public function canSearchSubfolders(): bool
     {
+        if ($this->request->has('showFolders') && ! $this->request->boolean('showFolders')) {
+            return false;
+        }
+
         return ($this->folder() ?? $this->sourceRootFolder())?->getHasChildren() ?? false;
     }
 
@@ -225,14 +232,18 @@ class ModalIndexViewModel extends ContentIndexViewModel
     }
 
     /**
-     * The trail from the volume's root to the folder being listed, so the
+     * The trail from the source's folder to the folder being listed, so the
      * modal can lead back up. Empty unless a volume source is selected.
+     *
+     * A source can be a subfolder, such as an Assets field's restricted
+     * location, so the trail stops there rather than at the volume's root.
      *
      * @return list<array{label: string, folderId: int, url: ?string}>
      */
     public function folderBreadcrumbs(): array
     {
-        $current = $this->folder() ?? $this->sourceRootFolder();
+        $root = $this->sourceRootFolder();
+        $current = $this->folder() ?? $root;
         $crumbs = [];
 
         while ($current !== null) {
@@ -243,15 +254,15 @@ class ModalIndexViewModel extends ContentIndexViewModel
                 'folderId' => (int) $current->id,
                 'url' => ($uri = $current->getSourcePathInfo()['uri'] ?? null) !== null ? Url::cpUrl($uri) : null,
             ]);
-            $current = $current->getParent();
+            $current = $current->id === $root?->id ? null : $current->getParent();
         }
 
         return $crumbs;
     }
 
     /**
-     * The folder named by the request's `folderId`, if it's a subfolder of the
-     * selected volume source that the user can view.
+     * The folder named by the request's `folderId`, if it's within the
+     * selected volume source's folder and the user can view it.
      */
     private function folder(): ?VolumeFolder
     {
@@ -273,6 +284,7 @@ class ModalIndexViewModel extends ContentIndexViewModel
         if (
             $folder === null ||
             $folder->volumeId !== $root->volumeId ||
+            ! str_starts_with((string) $folder->path, (string) $root->path) ||
             Gate::denies('viewContents', $folder)
         ) {
             return null;
@@ -359,6 +371,24 @@ class ModalIndexViewModel extends ContentIndexViewModel
             page: $this->page,
             restrictTo: $this->restrictToSources,
         )->all();
+    }
+
+    /**
+     * A source the opener didn't allow, such as an Assets field's upload location in a volume it doesn't list,
+     * falls back to the first allowed one. Folders nested within an allowed source are allowed too.
+     */
+    #[\Override]
+    protected function allowsSource(string $sourceKey): bool
+    {
+        if ($this->restrictToSources === null) {
+            return true;
+        }
+
+        return array_any($this->sources(), function (array $source) use ($sourceKey): bool {
+            $allowedKey = $source['keyPath'] ?? $source['key'] ?? null;
+
+            return is_string($allowedKey) && $source['type'] !== ElementSources::TYPE_HEADING && ($sourceKey === $allowedKey || str_starts_with($sourceKey, "$allowedKey/"));
+        });
     }
 
     /** @return list<array<string, mixed>> */

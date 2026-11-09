@@ -280,6 +280,17 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     public function uiWarning(?ElementInterface $element = null): ?string;
 
     /**
+     * Rekeys the errors the field added to an element so the element's UI can show each one where it was raised.
+     *
+     * A field that shows nested elements' fields, such as Matrix, moves their errors from the keys it copied
+     * them to onto the paths of the nested controls.
+     *
+     * @param  array<string, list<string>>  $errors  The element's errors, keyed as {@see ElementInterface::uiErrors()} keys them
+     * @return array<string, list<string>>
+     */
+    public function uiErrors(ElementInterface $element, array $errors): array;
+
+    /**
      * Prepare the field value for validation.
      *
      * Use this method to normalize or transform the value before

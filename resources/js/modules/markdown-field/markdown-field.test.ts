@@ -1,8 +1,16 @@
 import {readFileSync} from 'node:fs';
-import {createApp, nextTick} from 'vue';
+import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import MarkdownControl from '../ui/MarkdownControl.vue';
 import './markdown-field';
+
+const {createElementSelectorModal} = vi.hoisted(() => ({
+  createElementSelectorModal: vi.fn(),
+}));
+vi.mock(
+  '@/modules/element-selector-modal/create-element-selector-modal',
+  () => ({createElementSelectorModal})
+);
 
 // The stylesheet's own text. happy-dom applies none of it, so an assertion
 // that went through the cascade would pass against anything — and the test
@@ -15,6 +23,7 @@ const styles = readFileSync(
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  createElementSelectorModal.mockReset();
   document.body.replaceChildren();
 });
 
@@ -49,6 +58,65 @@ it('turns off stats and the toolbar from the Vue Markdown Control', async () => 
 
   expect(field.showStats).toBe(false);
   expect(field.showToolbar).toBe(false);
+});
+
+// Autosave turns the edited element into a new draft partway through editing,
+// and the layout it returns then names that draft as the reference element.
+it('evaluates the Asset chooser against the element being edited now', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+  createElementSelectorModal.mockImplementation(async () => ({
+    show: vi.fn(),
+    destroy: vi.fn(),
+  }));
+  const control = reactive({
+    type: 'Markdown',
+    component: 'craft:markdown',
+    props: {
+      showToolbar: true,
+      toolbarButtons: ['asset'],
+      assetSources: ['volume:documents'],
+      assetReferenceElement: {
+        referenceElementId: 10,
+        referenceElementOwnerId: null,
+        referenceElementSiteId: 1,
+      },
+    },
+    path: ['body'],
+    mode: 'editable',
+    deltaGroup: ['body'],
+  });
+  const container = document.createElement('div');
+  document.body.append(container);
+  createApp(MarkdownControl, {
+    control,
+    value: '',
+    editable: true,
+    invalid: false,
+    required: false,
+  }).mount(container);
+  await nextTick();
+  const assetButton = () =>
+    container.querySelector<HTMLButtonElement>('button[title="Asset"]')!;
+
+  assetButton().click();
+  await vi.waitFor(() =>
+    expect(createElementSelectorModal).toHaveBeenCalledTimes(1)
+  );
+
+  control.props.assetReferenceElement = {
+    referenceElementId: 11,
+    referenceElementOwnerId: null,
+    referenceElementSiteId: 1,
+  };
+  await nextTick();
+  assetButton().click();
+
+  await vi.waitFor(() =>
+    expect(createElementSelectorModal).toHaveBeenLastCalledWith(
+      'CraftCms\\Cms\\Asset\\Elements\\Asset',
+      expect.objectContaining({referenceElementId: 11})
+    )
+  );
 });
 
 it('applies properties from the Vue Markdown Control', async () => {

@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Field\Events\EntryTypesForFieldResolving;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
@@ -28,6 +30,7 @@ use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\FieldLayout\FieldLayoutForm;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
+use Illuminate\Support\Facades\Event;
 use Symfony\Component\DomCrawler\Crawler;
 
 uses(DatabaseTestCase::class);
@@ -52,7 +55,7 @@ it('preserves owner-specific Matrix creation choices while rendering existing ex
     expect(Elements::saveElement($owner))->toBeTrue();
     $owner = Entry::find()->id($model->id)->one();
     $field = Fields::getFieldByHandle('blocks');
-    \Illuminate\Support\Facades\Event::listen(\CraftCms\Cms\Field\Events\EntryTypesForFieldResolving::class, function($event) use ($owner) {
+    Event::listen(EntryTypesForFieldResolving::class, function($event) use ($owner) {
         if ($event->element?->id === $owner->id) {
             $event->entryTypes = [$event->entryTypes[2], $event->entryTypes[1]];
         }
@@ -137,9 +140,17 @@ it('shows nested entry validation errors in legacy field layout forms', function
     $owner->setFieldValue('blocks', ['entries' => ["uid:$uid" => ['type' => 'card', 'title' => '']], 'sortOrder' => [$uid]]);
     $owner->setScenario(ElementRules::SCENARIO_LIVE);
 
-    expect(Elements::saveElement($owner))->toBeFalse()
-        ->and(new Crawler(FieldLayoutForm::fromLayout($owner->getFieldLayout(), $owner)->render())->filter('.error-list')->text())
-        ->toContain('The title field is required.');
+    expect(Elements::saveElement($owner))->toBeFalse();
+
+    // On the block's own Title field, rather than the form's error list.
+    $html = FieldLayoutForm::fromLayout($owner->getFieldLayout(), $owner)->render();
+    $ui = Json::decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'));
+
+    expect($ui['errors'])->toBe([[
+        'path' => ['fields', 'blocks', 'entries', $uid, 'title'],
+        'messages' => ['The title field is required.'],
+    ]])
+        ->and($ui['globalErrors'])->toBe([]);
 })->with([
     'Matrix' => LegacyMatrix::class,
     'plugin Matrix' => PluginMatrixUiField::class,

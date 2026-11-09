@@ -66,32 +66,12 @@ export class VolumeFolderSelectorController extends ElementSelectorController<Vo
    * of.
    */
   override indexParams(): Record<string, unknown> {
-    const params: Record<string, unknown> = {
+    return {
       ...super.indexParams(),
       foldersOnly: true,
       // Asset indexes only merge folders into their listing when asked to.
       showFolders: true,
     };
-
-    // Legacy callers nest these under `indexSettings`.
-    const {indexSettings} = this.options;
-    const defaultSource =
-      this.options.defaultSource ?? (indexSettings.defaultSource as string);
-    const path = (this.options.defaultSourcePath ??
-      indexSettings.defaultSourcePath ??
-      []) as SourcePathSegment[];
-
-    if (defaultSource) {
-      params.source = defaultSource;
-    }
-
-    const folderId = Number(path[path.length - 1]?.folderId);
-
-    if (Number.isFinite(folderId)) {
-      params.folderId = folderId;
-    }
-
-    return params;
   }
 
   override indexSettings(): Record<string, unknown> {

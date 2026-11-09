@@ -29,14 +29,17 @@ function assetsData(overrides: Partial<ContentIndexData> = {}) {
 
 let scope: ReturnType<typeof effectScope>;
 
-function mountIndex(initial = assetsData()) {
+function mountIndex(
+  initial = assetsData(),
+  params: Record<string, unknown> = {elementType: 'Asset'}
+) {
   scope = effectScope();
 
   return scope.run(() =>
     useModalElementIndex({
       action: 'element-selector-modals/body',
       initial,
-      params: {elementType: 'Asset'},
+      params,
     })
   )!;
 }
@@ -313,6 +316,29 @@ describe('leaving a folder', () => {
     index.changeSource(otherVolume.key);
 
     expect(lastQuery()).toMatchObject({source: otherVolume.key});
+    expect(lastQuery()).not.toHaveProperty('folderId');
+  });
+
+  // Such as an Assets field's upload location within its volume.
+  it('goes back to the volume’s root from the folder the modal opened in', async () => {
+    // Requested by its path, which the sidebar lists by the source's own key
+    const index = mountIndex(assetsData(), {
+      elementType: 'Asset',
+      source: `volume:xyz/${volume.key}`,
+      folderId: 5,
+    });
+
+    expect(index.activeSourceKey.value).toBe(volume.key);
+
+    // Any request made before leaving it, such as reaching into subfolders
+    index.setIncludeSubfolders(true);
+    expect(lastQuery()).toMatchObject({
+      source: `volume:xyz/${volume.key}`,
+      folderId: 5,
+    });
+
+    index.changeSource(volume.key);
+    expect(lastQuery()).toMatchObject({source: volume.key});
     expect(lastQuery()).not.toHaveProperty('folderId');
   });
 
