@@ -50,6 +50,7 @@ use CraftCms\Yii2Adapter\Asset\LegacyAssetFileKinds;
 use CraftCms\Yii2Adapter\Asset\LegacyAssetTransforms;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
+use CraftCms\Yii2Adapter\Console\AdapterCleanupCommand;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddTagsSupportCommand;
@@ -79,6 +80,8 @@ use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
 use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
 use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
+use CraftCms\Yii2Adapter\LooseEnds\LooseEndsUtility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
 use CraftCms\Yii2Adapter\SystemMessage\LegacySystemMessages;
@@ -173,6 +176,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
+        $this->callAfterResolving(UtilityTypes::class, fn(UtilityTypes $types) => $types->register(LooseEndsUtility::class));
         $this->app->singleton(Conditions::class, LegacyConditions::class);
         $this->callAfterResolving(UiNodeTypes::class, fn(UiNodeTypes $types) => $types->register(LegacyHtmlField::class));
         $this->callAfterResolving(UiControlTypes::class, fn(UiControlTypes $types) => $types->register(LegacyHtmlControl::class));
@@ -367,6 +371,7 @@ class Yii2ServiceProvider extends ServiceProvider
             DropCategoriesSupportCommand::class,
             DropGlobalSetsSupportCommand::class,
             DropTagsSupportCommand::class,
+            AdapterCleanupCommand::class,
             MigrateSessionsTableCommand::class,
             OffCommand::class,
             OnCommand::class,
@@ -398,6 +403,7 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         $this->app->terminating(function(): void {
+            $this->app->make(LegacyUsage::class)->flush();
             $this->triggerAfterRequestForLaravelRequest();
             Craft::getLogger()->flush(true);
         });

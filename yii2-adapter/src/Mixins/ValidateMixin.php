@@ -11,7 +11,7 @@ use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Yii2Adapter\Validation\LegacyElementRules;
 
 readonly class ValidateMixin
@@ -19,7 +19,7 @@ readonly class ValidateMixin
     public function hasErrors(): Closure
     {
         return function(?string $attribute = null): bool {
-            Deprecator::log($this::class . '->hasErrors', 'Calling `->hasErrors` is deprecated. Use `->errors()->has($attribute)` or `->errors()->isNotEmpty()` instead.');
+            LegacyUsage::record($this::class . '->hasErrors', 'Calling `->hasErrors` is deprecated. Use `->errors()->has($attribute)` or `->errors()->isNotEmpty()` instead.');
 
             /**
              * @var Element|Field|Field $this
@@ -35,7 +35,7 @@ readonly class ValidateMixin
     public function getErrors(): Closure
     {
         return function(?string $attribute = null): array {
-            Deprecator::log($this::class . '->getErrors', 'Calling `->getErrors` is deprecated. Use `->errors()->get($attribute)` or `->errors()->getMessages()` instead.');
+            LegacyUsage::record($this::class . '->getErrors', 'Calling `->getErrors` is deprecated. Use `->errors()->get($attribute)` or `->errors()->getMessages()` instead.');
 
             /**
              * @var Element|Field $this
@@ -52,7 +52,7 @@ readonly class ValidateMixin
     public function addErrors(): Closure
     {
         return function(array $items): void {
-            Deprecator::log($this::class . '->addErrors', 'Calling `->addErrors` is deprecated. Use `->errors()->merge($items)` instead.');
+            LegacyUsage::record($this::class . '->addErrors', 'Calling `->addErrors` is deprecated. Use `->errors()->merge($items)` instead.');
 
             /**
              * @var Element|Field $this
@@ -67,7 +67,7 @@ readonly class ValidateMixin
     public function addError(): Closure
     {
         return function(string $attribute, string $error = ''): void {
-            Deprecator::log($this::class . '->addError', 'Calling `->addError` is deprecated. Use `->errors()->add($attribute, $message)` instead.');
+            LegacyUsage::record($this::class . '->addError', 'Calling `->addError` is deprecated. Use `->errors()->add($attribute, $message)` instead.');
 
             /**
              * @var Volume|Widget|Element|Field|FieldLayoutComponent $this
@@ -81,7 +81,7 @@ readonly class ValidateMixin
     public function getFirstError(): Closure
     {
         return function(string $attribute): ?string {
-            Deprecator::log($this::class . '->getFirstError', 'Calling `->getFirstError` is deprecated. Use `->getFirstErrors()` instead.');
+            LegacyUsage::record($this::class . '->getFirstError', 'Calling `->getFirstError` is deprecated. Use `->getFirstErrors()` instead.');
 
             /**
              * @var Element|Field $this
@@ -95,7 +95,7 @@ readonly class ValidateMixin
     public function getErrorSummary(): Closure
     {
         return function($showAllErrors = false) {
-            Deprecator::log($this::class . '->getErrorSummary', 'Calling `->getErrorSummary` is deprecated. Use `->errors()->all()` instead.');
+            LegacyUsage::record($this::class . '->getErrorSummary', 'Calling `->getErrorSummary` is deprecated. Use `->errors()->all()` instead.');
 
             /**
              * @var \CraftCms\Cms\Validation\Contracts\Validatable $this
@@ -116,7 +116,7 @@ readonly class ValidateMixin
     public function setScenario(): Closure
     {
         return function(string $scenario) {
-            Deprecator::log($this::class . '->setScenario', 'Calling `->setScenario` is deprecated. Use `->ruleset->useScenario()` instead.');
+            LegacyUsage::record($this::class . '->setScenario', 'Calling `->setScenario` is deprecated. Use `->ruleset->useScenario()` instead.');
 
             /**
              * @var \CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset $this
@@ -130,7 +130,7 @@ readonly class ValidateMixin
     public function getScenario(): Closure
     {
         return function() {
-            Deprecator::log($this::class . '->getScenario', 'Calling `->getScenario` is deprecated. Use `->ruleset->getScenario()` instead.');
+            LegacyUsage::record($this::class . '->getScenario', 'Calling `->getScenario` is deprecated. Use `->ruleset->getScenario()` instead.');
 
             /**
              * @var \CraftCms\RulesetValidation\Contracts\ValidatesWithRuleset $this

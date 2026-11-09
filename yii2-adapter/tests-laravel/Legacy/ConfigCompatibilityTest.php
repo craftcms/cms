@@ -3,9 +3,7 @@
 declare(strict_types=1);
 
 use craft\config\GeneralConfig;
-use craft\services\Config as LegacyConfig;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -62,14 +60,11 @@ it('supports moved deprecated config settings', function(): void {
     expect(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeTrue();
 
     $config->generateTransformsBeforePageLoad = false;
-    $deprecation = collect(Deprecator::getRequestLogs())
-        ->firstWhere('key', 'generalConfig.generateTransformsBeforePageLoad');
 
     expect($config->defaultCookieDomain)->toBe('.example.test')
         ->and(config('session.domain'))->toBe('.example.test')
         ->and($config->generateTransformsBeforePageLoad)->toBeFalse()
         ->and(Context::getHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT))->toBeFalse()
-        ->and($deprecation?->message)->toBe('The `generateTransformsBeforePageLoad` config setting is deprecated. Configure immediate generation on the Craft asset transformer instead.')
         ->and($config->rememberedUserSessionDuration)->toBe(7200)
         ->and($config->verificationCodeDuration)->toBe(1800);
 });
@@ -85,10 +80,7 @@ it('accepts the deprecated system live setting without changing maintenance mode
         $config->isSystemLive(true);
 
         expect($config->isSystemLive)->toBeTrue()
-            ->and(app()->isDownForMaintenance())->toBeTrue()
-            ->and(collect(Deprecator::getRequestLogs())
-                ->firstWhere('key', 'generalConfig.isSystemLive')?->message)
-            ->toContain('Use Laravel maintenance mode instead.');
+            ->and(app()->isDownForMaintenance())->toBeTrue();
     } finally {
         app()->maintenanceMode()->deactivate();
     }
@@ -100,10 +92,7 @@ it('supports the deprecated application live status', function(): void {
 
         app()->maintenanceMode()->activate([]);
 
-        expect(Craft::$app->getIsLive())->toBeFalse()
-            ->and(collect(Deprecator::getRequestLogs())
-                ->firstWhere('key', 'Craft::$app->getIsLive()')?->message)
-            ->toContain('Use ! app()->isDownForMaintenance() instead.');
+        expect(Craft::$app->getIsLive())->toBeFalse();
     } finally {
         app()->maintenanceMode()->deactivate();
     }
@@ -134,51 +123,11 @@ it('applies a deprecated anchors.php config file unless the general config sets 
         ['anchorLinkText' => 'File'],
     );
 
-    expect($config->anchors->anchorLinkText)->toBe($expectedText)
-        ->and(collect(Deprecator::getRequestLogs())->firstWhere('key', 'config-anchors')?->message)
-        ->toContain('config/craft/anchors.php');
+    expect($config->anchors->anchorLinkText)->toBe($expectedText);
 })->with([
     'without general.php anchors' => [[], 'File'],
     'with general.php anchors' => [['anchors' => ['anchorLinkText' => 'General']], 'General'],
 ]);
-
-it('loads a legacy general config without logging deprecations for settings it leaves alone', function(): void {
-    Config::set('craft.general', GeneralConfig::create()->cpTrigger('control'));
-
-    $config = new LegacyConfig()->getConfigSettings(LegacyConfig::CATEGORY_GENERAL);
-
-    expect($config)->toBeInstanceOf(GeneralConfig::class)
-        ->and($config->cpTrigger)->toBe('control')
-        ->and(collect(Deprecator::getRequestLogs())->pluck('key')->filter(fn(string $key) => str_starts_with($key, 'generalConfig.')))
-        ->toBeEmpty();
-});
-
-it('logs a deprecation for each deprecated config setting that is set', function(string $method, mixed $value): void {
-    GeneralConfig::create()->{$method}($value);
-
-    expect(collect(Deprecator::getRequestLogs())->firstWhere('key', "generalConfig.$method")?->message)
-        ->toStartWith("The `$method` config setting is deprecated.");
-})->with(function(): iterable {
-    $samples = [
-        'bool' => true,
-        'int' => 13,
-        'string' => 'value',
-        'array' => [],
-        'mixed' => 3600,
-    ];
-
-    foreach (new ReflectionClass(GeneralConfig::class)->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-        if ($method->getAttributes(Deprecated::class) === [] || $method->name === 'tempAssetUploadFs') {
-            continue;
-        }
-
-        $type = $method->getParameters()[0]->getType();
-        $types = $type instanceof ReflectionUnionType ? $type->getTypes() : [$type];
-        $name = collect($types)->map(fn(ReflectionNamedType $type) => $type->getName())->first(fn(string $name) => isset($samples[$name]));
-
-        yield $method->name => [$method->name, $samples[$name]];
-    }
-});
 
 it('applies array general configs through the legacy settings', function(): void {
     $config = new GeneralConfigCompatibility()->convert([
@@ -190,8 +139,7 @@ it('applies array general configs through the legacy settings', function(): void
     expect($config)->toBeInstanceOf(GeneralConfig::class)
         ->and($config->cpTrigger)->toBe('control')
         ->and($config->defaultCookieDomain)->toBe('.example.test')
-        ->and(collect(Deprecator::getRequestLogs())->pluck('key'))
-        ->toContain('generalConfig.defaultCookieDomain', 'generalConfig.usePathInfo');
+        ->and($config->usePathInfo)->toBeTrue();
 });
 
 it('maps the renamed temp asset upload setting', function(): void {

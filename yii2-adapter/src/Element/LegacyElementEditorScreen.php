@@ -11,9 +11,9 @@ use CraftCms\Cms\Element\Events\ElementEditorContentResolving;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use ReflectionMethod;
 
 /**
@@ -61,7 +61,7 @@ class LegacyElementEditorScreen
         });
 
         if ($buttonsHtml !== '') {
-            Deprecator::log(
+            LegacyUsage::record(
                 'element-editor-additional-buttons',
                 sprintf(
                     'Additional buttons HTML for element edit pages (`getAdditionalButtons()`, `EVENT_DEFINE_ADDITIONAL_BUTTONS`, or `additionalButtonsHtml()`) is deprecated. Override `defineAdditionalButtonDescriptors()` or listen for `%s` instead.',

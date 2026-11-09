@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\HtmlPurifier;
 
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
@@ -37,34 +36,14 @@ readonly class LegacyHtmlPurifierConfigRegistrar
             try {
                 $legacyConfig = Json::decodeFromFile($file->getPathname());
             } catch (InvalidArgumentException) {
-                Deprecator::log(
-                    "htmlpurifier-config-invalid:$name",
-                    "Invalid HTML Purifier config at {$file->getPathname()}.",
-                    $file->getPathname(),
-                );
-
                 continue;
             }
 
             if (!is_array($legacyConfig)) {
-                Deprecator::log(
-                    "htmlpurifier-config-invalid:$name",
-                    "HTML Purifier config at {$file->getPathname()} must decode to an array.",
-                    $file->getPathname(),
-                );
-
                 continue;
             }
 
             $this->sanitizers->extend($name, new HtmlPurifierSanitizer($legacyConfig));
-
-            $message = "HTML Purifier config file [craft/htmlpurifier/$name.json] is deprecated. Register this sanitizer on the HtmlSanitizers facade instead.";
-
-            Deprecator::log(
-                "htmlpurifier-config:$name",
-                $message,
-                $file->getPathname(),
-            );
         }
     }
 }

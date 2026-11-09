@@ -7,7 +7,6 @@ namespace CraftCms\Yii2Adapter\Config;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
 
 readonly class GeneralConfigCompatibility
@@ -25,8 +24,6 @@ readonly class GeneralConfigCompatibility
         if ($overlay === null || $overlay === []) {
             return $this->toConfigObject($config);
         }
-
-        Deprecator::log('config-general-app-type', 'Using general.web.php and general.console.php configuration files is deprecated.');
 
         if (is_array($config)) {
             $overlay = $this->resolve($overlay, LegacyGeneralConfig::create());
@@ -55,8 +52,6 @@ readonly class GeneralConfigCompatibility
             return $config;
         }
 
-        Deprecator::log('config-anchors', 'The `config/craft/anchors.php` config file is deprecated. Move its settings to the `anchors` setting in `config/craft/general.php`.');
-
         if ($config->anchors == AnchorsConfig::create()) {
             $config->anchors($anchors);
         }
@@ -67,7 +62,6 @@ readonly class GeneralConfigCompatibility
     private function resolve(mixed $config, GeneralConfig $default): GeneralConfig|array
     {
         if (is_callable($config)) {
-            Deprecator::log('config-general-callable', 'Returning a callable from general.php is deprecated.');
             $config = $config($default);
         }
 

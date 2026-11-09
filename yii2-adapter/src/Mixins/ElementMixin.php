@@ -6,14 +6,14 @@ namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 
 class ElementMixin
 {
     public function getSourceId(): Closure
     {
         return function(): ?int {
-            Deprecator::log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
+            LegacyUsage::record(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
 
             /**
              * @var Element $this
@@ -27,7 +27,7 @@ class ElementMixin
     public function getSourceUid(): Closure
     {
         return function(): ?string {
-            Deprecator::log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
+            LegacyUsage::record(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
 
             /**
              * @var Element $this

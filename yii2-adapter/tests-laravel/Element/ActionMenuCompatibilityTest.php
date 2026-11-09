@@ -8,7 +8,6 @@ use craft\events\DefineMenuItemsEvent;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use Illuminate\Support\Facades\Crypt;
@@ -27,11 +26,6 @@ afterEach(function(): void {
 function legacyMenuDescriptor(EntryElement $entry, string $label, ElementActionContext $context = ElementActionContext::Editor): ?array
 {
     return collect($entry->actionMenuDescriptors($context))->firstWhere('label', $label);
-}
-
-function legacyMenuDeprecation(string $key): ?object
-{
-    return collect(Deprecator::getRequestLogs())->firstWhere('key', $key);
 }
 
 it('converts legacy event items into action menu descriptors', function(): void {
@@ -60,17 +54,15 @@ it('converts legacy event items into action menu descriptors', function(): void 
         ->and(Crypt::decrypt($sync['behavior']['redirect']))->toBe('entries')
         ->and(array_search('Sync', $labels))->toBeLessThan(array_search('Delete entry', $labels))
         ->and(end($labels))->toBe('Purge')
-        ->and(legacyMenuDescriptor($this->entry, 'Purge', ElementActionContext::Field))->toBeNull()
-        ->and(legacyMenuDeprecation('Element::EVENT_DEFINE_ACTION_MENU_ITEMS')?->file)->toBe(__FILE__);
+        ->and(legacyMenuDescriptor($this->entry, 'Purge', ElementActionContext::Field))->toBeNull();
 });
 
-it('drops legacy items that rely on JavaScript and says so', function(): void {
+it('drops legacy items that rely on JavaScript', function(): void {
     Event::on(LegacyEntry::class, LegacyEntry::EVENT_DEFINE_ACTION_MENU_ITEMS, function(DefineMenuItemsEvent $event) {
         $event->items[] = ['id' => 'my-plugin-action', 'label' => 'Do the thing'];
     });
 
-    expect(legacyMenuDescriptor($this->entry, 'Do the thing'))->toBeNull()
-        ->and(legacyMenuDeprecation('action-menu-item:Do the thing')?->file)->toBe(__FILE__);
+    expect(legacyMenuDescriptor($this->entry, 'Do the thing'))->toBeNull();
 });
 
 it('converts items a plugin element type adds by overriding the legacy methods', function(): void {
@@ -85,8 +77,7 @@ it('converts items a plugin element type adds by overriding the legacy methods',
     };
 
     expect(array_column($entry->actionMenuDescriptors(), 'label'))
-        ->toBe([...array_column($plain->actionMenuDescriptors(), 'label'), 'Plugin docs'])
-        ->and(legacyMenuDeprecation($entry::class . '::safeActionMenuItems')?->file)->toBe(__FILE__);
+        ->toBe([...array_column($plain->actionMenuDescriptors(), 'label'), 'Plugin docs']);
 });
 
 it('leaves legacy overrides alone once the element type provides descriptors', function(): void {
