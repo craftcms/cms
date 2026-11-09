@@ -1,0 +1,47 @@
+/* Shared by the Vue and server renderers of UI nodes. */
+
+/* Group::flat() — its children join the surrounding grid. */
+.group-flat {
+  display: contents;
+}
+
+.group-flat[hidden] {
+  display: none;
+}
+
+/* The field group places only its direct children, which a flat group's
+   children aren't, so they get the same placement here. */
+craft-field-group .group-flat > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+@container (min-width: 30rem) {
+  craft-field-group .group-flat > .width-25 {
+    grid-column: span 3;
+  }
+
+  craft-field-group .group-flat > .width-33 {
+    grid-column: span 4;
+  }
+
+  craft-field-group .group-flat > :is(.width-50, .width-66, .width-75) {
+    grid-column: span 6;
+  }
+}
+
+@container (min-width: 50rem) {
+  craft-field-group .group-flat > .width-66 {
+    grid-column: span 8;
+  }
+
+  craft-field-group .group-flat > .width-75 {
+    grid-column: span 9;
+  }
+}
+
+@container (min-width: 25rem) and (max-width: calc(50rem - 1px)) {
+  craft-field-group .group-flat > .width-25 {
+    grid-column: span 6;
+  }
+}

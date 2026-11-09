@@ -29,6 +29,8 @@
     expanded?: boolean;
     /** Renders the group as one field rather than a section — see `Nodes\Group`. */
     asField?: boolean;
+    /** Renders the children straight into the surrounding grid — see `Nodes\Group`. */
+    flat?: boolean;
     required?: boolean;
     instructions?: string | null;
     instructionsHtml?: string;
@@ -171,6 +173,26 @@
         {{ t('Loading') }}
       </craft-spinner>
     </craft-field>
+    <div
+      v-else-if="node.props.flat"
+      :class="{'group-flat': true, 'group-fields-loading': showLoading}"
+      :hidden="node.props.hidden || undefined"
+      :data-ui-node="node.uid"
+      :aria-busy="showLoading || undefined"
+    >
+      <UiNodeList
+        :nodes="node.children ?? []"
+        :values="values"
+        :errors="errors"
+        :touched-paths="touchedPaths"
+        :scope="scope"
+        :refreshable="refreshable"
+        @change="emit('change', $event)"
+      />
+      <craft-spinner v-if="showLoading" class="group-spinner" role="status">
+        {{ t('Loading') }}
+      </craft-spinner>
+    </div>
     <component
       v-else
       :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
@@ -187,7 +209,10 @@
       :data-ui-node="node.uid"
       :aria-busy="showLoading || undefined"
     >
-      <legend v-if="!node.props.collapsible && node.props.label">
+      <legend
+        v-if="!node.props.collapsible && node.props.label"
+        :class="{'sr-only': node.props.labelSrOnly}"
+      >
         {{ node.props.label }}
       </legend>
       <craft-field-group

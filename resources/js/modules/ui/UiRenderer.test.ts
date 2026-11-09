@@ -1397,6 +1397,81 @@ describe('UiRenderer', () => {
     );
   });
 
+  it('fills a Slot node from the renderer’s slot of the same name', async () => {
+    const withSlots: UiPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Slot',
+          component: 'craft:slot',
+          uid: 'filled',
+          props: {name: 'filled'},
+        },
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Slot',
+          component: 'craft:slot',
+          uid: 'unfilled',
+          props: {name: 'unfilled'},
+        },
+      ],
+      values: {},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(withSlots, {
+      slots: {filled: () => h('button', {'data-filled': ''}, 'Edit')},
+    });
+
+    expect(
+      container.querySelector('[data-ui-node="filled"] [data-filled]')
+        ?.textContent
+    ).toBe('Edit');
+    expect(container.querySelector('[data-ui-node="unfilled"]')).toBeNull();
+  });
+
+  it('renders a flat Group’s children with no fieldset of its own', async () => {
+    const flat: UiPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Group',
+          component: 'craft:group',
+          uid: 'flat',
+          props: {flat: true},
+          children: [
+            {
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+              component: 'craft:field',
+              props: {label: 'Name'},
+              control: {
+                type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+                component: 'craft:text',
+                props: {},
+                path: ['name'],
+                mode: 'editable',
+                deltaGroup: ['name'],
+              },
+            },
+          ],
+        },
+      ],
+      values: {name: 'Ada'},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(flat);
+
+    const group = container.querySelector('[data-ui-node="flat"]')!;
+
+    expect(group.classList.contains('group-flat')).toBe(true);
+    expect(group.querySelector('craft-field')).not.toBeNull();
+    expect(container.querySelector('fieldset')).toBeNull();
+  });
+
   it('accepts override values derived from reactive arrays', async () => {
     const overridden: UiPayload = {
       scope: [],

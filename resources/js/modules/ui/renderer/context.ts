@@ -21,7 +21,7 @@ export interface UiRendererContext {
   /** Hides the errors below `path` until new errors arrive. */
   clearChildErrors(path: string[]): void;
   childErrorsCleared(path: string[]): boolean;
-  /** Slots overriding the control at a dotted path. */
+  /** Slots overriding the control at a dotted path, or filling a Slot node of that name. */
   overrides: Readonly<Slots>;
   /** Whether the UI is disabled, submitting, or refreshing. */
   pending: Readonly<Ref<boolean>>;

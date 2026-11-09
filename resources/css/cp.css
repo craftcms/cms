@@ -27,6 +27,7 @@ CP Styles
 @import './slideout.css';
 @import './modal.css' layer(cp);
 @import './menu.css' layer(cp);
+@import './ui-nodes.css' layer(cp);
 
 :root {
   --cp-sidebar-width: calc(226rem / 16);
