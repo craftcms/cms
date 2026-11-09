@@ -134,7 +134,12 @@ class Color extends Control implements ReadableValueControl, WritableValueContro
     /** @param list<string> $presets */
     public function presets(array $presets): static
     {
-        $this->presets = $presets;
+        // Written as the Color field stores them, so `ff0000` is `#ff0000`,
+        // and without any that aren't colors, as the color input dropped them.
+        $this->presets = array_values(array_unique(array_filter(
+            array_map(self::normalizeColor(...), $presets),
+            fn (?string $color) => $color !== null,
+        )));
 
         return $this;
     }
@@ -147,9 +152,31 @@ class Color extends Control implements ReadableValueControl, WritableValueContro
      */
     public function presetLabels(array $labels): static
     {
-        $this->presetLabels = $labels;
+        $this->presetLabels = [];
+        foreach ($labels as $color => $label) {
+            $color = self::normalizeColor((string) $color);
+            if ($color !== null) {
+                $this->presetLabels[$color] = $label;
+            }
+        }
 
         return $this;
+    }
+
+    /**
+     * The color as {@see ColorRule::normalizeColor()} writes it, or `null` when
+     * it isn't a hex color or `transparent`.
+     */
+    private static function normalizeColor(string $color): ?string
+    {
+        $color = trim($color);
+        if ($color === '') {
+            return null;
+        }
+
+        $color = ColorRule::normalizeColor($color);
+
+        return $color === 'transparent' || preg_match('/^#[0-9a-f]{6}([0-9a-f]{2})?$/', $color) ? $color : null;
     }
 
     /**
