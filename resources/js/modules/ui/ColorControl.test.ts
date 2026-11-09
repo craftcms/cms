@@ -15,7 +15,7 @@ vi.mock('@craftcms/ui/components/select-color/select-color', () => {
 });
 vi.mock('@craftcms/ui/components/input-color/input-color', () => {
   class CraftInputColor extends HTMLElement {
-    modelValue: string | null = null;
+    value = '';
   }
   customElements.define('craft-input-color', CraftInputColor);
 
@@ -30,7 +30,7 @@ type ColorSelect = HTMLElement & {
   allowCustom: boolean;
 };
 
-type ColorInput = HTMLElement & {modelValue: string | null};
+type ColorInput = HTMLElement & {value: string};
 
 describe('ColorControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
@@ -76,11 +76,16 @@ describe('ColorControl', () => {
     return container;
   }
 
-  function pick(select: ColorSelect | ColorInput, modelValue: string) {
+  function pick(select: ColorSelect, modelValue: string) {
     select.modelValue = modelValue;
     select.dispatchEvent(
       new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
+  }
+
+  function type(input: ColorInput, value: string) {
+    input.value = value;
+    input.dispatchEvent(new Event('input', {bubbles: true}));
   }
 
   it('takes any color in a color input when there’s no palette', async () => {
@@ -109,13 +114,13 @@ describe('ColorControl', () => {
     expect(onUpdate).not.toHaveBeenCalled();
     expect(input.getAttribute('slot')).toBe('after');
     expect(input.getAttribute('name')).toBe('color[custom]');
-    expect(input.modelValue).toBe('#2563eb');
+    expect(input.value).toBe('#2563eb');
 
-    pick(input, '123456');
+    type(input, '123456');
     expect(onUpdate).toHaveBeenLastCalledWith('123456', 'discrete');
 
     // Typing a preset's color in doesn't take "Custom…" away mid-edit.
-    pick(input, 'e5422b');
+    type(input, 'e5422b');
     value.value = 'e5422b';
     await nextTick();
     expect(select.modelValue).toBe('__custom__');
@@ -127,7 +132,7 @@ describe('ColorControl', () => {
     const select = root.querySelector('craft-select-color') as ColorSelect;
     pick(select, '__custom__');
     await nextTick();
-    pick(root.querySelector('craft-input-color') as ColorInput, '123456');
+    type(root.querySelector('craft-input-color') as ColorInput, '123456');
     value.value = '123456';
     await nextTick();
 
@@ -139,9 +144,9 @@ describe('ColorControl', () => {
     value.value = '123456';
     await nextTick();
     expect(select.modelValue).toBe('__custom__');
-    expect(
-      (root.querySelector('craft-input-color') as ColorInput).modelValue
-    ).toBe('123456');
+    expect((root.querySelector('craft-input-color') as ColorInput).value).toBe(
+      '123456'
+    );
   });
 
   it('shows a color from elsewhere as a preset or as "Custom…"', async () => {
@@ -151,9 +156,9 @@ describe('ColorControl', () => {
     expect(select.modelValue).toBe('__custom__');
     expect(select.colors).toEqual(['#e5422b', '#2563eb']);
     expect(select.allowTransparent).toBe(false);
-    expect(
-      (root.querySelector('craft-input-color') as ColorInput).modelValue
-    ).toBe('#123456');
+    expect((root.querySelector('craft-input-color') as ColorInput).value).toBe(
+      '#123456'
+    );
 
     // As when a palette color is pasted in.
     value.value = 'E5422B';
