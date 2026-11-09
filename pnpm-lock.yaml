@@ -508,8 +508,8 @@ importers:
         version: 3.2.7(typescript@6.0.3)
     optionalDependencies:
       '@awesome.me/kit-ddaed3f5c5':
-        specifier: ^1.0.81
-        version: 1.0.81
+        specifier: ^1.0.110
+        version: 1.0.110
 
   packages/craftcms-browserslist-config: {}
 
@@ -703,8 +703,8 @@ importers:
         version: 4.15.2(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(webpack-cli@5.1.4)(webpack@5.102.1)
     optionalDependencies:
       '@awesome.me/kit-ddaed3f5c5':
-        specifier: ^1.0.81
-        version: 1.0.81
+        specifier: ^1.0.110
+        version: 1.0.110
 
   packages/craftcms-sass: {}
 
@@ -1041,8 +1041,8 @@ packages:
   '@atlaskit/pragmatic-drag-and-drop@1.8.1':
     resolution: {integrity: sha512-uXWNPpL8n4OmTVbduH7nq8pk8htqGo/prR5cYEE8sVCPJGAUMWn6lzvWTfI+4VCeQvHiDRODVz4YzH06OVAxhw==}
 
-  '@awesome.me/kit-ddaed3f5c5@1.0.81':
-    resolution: {integrity: sha512-RERmKSUwLd5dWuJ5Y/tIgw0ycWACYW2BwAEqHGw3mnPBdjdetjF7P5YXVNGrjiH5X/ZerJx/vExYrO8HAPv+kQ==}
+  '@awesome.me/kit-ddaed3f5c5@1.0.110':
+    resolution: {integrity: sha512-3DKvr5AIR/HL8slD5LKtX3yuzAsB7BYHBORK1GBcT4E8t56NmS1S7zVyRjKC0QZYFQMzZ8KHSLj1YdqjVOxNYw==}
     engines: {node: '>=16'}
 
   '@babel/code-frame@7.27.1':
@@ -2056,8 +2056,8 @@ packages:
   '@formatjs/intl-localematcher@0.8.6':
     resolution: {integrity: sha512-AZRgUxj0q93lyF7Z5lFS85bLINXuBLX4R3tCKicO6fSWo6cvh9GQfoR3B1WlsqQwefZ1QORTivhInx7gM6HUzQ==}
 
-  '@fortawesome/fontawesome-common-types@6.7.2':
-    resolution: {integrity: sha512-Zs+YeHUC5fkt7Mg1l6XTniei3k4bwG/yo3iFUtZWd/pMx9g3fdvkSK9E0FOC+++phXOka78uJcYb8JaFkW52Xg==}
+  '@fortawesome/fontawesome-common-types@7.3.1':
+    resolution: {integrity: sha512-k0C0sdHmZtAo6dRDtd1Z/qcpyHbL0CKsjV8seMY/21xGhY5Wsv0XRmiI/xEEH4y2c9b1+jvgNs/3EqhV27yUEA==}
     engines: {node: '>=6'}
 
   '@github/catalyst@1.7.0':
@@ -10293,9 +10293,9 @@ snapshots:
       bind-event-listener: 3.0.0
       raf-schd: 4.0.3
 
-  '@awesome.me/kit-ddaed3f5c5@1.0.81':
+  '@awesome.me/kit-ddaed3f5c5@1.0.110':
     dependencies:
-      '@fortawesome/fontawesome-common-types': 6.7.2
+      '@fortawesome/fontawesome-common-types': 7.3.1
     optional: true
 
   '@babel/code-frame@7.27.1':
@@ -11462,7 +11462,7 @@ snapshots:
     dependencies:
       '@formatjs/fast-memoize': 3.1.4
 
-  '@fortawesome/fontawesome-common-types@6.7.2':
+  '@fortawesome/fontawesome-common-types@7.3.1':
     optional: true
 
   '@github/catalyst@1.7.0': {}

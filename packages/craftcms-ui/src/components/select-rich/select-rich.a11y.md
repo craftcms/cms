@@ -22,7 +22,8 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 - [ ] The invoker's `aria-expanded` follows the open state. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
 - [ ] The invoker is named by the label and the selected option together (`aria-labelledby` lists the label and the invoker itself), so the current value is announced with the question. Per WCAG 4.1.2 (Name, Role, Value) and 1.3.1 (Info and Relationships). Not yet verified.
 - [ ] The listbox is named by the field's label. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
-- [ ] Help text and validation messages are referenced by the invoker's `aria-describedby`, and the invoker carries `aria-invalid` while an error is shown. Per WCAG 1.3.1 (Info and Relationships) and 3.3.1 (Error Identification). Not yet verified.
+- [ ] Help text and validation messages are referenced by the invoker's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships). Not yet verified.
+- [x] While an error is shown, the invoker carries `aria-invalid="true"`, and it goes back to `false` once the error clears. An `aria-invalid` set on the host overrides the validation state, and removing it hands control back. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Verified by `marks the invoker invalid from validation, unless the host says otherwise` in `select-rich.browser.test.ts`.
 - [ ] The chevron is a `craft-icon` with no `label`, so it stays `aria-hidden` and out of the name. Per WCAG 1.1.1 (Non-text Content). Not yet verified.
 - [ ] With `disabled`, the invoker carries `aria-disabled="true"`, leaves the Tab order and doesn't open. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
 - [ ] With a single option, the invoker keeps a role. Per WCAG 4.1.2 (Name, Role, Value). Known gap: Lion removes the invoker's `role`, `aria-haspopup` and `aria-expanded` when there's only one option, but the element stays focusable, so it's announced with no role.

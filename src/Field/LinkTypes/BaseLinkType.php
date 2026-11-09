@@ -94,15 +94,6 @@ abstract class BaseLinkType extends Component implements ConfigurableComponentIn
         ];
     }
 
-    /**
-     * Returns the input HTML that should be shown when this link type is selected.
-     *
-     * @param  Link  $field  The Link field
-     * @param  string|null  $value  The current value, if this link type was previously selected.
-     * @param  string  $containerId  The ID of the input’s container div.
-     */
-    abstract public function inputHtml(Link $field, ?string $value, string $containerId): string;
-
     abstract public function validateValue(string $value, ?string &$error = null): bool;
 
     public function isValueEmpty(string $value): bool
