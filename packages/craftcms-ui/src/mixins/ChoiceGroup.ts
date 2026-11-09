@@ -75,6 +75,14 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
 
     #observer = new MutationObserver(() => {
       this.#refreshChoices();
+
+      // Checking a radio from code unchecks the others without telling them.
+      if (!multiple) {
+        for (const option of this.choices) {
+          option._syncFromControl?.();
+        }
+      }
+
       this.#syncTabStops();
     });
 

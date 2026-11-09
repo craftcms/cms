@@ -199,6 +199,25 @@ describe('value', () => {
     ]);
   });
 
+  it('marks only the radio checked from code as checked', async () => {
+    const element = await createFromMarkup(SSR_MARKUP);
+    const radios = [...element.querySelectorAll('craft-radio')];
+    const events: string[] = [];
+    for (const type of ['input', 'change']) {
+      element.addEventListener(type, () => events.push(type));
+    }
+
+    radios[2]!.checked = true;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(radios.map((radio) => radio.hasAttribute('checked'))).toEqual([
+      false,
+      false,
+      true,
+    ]);
+    expect(events).toEqual([]);
+  });
+
   it('selects the option a value names, or none', async () => {
     const element = await createFromMarkup(NAMELESS);
 
