@@ -51,7 +51,7 @@ class UpdaterController extends BaseUpdaterController
         }
 
         if (
-            in_array($action->id, [self::ACTION_COMPOSER_INSTALL, self::ACTION_REVERT], true) &&
+            in_array($action->id, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE, self::ACTION_REVERT], true) &&
             (
                 !Craft::$app->getConfig()->getGeneral()->allowUpdates ||
                 !Craft::$app->getConfig()->getGeneral()->allowAdminChanges

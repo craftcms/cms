@@ -87,6 +87,8 @@ class UpdaterControllerTest extends TestCase
         return [
             'composer-install, allowUpdates off' => [BaseUpdaterController::ACTION_COMPOSER_INSTALL, false, true],
             'composer-install, allowAdminChanges off' => [BaseUpdaterController::ACTION_COMPOSER_INSTALL, true, false],
+            'composer-remove, allowUpdates off' => [BaseUpdaterController::ACTION_COMPOSER_REMOVE, false, true],
+            'composer-remove, allowAdminChanges off' => [BaseUpdaterController::ACTION_COMPOSER_REMOVE, true, false],
             'revert, allowUpdates off' => [UpdaterController::ACTION_REVERT, false, true],
             'revert, allowAdminChanges off' => [UpdaterController::ACTION_REVERT, true, false],
         ];
@@ -142,6 +144,8 @@ class UpdaterControllerTest extends TestCase
         $response = $this->runUpdaterAction(BaseUpdaterController::ACTION_PRECHECK, $data);
 
         self::assertSame(UpdaterController::ACTION_BACKUP, $response->data['nextAction']);
+        // Responses to globally signed data stay globally signed, so a pre-patch version can take the next step
+        self::assertNotFalse(Craft::$app->getSecurity()->validateData($response->data['data']));
     }
 
     private function beforeAction(string $class, string $controllerId, string $actionId, string $data): bool
