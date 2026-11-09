@@ -24,7 +24,7 @@ describe('ColorSelectControl', () => {
     container?.remove();
   });
 
-  async function mount(value: string, onUpdate = vi.fn()) {
+  async function mount(value: string, onUpdate = vi.fn(), required = false) {
     const control: UiControlPayload<{
       allowTransparent: boolean;
       blankLabel: string;
@@ -50,7 +50,7 @@ describe('ColorSelectControl', () => {
           value,
           editable: true,
           invalid: false,
-          required: false,
+          required,
           'onUpdate:value': onUpdate,
         }),
     });
@@ -63,6 +63,7 @@ describe('ColorSelectControl', () => {
       value: string | null;
       colors: string[];
       allowTransparent: boolean;
+      required?: boolean;
     };
   }
 
@@ -91,5 +92,11 @@ describe('ColorSelectControl', () => {
 
     pick(select, '__blank__');
     expect(onUpdate).toHaveBeenLastCalledWith('', 'discrete');
+  });
+
+  it('marks the select required when the field is', async () => {
+    const select = await mount('red', vi.fn(), true);
+
+    expect(select.required).toBe(true);
   });
 });

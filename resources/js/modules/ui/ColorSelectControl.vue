@@ -49,6 +49,7 @@
     .allowTransparent="control.props.allowTransparent === true"
     :blank-label="control.props.blankLabel"
     :colors="control.props.colors ?? undefined"
+    .required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="!editable"
     :invalid="invalid"
