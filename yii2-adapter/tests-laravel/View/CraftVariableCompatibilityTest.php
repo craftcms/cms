@@ -46,14 +46,15 @@ it('exposes behaviors attached from the legacy init event', function() {
                 return 'query:' . implode(',', $criteria);
             }
 
-            public function getTestBehaviorQuery(): string
-            {
-                return 'getter-query';
-            }
-
             public function getTestBehaviorGetter(): string
             {
                 return 'getter';
+            }
+        });
+        $event->sender->attachBehavior('test2', new class() extends Behavior {
+            public function getTestBehaviorQuery(): string
+            {
+                return 'getter-query';
             }
         });
     });
