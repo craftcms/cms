@@ -1,7 +1,8 @@
 <script setup lang="ts">
-  import {useEventListener} from '@vueuse/core';
+  import {tryOnScopeDispose, useEventListener} from '@vueuse/core';
   import {computed, inject, ref, shallowRef, watch} from 'vue';
   import {useSelectable} from '@/common/composables/useSelectable';
+  import {onElementChanged} from '@/modules/elements/element-instances';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
   import NestedElementsCards from './NestedElementsCards.vue';
   import {useNestedElementsControl} from './nested-elements-context';
@@ -77,6 +78,27 @@
     markModified: controlContext.markModified,
   });
   watch(cards, () => selection.prune());
+
+  // Cards saved in another tab are redrawn by their owner, once for all the
+  // cards saved together. Changes made here refresh it where they happen, as
+  // does an operation that's under way.
+  let refreshQueued = false;
+  tryOnScopeDispose(
+    onElementChanged((id) => {
+      const shown =
+        id === null
+          ? cards.value.length > 0
+          : cards.value.some((card) => card.id === id);
+      if (!shown || !owner?.refresh || refreshQueued || operations.busy.value) {
+        return;
+      }
+      refreshQueued = true;
+      queueMicrotask(() => {
+        refreshQueued = false;
+        owner.refresh?.({changedElsewhere: true}).catch(() => {});
+      });
+    })
+  );
 
   useEventListener(window, 'craft:nested-validation', (event: Event) => {
     if (

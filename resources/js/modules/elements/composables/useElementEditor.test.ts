@@ -1280,8 +1280,10 @@ describe('useElementEditor', () => {
 
     expect(editor.activity.isStale.value).toBe(false);
 
-    // Something that changes it afterwards is still someone else's edit.
+    // Something that changes it afterwards is still someone else's edit,
+    // even when it redraws the nested element it saved.
     serverStamp = 3;
+    await editor.nestedOwnerEditor.refresh!({changedElsewhere: true});
     await editor.activity.poll();
 
     expect(editor.activity.isStale.value).toBe(true);
