@@ -13,6 +13,7 @@ import '../indicator/indicator.js';
 import '../button/button.js';
 import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
 import {FormControl} from '@src/mixins/FormControl';
+import {FormAssociated, type FormValue} from '@src/mixins/FormAssociated';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {colors} from '@src/constants/colors';
 import {variants} from '@src/constants/variants';
@@ -143,10 +144,9 @@ interface EntryRun {
  * @fires change - Emitted when the value is committed: an option is selected,
  *   or the field is left after typing.
  */
-export default class CraftCombobox extends FormControl(LitElement) {
-  /** Lets the combobox post its value with its form, through `ElementInternals`. */
-  static formAssociated = true;
-
+export default class CraftCombobox extends FormAssociated(
+  FormControl(LitElement)
+) {
   static override styles = [
     formControlStyles,
     visuallyHiddenStyles,
@@ -159,9 +159,6 @@ export default class CraftCombobox extends FormControl(LitElement) {
 
   /** Maximum number of matching options rendered at once (performance guard). */
   @property({type: Number}) limit = 150;
-
-  /** The field name the value posts under. */
-  @property({reflect: true}) name = '';
 
   /**
    * Whether more than one option may be selected. Each selected value posts
@@ -243,8 +240,6 @@ export default class CraftCombobox extends FormControl(LitElement) {
   /** The `aria-labelledby` ids the textbox got from the host and selection. */
   #addedLabelledBy: string[] = [];
 
-  #internals?: ElementInternals;
-  #inputs?: HTMLSpanElement;
   #initialValue: ComboboxValue = '';
   #fieldsetDisabled = false;
   #filtering = false;
@@ -263,10 +258,6 @@ export default class CraftCombobox extends FormControl(LitElement) {
 
   constructor() {
     super();
-
-    if (typeof this.attachInternals === 'function') {
-      this.#internals = this.attachInternals();
-    }
 
     this.addEventListener('focusout', this.#onFocusOut);
   }
@@ -429,7 +420,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       listbox?.removeAttribute('aria-multiselectable');
     }
 
-    this.#syncForm();
+    this.#syncValidity();
 
     this.toggleAttribute(
       'has-prefix-icon',
@@ -818,7 +809,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       this.open = false;
     }
     this.#renderOptions();
-    this.#syncInputs();
+    this._syncFormValue();
     emitInput(this, inputType);
     this.#committedValue = this.value;
     // An `input` listener may have put the value back; that's no commit.
@@ -1320,64 +1311,30 @@ export default class CraftCombobox extends FormControl(LitElement) {
 
   // ─── Forms ────────────────────────────────────────────────────────────
 
-  #syncForm(): void {
-    this.#internals?.setFormValue?.(null);
-    this.#syncInputs();
+  #syncValidity(): void {
+    const missing =
+      this.multiple &&
+      this.required &&
+      !this.disabled &&
+      !this.readOnly &&
+      !this.#fieldsetDisabled &&
+      (this.value as string[]).length === 0;
 
-    if (this.multiple) {
-      const missing =
-        this.required &&
-        !this.disabled &&
-        !this.readOnly &&
-        !this.#fieldsetDisabled &&
-        (this.value as string[]).length === 0;
-      this.#internals?.setValidity?.(
-        missing ? {valueMissing: true} : {},
-        missing ? t('This field is required.') : '',
-        this._inputNode
-      );
-      return;
-    }
-
-    this.#internals?.setValidity?.({});
+    this._setValidity(
+      missing ? {valueMissing: true} : {},
+      missing ? t('This field is required.') : '',
+      this._inputNode
+    );
   }
 
-  /**
-   * Posts through hidden inputs rather than `ElementInternals`, so a page that
-   * serializes its form's native controls, such as with jQuery's
-   * `serialize()`, sees each value.
-   */
-  #syncInputs(): void {
-    if (!this.#inputs) {
-      this.#inputs = document.createElement('span');
-      this.#inputs.hidden = true;
-      this.#inputs.slot = 'native-inputs';
-      this.#inputs.setAttribute('data-combobox-inputs', '');
-      this.append(this.#inputs);
+  override _formValue(): FormValue {
+    if (this.#fieldsetDisabled) {
+      return null;
     }
 
-    render(
-      !this.name || this.disabled || this.#fieldsetDisabled
-        ? nothing
-        : !this.multipleChoice
-          ? html`<input
-              type="hidden"
-              name=${this.name}
-              .value=${this.value as string}
-            />`
-          : html`
-              <input type="hidden" name=${this.name} value="" />
-              ${(this.value as string[]).map(
-                (value) =>
-                  html`<input
-                    type="hidden"
-                    name=${`${this.name}[]`}
-                    .value=${value}
-                  />`
-              )}
-            `,
-      this.#inputs
-    );
+    return this.multiple
+      ? [...(this.value as string[])]
+      : (this.value as string);
   }
 
   /** Restores the initial value when the owning form is reset. */
@@ -1385,14 +1342,14 @@ export default class CraftCombobox extends FormControl(LitElement) {
     this.value = this.#initialValue;
     this.#committedValue = this.value;
     this.#syncTextbox();
-    this.#syncInputs();
+    this._syncFormValue();
   }
 
   /** Tracks whether an ancestor `<fieldset>` has disabled the control. */
   formDisabledCallback(disabled: boolean): void {
     this.#fieldsetDisabled = disabled;
     this.requestUpdate();
-    this.#syncInputs();
+    this._syncFormValue();
   }
 }
 

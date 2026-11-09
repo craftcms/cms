@@ -1,7 +1,7 @@
 import {html, LitElement, type PropertyValues} from 'lit';
 import {property, query} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
-import {FormAssociated} from '@src/mixins/FormAssociated';
+import {FormAssociated, type FormValue} from '@src/mixins/FormAssociated';
 import {t} from '@src/utilities/translate';
 import styles from './slide-rule.styles.js';
 
@@ -68,11 +68,11 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
     return !this.disabled && !this._formDisabled;
   }
 
-  override _formValue(): string | null {
-    return this.name ? String(this.value) : null;
+  override _formValue(): string {
+    return String(this.value);
   }
 
-  override _restoreFormValue(value: string | null): void {
+  override _restoreFormValue(value: FormValue): void {
     this.value = Math.min(Math.max(Number(value ?? 0), this.min), this.max);
   }
 

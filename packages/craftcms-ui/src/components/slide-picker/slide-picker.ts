@@ -70,8 +70,6 @@ export default class CraftSlidePicker extends FormAssociated(
    */
   @property({attribute: false}) valueLabel?: (value: number) => string;
 
-  #input?: HTMLInputElement;
-
   /** The value a form reset goes back to, read on first connect. */
   #defaultValue?: number;
 
@@ -98,10 +96,8 @@ export default class CraftSlidePicker extends FormAssociated(
     super.disconnectedCallback();
   }
 
-  // The hidden input posts the value, so `ElementInternals` posts nothing.
-  // oxlint-disable-next-line class-methods-use-this
-  override _formValue(): string | null {
-    return null;
+  override _formValue(): string {
+    return String(this.value);
   }
 
   /** Restores the starting value when the owning form is reset. */
@@ -159,31 +155,6 @@ export default class CraftSlidePicker extends FormAssociated(
       slider.disabled = this.disabled || this._formDisabled;
       slider.valueText = (value) => this.#valueText(value);
     }
-
-    this.#syncInput();
-  }
-
-  /** Posts the value through a hidden input while the picker has a name. */
-  #syncInput(): void {
-    if (!this.name) {
-      this.#input?.remove();
-      return;
-    }
-
-    if (!this.#input) {
-      this.#input = document.createElement('input');
-      this.#input.type = 'hidden';
-      // A slot the shadow root doesn't render.
-      this.#input.slot = 'form-value';
-    }
-
-    if (this.#input.parentNode !== this) {
-      this.append(this.#input);
-    }
-
-    this.#input.name = this.name;
-    this.#input.value = String(this.value);
-    this.#input.disabled = this.disabled;
   }
 
   /** Focuses the slider, as a `craft-field` does when its label is clicked. */

@@ -33,9 +33,8 @@ import {uniqueId} from '@src/utilities/unique-id';
  *
  * It is form-associated: it belongs to its `<form>`, follows an ancestor
  * `<fieldset disabled>`, and goes back to its initial option on `form.reset()`.
- * The value posts through a hidden light-DOM input rather than
- * `ElementInternals`, because jQuery's `serialize()` and
- * `serializeFormInputs()` only read native controls.
+ * The value posts through a hidden light-DOM input, so jQuery's
+ * `serialize()` and `serializeFormInputs()` see it.
  *
  * @attr {string} name - Field name. The control posts under this, like any
  * other input. Supplied by the `FormAssociated` mixin.
@@ -86,8 +85,6 @@ export default class CraftSelectRich extends FormAssociated(
     this.requestUpdate('value', old);
   }
 
-  #input?: HTMLInputElement;
-
   /** The value a form reset goes back to, read once the options are in. */
   #defaultValue = '';
 
@@ -99,12 +96,16 @@ export default class CraftSelectRich extends FormAssociated(
   #typeahead = new Typeahead();
 
   #observer = new MutationObserver((records) => {
-    // The field's copy of the selection and the hidden input change with
+    // The field's copy of the selection and the hidden inputs change with
     // every sync, so only changes to the options themselves count.
     const own = (node: Node) =>
       node === this._inputNode ||
-      node === this.#input ||
-      Boolean(this._inputNode?.contains(node));
+      Boolean(this._inputNode?.contains(node)) ||
+      Boolean(
+        (node instanceof Element ? node : node.parentElement)?.closest(
+          '[slot="form-value"]'
+        )
+      );
 
     if (records.some((record) => !own(record.target))) {
       this.#onOptionsChanged();
@@ -203,16 +204,14 @@ export default class CraftSelectRich extends FormAssociated(
     super.disconnectedCallback();
   }
 
-  // The hidden input posts the value, so `ElementInternals` posts nothing.
-  // oxlint-disable-next-line class-methods-use-this
-  override _formValue(): string | null {
-    return null;
+  override _formValue(): string {
+    return this.#value;
   }
 
   /** Selects the option that was selected on load when the owning form resets. */
   formResetCallback() {
     this.value = this.#defaultValue;
-    this.#syncInput();
+    this._syncFormValue();
   }
 
   // ─── Options and value ────────────────────────────────────────────────
@@ -260,7 +259,7 @@ export default class CraftSelectRich extends FormAssociated(
     }
 
     this.#syncInvoker();
-    this.#syncInput();
+    this._syncFormValue();
     this.requestUpdate();
     void this.updateComplete.then(() => this.#alignInvokerWidth());
   }
@@ -290,7 +289,7 @@ export default class CraftSelectRich extends FormAssociated(
     }
 
     this.#syncInvoker();
-    this.#syncInput();
+    this._syncFormValue();
   }
 
   /** An option selected from outside, by setting its `selected`. */
@@ -382,29 +381,6 @@ export default class CraftSelectRich extends FormAssociated(
     }
   }
 
-  #syncInput(): void {
-    if (!this.name) {
-      this.#input?.remove();
-
-      return;
-    }
-
-    if (!this.#input) {
-      this.#input = document.createElement('input');
-      this.#input.type = 'hidden';
-      // A slot the shadow root doesn't render.
-      this.#input.slot = 'form-value';
-    }
-
-    if (this.#input.parentNode !== this) {
-      this.append(this.#input);
-    }
-
-    this.#input.name = this.name;
-    this.#input.value = this.#value;
-    this.#input.disabled = this.disabled;
-  }
-
   /**
    * Gives the field at least the width of the widest option, up to its
    * container's, so it doesn't change size with the selection.
@@ -451,7 +427,7 @@ export default class CraftSelectRich extends FormAssociated(
     }
 
     if (changed.has('name') || changed.has('disabled')) {
-      this.#syncInput();
+      this._syncFormValue();
     }
 
     if (this.open) {

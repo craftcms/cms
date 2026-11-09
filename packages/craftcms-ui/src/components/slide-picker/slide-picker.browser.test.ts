@@ -219,7 +219,7 @@ it('keeps its value when the form reset is canceled', async () => {
   const form = document.querySelector('form')!;
   const picker =
     document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
-  const input = form.querySelector('input')!;
+  const input = form.querySelector<HTMLInputElement>('input[name="title"]')!;
   await picker.updateComplete;
   form.addEventListener('reset', (event) => event.preventDefault());
 
