@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Wymagane',
     'Requirements' => 'Wymagania',
     'Requires PHP {version}' => 'Wymaga PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Ponowne zapisywanie wpisów {name}',
     'Resaving {type} entries' => 'Ponowne zapisywanie elementów typu {type}',
     'Resaving {type}' => '{type} – ponowne zapisywanie',
