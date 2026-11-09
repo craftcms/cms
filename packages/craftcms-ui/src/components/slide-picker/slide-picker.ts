@@ -116,6 +116,7 @@ export default class CraftSlidePicker extends HostAriaReferences(
   #onSliderInput = (event: Event): void => {
     event.stopPropagation();
     this.value = Number((event.target as CraftSlidePickerSlider).value);
+    this.#syncInput();
     emitInput(this);
     emitChange(this);
   };

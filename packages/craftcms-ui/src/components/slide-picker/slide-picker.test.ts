@@ -260,6 +260,20 @@ describe('craft-slide-picker in a form', () => {
     expect(new FormData(form).get('columns')).toBe('50');
   });
 
+  it('posts the picked value by the time it emits input and change', async () => {
+    const {form, element} = await createInForm({name: 'columns'});
+    const posted: Record<string, FormDataEntryValue | null> = {};
+    for (const type of ['input', 'change']) {
+      element.addEventListener(type, () => {
+        posted[type] = new FormData(form).get('columns');
+      });
+    }
+
+    segments(element)[5]!.click();
+
+    expect(posted).toEqual({input: '50', change: '50'});
+  });
+
   it('posts nothing without a name', async () => {
     const {form} = await createInForm({value: 30});
 
