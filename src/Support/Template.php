@@ -214,13 +214,14 @@ class Template
         HtmlStack::js($js, $position, $key);
     }
 
-    public static function script(string $script, int|Position $position = Position::BodyEnd): void
+    /** @param array<string, mixed> $options */
+    public static function script(string $script, int|Position $position = Position::BodyEnd, array $options = []): void
     {
         if (is_int($position)) {
             $position = Position::from($position);
         }
 
-        HtmlStack::script($script, $position);
+        HtmlStack::script($script, $position, $options);
     }
 
     /**
