@@ -205,6 +205,48 @@ class GraphqlOAuthCest
         $I->expectThrowable(OAuthServerException::class, fn() => Craft::$app->getOAuth()->authenticate($request, 'mcp'));
     }
 
+    public function testRevokingTheLastGrantLeavesTheTokensScreen(FunctionalTester $I): void
+    {
+        foreach (['test-mcp', 'test-mcp-2'] as $clientId) {
+            Craft::$app->getDb()->createCommand()->insert(Table::OAUTH_CLIENTS, [
+                'id' => $clientId,
+                'name' => 'Test MCP client',
+                'redirect_uris' => '["https://client.example/callback"]',
+                'grant_types' => '["authorization_code","refresh_token"]',
+                'scopes' => '["mcp:read","mcp:write","mcp:admin"]',
+                'revoked' => false,
+            ])->execute();
+        }
+        Craft::$app->get('mcp')->getSettings()->enabled = true;
+        $general = Craft::$app->getConfig()->getGeneral();
+        $user = $this->user(['accessCp']);
+        $this->token($user, Mcp::SCOPE_READ, 'mcp', 'test-mcp');
+        $this->token($user, Mcp::SCOPE_READ, 'mcp', 'test-mcp-2');
+        $I->amLoggedInAs($user);
+
+        // Without GraphQL, the Tokens screen is only there while the user has something to revoke
+        $general->enableGql = false;
+        try {
+            $I->amOnPage("/$general->cpTrigger/myaccount");
+            $csrfToken = $I->grabValueFrom("#main-form input[name=\"$general->csrfTokenName\"]");
+
+            foreach (['test-mcp-2' => '/myaccount/tokens', 'test-mcp' => '/myaccount'] as $clientId => $path) {
+                $I->haveHttpHeader('Accept', 'application/json');
+                $I->sendAjaxPostRequest("/$general->cpTrigger/actions/users/revoke-token", [
+                    $general->csrfTokenName => $csrfToken,
+                    'clientId' => $clientId,
+                ]);
+                $redirect = Json::decode($I->grabPageSource())['redirect'];
+                $I->assertStringEndsWith($path, $redirect);
+                $I->deleteHeader('Accept');
+                $I->amOnPage(parse_url($redirect, PHP_URL_PATH));
+                $I->seeResponseCodeIs(200);
+            }
+        } finally {
+            $general->enableGql = true;
+        }
+    }
+
     public function testInvalidTokensAreRejected(FunctionalTester $I): void
     {
         $I->haveHttpHeader('Authorization', 'Bearer aaa.bbb.ccc');

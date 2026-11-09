@@ -1750,13 +1750,16 @@ JS, ['users/token-modal']);
         $this->requirePostRequest();
         $this->requireCpRequest();
 
+        $user = static::currentUser();
         Craft::$app->getPersonalAccessTokens()->revoke(
-            static::currentUser(),
+            $user,
             $this->request->getRequiredBodyParam('clientId'),
             $this->request->getBodyParam('tokenId') ?: null,
         );
 
-        return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl('myaccount/tokens'));
+        // The Tokens screen goes away once there's nothing left to list or create
+        $path = $this->showTokensScreen($user) ? 'myaccount/tokens' : 'myaccount';
+        return $this->asSuccess(Craft::t('app', 'Access revoked.'), redirect: UrlHelper::cpUrl($path));
     }
 
     /**
