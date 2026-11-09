@@ -162,6 +162,15 @@ it('applies fluent application type overlay settings after the base general conf
     'callable' => ['fn(\craft\config\GeneralConfig $config) => $config->cpTrigger("base")->enableCsrfProtection(false)'],
 ]);
 
+it('does not apply a callable general config that an application type overlay replaces', function(): void {
+    registerGeneralConfigFiles([
+        'general' => 'fn(\craft\config\GeneralConfig $config) => $config->enableCsrfProtection(false)',
+        'general.console' => 'fn() => \craft\config\GeneralConfig::create()',
+    ]);
+
+    expect(app(PreventRequestForgery::class)->getExcludedPaths())->not->toContain('*');
+});
+
 it('applies multi-environment application type overlays to the base general config', function(string $general): void {
     $config = registerGeneralConfigFiles([
         'general' => $general,

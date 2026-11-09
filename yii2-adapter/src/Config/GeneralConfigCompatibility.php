@@ -55,7 +55,8 @@ readonly class GeneralConfigCompatibility
             return [Arr::except($config, ['web', 'console']), $overlay];
         }
 
-        $config = $this->resolve($base, LegacyGeneralConfig::create());
+        // A callable base is left for convert(), which holds back its side effects, or skips it when the overlay replaces it
+        $config = $base;
         $overlayPath = $app->configPath("craft/general.{$appType}.php");
 
         if ($overlay instanceof GeneralConfig && is_file($overlayPath)) {
