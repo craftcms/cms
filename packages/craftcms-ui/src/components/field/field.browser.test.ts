@@ -1,6 +1,9 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
-import {computeAccessibleName} from 'dom-accessibility-api';
+import {
+  computeAccessibleDescription,
+  computeAccessibleName,
+} from 'dom-accessibility-api';
 import type CraftField from './field.js';
 import {LitElement} from 'lit';
 import {FormControl} from '@src/mixins/FormControl';
@@ -134,6 +137,53 @@ describe('spacing', () => {
     );
   });
 });
+
+it.each([
+  [
+    'a nested craft control',
+    '<craft-field label="Width"><craft-input slot="input"><input slot="input"></craft-input></craft-field>',
+    'input',
+  ],
+  [
+    'a group',
+    '<craft-field label="Width" fieldset><input slot="input" type="checkbox"></craft-field>',
+    'craft-field',
+  ],
+])(
+  'drops replaced and cleared labelled-by and described-by references from %s',
+  async (_case, markup, target) => {
+    document.body.innerHTML = `<span id="name-a">Alpha</span><span id="name-b">Beta</span><span id="desc-a">First</span><span id="desc-b">Second</span>${markup}`;
+    const field = document.querySelector<CraftField>('craft-field')!;
+    const element = document.querySelector<HTMLElement>(target)!;
+    await field.updateComplete;
+    const reference = async (
+      labelledBy: string | null,
+      describedBy: string | null
+    ) => {
+      field.labelledBy = labelledBy;
+      field.describedBy = describedBy;
+      await field.updateComplete;
+      return {
+        name: computeAccessibleName(element).trim(),
+        description: computeAccessibleDescription(element).trim(),
+      };
+    };
+
+    const first = await reference('name-a', 'desc-a');
+    expect(first.name).toContain('Alpha');
+    expect(first.description).toBe('First');
+
+    const replaced = await reference('name-b', 'desc-b');
+    expect(replaced.name).toContain('Beta');
+    expect(replaced.name).not.toContain('Alpha');
+    expect(replaced.description).toBe('Second');
+
+    expect(await reference(null, null)).toEqual({
+      name: 'Width',
+      description: '',
+    });
+  }
+);
 
 it('exposes translation help on keyboard focus and dismisses it with Escape', async () => {
   const field = document.createElement('craft-field');

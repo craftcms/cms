@@ -19,10 +19,12 @@ import {t} from '@src/utilities/translate';
 
 type FormControlTarget = HTMLElement & {
   addToAriaLabelledBy(element: HTMLElement, config?: AriaReferenceConfig): void;
+  removeFromAriaLabelledBy(element: HTMLElement): void;
   addToAriaDescribedBy(
     element: HTMLElement,
     config?: AriaReferenceConfig
   ): void;
+  removeFromAriaDescribedBy(element: HTMLElement): void;
 };
 
 /**
@@ -284,6 +286,38 @@ export default class CraftField extends FormControl(LitElement) {
     }
 
     super.addToAriaDescribedBy(element, customConfig);
+  }
+
+  /** Takes a label back from wherever `addToAriaLabelledBy()` gave it. */
+  override removeFromAriaLabelledBy(element: HTMLElement): void {
+    const control = this.__formControlTarget();
+    if (control) {
+      control.removeFromAriaLabelledBy(element);
+      return;
+    }
+
+    if (this.fieldset || !this.__hasNativeLabelTarget()) {
+      this.__removeGroupAriaReference('aria-labelledby', element);
+      return;
+    }
+
+    super.removeFromAriaLabelledBy(element);
+  }
+
+  /** Takes a description back from wherever `addToAriaDescribedBy()` gave it. */
+  override removeFromAriaDescribedBy(element: HTMLElement): void {
+    const control = this.__formControlTarget();
+    if (control) {
+      control.removeFromAriaDescribedBy(element);
+      return;
+    }
+
+    if (this.fieldset || !this.__hasNativeLabelTarget()) {
+      this.__removeGroupAriaReference('aria-describedby', element);
+      return;
+    }
+
+    super.removeFromAriaDescribedBy(element);
   }
 
   // `readOnly` (attribute: `readonly`) renders the read-only badge in the
@@ -563,6 +597,21 @@ export default class CraftField extends FormControl(LitElement) {
     );
     ids.add(element.id);
     this.setAttribute(attribute, [...ids].join(' '));
+  }
+
+  private __removeGroupAriaReference(
+    attribute: 'aria-labelledby' | 'aria-describedby',
+    element: HTMLElement
+  ): void {
+    const ids = (this.getAttribute(attribute) ?? '')
+      .split(/\s+/)
+      .filter((id) => id && id !== element.id);
+
+    if (ids.length) {
+      this.setAttribute(attribute, ids.join(' '));
+    } else {
+      this.removeAttribute(attribute);
+    }
   }
 
   private __syncHasErrors(): void {
