@@ -53,16 +53,11 @@
       </div>
     </section>
   {% else %}
-    <div class="grid gap-3">
-      <p>
-        {{ 'Here’s what still depends on the Yii2 adapter, and what’s left before you can uninstall it.'|t('yii2-adapter') }}
-      </p>
-      <p class="text-sm">
-        {{ 'Code is only reported once it has run in this environment ({env}), and only when it belongs to the project. Plugins and packages that need the adapter are listed on their own.'|t('yii2-adapter', {
-          env: environment,
-        }) }}
-      </p>
-    </div>
+    <craft-callout variant="info">
+      {{ '{count, number} {count, plural, =1{issue was} other{issues were}} detected, which must be resolved before it’s safe to remove the Yii2 adapter from this project.'|t('yii2-adapter', {
+        count: outstanding,
+      }) }}
+    </craft-callout>
 
     {% for section in sections %}
       {% set headingId = "loose-ends-section-#{loop.index}" %}
@@ -131,45 +126,43 @@
               {% set action = item.action %}
               {% if action or item.resolveUrl %}
                 {% set srTitle = item.title|replace("`", "") %}
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  {% if item.lastSeen %}
-                    <p class="text-sm">
-                      {{ 'Last seen {time}'|t('yii2-adapter', {time: item.lastSeen|timestamp(withPreposition: true)}) }}
-                    </p>
+                {% if item.lastSeen %}
+                  <p class="text-sm">
+                    {{ 'Last seen {time}'|t('yii2-adapter', {time: item.lastSeen|timestamp(withPreposition: true)}) }}
+                  </p>
+                {% endif %}
+                <div class="flex flex-wrap items-center gap-2">
+                  {% if (action.type ?? null) == 'fix' %}
+                    <form method="post" action="{{ action.url }}">
+                      {{ csrfInput() }}
+                      {{ hiddenInput('key', action.key) }}
+                      <craft-button type="submit">
+                        {{ 'Fix this'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
+                      </craft-button>
+                    </form>
+                  {% elseif (action.type ?? null) == 'update' %}
+                    <form method="post" action="{{ action.url }}">
+                      {{ csrfInput() }}
+                      {{ hiddenInput('return', 'utilities/yii2-loose-ends') }}
+                      {{ hiddenInput("install[#{action.handle}]", "^#{action.version}") }}
+                      {{ hiddenInput("packageNames[#{action.handle}]", action.packageName) }}
+                      <craft-button type="submit">
+                        {{ 'Update to {version}'|t('yii2-adapter', {version: action.version}) }}<span class="sr-only"> {{ srTitle }}</span>
+                      </craft-button>
+                    </form>
+                  {% elseif (action.type ?? null) == 'prompt' %}
+                    <craft-copy-button value="{{ action.prompt }}" variant="fill" size="medium">
+                      {{ 'Copy prompt'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
+                    </craft-copy-button>
                   {% endif %}
-                  <div class="ms-auto flex flex-wrap items-center gap-2">
-                    {% if (action.type ?? null) == 'fix' %}
-                      <form method="post" action="{{ action.url }}">
-                        {{ csrfInput() }}
-                        {{ hiddenInput('key', action.key) }}
-                        <craft-button type="submit" size="small">
-                          {{ 'Fix this'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
-                        </craft-button>
-                      </form>
-                    {% elseif (action.type ?? null) == 'update' %}
-                      <form method="post" action="{{ action.url }}">
-                        {{ csrfInput() }}
-                        {{ hiddenInput('return', 'utilities/yii2-loose-ends') }}
-                        {{ hiddenInput("install[#{action.handle}]", "^#{action.version}") }}
-                        {{ hiddenInput("packageNames[#{action.handle}]", action.packageName) }}
-                        <craft-button type="submit" size="small">
-                          {{ 'Update to {version}'|t('yii2-adapter', {version: action.version}) }}<span class="sr-only"> {{ srTitle }}</span>
-                        </craft-button>
-                      </form>
-                    {% elseif (action.type ?? null) == 'prompt' %}
-                      <craft-copy-button value="{{ action.prompt }}" variant="fill">
-                        {{ 'Copy prompt'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
-                      </craft-copy-button>
-                    {% endif %}
-                    {% if item.resolveUrl %}
-                      <form method="post" action="{{ item.resolveUrl }}">
-                        {{ csrfInput() }}
-                        <craft-button type="submit" size="small">
-                          {{ 'Mark resolved'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
-                        </craft-button>
-                      </form>
-                    {% endif %}
-                  </div>
+                  {% if item.resolveUrl %}
+                    <form method="post" action="{{ item.resolveUrl }}">
+                      {{ csrfInput() }}
+                      <craft-button type="submit">
+                        {{ 'Mark resolved'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
+                      </craft-button>
+                    </form>
+                  {% endif %}
                 </div>
               {% endif %}
             </li>
