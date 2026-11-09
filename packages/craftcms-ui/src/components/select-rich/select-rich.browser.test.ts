@@ -150,6 +150,23 @@ it('posts a newly picked option and fires change', async () => {
   expect(events).toEqual(['input', 'change']);
 });
 
+it('ignores a click on an option once it turns read-only while open', async () => {
+  const {form, select} = await formFixture();
+  const events: string[] = [];
+  form.addEventListener('change', () => events.push('change'));
+  form.addEventListener('input', () => events.push('input'));
+
+  await userEvent.click(select.querySelector('craft-select-invoker')!);
+  select.readOnly = true;
+  await select.updateComplete;
+  await userEvent.click(select.querySelectorAll('craft-option')[2]!);
+  await select.updateComplete;
+
+  expect(select.value).toBe('2');
+  expect(new FormData(form).get('typeId')).toBe('2');
+  expect(events).toEqual([]);
+});
+
 it('doesn’t fire change for programmatic selection', async () => {
   const {form, select} = await formFixture();
   const onChange = () => {

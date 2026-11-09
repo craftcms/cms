@@ -605,7 +605,7 @@ export default class CraftSelectRich extends FormAssociated(
       'craft-option'
     );
 
-    if (!option || option.disabled) {
+    if (!option || option.disabled || this.#inactive) {
       return;
     }
 
