@@ -539,7 +539,7 @@
     border-radius: var(--c-radius-md);
     background-color: transparent;
     color: inherit;
-    font-size: var(--c-text-lg);
+    font-size: var(--c-text-base);
     cursor: pointer;
   }
 
