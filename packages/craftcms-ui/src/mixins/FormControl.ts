@@ -8,6 +8,7 @@ import {
   type TemplateResult,
 } from 'lit';
 import {property} from 'lit/decorators.js';
+import {HasSlotController} from '@src/utilities/slot';
 import {uniqueId} from '@src/utilities/unique-id.js';
 
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
@@ -185,6 +186,9 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     #templateSlots = new Map<string, Comment>();
 
     #slotsCreated = false;
+
+    /** Re-renders the chrome when a prefix or suffix comes or goes. */
+    #hasAffix = new HasSlotController(this, 'prefix', 'suffix');
 
     /**
      * Light-DOM content created for slots the consumer didn't fill. Subclasses
@@ -492,7 +496,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     }
 
     protected _inputGroupPrefixTemplate(): unknown {
-      return this.#slotted('prefix')
+      return this.#hasAffix.test('prefix')
         ? html`
             <div class="input-group__prefix">
               <slot name="prefix"></slot>
@@ -510,7 +514,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     }
 
     protected _inputGroupSuffixTemplate(): unknown {
-      return this.#slotted('suffix')
+      return this.#hasAffix.test('suffix')
         ? html`
             <div class="input-group__suffix">
               <slot name="suffix"></slot>

@@ -117,6 +117,36 @@ describe('craft-input placeholder', () => {
   );
 });
 
+describe('craft-input prefix and suffix', () => {
+  it.each(['prefix', 'suffix'])(
+    'shows a %s slotted after the first render, and drops its wrapper once removed',
+    async (slot) => {
+      const element = document.createElement('craft-input') as CraftInput;
+      element.setAttribute('aria-label', 'Slug');
+      document.body.append(element);
+      await element.updateComplete;
+
+      const button = document.createElement('craft-button');
+      button.slot = slot;
+      button.textContent = 'Refresh';
+      element.append(button);
+      await new Promise((resolve) => setTimeout(resolve));
+      await element.updateComplete;
+
+      const wrapper = () =>
+        element.shadowRoot!.querySelector(`.input-group__${slot}`);
+      expect(wrapper()).not.toBeNull();
+      expect(button.getBoundingClientRect().width).toBeGreaterThan(0);
+
+      button.remove();
+      await new Promise((resolve) => setTimeout(resolve));
+      await element.updateComplete;
+
+      expect(wrapper()).toBeNull();
+    }
+  );
+});
+
 describe('craft-input suffix buttons', () => {
   it.each([
     ['medium', 30],
