@@ -264,6 +264,7 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
             ->advancedFields($this->linkSettingsAdvancedFields)
             ->assetSources($this->assetSourceKeys())
             ->assetCondition($this->getAssetSelectionCondition())
+            ->assetReferenceElement($context->element)
             // Let the selection condition determine whether they can view unpermitted files
             ->assetAnyUploader()
             ->uploadFolderId($this->uploadFolderId())

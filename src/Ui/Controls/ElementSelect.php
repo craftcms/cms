@@ -106,6 +106,10 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
                 ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
                 : null,
             'referenceElement' => self::referenceElementFromProps($control->props['referenceElement'] ?? null),
+            // Sent by AssetSelect, as the Vue control passes it to the selector modal
+            'modalSettings' => isset($control->props['showFolders'])
+                ? ['indexSettings' => ['showFolders' => (bool) $control->props['showFolders']]]
+                : [],
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
             'single' => $control->props['single'] ?? false,

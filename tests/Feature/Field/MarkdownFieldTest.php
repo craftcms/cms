@@ -429,7 +429,7 @@ it('passes its asset settings to the editor control', function () {
         'availableVolumes' => [$selectableVolume->uid],
         'uploadVolume' => $uploadVolume->uid,
     ]);
-    $element = new Entry(['siteId' => 1]);
+    $element = EntryModel::factory()->createElement();
 
     $props = $field->uiControl(new FieldContext('body', element: $element))->props();
 
@@ -437,7 +437,12 @@ it('passes its asset settings to the editor control', function () {
         ->and($props['assetCondition']['conditionRules']['rules'][0]['class'])->toBe(ViewableConditionRule::class)
         ->and($props['assetAnyUploader'])->toBeTrue()
         ->and($props['uploadFolderId'])->toBe($uploadFolder->id)
-        ->and($props['uploadSiteId'])->toBe(1);
+        ->and($props['uploadSiteId'])->toBe($element->siteId)
+        ->and($props['assetReferenceElement'])->toBe([
+            'referenceElementId' => $element->id,
+            'referenceElementOwnerId' => null,
+            'referenceElementSiteId' => $element->siteId,
+        ]);
 });
 
 it('gives new Markdown fields a default “Viewable” asset selection condition', function () {

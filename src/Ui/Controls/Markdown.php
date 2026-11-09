@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
@@ -45,6 +47,9 @@ class Markdown extends Control implements ReadableValueControl, WritableValueCon
     /** @var array<string, mixed>|null */
     private ?array $assetCondition = null;
 
+    /** @var array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null */
+    private ?array $assetReferenceElement = null;
+
     private bool $assetAnyUploader = false;
 
     private ?int $uploadFolderId = null;
@@ -67,6 +72,7 @@ class Markdown extends Control implements ReadableValueControl, WritableValueCon
             'link-advanced-fields' => Json::encode($control->props['advancedFields'] ?? []),
             'asset-sources' => Json::encode($control->props['assetSources'] ?? []),
             'asset-condition' => isset($control->props['assetCondition']) ? Json::encode($control->props['assetCondition']) : null,
+            'asset-reference-element' => isset($control->props['assetReferenceElement']) ? Json::encode($control->props['assetReferenceElement']) : null,
             'asset-any-uploader' => (bool) ($control->props['assetAnyUploader'] ?? false),
             'upload-folder-id' => $attributes['name'] !== null ? ($control->props['uploadFolderId'] ?? null) : null,
             'upload-site-id' => $control->props['uploadSiteId'] ?? null,
@@ -151,6 +157,21 @@ class Markdown extends Control implements ReadableValueControl, WritableValueCon
     }
 
     /**
+     * Sets the element the asset condition is evaluated against, such as the element being edited, for rules that
+     * refer to it.
+     */
+    public function assetReferenceElement(?ElementInterface $element): static
+    {
+        $this->assetReferenceElement = $element?->id ? [
+            'referenceElementId' => $element->id,
+            'referenceElementOwnerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+            'referenceElementSiteId' => $element->siteId,
+        ] : null;
+
+        return $this;
+    }
+
+    /**
      * Sets whether assets can be selected whoever uploaded them, leaving the asset condition to decide which
      * ones the user can see.
      */
@@ -195,6 +216,7 @@ class Markdown extends Control implements ReadableValueControl, WritableValueCon
             'showStats' => $this->showStats,
             'assetSources' => $this->assetSources,
             'assetCondition' => $this->assetCondition,
+            'assetReferenceElement' => $this->assetReferenceElement,
             'assetAnyUploader' => $this->assetAnyUploader,
             'uploadFolderId' => $this->uploadFolderId,
             'uploadSiteId' => $this->uploadSiteId,

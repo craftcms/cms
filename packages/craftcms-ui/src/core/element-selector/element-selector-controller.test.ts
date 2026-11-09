@@ -90,6 +90,29 @@ describe('indexParams', () => {
     );
   });
 
+  it('sends the reference element the condition is evaluated against', async () => {
+    const loadIndexBody = vi.fn(async () => body());
+    const controller = create({
+      condition: {x: 1},
+      referenceElementId: 12,
+      referenceElementOwnerId: 3,
+      referenceElementSiteId: 2,
+      loadIndexBody,
+    });
+
+    await controller.open();
+
+    expect(loadIndexBody).toHaveBeenCalledWith(
+      'element-selector-modals/body',
+      expect.objectContaining({
+        condition: {x: 1},
+        referenceElementId: 12,
+        referenceElementOwnerId: 3,
+        referenceElementSiteId: 2,
+      })
+    );
+  });
+
   it('identifies the index', () => {
     const controller = create({
       sources: ['section:a'],

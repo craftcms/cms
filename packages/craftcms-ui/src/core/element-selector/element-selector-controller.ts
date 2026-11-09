@@ -319,6 +319,13 @@ export class ElementSelectorController<
       params.showFolders = options.indexSettings.showFolders;
     }
 
+    // The condition is evaluated on the server, against this element.
+    if (options.referenceElementId) {
+      params.referenceElementId = options.referenceElementId;
+      params.referenceElementOwnerId = options.referenceElementOwnerId ?? null;
+      params.referenceElementSiteId = options.referenceElementSiteId ?? null;
+    }
+
     return params;
   }
 

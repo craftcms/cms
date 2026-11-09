@@ -12,6 +12,11 @@ use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Users;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -102,4 +107,14 @@ it('limits an Assets field control to its restricted location and selection sett
             'values' => ['image'],
         ])
         ->and($props['showFolders'])->toBeFalse();
+
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([UiField::make('Files', $field->uiControl(new FieldContext('files', element: $entry)))]),
+        new UiContext(namespace: 'fields'),
+    );
+    $html = app(UiHtmlRenderer::class)->render($payload);
+    $settings = Json::decode(new Crawler($html)->filter('craft-asset-select-input')->attr('settings'));
+
+    expect($settings['modalSettings']['indexSettings']['showFolders'])->toBeFalse()
+        ->and($settings['referenceElementId'])->toBe($entry->id);
 });
