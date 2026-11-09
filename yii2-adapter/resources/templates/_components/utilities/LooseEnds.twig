@@ -53,7 +53,7 @@
       </div>
     </section>
   {% else %}
-    <craft-callout variant="info">
+    <craft-callout variant="neutral">
       {{ '{count, number} {count, plural, =1{issue was} other{issues were}} detected, which must be resolved before it’s safe to remove the Yii2 adapter from this project.'|t('yii2-adapter', {
         count: outstanding,
       }) }}
@@ -79,92 +79,98 @@
         </div>
         <ul class="grid gap-3" role="list">
           {% for item in section.items %}
-            <li class="grid gap-2 rounded-md border border-solid border-neutral-border-quiet p-4">
-              <div class="flex flex-wrap items-start justify-between gap-2">
-                <div class="flex min-w-0 items-center gap-3">
-                  {% if item.iconSvg %}
-                    <span class="size-8 shrink-0 text-quiet [&>svg]:size-full" aria-hidden="true">{{ svg(item.iconSvg, sanitize=true, namespace=true) }}</span>
+            <li>
+              {# The footer isn’t sticky here: in a list of panes, a footer pinned to the viewport would cover the next pane’s content. #}
+              <craft-pane appearance="outline" class="[&::part(footer)]:static">
+                <div class="grid gap-2">
+                  <div class="flex flex-wrap items-start justify-between gap-2">
+                    <div class="flex min-w-0 items-center gap-3">
+                      {% if item.iconSvg %}
+                        <span class="size-8 shrink-0 text-quiet [&>svg]:size-full" aria-hidden="true">{{ svg(item.iconSvg, sanitize=true, namespace=true) }}</span>
+                      {% endif %}
+                      <h3 class="min-w-0 [overflow-wrap:anywhere]">{{ _self.text(item.title) }}</h3>
+                    </div>
+                    {% set badge = item.status ?? item.severity %}
+                    <craft-badge fill="{{ badge.fill() }}">{{ badge.label() }}</craft-badge>
+                  </div>
+
+                  {% if item.detail %}
+                    {% set lines = item.detail|split("\n") %}
+                    {% if lines|length > 1 %}
+                      <ul class="grid gap-1 list-disc ps-6 text-sm [overflow-wrap:anywhere]">
+                        {% for line in lines %}
+                          <li>{{ _self.text(line) }}</li>
+                        {% endfor %}
+                      </ul>
+                    {% else %}
+                      <p class="text-sm [overflow-wrap:anywhere]">{{ _self.text(item.detail) }}</p>
+                    {% endif %}
                   {% endif %}
-                  <h3 class="min-w-0 [overflow-wrap:anywhere]">{{ _self.text(item.title) }}</h3>
-                </div>
-                {% set badge = item.status ?? item.severity %}
-                <craft-badge fill="{{ badge.fill() }}">{{ badge.label() }}</craft-badge>
-              </div>
 
-              {% if item.detail %}
-                {% set lines = item.detail|split("\n") %}
-                {% if lines|length > 1 %}
-                  <ul class="grid gap-1 list-disc ps-6 text-sm [overflow-wrap:anywhere]">
-                    {% for line in lines %}
-                      <li>{{ _self.text(line) }}</li>
-                    {% endfor %}
-                  </ul>
-                {% else %}
-                  <p class="text-sm [overflow-wrap:anywhere]">{{ _self.text(item.detail) }}</p>
-                {% endif %}
-              {% endif %}
-
-              {% if item.location %}
-                <p class="text-sm [overflow-wrap:anywhere]">
-                  <span class="sr-only">{{ 'Location'|t('yii2-adapter') }}: </span><code>{{ item.location }}</code>
-                </p>
-              {% endif %}
-
-              {% if item.fix %}
-                <p>{{ _self.text(item.fix) }}</p>
-              {% endif %}
-
-              {% if item.url %}
-                <p>
-                  <a href="{{ item.url }}" target="_blank" rel="noopener">
-                    {{ item.urlLabel ?? item.url }}
-                    <span class="sr-only">{{ item.title|replace("`", "") }} ({{ 'Opens in a new window'|t('app') }})</span>
-                  </a>
-                </p>
-              {% endif %}
-
-              {% set action = item.action %}
-              {% if action or item.resolveUrl %}
-                {% set srTitle = item.title|replace("`", "") %}
-                {% if item.lastSeen %}
-                  <p class="text-sm">
-                    {{ 'Last seen {time}'|t('yii2-adapter', {time: item.lastSeen|timestamp(withPreposition: true)}) }}
-                  </p>
-                {% endif %}
-                <div class="flex flex-wrap items-center gap-2">
-                  {% if (action.type ?? null) == 'fix' %}
-                    <form method="post" action="{{ action.url }}">
-                      {{ csrfInput() }}
-                      {{ hiddenInput('key', action.key) }}
-                      <craft-button type="submit">
-                        {{ 'Fix this'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
-                      </craft-button>
-                    </form>
-                  {% elseif (action.type ?? null) == 'update' %}
-                    <form method="post" action="{{ action.url }}">
-                      {{ csrfInput() }}
-                      {{ hiddenInput('return', 'utilities/yii2-loose-ends') }}
-                      {{ hiddenInput("install[#{action.handle}]", "^#{action.version}") }}
-                      {{ hiddenInput("packageNames[#{action.handle}]", action.packageName) }}
-                      <craft-button type="submit">
-                        {{ 'Update to {version}'|t('yii2-adapter', {version: action.version}) }}<span class="sr-only"> {{ srTitle }}</span>
-                      </craft-button>
-                    </form>
-                  {% elseif (action.type ?? null) == 'prompt' %}
-                    <craft-copy-button value="{{ action.prompt }}" variant="fill" size="medium">
-                      {{ 'Copy prompt'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
-                    </craft-copy-button>
+                  {% if item.location %}
+                    <p class="text-sm [overflow-wrap:anywhere]">
+                      <span class="sr-only">{{ 'Location'|t('yii2-adapter') }}: </span><code>{{ item.location }}</code>
+                    </p>
                   {% endif %}
-                  {% if item.resolveUrl %}
-                    <form method="post" action="{{ item.resolveUrl }}">
-                      {{ csrfInput() }}
-                      <craft-button type="submit">
-                        {{ 'Mark resolved'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
-                      </craft-button>
-                    </form>
+
+                  {% if item.fix %}
+                    <p>{{ _self.text(item.fix) }}</p>
+                  {% endif %}
+
+                  {% if item.url %}
+                    <p>
+                      <a href="{{ item.url }}" target="_blank" rel="noopener">
+                        {{ item.urlLabel ?? item.url }}
+                        <span class="sr-only">{{ item.title|replace("`", "") }} ({{ 'Opens in a new window'|t('app') }})</span>
+                      </a>
+                    </p>
+                  {% endif %}
+
+                  {% if item.lastSeen %}
+                    <p class="text-sm">
+                      {{ 'Last seen {time}'|t('yii2-adapter', {time: item.lastSeen|timestamp(withPreposition: true)}) }}
+                    </p>
                   {% endif %}
                 </div>
-              {% endif %}
+
+                {% set action = item.action %}
+                {% if action or item.resolveUrl %}
+                  {% set srTitle = item.title|replace("`", "") %}
+                  <div slot="footer-content" class="flex flex-wrap items-center gap-2">
+                    {% if (action.type ?? null) == 'fix' %}
+                      <form method="post" action="{{ action.url }}">
+                        {{ csrfInput() }}
+                        {{ hiddenInput('key', action.key) }}
+                        <craft-button type="submit">
+                          {{ 'Fix this'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
+                        </craft-button>
+                      </form>
+                    {% elseif (action.type ?? null) == 'update' %}
+                      <form method="post" action="{{ action.url }}">
+                        {{ csrfInput() }}
+                        {{ hiddenInput('return', 'utilities/yii2-loose-ends') }}
+                        {{ hiddenInput("install[#{action.handle}]", "^#{action.version}") }}
+                        {{ hiddenInput("packageNames[#{action.handle}]", action.packageName) }}
+                        <craft-button type="submit">
+                          {{ 'Update to {version}'|t('yii2-adapter', {version: action.version}) }}<span class="sr-only"> {{ srTitle }}</span>
+                        </craft-button>
+                      </form>
+                    {% elseif (action.type ?? null) == 'prompt' %}
+                      <craft-copy-button value="{{ action.prompt }}" variant="fill" size="medium">
+                        {{ 'Copy prompt'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
+                      </craft-copy-button>
+                    {% endif %}
+                    {% if item.resolveUrl %}
+                      <form method="post" action="{{ item.resolveUrl }}">
+                        {{ csrfInput() }}
+                        <craft-button type="submit">
+                          {{ 'Mark resolved'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
+                        </craft-button>
+                      </form>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </craft-pane>
             </li>
           {% endfor %}
         </ul>
