@@ -63,7 +63,8 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     private array $middlewareSettings = [];
 
     /**
-     * @var list<callable>|null Changes to Laravel’s state that settings make while [[holdSideEffects()]] runs
+     * @var list<array{self, callable}>|null Changes to Laravel’s state that settings make while [[holdSideEffects()]]
+     * runs, with the config each was made on
      */
     private static ?array $heldSideEffects = null;
 
@@ -102,7 +103,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      */
     public ?bool $generateTransformsBeforePageLoad = null {
         set {
-            self::whenBooting(fn() => $value === null
+            $this->whenBooting(fn() => $value === null
                 ? Context::forgetHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT)
                 : Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value));
 
@@ -840,7 +841,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('blowfishHashCost', 'Configure `hashing.bcrypt.rounds` or set the `BCRYPT_ROUNDS` environment variable instead.');
 
-        self::whenBooting(fn() => ConfigFacade::set('hashing.bcrypt.rounds', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('hashing.bcrypt.rounds', $value));
 
         $this->blowfishHashCost = $value;
 
@@ -889,7 +890,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('devMode', 'Configure `app.debug` or set the `APP_DEBUG` environment variable instead.');
 
-        self::whenBooting(fn() => ConfigFacade::set('app.debug', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('app.debug', $value));
 
         $this->devMode = $value;
 
@@ -937,7 +938,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('defaultCookieDomain', 'Configure `session.domain` or set the `SESSION_DOMAIN` environment variable instead.');
 
-        self::whenBooting(fn() => ConfigFacade::set('session.domain', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('session.domain', $value));
 
         $this->defaultCookieDomain = $value;
 
@@ -975,7 +976,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
 
-        self::whenBooting(fn() => ConfigFacade::set('auth.guards.craft.remember', floor($this->rememberedUserSessionDuration / 60)));
+        $this->whenBooting(fn() => ConfigFacade::set('auth.guards.craft.remember', floor($this->rememberedUserSessionDuration / 60)));
 
         return $this;
     }
@@ -1010,7 +1011,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($value);
 
-        self::whenBooting(fn() => ConfigFacade::set('auth.passwords.craft.expire', floor($this->verificationCodeDuration / 60)));
+        $this->whenBooting(fn() => ConfigFacade::set('auth.passwords.craft.expire', floor($this->verificationCodeDuration / 60)));
 
         return $this;
     }
@@ -1113,7 +1114,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($value);
 
-        self::whenBooting(fn() => ConfigFacade::set('auth.password_timeout', $this->elevatedSessionDuration === 0 ? -1 : $this->elevatedSessionDuration));
+        $this->whenBooting(fn() => ConfigFacade::set('auth.password_timeout', $this->elevatedSessionDuration === 0 ? -1 : $this->elevatedSessionDuration));
 
         return $this;
     }
@@ -1266,7 +1267,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('phpSessionName', 'Configure `session.cookie` or set the `SESSION_COOKIE` environment variable instead.');
 
-        self::whenBooting(fn() => ConfigFacade::set('session.cookie', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('session.cookie', $value));
 
         $this->phpSessionName = $value;
 
@@ -1408,6 +1409,8 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this->secureHeaders = $value;
 
         if (!$value) {
+            $this->forgetMiddlewareSetting('secureHeaders');
+
             return $this;
         }
 
@@ -1500,7 +1503,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('securityKey', 'Configure `app.key` or set the `APP_KEY` environment variable instead.');
 
-        self::whenBooting(fn() => ConfigFacade::set('app.key', $value));
+        $this->whenBooting(fn() => ConfigFacade::set('app.key', $value));
 
         $this->securityKey = $value;
 
@@ -1533,6 +1536,8 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         if (!empty($value)) {
             $this->applyMiddlewareSetting('trustedHosts', self::trustedProxies($value));
+        } else {
+            $this->forgetMiddlewareSetting('trustedHosts');
         }
 
         return $this;
@@ -1667,7 +1672,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('useSecureCookies', 'Configure `session.secure` or set the `SESSION_SECURE_COOKIE` environment variable instead.');
 
-        self::whenBooting(fn() => ConfigFacade::set('session.secure', $value === 'auto' ? null : $value));
+        $this->whenBooting(fn() => ConfigFacade::set('session.secure', $value === 'auto' ? null : $value));
 
         $this->useSecureCookies = $value;
 
@@ -1891,7 +1896,8 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * @template T
      * @param callable(): T $callback
-     * @return array{T, list<callable>} The callback’s result, and the held changes
+     * @return array{T, list<array{self, callable}>} The callback’s result, and the held changes with the configs they
+     * were made on
      * @internal
      */
     public static function holdSideEffects(callable $callback): array
@@ -1907,15 +1913,18 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
-     * Applies changes to Laravel’s state that were held back by [[holdSideEffects()]].
+     * Applies changes to Laravel’s state that were held back by [[holdSideEffects()]], only those made on `$owner` if
+     * it’s given.
      *
-     * @param list<callable> ...$sideEffects
+     * @param list<array{self, callable}> $sideEffects
      * @internal
      */
-    public static function applySideEffects(array ...$sideEffects): void
+    public static function applySideEffects(array $sideEffects, ?\CraftCms\Cms\Config\GeneralConfig $owner = null): void
     {
-        foreach (array_merge(...$sideEffects) as $callback) {
-            self::whenBooting($callback);
+        foreach ($sideEffects as [$config, $callback]) {
+            if ($owner === null || $config === $owner) {
+                self::runWhenBooting($callback);
+            }
         }
     }
 
@@ -1926,14 +1935,19 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * booting, so they run in order after Laravel’s config and facades are ready. Settings applied after that, such as
      * `CRAFT_` environment overrides, run immediately.
      */
-    private static function whenBooting(callable $callback): void
+    private function whenBooting(callable $callback): void
     {
         if (self::$heldSideEffects !== null) {
-            self::$heldSideEffects[] = $callback;
+            self::$heldSideEffects[] = [$this, $callback];
 
             return;
         }
 
+        self::runWhenBooting($callback);
+    }
+
+    private static function runWhenBooting(callable $callback): void
+    {
         $app = app();
 
         if ($app->bound(self::class . '::booting')) {
@@ -1950,7 +1964,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->middlewareSettings[$setting] = $value;
 
-        self::whenBooting(function() use ($setting, $value): void {
+        $this->whenBooting(function() use ($setting, $value): void {
             if ($setting === 'trustedHosts') {
                 TrustProxies::at($value);
             } elseif ($setting === 'secureHeaders') {
@@ -1961,6 +1975,28 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
                 // Undo a previous `enableCsrfProtection(false)`, which PreventRequestForgery has no method for
                 $neverVerify = new ReflectionProperty(PreventRequestForgery::class, 'neverVerify');
                 $neverVerify->setValue(null, array_values(array_diff($neverVerify->getValue(), ['*'])));
+            }
+        });
+    }
+
+    /**
+     * Undoes the trusted proxies or headers this config applied earlier, unless something else has replaced them since,
+     * such as an app’s own `trustProxies()` call, and stops a cached config from applying them again.
+     */
+    private function forgetMiddlewareSetting(string $setting): void
+    {
+        if (!array_key_exists($setting, $this->middlewareSettings)) {
+            return;
+        }
+
+        $value = $this->middlewareSettings[$setting];
+        unset($this->middlewareSettings[$setting]);
+
+        $this->whenBooting(function() use ($setting, $value): void {
+            $property = new ReflectionProperty(TrustProxies::class, $setting === 'trustedHosts' ? 'alwaysTrustProxies' : 'alwaysTrustHeaders');
+
+            if ($property->getValue() === $value) {
+                $property->setValue(null, null);
             }
         });
     }

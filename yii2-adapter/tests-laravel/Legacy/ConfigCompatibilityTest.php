@@ -322,6 +322,18 @@ it('does not apply settings that an application type overlay replaces', function
         ['enableCsrfProtection' => false, 'trustedHosts' => ['any']],
         fn() => ['enableCsrfProtection' => true, 'trustedHosts' => []],
     ]],
+    'callable overlay emptying trusted hosts on an array config' => [fn() => [
+        ['trustedHosts' => ['any']],
+        fn(GeneralConfig $config) => $config->trustedHosts([]),
+    ]],
+    'callable overlay returning a new config after changing the one it was given' => [fn() => [
+        [],
+        function(GeneralConfig $config): GeneralConfig {
+            $config->enableCsrfProtection(false)->trustedHosts(['any']);
+
+            return GeneralConfig::create();
+        },
+    ]],
 ]);
 
 it('applies the middleware settings a callable application type overlay keeps from the general config', function(): void {
@@ -361,6 +373,27 @@ it('accepts null deprecated settings in array general configs', function(): void
 
     expect($config->generateTransformsBeforePageLoad)->toBeNull()
         ->and($config->trustedHosts)->toBeNull();
+});
+
+it('stops trusting proxies when a later setting empties trusted hosts or secure headers', function(): void {
+    $config = GeneralConfig::create()
+        ->trustedHosts(['any'])
+        ->trustedHosts([])
+        ->trustedHosts(['10.0.0.1'])
+        ->secureHeaders(['X-Forwarded-For'])
+        ->secureHeaders([]);
+
+    expect(proxiedClient())->toBe(['203.0.113.5', 'forwarded.test']);
+
+    $config->trustedHosts(null);
+    $state = var_export($config, true);
+
+    expect(proxiedClient())->toBe(['10.0.0.1', 'localhost']);
+
+    TrustProxies::flushState();
+    eval('$restored = ' . $state . ';');
+
+    expect(proxiedClient())->toBe(['10.0.0.1', 'localhost']);
 });
 
 it('turns CSRF protection back on when a later setting enables it', function(): void {

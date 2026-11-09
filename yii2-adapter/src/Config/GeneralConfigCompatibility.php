@@ -102,12 +102,13 @@ readonly class GeneralConfigCompatibility
         [$overlay, $overlayEffects] = LegacyGeneralConfig::holdSideEffects(fn() => $this->resolve($overlay, $object));
 
         if ($overlay !== $object && $overlay instanceof GeneralConfig) {
-            LegacyGeneralConfig::applySideEffects($overlayEffects);
-
             // A config the overlay returns may be a clone that keeps the discarded config's middleware settings
             if ($overlay instanceof LegacyGeneralConfig) {
                 $overlay->applyMiddlewareSettings();
             }
+
+            // Changes the overlay made on the config it was given, or on other configs it discarded, are left out
+            LegacyGeneralConfig::applySideEffects($overlayEffects, $overlay);
 
             return $overlay;
         }
@@ -116,7 +117,7 @@ readonly class GeneralConfigCompatibility
             return $this->toConfigObject(array_merge($config, $overlay));
         }
 
-        LegacyGeneralConfig::applySideEffects($configEffects, $overlayEffects);
+        LegacyGeneralConfig::applySideEffects([...$configEffects, ...$overlayEffects], $object);
 
         if (is_array($overlay)) {
             $this->applySettings($object, $overlay);
