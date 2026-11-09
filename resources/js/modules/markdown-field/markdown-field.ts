@@ -243,7 +243,7 @@ class MarkdownField extends LitElement {
       this.assetCondition,
       this.assetSources,
       previewController,
-      this.assetReferenceElement
+      () => this.assetReferenceElement
     );
     this.cleanups = [
       () => previewController.destroy(),

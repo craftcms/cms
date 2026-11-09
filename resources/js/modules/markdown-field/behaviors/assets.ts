@@ -51,12 +51,24 @@ export function createAssetController(
   assetCondition: Record<string, unknown> | null,
   assetSources: string[],
   preview: PreviewController,
-  assetReferenceElement: AssetReferenceElement | null = null
+  getAssetReferenceElement: () => AssetReferenceElement | null = () => null
 ): AssetController {
   let assetSelectorModal: ElementSelectorModalHandle | null = null;
+  let modalReferenceKey: string | null = null;
 
   async function open(): Promise<void> {
+    // Autosave can turn the edited element into a new draft after the modal
+    // was built, so it's rebuilt for whichever element is being edited now.
+    const assetReferenceElement = getAssetReferenceElement();
+    const referenceKey = JSON.stringify(assetReferenceElement);
+
+    if (assetSelectorModal && modalReferenceKey !== referenceKey) {
+      assetSelectorModal.destroy();
+      assetSelectorModal = null;
+    }
+
     if (!assetSelectorModal) {
+      modalReferenceKey = referenceKey;
       assetSelectorModal = await createElementSelectorModal(
         ASSET_ELEMENT_TYPE,
         {
