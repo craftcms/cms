@@ -59,6 +59,18 @@ it('hands its label and descriptions to a custom control built on LionField', as
   expect(field.getAttribute('role')).toBeNull();
 });
 
+it('describes a control after the main one by its instructions and errors, keeping its own label', async () => {
+  document.body.innerHTML =
+    '<craft-field label="Color" help-text="The card’s accent."><craft-input slot="input"><input slot="input"></craft-input><craft-input slot="after" label="Custom color:"><input slot="input"></craft-input><ul slot="feedback"><li>Color is invalid.</li></ul></craft-field>';
+  const [main, after] = document.querySelectorAll('input');
+
+  await expect.element(main!).toHaveAccessibleName('Color');
+  await expect.element(after!).toHaveAccessibleName('Custom color:');
+  await expect
+    .element(after!)
+    .toHaveAccessibleDescription('The card’s accent. Color is invalid.');
+});
+
 it.each([false, true])(
   'labels a nested combobox and its listbox once (multiple: %s)',
   async (multiple) => {

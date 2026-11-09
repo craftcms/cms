@@ -16,25 +16,53 @@ use Illuminate\Support\Facades\Config;
 readonly class GeneralConfigCompatibility
 {
     /**
-     * Converts the general config, with the general.web.php or general.console.php overlay for the application type.
+     * Replaces `craft.general` with a config object, applying the application type overlay and any leftover `anchors.php` file.
      */
     public function register(Application $app): void
     {
-        $appType = $app->runningInConsole() ? 'console' : 'web';
-        $config = Config::get('craft.general', []);
-        $overlay = Config::get("craft.general.$appType");
-
-        // Laravel loads the overlays into `craft.general.web` and `craft.general.console`, which replaces a
-        // general.php object or callable with an array, so the files are read again
-        if (!$app->configurationIsCached() && (is_file(config_path('craft/general.web.php')) || is_file(config_path('craft/general.console.php')))) {
-            $config = $this->requireConfigFile($app, 'general') ?? [];
-            $overlay = $this->requireConfigFile($app, "general.$appType");
-        }
+        [$config, $overlay] = $this->loadConfig($app, $app->runningInConsole() ? 'console' : 'web');
 
         Config::set('craft.general', $this->applyAnchorsConfig(
             $this->convert($config, $overlay),
             Config::get('craft.anchors'),
         ));
+    }
+
+    /**
+     * Returns the `general.php` config and its application type overlay.
+     *
+     * Laravel's config loader stores `general.web.php` and `general.console.php` inside `craft.general`,
+     * replacing a `general.php` that returns a config object or a callable, so the file is loaded again to recover it.
+     * A config object overlay already applied its settings when it loaded, so it loads again after the base,
+     * and settings with side effects, such as `enableCsrfProtection`, still end on the overlay's value.
+     *
+     * @return array{mixed, mixed}
+     */
+    private function loadConfig(Application $app, string $appType): array
+    {
+        $config = Config::get('craft.general', []);
+        $overlay = Config::get("craft.general.{$appType}");
+        $path = $app->configPath('craft/general.php');
+
+        if (!is_array($config) || !Arr::hasAny($config, ['web', 'console'])) {
+            return [$config, $overlay];
+        }
+
+        $base = is_file($path) ? (static fn() => require $path)() : [];
+
+        // An array base is still in the config, already normalized from any multi-environment array
+        if (is_array($base)) {
+            return [Arr::except($config, ['web', 'console']), $overlay];
+        }
+
+        $config = $this->resolve($base, LegacyGeneralConfig::create());
+        $overlayPath = $app->configPath("craft/general.{$appType}.php");
+
+        if ($overlay instanceof GeneralConfig && is_file($overlayPath)) {
+            $overlay = (static fn() => require $overlayPath)();
+        }
+
+        return [$config, $overlay];
     }
 
     /**
@@ -94,21 +122,6 @@ readonly class GeneralConfigCompatibility
         }
 
         return $object;
-    }
-
-    private function requireConfigFile(Application $app, string $name): mixed
-    {
-        $path = config_path("craft/$name.php");
-
-        if (!is_file($path)) {
-            return null;
-        }
-
-        $config = require $path;
-
-        return is_array($config) && array_key_exists('*', $config)
-            ? Arr::merge($config['*'], $config[$app->environment()] ?? [])
-            : $config;
     }
 
     /**

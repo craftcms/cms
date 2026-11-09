@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -15,10 +13,7 @@ use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\ElementSources;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\ConditionBuilder;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
@@ -159,53 +154,6 @@ abstract class BaseElementLinkType extends BaseLinkType
         $element = $this->element($value);
 
         return $element ? (string) $element : '';
-    }
-
-    public function inputHtml(Link $field, ?string $value, string $containerId): string
-    {
-        $id = sprintf('elementselect%s', mt_rand());
-
-        HtmlStack::jsWithVars(fn ($id, $refHandle) => <<<JS
-(() => {
-  const container = document.getElementById($id);
-  const input = container?.nextElementSibling;
-  if (!container || !(input instanceof HTMLInputElement)) {
-    return;
-  }
-  const field = () => Craft.LinkField.forContainer(
-    container.closest('[data-link-field]')?.parentElement
-  );
-  const refHandle = $refHandle;
-  container.addEventListener('selectElements', (ev) => {
-    const element = ev.detail.elements[0];
-    const chip = element.element ?? element.\$element?.[0];
-    input.value = `{\${refHandle}:\${element.id}@\${element.siteId}:url}`;
-    field()?.updateLabel(element.label);
-    field()?.updateFilename(chip?.dataset.filename ?? '');
-  });
-  container.addEventListener('removeElements', () => {
-    input.value = '';
-    field()?.updateLabel('');
-    field()?.updateFilename('');
-  });
-})();
-JS, [
-            'id' => InputNamespace::namespaceId($id),
-            'refHandle' => static::elementType()::refHandle(),
-        ]);
-
-        return
-            FormFields::elementSelectHtml(array_merge($this->elementSelectConfig(), [
-                'id' => $id,
-                'elements' => array_filter([$this->element($value)]),
-                'showSiteMenu' => true,
-                'condition' => $this->getSelectionCondition(),
-                'modalSettings' => [
-                    'matchSiteBeforeDisablingElement' => true,
-                    'siteId' => app(RequestedSite::class)->get()?->id,
-                ],
-            ])).
-            Html::hiddenInput('value', $value);
     }
 
     /**
