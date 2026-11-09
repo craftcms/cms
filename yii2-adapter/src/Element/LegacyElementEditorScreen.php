@@ -14,6 +14,7 @@ use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Yii2Adapter\LooseEnds\CodeOwnership;
 use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
@@ -64,9 +65,7 @@ class LegacyElementEditorScreen
             $buttonsHtml = trim("$screenButtons$methodButtons");
 
             if ($screenButtons !== '') {
-                $buttonLocations[] = $this->location($screen->additionalButtonsHtml instanceof Closure
-                    ? new ReflectionFunction($screen->additionalButtonsHtml)
-                    : new ReflectionMethod($element, 'prepareEditScreen'));
+                $buttonLocations[] = $this->screenButtonsLocation($element, $screen->additionalButtonsHtml);
             }
 
             if ($methodButtons !== '') {
@@ -107,6 +106,27 @@ class LegacyElementEditorScreen
             'editorAssets' => $assets,
             'editorContainerId' => $containerId,
         ];
+    }
+
+    /**
+     * Returns where `additionalButtonsHtml()` was given its value.
+     *
+     * A closure is attributed to where it’s written, unless that’s outside the project, as with the one
+     * `additionalButtonsTemplate()` creates. Then the value is attributed to the `prepareEditScreen()` method that set it.
+     *
+     * @return array{string|null, int|null}
+     */
+    private function screenButtonsLocation(ElementInterface $element, mixed $html): array
+    {
+        if ($html instanceof Closure) {
+            $location = $this->location(new ReflectionFunction($html));
+
+            if ($location[0] !== null && app(CodeOwnership::class)->isProjectFile($location[0])) {
+                return $location;
+            }
+        }
+
+        return $this->location(new ReflectionMethod($element, 'prepareEditScreen'));
     }
 
     /**
