@@ -298,7 +298,8 @@ export class ElementSelectorController<
       context: options.context ?? 'modal',
       elementType: this.elementType,
       sources: options.sources,
-      condition: options.condition,
+      // Kept apart from the filters' `condition`, which the user can change
+      selectionCondition: options.condition,
       criteria: {...options.criteria},
     };
 

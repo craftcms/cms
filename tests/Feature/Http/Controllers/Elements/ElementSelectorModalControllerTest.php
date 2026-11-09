@@ -5,7 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
@@ -104,7 +106,7 @@ it('narrows the sources to the ones the opener allows', function (?string $sourc
     $props = ($this->postBody)(['elementType' => User::class, 'sources' => ['inactive'], 'source' => $source])->json('props');
     expect($props['source']['key'])->toBe('inactive')
         ->and($props['pagination']['total'])->toBe(1)->and($props['data'])->toHaveCount(1);
-})->with(['absent' => null, 'invalid' => 'missing']);
+})->with(['absent' => null, 'invalid' => 'missing', 'not allowed' => 'admins']);
 
 // A click in the modal is a selection. A linked title would instead navigate
 // the CP behind the modal to the element's edit screen, dropping the selection
@@ -271,6 +273,26 @@ describe('asset folders', function () {
         expect(collect($props['data'])->pluck('label')->all())->toBe(['mine'])
             ->and($props['folderBreadcrumbs'])->toHaveCount(1);
     });
+});
+
+it('keeps the opener’s selection condition when the user changes the filters', function () {
+    EntryModel::factory()->createElement(['title' => 'Allowed']);
+    EntryModel::factory()->createElement(['title' => 'Excluded']);
+
+    $titleCondition = fn (string $operator, string $value) => [
+        'class' => EntryCondition::class,
+        'elementType' => Entry::class,
+        'conditionRules' => [
+            ['class' => TitleConditionRule::class, 'operator' => $operator, 'value' => $value],
+        ],
+    ];
+
+    $response = ($this->postBody)([
+        'selectionCondition' => $titleCondition('=', 'Allowed'),
+        'condition' => $titleCondition('!=', 'Neither'),
+    ])->assertOk();
+
+    expect(collect($response->json('props.data'))->pluck('label')->all())->toBe(['Allowed']);
 });
 
 it('excludes the target IDs supplied by replacement modals', function () {

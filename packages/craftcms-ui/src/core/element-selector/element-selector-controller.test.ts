@@ -105,7 +105,7 @@ describe('indexParams', () => {
     expect(loadIndexBody).toHaveBeenCalledWith(
       'element-selector-modals/body',
       expect.objectContaining({
-        condition: {x: 1},
+        selectionCondition: {x: 1},
         referenceElementId: 12,
         referenceElementOwnerId: 3,
         referenceElementSiteId: 2,
@@ -124,7 +124,7 @@ describe('indexParams', () => {
       context: 'modal',
       elementType: ENTRY,
       sources: ['section:a'],
-      condition: {x: 1},
+      selectionCondition: {x: 1},
       criteria: {id: ['not', 12, 34]},
     });
   });
@@ -491,7 +491,7 @@ describe('open and close', () => {
       context: 'modal',
       elementType: ENTRY,
       sources: ['section:a'],
-      condition: undefined,
+      selectionCondition: undefined,
       criteria: {id: ['not', 12, 34]},
     });
   });

@@ -373,6 +373,24 @@ class ModalIndexViewModel extends ContentIndexViewModel
         )->all();
     }
 
+    /**
+     * A source the opener didn't allow, such as an Assets field's upload location in a volume it doesn't list,
+     * falls back to the first allowed one. Folders nested within an allowed source are allowed too.
+     */
+    #[\Override]
+    protected function allowsSource(string $sourceKey): bool
+    {
+        if ($this->restrictToSources === null) {
+            return true;
+        }
+
+        return array_any($this->sources(), function (array $source) use ($sourceKey): bool {
+            $allowedKey = $source['keyPath'] ?? $source['key'] ?? null;
+
+            return is_string($allowedKey) && $source['type'] !== ElementSources::TYPE_HEADING && ($sourceKey === $allowedKey || str_starts_with($sourceKey, "$allowedKey/"));
+        });
+    }
+
     /** @return list<array<string, mixed>> */
     #[\Override]
     protected function sourceCandidates(int $siteId): array

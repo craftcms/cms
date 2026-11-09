@@ -1161,7 +1161,8 @@ abstract class ContentIndexViewModel extends ViewModel
             // through to a visible source rather than list a hidden one.
             if (
                 $resolved[0] !== null &&
-                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $siteId))
+                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $siteId)) &&
+                $this->allowsSource($resolved[0])
             ) {
                 return $resolved;
             }
@@ -1180,6 +1181,14 @@ abstract class ContentIndexViewModel extends ViewModel
             ?? array_first($sources);
 
         return [$source['keyPath'] ?? $source['key'] ?? null, $source];
+    }
+
+    /**
+     * Whether a requested source key can be opened, for indexes that only allow some of their sources.
+     */
+    protected function allowsSource(string $sourceKey): bool
+    {
+        return true;
     }
 
     /** @return list<array<string, mixed>> */
@@ -1327,6 +1336,9 @@ abstract class ContentIndexViewModel extends ViewModel
                 ? $this->request->collapsedElementIds()
                 : [],
         )['query'];
+
+        // Applied on top of the filters, which the user can change, so they can't widen what's selectable
+        $this->request->selectionCondition()?->modifyQuery($query);
 
         // Ahead of the source's own criteria, which shouldn't get to override
         // the site the user picked (the legacy index drops `criteria.siteId`
