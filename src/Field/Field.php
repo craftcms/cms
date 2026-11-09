@@ -352,8 +352,9 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
         $ui = app(FieldLayoutCompiler::class)->compile($fieldLayout, $nested, new UiContext(errors: $nestedErrors));
 
+        // An error a control owns on a deeper path's behalf keeps that path, so the control can still place it.
         foreach ($ui->errors as $error) {
-            $path = sprintf('%s.%s', $scope, implode('.', $error['path']));
+            $path = sprintf('%s.%s', $scope, implode('.', $error['source'] ?? $error['path']));
             $errors[$path] = [...$errors[$path] ?? [], ...$error['messages']];
         }
 
