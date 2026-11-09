@@ -48,6 +48,17 @@ it('drops a province from the previous country’s list when the country changes
         ->and($address->administrativeArea)->toBeNull();
 });
 
+it('drops a province with surrounding spaces from the previous country’s list', function () {
+    $address = new Address(['countryCode' => 'US']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => ' AR '],
+    ]);
+
+    expect($address->administrativeArea)->toBeNull();
+});
+
 it('keeps a province that belongs to the new country', function () {
     $address = new Address(['countryCode' => 'US']);
 
@@ -57,6 +68,17 @@ it('keeps a province that belongs to the new country', function () {
     ]);
 
     expect($address->administrativeArea)->toBe('NS');
+});
+
+it('keeps a province with surrounding spaces that belongs to the new country', function () {
+    $address = new Address(['countryCode' => 'US']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => ' NS '],
+    ]);
+
+    expect($address->administrativeArea)->toBe(' NS ');
 });
 
 it('keeps an unrecognized province when the country is unchanged', function () {
