@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Krävs',
     'Requirements' => 'Förutsättningar',
     'Requires PHP {version}' => 'Kräver PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Sparar om inläggen {name}',
     'Resaving {type} entries' => 'Sparar inlägg av typen {type} igen',
     'Resaving {type}' => 'Sparar {type} igen',
