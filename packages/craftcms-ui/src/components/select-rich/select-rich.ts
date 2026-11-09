@@ -252,8 +252,7 @@ export default class CraftSelectRich extends FormAssociated(
     if (active && !this.#options.includes(active)) {
       this.#setActive(
         this.#options.find(
-          (option) =>
-            option.choiceValue === active.choiceValue && !option.disabled
+          (option) => option.value === active.value && !option.disabled
         )
       );
     }

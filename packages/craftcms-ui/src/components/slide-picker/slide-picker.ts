@@ -110,7 +110,7 @@ export default class CraftSlidePicker extends FormAssociated(
   #onSliderInput = (event: Event): void => {
     event.stopPropagation();
     this.value = Number((event.target as CraftSlidePickerSlider).value);
-    this.#syncInput();
+    this._syncFormValue();
     emitInput(this);
     emitChange(this);
   };

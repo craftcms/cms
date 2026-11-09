@@ -155,6 +155,6 @@ it('wires up an invoker and content slotted in after it connected', async () => 
   invoker.click();
   await disclosure.updateComplete;
 
-  expect(disclosure.opened).toBe(true);
+  expect(disclosure.open).toBe(true);
   expect(getComputedStyle(content).display).not.toBe('none');
 });

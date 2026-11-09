@@ -193,7 +193,7 @@ it('binds an invoker slotted in after it renders, in place of the old one', asyn
 
   replacement.click();
   await tooltip.updateComplete;
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 });
 
 it('moves beside the new invoker when for changes while open', async () => {
@@ -228,7 +228,7 @@ it('closes and lets go of its invoker when removed before show() settles', async
 
   await expect(shown).resolves.toBeUndefined();
   await after(0);
-  expect(tooltip.opened).toBe(false);
+  expect(tooltip.open).toBe(false);
   expect(invoker.hasAttribute('aria-describedby')).toBe(false);
 });
 

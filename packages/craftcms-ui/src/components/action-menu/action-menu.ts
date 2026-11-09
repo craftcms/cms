@@ -903,7 +903,7 @@ export default class CraftActionMenu extends CraftPopover {
     const item = this._getNavigableItems()[0];
     if (item?.hasUpdated === false) {
       void item.updateComplete.then(() => {
-        if (this.opened) {
+        if (this.open) {
           item.focus();
         }
       });

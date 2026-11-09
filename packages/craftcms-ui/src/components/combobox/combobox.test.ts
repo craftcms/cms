@@ -369,7 +369,7 @@ describe('craft-combobox', () => {
     'tells a selection’s input from typing’s by its inputType (multiple: %s)',
     async (multiple) => {
       const combobox = await createFixture((c) => {
-        c.multipleChoice = multiple;
+        c.multiple = multiple;
         c.options = [
           {label: 'Online', value: '1'},
           {label: 'Offline', value: '0'},
