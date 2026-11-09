@@ -456,6 +456,10 @@ describe('fieldValueFormats', () => {
     expect(date({locale: 'de_DE'}, {date: '2026-01-02', time: null})).toBe(
       '02.01.2026'
     );
+    // Years before 100 aren't read as 1900–1999
+    expect(date({locale: 'en-US'}, {date: '0050-03-04', time: null})).toBe(
+      'Mar 4, 50'
+    );
     // Only the parts the field shows, though values hold both
     const both = {date: '2026-11-13', time: '23:30', timezone: 'UTC'};
     expect(date({locale: 'en-US', showDate: true, showTime: false}, both)).toBe(
@@ -503,5 +507,29 @@ describe('fieldValueFormats', () => {
       {label: 'Blue', icon: null, color: '#1d4ed8'},
     ]);
     expect(fieldValueFormats(choice(false), {value: 'teal'}).items).toBeNull();
+  });
+
+  it('labels true and false options as their items are labeled', () => {
+    const formats = fieldValueFormats(
+      {
+        type: 'Choice',
+        component: 'craft:choice',
+        path: ['fields', 'featured'],
+        deltaGroup: ['fields', 'featured'],
+        mode: 'editable' as const,
+        props: {
+          options: [
+            {label: 'Featured', value: true},
+            {label: 'Regular', value: false},
+          ],
+        },
+      },
+      {value: false}
+    );
+
+    expect(formats.text).toBe('Regular');
+    expect(formats.items).toEqual([
+      {label: 'Regular', icon: null, color: null},
+    ]);
   });
 });
