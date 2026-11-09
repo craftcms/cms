@@ -65,7 +65,7 @@ class CraftVariable extends ServiceLocator
      */
     public function __get($name)
     {
-        if (!$this->has($name) && !$this->canGetProperty($name)) {
+        if (!$this->has($name) && !$this->canGetProperty($name) && !$this->hasMethod($name)) {
             $craftVariable = app(CoreCraftVariable::class);
 
             if (property_exists($craftVariable, $name)) {
@@ -85,7 +85,7 @@ class CraftVariable extends ServiceLocator
      */
     public function __isset($name)
     {
-        if ($this->has($name) || $this->canGetProperty($name)) {
+        if ($this->has($name) || $this->canGetProperty($name) || $this->hasMethod($name)) {
             return parent::__isset($name);
         }
 

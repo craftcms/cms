@@ -21,6 +21,7 @@ afterEach(function() {
         $values['getTestBehaviorGetter'],
         $values['testBehaviorGetter'],
         $values['testBehaviorMethod'],
+        $values['testBehaviorRequired'],
     );
     $macros->setValue(null, $values);
 });
@@ -74,8 +75,13 @@ it('lets behaviors reach the core craft variable through their owner', function(
                     $this->owner->entries()::class,
                     $this->owner->cp::class,
                     $this->owner->app === Craft::$app ? 'app' : 'no-app',
-                    isset($this->owner->app, $this->owner->cp) && !isset($this->owner->bogus) ? 'isset' : 'no-isset',
+                    isset($this->owner->app, $this->owner->cp) && !isset($this->owner->bogus) && !isset($this->owner->testBehaviorRequired) ? 'isset' : 'no-isset',
                 ]);
+            }
+
+            public function testBehaviorRequired(string $suffix): string
+            {
+                return $suffix;
             }
         });
     });
