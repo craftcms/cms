@@ -286,3 +286,22 @@ test('uniqueDotifiedKeys', function (array $expected, array $array, string $prep
         'myPrefix',
     ],
 ]);
+
+test('sampleValueAtDotifiedKey', function (mixed $expected, string $key) {
+    $array = [
+        ['title' => 'First', 'blocks' => [['type' => 'text', 'body' => 'Hello']]],
+        ['title' => '', 'blocks' => [
+            ['type' => 'text', 'body' => ''],
+            // only a later block of a later item has this key
+            ['type' => 'quote', 'quote' => 'Be kind', 'tips' => [['note' => 'Smile']]],
+        ]],
+    ];
+
+    expect(Arr::sampleValueAtDotifiedKey($array, $key))->toBe($expected);
+})->with([
+    'from the first item' => ['First', 'title'],
+    'from a later item’s later list element' => ['Be kind', 'blocks.quote'],
+    'nested lists' => ['Smile', 'blocks.tips.note'],
+    'a non-empty value over an earlier empty one' => ['Hello', 'blocks.body'],
+    'missing' => [null, 'blocks.nope'],
+]);

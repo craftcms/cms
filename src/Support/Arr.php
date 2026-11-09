@@ -330,37 +330,49 @@ class Arr extends \Illuminate\Support\Arr
     }
 
     /**
-     * Returns the value at a dot-notated key produced by `uniqueDotifiedKeys()`, descending into
-     * the first element of any list encountered (mirroring that method's own list transparency).
+     * Returns a sample of the value at a dot-notated key produced by `uniqueDotifiedKeys()`, looking
+     * through every element of any list it meets (mirroring that method's own list transparency),
+     * since the key may only exist in a later element. A non-empty scalar is preferred over the
+     * first value found.
      *
      * @param  array<array-key, mixed>  $array
      */
     public static function sampleValueAtDotifiedKey(array $array, string $key): mixed
     {
-        $value = $array;
-
-        foreach (explode('.', $key) as $segment) {
-            $value = self::firstListElement($value);
-
-            if (! is_array($value) || ! array_key_exists($segment, $value)) {
-                return null;
-            }
-
-            $value = $value[$segment];
-        }
-
-        return self::firstListElement($value);
+        return self::sampleAt($array, explode('.', $key));
     }
 
     /**
-     * Descends into the first element of a list, repeating until the value isn't a list.
+     * @param  list<string>  $segments
      */
-    private static function firstListElement(mixed $value): mixed
+    private static function sampleAt(mixed $value, array $segments): mixed
     {
-        while (is_array($value) && self::isList($value)) {
-            $value = $value[0] ?? null;
+        if (is_array($value) && self::isList($value)) {
+            $fallback = null;
+
+            foreach ($value as $element) {
+                $sample = self::sampleAt($element, $segments);
+
+                if (is_scalar($sample) && $sample !== '') {
+                    return $sample;
+                }
+
+                $fallback ??= $sample;
+            }
+
+            return $fallback;
         }
 
-        return $value;
+        if ($segments === []) {
+            return $value;
+        }
+
+        $segment = array_shift($segments);
+
+        if (! is_array($value) || ! array_key_exists($segment, $value)) {
+            return null;
+        }
+
+        return self::sampleAt($value[$segment], $segments);
     }
 }
