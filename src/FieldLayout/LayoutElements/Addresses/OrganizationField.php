@@ -49,6 +49,13 @@ class OrganizationField extends TextField
         return true;
     }
 
+    /** @return array<string, string|array<string, string>> */
+    #[Override]
+    protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
+    {
+        return $this->belongsToCurrentUser($element) ? ['autocomplete' => 'organization'] : [];
+    }
+
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return t('Organization');

@@ -162,6 +162,7 @@
 - Added a “Skip to messages” link, and errors are now announced to screen readers immediately.
 - Action menu buttons no longer announce a menu pop-up.
 - Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
+- The current user’s own First Name and Last Name fields, and the Full Name, First Name, Last Name, and Organization fields of their own addresses, now have `autocomplete` tokens, so browsers and password managers can fill them in. ([#20407](https://github.com/craftcms/cms/pull/20407))
 
 ### Administration
 
@@ -394,6 +395,7 @@
 - Added `CraftCms\Cms\Ui\Controls\Checkbox`.
 - Added `CraftCms\Cms\Ui\Controls\FieldSelect`.
 - Added `CraftCms\Cms\Ui\Controls\ConditionBuilder::fieldLayouts()`.
+- Added `CraftCms\Cms\Ui\Controls\Choice::autocomplete()`, which sets a select’s `autocomplete` attribute. ([#20407](https://github.com/craftcms/cms/pull/20407))
 - Added `CraftCms\Cms\Cp\Components\Field::actions()`.
 - Added `CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving`, which is fired when a field layout field has no UI control of its own, so a listener can provide one. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Added `CraftCms\Cms\Cp\Components\ElementSelect` and `CraftCms\Cms\Cp\Components\SelectRich`, available as the `element-select` and `select-rich` `ui()` components. ([#20275](https://github.com/craftcms/cms/pull/20275))

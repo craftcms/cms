@@ -89,6 +89,33 @@ describe('ChoiceControl', () => {
     );
   }
 
+  it('gives a select its autocomplete token, and no attribute without one', async () => {
+    await mount(
+      {
+        multiple: false,
+        presentation: 'select',
+        options: previewModes,
+        autocomplete: 'country',
+      },
+      'full'
+    );
+
+    expect(
+      container!.querySelector('select')!.getAttribute('autocomplete')
+    ).toBe('country');
+
+    app!.unmount();
+    container!.remove();
+    await mount(
+      {multiple: false, presentation: 'select', options: previewModes},
+      'full'
+    );
+
+    expect(
+      container!.querySelector('select')!.hasAttribute('autocomplete')
+    ).toBe(false);
+  });
+
   it('leads a single select with an unlabeled blank option by default', async () => {
     await mount(
       {multiple: false, presentation: 'select', options: previewModes},
