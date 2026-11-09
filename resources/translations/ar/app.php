@@ -2664,6 +2664,7 @@ return [
     'Required' => 'مطلوب',
     'Requirements' => 'المتطلبات',
     'Requires PHP {version}' => 'يتطلب إصدار PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'جارٍ إعادة حفظ إدخالات {name}',
     'Resaving {type} entries' => 'إعادة حفظ إدخالات {type}',
     'Resaving {type}' => 'جاري إعادة حفظ {type}',
