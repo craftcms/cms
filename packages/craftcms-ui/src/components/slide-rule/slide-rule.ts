@@ -65,7 +65,7 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
 
   /** Whether the control responds to input. */
   get #editable(): boolean {
-    return !this.disabled;
+    return !this.disabled && !this._formDisabled;
   }
 
   override _formValue(): string | null {
@@ -408,7 +408,7 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
         aria-valuemax=${this.max}
         aria-valuenow=${this.value}
         aria-valuetext=${this.#valueText(this.value)}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
+        aria-disabled=${this.#editable ? 'false' : 'true'}
         @keydown=${this.#handleKeyDown}
         @pointerdown=${this.#handlePointerDown}
         @pointermove=${this.#handlePointerMove}

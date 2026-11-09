@@ -203,8 +203,14 @@ it('posts nothing while disabled, including by a disabled fieldset', async () =>
   await select.updateComplete;
   form.querySelector('fieldset')!.disabled = true;
   await select.updateComplete;
-  expect(select.disabled).toBe(true);
+  const invoker = select.querySelector('craft-select-invoker')!;
+  expect(invoker.getAttribute('aria-disabled')).toBe('true');
   expect(new FormData(form).has('typeId')).toBe(false);
+
+  form.querySelector('fieldset')!.disabled = false;
+  await select.updateComplete;
+  expect(invoker.hasAttribute('aria-disabled')).toBe(false);
+  expect(new FormData(form).getAll('typeId')).toEqual(['2']);
 });
 
 it('is a select-only combobox that keeps focus while its listbox is open', async () => {

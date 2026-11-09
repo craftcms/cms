@@ -175,6 +175,45 @@ it('follows changes to the references on its host', async () => {
   await expect.element(slider).toHaveAccessibleName('');
 });
 
+it('comes back from a disabled fieldset, and stays disabled if it was set so', async () => {
+  document.body.innerHTML = `
+    <form>
+      <fieldset>
+        <craft-slide-picker name="width" min="1" max="4" step="1" value="2"></craft-slide-picker>
+        <craft-slide-picker name="height" min="1" max="4" step="1" value="3" disabled></craft-slide-picker>
+      </fieldset>
+    </form>`;
+  const form = document.querySelector('form')!;
+  const fieldset = form.querySelector('fieldset')!;
+  const [picker, locked] = [
+    ...form.querySelectorAll<CraftSlidePicker>('craft-slide-picker'),
+  ] as [CraftSlidePicker, CraftSlidePicker];
+  const settle = async () => {
+    for (const element of [picker, locked]) {
+      await element.updateComplete;
+      await slider(element).updateComplete;
+    }
+  };
+  await settle();
+
+  fieldset.disabled = true;
+  await settle();
+  expect(slider(picker).getAttribute('aria-disabled')).toBe('true');
+  expect(slider(picker).tabIndex).toBe(-1);
+  expect(getComputedStyle(picker).pointerEvents).toBe('none');
+  expect(new FormData(form).has('width')).toBe(false);
+
+  fieldset.disabled = false;
+  await settle();
+  expect(slider(picker).getAttribute('aria-disabled')).toBe('false');
+  expect(slider(picker).tabIndex).toBe(0);
+  expect(getComputedStyle(picker).pointerEvents).toBe('auto');
+  expect(new FormData(form).getAll('width')).toEqual(['2']);
+  expect(locked.disabled).toBe(true);
+  expect(slider(locked).getAttribute('aria-disabled')).toBe('true');
+  expect(new FormData(form).has('height')).toBe(false);
+});
+
 it('keeps its value when the form reset is canceled', async () => {
   document.body.innerHTML = `<form><craft-slide-picker name="columns" min="1" max="4" step="1" value="2"></craft-slide-picker><input name="title" value="Original"></form>`;
   const form = document.querySelector('form')!;

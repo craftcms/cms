@@ -153,8 +153,12 @@ export default class CraftSelectRich extends FormAssociated(
     return this.#options.find((option) => option.checked);
   }
 
+  get #disabled(): boolean {
+    return this.disabled || this._formDisabled;
+  }
+
   get #inactive(): boolean {
-    return this.disabled || this.readOnly || this.#singleOption;
+    return this.#disabled || this.readOnly || this.#singleOption;
   }
 
   /**
@@ -326,7 +330,7 @@ export default class CraftSelectRich extends FormAssociated(
 
     invoker.id ||= this._inputId;
     invoker.singleOption = single;
-    invoker.disabled = this.disabled;
+    invoker.disabled = this.#disabled;
     render(
       checked
         ? [...checked.childNodes].map((node) => node.cloneNode(true))
@@ -346,8 +350,8 @@ export default class CraftSelectRich extends FormAssociated(
       invoker.setAttribute('aria-expanded', String(this.opened));
     }
 
-    invoker.tabIndex = this.disabled ? -1 : 0;
-    if (this.disabled) {
+    invoker.tabIndex = this.#disabled ? -1 : 0;
+    if (this.#disabled) {
       invoker.setAttribute('aria-disabled', 'true');
     } else {
       invoker.removeAttribute('aria-disabled');
@@ -428,6 +432,7 @@ export default class CraftSelectRich extends FormAssociated(
 
     if (
       changed.has('disabled') ||
+      changed.has('_formDisabled') ||
       changed.has('readOnly') ||
       changed.has('invalid') ||
       changed.has('required') ||

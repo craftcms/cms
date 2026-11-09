@@ -1,5 +1,5 @@
 import type {LitElement, PropertyValues} from 'lit';
-import {property} from 'lit/decorators.js';
+import {property, state} from 'lit/decorators.js';
 
 // oxlint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
@@ -30,6 +30,15 @@ export declare class FormAssociatedHost {
    * input and is left out of form submission.
    */
   disabled: boolean;
+
+  /**
+   * Whether the browser counts the control disabled, through its own
+   * `disabled` or an ancestor `<fieldset disabled>`. Kept apart from
+   * `disabled`, which holds only what was set on the control, so re-enabling
+   * the fieldset enables the control again. Hosts check
+   * `disabled || _formDisabled` to decide whether the control responds.
+   */
+  protected readonly _formDisabled: boolean;
 
   /** The form this control belongs to, or `null` when it is outside one. */
   readonly form: HTMLFormElement | null;
@@ -97,6 +106,8 @@ export const FormAssociated = <T extends Constructor<LitElement>>(Base: T) => {
     @property({reflect: true}) name = '';
     @property({type: Boolean, reflect: true}) disabled = false;
 
+    @state() protected _formDisabled = false;
+
     _formValue(): string | null {
       return null;
     }
@@ -148,7 +159,7 @@ export const FormAssociated = <T extends Constructor<LitElement>>(Base: T) => {
 
     /** Called when an ancestor `<fieldset disabled>` is toggled. */
     formDisabledCallback(disabled: boolean) {
-      this.disabled = disabled;
+      this._formDisabled = disabled;
     }
 
     formResetCallback() {

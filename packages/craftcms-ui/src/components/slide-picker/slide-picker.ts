@@ -158,7 +158,7 @@ export default class CraftSlidePicker extends HostAriaReferences(
       slider.step = this.step;
       slider.value = String(this.value);
       slider.readOnly = this.readOnly;
-      slider.disabled = this.disabled;
+      slider.disabled = this.disabled || this._formDisabled;
       slider.valueText = (value) => this.#valueText(value);
     }
 
@@ -195,7 +195,7 @@ export default class CraftSlidePicker extends HostAriaReferences(
 
   /** Clicking the label focuses the slider, as it would a native input. */
   protected override _onLabelClick() {
-    if (!this.disabled) {
+    if (!this.disabled && !this._formDisabled) {
       this.#slider?.focus();
     }
   }

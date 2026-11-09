@@ -73,13 +73,17 @@ export const formControlStyles = css`
     display: none;
   }
 
-  :host([disabled]) {
+  :host([disabled]),
+  :host(:disabled) {
     pointer-events: none;
   }
 
   :host([disabled]) .form-field__label ::slotted(*),
   :host([disabled]) .form-field__help-text ::slotted(*),
-  :host([disabled]) .input-group ::slotted([slot='input']) {
+  :host([disabled]) .input-group ::slotted([slot='input']),
+  :host(:disabled) .form-field__label ::slotted(*),
+  :host(:disabled) .form-field__help-text ::slotted(*),
+  :host(:disabled) .input-group ::slotted([slot='input']) {
     color: var(--disabled-text-color, #767676);
   }
 
