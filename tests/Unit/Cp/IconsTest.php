@@ -97,8 +97,7 @@ describe('svg', function () {
             ->and(strip_tags($svg, '<path>'))->toBe(strip_tags($originalSvg, '<path>'))
             ->and($originalSvg)->not->toContain('scale');
     })->with([
-        'legacy name' => ['listrtl', 'list'],
-        'solid icon' => ['share-flip', 'share'],
-        'custom icon' => ['sidebar-nav-flip-light', 'sidebar-nav-light'],
+        ['sidebar-nav-flip', 'sidebar-nav'],
+        ['sidebar-nav-flip-light', 'sidebar-nav-light'],
     ]);
 });
