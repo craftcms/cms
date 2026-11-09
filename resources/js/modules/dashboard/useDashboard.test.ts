@@ -68,16 +68,26 @@ function mount(widgets: DashboardWidget[]) {
     defineComponent({
       setup() {
         dashboard = useDashboard(props);
-        // Each widget remounts when its data changes, as the dashboard's do.
+        // A widget's content remounts when its data changes, as the
+        // dashboard's does. One with `later` data gets it later, as HTML
+        // widgets do.
         return () =>
           h(
             'div',
             {ref: dashboard.container},
             dashboard.widgets.value.map((item) =>
               h(
-                'a',
-                {key: JSON.stringify([item.id, item.data]), href: '#'},
-                item.title ?? ''
+                'div',
+                {key: item.id, class: 'dashboard-widget', 'data-id': item.id},
+                [
+                  (item.data as {later?: boolean} | null)?.later
+                    ? h('div', {key: 'later'})
+                    : h(
+                        'a',
+                        {key: JSON.stringify(item.data), href: '#'},
+                        item.title ?? ''
+                      ),
+                ]
               )
             )
           );
@@ -199,4 +209,34 @@ it('keeps focus in a widget that remounts when it’s reloaded', async () => {
   await new Promise((resolve) => setTimeout(resolve, 50));
 
   expect(document.activeElement?.textContent).toBe('Widget 2');
+});
+
+it('leaves focus alone when reloaded widgets come in another order', async () => {
+  const props = mount([widget(1), widget(2), widget(3)]);
+  await nextTick();
+  host.querySelectorAll<HTMLElement>('a')[1]!.focus();
+
+  props.widgets = [{...widget(2), data: {entries: []}}, widget(1), widget(3)];
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(document.activeElement).toBe(document.body);
+});
+
+it('keeps focus in a widget whose content comes in after it remounts', async () => {
+  const props = mount([widget(1), widget(2), widget(3)]);
+  await nextTick();
+  host.querySelectorAll<HTMLElement>('a')[1]!.focus();
+
+  props.widgets = [widget(1), {...widget(2), data: {later: true}}, widget(3)];
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(document.activeElement).toBe(document.body);
+
+  const link = document.createElement('a');
+  link.href = '#';
+  link.textContent = 'Widget 2';
+  host.querySelector('[data-id="2"] > div')!.append(link);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(document.activeElement).toBe(link);
 });

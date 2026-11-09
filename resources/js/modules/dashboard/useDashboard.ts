@@ -118,9 +118,12 @@ export function useDashboard(props: {
   );
 
   // A focused control in a widget that remounts, such as a Recent Entries
-  // link, keeps focus.
-  useFocusThroughRedraw(container, widgets, () =>
-    widgets.value.map(({id}) => id).join()
+  // link, keeps focus. HTML widgets add their content later.
+  useFocusThroughRedraw(
+    container,
+    widgets,
+    () => widgets.value.map(({id}) => id).join(),
+    {itemSelector: '.dashboard-widget'}
   );
 
   watch(widgets, async () => {
