@@ -113,16 +113,16 @@
                     </p>
                   {% endif %}
 
-                  {% if item.fix %}
-                    <p>{{ _self.text(item.fix) }}</p>
-                  {% endif %}
-
-                  {% if item.url %}
+                  {% if item.fix or item.url %}
                     <p>
-                      <a href="{{ item.url }}" target="_blank" rel="noopener">
-                        {{ item.urlLabel ?? item.url }}
-                        <span class="sr-only">{{ item.title|replace("`", "") }} ({{ 'Opens in a new window'|t('app') }})</span>
-                      </a>
+                      {{ item.fix ? _self.text(item.fix) }}
+                      {% if item.url %}
+                        <a href="{{ item.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1">
+                          {{- item.urlLabel ?? item.url -}}
+                          <span class="sr-only"> {{ item.title|replace("`", "") }}</span>
+                          <craft-icon name="external" label="{{ 'Opens in a new window'|t('app') }}"></craft-icon>
+                        </a>
+                      {% endif %}
                     </p>
                   {% endif %}
                 </div>

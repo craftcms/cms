@@ -711,13 +711,10 @@ class LooseEndsChecks
                 Severity::Breaks,
                 t('{package} {version}', ['package' => $plugin['name'] ?? $name, 'version' => $version], 'yii2-adapter'),
                 $fix,
-                detail: $release !== null && ($release['majorUpdate'] ?? false)
-                    ? t('This is a major update, so check its upgrade notes first.', category: 'yii2-adapter')
-                    : null,
                 url: $info['changelogUrl'] ?? $info['url'] ?? null,
                 urlLabel: isset($info['changelogUrl'])
-                    ? t('Changelog', category: 'yii2-adapter')
-                    : (isset($info['url']) ? t('Plugin Store', category: 'yii2-adapter') : null),
+                    ? t('View changelog', category: 'yii2-adapter')
+                    : (isset($info['url']) ? t('View in the Plugin Store', category: 'yii2-adapter') : null),
                 iconSvg: $plugin['iconSvg'] ?? $packageIcon,
                 status: $status,
                 update: $plugin !== null && $release !== null && ($release['compatible'] ?? false)
