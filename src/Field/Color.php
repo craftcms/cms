@@ -238,7 +238,7 @@ class Color extends Field implements DefaultableFieldInterface, InlineEditableFi
         return array_merge(parent::getRules(), [
             'allowCustomColors' => ['required', 'boolean'],
             'palette' => ['nullable', 'required_if:allowCustomColors,false'],
-            'palette.*.label' => ['string'],
+            'palette.*.label' => ['nullable', 'string'],
             'palette.*.default' => ['nullable', 'boolean'],
             'palette.*.color' => [new ColorRule(allowAlpha: true)],
         ]);

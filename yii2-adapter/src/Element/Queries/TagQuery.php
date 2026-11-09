@@ -69,6 +69,6 @@ class TagQuery extends ElementQuery
             return collect($fieldLayouts);
         }
 
-        return collect();
+        return parent::fieldLayouts();
     }
 }
