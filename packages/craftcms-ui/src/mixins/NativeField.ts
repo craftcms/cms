@@ -15,7 +15,7 @@ export declare class NativeFieldInterface extends FormControlInterface {
   autocomplete?: string;
   required: boolean;
   invalid: boolean;
-  get _inputNode(): NativeControl | undefined;
+  get _control(): NativeControl | undefined;
   protected _pushToControl(changed: PropertyValues): void;
 }
 
@@ -60,14 +60,14 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
     /** Whether host properties have been pushed onto the control yet. */
     #pushed = false;
 
-    override get _inputNode(): NativeControl | undefined {
-      return super._inputNode as NativeControl | undefined;
+    override get _control(): NativeControl | undefined {
+      return super._control as NativeControl | undefined;
     }
 
     /** The control's value. */
     @property({attribute: false})
     get value(): string {
-      const control = this._inputNode;
+      const control = this._control;
 
       return control && this.isConnected
         ? control.value
@@ -76,7 +76,7 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
 
     set value(value: string) {
       const old = this.value;
-      const control = this._inputNode;
+      const control = this._control;
 
       if (!control || !this.isConnected) {
         this.#pendingValue = value;
@@ -110,8 +110,8 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
     override connectedCallback() {
       super.connectedCallback();
 
-      if (this.#pendingValue !== undefined && this._inputNode) {
-        this._inputNode.value = this.#pendingValue;
+      if (this.#pendingValue !== undefined && this._control) {
+        this._control.value = this.#pendingValue;
         this.#pendingValue = undefined;
       }
 
@@ -157,7 +157,7 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
     };
 
     #onFocusIn = (event: FocusEvent): void => {
-      if (event.target !== this._inputNode) {
+      if (event.target !== this._control) {
         return;
       }
 
@@ -165,12 +165,12 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
       // :focus-visible from the shadow root.
       this.toggleAttribute(
         'focused-visible',
-        this._inputNode.matches(':focus-visible')
+        this._control.matches(':focus-visible')
       );
     };
 
     #onFocusOut = (event: FocusEvent): void => {
-      if (event.target !== this._inputNode) {
+      if (event.target !== this._control) {
         return;
       }
 
@@ -178,11 +178,11 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
     };
 
     override focus(options?: FocusOptions): void {
-      this._inputNode?.focus(options);
+      this._control?.focus(options);
     }
 
     override blur(): void {
-      this._inputNode?.blur();
+      this._control?.blur();
     }
 
     protected override updated(changed: PropertyValues) {
@@ -195,7 +195,7 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
      * for the attributes they add.
      */
     protected _pushToControl(changed: PropertyValues): void {
-      const control = this._inputNode;
+      const control = this._control;
 
       if (!control) {
         return;

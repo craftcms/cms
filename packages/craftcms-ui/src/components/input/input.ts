@@ -57,8 +57,8 @@ export default class CraftInput extends NativeField(LitElement) {
     };
   }
 
-  override get _inputNode(): HTMLInputElement | undefined {
-    return super._inputNode as HTMLInputElement | undefined;
+  override get _control(): HTMLInputElement | undefined {
+    return super._control as HTMLInputElement | undefined;
   }
 
   /** Maximum number of characters, applied to the native input's `maxLength`. */
@@ -131,8 +131,8 @@ export default class CraftInput extends NativeField(LitElement) {
   protected override _pushToControl(changed: PropertyValues): void {
     super._pushToControl(changed);
 
-    if (changed.has('type') && this.type && this._inputNode) {
-      this._inputNode.type = this.type;
+    if (changed.has('type') && this.type && this._control) {
+      this._control.type = this.type;
     }
   }
 
@@ -166,7 +166,7 @@ export default class CraftInput extends NativeField(LitElement) {
       : undefined;
   }
 
-  private syncNativeAttributes(input = this._inputNode) {
+  private syncNativeAttributes(input = this._control) {
     const attributes = {
       size: this.inputSize ?? this.maxlengthSize,
       maxlength:

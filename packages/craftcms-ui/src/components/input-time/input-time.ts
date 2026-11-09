@@ -91,7 +91,7 @@ export default class CraftInputTime extends CraftInput {
   }
 
   #validate() {
-    const input = this._inputNode;
+    const input = this._control;
 
     if (!input) {
       return;

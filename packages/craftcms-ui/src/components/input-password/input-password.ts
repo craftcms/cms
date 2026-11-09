@@ -87,12 +87,12 @@ export default class CraftInputPassword extends CraftInput {
 
   #syncPasswordRules() {
     if (this.passwordRules) {
-      this._inputNode?.setAttribute('passwordrules', this.passwordRules);
+      this._control?.setAttribute('passwordrules', this.passwordRules);
 
       return;
     }
 
-    this._inputNode?.removeAttribute('passwordrules');
+    this._control?.removeAttribute('passwordrules');
   }
 
   protected reveal = () => {

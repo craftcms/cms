@@ -275,8 +275,8 @@ export default class CraftCombobox extends FormAssociated(
     };
   }
 
-  override get _inputNode(): HTMLInputElement | undefined {
-    const node = super._inputNode;
+  override get _control(): HTMLInputElement | undefined {
+    const node = super._control;
 
     return node instanceof HTMLInputElement
       ? node
@@ -299,7 +299,7 @@ export default class CraftCombobox extends FormAssociated(
   override connectedCallback() {
     super.connectedCallback();
 
-    const input = this._inputNode;
+    const input = this._control;
     const listbox = this.#listbox;
 
     if (input && listbox) {
@@ -364,7 +364,7 @@ export default class CraftCombobox extends FormAssociated(
   protected override updated(changed: PropertyValues) {
     super.updated(changed);
 
-    const input = this._inputNode;
+    const input = this._control;
     const listbox = this.#listbox;
 
     if (changed.has('open')) {
@@ -441,7 +441,7 @@ export default class CraftCombobox extends FormAssociated(
    * what's already chosen.
    */
   protected override _reflectAriaReferences(): void {
-    const input = this._inputNode;
+    const input = this._control;
 
     // The base keeps ids it didn't write, so the ones added here last time
     // come off first; otherwise a host label that's gone would stay.
@@ -491,7 +491,7 @@ export default class CraftCombobox extends FormAssociated(
   // ─── Opening and closing ──────────────────────────────────────────────
 
   #onOpenChanged(was: boolean | undefined): void {
-    this._inputNode?.setAttribute('aria-expanded', String(this.open));
+    this._control?.setAttribute('aria-expanded', String(this.open));
 
     if (this.open) {
       this.#dropdown.show();
@@ -525,7 +525,7 @@ export default class CraftCombobox extends FormAssociated(
   #shouldOpen(): boolean {
     return (
       !this.#inactive &&
-      ((this._inputNode?.value ?? '') !== '' || this.showAllOnEmpty)
+      ((this._control?.value ?? '') !== '' || this.showAllOnEmpty)
     );
   }
 
@@ -559,7 +559,7 @@ export default class CraftCombobox extends FormAssociated(
     // `target`; the host re-emits it as its own.
     event.stopPropagation();
 
-    const query = this._inputNode?.value ?? '';
+    const query = this._control?.value ?? '';
     const previous = this.#lastQuery;
     this.#lastQuery = query;
     this.#filtering = true;
@@ -620,7 +620,7 @@ export default class CraftCombobox extends FormAssociated(
 
   /** Shows the value in the textbox: the selected option's label, or the text. */
   #syncTextbox(): void {
-    const input = this._inputNode;
+    const input = this._control;
 
     if (!input || this.multiple) {
       return;
@@ -665,7 +665,7 @@ export default class CraftCombobox extends FormAssociated(
         if (
           this.multiple &&
           !this.#inactive &&
-          (this._inputNode?.value ?? '') === ''
+          (this._control?.value ?? '') === ''
         ) {
           event.preventDefault();
           this.#changeValues((this.value as string[]).slice(0, -1));
@@ -743,7 +743,7 @@ export default class CraftCombobox extends FormAssociated(
     }
 
     this.#pick(option);
-    this._inputNode?.focus();
+    this._control?.focus();
 
     if (!this.multiple) {
       this.open = false;
@@ -800,8 +800,8 @@ export default class CraftCombobox extends FormAssociated(
     );
 
     this.value = values;
-    if (this._inputNode) {
-      this._inputNode.value = '';
+    if (this._control) {
+      this._control.value = '';
     }
     this.#lastQuery = '';
     this.#filtering = false;
@@ -816,7 +816,7 @@ export default class CraftCombobox extends FormAssociated(
     if (sameValue(this.value, values)) {
       emitChange(this);
     }
-    this._inputNode?.focus();
+    this._control?.focus();
 
     // The list of values announces additions only; a removed value leaves no
     // node behind to announce, so say what went.
@@ -835,7 +835,7 @@ export default class CraftCombobox extends FormAssociated(
 
   /** Adds the typed text as a value, when it's allowed to be one. */
   #commitQuery(): void {
-    const query = this._inputNode?.value ?? '';
+    const query = this._control?.value ?? '';
 
     if (this.#inactive || query === '') {
       return;
@@ -859,7 +859,7 @@ export default class CraftCombobox extends FormAssociated(
     this.value = '';
     this.#syncTextbox();
     this.#renderOptions();
-    this._inputNode?.focus();
+    this._control?.focus();
     this.#syncForm();
     emitInput(this);
     this.#commit();
@@ -879,7 +879,7 @@ export default class CraftCombobox extends FormAssociated(
 
   #setActive(option: CraftOption | undefined): void {
     this.#activeValue = option?.value ?? null;
-    activateOption(this.#options(), option, this._inputNode, {
+    activateOption(this.#options(), option, this._control, {
       scroll: this.open,
     });
   }
@@ -953,7 +953,7 @@ export default class CraftCombobox extends FormAssociated(
       return;
     }
 
-    const query = this.#filtering ? (this._inputNode?.value ?? '') : '';
+    const query = this.#filtering ? (this._control?.value ?? '') : '';
     const selected = this.multiple ? (this.value as string[]) : [];
     const matched = this.#matchedOptions(query).filter(
       (entry) => !selected.includes(entry.option.value)
@@ -1011,7 +1011,7 @@ export default class CraftCombobox extends FormAssociated(
     if (this.#activeValue !== null && !active) {
       this.#activeValue = null;
     }
-    activateOption(this.#options(), active, this._inputNode, {scroll: false});
+    activateOption(this.#options(), active, this._control, {scroll: false});
   }
 
   #optionTemplate(option: ComboboxOption, selected: boolean) {
@@ -1133,7 +1133,7 @@ export default class CraftCombobox extends FormAssociated(
 
     event.preventDefault();
     this.#openedOnIndicatorMousedown = this.open;
-    this._inputNode?.focus();
+    this._control?.focus();
   };
 
   #onIndicatorClick = () => {
@@ -1323,7 +1323,7 @@ export default class CraftCombobox extends FormAssociated(
     this._setValidity(
       missing ? {valueMissing: true} : {},
       missing ? t('This field is required.') : '',
-      this._inputNode
+      this._control
     );
   }
 

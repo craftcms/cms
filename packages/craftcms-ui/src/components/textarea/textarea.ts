@@ -61,8 +61,8 @@ export default class CraftTextarea extends NativeField(LitElement) {
     };
   }
 
-  override get _inputNode(): HTMLTextAreaElement | undefined {
-    return super._inputNode as HTMLTextAreaElement | undefined;
+  override get _control(): HTMLTextAreaElement | undefined {
+    return super._control as HTMLTextAreaElement | undefined;
   }
 
   /** Renders the value in a monospace font, for code or structured text. */
@@ -77,7 +77,7 @@ export default class CraftTextarea extends NativeField(LitElement) {
   override connectedCallback() {
     super.connectedCallback();
 
-    const input = this._inputNode;
+    const input = this._control;
     if (input) {
       autosize(input);
       // Grows once it's laid out, which it may not be yet.
@@ -93,8 +93,8 @@ export default class CraftTextarea extends NativeField(LitElement) {
   protected override _pushToControl(changed: PropertyValues): void {
     super._pushToControl(changed);
 
-    if (changed.has('rows') && this._inputNode) {
-      this._inputNode.rows = this.rows;
+    if (changed.has('rows') && this._control) {
+      this._control.rows = this.rows;
     }
   }
 
@@ -112,14 +112,14 @@ export default class CraftTextarea extends NativeField(LitElement) {
 
   /** Re-measures the height for the current value. */
   resizeTextarea(): void {
-    if (this._inputNode) {
-      autosize.update(this._inputNode);
+    if (this._control) {
+      autosize.update(this._control);
     }
   }
 
   /** Caps the height at `max-rows`, measured from an empty textarea. */
   #setMaxHeight(): void {
-    const input = this._inputNode;
+    const input = this._control;
     if (!input) {
       return;
     }
@@ -150,14 +150,14 @@ export default class CraftTextarea extends NativeField(LitElement) {
     super.disconnectedCallback();
     this.#intersectionObserver?.disconnect();
     this.#intersectionObserver = undefined;
-    if (this._inputNode) {
-      autosize.destroy(this._inputNode);
+    if (this._control) {
+      autosize.destroy(this._control);
     }
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = undefined;
     this.#styleObserver?.disconnect();
     this.#styleObserver = undefined;
-    this._inputNode?.removeEventListener(
+    this._control?.removeEventListener(
       'autosize:resized',
       this.#onAutosizeResized
     );
@@ -190,7 +190,7 @@ export default class CraftTextarea extends NativeField(LitElement) {
    *   both are fixed up manually right after destroying.
    */
   #watchForManualResize() {
-    const input = this._inputNode;
+    const input = this._control;
     if (
       !input ||
       typeof ResizeObserver === 'undefined' ||

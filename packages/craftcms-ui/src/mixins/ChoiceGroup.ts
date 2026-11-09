@@ -146,7 +146,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
     }
 
     /** The group is what the label names and the help text describes. */
-    override get _inputNode(): HTMLElement {
+    override get _control(): HTMLElement {
       return this;
     }
 
@@ -319,7 +319,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
         choice
       ) as unknown as ChoiceInputInterface | null;
 
-      return option?._inputNode === target &&
+      return option?._control === target &&
         (option as unknown as Element).parentElement?.closest(
           this.localName
         ) === this
@@ -343,7 +343,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
           options.find((option) => !option.disabled));
 
       for (const option of options) {
-        const input = option._inputNode;
+        const input = option._control;
 
         if (!input) {
           continue;
@@ -387,10 +387,10 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       }
 
       event.preventDefault();
-      next._inputNode?.focus();
+      next._control?.focus();
 
       if (!next.checked) {
-        next._inputNode?.click();
+        next._control?.click();
       }
     };
 

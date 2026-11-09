@@ -99,8 +99,8 @@ export default class CraftSelectRich extends FormAssociated(
     // The field's copy of the selection and the hidden inputs change with
     // every sync, so only changes to the options themselves count.
     const own = (node: Node) =>
-      node === this._inputNode ||
-      Boolean(this._inputNode?.contains(node)) ||
+      node === this._control ||
+      Boolean(this._control?.contains(node)) ||
       Boolean(
         (node instanceof Element ? node : node.parentElement)?.closest(
           '[slot="form-value"]'
@@ -115,7 +115,7 @@ export default class CraftSelectRich extends FormAssociated(
   #dropdown = new Dropdown(() => {
     const layer = this.renderRoot.querySelector<HTMLElement>('.overlay-layer');
     const pane = this.#pane;
-    const reference = this._inputNode;
+    const reference = this._control;
 
     return layer && pane && reference ? {layer, pane, reference} : undefined;
   });
@@ -133,8 +133,8 @@ export default class CraftSelectRich extends FormAssociated(
     };
   }
 
-  override get _inputNode(): CraftSelectInvoker | undefined {
-    return super._inputNode as CraftSelectInvoker | undefined;
+  override get _control(): CraftSelectInvoker | undefined {
+    return super._control as CraftSelectInvoker | undefined;
   }
 
   get #pane(): HTMLElement | null {
@@ -181,7 +181,7 @@ export default class CraftSelectRich extends FormAssociated(
   override connectedCallback() {
     super.connectedCallback();
 
-    const invoker = this._inputNode;
+    const invoker = this._control;
     if (invoker && !invoker.hasAttribute('role')) {
       invoker.addEventListener('keydown', this.#onInvokerKeydown);
       invoker.addEventListener('click', this.#onInvokerClick);
@@ -333,7 +333,7 @@ export default class CraftSelectRich extends FormAssociated(
   }
 
   #syncInvoker(): void {
-    const invoker = this._inputNode;
+    const invoker = this._control;
     if (!invoker) {
       return;
     }
@@ -388,7 +388,7 @@ export default class CraftSelectRich extends FormAssociated(
   #alignInvokerWidth(): void {
     const layer = this.renderRoot.querySelector<HTMLElement>('.overlay-layer');
     const pane = this.#pane;
-    const invoker = this._inputNode;
+    const invoker = this._control;
 
     if (!layer || !pane || !invoker || this.open) {
       return;
@@ -436,7 +436,7 @@ export default class CraftSelectRich extends FormAssociated(
   }
 
   #onOpenChanged(): void {
-    const invoker = this._inputNode;
+    const invoker = this._control;
 
     if (this.open && !this.#inactive) {
       this.#typeahead.reset();
@@ -489,7 +489,7 @@ export default class CraftSelectRich extends FormAssociated(
 
   #setActive(option: CraftOption | undefined): void {
     this.#active = option;
-    activateOption(this.#options, option, this._inputNode, {
+    activateOption(this.#options, option, this._control, {
       scroll: this.open,
     });
   }
@@ -602,12 +602,12 @@ export default class CraftSelectRich extends FormAssociated(
 
     this.#pick(option);
     this.open = false;
-    this._inputNode?.focus();
+    this._control?.focus();
   };
 
   /** Focuses the field, as a `craft-field` does when its label is clicked. */
   override focus(options?: FocusOptions): void {
-    this._inputNode?.focus(options);
+    this._control?.focus(options);
   }
 
   /** The text that names the listbox, which can't reference the label. */

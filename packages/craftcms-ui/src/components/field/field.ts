@@ -128,7 +128,7 @@ export default class CraftField extends FormControl(LitElement) {
 
   override connectedCallback(): void {
     super.connectedCallback();
-    this.__enhancedInput = this._inputNode ?? null;
+    this.__enhancedInput = this._control ?? null;
     this.__lightDomObserver.observe(this, {childList: true});
     this.__syncHasErrors();
     this.__syncHasMaxlength();
@@ -208,7 +208,7 @@ export default class CraftField extends FormControl(LitElement) {
    * value or listens to its events.
    */
   get control(): HTMLElement | undefined {
-    return this._inputNode ?? undefined;
+    return this._control ?? undefined;
   }
 
   protected get _resolvedOrientation(): 'ltr' | 'rtl' {
@@ -515,7 +515,7 @@ export default class CraftField extends FormControl(LitElement) {
    * label and descriptions it would otherwise go without.
    */
   private __enhanceSwappedInput(): void {
-    const input = this._inputNode;
+    const input = this._control;
     if (!input || input === this.__enhancedInput) {
       return;
     }
@@ -535,7 +535,7 @@ export default class CraftField extends FormControl(LitElement) {
   }
 
   private __formControlTarget(): FormControlTarget | undefined {
-    const input = this._inputNode;
+    const input = this._control;
 
     return input &&
       'addToAriaLabelledBy' in input &&
@@ -546,7 +546,7 @@ export default class CraftField extends FormControl(LitElement) {
 
   private __hasNativeLabelTarget(): boolean {
     return Boolean(
-      this._inputNode?.matches(
+      this._control?.matches(
         'button, input, meter, output, progress, select, textarea'
       )
     );
@@ -595,8 +595,8 @@ export default class CraftField extends FormControl(LitElement) {
       this.removeAttribute('aria-labelledby');
       if (labelNode && control) {
         labelNode.removeAttribute('for');
-      } else if (labelNode && this._inputNode) {
-        labelNode.setAttribute('for', this._inputNode.id || this._inputId);
+      } else if (labelNode && this._control) {
+        labelNode.setAttribute('for', this._control.id || this._inputId);
       }
     }
   }

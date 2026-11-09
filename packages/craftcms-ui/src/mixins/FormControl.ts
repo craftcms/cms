@@ -40,7 +40,7 @@ export declare class FormControlInterface {
   labelledBy: string | null;
   describedBy: string | null;
   readonly _inputId: string;
-  get _inputNode(): HTMLElement | undefined;
+  get _control(): HTMLElement | undefined;
   get _labelNode(): HTMLElement | undefined;
   get _helpTextNode(): HTMLElement | undefined;
   get _feedbackNode(): HTMLElement | undefined;
@@ -269,7 +269,11 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       };
     }
 
-    get _inputNode(): HTMLElement | undefined {
+    /**
+     * The control the user interacts with: the `input` slot's element, which
+     * the label and descriptions point at.
+     */
+    get _control(): HTMLElement | undefined {
       return this.#slotted('input');
     }
 
@@ -472,7 +476,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
      */
     protected _onLabelClick(): void {
       if (!this.disabled) {
-        this._inputNode?.focus();
+        this._control?.focus();
       }
     }
 
@@ -481,16 +485,16 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
      * help text and feedback to its name and description.
      */
     protected _enhanceLightDomA11y(): void {
-      const {_inputNode, _labelNode, _helpTextNode} = this;
+      const {_control, _labelNode, _helpTextNode} = this;
 
-      _inputNode?.classList.add('form-control');
+      _control?.classList.add('form-control');
 
-      if (_inputNode) {
-        _inputNode.id ||= this._inputId;
+      if (_control) {
+        _control.id ||= this._inputId;
       }
 
       if (_labelNode) {
-        _labelNode.setAttribute('for', _inputNode?.id ?? this._inputId);
+        _labelNode.setAttribute('for', _control?.id ?? this._inputId);
         this.addToAriaLabelledBy(_labelNode, {idPrefix: 'label'});
       }
 
@@ -577,7 +581,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
      * another node can redirect them.
      */
     protected _reflectAriaReferences(): void {
-      const control = this._inputNode;
+      const control = this._control;
 
       if (!control) {
         return;

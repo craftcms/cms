@@ -421,10 +421,10 @@ describe('craft-combobox', () => {
     });
     combobox.addEventListener('change', () => order.push('change'));
 
-    // Cast rather than reaching through `_inputNode` directly, which is
+    // Cast rather than reaching through `_control` directly, which is
     // protected — the older tests in this file predate that being checked.
-    const input = (combobox as unknown as {_inputNode: HTMLInputElement})
-      ._inputNode;
+    const input = (combobox as unknown as {_control: HTMLInputElement})
+      ._control;
     for (const value of ['h', 'ht']) {
       input.focus();
       input.value = value;

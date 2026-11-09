@@ -190,7 +190,7 @@ export default class CraftInputMoney extends CraftInput {
   }
 
   #input(): MaskedInput | undefined {
-    return this._inputNode as MaskedInput | undefined;
+    return this._control as MaskedInput | undefined;
   }
 
   #applyMask() {

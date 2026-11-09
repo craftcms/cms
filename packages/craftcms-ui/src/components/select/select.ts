@@ -26,8 +26,8 @@ import {NativeField} from '@src/mixins/NativeField';
 export default class CraftSelect extends NativeField(LitElement) {
   static override styles = [formControlStyles, styles];
 
-  override get _inputNode(): HTMLSelectElement | undefined {
-    return super._inputNode as HTMLSelectElement | undefined;
+  override get _control(): HTMLSelectElement | undefined {
+    return super._control as HTMLSelectElement | undefined;
   }
 
   /** Renders the control at a smaller size. */

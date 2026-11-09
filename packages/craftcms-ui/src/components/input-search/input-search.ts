@@ -131,9 +131,9 @@ export default class CraftInputSearch extends CraftInput {
 
     super.connectedCallback();
 
-    this._inputNode?.setAttribute('enterkeyhint', 'search');
-    if (!this._inputNode?.hasAttribute('autocomplete')) {
-      this._inputNode?.setAttribute('autocomplete', 'off');
+    this._control?.setAttribute('enterkeyhint', 'search');
+    if (!this._control?.hasAttribute('autocomplete')) {
+      this._control?.setAttribute('autocomplete', 'off');
     }
     this.#syncClearButton();
   }
@@ -184,10 +184,10 @@ export default class CraftInputSearch extends CraftInput {
     }
 
     this.value = '';
-    this._inputNode?.dispatchEvent(
+    this._control?.dispatchEvent(
       new Event('input', {bubbles: true, composed: true})
     );
-    this._inputNode?.focus();
+    this._control?.focus();
     this.dispatchEvent(
       new CustomEvent('clear', {bubbles: true, composed: true})
     );
@@ -200,7 +200,7 @@ export default class CraftInputSearch extends CraftInput {
   #onKeydown = (event: KeyboardEvent) => {
     if (
       event.key !== 'Escape' ||
-      event.target !== this._inputNode ||
+      event.target !== this._control ||
       !this.#hasValue()
     ) {
       return;
@@ -229,7 +229,7 @@ export default class CraftInputSearch extends CraftInput {
       this.requestUpdate();
     } else if (!show && this.#clearButton) {
       if (this.#clearButton.contains(document.activeElement)) {
-        this._inputNode?.focus();
+        this._control?.focus();
       }
       this.#clearButton.remove();
       this.#clearButton = null;

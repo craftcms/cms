@@ -82,7 +82,7 @@ export default class CraftSlidePicker extends FormAssociated(
   }
 
   get #slider(): CraftSlidePickerSlider | undefined {
-    return this._inputNode as CraftSlidePickerSlider | undefined;
+    return this._control as CraftSlidePickerSlider | undefined;
   }
 
   override connectedCallback() {

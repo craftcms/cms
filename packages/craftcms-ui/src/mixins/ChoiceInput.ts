@@ -25,7 +25,7 @@ export declare class ChoiceInputInterface extends FormControlInterface {
   name: string;
   required: boolean;
   invalid: boolean;
-  get _inputNode(): ChoiceControlElement | undefined;
+  get _control(): ChoiceControlElement | undefined;
   protected get _defaultValue(): string;
   protected _pushToControl(changed: PropertyValues): void;
   _syncFromControl(): void;
@@ -88,12 +88,12 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
     /** Whether the choice is on. */
     @property({type: Boolean, reflect: true})
     get checked(): boolean {
-      return this._inputNode?.checked ?? this.#pendingChecked ?? false;
+      return this._control?.checked ?? this.#pendingChecked ?? false;
     }
 
     set checked(checked: boolean) {
       const old = this.checked;
-      const control = this._inputNode;
+      const control = this._control;
 
       if (control) {
         control.checked = checked;
@@ -141,12 +141,12 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
     /** Where a form reset is heard: the tree the input and its form share. */
     #resetRoot?: Node;
 
-    override get _inputNode(): ChoiceControlElement | undefined {
-      return super._inputNode as ChoiceControlElement | undefined;
+    override get _control(): ChoiceControlElement | undefined {
+      return super._control as ChoiceControlElement | undefined;
     }
 
     get #nativeInput(): HTMLInputElement | undefined {
-      const control = this._inputNode;
+      const control = this._control;
       return control instanceof HTMLInputElement ? control : undefined;
     }
 
@@ -191,7 +191,7 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
      * directly, which fire no event.
      */
     #adoptControl(): void {
-      const control = this._inputNode;
+      const control = this._control;
 
       if (!control || control === this.#adopted) {
         return;
@@ -262,7 +262,7 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
      * the user, written to directly, or unchecked by a radio beside it.
      */
     _syncFromControl(): void {
-      const control = this._inputNode;
+      const control = this._control;
 
       if (control && control.checked !== this.#reflectedChecked) {
         this.requestUpdate('checked', this.#reflectedChecked);
@@ -270,7 +270,7 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
     }
 
     #onChange = (event: Event): void => {
-      if (event.target === this._inputNode) {
+      if (event.target === this._control) {
         this._syncFromControl();
       }
     };
@@ -283,7 +283,7 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
     };
 
     #onFocusIn = (event: FocusEvent): void => {
-      const control = this._inputNode;
+      const control = this._control;
 
       if (event.target !== control) {
         return;
@@ -298,7 +298,7 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
     };
 
     #onFocusOut = (event: FocusEvent): void => {
-      if (event.target !== this._inputNode) {
+      if (event.target !== this._control) {
         return;
       }
 
@@ -306,11 +306,11 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
     };
 
     override focus(options?: FocusOptions): void {
-      this._inputNode?.focus(options);
+      this._control?.focus(options);
     }
 
     override blur(): void {
-      this._inputNode?.blur();
+      this._control?.blur();
     }
 
     /**
@@ -318,7 +318,7 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
      * replaced by the label and help text.
      */
     protected override _enhanceLightDomA11y(): void {
-      const control = this._inputNode;
+      const control = this._control;
       const root = this.getRootNode() as Document | ShadowRoot;
 
       if (control && 'getElementById' in root) {
@@ -344,7 +344,7 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
      * own.
      */
     protected _pushToControl(changed: PropertyValues): void {
-      const control = this._inputNode;
+      const control = this._control;
 
       if (!control) {
         return;

@@ -80,8 +80,8 @@ export default class CraftSwitch extends ChoiceInput(LitElement) {
     return '1';
   }
 
-  override get _inputNode(): CraftSwitchButton | undefined {
-    return super._inputNode as CraftSwitchButton | undefined;
+  override get _control(): CraftSwitchButton | undefined {
+    return super._control as CraftSwitchButton | undefined;
   }
 
   /** The switch button, and the hidden input that posts. */
@@ -142,7 +142,7 @@ export default class CraftSwitch extends ChoiceInput(LitElement) {
   /** The button isn't labelable, so its label toggles it here. */
   protected override _onLabelClick(): void {
     if (!this.disabled) {
-      this._inputNode?.click();
+      this._control?.click();
     }
   }
 
@@ -234,7 +234,7 @@ export default class CraftSwitch extends ChoiceInput(LitElement) {
    * runs where none is (e.g. outside the control panel).
    */
   private __syncToggleTargets(): void {
-    const btn = this._inputNode;
+    const btn = this._control;
     if (!btn) {
       return;
     }
@@ -361,7 +361,7 @@ export default class CraftSwitch extends ChoiceInput(LitElement) {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
       return;
     }
-    if (this.disabled || event.target !== this._inputNode) {
+    if (this.disabled || event.target !== this._control) {
       return;
     }
     event.preventDefault();
@@ -376,19 +376,19 @@ export default class CraftSwitch extends ChoiceInput(LitElement) {
     // Legacy CP code (e.g. Craft.FieldToggle, which powers toggle/
     // reverseToggle reveals) listens for native change events on the switch
     // button.
-    if (this._inputNode) {
-      emitChange(this._inputNode);
+    if (this._control) {
+      emitChange(this._control);
     }
   }
 
   #onToggle = (event: Event): void => {
-    if (event.target === this._inputNode) {
+    if (event.target === this._control) {
       this.__syncHiddenInput();
     }
   };
 
   private __setupExternalLabelClicks(): void {
-    const btn = this._inputNode;
+    const btn = this._control;
     if (!btn) {
       return;
     }
@@ -429,11 +429,11 @@ export default class CraftSwitch extends ChoiceInput(LitElement) {
     if (event.composedPath().includes(this)) {
       return;
     }
-    this._inputNode?.click();
+    this._control?.click();
   };
 
   private __syncSwitchButton(): void {
-    const btn = this._inputNode as CraftSwitchButton | undefined;
+    const btn = this._control as CraftSwitchButton | undefined;
     if (!btn) {
       return;
     }
