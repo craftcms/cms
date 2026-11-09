@@ -2664,6 +2664,7 @@ return [
     'Required' => '필수',
     'Requirements' => '요구 사항',
     'Requires PHP {version}' => 'PHP {version} 필요',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => '{name} 항목 다시 저장 중',
     'Resaving {type} entries' => '{type} 항목 다시 저장 중',
     'Resaving {type}' => '{type} 재저장',
