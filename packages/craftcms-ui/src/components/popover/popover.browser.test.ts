@@ -603,3 +603,83 @@ it('binds the invoker its for names in the shadow root it moves into', async () 
   await popover.updateComplete;
   expect(popover.opened).toBe(true);
 });
+
+function paneIsShown(popover: CraftPopover): boolean {
+  return popover.shadowRoot!.querySelector('.popover-pane')!.checkVisibility();
+}
+
+function trigger(): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.id = 'trigger';
+  button.textContent = 'Open';
+  return button;
+}
+
+it.each([
+  [
+    'its for names no element',
+    '<craft-popover distance="4" for="trigger">',
+    (popover: CraftPopover) => (popover.for = 'missing'),
+    (popover: CraftPopover) => (popover.for = 'trigger'),
+  ],
+  [
+    'its slotted invoker is removed',
+    '<craft-popover distance="4">',
+    (popover: CraftPopover) => popover.querySelector('#trigger')!.remove(),
+    (popover: CraftPopover) =>
+      popover.prepend(Object.assign(trigger(), {slot: 'invoker'})),
+  ],
+])(
+  'hides while open when %s, and shows again once it has one',
+  async (_, openTag, lose, regain) => {
+    document.body.innerHTML = `
+      <div style="padding: 100px">
+        <button type="button" id="trigger" slot="invoker">Open</button>
+        ${openTag}
+          <div slot="content">Content</div>
+        </craft-popover>
+      </div>`;
+    const popover = document.querySelector<CraftPopover>('craft-popover')!;
+    const first = document.querySelector('#trigger')!;
+    if (!popover.for) {
+      popover.prepend(first);
+    }
+    await popover.show();
+    expect(offsetFromInvoker(popover, first)).toEqual({x: 0, y: 4});
+
+    lose(popover);
+
+    await expect.poll(() => paneIsShown(popover)).toBe(false);
+    expect(popover.opened).toBe(true);
+
+    regain(popover);
+
+    await expect
+      .poll(() =>
+        offsetFromInvoker(popover, document.querySelector('#trigger')!)
+      )
+      .toEqual({x: 0, y: 4});
+    expect(paneIsShown(popover)).toBe(true);
+  }
+);
+
+it('stays hidden when opened with no invoker, and shows against a virtual anchor alone', async () => {
+  document.body.innerHTML = `
+    <craft-popover distance="4">
+      <div slot="content">Content</div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.show();
+
+  expect(paneIsShown(popover)).toBe(false);
+
+  popover.anchor = {getBoundingClientRect: () => new DOMRect(200, 150, 0, 10)};
+  await popover.updateComplete;
+
+  await expect.poll(() => paneIsShown(popover)).toBe(true);
+  const {left, top} = popover
+    .shadowRoot!.querySelector('.popover-pane')!
+    .getBoundingClientRect();
+  expect({x: Math.round(left), y: Math.round(top)}).toEqual({x: 200, y: 164});
+});

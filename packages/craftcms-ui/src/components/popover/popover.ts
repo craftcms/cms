@@ -227,6 +227,12 @@ export default class CraftPopover extends LitElement {
   /** Whether the pane is showing. Trails `opened` until the update runs. */
   #shown = false;
 
+  /**
+   * Whether the pane was kept hidden for want of an anchor or invoker, and so
+   * shows once one arrives if the popover is still open.
+   */
+  #awaitingReference = false;
+
   #isSetUp = false;
 
   #pointerDownInside = false;
@@ -410,13 +416,19 @@ export default class CraftPopover extends LitElement {
     }
 
     // A new virtual anchor can keep the invoker it had, as its context element.
-    // An open popover may have no Popper yet, and one only follows the scroll
-    // containers it found when created.
-    if (
-      this.#shown &&
-      this.#popper?.state.elements.reference !== this.#reference
-    ) {
-      this.#position();
+    // A Popper only follows the scroll containers it found when created.
+    const reference = this.#reference;
+    if (!reference) {
+      if (this.#shown) {
+        this.#hidePane();
+        this.#awaitingReference = true;
+      }
+    } else if (this.#shown) {
+      if (this.#popper?.state.elements.reference !== reference) {
+        this.#position();
+      }
+    } else if (this.#awaitingReference && this.opened) {
+      this.#showPane();
     }
   }
 
@@ -661,6 +673,12 @@ export default class CraftPopover extends LitElement {
 
     // A detached layer can't enter the top layer. Reconnecting shows it.
     if (!layer || !wrapper || this.#shown || !this.isConnected) {
+      return;
+    }
+
+    // Without an anchor or invoker there's nothing to show it beside.
+    this.#awaitingReference = !this.#reference;
+    if (this.#awaitingReference) {
       return;
     }
 
