@@ -63,6 +63,12 @@ export default class CraftCopyButton extends LitElement {
   @property({attribute: 'tooltip-label'})
   tooltipLabel: string | null = null;
 
+  /**
+   * Name of the icon shown until the value is copied, replacing the default
+   * copy icon. The success and error icons still replace it after a copy.
+   */
+  @property() icon: string | null = null;
+
   /** The button's size. */
   @property({reflect: true}) size: CraftButton['size'] = 'small';
 
@@ -178,7 +184,9 @@ export default class CraftCopyButton extends LitElement {
         part="button"
         size="${this.size}"
         variant="${this.variant}"
-        icon="${STATUS_ICONS[this.status]}"
+        icon="${this.status === 'success' || this.status === 'error'
+          ? STATUS_ICONS[this.status]
+          : (this.icon ?? STATUS_ICONS[this.status])}"
         aria-label="${this.hasLabel
           ? nothing
           : this.label || t('Copy to clipboard')}"

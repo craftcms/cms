@@ -53,3 +53,17 @@ it('is named by its label attribute when icon-only', async () => {
     button.shadowRoot!.querySelector('craft-button')!.getAttribute('aria-label')
   ).toBe('Copy the cleanup command');
 });
+
+it('shows its own icon until copied, then the copy outcome', async () => {
+  const button = document.createElement('craft-copy-button');
+  button.icon = 'robot';
+  document.body.append(button);
+  await button.updateComplete;
+  const inner = () => button.shadowRoot!.querySelector('craft-button')!;
+
+  expect(inner().getAttribute('icon')).toBe('robot');
+
+  await button.showStatus('success');
+
+  expect(inner().getAttribute('icon')).toBe('check');
+});

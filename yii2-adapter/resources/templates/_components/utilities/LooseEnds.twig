@@ -135,7 +135,7 @@
                       <form method="post" action="{{ action.url }}">
                         {{ csrfInput() }}
                         {{ hiddenInput('key', action.key) }}
-                        <craft-button type="submit">
+                        <craft-button type="submit" icon="wrench">
                           {{ 'Fix this'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
                         </craft-button>
                       </form>
@@ -145,19 +145,19 @@
                         {{ hiddenInput('return', 'utilities/yii2-loose-ends') }}
                         {{ hiddenInput("install[#{action.handle}]", "^#{action.version}") }}
                         {{ hiddenInput("packageNames[#{action.handle}]", action.packageName) }}
-                        <craft-button type="submit">
+                        <craft-button type="submit" icon="up">
                           {{ 'Update to {version}'|t('yii2-adapter', {version: action.version}) }}<span class="sr-only"> {{ srTitle }}</span>
                         </craft-button>
                       </form>
                     {% elseif (action.type ?? null) == 'prompt' %}
-                      <craft-copy-button value="{{ action.prompt }}" variant="fill" size="medium">
+                      <craft-copy-button value="{{ action.prompt }}" variant="fill" size="medium" icon="robot">
                         {{ 'Copy prompt'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
                       </craft-copy-button>
                     {% endif %}
                     {% if item.resolveUrl %}
                       <form method="post" action="{{ item.resolveUrl }}">
                         {{ csrfInput() }}
-                        <craft-button type="submit">
+                        <craft-button type="submit" icon="circle-check">
                           {{ 'Mark resolved'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
                         </craft-button>
                       </form>
