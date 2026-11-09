@@ -1,4 +1,4 @@
-import {createApp, h, nextTick} from 'vue';
+import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import ColorControl from './ColorControl.vue';
 import type {UiControlPayload} from './types';
@@ -27,7 +27,10 @@ type ColorSelect = HTMLElement & {
   colors: string[];
   labels: Record<string, string>;
   allowTransparent: boolean;
+  allowCustom: boolean;
 };
+
+type ColorInput = HTMLElement & {modelValue: string | null};
 
 describe('ColorControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
@@ -38,11 +41,14 @@ describe('ColorControl', () => {
     container?.remove();
   });
 
+  const value = ref('');
+
   async function mount(
     props: Record<string, unknown>,
-    value: string,
+    initialValue: string,
     {required = false, onUpdate = vi.fn()} = {}
   ) {
+    value.value = initialValue;
     const control: UiControlPayload<{presets: string[]}> = {
       type: 'CraftCms\\Cms\\Ui\\Controls\\Color',
       component: 'craft:color',
@@ -57,7 +63,7 @@ describe('ColorControl', () => {
       render: () =>
         h(ColorControl, {
           control,
-          value,
+          value: value.value,
           editable: true,
           invalid: false,
           required,
@@ -70,18 +76,69 @@ describe('ColorControl', () => {
     return container;
   }
 
-  function pick(select: ColorSelect, modelValue: string) {
+  function pick(select: ColorSelect | ColorInput, modelValue: string) {
     select.modelValue = modelValue;
     select.dispatchEvent(
       new CustomEvent('model-value-changed', {bubbles: true, composed: true})
     );
   }
 
-  it('takes any color in a color input when custom colors are allowed', async () => {
-    const root = await mount({}, 'e5422c');
+  it('takes any color in a color input when there’s no palette', async () => {
+    const root = await mount({presets: []}, 'e5422c');
 
     expect(root.querySelector('craft-input-color')).not.toBeNull();
     expect(root.querySelector('craft-select-color')).toBeNull();
+  });
+
+  it('offers "Custom…" beside the palette, which takes any color', async () => {
+    const onUpdate = vi.fn();
+    const root = await mount({}, '#2563eb', {required: true, onUpdate});
+    const select = root.querySelector('craft-select-color') as ColorSelect;
+
+    expect(select.allowCustom).toBe(true);
+    expect(select.colors).toEqual(['#e5422b', '#2563eb']);
+    expect(select.modelValue).toBe('#2563eb');
+    expect(select.getAttribute('name')).toBe('color[color]');
+    expect(root.querySelector('craft-input-color')).toBeNull();
+
+    // Picking "Custom…" keeps the color until another is typed in.
+    pick(select, '__custom__');
+    await nextTick();
+    const input = root.querySelector('craft-input-color') as ColorInput;
+
+    expect(onUpdate).not.toHaveBeenCalled();
+    expect(input.getAttribute('slot')).toBe('after');
+    expect(input.getAttribute('name')).toBe('color[custom]');
+    expect(input.modelValue).toBe('#2563eb');
+
+    pick(input, '123456');
+    expect(onUpdate).toHaveBeenLastCalledWith('123456', 'discrete');
+
+    // Typing a preset's color in doesn't take "Custom…" away mid-edit.
+    pick(input, 'e5422b');
+    value.value = 'e5422b';
+    await nextTick();
+    expect(select.modelValue).toBe('__custom__');
+    expect(root.querySelector('craft-input-color')).not.toBeNull();
+  });
+
+  it('shows a color from elsewhere as a preset or as "Custom…"', async () => {
+    const root = await mount({}, '#123456', {required: true});
+    const select = root.querySelector('craft-select-color') as ColorSelect;
+
+    expect(select.modelValue).toBe('__custom__');
+    expect(select.colors).toEqual(['#e5422b', '#2563eb']);
+    expect(select.allowTransparent).toBe(false);
+    expect(
+      (root.querySelector('craft-input-color') as ColorInput).modelValue
+    ).toBe('#123456');
+
+    // As when a palette color is pasted in.
+    value.value = 'E5422B';
+    await nextTick();
+
+    expect(select.modelValue).toBe('#e5422b');
+    expect(root.querySelector('craft-input-color')).toBeNull();
   });
 
   it('picks from the presets, by their labels, when custom colors aren’t allowed', async () => {
@@ -94,6 +151,8 @@ describe('ColorControl', () => {
     const select = root.querySelector('craft-select-color') as ColorSelect;
 
     expect(root.querySelector('craft-input-color')).toBeNull();
+    expect(select.allowCustom).toBe(false);
+    expect(select.getAttribute('name')).toBe('color');
     expect(select.colors).toEqual(['#e5422b', '#2563eb']);
     expect(select.labels).toEqual({'#e5422b': 'Craft red'});
     expect(select.modelValue).toBe('#e5422b');

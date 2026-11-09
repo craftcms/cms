@@ -22,7 +22,7 @@ function isHex(color: string): boolean {
 /**
  * @summary A color picker: a rich select whose options are the colors from
  * `constants/colors` (or {@link CraftSelectColor.colors}, when narrowed, which
- * can also list hex colors), with an optional "transparent" option.
+ * can also list hex colors), with optional "transparent" and "Custom…" options.
  *
  * Everything else, including the label, help text, validation and the way a
  * surrounding `craft-field` names it, comes from {@link CraftSelectRich}.
@@ -74,6 +74,14 @@ export default class CraftSelectColor extends HostAriaReferences(
   blankLabel: string | null = null;
 
   /**
+   * When enabled, a "Custom…" option is appended to the list of colors, for
+   * a color that isn't one of them. Its value is `__custom__`, and whoever
+   * offers it takes the color itself, such as with a `craft-input-color`.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'allow-custom'})
+  allowCustom = false;
+
+  /**
    * Offered colors, in order: palette color names, or hex colors such as
    * `#e5422b`. Defaults to the shared palette.
    */
@@ -106,6 +114,16 @@ export default class CraftSelectColor extends HostAriaReferences(
    * boundary, so they still resolve in the invoker.
    */
   protected _swatchTemplate(color: string) {
+    // The "Custom…" option has no color of its own, so it keeps the swatch's
+    // space only, lining its name up with the others.
+    if (color === '__custom__') {
+      return html`<span
+        class="select-color__swatch"
+        style="flex:0 0 auto;inline-size:1rem;block-size:1rem;"
+        aria-hidden="true"
+      ></span>`;
+    }
+
     const isTransparent = color === '__blank__' || color === 'transparent';
     // Every swatch casts a slight shadow and has an edge in its card header's
     // border color (see --c-select-color-swatch-edge for no color's). The dark
@@ -227,7 +245,8 @@ export default class CraftSelectColor extends HostAriaReferences(
       changed.has('colors') ||
       changed.has('labels') ||
       changed.has('allowTransparent') ||
-      changed.has('blankLabel')
+      changed.has('blankLabel') ||
+      changed.has('allowCustom')
     ) {
       this.#renderOptions();
     }
@@ -247,7 +266,9 @@ export default class CraftSelectColor extends HostAriaReferences(
           color,
           this.labels[color] ?? (isHex(color) ? color : t(titleCase(color)))
         )
-      )}`,
+      )}${this.allowCustom
+        ? this._optionTemplate('__custom__', t('Custom…'))
+        : nothing}`,
       this._listboxNode
     );
   }

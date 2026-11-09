@@ -33,41 +33,83 @@ class Color extends Control implements ReadableValueControl, WritableValueContro
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         $value = $value === null || $value === '' ? null : (string) $value;
+        $presets = $control->props['presets'] ?? [];
+        $custom = ($control->props['custom'] ?? true) !== false;
+        $name = $attributes['name'];
 
-        if (($control->props['custom'] ?? true) === false) {
-            $presets = $control->props['presets'] ?? [];
-            $value = $value !== null ? self::matchingPreset($value, $presets) : null;
-
-            return SelectColor::make()
-                ->id($attributes['id'])
-                ->name($attributes['name'])
-                ->value($value ?? '__blank__')
-                ->colors($value === null || in_array($value, $presets, true) ? $presets : [...$presets, $value])
-                ->labels($control->props['presetLabels'] ?? [])
-                ->allowTransparent(! $attributes['required'] || $value === null || ! in_array($value, $presets, true))
-                ->blankLabel(t('No color'))
-                ->disabled($attributes['name'] === null)
-                ->readOnly($attributes['readonly'])
-                ->required($attributes['required'])
-                ->invalid(($attributes['aria']['invalid'] ?? null) === 'true')
-                ->describedBy($attributes['aria']['describedby'] ?? null)
-                ->toHtml();
+        if ($presets === [] && $custom) {
+            return self::colorInput($control, $attributes, $name, $value, $attributes['required'])->toHtml();
         }
 
+        // The value as one of the presets, when it's one of their colors.
+        $preset = $value !== null ? self::matchingPreset($value, $presets) : null;
+        $isPreset = $preset !== null && in_array($preset, $presets, true);
+        $isCustom = $value !== null && $custom && ! $isPreset;
+
+        $select = SelectColor::make()
+            ->id($attributes['id'])
+            ->name($name !== null && $custom ? "{$name}[color]" : $name)
+            ->value(match (true) {
+                $isCustom => '__custom__',
+                $preset !== null => $preset,
+                default => '__blank__',
+            })
+            // A value that can't be a custom color is listed, so it's shown.
+            ->colors($preset === null || $isPreset || $custom ? $presets : [...$presets, $preset])
+            ->labels($control->props['presetLabels'] ?? [])
+            ->allowTransparent(! $attributes['required'] || $value === null || (! $custom && ! $isPreset))
+            ->blankLabel(t('No color'))
+            ->allowCustom($custom)
+            ->disabled($name === null)
+            ->readOnly($attributes['readonly'])
+            ->required($attributes['required'])
+            ->invalid(($attributes['aria']['invalid'] ?? null) === 'true')
+            ->describedBy($attributes['aria']['describedby'] ?? null);
+
+        if (! $custom) {
+            return $select->toHtml();
+        }
+
+        // "Custom…" reveals the custom color, as a field toggle.
+        $customId = "{$attributes['id']}-custom";
+
+        return $select
+            ->attributes([
+                'class' => 'fieldtoggle',
+                'data' => ['target-prefix' => "#$customId-"],
+            ])
+            ->toHtml().
+            // It starts from the current color, as picking "Custom…" changes
+            // nothing until another is entered. It isn't required: it's hidden
+            // until then, and a hidden required input stops the form submitting.
+            self::colorInput($control, $attributes, $name !== null ? "{$name}[custom]" : null, $value, false)
+                ->id($customId)
+                ->attributes([
+                    'id' => "$customId-__custom__",
+                    'slot' => 'after',
+                    'label' => t('Custom color:'),
+                    'class' => array_filter(['mt-sm', $isCustom ? null : 'hidden']),
+                ])
+                ->toHtml();
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private static function colorInput(ControlPayload $control, array $attributes, ?string $name, ?string $value, bool $required): InputColor
+    {
         return InputColor::make()
             ->id($attributes['id'])
-            ->name($attributes['name'])
+            ->name($name)
             ->value($value)
-            ->presets($control->props['presets'] ?? [])
             ->alpha($control->props['alpha'] ?? false)
             ->disabled($attributes['name'] === null)
             ->readOnly($attributes['readonly'])
             ->describedBy($attributes['aria']['describedby'] ?? null)
             ->inputAttributes([
-                'required' => $attributes['required'],
+                'required' => $required,
                 'aria' => ['invalid' => $attributes['aria']['invalid'] ?? null],
-            ])
-            ->toHtml();
+            ]);
     }
 
     /**

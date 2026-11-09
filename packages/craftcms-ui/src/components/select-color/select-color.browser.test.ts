@@ -162,7 +162,7 @@ it('is named and described by the elements its host references', async () => {
 
 it('names each option by its color in text', async () => {
   const {page} = await import('vite-plus/test/browser');
-  document.body.innerHTML = `<craft-select-color label="Color" allow-transparent blank-label="No color" colors='["red","#e5422b","#2563eb"]' labels='{"#e5422b":"Craft red"}'></craft-select-color>`;
+  document.body.innerHTML = `<craft-select-color label="Color" allow-transparent blank-label="No color" allow-custom colors='["red","#e5422b","#2563eb"]' labels='{"#e5422b":"Craft red"}'></craft-select-color>`;
   const select =
     document.querySelector<CraftSelectColor>('craft-select-color')!;
   await select.registrationComplete;
@@ -172,7 +172,7 @@ it('names each option by its color in text', async () => {
     .elements()
     .map((option) => option.textContent?.trim());
 
-  expect(names).toEqual(['No color', 'Red', 'Craft red', '#2563eb']);
+  expect(names).toEqual(['No color', 'Red', 'Craft red', '#2563eb', 'Custom…']);
 });
 
 it('fills hex colors’ swatches, checkers a transparent one, and selects a hex color by its value', async () => {

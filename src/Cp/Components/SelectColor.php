@@ -26,6 +26,8 @@ class SelectColor extends ViewComponent
 
     protected ?string $blankLabel = null;
 
+    protected bool $allowCustom = false;
+
     /** @var list<string>|null */
     protected ?array $colors = null;
 
@@ -78,6 +80,17 @@ class SelectColor extends ViewComponent
     public function blankLabel(?string $blankLabel): static
     {
         $this->blankLabel = $blankLabel;
+
+        return $this;
+    }
+
+    /**
+     * Appends a "Custom…" option, valued `__custom__`, for a color that isn't
+     * one of {@see self::colors()}. The caller takes that color itself.
+     */
+    public function allowCustom(bool $allowCustom = true): static
+    {
+        $this->allowCustom = $allowCustom;
 
         return $this;
     }
@@ -158,6 +171,7 @@ class SelectColor extends ViewComponent
             'label' => $this->label,
             'allow-transparent' => $this->allowTransparent,
             'blank-label' => $this->blankLabel,
+            'allow-custom' => $this->allowCustom,
             'colors' => $this->colors !== null ? Json::encode($this->colors) : null,
             'labels' => $this->labels !== [] ? Json::encode($this->labels) : null,
             'required' => $this->required,

@@ -113,6 +113,32 @@ it('picks the color from the palette when custom colors aren’t allowed', funct
         ->and($crawler->filter('craft-input-color'))->toHaveCount(0);
 });
 
+it('offers a custom color beside the palette when custom colors are allowed', function (?string $value, string $selected) {
+    $field = new Color(['allowCustomColors' => true, 'palette' => [['color' => '#e5422b', 'label' => 'Craft red']]]);
+    $control = $field->uiControl(new FieldContext('color', $value));
+    $context = new UiContext(namespace: 'fields', values: ['fields' => ['color' => $value]]);
+    $payload = app(UiResolver::class)->resolve(Ui::make([UiField::make('Color', $control)]), $context);
+    $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+    $select = $crawler->filter('craft-select-color');
+    $input = $crawler->filter('craft-input-color');
+
+    expect($select->attr('allow-custom'))->not->toBeNull()
+        ->and($select->attr('name'))->toBe('fields[color][color]')
+        ->and($select->attr('model-value'))->toBe($selected)
+        // "Custom…" reveals the custom color, as a field toggle.
+        ->and($select->attr('class'))->toContain('fieldtoggle')
+        ->and($select->attr('data-target-prefix').'__custom__')->toBe('#'.$input->attr('id'))
+        ->and($input->attr('slot'))->toBe('after')
+        ->and(str_contains((string) $input->attr('class'), 'hidden'))->toBe($selected !== '__custom__')
+        ->and($input->filter('input')->attr('name'))->toBe('fields[color][custom]')
+        ->and($input->filter('input')->attr('value'))->toBe($value)
+        ->and($field->normalizeValue(['color' => $selected, 'custom' => $value], null)?->getHex())->toBe($value);
+})->with([
+    'a palette color' => ['#e5422b', '#e5422b'],
+    'another color' => ['#123456', '__custom__'],
+    'no color' => [null, '__blank__'],
+]);
+
 it('normalizes translucent palette colors', function () {
     $field = new Color(['palette' => [['color' => 'F008', 'label' => 'Red'], ['color' => '#00FF00FF', 'label' => 'Green']]]);
 
