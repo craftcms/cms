@@ -66,6 +66,12 @@ export type ElementSelectProps = {
   sources: string[] | null;
   criteria: UiProperties;
   selectionCondition?: UiProperties;
+  /** The element the selection condition is evaluated against, such as the one being edited. */
+  referenceElement?: {
+    referenceElementId: number;
+    referenceElementOwnerId: number | null;
+    referenceElementSiteId: number | null;
+  };
   selectionLabel: string;
   limit: number | null;
   single?: boolean;

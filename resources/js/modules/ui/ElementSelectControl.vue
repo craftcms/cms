@@ -424,6 +424,7 @@
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,
+        ...props.control.props.referenceElement,
         showSiteMenu: props.control.props.showSiteMenu,
         indexSettings: {showFolders: props.control.props.showFolders ?? true},
         multiSelect: replacing === null && remaining !== 1,

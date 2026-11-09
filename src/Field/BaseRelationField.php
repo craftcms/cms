@@ -278,6 +278,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
             ->sources($sources)
             ->criteria($this->getInputSelectionCriteria())
             ->selectionCondition($this->getSelectionCondition())
+            ->referenceElement($context->element)
             ->selectionLabel($this->selectionLabel ?? static::defaultSelectionLabel())
             ->limit($this->maxRelations)
             ->showSiteMenu($this->showSiteMenu)

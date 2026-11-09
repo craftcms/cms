@@ -414,6 +414,29 @@ describe('ElementSelectControl', () => {
     expect(updates).toEqual([9]);
   });
 
+  it('evaluates the selection condition against the reference element', async () => {
+    const root = await mount({
+      props: {
+        selectionCondition: {class: 'EntryCondition'},
+        referenceElement: {
+          referenceElementId: 12,
+          referenceElementOwnerId: 3,
+          referenceElementSiteId: 2,
+        },
+      },
+    });
+    addButton(root)!.click();
+    await flushSelector();
+
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    expect(settings).toMatchObject({
+      condition: {class: 'EntryCondition'},
+      referenceElementId: 12,
+      referenceElementOwnerId: 3,
+      referenceElementSiteId: 2,
+    });
+  });
+
   it('clears a scalar selection to null', async () => {
     const root = await mount({props: {single: true, limit: 1}, value: 5});
     menuItem(menus(root)[0], 'Remove').click();

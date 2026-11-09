@@ -7,6 +7,7 @@ use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Users;
@@ -85,9 +86,16 @@ it('limits an Assets field control to its restricted location and selection sett
         ],
     ]);
 
-    $props = $field->uiControl(new FieldContext('files'))->props();
+    $entry = EntryModel::factory()->createElement();
+
+    $props = $field->uiControl(new FieldContext('files', element: $entry))->props();
 
     expect($props['sources'])->toBe(["volume:$restrictedVolume->uid"])
+        ->and($props['referenceElement'])->toBe([
+            'referenceElementId' => $entry->id,
+            'referenceElementOwnerId' => null,
+            'referenceElementSiteId' => $entry->siteId,
+        ])
         ->and($props['criteria'])->toBe(['uploaderId' => null])
         ->and($props['selectionCondition']['conditionRules']['rules'][0])->toMatchArray([
             'class' => FileTypeConditionRule::class,

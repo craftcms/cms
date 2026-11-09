@@ -807,7 +807,8 @@ class Assets extends BaseRelationField
             $sources = array_merge($this->sources);
         } else {
             $sources = [];
-            foreach (ElementSources::getSources(Asset::class) as $source) {
+            // The field context lists every volume, leaving showUnpermittedVolumes to decide below
+            foreach (ElementSources::getSources(Asset::class, ElementSources::CONTEXT_FIELD) as $source) {
                 if ($source['type'] !== ElementSources::TYPE_HEADING) {
                     $sources[] = $source['key'];
                 }

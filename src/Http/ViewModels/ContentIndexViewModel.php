@@ -1174,7 +1174,9 @@ abstract class ContentIndexViewModel extends ViewModel
         $sources = array_filter($this->sourceCandidates($siteId), fn (array $source): bool => isset($source['key'])
             && ($source['type'] ?? null) !== ElementSources::TYPE_HEADING
             && ! ($source['disabled'] ?? false));
-        $source = ($requestedSource === null ? array_find($sources, fn (array $source): bool => $source['key'] === '*') : null)
+        // A nested source, such as an asset subfolder, is requested by its own key, which only the listed sources
+        // can resolve to its full key path.
+        $source = array_find($sources, fn (array $source): bool => $source['key'] === ($requestedSource ?? '*'))
             ?? array_first($sources);
 
         return [$source['keyPath'] ?? $source['key'] ?? null, $source];

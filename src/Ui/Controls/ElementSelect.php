@@ -13,12 +13,14 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
 use CraftCms\Cms\Ui\Contracts\WritableValueControl;
@@ -66,6 +68,9 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
     /** @var array<string, mixed>|null */
     private ?array $selectionCondition = null;
 
+    /** @var array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null */
+    private ?array $referenceElement = null;
+
     /**
      * The view modes a relation field can be set to, mirroring
      * {@see BaseRelationField::supportedViewModes()}. The
@@ -100,6 +105,7 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             'condition' => isset($control->props['selectionCondition'])
                 ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
                 : null,
+            'referenceElement' => self::referenceElementFromProps($control->props['referenceElement'] ?? null),
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
             'single' => $control->props['single'] ?? false,
@@ -113,6 +119,20 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             'useCustomElement' => true,
             'customElement' => $control->props['customElement'],
         ]));
+    }
+
+    /** @param array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null $reference */
+    private static function referenceElementFromProps(?array $reference): ?ElementInterface
+    {
+        if ($reference === null) {
+            return null;
+        }
+
+        return Elements::getElementById(
+            $reference['referenceElementId'],
+            siteId: $reference['referenceElementSiteId'],
+            criteria: array_filter(['ownerId' => $reference['referenceElementOwnerId']]),
+        );
     }
 
     /**
@@ -248,6 +268,21 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
         return $this;
     }
 
+    /**
+     * Sets the element the selection condition is evaluated against, such as the element being edited, for rules
+     * that refer to it.
+     */
+    public function referenceElement(?ElementInterface $element): static
+    {
+        $this->referenceElement = $element?->id ? [
+            'referenceElementId' => $element->id,
+            'referenceElementOwnerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+            'referenceElementSiteId' => $element->siteId,
+        ] : null;
+
+        return $this;
+    }
+
     public function viewMode(string $viewMode): static
     {
         if (! in_array($viewMode, self::viewModes(), true)) {
@@ -350,6 +385,7 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
+            ...($this->referenceElement !== null ? ['referenceElement' => $this->referenceElement] : []),
         ];
     }
 

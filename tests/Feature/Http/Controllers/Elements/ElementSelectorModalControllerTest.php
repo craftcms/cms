@@ -221,7 +221,7 @@ describe('asset folders', function () {
         ]);
         Search::indexElementAttributes($nestedAsset);
 
-        $search = ['folderId' => $parent->id, 'search' => 'nested-needle', 'showFolders' => false];
+        $search = ['folderId' => $parent->id, 'search' => 'nested-needle'];
         $ids = fn (array $props) => collect($props['data'])->pluck('id')->all();
 
         $props = ($this->postAssets)($search);
@@ -231,6 +231,32 @@ describe('asset folders', function () {
         $props = ($this->postAssets)([...$search, 'includeSubfolders' => 1]);
         expect($props['includeSubfolders'])->toBeTrue()
             ->and($ids($props))->toContain($nestedAsset->id);
+
+        $props = ($this->postAssets)([...$search, 'includeSubfolders' => 1, 'showFolders' => false]);
+        expect($props['canSearchSubfolders'])->toBeFalse()
+            ->and($props['includeSubfolders'])->toBeFalse()
+            ->and($ids($props))->not->toContain($nestedAsset->id);
+    });
+
+    it('keeps a subfolder source within that subfolder', function () {
+        $child = Folders::ensureFolderByFullPathAndVolume('restricted/child', $this->volume);
+        Folders::ensureFolderByFullPathAndVolume('outside', $this->volume);
+        $restricted = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'restricted/']);
+        $sources = ["volume:{$this->volume->uid}", "volume:{$this->volume->uid}/folder:{$restricted->uid}"];
+        $crumbs = fn (array $props) => collect($props['folderBreadcrumbs'])->pluck('folderId')->all();
+
+        $props = ($this->postAssets)([
+            'source' => "folder:{$restricted->uid}",
+            'sources' => $sources,
+            'folderId' => Folders::getRootFolderByVolumeId($this->volume->id)->id,
+        ]);
+
+        expect(collect($props['data'])->pluck('label')->all())->toBe(['child'])
+            ->and($crumbs($props))->toBe([$restricted->id]);
+
+        $props = ($this->postAssets)(['source' => "folder:{$restricted->uid}", 'sources' => $sources, 'folderId' => $child->id]);
+
+        expect($crumbs($props))->toBe([$restricted->id, $child->id]);
     });
 
     it('ignores a requested folder outside the current volume', function () {
