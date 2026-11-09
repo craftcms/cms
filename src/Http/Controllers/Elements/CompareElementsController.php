@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\FieldComparisonRow;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Element\FieldChangeComparisons;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Http\Controllers\Elements\Concerns\ElementCrumbs;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\NestedUiPayload;
 use CraftCms\Cms\Ui\NodePayload;
+use CraftCms\Cms\Ui\UiPayload;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -102,7 +104,7 @@ readonly class CompareElementsController
         $editors = ['to' => $this->editor($request, $to, $hasEdits['to'])];
         // Fields whose input HTML comes from `getInputHtml()` get the same ids in each editor, which their labels and
         // scripts would find in A's, so with those on both sides, only B's side is edited.
-        $editors['from'] = $sameCurrent || ($editors['to'] && $this->hasLegacyHtml($comparison['from']->nodes) && $this->hasLegacyHtml($comparison['to']->nodes))
+        $editors['from'] = $sameCurrent || ($editors['to'] && $this->hasLegacyHtml($from, $comparison['from']) && $this->hasLegacyHtml($to, $comparison['to']))
             ? null
             : $this->editor($request, $from, $hasEdits['from']);
         $chip = fn (ElementInterface $element): string => app(PreviewHtml::class)->elementPreviewHtml([$element], showStatus: false);
@@ -169,15 +171,27 @@ readonly class CompareElementsController
     }
 
     /**
+     * Whether an element's form can show a field whose input HTML is rendered the legacy way: one its layout has,
+     * whether or not a condition shows it yet, as only legacy fields have `getInputHtml()`, or one nested in the form.
+     */
+    private function hasLegacyHtml(ElementInterface $element, UiPayload $form): bool
+    {
+        return array_any(
+            $element->getFieldLayout()?->getCustomFields() ?? [],
+            fn (FieldInterface $field): bool => method_exists($field, 'getInputHtml'),
+        ) || $this->hasLegacyNodes($form->nodes);
+    }
+
+    /**
      * Whether any of the nodes, or those nested in them, is a field whose input HTML is rendered the legacy way.
      *
      * @param  list<NodePayload>  $nodes
      */
-    private function hasLegacyHtml(array $nodes): bool
+    private function hasLegacyNodes(array $nodes): bool
     {
         return array_any($nodes, fn ($node) => str_starts_with($node->control->component ?? '', 'craft-legacy:') ||
-        $this->hasLegacyHtml($node->children ?? []) ||
-        array_any($node->control->uis ?? [], fn (NestedUiPayload $ui): bool => $this->hasLegacyHtml($ui->nodes)));
+        $this->hasLegacyNodes($node->children ?? []) ||
+        array_any($node->control->uis ?? [], fn (NestedUiPayload $ui): bool => $this->hasLegacyNodes($ui->nodes)));
     }
 
     /**
