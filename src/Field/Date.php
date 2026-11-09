@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -18,9 +17,7 @@ use CraftCms\Cms\Gql\Directives\FormatDateTime;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -245,63 +242,6 @@ class Date extends Field implements InlineEditableFieldInterface, InputSchemaFie
     public function getInputId(): string
     {
         return sprintf('%s-date', parent::getInputId());
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        /** @var DateTimeInterface|null $value */
-        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Cms::timezone();
-
-        if ($value === null) {
-            // Override the initial value being set to null by CustomField::inputHtml()
-            $initialValue = [];
-            if ($this->showDate) {
-                $initialValue['date'] = '';
-            }
-            if ($this->showTime) {
-                $initialValue['time'] = '';
-            }
-            $initialValue['timezone'] = $timezone;
-            DeltaRegistry::setInitialValue($this->handle, $initialValue);
-        }
-
-        $components = [];
-
-        $variables = [
-            'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-date"
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $value,
-            'timeZone' => $this->showTimeZone ? false : null,
-            'outputTzParam' => false,
-            'minuteIncrement' => $this->minuteIncrement,
-            'isDateTime' => $this->showTime,
-            'hasOuterContainer' => true,
-        ];
-
-        if ($this->showDate) {
-            $components[] = FormFields::dateHtml($variables);
-        }
-
-        if ($this->showTime) {
-            $components[] = FormFields::timeHtml($variables);
-        }
-
-        if ($this->showTimeZone) {
-            $components[] = FormFields::timeZoneHtml([
-                'describedBy' => $this->describedBy,
-                'name' => "$this->handle[timezone]",
-                'value' => $timezone,
-                'offsetDate' => $value,
-            ]);
-        } else {
-            $components[] = Html::hiddenInput("$this->handle[timezone]", $timezone);
-        }
-
-        return Html::tag('div', implode("\n", $components), [
-            'class' => 'datetimewrapper',
-        ]);
     }
 
     /** @return list<string> */

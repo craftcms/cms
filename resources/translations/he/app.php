@@ -3182,7 +3182,7 @@ return [
     'Try again' => 'נסה שוב',
     'Try another way' => 'נסה בדרך אחרת',
     'Try for free' => 'נסה ללא תשלום',
-    'Try running `composer install` from your terminal to resolve.' => 'נסה להפעיל `composer install` מהמסוף שלך כדי לפתור את הבעיה.',
+    'Try running `{command}` from your terminal to resolve.' => 'נסה להפעיל `{command}` מהמסוף שלך כדי לפתור את הבעיה.',
     'Try' => 'נסה',
     'Trying again…' => 'מנסה שוב...',
     'Two-Step Verification Setup' => 'הגדרת אימות דו-שלבי',

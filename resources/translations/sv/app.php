@@ -3182,7 +3182,7 @@ return [
     'Try again' => 'Försök igen',
     'Try another way' => 'Prova ett annat sätt',
     'Try for free' => 'Prova gratis',
-    'Try running `composer install` from your terminal to resolve.' => 'Försök att åtgärda genom att köra `composer install` i din terminal.',
+    'Try running `{command}` from your terminal to resolve.' => 'Försök att åtgärda genom att köra `{command}` i din terminal.',
     'Try' => 'Försök',
     'Trying again…' => 'Försöker igen ...',
     'Two-Step Verification Setup' => 'Konfigurering av tvåstegsverifiering',

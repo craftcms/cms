@@ -23,6 +23,10 @@ import {Size, type SizeValue} from '@src/constants/size';
  * @csspart indicator - The default indicator shown in the prefix slot.
  * @csspart suffix - The trailing slot, rendered after the label.
  *
+ * @cssproperty --c-badge-icon-color - The color of `<craft-icon>`s slotted
+ *   into a neutral badge. Defaults to the badge's text color, and to white in
+ *   the dark theme and in black badges. Tinted badges' icons take their tint.
+ *
  * @since 1.0
  */
 export default class CraftBadge extends LitElement {

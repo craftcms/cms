@@ -21,6 +21,7 @@ use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
+use Mcp\Server\RequestContext;
 
 /**
  * @since 6.0.0
@@ -58,6 +59,7 @@ readonly class Search
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function query(
+        RequestContext $context,
         string $query,
         #[Schema(items: ['type' => 'string'])]
         array $types = [],
@@ -78,6 +80,7 @@ readonly class Search
         }
 
         $actor = $this->actor->user();
+        $fields = ElementSerializer::fieldsArgument($context, $fields);
         $requestedTypes = $types !== [];
         $types = $this->resolveTypes($types ?: $this->elementQueries->registeredTypes());
         $userType = array_find($types, static fn (string $type): bool => is_a($type, User::class, true));

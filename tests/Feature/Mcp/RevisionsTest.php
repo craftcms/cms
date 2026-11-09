@@ -8,6 +8,7 @@ use CraftCms\Cms\Mcp\Capabilities\Elements as ElementCapabilities;
 use CraftCms\Cms\Mcp\Capabilities\Revisions;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Http\Request;
 
@@ -36,7 +37,7 @@ it('inspects and applies entry revisions through MCP', function () {
     $elements->update('entries', id: $created['id'], attributes: ['title' => 'Current title']);
 
     $revisions = app(Revisions::class);
-    $listed = $revisions->list(type: 'entries', id: $created['id']);
+    $listed = $revisions->list(McpRequest::context('revisions_list'), type: 'entries', id: $created['id']);
     $original = collect($listed['revisions'])->firstWhere('title', 'Original title');
 
     expect($original)->not->toBeNull();

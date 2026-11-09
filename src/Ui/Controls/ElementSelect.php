@@ -124,7 +124,15 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
     #[Override]
     public function valueProps(): array
     {
-        return ['elements'];
+        // The element type too, so the elements can be drawn again once copied.
+        return ['elements', 'elementType'];
+    }
+
+    /** Elements are only copied between controls that select the same element type, unless a narrower scope is set. */
+    #[Override]
+    public function getValueScope(): ?string
+    {
+        return parent::getValueScope() ?? $this->elementType;
     }
 
     public function component(): string

@@ -3182,7 +3182,7 @@ return [
     'Try again' => 'Újrapróbálkozás',
     'Try another way' => 'Próbálkozzon másképp',
     'Try for free' => 'Próbáld ki ingyen',
-    'Try running `composer install` from your terminal to resolve.' => 'A megoldáshoz próbálja terminálból futtatni a `composer install` parancsot.',
+    'Try running `{command}` from your terminal to resolve.' => 'A megoldáshoz próbálja terminálból futtatni a `{command}` parancsot.',
     'Try' => 'Kipróbálás',
     'Trying again…' => 'Újrapróbálkozás...',
     'Two-Step Verification Setup' => 'Kétlépéses ellenőrzés beállítása',

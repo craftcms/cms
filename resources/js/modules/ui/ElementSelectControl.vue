@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
   import {computed, reactive, ref, useId, watch} from 'vue';
@@ -137,12 +138,16 @@
     }),
     () => ids.value.map((id) => ({id, siteId: Number(siteOf(id)) || null}))
   );
+  /** Elements fetched since the server last rendered the field. */
+  const loaded = new Set<number>();
   watch(
     () => props.control.props.elements,
-    (elements, previous) =>
+    (elements, previous) => {
+      loaded.clear();
       cached.seed(elements, props.control.props.criteria.siteId, {
         replace: previous !== undefined,
-      }),
+      });
+    },
     {immediate: true}
   );
 
@@ -172,6 +177,35 @@
   const selectable = computed(() => limit.value !== 1);
 
   const viewMode = computed(() => props.control.props.viewMode);
+
+  /**
+   * Elements selected without a presentation, such as ones pasted in, which
+   * come as IDs alone, are fetched, so they draw as themselves rather than as
+   * their IDs. Each is fetched once until the server renders the field again.
+   */
+  watch(
+    ids,
+    (current) => {
+      // One that leaves loses its cached presentation, so it's fetched again
+      // if it comes back.
+      loaded.forEach((id) => current.includes(id) || loaded.delete(id));
+      const missing = current.filter(
+        (id) =>
+          !loaded.has(id) &&
+          !cached.get(id, siteOf(id)) &&
+          !providedPresentations.value.has(id) &&
+          !presentations.has(id)
+      );
+
+      if (missing.length) {
+        missing.forEach((id) => loaded.add(id));
+        cached
+          .load(missing.map((id) => ({id, siteId: Number(siteOf(id)) || null})))
+          .catch(() => {});
+      }
+    },
+    {immediate: true}
+  );
 
   /**
    * What the card and thumb bodies draw, in the field's current order.
@@ -413,6 +447,11 @@
     },
     container: dropZone,
     fallbackFocus: addButton,
+  });
+
+  usePasteElementsShortcut(dropZone, {
+    canPaste: () => pasteable.candidates.value.length > 0,
+    paste: () => pasteable.paste(),
   });
 
   // ───────────────────────────── chip actions ─────────────────────────────

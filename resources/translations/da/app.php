@@ -3182,7 +3182,7 @@ return [
     'Try again' => 'Prøv igen',
     'Try another way' => 'Prøv på en anden måde',
     'Try for free' => 'Prøv gratis',
-    'Try running `composer install` from your terminal to resolve.' => 'Prøv at køre `composer install` fra din terminal for at løse problemet.',
+    'Try running `{command}` from your terminal to resolve.' => 'Prøv at køre `{command}` fra din terminal for at løse problemet.',
     'Try' => 'Prøv',
     'Trying again…' => 'Prøver igen…',
     'Two-Step Verification Setup' => 'Opsætning af totrinsbekræftelse',

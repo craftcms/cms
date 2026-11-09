@@ -2,6 +2,7 @@
   import {computed, h, nextTick, ref} from 'vue';
   import {router, useHttp, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
+  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import CraftCheckboxGroup from '@craftcms/ui/vue/CraftCheckboxGroup.vue';
   import CraftField from '@craftcms/ui/vue/CraftField.vue';
   import {useCraftTable} from '@/common/table/craftTable';
@@ -78,7 +79,7 @@
   const keySetupInstructions = t(
     'Run {command}, or set the {privateKey} and {publicKey} environment variables to PEM-encoded keys.',
     {
-      command: '<code>php craft passport:keys</code>',
+      command: `<code>${escapeHtml(page.props.keysCommand)}</code>`,
       privateKey: '<code>PASSPORT_PRIVATE_KEY</code>',
       publicKey: '<code>PASSPORT_PUBLIC_KEY</code>',
     }

@@ -208,9 +208,11 @@
   }
 }
 
-/* The copied-element card: a gradient frame and the copied elements' chips,
-   stacked with each one behind the last. */
-.cp-messages .copied-elements-notification {
+/* A "copied" card: a gradient frame around a preview of what's copied, which
+   runs under the Cancel button, and off the card's right and bottom edges
+   when it's too big for the card, fading out as it reaches them.
+   `copied-notification.ts` says which edges it runs off. */
+.cp-messages .copied-notification {
   padding: 2px;
   background: linear-gradient(
     135deg,
@@ -227,43 +229,148 @@
     border-radius: var(--c-radius-sm);
     background-color: var(--c-surface-overlay);
   }
+}
 
-  .copied-elements {
-    position: relative;
-    margin-block-end: calc(var(--c-spacing) * -2.5);
-    padding-block-end: calc(var(--c-spacing) * 2.5);
+.cp-messages .copied-notification:has(.copied-notification-value) {
+  .notification-inner {
+    display: grid;
+    grid-template-columns: calc(20rem / 16) 1fr auto;
+    column-gap: var(--c-spacing-md);
+    align-items: start;
     overflow: hidden;
-    pointer-events: none;
   }
 
-  /* A `craft-chip` host is `display: contents`, so each one gets a box to
-     stack, and a fill to cover the chips behind it, as chips have none of
-     their own. */
-  .copied-element-chip {
-    position: relative;
-    display: flex;
-    inline-size: fit-content;
-    max-inline-size: 100%;
-    border-radius: var(--c-radius-md);
-    background-color: var(--c-surface-overlay);
+  .notification-body,
+  .notification-main {
+    display: contents;
   }
 
-  /* `copied-elements-notification.ts` offsets each chip after the first and
-     sets its `--overlay-opacity`. */
-  .copied-element-chip:not(:first-child) {
-    position: absolute;
+  .notification-icon,
+  .notification-message,
+  .notification-inner > :last-child {
+    grid-row: 1;
+  }
 
-    &::after {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      display: block;
-      border-radius: inherit;
-      background-color: color-mix(
-        var(--c-surface-overlay) calc(var(--overlay-opacity, 0) * 100%),
-        transparent
-      );
-    }
+  .notification-close-btn {
+    margin-inline-start: 0;
+  }
+
+  .notification-details {
+    grid-row: 2;
+    grid-column: 2 / -1;
+    margin-block-end: calc(var(--c-spacing) * -2.5);
+    margin-inline-end: calc(var(--c-spacing) * -3.5);
+  }
+}
+
+/* Content that fits keeps the card's padding; content that doesn't runs
+   through it to the edge. */
+.cp-messages .copied-notification-value {
+  --fade-inline: linear-gradient(#000, #000);
+  --fade-block: linear-gradient(#000, #000);
+
+  box-sizing: border-box;
+  max-block-size: calc(var(--c-spacing) * 36);
+  padding-block-end: calc(var(--c-spacing) * 2.5);
+  padding-inline-end: calc(var(--c-spacing) * 3.5);
+  overflow: hidden;
+  mask-image: var(--fade-inline), var(--fade-block);
+  mask-composite: intersect;
+
+  &[data-overflow-inline] {
+    --fade-inline: linear-gradient(
+      to left,
+      transparent,
+      #000 calc(var(--c-spacing) * 12)
+    );
+  }
+
+  &[data-overflow-block] {
+    --fade-block: linear-gradient(
+      to top,
+      transparent,
+      #000 calc(var(--c-spacing) * 10)
+    );
+  }
+}
+
+.cp-messages .copied-notification-text {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* Copied text, such as a value's, a link's, or code, in an outlined pane
+   as wide as its text, which wraps within the card. */
+.cp-messages .copied-notification-pane {
+  inline-size: fit-content;
+  max-inline-size: 100%;
+}
+
+/* Code whose lines shouldn't wrap, such as JSON, widens its pane past the
+   card's edge, where it fades out. */
+.cp-messages .copied-notification-pane--nowrap {
+  max-inline-size: none;
+
+  .copied-field-value-code {
+    white-space: pre;
+  }
+}
+
+/* A copied link's label, above its URL, each on one line, cut short. */
+.cp-messages .copied-field-value-link > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cp-messages .copied-field-value-link-url {
+  color: var(--c-text-quiet);
+  font-size: var(--c-text-sm);
+}
+
+/* Copied code, such as JSON or Markdown, with its indentation. */
+.cp-messages .copied-field-value-code {
+  margin: 0;
+  font-family: var(--c-font-mono);
+  font-size: var(--c-text-sm);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+/* Copied elements' chips, and a copied value's items, such as selected
+   options, or a color or an icon, as badges, side by side. */
+.cp-messages :is(.copied-chips, .copied-field-value-badges) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--c-spacing) * 1.5);
+}
+
+/* A copied table's first rows, with long cells cut short. */
+.cp-messages .copied-field-value-table {
+  border: 1px solid var(--c-color-neutral-border-quiet);
+  border-radius: var(--c-radius-md);
+  border-spacing: 0;
+  border-collapse: separate;
+  font-size: var(--c-text-sm);
+
+  td {
+    max-width: 12em;
+    padding-block: calc(var(--c-spacing) * 1);
+    padding-inline: calc(var(--c-spacing) * 2.5);
+    overflow: hidden;
+    text-align: start;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  td + td {
+    border-inline-start: 1px solid
+      color-mix(in oklab, var(--c-color-neutral-border-quiet) 60%, transparent);
+  }
+
+  tr + tr td {
+    border-block-start: 1px solid
+      color-mix(in oklab, var(--c-color-neutral-border-quiet) 60%, transparent);
   }
 }
 

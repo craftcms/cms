@@ -34,6 +34,8 @@ class SelectRich extends ViewComponent
 
     protected bool $small = false;
 
+    protected bool $invalid = false;
+
     protected function tagName(): string
     {
         return 'craft-select-rich';
@@ -86,6 +88,16 @@ class SelectRich extends ViewComponent
         return $this;
     }
 
+    /**
+     * Marks the value as having failed validation, such as on the server.
+     */
+    public function invalid(bool $invalid = true): static
+    {
+        $this->invalid = $invalid;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -95,6 +107,7 @@ class SelectRich extends ViewComponent
             'label' => $this->label,
             'label-sr-only' => $this->labelSrOnly,
             'small' => $this->small,
+            'aria-invalid' => $this->invalid ? 'true' : null,
             'disabled' => $this->isDisabled(),
         ];
     }

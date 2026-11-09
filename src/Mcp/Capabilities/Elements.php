@@ -24,6 +24,7 @@ use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
+use Mcp\Server\RequestContext;
 
 /**
  * Lists, reads, and manages elements of every type registered with {@see ElementAdapterRegistry}.
@@ -100,6 +101,7 @@ readonly class Elements
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
+        RequestContext $context,
         #[Schema(definition: self::TypeSchema)]
         string $type,
         #[Schema(definition: self::CriteriaSchema)]
@@ -110,6 +112,7 @@ readonly class Elements
         $actor = $this->actor->user();
         $adapter = $this->adapter($type);
         $this->assertValid($criteria, $adapter->schema()['criteria'], 'criteria', $type);
+        $fields = ElementSerializer::fieldsArgument($context, $fields);
 
         $query = $adapter->listQuery($actor);
         $page = $this->elementQueryCriteria->page($query, $criteria);

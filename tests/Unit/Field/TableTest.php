@@ -135,6 +135,24 @@ it('validates optional built-in cell values and reports their table paths', func
     'empty money' => ['money', ['value' => '', 'locale' => 'nl-BE'], true],
 ]);
 
+it('describes columns by their cells’ own settings, which pasted rows are checked against', function () {
+    $control = fn (string $currency) => new Table([
+        'name' => 'Rows',
+        'handle' => 'rows',
+        'columns' => [
+            'price' => ['heading' => 'Price', 'handle' => 'price', 'type' => 'money', 'settings' => ['currency' => $currency]],
+            'link' => ['heading' => 'Link', 'handle' => 'link', 'type' => 'link', 'settings' => ['types' => ['url', 'email']]],
+            'size' => ['heading' => 'Size', 'handle' => 'size', 'type' => 'select', 'options' => ['s' => 'Small']],
+        ],
+    ])->uiControl(new FieldContext('rows'));
+    $columns = $control('EUR')->props()['columns'];
+
+    expect($columns['price']['currency'])->toBe('EUR')
+        ->and($columns['link']['types'])->toBe(['url', 'email'])
+        ->and(array_column($columns['size']['options'], 'value'))->toBe(['s'])
+        ->and($control('EUR')->getValueScope())->not->toBe($control('USD')->getValueScope());
+});
+
 it('round-trips money cells through localized row forms and scalar storage', function (?string $amount, ?string $expected) {
     I18N::withLocale('en-US', 'nl-BE', function () use ($amount, $expected): void {
         $field = new Table([
@@ -313,36 +331,6 @@ it('rejects unregistered cell types submitted as new column settings', function 
         ->and($field->columns['col1']['type'])->toBe(ScaledTableCell::class);
 });
 
-it('renders registered cells and their validation feedback in inline HTML inputs', function () {
-    app(TableCellTypes::class)->register(ScaledTableCell::class);
-    $field = new Table([
-        'handle' => 'details',
-        'columns' => [
-            'col1' => ['heading' => 'Quantity', 'handle' => 'quantity', 'type' => ScaledTableCell::class, 'factor' => 10],
-        ],
-    ]);
-    $element = new class extends Entry
-    {
-        public function getLanguage(): string
-        {
-            return 'en-US';
-        }
-    };
-    $element->errors()->add('details.0.col1', 'Quantity must be positive.');
-    $element->errors()->add('title', 'Unrelated title error.');
-    $rows = $field->normalizeValue([['col1' => -25]], $element);
-    $html = $field->getInlineInputHtml($rows, $element);
-    $input = new Crawler($html);
-    $payload = json_decode($input->filter('craft-table-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
-
-    expect($input->filter('craft-table-ui')->attr('name'))->toBe('details')
-        ->and($payload['values']['details'][0]['col1'])->toBe(-25)
-        ->and($payload['errors'])->toBe([
-            ['path' => ['details', '0', 'col1'], 'messages' => ['Quantity must be positive.']],
-        ])
-        ->and($payload['globalErrors'])->toBe([]);
-});
-
 it('round-trips link cells through request values, storage, and editor values', function () {
     $field = new Table([
         'handle' => 'links',
@@ -458,3 +446,12 @@ class ScaledTableCell extends TableCell
         return Type::float();
     }
 }
+
+it('only takes copied values from its own field when its rows are static', function () {
+    $columns = ['col1' => ['heading' => 'Label', 'handle' => 'label', 'type' => 'singleline']];
+    $scope = fn (array $config) => new Table(['uid' => 'table-uid', 'columns' => $columns, ...$config])
+        ->uiControl(new FieldContext('details'))->getValueScope();
+
+    expect($scope(['staticRows' => true, 'defaults' => [['col1' => 'A']]]))->toBe('table-uid')
+        ->and($scope([]))->toBeNull();
+});
