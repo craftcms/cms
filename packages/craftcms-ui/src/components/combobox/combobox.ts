@@ -221,9 +221,9 @@ export default class CraftCombobox extends FormAssociated(
     }
 
     // Typed text that stays in the textbox goes on filtering the options.
-    const text = this._inputNode?.value;
+    const text = this._control?.value;
     this.#syncTextbox();
-    if (this._inputNode?.value !== text) {
+    if (this._control?.value !== text) {
       this.#filtering = false;
     }
     this.requestUpdate('value', old);

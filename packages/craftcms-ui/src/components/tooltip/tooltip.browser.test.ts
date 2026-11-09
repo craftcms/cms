@@ -255,7 +255,7 @@ it('rebinds to the element for names in the shadow root it moves into', async ()
 
   inside.click();
   await tooltip.updateComplete;
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 });
 
 it('uses a slot="content" child as its content, keeping its id', async () => {

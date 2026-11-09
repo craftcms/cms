@@ -493,7 +493,7 @@ it('treats a click on an invoker linked while open as inside, with manual set', 
   await userEvent.click(page.getByRole('button', {name: 'Second'}));
   await new Promise((resolve) => setTimeout(resolve, 50));
 
-  expect(popover.opened).toBe(true);
+  expect(popover.open).toBe(true);
 });
 
 it.each([
@@ -597,11 +597,11 @@ it('binds the invoker its for names in the shadow root it moves into', async () 
 
   buttonA.click();
   await popover.updateComplete;
-  expect(popover.opened).toBe(false);
+  expect(popover.open).toBe(false);
 
   buttonB.click();
   await popover.updateComplete;
-  expect(popover.opened).toBe(true);
+  expect(popover.open).toBe(true);
 });
 
 function paneIsShown(popover: CraftPopover): boolean {

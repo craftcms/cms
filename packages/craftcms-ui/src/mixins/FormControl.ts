@@ -11,6 +11,7 @@ import {property} from 'lit/decorators.js';
 // Registers <craft-callout> and <craft-visually-hidden> for the notices.
 import '../components/callout/callout.js';
 import '../components/visually-hidden/visually-hidden.js';
+import {HasSlotController} from '@src/utilities/slot';
 import {t} from '@src/utilities/translate';
 import {uniqueId} from '@src/utilities/unique-id.js';
 

@@ -434,7 +434,7 @@ it.each([
     'is opened before its first update',
     async () => {
       await renderMenu(`
-        <craft-action-menu searchable opened>
+        <craft-action-menu searchable open>
           <craft-button slot="invoker" type="button">Open</craft-button>
           <div slot="content">
             <craft-action-item>First</craft-action-item>
@@ -455,7 +455,7 @@ it.each([
         </craft-action-menu>
       `);
       menu.searchable = true;
-      menu.opened = true;
+      menu.open = true;
       await menu.updateComplete;
     },
   ],

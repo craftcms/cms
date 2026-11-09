@@ -766,7 +766,7 @@ describe('visual', () => {
     'draws the error border around the field while invalid (multiple choice: %s)',
     async (multipleChoice) => {
       const {control, input, surface} = await fixture((c) => {
-        c.multipleChoice = multipleChoice;
+        c.multiple = multipleChoice;
         c.invalid = true;
       });
       const border = multipleChoice
