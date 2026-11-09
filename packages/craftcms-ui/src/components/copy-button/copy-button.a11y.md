@@ -8,7 +8,7 @@ Follows the WAI-ARIA APG [Button](https://www.w3.org/WAI/ARIA/apg/patterns/butto
 
 - [ ] The control is a `craft-button` with `type="button"`, so it never submits a form. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
 - [x] `disabled` disables the `craft-button`, so it leaves the Tab order and doesn't copy. Per WCAG 4.1.2 (Name, Role, Value). Verified by `does nothing while disabled` in `copy-button.test.ts`.
-- [ ] The accessible name says what will be copied. Per WCAG 2.4.6 (Headings and Labels) and 4.1.2 (Name, Role, Value). Known gap: an icon-only button is named "Copy to clipboard", whatever it copies. `tooltip-label` goes in the tooltip, which describes the button rather than naming it. A button with slotted content is named by that content.
+- [x] The accessible name says what will be copied. Per WCAG 2.4.6 (Headings and Labels) and 4.1.2 (Name, Role, Value). An icon-only button is named by `label`, or "Copy to clipboard" without one, so give each button on a page its own `label`. `tooltip-label` goes in the tooltip, which describes the button rather than naming it. A button with slotted content is named by that content. Verified by `is icon-only, with its own name, without a label` and `is named by its label attribute when icon-only` in `copy-button.browser.test.ts`.
 - [ ] Every string the button shows or announces is translated. Per WCAG 3.1.2 (Language of Parts). "Copy to clipboard", "Copied", "Copy failed" and "Copy" all go through `t()`. Not yet verified.
 - [x] After showing the outcome, the tooltip goes back to the `tooltip-label` it started with. Per WCAG 2.4.6 (Headings and Labels). Verified by `restores its tooltip label after showing the outcome` in `copy-button.test.ts`.
 

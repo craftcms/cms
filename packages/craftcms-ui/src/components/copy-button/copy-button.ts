@@ -51,6 +51,13 @@ export default class CraftCopyButton extends LitElement {
     1000;
 
   /**
+   * The accessible name of an icon-only button, saying what it copies.
+   * Defaults to "Copy to clipboard". A button with a slotted label is named by
+   * that label instead.
+   */
+  @property() label: string | null = null;
+
+  /**
    * Text shown in the button's tooltip, naming what will be copied.
    */
   @property({attribute: 'tooltip-label'})
@@ -172,7 +179,9 @@ export default class CraftCopyButton extends LitElement {
         size="${this.size}"
         variant="${this.variant}"
         icon="${STATUS_ICONS[this.status]}"
-        aria-label="${this.hasLabel ? nothing : t('Copy to clipboard')}"
+        aria-label="${this.hasLabel
+          ? nothing
+          : this.label || t('Copy to clipboard')}"
         ?disabled=${this.disabled}
         @click="${this.copyValue}"
         >${this.hasLabel

@@ -7,11 +7,13 @@
     heading: 'Remove the tracking data'|t('yii2-adapter'),
     description: 'Drops the table this utility keeps its findings in. Run it in each environment before you deploy the adapter’s removal, since the command goes away with the adapter.'|t('yii2-adapter'),
     command: commands.cleanup,
+    copyLabel: 'Copy the command to remove the tracking data'|t('yii2-adapter'),
   },
   {
     heading: 'Uninstall the adapter'|t('yii2-adapter'),
     description: 'Removes `craftcms/yii2-adapter` from `composer.json`. Commit the change and deploy it.'|t('yii2-adapter'),
     command: commands.remove,
+    copyLabel: 'Copy the command to uninstall the adapter'|t('yii2-adapter'),
   },
 ] %}
 
@@ -35,7 +37,7 @@
                 <div class="rounded-lg border border-transparent bg-[var(--c-color-black-fill-quiet)] text-[var(--c-color-black-on-quiet)]">
                   <div data-theme="dark" class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-1 ps-4 pe-1">
                     <code class="min-w-0 break-all bg-transparent p-0 font-mono text-sm text-inherit"><span class="select-none text-[var(--c-text-quiet)]" aria-hidden="true">$ </span>{{ step.command }}</code>
-                    <craft-copy-button value="{{ step.command }}" tooltip-label="{{ 'Copy'|t('yii2-adapter') }}"></craft-copy-button>
+                    <craft-copy-button value="{{ step.command }}" label="{{ step.copyLabel }}" tooltip-label="{{ 'Copy'|t('yii2-adapter') }}"></craft-copy-button>
                   </div>
                 </div>
               </div>

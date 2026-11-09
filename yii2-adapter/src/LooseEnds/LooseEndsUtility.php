@@ -12,7 +12,6 @@ use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Cache;
 use Override;
 use stdClass;
-use Throwable;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -72,13 +71,10 @@ class LooseEndsUtility extends Utility
         $store = app(LooseEndsStore::class);
         $usages = collect();
 
+        // A failure to read recorded usage is left to surface, as an empty list would claim nothing depends on the adapter.
         if (Cms::isInstalled()) {
-            try {
-                app(LegacyUsage::class)->flush();
-                $usages = $store->usages();
-            } catch (Throwable $e) {
-                report($e);
-            }
+            app(LegacyUsage::class)->flush();
+            $usages = $store->usages();
         }
 
         Cache::forever(LooseEndsStore::FINDING_COUNT_CACHE_KEY, count($findings));

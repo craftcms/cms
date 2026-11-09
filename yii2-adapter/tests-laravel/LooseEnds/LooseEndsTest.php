@@ -217,6 +217,12 @@ it('reports a Craft 5 mail transport adapter until a Laravel mailer is chosen', 
         ->and($afterChoosing)->toBe([]);
 });
 
+it('doesn’t claim nothing depends on the adapter when recorded usage can’t be read', function(): void {
+    $this->partialMock(LooseEndsStore::class)->shouldReceive('usages')->andThrow(new RuntimeException('Database unavailable.'));
+
+    expect(fn() => LooseEndsUtility::contentHtml())->toThrow(RuntimeException::class, 'Database unavailable.');
+});
+
 it('shows the removal steps once nothing depends on the adapter', function(): void {
     $html = LooseEndsUtility::contentHtml();
 

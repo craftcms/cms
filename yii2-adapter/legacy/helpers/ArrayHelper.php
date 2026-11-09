@@ -34,7 +34,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         }
 
         if (is_string($object) && str_contains($object, ',')) {
-            LegacyUsage::record('ArrayHelper::toArray(string)', 'Passing a string to `ArrayHelper::toArray()` has been deprecated. Use `str($value)->explode(',')` instead.');
+            LegacyUsage::record('ArrayHelper::toArray(string)', 'Passing a string to `ArrayHelper::toArray()` has been deprecated. Use `str($value)->explode(\',\')` instead.');
 
             // Split it on the non-escaped commas
             $object = preg_split('/(?<!\\\),/', $object);

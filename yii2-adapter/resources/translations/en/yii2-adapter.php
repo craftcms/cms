@@ -30,6 +30,8 @@ return [
     'Convert them to entries with `{entrify}`, then run `{drop}`.' => 'Convert them to entries with `{entrify}`, then run `{drop}`.',
     'Converting categories and tags to entries also converts these fields to Entries fields.' => 'Converting categories and tags to entries also converts these fields to Entries fields.',
     'Copy' => 'Copy',
+    'Copy the command to remove the tracking data' => 'Copy the command to remove the tracking data',
+    'Copy the command to uninstall the adapter' => 'Copy the command to uninstall the adapter',
     'Copy prompt' => 'Copy prompt',
     'Cosmetic' => 'Cosmetic',
     'Couldn’t fix the item.' => 'Couldn’t fix the item.',

@@ -74,8 +74,9 @@ class CodeOwnership
                     continue;
                 }
 
-                $file = $path;
-                $line = $this->templateLine($template, $line);
+                // A template is where the call was written, so it decides ownership, even when it’s Craft’s or the
+                // adapter’s own. Scanning past it would reach whatever rendered it, such as the front controller.
+                return $this->isProjectFile($path) ? [$path, $this->templateLine($template, $line)] : null;
             }
 
             if ($this->isPassThrough($file)) {
