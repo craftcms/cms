@@ -4,9 +4,12 @@ use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Yii2Adapter\Http\HandleYiiSiteRouteFallback;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Http\Request;
+use Illuminate\Queue\Events\JobAttempted;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Event;
 use yii\base\Application;
 
 it('can restore empty strings', function() {
@@ -126,4 +129,54 @@ it('does not trigger after request callbacks twice after a legacy request', func
     app()->terminate();
 
     expect($calls)->toBe(1);
+});
+
+it('triggers after request callbacks after each queued job', function() {
+    $calls = [];
+
+    Craft::$app->onAfterRequest(function() use (&$calls) {
+        $calls[] = 'first';
+    });
+    Event::dispatch(new JobAttempted('database', Mockery::mock(Job::class)));
+
+    Craft::$app->onAfterRequest(function() use (&$calls) {
+        $calls[] = 'second';
+    });
+
+    expect($calls)->toBe(['first']);
+
+    Event::dispatch(new JobAttempted('database', Mockery::mock(Job::class)));
+
+    expect($calls)->toBe(['first', 'second']);
+});
+
+it('fires the after request event once a worker ends, not after each job', function() {
+    $calls = 0;
+
+    Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use (&$calls) {
+        $calls++;
+    });
+    Event::dispatch(new JobAttempted('database', Mockery::mock(Job::class)));
+    Event::dispatch(new JobAttempted('database', Mockery::mock(Job::class)));
+
+    expect($calls)->toBe(0);
+
+    app()->terminate();
+
+    expect($calls)->toBe(1);
+});
+
+it('leaves after request callbacks to the request when a job runs synchronously', function() {
+    $called = false;
+
+    Craft::$app->onAfterRequest(function() use (&$called) {
+        $called = true;
+    });
+    Event::dispatch(new JobAttempted('sync', Mockery::mock(Job::class)));
+
+    expect($called)->toBeFalse();
+
+    app()->terminate();
+
+    expect($called)->toBeTrue();
 });

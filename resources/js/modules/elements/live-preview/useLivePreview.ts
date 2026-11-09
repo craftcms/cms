@@ -38,8 +38,6 @@ export interface ElementPreview {
   paramValue: string;
   siteTokenParam: string;
   siteToken: string | null;
-  /** `false` when `useIframeResizer` is off. */
-  iframeResizerOptions: Record<string, unknown> | false;
 }
 
 /** One iframe; a refresh loads a new one behind the current one, then swaps. */
@@ -400,15 +398,14 @@ export function useLivePreview(
     isLoading,
     device,
     orientation,
-    iframeResizerOptions: computed(
-      () => preview()?.iframeResizerOptions ?? false
-    ),
     open,
     close,
     refresh,
     switchTarget,
     frameLoaded,
     urlFor,
+    /** The token the frames use, created on the server first if need be. */
+    previewToken: ensureToken,
     draftSaved,
     editor,
     editorCovers,

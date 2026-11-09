@@ -1215,6 +1215,8 @@ readonly class ElementHtml
                     'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
                     'draft-id' => $element->isProvisionalDraft ? null : $element->draftId,
                     'revision-id' => $element->revisionId,
+                    // A draft’s or revision’s copy of a nested element, matched to the original where versions are compared.
+                    'canonical-id' => $element->getIsDerivative() ? $element->getCanonicalId() : null,
                     'field-id' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                     'primary-owner-id' => $element instanceof NestedElementInterface ? $element->getPrimaryOwnerId() : null,
                     'owner-id' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
@@ -1236,8 +1238,8 @@ readonly class ElementHtml
                     'deletable-for-site' => (
                         $editable &&
                         $this->contextIsAdministrative($config['context']) &&
-                        ElementHelper::isMultiSite($element) &&
-                        Gate::check('deleteForSite', $element)
+                        Gate::check('deleteForSite', $element) &&
+                        ElementHelper::isMultiSite($element)
                     ),
                 ]),
             ],

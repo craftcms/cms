@@ -85,14 +85,6 @@ readonly class SaveElementController
             ])));
         }
 
-        if (! $this->request->acceptsJson()) {
-            // Tell all browser windows about the element save
-            session()->broadcastToJs([
-                'event' => 'saveElement',
-                'id' => $element->id,
-            ]);
-        }
-
         return new ElementResponse()->success($element, t('{type} saved.', [
             'type' => $element::displayName(),
         ]), supportsAddAnother: true);
@@ -121,7 +113,17 @@ readonly class SaveElementController
 
         // Get the new owner and make sure it's a derivative element,
         // and that its canonical element is the nested element's primary owner
-        $owner = $this->elements->getElementById($this->request->integer('newOwnerId'), siteId: $element->siteId);
+        // (look in all sites, since non-localized nested elements like addresses always have the primary site ID,
+        // which the owner might not be saved in)
+        $newOwnerId = $this->request->integer('newOwnerId');
+        $owner = $this->elements->getElementById($newOwnerId, siteId: '*', criteria: [
+            'preferSites' => array_values(array_filter([$this->request->integer('siteId'), $element->siteId])),
+            'unique' => true,
+        ]);
+
+        if (! $owner) {
+            abort(400, "Invalid owner ID: $newOwnerId");
+        }
 
         if ($owner->getIsCanonical()) {
             abort(400, 'The owner element must be a derivative.');

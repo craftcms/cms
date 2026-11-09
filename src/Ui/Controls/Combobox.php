@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Cp\Components\Combobox as ComboboxComponent;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Controls\Combobox\CreateOption as ComboboxCreateOption;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -14,7 +16,7 @@ use InvalidArgumentException;
 /**
  * @since 6.0.0
  */
-class Combobox extends Control
+class Combobox extends Control implements ReadableValueControl, WritableValueControl
 {
     /** @var list<array<string, mixed>> */
     private array $options = [];
@@ -108,6 +110,9 @@ class Combobox extends Control
         return $this;
     }
 
+    /**
+     * Sets how many matching options are listed at once. More can still be selected by filtering.
+     */
     public function limit(?int $limit): static
     {
         if ($limit !== null && $limit < 1) {
@@ -173,7 +178,7 @@ class Combobox extends Control
             default => ['type' => 'string', 'examples' => array_column($choices, 'const')],
         };
 
-        return $this->multiple ? Arr::whereNotNull(['type' => 'array', 'items' => $schema, 'maxItems' => $this->limit]) : $schema;
+        return $this->multiple ? ['type' => 'array', 'items' => $schema] : $schema;
     }
 
     #[\Override]

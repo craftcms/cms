@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
@@ -64,7 +63,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Table extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InputSchemaFieldInterface, TracksReferencesFieldInterface
+class Table extends Field implements DefaultableFieldInterface, InputSchemaFieldInterface, TracksReferencesFieldInterface
 {
     /** @var array<string, array<string, true>> */
     private array $columnErrors = [];
@@ -133,9 +132,21 @@ class Table extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
             ->includeRowId($this->staticRows)
             ->minRows($this->minRows)
             ->maxRows($this->maxRows)
+            // Static rows are this field's own, and links to elements are limited to the elements its Link
+            // columns can select, so its values only fit it.
+            ->valueScope($this->staticRows || $this->linksToElements($columns) ? ($this->uid ?? static::class) : null)
             ->value($value);
 
         return $missing ? $control->mode(ControlMode::ReadOnly) : $control;
+    }
+
+    /** @param array<string, array<string, mixed>> $columns */
+    private function linksToElements(array $columns): bool
+    {
+        return array_any($columns, fn (array $column): bool => array_any(
+            $column['control']->props()['types'] ?? [],
+            fn (mixed $type): bool => ($type['kind'] ?? null) === 'element',
+        ));
     }
 
     /**

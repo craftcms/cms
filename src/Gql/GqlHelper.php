@@ -7,9 +7,15 @@ namespace CraftCms\Cms\Gql;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Entry\Data\EntryType;
+use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentShowInFormResolving;
+use CraftCms\Cms\FieldLayout\FieldLayoutElement;
+use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
@@ -20,8 +26,10 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
+use CraftCms\Cms\User\Conditions\UserCondition;
 use CraftCms\Cms\User\Elements\User;
 use GraphQL\Error\Error;
+use GraphQL\Executor\Executor;
 use GraphQL\Executor\Values;
 use GraphQL\Language\Parser;
 use GraphQL\Type\Definition\NonNull;
@@ -30,14 +38,21 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
 use GraphQL\Utils\AST;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use WeakMap;
 
 /**
  * @since 6.0.0
  */
 class GqlHelper
 {
+    /**
+     * @var WeakMap<ElementInterface, array<string, true>>|null
+     */
+    private static ?WeakMap $visibleFieldHandles = null;
+
     /**
      * @param  string|string[]  $components  The component(s) to check.
      * @param  GqlSchema|null  $schema  The GraphQL schema. If none is provided, the active schema will be used.
@@ -77,6 +92,208 @@ class GqlHelper
         } catch (GqlException) {
             return null;
         }
+    }
+
+    /**
+     * Returns whether a custom field should be included in an authenticated schema’s types, based on whether the user
+     * meets its (and its tab’s) user conditions.
+     *
+     * Element conditions and `showInForm` listeners are evaluated at resolve time instead, via
+     * [[guardContentFieldDefinition()]], since listeners may expect an element.
+     *
+     * @internal
+     */
+    public static function isFieldVisibleToUser(FieldInterface $field, User $user): bool
+    {
+        $layoutElement = $field->layoutElement;
+
+        if (! isset($layoutElement->uid)) {
+            return true;
+        }
+
+        $tab = self::layoutElementTab($layoutElement);
+
+        if ($tab && ! self::meetsUserCondition($tab->getUserCondition(), $user)) {
+            return false;
+        }
+
+        return self::meetsUserCondition($layoutElement->getUserCondition(), $user);
+    }
+
+    /**
+     * Returns whether a custom field should be included in an authenticated schema’s mutation arguments, based on
+     * whether the user meets its (and its tab’s) user and edit conditions.
+     *
+     * Element conditions are evaluated at resolve time instead, via [[populateFieldValues()]].
+     *
+     * @internal
+     */
+    public static function isFieldEditableByUser(FieldInterface $field, User $user): bool
+    {
+        if (! self::isFieldVisibleToUser($field, $user)) {
+            return false;
+        }
+
+        if (! self::meetsUserCondition($field->layoutElement?->getEditCondition(), $user)) {
+            return false;
+        }
+
+        // Content Block input types would be empty if none of their nested fields are editable
+        if ($field instanceof ContentBlockField) {
+            return ! empty(self::filterMutableFields($field->getFieldLayout()->getCustomFields()));
+        }
+
+        return true;
+    }
+
+    /**
+     * Filters custom fields down to the ones that should be included in mutation arguments.
+     *
+     * Fields are only filtered for schemas authenticated as a user.
+     *
+     * @template T of FieldInterface
+     *
+     * @param  T[]  $fields
+     * @return T[]
+     *
+     * @internal
+     */
+    public static function filterMutableFields(array $fields): array
+    {
+        $user = self::getSchemaUser();
+
+        if (! $user) {
+            return $fields;
+        }
+
+        return array_values(array_filter($fields, fn (FieldInterface $field) => self::isFieldEditableByUser($field, $user)));
+    }
+
+    /**
+     * Wraps a content field’s GraphQL definition so it resolves to `null` for elements it isn’t visible for.
+     *
+     * The definition is returned as-is if the field’s visibility can’t vary by element.
+     *
+     * @internal
+     */
+    public static function guardContentFieldDefinition(FieldInterface $field, mixed $definition): mixed
+    {
+        if (! self::visibilityVariesByElement($field)) {
+            return $definition;
+        }
+
+        if ($definition instanceof Type) {
+            $definition = [
+                'name' => $field->handle,
+                'type' => $definition,
+            ];
+        } elseif (! is_array($definition)) {
+            return $definition;
+        }
+
+        // The field may resolve to null for some elements, so it can’t be non-null
+        if (($definition['type'] ?? null) instanceof NonNull) {
+            $definition['type'] = $definition['type']->getWrappedType();
+        }
+
+        $handle = $field->handle;
+        $resolve = $definition['resolve'] ?? null;
+
+        $definition['resolve'] = function (mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo) use ($handle, $resolve): mixed {
+            if ($source instanceof ElementInterface && ! self::isFieldVisibleForElement($source, $handle)) {
+                return null;
+            }
+
+            // Fall back to the parent type’s resolver, so directives are still applied
+            $resolve ??= $resolveInfo->parentType->resolveFieldFn ?? Executor::getDefaultFieldResolver();
+
+            return $resolve($source, $arguments, $context, $resolveInfo);
+        };
+
+        return $definition;
+    }
+
+    /**
+     * Sets custom field values on an element for a schema authenticated as a user, like
+     * [[ElementInterface::setFieldValuesFromRequest()]]: only fields that are visible and editable for the element are
+     * set, and an error is thrown if values were provided for any other fields in its layout.
+     *
+     * @param  array<string, mixed>  $values  The field values, indexed by field handle
+     *
+     * @throws Error if values were provided for fields the user can’t edit
+     *
+     * @internal
+     */
+    public static function populateFieldValues(ElementInterface $element, array $values): void
+    {
+        $lockedHandles = ElementHelper::setEditableFieldValuesFromRequest($element, $values);
+
+        if (! empty($lockedHandles)) {
+            throw new Error(sprintf(
+                'You don’t have permission to edit the following fields: %s',
+                implode(', ', $lockedHandles),
+            ));
+        }
+    }
+
+    private static function meetsUserCondition(?UserCondition $condition, User $user): bool
+    {
+        return ! $condition || $condition->matchElement($user);
+    }
+
+    /**
+     * Returns the tab that contains a layout element, if it can be conditional.
+     */
+    private static function layoutElementTab(FieldLayoutElement $layoutElement): ?FieldLayoutTab
+    {
+        foreach ($layoutElement->getLayout()?->getTabs() ?? [] as $tab) {
+            if (! isset($tab->uid)) {
+                continue;
+            }
+
+            foreach ($tab->getElements() as $tabElement) {
+                if ($tabElement === $layoutElement || ($tabElement->uid ?? null) === $layoutElement->uid) {
+                    return $tab;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns whether a custom field’s visibility can vary by element.
+     */
+    private static function visibilityVariesByElement(FieldInterface $field): bool
+    {
+        $layoutElement = $field->layoutElement;
+
+        if (! isset($layoutElement->uid)) {
+            return false;
+        }
+
+        if (Event::hasListeners(FieldLayoutComponentShowInFormResolving::class) || $layoutElement->getElementCondition()) {
+            return true;
+        }
+
+        return (bool) self::layoutElementTab($layoutElement)?->getElementCondition();
+    }
+
+    private static function isFieldVisibleForElement(ElementInterface $element, string $handle): bool
+    {
+        self::$visibleFieldHandles ??= new WeakMap;
+
+        if (! isset(self::$visibleFieldHandles[$element])) {
+            $handles = [];
+
+            foreach ($element->getFieldLayout()?->getVisibleCustomFields($element) ?? [] as $field) {
+                $handles[$field->handle] = true;
+            }
+
+            self::$visibleFieldHandles[$element] = $handles;
+        }
+
+        return isset(self::$visibleFieldHandles[$element][$handle]);
     }
 
     /**

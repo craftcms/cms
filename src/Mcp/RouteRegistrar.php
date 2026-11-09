@@ -19,11 +19,12 @@ use CraftCms\Cms\Mcp\Enums\McpScope;
 use CraftCms\Cms\Mcp\Http\Controllers\DiscoveryController;
 use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
+use CraftCms\Cms\Mcp\Http\Middleware\ChallengeWithoutOAuthKeys;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
 use CraftCms\Cms\Mcp\Http\Middleware\RequireAccessDuringMaintenance;
+use CraftCms\Cms\Mcp\Http\Middleware\RequireAnyTokenScope;
 use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
 use Illuminate\Routing\Router;
-use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
 
 /**
  * Registers the routes for the enabled MCP servers.
@@ -55,8 +56,9 @@ readonly class RouteRegistrar
             PreventStaleDatabaseReads::class,
             AddOAuthChallenge::class.':mcp',
             ReorderJsonAccept::class,
+            ChallengeWithoutOAuthKeys::class,
             'auth:craft-mcp',
-            CheckTokenForAnyScope::using(McpScope::Read->satisfyingValues()),
+            RequireAnyTokenScope::using(McpScope::Read->satisfyingValues()),
             AuthorizeCpRequests::class,
             RequireAccessDuringMaintenance::class,
             SetActivityOrigin::class,
@@ -104,7 +106,7 @@ readonly class RouteRegistrar
             $this->router->allowDuringMaintenance()
                 ->prefix("$route/uploads")
                 ->name('craft.mcp.uploads.')
-                ->middleware([...self::authenticatedMiddleware(), CheckTokenForAnyScope::using(McpScope::Write->satisfyingValues())])
+                ->middleware([...self::authenticatedMiddleware(), RequireAnyTokenScope::using(McpScope::Write->satisfyingValues())])
                 ->group(function (Router $router): void {
                     $router->name('transfer')->any('{upload}/transfer', [UploadSessionController::class, 'transfer'])
                         ->whereUuid('upload');

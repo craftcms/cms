@@ -240,3 +240,23 @@ it.each(['light', 'dark'])(
     );
   }
 );
+
+it('draws a label badge right after the read-only badge, at its size and weight', async () => {
+  document.body.innerHTML = `
+    <craft-field label="Title" readonly>
+      <span slot="label-badge">Changed</span>
+    </craft-field>`;
+  const field = document.querySelector<CraftField>('craft-field')!;
+  await field.updateComplete;
+  const readOnly = field.shadowRoot!.querySelector('.read-only-badge')!;
+  const badge = field.querySelector('[slot="label-badge"]')!;
+  const readOnlyBox = readOnly.getBoundingClientRect();
+  const badgeBox = badge.getBoundingClientRect();
+
+  expect(badgeBox.height).toBe(readOnlyBox.height);
+  expect(badgeBox.top).toBe(readOnlyBox.top);
+  expect(badgeBox.left).toBeGreaterThan(readOnlyBox.right);
+  expect(getComputedStyle(badge).fontWeight).toBe(
+    getComputedStyle(readOnly).fontWeight
+  );
+});

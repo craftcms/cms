@@ -275,8 +275,11 @@ class UserPermissions
     {
         Edition::require(Edition::Team);
 
-        // Filter out any orphaned permissions
-        $permissions = $this->filterOrphanedPermissions($permissions);
+        // Filter out any orphaned permissions, keeping stored ones that aren't registered right now
+        $permissions = [
+            ...$this->filterOrphanedPermissions($permissions),
+            ...$this->storedUnregisteredPermissions($permissions, $this->getPermissionsByGroupId($groupId)->all()),
+        ];
 
         // Sort ascending
         sort($permissions);
@@ -432,6 +435,8 @@ class UserPermissions
     {
         Edition::require(Edition::Pro);
 
+        $storedPermissions = $this->storedDirectPermissionsByUserId($userId);
+
         // Delete any existing user permissions
         DB::table(Table::USERPERMISSIONS_USERS)
             ->where('userId', $userId)
@@ -439,7 +444,10 @@ class UserPermissions
 
         // Filter out any orphaned permissions
         $groupPermissions = $this->getGroupPermissionsByUserId($userId);
-        $permissions = $this->filterOrphanedPermissions($permissions, $groupPermissions->all());
+        $permissions = [
+            ...$this->filterOrphanedPermissions($permissions, $groupPermissions->all()),
+            ...$this->storedUnregisteredPermissions($permissions, $storedPermissions),
+        ];
 
         if (! empty($permissions)) {
             $userPermissionVals = [];
@@ -996,6 +1004,26 @@ class UserPermissions
         }
 
         return $filteredPermissions;
+    }
+
+    /**
+     * Returns the posted permissions that aren’t registered right now but are already stored, such as those of a
+     * plugin that only registers its permissions for control panel requests, so saving doesn’t drop them.
+     *
+     * @param  string[]  $postedPermissions
+     * @param  string[]  $storedPermissions
+     * @return string[]
+     */
+    private function storedUnregisteredPermissions(array $postedPermissions, array $storedPermissions): array
+    {
+        $storedPermissions = array_map(Str::lower(...), $storedPermissions);
+
+        return collect($postedPermissions)
+            ->filter(fn (string $permission) => ! $this->validatePermission($permission)
+                && in_array(Str::lower($permission), $storedPermissions, true))
+            ->unique(Str::lower(...))
+            ->values()
+            ->all();
     }
 
     /**

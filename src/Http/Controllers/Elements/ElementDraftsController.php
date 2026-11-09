@@ -519,22 +519,6 @@ class ElementDraftsController
 
         $this->elementActivity->trackActivity($canonical, ElementActivityType::Save);
 
-        if (! $this->request->expectsJson()) {
-            // Tell all browser windows about the element save
-            session()->broadcastToJs([
-                'event' => 'saveElement',
-                'id' => $canonical->id,
-            ]);
-
-            if (! $isUnpublishedDraft) {
-                session()->broadcastToJs([
-                    'event' => 'deleteDraft',
-                    'canonicalId' => $element->getCanonicalId(),
-                    'draftId' => $element->draftId,
-                ]);
-            }
-        }
-
         $message = match (true) {
             $isUnpublishedDraft => t('{type} created.', [
                 'type' => $element::displayName(),
@@ -573,15 +557,6 @@ class ElementDraftsController
             : t('{type} deleted.', [
                 'type' => t('Draft'),
             ]);
-
-        if (! $this->request->acceptsJson()) {
-            // Tell all browser windows about the draft deletion
-            session()->broadcastToJs([
-                'event' => 'deleteDraft',
-                'canonicalId' => $element->getCanonicalId(),
-                'draftId' => $element->draftId,
-            ]);
-        }
 
         return new ElementResponse()->success($element, $message);
     }

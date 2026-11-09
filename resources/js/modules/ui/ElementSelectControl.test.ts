@@ -2,6 +2,7 @@ import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {ConfigService} from '@craftcms/ui/services/Config';
 import type {UiControlPayload} from './types';
+import {broadcast} from '@/common/craft/broadcast';
 import {provideUiPreview} from './uiPreview';
 
 const stub = vi.hoisted(() => {
@@ -459,6 +460,129 @@ describe('ElementSelectControl', () => {
     settings.onSelect([{id: 9, label: 'Another entry', siteId: 1}]);
 
     expect(updates).toEqual([[5, 9]]);
+  });
+
+  it('keeps the newest refetch of a saved element when answers arrive out of order', async () => {
+    const answers: Array<(label: string) => void> = [];
+    const root = await mount();
+    stub.post.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          answers.push((label) =>
+            resolve({data: {elements: [{id: 5, label}]}})
+          );
+        })
+    );
+
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(answers).toHaveLength(1));
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(answers).toHaveLength(2));
+    answers[1]!('Newer title');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    answers[0]!('Older title');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await nextTick();
+
+    expect(root.textContent).toContain('Newer title');
+    expect(root.textContent).not.toContain('Older title');
+  });
+
+  it('forgets a refetched element once it leaves the selection', async () => {
+    const value = ref<number[] | number | null>([5]);
+    // Picked client-side, so the server's render doesn't name it.
+    const payload = control({elements: []});
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(ElementSelectControl, {
+          control: payload,
+          value: value.value,
+          editable: true,
+          'onUpdate:value': (next: number[] | number | null) => {
+            value.value = next;
+          },
+        }),
+    });
+    app.mount(container);
+    await nextTick();
+    stub.post.mockResolvedValue({data: {elements: [{id: 5, label: 'Saved'}]}});
+    broadcast({event: 'saveElement', id: 5});
+    await vi.waitFor(() => expect(container!.textContent).toContain('Saved'));
+
+    value.value = [];
+    await nextTick();
+    (
+      container.querySelector('[data-element-select-add]') as HTMLElement
+    ).click();
+    await flushSelector();
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    settings.onSelect([{id: 5, label: 'Renamed', siteId: 1}]);
+    await nextTick();
+
+    expect(container.textContent).toContain('Renamed');
+    expect(container.textContent).not.toContain('Saved');
+  });
+
+  it('fetches elements it’s given without their presentations, such as pasted ones', async () => {
+    const value = ref<number[] | number | null>([5]);
+    // One render from the server throughout, as a paste brings none
+    const rendered = control();
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(ElementSelectControl, {
+          control: rendered,
+          value: value.value,
+          editable: true,
+        }),
+    });
+    app.mount(container);
+    await nextTick();
+    expect(stub.post).not.toHaveBeenCalled();
+
+    stub.post.mockResolvedValue({
+      data: {elements: [{id: 8, label: 'Pasted entry'}]},
+    });
+    value.value = [5, 8];
+    await vi.waitFor(() =>
+      expect(container!.textContent).toContain('Pasted entry')
+    );
+
+    expect(stub.post).toHaveBeenCalledOnce();
+    expect(stub.post.mock.calls[0]![1]).toMatchObject({elementIds: [8]});
+    expect(container.textContent).toContain('Some entry');
+
+    // Removed and pasted back, it's fetched again.
+    value.value = [5];
+    await nextTick();
+    value.value = [5, 8];
+    await vi.waitFor(() => expect(stub.post).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() =>
+      expect(container!.textContent).toContain('Pasted entry')
+    );
+  });
+
+  it('keeps focus on a card’s link when its refetched card remounts', async () => {
+    const card = (label: string) => ({
+      id: 5,
+      label,
+      cardHeaderHtml: `<a href="/entries/5" class="card-link">${label}</a>`,
+    });
+    const root = await mount({
+      props: {viewMode: 'cards', elements: [card('Old')]},
+      value: [5],
+    });
+    root.querySelector<HTMLElement>('a.card-link')!.focus();
+    stub.post.mockResolvedValue({data: {elements: [card('New')]}});
+
+    broadcast({event: 'saveElement', id: 5});
+
+    await vi.waitFor(() =>
+      expect(document.activeElement?.textContent).toBe('New')
+    );
   });
 
   describe('maintaining hierarchy', () => {

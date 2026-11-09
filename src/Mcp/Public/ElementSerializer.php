@@ -22,10 +22,11 @@ class ElementSerializer
 
     /**
      * @param  list<string>|null  $fields
-     * @param  Closure(ElementInterface): ?array<string, mixed>|null  $serializeNested
+     * @param  Closure(ElementInterface, list<string>, bool): ?array<string, mixed>|null  $serializeNested
+     * @param  list<string>  $nestedPaths
      * @return array<string, mixed>
      */
-    public function serialize(ElementInterface $element, ?array $fields = [], ?Closure $serializeNested = null): array
+    public function serialize(ElementInterface $element, ?array $fields = [], ?Closure $serializeNested = null, array $nestedPaths = []): array
     {
         $data = ['type' => $element::class, 'id' => $element->id, 'uid' => $element->uid];
 
@@ -38,7 +39,17 @@ class ElementSerializer
             $data['affiliatedSiteHandle'] = Sites::getSiteById($element->affiliatedSiteId, true)?->handle;
         }
 
-        return $this->serializer->serialize($element, $data, public: true, fields: $fields, serializeNested: $serializeNested);
+        return $this->serializer->serialize($element, $data, public: true, fields: $fields, serializeNested: $serializeNested, nestedPaths: $nestedPaths);
+    }
+
+    /**
+     * Returns a summary of an element.
+     *
+     * @return array<string, mixed>
+     */
+    public function summarize(ElementInterface $element): array
+    {
+        return $this->serializer->summarize($element);
     }
 
     private function date(mixed $date): ?string

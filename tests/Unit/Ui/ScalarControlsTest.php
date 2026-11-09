@@ -225,6 +225,27 @@ it('serializes and validates combobox behavior', function () {
         ->and(fn () => Combobox::make('path')->limit(0))->toThrow(InvalidArgumentException::class);
 });
 
+it('allows selecting more combobox options than its limit lists', function () {
+    $control = Combobox::make('colors')
+        ->multiple()
+        ->requireOptionMatch()
+        ->limit(2)
+        ->options([
+            ['label' => 'Red', 'value' => 'red'],
+            ['label' => 'Green', 'value' => 'green'],
+            ['label' => 'Blue', 'value' => 'blue'],
+        ]);
+
+    expect($control->inputSchema())->toBe([
+        'type' => 'array',
+        'items' => ['oneOf' => [
+            ['const' => 'red', 'title' => 'Red'],
+            ['const' => 'green', 'title' => 'Green'],
+            ['const' => 'blue', 'title' => 'Blue'],
+        ]],
+    ]);
+});
+
 it('renders a create option in an ordinary combobox', function () {
     $payload = app(UiResolver::class)->resolve(
         Ui::make([Field::make()->control(Combobox::make('category')->options([

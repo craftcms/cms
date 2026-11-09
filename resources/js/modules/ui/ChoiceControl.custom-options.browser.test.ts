@@ -1,7 +1,7 @@
 import '../../../css/cp.css';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {userEvent} from 'vite-plus/test/browser/context';
-import {createApp, h, nextTick, type App} from 'vue';
+import {createApp, h, nextTick, ref, type App} from 'vue';
 import ChoiceControl from './ChoiceControl.vue';
 import type {UiControlPayload} from './types';
 
@@ -13,10 +13,13 @@ afterEach(() => {
   container?.remove();
 });
 
+const value = ref<string | string[]>('');
+
 async function mount(
-  value: string | string[],
+  initial: string | string[],
   multiple = true
 ): Promise<unknown[]> {
+  value.value = initial;
   const emitted: unknown[] = [];
   const control: UiControlPayload<any> = {
     type: 'CraftCms\\Cms\\Ui\\Controls\\Choice',
@@ -40,11 +43,14 @@ async function mount(
     render: () =>
       h(ChoiceControl, {
         control,
-        value,
+        value: value.value,
         editable: true,
         invalid: false,
         required: false,
-        'onUpdate:value': (next: unknown) => emitted.push(next),
+        'onUpdate:value': (next: string | string[]) => {
+          emitted.push(next);
+          value.value = next;
+        },
       }),
   });
   app.mount(container);
@@ -100,4 +106,122 @@ it('emits what’s typed into the custom radio, leaving the group to its radios'
       (element) => element.tagName.toLowerCase()
     )
   ).toEqual(['craft-radio', 'craft-radio']);
+});
+
+it('shows the custom options of a value written from outside, rather than the ones it had', async () => {
+  const emitted = await mount(['mine']);
+
+  value.value = ['copied'];
+  await vi.waitFor(() =>
+    expect(
+      [
+        ...container!.querySelectorAll<HTMLInputElement>(
+          '[data-custom] input[type=text]'
+        ),
+      ].map((input) => input.value)
+    ).toEqual(['copied'])
+  );
+  await userEvent.click(
+    container!.querySelector<HTMLInputElement>('input[type=checkbox][value=a]')!
+  );
+
+  expect(emitted.at(-1)).toEqual(['a', 'copied']);
+});
+
+it('selects the custom radio for a custom value written from outside, and leaves it for a regular one', async () => {
+  await mount('a', false);
+  const radio = () =>
+    container!.querySelector<HTMLInputElement>(
+      '[data-custom] input[type=radio]'
+    )!;
+
+  value.value = 'copied';
+  await vi.waitFor(() => expect(radio().checked).toBe(true));
+  expect(
+    container!.querySelector<HTMLInputElement>(
+      '[data-custom] input[type=text]'
+    )!.value
+  ).toBe('copied');
+
+  value.value = 'a';
+  await vi.waitFor(() => expect(radio().checked).toBe(false));
+
+  value.value = 'copied';
+  await vi.waitFor(() => expect(radio().checked).toBe(true));
+  value.value = '';
+  await vi.waitFor(() => expect(radio().checked).toBe(false));
+  expect(
+    container!.querySelector<HTMLInputElement>(
+      '[data-custom] input[type=text]'
+    )!.value
+  ).toBe('');
+});
+
+it('keeps the custom radio selected while its text is cleared', async () => {
+  const emitted = await mount('mine', false);
+  const input = container!.querySelector<HTMLInputElement>(
+    '[data-custom] input[type=text]'
+  )!;
+
+  await userEvent.clear(input);
+  await nextTick();
+
+  expect(emitted.at(-1)).toBe('');
+  expect(
+    container!.querySelector<HTMLInputElement>(
+      '[data-custom] input[type=radio]'
+    )!.checked
+  ).toBe(true);
+});
+
+it('keeps a custom option that’s being typed when its text matches a regular option', async () => {
+  await mount(['mine']);
+  const input = container!.querySelector<HTMLInputElement>(
+    '[data-custom] input[type=text]'
+  )!;
+
+  await userEvent.clear(input);
+  await userEvent.type(input, 'abc');
+
+  expect(
+    [
+      ...container!.querySelectorAll<HTMLInputElement>(
+        '[data-custom] input[type=text]'
+      ),
+    ].map((custom) => custom.value)
+  ).toEqual(['abc']);
+  expect(document.activeElement).toBe(input);
+});
+
+it('keeps the custom radio selected while typing text that matches a regular option', async () => {
+  const emitted = await mount('mine', false);
+  const input = container!.querySelector<HTMLInputElement>(
+    '[data-custom] input[type=text]'
+  )!;
+
+  await userEvent.clear(input);
+  await userEvent.type(input, 'abc');
+
+  expect(emitted.at(-1)).toBe('abc');
+});
+
+it('rebuilds the custom options when an Undo puts back the value they last sent', async () => {
+  await mount(['mine']);
+  const input = container!.querySelector<HTMLInputElement>(
+    '[data-custom] input[type=text]'
+  )!;
+  const customTexts = () =>
+    [
+      ...container!.querySelectorAll<HTMLInputElement>(
+        '[data-custom] input[type=text]'
+      ),
+    ].map((custom) => custom.value);
+
+  await userEvent.clear(input);
+  await userEvent.type(input, 'typed');
+  value.value = ['copied'];
+  await vi.waitFor(() => expect(customTexts()).toEqual(['copied']));
+  value.value = ['typed'];
+
+  await vi.waitFor(() => expect(customTexts()).toEqual(['typed']));
 });

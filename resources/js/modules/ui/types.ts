@@ -61,7 +61,16 @@ export type TextControlProps = {
  */
 export type UiControlPayload<Props extends object = UiProperties> = Omit<
   GeneratedUiControlPayload,
-  'props' | 'uis' | 'reactive' | 'emptyValue' | 'nestsUis' | 'omitNullValue'
+  | 'props'
+  | 'uis'
+  | 'reactive'
+  | 'emptyValue'
+  | 'nestsUis'
+  | 'omitNullValue'
+  | 'readable'
+  | 'writable'
+  | 'valueProps'
+  | 'valueScope'
 > & {
   props: Props;
   uis?: NestedUiPayload[];
@@ -70,6 +79,23 @@ export type UiControlPayload<Props extends object = UiProperties> = Omit<
   nestsUis?: boolean;
   /** Omit presentation-only null values from mutations. Shipped only when true. */
   omitNullValue?: boolean;
+  /**
+   * Whether the control's value, with its `valueProps`, is everything it
+   * draws, so it can be read and shown elsewhere. Shipped only when true.
+   */
+  readable?: boolean;
+  /**
+   * Whether the control draws whatever value is set on it from outside.
+   * Shipped only when true.
+   */
+  writable?: boolean;
+  /** The props the control draws its value with, read along with it. Shipped only when there are any. */
+  valueProps?: string[];
+  /**
+   * Values are only copied between controls with the same value scope.
+   * Shipped only when the control has one.
+   */
+  valueScope?: string;
 };
 
 export type UiNodePayload<

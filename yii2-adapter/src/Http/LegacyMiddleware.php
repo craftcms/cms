@@ -17,6 +17,7 @@ use CraftCms\Yii2Adapter\Web\DummyResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use yii\base\ExitException as YiiExitException;
 use yii\web\HttpException as YiiHttpException;
 
@@ -65,7 +66,8 @@ class LegacyMiddleware
                 return $next($request);
             }
 
-            throw $e;
+            // Let Laravel render Yii's status code instead of a 500
+            throw new HttpException($e->statusCode, $e->getMessage(), $e, code: $e->getCode());
         } catch (YiiExitException $e) {
             // In case Yii requests application termination - request is considered handled
             return self::createResponse();

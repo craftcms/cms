@@ -767,7 +767,17 @@ class ProjectConfig
         }
     }
 
-    private function acquireLock(): void
+    /**
+     * Acquires the lock that project config changes take, and holds it until modified config data is saved.
+     *
+     * Call it before reading values that a change depends on, so no other process can change them in between.
+     *
+     * @throws BusyResourceException if a lock could not be acquired
+     * @throws StaleResourceException if the loaded project config is out-of-date
+     *
+     * @since 6.0.0
+     */
+    public function acquireLock(): void
     {
         if ($this->lock !== null) {
             return;

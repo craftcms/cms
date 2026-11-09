@@ -125,12 +125,6 @@ class AltField extends TextareaField
     }
 
     #[Override]
-    public function isCrossSiteCopyable(ElementInterface $element): bool
-    {
-        return true;
-    }
-
-    #[Override]
     protected function uiIcon(): ?string
     {
         return 'universal-access';

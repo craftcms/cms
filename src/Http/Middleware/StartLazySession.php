@@ -7,13 +7,16 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Http\BufferedSessionHandler;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Cookie\QueueingFactory;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Illuminate\Routing\RouteRegistrar;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Session\SessionManager;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Starts the session lazily for requests that arrive without a session cookie.
@@ -43,6 +46,7 @@ readonly class StartLazySession
         private StartSession $startSession,
         private Router $router,
         private Container $container,
+        private QueueingFactory $cookies,
     ) {}
 
     /**
@@ -105,10 +109,10 @@ readonly class StartLazySession
     {
         $config = $this->manager->getSessionConfig();
 
-        $startSession = $this->startSession($request);
+        [$startSession, $parameters] = $this->startSession($request);
 
         if (($config['driver'] ?? null) === null || $request->cookies->get($config['cookie']) !== null) {
-            return $startSession->handle($request, $next);
+            return $startSession->handle($request, $next, ...$parameters);
         }
 
         $session = $this->manager->driver();
@@ -121,16 +125,18 @@ readonly class StartLazySession
         try {
             $response = $startSession->handle($request, function (Request $request) use ($next, $session, &$used) {
                 $id = $session->getId();
-                $attributes = $this->attributes($session->all());
+                $attributes = $this->attributes($request, $session->all());
 
                 $response = $next($request);
 
                 $used = $session->getId() !== $id
-                    || $this->attributes($session->all()) !== $attributes
-                    || $this->hasToken($response, $session->token());
+                    || $this->attributes($request, $session->all()) !== $attributes;
 
                 return $response;
-            });
+            }, ...$parameters);
+
+            // Checked on the final response, in case a host `StartSession` subclass adds the token to it.
+            $used = $used || $this->hasToken($response, $session->token());
         } finally {
             $session->setHandler($handler);
         }
@@ -147,46 +153,64 @@ readonly class StartLazySession
     }
 
     /**
-     * Returns the route's own {@see StartSession} subclass, if it has one, as `withLazySession()` excludes it too.
+     * Returns the route's own {@see StartSession} subclass, if it has one, as `withLazySession()` excludes it too,
+     * along with its middleware parameters.
+     *
+     * @return array{StartSession, list<string>}
      */
-    private function startSession(Request $request): StartSession
+    private function startSession(Request $request): array
     {
         $route = $request->route();
 
         if ($route instanceof Route) {
             foreach ($this->router->resolveMiddleware($route->gatherMiddleware()) as $middleware) {
-                if (is_string($middleware) && is_subclass_of($class = explode(':', $middleware, 2)[0], StartSession::class)) {
-                    return $this->container->make($class);
+                if (! is_string($middleware)) {
+                    continue;
+                }
+
+                [$class, $parameters] = array_pad(explode(':', $middleware, 2), 2, null);
+
+                if (is_subclass_of($class, StartSession::class)) {
+                    return [$this->container->make($class), $parameters === null ? [] : explode(',', $parameters)];
                 }
             }
         }
 
-        return $this->startSession;
+        return [$this->startSession, []];
     }
 
     /**
      * Returns the session's attributes, minus bookkeeping that doesn't need a session of its own.
      *
      * `_database_modified_at` is set by {@see PreventStaleDatabaseReads} whenever the request changes
-     * database records, so later requests read their own writes. That alone doesn't need a session.
+     * database records, so later requests read their own writes. Safe requests can set it too, such as
+     * when a page writes caches, so it only counts as using the session on unsafe requests.
      *
      * @param  array<string, mixed>  $attributes
      * @return array<string, mixed>
      */
-    private function attributes(array $attributes): array
+    private function attributes(Request $request, array $attributes): array
     {
-        unset($attributes['_database_modified_at']);
+        if ($request->isMethodSafe()) {
+            unset($attributes['_database_modified_at']);
+        }
 
         return $attributes;
     }
 
     /**
-     * Whether the session's CSRF token was put in the response body or headers, which only works if the session is saved.
+     * Whether the session's CSRF token was put in the response body, headers, or cookies, which only works if the session is saved.
+     * Streamed responses are assumed to contain it, as their bodies can't be checked.
      */
     private function hasToken(mixed $response, mixed $token): bool
     {
         if (! $response instanceof Response || ! is_string($token)) {
             return false;
+        }
+
+        // Streamed bodies can't be checked, so they're assumed to contain it.
+        if ($response instanceof StreamedResponse) {
+            return true;
         }
 
         $content = $response->getContent();
@@ -195,7 +219,6 @@ readonly class StartLazySession
             return true;
         }
 
-        // Cookies are skipped, as `PreventRequestForgery` puts the token in `XSRF-TOKEN` on every response.
         foreach ($response->headers->allPreserveCaseWithoutCookies() as $values) {
             foreach ($values as $value) {
                 if (is_string($value) && str_contains($value, $token)) {
@@ -204,6 +227,11 @@ readonly class StartLazySession
             }
         }
 
-        return false;
+        // Queued cookies are only added to the response after this middleware, by `AddQueuedCookiesToResponse`.
+        // `XSRF-TOKEN` is skipped, as `PreventRequestForgery` puts the token in it on every response.
+        return array_any(
+            [...$response->headers->getCookies(), ...$this->cookies->getQueuedCookies()],
+            fn (Cookie $cookie) => $cookie->getName() !== 'XSRF-TOKEN' && str_contains((string) $cookie->getValue(), $token),
+        );
     }
 }

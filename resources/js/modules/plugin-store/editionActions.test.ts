@@ -71,6 +71,8 @@ const context: PluginStoreContext = {
   allowUpdates: true,
   cmsLicenseKey: null,
   craftIdEndpoint: 'https://console.craftcms.com',
+  craftExecutable: 'php craft',
+  composerExecutable: 'composer',
 };
 
 function resolve(overrides: Partial<EditionActionsInput>) {

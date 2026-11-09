@@ -120,9 +120,10 @@ export function useDetachedElementIndex<
     pinnedColumn: options.pinnedColumn,
     data: options.data,
     columns: options.columns,
-    refresh: async () => {
+    refresh: async (refreshOptions) => {
       let applied = false;
       await visitor.visit(visitor.currentQuery(), {
+        silent: refreshOptions?.silent,
         onFinish: (result) => {
           applied = result.completed;
         },

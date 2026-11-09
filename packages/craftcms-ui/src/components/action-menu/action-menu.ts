@@ -121,8 +121,8 @@ export default class CraftActionMenu extends CraftPopover {
    */
   @property({attribute: false}) actions?: ActionMenuActions;
 
-  /** Accessible label for the generated default invoker, and for the menu. */
-  @property() override label: string = t('Actions');
+  /** Accessible label for the generated default invoker. */
+  @property() label: string = t('Actions');
 
   /** Icon name for the generated default invoker. */
   @property() icon: string = 'ellipsis';
@@ -184,7 +184,11 @@ export default class CraftActionMenu extends CraftPopover {
   private readonly _onItemClick = (event: Event): void => {
     const item = event.currentTarget as CraftActionItem;
 
-    this.opened = false;
+    if (this._isOpening) {
+      void this.hide();
+    } else {
+      this.opened = false;
+    }
 
     // In data-driven mode the 'craft-select' event is dispatched from _renderItem
     // (which has access to the descriptor). For slot-based mode this is the
@@ -244,7 +248,6 @@ export default class CraftActionMenu extends CraftPopover {
     if (firstInvoker) {
       firstInvoker.setAttribute('id', `invoker-${this.uid}`);
       firstInvoker.setAttribute('aria-controls', `content-${this.uid}`);
-      firstInvoker.setAttribute('aria-haspopup', 'true');
     }
     this._syncInvokerDisabled();
   }
@@ -887,9 +890,11 @@ export default class CraftActionMenu extends CraftPopover {
 
   /**
    * Initial focus once the overlay is fully shown: the search input when
-   * `searchable`, otherwise the first navigable item (APG menu-button
-   * pattern). Escape/outside-click closing restores focus to the invoker via
-   * Lion's `elementToFocusAfterHide` (which defaults to the invoker node).
+   * `searchable`, otherwise the first navigable item. The Disclosure example
+   * leaves focus on the button; moving it in is deliberate, so the arrow keys
+   * work straight away. Escape/outside-click closing restores focus to the
+   * invoker via Lion's `elementToFocusAfterHide` (which defaults to the
+   * invoker node).
    */
   private _onOverlayShow = (): void => {
     if (!this.opened) {
@@ -990,9 +995,15 @@ export default class CraftActionMenu extends CraftPopover {
     }
 
     if (event.key === ' ' && !this.searchable && currentItem?.href) {
-      // Links don't activate on Space natively; APG menus do.
+      // Links don't activate on Space natively; APG menus do. The item's `<a>`
+      // is in its shadow root, so a click on the host alone wouldn't follow it.
+      // The link's click still bubbles to the host, where a handler such as
+      // `CpLink`'s can turn it into an Inertia visit instead.
       event.preventDefault();
-      currentItem.click();
+      (
+        currentItem.shadowRoot?.querySelector<HTMLElement>('a[href]') ??
+        currentItem
+      ).click();
       return;
     }
 

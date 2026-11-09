@@ -1,4 +1,5 @@
 import '@/bootstrap/seed-translations';
+import './code-class.css';
 import './matrix';
 import './matrix/field-actions';
 import './nested-element-manager';

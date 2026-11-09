@@ -5,17 +5,22 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Auth\SessionTimeout;
 use CraftCms\Cms\Tests\TestClasses\Http\HostStartSession;
+use CraftCms\Cms\Tests\TestClasses\Http\HostTokenStartSession;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Session\SessionManager;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 
 beforeEach(function () {
     $this->tempDir = sys_get_temp_dir().'/craft-site-session-test-'.uniqid();
@@ -95,11 +100,64 @@ it('opts routes in with withLazySession()', function () {
 });
 
 it('uses the host app’s StartSession subclass', function () {
-    Route::middlewareGroup('host-web', [EncryptCookies::class, AddQueuedCookiesToResponse::class, HostStartSession::class]);
+    Route::middlewareGroup('host-web', [EncryptCookies::class, AddQueuedCookiesToResponse::class, HostStartSession::class.':custom']);
     Route::middleware('host-web')->withLazySession()->get('host-session', fn () => session('notice', 'none'));
 
     get('/host-session')
         ->assertOk()
-        ->assertHeader('X-Host-Start-Session', 'yes')
+        ->assertHeader('X-Host-Start-Session', 'custom')
         ->assertCookieMissing(config('session.cookie'));
+
+    $this->withCookie(config('session.cookie'), 'existing')
+        ->get('/host-session')
+        ->assertOk()
+        ->assertHeader('X-Host-Start-Session', 'custom');
+});
+
+it('saves the session when an unsafe request changes database records', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->post('lazy-write', function () {
+        DB::table('cache')->insert(['key' => 'lazy-write', 'value' => 'x', 'expiration' => 0]);
+
+        return 'written';
+    })->withoutMiddleware(PreventRequestForgery::class);
+
+    $response = post('/lazy-write')
+        ->assertOk()
+        ->assertCookie(config('session.cookie'));
+
+    $saved = unserialize(app(SessionManager::class)->driver()->getHandler()->read($response->getCookie(config('session.cookie'))->getValue()));
+
+    expect($saved['_database_modified_at'] ?? null)->toBeInt();
+});
+
+it('checks the final response for the CSRF token', function () {
+    Route::middlewareGroup('host-token-web', [EncryptCookies::class, AddQueuedCookiesToResponse::class, HostTokenStartSession::class]);
+    Route::middleware('host-token-web')->withLazySession()->get('host-token', fn () => 'page');
+
+    get('/host-token')
+        ->assertOk()
+        ->assertHeader('X-CSRF-Token')
+        ->assertCookie(config('session.cookie'));
+});
+
+it('saves the session when a response cookie contains the CSRF token', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->get('token-cookie', fn () => response('page')->cookie('csrf', csrf_token()));
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->get('queued-token-cookie', function () {
+        Cookie::queue('csrf', csrf_token());
+
+        return 'page';
+    });
+
+    get('/token-cookie')->assertOk()->assertCookie(config('session.cookie'));
+    get('/queued-token-cookie')->assertOk()->assertCookie(config('session.cookie'));
+});
+
+it('saves the session for streamed responses', function () {
+    Route::middleware(['web', 'craft', 'craft.web'])->withLazySession()->get('streamed', fn () => response()->stream(function () {
+        echo csrf_token();
+    }));
+
+    get('/streamed')
+        ->assertOk()
+        ->assertCookie(config('session.cookie'));
 });

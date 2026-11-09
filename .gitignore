@@ -56,3 +56,6 @@ resources/build
 # Vitest browser-mode failure artifacts
 **/__screenshots__/
 **/.vitest-attachments/
+
+# phpbench workbench, results and opcache
+.phpbench/

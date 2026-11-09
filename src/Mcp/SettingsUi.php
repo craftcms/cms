@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
+use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -51,6 +53,8 @@ readonly class SettingsUi
         private Sites $sites,
         private UserGroups $userGroups,
         private Volumes $volumes,
+        private PersonalAccessTokens $tokens,
+        private TerminalCommands $terminalCommands,
     ) {}
 
     /** @param array<string, mixed> $values The form's current values, which decide which notices show. */
@@ -92,6 +96,13 @@ readonly class SettingsUi
                 $this->booleanField(t('Allow Inactive Elements'), 'publicAllowInactive', t('Allow public queries to include elements that are not enabled.')),
             ]),
             Tab::make('mcp-authenticated', t('Authenticated'), [
+                ...($this->tokens->hasKeys() ? [] : [
+                    Callout::make('mcp-oauth-keys-warning', t('MCP clients can’t sign in until Craft has OAuth signing keys.').' '.t('Run {command}, or set the {privateKey} and {publicKey} environment variables to PEM-encoded keys.', [
+                        'command' => '`'.$this->terminalCommands->craft('passport:keys').'`',
+                        'privateKey' => '`PASSPORT_PRIVATE_KEY`',
+                        'publicKey' => '`PASSPORT_PUBLIC_KEY`',
+                    ]))->variant('warning'),
+                ]),
                 MarkdownContent::make('mcp-authenticated-description', t('Lets MCP clients act as a Craft user after the user signs in and approves access. Any active user can sign in. Tools still check their permissions.')),
                 Field::make(t('Enable the Authenticated MCP Server'), Lightswitch::make('enabled')->reactive()),
                 Field::make(t('Endpoint'), Text::make('route')->monospace()->reactive())

@@ -23,7 +23,7 @@ import {
   shallowRef,
   watch,
 } from 'vue';
-import {broadcast, onBroadcast} from '@/common/craft/broadcast';
+import {onBroadcast} from '@/common/craft/broadcast';
 import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import {
   useScreenPageProps,
@@ -120,6 +120,8 @@ export interface ElementContextMenuItem {
   description?: string;
   href?: string;
   selected?: boolean;
+  /** The Compare screen comparing this draft or revision with what it was based on. */
+  compareHref?: string | null;
 }
 
 /**
@@ -205,6 +207,8 @@ export interface ElementEditPayload {
   notice: string | null;
   mergeNotice: string | null;
   canDiscardDraft: boolean;
+  /** The Compare screen comparing this version with what it was based on, when there's anything to compare. */
+  compareChangesUrl?: string | null;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<ElementPreviewTarget>;
   /** What Live Preview needs; `null` when the element has no preview targets. */
@@ -1197,17 +1201,13 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
   /**
    * What a save from inside a panel tells the rest of the CP, since the page
-   * behind it isn't reloaded: the confirmation, other tabs and element indexes
-   * (via a broadcast), and Live Preview.
+   * behind it isn't reloaded: the confirmation, and Live Preview. Other tabs
+   * hear about the save from the server.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function announceSaved(data: any): void {
     if (data?.message) {
       showSuccess(data.message, data.notificationSettings);
-    }
-
-    if (data?.element?.id) {
-      broadcast({event: 'saveElement', id: data.element.id});
     }
 
     refreshPreviews();

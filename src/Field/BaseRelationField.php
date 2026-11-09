@@ -30,7 +30,6 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Conditions\RelationalFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -88,7 +87,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-abstract class BaseRelationField extends Field implements CrossSiteCopyableFieldInterface, EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
+abstract class BaseRelationField extends Field implements EagerLoadingFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface, ThumbableFieldInterface
 {
     /** The source key meaning “every source, including ones added later”. */
     public const string ALL_SOURCES = '*';
@@ -285,6 +284,9 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
             ->thumbSize($this->thumbSize)
             ->maintainHierarchy($this->maintainHierarchy)
             ->branchLimit($this->branchLimit)
+            // Which elements can be selected can depend on the field’s settings, such as its selectable element
+            // condition, so values are only copied between instances of this field.
+            ->valueScope($this->uid ?? static::class)
             ->value($value);
     }
 
@@ -849,10 +851,19 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     }
 
     /**
-     * Ensure only one structured source is selected when maintainHierarchy is true.
+     * Ensure the selected sources exist, and only one structured source is selected when maintainHierarchy is true.
      */
     public function validateSources(): void
     {
+        $attribute = $this->allowMultipleSources ? 'sources' : 'source';
+        $sourceKeys = array_column($this->getSourceOptions(), 'value');
+
+        foreach ((array) $this->$attribute as $source) {
+            if ($source !== self::ALL_SOURCES && ! in_array($source, $sourceKeys, true)) {
+                $this->errors()->add($attribute, t('Source “{source}” doesn’t exist.', ['source' => $source]));
+            }
+        }
+
         if (! $this->maintainHierarchy) {
             return;
         }

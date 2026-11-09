@@ -110,6 +110,15 @@ export default css`
     min-height: var(--c-size-control-md);
   }
 
+  .cp-chip--xsmall {
+    --_thumb-size: calc(
+      var(--c-size-control-sm) - var(--_border-width) * 2 -
+        var(--_chip-block-padding) * 2
+    );
+    min-height: var(--c-size-control-sm);
+    font-size: var(--c-text-sm);
+  }
+
   .cp-chip--large {
     --_chip-spacing: 1em;
     --_thumb-size: calc(40rem / 16);
@@ -139,6 +148,10 @@ export default css`
   .cp-chip.cp-chip--thumb-xl,
   .cp-chip.cp-chip--thumb-2xl {
     --_radius: var(--c-radius-lg);
+  }
+
+  .cp-chip.cp-chip--rounded {
+    --_radius: var(--c-radius-full);
   }
 
   /* Alignment */
@@ -383,6 +396,35 @@ export default css`
 
   :host([full-width]) .cp-chip--stacked {
     display: grid;
+  }
+
+  :host([full-width][prefix-placement='block-start']) {
+    display: block;
+    flex: 1 1 auto;
+    container: chip / inline-size;
+  }
+
+  /* Conditions can't read var(), so 18px is a large chip's padding and border on both sides. */
+  @container chip (inline-size < calc(240rem / 16 + 18px)) {
+    .cp-chip--stacked.cp-chip--thumb-2xl {
+      --_thumb-size: calc(180rem / 16);
+    }
+  }
+
+  @container chip (inline-size < calc(180rem / 16 + 18px)) {
+    .cp-chip--stacked:is(.cp-chip--thumb-2xl, .cp-chip--thumb-xl) {
+      --_thumb-size: calc(120rem / 16);
+    }
+  }
+
+  @container chip (inline-size < calc(120rem / 16 + 18px)) {
+    .cp-chip--stacked:is(
+      .cp-chip--thumb-2xl,
+      .cp-chip--thumb-xl,
+      .cp-chip--thumb-lg
+    ) {
+      --_thumb-size: calc(60rem / 16);
+    }
   }
 
   .cp-chip--stacked.cp-chip--has-header {

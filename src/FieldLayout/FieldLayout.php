@@ -326,6 +326,14 @@ class FieldLayout extends Component
 
             foreach ($tab->getElements() as $elementIndex => $element) {
                 $components["tabs.$tabIndex.elements.$elementIndex"] = $element;
+
+                if ($element instanceof CustomField) {
+                    try {
+                        $element->getField();
+                    } catch (FieldNotFoundException) {
+                        $this->errors()->add("tabs.$tabIndex.elements.$elementIndex.fieldUid", t('Field “{uid}” doesn’t exist.', ['uid' => $element->getFieldUid()]));
+                    }
+                }
             }
 
             foreach ($components as $path => $component) {

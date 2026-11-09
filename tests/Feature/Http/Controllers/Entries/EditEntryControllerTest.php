@@ -874,7 +874,6 @@ it('gives Live Preview untokenized targets and the token the View links share', 
             ->where('preview.targets.0.refresh', true)
             ->where('preview.tokenParams.canonicalId', $this->entry->id)
             ->where('preview.token', fn (string $token) => strlen($token) === 32)
-            ->where('preview.iframeResizerOptions', false)
             ->etc()
         );
 });

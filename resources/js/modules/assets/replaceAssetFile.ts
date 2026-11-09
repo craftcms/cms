@@ -35,6 +35,8 @@ export function replaceAssetFile(
         }
 
         showNotice(t('New file uploaded.'));
+        // Uploads don't go through the CP's HTTP clients, which relay the
+        // server's broadcasts, so the save is announced here.
         broadcast({event: 'saveElement', id: assetId});
         onReplaced();
       },

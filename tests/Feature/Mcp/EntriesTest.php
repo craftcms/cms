@@ -83,7 +83,7 @@ it('reads custom fields on demand and expands only one level of nested content',
     expect($block->getFieldValue('innerBlocks')->one()->getFieldValue('leafText'))->toBe('Deeper content');
 
     $elements = app(ElementCapabilities::class);
-    $listed = $elements->list('entries', ['id' => $entry->id])->structuredContent['elements'][0];
+    $listed = $elements->list(McpRequest::context('elements_list'), 'entries', ['id' => $entry->id])->structuredContent['elements'][0];
 
     expect($listed)->not->toHaveKeys(['teaser', 'blocks']);
 
@@ -104,6 +104,21 @@ it('reads custom fields on demand and expands only one level of nested content',
         ->and($selected['blocks'])->toHaveCount(1)
         ->and($selected['blocks'][0]['blockText'])->toBe('First level content')
         ->and($selected['blocks'][0])->not->toHaveKey('innerBlocks');
+
+    // The SDK passes a parameter’s default for an explicit null, and elements_list defaults to metadata only
+    $all = McpRequest::send($this, 'tools/call', [
+        'name' => 'elements_list',
+        'arguments' => ['type' => 'entries', 'criteria' => ['id' => $entry->id], 'fields' => null],
+    ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.elements.0');
+
+    expect($all['teaser'])->toBe('A short teaser')
+        ->and($all)->not->toHaveKey('blocks');
+
+    $leaf = $block->getFieldValue('innerBlocks')->one();
+    $dotted = $elements->get('entries', id: $entry->id, fields: ['blocks.innerBlocks'])['element']['blocks'][0];
+
+    expect($dotted['blockText'])->toBe('First level content')
+        ->and($dotted['innerBlocks'])->toBe([['type' => Entry::class, 'id' => $leaf->id, 'status' => $leaf->getStatus()]]);
 
     app()->instance(Settings::class, new Settings([
         'publicSiteHandles' => [Sites::getPrimarySite()->handle],
@@ -139,7 +154,7 @@ it('manages entries through MCP', function () {
         'enabled' => true,
     ], ['summary' => 'Original summary']);
     $created = $createResult['element'];
-    $listed = $elements->list('entries', [
+    $listed = $elements->list(McpRequest::context('elements_list'), 'entries', [
         'sectionId' => $this->section->id,
         'status' => null,
     ])->structuredContent;
@@ -203,8 +218,8 @@ it('requires paginated queries for large nested collections', function (): void 
 
     $criteria = ['ownerId' => $result->element->id, 'fieldId' => $result->fields['largeBlocks']->id, 'limit' => 100];
 
-    $firstPage = $elements->list('entries', $criteria)->structuredContent['elements'];
-    $lastPage = $elements->list('entries', [...$criteria, 'offset' => 100])->structuredContent['elements'];
+    $firstPage = $elements->list(McpRequest::context('elements_list'), 'entries', $criteria)->structuredContent['elements'];
+    $lastPage = $elements->list(McpRequest::context('elements_list'), 'entries', [...$criteria, 'offset' => 100])->structuredContent['elements'];
 
     expect($firstPage)->toHaveCount(100)
         ->and($lastPage)->toHaveCount(1)
@@ -372,4 +387,24 @@ it('only shows and accepts the custom fields the user can see', function (): voi
         ->toThrow(ToolCallException::class);
 
     expect(Entry::find()->id($entry->id)->one()->getFieldValue('secret'))->toBe('Hidden value');
+});
+
+it('sets entry post and expiry dates from date strings, and rejects invalid ones', function (): void {
+    $elements = app(ElementCapabilities::class);
+    $created = $elements->create('entries', [
+        'sectionId' => $this->section->id,
+        'title' => 'Dated',
+        'postDate' => '2026-01-15T10:00:00+02:00',
+        'expiryDate' => '2027-01-15T00:00:00Z',
+    ], ['summary' => 'Summary'])['element'];
+    $entry = Entry::find()->id($created['id'])->status(null)->one();
+
+    expect($entry->postDate->getTimestamp())->toBe(strtotime('2026-01-15T08:00:00Z'))
+        ->and($entry->expiryDate->getTimestamp())->toBe(strtotime('2027-01-15T00:00:00Z'));
+
+    $elements->update('entries', id: $created['id'], attributes: ['expiryDate' => null]);
+
+    expect(Entry::find()->id($created['id'])->status(null)->one()->expiryDate)->toBeNull()
+        ->and(fn () => $elements->update('entries', id: $created['id'], attributes: ['postDate' => 'not-a-date']))
+        ->toThrow(ToolCallException::class, '/postDate');
 });

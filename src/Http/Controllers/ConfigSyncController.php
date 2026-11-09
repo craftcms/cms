@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
@@ -215,7 +216,9 @@ class ConfigSyncController extends BaseUpdaterController
 
         if ($error) {
             return [
-                'error' => $error."\n\n".t('Try running `composer install` from your terminal to resolve.'),
+                'error' => $error."\n\n".t('Try running `{command}` from your terminal to resolve.', [
+                    'command' => app(TerminalCommands::class)->composer('install'),
+                ]),
                 'options' => [
                     $this->finishedState(['label' => t('Cancel')]),
                     $this->actionOption(t('Try again'), self::ACTION_RETRY, ['submit' => true]),

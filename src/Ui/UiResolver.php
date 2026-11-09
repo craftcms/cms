@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Ui;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Scope;
 use InvalidArgumentException;
@@ -237,6 +239,12 @@ class UiResolver
             emptyValue: $control->emptyValue(),
             nestsUis: $control->nestsUis(),
             omitNullValue: $control->omitNullValue(),
+            readable: $control instanceof ReadableValueControl,
+            writable: $control instanceof WritableValueControl,
+            valueProps: $control instanceof ReadableValueControl ? $control->valueProps() : [],
+            valueScope: $control instanceof ReadableValueControl || $control instanceof WritableValueControl
+                ? $control->getValueScope()
+                : null,
         );
     }
 

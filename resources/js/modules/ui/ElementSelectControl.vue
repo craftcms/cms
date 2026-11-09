@@ -1,7 +1,8 @@
 <script setup lang="ts">
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId} from 'vue';
+  import {computed, reactive, ref, useId, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
@@ -15,6 +16,7 @@
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
+  import {useElementPresentations} from '@/modules/elements/element-presentations';
   import type {
     ElementPresentation,
     ElementSelectProps,
@@ -113,10 +115,46 @@
     return Number(value);
   }
 
+  /** The site an element is drawn in. */
+  function siteOf(id: number): number | string | null | undefined {
+    return (
+      providedPresentations.value.get(id)?.siteId ??
+      presentations.get(id)?.siteId ??
+      (props.control.props.criteria.siteId as number | string | null)
+    );
+  }
+
+  /**
+   * Elements drawn through the page's shared cache, so they're refetched when
+   * they're saved, here or in another tab. The server's renders seed it; the
+   * one the field mounted with only fills gaps, since it may be older.
+   */
+  const cached = useElementPresentations(
+    () => ({
+      elementType: props.control.props.elementType,
+      viewMode: props.control.props.viewMode,
+      thumbSize: props.control.props.thumbSize,
+    }),
+    () => ids.value.map((id) => ({id, siteId: Number(siteOf(id)) || null}))
+  );
+  /** Elements fetched since the server last rendered the field. */
+  const loaded = new Set<number>();
+  watch(
+    () => props.control.props.elements,
+    (elements, previous) => {
+      loaded.clear();
+      cached.seed(elements, props.control.props.criteria.siteId, {
+        replace: previous !== undefined,
+      });
+    },
+    {immediate: true}
+  );
+
   function presentation(value: number | string): ElementPresentation {
     const id = elementId(value);
 
     return (
+      cached.get(id, siteOf(id)) ??
       providedPresentations.value.get(id) ??
       presentations.get(id) ?? {id, label: String(id)}
     );
@@ -140,6 +178,35 @@
   const viewMode = computed(() => props.control.props.viewMode);
 
   /**
+   * Elements selected without a presentation, such as ones pasted in, which
+   * come as IDs alone, are fetched, so they draw as themselves rather than as
+   * their IDs. Each is fetched once until the server renders the field again.
+   */
+  watch(
+    ids,
+    (current) => {
+      // One that leaves loses its cached presentation, so it's fetched again
+      // if it comes back.
+      loaded.forEach((id) => current.includes(id) || loaded.delete(id));
+      const missing = current.filter(
+        (id) =>
+          !loaded.has(id) &&
+          !cached.get(id, siteOf(id)) &&
+          !providedPresentations.value.has(id) &&
+          !presentations.has(id)
+      );
+
+      if (missing.length) {
+        missing.forEach((id) => loaded.add(id));
+        cached
+          .load(missing.map((id) => ({id, siteId: Number(siteOf(id)) || null})))
+          .catch(() => {});
+      }
+    },
+    {immediate: true}
+  );
+
+  /**
    * What the card and thumb bodies draw, in the field's current order.
    *
    * Built from `value` rather than `control.props.elements` for the same reason
@@ -157,6 +224,56 @@
       id: elementId(selectedValue),
       ...(maintainHierarchy.value ? {} : {level: undefined}),
     }))
+  );
+
+  const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]';
+
+  /**
+   * Keeps keyboard focus when refetched presentations redraw the same
+   * elements. Card parts are compiled as templates, so new markup remounts
+   * them, and a focused link inside goes with it; focus moves to its
+   * counterpart unless it went somewhere else.
+   */
+  let focusBeforeRedraw: {
+    element: Element;
+    index: number;
+    ids: string;
+  } | null = null;
+  watch(
+    listData,
+    () => {
+      const root = dropZone.value;
+      const focused = document.activeElement;
+      focusBeforeRedraw =
+        root && focused && root.contains(focused)
+          ? {
+              element: focused,
+              index: [...root.querySelectorAll(FOCUSABLE)].indexOf(focused),
+              ids: ids.value.join(),
+            }
+          : null;
+    },
+    {flush: 'pre'}
+  );
+  watch(
+    listData,
+    () => {
+      const before = focusBeforeRedraw;
+      focusBeforeRedraw = null;
+      const active = document.activeElement;
+      if (
+        !before ||
+        before.ids !== ids.value.join() ||
+        before.element.isConnected ||
+        (active && active !== document.body)
+      ) {
+        return;
+      }
+      dropZone.value
+        ?.querySelectorAll<HTMLElement>(FOCUSABLE)
+        [before.index]?.focus();
+    },
+    {flush: 'post'}
   );
 
   const list = useElementList({
@@ -374,6 +491,11 @@
     fallbackFocus: addButton,
   });
 
+  usePasteElementsShortcut(dropZone, {
+    canPaste: () => pasteable.candidates.value.length > 0,
+    paste: () => pasteable.paste(),
+  });
+
   // ───────────────────────────── chip actions ─────────────────────────────
 
   function removeIds(remove: Set<number>): void {
@@ -588,7 +710,7 @@
 
       <div
         v-if="editable && !atLimit"
-        class="flex gap-md"
+        class="flex flex-wrap gap-md"
         :class="{'pt-md': ids.length > 0}"
       >
         <craft-button
