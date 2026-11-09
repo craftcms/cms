@@ -125,16 +125,10 @@
                       </a>
                     </p>
                   {% endif %}
-
-                  {% if item.lastSeen %}
-                    <p class="text-sm">
-                      {{ 'Last seen {time}'|t('yii2-adapter', {time: item.lastSeen|timestamp(withPreposition: true)}) }}
-                    </p>
-                  {% endif %}
                 </div>
 
                 {% set action = item.action %}
-                {% if action or item.resolveUrl %}
+                {% if action or item.resolveUrl or item.lastSeen %}
                   {% set srTitle = item.title|replace("`", "") %}
                   <div slot="footer-content" class="flex flex-wrap items-center gap-2">
                     {% if (action.type ?? null) == 'fix' %}
@@ -167,6 +161,11 @@
                           {{ 'Mark resolved'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
                         </craft-button>
                       </form>
+                    {% endif %}
+                    {% if item.lastSeen %}
+                      <p class="ms-auto text-sm">
+                        {{ 'Last seen {time}'|t('yii2-adapter', {time: item.lastSeen|timestamp(withPreposition: true)}) }}
+                      </p>
                     {% endif %}
                   </div>
                 {% endif %}
