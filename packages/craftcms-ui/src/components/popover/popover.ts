@@ -66,6 +66,26 @@ const fitAvailableBlockSize: Partial<Modifier<'fitAvailableBlockSize', {}>> = {
 };
 
 /**
+ * Keeps a `match-invoker-width` pane at least as wide as its reference after
+ * the reference is resized or replaced. Popper measured the pane at its old
+ * width, so it updates once more when the width changes.
+ */
+const matchReferenceWidth: Partial<Modifier<'matchReferenceWidth', {}>> = {
+  name: 'matchReferenceWidth',
+  enabled: true,
+  phase: 'main',
+  fn: ({state, instance}) => {
+    const style = state.elements.popper.style;
+    const previous = style.minWidth;
+    style.minWidth = `${state.rects.reference.width}px`;
+
+    if (style.minWidth !== previous) {
+      void instance.update();
+    }
+  },
+};
+
+/**
  * Whether the Escape now being pressed belongs to an open overlay built on the
  * older overlay controller (an `_overlayCtrl` host). Those close on the same
  * keyup but keep their record of it to themselves, so this is judged on
@@ -382,19 +402,21 @@ export default class CraftPopover extends LitElement {
         };
         node.addEventListener('click', this.#onInvokerClick);
         node.addEventListener('keyup', this.#onEscape);
+        if (this.#shown) {
+          this.#addPointerListeners(node);
+        }
         this.#syncInvokerAria();
       }
     }
 
     // A new virtual anchor can keep the invoker it had, as its context element.
-    const reference = this.#reference;
+    // An open popover may have no Popper yet, and one only follows the scroll
+    // containers it found when created.
     if (
-      this.#popper &&
-      reference &&
-      this.#popper.state.elements.reference !== reference
+      this.#shown &&
+      this.#popper?.state.elements.reference !== this.#reference
     ) {
-      this.#popper.state.elements.reference = reference as Element;
-      void this.#popper.update();
+      this.#position();
     }
   }
 
@@ -586,6 +608,7 @@ export default class CraftPopover extends LitElement {
         {name: 'arrow', enabled: false},
         ...(viewportEscapingModifiers() as Partial<Modifier<string, object>>[]),
         fitAvailableBlockSize,
+        ...(this.matchInvokerWidth ? [matchReferenceWidth] : []),
       ],
     };
   }
@@ -608,10 +631,33 @@ export default class CraftPopover extends LitElement {
     }
   }
 
+  /** Positions the pane against the current reference with a new Popper. */
+  #position(): void {
+    const wrapper = this.#wrapper;
+    const reference = this.#reference;
+
+    this.#popper?.destroy();
+    this.#popper = null;
+
+    if (!wrapper) {
+      return;
+    }
+
+    this.#syncReferenceWidth();
+
+    if (reference) {
+      this.#popper = createPopper(
+        reference as Element,
+        wrapper,
+        this.#popperOptions()
+      );
+      this.#popper.forceUpdate();
+    }
+  }
+
   #showPane(): void {
     const layer = this.#layer;
     const wrapper = this.#wrapper;
-    const reference = this.#reference;
 
     // A detached layer can't enter the top layer. Reconnecting shows it.
     if (!layer || !wrapper || this.#shown || !this.isConnected) {
@@ -626,16 +672,7 @@ export default class CraftPopover extends LitElement {
 
     this.#shown = true;
     this.#syncInvokerAria();
-    this.#syncReferenceWidth();
-
-    if (reference) {
-      this.#popper = createPopper(
-        reference as Element,
-        wrapper,
-        this.#popperOptions()
-      );
-      this.#popper.forceUpdate();
-    }
+    this.#position();
 
     this.#addPointerListeners(wrapper);
     if (this.#invoker) {
@@ -764,6 +801,8 @@ export default class CraftPopover extends LitElement {
 
     void this.updateComplete.then(() => {
       if (this.isConnected) {
+        // Moved: `for` may name another element in the root it landed in.
+        this._syncInvoker();
         if (this.opened) {
           this.#showPane();
         }
