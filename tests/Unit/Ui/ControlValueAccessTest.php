@@ -62,6 +62,15 @@ it('scopes tables to their money columns’ currencies', function () {
         ->toBe($table(['col2' => ['type' => 'singleline'], 'col1' => ['type' => 'money', 'currency' => 'EUR']]));
 });
 
+it('keeps scoping a table to its currencies when it has a scope of its own', function () {
+    $table = fn (array $columns) => Table::make('rows')->columns($columns)->valueScope('field-uid')->getValueScope();
+
+    expect($table(['col1' => ['type' => 'singleline']]))->toBe('field-uid')
+        ->and($table(['col1' => ['type' => 'money', 'currency' => 'EUR']]))
+        ->toStartWith('field-uid')
+        ->not->toBe($table(['col1' => ['type' => 'money', 'currency' => 'USD']]));
+});
+
 it('lists table columns’ options as their cells offer them', function () {
     $columns = Table::make('rows')->columns(['size' => ['type' => 'select', 'options' => ['s' => 'Small']]])->props()['columns'];
 

@@ -141,6 +141,12 @@ step 'Install adapter PHP dependencies' composer --working-dir=yii2-adapter inst
 if [[ -n ${CRAFT_FONTAWESOME_TOKEN:-} ]]; then
     pnpm config set '//npm.fontawesome.com/:_authToken' "$CRAFT_FONTAWESOME_TOKEN"
 fi
+# An npm install (5.x's setup runs `npm ci`) leaves a flat tree that pnpm keeps
+# beside its own links. Tools resolve those stale copies first; webpack-cli then
+# loads an older webpack and terser, which rewrites the committed xregexp bundle.
+if [[ -f node_modules/.package-lock.json ]]; then
+    step 'Remove npm-installed dependencies' rm -rf node_modules packages/*/node_modules
+fi
 step 'Install frontend dependencies' pnpm install --prefer-offline --frozen-lockfile --trust-lockfile
 # pnpm remembers skipped optional dependencies from an unauthenticated install.
 if [[ -n ${CRAFT_FONTAWESOME_TOKEN:-} && ! -f node_modules/@awesome.me/kit-ddaed3f5c5/icons/metadata/icons.json ]]; then
@@ -159,12 +165,16 @@ fi
 step 'Copy icons' composer copy-icons
 
 # Snapshots from before the Craft 5 worktree was dropped still carry it and its
-# agent guidance; remove both so agents don't use a stale 5.x checkout.
+# agent guidance; remove both so agents don't use a stale 5.x checkout. Orbs
+# that ran 5.x's setup also carry its "Craft 5 orb" guidance (PHP 8.2,
+# Codeception), so drop each section up to the next top-level heading.
 if [[ -d ../cms-5.x ]]; then
     git worktree remove --force ../cms-5.x
 fi
 if [[ -f ~/.config/amp/AGENTS.md ]]; then
-    sed -i '/^# Craft 5 worktree$/,$d' ~/.config/amp/AGENTS.md
+    awk '/^# Craft 5 (worktree|orb)$/ { skip = 1; next } /^# / { skip = 0 } !skip' \
+        ~/.config/amp/AGENTS.md > "$scratch/AGENTS.md"
+    cat "$scratch/AGENTS.md" > ~/.config/amp/AGENTS.md
 fi
 
 # The browser download is network-bound, so overlap it with the CPU-bound

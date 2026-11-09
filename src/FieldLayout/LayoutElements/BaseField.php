@@ -15,6 +15,7 @@ use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -450,7 +451,17 @@ abstract class BaseField extends FieldLayoutElement
         $control = $this->uiControl($context);
 
         if ($control === null) {
-            return null;
+            event($event = new FieldLayoutElementControlResolving($this, $context));
+
+            if ($event->node !== null) {
+                return $event->node;
+            }
+
+            $control = $event->control;
+
+            if ($control === null) {
+                return null;
+            }
         }
 
         if ($context->mode !== ControlMode::Editable) {

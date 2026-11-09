@@ -696,6 +696,7 @@
 - Added `CraftCms\Cms\Translation\Locale::languageId()`.
 - Added `CraftCms\Cms\Plugin\Plugins::hasPluginIcon()`. ([#20074](https://github.com/craftcms/cms/pull/20074))
 - Added `CraftCms\Cms\Cp\Data\ElementCardParts` and `CraftCms\Cms\Cp\Html\ElementHtml::elementCardPartsHtml()`. ([#20335](https://github.com/craftcms/cms/pull/20335))
+- Added `CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving`, which is fired when a field layout field has no UI control of its own, so a listener can provide one. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Added `CraftCms\Cms\Support\HtmlSanitizer\HtmlSanitizerManager::config()`, which returns the `Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig` for a sanitizer defined as an array, so it can be extended. ([#20328](https://github.com/craftcms/cms/pull/20328))
 - Renamed `CraftCms\Cms\Cp\Events\ElementCardHtmlResolving` to `ElementCardPartsResolving`. It’s now fired for every element card, including cards rendered by the card component’s slots, such as those in Matrix fields, relation fields, element indexes, and CKEditor fields, and its `$html` property has been replaced by `$parts`, which listeners can modify to change the card wherever it’s shown. ([#20335](https://github.com/craftcms/cms/pull/20335))
 - `craft\helpers\Cp::EVENT_DEFINE_ELEMENT_CARD_HTML` handlers now apply to every element card when the Yii adapter is installed, as they did in Craft 5. Changes they make to the card’s HTML are split back into the card’s parts. ([#20335](https://github.com/craftcms/cms/pull/20335))
@@ -703,7 +704,7 @@
 - `CraftCms\Cms\Element\Element::attributes()` no longer includes elements’ internal state, such as `forceSave`, `siteSettingsId`, and `trackDraftChanges`, so it’s left out of MCP tools’ results, element responses, and exports. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - `craft\web\assets\pluginstore\PluginStoreAsset` is now deprecated and does nothing.
-- Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
+- Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact. Their `{% js %}` code and jQuery ready callbacks, such as `$(function () {…})`, run once the screen is in the page.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - `CraftCms\Cms\Element\Element::searchableAttributes()` is now `final`. `defineSearchableAttributes()` should be overridden instead, including by element types extending `craft\base\Element` through the Yii adapter.
@@ -747,6 +748,7 @@
 - Uploads staged on an S3 disk are now copied into their volume within S3, rather than downloaded and uploaded again, when the volume’s disk uses the same credentials and endpoint. ([#20103](https://github.com/craftcms/cms/pull/20103))
 
 ### System
+- With the Yii adapter installed, email is now sent through the mail transport adapter saved in the project config, including ones provided by plugins, until a Laravel mailer is configured. Saving Settings → Email now keeps the transport adapter settings. ([#20502](https://github.com/craftcms/cms/pull/20502))
 - An element editor or queue indicator left open no longer keeps the user’s session from expiring. ([#20086](https://github.com/craftcms/cms/pull/20086))
 - MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files (e.g. `ssl-ca` or `disable-ssl-verify-server-cert`), if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
@@ -765,6 +767,10 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed an error during application boot when the `aliases` general config setting contained a `null` path. Null paths now remove existing aliases. ([#20510](https://github.com/craftcms/cms/pull/20510))
+- Fixed a bug where field layout elements from plugins that only implement Craft 5’s `inputHtml()` or `formHtml()`, such as Shopify’s Variants, Options, Media, and Metafields elements, weren’t shown in element edit screens, with the Yii adapter installed. ([#20508](https://github.com/craftcms/cms/pull/20508))
+- Fixed a bug where class-level Yii element event handlers attached to `craft\base\Element` or `craft\base\ElementInterface`, such as `afterSave` and `afterDelete` handlers, weren’t called, and handlers attached to native element classes were called several times. ([#20494](https://github.com/craftcms/cms/pull/20494))
+- Fixed a bug where `EVENT_AFTER_REQUEST` handlers and `Craft::$app->onAfterRequest()` callbacks weren’t called after console commands, and `onAfterRequest()` callbacks added by queued jobs weren’t called. They’re now called once the job that added them finishes. ([#20494](https://github.com/craftcms/cms/pull/20494))
 - Fixed a bug where autosuggest fields saved an empty value when the typed text matched a suggestion without choosing it, such as an email address matching an environment variable’s value. ([#20476](https://github.com/craftcms/cms/pull/20476))
 - Fixed an error when force-uninstalling a plugin whose package had already been removed, such as with `craft:plugin:uninstall --force`, which left its install record behind. ([#20475](https://github.com/craftcms/cms/pull/20475))
 - Fixed a bug where workflow notifications showed an empty title (“”) for untitled drafts, such as new entries submitted for review before they had a title. ([#20465](https://github.com/craftcms/cms/pull/20465))
@@ -1246,6 +1252,10 @@
 - Fixed a bug where `craft.app.session.hasFlash()`, `getFlash()`, and `getAllFlashes()` didn’t return messages flashed to the Laravel session on site requests, with the Yii adapter installed. ([#20472](https://github.com/craftcms/cms/pull/20472))
 - Fixed a bug where values cached through the Yii adapter with a Craft 6 cache dependency, such as element cache info, were never read back, so legacy plugins like Element API never got a cache hit. ([#20481](https://github.com/craftcms/cms/pull/20481))
 - Fixed a bug where headers and cache settings set with `CraftCms\Cms\Support\Facades\ResponseHeaders`, such as with the `{% header %}` and `{% expires %}` tags, weren’t applied to JSON, redirect, and file responses. ([#20482](https://github.com/craftcms/cms/pull/20482))
+- Fixed a bug where `Craft::$app->mailer` sent email through Laravel’s default mailer rather than the mailer chosen in Settings → Email, with the Yii adapter installed. ([#20488](https://github.com/craftcms/cms/pull/20488))
+- Fixed a bug where Yii adapter plugin commands with nested routes, such as `php craft feed-me/feeds/queue`, weren’t found when called with slashes. ([#20507](https://github.com/craftcms/cms/pull/20507))
+- Fixed an error that occurred when a Yii adapter plugin called `getAttributes()` on a native element. ([#20507](https://github.com/craftcms/cms/pull/20507))
+- Fixed an error that occurred when a Yii adapter plugin listed tag groups or global sets on a project without tags or global sets. ([#20507](https://github.com/craftcms/cms/pull/20507))
 - Fixed a bug where Money fields’ inputs held their minimum and maximum amounts in the currency’s minor units, such as cents. ([#20449](https://github.com/craftcms/cms/pull/20449))
 
 ## 6.0.0-alpha.20 - 2026-10-07

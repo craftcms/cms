@@ -776,6 +776,43 @@
     sweep(document);
   }
 
+  /**
+   * Holds jQuery ready callbacks registered from here on until a bridged
+   * screen's markup is mounted.
+   *
+   * Vue mounts a bridged screen after the document is ready, so a plugin
+   * script's `$(fn)` or `$(document).ready(fn)` would otherwise run against a
+   * page without its markup. `Craft.whenReady()` only exists on bridged
+   * screens, and queues callbacks until the screen calls `Craft.flushReady()`.
+   *
+   * This file loads after the rest of Craft's legacy scripts and before plugin
+   * asset bundles, so Craft's own ready callbacks keep their timing. Holding
+   * those too would run `Craft.initUiElements()` again over markup the screen
+   * has already initialized.
+   */
+  function deferReadyUntilScreenMounts() {
+    var $ = window.jQuery;
+    var whenReady = window.Craft && window.Craft.whenReady;
+
+    if (!$ || typeof whenReady !== 'function') {
+      return;
+    }
+
+    var ready = $.fn.ready;
+
+    $.fn.ready = function (fn) {
+      var $this = this;
+
+      whenReady(function () {
+        ready.call($this, fn);
+      });
+
+      return this;
+    };
+  }
+
+  deferReadyUntilScreenMounts();
+
   // Run after the DOM is ready so jQuery and Craft (both loaded via blocking
   // scripts) are guaranteed to be present, regardless of this file's position.
   if (document.readyState === 'loading') {

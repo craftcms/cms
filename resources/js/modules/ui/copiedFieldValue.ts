@@ -308,15 +308,17 @@ function dateTimeText(value: unknown, props: object): string {
     return shownText;
   }
 
-  // The wall-clock date and time, formatted as they are, not converted.
-  const wallClock = new Date(
-    Date.UTC(
-      dateParts ? Number(dateParts[1]) : 2000,
-      dateParts ? Number(dateParts[2]) - 1 : 0,
-      dateParts ? Number(dateParts[3]) : 1,
-      timeParts ? Number(timeParts[1]) : 0,
-      timeParts ? Number(timeParts[2]) : 0
-    )
+  // The wall-clock date and time, formatted as they are, not converted. The
+  // year is set on its own, as `Date.UTC()` reads years 0–99 as 1900–1999.
+  const wallClock = new Date(0);
+  wallClock.setUTCFullYear(
+    dateParts ? Number(dateParts[1]) : 2000,
+    dateParts ? Number(dateParts[2]) - 1 : 0,
+    dateParts ? Number(dateParts[3]) : 1
+  );
+  wallClock.setUTCHours(
+    timeParts ? Number(timeParts[1]) : 0,
+    timeParts ? Number(timeParts[2]) : 0
   );
   let text: string;
 
@@ -348,8 +350,9 @@ function valueText(
     return '';
   }
 
+  // An option's own label, if it's one, as its item is labeled.
   if (typeof value === 'boolean') {
-    return value ? t('Yes') : t('No');
+    return options?.get(String(value)) ?? (value ? t('Yes') : t('No'));
   }
 
   if (typeof value === 'string' || typeof value === 'number') {

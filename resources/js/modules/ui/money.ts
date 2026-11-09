@@ -60,7 +60,10 @@ export function moneyAmount(text: string, locale?: string): number | null {
     return null;
   }
 
-  return Number(normalized);
+  const amount = Number(normalized);
+
+  // Too many digits read as Infinity, which no money input can hold.
+  return Number.isFinite(amount) ? amount : null;
 }
 
 /** `text`, an amount in `locale`, formatted with its currency, such as `$1,999.00`. */

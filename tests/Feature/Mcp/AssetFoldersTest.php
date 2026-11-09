@@ -5,9 +5,11 @@ declare(strict_types=1);
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Mcp\Capabilities\AssetFolders;
+use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Passport\Passport;
 
 use function Pest\Laravel\actingAs;
 
@@ -41,4 +43,21 @@ it('manages asset folders through MCP', function () {
         ->and($fetched)->toBe($updated)
         ->and($deleted)->toBe(['deleted' => true])
         ->and(VolumeFolder::find($created['id']))->toBeNull();
+});
+
+it('lists root folders for a null parentId', function () {
+    $volume = Volume::factory()->create(['fs' => 'asset-folders']);
+    $otherRoot = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'parentId' => null, 'path' => '']);
+    $subfolder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'parentId' => $otherRoot->id, 'name' => 'Sub', 'path' => 'Sub/']);
+
+    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    Passport::actingAs(User::query()->firstOrFail(), ['mcp:read'], 'craft-mcp');
+    $ids = fn (array $criteria): array => array_column(McpRequest::send($this, 'tools/call', [
+        'name' => 'asset_folders_list',
+        'arguments' => ['criteria' => $criteria],
+    ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.folders'), 'id');
+
+    expect($ids(['parentId' => null]))->toContain($this->rootFolder->id, $otherRoot->id)->not->toContain($subfolder->id)
+        ->and($ids(['parentId' => null, 'volumeId' => $volume->id]))->toBe([$otherRoot->id]);
 });

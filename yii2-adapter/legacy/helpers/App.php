@@ -29,7 +29,9 @@ use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Email\Data\EmailSettings;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
@@ -526,6 +528,41 @@ class App
     }
 
     /**
+     * Returns whether Craft is running in a [DDEV](https://ddev.com) project.
+     *
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see TerminalCommands::environment()} instead.
+     */
+    public static function isDdev(): bool
+    {
+        return app(TerminalCommands::class)->environment() === 'ddev';
+    }
+
+    /**
+     * Returns a Craft console command, as it should be run from a terminal for the current environment.
+     *
+     * @param string $command The command and its arguments, without the `craft` executable
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see TerminalCommands::craft()} instead.
+     */
+    public static function craftCommand(string $command): string
+    {
+        return app(TerminalCommands::class)->craft($command);
+    }
+
+    /**
+     * Returns a Composer command, as it should be run from a terminal for the current environment.
+     *
+     * @param string $command The command and its arguments, without the `composer` executable
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see TerminalCommands::composer()} instead.
+     */
+    public static function composerCommand(string $command): string
+    {
+        return app(TerminalCommands::class)->composer($command);
+    }
+
+    /**
      * Returns whether Craft is running on a Windows environment
      *
      * @since 5.0.0
@@ -734,29 +771,22 @@ class App
             );
         }
 
-        $fromEmail = data_get(config('mail'), 'from.address');
-        $fromName = data_get(config('mail'), 'from.name');
-        $replyTo = data_get(config('mail'), 'reply_to.address');
-
-        if (!is_string($fromEmail) || $fromEmail === '') {
-            $fromEmail = Env::get('FROM_EMAIL_ADDRESS');
-        }
-
-        if (!is_string($fromName) || $fromName === '') {
-            $fromName = Env::get('FROM_EMAIL_NAME');
-        }
-
-        if (!is_string($replyTo) || $replyTo === '') {
-            $replyTo = null;
-        }
+        $emailSettings = $settings
+            ? new EmailSettings(
+                fromEmail: $settings->fromEmail,
+                fromName: $settings->fromName,
+                replyToEmail: $settings->replyToEmail,
+            )
+            : EmailSettings::fromProjectConfig();
+        $resolved = $emailSettings->resolveForSite();
 
         return [
             'class' => Mailer::class,
             'messageClass' => Message::class,
-            'from' => ($fromEmail && is_string($fromEmail)) ? [
-                $fromEmail => is_string($fromName) ? $fromName : null,
+            'from' => $resolved->fromEmail ? [
+                $resolved->fromEmail => $resolved->fromName,
             ] : [],
-            'replyTo' => $replyTo,
+            'replyTo' => $resolved->replyToEmail ?: null,
             'template' => null,
             'siteOverrides' => [],
             'transport' => app('mail.manager')->mailer()->getSymfonyTransport(),

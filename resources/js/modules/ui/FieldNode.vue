@@ -28,6 +28,7 @@
     type ApplyAssistantProposalDetail,
   } from '@/modules/ai/assistant/context';
   import UiNodeList from './UiNodeList.vue';
+  import type {ActionItems} from '@/common/types';
   import {isCopiedText, pastesInto} from '@/common/craft/system-clipboard';
   import {
     copyFieldValue,
@@ -80,9 +81,14 @@
   const PASTE_VALUE_EVENT = 'craft:paste-field-value';
 
   type FieldActionItem = {
+    type?: string;
     hidden?: boolean;
     action?: {name?: string};
   };
+
+  function isShownAction(item: FieldActionItem): boolean {
+    return item.type !== 'hr' && !item.hidden;
+  }
 
   type GenerateValueResponse = {
     value: UiValue;
@@ -167,6 +173,11 @@
   });
   const override = computed(() => overrides[control.value.path.join('.')]);
   const copiedValue = useCopiedFieldValue();
+  /** How the field's control rewrites its menu, if it does (see FieldActionItems). */
+  const actionItemsResolver = shallowRef<
+    ((items: ActionItems) => ActionItems) | undefined
+  >();
+  provide(FieldActionItems, actionItemsResolver);
 
   /**
    * Whether the clipboard holds a value this field's control takes, on the
@@ -196,7 +207,7 @@
       const {items = []} = child.props as unknown as {
         items?: FieldActionItem[];
       };
-      const kept = items.flatMap((item) => {
+      const filtered = items.flatMap((item) => {
         const name = item.action?.name;
 
         if (name === GENERATE_VALUE_EVENT && !control.value.writable) {
@@ -214,20 +225,22 @@
         return [item];
       });
 
-      if (
-        kept.length === items.length &&
-        kept.every((item, i) => item === items[i])
-      ) {
-        return [child];
+      // A menu of hidden items would open empty, as the field's control
+      // leaves them: it may show some, as a Matrix does its selection's.
+      const resolved = (actionItemsResolver.value?.(
+        filtered as unknown as ActionItems
+      ) ?? filtered) as FieldActionItem[];
+      if (!resolved.some(isShownAction)) {
+        return [];
       }
 
-      return kept.length
-        ? [{...child, props: {...child.props, items: kept}}]
-        : [];
+      return filtered.length === items.length &&
+        filtered.every((item, i) => item === items[i])
+        ? [child]
+        : [{...child, props: {...child.props, items: filtered}}];
     });
   });
 
-  provide(FieldActionItems, shallowRef());
   // A nested UI's fields stay in its control, even when they share layout UIDs
   // with the form's own fields.
   provide(UiFieldOutletsKey, null);

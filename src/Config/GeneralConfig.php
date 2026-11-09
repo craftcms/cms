@@ -1053,14 +1053,13 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
      *
-     * ::: code
-     * ```php Static Config
-     * ->devMode(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEV_MODE=true
-     * ```
+     * ::: warning
+     * This setting is deprecated. Configure `app.debug` or set the `APP_DEBUG` environment variable instead.
      * :::
+     *
+     * ```shell
+     * APP_DEBUG=true
+     * ```
      *
      * @group System
      */
@@ -1212,18 +1211,13 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
-     * Set to `0` to disable elevated session support.
-     *
-     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->elevatedSessionDuration(0)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ELEVATED_SESSION_DURATION=0
-     * ```
+     * ::: warning
+     * This setting is deprecated. Configure `auth.password_timeout` instead, in seconds. Set it to `-1` to disable elevated session support.
      * :::
+     *
+     * ```php config/auth.php
+     * 'password_timeout' => -1,
+     * ```
      *
      * @group Security
      *
@@ -2604,16 +2598,13 @@ class GeneralConfig extends BaseConfig
      *
      * @phpstan-var 'None'|'Lax'|'Strict'|null
      *
-     * This can be set to `'None'`, `'Lax'`, `'Strict'`, or `null`.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->sameSiteCookieValue('Strict')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SAME_SITE_COOKIE_VALUE=Strict
-     * ```
+     * ::: warning
+     * This setting is deprecated. Configure `session.same_site` or set the `SESSION_SAME_SITE` environment variable instead.
      * :::
+     *
+     * ```shell
+     * SESSION_SAME_SITE=strict
+     * ```
      *
      * @group System
      *
@@ -2658,25 +2649,21 @@ class GeneralConfig extends BaseConfig
     /**
      * @var list<string>|null Lists of headers that are, by default, subject to the trusted host configuration.
      *
-     * See [[\yii\web\Request::secureHeaders]] for more details.
-     *
-     * If not set, the default [[\yii\web\Request::secureHeaders]] value will be used.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->secureHeaders([
-     *     'X-Forwarded-For',
-     *     'X-Forwarded-Host',
-     *     'X-Forwarded-Proto',
-     *     'X-Rewrite-Url',
-     *     'X-Original-Host',
-     *     'CF-Connecting-IP',
-     * ])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SECURE_HEADERS=X-Forwarded-For,X-Forwarded-Host,X-Forwarded-Proto,X-Rewrite-Url,X-Original-Host,CF-Connecting-IP
-     * ```
+     * ::: warning
+     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead,
+     * passing the headers to trust in `bootstrap/app.php`.
      * :::
+     *
+     * ```php bootstrap/app.php
+     * return Application::configure(basePath: dirname(__DIR__))
+     *     ->withMiddleware(function (Middleware $middleware): void {
+     *         $middleware->trustProxies(headers: Request::HEADER_X_FORWARDED_FOR |
+     *             Request::HEADER_X_FORWARDED_HOST |
+     *             Request::HEADER_X_FORWARDED_PROTO
+     *         );
+     *     })
+     *     // ...
+     * ```
      *
      * @group Security
      */
@@ -2685,22 +2672,17 @@ class GeneralConfig extends BaseConfig
     /**
      * @var array<string, list<string>>|null List of headers to check for determining whether the connection is made via HTTPS.
      *
-     * See [[\yii\web\Request::secureProtocolHeaders]] for more details.
+     * ::: warning
+     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
+     * Requests from trusted proxies are treated as secure when their `X-Forwarded-Proto` header is `https`.
+     * :::
      *
-     * If not set, the default [[\yii\web\Request::secureProtocolHeaders]] value will be used.
-     *
-     * ```php Static Config
-     * ->secureProtocolHeaders([
-     *     'X-Forwarded-Proto' => [
-     *         'https',
-     *     ],
-     *     'Front-End-Https' => [
-     *         'on',
-     *     ],
-     *     'CF-Visitor' => [
-     *         '{\"scheme\":\"https\"}',
-     *     ],
-     * ])
+     * ```php bootstrap/app.php
+     * return Application::configure(basePath: dirname(__DIR__))
+     *     ->withMiddleware(function (Middleware $middleware): void {
+     *         $middleware->trustProxies(at: ['192.168.1.1', '10.0.0.0/8']);
+     *     })
+     *     // ...
      * ```
      *
      * @group Security
@@ -2711,20 +2693,24 @@ class GeneralConfig extends BaseConfig
      * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
      *
      * ::: warning
+     * This setting is deprecated. Configure `app.key` or set the `APP_KEY` environment variable instead.
+     * :::
+     *
+     * ::: warning
      * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
      * :::
      *
-     * In the event that the key is compromised, a new secure key can be generated with the command:
+     * ```shell
+     * APP_KEY=base64:2cf24dba5...
+     * ```
+     *
+     * In the event that the key is compromised, a new key can be generated with the command:
      *
      * ```sh
-     * php craft setup/security-key
+     * php artisan key:generate
      * ```
      *
      * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
-     *
-     * ```php Static Config
-     * ->securityKey('2cf24dba5...')
-     * ```
      *
      * @see https://craftcms.com/knowledge-base/securing-craft
      *
@@ -2734,6 +2720,8 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var bool Whether a `Content-Length` header should be sent with responses.
+     *
+     * This only affects template responses rendered through the Yii2 adapter.
      *
      * ::: code
      * ```php Static Config
@@ -3087,18 +3075,17 @@ class GeneralConfig extends BaseConfig
     /**
      * @var array<int|string, string|list<string>> The configuration for trusted security-related headers.
      *
-     * See [[\yii\web\Request::trustedHosts]] for more details.
-     *
-     * By default, all hosts are trusted.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->trustedHosts(['trusted-one.foo', 'trusted-two.foo'])
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TRUSTED_HOSTS=trusted-one.foo,trusted-two.foo
-     * ```
+     * ::: warning
+     * This setting is deprecated. [Configure trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) instead.
      * :::
+     *
+     * ```php bootstrap/app.php
+     * return Application::configure(basePath: dirname(__DIR__))
+     *     ->withMiddleware(function (Middleware $middleware): void {
+     *         $middleware->trustProxies(at: ['192.168.1.1', '10.0.0.0/8']);
+     *     })
+     *     // ...
+     * ```
      *
      * @group Security
      */
@@ -3220,17 +3207,13 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool|string Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
      *
-     * Valid values are `true`, `false`, and `'auto'`. Defaults to `'auto'`, which will set the secure flag if the page you’re currently accessing
-     * is over `https://`. `true` will always set the flag, regardless of protocol and `false` will never automatically set the flag.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->useSecureCookies(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_USE_SECURE_COOKIES=true
-     * ```
+     * ::: warning
+     * This setting is deprecated. Configure `session.secure` or set the `SESSION_SECURE_COOKIE` environment variable instead.
      * :::
+     *
+     * ```shell
+     * SESSION_SECURE_COOKIE=true
+     * ```
      *
      * @group Security
      */
@@ -3639,6 +3622,44 @@ class GeneralConfig extends BaseConfig
     public function anchors(AnchorsConfig|array|string $value): self
     {
         $this->anchors = $value instanceof AnchorsConfig ? $value : AnchorsConfig::fromConfig($value);
+
+        return $this;
+    }
+
+    /**
+     * The Laravel authentication guard Craft should use.
+     *
+     * ```php
+     * ->authGuard('craft')
+     * ```
+     *
+     * @group Security
+     *
+     * @since 6.0.0
+     * @see $authGuard
+     */
+    public function authGuard(?string $value): self
+    {
+        $this->authGuard = $value;
+
+        return $this;
+    }
+
+    /**
+     * The Laravel password broker Craft should use.
+     *
+     * ```php
+     * ->authPasswordBroker('craft')
+     * ```
+     *
+     * @group Security
+     *
+     * @since 6.0.0
+     * @see $authPasswordBroker
+     */
+    public function authPasswordBroker(?string $value): self
+    {
+        $this->authPasswordBroker = $value;
 
         return $this;
     }
@@ -4359,9 +4380,7 @@ class GeneralConfig extends BaseConfig
      * This can also be set to `'*'` to disable **all** plugins.
      *
      * ```php
-     * ->dev([
-     *     'disabledPlugins' => '*',
-     * ])
+     * ->disabledPlugins('*')
      * ```
      *
      * ::: warning
@@ -6016,6 +6035,25 @@ class GeneralConfig extends BaseConfig
     public function sanitizeSvgUploads(bool $value = true): self
     {
         $this->sanitizeSvgUploads = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether a `Content-Length` header should be sent with responses.
+     *
+     * ```php
+     * ->sendContentLengthHeader(true)
+     * ```
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     * @see $sendContentLengthHeader
+     */
+    public function sendContentLengthHeader(bool $value = true): self
+    {
+        $this->sendContentLengthHeader = $value;
 
         return $this;
     }

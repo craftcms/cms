@@ -346,6 +346,7 @@ type ColumnProps = {
   html?: unknown;
   alpha?: unknown;
   types?: unknown;
+  radioMode?: unknown;
 };
 
 function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
@@ -377,14 +378,18 @@ function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
       const amount = isRecord(cell) ? cell.value : cell;
       const locale = isRecord(cell) ? cell.locale : undefined;
 
-      return (
-        isBlank(amount) ||
-        (isScalar(amount) &&
-          moneyAmount(
+      if (isBlank(amount)) {
+        return true;
+      }
+
+      const number = isScalar(amount)
+        ? moneyAmount(
             String(amount),
             typeof locale === 'string' ? locale : undefined
-          ) !== null)
-      );
+          )
+        : null;
+
+      return number !== null && withinBounds(number, column.min, column.max);
     }
     case 'singleline':
       return isScalar(cell) && isSingleLine(String(cell));
@@ -450,6 +455,17 @@ const table: UiValueAcceptor = (control, {value}) => {
 
   const rows: UiValue[] = Object.values(value);
 
+  // Objects list integer-like keys first, in ascending order, so a keyed
+  // table's own row order can't be copied with its rows when any key is one,
+  // and pasting them would reorder them.
+  if (
+    !Array.isArray(value) &&
+    rows.length > 1 &&
+    Object.keys(value).some((key) => /^(?:0|[1-9]\d*)$/.test(key))
+  ) {
+    return false;
+  }
+
   if (rows.length === 0) {
     return true;
   }
@@ -463,6 +479,14 @@ const table: UiValueAcceptor = (control, {value}) => {
   return (
     // A keyed table holds its rows by key, and others in a list.
     Array.isArray(value) !== Boolean(keyed) &&
+    // A radio-mode column is checked in one row at most.
+    Object.entries(columns ?? {}).every(
+      ([key, column]) =>
+        !column.radioMode ||
+        rows.filter(
+          (row) => isRecord(row) && [true, '1', 1].includes(row[key] as never)
+        ).length <= 1
+    ) &&
     (typeof maxRows !== 'number' || rows.length <= maxRows) &&
     rows.every(
       (row) =>

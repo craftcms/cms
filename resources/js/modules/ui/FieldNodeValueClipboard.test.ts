@@ -1,7 +1,9 @@
-import {createApp, defineComponent, h, nextTick, reactive} from 'vue';
+import {createApp, defineComponent, h, inject, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {stubUiRenderer} from './renderer/context.test-support';
 import ActionMenuNode from './ActionMenuNode.vue';
+import {FieldActionItems} from './runtime';
+import type {ActionItems} from '@/common/types';
 import FieldNode from './FieldNode.vue';
 import {clearCopiedFieldValue, fieldValueFormats} from './copiedFieldValue';
 import type {UiChange, UiNodePayload, UiValues} from './types';
@@ -66,6 +68,25 @@ function fieldNode(
   } as UiNodePayload;
 }
 
+/**
+ * A control that shows a hidden item of its field's menu, as a Matrix shows
+ * its selection's items.
+ */
+const RevealingControl = defineComponent({
+  props: ['value'],
+  setup() {
+    const resolver = inject(FieldActionItems)!;
+    resolver.value = (items: ActionItems) =>
+      items.map((item) =>
+        (item as {label?: string}).label === 'Selected'
+          ? {...item, hidden: false}
+          : item
+      ) as ActionItems;
+
+    return () => h('div');
+  },
+});
+
 describe('FieldNode value clipboard', () => {
   let app: ReturnType<typeof createApp>;
   let container: HTMLElement;
@@ -111,19 +132,22 @@ describe('FieldNode value clipboard', () => {
       },
     });
     app.component('craft:element-select', ElementsControl);
+    app.component('craft:revealing', RevealingControl);
     app.component('craft:action-menu', ActionMenuNode);
     app.provide(...stubUiRenderer(values));
     app.mount(container);
   }
 
-  function actionItem(handle: string, label: string): HTMLElement {
-    const field = [...container.querySelectorAll('craft-field')].find(
-      (candidate) => candidate.textContent?.includes(handle)
+  function field(handle: string): Element {
+    return [...container.querySelectorAll('craft-field')].find((candidate) =>
+      candidate.textContent?.includes(handle)
     )!;
+  }
 
-    return [...field.querySelectorAll<HTMLElement>('craft-action-item')].find(
-      (item) => item.textContent?.trim() === label
-    )!;
+  function actionItem(handle: string, label: string): HTMLElement {
+    return [
+      ...field(handle).querySelectorAll<HTMLElement>('craft-action-item'),
+    ].find((item) => item.textContent?.trim() === label)!;
   }
 
   it('pastes a copied value alone, without the props it was stored with, into fields in the same value scope', async () => {
@@ -147,9 +171,9 @@ describe('FieldNode value clipboard', () => {
       expect(actionItem('source', 'Copy value')).toBeTruthy()
     );
 
-    expect(actionItem('target', 'Paste value').hidden).toBe(true);
-    // Blank fields have nothing to copy
-    expect(actionItem('target', 'Copy value')).toBeUndefined();
+    // Blank fields have nothing to copy, and with nothing to paste either,
+    // no menu that would open empty
+    expect(field('target').querySelector('craft-action-menu')).toBeNull();
 
     actionItem('source', 'Copy value').click();
     await nextTick();
@@ -165,7 +189,8 @@ describe('FieldNode value clipboard', () => {
     await vi.waitFor(() =>
       expect(actionItem('target', 'Paste value').hidden).toBe(false)
     );
-    expect(actionItem('other', 'Paste value').hidden).toBe(true);
+    expect(actionItem('target', 'Copy value')).toBeUndefined();
+    expect(field('other').querySelector('craft-action-menu')).toBeNull();
 
     actionItem('target', 'Paste value').click();
     await nextTick();
@@ -180,6 +205,32 @@ describe('FieldNode value clipboard', () => {
     // Each field gets its own copy of the value
     (values.fields as {target: number[]}).target.push(11);
     expect((values.fields as {source: number[]}).source).toEqual([7, 9]);
+  });
+
+  it('keeps a menu its control shows hidden items in, without separators that separate nothing', async () => {
+    const values = reactive<UiValues>({fields: {target: []}});
+    const base = fieldNode('target', 'related-entries');
+    const node = {
+      ...base,
+      control: {...base.control!, component: 'craft:revealing'},
+    } as UiNodePayload;
+    const menu = node.children![0]!;
+    (menu.props as {items: object[]}).items.push(
+      {type: 'hr'},
+      {
+        type: 'button',
+        label: 'Selected',
+        action: {type: 'event', name: 'craft:selected'},
+        hidden: true,
+      }
+    );
+    mount(values, [node], vi.fn());
+
+    await vi.waitFor(() =>
+      expect(actionItem('target', 'Selected')?.hidden).toBe(false)
+    );
+    // Copy value is dropped and Paste value hidden, so nothing comes before it
+    expect(field('target').querySelector('craft-action-menu hr')).toBeNull();
   });
 
   it('copies relations as they’re selected now, not as the server last drew them', async () => {
@@ -405,6 +456,10 @@ describe('fieldValueFormats', () => {
     expect(date({locale: 'de_DE'}, {date: '2026-01-02', time: null})).toBe(
       '02.01.2026'
     );
+    // Years before 100 aren't read as 1900–1999
+    expect(date({locale: 'en-US'}, {date: '0050-03-04', time: null})).toBe(
+      'Mar 4, 50'
+    );
     // Only the parts the field shows, though values hold both
     const both = {date: '2026-11-13', time: '23:30', timezone: 'UTC'};
     expect(date({locale: 'en-US', showDate: true, showTime: false}, both)).toBe(
@@ -452,5 +507,29 @@ describe('fieldValueFormats', () => {
       {label: 'Blue', icon: null, color: '#1d4ed8'},
     ]);
     expect(fieldValueFormats(choice(false), {value: 'teal'}).items).toBeNull();
+  });
+
+  it('labels true and false options as their items are labeled', () => {
+    const formats = fieldValueFormats(
+      {
+        type: 'Choice',
+        component: 'craft:choice',
+        path: ['fields', 'featured'],
+        deltaGroup: ['fields', 'featured'],
+        mode: 'editable' as const,
+        props: {
+          options: [
+            {label: 'Featured', value: true},
+            {label: 'Regular', value: false},
+          ],
+        },
+      },
+      {value: false}
+    );
+
+    expect(formats.text).toBe('Regular');
+    expect(formats.items).toEqual([
+      {label: 'Regular', icon: null, color: null},
+    ]);
   });
 });

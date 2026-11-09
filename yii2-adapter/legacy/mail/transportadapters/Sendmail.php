@@ -21,7 +21,7 @@ use function CraftCms\Cms\t;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @mixin EnvAttributeParserBehavior
- * @deprecated 6.0.0 transport adapters are ignored; use Laravel mail drivers.
+ * @deprecated 6.0.0 configure a Laravel mailer instead.
  */
 class Sendmail extends BaseTransportAdapter
 {

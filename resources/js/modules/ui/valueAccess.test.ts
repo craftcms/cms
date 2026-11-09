@@ -204,6 +204,8 @@ describe('acceptsValue', () => {
         col13: {type: 'color'},
         col14: {heading: 'Custom'},
         col15: {type: 'link'},
+        col16: {type: 'money', min: 0, max: 100},
+        col17: {type: 'checkbox', radioMode: true},
       },
       maxRows: 2,
     });
@@ -219,6 +221,20 @@ describe('acceptsValue', () => {
         {col4: {value: null, locale: 'en-US'}},
       ])
     ).toBe(true);
+    // Within their column's bounds
+    expect(
+      takes(table, [
+        {col16: {value: '99.50', locale: 'en-US'}},
+        {col16: {value: null, locale: 'en-US'}},
+      ])
+    ).toBe(true);
+    expect(takes(table, [{col16: {value: '150', locale: 'en-US'}}])).toBe(
+      false
+    );
+    // Amounts too long to be a finite number
+    expect(
+      takes(table, [{col4: {value: '9'.repeat(400), locale: 'en-US'}}])
+    ).toBe(false);
     expect(takes(table, [{col4: {value: 'lots', locale: 'en-US'}}])).toBe(
       false
     );
@@ -263,7 +279,27 @@ describe('acceptsValue', () => {
     expect(
       takes(table, [{col15: {type: 'url', value: 'https://craftcms.com'}}])
     ).toBe(false);
+    // A radio-mode column is checked in one row at most
+    expect(takes(table, [{col17: true}, {col17: false}])).toBe(true);
+    expect(takes(table, [{col17: true}, {col17: '1'}])).toBe(false);
     expect(takes(table, [{}, {}, {}])).toBe(false);
+  });
+
+  it('takes no keyed rows whose order an object can’t keep', () => {
+    const table = control('craft:table', {
+      columns: {title: {type: 'singleline'}},
+      keyed: true,
+    });
+
+    expect(takes(table, {row2: {title: 'Tue'}, row0: {title: 'Sun'}})).toBe(
+      true
+    );
+    // Listed 0, 2 whatever order they were copied in
+    expect(takes(table, {2: {title: 'Tue'}, 0: {title: 'Sun'}})).toBe(false);
+    // Listed before string keys too
+    expect(takes(table, {row1: {title: 'Mon'}, 0: {title: 'Sun'}})).toBe(false);
+    // One row has no order to lose
+    expect(takes(table, {0: {title: 'Sun'}})).toBe(true);
   });
 
   it('takes no fewer rows than a table must have', () => {

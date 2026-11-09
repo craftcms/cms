@@ -3182,7 +3182,7 @@ return [
     'Try again' => 'もう一度お試しください。',
     'Try another way' => '別の方法を試す',
     'Try for free' => '無料で試用',
-    'Try running `composer install` from your terminal to resolve.' => '解決のために端末から `composer install` を実行してみてください。',
+    'Try running `{command}` from your terminal to resolve.' => '解決のために端末から `{command}` を実行してみてください。',
     'Try' => '試す',
     'Trying again…' => '再試行中…',
     'Two-Step Verification Setup' => '2段階認証の設定',

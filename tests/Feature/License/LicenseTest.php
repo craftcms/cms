@@ -24,6 +24,16 @@ it('can get the key path', function () {
     expect($this->license->keyPath())->toBe(config_path('craft/license.key'));
 });
 
+it('gets the key path from the CRAFT_LICENSE_KEY_PATH environment variable', function () {
+    putenv('CRAFT_LICENSE_KEY_PATH=/var/craft/license.key');
+
+    try {
+        expect($this->license->keyPath())->toBe('/var/craft/license.key');
+    } finally {
+        putenv('CRAFT_LICENSE_KEY_PATH');
+    }
+});
+
 it('can get key from file', function () {
     File::delete($this->license->keyPath());
     expect($this->license->key())->toBeNull();
