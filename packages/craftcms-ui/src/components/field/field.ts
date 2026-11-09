@@ -517,11 +517,23 @@ export default class CraftField extends FieldNotices(
   }
 
   private __wireDescribedBy(): void {
+    // Controls after the main one, such as a custom value's input, take their
+    // own label, but the field's instructions and errors describe them too.
+    const afterControls = (Array.from(this.children) as HTMLElement[]).filter(
+      (el): el is HTMLElement & FormControlTarget =>
+        el.slot === 'after' && 'addToAriaDescribedBy' in el
+    );
+
     for (const slotName of ['help-text', 'feedback']) {
       const node = this.__lightChild(slotName);
       if (node) {
         // Already-registered nodes are ignored by addToAriaDescribedBy.
         this.addToAriaDescribedBy(node, {idPrefix: slotName});
+        for (const control of afterControls) {
+          control.addToAriaDescribedBy(node, {
+            idPrefix: `field-${slotName}`,
+          });
+        }
       }
     }
   }
