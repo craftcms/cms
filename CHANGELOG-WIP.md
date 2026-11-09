@@ -337,6 +337,7 @@
 - GraphQL schema components can support requests made with access tokens via an `authenticated` key on their config, set to `true` or a closure that’s passed the user and returns whether the component is available to them. ([#20231](https://github.com/craftcms/cms/pull/20231))
 - Action menu items added via `craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS`, or by plugin element types’ `safeActionMenuItems()` and `destructiveActionMenuItems()` overrides, are only shown in the Inertia element editor and element chips if they define a `url` or `action`. ([#19783](https://github.com/craftcms/cms/pull/19783))
 - Plugins can no longer register custom Craft filesystem types. Filesystem types registered through `craft\base\Fs` remain supported for legacy plugins via the Yii adapter. ([#19650](https://github.com/craftcms/cms/pull/19650))
+- The `list-flip`, `list-tree-flip`, `share-flip`, `sidebar-nav-flip`, and `sidebar-nav-flip-light` icons are now drawn by mirroring the `list`, `list-tree`, `share`, `sidebar-nav`, and `sidebar-nav-light` icons, so paths to them, such as the deprecated `@appicons/listrtl.svg` alias, no longer point to a file. They still show when referenced by name. ([#20520](https://github.com/craftcms/cms/pull/20520))
 - `Garnish.uiLayerManager.registerShortcut()` now accepts `description` and `group` keys on its shortcut definition, which list the shortcut in the command palette’s “Keyboard shortcuts” view. ([#20263](https://github.com/craftcms/cms/pull/20263))
 
 ##### Added
