@@ -9,6 +9,7 @@ use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
@@ -310,6 +311,51 @@ it('doesn’t let one side be edited while the other saves, which would lose the
     }');
 
     expect($editable)->toBe(['from,to', 'from,to frozen']);
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('keeps each side’s radio buttons to that side', function () {
+    $tone = Field::factory()->create([
+        'name' => 'Tone',
+        'handle' => 'tone',
+        'type' => RadioButtons::class,
+        'settings' => ['options' => [
+            ['label' => 'Calm', 'value' => 'calm', 'default' => false],
+            ['label' => 'Bold', 'value' => 'bold', 'default' => false],
+            ['label' => 'Wry', 'value' => 'wry', 'default' => false],
+        ]],
+    ]);
+    Fields::refreshFields();
+
+    $type = EntryType::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([
+            new EntryTitleField,
+            new CustomField(config: ['fieldUid' => $tone->uid]),
+        ]))
+        ->create(['name' => 'Event', 'handle' => 'event']);
+    EntryTypes::refreshEntryTypes();
+    $section = Section::factory()->withEntryTypes($type)->create(['name' => 'Events', 'handle' => 'events']);
+    $entries = array_map(function (array $values) use ($section, $type): EntryElement {
+        $entry = Entry::factory()->forSection($section)->forEntryType($type)->createElement(['title' => $values[0]]);
+        $entry->setFieldValue('tone', $values[1]);
+        expect(Elements::saveElement($entry))->toBeTrue();
+
+        return $entry;
+    }, [['Light and Line', 'calm'], ['Shadow and Form', 'bold']]);
+
+    $a = 'role=group[name=/compared with/i]';
+    $b = 'role=group[name=/showing/i]';
+
+    // Both sides render the same field in the page's one form, so the radios mustn't share a group, or label targets.
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $entries[0]->id, 'toId' => $entries[1]->id], false))
+        ->assertPresent('main[id]')
+        ->assertChecked("$a >> role=radio[name=\"Calm\"]")
+        ->assertChecked("$b >> role=radio[name=\"Bold\"]")
+        ->click("$b >> label:text-is(\"Wry\")")
+        ->assertChecked("$b >> role=radio[name=\"Wry\"]")
+        ->assertChecked("$a >> role=radio[name=\"Calm\"]")
+        ->assertNotChecked("$a >> role=radio[name=\"Wry\"]");
 
     assertNoJavaScriptErrors($page);
 });
