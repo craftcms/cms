@@ -336,11 +336,23 @@ it('does not apply settings that an application type overlay replaces', function
     ]],
 ]);
 
-it('applies the middleware settings a callable application type overlay keeps from the general config', function(): void {
-    new GeneralConfigCompatibility()->convert(['trustedHosts' => ['10.0.0.1']], fn(GeneralConfig $config) => clone $config);
+it('applies the settings a config keeps when it is cloned while it is converted', function(array $files): void {
+    Config::set('app.debug', false);
 
-    expect(proxiedClient())->toBe(['203.0.113.5', 'forwarded.test']);
-});
+    new GeneralConfigCompatibility()->convert(...$files);
+
+    expect(config('app.debug'))->toBeTrue()
+        ->and(proxiedClient())->toBe(['203.0.113.5', 'forwarded.test']);
+})->with([
+    'callable overlay returning a clone' => [fn() => [
+        ['trustedHosts' => ['10.0.0.1']],
+        fn(GeneralConfig $config) => clone $config->devMode(true),
+    ]],
+    'callable config returning a clone' => [fn() => [
+        fn(GeneralConfig $config) => clone $config->devMode(true)->trustedHosts(['10.0.0.1']),
+        ['cacheDuration' => 60],
+    ]],
+]);
 
 it('trusts the proxies that trusted hosts list', function(array $trustedHosts, array $client): void {
     GeneralConfig::create()->trustedHosts($trustedHosts);

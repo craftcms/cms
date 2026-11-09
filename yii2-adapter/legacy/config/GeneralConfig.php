@@ -63,10 +63,15 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     private array $middlewareSettings = [];
 
     /**
-     * @var list<array{self, callable}>|null Changes to Laravel’s state that settings make while [[holdSideEffects()]]
-     * runs, with the config each was made on
+     * @var bool Whether [[holdSideEffects()]] is running
      */
-    private static ?array $heldSideEffects = null;
+    private static bool $holdingSideEffects = false;
+
+    /**
+     * @var list<callable> Changes to Laravel’s state that this config’s settings made while [[holdSideEffects()]] ran.
+     * A clone keeps them, as it keeps the settings that made them.
+     */
+    private array $heldSideEffects = [];
 
     /**
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
@@ -1868,12 +1873,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
-     * Applies the middleware settings this config’s fluent methods applied again, including those applied before it
-     * was cloned.
-     *
-     * @internal
+     * Applies the middleware settings this config’s fluent methods applied again.
      */
-    public function applyMiddlewareSettings(): void
+    private function applyMiddlewareSettings(): void
     {
         foreach ($this->middlewareSettings as $setting => $value) {
             $this->applyMiddlewareSetting($setting, $value);
@@ -1891,40 +1893,39 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
-     * Runs a callback, and holds back the changes to Laravel’s state that settings make meanwhile, so they can be
-     * applied with [[applySideEffects()]] if the configs they were made on are kept.
+     * Runs a callback, and holds back the changes to Laravel’s state that settings make meanwhile on the configs they
+     * were made on, so only those of a config that’s kept are applied, with [[applyHeldSideEffects()]].
      *
      * @template T
      * @param callable(): T $callback
-     * @return array{T, list<array{self, callable}>} The callback’s result, and the held changes with the configs they
-     * were made on
+     * @return T
      * @internal
      */
-    public static function holdSideEffects(callable $callback): array
+    public static function holdSideEffects(callable $callback): mixed
     {
-        $held = self::$heldSideEffects;
-        self::$heldSideEffects = [];
+        $holding = self::$holdingSideEffects;
+        self::$holdingSideEffects = true;
 
         try {
-            return [$callback(), self::$heldSideEffects];
+            return $callback();
         } finally {
-            self::$heldSideEffects = $held;
+            self::$holdingSideEffects = $holding;
         }
     }
 
     /**
-     * Applies changes to Laravel’s state that were held back by [[holdSideEffects()]], only those made on `$owner` if
-     * it’s given.
+     * Applies the changes to Laravel’s state that this config’s settings made while [[holdSideEffects()]] ran,
+     * including those made before it was cloned.
      *
-     * @param list<array{self, callable}> $sideEffects
      * @internal
      */
-    public static function applySideEffects(array $sideEffects, ?\CraftCms\Cms\Config\GeneralConfig $owner = null): void
+    public function applyHeldSideEffects(): void
     {
-        foreach ($sideEffects as [$config, $callback]) {
-            if ($owner === null || $config === $owner) {
-                self::runWhenBooting($callback);
-            }
+        $sideEffects = $this->heldSideEffects;
+        $this->heldSideEffects = [];
+
+        foreach ($sideEffects as $callback) {
+            self::runWhenBooting($callback);
         }
     }
 
@@ -1937,8 +1938,8 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      */
     private function whenBooting(callable $callback): void
     {
-        if (self::$heldSideEffects !== null) {
-            self::$heldSideEffects[] = [$this, $callback];
+        if (self::$holdingSideEffects) {
+            $this->heldSideEffects[] = $callback;
 
             return;
         }
