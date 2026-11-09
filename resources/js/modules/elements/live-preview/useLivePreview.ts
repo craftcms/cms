@@ -409,6 +409,8 @@ export function useLivePreview(
     switchTarget,
     frameLoaded,
     urlFor,
+    /** The token the frames use, created on the server first if need be. */
+    previewToken: ensureToken,
     draftSaved,
     editor,
     editorCovers,

@@ -8,7 +8,6 @@ use Craft;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\events\ExceptionEvent;
 use craft\events\RedirectEvent;
-use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\RedirectRule;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
@@ -91,6 +90,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Queue\Events\JobAttempted;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
@@ -398,8 +398,18 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         $this->app->terminating(function(): void {
-            $this->triggerAfterRequestForLaravelRequest();
+            $this->triggerAfterRequest();
             Craft::getLogger()->flush(true);
+        });
+
+        // A worker runs many jobs, so onAfterRequest() callbacks run after the job that added them, as Laravel's
+        // defer() callbacks do. EVENT_AFTER_REQUEST handlers still fire once, as they'd fire again after every job.
+        Event::listen(function(JobAttempted $event): void {
+            if (in_array($event->connectionName, ['sync', 'deferred'], true) || !Craft::$app instanceof YiiApplication) {
+                return;
+            }
+
+            Craft::$app->runAfterRequestCallbacks();
         });
 
         if (!$this->app->runningInConsole()) {
@@ -409,13 +419,9 @@ class Yii2ServiceProvider extends ServiceProvider
         new LegacyCommandCompatibility()->boot();
     }
 
-    private function triggerAfterRequestForLaravelRequest(): void
+    private function triggerAfterRequest(): void
     {
-        if (!Craft::$app instanceof WebApplication) {
-            return;
-        }
-
-        if (Craft::$app->state >= YiiApplication::STATE_AFTER_REQUEST) {
+        if (!Craft::$app instanceof YiiApplication || Craft::$app->state >= YiiApplication::STATE_AFTER_REQUEST) {
             return;
         }
 
