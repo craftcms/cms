@@ -386,6 +386,9 @@
     const copied = editors[into]?.copyValue(uid, snapshot);
 
     if (copied) {
+      // The copy edits that side, which Cmd/Ctrl+S then saves, though the
+      // button that made it is on neither side.
+      focusedSide.value = into;
       announceCopy(into, uid, copied.previous);
     }
   }

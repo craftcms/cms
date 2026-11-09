@@ -44,6 +44,11 @@
       params?: BulkActionParams;
       /** Embedded indexes prepare their owner before executing an action. */
       perform?: PerformBulkAction;
+      /**
+       * The site the index lists elements in, for selected rows that don't
+       * name their own, as only structure view's do.
+       */
+      siteId?: number | null;
     }>(),
     {
       actions: () => [],
@@ -140,7 +145,9 @@
     const siteId = (id: string | number) =>
       props.selectedElements.find(
         (element) => String(element.id) === String(id)
-      )?.siteId ?? undefined;
+      )?.siteId ??
+      props.siteId ??
+      undefined;
 
     return compareElements.url(
       {fromId, toId},

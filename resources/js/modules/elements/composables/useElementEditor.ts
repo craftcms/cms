@@ -1044,6 +1044,9 @@ export function useElementEditor({
     }
   );
 
+  let unmounted = false;
+  onBeforeUnmount(() => (unmounted = true));
+
   function save(options?: FormSaveOptions): void {
     if (!beforeSave) {
       submit(options);
@@ -1056,7 +1059,9 @@ export function useElementEditor({
     const action = pendingAction.value;
 
     void beforeSave().then((proceed) => {
-      if (!proceed) {
+      // Nor once the editor is gone, as another submission can take the page
+      // away while this one waits.
+      if (!proceed || unmounted) {
         return;
       }
 

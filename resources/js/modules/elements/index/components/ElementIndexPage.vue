@@ -175,6 +175,7 @@
           :source="elementIndex.source?.key"
           :context="elementIndex.context"
           :params="actionParams"
+          :site-id="elementIndex.siteId"
           @edit="editElement"
           @view="viewElement"
           @performed="onActionPerformed"

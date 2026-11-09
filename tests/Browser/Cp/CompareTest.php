@@ -219,3 +219,22 @@ it('names the sides by their letters when two entries share a title', function (
 
     assertNoJavaScriptErrors($page);
 });
+
+it('saves the side a value was copied into with Cmd/Ctrl+S', function () {
+    $other = Entry::factory()->forSection($this->section)->forEntryType($this->entryType)
+        ->createElement(['title' => 'Shadow and Form']);
+    $other->setFieldValue('summary', 'Opens in June');
+    expect(Elements::saveElement($other))->toBeTrue();
+
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $this->entry->id, 'toId' => $other->id], false))
+        ->assertPresent('main[id]')
+        ->click('role=button[name="Copy Summary from Shadow and Form"]')
+        ->assertSee('Field value copied.')
+        ->keys('main[id]', ['Control+s']);
+
+    $saved = fn () => EntryElement::find()->id($this->entry->id)->status(null)->one()?->getFieldValue('summary');
+
+    expect(eventually($page, $saved, 'Opens in June'))->toBe('Opens in June');
+
+    assertNoJavaScriptErrors($page);
+});

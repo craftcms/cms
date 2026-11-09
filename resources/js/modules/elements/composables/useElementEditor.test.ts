@@ -2291,6 +2291,26 @@ describe('useElementEditor', () => {
     expect(save.last().data).toMatchObject({addAnother: 1});
   });
 
+  it('drops a save still waiting on beforeSave once the editor is removed', async () => {
+    let allow!: (proceed: boolean) => void;
+    const {editor} = mount(payload({}), null, {
+      beforeSave: () =>
+        new Promise<boolean>((resolve) => {
+          allow = resolve;
+        }),
+    });
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    editor.save();
+    app!.unmount();
+    app = undefined;
+    allow(true);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(save.calls()).toBe(0);
+  });
+
   it('doesn’t report its edits settled while one made during their autosave is still pending', async () => {
     vi.useFakeTimers();
     onTestFinished(() => {
