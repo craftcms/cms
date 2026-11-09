@@ -135,10 +135,16 @@ abstract class BaseUpdaterController extends Controller
      * Ensures that PHP’s memory_limit and max_execution_time settings are high enough to run Composer.
      *
      * @return Response
+     * @throws BadRequestHttpException if the updater data has no post-precheck state
      */
     public function actionPrecheck(): Response
     {
-        $postState = $this->data['postPrecheckState'];
+        $postState = $this->data['postPrecheckState'] ?? null;
+
+        // Only set when there was something to do, so data without it can't have come from a precheck
+        if (!is_array($postState)) {
+            throw new BadRequestHttpException('Request contained invalid updater data.');
+        }
 
         if (!App::testIniSet()) {
             $errors = [];
