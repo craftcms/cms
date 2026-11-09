@@ -105,6 +105,15 @@ export function useDashboard(props: {
   const settingsOpen = new Set<number>();
   let reloadQueued = false;
   let reloadAfterSettings = false;
+  /** Once the dashboard is left, a reload would reload the page it went to. */
+  let left = false;
+  tryOnScopeDispose(() => {
+    left = true;
+  });
+
+  function reloadWidgets() {
+    if (!left) router.reload({only: ['widgets']});
+  }
 
   watch(
     () => props.widgets,
@@ -157,7 +166,7 @@ export function useDashboard(props: {
 
     if (!settingsOpen.size && reloadAfterSettings) {
       reloadAfterSettings = false;
-      router.reload({only: ['widgets']});
+      reloadWidgets();
     }
   }
 
@@ -175,7 +184,7 @@ export function useDashboard(props: {
         reloadQueued = true;
         queueMicrotask(() => {
           reloadQueued = false;
-          router.reload({only: ['widgets']});
+          reloadWidgets();
         });
       },
       {includeSelf: true}

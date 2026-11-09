@@ -1,5 +1,13 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {createApp, defineComponent, h, nextTick, reactive, type App} from 'vue';
+import {
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  onBeforeUnmount,
+  reactive,
+  type App,
+} from 'vue';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {broadcast} from '@/common/craft/broadcast';
 import {useDashboard} from './useDashboard';
@@ -60,6 +68,16 @@ function widget(id: number): DashboardWidget {
   };
 }
 
+/** Like a dashboard widget, it reports its settings closed as it goes. */
+const WidgetFrame = defineComponent({
+  props: {id: {type: Number, required: true}},
+  setup(props, {slots}) {
+    onBeforeUnmount(() => dashboard.settingsToggled(props.id, false));
+    return () =>
+      h('div', {class: 'dashboard-widget', 'data-id': props.id}, slots);
+  },
+});
+
 function mount(widgets: DashboardWidget[]) {
   const props = reactive({widgets, widgetTypes: {}});
   host = document.createElement('div');
@@ -77,17 +95,19 @@ function mount(widgets: DashboardWidget[]) {
             {ref: dashboard.container},
             dashboard.widgets.value.map((item) =>
               h(
-                'div',
-                {key: item.id, class: 'dashboard-widget', 'data-id': item.id},
-                [
-                  (item.data as {later?: boolean} | null)?.later
-                    ? h('div', {key: 'later'})
-                    : h(
-                        'a',
-                        {key: JSON.stringify(item.data), href: '#'},
-                        item.title ?? ''
-                      ),
-                ]
+                WidgetFrame,
+                {key: item.id, id: item.id},
+                {
+                  default: () => [
+                    (item.data as {later?: boolean} | null)?.later
+                      ? h('div', {key: 'later'})
+                      : h(
+                          'a',
+                          {key: JSON.stringify(item.data), href: '#'},
+                          item.title ?? ''
+                        ),
+                  ],
+                }
               )
             )
           );
@@ -198,6 +218,18 @@ it('sets aside widgets reloaded while settings are open, and reloads them once t
   dashboard.settingsToggled(2, false);
 
   expect(state.reload).toHaveBeenCalledWith({only: ['widgets']});
+});
+
+it('doesn’t reload a page it’s left with settings open after elements were saved', async () => {
+  mount([widget(1), widget(2)]);
+  dashboard.settingsToggled(2, true);
+  broadcast({event: 'saveElement', id: 7});
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  app.unmount();
+  await Promise.resolve();
+
+  expect(state.reload).not.toHaveBeenCalled();
 });
 
 it('keeps focus in a widget that remounts when it’s reloaded', async () => {
