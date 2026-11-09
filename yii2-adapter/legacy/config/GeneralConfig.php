@@ -364,15 +364,10 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * ```
      * :::
      *
-     * ::: tip
-     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
-     * unless this setting is set to `true`.
-     * :::
-     *
      * @group GraphQL
      *
      * @since 3.6.0
-     * @deprecated in 5.9.0
+     * @deprecated in 5.9.0. It no longer has any effect. Choose whether each GraphQL schema includes the `@transform` directive instead.
      */
     public bool $disableGraphqlTransformDirective = false;
 
@@ -1022,17 +1017,16 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * ->disableGraphqlTransformDirective(true)
      * ```
      *
-     * ::: tip
-     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
-     * unless this setting is set to `true`.
-     * :::
-     *
      * @group GraphQL
      *
      * @see $disableGraphqlTransformDirective
+     * @deprecated in 5.9.0. It no longer has any effect. Choose whether each GraphQL schema includes the `@transform` directive instead.
      */
+    #[Deprecated(message: 'in 5.9.0. It no longer has any effect. Choose whether each GraphQL schema includes the `@transform` directive instead.')]
     public function disableGraphqlTransformDirective(bool $value = true): self
     {
+        $this->deprecate('disableGraphqlTransformDirective', 'It no longer has any effect. Choose whether each GraphQL schema includes the `@transform` directive instead.');
+
         $this->disableGraphqlTransformDirective = $value;
 
         return $this;
