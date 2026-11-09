@@ -88,7 +88,7 @@ export function createLinkPopoverController(
       suspend as EventListener
     );
     linkField.addEventListener('element-select-end', resume);
-    popover.addEventListener('opened-changed', handlePopoverAfterHide);
+    popover.addEventListener('craft-after-hide', handlePopoverAfterHide);
 
     setDisclosureState(trigger, false);
     void showPopover(popover);
@@ -179,11 +179,6 @@ export function createLinkPopoverController(
       return;
     }
 
-    // `opened-changed` fires on both open and close; only react to closes.
-    if (event instanceof CustomEvent && event.detail?.opened) {
-      return;
-    }
-
     if (suspended) {
       return;
     }
@@ -249,7 +244,7 @@ export function createLinkPopoverController(
     }
 
     currentPopover?.removeEventListener(
-      'opened-changed',
+      'craft-after-hide',
       handlePopoverAfterHide
     );
     currentPopover?.remove();
