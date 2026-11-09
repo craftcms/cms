@@ -248,14 +248,25 @@ it('applies application type overlays on top of the general config', function(st
     'callable overlay' => "fn(\$config) => \$config->cacheDuration(60)",
 ]);
 
-it('does not apply base settings that an object application type overlay replaces', function(): void {
-    $overlay = GeneralConfig::create()->enableCsrfProtection(true);
+it('does not apply settings that an application type overlay replaces', function(array $files): void {
+    new GeneralConfigCompatibility()->convert(...$files);
 
-    $config = new GeneralConfigCompatibility()->convert(['enableCsrfProtection' => false], $overlay);
-
-    expect($config)->toBe($overlay)
-        ->and(app(PreventRequestForgery::class)->getExcludedPaths())->not->toContain('*');
-});
+    expect(app(PreventRequestForgery::class)->getExcludedPaths())->not->toContain('*')
+        ->and(proxiedClient())->toBe(['10.0.0.1', 'localhost']);
+})->with([
+    'object overlay on an array config' => [fn() => [
+        ['enableCsrfProtection' => false, 'trustedHosts' => ['any']],
+        GeneralConfig::create()->enableCsrfProtection(true),
+    ]],
+    'object overlay on a callable config' => [fn() => [
+        fn(GeneralConfig $config) => $config->enableCsrfProtection(false)->trustedHosts(['any']),
+        GeneralConfig::create()->enableCsrfProtection(true),
+    ]],
+    'callable overlay returning settings on an array config' => [fn() => [
+        ['enableCsrfProtection' => false, 'trustedHosts' => ['any']],
+        fn() => ['enableCsrfProtection' => true, 'trustedHosts' => []],
+    ]],
+]);
 
 it('trusts the proxies that trusted hosts list', function(array $trustedHosts, array $client): void {
     GeneralConfig::create()->trustedHosts($trustedHosts);
