@@ -157,6 +157,18 @@ it('records the caller of a deprecated API called back by PHP', function () {
         ->and($log->line)->toBe($line);
 });
 
+it('records the caller of a deprecated API reached through a property assignment', function () {
+    $query = Entry::find();
+    $query->orderBy = ['title' => SORT_ASC];
+    $line = __LINE__ - 1;
+
+    $log = Arr::first($this->deprecator->getRequestLogs());
+
+    expect($log->key)->toBe('CraftCms\\Cms\\Element\\Queries\\EntryQuery::orderBy')
+        ->and($log->file)->toBe(__FILE__)
+        ->and($log->line)->toBe($line);
+});
+
 it('records the template line of a deprecated API called from Twig', function (string $call, string $key) {
     $tempDir = sys_get_temp_dir().'/craft-deprecator-test-'.uniqid();
     File::ensureDirectoryExists($tempDir);

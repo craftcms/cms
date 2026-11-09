@@ -213,7 +213,7 @@ class Deprecator
         $function = $trace['function'] ?? null;
 
         return
-            in_array($function, ['__get', '__call', '__callStatic'], true) ||
+            in_array($function, ['__get', '__set', '__call', '__callStatic'], true) ||
             ($class === CoreExtension::class && $function === 'getAttribute') ||
             ($class === Template::class && $function === 'attribute');
     }
