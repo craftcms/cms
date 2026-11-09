@@ -23,16 +23,16 @@ beforeEach(function (): void {
 it('changes the user’s language and formatting locale, keeping other preferences', function (): void {
     Users::saveUserPreferences($this->user, ['locale' => 'en-GB', 'theme' => 'dark']);
 
-    ($this->call)('preferences.update', ['language' => 'de'])
+    ($this->call)('preferences_update', ['language' => 'de'])
         ->assertJsonPath('result.structuredContent', ['language' => 'de', 'locale' => 'en-GB']);
-    ($this->call)('preferences.update', ['locale' => null])
+    ($this->call)('preferences_update', ['locale' => null])
         ->assertJsonPath('result.structuredContent', ['language' => 'de', 'locale' => null]);
 
     expect(Users::getUserPreferences($this->user->id))->toMatchArray(['language' => 'de', 'locale' => null, 'theme' => 'dark']);
 });
 
 it('refuses languages and locales Craft doesn’t support', function (array $arguments, string $message): void {
-    ($this->call)('preferences.update', $arguments)
+    ($this->call)('preferences_update', $arguments)
         ->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', fn (string $text): bool => str_starts_with($text, $message));
 

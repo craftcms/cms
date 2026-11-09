@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
@@ -409,7 +410,7 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             ->ui(app(FieldLayoutCompiler::class)->ui(
                 $context->value->getFieldLayout(),
                 $context->value,
-                new UiContext,
+                new UiContext(preview: $context->ui->preview),
             ))
             ->value([]);
     }
@@ -830,14 +831,15 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         }
 
         if (isset($value['fields'])) {
-            foreach ($value['fields'] as $fieldHandle => $fieldValue) {
-                try {
-                    if ($fromRequest) {
-                        $contentBlock->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                    } else {
+            if ($fromRequest) {
+                // Respect field layout conditions
+                ElementHelper::setNestedFieldValuesFromRequest($contentBlock, $value['fields']);
+            } else {
+                foreach ($value['fields'] as $fieldHandle => $fieldValue) {
+                    try {
                         $contentBlock->setFieldValue($fieldHandle, $fieldValue);
+                    } catch (InvalidFieldException) {
                     }
-                } catch (InvalidFieldException) {
                 }
             }
         }

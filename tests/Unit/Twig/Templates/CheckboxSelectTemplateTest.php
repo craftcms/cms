@@ -13,7 +13,7 @@ it('renders the element from the legacy checkboxSelect variables', function () {
         templateMode: TemplateMode::Cp,
     ));
 
-    expect($crawler->filter('craft-checkbox-select#s.cp-checkbox-select'))->toHaveCount(1)
+    expect($crawler->filter('craft-checkbox-select#s'))->toHaveCount(1)
         ->and($crawler->filter('input[type="hidden"][data-empty]')->attr('name'))->toBe('sources')
         ->and($crawler->filter('.cp-checkbox-select__item input[name="sources[]"]')->extract(['value']))->toBe(['a', 'b'])
         ->and($crawler->filter('input[value="b"]')->attr('checked'))->not->toBeNull();

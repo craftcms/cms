@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Cp\Components\Input;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Controls\Concerns\HasTextExpander;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
@@ -13,7 +15,7 @@ use Illuminate\Support\Arr;
 /**
  * @since 6.0.0
  */
-class Text extends Control
+class Text extends Control implements ReadableValueControl, WritableValueControl
 {
     use HasTextExpander;
 
@@ -32,6 +34,8 @@ class Text extends Control
     private ?string $inputMode = null;
 
     private bool $autofocus = false;
+
+    private bool $selectOnFocus = false;
 
     private bool|string|null $autocomplete = null;
 
@@ -142,6 +146,16 @@ class Text extends Control
         return $this;
     }
 
+    /**
+     * Select the control's value whenever it's focused, so it can be typed over.
+     */
+    public function selectOnFocus(bool $selectOnFocus = true): static
+    {
+        $this->selectOnFocus = $selectOnFocus;
+
+        return $this;
+    }
+
     public function autocomplete(bool|string $autocomplete): static
     {
         $this->autocomplete = $autocomplete;
@@ -218,6 +232,7 @@ class Text extends Control
             'placeholder' => $this->placeholder,
             'inputMode' => $this->inputMode,
             'autofocus' => $this->autofocus ?: null,
+            'selectOnFocus' => $this->selectOnFocus ?: null,
             'autocomplete' => $this->autocomplete,
             'autocorrect' => $this->autocorrect ? null : false,
             'autocapitalize' => $this->autocapitalize ? null : false,

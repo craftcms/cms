@@ -14,10 +14,16 @@ use CraftCms\Cms\Asset\Enums\AssetIngestStatus;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Field\Assets as AssetsField;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Data\UploadSessionData;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
+use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
+use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Mcp\AssetUploads as McpAssetUploads;
 use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
@@ -43,7 +49,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
  * Asset-specific MCP capabilities: creating assets from files, replacing files, uploads, and transform URLs. Assets
- * are listed and managed through the `elements.*` tools.
+ * are listed and managed through the `elements_*` tools.
  *
  * @since 6.0.0
  */
@@ -62,20 +68,21 @@ readonly class Assets
 
     private const array FieldsSchema = [
         'type' => 'object',
-        'description' => 'Custom field values keyed by field handle. Use elements.field-schema for the applicable schema.',
+        'description' => 'Custom field values keyed by field handle. Use elements_field_schema for the applicable schema.',
         'additionalProperties' => true,
     ];
 
     private const array FileSchema = [
         'type' => 'object',
-        'description' => 'A downloadable file reference supplied by the client. URLs must be direct, temporary HTTPS URLs. Local paths and base64 are not supported.',
+        'description' => 'The file, from exactly one source: download_url, data, or path. The filename defaults to file_name, then to the URL or path basename.',
         'properties' => [
-            'download_url' => ['type' => 'string', 'format' => 'uri'],
+            'download_url' => ['type' => 'string', 'format' => 'uri', 'description' => 'Public HTTPS URL to download. Up to 3 redirects are followed.'],
+            'data' => ['type' => 'string', 'description' => 'Base64-encoded file contents, or a base64 data URL. Best for small files; use assets_upload_prepare for larger ones over HTTP.'],
+            'path' => ['type' => 'string', 'description' => 'Absolute path to a file within the Craft project, outside of system directories such as config/ and vendor/. Only supported by the stdio server (craft:mcp:serve).'],
             'file_id' => ['type' => 'string', 'minLength' => 1],
             'mime_type' => ['type' => 'string'],
             'file_name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255],
         ],
-        'required' => ['download_url', 'file_id'],
         'additionalProperties' => false,
     ];
 
@@ -86,6 +93,7 @@ readonly class Assets
         private AssetUploadHandler $assetUploads,
         private ElementSerializer $elementSerializer,
         private Elements $elements,
+        private Fields $fields,
         private Folders $folders,
         private McpAssetUploads $mcpAssetUploads,
         private Request $request,
@@ -100,7 +108,7 @@ readonly class Assets
      * @return array{url: string, mimeType: string, width: int|null, height: int|null}
      */
     #[McpTool(
-        name: 'assets.transform-url',
+        name: 'assets_transform_url',
         description: 'Gets a transformed asset URL for previewing. Accepts a named image transform handle or inline parameters such as width, height, mode, and format. Honors the selected transformer\'s generation settings, so this may queue or generate a transform and return a temporary generation URL.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -144,7 +152,7 @@ readonly class Assets
      * @return array{queued: list<int>, skipped: list<int>}
      */
     #[McpTool(
-        name: 'assets.analyze',
+        name: 'assets_analyze',
         description: 'Queues images to be analyzed by the image analysis AI tasks an administrator has set up, such as craft:altText for alt text, craft:title for titles, craft:focalPoint, craft:tagImage, and craft:imageType. It only fills in what each image is missing, without overwriting anything, so prefer it to writing alt text yourself when craft:altText is set up. Images are skipped when they aren’t images, can’t be saved by the user, or have nothing for the tasks to fill in. Results are saved by a queue job, so check the images later.',
     )]
     public function analyze(
@@ -184,7 +192,7 @@ readonly class Assets
     }
 
     /** @return array{upload: array<string, mixed>} */
-    #[McpTool(name: 'assets.upload.prepare', description: 'Starts a short-lived, resumable HTTP upload. Provide folderId or volumeId for assets.create, or assetId for assets.replace. Complete the binary transfer using upload.urls and upload.transport with the MCP bearer token, then pass upload.id as uploadId to create or replace. Stdio clients and clients unable to transfer binary data use the file input on create or replace instead.')]
+    #[McpTool(name: 'assets_upload_prepare', description: 'Starts a short-lived, resumable HTTP upload. Provide folderId, volumeId, or fieldId (with elementId and siteId for the element the Assets field belongs to) for assets_create, or assetId for assets_replace. Complete the binary transfer using upload.urls and upload.transport with the MCP bearer token, then pass upload.id as uploadId to create or replace. Stdio clients and clients unable to transfer binary data use the file input on create or replace instead.')]
     #[RequiresHttp]
     public function prepareUpload(
         #[Schema(minLength: 1, maxLength: 255)]
@@ -197,23 +205,33 @@ readonly class Assets
         ?int $volumeId = null,
         #[Schema(minimum: 1)]
         ?int $assetId = null,
+        #[Schema(minimum: 1)]
+        ?int $fieldId = null,
+        #[Schema(minimum: 1)]
+        ?int $elementId = null,
+        #[Schema(minimum: 1)]
+        ?int $siteId = null,
     ): array {
         $actor = $this->actor->user();
 
         if ($assetId !== null) {
-            if ($folderId !== null || $volumeId !== null) {
+            if ($folderId !== null || $volumeId !== null || $fieldId !== null || $elementId !== null) {
                 throw new ToolCallException('Provide either assetId or an upload destination, not both.');
             }
 
             $parameters = ['operation' => 'replace', 'assetId' => $assetId];
         } else {
-            $folder = $this->assetAdapter->targetFolder($folderId, $volumeId);
+            [$folder] = $this->uploadTarget($folderId, $volumeId, $fieldId, $elementId, $siteId);
 
-            if (! $folder || ! Gate::forUser($actor)->allows('uploadAsset', $folder)) {
+            if (! Gate::forUser($actor)->allows('uploadAsset', $folder)) {
                 throw new ToolCallException('You are not authorized to upload assets to this folder.');
             }
 
             $parameters = ['operation' => 'upload', 'folderId' => $folder->id];
+
+            if ($fieldId !== null) {
+                $parameters += ['fieldId' => $fieldId, 'elementId' => $elementId, 'siteId' => $siteId];
+            }
         }
 
         try {
@@ -234,15 +252,17 @@ readonly class Assets
     }
 
     /**
-     * @param  array{download_url: string, file_id: string, mime_type?: string, file_name?: string}|null  $file  File reference. Provide folderId or volumeId when using this input.
+     * @param  array{download_url?: string, data?: string, path?: string, file_id?: string, mime_type?: string, file_name?: string}|null  $file  File reference. Provide folderId, volumeId, or fieldId when using this input.
      * @param  array<string, mixed>  $attributes  Built-in asset attributes.
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
-     * @param  string|null  $filename  Filename override for a file reference. Required if file_name is absent.
+     * @param  string|null  $filename  Filename override for a file reference.
+     * @param  int|null  $fieldId  An Assets field whose default upload location to upload to.
+     * @param  int|null  $elementId  The element the Assets field belongs to, so dynamic subpaths resolve.
      * @return array{asset: array<string, mixed>}
      */
     #[McpTool(
-        name: 'assets.create',
-        description: 'Creates an asset from exactly one source: a client-provided file reference plus folderId or volumeId, or a completed uploadId from the HTTP-only assets.upload.prepare tool. Stdio clients and clients unable to transfer binary data use file references. Use elements.field-schema to discover custom fields.',
+        name: 'assets_create',
+        description: 'Creates an asset from exactly one source: a client-provided file reference, or a completed uploadId from the HTTP-only assets_upload_prepare tool. With a file reference, target exactly one of: folderId, volumeId (its root folder), or fieldId (an Assets field’s default upload location; pass elementId, and attributes.siteId if needed, for the element the field belongs to so dynamic subpaths resolve). Stdio clients and clients unable to transfer binary data use file references. Use elements_field_schema to discover custom fields.',
         meta: ['openai/fileParams' => ['file']],
     )]
     public function create(
@@ -260,36 +280,30 @@ readonly class Assets
         ?int $volumeId = null,
         #[Schema(minLength: 1, maxLength: 255)]
         ?string $filename = null,
+        #[Schema(minimum: 1)]
+        ?int $fieldId = null,
+        #[Schema(minimum: 1)]
+        ?int $elementId = null,
     ): array {
         if (($uploadId === null) === ($file === null)) {
             throw new ToolCallException('Provide exactly one of: uploadId, file.');
         }
 
-        if ($uploadId !== null && ($folderId !== null || $volumeId !== null || $filename !== null)) {
+        if ($uploadId !== null && ($folderId !== null || $volumeId !== null || $fieldId !== null || $elementId !== null || $filename !== null)) {
             throw new ToolCallException('The uploadId already specifies the filename and destination.');
         }
 
         try {
             if ($file !== null) {
-                $folder = $this->assetAdapter->targetFolder($folderId, $volumeId);
-
-                if (! $folder) {
-                    throw new ToolCallException('Provide a valid folderId or volumeId for the file reference.');
-                }
-
-                $filename ??= $file['file_name'] ?? null;
-
-                if ($filename === null || trim($filename) === '') {
-                    throw new ToolCallException('Provide filename when the file reference does not include file_name.');
-                }
-
+                [$folder, $selectionCondition] = $this->uploadTarget($folderId, $volumeId, $fieldId, $elementId, $attributes['siteId'] ?? null);
+                $filename = $this->mcpAssetUploads->filename($file, $filename);
                 $this->mcpAssetUploads->authorize($this->request, ['folderId' => $folder->id], $filename, 0);
                 $asset = $this->newAsset($folder, $attributes, $fields);
 
                 return $this->mcpAssetUploads->consumeFile(
-                    $file['download_url'],
+                    $file,
                     $filename,
-                    fn (UploadedFile $source): array => $this->ingestAsset($source, $folder, $asset),
+                    fn (UploadedFile $source): array => $this->ingestAsset($source, $folder, $asset, $selectionCondition),
                 );
             }
 
@@ -297,13 +311,22 @@ readonly class Assets
                 $this->request,
                 $uploadId,
                 function (UploadedFile $source, array $parameters) use ($attributes, $fields): array {
-                    $folder = $this->folders->getFolderById((int) $parameters['folderId']);
+                    if (isset($parameters['fieldId'])) {
+                        [$folder, $selectionCondition] = $this->fieldUploadTarget(
+                            (int) $parameters['fieldId'],
+                            isset($parameters['elementId']) ? (int) $parameters['elementId'] : null,
+                            isset($parameters['siteId']) ? (int) $parameters['siteId'] : null,
+                        );
+                    } else {
+                        $folder = $this->folders->getFolderById((int) $parameters['folderId']);
+                        $selectionCondition = null;
+                    }
 
                     if (! $folder) {
                         throw new ToolCallException('The upload destination no longer exists.');
                     }
 
-                    return $this->ingestAsset($source, $folder, $this->newAsset($folder, $attributes, $fields));
+                    return $this->ingestAsset($source, $folder, $this->newAsset($folder, $attributes, $fields), $selectionCondition);
                 },
             );
         } catch (ModelNotFoundException) {
@@ -319,13 +342,13 @@ readonly class Assets
     }
 
     /**
-     * @param  array{download_url: string, file_id: string, mime_type?: string, file_name?: string}|null  $file  File reference.
-     * @param  string|null  $filename  Filename override for a file reference. Required if file_name is absent.
+     * @param  array{download_url?: string, data?: string, path?: string, file_id?: string, mime_type?: string, file_name?: string}|null  $file  File reference.
+     * @param  string|null  $filename  Filename override for a file reference.
      * @return array{asset: array<string, mixed>}
      */
     #[McpTool(
-        name: 'assets.replace',
-        description: 'Replaces an existing asset file while preserving its ID and references, using exactly one source: a client-provided file reference or a completed uploadId bound to assetId from the HTTP-only assets.upload.prepare tool. Stdio clients use file references. Uses the HTTP replacement behavior, including adopting the incoming filename, which may change the URL. Uploads are consumed once; inspect the asset after an ambiguous failure before retrying.',
+        name: 'assets_replace',
+        description: 'Replaces an existing asset file while preserving its ID and references, using exactly one source: a client-provided file reference or a completed uploadId bound to assetId from the HTTP-only assets_upload_prepare tool. Stdio clients use file references. Uses the HTTP replacement behavior, including adopting the incoming filename, which may change the URL. Uploads are consumed once; inspect the asset after an ambiguous failure before retrying.',
         annotations: new ToolAnnotations(destructiveHint: true),
         meta: ['openai/fileParams' => ['file']],
     )]
@@ -351,16 +374,11 @@ readonly class Assets
 
         try {
             if ($file !== null) {
-                $filename ??= $file['file_name'] ?? null;
-
-                if ($filename === null || trim($filename) === '') {
-                    throw new ToolCallException('Provide filename when the file reference does not include file_name.');
-                }
-
+                $filename = $this->mcpAssetUploads->filename($file, $filename);
                 $this->mcpAssetUploads->authorize($this->request, ['operation' => 'replace', 'assetId' => $assetId], $filename, 0);
 
                 return $this->mcpAssetUploads->consumeFile(
-                    $file['download_url'],
+                    $file,
                     $filename,
                     fn (UploadedFile $source): array => $this->replaceAsset($assetId, $source),
                 );
@@ -404,6 +422,85 @@ readonly class Assets
     }
 
     /**
+     * Resolves an upload destination from exactly one of: a folder ID, a volume ID, or an Assets field ID.
+     *
+     * @return array{VolumeFolder, ElementConditionInterface|null}
+     */
+    private function uploadTarget(?int $folderId, ?int $volumeId, ?int $fieldId, ?int $elementId, ?int $siteId): array
+    {
+        if ($fieldId !== null) {
+            if ($folderId !== null || $volumeId !== null) {
+                throw new ToolCallException('Provide exactly one of: folderId, volumeId, fieldId.');
+            }
+
+            return $this->fieldUploadTarget($fieldId, $elementId, $siteId);
+        }
+
+        if ($elementId !== null) {
+            throw new ToolCallException('elementId is only used with fieldId.');
+        }
+
+        $folder = $this->assetAdapter->targetFolder($folderId, $volumeId);
+
+        if (! $folder) {
+            throw new ToolCallException('Provide a valid folderId or volumeId.');
+        }
+
+        return [$folder, null];
+    }
+
+    /**
+     * Resolves an Assets field’s default upload location and selection condition, the same way the control panel
+     * does when uploading files to the field.
+     *
+     * @return array{VolumeFolder, ElementConditionInterface|null}
+     */
+    private function fieldUploadTarget(int $fieldId, ?int $elementId, ?int $siteId): array
+    {
+        $actor = $this->actor->user();
+        $field = $this->fields->getFieldById($fieldId);
+
+        if (! $field instanceof AssetsField) {
+            throw new ToolCallException('fieldId must be the ID of an Assets field.');
+        }
+
+        // Check the field’s volume before resolving its dynamic path, which can create folders
+        $volume = $field->_volumeBySourceKey($field->restrictLocation ? $field->restrictedLocationSource : $field->defaultUploadLocationSource);
+
+        if ($volume && ! $actor->can("saveAssets:$volume->uid")) {
+            throw new ToolCallException('You are not authorized to upload assets to this folder.');
+        }
+
+        $element = null;
+
+        if ($elementId !== null) {
+            $element = $this->elements->getElementById($elementId, null, $siteId);
+
+            if (! $element || ! Gate::forUser($actor)->allows('view', $element)) {
+                throw new ToolCallException('Element not found.');
+            }
+        }
+
+        try {
+            $folder = $this->folders->getFolderById($field->resolveDynamicPathToFolderId($element));
+        } catch (InvalidFsException|InvalidSubpathException $exception) {
+            throw new ToolCallException($exception->getMessage(), previous: $exception);
+        }
+
+        if (! $folder) {
+            throw new ToolCallException('The field’s upload location is not valid.');
+        }
+
+        $condition = $field->getSelectionCondition();
+
+        if ($condition instanceof ElementCondition) {
+            $condition->referenceElement = $element;
+        }
+
+        return [$folder, $condition];
+    }
+
+    /**
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $fields
      */
@@ -422,7 +519,7 @@ readonly class Assets
     }
 
     /** @return array{asset: array<string, mixed>} */
-    private function ingestAsset(UploadedFile $source, VolumeFolder $folder, Asset $asset): array
+    private function ingestAsset(UploadedFile $source, VolumeFolder $folder, Asset $asset, ?ElementConditionInterface $selectionCondition = null): array
     {
         $result = $this->assetUploads->ingest(new AssetIngest(
             source: $source,
@@ -430,6 +527,10 @@ readonly class Assets
             mimeType: $source->mimeType(),
             folder: $folder,
             sanitizeOnUpload: true,
+            // Like the control panel, stage files for fields with selection conditions in the user’s temporary
+            // folder, so rejected files never reach the destination volume
+            selectionCondition: $selectionCondition,
+            temporaryFolder: $selectionCondition ? $this->assets->getUserTemporaryUploadFolder() : null,
             uploaderId: $asset->uploaderId,
             asset: $asset,
         ));

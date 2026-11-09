@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use Override;
+use WeakMap;
 
 /**
  * @since 6.0.0
@@ -53,6 +54,9 @@ class User extends BaseModel implements CraftUser, OAuthenticatable
 
     #[Override]
     public $incrementing = false;
+
+    /** @var WeakMap<self, array{state: array<mixed>, element: \CraftCms\Cms\User\Elements\User}>|null */
+    private static ?WeakMap $elements = null;
 
     #[Override]
     protected $with = [
@@ -128,7 +132,37 @@ class User extends BaseModel implements CraftUser, OAuthenticatable
             );
     }
 
+    /**
+     * Returns the user element for this model.
+     *
+     * Building the element is costly, and authorization calls this for every ability it checks, so the element is
+     * reused until the model's attributes or its element record change.
+     */
     public function asElement(): \CraftCms\Cms\User\Elements\User
+    {
+        $state = [
+            $this->getAttributes(),
+            $this->relationLoaded('element') ? $this->element?->getAttributes() : null,
+        ];
+
+        self::$elements ??= new WeakMap;
+        $cached = self::$elements[$this] ?? null;
+
+        if ($cached !== null && $cached['state'] === $state) {
+            return $cached['element'];
+        }
+
+        $element = $this->buildElement();
+
+        self::$elements[$this] = [
+            'state' => $state,
+            'element' => $element,
+        ];
+
+        return $element;
+    }
+
+    private function buildElement(): \CraftCms\Cms\User\Elements\User
     {
         $element = new \CraftCms\Cms\User\Elements\User(Arr::except($this->toArray(), [
             'element',

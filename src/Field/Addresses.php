@@ -580,14 +580,15 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             }
 
             if (isset($addressData['fields'])) {
-                foreach ($addressData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        if ($fromRequest) {
-                            $address->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                        } else {
+                if ($fromRequest) {
+                    // Respect field layout conditions
+                    ElementHelper::setNestedFieldValuesFromRequest($address, $addressData['fields']);
+                } else {
+                    foreach ($addressData['fields'] as $fieldHandle => $fieldValue) {
+                        try {
                             $address->setFieldValue($fieldHandle, $fieldValue);
+                        } catch (InvalidFieldException) {
                         }
-                    } catch (InvalidFieldException) {
                     }
                 }
             }

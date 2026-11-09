@@ -411,6 +411,27 @@ it('moves focus into a panel its screen opens', async () => {
   expect(document.activeElement).toBe(heading('history'));
 });
 
+it('moves focus to what its screen asks for in a panel it opens', async () => {
+  await mount('#rail');
+
+  registry.open('history', {
+    focus: () => panel('history').querySelector<HTMLElement>('.inner'),
+  });
+  await settle();
+
+  expect(panel('history').hidden).toBe(false);
+  expect(document.activeElement?.className).toBe('inner');
+});
+
+it('falls back to the panel’s heading when what its screen asks for isn’t there', async () => {
+  await mount('#rail');
+
+  registry.open('history', {focus: () => null});
+  await settle();
+
+  expect(document.activeElement).toBe(heading('history'));
+});
+
 describe('with panels that stay from page to page', () => {
   it('adds them to the rail, but opens on the page’s own first panel', async () => {
     await mount('#rail', {chat: true});

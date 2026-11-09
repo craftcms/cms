@@ -19,12 +19,14 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Elements\ElementDraftsController;
+use CraftCms\Cms\Http\Middleware\SendBroadcasts;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Elements\User;
@@ -33,6 +35,7 @@ use CraftCms\Cms\Workflow\Enums\WorkflowStatus;
 use CraftCms\Cms\Workflow\Models\Workflow;
 use CraftCms\Cms\Workflow\Workflows;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -737,7 +740,7 @@ describe('apply', function () {
         /** @var Entry $draft */
         $draft = app(Drafts::class)->createDraft($entry, auth()->id(), name: 'Existing Draft');
 
-        postJson(action([ElementDraftsController::class, 'apply']), [
+        $response = postJson(action([ElementDraftsController::class, 'apply']), [
             'elementType' => Entry::class,
             'draftId' => $draft->draftId,
             'siteId' => $draft->siteId,
@@ -745,6 +748,11 @@ describe('apply', function () {
             'slug' => 'applied-draft-title',
         ])->assertOk()
             ->assertJsonPath('message', t('Draft applied.'));
+
+        expect(Json::decode($response->headers->get(SendBroadcasts::HEADER)))->toEqualCanonicalizing([
+            ['event' => 'saveElement', 'id' => $entry->id],
+            ['event' => 'deleteDraft', 'canonicalId' => $entry->id, 'draftId' => $draft->draftId],
+        ]);
 
         /** @var Entry $canonical */
         $canonical = Entry::find()
@@ -867,6 +875,34 @@ describe('apply', function () {
             ->and($response->json('screen.draftId'))->toBe($draft->draftId)
             ->and($response->json('screen.workflow.convertedToDraft'))->toBeTrue()
             ->and($response->json('screen.workflow.current.canSubmit'))->toBeTrue();
+    });
+
+    it('goes to the workflow draft saving makes, wherever saving would otherwise go, so it can be submitted for review', function () {
+        $entry = EntryModel::factory()->createElement(['title' => 'Canonical Title']);
+        $workflow = Workflow::query()->create([
+            'name' => 'Editorial workflow',
+            'uid' => Str::uuid7()->toString(),
+        ]);
+        Section::query()->whereKey($entry->sectionId)->update(['workflowId' => $workflow->id]);
+        Sections::refreshSections();
+        /** @var Entry $draft */
+        $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
+
+        $response = postJson(action([ElementDraftsController::class, 'apply']), [
+            'elementType' => Entry::class,
+            'draftId' => $draft->draftId,
+            'siteId' => $draft->siteId,
+            'provisional' => true,
+            'workflowSave' => true,
+            'title' => 'Changed Title',
+            // Where the editor goes after saving: the element index.
+            'redirect' => Crypt::encrypt('content/entries'),
+        ])->assertOk();
+
+        /** @var Entry $savedDraft */
+        $savedDraft = Entry::find()->draftId($draft->draftId)->siteId($draft->siteId)->status(null)->one();
+
+        expect($response->json('redirect'))->toBe($savedDraft->getCpEditUrl());
     });
 
     it('applies a disabled provisional workflow entry without requiring review', function () {

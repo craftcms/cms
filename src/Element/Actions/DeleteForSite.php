@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Actions;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -72,12 +73,13 @@ JS, [static::class]);
     #[\Override]
     public function performAction(ElementQueryInterface $query): bool
     {
-        // Ignore any elements the user doesn’t have permission to delete
+        // Ignore any elements the user doesn’t have permission to delete, or that only exist in this site
         $elements = array_filter(
             $query->all(),
             fn (ElementInterface $element) => (
                 Gate::check('view', $element) &&
-                Gate::check('deleteForSite', $element)
+                Gate::check('deleteForSite', $element) &&
+                ElementHelper::isMultiSite($element)
             ),
         );
 

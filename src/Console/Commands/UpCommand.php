@@ -12,11 +12,13 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Override;
 use Throwable;
 
+use function CraftCms\Cms\t;
 use function Laravel\Prompts\confirm;
 
 /**
@@ -81,6 +83,8 @@ class UpCommand extends Command implements Isolatable
             $this->call('craft:clear-caches', [
                 'keys' => ['compiled-templates'],
             ]);
+
+            $this->clearCompiledViews();
         } catch (Throwable $e) {
             if (! $e instanceof OperationAbortedException) {
                 throw $e;
@@ -96,6 +100,25 @@ class UpCommand extends Command implements Isolatable
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Clears compiled Blade views, so updated control panel views aren't shadowed by stale compiled copies.
+     *
+     * The update has already been applied by this point, so a failure is reported rather than failing the command.
+     */
+    private function clearCompiledViews(): void
+    {
+        if (CompiledViews::path() === null) {
+            return;
+        }
+
+        try {
+            $this->components->task(t('Clearing:').' '.t('Compiled views'), CompiledViews::clear(...));
+        } catch (Throwable $e) {
+            report($e);
+            $this->components->warn('Could not clear compiled views: '.$e->getMessage().' Run `php artisan view:clear` manually.');
+        }
     }
 
     private function showLicensingIssues(Updates $updates, License $license): bool

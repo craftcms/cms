@@ -8,6 +8,7 @@ use Closure;
 use Composer\Semver\VersionParser;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Update\Data\Update;
 use CraftCms\Cms\Update\Enums\UpdateStatus;
 use CraftCms\Cms\Update\Updates;
+use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Support\Facades\Cache;
@@ -110,6 +112,16 @@ class UpdateCommand extends Command
             return self::FAILURE;
         }
 
+        // Composer installs files with their commit's mtime, so compiled views can be newer than their updated sources
+        if (CompiledViews::path() !== null) {
+            try {
+                $this->components->task('Clearing compiled views', CompiledViews::clear(...));
+            } catch (Throwable $e) {
+                report($e);
+                $this->components->warn('Could not clear compiled views: '.$e->getMessage().' Run `php artisan view:clear` manually.');
+            }
+        }
+
         $refreshed = false;
         $this->components->task(
             'Updating license info',
@@ -119,7 +131,7 @@ class UpdateCommand extends Command
         );
 
         if (! $refreshed) {
-            $this->components->warn('Run `php craft update/info` to retry the license refresh.');
+            $this->components->warn('Run `'.app(TerminalCommands::class)->craft('update/info').'` to retry the license refresh.');
         }
 
         $this->components->success('Update complete!');

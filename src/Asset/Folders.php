@@ -41,6 +41,8 @@ class Folders
     /** @var array<int, int|null> */
     private array $rootFolderIds = [];
 
+    private bool $rootFoldersLoaded = false;
+
     public function getFolderById(int $folderId): ?VolumeFolder
     {
         if (! array_key_exists($folderId, $this->foldersById)) {
@@ -164,6 +166,16 @@ class Folders
 
     public function getRootFolderByVolumeId(int $volumeId): ?VolumeFolder
     {
+        // Pages list many volumes' root folders, so they're all fetched at once.
+        if (! $this->rootFoldersLoaded) {
+            $this->rootFoldersLoaded = true;
+            // Trashed volumes keep their folders, but have no root folder to return. Temporary upload folders
+            // belong to no volume.
+            $this->findFolders(['parentId' => ':empty:'])
+                ->filter(fn (VolumeFolder $folder) => $folder->volumeId !== null && Volumes::getVolumeById($folder->volumeId) !== null)
+                ->each(fn (VolumeFolder $folder) => $this->rootFolderIds[$folder->volumeId] ??= $folder->id);
+        }
+
         if (! array_key_exists($volumeId, $this->rootFolderIds)) {
             $volume = Volumes::getVolumeById($volumeId);
 
@@ -425,6 +437,7 @@ class Folders
         $this->foldersById = [];
         $this->folderIdsByUid = [];
         $this->rootFolderIds = [];
+        $this->rootFoldersLoaded = false;
     }
 
     private function hydrateFolder(stdClass $result): VolumeFolder

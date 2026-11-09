@@ -144,7 +144,6 @@ describe('ActionMenu', () => {
       expect(invoker.tagName).toBe('CRAFT-BUTTON');
       expect(invoker.id).toMatch(/^invoker-/);
       expect(invoker.getAttribute('aria-controls')).toMatch(/^content-/);
-      expect(invoker.getAttribute('aria-haspopup')).toBe('true');
       expect(invoker.getAttribute('aria-expanded')).toBe('false');
 
       return invoker;

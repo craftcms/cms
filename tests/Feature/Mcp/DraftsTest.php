@@ -56,7 +56,7 @@ it('manages entry drafts through MCP', function () {
     $draft->title = 'Draft title';
     expect(app(Elements::class)->saveElement($draft))->toBeTrue();
 
-    $listed = $drafts->list(type: 'entries', id: $entry['id']);
+    $listed = $drafts->list(McpRequest::context('drafts_list'), type: 'entries', id: $entry['id']);
     $applied = $drafts->apply(type: 'entries', uid: $created['uid'])['element'];
     $discardedDraft = $drafts->create(type: 'entries', id: $entry['id'])['draft'];
     $deleted = $drafts->delete(type: 'entries', id: $discardedDraft['id']);
@@ -118,13 +118,13 @@ it('lists unpublished drafts only when asked', function (): void {
     $entry = $elements->create('entries', $attributes, ['summary' => 'Live summary'])['element'];
     $draftOfEntry = $drafts->create(type: 'entries', id: $entry['id'])['draft'];
 
-    expect(collect($drafts->list(type: 'entries')['drafts'])->pluck('id')->all())->toBe([$draftOfEntry['id']])
-        ->and(collect($drafts->list(type: 'entries', unpublished: true)['drafts'])->pluck('id')->all())->toBe([$unpublished['id']])
-        ->and(fn () => $drafts->list(type: 'entries', id: $unpublished['id']))
+    expect(collect($drafts->list(McpRequest::context('drafts_list'), type: 'entries')['drafts'])->pluck('id')->all())->toBe([$draftOfEntry['id']])
+        ->and(collect($drafts->list(McpRequest::context('drafts_list'), type: 'entries', unpublished: true)['drafts'])->pluck('id')->all())->toBe([$unpublished['id']])
+        ->and(fn () => $drafts->list(McpRequest::context('drafts_list'), type: 'entries', id: $unpublished['id']))
         ->toThrow(ToolCallException::class, "Element {$unpublished['id']} is an unpublished draft and has no canonical element.")
-        ->and(fn () => $drafts->list(type: 'entries', id: $unpublished['id'], unpublished: true))
+        ->and(fn () => $drafts->list(McpRequest::context('drafts_list'), type: 'entries', id: $unpublished['id'], unpublished: true))
         ->toThrow(ToolCallException::class, 'omit id and uid when unpublished is true.')
-        ->and(fn () => $drafts->list(type: 'entries', id: 999999))
+        ->and(fn () => $drafts->list(McpRequest::context('drafts_list'), type: 'entries', id: 999999))
         ->toThrow(ToolCallException::class, 'Canonical element not found.');
 });
 
@@ -188,12 +188,12 @@ it('requires entry permissions to create and edit drafts', function (): void {
     $createDraft = ['asUnpublishedDraft' => true, 'attributes' => ['sectionId' => $this->section->id, 'title' => 'Proposed article']];
     $updateDraft = ['id' => $draft['id'], 'attributes' => ['title' => 'Draft title']];
 
-    expect($call($viewer, 'elements.create', $createDraft)['content'][0]['text'])->toBe('You are not authorized to save this entry.')
-        ->and($call($viewer, 'elements.update', $updateDraft)['content'][0]['text'])->toBe('You are not authorized to save this entry.')
+    expect($call($viewer, 'elements_create', $createDraft)['content'][0]['text'])->toBe('You are not authorized to save this entry.')
+        ->and($call($viewer, 'elements_update', $updateDraft)['content'][0]['text'])->toBe('You are not authorized to save this entry.')
         ->and(Entry::find()->drafts()->sectionId($this->section->id)->status(null)->ids())->toBe([$draft['id']])
         ->and(Entry::find()->drafts()->id($draft['id'])->status(null)->one()->title)->toBe('Canonical title')
-        ->and($call($editor, 'elements.create', $createDraft))->toMatchArray(['isError' => false])
-        ->and($call($editor, 'elements.update', $updateDraft))->toMatchArray(['isError' => false])
+        ->and($call($editor, 'elements_create', $createDraft))->toMatchArray(['isError' => false])
+        ->and($call($editor, 'elements_update', $updateDraft))->toMatchArray(['isError' => false])
         ->and(Entry::find()->id($entry['id'])->one()->title)->toBe('Canonical title');
 });
 
@@ -205,7 +205,7 @@ it('supports registered plugin element types', function () {
 
     $drafts = app(Drafts::class);
     $created = $drafts->create(type: 'test-mcp-draft-element', id: $element->id)['draft'];
-    $listed = $drafts->list(type: 'test-mcp-draft-element', id: $element->id);
+    $listed = $drafts->list(McpRequest::context('drafts_list'), type: 'test-mcp-draft-element', id: $element->id);
 
     expect($created)->toMatchArray([
         'type' => TestMcpDraftElement::class,

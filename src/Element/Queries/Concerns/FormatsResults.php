@@ -14,7 +14,6 @@ use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
-use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -250,8 +249,9 @@ trait FormatsResults
             callback: fn ($order) => ! isset($order['column']) || ! $order['column'] instanceof OrderByPlaceholderExpression,
         );
 
-        // Order by was set
-        if (count($elementQuery->query->orders) > 0) {
+        // Order by was set, or the query is unioned: Laravel puts orders added after union() on the combined
+        // result, where the default order's table-qualified columns don't exist.
+        if (count($elementQuery->query->orders) > 0 || ! empty($elementQuery->query->unions)) {
             return;
         }
 
@@ -317,12 +317,7 @@ trait FormatsResults
                 return $order;
             }
 
-            if (isset($elementQuery->columnMap[$order['column']])) {
-                $column = $elementQuery->resolveColumnMapping($order['column']);
-                $order['column'] = is_array($column)
-                    ? (count($column) === 1 ? reset($column) : new Coalesce($column))
-                    : $column;
-            }
+            $order['column'] = $elementQuery->resolveColumn($order['column']);
 
             return $order;
         }, $orders);

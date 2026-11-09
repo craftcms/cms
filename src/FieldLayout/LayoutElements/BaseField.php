@@ -7,9 +7,11 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
-use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
@@ -543,7 +545,7 @@ abstract class BaseField extends FieldLayoutElement
         ));
 
         $coreActions = array_values(array_filter([
-            $this->crossSiteCopyAction($context),
+            $this->compareChangesAction($context),
             $this->aiAssistantAction($context),
         ]));
 
@@ -584,43 +586,46 @@ abstract class BaseField extends FieldLayoutElement
         ];
     }
 
-    /** @return array<string, mixed>|null */
-    private function crossSiteCopyAction(FieldLayoutElementContext $context): ?array
+    /**
+     * Returns an action that compares the field’s value on a draft, revision, or nested element with the value it
+     * was based on, for fields marked as modified. Outdated fields aren’t compared: the revision before the current
+     * element changed them can’t be told reliably from when the change was recorded.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function compareChangesAction(FieldLayoutElementContext $context): ?array
     {
         $element = $context->element;
 
         if (
             ! $this->uid ||
-            ! $element?->id ||
-            $context->mode !== ControlMode::Editable ||
-            $context->ui->mode !== ControlMode::Editable ||
-            ! $this->isCrossSiteCopyable($element) ||
-            ! $this->translatable($element) ||
-            ! $element->getIsCrossSiteCopyable()
+            $element === null ||
+            ! $this->showStatus() ||
+            ! FieldChangeComparisons::isComparable($element)
         ) {
             return null;
         }
 
-        $siteIds = array_values(array_filter(
-            array_keys(ElementHelper::siteStatusesForElement($element, true)),
-            fn (int $siteId): bool => $siteId !== $element->siteId,
-        ));
-        $label = $this->showLabel() ? $this->label() : null;
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
+        if ($this->statusClass($element, $static) !== AttributeStatus::Modified->value) {
+            return null;
+        }
 
         return [
-            'icon' => 'clone',
-            'label' => t('Copy value from site…'),
+            'icon' => 'code-compare',
+            'color' => '--c-field-modified-indicator',
+            'label' => t('Compare changes'),
             'action' => [
                 'type' => 'event',
-                'name' => 'craft:copy-value-from-site',
+                'name' => 'craft:compare-field-changes',
                 'detail' => [
                     'elementType' => $element::class,
                     'elementId' => $element->id,
-                    'draftId' => $element->draftId,
                     'siteId' => $element->siteId,
+                    'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+                    'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                     'layoutElementUid' => $this->uid,
-                    'label' => $label,
-                    'siteIds' => $siteIds,
+                    'label' => $this->showLabel() ? $this->label() : null,
                 ],
             ],
         ];
@@ -1091,14 +1096,6 @@ abstract class BaseField extends FieldLayoutElement
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
-    }
-
-    /**
-     * Returns whether field supports copying its value across sites.
-     */
-    public function isCrossSiteCopyable(ElementInterface $element): bool
-    {
-        return false;
     }
 
     /**

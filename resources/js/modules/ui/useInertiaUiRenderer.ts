@@ -1,14 +1,9 @@
 import type {InertiaForm} from '@inertiajs/vue3';
-import {
-  computed,
-  shallowRef,
-  toRaw,
-  toValue,
-  watch,
-  type MaybeRefOrGetter,
-} from 'vue';
+import {computed, shallowRef, toValue, watch, type MaybeRefOrGetter} from 'vue';
 import type {UiChangeKind, UiPayload, UiValue} from './types';
+import type {UiValueSnapshot} from './valueAccess';
 import {pathsMatch, visitControls} from './runtime';
+import {cloneRaw} from './renderer/uiTree';
 
 export interface UiRendererInstance {
   advanceBaseline(): void;
@@ -21,6 +16,10 @@ export interface UiRendererInstance {
   setValues(
     changes: {path: string[]; value: UiValue; refreshable?: boolean}[]
   ): void;
+  /** The value of the control at a path, when it says it can be read. */
+  readValue(path: string[]): UiValueSnapshot | null;
+  /** Gives the control at a path a value read from elsewhere, when it says it can take one. */
+  writeValue(path: string[], snapshot: UiValueSnapshot): boolean;
 }
 
 interface Options<T extends object, Key extends Extract<keyof T, string>> {
@@ -222,6 +221,11 @@ function defaultErrorPath(
   return withinScope ? segments : null;
 }
 
-function clone<T>(value: T): T {
-  return structuredClone(toRaw(value));
+/**
+ * A copy with no Vue proxies anywhere in it, not just at the top: a payload
+ * merged from Inertia's props, as the editor's deferred tabs are, holds
+ * reactive objects further down, which `structuredClone()` can't copy.
+ */
+function clone<T extends UiValue>(value: T): T {
+  return cloneRaw(value);
 }

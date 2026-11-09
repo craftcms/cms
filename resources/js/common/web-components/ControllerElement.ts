@@ -92,11 +92,19 @@ export abstract class ControllerElement<
     });
   }
 
+  /**
+   * Tear the controller down once the element has left the document. Moving the
+   * element (`before()`, `after()`, drag-sorting) disconnects and reconnects it
+   * within one DOM operation, so the check waits a microtask and keeps the
+   * controller when the element is back in the document by then.
+   */
   disconnectedCallback(): void {
-    if (this.#instance) {
-      this.#instance.destroy();
-      this.#instance = null;
-    }
+    queueMicrotask(() => {
+      if (this.#instance && !this.isConnected) {
+        this.#instance.destroy();
+        this.#instance = null;
+      }
+    });
   }
 
   /** Parse a JSON object attribute, returning `{}` when absent or invalid. */

@@ -13,7 +13,6 @@ use CraftCms\Cms\Console\Commands\Install\InstallCheckCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCommand;
 use CraftCms\Cms\Console\Commands\InvalidateTagsCommand;
 use CraftCms\Cms\Console\Commands\RouteCacheCommand;
-use CraftCms\Cms\Console\Commands\Setup\CloudCommand;
 use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
 use CraftCms\Cms\Console\Commands\Setup\PublishCommand;
 use CraftCms\Cms\Console\Commands\Setup\SetupCommand;
@@ -53,7 +52,6 @@ class ConsoleServiceProvider extends ServiceProvider
         WelcomeCommand::class,
         DatabaseCredentialsCommand::class,
         SetupCommand::class,
-        CloudCommand::class,
         PublishCommand::class,
 
         // Env

@@ -68,7 +68,7 @@
    — the default `craft-button` below, or whatever a consumer slots in via
    `#invoker` — is the *direct* child `craft-action-menu` assigns to its
    `invoker` slot. That's what lets the component's `id`/`aria-controls`/
-   `aria-haspopup`/`aria-expanded` wiring land on the real, focusable element
+   `aria-expanded` wiring land on the real, focusable element
    instead of an inert wrapper.
 
    The items are a different matter: they change, and they're rendered here

@@ -1,11 +1,14 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/field-group/field-group';
+  import '@craftcms/ui/components/spinner/spinner';
+  import {t} from '@craftcms/ui';
   import UiNodeList from './UiNodeList.vue';
   import {uiTabPanelId} from './runtime';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
   const props = defineProps<{
-    node: UiNodePayload<{label: string}>;
+    /** `deferred` when the server held its children back, to send once the page has loaded. */
+    node: UiNodePayload<{label: string; deferred?: boolean}>;
     values: UiPayload['values'];
     errors: UiPayload['errors'];
     touchedPaths: Set<string>;
@@ -13,6 +16,8 @@
     refreshable: boolean;
     initiallyHidden?: boolean;
     tabButtonId?: string;
+    /** Leaves the panel empty, until it's first shown. */
+    deferred?: boolean;
   }>();
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
@@ -34,7 +39,14 @@
     :data-ui-tab="node.uid"
     :data-layout-tab="node.uid"
   >
+    <div
+      v-if="!deferred && node.props.deferred"
+      class="flex justify-center py-lg"
+    >
+      <craft-spinner :label="t('Loading')" />
+    </div>
     <craft-field-group
+      v-else-if="!deferred"
       separated
       style="--c-field-group-separator-spacing: var(--cp-container-padding)"
     >

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
-use CraftCms\Cms\Cp\Html\ElementIndexHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Http\ViewModels\ContentIndexViewModel;
 use CraftCms\Cms\Site\Sites;
@@ -18,9 +17,8 @@ use Illuminate\Support\Collection;
  * site/status menus apply.
  *
  * This is the single implementation shared by the Inertia payload
- * ({@see ContentIndexViewModel}) and the server-rendered index shell
- * ({@see ElementIndexHtml}, used by the element-selector modal and the
- * remaining legacy screens), which had grown independent copies of all of it.
+ * ({@see ContentIndexViewModel}) and the Yii2 adapter's server-rendered legacy
+ * index, which had grown independent copies of all of it.
  *
  * Query building is {@see ElementIndexes}' job; this class never touches a
  * query.

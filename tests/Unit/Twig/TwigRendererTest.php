@@ -9,6 +9,7 @@ use CraftCms\Cms\View\Events\TemplateRendering;
 use CraftCms\Cms\View\TemplateEngine;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Twig\Extension\AbstractExtension;
@@ -286,6 +287,19 @@ describe('sandboxed rendering', function () {
 
     it('does not allow Facade calls in sandbox', function () {
         $this->manager->renderSandboxedString('{{ Config.get("app.name") }}');
+    })->throws(SecurityNotAllowedMethodError::class);
+
+    it('allows dates to be converted to strings in sandbox', function (string $template, string $expected) {
+        $date = Date::parse('2026-01-02 12:04:05', 'UTC');
+
+        expect($this->manager->renderSandboxedString($template, ['date' => $date]))->toBe($expected);
+    })->with([
+        'date filter' => ['{{ date|date("Y-m-d") }}', '2026-01-02'],
+        'output' => ['{{ date }}', '2026-01-02 12:04:05'],
+    ]);
+
+    it('does not allow other date methods in sandbox', function () {
+        $this->manager->renderSandboxedString('{{ date.addDay() }}', ['date' => now()]);
     })->throws(SecurityNotAllowedMethodError::class);
 
     it('does not allow the attribute() function in sandbox', function () {

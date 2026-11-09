@@ -18,28 +18,37 @@ use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\Support\Utils;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Concerns\BuildsQueries;
 use Illuminate\Database\MultipleRecordsFoundException;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Database\RecordsNotFoundException;
+use Illuminate\Pagination\Cursor;
+use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\LazyCollection;
+use Illuminate\Support\Reflector;
 use Illuminate\Support\Traits\ForwardsCalls;
 use InvalidArgumentException;
 use Override;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionProperty;
 use RuntimeException;
@@ -61,11 +70,10 @@ use Tpetry\QueryExpressions\Language\Alias;
  * @method static orderByDesc($column)
  * @method static reorder($column = null, $direction = 'asc')
  * @method static rightJoin($table, $first, $operator = null, $second = null)
- * @method static where($column, $operator = null, $value = null, $boolean = 'and')
  * @method static whereIn($column, $values, $boolean = 'and', $not = false)
- * @method static whereNot($column, $operator = null, $value = null, $boolean = 'and')
  * @method static whereNotIn($column, $values, $boolean = 'and')
  * @method static whereNotNull($columns, $boolean = 'and')
+ * @method static whereNested(Closure $callback, string $boolean = 'and')
  * @method static whereNotExists($callback, $boolean = 'and')
  * @method static whereNull($columns, $boolean = 'and', $not = false)
  *
@@ -108,13 +116,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      * The base query builder instance.
      */
     protected Builder $query;
-
-    /**
-     * All of the globally registered builder macros.
-     */
-    /** @var array<string, Closure> */
-    #[Override]
-    protected static $macros = [];
 
     /**
      * All of the locally registered builder macros.
@@ -160,7 +161,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         'getconnection',
         'getgrammar',
         'getrawbindings',
-        'implode',
         'insert',
         'insertgetid',
         'insertorignore',
@@ -175,7 +175,6 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         'sum',
         'tosql',
         'torawsql',
-        'value',
     ];
 
     /**
@@ -226,6 +225,46 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     private bool $elementQueryBeforeQueryCalled = false;
 
     private ?Builder $queryBeforePrepare = null;
+
+    /**
+     * @var bool Whether this is the copy of a query that one of its execution methods prepares and runs,
+     *           so the query itself stays unprepared and params set on it later still apply
+     *
+     * @see executeOnCopy()
+     */
+    private bool $isExecutionCopy = false;
+
+    /**
+     * @var bool Whether this query only provides the conditions for another query’s nested where clause,
+     *           so it leaves out the default site and archived conditions
+     *
+     * @see whereNestedElementQuery()
+     */
+    private bool $isNestedCondition = false;
+
+    /**
+     * @var bool Whether columns were added to the default select with addSelect() or its variants, so the
+     *           columns passed to get() don't apply, as in Laravel
+     */
+    private bool $addsSelect = false;
+
+    /**
+     * @var bool|null Whether the prepared query selects the default columns, rather than only the ones passed to select(),
+     *                or null until the select is resolved
+     *
+     * @see applySelectParams()
+     */
+    private ?bool $selectsDefaultColumns = null;
+
+    /**
+     * @var array<int, Expression|string> The columns the prepared query selects besides the default ones, such as
+     *                                    subqueries and columns added with addSelect(), which pluck() keeps when
+     *                                    they carry bindings or it plucks them by alias
+     *
+     * @see applySelectParams()
+     * @see pluck()
+     */
+    private array $selectedColumns = [];
 
     /** @var array<string,string|callable|array<array-key, mixed>>|null */
     private ?array $columnMapBeforePrepare = null;
@@ -294,6 +333,20 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 $this->columnMap[$column] ??= "$this->table.$column";
             }
         }
+
+        // The other columns the query selects by default, which several joined tables can share
+        $this->columnMap += [
+            'archived' => 'elements.archived',
+            'canonicalId' => 'elements.canonicalId',
+            'dateDeleted' => 'elements.dateDeleted',
+            'dateLastMerged' => 'elements.dateLastMerged',
+            'draftId' => 'elements.draftId',
+            'enabledForSite' => 'elements_sites.enabled',
+            'fieldLayoutId' => 'elements.fieldLayoutId',
+            'revisionId' => 'elements.revisionId',
+            'siteSettingsId' => 'elements_sites.id',
+            'uri' => 'elements_sites.uri',
+        ];
 
         $this->initTraits();
 
@@ -484,11 +537,69 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
+     * Get a single attribute’s value from the first result of the query.
+     *
+     * Like Eloquent, the value is read from the hydrated element, so custom fields return their normalized values.
+     * Use `pluck()` for raw column values.
+     */
+    public function value(string|Expression $column): mixed
+    {
+        $element = $this->first();
+
+        return $element === null ? null : $this->elementValue($element, $column);
+    }
+
+    /**
+     * Get a single attribute’s value from the first result of the query if it’s the sole matching element.
+     *
+     * @throws ElementNotFoundException<TElement>
+     * @throws MultipleRecordsFoundException
+     */
+    public function soleValue(string|Expression $column): mixed
+    {
+        return $this->elementValue($this->sole(), $column);
+    }
+
+    /**
+     * Get a single attribute’s value from the first result of the query or throw an exception.
+     *
+     * @throws ElementNotFoundException<TElement>
+     */
+    public function valueOrFail(string|Expression $column): mixed
+    {
+        return $this->elementValue($this->firstOrFail(), $column);
+    }
+
+    /**
+     * Reads an attribute from a result.
+     *
+     * @param  TElement|array<string, mixed>  $element
+     */
+    private function elementValue(ElementInterface|array $element, string|Expression $column): mixed
+    {
+        return data_get($element, $this->attributeName($column));
+    }
+
+    /**
+     * Returns the element attribute a column name refers to, dropping a table prefix such as `elements.`.
+     */
+    private function attributeName(string|Expression $column): string
+    {
+        $column = $column instanceof Expression ? (string) $column->getValue($this->query->getGrammar()) : $column;
+
+        return $this->isCustomFieldHandle(explode('.', $column, 2)[0]) ? $column : Str::afterLast($column, '.');
+    }
+
+    /**
      * @param  array<int, string>  $columns
      * @return TElement|array<string, mixed>|null
      */
     public function first($columns = ['*']): ElementInterface|array|null
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->first($columns));
+        }
+
         // Eagerly?
         $eagerResult = $this->eagerLoad(
             criteria: ['limit' => 1],
@@ -510,6 +621,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function get($columns = ['*']): ElementCollection|Collection
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->get($columns));
+        }
+
         $models = $this->getModels($columns);
 
         $results = $this->asArray
@@ -538,6 +653,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function getModels(array|string $columns = ['*']): array
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->getModels($columns));
+        }
+
         if (! is_null($result = $this->getResultOverride())) {
             if ($this->with) {
                 Elements::eagerLoadElements($this->elementType, $result, $this->with);
@@ -549,6 +668,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         if (($eagerResult = $this->eagerLoad(columns: $columns)) !== null) {
             return $eagerResult->all();
         }
+
+        $this->selectColumns($columns);
 
         try {
             $this->applyBeforeQueryCallbacks();
@@ -571,6 +692,18 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
+     * Selects the columns passed to an execution method, unless the query has its own select, as Eloquent does.
+     *
+     * @param  array<int, string|Expression>|string|Expression  $columns
+     */
+    private function selectColumns(array|string|Expression $columns): void
+    {
+        if ($columns !== ['*'] && $columns !== '*' && ! $this->addsSelect && in_array('**', $this->query->columns ?? [], true)) {
+            $this->query->select($columns);
+        }
+    }
+
+    /**
      * Execute the query as a "select" statement.
      *
      * @param  array<int, string>|string  $columns
@@ -590,13 +723,21 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         return $this->first($columns);
     }
 
-    /** @return Collection<array-key, mixed> */
-    public function pluck(string $column, ?string $key = null): Collection
+    /**
+     * Get a collection of a column’s raw values, optionally keyed by another column’s.
+     *
+     * Columns can be custom field handles and other mapped names, such as `id` or `dateCreated`.
+     *
+     * @return Collection<array-key, mixed>
+     */
+    public function pluck(string|Expression $column, string|Expression|null $key = null): Collection
     {
-        $column = $this->columnMap[$column] ?? $column;
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->pluck($column, $key));
+        }
 
         if (! is_null($result = $this->getResultOverride())) {
-            return collect($result)->pluck($column, $key);
+            return collect($result)->pluck($this->attributeName($column), $key === null ? null : $this->attributeName($key));
         }
 
         try {
@@ -605,18 +746,100 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return new Collection;
         }
 
-        $column = $this->columnMap[$column] ?? $column;
+        // Select only the plucked columns, the selected expressions such as subqueries, and any added column the plucked
+        // ones or the orders name by alias, unless the query selects its own columns
+        $query = clone $this->query;
+        $aliases = array_filter([$column, $key, ...array_column($query->orders ?? [], 'column')], is_string(...));
+        $query->columns = $this->selectsDefaultColumns ? array_values(array_filter(
+            $this->selectedColumns,
+            fn (mixed $selected) => ($selected instanceof Expression && ! $selected instanceof Alias) || array_any(
+                $aliases,
+                fn (string $name) => $this->columnHasAlias($query, $selected, $name),
+            ),
+        )) : $query->columns;
+        $valueColumn = $this->pluckColumn($query, $column, 'pluckValue');
+        $keyColumn = $key === null ? null : $this->pluckColumn($query, $key, 'pluckKey');
+
+        $pluck = fn () => $query->pluck($valueColumn, $keyColumn);
 
         if ((int) $this->queryCacheDuration >= 0) {
             return DependencyCache::remember(
                 key: $this->queryCacheKey($this, 'pluck', [$column, $key]),
                 ttl: $this->queryCacheDuration,
-                callback: fn () => $this->query->pluck($column, $key),
+                callback: $pluck,
                 dependency: $this->getCacheDependency(),
             );
         }
 
-        return $this->query->pluck($column, $key);
+        return $pluck();
+    }
+
+    /**
+     * Concatenate a column’s raw values as a string.
+     */
+    public function implode(string|Expression $column, string $glue = ''): string
+    {
+        return $this->pluck($column)->implode($glue);
+    }
+
+    /**
+     * Adds a column to a pluck query’s select under the given alias and returns the name to read it by.
+     *
+     * A column the query’s own select already includes is read by its name, as in Laravel.
+     */
+    private function pluckColumn(Builder $query, string|Expression $column, string $alias): string
+    {
+        if (is_string($column) && (
+            (! $this->selectsDefaultColumns && ! $this->hasColumnMapping($column)) ||
+            $this->selectsAlias($query, $column)
+        )) {
+            return $column;
+        }
+
+        $query->columns[] = new Alias($this->resolveColumn($column), $alias);
+
+        return $alias;
+    }
+
+    /**
+     * Returns whether a query selects a column under the given alias, such as one added with `selectSub()`.
+     */
+    private function selectsAlias(Builder $query, string $alias): bool
+    {
+        return array_any($query->columns ?? [], fn (mixed $column) => $this->columnHasAlias($query, $column, $alias));
+    }
+
+    /**
+     * Returns whether a selected column has the given alias.
+     */
+    private function columnHasAlias(Builder $query, mixed $column, string $alias): bool
+    {
+        $pattern = sprintf('/\\sas\\s+(%s|%s)$/i', preg_quote($query->getGrammar()->wrap($alias), '/'), preg_quote($alias, '/'));
+
+        return preg_match(
+            $pattern,
+            trim($column instanceof Expression ? (string) $column->getValue($query->getGrammar()) : (string) $column),
+        ) === 1;
+    }
+
+    /**
+     * Resolves a column name through the column map, so custom field handles and names like `id` refer to their columns.
+     *
+     * A custom field used in several field layouts resolves to the first of its instances’ values that isn’t null.
+     */
+    private function resolveColumn(string|Expression $column): string|Expression
+    {
+        if (! is_string($column) || ! $this->hasColumnMapping($column)) {
+            return $column;
+        }
+
+        $column = $this->resolveColumnMapping($column);
+
+        if (! is_array($column)) {
+            return $column;
+        }
+
+        return count($column) === 1 ? reset($column) : new Coalesce($column);
     }
 
     /**
@@ -633,6 +856,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function paginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null, $total = null): LengthAwarePaginator
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->paginate($perPage, $columns, $pageName, $page, $total));
+        }
+
         $page = $page ?: Paginator::resolveCurrentPage($pageName);
 
         $total = value($total) ?? $this->getCountForPagination();
@@ -660,6 +887,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function simplePaginate($perPage = 15, $columns = ['*'], $pageName = 'page', $page = null)
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->simplePaginate($perPage, $columns, $pageName, $page));
+        }
+
         $page = $page ?: Paginator::resolveCurrentPage($pageName);
 
         // Next we will set the limit and offset for this query so that when we get the
@@ -673,9 +904,183 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         ]);
     }
 
+    /**
+     * Paginate the given query into a cursor paginator.
+     *
+     * The query must be ordered by columns, not by expressions such as a custom field or `fixedOrder`.
+     *
+     * @param  int  $perPage
+     * @param  array<int, string>|string  $columns
+     * @param  string  $cursorName
+     * @param  Cursor|string|null  $cursor
+     * @return CursorPaginator<int, TElement|array<string, mixed>>
+     */
+    public function cursorPaginate($perPage = 15, $columns = ['*'], $cursorName = 'cursor', $cursor = null): CursorPaginator
+    {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->cursorPaginate($perPage, $columns, $cursorName, $cursor));
+        }
+
+        $this->selectColumns($columns);
+
+        // Prepare the query first, so the orders cursor pagination reads are the resolved ones
+        try {
+            $this->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            return $this->cursorPaginator(new Collection, $perPage, null, [
+                'path' => Paginator::resolveCurrentPath(),
+                'cursorName' => $cursorName,
+            ]);
+        }
+
+        return $this->paginateUsingCursor($perPage, $columns, $cursorName, $cursor);
+    }
+
+    /**
+     * @param  bool  $shouldReverse
+     * @return Collection<int, array{column: string, direction: string}>
+     */
+    protected function ensureOrderForCursorPagination($shouldReverse = false): Collection
+    {
+        $reverse = fn (?array $orders) => array_map(fn (array $order) => isset($order['direction'])
+            ? [...$order, 'direction' => $order['direction'] === 'asc' ? 'desc' : 'asc']
+            : $order, $orders ?? []);
+
+        if ($shouldReverse) {
+            $this->query->orders = $reverse($this->query->orders);
+            $this->query->unionOrders = $reverse($this->query->unionOrders);
+        }
+
+        // A unioned query is ordered by the combined result’s columns, as in Laravel
+        $isUnion = ! empty($this->query->unionOrders);
+
+        return collect($isUnion ? $this->query->unionOrders : $this->query->orders)
+            ->map(function (array $order) use ($isUnion) {
+                $column = $order['column'] ?? null;
+
+                // Laravel compares unioned queries’ cursors by column name, so they can’t be ordered by a custom field
+                if (! isset($order['direction']) || ! is_string($column) || ($isUnion && $this->resolveColumn($column) instanceof Expression)) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Cursor pagination needs the query to be ordered by columns, but it’s ordered by `%s`.',
+                        $column instanceof Expression ? $column->getValue($this->query->getGrammar()) : ($order['sql'] ?? $column),
+                    ));
+                }
+
+                return ['column' => $column, 'direction' => (string) $order['direction']];
+            })
+            ->values();
+    }
+
+    /**
+     * Returns the column a cursor parameter refers to, so an order by a select alias compares against what the alias
+     * selects, as Laravel’s does, and an order by a unioned query’s column compares against that column in each of
+     * its queries. Other orders are already resolved to their columns.
+     *
+     * @param  mixed  $builder
+     */
+    protected function getOriginalColumnNameForCursorPagination($builder, string $parameter): string
+    {
+        $grammar = $this->query->getGrammar();
+
+        foreach (($this->queryBeforePrepare ?? $this->query)->columns ?? [] as $column) {
+            $isExpression = $column instanceof Expression;
+            $sql = $isExpression ? (string) $column->getValue($grammar) : $column;
+
+            if (! is_string($sql) || ! preg_match('/^(.+)\s+as\s+(.+)$/is', trim($sql), $match) || trim($match[2], " \t\n\"`[]") !== $parameter) {
+                continue;
+            }
+
+            // Raw SQL is used as written. The parentheses make Laravel compare against it as an expression, rather
+            // than quote it as a column name, which would quote and prefix its identifiers again.
+            if ($isExpression) {
+                return '('.trim($match[1]).')';
+            }
+
+            $column = $this->resolveColumn(trim($match[1]));
+
+            return $column instanceof Expression ? (string) $column->getValue($grammar) : $column;
+        }
+
+        if (! empty($this->query->unionOrders)) {
+            $column = $this->resolveColumn($parameter);
+
+            return $column instanceof Expression ? $parameter : $column;
+        }
+
+        return $parameter;
+    }
+
+    /**
+     * Get the queries this query is unioned with, as Eloquent’s `getUnionBuilders()` does.
+     *
+     * @return Collection<int, mixed>
+     */
+    protected function getUnionBuilders(): Collection
+    {
+        return collect($this->query->unions ?? [])->pluck('query');
+    }
+
+    /**
+     * @param  Collection<int, TElement|array<string, mixed>>  $items
+     * @param  int  $perPage
+     * @param  Cursor|null  $cursor
+     * @param  array<string, mixed>  $options
+     * @return CursorPaginator<int, TElement|array<string, mixed>>
+     */
+    protected function cursorPaginator($items, $perPage, $cursor, $options): CursorPaginator
+    {
+        return new ElementCursorPaginator($items, $perPage, $cursor, $options);
+    }
+
+    /**
+     * Get a base query builder with this query’s params applied, as Eloquent’s `toBase()` does.
+     *
+     * This query isn’t changed. If a param means the query can’t match anything, the builder matches nothing.
+     */
+    public function toBase(): Builder
+    {
+        $query = clone $this;
+
+        try {
+            $query->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            // Resolve the select if the query didn’t get that far, so its columns aren’t ambiguous
+            if ($query->selectsDefaultColumns === null) {
+                $query->applySelectParams();
+            }
+
+            // Drop the wheres first, so one joined with OR can’t still match
+            $query->query->wheres = [];
+            $query->query->bindings['where'] = [];
+            $query->query->reorder()->whereRaw('1 = 0');
+        }
+
+        return $query->query;
+    }
+
+    /**
+     * Replaces element queries passed to the base query builder with their base query, so they can be used
+     * as subqueries, as Eloquent queries can.
+     *
+     * @param  array<array-key, mixed>  $parameters
+     * @return array<array-key, mixed>
+     */
+    private function toBaseSubqueries(array $parameters): array
+    {
+        return array_map(fn (mixed $parameter) => match (true) {
+            $parameter instanceof self => $parameter->toBase(),
+            is_array($parameter) => array_map(fn (mixed $value) => $value instanceof self ? $value->toBase() : $value, $parameter),
+            default => $parameter,
+        }, $parameters);
+    }
+
     /** @param array<int, string>|string $columns */
     public function count($columns = '*'): int
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->count($columns));
+        }
+
         if (! $this->getOffset() && ! $this->getLimit() && ! is_null($result = $this->getResultOverride())) {
             return count($result);
         }
@@ -687,6 +1092,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         $eagerLoadedCount = $this->eagerLoad(count: true, columns: $columns);
+        $cacheKeyColumns = $columns;
+        $columns = is_array($columns) ? array_map($this->resolveColumn(...), $columns) : $this->resolveColumn($columns);
 
         if ($eagerLoadedCount !== null) {
             return $this->applyAfterQueryCallbacks($eagerLoadedCount);
@@ -694,7 +1101,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
         if ((int) $this->queryCacheDuration >= 0) {
             $result = DependencyCache::remember(
-                key: $this->queryCacheKey($this, 'count', $columns),
+                key: $this->queryCacheKey($this, 'count', $cacheKeyColumns),
                 ttl: $this->queryCacheDuration,
                 callback: fn () => $this->query->count($columns),
                 dependency: $this->getCacheDependency(),
@@ -737,6 +1144,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     public function exists(): bool
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->exists());
+        }
+
         try {
             $this->applyBeforeQueryCallbacks();
         } catch (QueryAbortedException) {
@@ -813,6 +1224,10 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
      */
     public function cursor(): LazyCollection
     {
+        if (! $this->isExecutionCopy) {
+            return $this->executeOnCopy(fn (self $query) => $query->cursor());
+        }
+
         try {
             $this->applyBeforeQueryCallbacks();
         } catch (QueryAbortedException) {
@@ -828,6 +1243,16 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
             return $this->applyAfterQueryCallbacks(new ElementCollection([$model]))->first();
         })->reject(fn ($model) => is_null($model));
+    }
+
+    /**
+     * Get the default key name for `chunkById()` and `lazyById()`, as Eloquent uses the model’s key name.
+     *
+     * It resolves to `elements.id` in the query and is read back from each element or row as `id`.
+     */
+    protected function defaultKeyName(): string
+    {
+        return 'id';
     }
 
     /**
@@ -903,6 +1328,26 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $this->forwardCallTo($this->query, 'orderBy', [$column, $direction]);
 
         return $this;
+    }
+
+    /**
+     * Order the query by a date column, newest first, as Eloquent orders by the model’s creation date by default.
+     *
+     * @return self<TElement>
+     */
+    public function latest(string|Expression|null $column = null): self
+    {
+        return $this->orderBy($column ?? 'dateCreated', 'desc');
+    }
+
+    /**
+     * Order the query by a date column, oldest first, as Eloquent orders by the model’s creation date by default.
+     *
+     * @return self<TElement>
+     */
+    public function oldest(string|Expression|null $column = null): self
+    {
+        return $this->orderBy($column ?? 'dateCreated');
     }
 
     private function isDeprecatedOrderByString(string $columns): bool
@@ -1029,21 +1474,21 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
-     * Get the given global macro by name.
+     * Get the given global macro by name, as registered on this class or the closest parent class.
      */
-    public static function getGlobalMacro(string $name): Closure
+    public static function getGlobalMacro(string $name): object|callable|null
     {
-        return Arr::get(static::$macros, $name);
+        return static::findMacro($name);
     }
 
     /**
-     * Checks if a global macro is registered.
+     * Checks if a global macro is registered on this class or a parent class.
      *
      * @param  string  $name
      */
     public static function hasGlobalMacro($name): bool
     {
-        return isset(static::$macros[$name]);
+        return static::hasMacro($name);
     }
 
     /**
@@ -1101,6 +1546,32 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     }
 
     /**
+     * Resolves the columns passed to an aggregate method, such as `sum('price')`, through the column map.
+     *
+     * @param  array<int, mixed>  $parameters
+     * @return array<int, mixed>
+     */
+    private function resolveAggregateColumns(string $method, array $parameters): array
+    {
+        $index = match ($method) {
+            'average', 'avg', 'max', 'min', 'sum' => 0,
+            'aggregate', 'numericaggregate' => 1,
+            default => null,
+        };
+
+        if ($index === null || ! isset($parameters[$index])) {
+            return $parameters;
+        }
+
+        $columns = $parameters[$index];
+        $parameters[$index] = is_array($columns)
+            ? array_map(fn ($column) => is_string($column) || $column instanceof Expression ? $this->resolveColumn($column) : $column, $columns)
+            : (is_string($columns) || $columns instanceof Expression ? $this->resolveColumn($columns) : $columns);
+
+        return $parameters;
+    }
+
+    /**
      * Dynamically handle calls into the query instance.
      *
      * @param  string  $method
@@ -1127,8 +1598,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->localMacros[$method](...$parameters);
         }
 
-        if (static::hasGlobalMacro($method)) {
-            $callable = static::$macros[$method];
+        if (($callable = static::findMacro($method)) !== null) {
 
             if ($callable instanceof Closure) {
                 $callable = $callable->bindTo($this, static::class);
@@ -1138,15 +1608,22 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         }
 
         if (in_array(strtolower($method), $this->passthru)) {
+            if (! $this->isExecutionCopy) {
+                return $this->executeOnCopy(fn (self $query) => $query->__call($method, $parameters));
+            }
+
             try {
                 $this->applyBeforeQueryCallbacks();
             } catch (QueryAbortedException) {
                 return null;
             }
 
+            $cacheKeyParameters = $parameters;
+            $parameters = $this->resolveAggregateColumns(strtolower($method), $this->toBaseSubqueries($parameters));
+
             if ((int) $this->queryCacheDuration >= 0) {
                 return DependencyCache::remember(
-                    key: $this->queryCacheKey($this, strtolower($method), $parameters),
+                    key: $this->queryCacheKey($this, strtolower($method), $cacheKeyParameters),
                     ttl: $this->queryCacheDuration,
                     callback: fn () => $this->getQuery()->{$method}(...$parameters),
                     dependency: $this->getCacheDependency(),
@@ -1156,7 +1633,11 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             return $this->getQuery()->{$method}(...$parameters);
         }
 
-        $this->forwardCallTo($this->query, $method, $parameters);
+        $this->forwardCallTo($this->query, $method, $this->toBaseSubqueries($parameters));
+
+        if (in_array(strtolower($method), ['addselect', 'selectraw', 'selectsub', 'selectexpression'], true)) {
+            $this->addsSelect = true;
+        }
 
         return $this;
     }
@@ -1172,23 +1653,17 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     #[Override]
     public static function __callStatic($method, $parameters): mixed
     {
-        if ($method === 'macro') {
-            static::$macros[$parameters[0]] = $parameters[1];
-
-            return null;
-        }
-
         if ($method === 'mixin') {
             static::registerMixin($parameters[0], $parameters[1] ?? true);
 
             return null;
         }
 
-        if (! static::hasGlobalMacro($method)) {
+        $callable = static::findMacro($method);
+
+        if ($callable === null) {
             static::throwBadMethodCallException($method);
         }
-
-        $callable = static::$macros[$method];
 
         if ($callable instanceof Closure) {
             $callable = $callable->bindTo(null, static::class);
@@ -1211,6 +1686,171 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 static::macro($method->name, $method->invoke($mixin));
             }
         }
+    }
+
+    /**
+     * Add a basic where clause to the query.
+     *
+     * Given a closure, the closure receives a new element query of the same type, so its params can be used
+     * in a nested condition, as Eloquent passes a model query. A closure whose first parameter is typed as
+     * the base query builder receives one instead.
+     *
+     * Params apply when the query is prepared, like Eloquent’s global scopes, so in a closure they’re always
+     * combined with AND, after the closure’s own conditions, even when an `orWhere()` follows them. To match
+     * either of two sets of params, give each its own closure:
+     * `->where(fn ($q) => $q->section('news'))->orWhere(fn ($q) => $q->featured(true))`.
+     *
+     * @param  Closure|string|array<array-key, mixed>|Expression  $column
+     */
+    public function where($column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): static
+    {
+        if ($column instanceof Closure && $operator === null) {
+            return $this->whereNestedElementQuery($column, $boolean);
+        }
+
+        $this->query->where(...$this->toBaseSubqueries(func_get_args()));
+
+        return $this;
+    }
+
+    /**
+     * Add an "or where" clause to the query.
+     *
+     * @param  Closure|string|array<array-key, mixed>|Expression  $column
+     */
+    public function orWhere($column, mixed $operator = null, mixed $value = null): static
+    {
+        if ($column instanceof Closure && $operator === null) {
+            return $this->whereNestedElementQuery($column, 'or');
+        }
+
+        $this->query->orWhere(...$this->toBaseSubqueries(func_get_args()));
+
+        return $this;
+    }
+
+    /**
+     * Add a "where not" clause to the query.
+     *
+     * @param  Closure|string|array<array-key, mixed>|Expression  $column
+     */
+    public function whereNot($column, mixed $operator = null, mixed $value = null, string $boolean = 'and'): static
+    {
+        if ($column instanceof Closure && $operator === null) {
+            return $this->whereNestedElementQuery($column, $boolean.' not');
+        }
+
+        $this->query->whereNot(...$this->toBaseSubqueries(func_get_args()));
+
+        return $this;
+    }
+
+    /**
+     * Add an "or where not" clause to the query.
+     *
+     * @param  Closure|string|array<array-key, mixed>|Expression  $column
+     */
+    public function orWhereNot($column, mixed $operator = null, mixed $value = null): static
+    {
+        if ($column instanceof Closure && $operator === null) {
+            return $this->whereNestedElementQuery($column, 'or not');
+        }
+
+        $this->query->orWhereNot(...$this->toBaseSubqueries(func_get_args()));
+
+        return $this;
+    }
+
+    /**
+     * Adds the conditions a closure sets on a new element query of the same type as a nested where clause.
+     *
+     * Like Eloquent’s nested queries, which leave out global scopes, the new query starts without the
+     * default site, status, draft, revision and trashed conditions, which this query applies once.
+     *
+     * A closure whose first parameter can’t accept an element query, such as one typed as the base
+     * query builder, gets a nested base query builder instead.
+     *
+     * @param  Closure(static): mixed|Closure(Builder): mixed  $callback
+     */
+    private function whereNestedElementQuery(Closure $callback, string $boolean): static
+    {
+        $parameter = new ReflectionFunction($callback)->getParameters()[0] ?? null;
+        $types = $parameter ? Reflector::getParameterClassNames($parameter) : [];
+
+        if ($types !== [] && ! array_any($types, fn (string $type) => $this instanceof $type)) {
+            $this->query->whereNested($callback, $boolean);
+
+            return $this;
+        }
+
+        $baseline = $this->newNestedElementQuery();
+        $nested = $this->newNestedElementQuery();
+        $callback($nested);
+
+        try {
+            $nested->applyBeforeQueryCallbacks();
+        } catch (QueryAbortedException) {
+            $this->query->whereRaw('1 = 0', boolean: $boolean);
+
+            return $this;
+        }
+
+        $baseline->applyBeforeQueryCallbacks();
+        // The nested query’s wheres are all that’s kept, so it can’t add a join or change one’s type or conditions
+        $joinKey = function (JoinClause $join): string {
+            $query = $this->query->newQuery()->from('nested');
+            $query->joins = [$join];
+
+            return $query->toSql().' '.Json::encode($join->getBindings());
+        };
+        $baselineJoins = array_map($joinKey, $baseline->query->joins ?? []);
+
+        foreach ($nested->query->joins ?? [] as $join) {
+            if (! in_array($joinKey($join), $baselineJoins, true)) {
+                throw new InvalidArgumentException(sprintf(
+                    'A param set in a nested where() closure joins `%s`, which a nested condition can’t add or change. Set that param on the outer query instead.',
+                    $join->table instanceof Expression ? $join->table->getValue($this->query->getGrammar()) : $join->table,
+                ));
+            }
+        }
+
+        if ($nested->query->wheres !== []) {
+            $this->query->addNestedWhereQuery($nested->query, $boolean);
+        }
+
+        return $this;
+    }
+
+    private function newNestedElementQuery(): static
+    {
+        /** @var static $query */
+        $query = $this->elementType::find();
+        $query->isNestedCondition = true;
+
+        return $query
+            ->site(null)
+            ->status(null)
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->revisions(null)
+            ->trashed(null);
+    }
+
+    /**
+     * Runs an execution method on a copy of this query, which the method prepares, so this query stays unprepared
+     * and params set on it afterwards still apply, as Eloquent applies its scopes to a copy of its query.
+     *
+     * @template TResult
+     *
+     * @param  Closure(static): TResult  $callback
+     * @return TResult
+     */
+    private function executeOnCopy(Closure $callback): mixed
+    {
+        $copy = clone $this;
+        $copy->isExecutionCopy = true;
+
+        return $callback($copy);
     }
 
     public function clone(): static
@@ -1247,12 +1887,15 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 ...$beforeQueryCallbacks,
             ];
             $this->elementQueryBeforeQueryCalled = false;
+            $this->selectsDefaultColumns = null;
             $this->queryBeforePrepare = null;
             $this->columnMapBeforePrepare = null;
             $this->beforeQueryCallbacksBeforePrepare = null;
         } else {
             $this->query = clone $this->query;
         }
+
+        $this->isExecutionCopy = false;
 
         foreach ($this->onCloneCallbacks as $onCloneCallback) {
             $onCloneCallback($this);
@@ -1278,6 +1921,8 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
             $this->beforeQueryCallbacksBeforePrepare = $this->beforeQueryCallbacks;
         }
 
+        $originalWhereCount = count($this->query->wheres);
+
         foreach ($this->beforeQueryCallbacks as $i => $callback) {
             $callback($this);
 
@@ -1287,6 +1932,116 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $this->beforeQueryCallbacks = [];
 
         $this->elementQueryBeforeQuery();
+
+        $this->query->wheres = [
+            ...$this->resolveWhereColumns(array_slice($this->query->wheres, 0, $originalWhereCount)),
+            ...array_slice($this->query->wheres, $originalWhereCount),
+        ];
+
+        if (count($this->query->wheres) > $originalWhereCount) {
+            $this->addNewWheresWithinGroup($originalWhereCount);
+        }
+
+        $this->convertDateBindingsToUtc();
+    }
+
+    /**
+     * Resolves the columns in where clauses through the column map, so they can name custom fields
+     * and columns that several joined tables share, as orderBy() and select() can.
+     *
+     * Subqueries select from their own tables, and Laravel’s JSON where clauses need real columns,
+     * so neither is resolved.
+     *
+     * @param  array<int, array<string, mixed>>  $wheres
+     * @return array<int, array<string, mixed>>
+     */
+    private function resolveWhereColumns(array $wheres): array
+    {
+        return array_map(function (array $where) {
+            $type = $where['type'] ?? '';
+
+            if ($type === 'Nested') {
+                $where['query'] = clone $where['query'];
+                $where['query']->wheres = $this->resolveWhereColumns($where['query']->wheres);
+
+                return $where;
+            }
+
+            if (str_starts_with($type, 'Json') || $type === 'Fulltext') {
+                return $where;
+            }
+
+            foreach (['column', 'first', 'second'] as $key) {
+                if (isset($where[$key]) && (is_string($where[$key]) || $where[$key] instanceof Expression)) {
+                    $where[$key] = $this->resolveColumn($where[$key]);
+                }
+            }
+
+            // Laravel’s MySQL grammar mistakes a JSON extraction in a null check for a JSON path, so compile it as raw SQL
+            if (in_array($type, ['Null', 'NotNull'], true) && $where['column'] instanceof Expression) {
+                return [
+                    'type' => 'raw',
+                    'sql' => $where['column']->getValue($this->query->getGrammar()).($type === 'Null' ? ' is null' : ' is not null'),
+                    'boolean' => $where['boolean'],
+                ];
+            }
+
+            if ($type === 'RowValues') {
+                $where['columns'] = array_map($this->resolveColumn(...), $where['columns']);
+            }
+
+            return $where;
+        }, $wheres);
+    }
+
+    /**
+     * Converts dates bound to the query to UTC, which is how Craft stores them.
+     *
+     * Laravel binds a date in its own time zone, which is the system time zone,
+     * so `where('postDate', '<=', now())` would otherwise compare against the wrong time.
+     */
+    private function convertDateBindingsToUtc(): void
+    {
+        foreach ($this->query->bindings as $type => $bindings) {
+            foreach ($bindings as $i => $binding) {
+                if ($binding instanceof DateTimeInterface) {
+                    $this->query->bindings[$type][$i] = Query::prepareDateForDb($binding);
+                }
+            }
+        }
+    }
+
+    /**
+     * Groups the conditions added before the query was prepared apart from the ones its params added,
+     * so an `orWhere()` can't bypass the element query's own conditions.
+     *
+     * @see \Illuminate\Database\Eloquent\Builder::addNewWheresWithinGroup()
+     */
+    private function addNewWheresWithinGroup(int $originalWhereCount): void
+    {
+        $allWheres = $this->query->wheres;
+
+        $this->query->wheres = [];
+
+        $this->groupWhereSlice(array_slice($allWheres, 0, $originalWhereCount));
+        $this->groupWhereSlice(array_slice($allWheres, $originalWhereCount));
+    }
+
+    /** @param array<int, array<string, mixed>> $whereSlice */
+    private function groupWhereSlice(array $whereSlice): void
+    {
+        $booleans = array_column($whereSlice, 'boolean');
+
+        if (! array_any($booleans, fn (string $boolean) => str_contains($boolean, 'or'))) {
+            $this->query->wheres = [...$this->query->wheres, ...$whereSlice];
+
+            return;
+        }
+
+        $group = $this->query->forNestedWhere();
+        $group->wheres = $whereSlice;
+
+        $this->query->wheres[] = ['type' => 'Nested', 'query' => $group, 'boolean' => str_replace(' not', '', $booleans[0])];
     }
 
     protected function elementQueryBeforeQuery(): void
@@ -1300,7 +2055,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
         $this->applySelectParams();
 
         if ($this->query->groups) {
-            $this->query->groups = array_map($this->sqlColumn(...), $this->query->groups);
+            $this->query->groups = array_map(fn ($column) => $this->resolveColumn($this->sqlColumn($column)), $this->query->groups);
         }
 
         // If the query isn't sourced from a concrete element table, explicitly filter by element type.
@@ -1384,28 +2139,18 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
                 continue;
             }
 
-            $alias ??= $column;
-
             if ($column === '**') {
                 $includeDefaults = true;
+            } elseif ($alias === null && str_ends_with($column, '*')) {
+                $select[] = $this->resolveColumn($column);
             } else {
-                // Is this a mapped column name?
-                if (is_string($column) && isset($this->columnMap[$column])) {
-                    $column = $this->resolveColumnMapping($column);
-
-                    // Completely ditch the mapped name if instantiated elements are going to be returned
-                    if (! $this->asArray && is_string($column)) {
-                        $alias = $column;
-                    }
-                }
-
-                if (is_array($column)) {
-                    $select[] = new Alias(new Coalesce($column), $alias);
-                } else {
-                    $select[] = new Alias($column, $alias);
-                }
+                // Name the column as SQL would, without its table
+                $select[] = new Alias($this->resolveColumn($column), $alias ?? Str::afterLast($column, '.'));
             }
         }
+
+        $this->selectsDefaultColumns = $includeDefaults;
+        $this->selectedColumns = $select;
 
         // Is there still a ** placeholder param?
         if (! $includeDefaults) {
@@ -1445,7 +2190,7 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
     /** @return string|array<array-key, mixed> */
     private function resolveColumnMapping(string $key): string|array
     {
-        if (! isset($this->columnMap[$key])) {
+        if (! $this->hasColumnMapping($key)) {
             throw new InvalidArgumentException("Invalid column map key: $key");
         }
 

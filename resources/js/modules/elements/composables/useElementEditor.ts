@@ -14,7 +14,17 @@ import {
   t,
   type ButtonVariant,
 } from '@craftcms/ui';
-import {computed, nextTick, onBeforeUnmount, ref, shallowRef, watch} from 'vue';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue';
+import {onBroadcast} from '@/common/craft/broadcast';
+import {refreshPreviews} from '@/modules/elements/live-preview/previews';
 import {
   useScreenPageProps,
   type ScreenPageProps,
@@ -34,6 +44,7 @@ import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
 import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {attach} from '@actions/ReleasesController';
+import {showError, showNotice, showSuccess} from '@/modules/messages/messages';
 
 export interface ElementEditFormData {
   typeId?: string | number | null;
@@ -109,6 +120,45 @@ export interface ElementContextMenuItem {
   description?: string;
   href?: string;
   selected?: boolean;
+  /** The Compare screen comparing this draft or revision with what it was based on. */
+  compareHref?: string | null;
+}
+
+/**
+ * Fills in the tabs `ui` deferred with the ones the page requested once it
+ * loaded. Until they arrive, the tabs stay placeholders.
+ */
+function withDeferredTabs(
+  ui: UiPayload | null,
+  deferred: UiPayload | null | undefined
+): UiPayload | null {
+  if (!ui || !deferred) {
+    return ui;
+  }
+
+  const filled = new Map(deferred.nodes.map((node) => [node.uid, node]));
+
+  return {
+    ...ui,
+    nodes: ui.nodes.map((node) =>
+      node.props.deferred ? (filled.get(node.uid) ?? node) : node
+    ),
+    values: mergeValues(ui.values, deferred.values),
+  };
+}
+
+function mergeValues(target: UiValues, source: UiValues): UiValues {
+  const merged: UiValues = {...target};
+
+  for (const [key, value] of Object.entries(source)) {
+    const current = merged[key];
+    merged[key] =
+      isRecord(current) && isRecord(value)
+        ? mergeValues(current, value)
+        : (current ?? value);
+  }
+
+  return merged;
 }
 
 /** The shared payload every {@link ElementEditViewModel} emits. */
@@ -128,6 +178,11 @@ export interface ElementEditPayload {
   crumbs: Array<{label: string; url?: string}>;
   readOnly: boolean;
   ui: UiPayload | null;
+  /**
+   * The tabs `ui` holds back as `deferred` placeholders, which Inertia
+   * requests once the page has loaded. Never sent to slideouts.
+   */
+  deferredTabs?: UiPayload | null;
   sidebarUi: UiPayload | null;
   metadataHtml: string | null;
   /** The element's status badge. `null` for element types without statuses. */
@@ -152,6 +207,8 @@ export interface ElementEditPayload {
   notice: string | null;
   mergeNotice: string | null;
   canDiscardDraft: boolean;
+  /** The Compare screen comparing this version with what it was based on, when there's anything to compare. */
+  compareChangesUrl?: string | null;
   actionMenu: Array<ElementActionMenuItem>;
   previewTargets: Array<ElementPreviewTarget>;
   /** What Live Preview needs; `null` when the element has no preview targets. */
@@ -336,7 +393,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   // address) receives its own UI payload. Until it does, the block has
   // nothing to render but a spinner.
   const savedUi = shallowRef<UiPayload | null>(null);
-  const uiPayload = computed(() => savedUi.value ?? props.ui);
+  const uiPayload = computed(
+    () => savedUi.value ?? withDeferredTabs(props.ui, props.deferredTabs)
+  );
   const sidebarPayload = computed(() => props.sidebarUi);
   const form = useForm<ElementEditFormData>({});
   let refreshGeneration = 0;
@@ -475,11 +534,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     updatedTimestamps: props.updatedTimestamps,
   });
 
-  useEventListener(
-    () => window.Craft?.broadcaster,
-    'message',
-    (event: MessageEvent) => {
-      const data = event.data;
+  // Other tabs that reorder these nested elements
+  onScopeDispose(
+    onBroadcast('reorderNestedElements', (data: any) => {
       const draftId = autosave.draftId.value ?? props.draftId;
       if (
         data.event === 'reorderNestedElements' &&
@@ -501,7 +558,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
           router.reload();
         }
       }
-    }
+    })
   );
 
   // Applying a draft consumes it, and Inertia preserves this component across
@@ -570,9 +627,20 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   // itself, which Inertia replaces on every visit and the slideout store
   // reassigns on every panel load — `props` here is the merged view, so
   // watching that would see the overlay's own writes.
+  //
+  // The deferred tabs arriving isn't a newer payload: the partial reload that
+  // brings them leaves `ui` as it was, and dropping what autosave stashed then
+  // would discard edits made while they loaded.
   watch(
     () => pageProps(),
-    () => {
+    (current, previous) => {
+      if (
+        current.ui === previous.ui &&
+        current.deferredTabs !== previous.deferredTabs
+      ) {
+        return;
+      }
+
       invalidateUiRefreshes();
       draftElementIds.clear();
       savedUi.value = null;
@@ -810,9 +878,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
       return true;
     } catch (error) {
-      window.Craft?.cp?.displayError(
-        error instanceof Error ? error.message : t('Couldn’t save.')
-      );
+      showError(error instanceof Error ? error.message : t('Couldn’t save.'));
 
       return false;
     }
@@ -897,7 +963,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
         pendingRelease.value = null;
 
         if (data?.message) {
-          window.Craft?.cp?.displayError(data.message);
+          showError(data.message);
         }
 
         if (Array.isArray(data?.invalidNestedElementIds)) {
@@ -1008,7 +1074,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       }>(target.url, data);
 
       if (response.message) {
-        window.Craft?.cp?.displayNotice(response.message);
+        showNotice(response.message);
       }
 
       if (response.redirect) {
@@ -1017,7 +1083,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
       await slideout.reload();
     } catch (error: any) {
-      window.Craft?.cp?.displayError(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
     }
@@ -1135,25 +1201,16 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
 
   /**
    * What a save from inside a panel tells the rest of the CP, since the page
-   * behind it isn't reloaded: the confirmation, other tabs and element indexes
-   * (via the broadcaster), and Live Preview.
+   * behind it isn't reloaded: the confirmation, and Live Preview. Other tabs
+   * hear about the save from the server.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function announceSaved(data: any): void {
-    const craft = window.Craft;
-
     if (data?.message) {
-      craft?.cp?.displaySuccess(data.message, data.notificationSettings);
+      showSuccess(data.message, data.notificationSettings);
     }
 
-    if (data?.element?.id) {
-      craft?.broadcaster?.postMessage({
-        event: 'saveElement',
-        id: data.element.id,
-      });
-    }
-
-    craft?.Preview?.refresh?.();
+    refreshPreviews();
   }
 
   /** Throws away the provisional draft, reverting to the canonical element. */

@@ -1,4 +1,11 @@
-import {actionClient, getActionUrl, t, isHttpError} from '@craftcms/ui';
+import {
+  actionClient,
+  getActionUrl,
+  isHttpError,
+  showCopyTextPrompt,
+  t,
+} from '@craftcms/ui';
+import {QueueService} from '@/modules/queue/queue';
 import {useEventListener} from '@vueuse/core';
 import {shallowRef} from 'vue';
 import {submitNativeForm} from '@/common/utils/forms';
@@ -9,6 +16,7 @@ import {
   type ImageEditorSettings,
 } from '@/modules/image-editor/open-image-editor-dialog';
 import type {ElementIndexOperations} from '@/modules/elements/index/types/model';
+import {showError} from '@/modules/messages/messages';
 
 interface FileActionDetail {
   elementIds?: Array<string | number>;
@@ -120,13 +128,13 @@ export function useAssetFileActions(
       onActionPerformed();
       // Renaming onto an existing file merges the two, which can leave
       // reference tags to update.
-      Craft.cp?.runQueue?.();
+      void QueueService.getInstance().runQueue();
     } catch (error) {
       const message = isHttpError<{message?: string}>(error)
         ? (error.response?.data?.message ?? t('A server error occurred.'))
         : t('A server error occurred.');
       renameFileError.value = message;
-      Craft.cp?.displayError?.(message);
+      showError(message);
     } finally {
       renamingFile.value = false;
     }
@@ -144,14 +152,14 @@ export function useAssetFileActions(
     const url = assetId === null ? null : rowValue(assetId, 'viewUrl');
     if (typeof url !== 'string') return;
 
-    Craft.ui.createCopyTextPrompt({label: t('Copy the URL'), value: url});
+    showCopyTextPrompt({label: t('Copy the URL'), value: url});
   }
 
   function onCopyReferenceTag(event: Event) {
     const assetId = firstAsset(event);
     if (assetId === null) return;
 
-    Craft.ui.createCopyTextPrompt({
+    showCopyTextPrompt({
       label: t('Copy the reference tag'),
       value: `{asset:${assetId}}`,
     });

@@ -3,9 +3,11 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import ElementThumbs from './ElementThumbs.vue';
 import {useSelectable} from '@/common/composables/useSelectable';
 
+// The page's `readOnly` prop means admin changes are disabled, which locks
+// settings, not content, so the tiles stay selectable under it.
 vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
-  usePage: () => ({props: {readOnly: false}}),
+  usePage: () => ({props: {readOnly: true}}),
 }));
 
 describe('ElementThumbs', () => {
@@ -46,6 +48,29 @@ describe('ElementThumbs', () => {
 
     return {root: container, selection};
   }
+
+  it.each([
+    ['white, by default', {}, ['white', 'violet']],
+    ['uncolored when told to', {fallbackColor: null}, [null, 'violet']],
+  ])(
+    'colors a tile with its element’s own color, or %s',
+    async (_, props, colors) => {
+      const {root} = mount({
+        data: [
+          {id: 5, label: 'Homepage'},
+          {id: 6, label: 'Untitled entry', color: 'violet'},
+        ],
+        ...props,
+      });
+      await nextTick();
+
+      expect(
+        [...root.querySelectorAll('li craft-chip')].map((chip) =>
+          chip.getAttribute('data-color')
+        )
+      ).toEqual(colors);
+    }
+  );
 
   it("labels each tile's checkbox with that tile's own title", async () => {
     const {root} = mount();

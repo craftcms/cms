@@ -414,9 +414,16 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public static function sourceCpUri(array $source, ?string $page = null): ?string
     {
-        $handle = ($source['key'] ?? null) === 'singles'
-            ? 'singles'
-            : ($source['data']['handle'] ?? null);
+        $key = (string) ($source['key'] ?? '');
+
+        // A custom source limited to one section carries its handle too (see
+        // modifyCustomSource()), but the handle URL would select the section's
+        // own source, not the custom one.
+        $handle = match (true) {
+            $key === 'singles' => 'singles',
+            str_starts_with($key, 'section:') => $source['data']['handle'] ?? null,
+            default => null,
+        };
 
         if (! is_string($handle) || $handle === '') {
             return null;
@@ -523,8 +530,8 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     if ($type === SectionType::Structure->value) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $structure = $section->structureId ? Structures::getStructureById($section->structureId) : null;
-                        $source['structureEditable'] = $user && $structure && $user->can('edit', $structure);
+                        // What StructurePolicy::edit() checks, without looking the structure and its section up again
+                        $source['structureEditable'] = $user && $section->structureId && $user->can("saveEntries:$section->uid");
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -2537,23 +2544,23 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         if (! $this->isEntryTypeCompatible()) {
             $js = <<<JS
-let applyDraftBtn = $('#action-buttons .tooltip-draft-btn')
-if (applyDraftBtn.length > 0) {
-  applyDraftBtn.addClass('disabled');
-  let tooltipBtn = `<craft-tooltip aria-label="$draftMessage">` +
-    applyDraftBtn.get(0).outerHTML +
-    `</craft-tooltip>`;
-  applyDraftBtn.replaceWith(tooltipBtn);
-}
+(() => {
+  const applyDraftBtn = document.querySelector('#action-buttons .tooltip-draft-btn');
+  if (applyDraftBtn) {
+    applyDraftBtn.classList.add('disabled');
+    applyDraftBtn.outerHTML = `<craft-tooltip aria-label="$draftMessage">` +
+      applyDraftBtn.outerHTML +
+      `</craft-tooltip>`;
+  }
 
-let revertRevisionBtn = $('#action-buttons .revision-draft-btn');
-if (revertRevisionBtn.length > 0) {
-  revertRevisionBtn.addClass('disabled');
-  let tooltipBtn = `<craft-tooltip aria-label="$revisionMessage">` +
-    revertRevisionBtn.get(0).outerHTML +
-    `</craft-tooltip>`;
-  revertRevisionBtn.replaceWith(tooltipBtn);
-}
+  const revertRevisionBtn = document.querySelector('#action-buttons .revision-draft-btn');
+  if (revertRevisionBtn) {
+    revertRevisionBtn.classList.add('disabled');
+    revertRevisionBtn.outerHTML = `<craft-tooltip aria-label="$revisionMessage">` +
+      revertRevisionBtn.outerHTML +
+      `</craft-tooltip>`;
+  }
+})();
 JS;
             HtmlStack::js($js);
         }
@@ -2609,11 +2616,12 @@ JS;
             if ($this->id) {
                 // Figure out how deep the ancestors go
                 $maxDepth = self::find()
-                    ->select('level')
                     ->descendantOf($this)
                     ->status(null)
                     ->leaves()
-                    ->value('level');
+                    ->limit(1)
+                    ->pluck('level')
+                    ->first();
                 $depth = 1 + ($maxDepth ?: $this->level) - $this->level;
             } else {
                 $depth = 1;
@@ -2882,13 +2890,14 @@ JS;
         // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
         if ($this->isProvisionalDraft) {
             $canonicalParentId = self::find()
-                ->select(['elements.id'])
                 ->ancestorOf($this->getCanonicalId())
                 ->ancestorDist(1)
                 ->status(null)
                 ->site('*')
                 ->unique()
-                ->value('id');
+                ->limit(1)
+                ->pluck('elements.id')
+                ->first();
 
             if ($parentId === $canonicalParentId) {
                 Structures::remove($this->structureId, $this);
@@ -2939,8 +2948,9 @@ JS;
             $parentId = $this->ancestors()
                 ->ancestorDist(1)
                 ->status(null)
-                ->select(['elements.id'])
-                ->value('id');
+                ->limit(1)
+                ->pluck('elements.id')
+                ->first();
             if ($parentId) {
                 $data['parentId'] = $parentId;
             }

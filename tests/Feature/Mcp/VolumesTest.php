@@ -22,7 +22,7 @@ beforeEach(function (): void {
 
 it('manages volumes and their field layouts through MCP', function (): void {
     $call = fn (string $operation, array $arguments) => McpRequest::send($this, 'tools/call', [
-        'name' => "configuration.$operation",
+        'name' => "configuration_$operation",
         'arguments' => ['type' => 'volumes', ...$arguments],
     ])->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent');
     $created = $call('create', ['attributes' => [

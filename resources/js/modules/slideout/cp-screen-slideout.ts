@@ -23,7 +23,27 @@
  *   `serializer`) that `Craft.ElementEditor` reads and writes.
  */
 
-import {Garnish, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
+import {
+  Garnish,
+  ESC_KEY,
+  S_KEY,
+  isMobileBrowser,
+  releaseFocusWithin,
+  setFocusWithin,
+  trapFocusWithin,
+} from '@craftcms/garnish';
+import {refreshComponentInstances} from '@/common/craft/component-instances';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
+import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
+import {
+  addErrorsToField,
+  clearErrorsFromField,
+  clearErrorSummary,
+  setFocusOnErrorSummary,
+  findTabAnchorForField,
+} from '@/common/craft/field-errors';
+import {bridgeLegacyClasses} from '@/modules/ui/legacy/buttons';
+import {create} from '@craftcms/ui/utilities/create';
 import {installCpApp} from '@/bootstrap/cp-app';
 import {resolveInertiaPage} from '@/bootstrap/inertia-pages';
 import {createApp, type App} from 'vue';
@@ -35,6 +55,17 @@ import {
   type LegacyRequestOptions,
 } from '@craftcms/ui/utilities/api/legacyRequest';
 import {commandShortcut} from '@/common/utils/keyShortcuts';
+import {getCookie, setCookie} from '@/common/craft/cookies';
+import {
+  actionClient,
+  actionHeaders,
+} from '@craftcms/ui/utilities/api/actionClient';
+import {findDeltaData} from '@/common/craft/delta';
+import {getCpUrl} from '@/common/craft/url';
+import {t} from '@craftcms/ui/utilities/translate';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {setElementAttributes} from '@/common/craft/attributes';
+import {showError, showSuccess} from '@/modules/messages/messages';
 
 declare const Craft: any;
 declare const $: any;
@@ -103,6 +134,10 @@ export class CpScreenSlideout extends Slideout {
   hasSidebar = false;
 
   // --- jQuery public surface (see class docblock for why) -------------------
+  get $container(): any {
+    return this.container ? $(this.container) : null;
+  }
+
   $header: any = null;
   $toolbar: any = null;
   $tabContainer: any = null;
@@ -194,21 +229,21 @@ export class CpScreenSlideout extends Slideout {
     );
     this.$loadSpinner = $('<div/>', {
       class: 'spinner',
-      title: Craft.t('app', 'Loading'),
-      'aria-label': Craft.t('app', 'Loading'),
+      title: t('Loading'),
+      'aria-label': t('Loading'),
     }).appendTo(this.$toolbar);
     this.$editLink = $('<a/>', {
       target: '_blank',
       class: 'btn header-btn hidden',
-      title: Craft.t('app', 'Open in a new tab'),
-      'aria-label': Craft.t('app', 'Open in a new tab'),
+      title: t('Open in a new tab'),
+      'aria-label': t('Open in a new tab'),
       html: '<craft-icon name="external"></craft-icon>',
     }).appendTo(this.$toolbar);
     this.$sidebarBtn = $('<button/>', {
       type: 'button',
       class: 'btn header-btn hidden sidebar-btn',
-      title: Craft.t('app', 'Show sidebar'),
-      'aria-label': Craft.t('app', 'Show sidebar'),
+      title: t('Show sidebar'),
+      'aria-label': t('Show sidebar'),
       html: `<craft-icon name="sidebar-${Garnish.ltr ? 'right' : 'left'}"></craft-icon>`,
       'aria-expanded': 'false',
     }).appendTo(this.$toolbar);
@@ -218,12 +253,12 @@ export class CpScreenSlideout extends Slideout {
       if (!this.showingSidebar) {
         this.showSidebar();
         if (this.showExpandedView) {
-          Craft.setCookie('sidebar-slideout', 'expanded');
+          setCookie('sidebar-slideout', 'expanded');
         }
       } else {
         this.hideSidebar();
         if (this.showExpandedView) {
-          Craft.setCookie('sidebar-slideout', 'collapsed');
+          setCookie('sidebar-slideout', 'collapsed');
         }
       }
     });
@@ -251,14 +286,16 @@ export class CpScreenSlideout extends Slideout {
     this.$cancelBtn = $('<button/>', {
       type: 'button',
       class: 'btn',
-      text: isForm ? Craft.t('app', 'Cancel') : Craft.t('app', 'Close'),
+      text: isForm ? t('Cancel') : t('Close'),
     }).appendTo($btnContainer);
     if (isForm) {
-      this.$saveBtn = Craft.ui
-        .createSubmitButton({
-          label: Craft.t('app', 'Save'),
-          spinner: true,
-        })
+      const saveBtn = create(
+        'craft-button',
+        {type: 'submit', variant: 'primary', className: 'submit'},
+        create('span', {className: 'label'}, t('Save'))
+      );
+      // $saveBtn is public, and callers toggle its `loading` class
+      this.$saveBtn = $(bridgeLegacyClasses(saveBtn))
         .attr('aria-keyshortcuts', commandShortcut('S'))
         .appendTo($btnContainer);
     }
@@ -334,16 +371,11 @@ export class CpScreenSlideout extends Slideout {
         },
         this.settings!.requestOptions
       );
-      const request = /^(?:https?:\/\/|\/)/.test(this.action!)
-        ? sendLegacyRequest(http, {
-            ...options,
-            method: 'get',
-            url: this.action!,
-            headers: {...Craft._actionHeaders(), ...options.headers},
-          })
-        : Craft.sendActionRequest('GET', this.action, options);
-
-      request
+      sendLegacyRequest(actionClient, {
+        ...options,
+        method: 'get',
+        url: this.action!,
+      })
         .then((response: any) => {
           this.update(response.data)
             .then(() => {
@@ -366,7 +398,7 @@ export class CpScreenSlideout extends Slideout {
         })
         .catch((e: any) => {
           if (!this.ignoreFailedRequest) {
-            Craft.cp.displayError();
+            showError();
             reject(e);
           }
           this.ignoreFailedRequest = false;
@@ -440,7 +472,7 @@ export class CpScreenSlideout extends Slideout {
       this.updateExtraToolbarItems(data.extraToolbarItems);
 
       if (data.formAttributes) {
-        Craft.setElementAttributes(this.$container, data.formAttributes);
+        setElementAttributes(this.$container, data.formAttributes);
       }
 
       if (data.editUrl) {
@@ -471,7 +503,7 @@ export class CpScreenSlideout extends Slideout {
 
         if (
           this.showExpandedView &&
-          (Craft.getCookie('sidebar-slideout') || 'expanded') === 'expanded'
+          (getCookie('sidebar-slideout') || 'expanded') === 'expanded'
         ) {
           this.showSidebar(false);
         } else {
@@ -496,8 +528,8 @@ export class CpScreenSlideout extends Slideout {
       requestAnimationFrame(async () => {
         // Execute the response JS first so any Selectize inputs, etc.,
         // get instantiated before field toggles
-        await Craft.appendHeadHtml(data.headHtml);
-        await Craft.appendBodyHtml(data.bodyHtml);
+        await appendHeadHtml(data.headHtml);
+        await appendBodyHtml(data.bodyHtml);
 
         if (data.inertiaPage) {
           const inertiaPage = await resolveInertiaPage(data.inertiaPage);
@@ -510,12 +542,12 @@ export class CpScreenSlideout extends Slideout {
           this.inertiaApp.mount(this.$content[0]);
         }
 
-        Craft.initUiElements(this.$content);
-        Craft.cp.elementThumbLoader.load($(this.$content));
+        initLegacyUi(this.$content);
+        loadElementThumbs(this.$content);
 
         if (data.sidebar) {
-          Craft.initUiElements(this.$sidebar);
-          Craft.cp.elementThumbLoader.load(this.$sidebar);
+          initLegacyUi(this.$sidebar);
+          loadElementThumbs(this.$sidebar);
         }
 
         if (!isMobileBrowser() && !this.isOpening) {
@@ -532,7 +564,7 @@ export class CpScreenSlideout extends Slideout {
   }
 
   override setFocusWithin(): void {
-    Craft.setFocusWithin(this.$content);
+    setFocusWithin(this.$content[0]!);
   }
 
   updateTabs(tabs: any): void {
@@ -593,12 +625,12 @@ export class CpScreenSlideout extends Slideout {
 
     if (focus && !isMobileBrowser()) {
       this.$sidebar.one('transitionend.so', () => {
-        Craft.setFocusWithin(this.$sidebar);
+        setFocusWithin(this.$sidebar[0]!);
       });
     }
 
     if (!this.showExpandedView) {
-      Craft.trapFocusWithin(this.$sidebar);
+      trapFocusWithin(this.$sidebar[0]);
     }
 
     this.$sidebarBtn.addClass('active').attr({
@@ -641,7 +673,7 @@ export class CpScreenSlideout extends Slideout {
         this.$sidebarBtn.focus();
       });
 
-    Craft.releaseFocusWithin(this.$sidebar);
+    releaseFocusWithin(this.$sidebar[0]);
 
     this.$sidebarBtn.removeClass('active').attr({
       'aria-expanded': 'false',
@@ -694,7 +726,7 @@ export class CpScreenSlideout extends Slideout {
   submit(): void {
     this.showSubmitSpinner();
 
-    const data = Craft.findDeltaData(
+    const data = findDeltaData(
       this.$container.data('initialSerializedValue'),
       this.$container.serialize(),
       this.$container.data('delta-names'),
@@ -711,9 +743,9 @@ export class CpScreenSlideout extends Slideout {
     };
     const request = action
       ? http.post(action, data, {
-          headers: {...Craft._actionHeaders(), ...options.headers},
+          headers: {...actionHeaders(), ...options.headers},
         })
-      : Craft.sendActionRequest('POST', null, options);
+      : actionClient.post(getCpUrl(), data, {headers: options.headers});
 
     request
       .then((response: any) => {
@@ -731,10 +763,10 @@ export class CpScreenSlideout extends Slideout {
     this.clearErrors();
     const data = response.data || {};
     if (data.message) {
-      Craft.cp.displaySuccess(data.message, data.notificationSettings);
+      showSuccess(data.message, data.notificationSettings);
     }
     if (data.modelClass && data.modelId) {
-      Craft.refreshComponentInstances(data.modelClass, data.modelId);
+      void refreshComponentInstances(data.modelClass, data.modelId);
     }
     const ev = {
       response: response,
@@ -756,12 +788,12 @@ export class CpScreenSlideout extends Slideout {
     // compatibility; the `as any` only silences TS2367, which correctly
     // flags the comparison.
     if (!isHttpError(e) || !e.response) {
-      Craft.cp.displayError();
+      showError();
       throw e;
     }
 
     const data = e.response.data || {};
-    Craft.cp.displayError(data.message);
+    showError(data.message);
     if (data.errors) {
       this.showErrors(data.errors);
     }
@@ -776,7 +808,7 @@ export class CpScreenSlideout extends Slideout {
 
   showErrorSummary(errorSummary: any, errorCount = 0): void {
     // start by clearing any error summary that might be left
-    Craft.ui.clearErrorSummary(this.$body);
+    clearErrorSummary(this.$body);
 
     // if we have multiple tabs - split the error summary into them
     if (this.tabManager !== null) {
@@ -807,8 +839,7 @@ export class CpScreenSlideout extends Slideout {
           });
 
           if (tabErrorCount > 0) {
-            headingText = Craft.t(
-              'app',
+            headingText = t(
               'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
               {num: tabErrorCount}
             );
@@ -817,8 +848,7 @@ export class CpScreenSlideout extends Slideout {
             if ($tabsWithErrors.length - 1 > 0) {
               headingText +=
                 '<span class="visually-hidden">' +
-                Craft.t(
-                  'app',
+                t(
                   '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
                   {
                     total: errorCount,
@@ -828,19 +858,19 @@ export class CpScreenSlideout extends Slideout {
                 '</span>';
             }
           } else {
-            headingText = Craft.t('app', 'Found errors in other tabs.');
+            headingText = t('Found errors in other tabs.');
           }
 
           $tabErrorSummary.find('h2').html(headingText);
 
           $tabErrorSummary.prependTo($tabContainer);
-          Craft.ui.setFocusOnErrorSummary($tabContainer); // this also makes the deep linking work
+          setFocusOnErrorSummary($tabContainer); // this also makes the deep linking work
         }
       });
     } else {
       // if we only have one tab - just show the error summary as is
       $(errorSummary).prependTo(this.$content);
-      Craft.ui.setFocusOnErrorSummary(this.$content);
+      setFocusOnErrorSummary(this.$content);
     }
   }
 
@@ -851,21 +881,18 @@ export class CpScreenSlideout extends Slideout {
     const tabErrorIndicator =
       '<craft-icon name="alert" data-tab-error>' +
       '<span class="sr-only">' +
-      Craft.t('app', 'This tab contains errors') +
+      t('This tab contains errors') +
       '</span>' +
       '</craft-icon>';
 
     Object.entries(errors).forEach(([name, fieldErrors]) => {
       const $field = this.$container.find(`[data-error-key="${name}"]`);
       if ($field) {
-        Craft.ui.addErrorsToField($field, fieldErrors);
+        addErrorsToField($field, fieldErrors);
         this.fieldsWithErrors.push($field);
 
         // find tabs that contain fields with errors
-        const fieldTabAnchors = Craft.ui.findTabAnchorForField(
-          $field,
-          this.$container
-        );
+        const fieldTabAnchors = findTabAnchorForField($field, this.$container);
 
         // add error indicator to tabs
         if (fieldTabAnchors.length > 0) {
@@ -906,7 +933,7 @@ export class CpScreenSlideout extends Slideout {
 
   clearErrors(): void {
     this.fieldsWithErrors.forEach(($field: any) => {
-      Craft.ui.clearErrorsFromField($field);
+      clearErrorsFromField($field);
     });
   }
 
@@ -938,8 +965,7 @@ export class CpScreenSlideout extends Slideout {
     if (
       !this.isDirty() ||
       confirm(
-        Craft.t(
-          'app',
+        t(
           'Are you sure you want to close this screen? Any changes will be lost.'
         )
       )

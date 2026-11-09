@@ -1,5 +1,6 @@
 <?php
 
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 return [
@@ -17,6 +18,7 @@ return [
     'allowedFilters' => [
         'abs',
         'address',
+        'anchors',
         'append',
         'ascii',
         'base64_encode',
@@ -44,6 +46,7 @@ return [
         'float',
         'format',
         'group',
+        'hexdec',
         'id',
         'index',
         'indexOf',
@@ -134,6 +137,8 @@ return [
         'uuid',
     ],
     'allowedMethods' => [
+        // Lets dates be output, and passed to filters such as `date`
+        CarbonInterface::class => ['__toString'],
         Collection::class => ['render'],
     ],
     'allowedProperties' => [],

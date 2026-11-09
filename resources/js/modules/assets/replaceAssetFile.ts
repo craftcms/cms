@@ -1,6 +1,8 @@
 import {t} from '@craftcms/ui';
 import {Uploader} from '@/modules/uploader/uploader';
 import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
+import {broadcast} from '@/common/craft/broadcast';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 /**
  * Swaps the asset's file for a newly uploaded one through the native uploader.
@@ -27,18 +29,20 @@ export function replaceAssetFile(
     on: {
       done: ({result}) => {
         if (result?.error) {
-          Craft.cp?.displayError?.(result.error);
+          showError(result.error);
 
           return;
         }
 
-        Craft.cp?.displayNotice?.(t('New file uploaded.'));
-        Craft.broadcaster?.postMessage({event: 'saveElement', id: assetId});
+        showNotice(t('New file uploaded.'));
+        // Uploads don't go through the CP's HTTP clients, which relay the
+        // server's broadcasts, so the save is announced here.
+        broadcast({event: 'saveElement', id: assetId});
         onReplaced();
       },
       fail: ({error, canceled}) => {
         if (!canceled) {
-          Craft.cp?.displayError?.(
+          showError(
             error instanceof Error ? error.message : t('Replace file failed.')
           );
         }

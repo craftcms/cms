@@ -24,12 +24,13 @@ use Mcp\Exception\ResourceReadException;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
+use Mcp\Server\RequestContext;
 
 /**
  * Lists, reads, and manages elements of every type registered with {@see ElementAdapterRegistry}.
  *
  * Tool input schemas stay compact. Each element type's full criteria and attribute schemas are served by
- * `elements.schema` and the `craft://element-types/{type}` resource, and inputs are validated against them.
+ * `elements_schema` and the `craft://element-types/{type}` resource, and inputs are validated against them.
  *
  * @since 6.0.0
  */
@@ -43,25 +44,25 @@ readonly class Elements
 
     private const array CriteriaSchema = [
         'type' => 'object',
-        'description' => 'Element query criteria, such as {"sectionId": 1, "limit": 20}. Custom fields can be queried by handle. Call elements.schema for the criteria the type supports.',
+        'description' => 'Element query criteria, such as {"sectionId": 1, "limit": 20}. Custom fields can be queried by handle. Call elements_schema for the criteria the type supports.',
         'additionalProperties' => true,
     ];
 
     private const array AttributesSchema = [
         'type' => 'object',
-        'description' => 'Built-in element attributes. Call elements.schema for the attributes the type accepts.',
+        'description' => 'Built-in element attributes. Call elements_schema for the attributes the type accepts.',
         'additionalProperties' => true,
     ];
 
     private const array FieldValuesSchema = [
         'type' => 'object',
-        'description' => 'Custom field values keyed by field handle. Values must match the schema from elements.field-schema.',
+        'description' => 'Custom field values keyed by field handle. Values must match the schema from elements_field_schema.',
         'additionalProperties' => true,
     ];
 
     private const array ContextSchema = [
         'type' => 'object',
-        'description' => 'For a new element, the values that select its field layout, such as {"sectionId": 1} for entries. Call elements.schema for the context the type accepts.',
+        'description' => 'For a new element, the values that select its field layout, such as {"sectionId": 1} for entries. Call elements_schema for the context the type accepts.',
         'additionalProperties' => true,
     ];
 
@@ -78,8 +79,8 @@ readonly class Elements
 
     /** @return array<string, mixed> */
     #[McpTool(
-        name: 'elements.schema',
-        description: 'Describes an element type for the elements.* tools: the criteria, create and update attributes, field-schema context, and duplication modes it accepts. Also available as the craft://element-types/{type} resource.',
+        name: 'elements_schema',
+        description: 'Describes an element type for the elements_* tools: the criteria, create and update attributes, field-schema context, and duplication modes it accepts. Also available as the craft://element-types/{type} resource.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     #[RequiresPermission('accessCp')]
@@ -95,11 +96,12 @@ readonly class Elements
      * @param  list<string>|null  $fields
      */
     #[McpTool(
-        name: 'elements.list',
+        name: 'elements_list',
         description: 'Lists elements of one type, such as entries, assets, users, or addresses.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
+        RequestContext $context,
         #[Schema(definition: self::TypeSchema)]
         string $type,
         #[Schema(definition: self::CriteriaSchema)]
@@ -110,6 +112,7 @@ readonly class Elements
         $actor = $this->actor->user();
         $adapter = $this->adapter($type);
         $this->assertValid($criteria, $adapter->schema()['criteria'], 'criteria', $type);
+        $fields = ElementSerializer::fieldsArgument($context, $fields);
 
         $query = $adapter->listQuery($actor);
         $page = $this->elementQueryCriteria->page($query, $criteria);
@@ -134,7 +137,7 @@ readonly class Elements
      * @return array{element: array<string, mixed>}
      */
     #[McpTool(
-        name: 'elements.get',
+        name: 'elements_get',
         description: 'Gets an element by ID or UID. For entries, a saved draft’s own ID or UID loads that draft.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -168,7 +171,7 @@ readonly class Elements
      * @return array{schema: array<string, mixed>}
      */
     #[McpTool(
-        name: 'elements.field-schema',
+        name: 'elements_field_schema',
         description: 'Gets the writable custom-field JSON Schema for an existing element or entry draft, or for a new element described by context.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -212,8 +215,8 @@ readonly class Elements
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'elements.create',
-        description: 'Creates an element. Call elements.field-schema to discover custom fields. For entries, set asUnpublishedDraft to create an unpublished draft that is not live until it is applied with drafts.apply. For assets, use assets.create instead.',
+        name: 'elements_create',
+        description: 'Creates an element. Call elements_field_schema to discover custom fields. For entries, set asUnpublishedDraft to create an unpublished draft that is not live until it is applied with drafts_apply. For assets, use assets_create instead.',
     )]
     public function create(
         #[Schema(definition: self::TypeSchema)]
@@ -252,8 +255,8 @@ readonly class Elements
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'elements.update',
-        description: 'Updates an element. Call elements.field-schema to discover custom fields. For entries, a saved draft’s own ID or UID updates only that draft and leaves its canonical entry unchanged.',
+        name: 'elements_update',
+        description: 'Updates an element. Call elements_field_schema to discover custom fields. For entries, a saved draft’s own ID or UID updates only that draft and leaves its canonical entry unchanged.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function update(
@@ -282,8 +285,8 @@ readonly class Elements
      * @return array{deleted: true}
      */
     #[McpTool(
-        name: 'elements.delete',
-        description: 'Deletes an element. Soft-deleted elements can be restored with elements.restore unless hardDelete is true.',
+        name: 'elements_delete',
+        description: 'Deletes an element. Soft-deleted elements can be restored with elements_restore unless hardDelete is true.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function delete(
@@ -303,7 +306,7 @@ readonly class Elements
         }
 
         if ($element->getIsDraft()) {
-            throw new ToolCallException('Use drafts.delete to delete a draft.');
+            throw new ToolCallException('Use drafts_delete to delete a draft.');
         }
 
         if (! $this->elements->deleteElement($element, $hardDelete)) {
@@ -318,7 +321,7 @@ readonly class Elements
      * @return array{restored: bool}
      */
     #[McpTool(
-        name: 'elements.restore',
+        name: 'elements_restore',
         description: 'Restores a deleted element across all supported sites. Returns restored: false without changes if it is already active. List deleted elements with criteria {"trashed": true, "status": null}.',
         annotations: new ToolAnnotations(destructiveHint: true, idempotentHint: true),
     )]
@@ -343,7 +346,7 @@ readonly class Elements
      * @return array{valid: bool, scenario: string, errors: array<string, list<string>>}
      */
     #[McpTool(
-        name: 'elements.validate',
+        name: 'elements_validate',
         description: 'Validates an existing element or saved draft under live rules, optionally applying proposed attributes and fields in memory. Does not save. A valid result does not guarantee a later update succeeds.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -367,8 +370,8 @@ readonly class Elements
     }
 
     /**
-     * Sets the values that `elements.update` takes on an element, without saving it, after checking them as
-     * `elements.update` does.
+     * Sets the values that `elements_update` takes on an element, without saving it, after checking them as
+     * `elements_update` does.
      *
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $fields
@@ -387,12 +390,12 @@ readonly class Elements
 
     /**
      * @param  int|null  $siteId  Site ID to load the element in.
-     * @param  string|null  $mode  Duplication mode. Call elements.schema for the modes the type supports.
+     * @param  string|null  $mode  Duplication mode. Call elements_schema for the modes the type supports.
      * @return array{element: array<string, mixed>}
      */
     #[McpTool(
-        name: 'elements.duplicate',
-        description: 'Duplicates an element as independent content, for types that support it. Call elements.schema for the type’s duplication modes.',
+        name: 'elements_duplicate',
+        description: 'Duplicates an element as independent content, for types that support it. Call elements_schema for the type’s duplication modes.',
     )]
     public function duplicate(
         #[Schema(definition: self::TypeSchema)]
@@ -414,7 +417,7 @@ readonly class Elements
         uri: 'craft://element-types',
         name: 'craft-element-types',
         title: 'Craft Element Types',
-        description: 'A JSON list of the element types the elements.* tools support.',
+        description: 'A JSON list of the element types the elements_* tools support.',
         mimeType: 'application/json',
     )]
     #[RequiresPermission('accessCp')]
@@ -439,7 +442,7 @@ readonly class Elements
         uriTemplate: 'craft://element-types/{type}',
         name: 'craft-element-types-get',
         title: 'Craft Element Type',
-        description: 'A JSON description of the criteria, attributes, field-schema context, and duplication modes an element type accepts in the elements.* tools.',
+        description: 'A JSON description of the criteria, attributes, field-schema context, and duplication modes an element type accepts in the elements_* tools.',
         mimeType: 'application/json',
     )]
     #[RequiresPermission('accessCp')]
@@ -490,7 +493,7 @@ readonly class Elements
         );
 
         throw new ToolCallException(sprintf(
-            'Invalid %s for %s: %s. Call elements.schema for the accepted %s.',
+            'Invalid %s for %s: %s. Call elements_schema for the accepted %s.',
             $parameter,
             $type,
             implode('; ', $messages),

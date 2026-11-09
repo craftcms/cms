@@ -1,6 +1,5 @@
 import {Base, type ModalSettings} from '@craftcms/garnish';
-
-declare const Craft: any;
+import {t} from '@craftcms/ui/utilities/translate';
 
 /** A `craft-radio-group`; its `modelValue` is the checked radio's value. */
 type ChoiceGroup = HTMLElement & {modelValue: string};
@@ -170,8 +169,7 @@ export class PromptHandler extends Base {
     ) as ApplyToRemainingCheckbox;
     applyToRemaining.hidden = !itemsToGo;
     if (itemsToGo) {
-      applyToRemaining.label = Craft.t(
-        'app',
+      applyToRemaining.label = t(
         'Apply this to the {number} remaining conflicts?',
         {number: itemsToGo}
       );
@@ -184,7 +182,7 @@ export class PromptHandler extends Base {
     const cancelBtn = document.createElement('craft-button');
     cancelBtn.slot = 'footer';
     cancelBtn.setAttribute('type', 'button');
-    cancelBtn.textContent = Craft.t('app', 'Cancel');
+    cancelBtn.textContent = t('Cancel');
 
     const submitBtn = document.createElement('craft-button') as HTMLElement & {
       disabled: boolean;
@@ -192,7 +190,7 @@ export class PromptHandler extends Base {
     submitBtn.slot = 'footer';
     submitBtn.setAttribute('type', 'button');
     submitBtn.setAttribute('variant', 'primary');
-    submitBtn.textContent = Craft.t('app', 'OK');
+    submitBtn.textContent = t('OK');
     submitBtn.disabled = true;
 
     dialog.append(body, cancelBtn, submitBtn);

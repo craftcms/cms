@@ -1,19 +1,21 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId} from 'vue';
+  import {computed, reactive, ref, useId, watch} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
   import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
   import type {UiChangeKind, UiControlPayload} from './types';
   import {inputName} from './runtime';
+  import {useUiPreview} from './uiPreview';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
   import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
+  import {useElementPresentations} from '@/modules/elements/element-presentations';
   import type {
     ElementPresentation,
     ElementSelectProps,
@@ -112,10 +114,42 @@
     return Number(value);
   }
 
+  /** The site an element is drawn in. */
+  function siteOf(id: number): number | string | null | undefined {
+    return (
+      providedPresentations.value.get(id)?.siteId ??
+      presentations.get(id)?.siteId ??
+      (props.control.props.criteria.siteId as number | string | null)
+    );
+  }
+
+  /**
+   * Elements drawn through the page's shared cache, so they're refetched when
+   * they're saved, here or in another tab. The server's renders seed it; the
+   * one the field mounted with only fills gaps, since it may be older.
+   */
+  const cached = useElementPresentations(
+    () => ({
+      elementType: props.control.props.elementType,
+      viewMode: props.control.props.viewMode,
+      thumbSize: props.control.props.thumbSize,
+    }),
+    () => ids.value.map((id) => ({id, siteId: Number(siteOf(id)) || null}))
+  );
+  watch(
+    () => props.control.props.elements,
+    (elements, previous) =>
+      cached.seed(elements, props.control.props.criteria.siteId, {
+        replace: previous !== undefined,
+      }),
+    {immediate: true}
+  );
+
   function presentation(value: number | string): ElementPresentation {
     const id = elementId(value);
 
     return (
+      cached.get(id, siteOf(id)) ??
       providedPresentations.value.get(id) ??
       presentations.get(id) ?? {id, label: String(id)}
     );
@@ -131,9 +165,10 @@
    *
    * It's only worth offering when more than one element can be related — a
    * single-relation field has nothing to bulk-act on. A `null` limit is
-   * unlimited, so it counts as more than one.
+   * unlimited, so it counts as more than one. A read-only field offers it too:
+   * its selection can still be copied, just not removed.
    */
-  const selectable = computed(() => props.editable && limit.value !== 1);
+  const selectable = computed(() => limit.value !== 1);
 
   const viewMode = computed(() => props.control.props.viewMode);
 
@@ -157,11 +192,60 @@
     }))
   );
 
+  const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]';
+
+  /**
+   * Keeps keyboard focus when refetched presentations redraw the same
+   * elements. Card parts are compiled as templates, so new markup remounts
+   * them, and a focused link inside goes with it; focus moves to its
+   * counterpart unless it went somewhere else.
+   */
+  let focusBeforeRedraw: {
+    element: Element;
+    index: number;
+    ids: string;
+  } | null = null;
+  watch(
+    listData,
+    () => {
+      const root = dropZone.value;
+      const focused = document.activeElement;
+      focusBeforeRedraw =
+        root && focused && root.contains(focused)
+          ? {
+              element: focused,
+              index: [...root.querySelectorAll(FOCUSABLE)].indexOf(focused),
+              ids: ids.value.join(),
+            }
+          : null;
+    },
+    {flush: 'pre'}
+  );
+  watch(
+    listData,
+    () => {
+      const before = focusBeforeRedraw;
+      focusBeforeRedraw = null;
+      const active = document.activeElement;
+      if (
+        !before ||
+        before.ids !== ids.value.join() ||
+        before.element.isConnected ||
+        (active && active !== document.body)
+      ) {
+        return;
+      }
+      dropZone.value
+        ?.querySelectorAll<HTMLElement>(FOCUSABLE)
+        [before.index]?.focus();
+    },
+    {flush: 'post'}
+  );
+
   const list = useElementList({
     ids,
     viewMode,
     selectable,
-    readOnly: () => !props.editable,
   });
 
   const {selectedIds, isSelected, prune: pruneSelection} = list.selection;
@@ -402,8 +486,14 @@
     t('Edit {type}', {type: props.control.props.elementDisplayName})
   );
 
+  /**
+   * Previews show in modals, which slideouts can't open over, so their
+   * elements can't be edited.
+   */
+  const previewing = useUiPreview();
+
   function canEditElement(value: number | string): boolean {
-    return presentation(value).canEdit === true;
+    return !previewing && presentation(value).canEdit === true;
   }
 
   /**
@@ -416,9 +506,10 @@
         listData.value.map((element) => [
           element.id,
           chipMenu(element, menuField.value, {
-            edit: list.isCards.value
-              ? undefined
-              : {label: editLabel.value, open: () => openEditor(element.id)},
+            edit:
+              list.isCards.value || previewing
+                ? undefined
+                : {label: editLabel.value, open: () => openEditor(element.id)},
             replace: () => void openSelector(element.id),
             remove: () =>
               removeIds(
@@ -457,6 +548,10 @@
 
   /** Double-click opens the element's editor slideout, as it does on chips elsewhere. */
   function openEditor(value: number | string): void {
+    if (previewing) {
+      return;
+    }
+
     const element = presentation(value);
     const href =
       element.cpEditUrl ??
@@ -521,6 +616,8 @@
           :actions="bulkActions"
           :total="ids.length"
           :limit="limit"
+          :element-display-name="control.props.elementDisplayName"
+          :element-plural-display-name="control.props.elementPluralDisplayName"
         />
         <div class="elements-stage">
           <ElementList
@@ -530,7 +627,6 @@
             :selection="list.selection"
             :selectable="selectable"
             :select-all="false"
-            :read-only="!editable"
             :sortable="sortable"
             @edit="(element) => openEditor(element.id)"
             @reorder="reorder"
@@ -575,7 +671,7 @@
 
       <div
         v-if="editable && !atLimit"
-        class="flex gap-md"
+        class="flex flex-wrap gap-md"
         :class="{'pt-md': ids.length > 0}"
       >
         <craft-button
@@ -594,7 +690,7 @@
           v-if="control.props.canUpload !== undefined"
           variant="dashed"
           :can-upload="control.props.canUpload"
-          :folder-id="control.props.uploadFolderId ?? undefined"
+          :params="control.props.uploadParams ?? undefined"
           :allowed-kinds="uploadKinds"
           :drop-zone="dropZone"
           :reload-on-complete="false"

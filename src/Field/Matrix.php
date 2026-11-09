@@ -281,6 +281,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      */
     private NestedElementManager $_entryManager;
 
+    /**
+     * Owners' entry counts while {@see nestedEntriesControl()} renders, keyed by field, owner, and site IDs.
+     *
+     * Static, as nested entries' permission checks get their own instances of the field.
+     *
+     * @var array<string, int>|null
+     */
+    private static ?array $renderingTotalEntries = null;
+
     public function __construct($config = [])
     {
         // Config normalization
@@ -618,7 +627,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $uis[$uid] = app(FieldLayoutCompiler::class)->ui(
                 $entry->getFieldLayout(),
                 $entry,
-                new UiContext(mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode),
+                new UiContext(
+                    mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
+                    preview: $context->ui->preview,
+                ),
             );
             $sortOrder[] = $uid;
         }
@@ -728,6 +740,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // Not `id`: `data-id` is the block's UID, which is what both
             // renderers, the sort order and the posted value are all keyed by.
             'element-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
+            // Matches the block to the same entry in another version, such as on the Compare screen.
+            'canonical-id' => $entry->getCanonicalId(),
             'draft-id' => $entry->isProvisionalDraft ? null : $entry->draftId,
             'revision-id' => $entry->revisionId,
             'owner-id' => $entry->getOwnerId(),
@@ -1082,14 +1096,26 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         /** @var EntryQuery<Entry>|ElementCollection<int,Entry> $value */
         $value = $owner->getFieldValue($this->handle);
 
-        if ($value instanceof EntryQuery) {
-            return (clone $value)
-                ->status(null)
-                ->siteId($owner->siteId)
-                ->getCountForPagination();
+        if (! $value instanceof EntryQuery) {
+            return $value->count();
         }
 
-        return $value->count();
+        $key = "$this->id:$owner->id:$owner->siteId";
+
+        if (isset(self::$renderingTotalEntries[$key])) {
+            return self::$renderingTotalEntries[$key];
+        }
+
+        $total = (clone $value)
+            ->status(null)
+            ->siteId($owner->siteId)
+            ->getCountForPagination();
+
+        if (self::$renderingTotalEntries !== null && $this->id && $owner->id) {
+            self::$renderingTotalEntries[$key] = $total;
+        }
+
+        return $total;
     }
 
     #[Override]
@@ -1426,19 +1452,31 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             && $context->ui->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
 
-        return $this->entryManager()->uiControl(
-            $context->path,
-            $owner,
-            $this->viewMode,
-            $this->nestedElementManagerConfig($context->value, $owner, ! $editable),
-        );
+        // Previews show their entries as a list of cards, which fits side by side and shows which ones changed.
+        $viewMode = $context->ui->preview ? self::VIEW_MODE_CARDS : $this->viewMode;
+
+        // Every nested entry's permission checks ask whether the owner has reached Max Entries, and nothing adds entries
+        // while they render, so the owner's entries are counted once.
+        $totalEntries = self::$renderingTotalEntries;
+        self::$renderingTotalEntries ??= [];
+
+        try {
+            return $this->entryManager()->uiControl(
+                $context->path,
+                $owner,
+                $viewMode,
+                $this->nestedElementManagerConfig($context->value, $owner, ! $editable, $viewMode),
+            );
+        } finally {
+            self::$renderingTotalEntries = $totalEntries;
+        }
     }
 
     /**
      * @param  EntryQuery<Entry>|ElementCollection<int,Entry>|null  $value
      * @return array<string, mixed>
      */
-    private function nestedElementManagerConfig(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static): array
+    private function nestedElementManagerConfig(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static, string $viewMode): array
     {
         if (Event::hasListeners(EntryTypesForFieldResolving::class)) {
             if ($owner?->hasEagerLoadedElements($this->handle)) {
@@ -1461,7 +1499,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         $config = [
-            'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
+            'showInGrid' => $viewMode === self::VIEW_MODE_CARDS_GRID,
             'nestedActionEvents' => true,
             'prevalidate' => false,
             'static' => $static,
@@ -1499,7 +1537,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
         }
 
-        if ($this->viewMode !== self::VIEW_MODE_INDEX) {
+        if ($viewMode !== self::VIEW_MODE_INDEX) {
             return $config;
         }
 
@@ -2094,14 +2132,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
 
             if (isset($entryData['fields'])) {
-                foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        if ($fromRequest) {
-                            $entry->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                        } else {
+                if ($fromRequest) {
+                    // Respect field layout conditions
+                    ElementHelper::setNestedFieldValuesFromRequest($entry, $entryData['fields']);
+                } else {
+                    foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
+                        try {
                             $entry->setFieldValue($fieldHandle, $fieldValue);
+                        } catch (InvalidFieldException) {
                         }
-                    } catch (InvalidFieldException) {
                     }
                 }
             }

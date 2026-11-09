@@ -385,6 +385,35 @@ export default css`
     display: grid;
   }
 
+  :host([full-width][prefix-placement='block-start']) {
+    display: block;
+    flex: 1 1 auto;
+    container: chip / inline-size;
+  }
+
+  /* Conditions can't read var(), so 18px is a large chip's padding and border on both sides. */
+  @container chip (inline-size < calc(240rem / 16 + 18px)) {
+    .cp-chip--stacked.cp-chip--thumb-2xl {
+      --_thumb-size: calc(180rem / 16);
+    }
+  }
+
+  @container chip (inline-size < calc(180rem / 16 + 18px)) {
+    .cp-chip--stacked:is(.cp-chip--thumb-2xl, .cp-chip--thumb-xl) {
+      --_thumb-size: calc(120rem / 16);
+    }
+  }
+
+  @container chip (inline-size < calc(120rem / 16 + 18px)) {
+    .cp-chip--stacked:is(
+      .cp-chip--thumb-2xl,
+      .cp-chip--thumb-xl,
+      .cp-chip--thumb-lg
+    ) {
+      --_thumb-size: calc(60rem / 16);
+    }
+  }
+
   .cp-chip--stacked.cp-chip--has-header {
     grid-template-areas:
       'select . suffix'
@@ -397,10 +426,10 @@ export default css`
     justify-self: start;
   }
 
-  /* With a checkbox, the header row is as tall as the checkbox, so it sits as
-     far from the top as from the side, and a taller suffix centers on it,
-     spilling evenly into the padding above and the gap below. */
-  .cp-chip--stacked.cp-chip--has-header.cp-chip--selectable {
+  /* The header row is as tall as a checkbox, with or without one, so a
+     checkbox sits as far from the top as from the side, and a taller suffix
+     centers on it, spilling evenly into the padding above and the gap below. */
+  .cp-chip--stacked.cp-chip--has-header {
     grid-template-rows: var(--c-chip-checkbox-size, calc(14rem / 16)) auto auto;
   }
 

@@ -17,7 +17,9 @@ use function CraftCms\Cms\craftAsset;
  */
 class InputmaskAsset implements LegacyAssetInterface
 {
-    public array $depends = [];
+    public array $depends = [
+        JqueryAsset::class,
+    ];
 
     public function register(HtmlStack $htmlStack): void
     {

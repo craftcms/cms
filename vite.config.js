@@ -316,7 +316,6 @@ export default defineConfig(async ({mode}) => {
         '!yii2-adapter/resources',
         'yii2-adapter/resources/*',
         '!yii2-adapter/resources/js',
-        'tests-playwright/.authentication.json',
         // Written by `boost:install`
         '.mcp.json',
         'boost.json',
@@ -401,8 +400,8 @@ export default defineConfig(async ({mode}) => {
       emptyOutDir: true,
       rollupOptions: {
         // App builds drop entry exports by default, which would empty the
-        // `vue.ts`/`cp-module.ts` entries that plugin bundles import through
-        // the import map.
+        // `vue.ts`/`cp-module.ts`/`garnish.ts` entries that plugin bundles
+        // import through the import map.
         preserveEntrySignatures: 'exports-only',
       },
     },
@@ -482,6 +481,7 @@ export default defineConfig(async ({mode}) => {
                   'yii2-adapter/resources/js/cp-compat.ts',
                   'yii2-adapter/resources/js/element-editor.ts',
                   'resources/js/cp-module.ts',
+                  'resources/js/garnish.ts',
                   'resources/js/legacy.ts',
                   'resources/js/uploads.ts',
                   'resources/js/vue.ts',

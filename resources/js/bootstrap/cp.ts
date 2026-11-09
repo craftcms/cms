@@ -1,4 +1,4 @@
-import {createInertiaApp, router} from '@inertiajs/vue3';
+import {createInertiaApp, router, usePage} from '@inertiajs/vue3';
 import {handleControlPanelLinks} from '@/common/inertia-links';
 import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
 import type {DefineComponent} from 'vue';
@@ -11,6 +11,16 @@ import {registerSlideoutGlobals} from '@/common/slideouts';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
 import {installSessionTimeout} from '@/modules/auth/session-timeout';
+import {installClipboard} from '@/modules/elements/clipboard';
+import {installElementInstanceRefresh} from '@/modules/elements/element-instances';
+import {installAnnouncer} from '@/common/announcer';
+import {observeFieldToggles} from '@/modules/field-toggle/observe';
+import {answerElevatedSessionRequests} from '@/modules/auth/elevated-session';
+import {
+  broadcast,
+  relayBroadcastEvents,
+  type BroadcastMessage,
+} from '@/common/craft/broadcast';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
 import {assistantApi} from './assistant.js';
@@ -134,6 +144,13 @@ const Cp = {
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
 
+    installAnnouncer();
+    installClipboard();
+    installElementInstanceRefresh();
+    observeFieldToggles();
+    answerElevatedSessionRequests();
+    relayBroadcastEvents();
+
     // The command palette's “Run pending queue jobs”.
     window.addEventListener('craft:run-queue', () => {
       void queue.runQueue({force: true});
@@ -156,6 +173,7 @@ const Cp = {
 
     // Before the app mounts, so the first page's messages have somewhere to go.
     setUpInertiaMessages();
+    relayPageBroadcasts();
 
     await createInertiaApp({
       resolve: async (name) => {
@@ -187,6 +205,29 @@ const Cp = {
  * When navigating to a new page, set keyboard focus on the route focus anchor and
  * announce route change.
  */
+/**
+ * Broadcasts the messages the server queued for the page with
+ * `session()->broadcastToJs()`, such as a full-page element save, so other
+ * tabs and this one hear about them. `success` and `error` cover visits, and the first
+ * `navigate` the page the CP loaded on; later `navigate`s restore history,
+ * whose messages have already gone out.
+ */
+function relayPageBroadcasts() {
+  const relay = (page: {props: Record<string, unknown>}) => {
+    const messages = page.props.broadcasts as BroadcastMessage[] | undefined;
+    messages?.forEach(broadcast);
+  };
+
+  const stopInitial = router.on('navigate', (event) => {
+    stopInitial();
+    relay(event.detail.page);
+  });
+  router.on('success', (event) => relay(event.detail.page));
+  // A visit that comes back with validation errors fires this instead, after
+  // its page is in place.
+  router.on('error', () => relay(usePage()));
+}
+
 function handleAccessibleRouting() {
   const {announce} = useAnnouncer();
   let previousPathname = window.location.pathname;

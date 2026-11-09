@@ -73,13 +73,17 @@ ordering. `open()` registers with it; `close()` unregisters.
 
 - `containerSlideouts` (module export) — a `WeakMap` from the container
   element to its instance.
-- `$container.data('slideout')` — the jQuery back-reference (CP screens also
+- `$container.data('slideout')` — the jQuery back-reference, when jQuery is loaded (CP screens also
   set `data('cpScreen')`).
 
 ## `CpScreenSlideout`
 
+`Craft.CpScreenSlideout` and `Craft.ElementEditorSlideout` are registered by
+`compat.ts`, which only the Yii2 adapter loads; core imports the classes
+directly.
+
 ```ts
-import {CpScreenSlideout} from '@/modules/slideout';
+import {CpScreenSlideout} from '@/modules/slideout/cp-screen-slideout';
 
 const slideout = new CpScreenSlideout('fields/edit-field', {
   params: {fieldId: 1},
@@ -125,10 +129,10 @@ saved model's payload).
 
 ## The jQuery API surface
 
-The `$`-prefixed instance members are jQuery collections and are public API —
-external code reads them directly: `$container`, `$outerContainer`, `$shade`
-(the shade shared with every other open panel — don't remove it),
-and on CP screens `$header`, `$toolbar`, `$content`, `$sidebar`, `$footer`,
+The base slideout stores plain elements: `container`, `outerContainer` and
+`shade` (the shade shared with every other open panel — don't remove it).
+On CP screens the `$`-prefixed members are jQuery collections and are public
+API — external code reads them directly: `$container`, `$header`, `$toolbar`, `$content`, `$sidebar`, `$footer`,
 `$saveBtn`, etc. The same goes for the jQuery data entries the submit flow
 maintains: `data('initialSerializedValue')`, `data('delta-names')`,
 `data('initial-delta-values')`, and the optional `data('serializer')`

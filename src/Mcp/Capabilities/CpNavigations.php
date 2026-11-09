@@ -45,7 +45,7 @@ readonly class CpNavigations
     private const array TreeSchema = [
         'type' => 'array',
         'maxItems' => 500,
-        'description' => 'The whole navigation as configuration.get returns it, edited: sections and items in order, each with their `children`. Reorder nodes, move items between the root and sections, change `label` or `icon`, set `hidden` to hide a node, or add sections and links with `source: custom`, a new `id` of `custom-` followed by lowercase letters and digits (such as `custom-7f3a`), a `label`, and `type: section` or `type: link` (with `url`). Custom sections and links can have a `userCondition`, the config of a user condition, so only users who match it see them. Pass every node the current tree has; drop a custom node to remove it.',
+        'description' => 'The whole navigation as configuration_get returns it, edited: sections and items in order, each with their `children`. Reorder nodes, move items between the root and sections, change `label` or `icon`, set `hidden` to hide a node, or add sections and links with `source: custom`, a new `id` of `custom-` followed by lowercase letters and digits (such as `custom-7f3a`), a `label`, and `type: section` or `type: link` (with `url`). Custom sections and links can have a `userCondition`, the config of a user condition, so only users who match it see them. Pass every node the current tree has; drop a custom node to remove it.',
         'items' => [
             'type' => 'object',
             'properties' => [

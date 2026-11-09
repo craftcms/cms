@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import {t, type ChipThumbSizeValue} from '@craftcms/ui';
   import {computed} from 'vue';
-  import {usePage} from '@inertiajs/vue3';
   import DragShadow from '@/common/components/DragShadow.vue';
   import {
     useReorderableItems,
@@ -25,6 +24,8 @@
     labelLinkAttributes?: Record<string, unknown>;
     thumbHtml?: string;
     label: string;
+    /** A Craft color name, such as an entry's type color. */
+    color?: string | null;
   }
 
   const props = withDefaults(
@@ -58,21 +59,24 @@
        * they load. Takes the place of the loading spinner.
        */
       placeholders?: number;
+      /**
+       * The tiles' color, for an element with none of its own. Null leaves them
+       * uncolored, taking the colors around them.
+       */
+      fallbackColor?: string | null;
     }>(),
     {
+      fallbackColor: 'white',
       data: () => [],
       selectable: false,
       selectAll: true,
       sortable: false,
-      readOnly: undefined,
+      readOnly: false,
       loading: false,
       thumbSize: 'lg',
       placeholders: 0,
     }
   );
-
-  const page = usePage<{readOnly: boolean}>();
-  const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
   // Selection is handed in rather than derived from a table, so this body works
   // for anything with an ordered list of ids.
@@ -125,7 +129,7 @@
       return;
     }
 
-    if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
+    if (props.selectable && !props.readOnly && !props.interactionsDisabled) {
       props.selection.handleClick(element.id, event);
     }
   }
@@ -226,7 +230,7 @@
         <craft-chip
           prefix-placement="block-start"
           appearance="outline-fill"
-          data-color="white"
+          :data-color="fallbackColor ?? undefined"
           full-width
           show-thumb
           :thumb-size="thumbSize"
@@ -283,7 +287,7 @@
         <craft-chip
           prefix-placement="block-start"
           appearance="outline-fill"
-          data-color="white"
+          :data-color="element.color ?? fallbackColor ?? undefined"
           full-width
           show-thumb
           :thumb-size="thumbSize"
@@ -379,7 +383,10 @@
     --_column-width: 180px;
     display: grid;
     gap: var(--c-spacing-md);
-    grid-template-columns: repeat(auto-fill, minmax(var(--_column-width), 1fr));
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(var(--_column-width), 100%), 1fr)
+    );
 
     &[data-thumb-size='sm'] {
       --_column-width: 120px;

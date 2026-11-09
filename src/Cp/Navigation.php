@@ -439,7 +439,7 @@ readonly class Navigation
                     ->icon(
                         $this->generalConfig->allowAdminChanges
                             ? 'gear'
-                            : 'gear-slash',
+                            : 'custom-icons/gear-slash',
                     )
                     ->subnav($this->settingsSubnav());
 

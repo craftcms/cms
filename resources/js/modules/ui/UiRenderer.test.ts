@@ -42,6 +42,7 @@ import Cp from '@/bootstrap/cp';
 import UiRenderer from './UiRenderer.vue';
 import {registerUiComponents} from './register';
 import type {UiValueChangeDetail} from './ui-values';
+import type {UiValueSnapshot} from './valueAccess';
 import type {
   UiChange,
   UiControlPayload,
@@ -411,6 +412,8 @@ describe('UiRenderer', () => {
     setValues: (
       changes: {path: string[]; value: UiValue; refreshable?: boolean}[]
     ) => void;
+    readValue: (path: string[]) => UiValueSnapshot | null;
+    writeValue: (path: string[], snapshot: UiValueSnapshot) => boolean;
   };
 
   beforeEach(async () => {
@@ -999,6 +1002,101 @@ describe('UiRenderer', () => {
     expect(labelSrOnly('hidden', 'craft-select')).toBe(true);
     expect(labelSrOnly('visible', 'craft-field')).toBe(false);
     expect(labelSrOnly('visible', 'craft-select')).toBe(false);
+  });
+
+  it('renders a field in its outlet, where it still edits the form’s value', async () => {
+    const outlet = document.createElement('div');
+    document.body.append(outlet);
+    app.unmount();
+    await mount(choiceFieldsPayload(), {
+      fieldOutlets: (layoutUid) => (layoutUid === 'moved' ? outlet : undefined),
+    });
+
+    const moved = outlet.querySelector<HTMLSelectElement>(
+      'select[name="settings[moved]"]'
+    );
+    expect(moved).not.toBeNull();
+    expect(
+      container.querySelector('select[name="settings[stays]"]')
+    ).not.toBeNull();
+    expect(
+      container.querySelector('select[name="settings[moved]"]')
+    ).toBeNull();
+
+    moved!.value = 'notIn';
+    moved!.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {moved: 'notIn'},
+    });
+    outlet.remove();
+  });
+
+  it('keeps a nested UI’s fields in its control, even when they share an outlet’s layout UID', async () => {
+    const outlet = document.createElement('div');
+    document.body.append(outlet);
+    const payload = choiceFieldsPayload();
+    const [, moved] = payload.nodes;
+    payload.nodes.push({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: 'Block', layoutUid: 'block'},
+      control: {
+        type: 'CraftCms\\Cms\\Ui\\Controls\\ContentBlock',
+        component: 'craft:content-block',
+        props: {addLabel: 'Add content'},
+        path: ['settings', 'block'],
+        mode: 'editable',
+        deltaGroup: ['settings', 'block'],
+        uis: [
+          {
+            scope: ['settings', 'block'],
+            refreshable: false,
+            nodes: [
+              {
+                ...moved!,
+                control: {
+                  ...moved!.control!,
+                  path: ['settings', 'block', 'moved'],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+    payload.values = {
+      settings: {stays: 'in', moved: 'in', block: {moved: 'in'}},
+    };
+    app.unmount();
+    await mount(payload, {
+      fieldOutlets: (layoutUid) => (layoutUid === 'moved' ? outlet : undefined),
+    });
+
+    expect(outlet.querySelectorAll('select')).toHaveLength(1);
+    expect(
+      outlet.querySelector('select[name="settings[moved]"]')
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        '[data-content-block] select[name="settings[block][moved]"]'
+      )
+    ).not.toBeNull();
+    outlet.remove();
+  });
+
+  it('badges a field’s label row', async () => {
+    app.unmount();
+    await mount(choiceFieldsPayload({moved: {labelBadge: 'Changed'}}));
+
+    const badge = (name: string) =>
+      container
+        .querySelector(`select[name="settings[${name}]"]`)!
+        .closest('craft-field')!
+        .querySelector(':scope > [slot="label-badge"]');
+    expect(badge('moved')?.textContent?.trim()).toBe('Changed');
+    expect(badge('stays')).toBeNull();
   });
 
   it('displays a combobox option label for its initial value', async () => {
@@ -1693,7 +1791,58 @@ describe('UiRenderer', () => {
         tab.textContent?.trim()
       )
     ).toEqual(['Content', 'Meta']);
+
+    container.querySelectorAll<HTMLElement>('craft-tab')[1]!.click();
+    await selectionSettled();
+
     expect(container.querySelectorAll('.width-50')).toHaveLength(2);
+  });
+
+  it('renders a tab’s fields once it’s first selected, and keeps them', async () => {
+    vi.stubGlobal('requestIdleCallback', vi.fn());
+    history.replaceState(null, '', location.pathname);
+    app.unmount();
+    await mount(sidebarTabsPayload());
+
+    const panel = (uid: string) =>
+      container.querySelector(`section[data-ui-tab="${uid}"]`);
+    const tabButtons = container.querySelectorAll<HTMLElement>('craft-tab');
+
+    expect(panel('tab-content')?.querySelector('craft-field')).not.toBeNull();
+    expect(panel('tab-meta')).not.toBeNull();
+    expect(panel('tab-meta')?.querySelector('craft-field')).toBeNull();
+
+    tabButtons[1]!.click();
+    await selectionSettled();
+
+    expect(panel('tab-meta')?.querySelector('craft-field')).not.toBeNull();
+
+    const metaInput = panel('tab-meta')?.querySelector('craft-input');
+    tabButtons[0]!.click();
+    await selectionSettled();
+
+    expect(panel('tab-meta')?.classList).toContain('hidden');
+    expect(panel('tab-meta')?.querySelector('craft-input')).toBe(metaInput);
+  });
+
+  it('renders the other tabs’ fields when the browser is idle', async () => {
+    const idle: Array<() => void> = [];
+    vi.stubGlobal(
+      'requestIdleCallback',
+      vi.fn((callback: () => void) => idle.push(callback))
+    );
+    history.replaceState(null, '', location.pathname);
+    app.unmount();
+    await mount(sidebarTabsPayload());
+
+    const meta = container.querySelector('section[data-ui-tab="tab-meta"]');
+    expect(meta?.querySelector('craft-field')).toBeNull();
+
+    idle.splice(0).forEach((callback) => callback());
+    await nextTick();
+
+    expect(meta?.querySelector('craft-field')).not.toBeNull();
+    expect(meta?.classList).toContain('hidden');
   });
 
   it('renders its tab strip in a tabs outlet', async () => {
@@ -1713,6 +1862,7 @@ describe('UiRenderer', () => {
   });
 
   it('renders FieldLayout tabs and semantic content', async () => {
+    vi.stubGlobal('requestIdleCallback', vi.fn());
     app.unmount();
     await mount({
       scope: [],
@@ -1898,6 +2048,7 @@ describe('UiRenderer', () => {
     expect(tabButtons[0]?.id).toBeTruthy();
     expect(tab?.classList).not.toContain('hidden');
     expect(seoTab?.classList).toContain('hidden');
+    expect(seoTab?.querySelector('craft-field')).not.toBeNull();
 
     tabButtons[1]!.click();
     await nextTick();
@@ -4730,6 +4881,120 @@ describe('UiRenderer', () => {
     expect(container.querySelector('craft-input-date-time')).not.toBeNull();
   });
 
+  async function selectionSettled(): Promise<void> {
+    await (
+      container.querySelector('craft-tabs') as unknown as {
+        updateComplete: Promise<unknown>;
+      }
+    ).updateComplete;
+    await nextTick();
+  }
+
+  describe('reading and writing a value from outside', () => {
+    const control = (extra: object = {}) => ({
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+      component: 'craft:text',
+      props: {placeholder: 'Before', maxLength: 20},
+      path: ['title'],
+      mode: 'editable' as const,
+      deltaGroup: ['title'],
+      ...extra,
+    });
+
+    async function mountTitle(extra: object = {}, title = 'Original') {
+      app.unmount();
+      await mount({
+        scope: [],
+        refreshable: false,
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+            component: 'craft:field',
+            props: {label: 'Title'},
+            control: control(extra),
+          },
+        ],
+        values: {title},
+        errors: [],
+        globalErrors: [],
+      });
+    }
+
+    it('writes a value back as it was read, with the props it draws it with', async () => {
+      await mountTitle({
+        readable: true,
+        writable: true,
+        valueProps: ['placeholder'],
+      });
+      const original = renderer.readValue(['title']);
+
+      expect(original).toEqual({
+        value: 'Original',
+        props: {placeholder: 'Before'},
+      });
+
+      expect(
+        renderer.writeValue(['title'], {
+          value: 'Copied',
+          props: {placeholder: 'After'},
+        })
+      ).toBe(true);
+      await nextTick();
+
+      const input = container.querySelector<HTMLInputElement>('input')!;
+      expect(input.value).toBe('Copied');
+      expect(input.placeholder).toBe('After');
+      expect(input.maxLength).toBe(20);
+      expect(renderer.readValue(['title'])).toEqual({
+        value: 'Copied',
+        props: {placeholder: 'After'},
+      });
+
+      renderer.writeValue(['title'], original!);
+      await nextTick();
+
+      expect(input.value).toBe('Original');
+      expect(input.placeholder).toBe('Before');
+    });
+
+    it('refreshes the layout after writing a reactive control’s value, as an edit does', async () => {
+      const refresh = vi.fn(
+        async (values: UiPayload['values']): Promise<UiPayload> => ({
+          ...choiceFieldsPayload(),
+          refreshable: true,
+          values: {settings: values},
+        })
+      );
+      const payload = {...choiceFieldsPayload(), refreshable: true};
+      Object.assign(payload.nodes[1]!.control!, {
+        writable: true,
+        reactive: true,
+      });
+      app.unmount();
+      await mount(payload, {refresh});
+
+      expect(renderer.writeValue(['settings', 'moved'], {value: 'notIn'})).toBe(
+        true
+      );
+      await nextTick();
+
+      expect(refresh).toHaveBeenCalledOnce();
+      expect(refresh.mock.calls[0]![0]).toMatchObject({moved: 'notIn'});
+    });
+
+    it('neither reads nor writes a control that doesn’t say it can', async () => {
+      await mountTitle();
+
+      expect(renderer.readValue(['title'])).toBeNull();
+      expect(renderer.writeValue(['title'], {value: 'Copied'})).toBe(false);
+      await nextTick();
+
+      expect(container.querySelector<HTMLInputElement>('input')!.value).toBe(
+        'Original'
+      );
+    });
+  });
+
   async function mount(
     uiPayload: UiPayload,
     options: {
@@ -4754,6 +5019,7 @@ describe('UiRenderer', () => {
       >;
       sidebarTabOutlets?: Map<string, HTMLElement>;
       tabsOutlet?: HTMLElement;
+      fieldOutlets?: (layoutUid: string) => HTMLElement | undefined;
     } = {}
   ): Promise<void> {
     currentPayload = shallowRef(uiPayload);
@@ -4772,6 +5038,7 @@ describe('UiRenderer', () => {
             onChange: options.onChange,
             sidebarTabOutlets: options.sidebarTabOutlets,
             tabsOutlet: options.tabsOutlet,
+            fieldOutlets: options.fieldOutlets,
           },
           options.slots
         ),
@@ -4788,6 +5055,40 @@ describe('UiRenderer', () => {
     renderer = rendererRef.value;
   }
 });
+
+function choiceFieldsPayload(
+  props: Record<string, UiPayload['nodes'][number]['props']> = {}
+): UiPayload {
+  const field = (name: string): UiPayload['nodes'][number] => ({
+    type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+    component: 'craft:field',
+    props: {label: name, layoutUid: name, ...props[name]},
+    control: {
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Choice',
+      component: 'craft:choice',
+      props: {
+        options: [
+          {label: 'is one of', value: 'in'},
+          {label: 'is not one of', value: 'notIn'},
+        ],
+        multiple: false,
+        presentation: 'select',
+      },
+      path: ['settings', name],
+      mode: 'editable',
+      deltaGroup: ['settings', name],
+    },
+  });
+
+  return {
+    scope: ['settings'],
+    refreshable: false,
+    nodes: [field('stays'), field('moved')],
+    values: {settings: {stays: 'in', moved: 'in'}},
+    errors: [],
+    globalErrors: [],
+  };
+}
 
 function visitControls(
   nodes: UiPayload['nodes'],

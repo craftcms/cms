@@ -391,6 +391,36 @@ it('makes medium and large chips as tall as a button of the same size', async ()
   }
 });
 
+it('puts a stacked chip’s suffix and thumbnail in the same place with or without a checkbox', async () => {
+  const tile = (selectable: boolean) => `
+    <craft-chip prefix-placement="block-start" full-width show-thumb thumb-size="lg" ${selectable ? 'selectable' : ''} style="width: 200px">
+      <div slot="thumbnail"><craft-thumbnail src="${image}" alt="Thumbnail"></craft-thumbnail></div>
+      Label
+      <craft-button slot="suffix" size="small" icon="ellipsis" aria-label="Actions"></craft-button>
+    </craft-chip>`;
+  document.body.innerHTML = tile(true) + tile(false);
+  const chips = [...document.querySelectorAll('craft-chip')];
+  await Promise.all(chips.map((chip) => chip.updateComplete));
+
+  const offsets = chips.map((chip) => {
+    const top = chip
+      .shadowRoot!.querySelector('.cp-chip')!
+      .getBoundingClientRect().top;
+    const offset = (selector: string) =>
+      Math.round(
+        chip.shadowRoot!.querySelector(selector)!.getBoundingClientRect().top -
+          top
+      );
+
+    return {
+      suffix: offset('.cp-chip__suffix'),
+      thumbnail: offset('.cp-chip__prefix'),
+    };
+  });
+
+  expect(offsets[1]).toEqual(offsets[0]);
+});
+
 it('sizes to its content, or fills its parent when full-width', async () => {
   for (const parent of ['', 'display: flex;']) {
     document.body.innerHTML = `
@@ -1088,6 +1118,33 @@ it('stacks the prefix above the label, with the checkbox and suffix on top', asy
   const center = outer.left + outer.width / 2;
   expect(Math.abs(prefix.left + prefix.width / 2 - center)).toBeLessThan(1);
 });
+
+it.each([
+  [300, 240],
+  [250, 180],
+  [180, 120],
+  [100, 60],
+])(
+  'steps a full-width stacked 2xl tile’s thumbnail down to fit a %ipx parent',
+  async (width, thumb) => {
+    document.body.innerHTML = `
+      <div style="width: ${width}px; display: flex">
+        <craft-chip prefix-placement="block-start" full-width thumb-size="2xl" show-thumb>
+          <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+          Label
+        </craft-chip>
+      </div>`;
+    const chip = document.querySelector('craft-chip')!;
+    const thumbnail = chip.querySelector('craft-thumbnail')!;
+    await chip.updateComplete;
+    await thumbnail.updateComplete;
+
+    expect(box(chip.shadowRoot!.querySelector('.cp-chip')!).width).toBe(width);
+    expect(box(thumbnail.shadowRoot!.querySelector('.thumbnail')!).width).toBe(
+      thumb
+    );
+  }
+);
 
 // The thumbnail size and the chip's: a thumb-size picks a chip size to suit,
 // unless the chip has one of its own.

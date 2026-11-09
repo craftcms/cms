@@ -187,6 +187,43 @@ it('uses configured base URLs rather than the request host in OAuth metadata', f
         ->assertJsonPath('registration_endpoint', $expectedResource.'/oauth/register');
 })->with(['control panel endpoint' => true, 'site endpoint' => false]);
 
+it('keeps OAuth on the control panel’s own domain without a control panel trigger', function (): void {
+    $cpTrigger = Cms::config()->cpTrigger;
+    Cms::config()->cpTrigger = null;
+    Cms::config()->baseCpUrl('https://cp.example.test');
+    config()->set('app.url', 'https://site.example.test');
+
+    try {
+        enableMcp(['route' => '/mcp', 'authorizationRoute' => '/mcp/auth']);
+
+        $this->getJson('https://cp.example.test/.well-known/oauth-protected-resource/mcp/auth')
+            ->assertOk()
+            ->assertJsonPath('resource', 'https://cp.example.test/mcp/auth')
+            ->assertJsonPath('authorization_servers.0', 'https://cp.example.test/mcp/auth');
+
+        $this->getJson('https://cp.example.test/.well-known/oauth-authorization-server/mcp/auth')
+            ->assertOk()
+            ->assertJsonPath('issuer', 'https://cp.example.test/mcp/auth')
+            ->assertJsonPath('authorization_endpoint', 'https://cp.example.test/mcp/auth/oauth/authorize')
+            ->assertJsonPath('token_endpoint', 'https://cp.example.test/oauth/token')
+            ->assertJsonPath('registration_endpoint', 'https://cp.example.test/mcp/auth/oauth/register');
+    } finally {
+        Cms::config()->cpTrigger = $cpTrigger;
+    }
+});
+
+it('challenges requests without access tokens when the OAuth signing keys are missing', function (array $headers): void {
+    config()->set('passport.private_key');
+    config()->set('passport.public_key');
+
+    $this->postJson(route('craft.mcp.server'), McpRequest::payload('initialize'), [...McpRequest::headers('initialize'), ...$headers])
+        ->assertUnauthorized()
+        ->assertHeader('WWW-Authenticate');
+})->with([
+    'no authorization' => [[]],
+    'basic authorization' => [['Authorization' => 'Basic dXNlcjpwYXNz']],
+]);
+
 it('serves the endpoint and OAuth metadata from current settings when routes are cached', function (): void {
     // Cache routes from before MCP was enabled, then boot again, as the next request would
     $routes = new RouteCollection;
@@ -409,23 +446,23 @@ it('exposes only the tools the token scope covers', function (array $scopes, arr
     expect(array_diff($visible, $names))->toBe([])
         ->and(array_intersect($hidden, $names))->toBe([]);
 })->with([
-    'read' => [['mcp:read'], ['elements.list', 'assets.transform-url'], ['elements.create', 'configuration.list']],
-    'write' => [['mcp:write'], ['elements.list', 'elements.create'], ['configuration.list']],
-    'admin' => [['mcp:admin'], ['elements.list', 'elements.create', 'configuration.list'], []],
+    'read' => [['mcp:read'], ['elements_list', 'assets_transform_url'], ['elements_create', 'configuration_list']],
+    'write' => [['mcp:write'], ['elements_list', 'elements_create'], ['configuration_list']],
+    'admin' => [['mcp:admin'], ['elements_list', 'elements_create', 'configuration_list'], []],
 ]);
 
 it('rejects calls to tools outside the token scope', function (): void {
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:read'], 'craft-mcp');
 
-    McpRequest::send($this, 'tools/call', ['name' => 'elements.delete', 'arguments' => ['type' => 'entry', 'id' => 1]])
-        ->assertJsonPath('error.message', 'Tool not found: "elements.delete".');
+    McpRequest::send($this, 'tools/call', ['name' => 'elements_delete', 'arguments' => ['type' => 'entry', 'id' => 1]])
+        ->assertJsonPath('error.message', 'Tool not found: "elements_delete".');
 });
 
 it('requires write access for upload sessions', function (array $scopes, int $status): void {
     $user = User::query()->firstOrFail();
     Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
     $upload = McpRequest::send($this, 'tools/call', [
-        'name' => 'assets.upload.prepare',
+        'name' => 'assets_upload_prepare',
         'arguments' => ['filename' => 'notes.txt', 'size' => 3, 'volumeId' => Volume::factory()->create()->id],
     ])->assertJsonPath('result.isError', false)->json('result.structuredContent.upload');
 

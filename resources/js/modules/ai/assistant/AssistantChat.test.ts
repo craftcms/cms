@@ -345,7 +345,7 @@ describe('AssistantChat', () => {
     await flush();
 
     expect(container.textContent).toContain(
-      'Allow the assistant to use elements.update?'
+      'Allow the assistant to use elements_update?'
     );
 
     button('Approve', 0).click();
@@ -671,7 +671,7 @@ describe('AssistantChat', () => {
     ).toBe('shipped');
   });
 
-  it('shows the images Craft made with assets.transform-url inline, and others as links', async () => {
+  it('shows the images Craft made with assets_transform_url inline, and others as links', async () => {
     const url = 'https://example.test/transforms/_800x600/photo.jpg';
     chat.messages.value = [
       {
@@ -681,7 +681,7 @@ describe('AssistantChat', () => {
           {
             type: 'tool-call',
             id: 'call_1',
-            name: 'assets_transform-url',
+            name: 'assets_transform_url',
             arguments: '{"id":1}',
             state: 'input-complete',
             output: JSON.stringify({url}),
@@ -739,14 +739,14 @@ describe('AssistantChat', () => {
     ].map((decision) => decision.textContent?.trim());
 
     expect(container.textContent).toContain(
-      'Allow the assistant to use elements.update?'
+      'Allow the assistant to use elements_update?'
     );
     expect(container.textContent).toContain(
-      'Allow the assistant to use elements.delete?'
+      'Allow the assistant to use elements_delete?'
     );
     expect(answers).toEqual(['Approved', 'Denied']);
-    expect(container.textContent).not.toContain('Used elements.update');
-    expect(container.textContent).not.toContain('Denied elements.delete');
+    expect(container.textContent).not.toContain('Used elements_update');
+    expect(container.textContent).not.toContain('Denied elements_delete');
     expect(button('Approve')).toBeUndefined();
   });
 
@@ -776,7 +776,7 @@ describe('AssistantChat', () => {
     await flush();
 
     expect(container.textContent).toContain(
-      'Allow the assistant to use elements.update?'
+      'Allow the assistant to use elements_update?'
     );
     expect(
       container.querySelector('.assistant-approvals__decision')?.textContent
@@ -802,7 +802,7 @@ describe('AssistantChat', () => {
     await flush();
 
     expect(container.textContent).toContain(
-      'Didn’t finish using elements.update'
+      'Didn’t finish using elements_update'
     );
   });
 });

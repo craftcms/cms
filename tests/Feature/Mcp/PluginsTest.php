@@ -73,7 +73,7 @@ it('adds missing plugin packages through Composer before installation', function
         'restartRequired' => true,
         'instructions' => 'Reconnect to the Craft MCP server so it loads the new Composer dependencies, then make the indicated tool call to complete the Craft plugin installation.',
         'nextToolCall' => [
-            'name' => 'plugins.install',
+            'name' => 'plugins_install',
             'arguments' => [
                 'handle' => 'plugin-handle',
                 'edition' => 'pro',

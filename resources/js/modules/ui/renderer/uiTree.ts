@@ -50,6 +50,21 @@ export function disabledNodes(nodes: UiNodePayload[]): UiNodePayload[] {
   return disabled;
 }
 
+/**
+ * The nodes with every editable control read-only, for a form that can't be
+ * edited for now: its values stay legible and focusable, unlike disabled ones.
+ */
+export function readOnlyNodes(nodes: UiNodePayload[]): UiNodePayload[] {
+  const readOnly = cloneRaw(nodes);
+  visitControls(readOnly, (control) => {
+    if (control.mode === 'editable') {
+      Object.assign(control, {mode: 'readOnly'});
+    }
+  });
+
+  return readOnly;
+}
+
 /** The payload with the control at `path` redefined. */
 export function withControl(
   payload: UiPayload,

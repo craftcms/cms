@@ -87,10 +87,8 @@ use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Folders;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Images;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -126,7 +124,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Imagick;
-use Intervention\Image\Encoders\PngEncoder;
 use InvalidArgumentException;
 use League\Flysystem\MountManager;
 use League\Flysystem\UnableToDeleteFile;
@@ -191,6 +188,9 @@ class Asset extends Element
     public const string ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
 
     public const string ERROR_FILENAME_CONFLICT = 'filename_conflict';
+
+    /** The width and height of the image that covers element cards, from {@see getCardCoverUrl()}. */
+    public const array CARD_COVER_SIZE = [800, 600];
 
     /** How many times the color grid is scaled up for {@see getPlaceholderDataUrl()}. */
     private const int PLACEHOLDER_SCALE = 3;
@@ -444,6 +444,9 @@ class Asset extends Element
      * @var array{x: float, y: float}|null Focal point
      */
     private ?array $_focalPoint = null;
+
+    /** @var array{list<list<string>>, string}|null The color grid {@see getPlaceholderDataUrl()} last painted, and its data URL */
+    private ?array $_placeholder = null;
 
     private ?Volume $_volume = null;
 
@@ -1702,57 +1705,39 @@ class Asset extends Element
         $items = parent::safeActionMenuItems();
 
         $user = currentUserElement();
-        $updatePreviewThumbJs = $this->_updatePreviewThumbJs();
 
         $viewItems = [];
 
         // Preview
         if (AssetsService::getAssetPreviewHandler($this) !== null) {
-            $previewId = sprintf('action-preview-%s', mt_rand());
             $viewItems[] = [
                 'type' => MenuItemType::Button,
-                'id' => $previewId,
+                'id' => sprintf('action-preview-%s', mt_rand()),
                 'icon' => 'view',
                 'label' => t('Preview file'),
+                'action' => self::behaviorAction([
+                    'type' => 'previewFile',
+                    'assetId' => $this->id,
+                    'settings' => [
+                        'startingWidth' => $this->width,
+                        'startingHeight' => $this->height,
+                    ],
+                ]),
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $assetId, $settings) => <<<JS
-$('#' + $id).on('activate', () => {
-  new Craft.PreviewFileModal($assetId, $settings)
-});
-JS, [
-                InputNamespace::namespaceId($previewId),
-                $this->id,
-                [
-                    'startingWidth' => $this->width,
-                    'startingHeight' => $this->height,
-                ],
-            ]);
         }
 
         // Download
-        $downloadId = sprintf('action-download-%s', mt_rand());
         $viewItems[] = [
             'type' => MenuItemType::Button,
-            'id' => $downloadId,
+            'id' => sprintf('action-download-%s', mt_rand()),
             'icon' => 'download',
             'label' => t('Download'),
+            'action' => self::behaviorAction([
+                'type' => 'download',
+                'actionUrl' => Url::actionUrl('assets/download-asset'),
+                'params' => ['assetId' => $this->id],
+            ]),
         ];
-
-        HtmlStack::jsWithVars(fn ($id, $assetId) => <<<JS
-$('#' + $id).on('activate', () => {
-  const form = Craft.createForm().appendTo(Garnish.\$bod);
-  form.append(Craft.getCsrfInput());
-  $('<input/>', {type: 'hidden', name: 'action', value: 'assets/download-asset'}).appendTo(form);
-  $('<input/>', {type: 'hidden', name: 'assetId', value: $assetId}).appendTo(form);
-  $('<input/>', {type: 'submit', value: 'Submit'}).appendTo(form);
-  form.submit();
-  form.remove();
-});
-JS, [
-            InputNamespace::namespaceId($downloadId),
-            $this->id,
-        ]);
 
         // Show in Folder
         if ($user && $this->volumeId && $this->canView($user)) {
@@ -1776,138 +1761,17 @@ JS, [
             $user &&
             $user->can('replaceFile', $this)
         ) {
-            $replaceId = sprintf('action-replace-%s', mt_rand());
             $items[] = [
                 'type' => MenuItemType::Button,
-                'id' => $replaceId,
+                'id' => sprintf('action-replace-%s', mt_rand()),
                 'icon' => 'upload',
                 'label' => t('Replace file'),
                 'showInChips' => false,
+                'action' => self::behaviorAction([
+                    'type' => 'replaceFile',
+                    'assetId' => $this->id,
+                ]),
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $namespace, $assetId, $dimensionsLabel) => <<<JS
-$('#' + $id).on('activate', () => {
-  const fileInput = $('<input/>', {type: 'file', name: 'replaceFile', class: 'replaceFile hidden'}).appendTo(Garnish.\$bod);
-  const uploader = new Craft.Uploaders.Uploader(fileInput[0], {
-    dropZone: null,
-    fileInput: fileInput[0],
-    replace: true,
-    on: {
-      start: () => {
-        $('#' + Craft.namespaceId('thumb-container', $namespace)).addClass('loading');
-      },
-      done: ({result}) => {
-
-        // Update the filename input and serialized param value
-        const filenameInput = $('#' + Craft.namespaceId('new-filename', $namespace))
-        const oldFilenameValue = encodeURIComponent(filenameInput.val());
-        filenameInput.val(result.filename);
-
-        let form = filenameInput.closest('form');
-
-        // Make sure the form is for this asset
-        let elementEditor = form.data('elementEditor');
-        if (elementEditor?.settings.elementId !== $assetId) {
-          form = null;
-          elementEditor = null;
-        }
-
-        const initialSerializedData = form?.data('initialSerializedValue');
-        if (initialSerializedData) {
-          const inputName = encodeURIComponent(filenameInput.attr('name'));
-          const newFilenameValue = encodeURIComponent(result.filename);
-          form.data('initialSerializedValue', initialSerializedData
-            .replace(inputName + '=' + oldFilenameValue, inputName + '=' + newFilenameValue));
-        }
-
-        // Update the file size value
-        $('#' + Craft.namespaceId('file-size-value', $namespace))
-          .text(result.formattedSize)
-          .attr('title', result.formattedSizeInBytes);
-
-        // Update the dimensions value
-        let dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace))
-        if (result.dimensions) {
-          if (!dimensionsVal.length) {
-            $(
-              '<div class="data">' +
-              '<dt class="heading">' + $dimensionsLabel + '</div>' +
-              '<dd id="dimensions-value" class="value"></div>' +
-              '</div>'
-            ).appendTo($('#' + Craft.namespaceId('details', $namespace) + ' > .meta.read-only'))
-            dimensionsVal = $('#' + Craft.namespaceId('dimensions-value', $namespace))
-          }
-          dimensionsVal.text(result.dimensions);
-        } else if (dimensionsVal.length) {
-          dimensionsVal.parent().remove();
-        }
-
-        // Update the timestamp on the element editor
-        if (elementEditor && result.updatedTimestamp) {
-          elementEditor.settings.updatedTimestamp = result.updatedTimestamp;
-          elementEditor.settings.canonicalUpdatedTimestamp = result.updatedTimestamp;
-        }
-
-        $updatePreviewThumbJs
-        Craft.cp.runQueue();
-
-        if (Craft.broadcaster) {
-          Craft.broadcaster.postMessage({
-            event: 'saveElement',
-            id: $assetId,
-          })
-        }
-
-        if (result.error) {
-          $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
-          alert(result.error);
-        } else {
-          Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
-          // update the View menu item link
-          let viewBtn = $('#action-menu .menu-item[data-view]');
-          if (viewBtn && result.resultingUrl) {
-            viewBtn.attr('href', result.resultingUrl)
-          }
-        }
-      },
-      fail: ({error, canceled, file}) => {
-        if (canceled) {
-          return;
-        }
-
-        const backupFilename = file?.name;
-        let message = error instanceof Error ? error.message : undefined;
-        let filename = error?.data?.filename;
-
-        if (!message) {
-          if (!filename) {
-            filename = backupFilename;
-          }
-          message = filename
-            ? Craft.t('app', 'Replace file failed for “{filename}”.', {filename})
-            : Craft.t('app', 'Replace file failed.');
-        }
-
-        Craft.cp.displayError(message);
-      },
-      settled: () => {
-        $('#' + Craft.namespaceId('thumb-container', $namespace)).removeClass('loading');
-      },
-    }
-  })
-
-  uploader.setParams({
-    assetId: $assetId,
-  })
-
-  fileInput.click();
-});
-JS, [
-                InputNamespace::namespaceId($replaceId),
-                InputNamespace::get(),
-                $this->id,
-                t('Dimensions'),
-            ]);
         }
 
         // Image editor
@@ -1916,28 +1780,17 @@ JS, [
             $user &&
             $user->can('editImage', $this)
         ) {
-            $editImageId = sprintf('action-image-edit-%s', mt_rand());
             $items[] = [
                 'type' => MenuItemType::Button,
-                'id' => $editImageId,
+                'id' => sprintf('action-image-edit-%s', mt_rand()),
                 'icon' => 'edit',
                 'label' => t('Open in Image Editor'),
+                'action' => self::behaviorAction([
+                    'type' => 'editImage',
+                    'assetId' => $this->id,
+                    'settings' => $this->getImageEditorSettings(),
+                ]),
             ];
-
-            HtmlStack::jsWithVars(fn ($id, $settings) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.openAssetImageEditor($settings, (result) => {
-    if (result.newAssetId) {
-      return;
-    }
-
-    $updatePreviewThumbJs
-  });
-});
-JS, [
-                InputNamespace::namespaceId($editImageId),
-                $this->getImageEditorSettings(),
-            ]);
         }
 
         if (
@@ -2829,7 +2682,7 @@ JS, [
      */
     public function getCardCoverUrl(): ?string
     {
-        return AssetsService::getThumbUrl($this, 800, 600, false, ImageTransformMode::Crop);
+        return AssetsService::getThumbUrl($this, ...self::CARD_COVER_SIZE, iconFallback: false, mode: ImageTransformMode::Crop);
     }
 
     /**
@@ -2872,16 +2725,36 @@ JS, [
             return null;
         }
 
-        $pixels = ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE);
-        $image = Images::getManager()->createImage(count($pixels[0]), count($pixels));
+        // Cards show it twice: behind their cover image and their thumbnail
+        if ($this->_placeholder !== null && $this->_placeholder[0] === $grid) {
+            return $this->_placeholder[1];
+        }
 
-        foreach ($pixels as $y => $row) {
-            foreach ($row as $x => $color) {
-                $image->drawPixel($x, $y, $color);
+        $pixels = ColorGrid::interpolate($grid, self::PLACEHOLDER_SCALE);
+
+        // Encoded by hand: drawing it pixel by pixel with an image library took ~20ms per image, and element
+        // indexes show one for every image on the page.
+        $data = '';
+
+        foreach ($pixels as $row) {
+            // Each scanline starts with its filter type: none
+            $data .= "\0";
+
+            foreach ($row as $color) {
+                [$red, $green, $blue, $alpha] = ColorGrid::parse($color);
+                $data .= pack('C4', $red, $green, $blue, (int) round($alpha * 255));
             }
         }
 
-        return $image->encode(new PngEncoder)->toDataUri()->toString();
+        $chunk = fn (string $type, string $body): string => pack('N', strlen($body)).$type.$body.pack('N', crc32($type.$body));
+        // 8-bit RGBA, with default compression, filtering, and no interlacing
+        $header = pack('N2C5', count($pixels[0]), count($pixels), 8, 6, 0, 0, 0);
+        $png = "\x89PNG\r\n\x1a\n".$chunk('IHDR', $header).$chunk('IDAT', (string) gzcompress($data)).$chunk('IEND', '');
+
+        $url = 'data:image/png;base64,'.base64_encode($png);
+        $this->_placeholder = [$grid, $url];
+
+        return $url;
     }
 
     /**
@@ -3244,29 +3117,6 @@ CSS,
                 'background-image' => "linear-gradient(#00000040, #0000000d), linear-gradient(to right, color-mix(in srgb, $left 40%, transparent), color-mix(in srgb, $right 40%, transparent))",
             ],
         ];
-    }
-
-    private function _updatePreviewThumbJs(): string
-    {
-        $thumbContainerId = InputNamespace::namespaceId('thumb-container');
-
-        return <<<JS
-$('#$thumbContainerId')
-    .addClass('loading')
-    .append($('<div class="spinner spinner-absolute"/>'));
-Craft.sendActionRequest('POST', 'assets/preview-thumb', {
-    data: {
-        assetId: $this->id,
-        width: 350,
-        height: 190,
-    },
-}).then(({data}) => {
-    $('#$thumbContainerId').find('craft-thumbnail').replaceWith(data.img);
-}).finally(() => {
-    $('#$thumbContainerId').removeClass('loading')
-        .find('.spinner').remove();
-});
-JS;
     }
 
     #[Override]

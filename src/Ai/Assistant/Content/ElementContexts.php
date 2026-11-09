@@ -18,7 +18,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Resolves the elements the user added to the AI assistant’s context, as they have them in their editors, and
- * describes them to the model as the MCP server’s `elements.get` tool does.
+ * describes them to the model as the MCP server’s `elements_get` tool does.
  *
  * @internal
  *
@@ -105,7 +105,7 @@ readonly class ElementContexts
     }
 
     /**
-     * Describes the elements to the model, as `elements.get` returns them, with the elements nested in their fields.
+     * Describes the elements to the model, as `elements_get` returns them, with the elements nested in their fields.
      * The element open in the user’s editor is only named, unless it’s being read.
      *
      * @param  list<ElementContext>  $contexts
@@ -119,7 +119,7 @@ readonly class ElementContexts
 
             if ($context->open && ! $read) {
                 $sections[] = sprintf(
-                    '%s: the %s “%s” (ID %d), which the user has open in their editor. Before answering about it or proposing changes to it, read it with %s rather than elements.get, as it has changes they haven’t saved. Don’t read it for questions about something else.%s',
+                    '%s: the %s “%s” (ID %d), which the user has open in their editor. Before answering about it or proposing changes to it, read it with %s rather than elements_get, as it has changes they haven’t saved. Don’t read it for questions about something else.%s',
                     $context->id,
                     $element::lowerDisplayName(),
                     $element->getUiLabel(),

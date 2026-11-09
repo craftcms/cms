@@ -14,6 +14,8 @@ use CraftCms\Cms\Mcp\Enums\ConfigurationOperation;
 use CraftCms\Cms\Mcp\Enums\ConfigurationType;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\ConfigurationSchema;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Capability\Discovery\SchemaValidator;
@@ -31,15 +33,17 @@ readonly class Configuration
 {
     private const array IdentifierSchema = [
         'type' => 'object',
-        'description' => 'Exactly one lookup key from configuration.schema.',
+        'description' => 'Exactly one lookup key from configuration_schema.',
         'additionalProperties' => true,
     ];
 
     private const array AttributesSchema = [
         'type' => 'object',
-        'description' => 'Values accepted by configuration.schema for this type and operation.',
+        'description' => 'Values accepted by configuration_schema for this type and operation.',
         'additionalProperties' => true,
     ];
+
+    private const string RevisionNote = 'Pass the revision you last read or wrote as expectedRevision. If the record has changed since, nothing is changed; read it again and redo your change. Without expectedRevision, newer changes can be overwritten.';
 
     public function __construct(
         private McpActor $actor,
@@ -47,11 +51,12 @@ readonly class Configuration
         private ConfigurationSchema $schemas,
         private SchemaValidator $validator,
         private CapabilityContainer $container,
+        private ProjectConfig $projectConfig,
     ) {}
 
     /** @return array<string, mixed> */
     #[McpTool(
-        name: 'configuration.schema',
+        name: 'configuration_schema',
         description: 'Lists configuration types and available operations, or returns their detailed input schemas and effects. Omit type to discover types; supply type and operation for one schema.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -89,7 +94,7 @@ readonly class Configuration
 
     /** @return array<string, mixed> */
     #[McpTool(
-        name: 'configuration.list',
+        name: 'configuration_list',
         description: 'Lists configuration records of one type.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -104,8 +109,8 @@ readonly class Configuration
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'configuration.get',
-        description: 'Gets a configuration record by its supported identifier. Read configuration.schema for lookup keys.',
+        name: 'configuration_get',
+        description: 'Gets a configuration record by its supported identifier. Read configuration_schema for lookup keys.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     #[RequiresAdmin]
@@ -123,8 +128,8 @@ readonly class Configuration
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'configuration.create',
-        description: 'Creates a configuration record. Read configuration.schema for accepted attributes, required values, and defaults.',
+        name: 'configuration_create',
+        description: 'Creates a configuration record. Read configuration_schema for accepted attributes, required values, and defaults.',
     )]
     #[RequiresAdminChanges]
     public function create(
@@ -142,8 +147,8 @@ readonly class Configuration
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'configuration.update',
-        description: 'Updates supplied configuration attributes, preserving omitted values. Read current values and configuration.schema first. Put lookup keys in identifier and new values in attributes.',
+        name: 'configuration_update',
+        description: 'Updates supplied configuration attributes, preserving omitted values. Read current values and configuration_schema first. Put lookup keys in identifier and new values in attributes.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]
@@ -154,8 +159,10 @@ readonly class Configuration
         array $identifier,
         #[Schema(definition: self::AttributesSchema)]
         array $attributes,
+        #[Schema(definition: ConfigurationSchema::ExpectedRevision)]
+        ?string $expectedRevision = null,
     ): array {
-        return $this->execute($context, $type, ConfigurationOperation::Update, $identifier, $attributes);
+        return $this->execute($context, $type, ConfigurationOperation::Update, $identifier, $attributes, expectedRevision: $expectedRevision);
     }
 
     /**
@@ -164,8 +171,8 @@ readonly class Configuration
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'configuration.delete',
-        description: 'Deletes configuration using the selected type’s rules and content effects. Read configuration.schema for deletion effects and options. No configuration undo tool is provided.',
+        name: 'configuration_delete',
+        description: 'Deletes configuration using the selected type’s rules and content effects. Read configuration_schema for deletion effects and options. No configuration undo tool is provided.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]
@@ -176,8 +183,10 @@ readonly class Configuration
         array $identifier,
         #[Schema(type: 'object', additionalProperties: true)]
         array $options = [],
+        #[Schema(definition: ConfigurationSchema::ExpectedRevision)]
+        ?string $expectedRevision = null,
     ): array {
-        return $this->execute($context, $type, ConfigurationOperation::Delete, $identifier, options: $options);
+        return $this->execute($context, $type, ConfigurationOperation::Delete, $identifier, options: $options, expectedRevision: $expectedRevision);
     }
 
     /** @return array<string, mixed> */
@@ -187,7 +196,11 @@ readonly class Configuration
             'type' => $type->value,
             'operation' => $operation->value,
             'inputSchema' => $this->schemas->for($type, $operation),
-            'notes' => [...$type->notes(), ...($operation === ConfigurationOperation::Update ? ['Only supplied attributes are updated. Read current values before replacing complete lists or layouts.'] : [])],
+            'notes' => [...$type->notes(), ...match ($operation) {
+                ConfigurationOperation::Update => ['Only supplied attributes are updated. Read current values before replacing complete lists or layouts.', self::RevisionNote],
+                ConfigurationOperation::Delete => [self::RevisionNote],
+                default => [],
+            }],
             ...($operation === ConfigurationOperation::Delete ? ['effects' => $type->deletionEffects()] : []),
         ];
     }
@@ -205,6 +218,7 @@ readonly class Configuration
         array $identifier = [],
         array $attributes = [],
         array $options = [],
+        ?string $expectedRevision = null,
     ): array {
         $this->authorize($operation->writes());
         $this->authorizeType($type);
@@ -222,15 +236,46 @@ readonly class Configuration
             $values['options'] = (object) $options;
         }
 
+        if ($expectedRevision !== null) {
+            $values['expectedRevision'] = $expectedRevision;
+        }
+
         $errors = $this->validator->validateAgainstJsonSchema($values, $this->schemas->for($type, $operation));
 
         if ($errors !== []) {
             $messages = array_map(static fn (array $error): string => "{$error['pointer']}: {$error['message']}", array_slice($errors, 0, 3));
 
-            throw new ToolCallException("Invalid {$type->value} {$operation->value} input: ".implode('; ', $messages).'. Call configuration.schema for accepted values.');
+            throw new ToolCallException("Invalid {$type->value} {$operation->value} input: ".implode('; ', $messages).'. Call configuration_schema for accepted values.');
         }
 
-        $arguments = $this->schemas->arguments($type, $operation, $identifier, $attributes, $options);
+        if ($expectedRevision !== null) {
+            // Hold the project config lock from this check until the change is saved, so nothing can change the record in between.
+            $this->projectConfig->acquireLock();
+            $current = $this->call($context, $type, ConfigurationOperation::Get, $this->schemas->arguments($type, ConfigurationOperation::Get, $identifier, [], []));
+
+            if ($this->revision($type, $current[$type->itemKey()]) !== $expectedRevision) {
+                throw new ToolCallException("The {$type->value} record has changed since revision $expectedRevision was read, so nothing was changed. Read it again with configuration_get, redo your change on the current values, and pass the new revision.");
+            }
+        }
+
+        $result = $this->call($context, $type, $operation, $this->schemas->arguments($type, $operation, $identifier, $attributes, $options));
+
+        return match ($operation) {
+            ConfigurationOperation::List => ['type' => $type->value, 'count' => $result['count'], 'items' => array_map(
+                fn (array $item): array => [...$item, 'revision' => $this->revision($type, $item)],
+                $result[$type->itemsKey()],
+            )],
+            ConfigurationOperation::Delete => ['type' => $type->value, ...$result],
+            default => ['type' => $type->value, 'item' => $result[$type->itemKey()], 'revision' => $this->revision($type, $result[$type->itemKey()])],
+        };
+    }
+
+    /**
+     * @param  array<string, mixed>  $arguments
+     * @return array<string, mixed>
+     */
+    private function call(RequestContext $context, ConfigurationType $type, ConfigurationOperation $operation, array $arguments): array
+    {
         $request = new CallToolRequest($type->value.'.'.$operation->value, $arguments);
         $result = new ReferenceHandler($this->container)->handle(
             new ElementReference([$type->capability(), $operation->value]),
@@ -238,11 +283,23 @@ readonly class Configuration
         );
         assert(is_array($result));
 
-        return match ($operation) {
-            ConfigurationOperation::List => ['type' => $type->value, 'count' => $result['count'], 'items' => $result[$type->itemsKey()]],
-            ConfigurationOperation::Delete => ['type' => $type->value, ...$result],
-            default => ['type' => $type->value, 'item' => $result[$type->itemKey()]],
-        };
+        return $result;
+    }
+
+    /**
+     * An opaque revision of a record: a hash of its complete project config, including nested settings and layouts.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    private function revision(ConfigurationType $type, array $item): string
+    {
+        $config = [];
+
+        foreach ($type->configPaths($item) as $path) {
+            $config[$path] = $this->projectConfig->get($path);
+        }
+
+        return substr(hash('sha256', ProjectConfigHelper::encodeValueAsString($config)), 0, 32);
     }
 
     private function authorizeType(ConfigurationType $type): void

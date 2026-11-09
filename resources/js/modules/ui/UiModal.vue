@@ -5,6 +5,7 @@
   import UiRenderer from './UiRenderer.vue';
   import {useUiForm, type UiFormResponse} from './useUiForm';
   import type {UiValues} from './types';
+  import {showNotice} from '@/modules/messages/messages';
 
   export type UiModalResponse = UiFormResponse;
 
@@ -63,7 +64,7 @@
     }
 
     if (typeof data.message === 'string') {
-      Craft.cp?.displayNotice?.(data.message);
+      showNotice(data.message);
     }
 
     emit('submitted', data);

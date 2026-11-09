@@ -8,6 +8,7 @@ The manager lets plugins and apps:
 - register named sanitizers for project-specific rules
 - customize the default sanitizer config
 - reuse Craft’s default config when defining custom sanitizers
+- build on a named sanitizer’s config
 
 Legacy HtmlPurifier support remains available through the Yii2 adapter layer. The legacy Twig `|purify` filter still uses HtmlPurifier, while `|sanitize` uses the sanitizer manager.
 
@@ -116,6 +117,24 @@ HtmlSanitizers::extend('embedded-content', fn () => new HtmlSanitizer(
         ->allowAttribute('src', ['iframe'])
 ));
 ```
+
+## Building on a Sanitizer’s Config
+
+`config()` returns the `HtmlSanitizerConfig` for a sanitizer, so it can be extended, such as by a field type that needs to allow its own markup on top of whichever sanitizer was selected:
+
+```php
+$config = HtmlSanitizers::config('no-headings');
+
+if ($config !== null) {
+    $sanitizer = new HtmlSanitizer($config->allowElement('mark'));
+}
+```
+
+When no name is passed, the default sanitizer’s config is returned. That’s `defaultConfig()`, unless the default sanitizer was replaced with an array definition, such as a `default.php` config file.
+
+Only sanitizers defined as arrays (or creator closures that return arrays) have a config that can be returned. `config()` returns `null` for sanitizers registered as `HtmlSanitizerInterface` instances, which should be used as-is, and throws an `InvalidArgumentException` for names that aren’t registered.
+
+Each call builds a new config from the sanitizer’s definition, and doesn’t affect the sanitizer resolved by `sanitizer()`.
 
 ## Resolution and Caching
 

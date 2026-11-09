@@ -130,6 +130,7 @@ it('serializes choice presentations', function () {
 it('serializes text input behavior', function () {
     expect(Text::make('name')
         ->autofocus()
+        ->selectOnFocus()
         ->autocomplete(false)
         ->autocorrect(false)
         ->autocapitalize(false)
@@ -137,6 +138,7 @@ it('serializes text input behavior', function () {
         ->dir('rtl')
         ->props())->toMatchArray([
             'autofocus' => true,
+            'selectOnFocus' => true,
             'autocomplete' => false,
             'autocorrect' => false,
             'autocapitalize' => false,
@@ -221,6 +223,27 @@ it('serializes and validates combobox behavior', function () {
             'dir' => 'rtl',
         ])
         ->and(fn () => Combobox::make('path')->limit(0))->toThrow(InvalidArgumentException::class);
+});
+
+it('allows selecting more combobox options than its limit lists', function () {
+    $control = Combobox::make('colors')
+        ->multiple()
+        ->requireOptionMatch()
+        ->limit(2)
+        ->options([
+            ['label' => 'Red', 'value' => 'red'],
+            ['label' => 'Green', 'value' => 'green'],
+            ['label' => 'Blue', 'value' => 'blue'],
+        ]);
+
+    expect($control->inputSchema())->toBe([
+        'type' => 'array',
+        'items' => ['oneOf' => [
+            ['const' => 'red', 'title' => 'Red'],
+            ['const' => 'green', 'title' => 'Green'],
+            ['const' => 'blue', 'title' => 'Blue'],
+        ]],
+    ]);
 });
 
 it('renders a create option in an ordinary combobox', function () {

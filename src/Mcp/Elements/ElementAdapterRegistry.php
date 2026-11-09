@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Elements;
 
 use CraftCms\Cms\Component\TypeRegistry;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Mcp\Elements\Adapters\AddressAdapter;
 use CraftCms\Cms\Mcp\Elements\Adapters\AssetAdapter;
@@ -13,7 +14,7 @@ use CraftCms\Cms\Mcp\Elements\Adapters\UserAdapter;
 use Illuminate\Container\Attributes\Singleton;
 
 /**
- * Registers the element types the `elements.*` MCP tools support, keyed by their handles.
+ * Registers the element types the `elements_*` MCP tools support, keyed by their handles.
  *
  * Plugins may register adapters from their service provider:
  *
@@ -56,6 +57,16 @@ class ElementAdapterRegistry extends TypeRegistry
         $type = $this->typeByIdentity($handle) ?? $this->typeByElementType($handle);
 
         return $type === null ? null : app($type);
+    }
+
+    /**
+     * Returns whether an adapter is registered for an element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function supports(string $elementType): bool
+    {
+        return $this->types()->contains(static fn (string $type): bool => $type::elementType() === $elementType);
     }
 
     /** @return class-string<ElementAdapter>|null */

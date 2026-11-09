@@ -1,6 +1,7 @@
 import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import '@craftcms/ui/components/action-item/action-item';
+import '@craftcms/ui/components/badge/badge';
 import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/indicator/indicator';
 import type {ActionItems} from '@/common/types';
@@ -333,4 +334,36 @@ describe('ActionList', () => {
       expect(all!.querySelector('craft-indicator')).toBeNull();
     }
   );
+
+  it('marks a menu item with a badge beside its label', async () => {
+    const container = mount({
+      actions: [
+        {type: 'link', href: '/current', label: 'Current'},
+        {
+          type: 'link',
+          href: '/current?edits=1',
+          label: 'Current',
+          badge: {label: 'Edited', fill: 'violet', icon: 'pen-circle'},
+        },
+      ],
+      as: 'craft-action-item',
+    });
+    await nextTick();
+
+    const [saved, edited] = [
+      ...container.querySelectorAll('craft-action-item'),
+    ];
+    const badge = edited!.querySelector('craft-badge') as HTMLElement & {
+      fill?: string;
+    };
+
+    expect(badge.textContent?.trim()).toBe('Edited');
+    expect(badge.fill).toBe('violet');
+    // In the label, not a slot at the item's far end.
+    expect(badge.slot).toBe('');
+    expect(edited!.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Current Edited'
+    );
+    expect(saved!.querySelector('craft-badge')).toBeNull();
+  });
 });

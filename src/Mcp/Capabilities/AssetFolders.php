@@ -28,7 +28,7 @@ readonly class AssetFolders
             'id' => ['type' => 'integer'],
             'uid' => ['type' => 'string', 'format' => 'uuid'],
             'volumeId' => ['type' => 'integer'],
-            'parentId' => ['type' => 'integer', 'description' => 'Parent folder ID.'],
+            'parentId' => ['type' => ['integer', 'null'], 'description' => 'Parent folder ID, or null for root folders: one per volume, across all volumes unless volumeId is also given. A volume’s top-level folders have its root folder’s ID as their parentId.'],
             'name' => ['type' => 'string', 'description' => 'Folder name.'],
             'path' => ['type' => 'string', 'description' => 'Folder path.'],
             'offset' => ['type' => 'integer', 'minimum' => 0, 'description' => 'Number of folders to skip.'],
@@ -47,7 +47,7 @@ readonly class AssetFolders
      * @return array{count: int, folders: list<array<string, mixed>>}
      */
     #[McpTool(
-        name: 'asset-folders.list',
+        name: 'asset_folders_list',
         description: 'Lists Craft CMS asset folders available to the current user.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -56,6 +56,12 @@ readonly class AssetFolders
         array $criteria = [],
     ): array {
         $actor = $this->actor->user();
+
+        // Folder criteria ignore a null parentId, so match root folders explicitly
+        if (array_key_exists('parentId', $criteria) && $criteria['parentId'] === null) {
+            $criteria['parentId'] = ':empty:';
+        }
+
         $folders = $this->folders
             ->findFolders($criteria)
             ->filter(static fn (VolumeFolder $folder): bool => Gate::forUser($actor)->allows('viewContents', $folder))
@@ -69,7 +75,7 @@ readonly class AssetFolders
 
     /** @return array{folder: array<string, mixed>} */
     #[McpTool(
-        name: 'asset-folders.get',
+        name: 'asset_folders_get',
         description: 'Gets a Craft CMS asset folder by ID or UID.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -88,7 +94,7 @@ readonly class AssetFolders
     }
 
     /** @return array{folder: array<string, mixed>} */
-    #[McpTool(name: 'asset-folders.create', description: 'Creates a Craft CMS asset folder.')]
+    #[McpTool(name: 'asset_folders_create', description: 'Creates a Craft CMS asset folder.')]
     public function create(
         #[Schema(minLength: 1, maxLength: 255)]
         string $name,
@@ -128,7 +134,7 @@ readonly class AssetFolders
 
     /** @return array{folder: array<string, mixed>} */
     #[McpTool(
-        name: 'asset-folders.update',
+        name: 'asset_folders_update',
         description: 'Renames a Craft CMS asset folder.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
@@ -166,8 +172,8 @@ readonly class AssetFolders
 
     /** @return array{deleted: true} */
     #[McpTool(
-        name: 'asset-folders.delete',
-        description: 'Permanently deletes a folder, its subfolders, and all their asset records. These assets cannot be restored with elements.restore, even when deleteDirectory is false. Defaults to also deleting the directory and its files.',
+        name: 'asset_folders_delete',
+        description: 'Permanently deletes a folder, its subfolders, and all their asset records. These assets cannot be restored with elements_restore, even when deleteDirectory is false. Defaults to also deleting the directory and its files.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function delete(

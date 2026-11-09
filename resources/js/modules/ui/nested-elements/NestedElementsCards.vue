@@ -91,6 +91,7 @@
         :selection="selection"
         :selectable="editable"
         :read-only="!editable"
+        :placeholder-select-all="!editable"
         :single-column="singleColumn"
         :sortable="reorderable"
         :loading="operations.busy.value && !cards.length"

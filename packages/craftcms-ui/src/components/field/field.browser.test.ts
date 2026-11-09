@@ -9,6 +9,7 @@ import '../input/input.js';
 import '../select/select.js';
 import '../combobox/combobox.js';
 import '../../styles/cp.css';
+import {contrast} from '../../../test/contrast';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -213,4 +214,49 @@ it('keeps a maxlength wider than the column within the column', async () => {
   expect(
     field.querySelector('craft-input')!.getBoundingClientRect().width
   ).toBeLessThanOrEqual(400);
+});
+
+it.each(['light', 'dark'])(
+  'draws the read-only badge as a quiet chip with 4.5:1 text in the %s theme',
+  async (theme) => {
+    document.body.innerHTML = `
+      <div data-theme="${theme}" style="background-color: var(--c-surface-default)">
+        <craft-field label="Title" readonly></craft-field>
+      </div>`;
+    const field = document.querySelector<CraftField>('craft-field')!;
+    await field.updateComplete;
+    const surface = getComputedStyle(
+      document.querySelector('[data-theme]')!
+    ).backgroundColor;
+    const badge = getComputedStyle(
+      field.shadowRoot!.querySelector('.read-only-badge')!
+    );
+
+    expect(contrast(badge.color, badge.backgroundColor)).toBeGreaterThanOrEqual(
+      4.5
+    );
+    expect(contrast(badge.backgroundColor, surface)).toBeLessThan(
+      contrast(badge.color, surface)
+    );
+  }
+);
+
+it('draws a label badge right after the read-only badge, at its size and weight', async () => {
+  document.body.innerHTML = `
+    <craft-field label="Title" readonly>
+      <span slot="label-badge">Changed</span>
+    </craft-field>`;
+  const field = document.querySelector<CraftField>('craft-field')!;
+  await field.updateComplete;
+  const readOnly = field.shadowRoot!.querySelector('.read-only-badge')!;
+  const badge = field.querySelector('[slot="label-badge"]')!;
+  const readOnlyBox = readOnly.getBoundingClientRect();
+  const badgeBox = badge.getBoundingClientRect();
+
+  expect(badgeBox.height).toBe(readOnlyBox.height);
+  expect(badgeBox.top).toBe(readOnlyBox.top);
+  expect(badgeBox.left).toBeGreaterThan(readOnlyBox.right);
+  expect(getComputedStyle(badge).fontWeight).toBe(
+    getComputedStyle(readOnly).fontWeight
+  );
 });

@@ -1,0 +1,357 @@
+import {Uploader} from '@/modules/uploader/uploader';
+import {UploadError} from '@/upload-client';
+import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
+import {BaseElementSelectInput} from './base-element-select-input';
+import {openAssetImageEditor} from '@/modules/image-editor';
+import {IntervalManager} from '@/modules/interval-manager/interval-manager';
+import '@craftcms/ui/components/progress-bar/progress-bar';
+import type CraftProgressBar from '@craftcms/ui/components/progress-bar/progress-bar';
+import '@/modules/asset-select-input/asset-select-input.css';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
+import {startSide} from '@/common/craft/direction';
+import {showError} from '@/modules/messages/messages';
+import {QueueService} from '@/modules/queue/queue';
+import {announce} from '@/common/announcer';
+import {getElementInfo} from './element-markup';
+
+declare const Craft: any;
+declare const Garnish: any;
+declare const $: any;
+
+/**
+ * AssetSelectInput — a port of `Craft.AssetSelectInput` onto
+ * {@link BaseElementSelectInput}. Extends the base element select with:
+ * - An upload button + hidden file input wired to the native uploader
+ * - A `<craft-progress-bar>` overlay during uploads, announced to screen readers
+ * - Shift-Space keyboard shortcut to open the file preview modal
+ *
+ * Notes:
+ * - `keydown` on the elements container is a native event — `addListener` works.
+ * - Upload lifecycle callbacks are passed in the uploader settings.
+ * - The upload button's `click` handler uses jQuery `.on()` because the file
+ *   input is replaced after each upload (see the comment in `_attachUploader`).
+ */
+export class AssetSelectInput extends BaseElementSelectInput {
+  $uploadBtn: any = null;
+  $fileInput: any = null;
+  uploader: any = null;
+  progressBar: CraftProgressBar | null = null;
+  #progressAnnouncer: IntervalManager | null = null;
+  openPreviewTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  constructor(settings?: any) {
+    super(settings);
+    if (new.target === AssetSelectInput) {
+      this.init(settings);
+    }
+  }
+
+  override init(...initArgs: any[]): void {
+    super.init(...initArgs);
+
+    if (this.settings.canUpload) {
+      this._attachUploader();
+    }
+
+    this.updateAddElementsBtn();
+
+    // SAFETY: This listener is attached specifically to the native keydown event.
+    this.addListener(this.$elementsContainer[0], 'keydown', ((
+      ev: KeyboardEvent
+    ) => {
+      if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
+        this.openPreview();
+        ev.stopPropagation();
+      }
+    }) as any);
+  }
+
+  override addElements($elements: any): void {
+    super.addElements($elements);
+
+    // Route the Open in Image Editor actions through this input, so new assets can replace the selected ones
+    for (let i = 0; i < $elements.length; i++) {
+      const $element = $elements.eq(i);
+      $element
+        .find('[id*="action-image-edit"]')
+        .each((_: number, btn: HTMLElement) => {
+          const $btn = $(btn);
+          // Remove the existing handler, and change the ID in case it hasn't been registered yet
+          $btn
+            .off('activate')
+            .attr('id', `${btn.id}-${Math.floor(Math.random() * 1000000)}`);
+          // `activate` is a jQuery synthetic event, so it needs `.on()` rather than `addListener()`.
+          $btn.on('activate', () => {
+            openAssetImageEditor($element.data('id'), (result) => {
+              if (result.newAssetId) {
+                this.replaceElement(
+                  $element.data('id'),
+                  result.newAssetId
+                ).catch(() => {});
+              }
+            }).catch((error) => showError(error?.response?.data?.message));
+          });
+        });
+    }
+  }
+
+  override elementSelectSettings(): any {
+    return Object.assign(super.elementSelectSettings(), {
+      makeFocusable: true,
+    });
+  }
+
+  clearOpenPreviewTimeout(): void {
+    if (this.openPreviewTimeout) {
+      clearTimeout(this.openPreviewTimeout);
+      this.openPreviewTimeout = null;
+    }
+  }
+
+  openPreview($element?: any): void {
+    if (Craft.PreviewFileModal.openInstance) {
+      Craft.PreviewFileModal.openInstance.hide();
+    } else {
+      if (!$element) {
+        $element = this.$elements
+          .filter(':focus')
+          .add(this.$elements.has(':focus'));
+      }
+      if ($element.length) {
+        Craft.PreviewFileModal.showForAsset($element, this.elementSelect);
+      }
+    }
+  }
+
+  _attachUploader(): void {
+    const shade = document.createElement('div');
+    shade.className = 'progress-shade';
+    this.progressBar = document.createElement('craft-progress-bar');
+    this.progressBar.label = t('Upload progress');
+    this.progressBar.hidden = true;
+    shade.append(this.progressBar);
+    this.$container[0].append(shade);
+
+    // The bar has no live region of its own, so progress is read out
+    // periodically while an upload runs.
+    this.#progressAnnouncer = new IntervalManager({
+      onInterval: () => announce(this.#progressMessage()),
+    });
+
+    if (this.$addElementBtn) {
+      this.$uploadBtn = $('<button/>', {
+        type: 'button',
+        class: 'btn dashed',
+        'aria-label':
+          this.settings.limit == 1 ? t('Upload a file') : t('Upload files'),
+        'aria-describedby': this.settings.describedBy,
+        text: this.settings.limit == 1 ? t('Upload a file') : t('Upload files'),
+      })
+        .prepend('<craft-icon name="upload"></craft-icon>')
+        .insertAfter(this.$addElementBtn);
+
+      this.$fileInput = $('<input/>', {
+        type: 'file',
+        class: 'hidden',
+        multiple: this.settings.limit != 1,
+      }).insertAfter(this.$uploadBtn);
+
+      // Trigger resize in case the field is inside an element editor HUD
+      $(window).trigger('resize');
+    }
+
+    const options: any = {
+      dropZone: this.$container.toArray(),
+      fileInput: this.$fileInput?.toArray(),
+    };
+
+    if (this.settings.criteria.kind !== undefined) {
+      options.allowedKinds = [this.settings.criteria.kind].flat();
+    }
+
+    options.canAddMoreFiles = this.canAddMoreFiles.bind(this);
+
+    options.on = {
+      start: this._onUploadStart.bind(this),
+      progress: this._onUploadProgress.bind(this),
+      done: this._onUploadComplete.bind(this),
+      fail: this._onUploadFailure.bind(this),
+    } satisfies UploaderCallbacks;
+
+    this.uploader = new Uploader(this.$container[0], options);
+
+    const params: any = {fieldId: this.settings.fieldId};
+    if (this.settings.sourceElementId) {
+      params.elementId = this.settings.sourceElementId;
+    }
+    if (this.settings.criteria.siteId) {
+      params.siteId = this.settings.criteria.siteId;
+    }
+    this.uploader.setParams(params);
+
+    if (this.$uploadBtn) {
+      this.$uploadBtn.on('click', () => {
+        this.$uploadBtn.next('input[type=file]').trigger('click');
+      });
+    }
+  }
+
+  override enableAddElementsBtn(): void {
+    if (this.$uploadBtn) {
+      this.$uploadBtn.removeClass('hidden');
+    }
+    super.enableAddElementsBtn();
+  }
+
+  override disableAddElementsBtn(): void {
+    if (this.$uploadBtn) {
+      this.$uploadBtn.addClass('hidden');
+    }
+    super.disableAddElementsBtn();
+  }
+
+  selectUploadedFile(element: any): void {
+    if (!this.canAddMoreElements()) return;
+
+    const $newElement = element.$element;
+    $newElement.appendTo(this.$elementsContainer);
+
+    const margin = -($newElement.outerWidth() + 10);
+    this.$addElementBtn.css('margin-' + startSide(), margin + 'px');
+
+    const animateCss: any = {};
+    animateCss['margin-' + startSide()] = 0;
+    this.$addElementBtn.velocity(animateCss, 'fast');
+
+    this.addElements($newElement);
+
+    // SAFETY: The legacy base declares modal dynamically and deletion restores lazy creation.
+    delete (this as any).modal;
+  }
+
+  _onUploadStart(): void {
+    this.$container.addClass('uploading');
+    this.progressBar?.reset();
+    this.progressBar?.show();
+    this.#progressAnnouncer?.start();
+  }
+
+  #hideProgress(): void {
+    this.progressBar?.hide();
+    this.#progressAnnouncer?.stop();
+    this.$container.removeClass('uploading');
+  }
+
+  #progressMessage(): string {
+    const bar = this.progressBar;
+    if (!bar || bar.pending || bar.progress === 100) {
+      return t('Processing');
+    }
+
+    return t('{num} percent complete', {num: bar.progress});
+  }
+
+  _onUploadProgress(
+    data: Parameters<NonNullable<UploaderCallbacks['progress']>>[0]
+  ): void {
+    const progress = Math.round(Math.min(data.loaded / data.total, 1) * 100);
+    if (this.progressBar) {
+      this.progressBar.progress = progress;
+    }
+  }
+
+  _onUploadComplete({
+    result,
+  }: Parameters<NonNullable<UploaderCallbacks['done']>>[0]): void {
+    actionClient
+      .post('app/render-elements', {
+        elements: [
+          {
+            type: 'CraftCms\\Cms\\Asset\\Elements\\Asset',
+            id: result.assetId,
+            siteId: this.settings.criteria.siteId,
+            instances: [
+              {
+                context: 'field',
+                ui: ['list', 'list-inline', 'large', 'thumbs'].includes(
+                  this.settings.viewMode
+                )
+                  ? 'chip'
+                  : 'card',
+                size: ['large', 'thumbs'].includes(this.settings.viewMode)
+                  ? 'large'
+                  : 'small',
+                showActionMenu: this.settings.showActionMenu,
+              },
+            ],
+          },
+        ],
+      })
+      .then(async ({data}: any) => {
+        const elementInfo = getElementInfo(data.elements[result.assetId][0]);
+        this.selectElements([elementInfo]);
+
+        await appendHeadHtml(data.headHtml);
+        await appendBodyHtml(data.bodyHtml);
+
+        if (this.uploader.isLastUpload()) {
+          this.#hideProgress();
+          this.$container.trigger('change');
+        }
+      })
+      .catch((error: any) => {
+        if (error?.response) {
+          showError(error.response.data.message);
+        } else {
+          showError();
+          throw error;
+        }
+      });
+
+    void QueueService.getInstance().runQueue();
+  }
+
+  _onUploadFailure({
+    error,
+    canceled,
+    file,
+  }: Parameters<NonNullable<UploaderCallbacks['fail']>>[0]): void {
+    if (canceled) {
+      this.#hideProgress();
+      return;
+    }
+
+    const response = error instanceof UploadError ? error.data : {};
+
+    let message = error instanceof Error ? error.message : undefined;
+    const filename = response.filename || file?.name;
+    const {errors} = response || {};
+
+    // SAFETY: The upload endpoint returns arrays of validation message strings.
+    const errorMessages: string[] = errors
+      ? (Object.values(errors).flat() as string[])
+      : [];
+
+    if (!message) {
+      if (errorMessages.length) {
+        message = errorMessages.join('\n');
+      } else if (filename) {
+        message = t('Upload failed for “{filename}”.', {filename});
+      } else {
+        message = t('Upload failed.');
+      }
+    }
+
+    showError(message);
+    this.#hideProgress();
+  }
+
+  canAddMoreFiles(slotsTaken: number): boolean {
+    return (
+      !this.settings.limit ||
+      this.$elements.length + slotsTaken < this.settings.limit
+    );
+  }
+}

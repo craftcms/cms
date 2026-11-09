@@ -2,7 +2,7 @@
 
 {% set addOptionFn %}
 (createOption, selectize) => {
-    Craft.openSlideout(Craft.getCpUrl('settings/assets/volumes/new'), {
+    Craft.openSlideout({{ cpUrl('settings/assets/volumes/new')|json_encode|raw }}, {
         onSaved: ({data, draft}) => {
             const volume = data?.volume;
             if (!draft && volume) {

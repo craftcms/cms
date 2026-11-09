@@ -30,6 +30,41 @@ import {registerUiComponents} from '@/modules/ui/register';
 import type {UiPayload} from '@/modules/ui/types';
 import {useElementEditor, type ElementEditPayload} from './useElementEditor';
 
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+const broadcasts = vi.hoisted(() => ({
+  handlers: new Map<string, Set<(message: any) => void>>(),
+}));
+vi.mock('@/common/craft/broadcast', () => ({
+  onBroadcast: (event: string, handler: (message: any) => void) => {
+    const handlers = broadcasts.handlers.get(event) ?? new Set();
+    handlers.add(handler);
+    broadcasts.handlers.set(event, handlers);
+    return () => handlers.delete(handler);
+  },
+}));
+const refreshPreviews = vi.hoisted(() => vi.fn());
+vi.mock('@/modules/elements/live-preview/previews', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  refreshPreviews,
+}));
+
+/** A broadcast from another control panel tab. */
+function fromOtherTab(message: Record<string, unknown>): void {
+  broadcasts.handlers.get(message.event as string)?.forEach((h) => h(message));
+}
+
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
 const {postSpy} = vi.hoisted(() => ({postSpy: vi.fn()}));
 
 function deferred<T>() {
@@ -274,7 +309,7 @@ describe('useElementEditor', () => {
   it('prepares an unchanged nested owner with the enclosing editable Matrix values', async () => {
     vi.stubGlobal('Craft', {
       systemUid: 'test',
-      cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+      cp: {},
     });
     onTestFinished(() => {
       vi.unstubAllGlobals();
@@ -442,7 +477,7 @@ describe('useElementEditor', () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
       vi.stubGlobal('Craft', {
         systemUid: 'test',
-        cp: {getCopiedElements: () => [], onCopyElements: () => {}},
+        cp: {},
       });
       const components = createCpComponentRegistry();
       registerUiComponents(components);
@@ -1397,8 +1432,6 @@ describe('useElementEditor', () => {
   });
 
   it('reloads the owner when another tab reorders the same draft, but not an unrelated draft', async () => {
-    const broadcaster = new EventTarget();
-    vi.stubGlobal('Craft', {broadcaster});
     const slideout = slideoutController();
     mount(payload({draftId: 7}), slideout);
     await nextTick();
@@ -1407,26 +1440,16 @@ describe('useElementEditor', () => {
       {canonicalId: 12, draftId: 8},
       {canonicalId: 13, draftId: 7},
     ]) {
-      broadcaster.dispatchEvent(
-        new MessageEvent('message', {
-          data: {event: 'reorderNestedElements', ...data},
-        })
-      );
+      fromOtherTab({event: 'reorderNestedElements', ...data});
     }
     expect(slideout.reload).not.toHaveBeenCalled();
 
-    broadcaster.dispatchEvent(
-      new MessageEvent('message', {
-        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
-      })
-    );
+    fromOtherTab({event: 'reorderNestedElements', canonicalId: 12, draftId: 7});
     expect(slideout.reload).toHaveBeenCalledOnce();
     vi.unstubAllGlobals();
   });
 
   it('defers a matching reorder reload while a slideout has unsaved changes', async () => {
-    const broadcaster = new EventTarget();
-    vi.stubGlobal('Craft', {broadcaster});
     const slideout = slideoutController();
     const {editor} = mount(
       payload({
@@ -1438,11 +1461,7 @@ describe('useElementEditor', () => {
     );
     await typeTitle('Unsaved title');
 
-    broadcaster.dispatchEvent(
-      new MessageEvent('message', {
-        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
-      })
-    );
+    fromOtherTab({event: 'reorderNestedElements', canonicalId: 12, draftId: 7});
     await nextTick();
 
     expect(slideout.reload).not.toHaveBeenCalled();
@@ -1452,8 +1471,6 @@ describe('useElementEditor', () => {
   });
 
   it('defers a matching reorder reload until the latest autosave is acknowledged', async () => {
-    const broadcaster = new EventTarget();
-    vi.stubGlobal('Craft', {broadcaster});
     const slideout = slideoutController();
     const {editor} = mount(
       payload({
@@ -1468,11 +1485,7 @@ describe('useElementEditor', () => {
     await editor.autosave.save();
     await typeTitle('Pending title');
 
-    broadcaster.dispatchEvent(
-      new MessageEvent('message', {
-        data: {event: 'reorderNestedElements', canonicalId: 12, draftId: 7},
-      })
-    );
+    fromOtherTab({event: 'reorderNestedElements', canonicalId: 12, draftId: 7});
     await nextTick();
 
     expect(editor.autosave.status.value).toBe('saved');
@@ -2703,8 +2716,7 @@ describe('useElementEditor', () => {
     });
 
     it('announces invalid nested elements when a save fails', async () => {
-      const displayError = vi.fn();
-      vi.stubGlobal('Craft', {cp: {displayError}});
+      vi.stubGlobal('Craft', {cp: {}});
       const root = document.createElement('div');
       document.body.append(root);
       const listener = vi.fn();
@@ -2736,23 +2748,11 @@ describe('useElementEditor', () => {
       expect((listener.mock.calls[0]![0] as CustomEvent).detail).toEqual({
         ids: [5],
       });
-      expect(displayError).toHaveBeenCalledWith('Couldn’t save entry.');
+      expect(messages.showError).toHaveBeenCalledWith('Couldn’t save entry.');
       root.remove();
     });
 
-    it('announces a finished save to the rest of the CP', async () => {
-      const displaySuccess = vi.fn();
-      const postMessage = vi.fn();
-      const refresh = vi.fn();
-      vi.stubGlobal('Craft', {
-        cp: {displaySuccess},
-        broadcaster: {
-          postMessage,
-          addEventListener: vi.fn(),
-          removeEventListener: vi.fn(),
-        },
-        Preview: {refresh},
-      });
+    it('refreshes previews after a finished save', async () => {
       stubSaveRequest(() =>
         Promise.resolve({
           data: {message: 'Entry saved.', element: {id: 12}},
@@ -2762,13 +2762,9 @@ describe('useElementEditor', () => {
 
       editor.save();
 
-      await vi.waitFor(() => expect(displaySuccess).toHaveBeenCalled());
-      expect(displaySuccess.mock.calls[0]![0]).toBe('Entry saved.');
-      expect(postMessage).toHaveBeenCalledWith({
-        event: 'saveElement',
-        id: 12,
-      });
-      expect(refresh).toHaveBeenCalled();
+      await vi.waitFor(() => expect(messages.showSuccess).toHaveBeenCalled());
+      expect(messages.showSuccess.mock.calls[0]![0]).toBe('Entry saved.');
+      expect(refreshPreviews).toHaveBeenCalled();
     });
   });
 });

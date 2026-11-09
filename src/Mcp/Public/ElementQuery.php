@@ -41,7 +41,7 @@ readonly class ElementQuery
         $type = $this->elementTypes->make($name);
 
         if (! $this->allows($type)) {
-            throw new ToolCallException("Public element type [$type->name] is not enabled. Use craft-context-get for allowed queryTypes.");
+            throw new ToolCallException("Public element type [$type->name] is not enabled. Use craft_context_get for allowed queryTypes.");
         }
 
         $this->criteria->assertSupported($type, $criteria);
@@ -62,8 +62,11 @@ readonly class ElementQuery
         ];
     }
 
-    /** @return array<string, mixed>|null */
-    private function serializeNested(ElementInterface $element): ?array
+    /**
+     * @param  list<string>  $paths
+     * @return array<string, mixed>|null
+     */
+    private function serializeNested(ElementInterface $element, array $paths = [], bool $summary = false): ?array
     {
         $type = $this->elementTypes->find($this->elementTypes->name($element::class));
 
@@ -83,7 +86,11 @@ readonly class ElementQuery
             return null;
         }
 
-        return $this->serializer->serialize($element, fields: null);
+        if ($summary) {
+            return $this->serializer->summarize($element);
+        }
+
+        return $this->serializer->serialize($element, fields: null, serializeNested: $this->serializeNested(...), nestedPaths: $paths);
     }
 
     public function allows(ElementType $type): bool
@@ -285,7 +292,7 @@ readonly class ElementQuery
         foreach (explode(',', $orderBy) as $sort) {
             if (! preg_match('/^\s*([a-zA-Z][a-zA-Z0-9]*)\s*(?:\s+(asc|desc))?\s*$/i', $sort, $matches)
                 || ! isset($fields[$matches[1]])) {
-                throw new ToolCallException('Unsupported public sort field. Use craft-context-get for allowed orderBy fields.');
+                throw new ToolCallException('Unsupported public sort field. Use craft_context_get for allowed orderBy fields.');
             }
 
             $query->orderBy($fields[$matches[1]], strtolower($matches[2] ?? 'asc'));

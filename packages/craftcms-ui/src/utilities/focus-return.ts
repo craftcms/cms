@@ -57,7 +57,32 @@ function closestComposed(el: Element, selector: string): HTMLElement | null {
   return null;
 }
 
+/**
+ * The button that opens `menu`, in the same order as
+ * `CraftPopover._overlayInvokerNode`: one linked with `anchor` (or a virtual
+ * anchor's `contextElement`) or `for`, which sits outside the menu, then a
+ * slotted invoker.
+ */
 function invokerOf(menu: Element): HTMLElement | null {
+  const anchor = (menu as Element & {anchor?: unknown}).anchor;
+  if (anchor instanceof HTMLElement) {
+    return anchor;
+  }
+  const contextElement = (anchor as {contextElement?: unknown} | undefined)
+    ?.contextElement;
+  if (contextElement instanceof HTMLElement) {
+    return contextElement;
+  }
+
+  const id = menu.getAttribute('for');
+  if (id) {
+    // A detached menu's root may be the element itself or a bare fragment.
+    const root = menu.getRootNode() as Document | ShadowRoot;
+    return typeof root.getElementById === 'function'
+      ? root.getElementById(id)
+      : null;
+  }
+
   return menu.querySelector<HTMLElement>(':scope > [slot="invoker"]');
 }
 

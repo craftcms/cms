@@ -56,6 +56,16 @@ trait HasSources
         return null;
     }
 
+    /**
+     * Forgets the memoized sources of every element type, so long-running processes see sources added since.
+     *
+     * @internal
+     */
+    public static function forgetSources(): void
+    {
+        self::$sources = [];
+    }
+
     public static function sources(string $context): array
     {
         if (! isset(self::$sources[static::class][$context])) {

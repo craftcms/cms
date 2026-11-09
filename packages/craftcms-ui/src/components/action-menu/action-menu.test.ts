@@ -363,7 +363,7 @@ describe('keyboard navigation', () => {
     expect(focused).toEqual(['Date', 'Plain Text']);
   });
 
-  it('skips consumer-hidden, filtered, and disabled items', async () => {
+  it('skips consumer-hidden and filtered items, but stops on disabled ones', async () => {
     const element = await createFromMarkup(`
       <craft-action-menu searchable>
         <button slot="invoker" type="button">Open</button>
@@ -379,11 +379,12 @@ describe('keyboard navigation', () => {
     getItem(element, 'Five').setAttribute('data-search-hidden', '');
     const focused = spyOnItemFocus(element);
 
-    // Two (hidden), Three (disabled) and Five (filtered) are not navigable.
+    // Two (hidden) and Five (filtered) are not navigable; Three (disabled) is.
     pressKey(getItem(element, 'One'), 'ArrowDown');
+    pressKey(getItem(element, 'Three'), 'ArrowDown');
     pressKey(getItem(element, 'Four'), 'ArrowDown'); // wraps past Five
 
-    expect(focused).toEqual(['Four', 'One']);
+    expect(focused).toEqual(['Three', 'Four', 'One']);
   });
 
   it('returns focus to the search input when typing on a focused item', async () => {
@@ -441,26 +442,6 @@ describe('keyboard navigation', () => {
 
     // Arrow navigation still works without a search input.
     pressKey(getItem(element, 'One'), 'ArrowDown');
-    expect(focused).toEqual(['Two']);
-  });
-
-  it('focuses the first navigable item on open in non-searchable mode', async () => {
-    const element = await createFromMarkup(`
-      <craft-action-menu>
-        <button slot="invoker" type="button">Open</button>
-        <div slot="content">
-          <craft-action-item hidden>One</craft-action-item>
-          <craft-action-item>Two</craft-action-item>
-        </div>
-      </craft-action-menu>
-    `);
-    const focused = spyOnItemFocus(element);
-
-    element.opened = true;
-    await element.updateComplete;
-    // Lion dispatches `show` on the overlay controller asynchronously.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
     expect(focused).toEqual(['Two']);
   });
 });

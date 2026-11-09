@@ -29,6 +29,7 @@ use Mcp\Capability\Attribute\Schema;
 use Mcp\Capability\Discovery\SchemaValidator;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\ToolAnnotations;
+use Mcp\Server\RequestContext;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
@@ -78,12 +79,13 @@ readonly class Drafts
      * @return array{count: int, limit: int, offset: int, nextOffset: int|null, drafts: list<array<string, mixed>>}
      */
     #[McpTool(
-        name: 'drafts.list',
+        name: 'drafts_list',
         description: 'Lists Craft CMS drafts of existing elements for a supported element type. Unpublished drafts (new elements that have never been published) have no canonical element and are only listed with unpublished: true.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        RequestContext $context,
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -97,6 +99,7 @@ readonly class Drafts
         bool $unpublished = false,
     ): array {
         $actor = $this->actor->user();
+        $fields = ElementSerializer::fieldsArgument($context, $fields);
         $query = $this->elementQueries->make($type)
             ->drafts()
             ->provisionalDrafts(null)
@@ -119,7 +122,7 @@ readonly class Drafts
                 $draft = $canonical ? null : $this->findDraft($type, $id, $uid, $siteId);
 
                 if ($draft?->getIsUnpublishedDraft() && Gate::forUser($actor)->allows('view', $draft)) {
-                    throw new ToolCallException("Element {$draft->id} is an unpublished draft and has no canonical element. Load it with elements.get, or list unpublished drafts with unpublished: true.");
+                    throw new ToolCallException("Element {$draft->id} is an unpublished draft and has no canonical element. Load it with elements_get, or list unpublished drafts with unpublished: true.");
                 }
 
                 throw new ToolCallException('Canonical element not found.');
@@ -146,9 +149,9 @@ readonly class Drafts
     }
 
     /** @return array{draft: array<string, mixed>} */
-    #[McpTool(name: 'drafts.create', description: 'Creates a draft of an existing Craft CMS element. Edit the draft with elements.update using the draft’s ID. To create a new entry as a draft, use elements.create with asUnpublishedDraft.')]
+    #[McpTool(name: 'drafts_create', description: 'Creates a draft of an existing Craft CMS element. Edit the draft with elements_update using the draft’s ID. To create a new entry as a draft, use elements_create with asUnpublishedDraft.')]
     public function create(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -184,7 +187,7 @@ readonly class Drafts
      * @param  list<string>|null  $fields
      * @return array{draft: array<string, mixed>}
      */
-    #[McpTool(name: 'drafts.get', description: 'Reads a draft by its draft record ID, not its element ID. siteId defaults to the current site.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'drafts_get', description: 'Reads a draft by its draft record ID, not its element ID. siteId defaults to the current site.', annotations: new ToolAnnotations(readOnlyHint: true))]
     public function get(
         #[Schema(minimum: 1)]
         int $draftId,
@@ -196,7 +199,7 @@ readonly class Drafts
     }
 
     /** @return array{schema: array<string, mixed>} */
-    #[McpTool(name: 'drafts.field-schema', description: 'Describes custom fields for an editable draft. Uses the registered element adapter.', annotations: new ToolAnnotations(readOnlyHint: true))]
+    #[McpTool(name: 'drafts_field_schema', description: 'Describes custom fields for an editable draft. Uses the registered element adapter.', annotations: new ToolAnnotations(readOnlyHint: true))]
     public function fieldSchema(#[Schema(minimum: 1)] int $draftId, ?int $siteId = null): array
     {
         $draft = $this->recordDraft($draftId, $siteId);
@@ -210,7 +213,7 @@ readonly class Drafts
      * @param  array<string, mixed>  $fields
      * @return array{draft: array<string, mixed>}
      */
-    #[McpTool(name: 'drafts.update', description: 'Edits an existing draft without publishing or creating another draft. Uses elements.schema updateAttributes and drafts.field-schema. Saving content of a draft in review can withdraw it from review, send it back to an earlier stage, or withdraw the user’s own approval.')]
+    #[McpTool(name: 'drafts_update', description: 'Edits an existing draft without publishing or creating another draft. Uses elements_schema updateAttributes and drafts_field_schema. Saving content of a draft in review can withdraw it from review, send it back to an earlier stage, or withdraw the user’s own approval.')]
     public function update(
         #[Schema(minimum: 1)]
         int $draftId,
@@ -225,7 +228,7 @@ readonly class Drafts
         $errors = $this->schemaValidator->validateAgainstJsonSchema($attributes, $adapter->schema()['updateAttributes']);
 
         if ($errors !== []) {
-            throw new ToolCallException('Invalid draft attributes: '.$errors[0]['message'].'. Call elements.schema for accepted updateAttributes.');
+            throw new ToolCallException('Invalid draft attributes: '.$errors[0]['message'].'. Call elements_schema for accepted updateAttributes.');
         }
 
         return ['draft' => $adapter->update($draft, $attributes, $fields, $this->actor->user())['element']];
@@ -233,20 +236,20 @@ readonly class Drafts
 
     /** @return array{element: array<string, mixed>} */
     #[McpTool(
-        name: 'drafts.apply',
+        name: 'drafts_apply',
         description: 'Applies a Craft CMS draft to its canonical element.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function apply(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         ?string $type = null,
         ?int $id = null,
         #[Schema(format: 'uuid')]
         ?string $uid = null,
         ?int $siteId = null,
-        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows.review result. Provide together with workflowCurrentStage to reject stale approvals.')]
+        #[Schema(minimum: 1, description: 'review.runId from a fresh workflows_review result. Provide together with workflowCurrentStage to reject stale approvals.')]
         ?int $workflowRunId = null,
-        #[Schema(minimum: 0, description: 'Zero-based review.currentStage from the same workflows.review result. Provide together with workflowRunId; this is an index, not review.stage.uid.')]
+        #[Schema(minimum: 0, description: 'Zero-based review.currentStage from the same workflows_review result. Provide together with workflowRunId; this is an index, not review.stage.uid.')]
         ?int $workflowCurrentStage = null,
         #[Schema(minimum: 1, description: 'Draft record ID. Mutually exclusive with the legacy element id/uid selectors; type is optional.')]
         ?int $draftId = null,
@@ -293,12 +296,12 @@ readonly class Drafts
 
     /** @return array{deleted: true, release?: array<string, mixed>} */
     #[McpTool(
-        name: 'drafts.delete',
+        name: 'drafts_delete',
         description: 'Deletes a Craft CMS draft.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     public function delete(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         ?string $type = null,
         ?int $id = null,
         #[Schema(format: 'uuid')]

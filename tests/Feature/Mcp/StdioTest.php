@@ -6,9 +6,13 @@ use CraftCms\Cms\Activity\EventTypes\CommentCreated;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\StdioTransport;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -52,18 +56,18 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
     $editor = User::factory()->withPermissions([])->create(['username' => 'editor']);
     $call = static fn (string $tool, array $arguments = []): array => ['jsonrpc' => '2.0', 'id' => $tool, 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]];
 
-    $admin = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [$call('info.get'), $call('configuration.list', ['type' => 'sections']), $call('assets.upload.prepare')]);
-    $editorResponses = ($this->serve)($editor->email, [$call('configuration.list', ['type' => 'sections'])]);
+    $admin = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [$call('info_get'), $call('configuration_list', ['type' => 'sections']), $call('assets_upload_prepare')]);
+    $editorResponses = ($this->serve)($editor->email, [$call('configuration_list', ['type' => 'sections'])]);
 
-    expect($admin['configuration.list'])->not->toHaveKey('error')
+    expect($admin['configuration_list'])->not->toHaveKey('error')
         ->and(strlen($admin['init']['result']['instructions']))->toBeLessThanOrEqual(2048)
-        ->and($admin['init']['result']['instructions'])->toContain('info.get')
+        ->and($admin['init']['result']['instructions'])->toContain('info_get')
         ->not->toContain('Preserve legal notices.', 'reviews.list')
-        ->and($admin['info.get']['result']['structuredContent']['instructions'])->toContain('hardDelete')
+        ->and($admin['info_get']['result']['structuredContent']['instructions'])->toContain('hardDelete')
         ->toEndWith("Preserve legal notices.\n\nUse reviews.list before changing a product.")
-        ->and($admin['configuration.list']['result']['structuredContent'])->toMatchArray(['type' => 'sections', 'items' => []])
-        ->and($admin['assets.upload.prepare']['error']['message'])->toBe('Tool not found: "assets.upload.prepare".')
-        ->and($editorResponses['configuration.list']['error']['message'])->toBe('Tool not found: "configuration.list".');
+        ->and($admin['configuration_list']['result']['structuredContent'])->toMatchArray(['type' => 'sections', 'items' => []])
+        ->and($admin['assets_upload_prepare']['error']['message'])->toBe('Tool not found: "assets_upload_prepare".')
+        ->and($editorResponses['configuration_list']['error']['message'])->toBe('Tool not found: "configuration_list".');
 });
 
 it('attributes every message’s activity to the named user and the MCP origin', function (): void {
@@ -73,7 +77,7 @@ it('attributes every message’s activity to the named user and the MCP origin',
         'jsonrpc' => '2.0',
         'id' => $id,
         'method' => 'tools/call',
-        'params' => ['name' => 'activity.comments.create', 'arguments' => ['type' => 'entries', 'id' => $entry->id, 'markdown' => $markdown]],
+        'params' => ['name' => 'activity_comments_create', 'arguments' => ['type' => 'entries', 'id' => $entry->id, 'markdown' => $markdown]],
     ];
 
     $responses = ($this->serve)((string) $user->id, [$comment('first', 'First'), $comment('second', 'Second')]);
@@ -109,7 +113,7 @@ it('saves project config changes before responding, rather than when the server 
             'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
         ]],
         ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
-        ['jsonrpc' => '2.0', 'id' => 'create', 'method' => 'tools/call', 'params' => ['name' => 'configuration.create', 'arguments' => ['type' => 'site-groups', 'attributes' => ['name' => 'Archive']]]],
+        ['jsonrpc' => '2.0', 'id' => 'create', 'method' => 'tools/call', 'params' => ['name' => 'configuration_create', 'arguments' => ['type' => 'site-groups', 'attributes' => ['name' => 'Archive']]]],
     ])));
     rewind($input);
     StdioTestOutput::$saved = [];
@@ -151,3 +155,23 @@ class StdioTestOutput
         return strlen($data);
     }
 }
+
+it('sees sections added since an earlier message read element sources', function (): void {
+    EntryElement::sources(ElementSources::CONTEXT_MODAL);
+    $section = Section::factory()->create();
+
+    $responses = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [[
+        'jsonrpc' => '2.0',
+        'id' => 'create',
+        'method' => 'tools/call',
+        'params' => ['name' => 'configuration_create', 'arguments' => ['type' => 'fields', 'attributes' => [
+            'type' => EntriesField::class,
+            'name' => 'Related',
+            'handle' => 'related',
+            'settings' => ['sources' => ["section:$section->uid"]],
+        ]]],
+    ]]);
+
+    expect($responses['create']['result']['isError'])->toBeFalse()
+        ->and($responses['create']['result']['structuredContent']['item']['settings']['sources'])->toBe(["section:$section->uid"]);
+});

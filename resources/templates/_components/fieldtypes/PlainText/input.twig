@@ -2,7 +2,6 @@
 {%- set maxlength = not disabled ? field.charLimit : null %}
 
 {%- set class = [
-    'nicetext',
     field.code ? 'code',
     field.uiMode == 'enlarged' ? 'readable',
 ]|filter %}

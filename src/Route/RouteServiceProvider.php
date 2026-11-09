@@ -30,6 +30,7 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveElementRoute;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
+use CraftCms\Cms\Http\Middleware\SendBroadcasts;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
 use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
@@ -213,6 +214,8 @@ class RouteServiceProvider extends ServiceProvider
             RequireCpRequest::class,
             AuthenticateCraftSession::class,
             CheckRequirements::class,
+            // Outside `HandleInertiaRequests`, so it sees what the page delivered.
+            SendBroadcasts::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
             HandleTemplateRequest::class,

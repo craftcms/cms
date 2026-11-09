@@ -181,6 +181,9 @@ class HandleInertiaRequests extends Middleware
             // Always included, so a partial reload can't consume the flashed
             // messages without delivering them.
             'messages' => Inertia::always(fn () => Flash::all()),
+            // Messages for the page to broadcast to every open control panel
+            // tab, such as an element save. Always included for the same reason.
+            'broadcasts' => Inertia::always(fn () => session()->getBroadcasts()),
             // @deprecated Read `messages`, which also carries notices, message
             // settings and ids.
             'flash' => fn () => [
@@ -193,7 +196,14 @@ class HandleInertiaRequests extends Middleware
                 'hasWaitingJobs' => false,
             ],
             'isMultiSite' => fn () => Sites::isMultiSite(),
-            'readOnly' => fn () => ! $generalConfig->allowAdminChanges,
+            // Disabling admin changes locks settings, not content, so only
+            // settings screens are read-only for it. Other screens that can be
+            // read-only, such as releases, pass their own `readOnly` prop.
+            'readOnly' => function () use ($request, $generalConfig): bool {
+                $settingsPath = ltrim(trim((string) $generalConfig->cpTrigger, '/').'/settings', '/');
+
+                return ! $generalConfig->allowAdminChanges && $request->is($settingsPath, "$settingsPath/*");
+            },
             'locale' => fn () => app()->getLocale(),
             ...($currentUser !== null && $nav->hasSourceBadges() ? [
                 'navSourceBadges' => Inertia::defer(fn (): object => (object) $nav->getSourceBadgeCounts()),
@@ -201,7 +211,7 @@ class HandleInertiaRequests extends Middleware
             'craft' => fn () => [
                 'csrfTokenValue' => csrf_token(),
                 'csrfTokenName' => '_token',
-                'general' => Cp::config()->toArray(),
+                'general' => Cp::inertiaConfig(),
                 'system' => [
                     'name' => Cms::systemName(),
                     'icon' => $systemIcon,

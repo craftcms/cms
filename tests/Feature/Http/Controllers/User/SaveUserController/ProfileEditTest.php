@@ -185,7 +185,7 @@ describe('photo selection', function () {
             expect($control['props']['sources'])->toBe(["volume:{$this->volume->uid}/folder:{$folder->uid}"])
                 ->and($control['props']['criteria'])->toBe(['volumeId' => $this->volume->id, 'folderId' => $folder->id, 'kind' => 'image'])
                 ->and($control['props']['canUpload'])->toBeTrue()
-                ->and($control['props']['uploadFolderId'])->toBe($folder->id)
+                ->and($control['props']['uploadParams'])->toBe(['folderId' => $folder->id])
                 ->and($control['props']['showFolders'])->toBeFalse();
         });
 

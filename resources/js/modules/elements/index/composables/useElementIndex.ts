@@ -28,6 +28,8 @@ import {
   useElementIndexStructure,
 } from '@/modules/elements/index/composables/useElementIndexStructure';
 import {useElementIndexViewMode} from '@/modules/elements/index/composables/useElementIndexViewMode';
+import {onElementChanged} from '@/modules/elements/element-instances';
+import {tryOnScopeDispose} from '@vueuse/core';
 import {useElementIndexViewState} from '@/modules/elements/index/composables/useElementIndexViewState';
 import type {
   IndexQueryParams,
@@ -83,7 +85,8 @@ interface UseElementIndexOptions {
   ) => ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>;
   structure?: boolean;
   readOnly?: MaybeRefOrGetter<boolean>;
-  refresh: () => Promise<boolean>;
+  /** `silent` reloads without the loading state, keeping the rows on screen. */
+  refresh: (options?: {silent?: boolean}) => Promise<boolean>;
 }
 
 /** Shared state and table setup for page and detached element indexes. */
@@ -107,28 +110,6 @@ export function useElementIndex(options: UseElementIndexOptions) {
     () => visibleViewModes.value.map(({mode}) => mode),
     (mode) => thumbSizeModeParams(mode)
   );
-  const filters = useElementIndexFilters(visitor, {
-    search: elementIndex.search,
-    status: elementIndex.statusMenuValue,
-    conditions: elementIndex.currentCondition,
-    busy: options.busy,
-    preferredSort: () => {
-      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
-        ({field}) => field !== 'score'
-      );
-
-      if (saved?.length) {
-        return saved;
-      }
-
-      return sourceKey() === initialSourceKey ? preferredSort : [];
-    },
-    params: () => ({
-      source: elementIndex.source?.key,
-      viewMode: persistedMode(),
-      ...options.filterParams?.(),
-    }),
-  });
   const pinnedColumn =
     options.pinnedColumn === undefined
       ? {key: 'title', label: elementIndex.elementDisplayName}
@@ -157,8 +138,12 @@ export function useElementIndex(options: UseElementIndexOptions) {
     elementIndex,
     visitor
   );
+  // The selection watcher below is sync, so it reruns this when a visit swaps
+  // in the next page's props, before the index unmounts. Throwing there would
+  // reject Inertia's swap, which then skips loading the next page's deferred
+  // props.
   const visibleViewModes = computed(() =>
-    elementIndex.viewModes.filter(
+    (elementIndex.viewModes ?? []).filter(
       (viewMode) =>
         !viewMode.structuresOnly || elementIndex.source?.structureId != null
     )
@@ -178,6 +163,28 @@ export function useElementIndex(options: UseElementIndexOptions) {
     set: (value) => {
       savedMode.value = value;
     },
+  });
+  const filters = useElementIndexFilters(visitor, {
+    search: elementIndex.search,
+    status: elementIndex.statusMenuValue,
+    conditions: elementIndex.currentCondition,
+    busy: options.busy,
+    preferredSort: () => {
+      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
+        ({field}) => field !== 'score'
+      );
+
+      if (saved?.length) {
+        return saved;
+      }
+
+      return sourceKey() === initialSourceKey ? preferredSort : [];
+    },
+    params: () => ({
+      source: elementIndex.source?.key,
+      viewMode: mode.value,
+      ...options.filterParams?.(),
+    }),
   });
   const {
     thumbSize,
@@ -541,14 +548,48 @@ export function useElementIndex(options: UseElementIndexOptions) {
     visitor.merge({site: handle}, {resetPage: true});
   }
 
-  async function refresh(refreshOptions?: {selectId?: number}): Promise<void> {
-    const applied = await options.refresh();
+  async function refresh(refreshOptions?: {
+    selectId?: number;
+    silent?: boolean;
+  }): Promise<void> {
+    const applied = await options.refresh({silent: refreshOptions?.silent});
     if (!applied || refreshOptions?.selectId === undefined) return;
     const row = table
       .getRowModel()
       .rows.find(({original}) => original.id === refreshOptions.selectId);
     if (row) selection.selectRow(row, {checked: true});
   }
+
+  // Rows saved in another tab are reloaded, once for all the rows saved
+  // together. Saves in this one refresh the index where they happen, such as
+  // after a quick edit. The reload is silent, so the rows stay on screen, and
+  // focus within them, instead of making way for placeholders. While rows are
+  // edited inline, it waits until editing ends, so it doesn't redraw the
+  // inputs over unsaved changes.
+  let reloadQueued = false;
+  let reloadAfterEditing = false;
+  tryOnScopeDispose(
+    onElementChanged((id) => {
+      const shown =
+        id === null ||
+        elementIndex.data?.some((row) => Number(row.id) === id) === true;
+      if (!shown || reloadQueued) return;
+      if (inlineEditingActive.value) {
+        reloadAfterEditing = true;
+        return;
+      }
+      reloadQueued = true;
+      queueMicrotask(() => {
+        reloadQueued = false;
+        void refresh({silent: true});
+      });
+    })
+  );
+  watch(inlineEditingActive, (active) => {
+    if (active || !reloadAfterEditing) return;
+    reloadAfterEditing = false;
+    void refresh({silent: true});
+  });
 
   const processing = computed(
     () => loading.value || pending.value || Boolean(toValue(options.busy))
