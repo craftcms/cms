@@ -1038,6 +1038,7 @@
             :data-compare-side="key"
             role="group"
             :aria-labelledby="`compare-${key}-title`"
+            :inert="saving[otherSide(key)]"
           >
             <!-- Tells stacked sides apart. Decorative: the cell is named by
                  its side's heading. -->

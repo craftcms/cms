@@ -292,11 +292,11 @@ it('doesn’t let one side be edited while the other saves, which would lose the
     $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $this->entry->id, 'toId' => $other->id], false))
         ->assertPresent('main[id]');
 
-    // Which sides' Summary fields can be edited, as A's Save button is clicked and until the page reloads.
+    // Which sides' Summary fields can be edited, as A's Save button is clicked and until the page reloads. B's stays
+    // an input, frozen rather than shown read-only, which would take its value out of the edits waiting to autosave.
     $editable = $page->script('async () => {
         const editable = () => [...document.querySelectorAll("input[name=\"fields[summary]\"]")]
-            .filter((input) => !input.readOnly && !input.disabled)
-            .map((input) => input.closest("[data-compare-side]").dataset.compareSide)
+            .map((input) => input.closest("[data-compare-side]").dataset.compareSide + (input.closest("[inert]") ? " frozen" : ""))
             .sort()
             .join();
         const seen = [editable()];
@@ -309,7 +309,7 @@ it('doesn’t let one side be edited while the other saves, which would lose the
         return seen;
     }');
 
-    expect($editable)->toBe(['from,to', 'from']);
+    expect($editable)->toBe(['from,to', 'from,to frozen']);
 
     assertNoJavaScriptErrors($page);
 });

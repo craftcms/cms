@@ -66,7 +66,9 @@
     fieldIdScope: string;
     /**
      * Whether the other side is saving, which reloads the page and with it this
-     * editor, so an edit made here meanwhile would be lost.
+     * editor, so an edit made here meanwhile would be lost. The screen freezes
+     * this side's fields, rather than their being shown read-only, which would
+     * take their values out of the edits waiting to autosave.
      */
     otherSideSaving?: boolean;
   }>();
@@ -361,7 +363,7 @@
       :payload="pane"
       :errors="errors"
       :modified="autosave.modified.value"
-      :read-only="workflowReviewLocked || releaseDraftLocked || otherSideSaving"
+      :read-only="workflowReviewLocked || releaseDraftLocked"
       :refresh="pane.refreshable ? refresh : undefined"
       :field-outlets="fieldOutlets"
       @change="onChange"
