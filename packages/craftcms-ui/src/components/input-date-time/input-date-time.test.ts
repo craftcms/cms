@@ -115,6 +115,33 @@ describe('craft-input-date-time', () => {
       element.querySelector('input[type="hidden"][name="startsAt[timezone]"]')
     ).toBeNull();
   });
+
+  it('keeps a time that force-round-time rounded', async () => {
+    const element = document.createElement(
+      'craft-input-date-time'
+    ) as CraftInputDateTime;
+    element.minuteIncrement = 15;
+    element.forceRoundTime = true;
+    document.body.append(element);
+    await element.updateComplete;
+
+    const time = element.querySelector<CraftInput>('craft-input-time')!;
+    await time.updateComplete;
+    const timeInput = time.querySelector('input')!;
+    timeInput.value = '12:08';
+    timeInput.dispatchEvent(
+      new Event('input', {bubbles: true, composed: true})
+    );
+    timeInput.dispatchEvent(new Event('change', {bubbles: true}));
+    await element.updateComplete;
+
+    expect(element.timeValue).toBe('12:15');
+
+    element.disabled = true;
+    await element.updateComplete;
+
+    expect(timeInput.value).toBe('12:15');
+  });
 });
 
 describe('a clearable craft-input-date-time', () => {

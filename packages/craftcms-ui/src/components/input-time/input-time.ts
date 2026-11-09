@@ -80,9 +80,11 @@ export default class CraftInputTime extends CraftInput {
       return;
     }
 
-    if (this.forceRoundTime) {
-      const rounded = this.#round(event.target.value);
-      this.value = rounded;
+    const input = event.target;
+
+    if (this.forceRoundTime && this.#round(input.value) !== input.value) {
+      this.value = this.#round(input.value);
+      input.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
     }
 
     this.#validate();
