@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Import;
 
 use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Import\Data\MappingColumnGroup;
 use CraftCms\Cms\Import\Data\MappingValues;
 use CraftCms\Cms\Import\Data\NestedMappingPayload;
 use CraftCms\Cms\Import\Data\StepMappingPayload;
+use CraftCms\Cms\Import\Data\StepSummary;
 use CraftCms\Cms\Import\Data\StepUiPayload;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -119,6 +121,71 @@ class ImportPlansController
         return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : $found);
     }
 
+    /** One saved step on a page of its own, which a step's slideout links to. */
+    public function editStep(string $handle, string $uid): InertiaResponse
+    {
+        abort_if(is_null($importPlan = $this->importsService->getImportPlanByHandle($handle)), 404, 'Import plan not found');
+        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable: $importPlan->handle");
+
+        $steps = $importPlan->serializeSteps() ?? [];
+        $index = collect($steps)->search(fn (array $step) => $step['uid'] === $uid);
+
+        abort_if($index === false, 404, 'Import step not found');
+
+        $step = $steps[$index];
+        $planUrl = route('craft.cp.import.edit', ['handle' => $importPlan->handle]);
+        $importer = ! empty($step['type']) ? ImportPlans::createImporter($step) : null;
+
+        return Inertia::render('import/StepEdit', [
+            'title' => t('Edit step {number} of {name}', ['number' => $index + 1, 'name' => $importPlan->name]),
+            'crumbs' => [
+                new ActionItem()->label(t('Import'))->href(route('craft.cp.import.index')),
+                new ActionItem()->label((string) $importPlan->name)->href($planUrl),
+            ],
+            'planUid' => $importPlan->uid,
+            'step' => $step,
+            'stepUi' => $this->stepUiPayload($importer, $step['batchSize'] ?? null),
+            'editable' => (bool) $this->request->craftUser()?->can('saveImportPlans'),
+            'submit' => ['method' => 'post', 'url' => action([self::class, 'storeStep'])],
+        ]);
+    }
+
+    /** Saves one step into its plan, replacing the step with its uid or adding it as new. */
+    public function storeStep(): Response
+    {
+        $data = $this->request->validate([
+            'planUid' => ['required', 'string', 'max:36'],
+            'step' => ['required', 'array'],
+            'step.uid' => ['required', 'string', 'max:36'],
+        ]);
+
+        abort_if(is_null($importPlan = $this->importsService->getImportPlanByUid($data['planUid'], true)), 400, "Invalid import plan UID: {$data['planUid']}");
+
+        // the validated data keeps only the step keys named in the rules
+        $step = $this->request->input('step');
+        $steps = $importPlan->serializeSteps() ?? [];
+        $index = collect($steps)->search(fn (array $existing) => $existing['uid'] === $step['uid']);
+
+        if ($index === false) {
+            $steps[] = $step;
+        } else {
+            $steps[$index] = $step;
+        }
+
+        $importPlan->steps($steps);
+
+        if (! $this->importsService->saveImportPlan($importPlan)) {
+            return $this->asModelFailure($importPlan, t('Couldn’t save import step.'), 'import');
+        }
+
+        return $this->asModelSuccess(
+            $importPlan,
+            t('Import step saved.'),
+            'import',
+            redirect: route('craft.cp.import.steps.edit', ['handle' => $importPlan->handle, 'uid' => $step['uid']]),
+        );
+    }
+
     public function store(): Response
     {
         $importUid = $this->request->input('uid');
@@ -155,22 +222,31 @@ class ImportPlansController
      */
     public function stepSettings(): JsonResponse
     {
-        $importer = $this->draftImporter(requireType: false);
         $batchSize = $this->request->input('step.batchSize');
+
+        return new JsonResponse($this->stepUiPayload(
+            $this->draftImporter(requireType: false),
+            $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
+        ));
+    }
+
+    private function stepUiPayload(?BaseImporter $importer, ?int $batchSize): StepUiPayload
+    {
         $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false);
 
-        return new JsonResponse(new StepUiPayload(
+        return new StepUiPayload(
             ui: new ImportPlanStepUiViewModel(
                 $importer,
                 $this->importService,
                 app(UiResolver::class),
                 (bool) $this->request->craftUser()?->can('saveImportPlans'),
-                $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
+                $batchSize,
             )->ui(),
             canMap: $this->hasDestination($importer) && $sourceError === null,
             // shown under the source field; a step whose source is yet to be entered isn't flagged
             sourceError: ! empty($importer->source) ? $sourceError : null,
-        ));
+            summary: StepSummary::fromImporter($importer),
+        );
     }
 
     /**

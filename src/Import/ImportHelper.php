@@ -7,6 +7,11 @@ namespace CraftCms\Cms\Import;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
+use CraftCms\Cms\Field\Date;
+use CraftCms\Cms\Field\Lightswitch;
+use CraftCms\Cms\Field\Number;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Users;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
@@ -25,7 +30,7 @@ use function CraftCms\Cms\renderSandboxedObjectTemplate;
 use function CraftCms\Cms\t;
 
 /**
- * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed, trait: class-string|null}
+ * @phpstan-type ImportableProperty array{property: string, name: string, label: string, excludeFromUiMapping: bool, isContainer: bool, canBeMatchCriteria: bool, canBeCleared: bool, canBeSet: bool, defaultValue: mixed, trait: class-string|null, icon?: string, defaultValueInput?: array{type: string}|null}
  * @phpstan-type MappedNode array{data: array<mixed>, consumed: list<int|string>}
  * @phpstan-type MappingSource array{value: array<mixed>, basePath: string, consumed: list<string>}
  * @phpstan-type MappedScalar array{value: mixed, consumed: string|null}
@@ -164,8 +169,49 @@ class ImportHelper
                 'canBeSet' => $arguments[6] ?? $arguments['canBeSet'] ?? true,
                 'defaultValue' => $property->getDefaultValue(),
                 'trait' => self::declaringTrait($property->getDeclaringClass(), $property->getName()),
+                'icon' => self::propertyIcon($property),
+                'defaultValueInput' => self::propertyDefaultValueInput($property),
             ];
         }, $properties));
+    }
+
+    /**
+     * The icon of the field type an importable property's values are most like, so it reads
+     * alongside custom fields in a mapping.
+     */
+    private static function propertyIcon(\ReflectionProperty $property): string
+    {
+        $types = self::propertyTypes($property);
+
+        return match (true) {
+            array_any($types, fn (string $name) => is_a($name, \DateTimeInterface::class, true)) => Date::icon(),
+            in_array('bool', $types, true) => Lightswitch::icon(),
+            in_array('int', $types, true), in_array('float', $types, true) => Number::icon(),
+            str_starts_with($property->getName(), 'author') => Users::icon(),
+            default => PlainText::icon(),
+        };
+    }
+
+    /**
+     * The input an importable property's default value is entered with, so a boolean gets a switch rather than text.
+     *
+     * @return array{type: string}|null
+     */
+    private static function propertyDefaultValueInput(\ReflectionProperty $property): ?array
+    {
+        return DefaultValueInputs::forPropertyTypes(self::propertyTypes($property));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function propertyTypes(\ReflectionProperty $property): array
+    {
+        $type = $property->getType();
+
+        return $type instanceof \ReflectionNamedType
+            ? [$type->getName()]
+            : ($type instanceof \ReflectionUnionType ? array_map(fn ($t) => $t instanceof \ReflectionNamedType ? $t->getName() : '', $type->getTypes()) : []);
     }
 
     /**

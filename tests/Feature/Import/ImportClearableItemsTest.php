@@ -170,3 +170,39 @@ describe('nested matrix clearing', function () {
         expect($block->getFieldValue('plainText'))->toBeNull();
     });
 });
+
+it('uses a field’s default value when the provided value is empty', function () {
+    $importer = (clone $this->importer)->defaultValues(['myPlainText' => 'Coming soon']);
+
+    $this->import->importItem($importer, ($this->entryData)(['myPlainText' => '']));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myPlainText'))->toBe('Coming soon');
+});
+
+it('uses a field’s default value when no value is provided at all', function () {
+    $importer = (clone $this->importer)->defaultValues(['myPlainText' => 'Coming soon']);
+
+    $this->import->importItem($importer, ($this->entryData)());
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myPlainText'))->toBe('Coming soon');
+});
+
+it('keeps a provided value over a field’s default', function () {
+    $importer = (clone $this->importer)->defaultValues(['myPlainText' => 'Coming soon']);
+
+    $this->import->importItem($importer, ($this->entryData)(['myPlainText' => 'new value']));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myPlainText'))->toBe('new value');
+});
+
+it('leaves the existing value alone when a field’s default is empty', function () {
+    $importer = (clone $this->importer)->defaultValues(['myPlainText' => '']);
+
+    $this->import->importItem($importer, ($this->entryData)(['myPlainText' => '']));
+
+    $entry = EntryElement::find()->title('imported entry')->one();
+    expect($entry->getFieldValue('myPlainText'))->toBe('original value');
+});

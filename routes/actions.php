@@ -372,6 +372,7 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('import/duplicate', [ImportPlansController::class, 'duplicate']);
             Route::post('import/reorder', [ImportPlansController::class, 'reorder']);
             Route::post('import/validate-step', [ImportPlansController::class, 'validateStep']);
+            Route::post('import/save-step', [ImportPlansController::class, 'storeStep']);
             Route::get('import/source-suggestions', [ImportPlansController::class, 'sourceSuggestions']);
         });
         Route::middleware('can:deleteImportPlans')->delete('import/delete', [ImportPlansController::class, 'destroy']);

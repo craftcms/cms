@@ -252,6 +252,18 @@ it('offers enabled but not parentId on the mapping screen for a channel section'
         ->and($handles)->not->toContain('parentId');
 });
 
+it('enters a boolean attribute’s default value with a switch', function () {
+    $this->importer->section($this->section->uid)->entryType($this->entryType->uid);
+
+    $cols = collect($this->importer->getDestinationCols())
+        ->whereInstanceOf(MappingColumn::class)
+        ->keyBy('handle');
+
+    expect($cols['enabled']->defaultValueInput)->toBe(['type' => 'lightswitch'])
+        ->and($cols['title']->defaultValueInput)->toBe(['type' => 'text'])
+        ->and($cols['postDate']->defaultValueInput)->toBe(['type' => 'datetime']);
+});
+
 it('offers enabled and parentId on the mapping screen for a structure section', function () {
     $section = Section::factory()
         ->withEntryTypes($this->entryType)

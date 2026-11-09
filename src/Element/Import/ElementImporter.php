@@ -13,8 +13,10 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
+use CraftCms\Cms\Field\Lightswitch;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Enums\MatchMode;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Site\Data\Site;
@@ -29,6 +31,7 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -78,6 +81,9 @@ abstract class ElementImporter extends BaseImporter
      * e.g. `['myAssets' => ['fileConflict' => 'replace'], 'myMatrix' => ['someEntryType' => ['fields' => ['innerAssets' => [...]]]]]`.
      */
     public protected(set) ?array $fieldSettings = null;
+
+    /** Whether rows create new elements, update the ones they match, or both. */
+    public protected(set) MatchMode $matchMode = MatchMode::CreateAndUpdate;
 
     #[Override]
     public static function getDefaultTransformer(): ?string
@@ -208,10 +214,23 @@ abstract class ElementImporter extends BaseImporter
         return $this;
     }
 
+    /**
+     * Sets whether rows create new elements, update the ones they match, or both, and returns
+     * the current instance.
+     */
+    public function matchMode(MatchMode|string|null $matchMode): self
+    {
+        $this->matchMode = $matchMode instanceof MatchMode
+            ? $matchMode
+            : (MatchMode::tryFrom((string) $matchMode) ?? MatchMode::CreateAndUpdate);
+
+        return $this;
+    }
+
     #[Override]
     protected static function settingNames(): array
     {
-        return [...parent::settingNames(), 'site', 'fieldLayout', 'keepMissingNestedElements', 'fieldSettings'];
+        return [...parent::settingNames(), 'site', 'fieldLayout', 'keepMissingNestedElements', 'fieldSettings', 'matchMode'];
     }
 
     #[Override]
@@ -222,6 +241,7 @@ abstract class ElementImporter extends BaseImporter
             'settings.site' => ['required', new SiteRule],
             'settings.keepMissingNestedElements' => ['nullable', 'array'],
             'settings.fieldSettings' => ['nullable', 'array'],
+            'settings.matchMode' => ['nullable', Rule::enum(MatchMode::class)],
         ]);
     }
 
@@ -241,6 +261,7 @@ abstract class ElementImporter extends BaseImporter
         $data['settings']['fieldLayout'] = $this->fieldLayout ?? null;
         $data['settings']['keepMissingNestedElements'] = $this->keepMissingNestedElements;
         $data['settings']['fieldSettings'] = $this->fieldSettings;
+        $data['settings']['matchMode'] = $this->matchMode->value;
 
         return $data;
     }
@@ -348,6 +369,9 @@ abstract class ElementImporter extends BaseImporter
                 canBeCleared: $prop['canBeCleared'],
                 canBeSet: $prop['canBeSet'],
                 isProperty: true,
+                // properties declared outside ImportHelper may carry no icon
+                icon: $prop['icon'] ?? null,
+                defaultValueInput: $prop['defaultValueInput'] ?? null,
             ), $props));
         }
 
@@ -385,6 +409,7 @@ abstract class ElementImporter extends BaseImporter
                 'canBeMatchCriteria' => false,
                 'canBeCleared' => false,
                 'canBeSet' => true,
+                'icon' => Lightswitch::icon(),
                 'defaultValue' => false,
                 'trait' => null,
             ];
@@ -416,10 +441,16 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
-    public function importItem(array $data): ElementInterface
+    public function importItem(array $data): ?ElementInterface
     {
         // figure out if we're adding or updating
         $element = $this->getRootElement($data);
+
+        // a row the plan doesn't create or update is left out
+        if (! $this->matchMode->imports($element->id !== null)) {
+            return null;
+        }
+
         $element->markAsImporting();
 
         $item = Import::processData($this, $data, $element);

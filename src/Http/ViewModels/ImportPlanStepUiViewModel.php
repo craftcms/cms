@@ -10,7 +10,6 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Ui\Controls\Choice;
-use CraftCms\Cms\Ui\Controls\Hidden;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Enums\ControlMode;
@@ -18,6 +17,7 @@ use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
 use CraftCms\Cms\Ui\Nodes\Scope;
+use CraftCms\Cms\Ui\Nodes\Slot;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -26,8 +26,8 @@ use CraftCms\Cms\Ui\UiResolver;
 use function CraftCms\Cms\t;
 
 /**
- * The UI shown in an import plan step's slideout: the importer type, the data it reads, and
- * whatever settings that importer type asks for.
+ * The UI shown in an import plan step's slideout: the data it reads, what it imports and that
+ * importer type's own settings, a place for its mapping overview, and its advanced settings.
  *
  * @since 6.0.0
  */
@@ -63,11 +63,12 @@ class ImportPlanStepUiViewModel extends ViewModel
                 ->instructions(t('What this step imports.')),
             ...(empty($settingsNodes) ? [] : [
                 Scope::make('settings', [
-                    Group::make('import-step-settings', $settingsNodes)->dependsOn('type'),
+                    Group::make('import-step-settings', $settingsNodes)->flat()->dependsOn('type'),
                 ]),
             ]),
-            // the slideout renders the mapping button in place of this control
-            UiField::make(t('Mapping'), Hidden::make('mapping')),
+            // the page rendering the form fills this with the step's mapping overview, which follows the
+            // step's unsaved mapping without a request
+            Slot::make('mapping'),
             Group::make('import-step-advanced', [
                 UiField::make(t('Transformer'), Text::make('transformer')
                     ->value($this->importer?->usesDefaultTransformer() ? null : $this->importer?->transformerAsString())

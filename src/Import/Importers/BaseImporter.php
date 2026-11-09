@@ -8,8 +8,10 @@ use Closure;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\ImportStep;
 use CraftCms\Cms\Import\Data\MappingColumn;
@@ -17,6 +19,7 @@ use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Security;
@@ -103,6 +106,16 @@ abstract class BaseImporter
      *  null => no templates
      */
     public protected(set) ?array $templates = null;
+
+    /**
+     * @var array<mixed>|null
+     *
+     * array => keyed like $map; the value stands in for a field's incoming value when that's missing or empty,
+     *  e.g. `['summary' => 'Coming soon']`; an empty default leaves the field to `$clearableItems` as usual;
+     *
+     *  null => no defaults
+     */
+    public protected(set) ?array $defaultValues = null;
 
     public ?string $uid = null;
 
@@ -267,6 +280,19 @@ abstract class BaseImporter
     }
 
     /**
+     * Sets the values that stand in for missing or empty incoming values, keyed like `$map`, and returns the
+     * current instance.
+     *
+     * @param  array<mixed>|null  $defaultValues
+     */
+    public function defaultValues(?array $defaultValues = null): self
+    {
+        $this->defaultValues = $defaultValues === null ? null : ImportHelper::decodeRecursive($defaultValues);
+
+        return $this;
+    }
+
+    /**
      * Sets the field/attribute handles that should be cleared on import when no data is provided
      * for them or the provided value is empty, and returns the current instance.
      *
@@ -332,7 +358,7 @@ abstract class BaseImporter
      */
     protected static function settingNames(): array
     {
-        return ['map', 'matchCriteria', 'clearableItems', 'templates'];
+        return ['map', 'matchCriteria', 'clearableItems', 'defaultValues', 'templates'];
     }
 
     /**
@@ -347,6 +373,7 @@ abstract class BaseImporter
             'settings.map' => ['array'],
             'settings.matchCriteria' => ['nullable', 'array'],
             'settings.clearableItems' => ['nullable', 'array'],
+            'settings.defaultValues' => ['nullable', 'array'],
             'settings.templates' => [
                 'nullable',
                 'array',
@@ -401,6 +428,7 @@ abstract class BaseImporter
                 'map' => $this->map,
                 'matchCriteria' => $this->matchCriteria,
                 'clearableItems' => $this->clearableItems,
+                'defaultValues' => $this->defaultValues,
                 'templates' => $this->templates,
             ],
         ];
@@ -785,6 +813,10 @@ abstract class BaseImporter
             $this->clearableItems = $this->resolveMappingKeys($this->clearableItems);
         }
 
+        if ($this->defaultValues !== null) {
+            $this->defaultValues = $this->resolveMappingKeys($this->defaultValues);
+        }
+
         if ($this->templates !== null) {
             $this->templates = $this->resolveMappingKeys($this->templates);
         }
@@ -810,6 +842,101 @@ abstract class BaseImporter
     public function getDestinationCols(): array
     {
         return [];
+    }
+
+    /**
+     * Returns each destination column's label, handle and icon, keyed by its key in `$map`, and by
+     * its handle, since a map can hold either. A compound column's subfields read as “Heading › Label”.
+     *
+     * A container field's nested columns are keyed by their whole path in `$map`, joined with dots,
+     * both as uids and as handles, and read as “Entry type › Label”.
+     *
+     * @return array<string, array{label: string, handle: string, icon: string|null}>
+     */
+    public function getDestinationLabels(): array
+    {
+        $labels = [];
+
+        foreach (self::flattenCompoundColumns($this->getDestinationCols()) as [$col, $label]) {
+            $entry = ['label' => $label, 'handle' => $col->handle, 'icon' => $col->icon];
+            $labels[$col->prefixedHandleAsArray[0]] ??= $entry;
+            $labels[$col->handle] ??= $entry;
+
+            if ($col->isContainer) {
+                self::addNestedDestinationLabels($labels, $col, [$col->handle], []);
+            }
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Adds the labels of a container column's nested columns, and of theirs in turn.
+     *
+     * @param  array<string, array{label: string, handle: string, icon: string|null}>  $labels
+     * @param  list<string>  $handlePath  The container's path in `$map`, as handles.
+     * @param  list<string>  $seen  The containers' field uids along the path, so a field nested in itself stops.
+     */
+    private static function addNestedDestinationLabels(array &$labels, MappingColumn $container, array $handlePath, array $seen): void
+    {
+        if ($container->fieldUid === null || in_array($container->fieldUid, $seen, true) || count($seen) >= 5) {
+            return;
+        }
+
+        $field = Fields::getFieldByUid($container->fieldUid);
+
+        if (! $field instanceof ImportableElementContainerFieldInterface) {
+            return;
+        }
+
+        $seen[] = $container->fieldUid;
+        $depth = count($container->prefixedHandleAsArray);
+
+        foreach ($field->getFieldLayoutProviders() as $provider) {
+            $providerName = $provider instanceof Chippable ? $provider->getUiLabel() : $provider->getHandle();
+            $cols = ImportHelper::getDestinationColsForFieldLayout($provider->getFieldLayout(), $field, $provider, $container->prefixedHandle);
+
+            foreach (self::flattenCompoundColumns($cols) as [$col, $label]) {
+                // the column's path below the container: its provider, maybe `fields`, then its own key
+                $below = array_slice($col->prefixedHandleAsArray, $depth);
+                $colHandlePath = [...$handlePath, (string) $provider->getHandle(), ...array_slice($below, 1, -1), $col->handle];
+                $entry = ['label' => "$providerName › $label", 'handle' => $col->handle, 'icon' => $col->icon];
+
+                $labels[implode('.', $col->prefixedHandleAsArray)] ??= $entry;
+                $labels[implode('.', $colHandlePath)] ??= $entry;
+
+                if ($col->isContainer) {
+                    self::addNestedDestinationLabels($labels, $col, $colHandlePath, $seen);
+                }
+            }
+        }
+    }
+
+    /**
+     * Each column with its label, compound columns' subfields in their place.
+     *
+     * @param  list<MappingColumn|CompoundMappingColumn>  $cols
+     * @return list<array{MappingColumn, string}>
+     */
+    private static function flattenCompoundColumns(array $cols): array
+    {
+        $flat = [];
+
+        foreach ($cols as $entry) {
+            if (! $entry instanceof CompoundMappingColumn) {
+                $flat[] = [$entry, $entry->label];
+
+                continue;
+            }
+
+            foreach ($entry->subfields as $col) {
+                $flat[] = [$col, count($col->prefixedHandleAsArray) > 1
+                    ? (string) $entry->heading
+                    : ($entry->heading ? "$entry->heading › $col->label" : $col->label)];
+            }
+        }
+
+        return $flat;
     }
 
     /**

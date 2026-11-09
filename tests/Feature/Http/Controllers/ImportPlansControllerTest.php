@@ -658,7 +658,7 @@ describe('data source suggestions', function () {
             'step' => ($this->entryStep)(),
         ])->assertOk();
 
-        $source = collect($response->json('ui.nodes'))->first(fn (array $node) => ($node['control']['path'] ?? null) === ['source']);
+        $source = collect(uiNodes($response->json('ui.nodes')))->first(fn (array $node) => ($node['control']['path'] ?? null) === ['source']);
 
         expect(array_column($source['control']['props']['textExpanderTriggers'], 'trigger'))->toBe(['./', '@']);
     });
@@ -668,4 +668,156 @@ it('forbids data source suggestions without permission to save import plans', fu
     actingAs(UserModel::factory()->withPermissions(['accessCp', 'viewImportPlans'])->createElement());
 
     $this->getJson(action([ImportPlansController::class, 'sourceSuggestions'], ['query' => './']))->assertForbidden();
+});
+
+describe('step pages', function () {
+    beforeEach(function () {
+        ($this->createImportPlan)('Fixture Import', 'fixtureImport');
+        $this->plan = fn () => app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
+        $this->saveStep = fn (array $step) => $this->postJson(
+            action([ImportPlansController::class, 'storeStep']),
+            ['planUid' => ($this->plan)()->uid, 'step' => $step],
+        );
+    });
+
+    it('renders a step on its own page, with the same form as its slideout', function () {
+        $uid = ($this->plan)()->steps[0]->uid;
+
+        $this->get(route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $uid]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('import/StepEdit')
+                ->where('step.uid', $uid)
+                ->where('planUid', ($this->plan)()->uid)
+                ->has('stepUi.ui.nodes')
+                ->where('stepUi.canMap', true));
+    });
+
+    it('404s for a step the plan doesn’t have', function () {
+        $this->get(route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => Str::uuid()->toString()]))
+            ->assertNotFound();
+    });
+
+    it('links each saved step to its own page from the plan', function () {
+        $uid = ($this->plan)()->steps[0]->uid;
+
+        $this->get(route('craft.cp.import.edit', ['handle' => 'fixtureImport']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where(
+                "stepEditUrls.$uid",
+                route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $uid]),
+            ));
+    });
+
+    it('labels a container field’s nested destinations by their whole path, at every depth', function () {
+        $labels = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+            'step' => ($this->entryStep)(),
+        ])->assertOk()->json('summary.destinationLabels');
+
+        expect($labels['outerMatrix.outerEt.fields.innerMatrix'])->toMatchArray(['label' => 'Outer ET › Inner Matrix', 'handle' => 'innerMatrix'])
+            ->and($labels['outerMatrix.outerEt.fields.innerMatrix.innerEt.fields.innerPlainText'])->toMatchArray(['label' => 'Inner ET › Inner Plain Text', 'handle' => 'innerPlainText'])
+            ->and($labels['outerMatrix.outerEt.title']['label'])->toBe('Outer ET › Title');
+    });
+
+    it('gives the plan each step at a glance, by its uid', function () {
+        $uid = ($this->plan)()->steps[0]->uid;
+
+        $this->get(route('craft.cp.import.edit', ['handle' => 'fixtureImport']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where("stepSummaries.$uid.destinationLabels.title", ['label' => 'Title', 'handle' => 'title', 'icon' => 'i-cursor'])
+                ->where("stepSummaries.$uid.settings", [
+                    ['label' => 'Site', 'value' => Sites::getPrimarySite()->name],
+                    ['label' => 'Section', 'value' => $this->section->name],
+                    ['label' => 'Entry Type', 'value' => $this->entryType->name],
+                ]));
+    });
+
+    it('replaces the step with its uid, leaving the plan’s other steps alone', function () {
+        $existing = ($this->plan)()->serializeSteps()[0];
+
+        ($this->saveStep)([...$existing, 'batchSize' => 7])->assertOk();
+
+        expect(($this->plan)()->steps)->toHaveCount(1)
+            ->and(($this->plan)()->steps[0]->batchSize)->toBe(7);
+    });
+
+    it('adds a step it doesn’t have yet', function () {
+        $uid = Str::uuid()->toString();
+
+        ($this->saveStep)(($this->entryStep)(overrides: ['uid' => $uid]))->assertOk();
+
+        expect(array_map(fn ($step) => $step->uid, ($this->plan)()->steps))->toContain($uid)
+            ->and(($this->plan)()->steps)->toHaveCount(2);
+    });
+
+    it('reports a step’s errors against its uid in the plan', function () {
+        $step = ($this->entryStep)(overrides: ['source' => 'tests/Fixtures/Import/does-not-exist.json']);
+
+        $response = ($this->saveStep)($step)->assertStatus(400);
+
+        expect(array_keys($response->json('errors')))->toContain("steps.{$step['uid']}.source")
+            ->and(($this->plan)()->steps)->toHaveCount(1);
+    });
+
+    it('lands back on the step it saved', function () {
+        $step = ($this->entryStep)();
+
+        $this->post(action([ImportPlansController::class, 'storeStep']), [
+            'planUid' => ($this->plan)()->uid,
+            'step' => $step,
+        ])->assertRedirect(route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $step['uid']]));
+    });
+});
+
+/**
+ * Every node in a UI payload's tree, depth first.
+ *
+ * @param  list<array<string, mixed>>  $nodes
+ * @return list<array<string, mixed>>
+ */
+function uiNodes(array $nodes): array
+{
+    $all = [];
+
+    foreach ($nodes as $node) {
+        $all[] = $node;
+        array_push($all, ...uiNodes($node['children'] ?? []));
+    }
+
+    return $all;
+}
+
+describe('the step form', function () {
+    beforeEach(function () {
+        $this->stepUiTopLevel = fn () => $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+            'step' => ($this->entryStep)(),
+        ])->assertOk()->json('ui.nodes');
+        $this->stepUi = fn (array $settings = []) => collect(uiNodes(
+            $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+                'step' => ($this->entryStep)($settings),
+            ])->assertOk()->json('ui.nodes'),
+        ));
+    });
+
+    it('lays the step out on one page, with its mapping before its advanced settings', function () {
+        $nodes = ($this->stepUi)();
+
+        expect($nodes->where('component', 'craft:tab'))->toBeEmpty()
+            ->and(array_column(($this->stepUiTopLevel)(), 'uid'))->toBe(['scope:"settings"', 'mapping', 'import-step-advanced'])
+            ->and($nodes->firstWhere('uid', 'import-step-settings')['props']['flat'])->toBeTrue()
+            ->and($nodes->firstWhere('component', 'craft:slot')['props']['name'])->toBe('mapping');
+    });
+
+    it('reports each destination column’s label, keyed like the map', function () {
+        $labels = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+            'step' => ($this->entryStep)(),
+        ])->assertOk()->json('summary.destinationLabels');
+
+        expect($labels['title'])->toBe(['label' => 'Title', 'handle' => 'title', 'icon' => 'i-cursor'])
+            ->and($labels['postDate']['icon'])->toBe('calendar')
+            ->and($labels['enabled']['icon'])->toBe('toggle-on')
+            ->and($labels)->toHaveKey('slug');
+    });
+
 });

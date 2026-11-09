@@ -6,8 +6,10 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Http\Controllers\Import\ImportPlansController;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Data\StepSummary;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Ui\Controls\Handle;
 use CraftCms\Cms\Ui\Controls\Table;
 use CraftCms\Cms\Ui\Controls\Text;
@@ -19,6 +21,7 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\Ui\UiResolver;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -53,7 +56,8 @@ class ImportPlanEditViewModel extends ViewModel
                 ->required(),
             UiField::make(t('Description'), Textarea::make('description'))
                 ->instructions(t('A description of what this import plan is for.')),
-            UiField::make(control: Table::make('steps')),
+            UiField::make(t('Steps'), Table::make('steps'))
+                ->instructions(t('Each step imports one kind of data. Steps run in the order listed here.')),
         ]), new UiContext(
             values: [
                 'uid' => $this->importPlan->uid,
@@ -77,6 +81,44 @@ class ImportPlanEditViewModel extends ViewModel
             'label' => $type::displayName(),
             'value' => $type,
         ], $this->importService->getAllImporterTypes());
+    }
+
+    /**
+     * Each saved step's own page, by its uid. A step yet to be saved has none.
+     *
+     * @return array<string, string>
+     */
+    public function stepEditUrls(): array
+    {
+        if (! $this->importPlan->uid || ! $this->importPlan->handle) {
+            return [];
+        }
+
+        return collect($this->importPlan->serializeSteps() ?? [])
+            ->mapWithKeys(fn (array $step) => [
+                $step['uid'] => route('craft.cp.import.steps.edit', ['handle' => $this->importPlan->handle, 'uid' => $step['uid']]),
+            ])
+            ->all();
+    }
+
+    /**
+     * Each step at a glance, by its uid, for the list of steps.
+     *
+     * @return array<string, StepSummary>
+     */
+    public function stepSummaries(): array
+    {
+        $summaries = [];
+
+        foreach ($this->importPlan->serializeSteps() ?? [] as $step) {
+            try {
+                $summaries[$step['uid']] = StepSummary::fromImporter(ImportPlans::createImporter($step));
+            } catch (Throwable) {
+                // a step that can't be built is summed up from what it holds itself
+            }
+        }
+
+        return $summaries;
     }
 
     /** @return array{method: 'post', url: string} */

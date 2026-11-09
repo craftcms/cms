@@ -20,6 +20,7 @@ readonly class MappingValues implements JsonSerializable
      * @param  array<array-key, mixed>  $map
      * @param  array<array-key, mixed>  $matchCriteria
      * @param  array<array-key, mixed>  $clearableItems
+     * @param  array<array-key, mixed>  $defaultValues
      * @param  array<array-key, mixed>  $keepMissingNestedElements
      * @param  array<array-key, mixed>  $fieldSettings
      * @param  array<array-key, mixed>  $templates
@@ -34,9 +35,13 @@ readonly class MappingValues implements JsonSerializable
         #[LiteralTypeScriptType('Record<string, unknown>')]
         public array $keepMissingNestedElements = [],
         #[LiteralTypeScriptType('Record<string, unknown>')]
+        public array $defaultValues = [],
+        #[LiteralTypeScriptType('Record<string, unknown>')]
         public array $fieldSettings = [],
         #[LiteralTypeScriptType('Record<string, unknown>')]
         public array $templates = [],
+        /** What a step does with rows that match an existing element; null for an importer that doesn't match. */
+        public ?string $matchMode = null,
     ) {}
 
     /**
@@ -48,22 +53,26 @@ readonly class MappingValues implements JsonSerializable
             map: $importer->map,
             matchCriteria: $importer->matchCriteria ?? [],
             clearableItems: $importer->clearableItems ?? [],
+            defaultValues: $importer->defaultValues ?? [],
             keepMissingNestedElements: $importer instanceof ElementImporter ? $importer->keepMissingNestedElements ?? [] : [],
             fieldSettings: $importer instanceof ElementImporter ? $importer->fieldSettings ?? [] : [],
             templates: $importer->templates ?? [],
+            matchMode: $importer instanceof ElementImporter ? $importer->matchMode->value : null,
         );
     }
 
-    /** @return array<string, array<array-key, mixed>> */
+    /** @return array<string, array<array-key, mixed>|string|null> */
     public function jsonSerialize(): array
     {
         return [
             'map' => $this->map,
             'matchCriteria' => $this->matchCriteria,
             'clearableItems' => $this->clearableItems,
+            'defaultValues' => $this->defaultValues,
             'keepMissingNestedElements' => $this->keepMissingNestedElements,
             'fieldSettings' => $this->fieldSettings,
             'templates' => $this->templates,
+            'matchMode' => $this->matchMode,
         ];
     }
 }

@@ -281,6 +281,8 @@ class Import
             $importer->transformer->additionalMatchCriteria($importer, $data) : [];
         $this->resolveMatchCriteria($data, $matchCriteria, $additionalMatchCriteria);
 
+        // a default stands in for an empty value, so it's applied before empty values are cleared or dropped
+        $this->applyDefaultValues($data, $importer->defaultValues ?? []);
         $this->applyClearableItems($data, $importer->clearableItems ?? []);
 
         try {
@@ -308,7 +310,8 @@ class Import
     {
         $importerConfigLevelCriteria = [];
         foreach ($criteria as $key => $value) {
-            if ($value !== null && ! is_array($value) && isset($data[$key])/* array_key_exists($key, $data) */) {
+            // an empty value would add no condition and match any element, so it's left out like a missing one
+            if ($value !== null && ! is_array($value) && isset($data[$key]) && ! self::isEmptyValue($data[$key])) {
                 $importerConfigLevelCriteria[$key] = $data[$key];
             }
         }
@@ -325,6 +328,7 @@ class Import
                     }
                 }
             );
+            $dataSourcedMatchCriteria = array_filter($dataSourcedMatchCriteria, fn ($value) => ! self::isEmptyValue($value));
         }
 
         if (! empty($importerConfigLevelCriteria) || ! empty($dataSourcedMatchCriteria)) {
@@ -408,6 +412,55 @@ class Import
     }
 
     /**
+     * Fills in each handle in $defaultValues whose incoming value is missing or empty, walking into container
+     * fields the way applyClearableItems() does. An empty default leaves the value as it came.
+     *
+     * @param  array<mixed>  $data
+     * @param  array<mixed>  $defaultValues
+     */
+    private function applyDefaultValues(array &$data, array $defaultValues): void
+    {
+        foreach ($defaultValues as $key => $default) {
+            if (is_array($default) && ! array_is_list($default)) {
+                if (! isset($data[$key]) || ! is_array($data[$key])) {
+                    continue;
+                }
+
+                if (! empty($data[$key]) && array_is_list($data[$key])) {
+                    foreach ($data[$key] as &$item) {
+                        if (! is_array($item)) {
+                            continue;
+                        }
+
+                        if (isset($item['type'])) {
+                            if (is_array($default[$item['type']] ?? null)) {
+                                $this->applyDefaultValues($item, $default[$item['type']]);
+                            }
+
+                            continue;
+                        }
+
+                        $this->applyDefaultValues($item, $default);
+                    }
+                    unset($item);
+                } else {
+                    $this->applyDefaultValues($data[$key], $default);
+                }
+
+                continue;
+            }
+
+            if (self::isEmptyValue($default)) {
+                continue;
+            }
+
+            if (! array_key_exists($key, $data) || self::isEmptyValue($data[$key])) {
+                $data[$key] = $default;
+            }
+        }
+    }
+
+    /**
      * Clears out any handles marked as clearable in $clearableItems whose incoming value is missing or empty,
      * forcing them to null so they're explicitly applied (rather than silently left untouched) further downstream.
      *
@@ -469,7 +522,7 @@ class Import
     }
 
     /**
-     * Determines whether a value should be treated as "empty" for the purposes of clearableItems.
+     * Determines whether a value is "empty": what When empty rules act on, and what is never matched on.
      */
     private static function isEmptyValue(mixed $value): bool
     {

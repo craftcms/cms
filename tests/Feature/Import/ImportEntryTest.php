@@ -8,6 +8,7 @@ use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Import\Enums\MatchMode;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Section\Models\Section;
@@ -171,4 +172,69 @@ it('imports values rendered from mapping templates', function () {
 
     expect($entry)->not->toBeNull()
         ->and($entry->getFieldValue('optionalText'))->toBe('Born 1815');
+});
+
+it('matches on the value a mapping template renders', function () {
+    $importer = $this->importer
+        ->section($this->section->uid)
+        ->entryType($this->typeA->uid)
+        ->map(['title' => 'title', 'slug' => ImportHelper::TEMPLATE_RULE])
+        ->templates(['slug' => '{title|kebab}'])
+        ->matchCriteria(['slug' => 1]);
+
+    ImportFixtures::importWithConfigCriteria($this->import, $importer, ['title' => 'Getting Started']);
+    ImportFixtures::importWithConfigCriteria($this->import, $importer, ['title' => 'Getting  started']);
+
+    $entries = EntryElement::find()->sectionId($this->section->id)->status(null)->all();
+
+    expect($entries)->toHaveCount(1)
+        ->and($entries[0]->slug)->toBe('getting-started')
+        ->and($entries[0]->title)->toBe('Getting  started');
+});
+
+describe('an empty match value', function () {
+    beforeEach(function () {
+        $this->import->importItem(
+            $this->importer->section($this->section->uid)->entryType($this->typeA->uid)->map(['title' => 'title', 'slug' => 'slug']),
+            ['title' => 'Untouched', 'slug' => 'untouched'],
+        );
+
+        $this->templateImporter = fn (MatchMode $mode) => $this->importer
+            ->map(['title' => 'title', 'slug' => ImportHelper::TEMPLATE_RULE])
+            ->templates(['slug' => '{missing}'])
+            ->matchCriteria(['slug' => 1])
+            ->matchMode($mode);
+
+        $this->titles = fn () => EntryElement::find()->sectionId($this->section->id)->status(null)->orderBy('id')->collect()->pluck('title')->all();
+    });
+
+    // with no condition to match on, it would match whichever element came first
+    it('matches nothing, creating a new element', function () {
+        ImportFixtures::importWithConfigCriteria($this->import, ($this->templateImporter)(MatchMode::CreateAndUpdate), ['title' => 'New one']);
+
+        expect(($this->titles)())->toBe(['Untouched', 'New one']);
+    });
+
+    it('imports nothing when only updating', function () {
+        ImportFixtures::importWithConfigCriteria($this->import, ($this->templateImporter)(MatchMode::UpdateOnly), ['title' => 'New one']);
+
+        expect(($this->titles)())->toBe(['Untouched']);
+    });
+
+    it('counts whitespace as empty', function () {
+        $importer = $this->importer->map(['title' => 'title', 'slug' => 'slug'])->matchCriteria(['slug' => 1]);
+
+        ImportFixtures::importWithConfigCriteria($this->import, $importer, ['title' => 'New one', 'slug' => '  ']);
+
+        expect(($this->titles)())->toBe(['Untouched', 'New one']);
+    });
+
+    it('is left out of match criteria that come with the data', function () {
+        $this->import->importItem(
+            $this->importer->map(['title' => 'title', 'slug' => 'slug']),
+            ['title' => 'New one', 'slug' => '', 'matchCriteria' => ['slug' => 'slug']],
+        );
+
+        expect(($this->titles)())->toBe(['Untouched', 'New one']);
+    });
 });

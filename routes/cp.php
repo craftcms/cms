@@ -283,6 +283,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::get('import', [ImportPlansController::class, 'index'])->name('import.index');
         Route::middleware('can:saveImportPlans')->get('import/new', [ImportPlansController::class, 'create'])->name('import.create');
         Route::get('import/{handle}', [ImportPlansController::class, 'edit'])->name('import.edit');
+        Route::get('import/{handle}/steps/{uid}', [ImportPlansController::class, 'editStep'])->name('import.steps.edit');
     });
     /**
      * Users
