@@ -26,11 +26,7 @@
   <!-- the icon hangs to the left, so the label and handle line up with each other -->
   <div class="destination-cell">
     <span class="destination-cell__icon" aria-hidden="true">
-      <craft-icon
-        v-if="col.icon"
-        :name="col.icon"
-        :class="{'destination-cell__icon--match': matched}"
-      ></craft-icon>
+      <craft-icon v-if="col.icon" :name="col.icon"></craft-icon>
     </span>
     <div class="destination-cell__text">
       <div class="destination-cell__label">
@@ -86,10 +82,6 @@
     block-size: 1lh;
     color: var(--c-text-quiet);
     font-weight: normal;
-  }
-
-  .destination-cell__icon--match {
-    color: var(--c-color-accent-on-normal);
   }
 
   /* tighter lines for a name that wraps, with the first still centered on the cell's line, level with the controls */

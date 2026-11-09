@@ -74,7 +74,7 @@ it('lists each mapped destination and what fills it, in an admin table', () => {
 it('shows the template a destination is filled from', () => {
   mount({map: {slug: TEMPLATE_RULE}, templates: {slug: '{title|kebab}'}});
 
-  expect(rows()).toEqual([['slug', '', 'Template {title|kebab}']]);
+  expect(rows()).toEqual([['slug', '', '{title|kebab}']]);
 });
 
 it('shows the mappings past its limit behind a toggle', async () => {
@@ -196,7 +196,7 @@ it('passes the mapping count to its header slot', () => {
   expect(container.querySelector('h3')!.textContent).toBe('2 fields');
 });
 
-it('shows each destination’s field type icon, in the accent color for a match key', () => {
+it('shows each destination’s field type icon, the same for a match key, which its badge marks', () => {
   mount(
     {
       map: {title: 'name', postDate: 'date', other: 'x'},
@@ -214,12 +214,15 @@ it('shows each destination’s field type icon, in the accent color for a match 
       | (HTMLElement & {name?: string})
       | null;
 
-    return icon
-      ? [icon.name, icon.classList.contains('mapping-summary-row__icon--match')]
-      : null;
+    return icon?.name ?? null;
   });
 
-  expect(icons).toEqual([['i-cursor', true], ['calendar', false], null]);
+  expect(icons).toEqual(['i-cursor', 'calendar', null]);
+  expect(
+    [...container.querySelectorAll('tbody tr')][0]!.querySelector(
+      'craft-badge'
+    )!.textContent
+  ).toContain('Match Key');
 });
 
 it('lists every mapping with no toggle when it has no limit', () => {

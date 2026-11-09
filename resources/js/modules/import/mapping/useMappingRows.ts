@@ -1,17 +1,6 @@
 import {computed, shallowRef, toValue, type MaybeRefOrGetter} from 'vue';
-import {
-  getAt,
-  hasMapping,
-  isCompoundMappingColumn,
-  isMappingColumn,
-} from './paths';
-import {
-  useMappingContext,
-  type MappingColumn,
-  type MappingColumnEntry,
-} from './types';
-
-export type MappingFilter = 'all' | 'unmapped' | 'mapped';
+import {isCompoundMappingColumn, isMappingColumn} from './paths';
+import type {MappingColumn, MappingColumnEntry} from './types';
 
 /** A run of columns, after a heading row when it's named, as a Matrix field's entry types are. */
 export interface MappingTableGroup {
@@ -24,26 +13,13 @@ export type MappingRowData =
   | {kind: 'heading'; id: string; label: string};
 
 /**
- * The mapping table's rows, narrowed by a search of the columns' names and handles and
- * by whether they're mapped. A heading row is kept only while one of its columns is.
+ * The mapping table's rows, narrowed by a search of the columns' names and handles. A
+ * heading row is kept only while one of its columns is.
  */
 export function useMappingRows(groups: MaybeRefOrGetter<MappingTableGroup[]>) {
-  const context = useMappingContext();
-
   const search = shallowRef('');
-  const filter = shallowRef<MappingFilter>('all');
 
   function isShown(col: MappingColumn): boolean {
-    if (filter.value !== 'all') {
-      const mapped = hasMapping(
-        getAt(context.values.map, col.prefixedHandleAsArray)
-      );
-
-      if (mapped !== (filter.value === 'mapped')) {
-        return false;
-      }
-    }
-
     const term = search.value.trim().toLowerCase();
 
     return (
@@ -99,5 +75,5 @@ export function useMappingRows(groups: MaybeRefOrGetter<MappingTableGroup[]>) {
     })
   );
 
-  return {search, filter, rows};
+  return {search, rows};
 }

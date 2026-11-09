@@ -131,6 +131,7 @@ export function summarizeMapping(
       return {
         ...base,
         kind: 'template',
+        // shown only while the template itself is still empty
         incoming: t('Template'),
         template: typeof template === 'string' ? template : null,
       };

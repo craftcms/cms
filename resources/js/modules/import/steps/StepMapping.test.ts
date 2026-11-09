@@ -635,32 +635,6 @@ function searchFields(term: string): void {
   );
 }
 
-function showFields(label: string): void {
-  [
-    ...container.querySelectorAll<HTMLElement>(
-      'craft-button-group craft-button'
-    ),
-  ]
-    .find((button) => button.textContent!.trim() === label)!
-    .click();
-}
-
-it('filters the fields by whether they’re mapped', async () => {
-  mount([title, body], {...emptyValues(), map: {title: 'name'}});
-
-  expect(rowLabels()).toEqual(['title', 'body']);
-
-  showFields('Mapped');
-  await nextTick();
-
-  expect(rowLabels()).toEqual(['title']);
-
-  showFields('Unmapped');
-  await nextTick();
-
-  expect(rowLabels()).toEqual(['body']);
-});
-
 it('searches the fields by name or handle', async () => {
   mount([title, col({prefixedHandle: 'summary', label: 'Excerpt'})]);
 
@@ -703,25 +677,6 @@ it('keeps a compound column’s heading only while one of its subfields is shown
   await nextTick();
 
   expect(rowLabels()).toEqual(['title']);
-});
-
-it('counts a container as mapped once anything inside it is', async () => {
-  mount([outerMatrix], {...emptyValues(), map: {outerMatrix: {}}});
-
-  showFields('Mapped');
-  await nextTick();
-
-  expect(rowLabels()).toEqual([]);
-
-  app.unmount();
-  mount([outerMatrix], {
-    ...emptyValues(),
-    map: {outerMatrix: {outerEt: {title: 'name'}}},
-  });
-  showFields('Mapped');
-  await nextTick();
-
-  expect(rowLabels()).toEqual(['outerMatrix']);
 });
 
 /** The first row's Match checkbox. */

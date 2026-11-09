@@ -43,11 +43,7 @@
       <div class="mapping-summary-row__field">
         <!-- always the same width, so names line up whether or not they have an icon -->
         <span class="mapping-summary-row__icon" aria-hidden="true">
-          <craft-icon
-            v-if="entry.icon"
-            :name="entry.icon"
-            :class="{'mapping-summary-row__icon--match': entry.matchKey}"
-          ></craft-icon>
+          <craft-icon v-if="entry.icon" :name="entry.icon"></craft-icon>
         </span>
         <div class="flex items-baseline gap-sm min-w-0">
           <span class="truncate">{{ name }}</span>
@@ -68,8 +64,9 @@
     <td>
       <code v-if="entry.kind === 'column'">{{ entry.incoming }}</code>
       <template v-else-if="entry.kind === 'template'">
-        <span class="text-quiet">{{ `${entry.incoming} ` }}</span>
+        <!-- the braces say it's a template; it's named only while there's none written yet -->
         <code v-if="entry.template">{{ entry.template }}</code>
+        <span v-else class="text-quiet">{{ entry.incoming }}</span>
       </template>
       <button
         v-else
@@ -122,10 +119,6 @@
     align-self: center;
     inline-size: 1.25em;
     color: var(--c-text-quiet);
-  }
-
-  .mapping-summary-row__icon--match {
-    color: var(--c-color-accent-on-normal);
   }
 
   .mapping-summary-row__handle {

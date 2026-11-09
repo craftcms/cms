@@ -5,10 +5,9 @@
    * the mapping context around it.
    */
   import '@craftcms/ui/components/button/button';
-  import '@craftcms/ui/components/button-group/button-group';
   import {t} from '@craftcms/ui';
   import type {Row} from '@tanstack/vue-table';
-  import {computed, h} from 'vue';
+  import {h} from 'vue';
   import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import AdminTableToolbar from '@/modules/admin-table/components/AdminTableToolbar.vue';
@@ -33,7 +32,6 @@
   import {
     useMappingRows,
     type MappingTableGroup,
-    type MappingFilter,
     type MappingRowData,
   } from './useMappingRows';
 
@@ -47,16 +45,8 @@
 
   const context = useMappingContext();
 
-  const {search, filter, rows} = useMappingRows(
+  const {search, rows} = useMappingRows(
     () => props.groups ?? [{label: null, cols: props.cols ?? []}]
-  );
-
-  const filters = computed(
-    (): Array<{value: MappingFilter; label: string}> => [
-      {value: 'all', label: t('All')},
-      {value: 'unmapped', label: t('Unmapped')},
-      {value: 'mapped', label: t('Mapped')},
-    ]
   );
 
   /**
@@ -113,7 +103,6 @@
         header: t('Preview'),
         meta: {
           wrap: true,
-          columnClass: 'mapping-table__main',
           cellClass: 'mapping-table__cell--preview',
           headerTip: t(
             'The first item’s value, or the template it’s filled from.'
@@ -121,7 +110,9 @@
         },
         cell: ({row}) =>
           row.original.kind === 'column'
-            ? h(PreviewCell, {col: row.original.col})
+            ? h('div', {class: 'mapping-table__preview-box'}, [
+                h(PreviewCell, {col: row.original.col}),
+              ])
             : null,
       }),
       columnHelper.display({
@@ -175,19 +166,6 @@
             label-sr-only
           />
         </template>
-        <template #view>
-          <craft-button-group role="group" :aria-label="t('Show fields')">
-            <craft-button
-              v-for="option in filters"
-              :key="option.value"
-              :active="filter === option.value"
-              :aria-pressed="filter === option.value ? 'true' : 'false'"
-              @click="filter = option.value"
-            >
-              {{ option.label }}
-            </craft-button>
-          </craft-button-group>
-        </template>
       </AdminTableToolbar>
     </template>
     <template #empty-row>
@@ -207,10 +185,15 @@
     inline-size: 11rem;
   }
 
-  /* the other columns fit their content; these three share what's left */
+  /* the other columns fit their content; these two share what's left */
   .mapping-table :deep(.mapping-table__main) {
-    width: calc(100% / 3);
+    width: 50%;
     text-align: start;
+  }
+
+  /* a box rather than a column width, which the two shares above would win over */
+  .mapping-table :deep(.mapping-table__preview-box) {
+    inline-size: 280px;
   }
 
   /* a cell that grows, such as a template with its tip, leaves the others at the top */
