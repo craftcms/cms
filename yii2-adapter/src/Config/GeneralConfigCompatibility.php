@@ -32,7 +32,7 @@ readonly class GeneralConfigCompatibility
      * Returns the `general.php` config and its application type overlay.
      *
      * Laravel's config loader stores `general.web.php` and `general.console.php` inside `craft.general`,
-     * replacing a `general.php` that returns a config object or a callable, so the file is loaded again.
+     * replacing a `general.php` that returns a config object or a callable, so the file is loaded again to recover it.
      * A config object overlay already applied its settings when it loaded, so it loads again after the base,
      * and settings with side effects, such as `enableCsrfProtection`, still end on the overlay's value.
      *
@@ -48,11 +48,14 @@ readonly class GeneralConfigCompatibility
             return [$config, $overlay];
         }
 
-        if (!is_file($path)) {
+        $base = is_file($path) ? (static fn() => require $path)() : [];
+
+        // An array base is still in the config, already normalized from any multi-environment array
+        if (is_array($base)) {
             return [Arr::except($config, ['web', 'console']), $overlay];
         }
 
-        $config = $this->resolve((static fn() => require $path)(), LegacyGeneralConfig::create());
+        $config = $this->resolve($base, LegacyGeneralConfig::create());
         $overlayPath = $app->configPath("craft/general.{$appType}.php");
 
         if ($overlay instanceof GeneralConfig && is_file($overlayPath)) {
