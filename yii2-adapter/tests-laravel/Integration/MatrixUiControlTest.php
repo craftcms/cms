@@ -9,6 +9,7 @@ use CraftCms\Cms\Auth\SessionAuth;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
@@ -16,6 +17,11 @@ use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\FieldLayout\FieldLayoutForm;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
@@ -48,7 +54,9 @@ it('preserves owner-specific Matrix creation choices while rendering existing ex
             $event->entryTypes = [$event->entryTypes[2], $event->entryTypes[1]];
         }
     });
-    $html = $field->getInputHtml($owner->getFieldValue('blocks'), $owner);
+    $context = new UiContext();
+    $control = $field->uiControl(new FieldContext(['fields', 'blocks'], $owner->getFieldValue('blocks'), $owner, $context));
+    $html = app(UiHtmlRenderer::class)->render(app(UiResolver::class)->resolve(Ui::make([UiField::make()->control($control)]), $context));
     $ui = json_decode(new Crawler($html)->filter('craft-entry-field-layout-ui')->attr('data-payload'), true, flags: JSON_THROW_ON_ERROR);
     $control = $ui['nodes'][0]['control'];
 
@@ -175,10 +183,6 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
             fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
         );
         $scope = ['fields', 'blocks', 'entries', $owner->uid];
-        if ($plugin) {
-            $host = new Crawler($control['props']['fragment']['html'])->filter('craft-nested-elements-control');
-            $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
-        }
     } else {
         $host = new Crawler($html)->filter('craft-nested-elements-control');
         $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
@@ -211,13 +215,6 @@ it('refreshes native Matrix controls after deletion in Global Set content forms'
         fn(mixed $node): bool => is_array($node) && ($node['path'] ?? null) === $expectedPath,
     );
     expect($refreshed)->not->toBeNull();
-    if ($plugin) {
-        $refreshed = json_decode(
-            new Crawler($refreshed['props']['fragment']['html'])->filter('craft-nested-elements-control')->attr('data-control'),
-            true,
-            flags: JSON_THROW_ON_ERROR,
-        );
-    }
     $items = $viewMode === LegacyMatrix::VIEW_MODE_INDEX ? $refreshed['props']['index']['initial']['data'] : $refreshed['props']['cards'];
     expect($items)->toBeEmpty();
 })->with([

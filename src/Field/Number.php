@@ -14,10 +14,7 @@ use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Gql\Types\Number as NumberType;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -33,13 +30,10 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use InvalidArgumentException;
 use Money\Currencies\ISOCurrencies;
 use Override;
-use Throwable;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Number represents a Number field.
@@ -269,90 +263,6 @@ class Number extends Field implements DefaultableFieldInterface, InlineEditableF
         $value = round((float) $value, $this->decimals);
 
         return $this->decimals === 0 ? (int) $value : $value;
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        $formatter = I18N::getFormatter();
-
-        try {
-            $formatNumber = ! $this->step && ! $formatter->willBeMisrepresented($value);
-        } catch (InvalidArgumentException) {
-            $formatNumber = false;
-        }
-
-        if ($formatNumber) {
-            if ($value !== null) {
-                if ($this->previewFormat !== self::FORMAT_NONE) {
-                    try {
-                        $value = $formatter->asDecimal($value, $this->decimals);
-                    } catch (InvalidArgumentException) {
-                    }
-                } elseif ($this->decimals !== 0) {
-                    // Just make sure we're using the right decimal symbol
-                    $decimalSeparator = I18N::getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-                    try {
-                        $value = number_format($value, $this->decimals, $decimalSeparator, '');
-                    } catch (Throwable) {
-                        // NaN
-                    }
-                }
-            } else {
-                // Override the initial value being set to null by CustomField::inputHtml()
-                DeltaRegistry::setInitialValue($this->handle, [
-                    'locale' => I18N::getFormattingLocale()->id,
-                    'value' => '',
-                ]);
-            }
-        }
-
-        $id = $this->getInputId();
-        $namespacedId = InputNamespace::namespaceId($id);
-
-        $js = <<<JS
-(() => {
-    const input = document.getElementById('$namespacedId');
-    // Reduce the value to numeric characters, keeping the caret in place
-    input?.addEventListener('input', () => {
-        const value = input.value;
-        let caret = input.selectionStart;
-        let filtered = '';
-        for (let i = 0; i < value.length; i++) {
-            if (/[0-9.,-]/.test(value[i])) {
-                filtered += value[i];
-            } else if (caret !== null && i < caret) {
-                caret--;
-            }
-        }
-        if (filtered !== value) {
-            input.value = filtered;
-            if (caret !== null) {
-                input.setSelectionRange(caret, caret);
-            }
-        }
-    });
-})();
-JS;
-
-        HtmlStack::js($js);
-
-        return template('_components/fieldtypes/Number/input', [
-            'id' => $id,
-            'describedBy' => $this->describedBy,
-            'field' => $this,
-            'value' => $value,
-            'formatNumber' => $formatNumber,
-            'currencyLabel' => $this->previewFormat === self::FORMAT_CURRENCY ? $this->currencyLabel() : false,
-        ]);
-    }
-
-    private function currencyLabel(): string
-    {
-        return t('({currencyCode}) {currencySymbol}', [
-            'currencyCode' => $this->previewCurrency,
-            'currencySymbol' => I18N::getFormattingLocale()->getCurrencySymbol($this->previewCurrency),
-        ]);
     }
 
     /** @return array<int,string> */

@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\IconSets;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -215,20 +214,6 @@ class Icon extends Field implements InlineEditableFieldInterface, MergeableField
             ->freeOnly(! $this->includeProIcons)
             ->sets($this->iconSets)
             ->value($context->value instanceof IconData ? $context->value->serialize() : $context->value);
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        /** @var IconData|null $value */
-        return FormFields::iconPickerHtml([
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $value?->serialize(),
-            'freeOnly' => ! $this->includeProIcons,
-            'sets' => $this->iconSets,
-        ]);
     }
 
     #[Override]

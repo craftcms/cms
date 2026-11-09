@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
-use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
-use CraftCms\Cms\Field\Data\SingleOptionFieldData;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use Override;
 
@@ -52,32 +48,6 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     protected function uiPresentation(): ChoicePresentation
     {
         return ChoicePresentation::Radios;
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        /** @var SingleOptionFieldData $value */
-        if (! $value->valid && ! $this->customOptions) {
-            DeltaRegistry::setInitialValue($this->handle, null);
-        }
-
-        $options = $this->translatedOptions(true, $value, $element);
-        if ($this->customOptions && $value->valid) {
-            // Add the custom option
-            $options[] = [
-                'label' => null,
-                'value' => '',
-                'custom' => true,
-            ];
-        }
-
-        return FormFields::radioGroupFromConfig([
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $this->encodeValue($value),
-            'options' => $options,
-        ])->toHtml();
     }
 
     #[Override]

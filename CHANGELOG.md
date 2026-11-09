@@ -322,6 +322,7 @@
 - Added `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::defaultTip()` and `defaultWarning()`.
 - `CraftCms\Cms\Field\Contracts\TableCellInterface::serializeValue()` can now return arrays. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Removed `CraftCms\Cms\Field\BaseRelationField::$inputTemplate` and `$settingsTemplate`. Relation fields that extend the Yii adapter’s base relation field classes can still set them; other relation fields that set `$inputTemplate` now throw an exception, and should override `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()` instead. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Craft’s field types, other than relation fields, no longer implement Craft 5’s `inputHtml()` methods, and link types no longer have an `inputHtml()` method. Built-in fields render through `uiControl()`, so calling `getInputHtml()` or `getInlineInputHtml()` on them through the Yii adapter no longer returns their input. Plugin fields that extend a built-in field type render its UI control in element edit forms, unless they implement their own `inputHtml()`, `getInputHtml()`, or `getInlineInputHtml()`. ([#PRNUM](https://github.com/craftcms/cms/pull/PRNUM))
 
 - Relational fields’ elements are no longer shown on white tiles, unless the element has a color of its own, so they take the colors around them.
 - Removed the “Copy value from site” field action. Field values can be copied between sites from the Compare screen instead. ([#20384](https://github.com/craftcms/cms/pull/20384))
