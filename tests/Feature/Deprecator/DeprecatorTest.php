@@ -147,6 +147,16 @@ it('records the PHP caller of a deprecated API', function () {
         ->and($log->line)->toBe($line);
 });
 
+it('records the caller of a deprecated API called back by PHP', function () {
+    array_map(Arr::toArray(...), ['a,b']);
+    $line = __LINE__ - 1;
+
+    $log = Arr::first($this->deprecator->getRequestLogs());
+
+    expect($log->file)->toBe(__FILE__)
+        ->and($log->line)->toBe($line);
+});
+
 it('records the template line of a deprecated API called from Twig', function (string $call, string $key) {
     $tempDir = sys_get_temp_dir().'/craft-deprecator-test-'.uniqid();
     File::ensureDirectoryExists($tempDir);

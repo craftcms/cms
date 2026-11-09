@@ -183,8 +183,9 @@ class Deprecator
             $t--;
         }
 
-        // $traces[$t] is now the deprecated code. Skip the frames that dispatched the call to it on behalf of the actual caller.
-        while (isset($traces[$t + 1]) && $this->isDispatchFrame($traces[$t + 1])) {
+        // $traces[$t] is now the deprecated code. Skip the frames that dispatched the call to it on behalf of the actual caller,
+        // including calls made by PHP itself, such as array_map() callbacks, which have no file.
+        while (isset($traces[$t + 1]) && (! isset($traces[$t]['file']) || $this->isDispatchFrame($traces[$t + 1]))) {
             $t++;
         }
 
