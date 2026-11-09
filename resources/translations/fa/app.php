@@ -2664,6 +2664,7 @@ return [
     'Required' => 'اجباری',
     'Requirements' => 'نیازمندی ها',
     'Requires PHP {version}' => 'نیازمند PHP {version} است',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'ذخیره مجدد ورودی های {name}',
     'Resaving {type} entries' => 'ذخیره دوباره محتوهای {type}',
     'Resaving {type}' => 'ذخیره کردن دوباره {type}',
