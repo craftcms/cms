@@ -154,6 +154,35 @@ describe('craft-input references', () => {
     expect(native(element).hasAttribute('aria-describedby')).toBe(false);
   });
 
+  it('gives each id-less name and description its own id', async () => {
+    const element = await createInput(
+      {},
+      '<label slot="label">Handle</label><div slot="help-text">Lowercase</div>'
+    );
+    const span = (text: string) => {
+      const node = document.createElement('span');
+      node.textContent = text;
+      element.append(node);
+      return node;
+    };
+
+    element.addToAriaLabelledBy(span('First'));
+    element.addToAriaDescribedBy(span('Second'));
+    element.addToAriaDescribedBy(span('Third'));
+
+    const resolve = (attribute: string) =>
+      native(element)
+        .getAttribute(attribute)!
+        .split(' ')
+        .map((id) => document.getElementById(id)?.textContent);
+    expect(resolve('aria-labelledby')).toEqual(['Handle', 'First']);
+    expect(resolve('aria-describedby')).toEqual([
+      'Lowercase',
+      'Second',
+      'Third',
+    ]);
+  });
+
   it('announces feedback politely only while the field has focus', async () => {
     const element = await createInput(
       {},

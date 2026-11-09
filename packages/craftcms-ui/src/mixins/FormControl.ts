@@ -375,7 +375,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       element: HTMLElement,
       {idPrefix = ''}: AriaReferenceConfig = {}
     ): void {
-      element.id ||= `${idPrefix}-${this._inputId}`;
+      element.id ||= uniqueId(`${idPrefix}-${this._inputId}`);
 
       if (!this.#labelledNodes.includes(element)) {
         this.#labelledNodes = [...this.#labelledNodes, element];
@@ -394,7 +394,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       element: HTMLElement,
       {idPrefix = ''}: AriaReferenceConfig = {}
     ): void {
-      element.id ||= `${idPrefix}-${this._inputId}`;
+      element.id ||= uniqueId(`${idPrefix}-${this._inputId}`);
 
       if (!this.#describedNodes.includes(element)) {
         this.#describedNodes = [...this.#describedNodes, element];
