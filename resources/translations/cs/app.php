@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Vyžadováno',
     'Requirements' => 'Požadavky',
     'Requires PHP {version}' => 'Vyžaduje PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Znovu se ukládají záznamy {name}',
     'Resaving {type} entries' => 'Nové ukládání prvků typu {type}',
     'Resaving {type}' => 'Nové ukládání {type}',
