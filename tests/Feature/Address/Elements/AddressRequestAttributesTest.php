@@ -113,3 +113,14 @@ it('keeps a typed administrative area when neither country lists it', function (
 
     expect($address->administrativeArea)->toBe('Bretagne');
 });
+
+it('keeps the administrative area when the country is cleared', function () {
+    $address = new Address(['countryCode' => 'US', 'administrativeArea' => 'OR']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => '',
+        'address' => ['administrativeArea' => 'OR'],
+    ]);
+
+    expect($address->administrativeArea)->toBe('OR');
+});

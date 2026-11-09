@@ -673,8 +673,8 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * When the country changes, an administrative area that isn’t one of the new country’s is dropped. Autofill
      * can post a new country along with an administrative area chosen from the previous country’s list, and
      * keeping it would add it to the new country’s options, where autofill selects it again. An unrecognized
-     * administrative area is kept when the country doesn’t change, or when neither country lists it. Surrounding
-     * whitespace is ignored when matching, as `AddressRules` trims it during validation.
+     * administrative area is kept when the country doesn’t change or is cleared, or when neither country lists it.
+     * Surrounding whitespace is ignored when matching, as `AddressRules` trims it during validation.
      *
      * @param  array<string,mixed>  $values
      */
@@ -687,16 +687,16 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         }
 
         $previousCountryCode = $this->countryCode ?? null;
+        $countryCode = $values['countryCode'] ?? null;
         if (
-            isset($values['countryCode'], $values['administrativeArea']) &&
-            $values['countryCode'] !== $previousCountryCode
+            is_string($countryCode) && $countryCode !== '' &&
+            is_string($values['administrativeArea'] ?? null) &&
+            $countryCode !== $previousCountryCode
         ) {
             $subdivisions = app(Addresses::class)->getSubdivisionRepository();
-            $administrativeAreas = $subdivisions->getList([$values['countryCode']]);
+            $administrativeAreas = $subdivisions->getList([$countryCode]);
             $previousAdministrativeAreas = $previousCountryCode ? $subdivisions->getList([$previousCountryCode]) : [];
-            $value = is_string($values['administrativeArea'])
-                ? trim($values['administrativeArea'])
-                : $values['administrativeArea'];
+            $value = trim($values['administrativeArea']);
 
             if (
                 ! isset($administrativeAreas[$value]) &&
