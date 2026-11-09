@@ -41,6 +41,8 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
@@ -57,6 +59,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -321,6 +324,44 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     public function uiWarning(?ElementInterface $element = null): ?string
     {
         return null;
+    }
+
+    public function uiErrors(ElementInterface $element, array $errors): array
+    {
+        return $errors;
+    }
+
+    /**
+     * Adds a nested element's errors to its owner's, keyed by the controls that show them in the nested element's UI
+     * under `$scope`. Errors none of its controls shows go to this field.
+     *
+     * The nested element's errors are passed in rather than read from it, because they're copied to its owner when
+     * it's validated and the owner can be saved or swapped for another instance before its UI is rendered.
+     *
+     * @param  array<string, list<string>>  $errors  The owner's errors
+     * @param  array<string, list<string>>  $nestedErrors  The nested element's errors, keyed as validated
+     * @return array<string, list<string>>
+     */
+    protected function addNestedUiErrors(array $errors, ElementInterface $nested, array $nestedErrors, string $scope): array
+    {
+        $fieldLayout = $nested->getFieldLayout() ?? new FieldLayout;
+
+        foreach ($fieldLayout->getCustomFields() as $field) {
+            $nestedErrors = $field->uiErrors($nested, $nestedErrors);
+        }
+
+        $ui = app(FieldLayoutCompiler::class)->compile($fieldLayout, $nested, new UiContext(errors: $nestedErrors));
+
+        foreach ($ui->errors as $error) {
+            $path = sprintf('%s.%s', $scope, implode('.', $error['path']));
+            $errors[$path] = [...$errors[$path] ?? [], ...$error['messages']];
+        }
+
+        if ($ui->globalErrors !== []) {
+            $errors[$this->handle] = [...$errors[$this->handle] ?? [], ...$ui->globalErrors];
+        }
+
+        return $errors;
     }
 
     public static function isMultiInstance(): bool

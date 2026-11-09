@@ -672,6 +672,7 @@
 - Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
 
 ### Extensibility
+- Added `CraftCms\Cms\Field\Contracts\FieldInterface::uiErrors()`, which fields that show nested elements’ fields, such as Matrix and Content Block fields, can use to show the nested elements’ validation errors on those fields in the element editor.
 - Added `CraftCms\Cms\Route\RedirectRule` and `CraftCms\Cms\Route\Events\Redirecting`, which apply and customize `config/redirects.php` rules. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Added `CraftCms\Cms\Element\Element::query()`. Static calls to element classes that aren’t macros, such as `Entry::section('news')`, now return a new element query, as they do on Eloquent models. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Added `CraftCms\Cms\Element\Queries\ElementQuery::toBase()`, which returns a base query builder with the query’s params applied. Element queries passed to Laravel query builder methods that take a subquery, such as `whereIn()`, `whereExists()`, `joinSub()`, and `selectSub()`, are now converted with it. ([#20450](https://github.com/craftcms/cms/pull/20450))
@@ -770,6 +771,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where validation errors in Matrix entries shown as blocks, and in Content Block fields, were only listed atop the element editor, rather than shown on the nested fields that had them.
 - Fixed a bug where custom field params were ignored on asset queries for subclasses of `Asset`, and on category and tag queries without a group, such as `craft\elements\Asset::find()->myField('value')` with the Yii adapter. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a validation error when saving Color fields created with `presets` or `defaultColor`. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a bug where `{% paginate %}` and `@craftPaginate` ignored queries’ `limit()` param, showing 15 results per page, and requests for a page past the last one showed no results. Queries’ `limit()` param sets the page size again, defaulting to 100, and out-of-range pages show the last page. ([#20511](https://github.com/craftcms/cms/pull/20511))

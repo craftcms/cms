@@ -53,7 +53,11 @@ test('content block field merges nested field errors onto the element', function
 
     $result->element->validate();
 
-    expect($result->element->errors()->has('contentBlock.innerText'))->toBeTrue();
+    expect($result->element->errors()->has('contentBlock.innerText'))->toBeTrue()
+        // The editor shows it on the nested field's control, at `fields.contentBlock.fields.innerText`.
+        ->and($result->element->uiErrors())
+        ->toHaveKey('contentBlock.fields.innerText')
+        ->not->toHaveKey('contentBlock.innerText');
 });
 
 test('content block field preserves nested values through element validation', function () {
