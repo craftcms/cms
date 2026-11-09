@@ -424,12 +424,19 @@ class Yii2ServiceProvider extends ServiceProvider
 
         // A worker runs many jobs, so onAfterRequest() callbacks run after the job that added them, as Laravel's
         // defer() callbacks do. EVENT_AFTER_REQUEST handlers still fire once, as they'd fire again after every job.
+        // Legacy usage is saved after each job too, rather than when the worker exits.
         Event::listen(function(JobAttempted $event): void {
-            if (in_array($event->connectionName, ['sync', 'deferred'], true) || !Craft::$app instanceof YiiApplication) {
+            if (in_array($event->connectionName, ['sync', 'deferred'], true)) {
                 return;
             }
 
-            Craft::$app->runAfterRequestCallbacks();
+            try {
+                if (Craft::$app instanceof YiiApplication) {
+                    Craft::$app->runAfterRequestCallbacks();
+                }
+            } finally {
+                $this->app->make(LegacyUsage::class)->flush();
+            }
         });
 
         if (!$this->app->runningInConsole()) {

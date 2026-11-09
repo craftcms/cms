@@ -18,9 +18,12 @@ use CraftCms\Yii2Adapter\LooseEnds\LooseEndsStore;
 use CraftCms\Yii2Adapter\LooseEnds\LooseEndsUtility;
 use CraftCms\Yii2Adapter\Mail\LegacyTransportCompatibility;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Queue\Events\JobAttempted;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 
 use function CraftCms\Cms\template;
@@ -49,6 +52,19 @@ it('ignores legacy usage from installed packages', function(): void {
     $usage->add('project', 'Used by the project.', base_path('modules/Module.php'), 10);
 
     expect(array_column($usage->pending(), 'key'))->toBe(['project']);
+});
+
+it('saves usage after each queue job, not only when the worker exits', function(): void {
+    LegacyUsage::record('project', 'Used by the project.', base_path('modules/Module.php'), 10);
+
+    Event::dispatch(new JobAttempted('sync', Mockery::mock(Job::class)));
+
+    expect(Schema::hasTable(LooseEndsStore::TABLE))->toBeFalse();
+
+    Event::dispatch(new JobAttempted('database', Mockery::mock(Job::class)));
+
+    expect(app(LegacyUsage::class)->pending())->toBe([])
+        ->and(app(LooseEndsStore::class)->usages()->pluck('key')->all())->toBe(['project']);
 });
 
 it('deletes usage marked resolved, and records it again if it’s seen again', function(): void {
