@@ -2664,6 +2664,7 @@ return [
     'Required' => 'נדרש',
     'Requirements' => 'דרישות',
     'Requires PHP {version}' => 'נדרש PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'שומר מחדש את רשומות {name}',
     'Resaving {type} entries' => 'שומר מחדש {type} ערכים',
     'Resaving {type}' => 'שומר שוב {type}',
