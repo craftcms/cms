@@ -82,29 +82,25 @@ readonly class GeneralConfigCompatibility
             return $overlay;
         }
 
-        // Changes the config and a callable overlay make to Laravel’s state are held back until it’s known which config
-        // is kept, so settings that are replaced or merged away never reach setters with side effects
-        [$config, $configEffects] = LegacyGeneralConfig::holdSideEffects(fn() => $this->resolve($config, LegacyGeneralConfig::create()));
+        // Changes the config and a callable overlay make to Laravel’s state are held back on the configs they're made on,
+        // and only those of the config that's kept are applied, so settings that are replaced, merged away, or set on a
+        // discarded config never reach setters with side effects. A clone keeps the changes made on its original.
+        $config = LegacyGeneralConfig::holdSideEffects(fn() => $this->resolve($config, LegacyGeneralConfig::create()));
 
         if (is_array($config)) {
             if (is_array($overlay) && !is_callable($overlay)) {
                 return $this->toConfigObject(array_merge($config, $overlay));
             }
 
-            [$object, $configEffects] = LegacyGeneralConfig::holdSideEffects(fn() => $this->toConfigObject($config));
+            $object = LegacyGeneralConfig::holdSideEffects(fn() => $this->toConfigObject($config));
         } else {
             $object = $config;
         }
 
-        [$overlay, $overlayEffects] = LegacyGeneralConfig::holdSideEffects(fn() => $this->resolve($overlay, $object));
+        $overlay = LegacyGeneralConfig::holdSideEffects(fn() => $this->resolve($overlay, $object));
 
         if ($overlay !== $object && $overlay instanceof GeneralConfig) {
-            LegacyGeneralConfig::applySideEffects($overlayEffects);
-
-            // A config the overlay returns may be a clone that keeps the discarded config's middleware settings
-            if ($overlay instanceof LegacyGeneralConfig) {
-                $overlay->applyMiddlewareSettings();
-            }
+            $this->applyHeldSideEffects($overlay);
 
             return $overlay;
         }
@@ -113,13 +109,20 @@ readonly class GeneralConfigCompatibility
             return $this->toConfigObject(array_merge($config, $overlay));
         }
 
-        LegacyGeneralConfig::applySideEffects($configEffects, $overlayEffects);
+        $this->applyHeldSideEffects($object);
 
         if (is_array($overlay)) {
             $this->applySettings($object, $overlay);
         }
 
         return $object;
+    }
+
+    private function applyHeldSideEffects(GeneralConfig $config): void
+    {
+        if ($config instanceof LegacyGeneralConfig) {
+            $config->applyHeldSideEffects();
+        }
     }
 
     /**
