@@ -382,10 +382,12 @@
 - Added `CraftCms\Cms\Ui\Controls\FieldSelect`.
 - Added `CraftCms\Cms\Ui\Controls\ConditionBuilder::fieldLayouts()`.
 - Added `CraftCms\Cms\Cp\Components\Field::actions()`.
+- Added `CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving`, which is fired when a field layout field has no UI control of its own, so a listener can provide one. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Added `CraftCms\Cms\Cp\Components\ElementSelect` and `CraftCms\Cms\Cp\Components\SelectRich`, available as the `element-select` and `select-rich` `ui()` components. ([#20275](https://github.com/craftcms/cms/pull/20275))
 - Added `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()`, which renders relation fields’ editable inputs. ([#20275](https://github.com/craftcms/cms/pull/20275))
 - The `_includes/forms.twig` macros and the `_includes/forms/*.twig` templates are now provided by `craftcms/yii2-adapter`. Core templates render form controls with `ui()` components instead. ([#20275](https://github.com/craftcms/cms/pull/20275))
 - Relation fields’ `$inputTemplate` and `$settingsTemplate` properties are now only supported by relation fields that extend `craft\fields\BaseRelationField` through the Yii adapter. Other relation fields should override `elementSelectHtml()` instead. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Field layout elements that implement Craft 5’s `inputHtml()` or `formHtml()` rather than `uiControl()` or `uiNode()` are still shown in element edit screens when the Yii adapter is installed. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Added `CraftCms\Cms\Cp\FormFields::fieldSelectHtml()`.
 - Added the `actions` slot to `<craft-field>`.
 - Added the `<craft-checkbox-select>` web component, which replaces checkbox selects and sortable checkbox selects. It has an “All” option, independent `sortable` and `presentation="add-menu"` options, and an `options` property along with `addOption()`, `updateOption()`, and `removeOption()` methods for changing its options at runtime. ([#20036](https://github.com/craftcms/cms/pull/20036))
