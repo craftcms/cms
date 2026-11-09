@@ -2664,6 +2664,7 @@ return [
     'Required' => '必选',
     'Requirements' => '要求',
     'Requires PHP {version}' => '要求 PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => '正在重新保存{name}条目',
     'Resaving {type} entries' => '正在重新保存{type}条目',
     'Resaving {type}' => '正在重新保存{type}',
