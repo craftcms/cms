@@ -15,6 +15,7 @@ use craft\helpers\ArrayHelper;
 use craft\services\ProjectConfig;
 use Throwable;
 use yii\base\NotSupportedException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -36,6 +37,11 @@ class ConfigSyncController extends BaseUpdaterController
 
     public function beforeAction($action): bool
     {
+        // Project config syncs never run Composer
+        if (in_array($action->id, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE], true)) {
+            throw new NotFoundHttpException();
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         }

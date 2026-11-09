@@ -9,6 +9,7 @@ namespace crafttests\unit\controllers;
 
 use Craft;
 use craft\controllers\BaseUpdaterController;
+use craft\controllers\ConfigSyncController;
 use craft\controllers\pluginstore\RemoveController;
 use craft\controllers\UpdaterController;
 use craft\elements\User;
@@ -16,6 +17,7 @@ use craft\helpers\Json;
 use craft\test\TestCase;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * Unit tests for the updater controllers’ handling of signed updater data.
@@ -116,6 +118,33 @@ class UpdaterControllerTest extends TestCase
 
         $this->expectException(BadRequestHttpException::class);
         $this->beforeAction(RemoveController::class, 'pluginstore/remove', BaseUpdaterController::ACTION_FINISH, $data);
+    }
+
+    /**
+     * Project config syncs only require an admin, not `allowAdminChanges` or `allowUpdates`, so their inherited
+     * Composer actions must not run, even for data signed with the global key.
+     *
+     * @dataProvider configSyncComposerActionDataProvider
+     */
+    public function testConfigSyncCantRunComposer(string $actionId): void
+    {
+        $this->loginAdmin();
+        Craft::$app->getConfig()->getGeneral()->allowAdminChanges = false;
+        $data = Craft::$app->getSecurity()->hashData(Json::encode([
+            'requirements' => ['foo/bar' => '1.0.0'],
+            'packageName' => 'foo/bar',
+        ]));
+
+        $this->expectException(NotFoundHttpException::class);
+        $this->beforeAction(ConfigSyncController::class, 'config-sync', $actionId, $data);
+    }
+
+    public static function configSyncComposerActionDataProvider(): array
+    {
+        return [
+            'composer-install' => [BaseUpdaterController::ACTION_COMPOSER_INSTALL],
+            'composer-remove' => [BaseUpdaterController::ACTION_COMPOSER_REMOVE],
+        ];
     }
 
     public function testUnsignedDataIsRejected(): void
