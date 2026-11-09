@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\Fields as FieldService;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
 use CraftCms\Cms\Mcp\SensitiveValues;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -93,7 +94,7 @@ readonly class Fields
             'searchable' => $searchable,
             'translationMethod' => $translationMethod,
             'translationKeyFormat' => $translationKeyFormat,
-            'settings' => $this->sensitiveValues->restore($settings, []),
+            'settings' => $this->sensitiveValues->restore(ProjectConfigHelper::unpackAssociativeArrays($settings), []),
         ]);
 
         return ['field' => $this->save($field)];
@@ -145,7 +146,7 @@ readonly class Fields
         ], $request->arguments);
 
         if (array_key_exists('settings', $request->arguments)) {
-            $attributes = [...array_replace($field->getSettings(), $this->sensitiveValues->restore($settings, $field->getSettings())), ...$attributes];
+            $attributes = [...array_replace($field->getSettings(), $this->sensitiveValues->restore(ProjectConfigHelper::unpackAssociativeArrays($settings), $field->getSettings())), ...$attributes];
         }
 
         Typecast::configure($field, $attributes);

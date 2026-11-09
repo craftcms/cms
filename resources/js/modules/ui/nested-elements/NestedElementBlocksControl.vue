@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   // `craft-action-menu`'s `actions` is a JS property (`attribute: false`), so the
   // element has to be defined before Vue patches it — otherwise the assignment
   // shadows the accessor and the menu never renders. Same reason ActionMenuNode
@@ -182,6 +183,11 @@
       copy: copyBlocks,
       paste: pasteBlocks,
     },
+  });
+
+  usePasteElementsShortcut(matrixHost, {
+    canPaste: () => props.editable && pasteable.value.length > 0 && !busy.value,
+    paste: () => pasteBlocks(),
   });
 
   function statusId(uid: string): string {

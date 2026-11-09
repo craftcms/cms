@@ -383,7 +383,10 @@
     --_column-width: 180px;
     display: grid;
     gap: var(--c-spacing-md);
-    grid-template-columns: repeat(auto-fill, minmax(var(--_column-width), 1fr));
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(min(var(--_column-width), 100%), 1fr)
+    );
 
     &[data-thumb-size='sm'] {
       --_column-width: 120px;

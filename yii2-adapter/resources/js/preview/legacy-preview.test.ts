@@ -198,6 +198,14 @@ describe('Craft.Preview', () => {
     expect(log).toEqual([['afterSaveDraft', {response: {data: {draftId: 7}}}]]);
   });
 
+  it('gives the preview token through its element editor', async () => {
+    const {preview} = mount();
+
+    await expect(preview.elementEditor!.getPreviewToken()).resolves.toBe(
+      'token'
+    );
+  });
+
   it('reloads the frame or keeps it, as updateIframe asks', async () => {
     const {controller, preview} = mount();
     expect(preview.updateIframe()).toBe(false);

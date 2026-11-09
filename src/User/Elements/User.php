@@ -87,7 +87,6 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Traits\Macroable;
 use LogicException;
 use Override;
 use Stringable;
@@ -127,7 +126,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     use ConfirmsPasswords;
     use HasNames;
     use LegacyConstants;
-    use Macroable;
     use Notifiable;
 
     public const string GQL_TYPE_NAME = 'User';

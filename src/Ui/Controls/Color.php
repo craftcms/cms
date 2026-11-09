@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Cp\Components\InputColor;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 
 /**
  * @since 6.0.0
  */
-class Color extends Control
+class Color extends Control implements ReadableValueControl, WritableValueControl
 {
     /** @var list<string> */
     private array $presets = [];

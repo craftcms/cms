@@ -62,8 +62,11 @@ readonly class ElementQuery
         ];
     }
 
-    /** @return array<string, mixed>|null */
-    private function serializeNested(ElementInterface $element): ?array
+    /**
+     * @param  list<string>  $paths
+     * @return array<string, mixed>|null
+     */
+    private function serializeNested(ElementInterface $element, array $paths = [], bool $summary = false): ?array
     {
         $type = $this->elementTypes->find($this->elementTypes->name($element::class));
 
@@ -83,7 +86,11 @@ readonly class ElementQuery
             return null;
         }
 
-        return $this->serializer->serialize($element, fields: null);
+        if ($summary) {
+            return $this->serializer->summarize($element);
+        }
+
+        return $this->serializer->serialize($element, fields: null, serializeNested: $this->serializeNested(...), nestedPaths: $paths);
     }
 
     public function allows(ElementType $type): bool

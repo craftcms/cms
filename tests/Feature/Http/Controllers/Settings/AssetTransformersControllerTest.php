@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformerRegistry;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
@@ -90,7 +91,7 @@ it('lists sorted transformers with editable default labels, handles, drivers, an
 
     if ($allowAdminChanges) {
         expect($craftRow['_deletable'])->toBeFalse()
-            ->and($craftRow['_deleteDisabledReason'])->toBe('The Craft asset transformer cannot be deleted.')
+            ->and($craftRow['_deleteDisabledReason'])->toBe('This asset transformer cannot be deleted because it is registered in code.')
             ->and($remoteRow['_deletable'])->toBe($defaultHandle !== 'remote')
             ->and($remoteRow['_deleteDisabledReason'])->toBe($defaultHandle === 'remote' ? 'This asset transformer cannot be deleted because it is configured as the default.' : null)
             ->and($remoteRow['_deleteUrl'])->toBe(action([AssetTransformersController::class, 'destroy'], ['handle' => 'remote']))
@@ -215,23 +216,26 @@ it('renders stored settings for an unavailable transformer driver', function () 
         ->and($crawler->text())->toContain('This asset transformer’s driver is unavailable.');
 });
 
-it('keeps the Craft transformer identity pinned', function () {
+it('rejects identity changes to the Craft transformer but saves its settings', function () {
     $craft = app(AssetTransformers::class)->resolve('craft');
-
-    postJson(action([AssetTransformersController::class, 'store']), [
+    $payload = fn (array $identity) => [
         'uid' => $craft->uid,
-        'name' => 'Changed',
-        'handle' => 'changed',
         'driver' => 'craft',
+        ...$identity,
         'settings' => [
             'subpath' => 'transforms',
             'generateTransformsBeforePageLoad' => true,
         ],
-    ])->assertOk();
+    ];
+
+    postJson(action([AssetTransformersController::class, 'store']), $payload(['name' => 'Changed', 'handle' => 'changed']))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['handle' => 'The name, handle, and driver of a registered asset transformer can’t be changed.']);
+    postJson(action([AssetTransformersController::class, 'store']), $payload(['name' => 'Craft', 'handle' => 'craft']))
+        ->assertOk();
 
     $saved = app(AssetTransformers::class)->resolve('craft');
     expect($saved->name)->toBe('Craft')
-        ->and($saved->driver)->toBe('craft')
         ->and($saved->settings['subpath'])->toBe('transforms')
         ->and($saved->settings['generateTransformsBeforePageLoad'])->toBeTrue();
 });
@@ -247,6 +251,41 @@ it('deletes non-reserved transformers', function () {
     deleteJson(action([AssetTransformersController::class, 'destroy'], ['handle' => 'disposable']))->assertOk();
 
     expect(app(AssetTransformers::class)->getAssetTransformerByHandle('disposable'))->toBeNull();
+});
+
+it('saves settings overrides for registered transformers and keeps them undeletable', function () {
+    app(AssetTransformDrivers::class)->extend('controller-test', fn () => new ControllerTestAssetTransformDriver);
+    app(AssetTransformerRegistry::class)->register(new AssetTransformer([
+        'name' => 'Cloud',
+        'handle' => 'cloud',
+        'driver' => 'controller-test',
+        'settings' => ['endpoint' => 'https://default.example.test'],
+    ]));
+    app(AssetTransformers::class)->reset();
+    $uid = app(AssetTransformers::class)->resolve('cloud')->uid;
+
+    get(action([AssetTransformersController::class, 'edit'], ['handle' => 'cloud']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('readOnly', false)
+            ->where('ui.values.settings.endpoint', 'https://default.example.test')
+            ->etc());
+    postJson(action([AssetTransformersController::class, 'store']), [
+        'uid' => $uid,
+        'name' => 'Cloud',
+        'handle' => 'cloud',
+        'driver' => 'controller-test',
+        'settings' => ['endpoint' => 'https://custom.example.test'],
+    ])->assertOk();
+    $index = get(action([AssetTransformersController::class, 'index']))->assertOk();
+    $table = collect(flattenUiNodes($index->inertiaProps('ui.nodes')))->firstWhere('component', 'craft:admin-table')['props'];
+    $row = collect($table['rows'])->firstWhere('id', $uid);
+    $saved = app(AssetTransformers::class)->getAssetTransformerByUid($uid);
+
+    expect([$saved->name, $saved->handle])->toBe(['Cloud', 'cloud'])
+        ->and($saved->settings)->toBe(['endpoint' => 'https://custom.example.test'])
+        ->and($row['_deletable'])->toBeFalse()
+        ->and($row['_deleteDisabledReason'])->toBe('This asset transformer cannot be deleted because it is registered in code.');
 });
 
 it('respects read-only mode', function () {

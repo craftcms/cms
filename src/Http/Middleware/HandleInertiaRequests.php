@@ -181,6 +181,9 @@ class HandleInertiaRequests extends Middleware
             // Always included, so a partial reload can't consume the flashed
             // messages without delivering them.
             'messages' => Inertia::always(fn () => Flash::all()),
+            // Messages for the page to broadcast to every open control panel
+            // tab, such as an element save. Always included for the same reason.
+            'broadcasts' => Inertia::always(fn () => session()->getBroadcasts()),
             // @deprecated Read `messages`, which also carries notices, message
             // settings and ids.
             'flash' => fn () => [

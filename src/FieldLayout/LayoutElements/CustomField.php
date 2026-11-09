@@ -11,7 +11,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\ContentBlock;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
@@ -1000,18 +999,6 @@ class CustomField extends BaseField
         }
 
         return $field->getTranslationDescription($element);
-    }
-
-    #[Override]
-    public function isCrossSiteCopyable(ElementInterface $element): bool
-    {
-        try {
-            $field = $this->getField();
-        } catch (FieldNotFoundException) {
-            return false;
-        }
-
-        return $field instanceof CrossSiteCopyableFieldInterface && $field->getIsTranslatable($element);
     }
 
     /** @return list<array<string, mixed>> */

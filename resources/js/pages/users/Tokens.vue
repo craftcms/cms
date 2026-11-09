@@ -2,6 +2,7 @@
   import {computed, h, nextTick, ref} from 'vue';
   import {router, useHttp, usePage} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
+  import {escapeHtml} from '@craftcms/ui/utilities/escapeHtml';
   import CraftCheckboxGroup from '@craftcms/ui/vue/CraftCheckboxGroup.vue';
   import CraftField from '@craftcms/ui/vue/CraftField.vue';
   import {useCraftTable} from '@/common/table/craftTable';
@@ -75,6 +76,14 @@
   const modalTitle = computed(() => {
     return editing.value ? editing.value.name : t('Create a new token');
   });
+  const keySetupInstructions = t(
+    'Run {command}, or set the {privateKey} and {publicKey} environment variables to PEM-encoded keys.',
+    {
+      command: `<code>${escapeHtml(page.props.keysCommand)}</code>`,
+      privateKey: '<code>PASSPORT_PRIVATE_KEY</code>',
+      publicKey: '<code>PASSPORT_PUBLIC_KEY</code>',
+    }
+  );
   const expiryOptions = [
     {label: t('7 days'), value: '7'},
     {label: t('30 days'), value: '30'},
@@ -246,7 +255,16 @@
 
 <template>
   <UserScreen>
-    <div class="grid gap-lg">
+    <craft-callout v-if="!page.props.hasKeys" variant="warning">
+      <div class="grid gap-md">
+        <p>
+          {{ t('Tokens can’t be created until Craft has OAuth signing keys.') }}
+        </p>
+        <p v-html="keySetupInstructions"></p>
+      </div>
+    </craft-callout>
+
+    <div v-else class="grid gap-lg">
       <div>
         <p>
           {{

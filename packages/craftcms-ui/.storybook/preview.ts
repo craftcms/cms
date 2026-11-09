@@ -94,6 +94,15 @@ const preview: Preview = {
             selector: '*:not(dialog[data-overlay-outer-wrapper])',
           },
           {
+            // The same wrapper, which Lion also gives `tabindex="-1"` for
+            // tooltips. axe then flags it, but only while the tooltip shows,
+            // such as when the pointer happens to rest on its button. This is
+            // axe's own selector, minus the wrapper.
+            id: 'presentation-role-conflict',
+            selector:
+              'img[alt=""], [role="none"]:not(dialog[data-overlay-outer-wrapper]), [role="presentation"]',
+          },
+          {
             // Links in running text are told apart from it by color alone,
             // unless the user turns on the “Underline links” accessibility
             // preference, which underlines them everywhere.

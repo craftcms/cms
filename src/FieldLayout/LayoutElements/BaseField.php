@@ -10,15 +10,16 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
-use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\I18N;
@@ -28,6 +29,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\Controls\Checkbox;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
@@ -448,7 +451,17 @@ abstract class BaseField extends FieldLayoutElement
         $control = $this->uiControl($context);
 
         if ($control === null) {
-            return null;
+            event($event = new FieldLayoutElementControlResolving($this, $context));
+
+            if ($event->node !== null) {
+                return $event->node;
+            }
+
+            $control = $event->control;
+
+            if ($control === null) {
+                return null;
+            }
         }
 
         if ($context->mode !== ControlMode::Editable) {
@@ -503,7 +516,7 @@ abstract class BaseField extends FieldLayoutElement
         $nodes = [];
         $uidPrefix = $this->uiActionsUid($control);
 
-        $items = $this->hasVisibleHeading($context) ? $this->resolveActionMenuItems($context) : [];
+        $items = $this->hasVisibleHeading($context) ? $this->resolveActionMenuItems($context, $control) : [];
         if ($items !== []) {
             $nodes[] = ActionMenu::make("$uidPrefix:menu", $items)
                 ->label(t('Field actions'));
@@ -534,9 +547,10 @@ abstract class BaseField extends FieldLayoutElement
      * Collects the field's action menu items, giving plugins a chance to amend
      * them.
      *
+     * @param  Control|null  $control  The field's control, which decides whether its value can be copied and pasted
      * @return list<array<string, mixed>>
      */
-    protected function resolveActionMenuItems(FieldLayoutElementContext $context): array
+    protected function resolveActionMenuItems(FieldLayoutElementContext $context, ?Control $control = null): array
     {
         event($event = new FieldLayoutComponentActionMenuItemsResolving(
             fieldLayoutComponent: $this,
@@ -547,7 +561,7 @@ abstract class BaseField extends FieldLayoutElement
 
         $coreActions = array_values(array_filter([
             $this->compareChangesAction($context),
-            $this->crossSiteCopyAction($context),
+            ...$this->valueClipboardActions($context, $control),
             $this->aiAssistantAction($context),
         ]));
 
@@ -560,6 +574,46 @@ abstract class BaseField extends FieldLayoutElement
             ...($event->items === [] ? [] : [['type' => 'hr']]),
             ...$event->items,
         ];
+    }
+
+    /**
+     * Returns the “Copy value” and “Paste value” actions, for a field whose control can be both read and written.
+     *
+     * “Paste value” is only offered on an editable field, and stays hidden until the clipboard holds a value the
+     * field’s control takes, which only the browser knows — see `FieldNode.vue`.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function valueClipboardActions(FieldLayoutElementContext $context, ?Control $control): array
+    {
+        if (! $control instanceof ReadableValueControl || ! $control instanceof WritableValueControl) {
+            return [];
+        }
+
+        $actions = [[
+            'icon' => 'clone-dashed',
+            'color' => Color::Fuchsia,
+            'label' => t('Copy value'),
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:copy-field-value',
+            ],
+        ]];
+
+        if ($context->mode === ControlMode::Editable && $context->ui->mode === ControlMode::Editable) {
+            $actions[] = [
+                'icon' => 'duplicate',
+                'color' => Color::Fuchsia,
+                'label' => t('Paste value'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:paste-field-value',
+                ],
+                'hidden' => true,
+            ];
+        }
+
+        return $actions;
     }
 
     /**
@@ -615,6 +669,7 @@ abstract class BaseField extends FieldLayoutElement
 
         return [
             'icon' => 'code-compare',
+            'color' => '--c-field-modified-indicator',
             'label' => t('Compare changes'),
             'action' => [
                 'type' => 'event',
@@ -627,48 +682,6 @@ abstract class BaseField extends FieldLayoutElement
                     'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                     'layoutElementUid' => $this->uid,
                     'label' => $this->showLabel() ? $this->label() : null,
-                ],
-            ],
-        ];
-    }
-
-    /** @return array<string, mixed>|null */
-    private function crossSiteCopyAction(FieldLayoutElementContext $context): ?array
-    {
-        $element = $context->element;
-
-        if (
-            ! $this->uid ||
-            ! $element?->id ||
-            $context->mode !== ControlMode::Editable ||
-            $context->ui->mode !== ControlMode::Editable ||
-            ! $this->isCrossSiteCopyable($element) ||
-            ! $this->translatable($element) ||
-            ! $element->getIsCrossSiteCopyable()
-        ) {
-            return null;
-        }
-
-        $siteIds = array_values(array_filter(
-            array_keys(ElementHelper::siteStatusesForElement($element, true)),
-            fn (int $siteId): bool => $siteId !== $element->siteId,
-        ));
-        $label = $this->showLabel() ? $this->label() : null;
-
-        return [
-            'icon' => 'clone',
-            'label' => t('Copy value from site…'),
-            'action' => [
-                'type' => 'event',
-                'name' => 'craft:copy-value-from-site',
-                'detail' => [
-                    'elementType' => $element::class,
-                    'elementId' => $element->id,
-                    'draftId' => $element->draftId,
-                    'siteId' => $element->siteId,
-                    'layoutElementUid' => $this->uid,
-                    'label' => $label,
-                    'siteIds' => $siteIds,
                 ],
             ],
         ];
@@ -1139,14 +1152,6 @@ abstract class BaseField extends FieldLayoutElement
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
-    }
-
-    /**
-     * Returns whether field supports copying its value across sites.
-     */
-    public function isCrossSiteCopyable(ElementInterface $element): bool
-    {
-        return false;
     }
 
     /**

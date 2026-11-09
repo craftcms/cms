@@ -43,7 +43,9 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 
 /**
@@ -55,7 +57,11 @@ use RuntimeException;
  *
  *     vendor/bin/testbench db:seed --class='Workbench\Database\Seeders\ScaleSeeder' --no-interaction
  *
- * Set `SCALE` to multiply the element counts (default 1).
+ * Set `SCALE` to multiply the element counts (default 1). `SCALE=0` seeds no entries, assets or users, only the
+ * sites, fields, entry types, sections, groups, volumes and settings, which most control panel costs grow with.
+ *
+ * It also adds `editor` (password `craftcms2018!!`), who isn't an admin but has every section, volume and site
+ * permission, so pages can be measured for non-admins too.
  */
 class ScaleSeeder extends Seeder
 {
@@ -66,7 +72,8 @@ class ScaleSeeder extends Seeder
 
     public function run(): void
     {
-        $this->scale = (float) (getenv('SCALE') ?: 1);
+        $scale = getenv('SCALE');
+        $this->scale = $scale === false || $scale === '' ? 1.0 : (float) $scale;
         mt_srand(6);
         Edition::set(Edition::Pro);
 
@@ -74,6 +81,7 @@ class ScaleSeeder extends Seeder
         $this->step('fields', fn () => $this->fields());
         $this->step('sections', fn () => $this->sections());
         $this->step('user groups and users', fn () => $this->users());
+        $this->step('editor', fn () => $this->editor());
         $this->step('volumes and assets', fn () => $this->assets());
         $this->step('routes, transforms and GraphQL', fn () => $this->settings());
         $this->step('large channel', fn () => $this->entries('news', $this->count(3000)));
@@ -90,7 +98,7 @@ class ScaleSeeder extends Seeder
 
     private function count(int $base): int
     {
-        return max(1, (int) round($base * $this->scale));
+        return $this->scale > 0 ? max(1, (int) round($base * $this->scale)) : 0;
     }
 
     private function sites(): void
@@ -238,6 +246,38 @@ class ScaleSeeder extends Seeder
 
             User::query()->find($user->id)->userGroups()->sync([$groups[$i % 30], $groups[($i * 7) % 30]]);
         }
+    }
+
+    private function editor(): void
+    {
+        $editor = UserFactory::new()->createOne([
+            'username' => 'editor',
+            'email' => 'editor@example.com',
+            'fullName' => 'Editor',
+            'admin' => false,
+            'password' => Hash::make('craftcms2018!!'),
+        ]);
+
+        $permissions = ['accessCp', 'viewUsers', 'editUsers', 'utility:system-report'];
+
+        foreach (Sections::getAllSections() as $section) {
+            foreach (['viewEntries', 'createEntries', 'saveEntries', 'deleteEntries', 'viewPeerEntries', 'savePeerEntries', 'viewPeerEntryDrafts'] as $permission) {
+                $permissions[] = "$permission:$section->uid";
+            }
+        }
+
+        foreach (Volumes::getAllVolumes() as $volume) {
+            foreach (['viewAssets', 'saveAssets', 'replaceFiles'] as $permission) {
+                $permissions[] = "$permission:$volume->uid";
+            }
+        }
+
+        foreach (Sites::getAllSites() as $site) {
+            $permissions[] = "editSite:$site->uid";
+        }
+
+        app(UserPermissions::class)->saveUserPermissions($editor->getKey(), $permissions)
+            || throw new RuntimeException("Couldn't save the editor's permissions.");
     }
 
     private function assets(): void

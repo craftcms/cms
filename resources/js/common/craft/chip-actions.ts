@@ -64,8 +64,8 @@ function buildActionMenu(): HTMLElement {
   const invoker = document.createElement('craft-button');
   invoker.setAttribute('type', 'button');
   invoker.setAttribute('slot', 'invoker');
-  invoker.setAttribute('appearance', 'plain');
-  invoker.setAttribute('variant', 'inherit');
+  invoker.setAttribute('variant', 'plain');
+  invoker.toggleAttribute('inherit', true);
   invoker.setAttribute('size', 'small');
   invoker.setAttribute('icon', '');
   invoker.setAttribute('aria-label', t('Actions'));
@@ -87,6 +87,8 @@ async function buildActionItem(action: ChipAction): Promise<HTMLElement> {
   const item = document.createElement('craft-action-item') as HTMLElement & {
     disabled?: boolean;
   };
+  // So a refresh of the chip knows the menu holds more than the server's items.
+  item.dataset.pageAction = '';
 
   if (action.destructive) {
     item.setAttribute('variant', 'danger');

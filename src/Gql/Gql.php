@@ -46,6 +46,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -341,6 +342,12 @@ class Gql
                 $prebuildSchema = $isIntrospectionQuery || ! Cms::config()->lazyGqlTypes;
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $this->elementCaches->startCollectingCacheInfo();
+
+                // Field layout user conditions may be based on the user’s own content, so invalidate cached results
+                // when the user is saved
+                if ($schema->user) {
+                    $this->elementCaches->collectCacheTags(["element::{$schema->user->id}"]);
+                }
 
                 $result = GraphQL::executeQuery(
                     $schemaDef,
@@ -1081,7 +1088,7 @@ class Gql
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
-        $devMode = Cms::config()->devMode;
+        $devMode = app()->hasDebugModeEnabled();
 
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
@@ -1165,6 +1172,11 @@ class Gql
             // user’s current permissions as well
             if ($schema->user) {
                 $cacheKey .= '::'.$this->userPermissionsHash($schema->user);
+
+                // Field layout user conditions are commonly based on the user’s groups as well
+                $groupIds = array_map(fn (UserGroup $group) => $group->id, $schema->user->getGroups());
+                sort($groupIds);
+                $cacheKey .= '::'.implode(',', $groupIds);
             }
         } catch (Throwable $e) {
             report($e);

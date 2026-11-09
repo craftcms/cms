@@ -15,7 +15,6 @@
     provide,
     ref,
     shallowReactive,
-    shallowRef,
     useTemplateRef,
     watch,
     type Component,
@@ -28,6 +27,7 @@
   import {createElementActionDispatcher} from '@/modules/elements/composables/useElementActionMenu';
   import ElementActivityAvatars from '@/modules/elements/components/ElementActivityAvatars.vue';
   import ElementViewButtons from '@/modules/elements/components/ElementViewButtons.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -41,7 +41,7 @@
   import ScreenPanelsScope from '@/common/components/ScreenPanelsScope.vue';
   import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
   import type {FormSaveOptions} from '@/common/types';
-  import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
+  import WorkflowEditLock from '@/modules/workflows/components/WorkflowEditLock.vue';
   import WorkflowDraftsStatus from '@/modules/workflows/components/WorkflowDraftsStatus.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
@@ -214,27 +214,6 @@
     () => workflowReviewLocked.value || releaseDraftLocked.value
   );
   const editorLocked = computed(() => fieldsLocked.value || payload.readOnly);
-
-  /**
-   * Settles the pending “Edit anyway?” question, while the dialog asking it is
-   * open: editing a reviewed draft in a scheduled release undoes its approval,
-   * which will stop the release from publishing. A draft that's already
-   * blocking the release isn't asked about.
-   */
-  const settleScheduledEdit = shallowRef<((confirmed: boolean) => void) | null>(
-    null
-  );
-
-  function confirmScheduledEdit(): Promise<boolean> {
-    return new Promise((resolve) => {
-      settleScheduledEdit.value = resolve;
-    });
-  }
-
-  function answerScheduledEdit(confirmed: boolean): void {
-    settleScheduledEdit.value?.(confirmed);
-    settleScheduledEdit.value = null;
-  }
 
   const canChooseRelease = computed(
     () =>
@@ -766,50 +745,12 @@
           </craft-button>
         </craft-callout>
 
-        <WorkflowEditLockCallout
+        <WorkflowEditLock
           v-if="workflowReviewLocked"
           :payload="payload"
           :update-payload="updatePayload"
-          :confirm-editing="
-            payload.release?.status === 'scheduled' &&
-            !payload.release.blockers.length
-              ? confirmScheduledEdit
-              : undefined
-          "
-          class="mb-4"
           @start-editing="startEditing"
         />
-
-        <craft-dialog
-          :label="t('Edit a draft in a scheduled release?')"
-          .opened="settleScheduledEdit !== null"
-          @craft-hide="answerScheduledEdit(false)"
-        >
-          <p class="m-0">
-            {{
-              t(
-                'Editing this draft will undo its approval. Unless it’s approved again before “{name}” publishes, the release will fail to publish.',
-                {name: payload.release?.name ?? ''}
-              )
-            }}
-          </p>
-          <craft-button
-            slot="footer"
-            type="button"
-            autofocus
-            @click="answerScheduledEdit(false)"
-          >
-            {{ t('Cancel') }}
-          </craft-button>
-          <craft-button
-            slot="footer"
-            type="button"
-            variant="primary"
-            @click="answerScheduledEdit(true)"
-          >
-            {{ t('Edit anyway') }}
-          </craft-button>
-        </craft-dialog>
 
         <craft-callout
           v-if="awaitingUserApproval && !approvalNoticeDismissed"
@@ -914,17 +855,36 @@
         >
           {{ payload.notice }}
 
-          <craft-button
-            v-if="payload.canDiscardDraft"
+          <!-- The callout's action slot lays out one item, so the buttons share it. -->
+          <div
+            v-if="
+              (payload.isProvisionalDraft && payload.compareChangesUrl) ||
+              payload.canDiscardDraft
+            "
             slot="action"
-            type="button"
-            variant="outline"
-            size="small"
-            @click="discardDraft"
-            inherit
+            class="flex flex-wrap gap-md"
           >
-            {{ t('Discard changes') }}
-          </craft-button>
+            <CpButtonLink
+              v-if="payload.isProvisionalDraft && payload.compareChangesUrl"
+              :href="payload.compareChangesUrl"
+              :variant="ButtonVariant.Outline"
+              size="small"
+              icon="code-compare"
+              inherit
+            >
+              {{ t('Compare changes') }}
+            </CpButtonLink>
+            <craft-button
+              v-if="payload.canDiscardDraft"
+              type="button"
+              variant="outline"
+              size="small"
+              @click="discardDraft"
+              inherit
+            >
+              {{ t('Discard changes') }}
+            </craft-button>
+          </div>
         </craft-callout>
 
         <craft-callout

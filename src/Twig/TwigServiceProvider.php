@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Twig;
 
-use Exception;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Support\ServiceProvider;
 use Override;
+use Throwable;
 use Twig\Loader\LoaderInterface;
 
 /**
@@ -24,7 +24,7 @@ class TwigServiceProvider extends ServiceProvider
         $handler = $this->app->make(ExceptionHandler::class);
 
         if ($handler instanceof Handler) {
-            $handler->map(Exception::class, fn (Exception $e) => $this->app->make(TwigExceptionMapper::class)->map($e));
+            $handler->map(Throwable::class, fn (Throwable $e) => $this->app->make(TwigExceptionMapper::class)->map($e));
         }
     }
 }

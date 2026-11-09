@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\MoneyFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
@@ -50,7 +49,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Money extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Money extends Field implements DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -222,8 +221,9 @@ class Money extends Field implements CrossSiteCopyableFieldInterface, Defaultabl
 
         return MoneyControl::make($context->path)
             ->currency($this->currency)
-            ->min($this->min)
-            ->max($this->max)
+            // Bounds are held in the currency's minor units, such as cents.
+            ->min($this->decimalSetting($this->min))
+            ->max($this->decimalSetting($this->max))
             ->size($this->size)
             ->showCurrency($this->showCurrency)
             ->value([
