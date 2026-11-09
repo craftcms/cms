@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Requis',
     'Requirements' => 'Exigences',
     'Requires PHP {version}' => 'Nécessite PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Ré-enregistrement des entrées de {name}',
     'Resaving {type} entries' => 'Ré-enregistrement des entrées {type}',
     'Resaving {type}' => 'Enregistrer à nouveau {type}',
