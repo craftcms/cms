@@ -5,6 +5,7 @@ import {baseFieldStyles} from '@src/styles/form.styles';
 import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
+import {emitChange} from '@src/utilities/form-events';
 import {HasLabel} from '@src/mixins/HasLabel';
 import {ChoiceInput, choiceInputStyles} from '@src/mixins/ChoiceInput';
 
@@ -370,7 +371,9 @@ export default class CraftSwitch extends HasLabel(ChoiceInput(LitElement)) {
     // Legacy CP code (e.g. Craft.FieldToggle, which powers toggle/
     // reverseToggle reveals) listens for native change events on the switch
     // button.
-    this._inputNode?.dispatchEvent(new Event('change', {bubbles: true}));
+    if (this._inputNode) {
+      emitChange(this._inputNode);
+    }
   }
 
   private __setupExternalLabelClicks(): void {

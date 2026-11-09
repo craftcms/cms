@@ -1,6 +1,7 @@
 import {css, html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {baseFormControlStyles} from '@src/styles/form.styles';
+import {emitChange, emitInput} from '@src/utilities/form-events';
 
 /**
  * @summary The toggle itself — the track and thumb a `craft-switch` renders.
@@ -72,8 +73,8 @@ export default class CraftSwitchButton extends LitElement {
     }
     this.focus();
     this.checked = !this.checked;
-    this.dispatchEvent(new Event('input', {bubbles: true}));
-    this.dispatchEvent(new Event('change', {bubbles: true}));
+    emitInput(this);
+    emitChange(this);
   }
 
   #onClick = (): void => this.#toggle();
