@@ -26,7 +26,7 @@ beforeEach(function (): void {
 
     $this->serve = function (string $user, array $messages): array {
         $input = fopen('php://memory', 'r+');
-        fwrite($input, implode('', array_map(static fn (array $message): string => json_encode($message).PHP_EOL, [
+        fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
             ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
                 'protocolVersion' => '2025-11-25',
                 'capabilities' => (object) [],
@@ -42,7 +42,7 @@ beforeEach(function (): void {
         $this->artisan('craft:mcp:serve', ['--user' => $user])->assertSuccessful();
 
         return collect(file($outputPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
-            ->map(static fn (string $line): array => json_decode($line, true))
+            ->map(static fn (string $line): array => Json::decode($line))
             ->keyBy('id')
             ->all();
     };
@@ -109,7 +109,7 @@ it('refuses to serve missing or inactive users', function (Closure $user, string
 
 it('saves project config changes before responding, rather than when the server stops', function (): void {
     $input = fopen('php://memory', 'r+');
-    fwrite($input, implode('', array_map(static fn (array $message): string => json_encode($message).PHP_EOL, [
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
         ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25',
             'capabilities' => (object) [],
