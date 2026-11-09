@@ -2665,6 +2665,7 @@ return [
     'Required' => 'จำเป็น',
     'Requirements' => 'ข้อกำหนด',
     'Requires PHP {version}' => 'ต้องใช้ PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'กำลังบันทึก {name} รายการใหม่',
     'Resaving {type} entries' => 'กำลังบันทึก {type} รายการใหม่',
     'Resaving {type}' => 'กำลังบันทึก {type} ใหม่',
