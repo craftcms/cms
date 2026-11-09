@@ -11,18 +11,14 @@ namespace crafttests\unit\elements;
 
 use craft\models\ImageTransform;
 use craft\test\TestCase;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\ImageTransforms;
-use CraftCms\Cms\Support\Str;
 use UnitTester;
 
 /**
@@ -44,12 +40,14 @@ class AssetElementTest extends TestCase
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
                 'hasUrls' => true,
+                'getResolvedFsTarget' => 'asset-element-test',
             ]),
             'folderId' => 2,
             'filename' => 'foo.jpg',
         ]);
 
-        app(AssetTransformDrivers::class)->extend('test', fn() => new class() implements AssetTransformDriver {
+        config()->set('filesystems.disks.asset-element-test', ['driver' => 'local', 'asset_transformer' => 'test']);
+        app(AssetTransformers::class)->extend('test', fn() => new class() implements AssetTransformDriver {
             public function definition(): AssetTransformDriverDefinition
             {
                 return new AssetTransformDriverDefinition('Test');
@@ -63,13 +61,6 @@ class AssetElementTest extends TestCase
                 );
             }
         });
-        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-            'uid' => Str::uuid()->toString(),
-            'name' => 'Test',
-            'handle' => 'test',
-            'driver' => 'test',
-        ]), false);
-        Cms::config()->defaultAssetTransformer('test');
 
         ImageTransforms::shouldReceive('getTransformByHandle')
             ->andReturn($this->make(ImageTransform::class, [

@@ -17,7 +17,7 @@ class ImageTransformIndex extends Component
 
     public ?int $assetId = null;
 
-    public ?string $transformer = null;
+    public ?string $outputKey = null;
 
     public ?string $filename = null;
 

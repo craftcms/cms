@@ -13,14 +13,13 @@ use Stringable;
 readonly class AssetTransformDriverDefinition
 {
     /**
+     * @param  string  $label  The driver’s display label.
      * @param  array<string, non-empty-list<string|Stringable>>  $parameterRules
      * @param  array<string, Field>  $parameterFields
-     * @param  list<Field>  $settingsFields
      */
     public function __construct(
-        public string $name,
+        public string $label,
         public array $parameterRules = [],
         public array $parameterFields = [],
-        public array $settingsFields = [],
     ) {}
 }

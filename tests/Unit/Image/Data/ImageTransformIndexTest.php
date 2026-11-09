@@ -14,7 +14,7 @@ describe('defaults', function () {
 
         expect($index->id)->toBeNull()
             ->and($index->assetId)->toBeNull()
-            ->and($index->transformer)->toBeNull()
+            ->and($index->outputKey)->toBeNull()
             ->and($index->filename)->toBeNull()
             ->and($index->format)->toBeNull()
             ->and($index->transformString)->toBeNull()

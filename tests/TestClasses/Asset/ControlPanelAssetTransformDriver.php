@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Tests\TestClasses\Asset;
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
-use CraftCms\Cms\Support\Str;
 use Throwable;
 
 class ControlPanelAssetTransformDriver implements AssetTransformDriver
@@ -25,13 +22,7 @@ class ControlPanelAssetTransformDriver implements AssetTransformDriver
     public function register(): void
     {
         $driver = $this;
-        app(AssetTransformDrivers::class)->extend('test', fn () => $driver);
-        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-            'uid' => Str::uuid()->toString(),
-            'name' => 'Test',
-            'handle' => 'test',
-            'driver' => 'test',
-        ]), false);
+        app(AssetTransformers::class)->extend('test', fn () => $driver);
     }
 
     public function definition(): AssetTransformDriverDefinition

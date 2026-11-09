@@ -41,7 +41,6 @@ use CraftCms\Yii2Adapter\Event\TypeRegistryCompatibility;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
-use Ramsey\Uuid\Uuid;
 use yii\base\Component;
 
 /**
@@ -408,12 +407,7 @@ class ImageTransforms extends Component
     /** @param class-string<ImageTransformerInterface> $transformer */
     private function legacyAssetTransformer(string $transformer): AssetTransformer
     {
-        return new AssetTransformer([
-            'uid' => Uuid::uuid5(Uuid::NAMESPACE_URL, "craftcms:legacy-image-transformer:$transformer")->toString(),
-            'name' => $transformer,
-            'handle' => 'legacy_' . substr(sha1($transformer), 0, 16),
-            'driver' => $transformer,
-        ]);
+        return new AssetTransformer(driver: $transformer);
     }
 
     /** @param class-string<ImageTransformerInterface> $transformer */
@@ -422,7 +416,9 @@ class ImageTransforms extends Component
         #[\SensitiveParameter] mixed $definition,
         string $transformer,
     ): ?AssetTransformRequest {
-        if ($asset->getVolume()->getAssetTransformerHandle(false) || $this->hasTransformerOverride($definition)) {
+        $diskTransformer = app(AssetTransformers::class)->forDisk($asset->getVolume()->getResolvedFsTarget());
+
+        if ($diskTransformer->driver !== 'craft' || $this->hasTransformerOverride($definition)) {
             return null;
         }
 
@@ -431,7 +427,7 @@ class ImageTransforms extends Component
         return new AssetTransformRequest(
             asset: $asset,
             transformer: $assetTransformer,
-            parameters: $this->transformParameters($definition, (string) $assetTransformer->uid),
+            parameters: $this->transformParameters($definition, $assetTransformer->driver),
         );
     }
 
@@ -471,7 +467,7 @@ class ImageTransforms extends Component
     }
 
     /** @return array<string, mixed> */
-    private function transformParameters(mixed $definition, string $transformerUid): array
+    private function transformParameters(mixed $definition, string $driver): array
     {
         try {
             $transform = ImageTransformHelper::normalizeTransform($definition);
@@ -483,7 +479,7 @@ class ImageTransforms extends Component
             throw new InvalidAssetTransformException('A transform definition must be an array, object, or named transform handle.');
         }
 
-        return $transform->getParameters($transformerUid);
+        return $transform->getParameters($driver);
     }
 
     private function service(): ImageTransformsService

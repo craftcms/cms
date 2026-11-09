@@ -105,12 +105,12 @@ readonly class Assets
     /**
      * @param  array<string, mixed>|string  $transform  Named image transform handle or inline transform parameters.
      * @param  int|null  $siteId  Site ID to load the asset in.
-     * @param  string|null  $transformer  Existing asset transformer handle. Defaults to the volume's transformer, then the configured default.
+     * @param  string|null  $transformer  Transform driver name that overrides the transformer configured on the asset's disk.
      * @return array{url: string, mimeType: string, width: int|null, height: int|null}
      */
     #[McpTool(
         name: 'assets_transform_url',
-        description: 'Gets a transformed asset URL for previewing. Accepts a named image transform handle or inline parameters such as width, height, mode, and format. Honors the selected transformer\'s generation settings, so this may queue or generate a transform and return a temporary generation URL.',
+        description: 'Gets a transformed asset URL for previewing. Accepts a named image transform handle or inline parameters such as width, height, mode, and format. Honors the disk transformer\'s generation settings, so this may queue or generate a transform and return a temporary generation URL.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function transformUrl(

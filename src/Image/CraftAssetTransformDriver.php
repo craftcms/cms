@@ -11,13 +11,9 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformFailedException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
-use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\File;
-use CraftCms\Cms\Ui\Controls\Combobox;
-use CraftCms\Cms\Ui\Controls\Lightswitch;
-use CraftCms\Cms\Ui\Nodes\Field;
 use Illuminate\Support\Facades\Context;
 
 use function CraftCms\Cms\t;
@@ -33,24 +29,7 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition(t('Craft'), settingsFields: [
-            Field::make(t('Output Disk'), Combobox::make('disk')
-                ->value(null)
-                ->options([
-                    ['label' => t('Same as source'), 'value' => ''],
-                    ...SelectOptions::getDiskOptions(),
-                    ...SelectOptions::getEnvSuggestions(),
-                ])),
-            Field::make(t('Transforms have public URLs'), Lightswitch::make('hasUrls'))
-                ->instructions(t('Whether Craft should generate public URLs for transforms stored on a custom output disk.')),
-            Field::make(t('Output Subpath'), Combobox::make('subpath')
-                ->value('')
-                ->options(SelectOptions::getEnvSuggestions(true))),
-            Field::make(
-                t('Generate Transforms Before Page Load'),
-                Lightswitch::make('generateTransformsBeforePageLoad'),
-            )->instructions(t('Whether image transforms should be generated before the page loads.')),
-        ]);
+        return new AssetTransformDriverDefinition(t('Craft'));
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
@@ -62,7 +41,7 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         $transform = ImageTransform::fromParameters($request->parameters);
         $immediately = Context::hasHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT)
             ? Context::getHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT) === true
-            : ($request->transformer->settings['generateTransformsBeforePageLoad'] ?? false) === true;
+            : ($request->transformer->settings['generate_transforms_before_page_load'] ?? false) === true;
         try {
             $url = $this->imageTransformer->getTransformUrl($request->asset, $transform, $immediately, $request->transformer);
         } catch (ImageTransformException $exception) {
@@ -108,7 +87,7 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         $groups = [];
 
         foreach ($requests as $request) {
-            $key = $request->transformer->uid.':'.serialize($request->parameters);
+            $key = serialize([$request->transformer->settings, $request->parameters]);
             $groups[$key]['transform'] ??= ImageTransform::fromParameters($request->parameters);
             $groups[$key]['transformer'] ??= $request->transformer;
             $groups[$key]['assets'][$request->asset->id] = $request->asset;

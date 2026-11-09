@@ -39,7 +39,7 @@ class Transform extends Arguments
             'transformer' => [
                 'name' => 'transformer',
                 'type' => Type::string(),
-                'description' => 'The asset transformer handle to use.',
+                'description' => 'The transform driver to use, overriding the transformer configured on the asset’s disk.',
             ],
         ];
 

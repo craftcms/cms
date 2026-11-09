@@ -9,8 +9,6 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\AssetTransformerDeleting;
-use CraftCms\Cms\Asset\Events\AssetTransformerUpdating;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
@@ -24,7 +22,6 @@ use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\File;
@@ -53,6 +50,15 @@ use function CraftCms\Cms\t;
  */
 class ImageTransformer
 {
+    /**
+     * Index keys written before rows recorded their output location: the transformer class names from Craft 5 and
+     * early Craft 6. These rows use the asset’s current transformer.
+     */
+    private const array LEGACY_OUTPUT_KEYS = [
+        'craft\\imagetransforms\\ImageTransformer',
+        ImageTransformer::class,
+    ];
+
     /** @var array<string, array<string, mixed>> */
     private array $eagerLoadedTransformIndexes = [];
 
@@ -64,9 +70,9 @@ class ImageTransformer
         Asset $asset,
         ImageTransform $imageTransform,
         bool $immediately,
-        ?AssetTransformer $assetTransformer = null,
+        ?AssetTransformer $transformer = null,
     ): string {
-        $assetTransformer ??= app(AssetTransformers::class)->resolve('craft');
+        $transformer ??= $this->currentTransformer($asset);
         $mimeType = $asset->getMimeType();
         $generalConfig = Cms::config();
 
@@ -78,9 +84,9 @@ class ImageTransformer
             throw new NotSupportedException('SVG files shouldn’t be transformed.');
         }
 
-        $index = $this->getTransformIndex($asset, $imageTransform, $assetTransformer);
-        $disk = $this->transformDisk($asset, $assetTransformer);
-        $transformHasUrls = $this->transformHasUrls($asset, $assetTransformer);
+        $index = $this->getTransformIndex($asset, $imageTransform, $transformer);
+        $disk = $this->transformDisk($asset, $transformer);
+        $transformHasUrls = $this->transformHasUrls($asset, $transformer);
         $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)).$this->getTransformUri($asset, $index);
 
         // If it's a local filesystem, make sure `fileExists` is accurate
@@ -162,7 +168,7 @@ class ImageTransformer
 
                 // Generate the transform
                 try {
-                    $this->generateTransform($index, $asset, $assetTransformer);
+                    $this->generateTransform($index, $asset, $transformer);
                 } catch (Exception $e) {
                     $index->inProgress = false;
                     $index->fileExists = false;
@@ -196,21 +202,26 @@ class ImageTransformer
         return AssetsHelper::revUrl($url, $asset, $dateUpdated);
     }
 
+    /**
+     * Returns the URL for an index row’s transform. A stale row, whose output location is no longer configured, is
+     * re-targeted to the asset’s current transformer, so a cached temporary URL still resolves.
+     */
     public function getTransformUrlForIndex(Asset $asset, ImageTransformIndex $index, bool $immediately): string
     {
-        return $this->getTransformUrl($asset, $index->getTransform(), $immediately, $this->assetTransformerForIndex($index));
+        return $this->getTransformUrl($asset, $index->getTransform(), $immediately, $this->transformerForIndex($asset, $index));
     }
 
     public function transformHasUrlsForIndex(Asset $asset, ImageTransformIndex $index): bool
     {
-        return $this->transformHasUrls($asset, $this->assetTransformerForIndex($index));
+        return $this->transformHasUrls($asset, $this->transformerForIndex($asset, $index));
     }
 
     public function getTransformResponse(Asset $asset, ImageTransformIndex $index): StreamedResponse
     {
-        $this->getTransformUrlForIndex($asset, $index, true);
+        $transformer = $this->transformerForIndex($asset, $index);
+        $this->getTransformUrl($asset, $index->getTransform(), true, $transformer);
         $path = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
-        $stream = $this->transformDisk($asset, $this->assetTransformerForIndex($index))->readStream($path);
+        $stream = $this->transformDisk($asset, $transformer)->readStream($path);
 
         if (! is_resource($stream)) {
             throw new ImageTransformException('Unable to read generated transform.');
@@ -235,21 +246,7 @@ class ImageTransformer
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
         foreach ($transformIndexes as $transformIndex) {
-            $this->deleteImageTransformFile($asset, $transformIndex, $this->assetTransformerForIndex($transformIndex));
-        }
-    }
-
-    public function handleAssetTransformerUpdating(AssetTransformerUpdating $event): void
-    {
-        if ($event->oldTransformer->driver === 'craft') {
-            $this->invalidateAssetTransformer($event->oldTransformer);
-        }
-    }
-
-    public function handleAssetTransformerDeleting(AssetTransformerDeleting $event): void
-    {
-        if ($event->transformer->driver === 'craft') {
-            $this->invalidateAssetTransformer($event->transformer);
+            $this->deleteImageTransformFile($asset, $transformIndex);
         }
     }
 
@@ -265,13 +262,21 @@ class ImageTransformer
     public function deleteImageTransformFile(
         Asset $asset,
         ImageTransformIndex $transformIndex,
-        ?AssetTransformer $assetTransformer = null,
+        ?AssetTransformer $transformer = null,
     ): void {
-        $assetTransformer ??= $this->assetTransformerForIndex($transformIndex);
+        $transformer ??= $this->matchingTransformerForIndex($asset, $transformIndex);
+
+        if ($transformer === null) {
+            // A stale row: its output location is no longer configured, so its file can’t be located.
+            $this->reportCleanupFailure($asset);
+
+            return;
+        }
+
         $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
 
         try {
-            $subPath = $this->outputSettings($assetTransformer->settings)[1];
+            $subPath = $this->outputSettings($transformer->settings)[1];
             $path = ($subPath ? $subPath.DIRECTORY_SEPARATOR : '').$diskPath;
 
             event(new DeletingTransformedImage(
@@ -279,7 +284,7 @@ class ImageTransformer
                 imageTransformIndex: $transformIndex,
                 path: $path,
             ));
-            $this->transformDisk($asset, $assetTransformer)->delete($diskPath);
+            $this->transformDisk($asset, $transformer)->delete($diskPath);
         } catch (Throwable) {
             $this->reportCleanupFailure($asset);
         }
@@ -287,21 +292,37 @@ class ImageTransformer
 
     /**
      * @param  ImageTransform[]  $transforms
-     * @param  Asset[]  $assets
+     * @param  array<Asset|array<string, mixed>>  $assets  Assets, or asset rows with at least `id` (legacy callers)
      */
     public function eagerLoadTransforms(
         array $transforms,
         array $assets,
-        ?AssetTransformer $assetTransformer = null,
+        ?AssetTransformer $transformer = null,
     ): void {
-        $assetTransformer ??= app(AssetTransformers::class)->resolve('craft');
-        // Index the assets by ID
+        // Index the assets by ID, along with the output location each one's transforms are indexed under
         $assetsById = Arr::keyBy($assets, 'id');
+        $rowAssetIds = array_keys(array_filter($assetsById, fn (mixed $asset): bool => ! $asset instanceof Asset));
+        $elementsById = array_filter($assetsById, fn (mixed $asset): bool => $asset instanceof Asset);
+
+        if ($rowAssetIds !== []) {
+            $elementsById += Arr::keyBy(Asset::find()->id($rowAssetIds)->site('*')->unique()->status(null)->all(), 'id');
+        }
+
+        $outputKeysByAssetId = array_map(
+            fn (Asset $asset): string => $this->outputKey($asset, $transformer ?? $this->currentTransformer($asset)),
+            $elementsById,
+        );
+
+        if ($outputKeysByAssetId === []) {
+            return;
+        }
+
         $transformsByFingerprint = [];
 
         // Query for the indexes
-        $results = $this->createTransformIndexQuery($assetTransformer)
-            ->whereIn('assetId', array_keys($assetsById))
+        $results = $this->createTransformIndexQuery()
+            ->whereIn('outputKey', array_values(array_unique($outputKeysByAssetId)))
+            ->whereIn('assetId', array_keys($outputKeysByAssetId))
             ->where(function (Builder $query) use ($transforms, &$transformsByFingerprint) {
                 foreach ($transforms as $transform) {
                     $transformString = ImageTransformHelper::getTransformString($transform);
@@ -327,6 +348,10 @@ class ImageTransformer
         $invalidIndexIds = [];
 
         foreach ($results as $result) {
+            if ($result->outputKey !== ($outputKeysByAssetId[$result->assetId] ?? null)) {
+                continue;
+            }
+
             // Get the transform's fingerprint
             $transformFingerprint = $result->transformString;
 
@@ -340,7 +365,7 @@ class ImageTransformer
             $index = new ImageTransformIndex((array) $result);
 
             if ($this->validateTransformIndexResult($index, $transform, $asset)) {
-                $indexFingerprint = $assetTransformer->uid.':'.$result->assetId.':'.$transformFingerprint;
+                $indexFingerprint = $result->outputKey.':'.$result->assetId.':'.$transformFingerprint;
                 $this->eagerLoadedTransformIndexes[$indexFingerprint] = [
                     ...(array) $result,
                     'dateIndexed' => $index->dateIndexed,
@@ -397,13 +422,13 @@ class ImageTransformer
     private function generateTransformedImage(
         Asset $asset,
         ImageTransformIndex $index,
-        AssetTransformer $assetTransformer,
+        AssetTransformer $transformer,
     ): void {
         if (! ImageHelper::canManipulateAsImage($asset->getExtension())) {
             return;
         }
 
-        $transformDisk = $this->transformDisk($asset, $assetTransformer);
+        $transformDisk = $this->transformDisk($asset, $transformer);
         $transformPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
 
         if ($transformDisk->exists($transformPath)) {
@@ -468,7 +493,7 @@ class ImageTransformer
     private function generateTransform(
         ImageTransformIndex $index,
         ?Asset $asset = null,
-        ?AssetTransformer $assetTransformer = null,
+        ?AssetTransformer $transformer = null,
     ): void {
         $asset ??= app(Assets::class)->getAssetById($index->assetId);
 
@@ -476,13 +501,13 @@ class ImageTransformer
             throw new ImageTransformException('Asset not found - '.$index->assetId);
         }
 
-        $assetTransformer ??= $this->assetTransformerForIndex($index);
+        $transformer ??= $this->transformerForIndex($asset, $index);
         $index->detectedFormat = $index->format ?: ImageTransformHelper::detectTransformFormat($asset);
         $transformFilename = pathinfo($asset->getFilename(), PATHINFO_FILENAME).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
-        $matchFound = $this->getSimilarTransformIndex($asset, $index, $assetTransformer);
-        $disk = $this->transformDisk($asset, $assetTransformer);
+        $matchFound = $this->getSimilarTransformIndex($asset, $index, $transformer);
+        $disk = $this->transformDisk($asset, $transformer);
 
         $target = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $index);
 
@@ -503,7 +528,7 @@ class ImageTransformer
                 throw new ImageTransformException('There was a problem re-using an existing transform.', 0, $exception);
             }
         } else {
-            $this->generateTransformedImage($asset, $index, $assetTransformer);
+            $this->generateTransformedImage($asset, $index, $transformer);
         }
 
         if (! $disk->exists($target)) {
@@ -521,9 +546,9 @@ class ImageTransformer
     public function getTransformIndex(
         Asset $asset,
         mixed $transform,
-        ?AssetTransformer $assetTransformer = null,
+        ?AssetTransformer $transformer = null,
     ): ImageTransformIndex {
-        $assetTransformer ??= app(AssetTransformers::class)->resolve('craft');
+        $outputKey = $this->outputKey($asset, $transformer ?? $this->currentTransformer($asset));
         $transform = ImageTransformHelper::normalizeTransform($transform);
 
         if ($transform === null) {
@@ -533,7 +558,7 @@ class ImageTransformer
         $transformString = ImageTransformHelper::getTransformString($transform);
 
         // Was it eager-loaded?
-        $fingerprint = $assetTransformer->uid.':'.$asset->id.':'.$transformString.($transform->format === null ? '' : ':'.$transform->format);
+        $fingerprint = $outputKey.':'.$asset->id.':'.$transformString.($transform->format === null ? '' : ':'.$transform->format);
 
         if (isset($this->eagerLoadedTransformIndexes[$fingerprint])) {
             $result = $this->eagerLoadedTransformIndexes[$fingerprint];
@@ -550,7 +575,7 @@ class ImageTransformer
         }
 
         // Check if an entry exists already
-        $result = $this->createTransformIndexQuery($assetTransformer)
+        $result = $this->createTransformIndexQuery($outputKey)
             ->where('assetId', $asset->id)
             ->where('transformString', $transformString)
             ->when(
@@ -582,7 +607,7 @@ class ImageTransformer
         $index = new ImageTransformIndex([
             'assetId' => $asset->id,
             'format' => $transform->format,
-            'transformer' => $assetTransformer->uid,
+            'outputKey' => $outputKey,
             'dateIndexed' => now(),
             'transformString' => $transformString,
             'fileExists' => false,
@@ -629,7 +654,7 @@ class ImageTransformer
         $values = Query::prepareValuesForDb(
             $index->toArray([
                 'assetId',
-                'transformer',
+                'outputKey',
                 'filename',
                 'format',
                 'transformString',
@@ -770,9 +795,9 @@ class ImageTransformer
         return $asset->getVolume()->uid.DIRECTORY_SEPARATOR.($asset->folderPath ?? '');
     }
 
-    private function transformDisk(Asset $asset, AssetTransformer $assetTransformer): FilesystemAdapter
+    private function transformDisk(Asset $asset, AssetTransformer $transformer): FilesystemAdapter
     {
-        [$diskReference, $subpath] = $this->outputSettings($assetTransformer->settings);
+        [$diskReference, $subpath] = $this->outputSettings($transformer->settings);
 
         if ($diskReference === null) {
             return $asset->getVolume()->sourceDisk();
@@ -795,20 +820,22 @@ class ImageTransformer
         return $disk;
     }
 
-    private function transformHasUrls(Asset $asset, AssetTransformer $assetTransformer): bool
+    private function transformHasUrls(Asset $asset, AssetTransformer $transformer): bool
     {
-        [$diskReference, , $hasUrls] = $this->outputSettings($assetTransformer->settings);
+        [$diskReference, , $hasUrls] = $this->outputSettings($transformer->settings);
 
         return $diskReference === null ? $asset->getVolume()->sourceHasUrls() : $hasUrls;
     }
 
     /**
+     * Returns the `craft` driver’s output disk, output subpath, and whether the output disk has public URLs.
+     *
      * @param  array<string,mixed>  $settings
      * @return array{string|null,string|null,bool}
      */
     private function outputSettings(array $settings): array
     {
-        $disk = $settings['disk'] ?? null;
+        $disk = $settings['output_disk'] ?? null;
         $subpath = $settings['subpath'] ?? '';
 
         if ($disk !== null && ! is_string($disk)) {
@@ -819,24 +846,11 @@ class ImageTransformer
             throw new FilesystemException('The configured asset transform output subpath is invalid.');
         }
 
-        $rawDisk = $disk;
-        $rawSubpath = $subpath;
-        $disk = Env::parse($disk);
-        $subpath = Env::parse($subpath);
-
-        if ($rawDisk !== null && $rawDisk !== '' && $disk === null) {
-            throw new FilesystemException('The configured asset transform output disk could not be resolved.');
-        }
-
-        if ($rawSubpath !== '' && $subpath === null) {
-            throw new FilesystemException('The configured asset transform output subpath could not be resolved.');
-        }
-
         $disk = $disk === '' ? null : $disk;
-        $subpath = trim(str_replace('\\', '/', $subpath ?? ''), '/');
+        $subpath = trim(str_replace('\\', '/', $subpath), '/');
         $subpath = $subpath === '' ? null : $subpath;
 
-        return [$disk, $subpath, ($settings['hasUrls'] ?? false) === true];
+        return [$disk, $subpath, ($settings['has_urls'] ?? false) === true];
     }
 
     private function deleteTransformIndexDataByAssetId(int $assetId): void
@@ -851,34 +865,60 @@ class ImageTransformer
         report(new RuntimeException("Unable to clean asset transform results for asset [{$asset->id}] with driver [craft]."));
     }
 
-    private function invalidateAssetTransformer(AssetTransformer $assetTransformer): void
+    /**
+     * Returns the `craft` transformer for an asset’s disk. A disk that uses another driver gets the `craft` defaults,
+     * for when that driver hands a file to `craft` or a caller uses this class directly.
+     */
+    private function currentTransformer(Asset $asset): AssetTransformer
     {
-        $indexes = $this->createTransformIndexQuery($assetTransformer)->get();
+        $transformer = app(AssetTransformers::class)->forDisk($asset->getVolume()->getResolvedFsTarget());
 
-        foreach ($indexes as $data) {
-            $index = new ImageTransformIndex((array) $data);
-            $asset = app(Assets::class)->getAssetById($index->assetId);
-
-            if ($asset === null) {
-                continue;
-            }
-
-            $this->deleteImageTransformFile($asset, $index, $assetTransformer);
-        }
-
-        DB::table(Table::IMAGETRANSFORMINDEX)
-            ->where('transformer', $assetTransformer->uid)
-            ->delete();
+        return $transformer->driver === 'craft' ? $transformer : new AssetTransformer('craft');
     }
 
-    private function assetTransformerForIndex(ImageTransformIndex $index): AssetTransformer
+    /**
+     * Returns the index key for an asset’s transforms: its source disk plus a hash of where the transformer stores
+     * files. Changing the output disk or subpath changes the key, so new transforms are generated at the new location.
+     */
+    private function outputKey(Asset $asset, AssetTransformer $transformer): string
     {
-        if ($index->transformer === null || $index->transformer === self::class) {
-            return app(AssetTransformers::class)->resolve('craft');
+        [$outputDisk, $subpath] = $this->outputSettings($transformer->settings);
+        $sourceDisk = $asset->getVolume()->getResolvedFsTarget() ?? '';
+
+        // Without an output disk, transforms are stored on the volume's source disk, below the volume's subpath. That
+        // must hash differently from an explicit `output_disk` naming the same disk, which doesn't use that subpath.
+        $location = $outputDisk === null ? null : [$outputDisk, $subpath];
+
+        return 'craft:'.$sourceDisk.':'.substr(hash('sha256', serialize($location)), 0, 16);
+    }
+
+    /**
+     * Returns the transformer that created an index row, or `null` if the row is stale: no current `craft`
+     * transformer for the asset stores files where the row says.
+     */
+    private function matchingTransformerForIndex(Asset $asset, ImageTransformIndex $index): ?AssetTransformer
+    {
+        $candidates = [$this->currentTransformer($asset), new AssetTransformer('craft')];
+
+        if ($index->outputKey === null || in_array($index->outputKey, self::LEGACY_OUTPUT_KEYS, true)) {
+            return $candidates[0];
         }
 
-        return app(AssetTransformers::class)->getAssetTransformerByUid($index->transformer)
-            ?? throw new RuntimeException("Asset transformer [{$index->transformer}] does not exist.");
+        foreach ($candidates as $candidate) {
+            if ($this->outputKey($asset, $candidate) === $index->outputKey) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the transformer that created an index row, re-targeting a stale row to the asset’s current transformer.
+     */
+    private function transformerForIndex(Asset $asset, ImageTransformIndex $index): AssetTransformer
+    {
+        return $this->matchingTransformerForIndex($asset, $index) ?? $this->currentTransformer($asset);
     }
 
     /**
@@ -898,7 +938,7 @@ class ImageTransformer
     private function getSimilarTransformIndex(
         Asset $asset,
         ImageTransformIndex $index,
-        AssetTransformer $assetTransformer,
+        AssetTransformer $transformer,
     ): ?ImageTransformIndex {
         $transform = $index->getTransform();
 
@@ -912,7 +952,7 @@ class ImageTransformer
             $possibleLocations[] = ImageTransformHelper::getTransformString($transform);
         }
 
-        $result = $this->createTransformIndexQuery($assetTransformer)
+        $result = $this->createTransformIndexQuery($this->outputKey($asset, $transformer))
             ->where([
                 'assetId' => $asset->id,
                 'fileExists' => true,
@@ -932,25 +972,21 @@ class ImageTransformer
         ]);
     }
 
-    private function createTransformIndexQuery(?AssetTransformer $assetTransformer = null): Builder
+    /**
+     * @param  string|null  $outputKey  Limits the query to one output location. Otherwise it covers every `craft` row.
+     */
+    private function createTransformIndexQuery(?string $outputKey = null): Builder
     {
         $query = DB::table(Table::IMAGETRANSFORMINDEX);
 
-        if ($assetTransformer !== null) {
-            $query->where('transformer', $assetTransformer->uid);
+        if ($outputKey !== null) {
+            $query->where('outputKey', $outputKey);
         } else {
-            $craftTransformerUids = app(AssetTransformers::class)
-                ->getAllAssetTransformers()
-                ->where('driver', 'craft')
-                ->pluck('uid')
-                ->filter()
-                ->all();
-
-            $query->where(function (Builder $query) use ($craftTransformerUids): void {
+            $query->where(function (Builder $query): void {
                 $query
-                    ->whereNull('transformer')
-                    ->orWhere('transformer', self::class)
-                    ->orWhereIn('transformer', $craftTransformerUids);
+                    ->whereNull('outputKey')
+                    ->orWhereIn('outputKey', self::LEGACY_OUTPUT_KEYS)
+                    ->orWhere('outputKey', 'like', 'craft:%');
             });
         }
 
@@ -958,7 +994,7 @@ class ImageTransformer
             ->select([
                 'id',
                 'assetId',
-                'transformer',
+                'outputKey',
                 'filename',
                 'format',
                 'transformString',

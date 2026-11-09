@@ -2,21 +2,17 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Queue;
 
@@ -61,24 +57,18 @@ describe('generate', function () {
         config()->set('filesystems.disks.configured-private-source', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-source'),
+            'asset_transformer' => [
+                'driver' => 'craft',
+                'output_disk' => 'configured-private-target',
+                'subpath' => 'transforms',
+            ],
         ]);
         config()->set('filesystems.disks.configured-private-target', [
             'driver' => 'local',
             'root' => storage_path('framework/testing/transform-controller-test/configured-private-target'),
         ]);
-        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-            'uid' => Str::uuid()->toString(),
-            'name' => 'Configured private',
-            'handle' => 'configured-private',
-            'driver' => 'craft',
-            'settings' => [
-                'disk' => 'configured-private-target',
-                'subpath' => 'transforms',
-            ],
-        ]), false);
         $volume = Volume::factory()->create([
             'fs' => 'configured-private-source',
-            'assetTransformer' => 'configured-private',
         ]);
         $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
         $asset = AssetModel::factory()->createElement([
@@ -156,14 +146,8 @@ describe('generate', function () {
                 return new AssetTransformResult('/plugin/card.jpg', 'image/jpeg');
             }
         };
-        app(AssetTransformDrivers::class)->extend('controller-test', fn () => $driver);
-        app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-            'uid' => Str::uuid()->toString(),
-            'name' => 'Controller test',
-            'handle' => 'controller-test',
-            'driver' => 'controller-test',
-        ]), false);
-        Cms::config()->defaultAssetTransformer('controller-test');
+        app(AssetTransformers::class)->extend('controller-test', fn () => $driver);
+        config()->set('filesystems.disks.test-disk.asset_transformer', 'controller-test');
         app(ImageTransforms::class)->saveTransform(new ImageTransform([
             'name' => 'Card',
             'handle' => 'controllerCard',
@@ -182,7 +166,7 @@ describe('generate', function () {
             'handle' => 'controllerCard',
         ])->assertOk()->assertJson(['url' => '/plugin/card.jpg']);
 
-        expect($driver->request?->transformer->handle)->toBe('controller-test');
+        expect($driver->request?->transformer->driver)->toBe('controller-test');
     });
 
     it('returns error for missing asset id', function () {

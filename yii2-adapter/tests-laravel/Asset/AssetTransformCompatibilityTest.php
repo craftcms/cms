@@ -13,11 +13,9 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\imagetransforms\ImageTransformer as LegacyCraftImageTransformer;
 use craft\models\ImageTransform as LegacyImageTransform;
 use craft\services\ImageTransforms as LegacyImageTransforms;
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Data\Volume as VolumeData;
@@ -28,7 +26,6 @@ use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\Image\Data\ImageTransform;
@@ -37,7 +34,6 @@ use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\Events\ImageTransforming;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Yii2Adapter\Asset\ImageTransformers;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
@@ -50,14 +46,10 @@ uses(DatabaseTestCase::class);
 
 beforeEach(function(): void {
     $this->driver = $driver = new CompatibilityAssetTransformDriver();
-    app(AssetTransformDrivers::class)->extend('compatibility-test', fn() => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-        'uid' => Str::uuid()->toString(),
-        'name' => 'Compatibility test',
-        'handle' => 'compatibility-test',
-        'driver' => 'compatibility-test',
-    ]), false);
-    Cms::config()->defaultAssetTransformer('compatibility-test');
+    app(AssetTransformers::class)->extend('compatibility-test', fn() => $driver);
+    // Disks without an asset_transformer key use `craft`, so this stands in for it without the disk choosing a
+    // transformer, which would take precedence over legacy transformers.
+    app(AssetTransformers::class)->extend('craft', fn() => $driver);
     $this->asset = function(array $attributes = []): LegacyAsset {
         $model = AssetModel::factory()->create([
             ...$attributes,
@@ -206,7 +198,7 @@ it('accepts the legacy immediate URL argument', function(): void {
 
 it('reports legacy URL failures and returns null', function(): void {
     Exceptions::fake();
-    app(AssetTransformDrivers::class)->extend('compatibility-test', fn() => new FailingCompatibilityAssetTransformDriver());
+    app(AssetTransformers::class)->forgetDrivers()->extend('craft', fn() => new FailingCompatibilityAssetTransformDriver());
     $asset = ($this->asset)();
 
     expect($asset->getUrl(['width' => 320]))->toBeNull();
@@ -257,10 +249,10 @@ it('selects the volume before the legacy transformer candidate', function(): voi
     config()->set('filesystems.disks.legacy-precedence-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/legacy-precedence-source'),
+        'asset_transformer' => 'compatibility-test',
     ]);
     $volume = Volume::factory()->create([
         'fs' => 'legacy-precedence-source',
-        'assetTransformer' => 'compatibility-test',
     ]);
     $folder = VolumeFolder::factory()->create(['volumeId' => $volume->id]);
     $asset = ($this->asset)([
@@ -380,7 +372,7 @@ it('keeps the built-in Craft transform index facade scoped to Craft rows', funct
     $index = $transformer->getTransformIndex($asset, ['width' => 320]);
     $foreignId = DB::table(Table::IMAGETRANSFORMINDEX)->insertGetId([
         'assetId' => $asset->id,
-        'transformer' => 'plugin\\ForeignTransformer',
+        'outputKey' => 'plugin\\ForeignTransformer',
         'filename' => 'foreign.jpg',
         'transformString' => '_320x_auto',
         'dateCreated' => now(),
@@ -392,7 +384,7 @@ it('keeps the built-in Craft transform index facade scoped to Craft rows', funct
     $foreignIndex = new ImageTransformIndex([
         'id' => $foreignId,
         'assetId' => $asset->id,
-        'transformer' => 'plugin\\ForeignTransformer',
+        'outputKey' => 'plugin\\ForeignTransformer',
         'filename' => 'foreign.jpg',
         'transformString' => '_320x_auto',
         'fileExists' => true,
@@ -401,7 +393,7 @@ it('keeps the built-in Craft transform index facade scoped to Craft rows', funct
     $transformer->storeTransformIndexData($foreignIndex);
 
     expect($transformer->getTransformIndexModelById($index->id)->fileExists)->toBeTrue()
-        ->and($index->transformer)->toBe(app(AssetTransformers::class)->resolve('craft')->uid)
+        ->and($index->outputKey)->toStartWith('craft:local:')
         ->and($transformer->getTransformIndexModelById($foreignId))->toBeNull()
         ->and($transformer->getPendingTransformIndexIds())->not->toContain($foreignId)
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $foreignId)->value('fileExists'))->toBe(0);

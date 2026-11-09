@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Component\Kinds;
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Ui\SettingsSchema;
 
 /**
@@ -15,7 +15,7 @@ use CraftCms\Cms\Ui\SettingsSchema;
 readonly class AssetTransformDriverKind implements ComponentKind
 {
     public function __construct(
-        private AssetTransformDrivers $drivers,
+        private AssetTransformers $drivers,
         private SettingsSchema $settingsSchema,
     ) {}
 
@@ -31,7 +31,7 @@ readonly class AssetTransformDriverKind implements ComponentKind
 
     public function usage(): string
     {
-        return 'configuration_* with type: asset-transformers takes the handle as driver and its settings as settings. Image transforms take parametersSchema values in parameters, keyed by the asset transformer’s UID.';
+        return 'Disks choose a driver with the asset_transformer key in config/filesystems.php. Image transforms take parametersSchema values in parameters, keyed by driver name.';
     }
 
     public function scope(): ?string
@@ -42,7 +42,7 @@ readonly class AssetTransformDriverKind implements ComponentKind
     public function types(?string $scope): array
     {
         return collect($this->drivers->definitions())
-            ->map(static fn ($definition, string $handle): array => ['type' => $handle, 'name' => $definition->name])
+            ->map(static fn ($definition, string $name): array => ['type' => $name, 'name' => $definition->label])
             ->sortBy('name')
             ->values()
             ->all();
@@ -53,7 +53,6 @@ readonly class AssetTransformDriverKind implements ComponentKind
         $definition = $this->drivers->definitions()[$type];
 
         return [
-            'settingsSchema' => $this->settingsSchema->fromUi($definition->settingsFields),
             'parametersSchema' => $this->settingsSchema->fromUi(array_values($definition->parameterFields)),
         ];
     }

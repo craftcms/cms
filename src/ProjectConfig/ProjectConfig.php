@@ -94,8 +94,6 @@ class ProjectConfig
 
     public const string PATH_AI = 'ai';
 
-    public const string PATH_ASSET_TRANSFORMERS = 'assetTransformers';
-
     public const string PATH_CP_NAV = 'cpNav';
 
     public const string PATH_DATE_MODIFIED = 'dateModified';

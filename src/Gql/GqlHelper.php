@@ -522,7 +522,7 @@ class GqlHelper
         $transformer = is_array($definition) ? Arr::pull($definition, 'transformer') : null;
 
         if ($transformer !== null && ! is_string($transformer)) {
-            throw new InvalidArgumentException('The asset transformer handle must be a string.');
+            throw new InvalidArgumentException('The transform driver name must be a string.');
         }
 
         return match ($field) {

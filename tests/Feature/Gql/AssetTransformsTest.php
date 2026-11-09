@@ -2,31 +2,21 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
-use CraftCms\Cms\Support\Str;
 
 beforeEach(function () {
     $this->driver = new GqlAssetTransformDriver;
     $driver = $this->driver;
-    app(AssetTransformDrivers::class)->extend('gql', fn () => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-        'uid' => Str::uuid()->toString(),
-        'name' => 'GraphQL',
-        'handle' => 'gql',
-        'driver' => 'gql',
-    ]), false);
-    Cms::config()->defaultAssetTransformer('gql');
+    app(AssetTransformers::class)->extend('gql', fn () => $driver);
+    config()->set('filesystems.disks.local.asset_transformer', 'gql');
 });
 
 it('keeps directive transforms local to their resolved Assets', function () {
@@ -95,13 +85,7 @@ it('resolves transform result fields for a capable non-image driver', function (
 
 it('applies transformer and parameter overrides to named transforms', function () {
     $driver = new GqlAssetTransformDriver('/explicit-transform.webp');
-    app(AssetTransformDrivers::class)->extend('explicit-gql', fn () => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-        'uid' => Str::uuid()->toString(),
-        'name' => 'Explicit GraphQL',
-        'handle' => 'explicit-gql',
-        'driver' => 'explicit-gql',
-    ]), false);
+    app(AssetTransformers::class)->extend('explicit-gql', fn () => $driver);
     app(ImageTransforms::class)->saveTransform(new ImageTransform([
         'name' => 'Thumbnail',
         'handle' => 'thumbnail',
