@@ -173,6 +173,21 @@ it('saves posted authorIds in order', function () {
     expect(Entry::find()->id($entry->id)->status(null)->one()->getAuthorIds())->toBe([$second, $first]);
 });
 
+it('clears authors when an empty authorIds value is posted', function () {
+    $this->section->update(['minAuthors' => 0, 'maxAuthors' => 3]);
+    Sections::refreshSections();
+    $entry = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->createElement();
+    $entry->setAuthorIds([$this->user->id]);
+    Elements::saveElement($entry);
+
+    postJson(action(StoreEntryController::class), [
+        'entryId' => $entry->id,
+        'authorIds' => '',
+    ])->assertOk();
+
+    expect(Entry::find()->id($entry->id)->status(null)->one()->getAuthorIds())->toBe([]);
+});
+
 it('saves canonical workflow changes as a draft', function () {
     $workflow = Workflow::query()->create([
         'name' => 'Editorial workflow',

@@ -16,6 +16,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use Exception;
@@ -238,12 +239,14 @@ readonly class StoreEntryController
 
     private function populateEntry(Entry $entry, CraftUser $currentUser): void
     {
+        // ConvertEmptyStringsToNull turns an emptied author list into null, so check which param was posted
+        $authorParam = Arr::first(['authorIds', 'authors', 'author'], fn (string $param) => $this->request->has($param));
+
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
         $attributes = [
-            'authorIds' => $this->request->input('authorIds')
-                ?? $this->request->input('authors')
-                ?? $this->request->input('author')
-                ?? ($entry->getAuthorIds() ?: $currentUser->getCraftUserId()),
+            'authorIds' => $authorParam !== null
+                ? $this->request->array($authorParam)
+                : ($entry->getAuthorIds() ?: $currentUser->getCraftUserId()),
         ];
 
         foreach (['expiryDate', 'postDate', 'slug', 'title', 'typeId'] as $attribute) {
