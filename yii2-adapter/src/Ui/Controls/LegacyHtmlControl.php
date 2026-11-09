@@ -10,7 +10,6 @@ use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Cms\View\HtmlFragment;
 use CraftCms\Cms\View\HtmlStack;
-use CraftCms\Yii2Adapter\Ui\NestedElementFieldHtml;
 use InvalidArgumentException;
 
 class LegacyHtmlControl extends Control
@@ -39,7 +38,7 @@ class LegacyHtmlControl extends Control
             $htmlStack->html((string) $fragment['bodyHtml'], Position::BodyEnd);
         }
 
-        return app(NestedElementFieldHtml::class)->rebase((string) $fragment['html'], $control, $attributes, $renderer);
+        return (string) $fragment['html'];
     }
 
     public function component(): string

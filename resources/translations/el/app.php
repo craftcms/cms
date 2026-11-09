@@ -3182,7 +3182,7 @@ return [
     'Try again' => 'Δοκιμάστε ξανά',
     'Try another way' => 'Δοκιμάστε άλλον τρόπο',
     'Try for free' => 'Δοκιμάστε δωρεάν',
-    'Try running `composer install` from your terminal to resolve.' => 'Δοκιμάστε να εκτελέσετε `composer install` από το τερματικό σας για επίλυση.',
+    'Try running `{command}` from your terminal to resolve.' => 'Δοκιμάστε να εκτελέσετε `{command}` από το τερματικό σας για επίλυση.',
     'Try' => 'Δοκιμή',
     'Trying again…' => 'Δοκιμή ξανά…',
     'Two-Step Verification Setup' => 'Ρύθμιση επαλήθευσης δύο βημάτων',

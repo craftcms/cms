@@ -117,8 +117,9 @@ class McpTools
         $discovered = $this->discovery->discoverWithoutToken(dirname(__DIR__, 2).'/Mcp/Capabilities', ['.']);
 
         foreach ($discovered->getTools() as $reference) {
-            // The assistant loads skills with its own tool, but can still manage them.
-            if (in_array($reference->tool->name, ['skills_list', 'skills_get'], true)) {
+            // The assistant loads skills with its own tool, but can still manage them. It can’t transfer files, so it
+            // has no use for upload sessions.
+            if (in_array($reference->tool->name, ['skills_list', 'skills_get', 'assets_upload_prepare'], true)) {
                 continue;
             }
 

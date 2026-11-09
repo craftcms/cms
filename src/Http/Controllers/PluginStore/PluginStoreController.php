@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
@@ -92,11 +93,13 @@ readonly class PluginStoreController
     /**
      * What the store needs to know about this install to decide which plugins it can offer.
      *
-     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, canTestEditions: bool, phpVersion: string, composerPhpVersion: string|null, allowUpdates: bool, cmsLicenseKey: string|null, craftIdEndpoint: string}
+     * @return array{edition: string, licensedEdition: string|null, editions: list<string>, canTestEditions: bool, phpVersion: string, composerPhpVersion: string|null, yii2AdapterRequired: bool, allowUpdates: bool, cmsLicenseKey: string|null, craftIdEndpoint: string, craftExecutable: string, composerExecutable: string}
      */
     private function context(): array
     {
         $generalConfig = app(GeneralConfig::class);
+        $terminalCommands = app(TerminalCommands::class);
+        $composerConfig = app(Composer::class)->getConfig();
 
         return [
             'edition' => Edition::get()->handle(),
@@ -104,11 +107,15 @@ readonly class PluginStoreController
             'editions' => array_map(fn (Edition $edition) => $edition->handle(), Edition::cases()),
             'canTestEditions' => Edition::canTest(),
             'phpVersion' => PHP::version(),
-            'composerPhpVersion' => app(Composer::class)->getConfig()['config']['platform']['php'] ?? null,
+            'composerPhpVersion' => $composerConfig['config']['platform']['php'] ?? null,
+            'yii2AdapterRequired' => isset($composerConfig['require']['craftcms/yii2-adapter']),
             'allowUpdates' => $generalConfig->allowUpdates && $generalConfig->allowAdminChanges,
             // Ties cart items to this install's license, and checkout hands the cart to Craft Console.
             'cmsLicenseKey' => app(License::class)->key(),
             'craftIdEndpoint' => Api::craftIdEndpoint(),
+            // Installation instructions use the local development environment’s wrappers, such as `ddev craft`.
+            'craftExecutable' => $terminalCommands->craftExecutable(),
+            'composerExecutable' => $terminalCommands->composerExecutable(),
         ];
     }
 }

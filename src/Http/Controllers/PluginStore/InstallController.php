@@ -110,6 +110,7 @@ class InstallController extends BaseUpdaterController
             'edition' => ['required', 'string'],
             'version' => ['required', 'string'],
             'licenseKey' => ['nullable', 'string'],
+            'requiresYii2Adapter' => ['nullable', 'boolean'],
         ]);
 
         $packageName = strip_tags((string) $this->request->input('packageName'));
@@ -117,6 +118,14 @@ class InstallController extends BaseUpdaterController
         $edition = strip_tags((string) $this->request->input('edition'));
         $version = strip_tags((string) $this->request->input('version'));
         $licenseKey = $this->request->input('licenseKey');
+        $requirements = [$packageName => $version];
+
+        if (
+            $this->request->boolean('requiresYii2Adapter') &&
+            ! isset($this->composer->getConfig()['require']['craftcms/yii2-adapter'])
+        ) {
+            $requirements['craftcms/yii2-adapter'] = '*';
+        }
 
         if (
             ($returnUrl = $this->findReturnUrl()) !== null &&
@@ -130,7 +139,7 @@ class InstallController extends BaseUpdaterController
             'handle' => $handle,
             'edition' => $edition,
             'version' => $version,
-            'requirements' => [$packageName => $version],
+            'requirements' => $requirements,
             'removed' => false,
             'licenseKey' => $licenseKey,
             'returnUrl' => $returnUrl,

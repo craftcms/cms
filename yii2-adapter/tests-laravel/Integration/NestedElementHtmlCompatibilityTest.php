@@ -21,8 +21,6 @@ use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
@@ -39,7 +37,7 @@ beforeEach(function() {
     $this->actingAs(User::findOne());
 });
 
-it('renders legacy nested field inputs with their owner scope and content', function(string $fieldType, string $viewMode, bool $inline = false, string $mode = 'editable', bool $invalid = false) {
+it('renders the core control for plugin nested fields without their own input HTML', function(string $fieldType, string $viewMode, bool $inline = false, string $mode = 'form') {
     $isMatrix = is_a($fieldType, LegacyMatrix::class, true);
     $entryType = $isMatrix
         ? EntryTypeModel::factory()->withFieldLayout(FieldLayout::factory()->withContentTab([
@@ -64,12 +62,9 @@ it('renders legacy nested field inputs with their owner scope and content', func
     $field = $owner->getFieldLayout()->getFieldByHandle('nested');
     $value = $owner->getFieldValue('nested');
     $nested = $value->one();
-    if ($invalid) {
-        $nested->addError('title', 'Please provide a valid title.');
-        $nested->addError('body', 'Please provide valid body content.');
-        $value->setResultOverride([$nested]);
-    }
-    if (in_array($mode, ['readOnly', 'disabled', 'form'])) {
+    if ($mode === 'static') {
+        $html = $field->getStaticHtml($value, $owner);
+    } else {
         $context = new UiContext(mode: $mode === 'form' ? ControlMode::Editable : $mode);
         $control = $field->uiControl(new FieldContext(
             path: ['fields', 'nested'],
@@ -80,18 +75,8 @@ it('renders legacy nested field inputs with their owner scope and content', func
         ));
         $payload = app(UiResolver::class)->resolve(Ui::make([UiField::make()->control($control)]), $context);
         $html = app(UiHtmlRenderer::class)->render($payload);
-    } else {
-        $html = InputNamespace::namespaceInputs(fn(): string => match (true) {
-            $mode === 'static' => $field->getStaticHtml($value, $owner),
-            $inline => $field->getInlineInputHtml($value, $owner),
-            default => $field->getInputHtml($value, $owner),
-        }, 'fields');
     }
     $crawler = new Crawler($html);
-
-    if (in_array($fieldType, [PluginMatrixHtmlField::class, PluginAddressesHtmlField::class])) {
-        expect($crawler->filter('[data-plugin-field-input]')->attr('data-plugin-field-input'))->toBe($inline ? 'inline' : 'input');
-    }
 
     if ($viewMode === LegacyMatrix::VIEW_MODE_BLOCKS) {
         $host = $crawler->filter('craft-entry-field-layout-ui[data-payload]');
@@ -105,16 +90,9 @@ it('renders legacy nested field inputs with their owner scope and content', func
                 'ownerId' => $owner->id,
                 'siteId' => $owner->siteId,
             ])
-            ->and($control['mode'])->toBe(in_array($mode, ['editable', 'form']) ? 'editable' : ($mode === 'disabled' ? 'disabled' : 'readOnly'))
+            ->and($control['mode'])->toBe($mode === 'form' ? 'editable' : ($mode === 'disabled' ? 'disabled' : 'readOnly'))
             ->and($host->filter('input[data-ui-field-name]')->attr('name'))->toBe('fields[nested]')
             ->and($host->filter('input[name]:not([disabled])'))->toHaveCount(0);
-
-        if ($invalid) {
-            expect($ui['errors'])->toContain(
-                ['path' => ['fields', 'nested', 'entries', $nested->uid, 'title'], 'messages' => ['Please provide a valid title.']],
-                ['path' => ['fields', 'nested', 'entries', $nested->uid, 'fields', 'body'], 'messages' => ['Please provide valid body content.']],
-            );
-        }
 
         return;
     }
@@ -122,14 +100,14 @@ it('renders legacy nested field inputs with their owner scope and content', func
     $host = $crawler->filter('craft-nested-elements-control');
     $control = json_decode($host->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
     $settings = $control['props']['manager'];
-    $editable = in_array($mode, ['editable', 'form']);
+    $editable = $mode === 'form';
     expect($settings)->toMatchArray([
         'ownerId' => $owner->id,
         'ownerSiteId' => $owner->siteId,
         'fieldId' => $field->id,
         'attribute' => 'field:nested',
         'canCreate' => $editable,
-    ])->and($control['path'])->toBe(['fields', 'nested'])
+    ])->and($control['path'])->toBe($mode === 'static' ? ['nested'] : ['fields', 'nested'])
         ->and($control['mode'])->toBe($editable ? 'editable' : ($mode === 'disabled' ? 'disabled' : 'readOnly'))
         ->and(json_decode($host->attr('data-scope'), true, flags: JSON_THROW_ON_ERROR))->toBe([])
         ->and(SessionAuth::checkAuthorization("manageNestedElements::{$owner->id}::field:nested"))->toBe($editable);
@@ -152,36 +130,21 @@ it('renders legacy nested field inputs with their owner scope and content', func
         expect($control['props']['cards'][0]['id'])->toBe($nested->id)
             ->and($html)->toContain($isMatrix ? 'Nested content' : '123 Legacy Street');
     }
-
-    if (!$editable) {
-        $html = $field->getInputHtml($value, $owner);
-        $control = json_decode(new Crawler($html)->filter('craft-nested-elements-control')->attr('data-control'), true, flags: JSON_THROW_ON_ERROR);
-        expect($control['mode'])->toBe('editable')
-            ->and($control['props']['manager']['canCreate'])->toBeTrue();
-    }
 })->with([
-    'Matrix cards' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_CARDS],
-    'Matrix cards grid' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_CARDS_GRID],
-    'Matrix index' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_INDEX],
-    'Matrix blocks' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_BLOCKS],
-    'invalid Matrix blocks' => [LegacyMatrix::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'editable', true],
-    'invalid plugin Matrix form blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'form', true],
-    'Addresses cards' => [LegacyAddresses::class, LegacyAddresses::VIEW_MODE_CARDS],
-    'Addresses index' => [LegacyAddresses::class, LegacyAddresses::VIEW_MODE_INDEX],
-    'plugin Matrix inline blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, true],
-    'plugin Matrix inline cards' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_CARDS, true],
-    'plugin Matrix inline index' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_INDEX, true],
-    'plugin Addresses inline cards' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_CARDS, true],
-    'plugin Addresses inline index' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_INDEX, true],
-    'plugin Matrix form blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'form'],
-    'plugin Matrix static blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'static'],
-    'plugin Matrix disabled blocks' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'disabled'],
-    'plugin Matrix form cards' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_CARDS, false, 'form'],
-    'plugin Addresses form index' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_INDEX, false, 'form'],
-    'plugin Matrix static cards' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_CARDS, false, 'static'],
-    'plugin Addresses static index' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_INDEX, false, 'static'],
-    'plugin Matrix read-only index' => [PluginMatrixHtmlField::class, LegacyMatrix::VIEW_MODE_INDEX, false, 'readOnly'],
-    'plugin Addresses disabled cards' => [PluginAddressesHtmlField::class, LegacyAddresses::VIEW_MODE_CARDS, false, 'disabled'],
+    'Matrix cards' => [PluginMatrixField::class, LegacyMatrix::VIEW_MODE_CARDS],
+    'Matrix cards grid' => [PluginMatrixField::class, LegacyMatrix::VIEW_MODE_CARDS_GRID],
+    'Matrix index' => [PluginMatrixField::class, LegacyMatrix::VIEW_MODE_INDEX],
+    'Matrix blocks' => [PluginMatrixField::class, LegacyMatrix::VIEW_MODE_BLOCKS],
+    'Addresses cards' => [PluginAddressesField::class, LegacyAddresses::VIEW_MODE_CARDS],
+    'Addresses index' => [PluginAddressesField::class, LegacyAddresses::VIEW_MODE_INDEX],
+    'inline Matrix blocks' => [PluginMatrixField::class, LegacyMatrix::VIEW_MODE_BLOCKS, true],
+    'inline Matrix cards' => [PluginMatrixField::class, LegacyMatrix::VIEW_MODE_CARDS, true],
+    'inline Addresses index' => [PluginAddressesField::class, LegacyAddresses::VIEW_MODE_INDEX, true],
+    'static Matrix cards' => [PluginMatrixField::class, LegacyMatrix::VIEW_MODE_CARDS, false, 'static'],
+    'static Addresses index' => [PluginAddressesField::class, LegacyAddresses::VIEW_MODE_INDEX, false, 'static'],
+    'disabled Matrix blocks' => [PluginMatrixField::class, LegacyMatrix::VIEW_MODE_BLOCKS, false, 'disabled'],
+    'read-only Matrix index' => [PluginMatrixField::class, LegacyMatrix::VIEW_MODE_INDEX, false, 'readOnly'],
+    'disabled Addresses cards' => [PluginAddressesField::class, LegacyAddresses::VIEW_MODE_CARDS, false, 'disabled'],
 ]);
 
 it('renders an attribute-backed legacy index on a plugin manager subclass with owner-scoped reorder actions', function() {
@@ -226,22 +189,10 @@ it('adapts creation choices to the legacy HTML manager protocol', function(bool 
     }
 })->with(['single choice' => false, 'multiple choices' => true]);
 
-class PluginMatrixHtmlField extends LegacyMatrix
+class PluginMatrixField extends LegacyMatrix
 {
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return Html::tag('div', parent::inputHtml($value, $element, $inline), [
-            'data-plugin-field-input' => $inline ? 'inline' : 'input',
-        ]);
-    }
 }
 
-class PluginAddressesHtmlField extends LegacyAddresses
+class PluginAddressesField extends LegacyAddresses
 {
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return Html::tag('div', parent::inputHtml($value, $element, $inline), [
-            'data-plugin-field-input' => $inline ? 'inline' : 'input',
-        ]);
-    }
 }

@@ -3183,7 +3183,7 @@ return [
     'Try again' => 'ลองอีกครั้ง',
     'Try another way' => 'ลองวิธีอื่น',
     'Try for free' => 'ลองใช้ฟรี',
-    'Try running `composer install` from your terminal to resolve.' => 'ลองเรียกใช้ `composer install` จากเทอร์มินัลของคุณเพื่อแก้ไข',
+    'Try running `{command}` from your terminal to resolve.' => 'ลองเรียกใช้ `{command}` จากเทอร์มินัลของคุณเพื่อแก้ไข',
     'Try' => 'ลอง',
     'Trying again…' => 'กำลังลองอีกครั้ง...',
     'Two-Step Verification Setup' => 'การตั้งค่าการยืนยันตัวตนแบบสองขั้นตอน',

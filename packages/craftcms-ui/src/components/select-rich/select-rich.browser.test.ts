@@ -1,3 +1,4 @@
+import {Required} from '@lion/ui/form-core.js';
 import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
 import {userEvent} from 'vite-plus/test/browser';
 import '../../styles/cp.css';
@@ -170,4 +171,36 @@ it('posts nothing while disabled, including by a disabled fieldset', async () =>
   await select.updateComplete;
   expect(select.disabled).toBe(true);
   expect(new FormData(form).has('typeId')).toBe(false);
+});
+
+it('marks the invoker invalid from validation, unless the host says otherwise', async () => {
+  const select = document.createElement('craft-select-rich');
+  select.label = 'Status';
+  select.hasNoDefaultSelected = true;
+  select.innerHTML = `<craft-option choice-value="all">All</craft-option><craft-option choice-value="live">Live</craft-option>`;
+  document.body.append(select);
+  await select.registrationComplete;
+  await select.updateComplete;
+  const invoker = select.querySelector('lion-select-invoker')!;
+
+  expect(invoker.getAttribute('aria-invalid')).toBe('false');
+
+  select.setAttribute('aria-invalid', 'true');
+  await select.updateComplete;
+  expect(invoker.getAttribute('aria-invalid')).toBe('true');
+
+  select.removeAttribute('aria-invalid');
+  select.validators = [new Required()];
+  select.submitted = true;
+  await select.updateComplete;
+  await select.updateComplete;
+  expect(invoker.getAttribute('aria-invalid')).toBe('true');
+
+  select.setAttribute('aria-invalid', 'false');
+  await select.updateComplete;
+  expect(invoker.getAttribute('aria-invalid')).toBe('false');
+
+  select.removeAttribute('aria-invalid');
+  await select.updateComplete;
+  expect(invoker.getAttribute('aria-invalid')).toBe('true');
 });

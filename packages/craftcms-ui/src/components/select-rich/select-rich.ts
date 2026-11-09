@@ -64,6 +64,13 @@ export default class CraftSelectRich extends FormAssociated(
   /** Renders the invoker at a smaller size. */
   @property({reflect: true, type: Boolean}) small = false;
 
+  /**
+   * Whether the value has failed validation, such as on the server. Set, it
+   * overrides the invoker's validation state; unset, validation decides.
+   */
+  @property({attribute: 'aria-invalid', reflect: true})
+  override ariaInvalid: string | null = null;
+
   #input?: HTMLInputElement;
 
   /** The value a form reset goes back to, read once the options register. */
@@ -130,6 +137,10 @@ export default class CraftSelectRich extends FormAssociated(
   override updated(changed: PropertyValues) {
     super.updated(changed);
     this.#syncInput();
+    this._invokerNode?.setAttribute(
+      'aria-invalid',
+      this.ariaInvalid ?? String(this._hasFeedbackVisibleFor('error'))
+    );
   }
 
   #syncInput() {

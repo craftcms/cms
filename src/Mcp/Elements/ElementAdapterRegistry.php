@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Elements;
 
 use CraftCms\Cms\Component\TypeRegistry;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Mcp\Elements\Adapters\AddressAdapter;
 use CraftCms\Cms\Mcp\Elements\Adapters\AssetAdapter;
@@ -56,6 +57,16 @@ class ElementAdapterRegistry extends TypeRegistry
         $type = $this->typeByIdentity($handle) ?? $this->typeByElementType($handle);
 
         return $type === null ? null : app($type);
+    }
+
+    /**
+     * Returns whether an adapter is registered for an element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     */
+    public function supports(string $elementType): bool
+    {
+        return $this->types()->contains(static fn (string $type): bool => $type::elementType() === $elementType);
     }
 
     /** @return class-string<ElementAdapter>|null */

@@ -18,8 +18,9 @@ interface McpOutputFieldInterface extends FieldInterface
     /**
      * Returns the field’s value as MCP tools should return it.
      *
-     * Elements, element queries, and element collections are expanded as nested elements,
-     * subject to the user’s permissions and the nested element limit.
+     * Elements, element queries, and element collections anywhere in the returned value,
+     * including within arrays, are expanded or summarized as nested elements, subject to
+     * the user’s permissions and the nested element limit.
      */
     public function getMcpValue(mixed $value, ElementInterface $element, McpOutputContext $context): mixed;
 }

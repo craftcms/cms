@@ -4,12 +4,12 @@ import {t} from '@craftcms/ui/utilities/translate';
 import {elementTypeName} from '@/common/craft/element-types';
 import {uppercaseFirst} from '@/common/craft/strings';
 import {
-  Notification,
-  type NotificationSettings,
-} from '@/modules/messages/notification';
+  elementFormats,
+  type ClipboardFormats,
+} from '@/common/craft/system-clipboard';
+import {CopiedNotification} from '@/modules/messages/copied-notification';
+import type {NotificationSettings} from '@/modules/messages/notification';
 import type {CopiedElementInfo} from './clipboard';
-
-const GAP = 4;
 
 interface RenderedElements {
   elements?: Record<string, string[]> | unknown[];
@@ -31,13 +31,18 @@ function chipData(chip: HTMLElement): NonNullable<CopiedElementInfo['data']> {
 }
 
 /**
- * The "copied" card: the copied elements as a stack of chips. Loading them
- * also fills in each element's chip data and drops elements that no longer
- * exist, so `elementInfo` is only final once it's shown.
+ * The "copied" card: the copied elements' chips. Loading them also fills in
+ * each element's chip data and drops elements that no longer exist, so
+ * `elementInfo` is only final once it's shown.
  */
-export class CopiedElementsNotification extends Notification {
+export class CopiedElementsNotification extends CopiedNotification {
   elementInfo: CopiedElementInfo[];
   loaded = false;
+  /** The elements as they're put on the system clipboard, once they're loaded. */
+  clipboardFormats: ClipboardFormats | null = null;
+  /** Resolves to `clipboardFormats` once they're loaded, or `null` if they never are. */
+  readonly loadedFormats: Promise<ClipboardFormats | null>;
+  #resolveFormats!: (formats: ClipboardFormats | null) => void;
   #onCancel: () => void;
 
   constructor(
@@ -49,24 +54,15 @@ export class CopiedElementsNotification extends Notification {
       throw new Error('No elements are copied.');
     }
 
-    super('notice', '', {
-      icon: 'clone-dashed',
-      persist: true,
-      class: 'copied-elements-notification',
-      ...settings,
-    });
+    super('', settings);
 
     this.elementInfo = elementInfo;
     this.#onCancel = onCancel;
     this.message = this.#message();
-  }
-
-  override createCloseButton(): HTMLElement {
-    return Notification.createIconButton(t('Cancel'));
-  }
-
-  override handleCloseButtonClick(): void {
-    this.#onCancel();
+    this.loadedFormats = new Promise((resolve) => {
+      this.#resolveFormats = resolve;
+    });
+    this.on('close', () => this.#resolveFormats(null));
   }
 
   #message(): string {
@@ -83,66 +79,29 @@ export class CopiedElementsNotification extends Notification {
   }
 
   override async getDetails(): Promise<HTMLElement | null> {
-    const {data} = await actionClient.post<RenderedElements>(
-      'app/render-elements',
-      {
-        elements: this.elementInfo.map((element) => ({
-          type: element.type,
-          id: element.id,
-          siteId: element.siteId,
-          revisionId: element.revisionId ?? null,
-          instances: [{ui: 'chip', hyperlink: false}],
-        })),
-      }
-    );
+    let chips: Map<CopiedElementInfo, HTMLElement> | null;
 
-    // An empty list rather than a map: none of them exist anymore
-    if (!data.elements || Array.isArray(data.elements)) {
+    try {
+      chips = await renderChips(this.elementInfo);
+    } catch {
+      // Offline, say. The elements stay copied, to paste within the control
+      // panel, but there are no titles for the system clipboard.
+      this.loaded = true;
+      this.#resolveFormats(null);
+      return null;
+    }
+
+    // None of them exist anymore
+    if (!chips) {
+      this.#resolveFormats(null);
       this.#onCancel();
       return null;
     }
 
-    setTimeout(async () => {
-      await appendHeadHtml(data.headHtml ?? '');
-      await appendBodyHtml(data.bodyHtml ?? '');
-    }, 1);
+    const remaining = this.elementInfo.filter((element) => chips.has(element));
 
-    const rendered = data.elements;
-    const container = document.createElement('div');
-    container.className = 'copied-elements';
-    const template = document.createElement('template');
-    const remaining: CopiedElementInfo[] = [];
-
-    for (const element of this.elementInfo) {
-      template.innerHTML = (rendered[String(element.id)] ?? []).join('');
-      const chip = [...template.content.children].find(
-        (candidate): candidate is HTMLElement =>
-          candidate instanceof HTMLElement &&
-          candidate.dataset.id === String(element.id) &&
-          candidate.dataset.siteId === String(element.siteId)
-      );
-
-      if (!chip) {
-        continue;
-      }
-
-      const index = remaining.length;
-      element.data = chipData(chip);
-      chip.classList.add('copied-element-chip');
-      chip.style.zIndex = String(this.elementInfo.length - index);
-
-      // Overlay opacities: 0, .4, .55, .7, .85
-      if (index !== 0) {
-        chip.style.insetBlockStart = `${index * GAP}px`;
-        chip.style.insetInlineStart = `${index * GAP}px`;
-        chip.style.setProperty(
-          '--overlay-opacity',
-          String(Math.min(0.25 + 0.15 * index, 1))
-        );
-      }
-
-      container.append(chip);
-      remaining.push(element);
+    for (const element of remaining) {
+      element.data = chipData(chips.get(element)!);
     }
 
     if (remaining.length !== this.elementInfo.length) {
@@ -150,8 +109,98 @@ export class CopiedElementsNotification extends Notification {
       this.updateMessage(this.#message());
     }
 
+    this.clipboardFormats = elementFormats(
+      [...chips.values()].map(({dataset}) => ({
+        label: dataset.label,
+        url: dataset.url,
+      }))
+    );
     this.loaded = true;
+    this.#resolveFormats(this.clipboardFormats);
 
-    return container;
+    return this.copiedDetails(
+      chipRow(chips.values()),
+      this.clipboardFormats.text
+    );
   }
+
+  override handleCloseButtonClick(): void {
+    this.#onCancel();
+  }
+}
+
+/** An element to draw a chip for. */
+export interface ChipElement {
+  type: string;
+  id: string | number | null;
+  siteId?: number | null;
+  revisionId?: unknown;
+}
+
+/**
+ * Draws elements' chips, in order, leaving out elements that no longer
+ * exist. Resolves to `null` when none of them do.
+ */
+export async function renderChips<T extends ChipElement>(
+  elements: T[]
+): Promise<Map<T, HTMLElement> | null> {
+  const {data} = await actionClient.post<RenderedElements>(
+    'app/render-elements',
+    {
+      elements: elements.map((element) => ({
+        type: element.type,
+        id: element.id,
+        siteId: element.siteId,
+        revisionId: element.revisionId ?? null,
+        instances: [{ui: 'chip', hyperlink: false}],
+      })),
+    }
+  );
+
+  // An empty list rather than a map: none of them exist anymore
+  if (!data.elements || Array.isArray(data.elements)) {
+    return null;
+  }
+
+  setTimeout(async () => {
+    await appendHeadHtml(data.headHtml ?? '');
+    await appendBodyHtml(data.bodyHtml ?? '');
+  }, 1);
+
+  const rendered = data.elements;
+  const template = document.createElement('template');
+  const chips = new Map<T, HTMLElement>();
+
+  for (const element of elements) {
+    template.innerHTML = (rendered[String(element.id)] ?? []).join('');
+    const chip = [...template.content.children].find(
+      (candidate): candidate is HTMLElement =>
+        candidate instanceof HTMLElement &&
+        candidate.dataset.id === String(element.id) &&
+        candidate.dataset.siteId === String(element.siteId)
+    );
+
+    if (chip) {
+      chips.set(element, chip);
+    }
+  }
+
+  return chips;
+}
+
+/**
+ * Lays chips out side by side, as small rounded chips that sit among badges,
+ * as "copied" cards preview them.
+ */
+export function chipRow(chips: Iterable<HTMLElement>): HTMLElement {
+  const row = document.createElement('div');
+  row.className = 'copied-chips';
+
+  for (const chip of chips) {
+    chip.setAttribute('size', 'xsmall');
+    chip.toggleAttribute('rounded', true);
+    row.append(chip);
+  }
+
+  return row;
 }

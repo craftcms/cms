@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -156,6 +157,30 @@ it('materializes array configuration through fluent setters', function () {
     expect($config->allowedFileExtensions)->toContain('custom')
         ->and(app(ConfigRepository::class)->get('craft.general'))->toBe($config);
 });
+
+it('applies configured aliases and removes aliases with null paths', function (bool $fluent) {
+    Aliases::set('@configExisting', '/previous');
+    Aliases::set('@configReplaced', '/previous');
+
+    $aliases = [
+        '@configMissing' => null,
+        '@configExisting' => null,
+        '@configReplaced' => '/replacement',
+        '@configEmpty' => '',
+    ];
+    app(ConfigRepository::class)->set('craft.general', $fluent
+        ? GeneralConfig::create()->aliases($aliases)
+        : ['aliases' => $aliases]);
+    app()->forgetInstance(GeneralConfig::class);
+
+    new ConfigServiceProvider(app())->register();
+    app(GeneralConfig::class);
+
+    expect(Aliases::get('@configMissing', false))->toBeFalse()
+        ->and(Aliases::get('@configExisting', false))->toBeFalse()
+        ->and(Aliases::get('@configReplaced'))->toBe('/replacement')
+        ->and(Aliases::get('@configEmpty'))->toBe('');
+})->with(['array' => false, 'fluent' => true]);
 
 it('applies environment overrides when resolved', function () {
     app(ConfigRepository::class)->set('craft.general', [

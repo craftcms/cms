@@ -171,6 +171,11 @@
     width: var(--cp-sidebar-collapsed-width);
   }
 
+  .cp-sidebar :deep(craft-nav-item) {
+    --c-icon-size: calc(12rem / 16);
+    --c-nav-item-icon-color: var(--color-slate-700);
+  }
+
   .cp-sidebar__header {
     display: flex;
     justify-content: space-between;

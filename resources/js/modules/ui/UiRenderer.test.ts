@@ -3627,7 +3627,7 @@ describe('UiRenderer', () => {
         },
       ],
       ['craft:time', 'Time', 'time', {inputType: 'time', step: 60}, '14:30'],
-      ['craft:color', 'Color', 'color', {presets: ['#ff0000']}, 'ff0000'],
+      ['craft:color', 'Color', 'color', {presets: []}, 'ff0000'],
       [
         'craft:money',
         'Money',

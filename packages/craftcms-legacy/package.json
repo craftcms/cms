@@ -40,7 +40,6 @@
     "blueimp-file-upload": "^10.32.0",
     "codemirror": "^5.65.21",
     "d3": "catalog:",
-    "iframe-resizer": "^4.4.5",
     "inputmask": "catalog:",
     "jquery": "catalog:",
     "jquery-ui": "^1.14.2",
@@ -58,6 +57,6 @@
     "yii2-pjax": "~2.0.8"
   },
   "optionalDependencies": {
-    "@awesome.me/kit-ddaed3f5c5": "^1.0.81"
+    "@awesome.me/kit-ddaed3f5c5": "^1.0.110"
   }
 }

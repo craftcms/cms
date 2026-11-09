@@ -8,6 +8,9 @@ use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
+use Illuminate\Container\Container;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Bootstrap\LoadConfiguration;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
@@ -128,6 +131,59 @@ it('converts callable general config and application type overlays', function():
         ->and($config->cpTrigger)->toBe('console');
 });
 
+it('merges application type overlays loaded from config files into the base general config', function(string $general): void {
+    $config = registerGeneralConfigFiles([
+        'general' => $general,
+        'general.console' => "['cpTrigger' => 'console']",
+        'general.web' => "['pageTrigger' => 'web-page']",
+    ]);
+
+    expect($config)->toBeInstanceOf(GeneralConfig::class)
+        ->and($config->cpTrigger)->toBe('console')
+        ->and($config->pageTrigger)->toBe('base-page');
+})->with([
+    'array' => ["['cpTrigger' => 'base', 'pageTrigger' => 'base-page']"],
+    'multi-environment array' => ["['*' => ['cpTrigger' => 'base'], 'testing' => ['pageTrigger' => 'base-page']]"],
+    'fluent' => ['\craft\config\GeneralConfig::create()->cpTrigger("base")->pageTrigger("base-page")'],
+    'callable' => ['fn(\craft\config\GeneralConfig $config) => $config->cpTrigger("base")->pageTrigger("base-page")'],
+]);
+
+it('applies fluent application type overlay settings after the base general config', function(string $general): void {
+    $config = registerGeneralConfigFiles([
+        'general' => $general,
+        'general.console' => '\craft\config\GeneralConfig::create()->cpTrigger("console")->enableCsrfProtection(true)',
+    ]);
+
+    expect($config->cpTrigger)->toBe('console')
+        ->and($config->enableCsrfProtection)->toBeTrue()
+        ->and(app(PreventRequestForgery::class)->getExcludedPaths())->not->toContain('*');
+})->with([
+    'fluent' => ['\craft\config\GeneralConfig::create()->cpTrigger("base")->enableCsrfProtection(false)'],
+    'callable' => ['fn(\craft\config\GeneralConfig $config) => $config->cpTrigger("base")->enableCsrfProtection(false)'],
+]);
+
+it('does not apply a callable general config that an application type overlay replaces', function(): void {
+    registerGeneralConfigFiles([
+        'general' => 'fn(\craft\config\GeneralConfig $config) => $config->enableCsrfProtection(false)',
+        'general.console' => 'fn() => \craft\config\GeneralConfig::create()',
+    ]);
+
+    expect(app(PreventRequestForgery::class)->getExcludedPaths())->not->toContain('*');
+});
+
+it('applies multi-environment application type overlays to the base general config', function(string $general): void {
+    $config = registerGeneralConfigFiles([
+        'general' => $general,
+        'general.console' => "['*' => ['pageTrigger' => 'console-page']]",
+    ]);
+
+    expect($config->cpTrigger)->toBe('base')
+        ->and($config->pageTrigger)->toBe('console-page');
+})->with([
+    'fluent' => ['\craft\config\GeneralConfig::create()->cpTrigger("base")->pageTrigger("base-page")'],
+    'multi-environment array' => ["['*' => ['cpTrigger' => 'base', 'pageTrigger' => 'base-page']]"],
+]);
+
 it('applies a deprecated anchors.php config file unless the general config sets anchors', function(array $general, string $expectedText): void {
     $config = new GeneralConfigCompatibility()->applyAnchorsConfig(
         new GeneralConfigCompatibility()->convert($general),
@@ -213,6 +269,103 @@ it('lets application type array overlays replace base settings before they are a
     }, 'web']],
 ]);
 
+it('applies application type overlays on top of the general config', function(string $config, string $overlay): void {
+    $originalConfigPath = $this->app->configPath();
+    $configPath = sys_get_temp_dir() . '/craft-config-' . bin2hex(random_bytes(8));
+    mkdir("$configPath/craft", recursive: true);
+    file_put_contents("$configPath/craft/general.php", "<?php return $config;");
+    file_put_contents("$configPath/craft/general.console.php", "<?php return $overlay;");
+    file_put_contents("$configPath/craft/general.web.php", "<?php return ['maxUploadFileSize' => 1234];");
+    $this->app->useConfigPath($configPath);
+
+    try {
+        foreach (['general', 'general.console', 'general.web'] as $file) {
+            Config::set("craft.$file", require "$configPath/craft/$file.php");
+        }
+
+        new GeneralConfigCompatibility()->register($this->app);
+
+        expect(Config::get('craft.general'))->toBeInstanceOf(GeneralConfig::class)
+            ->and(Config::get('craft.general')->cpTrigger)->toBe('control')
+            ->and(Config::get('craft.general')->cacheDuration)->toBe(60)
+            ->and(Config::get('craft.general')->maxUploadFileSize)->not->toBe(1234);
+    } finally {
+        $this->app->useConfigPath($originalConfigPath);
+        array_map(unlink(...), glob("$configPath/craft/*.php"));
+        rmdir("$configPath/craft");
+        rmdir($configPath);
+    }
+})->with([
+    'array' => "['cpTrigger' => 'control']",
+    'object' => "craft\\config\\GeneralConfig::create()->cpTrigger('control')",
+    'callable' => "fn(\$config) => \$config->cpTrigger('control')",
+], [
+    'array overlay' => "['cacheDuration' => 60]",
+    'callable overlay' => "fn(\$config) => \$config->cacheDuration(60)",
+]);
+
+it('does not apply settings that an application type overlay replaces', function(array $files): void {
+    new GeneralConfigCompatibility()->convert(...$files);
+
+    expect(app(PreventRequestForgery::class)->getExcludedPaths())->not->toContain('*')
+        ->and(proxiedClient())->toBe(['10.0.0.1', 'localhost']);
+})->with([
+    'object overlay on an array config' => [fn() => [
+        ['enableCsrfProtection' => false, 'trustedHosts' => ['any']],
+        GeneralConfig::create()->enableCsrfProtection(true),
+    ]],
+    'object overlay on a callable config' => [fn() => [
+        fn(GeneralConfig $config) => $config->enableCsrfProtection(false)->trustedHosts(['any']),
+        GeneralConfig::create()->enableCsrfProtection(true),
+    ]],
+    'callable overlay returning settings on an array config' => [fn() => [
+        ['enableCsrfProtection' => false, 'trustedHosts' => ['any']],
+        fn() => ['enableCsrfProtection' => true, 'trustedHosts' => []],
+    ]],
+    'callable overlay emptying trusted hosts on an array config' => [fn() => [
+        ['trustedHosts' => ['any']],
+        fn(GeneralConfig $config) => $config->trustedHosts([]),
+    ]],
+    'callable overlay returning a new config after changing the one it was given' => [fn() => [
+        [],
+        function(GeneralConfig $config): GeneralConfig {
+            $config->enableCsrfProtection(false)->trustedHosts(['any']);
+
+            return GeneralConfig::create();
+        },
+    ]],
+]);
+
+it('applies the settings a config keeps when it is cloned while it is converted', function(array $files): void {
+    Config::set('app.debug', false);
+
+    new GeneralConfigCompatibility()->convert(...$files);
+
+    expect(config('app.debug'))->toBeTrue()
+        ->and(proxiedClient())->toBe(['203.0.113.5', 'forwarded.test']);
+})->with([
+    'callable overlay returning a clone' => [fn() => [
+        ['trustedHosts' => ['10.0.0.1']],
+        fn(GeneralConfig $config) => clone $config->devMode(true),
+    ]],
+    'callable config returning a clone' => [fn() => [
+        fn(GeneralConfig $config) => clone $config->devMode(true)->trustedHosts(['10.0.0.1']),
+        ['cacheDuration' => 60],
+    ]],
+]);
+
+it('trusts the proxies that trusted hosts list', function(array $trustedHosts, array $client): void {
+    GeneralConfig::create()->trustedHosts($trustedHosts);
+
+    expect(proxiedClient())->toBe($client);
+})->with([
+    'any' => [['any'], ['203.0.113.5', 'forwarded.test']],
+    'wildcard' => [['*'], ['203.0.113.5', 'forwarded.test']],
+    'network alias' => [['private'], ['203.0.113.5', 'forwarded.test']],
+    'host with headers' => [['10.0.0.1' => ['X-Forwarded-For']], ['203.0.113.5', 'forwarded.test']],
+    'other network alias' => [['localhost'], ['10.0.0.1', 'localhost']],
+]);
+
 it('does not restore unset deprecated settings as overrides', function(): void {
     $config = new GeneralConfigCompatibility()->convert([]);
     TrustProxies::at('*');
@@ -232,6 +385,27 @@ it('accepts null deprecated settings in array general configs', function(): void
 
     expect($config->generateTransformsBeforePageLoad)->toBeNull()
         ->and($config->trustedHosts)->toBeNull();
+});
+
+it('stops trusting proxies when a later setting empties trusted hosts or secure headers', function(): void {
+    $config = GeneralConfig::create()
+        ->trustedHosts(['any'])
+        ->trustedHosts([])
+        ->trustedHosts(['10.0.0.1'])
+        ->secureHeaders(['X-Forwarded-For'])
+        ->secureHeaders([]);
+
+    expect(proxiedClient())->toBe(['203.0.113.5', 'forwarded.test']);
+
+    $config->trustedHosts(null);
+    $state = var_export($config, true);
+
+    expect(proxiedClient())->toBe(['10.0.0.1', 'localhost']);
+
+    TrustProxies::flushState();
+    eval('$restored = ' . $state . ';');
+
+    expect(proxiedClient())->toBe(['10.0.0.1', 'localhost']);
 });
 
 it('turns CSRF protection back on when a later setting enables it', function(): void {
@@ -290,5 +464,40 @@ function proxiedClient(): array
         return [$request->getClientIp(), $request->getHost()];
     } finally {
         Request::setTrustedProxies([], -1);
+    }
+}
+
+/**
+ * Loads `config/craft` files with Laravel's config loader, then registers the general config as the adapter does.
+ *
+ * @param array<string, string> $files PHP expressions returned by each file, keyed by file name
+ */
+function registerGeneralConfigFiles(array $files): object
+{
+    $app = app();
+    $originalConfigPath = $app->configPath();
+    $configPath = sys_get_temp_dir() . '/craft-config-' . bin2hex(random_bytes(8));
+    mkdir("$configPath/craft", recursive: true);
+
+    foreach ($files as $name => $expression) {
+        file_put_contents("$configPath/craft/$name.php", "<?php return $expression;");
+    }
+
+    try {
+        $loaded = new Application($configPath)->useConfigPath($configPath);
+        new LoadConfiguration()->bootstrap($loaded);
+        Container::setInstance($app);
+        Config::set('craft.general', $loaded['config']->get('craft.general'));
+        $app->useConfigPath($configPath);
+
+        new MultiEnvironmentConfigCompatibility()->register($app);
+        new GeneralConfigCompatibility()->register($app);
+
+        return Config::get('craft.general');
+    } finally {
+        $app->useConfigPath($originalConfigPath);
+        array_map(unlink(...), glob("$configPath/craft/*.php"));
+        rmdir("$configPath/craft");
+        rmdir($configPath);
     }
 }

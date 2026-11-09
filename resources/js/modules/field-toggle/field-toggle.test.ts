@@ -76,6 +76,23 @@ describe('a combobox toggle', () => {
   });
 });
 
+describe('a color select toggle', () => {
+  it('takes its value from model-value until the select adopts it', () => {
+    const toggle = document.createElement('craft-select-color');
+    toggle.setAttribute('model-value', '__custom__');
+    toggle.setAttribute('data-target-prefix', '#pane-');
+    document.body.append(toggle);
+    const fieldToggle = new FieldToggle(toggle);
+
+    expect(fieldToggle.getType()).toBe('select');
+    expect(fieldToggle.getToggleVal()).toBe('__custom__');
+
+    Object.assign(toggle, {modelValue: '#e5422b'});
+
+    expect(fieldToggle.getToggleVal()).toBe('-e5422b');
+  });
+});
+
 describe('a switch toggle', () => {
   it('reads the checked property, which switches update before aria-checked', () => {
     const toggle = document.createElement('craft-switch-button');
