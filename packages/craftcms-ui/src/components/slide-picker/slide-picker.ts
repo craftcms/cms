@@ -190,13 +190,6 @@ export default class CraftSlidePicker extends FormAssociated(
   override focus(options?: FocusOptions): void {
     this.#slider?.focus(options);
   }
-
-  /** Clicking the label focuses the slider, as it would a native input. */
-  protected override _onLabelClick() {
-    if (!this.disabled && !this._formDisabled) {
-      this.#slider?.focus();
-    }
-  }
 }
 
 if (!customElements.get('craft-slide-picker')) {

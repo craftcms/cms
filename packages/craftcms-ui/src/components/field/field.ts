@@ -232,10 +232,6 @@ export default class CraftField extends FormControl(LitElement) {
     this.__syncFieldsetSemantics();
   }
 
-  protected override _onLabelClick(): void {
-    this.__formControlTarget()?.focus();
-  }
-
   /**
    * Hands the label to the slotted control when it manages its own
    * references, and otherwise names the control, or the field as a group.

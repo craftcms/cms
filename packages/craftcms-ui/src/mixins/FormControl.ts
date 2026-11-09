@@ -466,8 +466,15 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       this._onLabelClick();
     };
 
-    /** Called when the label is clicked. */
-    protected _onLabelClick(): void {}
+    /**
+     * Called when the label is clicked. Focuses the control, which a label
+     * can't do for one that isn't a native form control.
+     */
+    protected _onLabelClick(): void {
+      if (!this.disabled) {
+        this._inputNode?.focus();
+      }
+    }
 
     /**
      * Gives the control an id, points the label at it, and adds the label,
@@ -614,14 +621,17 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       `;
     }
 
+    /** The label and help text, above the control. */
     protected _groupOneTemplate(): unknown {
       return html`${this._labelTemplate()} ${this._helpTextTemplate()}`;
     }
 
+    /** The control and everything below it. */
     protected _groupTwoTemplate(): unknown {
       return html`${this._inputGroupTemplate()} ${this._feedbackTemplate()}`;
     }
 
+    /** The `label` slot, when there is a label. */
     protected _labelTemplate(): unknown {
       if (!this.#hasLabel) {
         return nothing;
@@ -634,6 +644,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       `;
     }
 
+    /** The `help-text` slot, when there is help text. */
     protected _helpTextTemplate(): unknown {
       if (!this.#hasHelpText) {
         return nothing;
@@ -646,6 +657,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       `;
     }
 
+    /** The `before` content, the control row and the `after` content. */
     protected _inputGroupTemplate(): unknown {
       return html`
         <div class="input-group">
@@ -660,6 +672,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       `;
     }
 
+    /** The `before` slot, above the control row. */
     protected _inputGroupBeforeTemplate(): unknown {
       return html`
         <div class="input-group__before">
@@ -668,6 +681,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       `;
     }
 
+    /** The `prefix` slot, at the start of the control row. */
     protected _inputGroupPrefixTemplate(): unknown {
       return this.#hasAffix.test('prefix')
         ? html`
@@ -678,6 +692,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
         : nothing;
     }
 
+    /** The `input` slot, holding the control. */
     protected _inputGroupInputTemplate(): unknown {
       return html`
         <div class="input-group__input">
@@ -686,6 +701,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       `;
     }
 
+    /** The `suffix` slot, at the end of the control row. */
     protected _inputGroupSuffixTemplate(): unknown {
       return this.#hasAffix.test('suffix')
         ? html`
@@ -696,6 +712,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
         : nothing;
     }
 
+    /** The `after` slot, below the control row. */
     protected _inputGroupAfterTemplate(): unknown {
       return html`
         <div class="input-group__after">

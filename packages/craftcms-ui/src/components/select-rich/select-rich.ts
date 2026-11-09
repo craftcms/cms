@@ -629,10 +629,6 @@ export default class CraftSelectRich extends FormAssociated(
     this._inputNode?.focus(options);
   }
 
-  protected override _onLabelClick(): void {
-    this._inputNode?.focus();
-  }
-
   /** The text that names the listbox, which can't reference the label. */
   #listboxLabel(): string {
     return this._labelNode?.textContent?.trim() || this.label;
