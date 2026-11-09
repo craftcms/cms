@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -92,6 +93,24 @@ test('index', function () {
         ->assertSee('Plugin Installer')
         ->assertSee('data-updater', false);
 });
+
+test('index requires the Yii2 adapter alongside plugins that need it', function (array $input, array $composerRequire, array $requirements) {
+    $this->partialMock(Composer::class)->shouldReceive('getConfig')->andReturn(['require' => $composerRequire]);
+
+    $state = postJson(action([InstallController::class, 'index']), [
+        'packageName' => 'craftcms/test-plugin',
+        'handle' => 'test-plugin',
+        'edition' => 'standard',
+        'version' => '^1.0.0',
+        ...$input,
+    ])->viewData('state');
+
+    expect(Json::decode(Crypt::decrypt($state['data']))['requirements'])->toBe($requirements);
+})->with([
+    'required' => [['requiresYii2Adapter' => '1'], [], ['craftcms/test-plugin' => '^1.0.0', 'craftcms/yii2-adapter' => '*']],
+    'required and already in composer.json' => [['requiresYii2Adapter' => '1'], ['craftcms/yii2-adapter' => '^6.0'], ['craftcms/test-plugin' => '^1.0.0']],
+    'not required' => [[], [], ['craftcms/test-plugin' => '^1.0.0']],
+]);
 
 test('craftInstall', function () {
     $plugins = $this->partialMock(Plugins::class);
