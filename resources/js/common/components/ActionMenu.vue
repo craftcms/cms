@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, useTemplateRef, watch} from 'vue';
   import ActionList from '@/common/components/ActionList.vue';
   import type {ActionItem} from '@/common/types';
 
@@ -47,6 +47,20 @@
     props.flush === true ? '' : props.flush || undefined
   );
 
+  // The default invoker is rendered once (see below), so a new label, such as
+  // a renamed element's, is set on it directly.
+  const defaultInvoker = useTemplateRef<HTMLElement>('defaultInvoker');
+  watch(
+    () => props.label,
+    (label) => {
+      if (label) {
+        defaultInvoker.value?.setAttribute('aria-label', label);
+      } else {
+        defaultInvoker.value?.removeAttribute('aria-label');
+      }
+    }
+  );
+
   function isDanger(action: ActionItem): boolean {
     return 'variant' in action && action.variant === 'danger';
   }
@@ -89,6 +103,7 @@
   >
     <slot v-once name="invoker" :label="label" :attributes="{slot: 'invoker'}">
       <craft-button
+        ref="defaultInvoker"
         slot="invoker"
         type="button"
         size="small"
