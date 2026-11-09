@@ -210,7 +210,8 @@ class Table extends Control implements ReadableValueControl, WritableValueContro
 
     /**
      * Tables with money columns are scoped to those columns' currencies, so an amount is never
-     * pasted into a column that would read it in another currency.
+     * pasted into a column that would read it in another currency. A scope set with {@see valueScope()}
+     * narrows that one rather than replacing it.
      */
     #[\Override]
     public function getValueScope(): ?string
@@ -225,7 +226,10 @@ class Table extends Control implements ReadableValueControl, WritableValueContro
 
         ksort($currencies);
 
-        return parent::getValueScope() ?? ($currencies ? 'money:'.http_build_query($currencies) : null);
+        $scope = parent::getValueScope();
+        $money = $currencies ? 'money:'.http_build_query($currencies) : null;
+
+        return $scope !== null && $money !== null ? "{$scope}|{$money}" : $scope ?? $money;
     }
 
     #[\Override]
