@@ -294,14 +294,12 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       return this.#slotted('feedback');
     }
 
+    // A native query, as a control can hold thousands of options as children.
     #slotted(name: string): HTMLElement | undefined {
-      for (const child of this.children) {
-        if (child instanceof HTMLElement && child.slot === name) {
-          return child;
-        }
-      }
-
-      return undefined;
+      return (
+        this.querySelector<HTMLElement>(`:scope > [slot="${name}"]`) ??
+        undefined
+      );
     }
 
     override connectedCallback() {
@@ -347,9 +345,8 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       super.updated(changed);
       this.#renderTemplateSlots();
       this.#observe();
-      this.#syncChrome();
 
-      for (const kind of NOTICES) {
+      for (const kind of this.#notices) {
         const node = this.#slotted(kind);
         // Only a notice that renders describes the control.
         if (node && this.renderRoot.querySelector(`slot[name="${kind}"]`)) {
@@ -401,6 +398,8 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
           characterData: true,
           attributeFilter: ['slot'],
         });
+        // Catch up on anything that changed before the watch began.
+        this.#syncChrome();
       }
     }
 
