@@ -391,6 +391,11 @@ export default class CraftTabs extends LitElement {
 
     const tabSlot = this.shadowRoot?.querySelector('slot[name="tab"]');
     tabSlot?.addEventListener('slotchange', this.#setup);
+    // A panel can be added or replaced while its tab stays put, and the new
+    // one needs its pairing and visibility too.
+    this.shadowRoot
+      ?.querySelector('slot[name="panel"]')
+      ?.addEventListener('slotchange', this.#setup);
     this.#setup();
 
     this.#announcedIndex = this.selectedIndex;

@@ -381,6 +381,21 @@ it('moves the selection to the first tab when the selected slotted tab is remove
   expect(getComputedStyle(slottedPanels[0]!).display).not.toBe('none');
 });
 
+it('wires up a slotted panel that replaces one whose tab stays', async () => {
+  const {element, tabs, slottedPanels} = await strip();
+
+  const replacement = document.createElement('div');
+  replacement.slot = 'panel';
+  replacement.textContent = 'New panel 0';
+  slottedPanels[0]!.replaceWith(replacement);
+
+  await expect.poll(() => replacement.getAttribute('role')).toBe('tabpanel');
+  expect(tabs[0]!.getAttribute('aria-controls')).toBe(replacement.id);
+  expect(replacement.getAttribute('aria-labelledby')).toBe(tabs[0]!.id);
+  expect(element.selectedIndex).toBe(0);
+  expect(getComputedStyle(replacement).display).not.toBe('none');
+});
+
 it('moves the selection to the first tab when the selected external tab is removed', async () => {
   const {element, tabs, sections} = await externalStrip();
 

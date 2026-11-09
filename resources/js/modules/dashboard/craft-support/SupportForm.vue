@@ -127,6 +127,9 @@
               type="file"
               name="attachAdditionalFile"
               :disabled="sending"
+              :aria-invalid="
+                form.errors.attachAdditionalFile ? 'true' : undefined
+              "
             />
             <ul
               v-if="form.errors.attachAdditionalFile"

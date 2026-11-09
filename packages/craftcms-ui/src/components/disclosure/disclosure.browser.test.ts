@@ -126,3 +126,35 @@ it('toggles from the keyboard, leaving focus on the invoker', async () => {
   await userEvent.keyboard('{Tab}');
   expect(document.activeElement?.textContent).toBe('After');
 });
+
+it('wires up an invoker and content slotted in after it connected', async () => {
+  document.body.innerHTML = `
+    <craft-disclosure>
+      <button slot="invoker" type="button">More</button>
+      <div slot="content">Old</div>
+    </craft-disclosure>`;
+  const disclosure =
+    document.querySelector<CraftDisclosure>('craft-disclosure')!;
+  await disclosure.updateComplete;
+  await settle();
+
+  const invoker = document.createElement('button');
+  invoker.slot = 'invoker';
+  invoker.type = 'button';
+  invoker.textContent = 'Details';
+  const content = document.createElement('div');
+  content.slot = 'content';
+  content.textContent = 'New';
+  disclosure.replaceChildren(invoker, content);
+  await settle();
+
+  expect(invoker.getAttribute('aria-controls')).toBe(content.id);
+  expect(invoker.getAttribute('aria-expanded')).toBe('false');
+  expect(getComputedStyle(content).display).toBe('none');
+
+  invoker.click();
+  await disclosure.updateComplete;
+
+  expect(disclosure.opened).toBe(true);
+  expect(getComputedStyle(content).display).not.toBe('none');
+});

@@ -82,6 +82,9 @@ export default class CraftDisclosure extends LitElement {
 
   private __defaultInvoker: HTMLElement | null = null;
 
+  /** The slotted invoker the toggle listener is on (slotted mode). */
+  private __boundInvoker: HTMLElement | null = null;
+
   private __externalTrigger: HTMLElement | null = null;
 
   private __externalExpanded = false;
@@ -132,8 +135,8 @@ export default class CraftDisclosure extends LitElement {
 
   override render() {
     return html`
-      <slot name="invoker"></slot>
-      <slot name="content"></slot>
+      <slot name="invoker" @slotchange=${this.__onSlotChange}></slot>
+      <slot name="content" @slotchange=${this.__onSlotChange}></slot>
       <slot></slot>
     `;
   }
@@ -154,7 +157,8 @@ export default class CraftDisclosure extends LitElement {
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this.__invoker?.removeEventListener('click', this.toggle);
+    this.__boundInvoker?.removeEventListener('click', this.toggle);
+    this.__boundInvoker = null;
 
     if (this.__externalTrigger) {
       // Leave the target visible when the disclosure goes away (parity with
@@ -204,25 +208,38 @@ export default class CraftDisclosure extends LitElement {
     }
   }
 
+  /**
+   * A framework can swap the slotted invoker or content after the disclosure
+   * has connected, so each slot change wires up whatever is slotted now.
+   */
+  private __onSlotChange = () => {
+    if (!this.__externalTrigger) {
+      this.__setupSlottedMode();
+    }
+  };
+
   private __setupSlottedMode() {
     this.__ensureDefaultInvoker();
 
-    const invoker = this.__invoker;
+    const invoker = this.__invoker ?? null;
     const content = this.__content;
 
     if (content) {
       content.id ||= uniqueId('collapsible-content');
     }
 
-    if (invoker) {
-      invoker.addEventListener('click', this.toggle);
+    if (invoker !== this.__boundInvoker) {
+      this.__boundInvoker?.removeEventListener('click', this.toggle);
+      invoker?.addEventListener('click', this.toggle);
+      this.__boundInvoker = invoker;
+    }
 
-      if (content) {
-        invoker.setAttribute('aria-controls', content.id);
-      }
+    if (invoker && content) {
+      invoker.setAttribute('aria-controls', content.id);
     }
 
     this.__syncSlottedState();
+    this.__syncInvokerChevron();
   }
 
   private __syncSlottedState() {
