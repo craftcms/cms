@@ -167,3 +167,67 @@ it('opens on click rather than hover once its trigger changes to click', async (
   await tooltip.updateComplete;
   expect(tooltip.opened).toBe(true);
 });
+
+it('binds an invoker slotted in after it renders, in place of the old one', async () => {
+  document.body.innerHTML = `
+    <craft-tooltip trigger="click">
+      <button slot="invoker" type="button">Old</button>
+      Help
+    </craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.updateComplete;
+  await after(0);
+  const old = tooltip.querySelector('button')!;
+  const replacement = document.createElement('button');
+  replacement.type = 'button';
+  replacement.slot = 'invoker';
+  replacement.textContent = 'New';
+
+  old.replaceWith(replacement);
+  await after(50);
+
+  expect(old.hasAttribute('aria-describedby')).toBe(false);
+  expect(replacement.getAttribute('aria-describedby')).toBe(
+    tooltip.querySelector('[slot="content"]')!.id
+  );
+
+  replacement.click();
+  await tooltip.updateComplete;
+  expect(tooltip.opened).toBe(true);
+});
+
+it('moves beside the new invoker when for changes while open', async () => {
+  document.body.innerHTML = `
+    <button id="first" type="button">First</button>
+    <button id="second" type="button" style="margin: 200px 0 0 100px">Second</button>
+    <craft-tooltip for="first" placement="right">Help</craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.show();
+  await after(50);
+
+  tooltip.for = 'second';
+  await tooltip.updateComplete;
+  await after(50);
+
+  const second = document.querySelector('#second')!.getBoundingClientRect();
+  const content = tooltip
+    .querySelector<HTMLElement>('[slot="content"]')!
+    .getBoundingClientRect();
+
+  expect(content.left - second.right).toBeGreaterThanOrEqual(0);
+  expect(content.left - second.right).toBeLessThan(20);
+  expect(content.top).toBeLessThan(second.bottom);
+  expect(content.bottom).toBeGreaterThan(second.top);
+});
+
+it('closes and lets go of its invoker when removed before show() settles', async () => {
+  const {invoker, tooltip} = await render();
+
+  const shown = tooltip.show();
+  tooltip.remove();
+
+  await expect(shown).resolves.toBeUndefined();
+  await after(0);
+  expect(tooltip.opened).toBe(false);
+  expect(invoker.hasAttribute('aria-describedby')).toBe(false);
+});

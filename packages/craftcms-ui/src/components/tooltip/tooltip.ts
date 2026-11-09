@@ -181,7 +181,7 @@ export default class CraftTooltip extends LitElement {
     // Nested below the layer for Popper's containing-block search; see
     // craft-popover.
     return html`
-      <slot name="invoker"></slot>
+      <slot name="invoker" @slotchange=${this.#onInvokerSlotChange}></slot>
       <div
         class="overlay-layer"
         role="none"
@@ -193,6 +193,12 @@ export default class CraftTooltip extends LitElement {
       </div>
     `;
   }
+
+  #onInvokerSlotChange = (): void => {
+    if (this.#isSetUp && this.invoker !== this.#invoker?.node) {
+      this.#bind();
+    }
+  };
 
   override connectedCallback() {
     this.#ensureContentWrapper();
@@ -317,6 +323,11 @@ export default class CraftTooltip extends LitElement {
         hide: () => void (this.opened = false),
       });
     }
+
+    if (this.#popper) {
+      this.#popper.state.elements.reference = node;
+      void this.#popper.update();
+    }
   }
 
   #unbind(): void {
@@ -391,7 +402,9 @@ export default class CraftTooltip extends LitElement {
     const positioned = this.#positioned;
     const invoker = this.#invoker?.node;
 
-    if (!layer || !positioned || this.#popper) {
+    // An update queued before removal still runs, and a disconnected layer
+    // can't be shown.
+    if (!this.isConnected || !layer || !positioned || this.#popper) {
       return;
     }
 
