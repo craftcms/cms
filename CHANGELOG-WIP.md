@@ -205,6 +205,7 @@
 - Added support for Markdown-based custom Dashboard widgets in the application's `resources/widgets/` directory. ([#19319](https://github.com/craftcms/cms/pull/19319))
 - Added support for SQLite databases, including backups and restores. ([#18803](https://github.com/craftcms/cms/pull/18803), [#19149](https://github.com/craftcms/cms/pull/19149))
 - Added support for configuring the system time zone during installation. ([#18794](https://github.com/craftcms/cms/pull/18794))
+- Added the Yii2 Loose Ends utility, which the Yii adapter registers. It lists what in the project still depends on the adapter, including configuration, content, project code that has run the adapter’s compatibility features, and plugins and packages that require or suggest it, along with any updates that no longer need it. Items can be fixed in place, updated, or copied as a prompt for an AI agent, and once nothing is left, the utility lists the steps to uninstall the adapter. ([#20501](https://github.com/craftcms/cms/pull/20501))
 - Added the `autoEagerLoadElements` config setting (`true` by default), which determines whether element queries should be automatically lazy eager-loaded. ([#19637](https://github.com/craftcms/cms/pull/19637))
 - Added the `compiledTemplatesPath` config setting. ([#18861](https://github.com/craftcms/cms/pull/18861))
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for login, password reset, and two-step verification requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
@@ -214,7 +215,7 @@
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Removed the `isSystemLive` config setting. Laravel maintenance mode should be used instead. With the Yii adapter installed, the deprecated `craft:on` and `craft:off` commands still work, and run `up` and `down`.
 - Removed the `allowedGraphqlOrigins`, `enableBasicHttpAuth`, `enableTwigSandbox`, `omitScriptNameInUrls`, `pathParam`, `permissionsPolicyHeader`, `purgeStaleUserSessionDuration`, `requireMatchingUserAgentForSession`, `requireUserAgentAndIpForSession`, `useFileLocks`, and `usePathInfo` config settings, which no longer have any effect.
-- Craft 5 config settings that were deprecated or removed are still accepted when the Yii adapter is installed, including from array-based general configs and environment variables, and log a deprecation warning when they’re set.
+- Craft 5 config settings that were deprecated or removed are still accepted when the Yii adapter is installed, including from array-based general configs and environment variables, and are listed in the Yii2 Loose Ends utility when they’re set.
 
 ### Development
 
