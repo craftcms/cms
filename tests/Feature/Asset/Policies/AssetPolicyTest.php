@@ -235,6 +235,13 @@ it('allows view for temp upload filesystem regardless of permissions', function 
     expect($result)->toBeTrue();
 });
 
+it('allows saving own uploads on temp upload filesystem regardless of permissions', function () {
+    $user = createAssetTestUser([]);
+
+    expect($this->policy->save($user, createAssetTestAssetWithTempFs($this->volume, uploaderId: $user->id)))->toBeTrue()
+        ->and($this->policy->save($user, createAssetTestAssetWithTempFs($this->volume, uploaderId: User::factory()->create()->id)))->toBeFalse();
+});
+
 it('allows delete for temp upload filesystem regardless of permissions', function () {
     $user = createAssetTestUser([]);
     $asset = createAssetTestAssetWithTempFs($this->volume, uploaderId: $user->id);

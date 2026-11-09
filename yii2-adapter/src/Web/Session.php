@@ -300,7 +300,11 @@ class Session extends \yii\web\Session
         $counters = $this->get($this->flashParam, []);
 
         if (!isset($counters[$key])) {
-            return $defaultValue;
+            if (!in_array($key, $this->getIlluminateFlashKeys(), true)) {
+                return $defaultValue;
+            }
+
+            return $delete ? ($this->remove($key) ?? $defaultValue) : $this->get($key, $defaultValue);
         }
 
         $value = $this->get($key, $defaultValue);
@@ -345,7 +349,29 @@ class Session extends \yii\web\Session
 
         $this->set($this->flashParam, $counters);
 
+        foreach ($this->getIlluminateFlashKeys() as $key) {
+            if (!array_key_exists($key, $flashes) && is_string($session[$key] ?? null)) {
+                $flashes[$key] = $session[$key];
+                if ($delete) {
+                    $this->remove($key);
+                }
+            }
+        }
+
         return $flashes;
+    }
+
+    /**
+     * Returns the keys flashed through the Laravel session, such as by
+     * {@see \CraftCms\Cms\Support\Flash::success()}, which the Yii flash counters don’t track.
+     *
+     * @return string[]
+     */
+    private function getIlluminateFlashKeys(): array
+    {
+        $store = $this->getIlluminateSession();
+
+        return array_unique([...$store->get('_flash.old', []), ...$store->get('_flash.new', [])]);
     }
 
     /**

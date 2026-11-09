@@ -46,6 +46,11 @@ class AssetPolicy extends ElementPolicy
             return $user->can("savePeerAssets:$volume->uid");
         }
 
+        // Users can save their own temporary uploads
+        if ($volume->isTemporary()) {
+            return true;
+        }
+
         return $user->can("saveAssets:$volume->uid");
     }
 

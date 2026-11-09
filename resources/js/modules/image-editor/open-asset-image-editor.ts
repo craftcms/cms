@@ -6,7 +6,6 @@ import {
   type ImageEditorSettings,
 } from './open-image-editor-dialog';
 import {QueueService} from '@/modules/queue/queue';
-import {broadcast} from '@/common/craft/broadcast';
 import type {SaveResult} from './useImageEditor';
 import {showError} from '@/modules/messages/messages';
 
@@ -33,13 +32,6 @@ export async function openAssetImageEditor(
       : asset;
 
   await openImageEditorDialog(settings, (result) => {
-    if (!result.newAssetId) {
-      broadcast({
-        event: 'saveElement',
-        id: settings.assetId,
-      });
-    }
-
     void QueueService.getInstance().runQueue();
     refreshPreviews();
     onSaved?.(result);

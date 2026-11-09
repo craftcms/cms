@@ -852,10 +852,19 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     }
 
     /**
-     * Ensure only one structured source is selected when maintainHierarchy is true.
+     * Ensure the selected sources exist, and only one structured source is selected when maintainHierarchy is true.
      */
     public function validateSources(): void
     {
+        $attribute = $this->allowMultipleSources ? 'sources' : 'source';
+        $sourceKeys = array_column($this->getSourceOptions(), 'value');
+
+        foreach ((array) $this->$attribute as $source) {
+            if ($source !== self::ALL_SOURCES && ! in_array($source, $sourceKeys, true)) {
+                $this->errors()->add($attribute, t('Source “{source}” doesn’t exist.', ['source' => $source]));
+            }
+        }
+
         if (! $this->maintainHierarchy) {
             return;
         }

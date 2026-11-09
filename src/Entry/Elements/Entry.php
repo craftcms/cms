@@ -420,9 +420,16 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     #[Override]
     public static function sourceCpUri(array $source, ?string $page = null): ?string
     {
-        $handle = ($source['key'] ?? null) === 'singles'
-            ? 'singles'
-            : ($source['data']['handle'] ?? null);
+        $key = (string) ($source['key'] ?? '');
+
+        // A custom source limited to one section carries its handle too (see
+        // modifyCustomSource()), but the handle URL would select the section's
+        // own source, not the custom one.
+        $handle = match (true) {
+            $key === 'singles' => 'singles',
+            str_starts_with($key, 'section:') => $source['data']['handle'] ?? null,
+            default => null,
+        };
 
         if (! is_string($handle) || $handle === '') {
             return null;
@@ -2615,11 +2622,12 @@ JS;
             if ($this->id) {
                 // Figure out how deep the ancestors go
                 $maxDepth = self::find()
-                    ->select('level')
                     ->descendantOf($this)
                     ->status(null)
                     ->leaves()
-                    ->value('level');
+                    ->limit(1)
+                    ->pluck('level')
+                    ->first();
                 $depth = 1 + ($maxDepth ?: $this->level) - $this->level;
             } else {
                 $depth = 1;
@@ -2888,13 +2896,14 @@ JS;
         // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
         if ($this->isProvisionalDraft) {
             $canonicalParentId = self::find()
-                ->select(['elements.id'])
                 ->ancestorOf($this->getCanonicalId())
                 ->ancestorDist(1)
                 ->status(null)
                 ->site('*')
                 ->unique()
-                ->value('id');
+                ->limit(1)
+                ->pluck('elements.id')
+                ->first();
 
             if ($parentId === $canonicalParentId) {
                 Structures::remove($this->structureId, $this);
@@ -2945,8 +2954,9 @@ JS;
             $parentId = $this->ancestors()
                 ->ancestorDist(1)
                 ->status(null)
-                ->select(['elements.id'])
-                ->value('id');
+                ->limit(1)
+                ->pluck('elements.id')
+                ->first();
             if ($parentId) {
                 $data['parentId'] = $parentId;
             }

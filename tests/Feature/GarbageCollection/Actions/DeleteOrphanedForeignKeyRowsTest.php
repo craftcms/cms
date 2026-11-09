@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\GarbageCollection\Actions\DeleteOrphanedForeignKeyRows;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -64,4 +65,27 @@ test('it keeps valid and nullable composite keys without a child id', function (
     app(DeleteOrphanedForeignKeyRows::class)();
 
     expect(DB::table('test_posts')->orderBy('title')->pluck('title')->all())->toBe(['null author', 'null region', 'valid']);
+});
+
+// https://github.com/craftcms/cms/issues/20386
+test('it re-enables foreign key constraints when deleting orphaned rows fails', function () {
+    DB::table('test_authors')->insert(['id' => 1, 'region' => 1]);
+    DB::table('test_posts')->insert(['author_id' => 99, 'title' => 'orphan']);
+    Schema::table('test_posts', function (Blueprint $table) {
+        $table->foreign('author_id')->references('id')->on('test_authors')->cascadeOnDelete()->notValid();
+    });
+
+    $enableSql = DB::getSchemaGrammar()->compileEnableForeignKeyConstraints();
+    $reenabled = false;
+
+    DB::listen(function (QueryExecuted $query) use ($enableSql, &$reenabled): void {
+        if ($query->sql === $enableSql) {
+            $reenabled = true;
+        } elseif (str_starts_with(strtolower($query->sql), 'delete')) {
+            throw new RuntimeException('Delete failed');
+        }
+    });
+
+    expect(fn () => app(DeleteOrphanedForeignKeyRows::class)())->toThrow(RuntimeException::class, 'Delete failed')
+        ->and($reenabled)->toBeTrue();
 });

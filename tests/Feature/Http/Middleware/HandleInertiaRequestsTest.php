@@ -10,6 +10,7 @@ use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
+use CraftCms\Cms\Http\Middleware\SendBroadcasts;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -159,3 +160,17 @@ it('leaves out the stable config the client already has, until it changes', func
     }],
     'the user’s permissions change' => [fn (UserModel $user) => app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'utility:system-report'])],
 ]);
+
+it('shares broadcast messages with the next page once', function () {
+    actingAs(User::find()->one());
+    swapUrlRequest(cp_url('dashboard'));
+    session()->broadcastToJs(['event' => 'saveElement', 'id' => 42]);
+
+    get(action([DashboardController::class, 'index']))
+        ->assertHeaderMissing(SendBroadcasts::HEADER)
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('broadcasts', [['event' => 'saveElement', 'id' => 42]]));
+
+    get(action([DashboardController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('broadcasts', []));
+});

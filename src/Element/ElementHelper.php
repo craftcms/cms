@@ -9,8 +9,13 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Gql\Exceptions\GqlException;
+use CraftCms\Cms\Gql\Gql;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
@@ -844,6 +849,8 @@ class ElementHelper
 
     /**
      * Returns whether the given element is a multi-site element.
+     *
+     * Saved elements must also exist in at least one other supported site.
      */
     public static function isMultiSite(ElementInterface $element): bool
     {
@@ -860,7 +867,23 @@ class ElementHelper
 
         $propagatedSites = array_filter($supportedSites, fn (array $site) => $site['propagate']);
 
-        return count($propagatedSites) > 1;
+        if (count($propagatedSites) <= 1) {
+            return false;
+        }
+
+        if (! $element->id) {
+            return true;
+        }
+
+        $otherSiteIds = array_values(array_filter(
+            array_map(fn (array $site) => $site['siteId'], $propagatedSites),
+            fn (int $siteId) => $siteId !== $element->siteId,
+        ));
+
+        return DB::table(Table::ELEMENTS_SITES)
+            ->where('elementId', $element->id)
+            ->whereIn('siteId', $otherSiteIds)
+            ->exists();
     }
 
     /**
@@ -969,5 +992,83 @@ class ElementHelper
         }
 
         return true;
+    }
+
+    /**
+     * Sets custom field values on an element from request data, like [[ElementInterface::setFieldValuesFromRequest()]]:
+     * only fields that are visible and editable for the element are set.
+     *
+     * Values for fields that aren’t in the element’s field layout are ignored.
+     *
+     * @param  array<array-key, mixed>  $values  The field values, indexed by field handle
+     * @return string[] The handles of fields in the layout that weren’t set, because they aren’t editable
+     *
+     * @internal
+     */
+    public static function setEditableFieldValuesFromRequest(ElementInterface $element, array $values): array
+    {
+        $fieldLayout = $element->getFieldLayout();
+
+        if (! $fieldLayout) {
+            return [];
+        }
+
+        $layoutHandles = array_map(fn (FieldInterface $field) => $field->handle, $fieldLayout->getCustomFields());
+        $values = array_intersect_key($values, array_flip($layoutHandles));
+
+        // Run through this multiple times, in case any fields become visible or editable as a result of other field
+        // value changes
+        do {
+            $processedAnyFields = false;
+
+            foreach ($fieldLayout->getEditableCustomFields($element) as $field) {
+                if (array_key_exists((string) $field->handle, $values)) {
+                    $element->setFieldValueFromRequest($field->handle, $values[$field->handle]);
+                    unset($values[$field->handle]);
+                    $processedAnyFields = true;
+                }
+            }
+        } while ($processedAnyFields && ! empty($values));
+
+        return array_map(strval(...), array_keys($values));
+    }
+
+    /**
+     * Sets custom field values on a nested element from request data submitted with its owner.
+     *
+     * Fields that aren’t visible and editable for the nested element are ignored, like they are for top-level
+     * elements. For GraphQL requests authenticated as a user, an error is thrown for them instead. GraphQL requests
+     * made with a schema token can set any field.
+     *
+     * @param  array<array-key, mixed>  $values  The field values, indexed by field handle
+     *
+     * @internal
+     */
+    public static function setNestedFieldValuesFromRequest(ElementInterface $element, array $values): void
+    {
+        try {
+            $gqlSchema = app(Gql::class)->getActiveSchema();
+        } catch (GqlException) {
+            $gqlSchema = null;
+        }
+
+        if ($gqlSchema?->user) {
+            GqlHelper::populateFieldValues($element, $values);
+
+            return;
+        }
+
+        if ($gqlSchema) {
+            foreach ($values as $fieldHandle => $fieldValue) {
+                try {
+                    $element->setFieldValueFromRequest((string) $fieldHandle, $fieldValue);
+                } catch (InvalidFieldException) {
+                }
+            }
+
+            return;
+        }
+
+        self::setEditableFieldValuesFromRequest($element, $values);
     }
 }

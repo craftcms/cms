@@ -16,6 +16,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
+use craft\db\sqlite\Schema as SqliteSchema;
 use craft\db\Table;
 use craft\mail\Mailer;
 use craft\mail\Message;
@@ -28,6 +29,7 @@ use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
@@ -44,7 +46,6 @@ use InvalidArgumentException;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\db\Exception as DbException;
-use yii\db\sqlite\Schema as SqliteSchema;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
@@ -526,6 +527,41 @@ class App
     }
 
     /**
+     * Returns whether Craft is running in a [DDEV](https://ddev.com) project.
+     *
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see TerminalCommands::environment()} instead.
+     */
+    public static function isDdev(): bool
+    {
+        return app(TerminalCommands::class)->environment() === 'ddev';
+    }
+
+    /**
+     * Returns a Craft console command, as it should be run from a terminal for the current environment.
+     *
+     * @param string $command The command and its arguments, without the `craft` executable
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see TerminalCommands::craft()} instead.
+     */
+    public static function craftCommand(string $command): string
+    {
+        return app(TerminalCommands::class)->craft($command);
+    }
+
+    /**
+     * Returns a Composer command, as it should be run from a terminal for the current environment.
+     *
+     * @param string $command The command and its arguments, without the `composer` executable
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see TerminalCommands::composer()} instead.
+     */
+    public static function composerCommand(string $command): string
+    {
+        return app(TerminalCommands::class)->composer($command);
+    }
+
+    /**
      * Returns whether Craft is running on a Windows environment
      *
      * @since 5.0.0
@@ -659,7 +695,6 @@ class App
                 'defaultSchema' => $dbConfig->schema,
             ];
         } else {
-            // SQLite or other: use Yii2's built-in schema support
             $schemaConfig = [
                 'class' => SqliteSchema::class,
             ];

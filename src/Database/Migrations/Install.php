@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\PromptTask;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
@@ -86,7 +87,7 @@ class Install extends Migration
     public function up(): void
     {
         if (! $this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error Run `composer install` or remove your `config/craft/project/` folder and try again.";
+            $message = "Project config validation failed: $error Run `".app(TerminalCommands::class)->composer('install').'` or remove your `config/craft/project/` folder and try again.';
 
             error($message);
             error('Aborting install.');

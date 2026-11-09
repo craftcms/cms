@@ -28,6 +28,19 @@ abstract class BaseRelationField extends CoreBaseRelationField implements Legacy
         settingsUi as private legacySettingsUi;
     }
 
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+        $this->init();
+    }
+
+    /**
+     * Initializes the field after it’s configured, as Yii’s `BaseObject` did.
+     */
+    public function init(): void
+    {
+    }
+
     public function settingsUi(UiContext $context = new UiContext()): Ui
     {
         return $this->legacySettingsUi($context) ?? Ui::make();

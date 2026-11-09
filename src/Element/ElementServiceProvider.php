@@ -18,6 +18,7 @@ use CraftCms\Cms\Element\Commands\Resave\ResaveUsersCommand;
 use CraftCms\Cms\Element\Commands\RestoreCommand;
 use CraftCms\Cms\Element\Commands\SyncEloquentElementsCommand;
 use CraftCms\Cms\Element\Eloquent\EloquentElements;
+use CraftCms\Cms\Element\Listeners\BroadcastElementChanges;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -38,6 +39,7 @@ class ElementServiceProvider extends ServiceProvider
     {
         Event::subscribe(DraftActivity::class);
         Event::subscribe(ElementWriteActivity::class);
+        Event::subscribe(BroadcastElementChanges::class);
         Event::listen(BulkOpCompleted::class, fn (BulkOpCompleted $event) => app(BulkOpDeferrals::class)->replay($event->key));
 
         app()->terminating(fn () => app(BulkOpDeferrals::class)->persistPending());

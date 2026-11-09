@@ -6,7 +6,7 @@
 > This update contains breaking changes for plugins. See [#19882](https://github.com/craftcms/cms/pull/19882) for details.
 
 > [!WARNING]
-> Plugins should pass dates they write or compare with the query builder through `CraftCms\Cms\Support\Query::prepareDateForDb()`, so they’re stored in UTC like Craft’s own. Laravel stores a bound date in the system time zone. Eloquent models that extend `CraftCms\Cms\Shared\BaseModel` are converted automatically. See [#20053](https://github.com/craftcms/cms/pull/20053) for details.
+> Plugins should pass dates they write or compare with the query builder through `CraftCms\Cms\Support\Query::prepareDateForDb()`, so they’re stored in UTC like Craft’s own. Laravel stores a bound date in the system time zone. Eloquent models that extend `CraftCms\Cms\Shared\BaseModel`, and dates bound to element queries, are converted automatically. See [#20053](https://github.com/craftcms/cms/pull/20053) for details.
 
 ### Command Palette
 - Added a command palette, opened from the search button in the global header, with <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>K</kbd>, or with <kbd>/</kbd> when not typing in a field. It finds fields, tabs, and Matrix blocks on the current page, control panel pages and settings, entries, assets, users, and releases, and runs actions such as creating entries and settings, publishing releases, clearing caches, and changing preferences, with the same permission checks as the screens they stand in for. It also searches the Craft CMS documentation, and lists recently visited pages when nothing has been typed. ([#20081](https://github.com/craftcms/cms/pull/20081))
@@ -56,6 +56,7 @@
 - The MCP server’s `elements_update` tool can now set and clear assets’ focal points via a `focalPoint` attribute, in the format of `"x;y"`, such as `"0.5;0.5"`. ([#19933](https://github.com/craftcms/cms/pull/19933), [#20218](https://github.com/craftcms/cms/pull/20218))
 - The MCP server now validates custom field values against the `elements_field_schema` schema, and returns an error that identifies each invalid value. ([#19965](https://github.com/craftcms/cms/pull/19965))
 - The MCP server’s configuration tools can now manage control panel navigations, via the `cp-navigations` configuration type, which reads and writes each navigation as the tree the navigation builder edits. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- The `configuration_get`, `configuration_list`, `configuration_create`, and `configuration_update` MCP tools now return each record’s revision, and `configuration_update` and `configuration_delete` accept it as `expectedRevision`, failing without changing anything if the record has changed since it was read. Without `expectedRevision`, they can still overwrite changes made since the read. ([#20438](https://github.com/craftcms/cms/pull/20438))
 - The MCP server now accepts any date or time that Date and Time fields can parse, such as “2:30 PM” or a date with a UTC offset, rather than requiring ISO 8601. A value they can’t parse is rejected, rather than clearing the field, and a field’s instructions no longer replace the description of its format.
 - The MCP server’s `mcp:use` OAuth scope has been replaced with `mcp:read`, `mcp:write`, and `mcp:admin`. Users now choose an access level when they authorize an MCP client, defaulting to read only, and only administrators are offered full access. Clients that authorize again keep the earlier level without another prompt. ([#20080](https://github.com/craftcms/cms/pull/20080))
 - The MCP server now only shows and accepts the custom fields that users can see and edit in an element’s edit form, as field layouts’ conditions allow. ([#20091](https://github.com/craftcms/cms/pull/20091))
@@ -176,6 +177,7 @@
 - Added `CraftCms\Cms\Element\Element::showSitesField()`, `sitesFieldHtml()`, and `sitesNodes()`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Added `CraftCms\Cms\Ui\Controls\ElementSites`. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Element details panels’ content is no longer padded by the details pane. Panels registered via `Cp.$elementDetailsPanels` with a `component` should set their own padding, using `--cp-container-padding` for the inline padding. ([#19919](https://github.com/craftcms/cms/pull/19919))
+- Element chips and cards now update when their elements are saved or their drafts are deleted, on any open control panel page, including the page where the change was made. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - `Craft.createElementEditor()` now opens the element editor in a Vue slideout on control panel pages that have them, rather than in the legacy `Craft.ElementEditorSlideout`. It returns an object with the legacy slideout’s `submit`, `load` and `close` events, `close()` method, and `elementEditor` `update` event. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - `elements/save-draft` action responses now include a `canDeleteForSite` key. ([#20061](https://github.com/craftcms/cms/pull/20061))
 - Deprecated `Cp.$elementDetailsTabs`, its `tabs` property, and the `ElementDetailsTab*` types. `Cp.$elementDetailsPanels`, its `panels` property, and the `ElementDetailsPanel*` types should be used instead.
@@ -281,6 +283,7 @@
 - The control panel no longer loads Fabric.js. `craft\web\assets\fabric\FabricAsset` is now deprecated and doesn’t register Fabric.js, so plugins that rely on it should bundle it themselves. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - `CraftCms\Cms\Asset\Assets::getAssetById()` now returns the asset in another site if it doesn’t exist in the requested site, when no site ID is passed. ([#20060](https://github.com/craftcms/cms/pull/20060))
 - Deprecated `Craft.AssetImageEditor`. `Craft.openAssetImageEditor()` should be used instead. Constructing it now opens the image editor dialog, and only its `onSave` setting is supported. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- The upgrade error for filesystems without a matching Laravel disk now suggests an equivalent disk for Amazon S3, Google Cloud Storage, Azure Blob Storage, DigitalOcean Spaces, Linode Object Storage, and Cloudflare R2 filesystems, and references their credentials with `env()` rather than printing them. ([#20471](https://github.com/craftcms/cms/pull/20471))
 - Removed `CraftCms\Cms\Asset\Elements\Asset::$keptFile`, and the `assets` table’s `keptFile` column. `$trashedFileExists` should be used instead. ([#20093](https://github.com/craftcms/cms/pull/20093))
 - Fixed a bug where files uploaded to Assets fields when saving an element, such as from front-end forms, weren’t held to the `maxUploadFileSize` config setting, and were left behind as assets when the element couldn’t be saved because a file wasn’t allowed in the field.
 
@@ -304,6 +307,7 @@
 - Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table columns with invalid settings are now flagged in the Table field’s settings, and link setting validation errors in Link, Markdown, and Table fields now name the setting. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Link cells in Table fields now truncate long URLs, so columns keep their configured widths.
+- Table fields’ Lightswitch, Checkbox, and Dropdown columns now take values pasted from a spreadsheet: yes/no words such as “TRUE” and “no”, and options’ values or labels. Pasted values a column can’t take, such as text in a Number column, are skipped rather than clearing the cell.
 - Read-only Markdown fields’ values can now be focused, selected, and scrolled, rather than being disabled. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - The Markdown field’s default toolbar now only includes bold, italic, code, list, link, and preview buttons. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
@@ -648,6 +652,7 @@
 - Section and Matrix site settings now have a single “Route To” setting, in place of separate Route Type and Route settings. Namespaced controller actions and values that match a named route are saved as routes, and anything else is saved as a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - “Route To” settings now suggest the app’s named routes and controller actions, as well as templates. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Matrix fields’ Site Settings tables now have a narrow Site column, and give the Entry URI Format and Route To columns equal widths, as Sections’ do.
+- Site error pages are rendered from an `errors/` folder within the site templates again, such as `resources/views/errors/404.twig`, `errors/_404.twig`, or `errors/404.blade.php`, with `errors/offline` and `errors/error` as fallbacks, and a site’s own template folder takes precedence, such as `resources/views/siteHandle/errors/404.twig`. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Added `CraftCms\Cms\Route\ElementRoute::isRoute()`, which determines whether an element site settings destination refers to a route or a template. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added `CraftCms\Cms\Cp\SelectOptions::getRouteSuggestions()`, which returns the app’s named routes and controller actions, optionally limited to those that accept a given element type. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added `CraftCms\Cms\Element\Data\ElementSiteSettings::destinationColumn()`, which replaces `routeColumn()`. ([#19942](https://github.com/craftcms/cms/pull/19942))
@@ -661,6 +666,14 @@
 - Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
 
 ### Extensibility
+- Added `CraftCms\Cms\Route\RedirectRule` and `CraftCms\Cms\Route\Events\Redirecting`, which apply and customize `config/redirects.php` rules. ([#20448](https://github.com/craftcms/cms/pull/20448))
+- Added `CraftCms\Cms\Element\Element::query()`. Static calls to element classes that aren’t macros, such as `Entry::section('news')`, now return a new element query, as they do on Eloquent models. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Added `CraftCms\Cms\Element\Queries\ElementQuery::toBase()`, which returns a base query builder with the query’s params applied. Element queries passed to Laravel query builder methods that take a subquery, such as `whereIn()`, `whereExists()`, `joinSub()`, and `selectSub()`, are now converted with it. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Closures passed to element queries’ `where()`, `orWhere()`, `whereNot()`, and `orWhereNot()` now receive an element query of the same type, so element query params and custom field handles can be used in nested conditions. Closures whose first parameter is typed as `Illuminate\Database\Query\Builder` still receive a base query builder. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Element query execution methods, such as `get()`, `first()`, `count()`, and `ids()`, now run on a prepared copy of the query, as Eloquent applies scopes to a copy. `first()` and the paginators no longer leave a limit or offset on the query. Element query classes that override an execution method and call the parent method now run the override twice: once on the query and once on its copy. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Element queries’ `get()`, `first()`, `find()`, and paginators now select the columns passed to them, unless the query has its own `select()` or `addSelect()`, as Eloquent queries do. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Element queries with a custom `select()` now name columns without their table, as SQL does, so `select('elements.id')` returns an `id` column, and only queries that select their default columns get the structure columns. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Unioned element queries no longer get a default order, as in Laravel, so `orderBy()` after `union()` orders the combined result. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Added `CraftCms\Cms\User\Elements\User::photoColors()`, which returns the two colors of a user’s default photo’s gradient.
 - Added `CraftCms\Cms\Translation\Locale::getLanguageTag()`, and the `Craft.formattingLocale` JavaScript variable, which hold the formatting locale as a BCP 47 language tag for `Intl` APIs. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Utility\Utility::subpageTitle()`, which titles a utility’s subpages and gives them a breadcrumb back to the utility. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -702,6 +715,9 @@
 - Nested elements now have a `$touchOwnersOnSave` property.
 - `CraftCms\Cms\Element\ElementHelper::normalizeSlug()` now has a `$language` argument, which defaults to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
 - `CraftCms\Cms\Support\Str::lower()`, `::title()`, and `::upper()` now have `$language` arguments, which default to the current application language. ([#19558](https://github.com/craftcms/cms/pull/19558))
+- Element saves and draft deletions made during control panel requests, including plugins’, are now announced to every open control panel tab, so their chips, cards, and editors update without client-side `broadcast()` calls. ([#20419](https://github.com/craftcms/cms/pull/20419))
+- Messages queued with `session()->broadcastToJs()` now reach every open control panel tab, sent with the next page after a redirect, or in an `X-Craft-Broadcast` header on action responses. ([#20419](https://github.com/craftcms/cms/pull/20419))
+- `Craft.refreshElementInstances()` now refreshes `craft-chip` and `craft-card` instances too. ([#20419](https://github.com/craftcms/cms/pull/20419))
 - Removed the `plugin-store/craft-data` and `plugin-store/save-plugin-license-keys` actions.
 - Removed `CraftCms\Cms\Plugin\Contracts\PluginInterface::createSettingsModel()`. The static `createSettings()` must be implemented instead. (`createSettingsModel()` remains supported for plugins extending `craft\base\Plugin` through the Yii adapter.) ([#19574](https://github.com/craftcms/cms/pull/19574))
 - Removed `Craft.AuthManager` and `Craft.cp.authManager`, which no longer had a remaining session time to act on. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -726,6 +742,7 @@
 - Uploads staged on an S3 disk are now copied into their volume within S3, rather than downloaded and uploaded again, when the volume’s disk uses the same credentials and endpoint. ([#20103](https://github.com/craftcms/cms/pull/20103))
 
 ### System
+- With the Yii adapter installed, email is now sent through the mail transport adapter saved in the project config, including ones provided by plugins, until a Laravel mailer is configured. Saving Settings → Email now keeps the transport adapter settings. ([#20502](https://github.com/craftcms/cms/pull/20502))
 - An element editor or queue indicator left open no longer keeps the user’s session from expiring. ([#20086](https://github.com/craftcms/cms/pull/20086))
 - MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files (e.g. `ssl-ca` or `disable-ssl-verify-server-cert`), if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
@@ -744,6 +761,39 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where class-level Yii element event handlers attached to `craft\base\Element` or `craft\base\ElementInterface`, such as `afterSave` and `afterDelete` handlers, weren’t called, and handlers attached to native element classes were called several times. ([#20494](https://github.com/craftcms/cms/pull/20494))
+- Fixed a bug where `EVENT_AFTER_REQUEST` handlers and `Craft::$app->onAfterRequest()` callbacks weren’t called after console commands, and `onAfterRequest()` callbacks added by queued jobs weren’t called. They’re now called once the job that added them finishes. ([#20494](https://github.com/craftcms/cms/pull/20494))
+- Fixed a bug where autosuggest fields saved an empty value when the typed text matched a suggestion without choosing it, such as an email address matching an environment variable’s value. ([#20476](https://github.com/craftcms/cms/pull/20476))
+- Fixed an error when force-uninstalling a plugin whose package had already been removed, such as with `craft:plugin:uninstall --force`, which left its install record behind. ([#20475](https://github.com/craftcms/cms/pull/20475))
+- Fixed a bug where workflow notifications showed an empty title (“”) for untitled drafts, such as new entries submitted for review before they had a title. ([#20465](https://github.com/craftcms/cms/pull/20465))
+- Fixed a bug where spreadsheet cells containing line breaks or tabs were split across several Table field cells when pasted, with their quotes left in.
+- Fixed a bug where editable tables keyed by number, such as Yii adapter plugin fields’ tables, listed their rows in numeric order rather than their own order. ([#20479](https://github.com/craftcms/cms/pull/20479))
+- Fixed a bug where site error templates weren’t rendered, and unknown site URLs returned an empty 404 response. ([#20448](https://github.com/craftcms/cms/pull/20448))
+- Fixed a bug where `config/redirects.php` rules weren’t applied. ([#20448](https://github.com/craftcms/cms/pull/20448))
+- Fixed a bug where the “Show full exception views when Dev Mode is disabled” user preference had no effect. ([#20448](https://github.com/craftcms/cms/pull/20448))
+- Fixed a bug where errors thrown while rendering Twig templates, such as `TypeError`s, pointed at the compiled template rather than the template’s source. ([#20448](https://github.com/craftcms/cms/pull/20448))
+- Fixed a bug where element queries with a top-level `orWhere()` could return disabled, trashed, draft, and other elements that the query’s params excluded. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed a bug where params set on an element query after it had run, such as a param added between `count()` and `all()`, were ignored. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed a bug where dates passed to element queries’ `where()` methods, such as `where('postDate', '<=', now())`, were compared in the system time zone rather than UTC. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed a bug where element queries’ `value()` returned the wrong column. `value()`, `soleValue()`, and `valueOrFail()` now return the first element’s attribute, so custom fields return their normalized values. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed errors when passing custom field handles, or columns that several joined tables share such as `id`, to element queries’ `where()` methods, `groupBy()`, `pluck()`, `sum()`, `avg()`, `min()`, `max()`, or `count()`. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed a bug where element queries passed to `whereIn()` or `whereNotIn()` were bound as element objects, so `whereNotIn()` matched nothing on MySQL and SQLite. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed errors when calling `chunkById()`, `lazyById()`, `latest()`, `oldest()`, `cursorPaginate()`, or `union()` on element queries. `latest()` and `oldest()` now default to `dateCreated`. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed an error when using `groupBy()` with a custom `select()` on element queries on PostgreSQL. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed an error when selecting a custom field with element queries’ `select()` on SQLite. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed a bug where macros registered on one element query, element, or component class, such as `EntryQuery` or a field type, were available on all of them, and macros registered on `Element` didn’t apply to users. ([#20450](https://github.com/craftcms/cms/pull/20450))
+- Fixed a bug where Carbon dates passed to `CraftCms\Cms\Field\Field::serializeValue()` were serialized as arrays rather than ISO-8601 strings, so Yii adapter plugin fields that stored dates couldn’t load them back. ([#20477](https://github.com/craftcms/cms/pull/20477))
+- Fixed a bug where Craft 5 config settings that were deprecated or removed were ignored when set from an array-based general config with the Yii adapter installed.
+- Fixed a bug where deprecated config settings didn’t log deprecation warnings when they were set from environment variables or after the application had booted.
+- Fixed an error that occurred when a Craft 5 general config called `enableBasicHttpAuth()` or `tempAssetUploadFs()` with the Yii adapter installed.
+- Fixed a bug where editable tables in Yii adapter plugin fields, such as those rendered with `craft\helpers\Cp::editableTableFieldHtml()`, showed no rows in element editors, and saving the element cleared them. ([#20478](https://github.com/craftcms/cms/pull/20478))
+- Fixed a bug where CSRF protection stayed off when the `enableCsrfProtection` config setting was set to `false` and then back to `true`, such as with a `CRAFT_ENABLE_CSRF_PROTECTION` environment variable, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
+- Fixed a bug where the `enableCsrfProtection`, `secureHeaders`, and `trustedHosts` config settings had no effect when Laravel’s config was cached, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
+- Fixed a bug where `craft:plugin:install` and `craft:plugin:uninstall` reported success when a Yii adapter plugin’s `Install` migration failed, leaving the plugin installed without its tables. ([#20458](https://github.com/craftcms/cms/pull/20458))
+- Fixed errors when Yii adapter migrations called `addForeignKey()`, `dropTableIfExists()`, or `archiveTableIfExists()` on SQLite. ([#20458](https://github.com/craftcms/cms/pull/20458))
+- Fixed a bug where Yii adapter plugin fields’ `init()` methods weren’t called, so fields that set default settings there didn’t get them. ([#20480](https://github.com/craftcms/cms/pull/20480))
+- Fixed a bug where menus and other popovers could reopen, away from their button, when they were closed right after being opened, such as by choosing “Move down” from a reorder menu straight away.
+- Fixed a bug where Yii adapter components that use environment variables in their settings, such as filesystems, saved the variables’ values instead of their `$VARIABLE` references, which wrote secrets to the project config. ([#20470](https://github.com/craftcms/cms/pull/20470))
 - Fixed a bug where users with an authenticator app or recovery codes couldn’t sign in to the control panel, because the verification step showed an empty pane.
 - Fixed a bug where the control panel could error after updating Craft, when Laravel’s compiled Blade views were newer than the updated views they were compiled from. Compiled views are now cleared after updates, and the Caches utility has a “Compiled views” option. ([#20366](https://github.com/craftcms/cms/issues/20366), [#20374](https://github.com/craftcms/cms/pull/20374))
 - Fixed a bug where elements couldn’t be selected, edited inline, or reordered on element indexes when the `allowAdminChanges` config setting was disabled, and the “Changes to these settings aren’t permitted in this environment.” notice was shown on screens other than settings, and twice on the Settings and Sites index pages. ([#20339](https://github.com/craftcms/cms/issues/20339), [#20340](https://github.com/craftcms/cms/issues/20340), [#20344](https://github.com/craftcms/cms/issues/20344), [#20364](https://github.com/craftcms/cms/pull/20364))
@@ -1203,6 +1253,11 @@
 - Fixed a bug where text and number controls with `autofocus()` weren’t focused when they were shown after the page loaded, such as in modals and slideouts. They also no longer autofocus on mobile browsers, or for users who have disabled autofocus. ([#20373](https://github.com/craftcms/cms/pull/20373))
 - Fixed a bug where Assets fields’ thumbnail tiles could overflow into the next field when the field’s column was too narrow for the thumbnail size. ([#20392](https://github.com/craftcms/cms/issues/20392))
 - Fixed a bug where relational fields’ “Add” and “Upload files” buttons overlapped when the field was too narrow for them. ([#20423](https://github.com/craftcms/cms/pull/20423))
+- Fixed a bug where HTTP errors thrown by legacy plugin controllers through the Yii adapter, such as `yii\web\ForbiddenHttpException` and `yii\web\BadRequestHttpException`, returned a 500 response rather than their own status code. ([#20457](https://github.com/craftcms/cms/pull/20457))
+- Fixed a bug where `craft.app.session.hasFlash()`, `getFlash()`, and `getAllFlashes()` didn’t return messages flashed to the Laravel session on site requests, with the Yii adapter installed. ([#20472](https://github.com/craftcms/cms/pull/20472))
+- Fixed a bug where values cached through the Yii adapter with a Craft 6 cache dependency, such as element cache info, were never read back, so legacy plugins like Element API never got a cache hit. ([#20481](https://github.com/craftcms/cms/pull/20481))
+- Fixed a bug where headers and cache settings set with `CraftCms\Cms\Support\Facades\ResponseHeaders`, such as with the `{% header %}` and `{% expires %}` tags, weren’t applied to JSON, redirect, and file responses. ([#20482](https://github.com/craftcms/cms/pull/20482))
+- Fixed a bug where `Craft::$app->mailer` sent email through Laravel’s default mailer rather than the mailer chosen in Settings → Email, with the Yii adapter installed. ([#20488](https://github.com/craftcms/cms/pull/20488))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

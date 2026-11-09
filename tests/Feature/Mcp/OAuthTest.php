@@ -187,6 +187,43 @@ it('uses configured base URLs rather than the request host in OAuth metadata', f
         ->assertJsonPath('registration_endpoint', $expectedResource.'/oauth/register');
 })->with(['control panel endpoint' => true, 'site endpoint' => false]);
 
+it('keeps OAuth on the control panel’s own domain without a control panel trigger', function (): void {
+    $cpTrigger = Cms::config()->cpTrigger;
+    Cms::config()->cpTrigger = null;
+    Cms::config()->baseCpUrl('https://cp.example.test');
+    config()->set('app.url', 'https://site.example.test');
+
+    try {
+        enableMcp(['route' => '/mcp', 'authorizationRoute' => '/mcp/auth']);
+
+        $this->getJson('https://cp.example.test/.well-known/oauth-protected-resource/mcp/auth')
+            ->assertOk()
+            ->assertJsonPath('resource', 'https://cp.example.test/mcp/auth')
+            ->assertJsonPath('authorization_servers.0', 'https://cp.example.test/mcp/auth');
+
+        $this->getJson('https://cp.example.test/.well-known/oauth-authorization-server/mcp/auth')
+            ->assertOk()
+            ->assertJsonPath('issuer', 'https://cp.example.test/mcp/auth')
+            ->assertJsonPath('authorization_endpoint', 'https://cp.example.test/mcp/auth/oauth/authorize')
+            ->assertJsonPath('token_endpoint', 'https://cp.example.test/oauth/token')
+            ->assertJsonPath('registration_endpoint', 'https://cp.example.test/mcp/auth/oauth/register');
+    } finally {
+        Cms::config()->cpTrigger = $cpTrigger;
+    }
+});
+
+it('challenges requests without access tokens when the OAuth signing keys are missing', function (array $headers): void {
+    config()->set('passport.private_key');
+    config()->set('passport.public_key');
+
+    $this->postJson(route('craft.mcp.server'), McpRequest::payload('initialize'), [...McpRequest::headers('initialize'), ...$headers])
+        ->assertUnauthorized()
+        ->assertHeader('WWW-Authenticate');
+})->with([
+    'no authorization' => [[]],
+    'basic authorization' => [['Authorization' => 'Basic dXNlcjpwYXNz']],
+]);
+
 it('serves the endpoint and OAuth metadata from current settings when routes are cached', function (): void {
     // Cache routes from before MCP was enabled, then boot again, as the next request would
     $routes = new RouteCollection;

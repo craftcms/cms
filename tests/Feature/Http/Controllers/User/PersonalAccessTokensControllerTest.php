@@ -11,6 +11,7 @@ use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\User\UserPermissions;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use Inertia\Testing\AssertableInertia;
@@ -118,6 +119,49 @@ it('lists authorized MCP clients for users who can’t create tokens', function 
             ->where('grants.0.name', 'MCP client')
             ->where('grants.0.scopes', ['mcp' => ['mcp:read']])
             ->where('craft.currentUser.showTokens', true));
+});
+
+it('only shows the screen to admins, to explain how to set up keys, without valid signing keys', function (?string $privateKey): void {
+    registerTestScopeGroup();
+    config()->set('passport.private_key', $privateKey);
+    Passport::loadKeysFrom(sys_get_temp_dir().'/craft-missing-passport-keys');
+
+    try {
+        get(action([PersonalAccessTokensController::class, 'index']))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('users/Tokens')
+                ->where('hasKeys', false));
+
+        // Requests made directly to the action are rejected too, rather than failing when signing the token
+        postJson(action([PersonalAccessTokensController::class, 'store']), [
+            'name' => 'Build script',
+            'scopes' => ['test-api:read'],
+            'expiresIn' => 7,
+        ])->assertBadRequest()->assertJsonPath('message', 'Tokens can’t be created until Craft has OAuth signing keys.');
+
+        $this->user->update(['admin' => false]);
+        app(UserPermissions::class)->saveUserPermissions($this->user->id, ['accessCp']);
+        actingAs($this->user->fresh());
+
+        get(action([PersonalAccessTokensController::class, 'index']))->assertForbidden();
+        get(action([PreferencesController::class, 'index']))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.showTokens', false));
+    } finally {
+        Passport::$keyPath = null;
+    }
+})->with([
+    'missing' => [null],
+    'malformed' => ['not a key'],
+]);
+
+it('shows the screen when the signing keys are set', function (): void {
+    registerTestScopeGroup();
+
+    get(action([PersonalAccessTokensController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('hasKeys', true));
 });
 
 it('requires an elevated session to create a token', function (): void {
