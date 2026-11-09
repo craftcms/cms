@@ -63,7 +63,10 @@ export default class CraftField extends FieldNotices(
     return [visuallyHiddenStyles, baseFieldStyles, styles];
   }
 
-  /** Renders the required indicator inside the label. */
+  /**
+   * Renders the required indicator inside the label, and marks the control
+   * it labels `aria-required="true"`.
+   */
   @property({type: Boolean, reflect: true}) required = false;
 
   /** Renders the translation icon inside the label. */
@@ -144,6 +147,9 @@ export default class CraftField extends FieldNotices(
   /** The slotted control the field last wired up. */
   private __enhancedInput: HTMLElement | null = null;
 
+  /** The native control the field marked `aria-required`, if it did. */
+  private __requiredNode: HTMLElement | null = null;
+
   override connectedCallback(): void {
     super.connectedCallback();
     this.__enhancedInput = this._inputNode ?? null;
@@ -155,6 +161,7 @@ export default class CraftField extends FieldNotices(
       // Nested controls initialize their ARIA references after the field connects.
       this.addToAriaLabelledBy(this._labelNode);
       this.__wireDescribedBy();
+      this.__syncRequiredState();
     });
   }
 
@@ -215,6 +222,13 @@ export default class CraftField extends FieldNotices(
     }
 
     if (
+      changedProperties.has('required') ||
+      changedProperties.has('fieldset')
+    ) {
+      this.__syncRequiredState();
+    }
+
+    if (
       changedProperties.has('label') ||
       changedProperties.has('required') ||
       changedProperties.has('translatable') ||
@@ -253,6 +267,7 @@ export default class CraftField extends FieldNotices(
     super._enhanceLightDomA11y();
     this.__wireDescribedBy();
     this.__syncFieldsetSemantics();
+    this.__syncRequiredState();
   }
 
   protected _onLabelClick(): void {
@@ -507,6 +522,7 @@ export default class CraftField extends FieldNotices(
     this.__enhanceSwappedInput();
     this.__wireDescribedBy();
     this.__syncFieldsetSemantics();
+    this.__syncRequiredState();
     this.__syncHasErrors();
     this.__syncLabelDecorations();
     this.__syncHasMaxlength();
@@ -566,6 +582,44 @@ export default class CraftField extends FieldNotices(
     // write them onto the new input.
     this._ariaLabelledNodes = [...this._ariaLabelledNodes];
     this._ariaDescribedNodes = [...this._ariaDescribedNodes];
+  }
+
+  /**
+   * The native control the label names: the slotted input itself, or the one
+   * inside a slotted form control component. `null` in group mode, where the
+   * label names the host, or when it isn't an `input`, `select` or
+   * `textarea`, which manage their own state.
+   */
+  private __nativeControl(): HTMLElement | null {
+    if (this.getAttribute('role') === 'group') {
+      return null;
+    }
+
+    const target = this.__formControlTarget();
+    const node = target
+      ? ((target as {_inputNode?: HTMLElement | null})._inputNode ?? null)
+      : (this._inputNode ?? null);
+
+    return node?.matches('input, select, textarea') ? node : null;
+  }
+
+  /**
+   * Marks the control the label names as required, so it's announced as
+   * required, as the label's indicator shows. Leaves alone a control that
+   * set `aria-required` itself.
+   */
+  private __syncRequiredState(): void {
+    const node = this.required ? this.__nativeControl() : null;
+
+    if (this.__requiredNode && this.__requiredNode !== node) {
+      this.__requiredNode.removeAttribute('aria-required');
+      this.__requiredNode = null;
+    }
+
+    if (node && !node.hasAttribute('aria-required')) {
+      node.setAttribute('aria-required', 'true');
+      this.__requiredNode = node;
+    }
   }
 
   private __formControlTarget(): FormControlTarget | undefined {
