@@ -2291,6 +2291,27 @@ describe('useElementEditor', () => {
     expect(save.last().data).toMatchObject({addAnother: 1});
   });
 
+  it('submits once when saved again while beforeSave still waits', async () => {
+    let allow!: (proceed: boolean) => void;
+    const beforeSave = vi.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          allow = resolve;
+        })
+    );
+    const {editor} = mount(payload({}), null, {beforeSave});
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    editor.save();
+    editor.save();
+    allow(true);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(beforeSave).toHaveBeenCalledOnce();
+    expect(save.calls()).toBe(1);
+  });
+
   it('drops a save still waiting on beforeSave once the editor is removed', async () => {
     let allow!: (proceed: boolean) => void;
     const {editor} = mount(payload({}), null, {

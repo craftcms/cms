@@ -19,6 +19,7 @@ import {
   nextTick,
   onBeforeUnmount,
   onScopeDispose,
+  readonly,
   ref,
   shallowRef,
   watch,
@@ -1047,6 +1048,9 @@ export function useElementEditor({
   let unmounted = false;
   onBeforeUnmount(() => (unmounted = true));
 
+  /** Whether a save is waiting on `beforeSave`, before it submits. */
+  const savePending = ref(false);
+
   function save(options?: FormSaveOptions): void {
     if (!beforeSave) {
       submit(options);
@@ -1054,21 +1058,29 @@ export function useElementEditor({
       return;
     }
 
+    // One save at a time: another Save while this one waits would submit too.
+    if (savePending.value) {
+      return;
+    }
+
     // The action owns only the submission it was chosen for, which its caller
     // stops waiting for on the next tick, well before `beforeSave` settles.
     const action = pendingAction.value;
+    savePending.value = true;
 
-    void beforeSave().then((proceed) => {
-      // Nor once the editor is gone, as another submission can take the page
-      // away while this one waits.
-      if (!proceed || unmounted) {
-        return;
-      }
+    void beforeSave()
+      .then((proceed) => {
+        // Nor once the editor is gone, as another submission can take the page
+        // away while this one waits.
+        if (!proceed || unmounted) {
+          return;
+        }
 
-      pendingAction.value = action;
-      submit(options);
-      void nextTick(() => (pendingAction.value = null));
-    });
+        pendingAction.value = action;
+        submit(options);
+        void nextTick(() => (pendingAction.value = null));
+      })
+      .finally(() => (savePending.value = false));
   }
 
   /**
@@ -1455,6 +1467,7 @@ export function useElementEditor({
     refreshUi,
     saveForShortcut,
     settleChanges,
+    savePending: readonly(savePending),
     refreshLayout,
     formValues,
     save,

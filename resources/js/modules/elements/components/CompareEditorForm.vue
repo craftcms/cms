@@ -104,6 +104,7 @@
     refreshLayout,
     renderer,
     save,
+    savePending,
     saveForShortcut,
     settleChanges,
     uiPayload,
@@ -322,8 +323,8 @@
           <craft-button
             type="button"
             :variant="ButtonVariant.Primary"
-            .loading="form.processing"
-            .disabled="form.processing"
+            .loading="form.processing || savePending"
+            .disabled="form.processing || savePending"
             @click="save()"
           >
             {{ payload.editorActions.primary.label ?? t('Save') }}
