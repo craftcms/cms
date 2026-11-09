@@ -651,7 +651,7 @@ it.each([
     lose(popover);
 
     await expect.poll(() => paneIsShown(popover)).toBe(false);
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
 
     regain(popover);
 

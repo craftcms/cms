@@ -400,7 +400,7 @@ export default class CraftPopover extends LitElement {
       if (this.#popper?.state.elements.reference !== reference) {
         this.#position();
       }
-    } else if (this.#awaitingReference && this.opened) {
+    } else if (this.#awaitingReference && this.open) {
       this.#showPane();
     }
   }

@@ -357,7 +357,7 @@ it('hides while open if for names no element, and shows beside the next one it n
   await after(50);
 
   expect(content.checkVisibility()).toBe(false);
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 
   tooltip.for = 'second';
   await tooltip.updateComplete;
@@ -381,7 +381,7 @@ it('hides while open once its slotted invoker is removed, and shows beside the n
   await after(50);
 
   expect(content.checkVisibility()).toBe(false);
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 
   const replacement = document.createElement('button');
   replacement.type = 'button';
