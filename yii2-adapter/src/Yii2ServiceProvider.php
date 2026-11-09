@@ -101,10 +101,14 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Override;
 use PDOException;
+use ReflectionMethod;
+use ReflectionObject;
+use ReflectionProperty;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 use yii\base\Application as YiiApplication;
+use yii\base\Behavior;
 use yii\base\ExitException;
 use yii\web\HttpException as YiiHttpException;
 use yii\web\NotFoundHttpException as YiiNotFoundHttpException;
@@ -440,7 +444,36 @@ class Yii2ServiceProvider extends ServiceProvider
             foreach (array_keys($legacyVariable->getComponents()) as $name) {
                 CraftVariable::macro($name, fn() => $legacyVariable->get($name));
             }
+
+            foreach ($legacyVariable->getBehaviors() as $behavior) {
+                $this->registerCraftVariableBehavior($behavior);
+            }
         });
+    }
+
+    /**
+     * Exposes the public properties and methods of a behavior attached to the legacy `craft` variable,
+     * such as `craft.commerce` or `craft.shopifyProducts()`.
+     */
+    private function registerCraftVariableBehavior(Behavior $behavior): void
+    {
+        $reflection = new ReflectionObject($behavior);
+
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            $name = $property->getName();
+
+            if (!$property->isStatic() && !property_exists(Behavior::class, $name)) {
+                CraftVariable::macro($name, fn() => $behavior->$name);
+            }
+        }
+
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            $name = $method->getName();
+
+            if (!$method->isStatic() && !method_exists(Behavior::class, $name)) {
+                CraftVariable::macro($name, fn(mixed ...$args) => $behavior->$name(...$args));
+            }
+        }
     }
 
     /**
