@@ -27,6 +27,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving;
 use CraftCms\Cms\Gql\AssetTransformContext;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
@@ -65,6 +66,7 @@ use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Database\Migrator;
 use CraftCms\Yii2Adapter\Element\LegacyElementEditorScreen;
 use CraftCms\Yii2Adapter\Field\MatrixBlockHtml;
+use CraftCms\Yii2Adapter\FieldLayout\LegacyLayoutElementHtml;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Gql\LegacyGql;
 use CraftCms\Yii2Adapter\Gql\LegacyGqlArguments;
@@ -347,6 +349,7 @@ class Yii2ServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(ElementEditorPayloadResolving::class, LegacyElementEditorScreen::class);
+        Event::listen(FieldLayoutElementControlResolving::class, LegacyLayoutElementHtml::class);
 
         $kernel = $this->app->make(HttpKernel::class);
         $middleware = array_values(array_filter(
