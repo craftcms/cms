@@ -1,4 +1,4 @@
-import {html, LitElement, render, type PropertyValues} from 'lit';
+import {html, LitElement, nothing, render, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import styles from './select-rich.styles.js';
 import CraftOption from '../option/option.js';
@@ -323,6 +323,16 @@ export default class CraftSelectRich extends FormAssociated(
     emitChange(this);
   }
 
+  /**
+   * What the field shows for the selected option, or with none selected. A
+   * copy of the option's content by default.
+   */
+  protected _selectedTemplate(option: CraftOption | undefined): unknown {
+    return option
+      ? [...option.childNodes].map((node) => node.cloneNode(true))
+      : nothing;
+  }
+
   #syncInvoker(): void {
     const invoker = this._inputNode;
     if (!invoker) {
@@ -335,12 +345,7 @@ export default class CraftSelectRich extends FormAssociated(
     invoker.id ||= this._inputId;
     invoker.singleOption = single;
     invoker.disabled = this.#disabled;
-    render(
-      selected
-        ? [...selected.childNodes].map((node) => node.cloneNode(true))
-        : '',
-      invoker
-    );
+    render(this._selectedTemplate(selected), invoker);
 
     // With one option there's nothing to open, but the field still says
     // what it is and what it holds.

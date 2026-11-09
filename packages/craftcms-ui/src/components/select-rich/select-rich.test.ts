@@ -1,7 +1,15 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 
-import './select-rich.js';
-import type CraftSelectRich from './select-rich.js';
+import {html} from 'lit';
+import CraftSelectRich from './select-rich.js';
+import type CraftOption from '../option/option.js';
+
+class TestSelectRich extends CraftSelectRich {
+  protected override _selectedTemplate(option: CraftOption | undefined) {
+    return html`<b>${option?.value ?? 'none'}</b>`;
+  }
+}
+customElements.define('test-select-rich', TestSelectRich);
 
 async function createSelectRich(
   attrs: Record<string, string> = {}
@@ -63,5 +71,18 @@ describe('craft-select-rich', () => {
     const element = await createSelectRich({small: ''});
 
     expect(element.hasAttribute('small')).toBe(true);
+  });
+
+  it('lets a subclass choose what the field shows for the selection', async () => {
+    const element = document.createElement('test-select-rich');
+    element.innerHTML =
+      '<craft-option value="apple">Apple</craft-option>' +
+      '<craft-option value="pear" selected>Pear</craft-option>';
+    document.body.append(element);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(element.querySelector('craft-select-invoker')?.textContent).toBe(
+      'pear'
+    );
   });
 });

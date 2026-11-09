@@ -5,10 +5,12 @@ import '../icon/icon.js';
 
 /**
  * @summary The field of a {@link CraftSelectRich}: it shows the selected
- * option and opens the listbox. The select puts a copy of the selected
- * option's content in it and wires up its semantics.
+ * option and opens the listbox. The select renders its `_selectedTemplate()`
+ * into it and wires up its semantics. It's in the select's light DOM so it
+ * can point at the options by id, and has a shadow root of its own to lay
+ * out the selection and its chevron, which the select's styles can't reach.
  *
- * @slot - The selected option's content.
+ * @slot - What the select shows for the selected option.
  *
  * @since 1.0
  */
