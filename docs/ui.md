@@ -349,6 +349,37 @@ Resolution rejects unregistered types and non-JSON-safe properties. Either rende
 registered component is missing, its loader fails, or rendering throws. Do not catch these failures and submit a partial
 UI.
 
+### Copying and pasting field values
+
+Fields whose Control can be both read and written get "Copy value" and "Paste value" actions. A value can only be pasted
+into a Control drawn by the same component, in the same value scope (`Control::valueScope()`, which relation fields set
+to their field's UID). A Control component can narrow that further, and change how its copied values are previewed in
+the "copied" card, which shows their text by default:
+
+```ts
+Cp.booting((cp) => {
+  // Whether `control` takes this copied value, such as one that fits its max length.
+  cp.$ui.registerValueAcceptor('my-plugin:slug', (control, {value}) =>
+    typeof value === 'string' && value.length <= control.props.maxLength,
+  )
+
+  // A node to show in place of the value's text, or `null` to show the text.
+  // It's only for looking at: it can't take focus, and screen readers read the text.
+  cp.$ui.registerValuePreview('my-plugin:slug', ({value}) => {
+    const code = document.createElement('code')
+    code.textContent = String(value)
+    return code
+  })
+})
+```
+
+The preview gets the copied value, the props its Control named in `valueProps`, and the value as it was put on the
+clipboard: `text`, `html` when there was any, and `items` when it's a list or one of the Control's options: each item's
+`label`, with the option's `icon` and `color` when it has them. Controls without a preview of their own show items, such
+as selected options, as badges with their icons or colors, and other values as text. A preview may return a
+promise. If it throws or rejects, the card shows the value's text. Either one runs off the card's edges when it's too big
+for it, fading out as it reaches them.
+
 ## Modes, errors, and refresh
 
 Controls resolve to `editable`, `readOnly`, or `disabled` mode. Read-only and disabled Controls display canonical values

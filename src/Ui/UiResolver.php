@@ -242,6 +242,9 @@ class UiResolver
             readable: $control instanceof ReadableValueControl,
             writable: $control instanceof WritableValueControl,
             valueProps: $control instanceof ReadableValueControl ? $control->valueProps() : [],
+            valueScope: $control instanceof ReadableValueControl || $control instanceof WritableValueControl
+                ? $control->getValueScope()
+                : null,
         );
     }
 
