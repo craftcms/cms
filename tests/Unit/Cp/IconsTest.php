@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\Html;
 
 describe('resolveIconName', function () {
     it('maps legacy aliases', function () {
@@ -86,4 +87,18 @@ describe('svg', function () {
         expect($svg)->not->toContain('<?xml')
             ->and($svg)->toStartWith('<svg');
     })->with(['c-outline', 'c-debug', 'craft-cms', 'craft-partners', 'default-plugin']);
+
+    it('mirrors the original icon for flipped icon names', function (string $icon, string $original) {
+        $svg = Icons::svg($icon);
+        $originalSvg = Icons::svg($original);
+
+        expect($svg)->toContain('style="scale: -1 1;"')
+            ->and(Html::parseTagAttributes($svg)['viewBox'])->toBe(Html::parseTagAttributes($originalSvg)['viewBox'])
+            ->and(strip_tags($svg, '<path>'))->toBe(strip_tags($originalSvg, '<path>'))
+            ->and($originalSvg)->not->toContain('scale');
+    })->with([
+        'legacy name' => ['listrtl', 'list'],
+        'solid icon' => ['share-flip', 'share'],
+        'custom icon' => ['sidebar-nav-flip-light', 'sidebar-nav-light'],
+    ]);
 });
