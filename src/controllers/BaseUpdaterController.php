@@ -50,6 +50,12 @@ abstract class BaseUpdaterController extends Controller
     protected array $data = [];
 
     /**
+     * @var bool Whether the request’s data was signed with the global security key rather than the updater key.
+     * Responses are signed the same way, so the update can finish (or revert) whichever Craft version handles the next step.
+     */
+    protected bool $legacyData = false;
+
+    /**
      * @inheritdoc
      * @throws NotFoundHttpException if it’s not a control panel request
      * @throws BadRequestHttpException if there’s invalid data in the request
@@ -73,12 +79,29 @@ abstract class BaseUpdaterController extends Controller
                 throw new BadRequestHttpException();
             }
 
-            $data = Craft::$app->getSecurity()->validateData($data, $this->_dataKey());
-            if ($data === false) {
+            $security = Craft::$app->getSecurity();
+            $validated = $security->validateData($data, $this->_dataKey());
+
+            if ($validated === false) {
+                // Data signed with the global security key, by a Craft version that predates updater keys.
+                // Self-updates hit this once: Composer runs in the old process, and the next step runs on new code.
+                $validated = $security->validateData($data);
+                $this->legacyData = $validated !== false;
+            }
+
+            if ($validated === false) {
                 throw new BadRequestHttpException('Request contained invalid updater data.');
             }
 
-            $this->data = Json::decode($data);
+            $this->data = Json::decode($validated);
+
+            // Anything can be signed with the global key, so don't let legacy data reach Composer anonymously
+            if (
+                $this->legacyData &&
+                in_array($action->id, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE], true)
+            ) {
+                $this->requirePermission('performUpdates');
+            }
         }
 
         return true;
@@ -614,7 +637,10 @@ abstract class BaseUpdaterController extends Controller
      */
     private function _hashedData(): string
     {
-        return Craft::$app->getSecurity()->hashData(Json::encode($this->data), $this->_dataKey());
+        return Craft::$app->getSecurity()->hashData(
+            Json::encode($this->data),
+            $this->legacyData ? null : $this->_dataKey(),
+        );
     }
 
     /**

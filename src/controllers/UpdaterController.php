@@ -60,6 +60,10 @@ class UpdaterController extends BaseUpdaterController
             throw new ForbiddenHttpException('Updates are disabled.');
         }
 
+        if ($action->id === self::ACTION_REVERT && $this->legacyData) {
+            $this->requirePermission('performUpdates');
+        }
+
         return true;
     }
 
