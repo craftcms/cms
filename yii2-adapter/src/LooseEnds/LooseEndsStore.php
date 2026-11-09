@@ -33,6 +33,11 @@ class LooseEndsStore
     public const string FINDING_COUNT_CACHE_KEY = 'yii2-loose-ends:finding-count';
 
     /**
+     * The cache key that holds the error from the last failed attempt to save usage, until a later one succeeds.
+     */
+    public const string WRITE_ERROR_CACHE_KEY = 'yii2-loose-ends:write-error';
+
+    /**
      * How long to wait before writing runtime usage that was already written, in seconds.
      */
     private const int USAGE_WRITE_INTERVAL = 3600;
@@ -97,6 +102,7 @@ class LooseEndsStore
     {
         Schema::dropIfExists(self::TABLE);
         Cache::forget(self::FINDING_COUNT_CACHE_KEY);
+        Cache::forget(self::WRITE_ERROR_CACHE_KEY);
         $this->tableExists = false;
         $this->dropped = true;
     }
@@ -138,9 +144,13 @@ class LooseEndsStore
             } catch (Throwable $e) {
                 // Let the next occurrence try again, rather than waiting out the interval.
                 Cache::forget($cacheKey);
+                // The usage is lost, so the report mustn’t claim nothing depends on the adapter until saving works again.
+                rescue(fn() => Cache::forever(self::WRITE_ERROR_CACHE_KEY, $e->getMessage()), report: false);
 
                 throw $e;
             }
+
+            Cache::forget(self::WRITE_ERROR_CACHE_KEY);
         }
     }
 

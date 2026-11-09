@@ -223,6 +223,18 @@ it('doesn’t claim nothing depends on the adapter when recorded usage can’t b
     expect(fn() => LooseEndsUtility::contentHtml())->toThrow(RuntimeException::class, 'Database unavailable.');
 });
 
+it('reports usage that couldn’t be saved, rather than claiming nothing depends on the adapter', function(): void {
+    // A table without the columns the store writes makes the write fail.
+    Schema::create(LooseEndsStore::TABLE, fn(Blueprint $table) => $table->increments('id'));
+
+    LegacyUsage::record('project', 'Used by the project.', base_path('modules/Module.php'), 10);
+    app(LegacyUsage::class)->flush();
+
+    expect(LooseEndsUtility::contentHtml())
+        ->toContain('Usage of the Yii2 adapter couldn’t be saved.')
+        ->not->toContain('Your project no longer depends on the Yii2 adapter.');
+});
+
 it('shows the removal steps once nothing depends on the adapter', function(): void {
     $html = LooseEndsUtility::contentHtml();
 

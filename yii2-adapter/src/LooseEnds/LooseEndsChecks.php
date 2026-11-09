@@ -73,6 +73,7 @@ class LooseEndsChecks
             ...$this->generalConfigSettings(),
             ...$this->legacyEnvVars(),
             ...$this->mailTransport(),
+            ...$this->usageStorage(),
             ...$this->projectLayout(),
             ...$this->database(),
             ...$this->content(),
@@ -332,6 +333,31 @@ class LooseEndsChecks
                     'name' => is_subclass_of($type, TransportAdapterInterface::class) ? $type::displayName() : $type,
                 ], 'yii2-adapter'),
                 t('Choose a mailer in Settings → Email, or set `MAIL_MAILER`.', category: 'yii2-adapter'),
+            ),
+        ];
+    }
+
+    /**
+     * Reports a failure to save usage, as code paths that ran meanwhile aren’t listed.
+     *
+     * @return list<Finding>
+     */
+    public function usageStorage(): array
+    {
+        $error = Cache::get(LooseEndsStore::WRITE_ERROR_CACHE_KEY);
+
+        if (!is_string($error)) {
+            return [];
+        }
+
+        return [
+            $this->finding(
+                'usage.write-failed',
+                Section::Config,
+                Severity::Breaks,
+                t('Usage of the Yii2 adapter couldn’t be saved.', category: 'yii2-adapter'),
+                t('Make sure the database user can create the `{table}` table and write to it. Code that ran while saving failed isn’t listed, so this stays until usage is saved again.', ['table' => LooseEndsStore::TABLE], 'yii2-adapter'),
+                detail: $error,
             ),
         ];
     }
