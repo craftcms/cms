@@ -3182,7 +3182,7 @@ return [
     'Try again' => 'Skúsiť znova',
     'Try another way' => 'Vyskúšajte iný spôsob',
     'Try for free' => 'Vyskúšať zadarmo',
-    'Try running `composer install` from your terminal to resolve.' => 'Skúste problém vyriešiť zadaním príkazu `composer install` z terminálu.',
+    'Try running `{command}` from your terminal to resolve.' => 'Skúste problém vyriešiť zadaním príkazu `{command}` z terminálu.',
     'Try' => 'Skúsiť',
     'Trying again…' => 'Opakuje sa...',
     'Two-Step Verification Setup' => 'Nastavenie dvojstupňového overovania',

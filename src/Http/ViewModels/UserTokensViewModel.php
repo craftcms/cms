@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Auth\PersonalAccessTokens\ScopeGroup;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\User\Elements\User;
 
 /**
@@ -44,9 +45,13 @@ class UserTokensViewModel extends ViewModel
     /** Whether Passport has signing keys. Without them, the screen explains how to set them up. */
     public bool $hasKeys;
 
+    /** The command that generates the signing keys, as it should be run for the current environment. */
+    public string $keysCommand;
+
     public function __construct(User $user, PersonalAccessTokens $tokens)
     {
         $this->hasKeys = $tokens->hasKeys();
+        $this->keysCommand = app(TerminalCommands::class)->craft('passport:keys');
 
         $this->groups = $tokens->scopeGroupsFor($user)
             ->map(fn (ScopeGroup $group): array => [

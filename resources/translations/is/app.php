@@ -3182,7 +3182,7 @@ return [
     'Try again' => 'Reyndu aftur',
     'Try another way' => 'Prófaðu aðra leið',
     'Try for free' => 'Prófaðu ókeypis',
-    'Try running `composer install` from your terminal to resolve.' => 'Prófaðu að keyra \'composer install\' frá flugstöðinni þinni til að leysa það.',
+    'Try running `{command}` from your terminal to resolve.' => 'Prófaðu að keyra `{command}` frá flugstöðinni þinni til að leysa það.',
     'Try' => 'Reyndu',
     'Trying again…' => 'Reynir aftur…',
     'Two-Step Verification Setup' => 'Uppsetning tveggja þrepa staðfestingar',

@@ -8,6 +8,7 @@ use Closure;
 use Composer\Semver\VersionParser;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Commands\Concerns\BackupTrait;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -130,7 +131,7 @@ class UpdateCommand extends Command
         );
 
         if (! $refreshed) {
-            $this->components->warn('Run `php craft update/info` to retry the license refresh.');
+            $this->components->warn('Run `'.app(TerminalCommands::class)->craft('update/info').'` to retry the license refresh.');
         }
 
         $this->components->success('Update complete!');
