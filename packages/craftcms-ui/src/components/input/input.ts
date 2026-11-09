@@ -47,6 +47,8 @@ export default class CraftInput extends HasLabel(NativeField(LitElement)) {
         const value = this.getAttribute('value');
 
         input.type = this.type ?? 'text';
+        // Bounds go on first, as a range input clamps the value it's given.
+        this.syncNativeAttributes(input);
         if (value) {
           input.setAttribute('value', value);
         }
@@ -165,7 +167,7 @@ export default class CraftInput extends HasLabel(NativeField(LitElement)) {
       : undefined;
   }
 
-  private syncNativeAttributes() {
+  private syncNativeAttributes(input = this._inputNode) {
     const attributes = {
       size: this.inputSize ?? this.maxlengthSize,
       maxlength:
@@ -180,12 +182,12 @@ export default class CraftInput extends HasLabel(NativeField(LitElement)) {
 
     for (const [attribute, value] of Object.entries(attributes)) {
       if (value === undefined) {
-        this._inputNode?.removeAttribute(attribute);
+        input?.removeAttribute(attribute);
 
         continue;
       }
 
-      this._inputNode?.setAttribute(attribute, String(value));
+      input?.setAttribute(attribute, String(value));
     }
   }
 }

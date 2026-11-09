@@ -91,6 +91,23 @@ describe('craft-input maxlength sizing', () => {
   });
 });
 
+describe('craft-input value', () => {
+  it('keeps a value set before insertion within the bounds also set then', async () => {
+    const element = document.createElement('craft-input') as CraftInput;
+    element.label = 'Width';
+    element.type = 'range';
+    element.min = 100;
+    element.max = 1000;
+    element.step = 50;
+    element.value = '550';
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(element.querySelector('input')!.value).toBe('550');
+    expect(element.value).toBe('550');
+  });
+});
+
 describe('craft-input placeholder', () => {
   it.each(['light', 'dark'])(
     'sets the placeholder at 4.5:1 against the surface in the %s theme',
