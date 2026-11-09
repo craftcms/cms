@@ -272,7 +272,10 @@ class Mailer extends \yii\symfonymailer\Mailer
     protected function sendMessage($message): bool
     {
         try {
-            app('mail.manager')->mailer()->getSymfonyTransport()->send($message->getSymfonyEmail());
+            $siteId = $message instanceof Message ? $message->siteId : null;
+            $mailer = $this->resolveMailSettings($siteId)->mailer;
+
+            app('mail.manager')->mailer($mailer)->getSymfonyTransport()->send($message->getSymfonyEmail());
 
             return true;
         } catch (TransportExceptionInterface $e) {

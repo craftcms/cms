@@ -330,7 +330,6 @@ function withPreviewTargets(): void {
     paramValue: 'param',
     siteTokenParam: 'siteToken',
     siteToken: null,
-    iframeResizerOptions: false,
   };
 }
 

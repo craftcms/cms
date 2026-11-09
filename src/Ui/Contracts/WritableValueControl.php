@@ -14,4 +14,12 @@ namespace CraftCms\Cms\Ui\Contracts;
  *
  * @since 6.0.0
  */
-interface WritableValueControl extends Control {}
+interface WritableValueControl extends Control
+{
+    /**
+     * Returns the value scope, which a {@see ReadableValueControl} must share for its value to be set on this one.
+     * Besides that, the control panel’s scripts decide whether the control takes a value from the value itself, such
+     * as whether it fits the control’s length limit or options.
+     */
+    public function getValueScope(): ?string;
+}

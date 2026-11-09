@@ -57,6 +57,13 @@ it('keeps link cells with unavailable link types unchanged when the table is edi
         ->and($cell->props['registeredTypes'])->toContain('url')->not->toContain('missing');
 });
 
+it('scopes tables with columns that can link to elements to the field itself', function () {
+    $scope = fn (array $column) => linkTable($column)->uiControl(new FieldContext('links'))->getValueScope();
+
+    expect($scope([]))->toBe(Table::class)
+        ->and($scope(['types' => ['url', 'email']]))->toBeNull();
+});
+
 it('resolves link cells with unavailable link types to empty links in GraphQL', function () {
     $field = linkTable(['types' => ['entry', 'url']]);
     $row = $field->normalizeValue([['col1' => ['type' => 'missing', 'value' => 'opaque']]], null)[0];

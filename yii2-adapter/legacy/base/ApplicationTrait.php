@@ -423,6 +423,22 @@ trait ApplicationTrait
     }
 
     /**
+     * Runs the callbacks registered with [[onAfterRequest()]] so far, without triggering [[EVENT_AFTER_REQUEST]].
+     *
+     * @internal Queue workers call this after each job, as they run many before their own request ends.
+     */
+    public function runAfterRequestCallbacks(): void
+    {
+        $event = new Event();
+        $event->sender = $this;
+        $event->name = self::EVENT_AFTER_REQUEST;
+
+        while ($callback = array_shift($this->afterRequestCallbacks)) {
+            $callback($event);
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function trigger($name, ?Event $event = null)

@@ -2280,19 +2280,6 @@ class GeneralConfig extends BaseConfig
     public bool $preventUserEnumeration = true;
 
     /**
-     * @var array<string, mixed> Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
-     *
-     * ```php Static Config
-     * ->previewIframeResizerOptions([
-     *     'autoResize' => false,
-     * ])
-     * ```
-     *
-     * @group System
-     */
-    public array $previewIframeResizerOptions = [];
-
-    /**
      * @var mixed The amount of time content preview tokens can be used before expiring.
      *
      * Defaults to <config5:defaultTokenDuration> value.
@@ -3172,37 +3159,6 @@ class GeneralConfig extends BaseConfig
      * @since 5.9.0
      */
     public bool $useIdnaNontransitionalToUnicode = false;
-
-    /**
-     * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
-     *
-     * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
-     *
-     * It works by setting the height of the iframe to match the height of the inner web page, and the iframe’s container will be scrolled rather
-     * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
-     * than the visible portion of the iframe.
-     *
-     * If you have a [decoupled front end](https://craftcms.com/docs/5.x/reference/element-types/entries.html#previewing-decoupled-front-ends), you will need to include
-     * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
-     * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
-     * `x-craft-live-preview` query string parameter.
-     *
-     * ::: tip
-     * You can customize the behavior of iFrame Resizer via the <config5:previewIframeResizerOptions> config setting.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->useIframeResizer(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_USE_IFRAME_RESIZER=true
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public bool $useIframeResizer = false;
 
     /**
      * @var bool|string Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
@@ -5655,28 +5611,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
-     *
-     * ```php
-     * ->previewIframeResizerOptions([
-     *     'autoResize' => false,
-     * ])
-     * ```
-     *
-     * @group System
-     *
-     * @param  array<string, mixed>  $value
-     *
-     * @see $previewIframeResizerOptions
-     */
-    public function previewIframeResizerOptions(array $value): self
-    {
-        $this->previewIframeResizerOptions = $value;
-
-        return $this;
-    }
-
-    /**
      * The amount of time content preview tokens can be used before expiring.
      *
      * Defaults to <config5:defaultTokenDuration> value.
@@ -6513,39 +6447,6 @@ class GeneralConfig extends BaseConfig
     public function useIdnaNontransitionalToUnicode(bool $value = false): self
     {
         $this->useIdnaNontransitionalToUnicode = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
-     *
-     * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
-     *
-     * It works by setting the height of the iframe to match the height of the inner web page, and the iframe’s container will be scrolled rather
-     * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
-     * than the visible portion of the iframe.
-     *
-     * If you have a [decoupled front end](https://craftcms.com/docs/5.x/reference/element-types/entries.html#previewing-decoupled-front-ends), you will need to include
-     * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
-     * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
-     * `x-craft-live-preview` query string parameter.
-     *
-     * ::: tip
-     * You can customize the behavior of iFrame Resizer via the <config5:previewIframeResizerOptions> config setting.
-     * :::
-     *
-     * ```php
-     * ->useIframeResizer(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $useIframeResizer
-     */
-    public function useIframeResizer(bool $value = true): self
-    {
-        $this->useIframeResizer = $value;
 
         return $this;
     }

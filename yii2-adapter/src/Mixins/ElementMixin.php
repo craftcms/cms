@@ -7,9 +7,39 @@ namespace CraftCms\Yii2Adapter\Mixins;
 use Closure;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
+use Throwable;
 
 class ElementMixin
 {
+    /**
+     * Returns attribute values, like Yii’s `Model::getAttributes()`.
+     */
+    public function getAttributes(): Closure
+    {
+        return function(?array $names = null, array $except = []): array {
+            /**
+             * @var Element $this
+             *
+             * @phpstan-ignore varTag.nativeType
+             */
+            $values = [];
+
+            foreach ($names ?? $this->attributes() as $name) {
+                try {
+                    $values[$name] = $this->$name;
+                } catch (Throwable) {
+                    // Skip attributes that can't be read yet, as Element::validationData() does
+                }
+            }
+
+            foreach ($except as $name) {
+                unset($values[$name]);
+            }
+
+            return $values;
+        };
+    }
+
     public function getSourceId(): Closure
     {
         return function(): ?int {

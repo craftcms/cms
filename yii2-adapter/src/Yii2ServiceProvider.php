@@ -8,7 +8,6 @@ use Craft;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use craft\events\ExceptionEvent;
 use craft\events\RedirectEvent;
-use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\RedirectRule;
 use craft\web\twig\variables\CraftVariable as LegacyCraftVariable;
@@ -28,6 +27,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Events\ElementEditorPayloadResolving;
 use CraftCms\Cms\Field\Events\FieldCachesInvalidated;
 use CraftCms\Cms\Field\Events\MatrixBlockHtmlRendering;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving;
 use CraftCms\Cms\Gql\AssetTransformContext;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
@@ -67,6 +67,7 @@ use CraftCms\Yii2Adapter\Cp\LegacySettings;
 use CraftCms\Yii2Adapter\Database\Migrator;
 use CraftCms\Yii2Adapter\Element\LegacyElementEditorScreen;
 use CraftCms\Yii2Adapter\Field\MatrixBlockHtml;
+use CraftCms\Yii2Adapter\FieldLayout\LegacyLayoutElementHtml;
 use CraftCms\Yii2Adapter\Filesystem\FilesystemCompatibility;
 use CraftCms\Yii2Adapter\Gql\LegacyGql;
 use CraftCms\Yii2Adapter\Gql\LegacyGqlArguments;
@@ -82,6 +83,7 @@ use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
 use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Yii2Adapter\LooseEnds\LooseEndsUtility;
+use CraftCms\Yii2Adapter\Mail\LegacyTransportCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
 use CraftCms\Yii2Adapter\SystemMessage\LegacySystemMessages;
@@ -94,6 +96,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Queue\Events\JobAttempted;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
@@ -103,10 +106,14 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Override;
 use PDOException;
+use ReflectionMethod;
+use ReflectionObject;
+use ReflectionProperty;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 use yii\base\Application as YiiApplication;
+use yii\base\Behavior;
 use yii\base\ExitException;
 use yii\web\HttpException as YiiHttpException;
 use yii\web\NotFoundHttpException as YiiNotFoundHttpException;
@@ -147,6 +154,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $event->config['transformSubpath'] = $event->volume->getTransformSubpath(false, false);
         });
         new FilesystemCompatibility()->register($this->app);
+        new LegacyTransportCompatibility()->register($this->app);
         $this->app->singleton(AssetFileKinds::class, LegacyAssetFileKinds::class);
         $this->app->singleton(Settings::class, LegacySettings::class);
         $this->app->singleton(MenuHtml::class, LegacyMenuHtml::class);
@@ -345,6 +353,7 @@ class Yii2ServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(ElementEditorPayloadResolving::class, LegacyElementEditorScreen::class);
+        Event::listen(FieldLayoutElementControlResolving::class, LegacyLayoutElementHtml::class);
 
         $kernel = $this->app->make(HttpKernel::class);
         $middleware = array_values(array_filter(
@@ -404,13 +413,23 @@ class Yii2ServiceProvider extends ServiceProvider
 
         $this->app->terminating(function(): void {
             try {
-                $this->triggerAfterRequestForLaravelRequest();
+                $this->triggerAfterRequest();
             } finally {
                 // After the after-request handlers, which can run compatibility paths too.
                 $this->app->make(LegacyUsage::class)->flush();
             }
 
             Craft::getLogger()->flush(true);
+        });
+
+        // A worker runs many jobs, so onAfterRequest() callbacks run after the job that added them, as Laravel's
+        // defer() callbacks do. EVENT_AFTER_REQUEST handlers still fire once, as they'd fire again after every job.
+        Event::listen(function(JobAttempted $event): void {
+            if (in_array($event->connectionName, ['sync', 'deferred'], true) || !Craft::$app instanceof YiiApplication) {
+                return;
+            }
+
+            Craft::$app->runAfterRequestCallbacks();
         });
 
         if (!$this->app->runningInConsole()) {
@@ -420,13 +439,9 @@ class Yii2ServiceProvider extends ServiceProvider
         new LegacyCommandCompatibility()->boot();
     }
 
-    private function triggerAfterRequestForLaravelRequest(): void
+    private function triggerAfterRequest(): void
     {
-        if (!Craft::$app instanceof WebApplication) {
-            return;
-        }
-
-        if (Craft::$app->state >= YiiApplication::STATE_AFTER_REQUEST) {
+        if (!Craft::$app instanceof YiiApplication || Craft::$app->state >= YiiApplication::STATE_AFTER_REQUEST) {
             return;
         }
 
@@ -443,7 +458,36 @@ class Yii2ServiceProvider extends ServiceProvider
             foreach (array_keys($legacyVariable->getComponents()) as $name) {
                 CraftVariable::macro($name, fn() => $legacyVariable->get($name));
             }
+
+            foreach ($legacyVariable->getBehaviors() as $behavior) {
+                $this->registerCraftVariableBehavior($behavior);
+            }
         });
+    }
+
+    /**
+     * Exposes the public properties and methods of a behavior attached to the legacy `craft` variable,
+     * such as `craft.commerce` or `craft.shopifyProducts()`.
+     */
+    private function registerCraftVariableBehavior(Behavior $behavior): void
+    {
+        $reflection = new ReflectionObject($behavior);
+
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            $name = $property->getName();
+
+            if (!$property->isStatic() && !property_exists(Behavior::class, $name)) {
+                CraftVariable::macro($name, fn() => $behavior->$name);
+            }
+        }
+
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            $name = $method->getName();
+
+            if (!$method->isStatic() && !method_exists(Behavior::class, $name)) {
+                CraftVariable::macro($name, fn(mixed ...$args) => $behavior->$name(...$args));
+            }
+        }
     }
 
     /**

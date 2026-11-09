@@ -5,15 +5,6 @@ namespace CraftCms\Yii2Adapter\Element\Concerns;
 
 use craft\base\Element;
 use craft\base\ElementEventConstants;
-use craft\base\Event as YiiEvent;
-use craft\elements\Address;
-use craft\elements\Asset;
-use craft\elements\Category;
-use craft\elements\ContentBlock;
-use craft\elements\Entry;
-use craft\elements\GlobalSet;
-use craft\elements\Tag;
-use craft\elements\User;
 use craft\events\DefineAltActionsEvent;
 use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineAttributeKeywordsEvent;
@@ -83,6 +74,9 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Yii2Adapter\Element\LegacyActionMenuItems;
 use Illuminate\Support\Facades\Event;
 use ReflectionClass;
+use ReflectionProperty;
+use yii\base\Event as YiiBaseEvent;
+use yii\helpers\StringHelper;
 
 /**
  * @internal
@@ -103,584 +97,418 @@ trait LegacyConstants
 
     public static function registerEvents(): void
     {
-        $elementClasses = self::legacyElementClasses();
+        Event::listen(function(ElementCacheTagsResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_CACHE_TAGS)) {
+                return;
+            }
 
-        Event::listen(function(ElementCacheTagsResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_CACHE_TAGS)) {
-                    continue;
-                }
+            $yiiEvent = new DefineValueEvent([
+                'sender' => $event->element,
+                'value' => $event->tags,
+            ]);
 
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_CACHE_TAGS, $yiiEvent);
 
-                $yiiEvent = new DefineValueEvent([
-                    'sender' => $event->element,
-                    'value' => $event->tags,
-                ]);
+            $event->tags = $yiiEvent->value;
+        });
 
-                self::triggerEvent($class, $class::EVENT_DEFINE_CACHE_TAGS, $yiiEvent);
+        Event::listen(function(ElementSourcesResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_SOURCES)) {
+                return;
+            }
 
-                $event->tags = $yiiEvent->value;
+            $yiiEvent = new RegisterElementSourcesEvent([
+                'context' => $event->context,
+                'sources' => $event->sources,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_SOURCES, $yiiEvent);
+
+            $event->sources = $yiiEvent->sources;
+        });
+
+        Event::listen(function(ElementFieldLayoutsResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_FIELD_LAYOUTS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterElementFieldLayoutsEvent([
+                'source' => $event->source,
+                'fieldLayouts' => $event->fieldLayouts,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_FIELD_LAYOUTS, $yiiEvent);
+
+            $event->fieldLayouts = $yiiEvent->fieldLayouts;
+        });
+
+        Event::listen(function(ElementPreviewTargetsResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_REGISTER_PREVIEW_TARGETS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterPreviewTargetsEvent([
+                'sender' => $event->element,
+                'previewTargets' => $event->previewTargets,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_REGISTER_PREVIEW_TARGETS, $yiiEvent);
+
+            $event->previewTargets = $yiiEvent->previewTargets;
+        });
+
+        Event::listen(function(ElementActionsResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_ACTIONS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterElementActionsEvent([
+                'source' => $event->source,
+                'actions' => $event->actions,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_ACTIONS, $yiiEvent);
+
+            $event->actions = $yiiEvent->actions;
+        });
+
+        Event::listen(function(ElementExportersResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_EXPORTERS)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterElementExportersEvent([
+                'source' => $event->source,
+                'exporters' => $event->exporters,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_EXPORTERS, $yiiEvent);
+
+            $event->exporters = $yiiEvent->exporters;
+        });
+
+        Event::listen(function(ElementRendering $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_RENDER)) {
+                return;
+            }
+
+            $yiiEvent = new RenderElementEvent([
+                'sender' => $event->element,
+                'templates' => $event->templates,
+                'variables' => $event->variables,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_RENDER, $yiiEvent);
+
+            if (isset($yiiEvent->output)) {
+                $event->output = $yiiEvent->output;
+            }
+            $event->templates = $yiiEvent->templates;
+            $event->variables = $yiiEvent->variables;
+        });
+
+        Event::listen(function(ElementKeywordsResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_KEYWORDS)) {
+                return;
+            }
+
+            $yiiEvent = new DefineAttributeKeywordsEvent([
+                'sender' => $event->element,
+                'attribute' => $event->attribute,
+                'keywords' => $event->keywords,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_KEYWORDS, $yiiEvent);
+
+            if ($yiiEvent->handled) {
+                $event->keywords = $yiiEvent->keywords;
+                $event->handled = true;
             }
         });
 
-        Event::listen(function(ElementSourcesResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_SOURCES)) {
-                    continue;
-                }
+        Event::listen(function(ElementSortOptionsResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_SORT_OPTIONS)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
+            $yiiEvent = new RegisterElementSortOptionsEvent([
+                'sortOptions' => $event->sortOptions,
+            ]);
 
-                $yiiEvent = new RegisterElementSourcesEvent([
-                    'context' => $event->context,
-                    'sources' => $event->sources,
-                ]);
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_SORT_OPTIONS, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_REGISTER_SOURCES, $yiiEvent);
+            $event->sortOptions = $yiiEvent->sortOptions;
+        });
 
-                $event->sources = $yiiEvent->sources;
+        Event::listen(function(ElementTableAttributesResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_TABLE_ATTRIBUTES)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterElementTableAttributesEvent([
+                'tableAttributes' => $event->tableAttributes,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, $yiiEvent);
+
+            $event->tableAttributes = $yiiEvent->tableAttributes;
+        });
+
+        Event::listen(function(ElementDefaultTableAttributesResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterElementDefaultTableAttributesEvent([
+                'source' => $event->source,
+                'tableAttributes' => $event->tableAttributes,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $yiiEvent);
+
+            $event->tableAttributes = $yiiEvent->tableAttributes;
+        });
+
+        Event::listen(function(ElementCardAttributesResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_CARD_ATTRIBUTES)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterElementCardAttributesEvent([
+                'cardAttributes' => $event->cardAttributes,
+                'fieldLayout' => $event->fieldLayout,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_CARD_ATTRIBUTES, $yiiEvent);
+
+            $event->cardAttributes = $yiiEvent->cardAttributes;
+        });
+
+        Event::listen(function(ElementDefaultCardAttributesResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterElementDefaultCardAttributesEvent([
+                'cardAttributes' => $event->cardAttributes,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES, $yiiEvent);
+
+            $event->cardAttributes = $yiiEvent->cardAttributes;
+        });
+
+        Event::listen(function(ElementSearchableAttributesResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterElementSearchableAttributesEvent([
+                'attributes' => $event->attributes,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $yiiEvent);
+
+            $event->attributes = $yiiEvent->attributes;
+        });
+
+        Event::listen(function(QueryForTableAttributePreparing $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE)) {
+                return;
+            }
+
+            $yiiEvent = new ElementIndexTableAttributeEvent([
+                'query' => $event->query,
+                'attribute' => $event->attribute,
+            ]);
+
+            self::triggerEvent($event->elementType, Element::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $yiiEvent);
+
+            if ($yiiEvent->handled) {
+                $event->handled = true;
             }
         });
 
-        Event::listen(function(ElementFieldLayoutsResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_FIELD_LAYOUTS)) {
-                    continue;
-                }
+        Event::listen(function(ElementEagerLoadingMapResolving $event) {
+            if (!self::hasEventHandlers($event->elementType, Element::EVENT_DEFINE_EAGER_LOADING_MAP)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
+            $yiiEvent = new DefineEagerLoadingMapEvent([
+                'sourceElements' => $event->sourceElements,
+                'handle' => $event->handle,
+            ]);
 
-                $yiiEvent = new RegisterElementFieldLayoutsEvent([
-                    'source' => $event->source,
-                    'fieldLayouts' => $event->fieldLayouts,
-                ]);
+            self::triggerEvent($event->elementType, Element::EVENT_DEFINE_EAGER_LOADING_MAP, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_REGISTER_FIELD_LAYOUTS, $yiiEvent);
-
-                $event->fieldLayouts = $yiiEvent->fieldLayouts;
+            if ($yiiEvent->elementType !== null) {
+                $event->targetElementType = $yiiEvent->elementType;
+                $event->map = $yiiEvent->map;
+                $event->criteria = $yiiEvent->criteria;
             }
         });
 
-        Event::listen(function(ElementPreviewTargetsResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_PREVIEW_TARGETS)) {
-                    continue;
-                }
+        Event::listen(function(SetEagerLoadedElements $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_SET_EAGER_LOADED_ELEMENTS)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
+            $yiiEvent = new SetEagerLoadedElementsEvent([
+                'sender' => $event->element,
+                'handle' => $event->handle,
+                'elements' => $event->elements,
+                'plan' => $event->plan,
+            ]);
 
-                $yiiEvent = new RegisterPreviewTargetsEvent([
-                    'sender' => $event->element,
-                    'previewTargets' => $event->previewTargets,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_SET_EAGER_LOADED_ELEMENTS, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_REGISTER_PREVIEW_TARGETS, $yiiEvent);
-
-                $event->previewTargets = $yiiEvent->previewTargets;
+            if ($yiiEvent->handled) {
+                $event->handled = true;
             }
         });
 
-        Event::listen(function(ElementActionsResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_ACTIONS)) {
-                    continue;
-                }
+        Event::listen(function(ElementLifecycleSaving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_BEFORE_SAVE)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
+            $yiiEvent = new ModelEvent([
+                'sender' => $event->element,
+                'isNew' => $event->isNew,
+            ]);
 
-                $yiiEvent = new RegisterElementActionsEvent([
-                    'source' => $event->source,
-                    'actions' => $event->actions,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_BEFORE_SAVE, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_REGISTER_ACTIONS, $yiiEvent);
-
-                $event->actions = $yiiEvent->actions;
+            if (!$yiiEvent->isValid) {
+                $event->isValid = false;
             }
         });
 
-        Event::listen(function(ElementExportersResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_EXPORTERS)) {
-                    continue;
-                }
+        Event::listen(function(ElementLifecycleSaved $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_AFTER_SAVE)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
+            $yiiEvent = new ModelEvent([
+                'sender' => $event->element,
+                'isNew' => $event->isNew,
+            ]);
 
-                $yiiEvent = new RegisterElementExportersEvent([
-                    'source' => $event->source,
-                    'exporters' => $event->exporters,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_AFTER_SAVE, $yiiEvent);
+        });
 
-                self::triggerEvent($class, $class::EVENT_REGISTER_EXPORTERS, $yiiEvent);
+        Event::listen(function(ElementLifecyclePropagated $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_AFTER_PROPAGATE)) {
+                return;
+            }
 
-                $event->exporters = $yiiEvent->exporters;
+            $yiiEvent = new ModelEvent([
+                'sender' => $event->element,
+                'isNew' => $event->isNew,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_AFTER_PROPAGATE, $yiiEvent);
+        });
+
+        Event::listen(function(ElementLifecycleDeleting $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_BEFORE_DELETE)) {
+                return;
+            }
+
+            $yiiEvent = new ModelEvent([
+                'sender' => $event->element,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_BEFORE_DELETE, $yiiEvent);
+
+            if (!$yiiEvent->isValid) {
+                $event->isValid = false;
             }
         });
 
-        Event::listen(function(ElementRendering $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_RENDER)) {
-                    continue;
-                }
+        Event::listen(function(ElementLifecycleDeleted $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_AFTER_DELETE)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
+            $yiiEvent = new ModelEvent([
+                'sender' => $event->element,
+            ]);
 
-                $yiiEvent = new RenderElementEvent([
-                    'sender' => $event->element,
-                    'templates' => $event->templates,
-                    'variables' => $event->variables,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_AFTER_DELETE, $yiiEvent);
+        });
 
-                self::triggerEvent($class, $class::EVENT_RENDER, $yiiEvent);
+        Event::listen(function(ElementLifecycleRestoring $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_BEFORE_RESTORE)) {
+                return;
+            }
 
-                if (isset($yiiEvent->output)) {
-                    $event->output = $yiiEvent->output;
-                }
-                $event->templates = $yiiEvent->templates;
-                $event->variables = $yiiEvent->variables;
+            $yiiEvent = new ModelEvent([
+                'sender' => $event->element,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_BEFORE_RESTORE, $yiiEvent);
+
+            if (!$yiiEvent->isValid) {
+                $event->isValid = false;
             }
         });
 
-        Event::listen(function(ElementKeywordsResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_KEYWORDS)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new DefineAttributeKeywordsEvent([
-                    'sender' => $event->element,
-                    'attribute' => $event->attribute,
-                    'keywords' => $event->keywords,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_DEFINE_KEYWORDS, $yiiEvent);
-
-                if ($yiiEvent->handled) {
-                    $event->keywords = $yiiEvent->keywords;
-                    $event->handled = true;
-                }
+        Event::listen(function(ElementLifecycleRestored $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_AFTER_RESTORE)) {
+                return;
             }
+
+            $yiiEvent = new ModelEvent([
+                'sender' => $event->element,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_AFTER_RESTORE, $yiiEvent);
         });
 
-        Event::listen(function(ElementSortOptionsResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_SORT_OPTIONS)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
-
-                $yiiEvent = new RegisterElementSortOptionsEvent([
-                    'sortOptions' => $event->sortOptions,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_REGISTER_SORT_OPTIONS, $yiiEvent);
-
-                $event->sortOptions = $yiiEvent->sortOptions;
+        Event::listen(function(ElementAltActionsResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_ALT_ACTIONS)) {
+                return;
             }
+
+            $yiiEvent = new DefineAltActionsEvent([
+                'sender' => $event->element,
+                'altActions' => $event->altActions,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_ALT_ACTIONS, $yiiEvent);
+
+            $event->altActions = $yiiEvent->altActions;
         });
 
-        Event::listen(function(ElementTableAttributesResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_TABLE_ATTRIBUTES)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
-
-                $yiiEvent = new RegisterElementTableAttributesEvent([
-                    'tableAttributes' => $event->tableAttributes,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_REGISTER_TABLE_ATTRIBUTES, $yiiEvent);
-
-                $event->tableAttributes = $yiiEvent->tableAttributes;
+        Event::listen(function(ElementActionMenuItemsResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
+                return;
             }
-        });
 
-        Event::listen(function(ElementDefaultTableAttributesResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES)) {
-                    continue;
-                }
+            $yiiEvent = new DefineMenuItemsEvent([
+                'sender' => $event->element,
+                'items' => $event->items,
+            ]);
 
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_ACTION_MENU_ITEMS, $yiiEvent);
 
-                $yiiEvent = new RegisterElementDefaultTableAttributesEvent([
-                    'source' => $event->source,
-                    'tableAttributes' => $event->tableAttributes,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $yiiEvent);
-
-                $event->tableAttributes = $yiiEvent->tableAttributes;
-            }
-        });
-
-        Event::listen(function(ElementCardAttributesResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_CARD_ATTRIBUTES)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
-
-                $yiiEvent = new RegisterElementCardAttributesEvent([
-                    'cardAttributes' => $event->cardAttributes,
-                    'fieldLayout' => $event->fieldLayout,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_REGISTER_CARD_ATTRIBUTES, $yiiEvent);
-
-                $event->cardAttributes = $yiiEvent->cardAttributes;
-            }
-        });
-
-        Event::listen(function(ElementDefaultCardAttributesResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
-
-                $yiiEvent = new RegisterElementDefaultCardAttributesEvent([
-                    'cardAttributes' => $event->cardAttributes,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_REGISTER_DEFAULT_CARD_ATTRIBUTES, $yiiEvent);
-
-                $event->cardAttributes = $yiiEvent->cardAttributes;
-            }
-        });
-
-        Event::listen(function(ElementSearchableAttributesResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
-
-                $yiiEvent = new RegisterElementSearchableAttributesEvent([
-                    'attributes' => $event->attributes,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $yiiEvent);
-
-                $event->attributes = $yiiEvent->attributes;
-            }
-        });
-
-        Event::listen(function(QueryForTableAttributePreparing $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
-
-                $yiiEvent = new ElementIndexTableAttributeEvent([
-                    'query' => $event->query,
-                    'attribute' => $event->attribute,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_PREP_QUERY_FOR_TABLE_ATTRIBUTE, $yiiEvent);
-
-                if ($yiiEvent->handled) {
-                    $event->handled = true;
-                }
-            }
-        });
-
-        Event::listen(function(ElementEagerLoadingMapResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_EAGER_LOADING_MAP)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->elementType)) {
-                    continue;
-                }
-
-                $yiiEvent = new DefineEagerLoadingMapEvent([
-                    'sourceElements' => $event->sourceElements,
-                    'handle' => $event->handle,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_DEFINE_EAGER_LOADING_MAP, $yiiEvent);
-
-                if ($yiiEvent->elementType !== null) {
-                    $event->targetElementType = $yiiEvent->elementType;
-                    $event->map = $yiiEvent->map;
-                    $event->criteria = $yiiEvent->criteria;
-                }
-            }
-        });
-
-        Event::listen(function(SetEagerLoadedElements $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_SET_EAGER_LOADED_ELEMENTS)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new SetEagerLoadedElementsEvent([
-                    'sender' => $event->element,
-                    'handle' => $event->handle,
-                    'elements' => $event->elements,
-                    'plan' => $event->plan,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_SET_EAGER_LOADED_ELEMENTS, $yiiEvent);
-
-                if ($yiiEvent->handled) {
-                    $event->handled = true;
-                }
-            }
-        });
-
-        Event::listen(function(ElementLifecycleSaving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_SAVE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new ModelEvent([
-                    'sender' => $event->element,
-                    'isNew' => $event->isNew,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_BEFORE_SAVE, $yiiEvent);
-
-                if (!$yiiEvent->isValid) {
-                    $event->isValid = false;
-                }
-            }
-        });
-
-        Event::listen(function(ElementLifecycleSaved $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_SAVE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new ModelEvent([
-                    'sender' => $event->element,
-                    'isNew' => $event->isNew,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_AFTER_SAVE, $yiiEvent);
-            }
-        });
-
-        Event::listen(function(ElementLifecyclePropagated $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_PROPAGATE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new ModelEvent([
-                    'sender' => $event->element,
-                    'isNew' => $event->isNew,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_AFTER_PROPAGATE, $yiiEvent);
-            }
-        });
-
-        Event::listen(function(ElementLifecycleDeleting $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_DELETE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new ModelEvent([
-                    'sender' => $event->element,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_BEFORE_DELETE, $yiiEvent);
-
-                if (!$yiiEvent->isValid) {
-                    $event->isValid = false;
-                }
-            }
-        });
-
-        Event::listen(function(ElementLifecycleDeleted $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_DELETE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new ModelEvent([
-                    'sender' => $event->element,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_AFTER_DELETE, $yiiEvent);
-            }
-        });
-
-        Event::listen(function(ElementLifecycleRestoring $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_RESTORE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new ModelEvent([
-                    'sender' => $event->element,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_BEFORE_RESTORE, $yiiEvent);
-
-                if (!$yiiEvent->isValid) {
-                    $event->isValid = false;
-                }
-            }
-        });
-
-        Event::listen(function(ElementLifecycleRestored $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_RESTORE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new ModelEvent([
-                    'sender' => $event->element,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_AFTER_RESTORE, $yiiEvent);
-            }
-        });
-
-        Event::listen(function(ElementAltActionsResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ALT_ACTIONS)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new DefineAltActionsEvent([
-                    'sender' => $event->element,
-                    'altActions' => $event->altActions,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_DEFINE_ALT_ACTIONS, $yiiEvent);
-
-                $event->altActions = $yiiEvent->altActions;
-            }
-        });
-
-        Event::listen(function(ElementActionMenuItemsResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new DefineMenuItemsEvent([
-                    'sender' => $event->element,
-                    'items' => $event->items,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_DEFINE_ACTION_MENU_ITEMS, $yiiEvent);
-
-                $event->items = $yiiEvent->items;
-            }
+            $event->items = $yiiEvent->items;
         });
 
         // The Inertia editor and element chips read descriptors, so legacy items are converted for them.
-        Event::listen(function(ElementActionMenuDescriptorsResolving $event) use ($elementClasses) {
+        Event::listen(function(ElementActionMenuDescriptorsResolving $event) {
             $legacy = app(LegacyActionMenuItems::class);
             $items = [];
 
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
+            if (self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_ACTION_MENU_ITEMS)) {
                 // Handlers only see each other's items; the core ones are already descriptors.
                 $yiiEvent = new DefineMenuItemsEvent([
                     'sender' => $event->element,
                     'items' => $items,
                 ]);
 
-                $legacy->withoutJs(fn() => self::triggerEvent($class, $class::EVENT_DEFINE_ACTION_MENU_ITEMS, $yiiEvent));
+                $legacy->withoutJs(fn() => self::triggerEvent($event->element::class, Element::EVENT_DEFINE_ACTION_MENU_ITEMS, $yiiEvent));
 
                 $items = $yiiEvent->items;
             }
@@ -689,276 +517,184 @@ trait LegacyConstants
             $legacy->addOverrideItems($event);
         });
 
-        Event::listen(function(ElementSidebarHtmlResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_SIDEBAR_HTML)) {
-                    continue;
-                }
+        Event::listen(function(ElementSidebarHtmlResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_SIDEBAR_HTML)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
+            $yiiEvent = new DefineHtmlEvent([
+                'sender' => $event->element,
+                'html' => $event->html,
+            ]);
 
-                $yiiEvent = new DefineHtmlEvent([
-                    'sender' => $event->element,
-                    'html' => $event->html,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_SIDEBAR_HTML, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_DEFINE_SIDEBAR_HTML, $yiiEvent);
+            $event->html = $yiiEvent->html;
+        });
 
+        Event::listen(function(ElementMetaFieldsHtmlResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_META_FIELDS_HTML)) {
+                return;
+            }
+
+            $yiiEvent = new DefineHtmlEvent([
+                'sender' => $event->element,
+                'static' => $event->static,
+                'html' => $event->html,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_META_FIELDS_HTML, $yiiEvent);
+
+            $event->html = $yiiEvent->html;
+        });
+
+        Event::listen(function(ElementMetadataResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_METADATA)) {
+                return;
+            }
+
+            $yiiEvent = new DefineMetadataEvent([
+                'sender' => $event->element,
+                'metadata' => $event->metadata,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_METADATA, $yiiEvent);
+
+            $event->metadata = $yiiEvent->metadata;
+        });
+
+        Event::listen(function(ElementHtmlAttributesResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_REGISTER_HTML_ATTRIBUTES)) {
+                return;
+            }
+
+            $yiiEvent = new RegisterElementHtmlAttributesEvent([
+                'sender' => $event->element,
+                'htmlAttributes' => $event->htmlAttributes,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_REGISTER_HTML_ATTRIBUTES, $yiiEvent);
+
+            $event->htmlAttributes = $yiiEvent->htmlAttributes;
+        });
+
+        Event::listen(function(ElementAttributeHtmlResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_ATTRIBUTE_HTML)) {
+                return;
+            }
+
+            $yiiEvent = new DefineAttributeHtmlEvent([
+                'sender' => $event->element,
+                'attribute' => $event->attribute,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_ATTRIBUTE_HTML, $yiiEvent);
+
+            if (isset($yiiEvent->html)) {
                 $event->html = $yiiEvent->html;
             }
         });
 
-        Event::listen(function(ElementMetaFieldsHtmlResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_META_FIELDS_HTML)) {
-                    continue;
-                }
+        Event::listen(function(ElementInlineAttributeInputHtmlResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
+            $yiiEvent = new DefineAttributeHtmlEvent([
+                'sender' => $event->element,
+                'attribute' => $event->attribute,
+            ]);
 
-                $yiiEvent = new DefineHtmlEvent([
-                    'sender' => $event->element,
-                    'static' => $event->static,
-                    'html' => $event->html,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_DEFINE_META_FIELDS_HTML, $yiiEvent);
-
+            if (isset($yiiEvent->html)) {
                 $event->html = $yiiEvent->html;
             }
         });
 
-        Event::listen(function(ElementMetadataResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_METADATA)) {
-                    continue;
-                }
+        Event::listen(function(SetRoute $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_SET_ROUTE)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
+            $yiiEvent = new SetElementRouteEvent([
+                'sender' => $event->element,
+                'route' => $event->route,
+            ]);
 
-                $yiiEvent = new DefineMetadataEvent([
-                    'sender' => $event->element,
-                    'metadata' => $event->metadata,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_SET_ROUTE, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_DEFINE_METADATA, $yiiEvent);
-
-                $event->metadata = $yiiEvent->metadata;
+            $event->route = $yiiEvent->route;
+            if ($yiiEvent->handled) {
+                $event->handled = true;
             }
         });
 
-        Event::listen(function(ElementHtmlAttributesResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_REGISTER_HTML_ATTRIBUTES)) {
-                    continue;
-                }
+        Event::listen(function(ElementUrlResolving $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_BEFORE_DEFINE_URL)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
+            $yiiEvent = new DefineUrlEvent([
+                'sender' => $event->element,
+                'url' => $event->url,
+            ]);
 
-                $yiiEvent = new RegisterElementHtmlAttributesEvent([
-                    'sender' => $event->element,
-                    'htmlAttributes' => $event->htmlAttributes,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_BEFORE_DEFINE_URL, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_REGISTER_HTML_ATTRIBUTES, $yiiEvent);
-
-                $event->htmlAttributes = $yiiEvent->htmlAttributes;
+            $event->url = $yiiEvent->url;
+            if ($yiiEvent->handled) {
+                $event->handled = true;
             }
         });
 
-        Event::listen(function(ElementAttributeHtmlResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_ATTRIBUTE_HTML)) {
-                    continue;
-                }
+        Event::listen(function(ElementUrlResolved $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_DEFINE_URL)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
+            $yiiEvent = new DefineUrlEvent([
+                'sender' => $event->element,
+                'url' => $event->url,
+            ]);
 
-                $yiiEvent = new DefineAttributeHtmlEvent([
-                    'sender' => $event->element,
-                    'attribute' => $event->attribute,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_DEFINE_URL, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_DEFINE_ATTRIBUTE_HTML, $yiiEvent);
-
-                if (isset($yiiEvent->html)) {
-                    $event->html = $yiiEvent->html;
-                }
+            $event->url = $yiiEvent->url;
+            if ($yiiEvent->handled) {
+                $event->handled = true;
             }
         });
 
-        Event::listen(function(ElementInlineAttributeInputHtmlResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML)) {
-                    continue;
-                }
+        Event::listen(function(ElementMovingInStructure $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_BEFORE_MOVE_IN_STRUCTURE)) {
+                return;
+            }
 
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
+            $yiiEvent = new ElementStructureEvent([
+                'sender' => $event->element,
+                'structureId' => $event->structureId,
+            ]);
 
-                $yiiEvent = new DefineAttributeHtmlEvent([
-                    'sender' => $event->element,
-                    'attribute' => $event->attribute,
-                ]);
+            self::triggerEvent($event->element::class, Element::EVENT_BEFORE_MOVE_IN_STRUCTURE, $yiiEvent);
 
-                self::triggerEvent($class, $class::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $yiiEvent);
-
-                if (isset($yiiEvent->html)) {
-                    $event->html = $yiiEvent->html;
-                }
+            if (!$yiiEvent->isValid) {
+                $event->isValid = false;
             }
         });
 
-        Event::listen(function(SetRoute $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_SET_ROUTE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new SetElementRouteEvent([
-                    'sender' => $event->element,
-                    'route' => $event->route,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_SET_ROUTE, $yiiEvent);
-
-                $event->route = $yiiEvent->route;
-                if ($yiiEvent->handled) {
-                    $event->handled = true;
-                }
+        Event::listen(function(ElementMovedInStructure $event) {
+            if (!self::hasEventHandlers($event->element::class, Element::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
+                return;
             }
+
+            $yiiEvent = new ElementStructureEvent([
+                'sender' => $event->element,
+                'structureId' => $event->structureId,
+            ]);
+
+            self::triggerEvent($event->element::class, Element::EVENT_AFTER_MOVE_IN_STRUCTURE, $yiiEvent);
         });
-
-        Event::listen(function(ElementUrlResolving $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_DEFINE_URL)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new DefineUrlEvent([
-                    'sender' => $event->element,
-                    'url' => $event->url,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_BEFORE_DEFINE_URL, $yiiEvent);
-
-                $event->url = $yiiEvent->url;
-                if ($yiiEvent->handled) {
-                    $event->handled = true;
-                }
-            }
-        });
-
-        Event::listen(function(ElementUrlResolved $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_DEFINE_URL)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new DefineUrlEvent([
-                    'sender' => $event->element,
-                    'url' => $event->url,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_DEFINE_URL, $yiiEvent);
-
-                $event->url = $yiiEvent->url;
-                if ($yiiEvent->handled) {
-                    $event->handled = true;
-                }
-            }
-        });
-
-        Event::listen(function(ElementMovingInStructure $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_BEFORE_MOVE_IN_STRUCTURE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new ElementStructureEvent([
-                    'sender' => $event->element,
-                    'structureId' => $event->structureId,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_BEFORE_MOVE_IN_STRUCTURE, $yiiEvent);
-
-                if (!$yiiEvent->isValid) {
-                    $event->isValid = false;
-                }
-            }
-        });
-
-        Event::listen(function(ElementMovedInStructure $event) use ($elementClasses) {
-            foreach ($elementClasses as $class) {
-                if (!self::hasEventHandlers($class, $class::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
-                    continue;
-                }
-
-                if (!self::matchesElementClass($class, $event->element::class)) {
-                    continue;
-                }
-
-                $yiiEvent = new ElementStructureEvent([
-                    'sender' => $event->element,
-                    'structureId' => $event->structureId,
-                ]);
-
-                self::triggerEvent($class, $class::EVENT_AFTER_MOVE_IN_STRUCTURE, $yiiEvent);
-            }
-        });
-    }
-
-    /**
-     * @return list<class-string>
-     */
-    private static function legacyElementClasses(): array
-    {
-        $elementClasses = [
-            Address::class,
-            Asset::class,
-            Category::class,
-            ContentBlock::class,
-            Entry::class,
-            GlobalSet::class,
-            Tag::class,
-            User::class,
-        ];
-
-        // Find all classes that extend Element
-        foreach (get_declared_classes() as $class) {
-            if (is_subclass_of($class, Element::class)) {
-                $elementClasses[] = $class;
-            }
-        }
-
-        return $elementClasses;
     }
 
     /**
@@ -970,37 +706,24 @@ trait LegacyConstants
     {
         $event = new DefineHtmlEvent(['sender' => $this]);
 
-        foreach (self::legacyElementClasses() as $class) {
-            if (
-                self::hasEventHandlers($class, $class::EVENT_DEFINE_ADDITIONAL_BUTTONS) &&
-                self::matchesElementClass($class, static::class)
-            ) {
-                self::triggerEvent($class, $class::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
-            }
-        }
+        self::triggerEvent(static::class, Element::EVENT_DEFINE_ADDITIONAL_BUTTONS, $event);
 
         return $event->html;
     }
 
     private static function hasEventHandlers(string $class, string $name): bool
     {
-        foreach (self::eventTargetClasses($class) as $targetClass) {
-            if (YiiEvent::hasHandlers($targetClass, $name)) {
-                return true;
-            }
-        }
-
-        return false;
+        return self::eventHandlers($class, $name) !== [];
     }
 
-    private static function triggerEvent(string $class, string $name, \yii\base\Event $event): void
+    private static function triggerEvent(string $class, string $name, YiiBaseEvent $event): void
     {
-        foreach (self::eventTargetClasses($class) as $targetClass) {
-            if (!YiiEvent::hasHandlers($targetClass, $name)) {
-                continue;
-            }
+        $event->handled = false;
+        $event->name = $name;
 
-            YiiEvent::trigger($targetClass, $name, $event);
+        foreach (self::eventHandlers($class, $name) as [$handler, $data]) {
+            $event->data = $data;
+            $handler($event);
 
             if ($event->handled) {
                 return;
@@ -1009,36 +732,56 @@ trait LegacyConstants
     }
 
     /**
-     * @return list<class-string>
+     * The class-level Yii handlers for an event on the class, in the order Yii
+     * would call them.
+     *
+     * Yii looks handlers up by the class's name and its parents' and
+     * interfaces' names as PHP reports them, which are the native ones, so it
+     * never finds handlers attached to their legacy aliases, such as
+     * `craft\base\Element`. This looks both up.
+     *
+     * @return list<array{0: callable, 1: mixed}>
      */
-    private static function eventTargetClasses(string $class): array
+    private static function eventHandlers(string $class, string $name): array
     {
-        $classes = [$class];
-        $resolvedClass = self::resolvedClass($class);
+        static $eventsProperty = new ReflectionProperty(YiiBaseEvent::class, '_events');
+        static $wildcardsProperty = new ReflectionProperty(YiiBaseEvent::class, '_eventWildcards');
 
-        if ($resolvedClass !== $class) {
-            $classes[] = $resolvedClass;
+        $events = $eventsProperty->getValue()[$name] ?? [];
+        $wildcards = [];
+
+        foreach ($wildcardsProperty->getValue() as $nameWildcard => $classHandlers) {
+            if (StringHelper::matchWildcard($nameWildcard, $name)) {
+                $wildcards = array_merge($wildcards, $classHandlers);
+            }
         }
 
-        if (
-            $class !== Element::class &&
-            !is_subclass_of($class, Element::class) &&
-            is_a($resolvedClass, \CraftCms\Cms\Element\Element::class, true)
-        ) {
-            $classes[] = Element::class;
+        if ($events === [] && $wildcards === []) {
+            return [];
         }
 
-        return array_values(array_unique($classes));
-    }
+        $handlersByClass = [];
 
-    private static function matchesElementClass(string $class, string $elementClass): bool
-    {
-        $class = self::resolvedClass($class);
-        $elementClass = self::resolvedClass($elementClass);
+        foreach ($events as $registeredClass => $classHandlers) {
+            $resolvedClass = self::resolvedClass($registeredClass);
+            $handlersByClass[$resolvedClass] = array_merge($handlersByClass[$resolvedClass] ?? [], $classHandlers);
+        }
 
-        return $class === $elementClass ||
-            is_subclass_of($class, $elementClass) ||
-            is_subclass_of($elementClass, $class);
+        $class = self::resolvedClass(ltrim($class, '\\'));
+        $handlers = [];
+
+        foreach ([$class, ...class_parents($class), ...class_implements($class)] as $targetClass) {
+            foreach ($wildcards as $classWildcard => $classHandlers) {
+                if (StringHelper::matchWildcard($classWildcard, $targetClass, ['escape' => false])) {
+                    array_push($handlers, ...$classHandlers);
+                    unset($wildcards[$classWildcard]);
+                }
+            }
+
+            array_push($handlers, ...$handlersByClass[$targetClass] ?? []);
+        }
+
+        return $handlers;
     }
 
     private static function resolvedClass(string $class): string

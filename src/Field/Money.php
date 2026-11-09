@@ -221,8 +221,9 @@ class Money extends Field implements DefaultableFieldInterface, InlineEditableFi
 
         return MoneyControl::make($context->path)
             ->currency($this->currency)
-            ->min($this->min)
-            ->max($this->max)
+            // Bounds are held in the currency's minor units, such as cents.
+            ->min($this->decimalSetting($this->min))
+            ->max($this->decimalSetting($this->max))
             ->size($this->size)
             ->showCurrency($this->showCurrency)
             ->value([

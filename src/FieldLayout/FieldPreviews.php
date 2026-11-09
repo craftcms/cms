@@ -167,6 +167,7 @@ readonly class FieldPreviews
                 readable: $control->readable,
                 writable: $control->writable,
                 valueProps: $control->valueProps,
+                valueScope: $control->valueScope,
             );
         }
 

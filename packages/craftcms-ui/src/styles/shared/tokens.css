@@ -359,6 +359,7 @@
 :root,
 [data-theme='light'] {
   color-scheme: light;
+  --c-badge-icon-color: currentColor;
 }
 
 [data-theme='dark'],
@@ -368,6 +369,8 @@
   craft-badge[fill='black'] > *
 ) {
   color-scheme: dark;
+  /* Icons in neutral badges stand out from their pale label text. */
+  --c-badge-icon-color: var(--c-text-white);
   /* The dark palette's 600 is pale; its 400 keeps the bar vivid. */
   --c-field-modified-indicator: var(--color-violet-400);
   /* Filled callouts read loud against a dark surface. */
