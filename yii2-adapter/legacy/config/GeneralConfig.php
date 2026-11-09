@@ -62,6 +62,13 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     private array $middlewareSettings = [];
 
     /**
+     * @var bool Whether CSRF values should be injected via JavaScript for greater cache-ability.
+     *
+     * @deprecated in 6.0.0. Front-end forms don’t need CSRF inputs, as POST requests with a `Sec-Fetch-Site: same-origin` header are accepted without one.
+     */
+    public bool $asyncCsrfInputs = false;
+
+    /**
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
      * in Settings → General.
      *
@@ -775,6 +782,28 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this->deprecate('isSystemLive', 'Use Laravel maintenance mode instead.');
 
         $this->isSystemLive = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether CSRF values should be injected via JavaScript for greater cache-ability.
+     *
+     * ```php
+     * ->asyncCsrfInputs(true)
+     * ```
+     *
+     * @group Security
+     *
+     * @see $asyncCsrfInputs
+     * @since 5.1.0
+     */
+    #[Deprecated(message: 'in 6.0.0. This setting no longer has any effect.')]
+    public function asyncCsrfInputs(bool $value = true): self
+    {
+        $this->deprecate('asyncCsrfInputs', 'It no longer has any effect, as front-end forms don’t need CSRF inputs.');
+
+        $this->asyncCsrfInputs = $value;
 
         return $this;
     }

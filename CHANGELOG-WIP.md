@@ -249,6 +249,10 @@
 - Added the `{% render %}` Twig tag. `{% render %}` tags and `render()` methods are allowed within the Twig sandbox. ([#19988](https://github.com/craftcms/cms/pull/19988))
 - Dates can now be output and passed to filters such as `|date` within the Twig sandbox.
 - Templates can now choose white or black text for legibility over an image or one of its edges, with `asset.analysis.colors.textColor()`, which also gives the text’s contrast ratio. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Front-end forms no longer need CSRF tokens. POST requests that browsers mark with a `Sec-Fetch-Site: same-origin` header are accepted without one, as are requests without `Sec-Fetch-Site` whose `Origin` header matches the site’s scheme and host, such as from plain-HTTP local dev sites like `http://my-site.test`.
+- Pages that print a CSRF token save the visitor’s session and are marked `no-cache`, so shared caches can’t store them. To make them cacheable, enable origin-only request forgery checks with `$middleware->preventRequestForgery(originOnly: true)`, and `csrfInput()` prints nothing. Requests from clients that send neither `Sec-Fetch-Site` nor `Origin` then get a 403 response. Sites can also remove `csrfInput()` from their own templates.
+- Plugins that render forms should keep using `csrfInput()` rather than `csrf_field()`, so their forms follow the site’s request forgery settings.
+- `csrfInput()` no longer accepts an `async` option or tag attributes.
 
 #### GraphQL
 - GraphQL schemas can now include read-only components for sites, sections, entry types, volumes, and user groups, which add `site` fields to elements, `volume` fields to assets, and `groups` fields to users. ([#20055](https://github.com/craftcms/cms/pull/20055))
@@ -286,6 +290,7 @@
 - Deprecated the `rememberedUserSessionDuration` and `verificationCodeDuration` general config settings. Laravel’s `auth.guards.craft.remember` and `auth.passwords.craft.expire` config values should be used instead.
 - Deprecated the `secureHeaders`, `secureProtocolHeaders`, and `trustedHosts` general config settings. [Laravel’s trusted proxies](https://laravel.com/docs/13.x/requests#configuring-trusted-proxies) should be configured instead.
 - Deprecated the `devMode` and `securityKey` general config settings. Laravel’s `app.debug` and `app.key` config values should be used instead.
+- Deprecated the `asyncCsrfInputs` general config setting. It no longer has any effect, as front-end forms don’t need CSRF inputs.
 - Deprecated `craft.app.config.general` in Twig. `app.config.craft.general` should be used instead.
 - Deprecated `craft.app.userPermissions`. `craft.userPermissions` should be used instead.
 - Deprecated `asset.setTransform()`. `asset.transform()` should be used instead. With the Yii adapter installed, `setTransform()` still works on assets returned by Assets fields and asset queries, but the transform only applies to the asset’s URL, not its width, height, or `getImg()` output. ([#20191](https://github.com/craftcms/cms/pull/20191))
