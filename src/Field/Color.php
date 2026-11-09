@@ -185,7 +185,12 @@ class Color extends Field implements DefaultableFieldInterface, InlineEditableFi
     {
         return ColorControl::make($context->path)
             ->alpha($this->allowCustomAlpha)
+            ->custom($this->allowCustomColors)
             ->presets(array_values(array_filter(array_column($this->palette, 'color'))))
+            ->presetLabels(Collection::make($this->palette)
+                ->filter(fn (array $color) => $color['color'] && isset($color['label']) && $color['label'] !== '')
+                ->mapWithKeys(fn (array $color) => [$color['color'] => t($color['label'], category: 'site')])
+                ->all())
             ->value($context->value instanceof ColorData ? $context->value->getHex() : $context->value);
     }
 

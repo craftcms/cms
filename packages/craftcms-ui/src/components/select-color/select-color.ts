@@ -14,10 +14,15 @@ function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+/** Whether a color is a hex value rather than a palette color's name. */
+function isHex(color: string): boolean {
+  return color.startsWith('#');
+}
+
 /**
  * @summary A color picker: a rich select whose options are the colors from
- * `constants/colors` (or {@link CraftSelectColor.colors}, when narrowed), with
- * an optional "transparent" option.
+ * `constants/colors` (or {@link CraftSelectColor.colors}, when narrowed, which
+ * can also list hex colors), with optional "transparent" and "Custom…" options.
  *
  * Everything else, including the label, help text, validation and the way a
  * surrounding `craft-field` names it, comes from {@link CraftSelectRich}.
@@ -69,10 +74,26 @@ export default class CraftSelectColor extends HostAriaReferences(
   blankLabel: string | null = null;
 
   /**
-   * Offered colors, in order. Defaults to the shared palette.
+   * When enabled, a "Custom…" option is appended to the list of colors, for
+   * a color that isn't one of them. Its value is `__custom__`, and whoever
+   * offers it takes the color itself, such as with a `craft-input-color`.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'allow-custom'})
+  allowCustom = false;
+
+  /**
+   * Offered colors, in order: palette color names, or hex colors such as
+   * `#e5422b`. Defaults to the shared palette.
    */
   @property({type: Array})
   colors: string[] = [...paletteColors];
+
+  /**
+   * Names for the offered colors, by color. A palette color without one is
+   * named after itself (`red` is "Red"), and a hex color by its value.
+   */
+  @property({type: Object})
+  labels: Record<string, string> = {};
 
   /** Marks the control as required. */
   @property({type: Boolean, reflect: true})
@@ -80,9 +101,10 @@ export default class CraftSelectColor extends HostAriaReferences(
 
   /**
    * Renders a color swatch for the given color value. The special `__blank__`
-   * value (the "Transparent" option) reuses the checkerboard treatment so it
-   * reads as "no color". Other swatches match the header of a card in that
-   * color, fill and border alike.
+   * value (the "Transparent" option) and a `transparent` color reuse the
+   * checkerboard treatment so they read as "no color". Hex colors fill their
+   * swatch. Other swatches match the header of a card in that color, fill and
+   * border alike.
    *
    * Structural styling is applied inline (rather than via the component's
    * scoped stylesheet) so the rendered node stays self-contained when Lion's
@@ -92,7 +114,17 @@ export default class CraftSelectColor extends HostAriaReferences(
    * boundary, so they still resolve in the invoker.
    */
   protected _swatchTemplate(color: string) {
-    const isTransparent = color === '__blank__';
+    // The "Custom…" option has no color of its own, so it keeps the swatch's
+    // space only, lining its name up with the others.
+    if (color === '__custom__') {
+      return html`<span
+        class="select-color__swatch"
+        style="flex:0 0 auto;inline-size:1rem;block-size:1rem;"
+        aria-hidden="true"
+      ></span>`;
+    }
+
+    const isTransparent = color === '__blank__' || color === 'transparent';
     // Every swatch casts a slight shadow and has an edge in its card header's
     // border color (see --c-select-color-swatch-edge for no color's). The dark
     // theme rings them too (see --c-select-color-swatch-ring).
@@ -117,8 +149,9 @@ export default class CraftSelectColor extends HostAriaReferences(
       'background-size:0.5rem 0.5rem;';
 
     // White cards take the white surface rather than white's own fill.
-    const fill =
-      color === 'white'
+    const fill = isHex(color)
+      ? color
+      : color === 'white'
         ? 'var(--c-surface-white)'
         : `var(--c-color-${color}-fill-quiet)`;
 
@@ -135,9 +168,14 @@ export default class CraftSelectColor extends HostAriaReferences(
 
   /**
    * The border color of a card header in the given color, mirroring the
-   * card's own exceptions for black and white.
+   * card's own exceptions for black and white. A hex color or
+   * `transparent`, which has no card, takes the no-color swatch's edge.
    */
   protected _swatchBorder(color: string): string {
+    if (isHex(color) || color === 'transparent') {
+      return this._swatchBorder('__blank__');
+    }
+
     switch (color) {
       case '__blank__':
         return 'var(--c-select-color-swatch-edge, rgb(0 0 0 / 15%))';
@@ -205,8 +243,10 @@ export default class CraftSelectColor extends HostAriaReferences(
 
     if (
       changed.has('colors') ||
+      changed.has('labels') ||
       changed.has('allowTransparent') ||
-      changed.has('blankLabel')
+      changed.has('blankLabel') ||
+      changed.has('allowCustom')
     ) {
       this.#renderOptions();
     }
@@ -222,8 +262,13 @@ export default class CraftSelectColor extends HostAriaReferences(
       html`${this.allowTransparent
         ? this._optionTemplate('__blank__', this.blankLabel ?? t('Transparent'))
         : nothing}${this.colors.map((color) =>
-        this._optionTemplate(color, t(titleCase(color)))
-      )}`,
+        this._optionTemplate(
+          color,
+          this.labels[color] ?? (isHex(color) ? color : t(titleCase(color)))
+        )
+      )}${this.allowCustom
+        ? this._optionTemplate('__custom__', t('Custom…'))
+        : nothing}`,
       this._listboxNode
     );
   }

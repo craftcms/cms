@@ -202,6 +202,11 @@ class UiKitchenSink
                 'Presets' => $this->control('Color', Color::make('color')
                     ->presets(['#ef4444', '#22c55e', '#3b82f6'])
                     ->value('#3b82f6')),
+                'Presets only' => $this->control('Color', Color::make('color')
+                    ->presets(['#ef4444', '#22c55e', '#3b82f6'])
+                    ->presetLabels(['#ef4444' => 'Red', '#22c55e' => 'Green'])
+                    ->custom(false)
+                    ->value('#3b82f6')),
             ];
         }
 
