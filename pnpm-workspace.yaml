@@ -24,7 +24,7 @@ minimumReleaseAgeExclude:
   # Pinned to that version; remove once it's past the window.
   - '@tanstack/hotkeys@0.23.0'
   # Our own Font Awesome kit, published with the CP Navigation icons.
-  - '@awesome.me/kit-ddaed3f5c5@1.0.81'
+  - '@awesome.me/kit-ddaed3f5c5@1.0.110'
 
 # Single source of truth for every dependency more than one workspace package
 # needs. Manifests reference these as `catalog:` (or `catalog:legacy`), so two
@@ -35,7 +35,7 @@ minimumReleaseAgeExclude:
 # third-party packages too (Storybook, Vitest, the Tailwind plugin), which only
 # `overrides` below can do. A catalog would only cover our own manifests.
 catalog:
-  '@awesome.me/kit-ddaed3f5c5': ^1.0.81
+  '@awesome.me/kit-ddaed3f5c5': ^1.0.110
   '@lion/ui': ^0.16.1
   '@simplewebauthn/browser': ^13.3.0
   '@storybook/addon-a11y': ^10.6.0

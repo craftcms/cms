@@ -353,6 +353,7 @@
 - `IconData` GraphQL objects now have `set`, `svg`, and `keywords` fields. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - `CraftCms\Cms\Cp\Icons::svg()` now supports `set-handle:icon-name` values. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
 - The Yii2 adapter now provides `craft\services\Icons` (with `EVENT_REGISTER_ICON_SETS`), `craft\events\RegisterIconSetsEvent`, `craft\icons\IconSet`, `craft\icons\DirectoryIconSet`, and `Craft::$app->getIcons()`. ([#17101](https://github.com/craftcms/cms/discussions/17101), [#20277](https://github.com/craftcms/cms/pull/20277))
+- Icons that Font Awesome 7 renamed, such as `user-large`, `film-simple`, and `grid-horizontal` (now `user`, `film`, and `grip`), no longer show when referenced by their Font Awesome 6 names, including in Icon field values, entry type and option icons, and plugins’ icon names. ([#20520](https://github.com/craftcms/cms/pull/20520))
 
 ### Field Layouts
 - Card view designers’ “Thumbnail Source” setting is now “Thumb Sources”, where several fields can be chosen and ordered. Chips and cards show the thumbnail from the first one that has one. ([#20156](https://github.com/craftcms/cms/discussions/20156), [#20181](https://github.com/craftcms/cms/pull/20181))
@@ -511,6 +512,7 @@
 - Added the `page-header` layout slot, a row atop the screen’s panel that spans the secondary nav and the content.
 - Added the `appearance` property to `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::appearance()`. `line` is the default; `fill` sets the tabs on a quiet track with the selected one raised out of it.
 - Added `formatDate()`, `formatCurrency()`, and `formattingLocale()` to `@craftcms/ui`, which format dates and amounts of money in the user’s formatting locale. `formatNumber()` now uses it too, rather than always formatting numbers in English.
+- `createUrlIconResolver()` callbacks can now return `{url, flip: true}` instead of a URL, for an icon drawn by mirroring another one. The `list-flip`, `list-tree-flip`, `share-flip`, `sidebar-nav-flip`, and `sidebar-nav-flip-light` icons are now the mirrored `list`, `list-tree`, `share`, `sidebar-nav`, and `sidebar-nav-light` icons. Paths to them, such as those returned by `CraftCms\Cms\Cp\Icons::resolveIconPath()` and the Yii adapter’s deprecated `@appicons/listrtl.svg` alias, no longer point to a file. ([#20520](https://github.com/craftcms/cms/pull/20520))
 - Added the `.cp-prose` and `.cp-group-heading` CSS classes, for long-form text and group headings in control panel screens. A table in `.cp-prose` scrolls sideways when it’s wrapped in a `.cp-prose-table` element.
 - Added the `proportional` property to `<craft-markdown-field>`, which shows the text in the body font, without the Markdown badge. ([#20249](https://github.com/craftcms/cms/pull/20249))
 - Added the `craft:screen-panel` global Vue component, which plugins can use on their own Inertia pages to add panels, with an optional status and header actions, to the screen’s details pane. ([#20084](https://github.com/craftcms/cms/pull/20084))
@@ -769,6 +771,7 @@
 - Removed support for the non-standard `ED256` passkey algorithm. ([#19701](https://github.com/craftcms/cms/pull/19701))
 - Updated Twig to 3.30.
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
+- Updated Font Awesome to v7. Parts of some icons now extend a little beyond their icon’s box, rather than being clipped. ([#20520](https://github.com/craftcms/cms/pull/20520))
 
 ### Bug Fixes
 - Fixed a bug where field layout forms created through the Yii adapter, such as with `craft\models\FieldLayout::createForm()`, didn’t show the element’s validation errors, including nested Matrix entries’ errors. ([#20518](https://github.com/craftcms/cms/pull/20518))
