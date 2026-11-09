@@ -232,6 +232,32 @@ it('moves options with their reorder buttons, posting the new order', async () =
   );
 });
 
+it('notifies listeners outside the shadow root it is in when an option is moved or removed', async () => {
+  const host = document.createElement('div');
+  document.body.append(host);
+  const element = document.createElement('craft-checkbox-select');
+  element.setAttribute('name', 'columns');
+  element.setAttribute('presentation', 'add-menu');
+  element.toggleAttribute('sortable', true);
+  host.attachShadow({mode: 'open'}).append(element);
+  element.options = options.map((option) => ({...option, checked: true}));
+  await settle(element);
+  const seen: string[] = [];
+  document.body.addEventListener('change', () =>
+    seen.push(element.value.join())
+  );
+
+  shadow(element)
+    .querySelector('craft-reorder-button')!
+    .dispatchEvent(
+      new CustomEvent('craft-reorder', {detail: {direction: 'down'}})
+    );
+  await settle(element);
+  shadow(element).querySelector<HTMLElement>('.remove')!.click();
+
+  expect(seen).toEqual(['author,title,postDate', 'title,postDate']);
+});
+
 it('keeps “All” alongside sortable options', async () => {
   const {element, form} = await create({
     name: 'sources',

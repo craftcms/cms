@@ -3,6 +3,7 @@ import {property, state} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {t} from '@src/utilities/translate';
+import {emitChange} from '@src/utilities/form-events';
 import {ReorderableController} from '@src/controllers/ReorderableController';
 import type {ActionMenuItem} from '../action-menu/action-menu.types.js';
 import type {ReorderDirection} from '../reorder-button/reorder-button.js';
@@ -582,7 +583,7 @@ export default class CraftCheckboxSelect extends LitElement {
         detail: {value: this.#valueOf(item), index: finish},
       })
     );
-    this.dispatchEvent(new Event('change', {bubbles: true}));
+    emitChange(this);
   }
 
   /** Reacts to a checkbox changing, by the user or by {@link #check}. */
@@ -609,7 +610,7 @@ export default class CraftCheckboxSelect extends LitElement {
 
     input.checked = checked;
     if (notify) {
-      input.dispatchEvent(new Event('change', {bubbles: true}));
+      emitChange(input);
     }
   }
 
