@@ -83,6 +83,31 @@ describe('craft-input-color', () => {
     expect(textInput(element).value).toBe('112233');
   });
 
+  it('emits one change per committed color, picked or typed, after the value updates', async () => {
+    const form = document.createElement('form');
+    const element = document.createElement('craft-input-color');
+    element.name = 'fill';
+    form.append(element);
+    document.body.append(form);
+    await element.updateComplete;
+    const committed: (string | null)[] = [];
+    element.addEventListener('change', () =>
+      committed.push(textInput(element).value)
+    );
+    form.addEventListener('change', () =>
+      committed.push(new FormData(form).get('fill') as string)
+    );
+
+    element.value = '445566';
+    const picker = pickerInput(element);
+    picker.value = '#112233';
+    picker.dispatchEvent(new Event('change', {bubbles: true}));
+    textInput(element).value = 'abcdef';
+    textInput(element).dispatchEvent(new Event('change', {bubbles: true}));
+
+    expect(committed).toEqual(['112233', '112233', 'abcdef', 'abcdef']);
+  });
+
   it('parses presets from a JSON attribute and normalizes them for the picker datalist', async () => {
     const element = await createInputColor();
 

@@ -1,6 +1,7 @@
 import {html, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import CraftInput from '../input/input.js';
+import {emitChange} from '@src/utilities/form-events';
 import {t} from '@src/utilities/translate';
 import styles from './input-color.styles.js';
 
@@ -269,6 +270,18 @@ export default class CraftInputColor extends CraftInput {
     );
   }
 
+  /**
+   * The picker's `change` isn't composed, so it stays in the shadow root. The
+   * commit is announced from the text input instead, as a typed one is.
+   */
+  protected _handlePickerChange(event: Event) {
+    this._handlePickerInput(event);
+
+    if (this._inputNode) {
+      emitChange(this._inputNode);
+    }
+  }
+
   protected _pickerTemplate() {
     if (!CraftInputColor.doesBrowserSupportColorInputs()) {
       return nothing;
@@ -286,6 +299,7 @@ export default class CraftInputColor extends CraftInput {
         ?disabled="${this.disabled}"
         list=${presets.length ? this._pickerListId : nothing}
         @input="${this._handlePickerInput}"
+        @change="${this._handlePickerChange}"
       />
       ${presets.length
         ? html`
