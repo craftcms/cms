@@ -1,4 +1,8 @@
-import {createPopper, type Instance as PopperInstance} from '@popperjs/core';
+import {
+  createPopper,
+  type Instance as PopperInstance,
+  type Modifier,
+} from '@popperjs/core';
 import {hideLayer, overlayModifiers, showLayer} from './overlay-layer.js';
 
 export interface DropdownParts {
@@ -9,6 +13,20 @@ export interface DropdownParts {
   /** What the pane opens against. */
   reference: Element;
 }
+
+/** Keeps the pane at least as wide as the field each time Popper updates. */
+const minWidthOfReference: Partial<Modifier<'minWidthOfReference', object>> = {
+  name: 'minWidthOfReference',
+  enabled: true,
+  phase: 'beforeWrite',
+  requires: ['computeStyles'],
+  fn: ({state}) => {
+    state.styles.popper = {
+      ...state.styles.popper,
+      minWidth: `${state.rects.reference.width}px`,
+    };
+  },
+};
 
 /**
  * A pane that drops down from a field: below it unless there's no room, and
@@ -39,7 +57,7 @@ export class Dropdown {
     this.#popper = createPopper(parts.reference, parts.pane, {
       strategy: 'fixed',
       placement: 'bottom-start',
-      modifiers: overlayModifiers(0),
+      modifiers: [...overlayModifiers(0), minWidthOfReference],
     });
     this.#popper.forceUpdate();
   }

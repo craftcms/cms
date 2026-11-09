@@ -86,6 +86,24 @@ it.each([
   }
 );
 
+it('keeps its open list as wide as the field when the field widens', async () => {
+  await page.viewport(400, 640);
+  const select = await fixture();
+  const invoker = select.querySelector<HTMLElement>('craft-select-invoker')!;
+  const pane = select.shadowRoot!.querySelector<HTMLElement>(
+    '#overlay-content-node-wrapper'
+  )!;
+
+  await userEvent.click(invoker);
+  await expect.element(page.getByRole('listbox')).toBeVisible();
+  await page.viewport(800, 640);
+
+  await expect
+    .poll(() => pane.getBoundingClientRect().width)
+    .toBeGreaterThanOrEqual(invoker.getBoundingClientRect().width);
+  expect(invoker.getBoundingClientRect().width).toBeGreaterThan(400);
+});
+
 async function formFixture(): Promise<{
   form: HTMLFormElement;
   select: CraftSelectRich;
