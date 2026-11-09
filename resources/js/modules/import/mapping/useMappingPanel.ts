@@ -35,15 +35,48 @@ export interface UseMappingPanelOptions {
   apply(values: MappingValues): void;
 }
 
+/**
+ * Provides the mapping context `MappingTable` and its cells read and write through, over
+ * reactive copies of the given trees, with nested mappings opening in their own panels.
+ */
+export function provideMappingContext(
+  options: Omit<UseMappingPanelOptions, 'title' | 'apply'>
+) {
+  const values = reactive<MappingValues>(options.values);
+  const suggestedMap = reactive<SuggestedMap>(options.suggestedMap);
+  const templateErrors = ref<Record<string, string[]>>({});
+  const panelId = useId();
+
+  provide(MappingContextKey, {
+    values,
+    suggestedMap,
+    sourceDataCols: options.sourceDataCols,
+    templateTextExpanderTriggers: options.templateTextExpanderTriggers,
+    templateErrors,
+    panelId,
+    editable: options.editable,
+    openNested(col: MappingColumn, opener: HTMLElement | null): void {
+      void openNestedMapping({
+        col,
+        step: options.step,
+        values,
+        editable: options.editable,
+        opener,
+        apply: (applied) => Object.assign(values, applied),
+      });
+    },
+  });
+
+  return {values, suggestedMap, templateErrors, panelId};
+}
+
 export function useMappingPanel(options: UseMappingPanelOptions): {
   values: MappingValues;
   suggestedMap: SuggestedMap;
 } {
   const slideout = useSlideout();
-  const values = reactive<MappingValues>(options.values);
-  const suggestedMap = reactive<SuggestedMap>(options.suggestedMap);
-  const templateErrors = ref<Record<string, string[]>>({});
-  const panelId = useId();
+  const {values, suggestedMap, templateErrors, panelId} =
+    provideMappingContext(options);
 
   /**
    * Backs the shell's Apply button and gives it an accurate dirty check for the
@@ -68,26 +101,6 @@ export function useMappingPanel(options: UseMappingPanelOptions): {
     defaultFormActions: [],
     onSave: apply,
   }));
-
-  provide(MappingContextKey, {
-    values,
-    suggestedMap,
-    sourceDataCols: options.sourceDataCols,
-    templateTextExpanderTriggers: options.templateTextExpanderTriggers,
-    templateErrors,
-    panelId,
-    editable: options.editable,
-    openNested(col: MappingColumn, opener: HTMLElement | null): void {
-      void openNestedMapping({
-        col,
-        step: options.step,
-        values,
-        editable: options.editable,
-        opener,
-        apply: (applied) => Object.assign(values, applied),
-      });
-    },
-  });
 
   async function apply(): Promise<void> {
     if (options.editable && usesTemplates(values.map)) {

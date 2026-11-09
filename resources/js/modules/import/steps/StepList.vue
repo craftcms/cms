@@ -9,13 +9,13 @@
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/empty/empty';
   import '@craftcms/ui/components/reorder-button/reorder-button';
-  import {computed, ref} from 'vue';
+  import {computed, ref, shallowRef, useTemplateRef} from 'vue';
   import {t} from '@craftcms/ui';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
-  import type {ActionItems} from '@/common/types';
   import type {ImportStep} from '@/modules/import/mapping/types';
-  import {openStepSlideout} from './step-slideout';
+  import {openStepMapping} from './step-mapping';
+  import {openStepSlideout, type StepSummary} from './step-slideout';
+  import StepCard from './StepCard.vue';
 
   const props = defineProps<{
     editable: boolean;
@@ -23,18 +23,35 @@
     importerTypes: Array<{value: string; label: string}>;
     /** Server-side errors, keyed `steps.<step uid>.<attribute>`. */
     errors?: Record<string, string[]>;
+    /** Each saved step's own page, by its uid. */
+    stepEditUrls?: Record<string, string>;
+    /** Each step at a glance, by its uid, as the plan was loaded. */
+    stepSummaries?: Record<string, StepSummary>;
   }>();
 
   const steps = defineModel<ImportStep[]>({required: true});
 
-  const addButton = ref<HTMLElement | null>(null);
-  const itemButtons = ref<Record<string, HTMLElement | null>>({});
+  /** Summaries of the steps added or edited since the plan was loaded, from their slideouts. */
+  const appliedSummaries = ref<Record<string, StepSummary>>({});
+
+  function summaryFor(uid: string): StepSummary | null {
+    return appliedSummaries.value[uid] ?? props.stepSummaries?.[uid] ?? null;
+  }
+
+  const addButton = useTemplateRef<HTMLElement>('addButton');
 
   /** A slideout that couldn't be opened, as opposed to a server validation error. */
-  const requestError = ref<string | null>(null);
+  const requestError = shallowRef<string | null>(null);
 
-  /** Which slideout is being opened: `new` for Add, or the uid of the step being edited. */
-  const openingStep = ref<string | null>(null);
+  /** The slideout being opened: a step's, by its uid, or `new` for Add. */
+  const opening = shallowRef<{
+    uid: string;
+    slideout: 'settings' | 'mapping';
+  } | null>(null);
+
+  function openingFor(uid: string): 'settings' | 'mapping' | null {
+    return opening.value?.uid === uid ? opening.value.slideout : null;
+  }
 
   const {setItemRef, setHandleRef, getDropState, getRowPosition} =
     useReorderableItems({
@@ -83,16 +100,10 @@
     )
   );
 
-  function summary(step: ImportStep): string {
-    const label = step.type
+  function typeLabel(step: ImportStep): string {
+    return step.type
       ? (typeLabels.value[step.type] ?? step.type)
       : t('Choose an importer');
-
-    return [label, step.source].filter(Boolean).join(' — ');
-  }
-
-  function stepLabel(step: ImportStep, index: number): string {
-    return `${index + 1}. ${summary(step)}`;
   }
 
   function reorder(from: number, to: number): void {
@@ -144,38 +155,21 @@
     steps.value = steps.value.filter((existing) => existing.uid !== step.uid);
   }
 
-  function stepActions(step: ImportStep): ActionItems {
-    return [
-      {
-        label: step.enabled ? t('Disable step') : t('Enable step'),
-        icon: step.enabled ? 'circle-dashed' : 'circle',
-        disabled: !canToggle(step),
-        onClick: () => toggleEnabled(step),
-      },
-      {
-        label: t('Delete step'),
-        icon: 'trash',
-        variant: 'danger',
-        onClick: () => remove(step),
-      },
-    ];
-  }
-
   /**
    * Opening a step's slideout asks the server to build its form, so it can fail. Report it
    * rather than letting the rejection go unhandled, which reads as the button doing nothing.
    */
   async function openStep(
-    key: string,
+    uid: string,
     options: Parameters<typeof openStepSlideout>[0],
     title: string
   ): Promise<void> {
-    if (openingStep.value !== null) {
+    if (opening.value !== null) {
       return;
     }
 
     requestError.value = null;
-    openingStep.value = key;
+    opening.value = {uid, slideout: 'settings'};
 
     try {
       await openStepSlideout(options, title);
@@ -185,7 +179,7 @@
           ? error.message
           : t('Couldn’t open this step.');
     } finally {
-      openingStep.value = null;
+      opening.value = null;
     }
   }
 
@@ -198,115 +192,136 @@
         step,
         editable: props.editable,
         opener: addButton.value,
-        apply: (applied) => {
+        apply: (applied, summary) => {
           steps.value = [...steps.value, {...applied, uid: step.uid}];
+          appliedSummaries.value = {
+            ...appliedSummaries.value,
+            [step.uid]: summary,
+          };
         },
       },
       t('Add an import step')
     );
   }
 
-  async function edit(step: ImportStep): Promise<void> {
+  async function edit(
+    step: ImportStep,
+    opener: HTMLElement | null
+  ): Promise<void> {
     await openStep(
       step.uid,
       {
         step,
         editable: props.editable,
-        opener: itemButtons.value[step.uid] ?? null,
-        apply: (applied) => replace(step.uid, applied),
+        editUrl: props.stepEditUrls?.[step.uid] ?? null,
+        opener,
+        apply: (applied, summary) => {
+          replace(step.uid, applied);
+          appliedSummaries.value = {
+            ...appliedSummaries.value,
+            [step.uid]: summary,
+          };
+        },
       },
       t('Edit import step')
     );
   }
+
+  /** Opens a step's mapping straight from the list, without its settings slideout. */
+  async function editMapping(
+    step: ImportStep,
+    opener: HTMLElement | null
+  ): Promise<void> {
+    if (opening.value !== null) {
+      return;
+    }
+
+    requestError.value = null;
+    opening.value = {uid: step.uid, slideout: 'mapping'};
+
+    try {
+      await openStepMapping(
+        {
+          step,
+          editable: props.editable,
+          opener,
+          apply: (values) => {
+            // PHP sends empty settings as `[]`, which can't be spread into
+            const settings = Array.isArray(step.settings)
+              ? {}
+              : (step.settings ?? {});
+            replace(step.uid, {...step, settings: {...settings, ...values}});
+          },
+        },
+        t('Edit mapping')
+      );
+    } catch (error) {
+      requestError.value =
+        error instanceof Error && error.message
+          ? error.message
+          : t('Couldn’t open the mapping.');
+    } finally {
+      opening.value = null;
+    }
+  }
 </script>
 
 <template>
-  <h2>{{ t('Steps') }}</h2>
-  <p>
-    {{
-      t(
-        'Each step imports one kind of data. Steps run in the order listed here.'
-      )
-    }}
-  </p>
-
   <craft-empty v-if="!steps.length" :label="t('No steps yet.')"></craft-empty>
 
-  <ol v-else class="m-0 p-0 list-none space-y-2" role="list">
-    <li
+  <ol v-else class="grid gap-md" role="list">
+    <StepCard
       v-for="(step, index) in steps"
       :key="step.uid"
-      :ref="(el) => setItemRef(el, step.uid)"
-      class="flex flex-wrap items-center gap-3 rounded p-2"
-      :class="{'bg-gray-100': getDropState(step.uid).type === 'is-over'}"
+      :ref="
+        (el) => setItemRef(el as Parameters<typeof setItemRef>[0], step.uid)
+      "
+      :step="step"
+      :number="index + 1"
+      :type-label="typeLabel(step)"
+      :summary="summaryFor(step.uid)"
+      :editable="editable"
+      :can-toggle="canToggle(step)"
+      :invalid="Boolean(errorsByStep[step.uid])"
+      :opening="openingFor(step.uid)"
+      :over="getDropState(step.uid).type === 'is-over'"
+      @edit="edit(step, $event)"
+      @edit-mapping="editMapping(step, $event)"
+      @toggle-enabled="toggleEnabled(step)"
+      @remove="remove(step)"
     >
-      <craft-reorder-button
-        :ref="
-          (el: Parameters<typeof setHandleRef>[0]) => setHandleRef(el, step.uid)
-        "
-        .disabled="!editable || steps.length < 2"
-        :position="getRowPosition(index)"
-        @craft-reorder="
-          reorder(index, index + ($event.detail.direction === 'up' ? -1 : 1))
-        "
-      ></craft-reorder-button>
-
-      <span class="flex-1">
-        <span :id="`step-label-${step.uid}`" class="font-bold">{{
-          stepLabel(step, index)
-        }}</span>
-        <span v-if="!step.enabled" class="ms-2">({{ t('Disabled') }})</span>
-        <span
-          v-if="errorsByStep[step.uid]"
-          :id="`step-error-${step.uid}`"
-          class="error block"
-        >
-          {{
-            t('The step “{step}” is invalid. Edit it to fix the problem.', {
-              step: summary(step),
-            })
-          }}
-        </span>
-      </span>
-
-      <craft-button
-        :ref="(el: HTMLElement | null) => (itemButtons[step.uid] = el)"
-        type="button"
-        .loading="openingStep === step.uid"
-        :aria-describedby="
-          errorsByStep[step.uid] ? `step-error-${step.uid}` : undefined
-        "
-        :aria-label="
-          t(editable ? 'Edit {type}' : 'View {type}', {
-            type: stepLabel(step, index),
-          })
-        "
-        @click="edit(step)"
-        :icon="editable ? 'pencil' : 'eye'"
-      >
-        {{ editable ? t('Edit') : t('View') }}
-      </craft-button>
-
-      <ActionMenu
-        v-if="editable"
-        :label="t('Actions for {item}', {item: stepLabel(step, index)})"
-        :actions="stepActions(step)"
-      />
-    </li>
+      <template #handle>
+        <craft-reorder-button
+          v-if="editable && steps.length > 1"
+          :ref="
+            (el: Parameters<typeof setHandleRef>[0]) =>
+              setHandleRef(el, step.uid)
+          "
+          :position="getRowPosition(index)"
+          size="small"
+          @craft-reorder="
+            reorder(index, index + ($event.detail.direction === 'up' ? -1 : 1))
+          "
+        ></craft-reorder-button>
+      </template>
+    </StepCard>
   </ol>
 
   <ul v-if="listErrors.length" class="error-list" role="alert">
     <li v-for="error in listErrors" :key="error">{{ error }}</li>
   </ul>
 
-  <craft-button
-    v-if="editable"
-    ref="addButton"
-    type="button"
-    icon="plus"
-    .loading="openingStep === 'new'"
-    @click="add"
-  >
-    {{ t('Add a step') }}
-  </craft-button>
+  <div class="mt-md">
+    <craft-button
+      v-if="editable"
+      ref="addButton"
+      type="button"
+      icon="plus"
+      variant="dashed"
+      .loading="openingFor('new') !== null"
+      @click="add"
+    >
+      {{ t('Add a step') }}
+    </craft-button>
+  </div>
 </template>

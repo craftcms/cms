@@ -6,6 +6,7 @@
    * a copy of the step and hands it back on Apply; the step only reaches the database
    * when the import itself is saved.
    */
+  import '@craftcms/ui/components/field-group/field-group';
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/spinner/spinner';
   import {computed, onMounted, ref, shallowRef} from 'vue';
@@ -23,15 +24,19 @@
     fetchStepUi,
     takeStepSlideoutContext,
     validateStep,
+    type StepSlideoutContext,
   } from './step-slideout';
   import {openStepMapping, StepMappingUnavailableError} from './step-mapping';
+  import InlineStepMapping from './InlineStepMapping.vue';
 
   const props = defineProps<{
-    contextId: string;
+    /** A slideout claims its context by id; a page hands it over directly. */
+    contextId?: string;
+    context?: StepSlideoutContext;
     title: string;
   }>();
 
-  const context = takeStepSlideoutContext(props.contextId);
+  const context = props.context ?? takeStepSlideoutContext(props.contextId!);
   const slideout = useSlideout();
   const payload = shallowRef<UiPayload>(context.payload);
   const errors = shallowRef<UiPayload['errors']>([]);
@@ -54,7 +59,8 @@
 
   useAppLayout(() => ({
     title: props.title,
-    submitButtonLabel: t('Apply'),
+    submitButtonLabel: context.submitLabel ?? t('Apply'),
+    editUrl: context.editUrl ?? null,
     form,
     defaultFormActions: [],
     onSave: done,
@@ -78,6 +84,8 @@
   const canMap = ref(context.canMap);
   /** Why the data source can't be used, as the server last reported it. */
   const sourceError = ref(context.sourceError);
+  /** The step at a glance, as the server last reported it. */
+  const summary = ref(context.summary);
 
   /**
    * Why the data source couldn't be read when the mapping was opened. It's only found out by
@@ -124,8 +132,6 @@
   /** Shared by refreshes and source checks, so whichever started last sets `canMap`. */
   let latestCanMap = 0;
 
-  const mappedCount = computed(() => countLeaves(mappingValues().map));
-
   function mappingValues(): MappingValues {
     // PHP sends empty settings as `[]`, whose `map` would be `Array.prototype.map`
     const settings = Array.isArray(step.value.settings)
@@ -139,26 +145,13 @@
         string,
         unknown
       >,
+      defaultValues: (settings.defaultValues ?? {}) as Record<string, unknown>,
       keepMissingNestedElements: (settings.keepMissingNestedElements ??
         {}) as Record<string, unknown>,
       fieldSettings: (settings.fieldSettings ?? {}) as Record<string, unknown>,
       templates: (settings.templates ?? {}) as Record<string, unknown>,
+      matchMode: (settings.matchMode as string | undefined) ?? null,
     };
-  }
-
-  function countLeaves(tree: unknown): number {
-    if (tree === null || tree === undefined || tree === '') {
-      return 0;
-    }
-
-    if (typeof tree !== 'object') {
-      return 1;
-    }
-
-    return Object.values(tree as Record<string, unknown>).reduce<number>(
-      (total, value) => total + countLeaves(value),
-      0
-    );
   }
 
   /** Folds the form's current values back into the step. */
@@ -185,6 +178,12 @@
 
   function onChange(): void {
     syncFromForm();
+  }
+
+  /** The mapping is edited in place, so each change goes straight into the step. */
+  function onMappingChange(values: MappingValues): void {
+    step.value = {...step.value, settings: {...step.value.settings, ...values}};
+    form.state = dirtyState(step.value);
   }
 
   async function editMapping(): Promise<void> {
@@ -234,6 +233,10 @@
     }
   }
 
+  function fieldCount(count: number): string {
+    return t('{count, plural, =1{# field} other{# fields}}', {count});
+  }
+
   /** The step as the settings form endpoint expects it, with the mapping trees carried over. */
   function stepForRequest(settings: Record<string, unknown>): ImportStep {
     return {...step.value, settings: {...settings, ...mappingValues()}};
@@ -259,6 +262,7 @@
       // the form drops a response a newer refresh has overtaken, so this does too
       if (request === latestRefresh) {
         formType.value = type;
+        summary.value = response.summary;
       }
 
       if (canMapRequest === latestCanMap) {
@@ -347,7 +351,10 @@
       }
     }
 
-    context.apply(JSON.parse(JSON.stringify(step.value)) as ImportStep);
+    await context.apply(
+      JSON.parse(JSON.stringify(step.value)) as ImportStep,
+      summary.value
+    );
 
     // Before close(): closing drops the panel from the store, and its handler with it.
     slideout?.saved();
@@ -356,8 +363,8 @@
 </script>
 
 <template>
-  <CpContainer @focusout="onFocusOut">
-    <craft-field-group class="py-4">
+  <CpContainer @focusout="onFocusOut" class="py-lg">
+    <craft-field-group>
       <UiRenderer
         ref="renderer"
         :payload="payload"
@@ -366,22 +373,18 @@
         @change="onChange"
       >
         <template #mapping>
-          <craft-button
-            ref="mappingButton"
-            .disabled="!canMap"
-            .loading="openingMapping || checkingMap"
-            @click="editMapping"
-          >
-            {{ context.editable ? t('Edit mapping') : t('View mapping') }}
-          </craft-button>
-
-          <p v-if="mappingMessage" role="alert">{{ mappingMessage }}</p>
+          <InlineStepMapping
+            :step="step"
+            :editable="context.editable"
+            :can-map="canMap"
+            @change="onMappingChange"
+          />
         </template>
       </UiRenderer>
-
-      <craft-spinner v-if="showLoadingType" role="status">
-        {{ t('Loading') }}
-      </craft-spinner>
     </craft-field-group>
+
+    <craft-spinner v-if="showLoadingType" role="status">
+      {{ t('Loading') }}
+    </craft-spinner>
   </CpContainer>
 </template>

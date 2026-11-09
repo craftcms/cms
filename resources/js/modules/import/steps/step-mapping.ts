@@ -76,6 +76,33 @@ export async function fetchStepMapping(
   return data as StepMappingPayload;
 }
 
+/** The trees a mapping starts from: the step's own, with the server's guesses filled in where nothing is mapped. */
+export function initialMappingState(data: StepMappingPayload): {
+  values: MappingValues;
+  suggestedMap: SuggestedMap;
+} {
+  const values = cloneValues(
+    data.values ?? {
+      map: {},
+      matchCriteria: {},
+      clearableItems: {},
+      defaultValues: {},
+      keepMissingNestedElements: {},
+      fieldSettings: {},
+      templates: {},
+      matchMode: null,
+    }
+  );
+  const suggestedMap: SuggestedMap = {};
+  applySuggestions(
+    values.map,
+    toObjectTree(data.suggestions ?? {}),
+    suggestedMap
+  );
+
+  return {values, suggestedMap};
+}
+
 /**
  * Returns false when the user declined to discard unsaved changes in a panel this one
  * would have replaced. Throws with the server's reason when the step can't be mapped
@@ -94,22 +121,7 @@ export async function openStepMapping(
     );
   }
 
-  const values = cloneValues(
-    data.values ?? {
-      map: {},
-      matchCriteria: {},
-      clearableItems: {},
-      keepMissingNestedElements: {},
-      fieldSettings: {},
-      templates: {},
-    }
-  );
-  const suggestedMap: SuggestedMap = {};
-  applySuggestions(
-    values.map,
-    toObjectTree(data.suggestions ?? {}),
-    suggestedMap
-  );
+  const {values, suggestedMap} = initialMappingState(data);
 
   return openContextSlideout(
     registry,

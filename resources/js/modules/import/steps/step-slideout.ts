@@ -21,6 +21,8 @@ import {cloneStep} from '@/modules/import/mapping/paths';
 import type {UiPayload} from '@/modules/ui/types';
 import type {ImportStep} from '@/modules/import/mapping/types';
 
+export type StepSummary = CraftCms.Cms.Import.Data.StepSummary;
+
 export type StepUiPayload = Omit<
   CraftCms.Cms.Import.Data.StepUiPayload,
   'ui'
@@ -33,15 +35,22 @@ export interface StepSlideoutContext {
   payload: UiPayload;
   canMap: boolean;
   sourceError: string | null;
+  /** The step at a glance, as its form last reported it. */
+  summary: StepSummary;
   editable: boolean;
-  apply(step: ImportStep): void;
+  /** The step's own page, linked from the slideout's header. Unset for a step yet to be saved. */
+  editUrl?: string | null;
+  /** The submit button's label: Apply in a slideout, Save on the step's own page. */
+  submitLabel?: string;
+  apply(step: ImportStep, summary: StepSummary): void | Promise<void>;
 }
 
 export interface OpenStepSlideoutOptions {
   step: ImportStep;
   editable: boolean;
+  editUrl?: string | null;
   opener: HTMLElement | null;
-  apply(step: ImportStep): void;
+  apply(step: ImportStep, summary: StepSummary): void;
 }
 
 const registry = createContextRegistry<StepSlideoutContext>('import-step');
@@ -64,6 +73,7 @@ export async function fetchStepUi(step: ImportStep): Promise<StepUiPayload> {
     ui: data.ui as UiPayload,
     canMap: Boolean(data.canMap),
     sourceError: data.sourceError ?? null,
+    summary: data.summary ?? {settings: [], destinationLabels: {}},
   };
 }
 
@@ -84,7 +94,7 @@ export async function openStepSlideout(
   title: string
 ): Promise<boolean> {
   const step = cloneStep(options.step);
-  const {ui, canMap, sourceError} = await fetchStepUi(step);
+  const {ui, canMap, sourceError, summary} = await fetchStepUi(step);
 
   return openContextSlideout(
     registry,
@@ -97,7 +107,9 @@ export async function openStepSlideout(
       payload: ui,
       canMap,
       sourceError,
+      summary,
       editable: options.editable,
+      editUrl: options.editUrl ?? null,
       apply: options.apply,
     },
     title,

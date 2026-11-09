@@ -21,6 +21,8 @@
     ui: UiPayload;
     submit: UrlMethodPair;
     importerTypes: ImporterType[];
+    stepEditUrls: Record<string, string>;
+    stepSummaries: Record<string, CraftCms.Cms.Import.Data.StepSummary>;
     formActions?: FormAction[];
   }>();
 
@@ -48,6 +50,8 @@
         :model-value="asSteps(value)"
         :editable="editable"
         :importer-types="importerTypes"
+        :step-edit-urls="stepEditUrls"
+        :step-summaries="stepSummaries"
         :errors="stepErrors(errors)"
         @update:model-value="
           setValue(cloneSteps($event) as unknown as UiValue, 'discrete')

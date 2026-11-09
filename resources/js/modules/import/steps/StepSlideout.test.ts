@@ -39,13 +39,14 @@ vi.mock('./step-slideout', () => ({
   validateStep: state.validateStep,
 }));
 
-// Stubbed so the test can drive the panel's refresh callback and reported values.
+// Stubbed so the test can drive the panel's refresh callback and reported values. It renders
+// the mapping slot the server's form always includes.
 vi.mock('@/modules/ui/UiRenderer.vue', () => ({
   default: {
     name: 'UiRenderer',
     props: ['payload', 'refresh', 'errors'],
     emits: ['change'],
-    setup(props: any, {expose, emit}: any) {
+    setup(props: any, {expose, emit, slots}: any) {
       state.refresh = props.refresh;
       state.emitChange = () => emit('change', {}, state.values);
       expose({currentValues: () => state.values});
@@ -55,6 +56,7 @@ vi.mock('@/modules/ui/UiRenderer.vue', () => ({
 
         return h('div', {class: 'ui-renderer'}, [
           h('input', {'data-ui-control-path': '["source"]'}),
+          slots.mapping?.(),
           h('input', {'data-ui-control-path': '["transformer"]'}),
         ]);
       };
@@ -71,6 +73,16 @@ function payload(): UiPayload {
     errors: [],
     globalErrors: [],
   } as unknown as UiPayload;
+}
+
+const summary = {
+  settings: [],
+  destinationLabels: {title: {label: 'Title', handle: 'title'}},
+};
+
+/** What the step form endpoint sends back. */
+function response(canMap: boolean, sourceError: string | null = null) {
+  return {ui: payload(), canMap, sourceError, summary};
 }
 
 const step: ImportStep = {
@@ -90,14 +102,16 @@ function mount(
   canMap: boolean,
   type: string | null = step.type,
   formSettings: Record<string, unknown> = {},
-  editable = true
+  editable = true,
+  settings: ImportStep['settings'] = {}
 ) {
   state.values = {type, source: step.source, settings: formSettings};
   state.context = {
-    step: {...structuredClone(step), type},
+    step: {...structuredClone(step), type, settings},
     payload: payload(),
     canMap,
     sourceError: null,
+    summary,
     editable,
     apply: vi.fn(),
   };
@@ -109,7 +123,7 @@ function mount(
 }
 
 function mappingSection(): HTMLElement | null {
-  return container.querySelector('section');
+  return container.querySelector('.step-mapping-summary');
 }
 
 function mappingButton(): HTMLElement & {disabled: boolean; loading: boolean} {
@@ -166,19 +180,19 @@ it('renders the form and mapping inside the container field group, like other sl
 
   expect(group).not.toBeNull();
   expect(group!.querySelector('.ui-renderer')).not.toBeNull();
-  expect(group!.querySelector('section')).not.toBeNull();
+  expect(group!.querySelector('.step-mapping-summary')).not.toBeNull();
 });
 
-it('hides the mapping section until an importer type is chosen', () => {
+it('can’t add a mapping until an importer type is chosen', () => {
   mount(false, null);
 
-  expect(mappingSection()).toBeNull();
+  expect(mappingButton().disabled).toBe(true);
 });
 
 it('shows the mapping section with a disabled button while the step can’t be mapped', () => {
   mount(false);
 
-  expect(mappingSection()!.textContent).toContain('Mapping');
+  expect(mappingSection()!.textContent).toContain('Field mapping');
   expect(mappingButton().disabled).toBe(true);
 });
 
@@ -190,7 +204,7 @@ it('enables the mapping button once the step can be mapped', () => {
 
 it('enables the mapping button when a refresh reports the step as mappable', async () => {
   mount(false);
-  state.fetchStepUi.mockResolvedValue({ui: payload(), canMap: true});
+  state.fetchStepUi.mockResolvedValue(response(true));
 
   await state.refresh!({settings: {}});
   await nextTick();
@@ -199,7 +213,7 @@ it('enables the mapping button when a refresh reports the step as mappable', asy
 });
 
 it('lets a read-only step’s mapping be viewed', () => {
-  mount(true, step.type, {}, false);
+  mount(true, step.type, {}, false, {map: {title: 'name'}});
 
   expect(mappingButton().disabled).toBe(false);
   expect(mappingButton().textContent!.trim()).toBe('View mapping');
@@ -207,7 +221,7 @@ it('lets a read-only step’s mapping be viewed', () => {
 
 it('disables the mapping button again when a refresh reports it unmappable', async () => {
   mount(true);
-  state.fetchStepUi.mockResolvedValue({ui: payload(), canMap: false});
+  state.fetchStepUi.mockResolvedValue(response(false));
 
   await state.refresh!({settings: {}});
   await nextTick();
@@ -217,11 +231,9 @@ it('disables the mapping button again when a refresh reports it unmappable', asy
 
 it('shows the data source’s problem under its field when a refresh reports one', async () => {
   mount(true);
-  state.fetchStepUi.mockResolvedValue({
-    ui: payload(),
-    canMap: false,
-    sourceError: 'File “people.csv” does not exist.',
-  });
+  state.fetchStepUi.mockResolvedValue(
+    response(false, 'File “people.csv” does not exist.')
+  );
 
   await state.refresh!({settings: {}});
   await nextTick();
@@ -232,7 +244,7 @@ it('shows the data source’s problem under its field when a refresh reports one
   expect(mappingButton().disabled).toBe(true);
 });
 
-it('shows the mapping section only once the chosen type’s form arrives', async () => {
+it('shows a spinner while the chosen type’s form loads, then lets the step be mapped', async () => {
   vi.useFakeTimers();
   const loading = deferred<{ui: UiPayload; canMap: boolean}>();
   state.fetchStepUi.mockReturnValue(loading.promise);
@@ -243,21 +255,19 @@ it('shows the mapping section only once the chosen type’s form arrives', async
   const refreshing = state.refresh!({settings: {}});
   await nextTick();
 
-  expect(mappingSection()).toBeNull();
   expect(spinner()).toBeNull();
 
   vi.advanceTimersByTime(200);
   await nextTick();
 
   expect(spinner()).not.toBeNull();
-  expect(mappingSection()).toBeNull();
+  expect(mappingButton().disabled).toBe(true);
 
-  loading.resolve({ui: payload(), canMap: true});
+  loading.resolve(response(true));
   await refreshing;
   await nextTick();
 
   expect(spinner()).toBeNull();
-  expect(mappingSection()).not.toBeNull();
   expect(mappingButton().disabled).toBe(false);
 });
 
@@ -273,7 +283,7 @@ it('doesn’t show the spinner for a refresh that keeps the type', async () => {
 
   expect(spinner()).toBeNull();
 
-  loading.resolve({ui: payload(), canMap: true});
+  loading.resolve(response(true));
   await refreshing;
 });
 
@@ -290,16 +300,16 @@ it('ignores a refresh response that a newer one has overtaken', async () => {
   state.values = {...state.values, type: null};
   const latest = state.refresh!({settings: {}});
 
-  second.resolve({ui: payload(), canMap: false});
+  second.resolve(response(false));
   await latest;
-  first.resolve({ui: payload(), canMap: true});
+  first.resolve(response(true));
   await stale;
   await nextTick();
 
-  expect(mappingSection()).toBeNull();
+  expect(mappingButton().disabled).toBe(true);
 });
 
-it('clears the spinner and keeps the mapping section hidden when a refresh fails', async () => {
+it('clears the spinner and leaves the step unmappable when a refresh fails', async () => {
   vi.useFakeTimers();
   const loading = deferred<{ui: UiPayload; canMap: boolean}>();
   state.fetchStepUi.mockReturnValue(loading.promise);
@@ -317,7 +327,7 @@ it('clears the spinner and keeps the mapping section hidden when a refresh fails
   await nextTick();
 
   expect(spinner()).toBeNull();
-  expect(mappingSection()).toBeNull();
+  expect(mappingButton().disabled).toBe(true);
 });
 
 it('checks whether the step can be mapped once the data source field loses focus', async () => {
@@ -335,7 +345,7 @@ it('checks whether the step can be mapped once the data source field loses focus
   });
   expect(mappingButton().loading).toBe(true);
 
-  checking.resolve({ui: payload(), canMap: true});
+  checking.resolve(response(true));
   await checking.promise;
   await nextTick();
 
@@ -374,9 +384,9 @@ it('lets a refresh that starts after a source check decide whether the step can 
   blur('["source"]');
   const refresh = state.refresh!({settings: {}});
 
-  refreshing.resolve({ui: payload(), canMap: false});
+  refreshing.resolve(response(false));
   await refresh;
-  checking.resolve({ui: payload(), canMap: true});
+  checking.resolve(response(true));
   await checking.promise;
   await nextTick();
 
@@ -508,7 +518,11 @@ it('applies the step and lets the slideout close once it validates', async () =>
   await onSave();
 
   expect(state.context.apply).toHaveBeenCalledWith(
-    expect.objectContaining({uid: 'step-1'})
+    expect.objectContaining({uid: 'step-1'}),
+    {
+      settings: [],
+      destinationLabels: {title: {label: 'Title', handle: 'title'}},
+    }
   );
 });
 
