@@ -123,6 +123,25 @@ describe('craft-input-color', () => {
     expect(new FormData(form).has('fill')).toBe(false);
   });
 
+  it('strips a leading # from a server-rendered value without emitting input', async () => {
+    const form = document.createElement('form');
+    form.innerHTML = `
+      <craft-input-color name="settings[color]">
+        <input slot="input" type="text" name="settings[color]" value="#2563EB">
+      </craft-input-color>`;
+    const events: string[] = [];
+    form.addEventListener('input', (event) => events.push(event.type));
+    form.addEventListener('change', (event) => events.push(event.type));
+    document.body.append(form);
+    const element = form.querySelector('craft-input-color')!;
+    await element.updateComplete;
+
+    expect(textInput(element).value).toBe('2563EB');
+    expect(element.value).toBe('2563EB');
+    expect(new FormData(form).get('settings[color]')).toBe('2563EB');
+    expect(events).toEqual([]);
+  });
+
   it('previews translucent hex values, expanding 4-digit shorthand', async () => {
     const element = await createInputColor();
 

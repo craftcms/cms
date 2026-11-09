@@ -212,19 +212,21 @@ export default class CraftInputColor extends CraftInput {
 
   override connectedCallback() {
     super.connectedCallback();
-    this._inputNode?.addEventListener('input', this.#normalizeTyped);
+    this.#normalizeInput();
+    this._inputNode?.addEventListener('input', this.#normalizeInput);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
-    this._inputNode?.removeEventListener('input', this.#normalizeTyped);
+    this._inputNode?.removeEventListener('input', this.#normalizeInput);
   }
 
   /**
-   * Normalizes what is typed as it arrives, so a value pasted with or without
-   * a leading `#` lands the same way.
+   * Normalizes the value the input arrives with, such as server-rendered
+   * markup's, and what is typed as it arrives, so a value with or without a
+   * leading `#` lands the same way. Emits no event of its own.
    */
-  #normalizeTyped = (): void => {
+  #normalizeInput = (): void => {
     const input = this._inputNode;
 
     if (input && normalizeColorValue(input.value) !== input.value) {
