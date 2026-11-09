@@ -215,6 +215,10 @@ export default class CraftTooltip extends LitElement {
 
     void this.updateComplete.then(() => {
       if (this.isConnected) {
+        // Moved: `for` may name another element in the root it landed in.
+        if (this.invoker !== this.#invoker?.node) {
+          this.#bind();
+        }
         if (this.opened) {
           this.#showPane();
         }
@@ -269,22 +273,34 @@ export default class CraftTooltip extends LitElement {
     }
   }
 
-  /** Tooltip content goes in the default slot, so it's wrapped on connect. */
+  /**
+   * Tooltip content goes in the default slot, so it's wrapped on connect,
+   * unless markup supplies a `slot="content"` element itself.
+   */
   #ensureContentWrapper() {
     if (this.#contentWrapper?.isConnected) {
       return;
     }
 
-    const wrapper = document.createElement('div');
-    wrapper.slot = 'content';
-    wrapper.id = this.#contentId;
-    wrapper.setAttribute('role', 'tooltip');
-    wrapper.append(
-      ...Array.from(this.childNodes).filter(
-        (node) => !(node instanceof Element) || node.slot === ''
-      )
+    let wrapper = Array.from(this.children).find(
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child.slot === 'content'
     );
-    this.append(wrapper);
+
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.slot = 'content';
+      wrapper.append(
+        ...Array.from(this.childNodes).filter(
+          (node) => !(node instanceof Element) || node.slot === ''
+        )
+      );
+      this.append(wrapper);
+    }
+
+    wrapper.id ||= this.#contentId;
+    this.#contentId = wrapper.id;
+    wrapper.setAttribute('role', 'tooltip');
     this.#contentWrapper = wrapper;
     wrapper.addEventListener('keyup', this.#onEscape, true);
   }
@@ -324,9 +340,12 @@ export default class CraftTooltip extends LitElement {
       });
     }
 
-    if (this.#popper) {
-      this.#popper.state.elements.reference = node;
-      void this.#popper.update();
+    // An open tooltip may have no Popper yet, and one only follows the scroll
+    // containers it found when created.
+    if (this.opened) {
+      this.#popper?.destroy();
+      this.#popper = null;
+      this.#showPane();
     }
   }
 

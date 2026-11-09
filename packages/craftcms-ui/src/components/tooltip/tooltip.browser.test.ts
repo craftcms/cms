@@ -231,3 +231,102 @@ it('closes and lets go of its invoker when removed before show() settles', async
   expect(tooltip.opened).toBe(false);
   expect(invoker.hasAttribute('aria-describedby')).toBe(false);
 });
+
+it('rebinds to the element for names in the shadow root it moves into', async () => {
+  document.body.innerHTML = `
+    <button id="invoker" type="button">Outside</button>
+    <craft-tooltip for="invoker" trigger="click">Help</craft-tooltip>
+    <section></section>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.updateComplete;
+  await after(0);
+  const outside = document.querySelector('button')!;
+  const root = document.querySelector('section')!.attachShadow({mode: 'open'});
+  root.innerHTML = '<button id="invoker" type="button">Inside</button>';
+  const inside = root.querySelector('button')!;
+
+  root.append(tooltip);
+  await after(50);
+
+  expect(outside.hasAttribute('aria-describedby')).toBe(false);
+  expect(inside.getAttribute('aria-describedby')).toBe(
+    tooltip.querySelector('[slot="content"]')!.id
+  );
+
+  inside.click();
+  await tooltip.updateComplete;
+  expect(tooltip.opened).toBe(true);
+});
+
+it('uses a slot="content" child as its content, keeping its id', async () => {
+  document.body.innerHTML = `
+    <button id="invoker" type="button">Info</button>
+    <craft-tooltip for="invoker"><div slot="content" id="own">Help</div></craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.show();
+  await after(50);
+  const own = document.querySelector<HTMLElement>('#own')!;
+
+  expect(tooltip.querySelectorAll('[slot="content"]')).toHaveLength(1);
+  expect(own.getAttribute('role')).toBe('tooltip');
+  expect(
+    document.querySelector('button')!.getAttribute('aria-describedby')
+  ).toBe('own');
+});
+
+it('moves beside an invoker slotted in while open', async () => {
+  document.body.innerHTML = `
+    <craft-tooltip placement="right" trigger="manual">Help</craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.show();
+  await after(50);
+  const invoker = document.createElement('button');
+  invoker.type = 'button';
+  invoker.slot = 'invoker';
+  invoker.textContent = 'Late';
+  invoker.style.margin = '200px 0 0 100px';
+
+  tooltip.prepend(invoker);
+  await after(50);
+
+  const button = invoker.getBoundingClientRect();
+  const content = tooltip
+    .querySelector<HTMLElement>('[slot="content"]')!
+    .getBoundingClientRect();
+
+  expect(content.left - button.right).toBeGreaterThanOrEqual(0);
+  expect(content.left - button.right).toBeLessThan(20);
+  expect(content.top).toBeLessThan(button.bottom);
+  expect(content.bottom).toBeGreaterThan(button.top);
+});
+
+it('follows a new invoker as its own scrolling container scrolls', async () => {
+  document.body.innerHTML = `
+    <div style="height: 100px; overflow: auto">
+      <button id="first" type="button">First</button>
+      <div style="height: 400px"></div>
+    </div>
+    <div id="scroller" style="height: 200px; overflow: auto">
+      <div style="height: 100px"></div>
+      <button id="second" type="button">Second</button>
+      <div style="height: 400px"></div>
+    </div>
+    <craft-tooltip for="first" placement="right" trigger="manual">Help</craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.show();
+  await after(50);
+
+  tooltip.for = 'second';
+  await tooltip.updateComplete;
+  await after(50);
+  document.querySelector('#scroller')!.scrollTop = 60;
+  await after(50);
+
+  const second = document.querySelector('#second')!.getBoundingClientRect();
+  const content = tooltip
+    .querySelector<HTMLElement>('[slot="content"]')!
+    .getBoundingClientRect();
+
+  expect(content.top).toBeLessThan(second.bottom);
+  expect(content.bottom).toBeGreaterThan(second.top);
+});
