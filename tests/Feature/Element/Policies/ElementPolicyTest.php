@@ -181,6 +181,16 @@ it('delegates nested view checks to the field', function () {
     expect($result)->toBeTrue();
 });
 
+it('delegates nested copy checks to the field view check', function (bool $view) {
+    $user = UserModel::factory()->create();
+    $field = createElementPolicyField(view: $view);
+    $element = createElementPolicyNestedElement(field: $field);
+
+    $result = $this->policy->before($user, 'copy', $element);
+
+    expect($result)->toBe($view);
+})->with([true, false]);
+
 it('returns false when nested save is denied by the field', function () {
     $user = UserModel::factory()->create();
     $field = createElementPolicyField(save: false);
@@ -308,7 +318,7 @@ it('falls through to the authorizing event for nested abilities without field de
     $field = createElementPolicyField();
     $element = createElementPolicyNestedElement(field: $field);
 
-    $result = $this->policy->before($user, 'copy', $element);
+    $result = $this->policy->before($user, 'createDrafts', $element);
 
     expect($result)->toBeNull();
 });
