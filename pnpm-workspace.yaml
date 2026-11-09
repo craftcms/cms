@@ -46,6 +46,7 @@ catalog:
   '@vitest/coverage-v8': 4.1.10
   axios: ^1.17.0
   d3: ^7.9.0
+  dom-accessibility-api: ^0.7.1
   dotenv: ^16.6.1
   esbuild: ^0.28.0
   happy-dom: ^20.9.0

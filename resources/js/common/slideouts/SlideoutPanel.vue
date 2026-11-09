@@ -12,6 +12,7 @@
    */
   import {
     computed,
+    nextTick,
     onBeforeUnmount,
     onMounted,
     ref,
@@ -22,7 +23,6 @@
     addModalAttributes,
     ESC_KEY,
     releaseFocusWithin,
-    setFocusWithin,
     trapFocusWithin,
   } from '@craftcms/garnish';
   import {t} from '@craftcms/ui/utilities/translate';
@@ -34,6 +34,7 @@
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import ResizeHandle from '@/common/components/ResizeHandle.vue';
   import {useResizable} from '@/common/composables/useResizable';
+  import {focusDialogStart} from '@/common/utils/dialog-focus';
   import {provideSlideoutScreen} from './screenContext';
   import {
     registerPanel,
@@ -44,6 +45,7 @@
   } from './panel-stack';
   import {closeSlideout, notifySlideoutSaved, reloadSlideout} from './store';
   import type {SlideoutInstance} from './types';
+  import {slideoutTitleId} from './useSlideout';
 
   const props = defineProps<{
     instance: SlideoutInstance;
@@ -77,6 +79,30 @@
   );
 
   const panelEl = useTemplateRef<HTMLElement>('panel');
+
+  /**
+   * The dialog is named by its screen's title (`SlideoutScreen`), once a
+   * screen has loaded to supply one.
+   */
+  const titleId = computed(() => slideoutTitleId(props.instance.containerId));
+  const labelledBy = computed(() =>
+    props.instance.component ? titleId.value : undefined
+  );
+
+  /**
+   * Moves focus from the panel, where it's parked while loading, to the
+   * screen's title, or to its first field when the user prefers autofocus.
+   */
+  function focusScreen(): void {
+    const el = panelEl.value;
+    if (!el) {
+      return;
+    }
+    focusDialogStart(
+      el,
+      el.querySelector<HTMLElement>(`[id="${titleId.value}"]`)
+    );
+  }
 
   /**
    * Live Preview's editor pane, when this opened during a preview. The panel
@@ -208,7 +234,7 @@
     // A locally-built panel (see `openSlideoutWith`) arrives with its component
     // already set, so the watcher below never fires for it.
     if (props.instance.component) {
-      setFocusWithin(el);
+      focusScreen();
     }
   });
 
@@ -254,14 +280,17 @@
   });
 
   // The screen arrives a request after the panel does, so focus can't be
-  // placed until there's something in it to focus.
+  // placed until there's something in it to focus. After the render, which
+  // swaps the spinner for the screen: before it, only the panel is there.
   watch(
     () => props.instance.component,
-    (component) => {
-      if (component && panelEl.value) {
-        setFocusWithin(panelEl.value);
+    async (component) => {
+      if (component) {
+        await nextTick();
+        focusScreen();
       }
-    }
+    },
+    {flush: 'post'}
   );
 </script>
 
@@ -277,6 +306,7 @@
       'slideout-panel--in-preview': previewEditor,
     }"
     tabindex="-1"
+    :aria-labelledby="labelledBy"
     :data-slideout-id="instance.id"
     :data-focus-scope="instance.id"
     :style="panelStyle"

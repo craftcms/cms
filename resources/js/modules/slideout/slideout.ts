@@ -27,7 +27,6 @@ import {
   bod,
   addModalAttributes,
   prefersReducedMotion,
-  setFocusWithin,
   isMobileBrowser,
   trapFocusWithin,
   type GarnishBaseSettings,
@@ -48,9 +47,13 @@ import {
 import {containerSlideouts} from './support';
 import {setElementAttributes} from '@/common/craft/attributes';
 import {resolveElement} from '@/common/utils/dom';
+import {focusDialogStart} from '@/common/utils/dialog-focus';
 import {jq} from '@/common/utils/jquery';
 
 declare const Craft: any;
+
+/** Numbers the ids given to headings that name a slideout. */
+let headingIdCounter = 0;
 
 // Re-exported because `cp-screen-slideout.ts` and legacy consumers reach for
 // it here; the lookup itself lives with the rest of the cross-stack
@@ -330,6 +333,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     }
 
     addModalAttributes(outerContainer);
+    this.labelByHeading();
 
     trapFocusWithin(container);
 
@@ -443,8 +447,36 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     this.trigger('open');
   }
 
+  /**
+   * Places focus when the slideout opens: on its heading, or on its first
+   * field when the user prefers autofocus. See {@link focusDialogStart}.
+   *
+   * Overridden by `CpScreenSlideout`, which focuses within its content.
+   */
   setFocusWithin(): void {
-    setFocusWithin(this.container!);
+    focusDialogStart(this.container!, this.heading());
+  }
+
+  /** The heading that names the slideout: the first `h1` or `h2` in it. */
+  heading(): HTMLElement | null {
+    return this.container?.querySelector<HTMLElement>('h1, h2') ?? null;
+  }
+
+  /**
+   * Names the dialog after its {@link heading}. Call it again after replacing
+   * the contents, so the name follows the new heading.
+   *
+   * Leaves the dialog unnamed when there's no heading. Subclasses without one
+   * name it themselves.
+   */
+  labelByHeading(): void {
+    const heading = this.heading();
+    if (!heading) {
+      return;
+    }
+
+    heading.id ||= `slideout-heading-${++headingIdCounter}`;
+    this.outerContainer!.setAttribute('aria-labelledby', heading.id);
   }
 
   /** Sizes the slideout to Live Preview's editor pane, which it covers. */

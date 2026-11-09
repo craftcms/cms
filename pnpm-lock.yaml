@@ -235,6 +235,9 @@ catalogs:
     d3:
       specifier: ^7.9.0
       version: 7.9.0
+    dom-accessibility-api:
+      specifier: ^0.7.1
+      version: 0.7.1
     dotenv:
       specifier: ^16.6.1
       version: 16.6.1
@@ -458,6 +461,9 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^6.0.6
         version: 6.0.6(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vue@3.5.33(typescript@6.0.3))
+      dom-accessibility-api:
+        specifier: 'catalog:'
+        version: 0.7.1
       esbuild:
         specifier: 'catalog:'
         version: 0.28.1
@@ -808,7 +814,7 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       dom-accessibility-api:
-        specifier: ^0.7.1
+        specifier: 'catalog:'
         version: 0.7.1
       element-internals-polyfill:
         specifier: ^3.0.2
@@ -3387,7 +3393,7 @@ packages:
         optional: true
 
   '@selectize/selectize@https://codeload.github.com/selectize/selectize.js/tar.gz/e6ca6d3ba8f902c38da157f2caf7962c38e82095':
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/selectize/selectize.js/tar.gz/e6ca6d3ba8f902c38da157f2caf7962c38e82095}
+    resolution: {gitHosted: true, integrity: sha512-3ro98oE9am/yhLHCm+X9Idzi4KKkb+A0gqof1dncwBCmacbDXfpezVSbCtsJPWb5TARwiYNJQadVhA1e4T0yVw==, tarball: https://codeload.github.com/selectize/selectize.js/tar.gz/e6ca6d3ba8f902c38da157f2caf7962c38e82095}
     version: 0.15.2
     peerDependencies:
       jquery: ^1.7.0 || ^2 || ^3

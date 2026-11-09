@@ -107,7 +107,7 @@
     "@wc-toolkit/type-parser": "^1.3.1",
     "axios": "catalog:",
     "del": "^8.0.1",
-    "dom-accessibility-api": "^0.7.1",
+    "dom-accessibility-api": "catalog:",
     "element-internals-polyfill": "^3.0.2",
     "esbuild": "catalog:",
     "globby": "^16.2.0",

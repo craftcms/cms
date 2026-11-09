@@ -9,6 +9,7 @@ import {
   type Component,
 } from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {computeAccessibleName} from 'dom-accessibility-api';
 import type {ScreenPageProps} from '@/common/composables/screen';
 import type {UiPayload} from '@/modules/ui/types';
 import {registerPreview} from '@/modules/elements/live-preview/previews';
@@ -962,6 +963,96 @@ describe('SlideoutPanel', () => {
 
     expect(panel.getAttribute('aria-modal')).toBe('true');
     expect(panel.getAttribute('role')).toBe('dialog');
+  });
+
+  it('is named by its screen’s title', async () => {
+    const {root} = await mountPanel(defineComponent({render: () => h('div')}), {
+      title: 'Create a new address',
+    });
+
+    expect(computeAccessibleName(root.querySelector('.slideout-panel')!)).toBe(
+      'Create a new address'
+    );
+  });
+
+  describe('once a fetched screen loads', () => {
+    /** A screen with a link ahead of its first field. */
+    const Screen = defineComponent({
+      render: () =>
+        h('div', [
+          h('a', {href: '#help'}, 'Help'),
+          h('label', ['Label ', h('input')]),
+        ]),
+    });
+
+    /**
+     * Opens a panel that renders while its screen is still loading, as a
+     * fetched screen does, and resolves once the screen is in.
+     */
+    async function openLoadingPanel(): Promise<void> {
+      let finishLoading!: () => void;
+      fetchSlideoutPage.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            finishLoading = () =>
+              resolve({
+                component: Screen,
+                props: {title: 'Create a new address'},
+                url: '/screen',
+              });
+          })
+      );
+
+      const opening = openSlideout('/screen');
+      const instance = required(slideoutPanels().at(-1), 'Expected a panel.');
+      mount(defineComponent({render: () => h(SlideoutPanel, {instance})}));
+      await nextTick();
+
+      // Parked on the panel while there's nothing in it to focus.
+      expect(document.activeElement?.classList).toContain('slideout-panel');
+
+      finishLoading();
+      await opening;
+    }
+
+    function focusedName(): string {
+      return document.activeElement
+        ? computeAccessibleName(document.activeElement)
+        : '';
+    }
+
+    const hadCheckVisibility = 'checkVisibility' in HTMLElement.prototype;
+    beforeEach(() => {
+      // happy-dom doesn't implement it
+      if (!hadCheckVisibility) {
+        HTMLElement.prototype.checkVisibility = function (this: HTMLElement) {
+          return !this.closest('[hidden]');
+        };
+      }
+    });
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      if (!hadCheckVisibility) {
+        delete (HTMLElement.prototype as Partial<HTMLElement>).checkVisibility;
+      }
+    });
+
+    it('moves focus to its title, with "Disable autofocus" on', async () => {
+      await openLoadingPanel();
+
+      await vi.waitFor(() =>
+        expect(document.activeElement?.tagName).toBe('H2')
+      );
+      expect(focusedName()).toBe('Create a new address');
+    });
+
+    it('moves focus to its first field, with autofocus preferred', async () => {
+      vi.stubGlobal('Craft', {autofocusPreferred: true});
+
+      await openLoadingPanel();
+
+      await vi.waitFor(() => expect(focusedName()).toBe('Label'));
+    });
   });
 
   /**
