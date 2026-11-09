@@ -17,6 +17,7 @@
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
   import {useElementPresentations} from '@/modules/elements/element-presentations';
+  import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
   import type {
     ElementPresentation,
     ElementSelectProps,
@@ -226,54 +227,11 @@
     }))
   );
 
-  const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]';
-
-  /**
-   * Keeps keyboard focus when refetched presentations redraw the same
-   * elements. Card parts are compiled as templates, so new markup remounts
-   * them, and a focused link inside goes with it; focus moves to its
-   * counterpart unless it went somewhere else.
-   */
-  let focusBeforeRedraw: {
-    element: Element;
-    index: number;
-    ids: string;
-  } | null = null;
-  watch(
+  // Refetched presentations redraw the same elements without losing focus.
+  useFocusThroughRedraw(
+    () => dropZone.value,
     listData,
-    () => {
-      const root = dropZone.value;
-      const focused = document.activeElement;
-      focusBeforeRedraw =
-        root && focused && root.contains(focused)
-          ? {
-              element: focused,
-              index: [...root.querySelectorAll(FOCUSABLE)].indexOf(focused),
-              ids: ids.value.join(),
-            }
-          : null;
-    },
-    {flush: 'pre'}
-  );
-  watch(
-    listData,
-    () => {
-      const before = focusBeforeRedraw;
-      focusBeforeRedraw = null;
-      const active = document.activeElement;
-      if (
-        !before ||
-        before.ids !== ids.value.join() ||
-        before.element.isConnected ||
-        (active && active !== document.body)
-      ) {
-        return;
-      }
-      dropZone.value
-        ?.querySelectorAll<HTMLElement>(FOCUSABLE)
-        [before.index]?.focus();
-    },
-    {flush: 'post'}
+    () => ids.value.join()
   );
 
   const list = useElementList({

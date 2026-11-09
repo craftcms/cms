@@ -3,6 +3,7 @@ import {
   nestedOwnerContext,
   type NestedOwnerEditor,
   type NestedOwnerEditorRequest,
+  type NestedOwnerRefreshOptions,
   NESTED_OWNER_EDITOR_REQUEST,
 } from '@/modules/elements/nested-owner';
 import {toReactive, useEventListener} from '@vueuse/core';
@@ -1179,24 +1180,48 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
   }
 
   /**
-   * Catches the screen up with a change it made to one of its nested elements
-   * — one created, saved, moved or deleted from inside it.
+   * Catches the screen up with a change to one of its nested elements — one
+   * created, saved, moved or deleted from inside it, or saved elsewhere.
    *
    * Saving a nested element into this one bumps this one's `dateUpdated`.
-   * That's this screen's own doing, not someone else's edit, so the activity
-   * poll is re-baselined on what the server now reports rather than left to
-   * flag it.
+   * When that's this screen's own doing, not someone else's edit, the
+   * activity poll is re-baselined on what the server now reports rather than
+   * left to flag it. A save from elsewhere is left for the poll to report.
    */
-  async function refreshAfterNestedChange(): Promise<void> {
+  async function refreshAfterNestedChange({
+    changedElsewhere = false,
+  }: NestedOwnerRefreshOptions = {}): Promise<void> {
+    if (changedElsewhere) {
+      return refreshForChangesElsewhere();
+    }
+
     const response = await refreshUi();
 
-    if (response && 'updatedTimestamp' in response) {
+    if (!changedElsewhere && response && 'updatedTimestamp' in response) {
       activity.rebase({
         element: (response.updatedTimestamp as number | null) ?? null,
         canonical:
           (response.canonicalUpdatedTimestamp as number | null) ?? null,
       });
     }
+  }
+
+  /**
+   * The refresh that nested fields asking about the same saves elsewhere
+   * share, until it's sent. Each field hears of a save on its own, a turn
+   * apart, so one turn is waited for.
+   */
+  let refreshForElsewhere: Promise<void> | null = null;
+
+  function refreshForChangesElsewhere(): Promise<void> {
+    refreshForElsewhere ??= new Promise((resolve) => setTimeout(resolve))
+      .then(() => {
+        refreshForElsewhere = null;
+        return refreshUi();
+      })
+      .then(() => undefined);
+
+    return refreshForElsewhere;
   }
 
   /**

@@ -9,7 +9,15 @@ export interface NestedOwnerEditor {
     context?: NestedOwnerContext
   ): Promise<NestedOwnerContext | null>;
   resolveElementId?(id: number): number;
-  refresh?(): Promise<void>;
+  refresh?(options?: NestedOwnerRefreshOptions): Promise<void>;
+}
+
+export interface NestedOwnerRefreshOptions {
+  /**
+   * Whether a nested element was saved somewhere else, such as in another
+   * tab, rather than through this owner, which didn't change it itself.
+   */
+  changedElsewhere?: boolean;
 }
 
 export interface NestedOwnerContext {

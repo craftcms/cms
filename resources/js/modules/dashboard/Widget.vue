@@ -17,6 +17,8 @@
     saved: [widget: DashboardWidget | false];
     cancel: [];
     resize: [];
+    /** Its settings opened or closed. A reload waits for them to close. */
+    settings: [open: boolean];
   }>();
 
   const settings = ref(props.widget.id < 0);
@@ -42,7 +44,10 @@
     );
   });
 
+  watch(settings, (open) => emit('settings', open), {immediate: true});
+
   onBeforeUnmount(() => {
+    emit('settings', false);
     window.dispatchEvent(
       new CustomEvent('craft:widget-unmounting', {
         detail: {element: container.value!},
