@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Обов\'язково',
     'Requirements' => 'Вимоги',
     'Requires PHP {version}' => 'Потребує PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Повторне збереження записів ({name})',
     'Resaving {type} entries' => 'Повторне збереження записів ({type})',
     'Resaving {type}' => 'Повторне збереження ({type})',
