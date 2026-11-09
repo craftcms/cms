@@ -312,7 +312,9 @@ export default class CraftTooltip extends LitElement {
     const node = this.invoker;
     const content = this.#content;
 
+    // Rebinding to an invoker shows it again while it's still open.
     if (!node || !content) {
+      this.#hidePane();
       return;
     }
 
@@ -422,17 +424,20 @@ export default class CraftTooltip extends LitElement {
     const invoker = this.#invoker?.node;
 
     // An update queued before removal still runs, and a disconnected layer
-    // can't be shown.
-    if (!this.isConnected || !layer || !positioned || this.#popper) {
+    // can't be shown. Without an invoker there's nothing to show it beside.
+    if (
+      !this.isConnected ||
+      !layer ||
+      !positioned ||
+      !invoker ||
+      this.#popper
+    ) {
       return;
     }
 
     showLayer(layer);
-
-    if (invoker) {
-      this.#popper = createPopper(invoker, positioned, this.#popperOptions());
-      this.#popper.forceUpdate();
-    }
+    this.#popper = createPopper(invoker, positioned, this.#popperOptions());
+    this.#popper.forceUpdate();
   }
 
   #hidePane(): void {

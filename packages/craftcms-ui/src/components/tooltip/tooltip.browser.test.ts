@@ -330,3 +330,78 @@ it('follows a new invoker as its own scrolling container scrolls', async () => {
   expect(content.top).toBeLessThan(second.bottom);
   expect(content.bottom).toBeGreaterThan(second.top);
 });
+
+function expectBeside(content: HTMLElement, invoker: HTMLElement): void {
+  const button = invoker.getBoundingClientRect();
+  const rect = content.getBoundingClientRect();
+
+  expect(content.checkVisibility()).toBe(true);
+  expect(rect.left - button.right).toBeGreaterThanOrEqual(0);
+  expect(rect.left - button.right).toBeLessThan(20);
+  expect(rect.top).toBeLessThan(button.bottom);
+  expect(rect.bottom).toBeGreaterThan(button.top);
+}
+
+it('hides while open if for names no element, and shows beside the next one it names', async () => {
+  document.body.innerHTML = `
+    <button id="first" type="button">First</button>
+    <button id="second" type="button" style="margin: 200px 0 0 100px">Second</button>
+    <craft-tooltip for="first" placement="right" trigger="manual">Help</craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  const content = tooltip.querySelector<HTMLElement>('[slot="content"]')!;
+  await tooltip.show();
+  await after(50);
+
+  tooltip.for = 'missing';
+  await tooltip.updateComplete;
+  await after(50);
+
+  expect(content.checkVisibility()).toBe(false);
+  expect(tooltip.opened).toBe(true);
+
+  tooltip.for = 'second';
+  await tooltip.updateComplete;
+  await after(50);
+
+  expectBeside(content, document.querySelector<HTMLElement>('#second')!);
+});
+
+it('hides while open once its slotted invoker is removed, and shows beside the next one', async () => {
+  document.body.innerHTML = `
+    <craft-tooltip placement="right" trigger="manual">
+      <button slot="invoker" type="button">Old</button>
+      Help
+    </craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  const content = tooltip.querySelector<HTMLElement>('[slot="content"]')!;
+  await tooltip.show();
+  await after(50);
+
+  tooltip.querySelector('button')!.remove();
+  await after(50);
+
+  expect(content.checkVisibility()).toBe(false);
+  expect(tooltip.opened).toBe(true);
+
+  const replacement = document.createElement('button');
+  replacement.type = 'button';
+  replacement.slot = 'invoker';
+  replacement.textContent = 'New';
+  replacement.style.margin = '200px 0 0 100px';
+  tooltip.prepend(replacement);
+  await after(50);
+
+  expectBeside(content, replacement);
+});
+
+it('stays hidden when shown while for names no element', async () => {
+  document.body.innerHTML = `
+    <craft-tooltip for="missing" trigger="manual">Help</craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.show();
+  await after(50);
+
+  expect(
+    tooltip.querySelector<HTMLElement>('[slot="content"]')!.checkVisibility()
+  ).toBe(false);
+});
