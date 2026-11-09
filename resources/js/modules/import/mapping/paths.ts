@@ -64,6 +64,13 @@ export function isChecked(value: unknown): boolean {
   );
 }
 
+/** Whether a `map` leaf, or anything under a container column's subtree, is mapped. */
+export function hasMapping(value: unknown): boolean {
+  return value !== null && typeof value === 'object'
+    ? Object.values(value).some(hasMapping)
+    : isChecked(value);
+}
+
 /**
  * The value a `craft-checkbox` should write into one of the trees: `1` and `''`
  * rather than booleans, which is what `validateMap()` and the importer read back.

@@ -26,7 +26,7 @@
   <craft-button
     ref="button"
     type="button"
-    :variant="ButtonVariant.Dashed"
+    :variant="hasNestedMapping ? ButtonVariant.Fill : ButtonVariant.Dashed"
     :icon="hasNestedMapping ? 'pencil' : 'plus'"
     .disabled="!context.editable"
     @click="context.openNested(col, button)"

@@ -5,7 +5,6 @@
    * when the column is switched away, and switching back doesn't lose it.
    */
   import '@craftcms/ui/components/field/field';
-  import '@craftcms/ui/components/info-icon/info-icon';
   import '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/text-expander/text-expander';
   import {t} from '@craftcms/ui';
@@ -54,6 +53,7 @@
   <craft-field
     class="template-field"
     :label="t('Template')"
+    label-sr-only
     :has-errors="errors.length > 0"
     width="full"
     required
@@ -81,17 +81,11 @@
       :for="inputId"
       .triggers="context.templateTextExpanderTriggers"
     />
-    <craft-info-icon
+    <span
       v-if="context.editable"
-      slot="heading-suffix"
-      :label="
-        t('More info about {name}', {name: `${t('Template')} ${col.label}`})
-      "
-    >
-      <span
-        v-html="t('Type <kbd>{</kbd> to choose an object template variable.')"
-      ></span>
-    </craft-info-icon>
+      slot="tip"
+      v-html="t('Type <kbd>{</kbd> to choose an object template variable.')"
+    ></span>
     <ul v-if="errors.length" slot="feedback" class="error-list">
       <li v-for="error in errors" :key="error">{{ error }}</li>
     </ul>
@@ -100,7 +94,6 @@
 
 <style scoped>
   .template-field {
-    margin-block-start: var(--c-spacing-md);
     white-space: normal;
   }
 </style>

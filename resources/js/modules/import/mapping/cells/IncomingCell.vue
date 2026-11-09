@@ -1,55 +1,47 @@
 <script setup lang="ts">
   /**
    * Where a destination column's value comes from: a source column, a template, or,
-   * for a container column, a nested mapping of its own.
+   * for a container column, a nested mapping of its own. A template is entered in the
+   * Preview column.
    */
   import '@craftcms/ui/components/badge/badge';
-  import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {Color, t} from '@craftcms/ui';
+  import {computed, ref, watch} from 'vue';
   import SelectRichCell from '@/common/table/cells/SelectRichCell.vue';
-  import {getAt, isChecked, setAt} from '../paths';
   import {
-    TEMPLATE_RULE,
     useMappingContext,
     type FieldMappingSetting,
     type MappingColumn,
   } from '../types';
+  import {useSourceMapping} from '../useSourceMapping';
   import ImportSettings from './ImportSettings.vue';
   import NestedMappingButton from './NestedMappingButton.vue';
-  import TemplateField from './TemplateField.vue';
 
   const {col} = defineProps<{col: MappingColumn}>();
 
   const context = useMappingContext();
 
-  const path = computed(() => col.prefixedHandleAsArray);
+  const {mapValue, isSuggested, choose} = useSourceMapping(() => col);
 
-  const mapValue = computed(() => {
-    const value = getAt(context.values.map, path.value);
+  /**
+   * The column the server suggested, which its option goes on saying in the list once
+   * another is chosen. The select shows the badge too while that option is selected.
+   */
+  const suggestedColumn = ref<string | null>(null);
 
-    return value === null || value === undefined ? '' : String(value);
-  });
-
-  const isSuggested = computed(() =>
-    Boolean(getAt(context.suggestedMap, path.value))
+  watch(
+    isSuggested,
+    (suggested) => {
+      if (suggested) {
+        suggestedColumn.value = mapValue.value;
+      }
+    },
+    {immediate: true}
   );
 
   const importSettings = computed<FieldMappingSetting[]>(() =>
     mapValue.value !== '' ? (col.importSettings ?? []) : []
   );
-
-  function choose(value: string): void {
-    setAt(context.values.map, path.value, value);
-    setAt(context.suggestedMap, path.value, false);
-
-    // only a mapped column can be matched on, so unmapping it drops its match criterion too
-    if (
-      value === '' &&
-      isChecked(getAt(context.values.matchCriteria, path.value))
-    ) {
-      setAt(context.values.matchCriteria, path.value, '');
-    }
-  }
 </script>
 
 <template>
@@ -60,18 +52,20 @@
       :options="context.sourceDataCols"
       :label="col.label"
       :disabled="!context.editable"
+      searchable
       @change="choose"
     >
-      <template v-if="isSuggested" #help-text>
-        <span slot="help-text" class="sr-only">{{ t('Suggested') }}</span>
+      <template #option-badge="{option}">
+        <craft-badge
+          v-if="suggestedColumn !== null && option.value === suggestedColumn"
+          slot="badge"
+          :fill="Color.Accent"
+          :size.attr="'small'"
+          no-prefix
+          >{{ t('Suggested') }}</craft-badge
+        >
       </template>
     </SelectRichCell>
-    <div v-if="isSuggested" class="suggested">
-      <craft-badge fill="blue" aria-hidden="true">{{
-        t('Suggested')
-      }}</craft-badge>
-    </div>
-    <TemplateField v-if="mapValue === TEMPLATE_RULE" :col="col" />
     <ImportSettings
       v-if="importSettings.length"
       :col="col"
@@ -79,11 +73,3 @@
     />
   </template>
 </template>
-
-<style scoped>
-  .suggested {
-    display: flex;
-    justify-content: flex-end;
-    margin-block-start: var(--c-spacing-sm);
-  }
-</style>
