@@ -155,7 +155,7 @@
       "Composer\\Config::disableProcessTimeout",
       "./vendor/bin/pest tests/Browser"
     ],
-    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel",
+    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration \"$(pwd)/yii2-adapter/phpunit.xml.dist\" --test-directory ./tests-laravel",
     "post-autoload-dump": [
       "@clear",
       "@prepare"
@@ -187,8 +187,7 @@
     "allow-plugins": {
       "craftcms/plugin-installer": true,
       "pestphp/pest-plugin": true,
-      "php-http/discovery": true,
-      "yiisoft/yii2-composer": true
+      "php-http/discovery": true
     }
   },
   "extra": {

@@ -15,15 +15,18 @@ use CraftCms\Cms\Http\Middleware\ForgetTriggerParameters;
 use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
+use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
 use CraftCms\Cms\Mcp\Enums\McpScope;
 use CraftCms\Cms\Mcp\Http\Controllers\DiscoveryController;
 use CraftCms\Cms\Mcp\Http\Controllers\EndpointPageController;
 use CraftCms\Cms\Mcp\Http\Controllers\McpController;
+use CraftCms\Cms\Mcp\Http\Middleware\AuthenticateStdioUpload;
 use CraftCms\Cms\Mcp\Http\Middleware\ChallengeWithoutOAuthKeys;
 use CraftCms\Cms\Mcp\Http\Middleware\ReorderJsonAccept;
 use CraftCms\Cms\Mcp\Http\Middleware\RequireAccessDuringMaintenance;
 use CraftCms\Cms\Mcp\Http\Middleware\RequireAnyTokenScope;
 use CraftCms\Cms\Mcp\Http\Middleware\SetActivityOrigin;
+use CraftCms\Cms\Route\Routes;
 use Illuminate\Routing\Router;
 
 /**
@@ -43,6 +46,7 @@ readonly class RouteRegistrar
         private Router $router,
         private EndpointConflicts $conflicts,
         private OAuthResources $resources,
+        private Routes $routes,
     ) {}
 
     /** @return list<mixed> */
@@ -107,21 +111,44 @@ readonly class RouteRegistrar
                 ->prefix("$route/uploads")
                 ->name('craft.mcp.uploads.')
                 ->middleware([...self::authenticatedMiddleware(), RequireAnyTokenScope::using(McpScope::Write->satisfyingValues())])
-                ->group(function (Router $router): void {
-                    $router->name('transfer')->any('{upload}/transfer', [UploadSessionController::class, 'transfer'])
-                        ->whereUuid('upload');
-                    $router->name('status')->get('{upload}', [UploadSessionController::class, 'status'])
-                        ->whereUuid('upload');
-                    $router->name('destroy')->delete('{upload}', [UploadSessionController::class, 'destroy'])
-                        ->whereUuid('upload');
-                });
+                ->group($this->registerUploadRoutes(...));
         }
+
+        // Stdio clients have no access token, and may run Craft without the HTTP server, so their upload sessions get
+        // action routes that authenticate each session by its own credential. Their last segment differs from the
+        // HTTP server's `uploads`, so the two never overlap, even with an empty action trigger.
+        $this->router->allowDuringMaintenance()
+            ->prefix($this->routes->joinRoutePrefix([$this->routes->actionTriggerRoutePrefix(), 'mcp/upload-sessions']))
+            ->name('craft.mcp.stdio.uploads.')
+            ->middleware([
+                ForgetTriggerParameters::class,
+                EnsureInstalled::class,
+                AddLogContext::class,
+                ResolveSite::class,
+                PreventStaleDatabaseReads::class,
+                UseCraftAuthGuard::class,
+                AuthenticateStdioUpload::class,
+                RequireAccessDuringMaintenance::class,
+                SetActivityOrigin::class,
+                ...Cms::config()->mcp->middleware,
+            ])
+            ->group($this->registerUploadRoutes(...));
 
         if ($authorizationRoute !== null) {
             $this->resources->routes('mcp');
         }
 
         $this->registerDiscovery($settings);
+    }
+
+    private function registerUploadRoutes(Router $router): void
+    {
+        $router->name('transfer')->any('{upload}/transfer', [UploadSessionController::class, 'transfer'])
+            ->whereUuid('upload');
+        $router->name('status')->get('{upload}', [UploadSessionController::class, 'status'])
+            ->whereUuid('upload');
+        $router->name('destroy')->delete('{upload}', [UploadSessionController::class, 'destroy'])
+            ->whereUuid('upload');
     }
 
     /** Registers the AI Catalog and Server Card routes for the discoverable servers, per SEP-2127. */

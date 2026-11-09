@@ -32,7 +32,7 @@ readonly class GeneralConfigCompatibility
      * Returns the `general.php` config and its application type overlay.
      *
      * Laravel's config loader stores `general.web.php` and `general.console.php` inside `craft.general`,
-     * replacing a `general.php` that returns a config object or a callable, so the file is loaded again.
+     * replacing a `general.php` that returns a config object or a callable, so the file is loaded again to recover it.
      * A config object overlay already applied its settings when it loaded, so it loads again after the base,
      * and settings with side effects, such as `enableCsrfProtection`, still end on the overlay's value.
      *
@@ -48,11 +48,15 @@ readonly class GeneralConfigCompatibility
             return [$config, $overlay];
         }
 
-        if (!is_file($path)) {
+        $base = is_file($path) ? (static fn() => require $path)() : [];
+
+        // An array base is still in the config, already normalized from any multi-environment array
+        if (is_array($base)) {
             return [Arr::except($config, ['web', 'console']), $overlay];
         }
 
-        $config = $this->resolve((static fn() => require $path)(), LegacyGeneralConfig::create());
+        // A callable base is left for convert(), which holds back its side effects, or skips it when the overlay replaces it
+        $config = $base;
         $overlayPath = $app->configPath("craft/general.{$appType}.php");
 
         if ($overlay instanceof GeneralConfig && is_file($overlayPath)) {
@@ -70,30 +74,58 @@ readonly class GeneralConfigCompatibility
      */
     public function convert(mixed $config, mixed $overlay = null): GeneralConfig
     {
-        $config = $this->resolve($config, LegacyGeneralConfig::create());
-
         if ($overlay === null || $overlay === []) {
-            return $this->toConfigObject($config);
+            return $this->toConfigObject($this->resolve($config, LegacyGeneralConfig::create()));
         }
 
         Deprecator::log('config-general-app-type', 'Using general.web.php and general.console.php configuration files is deprecated.');
 
-        if (is_array($config)) {
-            $overlay = $this->resolve($overlay, LegacyGeneralConfig::create());
-
-            // Merge array overlays first, so overridden settings never reach setters with side effects
-            return is_array($overlay) ? $this->toConfigObject(array_merge($config, $overlay)) : $overlay;
-        }
-
-        $overlay = $this->resolve($overlay, $config);
-
+        // An object overlay replaces the config, as it did in Craft 5, so the config is never resolved or converted
         if ($overlay instanceof GeneralConfig) {
             return $overlay;
         }
 
-        $this->applySettings($config, $overlay);
+        // Changes the config and a callable overlay make to Laravel’s state are held back on the configs they're made on,
+        // and only those of the config that's kept are applied, so settings that are replaced, merged away, or set on a
+        // discarded config never reach setters with side effects. A clone keeps the changes made on its original.
+        $config = LegacyGeneralConfig::holdSideEffects(fn() => $this->resolve($config, LegacyGeneralConfig::create()));
 
-        return $config;
+        if (is_array($config)) {
+            if (is_array($overlay) && !is_callable($overlay)) {
+                return $this->toConfigObject(array_merge($config, $overlay));
+            }
+
+            $object = LegacyGeneralConfig::holdSideEffects(fn() => $this->toConfigObject($config));
+        } else {
+            $object = $config;
+        }
+
+        $overlay = LegacyGeneralConfig::holdSideEffects(fn() => $this->resolve($overlay, $object));
+
+        if ($overlay !== $object && $overlay instanceof GeneralConfig) {
+            $this->applyHeldSideEffects($overlay);
+
+            return $overlay;
+        }
+
+        if (is_array($config) && is_array($overlay)) {
+            return $this->toConfigObject(array_merge($config, $overlay));
+        }
+
+        $this->applyHeldSideEffects($object);
+
+        if (is_array($overlay)) {
+            $this->applySettings($object, $overlay);
+        }
+
+        return $object;
+    }
+
+    private function applyHeldSideEffects(GeneralConfig $config): void
+    {
+        if ($config instanceof LegacyGeneralConfig) {
+            $config->applyHeldSideEffects();
+        }
     }
 
     /**

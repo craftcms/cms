@@ -43,6 +43,9 @@ import {
  * @slot - The item's label.
  * @slot subnav - Nested `craft-nav-item`s, shown beneath the item or in a
  *   flyout beside it.
+ *
+ * @cssproperty [--c-nav-item-icon-color=inherit] - The icon's color while the
+ *   item isn't `active` or hovered, which take the row's own color.
  */
 export default class CraftNavItem extends LitElement {
   static override styles = [visuallyHiddenStyles, styles];

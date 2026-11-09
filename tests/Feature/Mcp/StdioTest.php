@@ -10,10 +10,12 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Entries as EntriesField;
+use CraftCms\Cms\Mcp\CapabilityRegistry;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\StdioTransport;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Tests\Support\McpCapabilities\Example;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -24,7 +26,7 @@ beforeEach(function (): void {
 
     $this->serve = function (string $user, array $messages): array {
         $input = fopen('php://memory', 'r+');
-        fwrite($input, implode('', array_map(static fn (array $message): string => json_encode($message).PHP_EOL, [
+        fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
             ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
                 'protocolVersion' => '2025-11-25',
                 'capabilities' => (object) [],
@@ -40,7 +42,7 @@ beforeEach(function (): void {
         $this->artisan('craft:mcp:serve', ['--user' => $user])->assertSuccessful();
 
         return collect(file($outputPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
-            ->map(static fn (string $line): array => json_decode($line, true))
+            ->map(static fn (string $line): array => Json::decode($line))
             ->keyBy('id')
             ->all();
     };
@@ -53,10 +55,11 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
         $event->instructions[] = 'Use reviews.list before changing a product.';
     });
 
+    app(CapabilityRegistry::class)->register(Example::class);
     $editor = User::factory()->withPermissions([])->create(['username' => 'editor']);
     $call = static fn (string $tool, array $arguments = []): array => ['jsonrpc' => '2.0', 'id' => $tool, 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]];
 
-    $admin = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [$call('info_get'), $call('configuration_list', ['type' => 'sections']), $call('assets_upload_prepare')]);
+    $admin = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [$call('info_get'), $call('configuration_list', ['type' => 'sections']), $call('example_http')]);
     $editorResponses = ($this->serve)($editor->email, [$call('configuration_list', ['type' => 'sections'])]);
 
     expect($admin['configuration_list'])->not->toHaveKey('error')
@@ -66,7 +69,7 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
         ->and($admin['info_get']['result']['structuredContent']['instructions'])->toContain('hardDelete')
         ->toEndWith("Preserve legal notices.\n\nUse reviews.list before changing a product.")
         ->and($admin['configuration_list']['result']['structuredContent'])->toMatchArray(['type' => 'sections', 'items' => []])
-        ->and($admin['assets_upload_prepare']['error']['message'])->toBe('Tool not found: "assets_upload_prepare".')
+        ->and($admin['example_http']['error']['message'])->toBe('Tool not found: "example_http".')
         ->and($editorResponses['configuration_list']['error']['message'])->toBe('Tool not found: "configuration_list".');
 });
 
@@ -106,7 +109,7 @@ it('refuses to serve missing or inactive users', function (Closure $user, string
 
 it('saves project config changes before responding, rather than when the server stops', function (): void {
     $input = fopen('php://memory', 'r+');
-    fwrite($input, implode('', array_map(static fn (array $message): string => json_encode($message).PHP_EOL, [
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
         ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25',
             'capabilities' => (object) [],
