@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Υποχρεωτικό',
     'Requirements' => 'Απαιτήσεις',
     'Requires PHP {version}' => 'Απαιτεί PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Επαναποθήκευση εγγραφών {name}',
     'Resaving {type} entries' => 'Επαναποθήκευση εγγραφών {type}',
     'Resaving {type}' => 'Επαναποθήκευση {type}',
