@@ -2,6 +2,7 @@ import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {useMessages} from '@/modules/messages/useMessages';
 import {provideHtmlWidgets} from './htmlWidgets';
 import {onElementChanged} from '@/modules/elements/element-instances';
+import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
 import {tryOnScopeDispose} from '@vueuse/core';
 
 import {
@@ -95,11 +96,31 @@ export function useDashboard(props: {
     );
   });
 
+  /**
+   * Widgets whose settings are open. Reloaded widgets remount where their
+   * data changed, which would close their settings and lose what's typed, so
+   * while any are open, reloads wait, and a reload that lands is set aside
+   * and made again once they close.
+   */
+  const settingsOpen = new Set<number>();
+  let reloadQueued = false;
+  let reloadAfterSettings = false;
+
   watch(
     () => props.widgets,
     (value) => {
+      if (settingsOpen.size) {
+        reloadAfterSettings = true;
+        return;
+      }
       widgets.value = value;
     }
+  );
+
+  // A focused control in a widget that remounts, such as a Recent Entries
+  // link, keeps focus.
+  useFocusThroughRedraw(container, widgets, () =>
+    widgets.value.map(({id}) => id).join()
   );
 
   watch(widgets, async () => {
@@ -123,14 +144,6 @@ export function useDashboard(props: {
   function refreshTypes() {
     router.reload({only: ['widgetTypes']});
   }
-
-  /**
-   * Widgets whose settings are open. A reload remounts the widgets whose data
-   * changed, which would close their settings, so it waits until none are.
-   */
-  const settingsOpen = new Set<number>();
-  let reloadQueued = false;
-  let reloadAfterSettings = false;
 
   function settingsToggled(id: number, open: boolean) {
     if (open) {

@@ -1,5 +1,5 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {createApp, defineComponent, h, type App} from 'vue';
+import {createApp, defineComponent, h, nextTick, reactive, type App} from 'vue';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {broadcast} from '@/common/craft/broadcast';
 import {useDashboard} from './useDashboard';
@@ -61,17 +61,31 @@ function widget(id: number): DashboardWidget {
 }
 
 function mount(widgets: DashboardWidget[]) {
+  const props = reactive({widgets, widgetTypes: {}});
   host = document.createElement('div');
   document.body.append(host);
   app = createApp(
     defineComponent({
       setup() {
-        dashboard = useDashboard({widgets, widgetTypes: {}});
-        return () => h('div', {ref: dashboard.container});
+        dashboard = useDashboard(props);
+        // Each widget remounts when its data changes, as the dashboard's do.
+        return () =>
+          h(
+            'div',
+            {ref: dashboard.container},
+            dashboard.widgets.value.map((item) =>
+              h(
+                'a',
+                {key: JSON.stringify([item.id, item.data]), href: '#'},
+                item.title ?? ''
+              )
+            )
+          );
       },
     })
   );
   app.mount(host);
+  return props;
 }
 
 beforeEach(() => {
@@ -159,4 +173,30 @@ it('reloads its widgets once elements are saved, after any open settings close',
   await new Promise((resolve) => setTimeout(resolve, 100));
 
   expect(state.reload).toHaveBeenCalledTimes(2);
+});
+
+it('sets aside widgets reloaded while settings are open, and reloads them once they close', async () => {
+  const props = mount([widget(1), widget(2)]);
+  dashboard.settingsToggled(2, true);
+
+  props.widgets = [{...widget(1), data: {entries: []}}, widget(2)];
+  await nextTick();
+
+  expect(dashboard.widgets.value[0]!.data).toBeNull();
+  expect(state.reload).not.toHaveBeenCalled();
+
+  dashboard.settingsToggled(2, false);
+
+  expect(state.reload).toHaveBeenCalledWith({only: ['widgets']});
+});
+
+it('keeps focus in a widget that remounts when it’s reloaded', async () => {
+  const props = mount([widget(1), widget(2)]);
+  await nextTick();
+  host.querySelectorAll<HTMLElement>('a')[1]!.focus();
+
+  props.widgets = [widget(1), {...widget(2), data: {entries: []}}];
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(document.activeElement?.textContent).toBe('Widget 2');
 });
