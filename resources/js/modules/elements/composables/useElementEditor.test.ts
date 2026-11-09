@@ -306,6 +306,33 @@ describe('useElementEditor', () => {
     }
   );
 
+  it('only submits Cmd+S on a draft in review once editing it is started', async () => {
+    const {editor} = mount(
+      payload({
+        workflow: {
+          current: {
+            status: 'pending',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+      })
+    );
+    const save = interceptSave();
+    onTestFinished(save.restore);
+    const shortcut = () =>
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
+      );
+
+    shortcut();
+    expect(save.calls()).toBe(0);
+
+    editor.startEditingDraft();
+    await nextTick();
+    shortcut();
+    expect(save.calls()).toBe(1);
+  });
+
   it('prepares an unchanged nested owner with the enclosing editable Matrix values', async () => {
     vi.stubGlobal('Craft', {
       systemUid: 'test',

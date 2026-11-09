@@ -562,11 +562,16 @@
   // The page's form submits for the side being edited, and each side's own
   // footer, rather than the page's, holds its Save button.
   useAppLayout(() => {
-    const editor = activeSide.value ? editors[activeSide.value] : null;
+    const side = activeSide.value;
+    const editor = side ? editors[side] : null;
+    // The form stays, so submitting it is still cancelled, but saves nothing
+    // while the side's locked, such as for a workflow review.
+    const locked = side !== null && editorLocked[side];
 
     return {
       form: editor?.form() ?? null,
-      onSave: editor ? (options) => editor.save(options) : undefined,
+      onSave: editor && !locked ? (options) => editor.save(options) : undefined,
+      saveDisabled: locked,
       handlesReadOnly: true,
       hideFooter: true,
     };

@@ -1103,7 +1103,11 @@ export function useElementEditor({
   }
 
   function canSaveForShortcut(): boolean {
-    return !props.readOnly && !releaseDraftLocked.value;
+    return (
+      !props.readOnly &&
+      !releaseDraftLocked.value &&
+      !workflowReviewLocked.value
+    );
   }
 
   /**
