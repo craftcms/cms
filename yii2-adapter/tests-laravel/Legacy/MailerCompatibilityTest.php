@@ -22,3 +22,24 @@ it('sends legacy mail through the mailer selected in the email settings', functi
         ->and(Mail::mailer('selected')->getSymfonyTransport()->messages())->toHaveCount(1)
         ->and(Mail::mailer('array')->getSymfonyTransport()->messages())->toHaveCount(0);
 });
+
+it('sends legacy mail from the sender in the email settings', function() {
+    Config::set('mail.default', 'array');
+    Config::set('mail.from', ['address' => 'laravel@example.com', 'name' => 'Laravel']);
+    ProjectConfig::set('email', array_merge(ProjectConfig::get('email') ?? [], [
+        'fromEmail' => 'system@example.com',
+        'fromName' => 'System',
+        'replyToEmail' => 'reply@example.com',
+    ]));
+
+    Craft::$app->getMailer()->compose()
+        ->setTo('to@example.com')
+        ->setSubject('Legacy mail')
+        ->setTextBody('Hello')
+        ->send();
+
+    $email = Mail::mailer('array')->getSymfonyTransport()->messages()->first()->getOriginalMessage();
+
+    expect($email->getFrom()[0]->toString())->toBe('"System" <system@example.com>')
+        ->and($email->getReplyTo()[0]->getAddress())->toBe('reply@example.com');
+});
