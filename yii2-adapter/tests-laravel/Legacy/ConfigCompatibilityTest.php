@@ -143,6 +143,7 @@ it('merges application type overlays loaded from config files into the base gene
         ->and($config->pageTrigger)->toBe('base-page');
 })->with([
     'array' => ["['cpTrigger' => 'base', 'pageTrigger' => 'base-page']"],
+    'multi-environment array' => ["['*' => ['cpTrigger' => 'base'], 'testing' => ['pageTrigger' => 'base-page']]"],
     'fluent' => ['\craft\config\GeneralConfig::create()->cpTrigger("base")->pageTrigger("base-page")'],
     'callable' => ['fn(\craft\config\GeneralConfig $config) => $config->cpTrigger("base")->pageTrigger("base-page")'],
 ]);
@@ -161,15 +162,18 @@ it('applies fluent application type overlay settings after the base general conf
     'callable' => ['fn(\craft\config\GeneralConfig $config) => $config->cpTrigger("base")->enableCsrfProtection(false)'],
 ]);
 
-it('applies multi-environment application type overlays to a fluent base general config', function(): void {
+it('applies multi-environment application type overlays to the base general config', function(string $general): void {
     $config = registerGeneralConfigFiles([
-        'general' => '\craft\config\GeneralConfig::create()->cpTrigger("base")->pageTrigger("base-page")',
+        'general' => $general,
         'general.console' => "['*' => ['pageTrigger' => 'console-page']]",
     ]);
 
     expect($config->cpTrigger)->toBe('base')
         ->and($config->pageTrigger)->toBe('console-page');
-});
+})->with([
+    'fluent' => ['\craft\config\GeneralConfig::create()->cpTrigger("base")->pageTrigger("base-page")'],
+    'multi-environment array' => ["['*' => ['cpTrigger' => 'base', 'pageTrigger' => 'base-page']]"],
+]);
 
 it('applies a deprecated anchors.php config file unless the general config sets anchors', function(array $general, string $expectedText): void {
     $config = new GeneralConfigCompatibility()->applyAnchorsConfig(
