@@ -1,5 +1,7 @@
 <?php
 
+use CraftCms\Cms\Support\Env;
+
 /**
  * General Configuration
  *
@@ -13,4 +15,5 @@ return [
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
     'enableTwigSandbox' => true,
+    'securityKey' => Env::get('CRAFT_SECURITY_KEY'),
 ];
