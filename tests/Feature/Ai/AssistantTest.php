@@ -257,6 +257,7 @@ it('shows up to three elements as cards and more as a list of chips, unless the 
     $result = Json::decode($tool->forDisplay($tool->handle(new ToolRequest(array_filter(['elements' => $elements, 'view' => $view])))));
 
     expect($result['view'])->toBe($shown)
+        ->and($result['thumbSize'])->toBe($shown === 'cards' ? null : 'sm')
         ->and($result['elements'][0])->toHaveKey($shown === 'cards' ? 'cardHeaderHtml' : 'status')
         ->and($result['elements'][0])->not->toHaveKey($shown === 'cards' ? 'status' : 'cardHeaderHtml');
 })->with([

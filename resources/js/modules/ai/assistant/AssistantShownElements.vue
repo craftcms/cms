@@ -31,6 +31,8 @@
   const props = defineProps<{
     elements: ShownElement[];
     view: 'cards' | 'list';
+    /** The thumbnail size the server drew them at, if they have thumbnails. */
+    thumbSize?: string | null;
   }>();
 
   const cardList = useTemplateRef<HTMLElement>('cardList');
@@ -58,7 +60,11 @@
         [
           type,
           useElementPresentations(
-            () => ({elementType: type, viewMode: props.view}),
+            () => ({
+              elementType: type,
+              viewMode: props.view,
+              thumbSize: props.thumbSize,
+            }),
             () =>
               ofType(type).map(({id, siteId}) => ({
                 id,

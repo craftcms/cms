@@ -686,6 +686,50 @@ describe('AssistantChat', () => {
     expect(field.get(4, 1)?.canEdit).toBe(true);
   });
 
+  it('refetches a chip show_elements returned with a list relation field drawing it the same way', async () => {
+    const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
+      data: {elements: [{id: 4, siteId: 1, label: 'Lighthouses'}]},
+    } as never);
+    onTestFinished(() => post.mockRestore());
+    chat.messages.value = [
+      {
+        id: 'm1',
+        role: 'assistant',
+        parts: [
+          {
+            type: 'tool-call',
+            id: 'call_1',
+            name: 'show_elements',
+            arguments: '{}',
+            state: 'input-complete',
+            output: JSON.stringify({
+              view: 'list',
+              thumbSize: 'sm',
+              elements: [
+                {elementType: ENTRY, id: 4, siteId: 1, label: 'Lighthouses'},
+              ],
+            }),
+          },
+        ],
+      },
+    ];
+    await flush();
+    const scope = effectScope();
+    onTestFinished(() => scope.stop());
+    scope.run(() =>
+      useElementPresentations(
+        {elementType: ENTRY, viewMode: 'list', thumbSize: 'sm'},
+        [{id: 4, siteId: 1}]
+      )
+    );
+
+    broadcast({event: 'saveElement', id: 4});
+    await vi.waitFor(() => expect(post).toHaveBeenCalled());
+    await flush();
+
+    expect(post).toHaveBeenCalledOnce();
+  });
+
   async function askQuestion(): Promise<void> {
     const question = (id: string, options: string[]) => ({
       id,

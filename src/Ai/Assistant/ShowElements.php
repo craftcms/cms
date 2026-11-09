@@ -137,7 +137,13 @@ readonly class ShowElements implements Tool
             }
         }
 
-        return Json::encode([...$decoded, 'view' => $view, 'elements' => $shown]);
+        return Json::encode([
+            ...$decoded,
+            'view' => $view,
+            // Which the chat asks for when it refetches them, as relation fields drawing them the same way do.
+            'thumbSize' => ElementSelect::resolveThumbSize($mode)?->value,
+            'elements' => $shown,
+        ]);
     }
 
     public function schema(JsonSchema $schema): array

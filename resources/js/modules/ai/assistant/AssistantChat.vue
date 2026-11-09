@@ -487,6 +487,13 @@
       : 'list';
   }
 
+  /** The thumbnail size a `show_elements` call’s elements were drawn at. */
+  function thumbSizeOf(output: unknown): string | null {
+    const size = (resultOf(output) as {thumbSize?: unknown} | null)?.thumbSize;
+
+    return typeof size === 'string' ? size : null;
+  }
+
   /** A setting a `show_components` call showed, as its chip draws it. */
   interface ShownComponent {
     type: string;
@@ -854,6 +861,7 @@
               class="assistant-chat__cards"
               :elements="elementsOf(entry.part.output)"
               :view="viewOf(entry.part.output)"
+              :thumb-size="thumbSizeOf(entry.part.output)"
             />
             <ul
               v-if="
