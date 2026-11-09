@@ -74,7 +74,10 @@
     <template v-else>
       <!-- only the table scrolls on a narrow screen; the header and its button stay put -->
       <div class="step-mapping-summary__scroll">
-        <table :id="listId" class="cp-table cp-table--auto cp-table--aligned">
+        <table
+          :id="listId"
+          class="step-mapping-summary__table cp-table cp-table--auto cp-table--aligned"
+        >
           <colgroup>
             <col class="step-mapping-summary__field-col" />
             <col />
@@ -123,6 +126,16 @@
 
   .step-mapping-summary__scroll {
     overflow-x: auto;
+  }
+
+  /* the columns keep their set widths, so expanding a container's longer nested names moves nothing */
+  .step-mapping-summary__table {
+    table-layout: fixed;
+  }
+
+  /* cells otherwise shrink to nothing, which the incoming data column, with no width of its own, would take on */
+  .step-mapping-summary__table :deep(:is(th, td)) {
+    width: auto;
   }
 
   .step-mapping-summary__field-col {
