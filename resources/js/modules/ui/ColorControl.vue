@@ -4,11 +4,7 @@
   import CraftSelectColor from '@craftcms/ui/components/select-color/select-color';
   import {t} from '@craftcms/ui/utilities/translate';
   import type {UiControlPayload} from './types';
-  import {
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-  } from './runtime';
+  import {inputName} from './runtime';
   import {sameColor} from './valueAcceptors';
 
   // The select's own values for "no color" and "Custom…". The server reads
@@ -121,14 +117,15 @@
     emit('update:value', newValue, 'discrete');
   }
 
-  const onSelectChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftSelectColor)) {
+  function onSelectChange(event: Event): void {
+    const select = event.currentTarget;
+    if (!(select instanceof CraftSelectColor)) {
       throw new TypeError('Expected a color select event target.');
     }
 
-    const picked = String(event.target.modelValue ?? '');
+    const picked = select.value;
 
-    // The select echoes a value set from here.
+    // Picking the option that's already selected changes nothing.
     if (picked === selectValue.value) {
       return;
     }
@@ -138,7 +135,7 @@
     if (!custom.value) {
       update(picked === BLANK_VALUE ? '' : picked);
     }
-  });
+  }
 
   function onInput(event: Event): void {
     const input = event.currentTarget;
@@ -155,7 +152,7 @@
     v-if="usesSelect"
     v-bind="$attrs"
     :name="name && customAllowed ? `${name}[color]` : name"
-    .modelValue="selectValue"
+    .value="selectValue"
     .colors="selectColors"
     .labels="control.props.presetLabels ?? {}"
     .allowTransparent="allowBlank"
@@ -164,8 +161,8 @@
     .required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="!editable"
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onSelectChanged"
+    :invalid="invalid"
+    @change="onSelectChange"
   ></craft-select-color>
   <craft-input-color
     v-else

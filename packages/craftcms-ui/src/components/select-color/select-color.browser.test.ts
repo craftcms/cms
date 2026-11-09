@@ -167,7 +167,7 @@ it('names each option by its color in text', async () => {
   document.body.innerHTML = `<craft-select-color label="Color" allow-transparent blank-label="No color" allow-custom colors='["red","#e5422b","#2563eb"]' labels='{"#e5422b":"Craft red"}'></craft-select-color>`;
   const select =
     document.querySelector<CraftSelectColor>('craft-select-color')!;
-  await select.registrationComplete;
+  await select.updateComplete;
 
   const names = page
     .getByRole('option', {includeHidden: true})
@@ -178,10 +178,10 @@ it('names each option by its color in text', async () => {
 });
 
 it('fills hex colors’ swatches, checkers a transparent one, and selects a hex color by its value', async () => {
-  document.body.innerHTML = `<craft-select-color label="Color" colors='["#e5422b","#2563eb","transparent"]' model-value="#2563eb"></craft-select-color>`;
+  document.body.innerHTML = `<craft-select-color label="Color" colors='["#e5422b","#2563eb","transparent"]' value="#2563eb"></craft-select-color>`;
   const select =
     document.querySelector<CraftSelectColor>('craft-select-color')!;
-  await select.registrationComplete;
+  await select.updateComplete;
   const swatch = (value: string) =>
     [...select.querySelectorAll('craft-option')]
       .find(
@@ -198,5 +198,5 @@ it('fills hex colors’ swatches, checkers a transparent one, and selects a hex 
   expect(getComputedStyle(swatch('transparent')).backgroundImage).toContain(
     'linear-gradient'
   );
-  expect(select.modelValue).toBe('#2563eb');
+  expect(select.value).toBe('#2563eb');
 });

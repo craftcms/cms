@@ -442,5 +442,5 @@ it('writes Color presets as hex colors, picking a bare one by its value', functi
         'presetLabels' => ['#ff0000' => 'Red'],
     ])
         ->and($select->attr('colors'))->toBe('["#ff0000","#00ff00","transparent"]')
-        ->and($select->attr('model-value'))->toBe('#ff0000');
+        ->and($select->attr('value'))->toBe('#ff0000');
 });
