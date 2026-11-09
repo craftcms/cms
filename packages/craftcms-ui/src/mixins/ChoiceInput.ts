@@ -360,7 +360,8 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
         input.name = this.name;
       }
 
-      if (input && given('value', this.#value) && this.#value !== undefined) {
+      // An empty value is given too: only a missing one leaves the input's own.
+      if (input && changed.has('value') && this.#value !== undefined) {
         input.value = this.#value;
       }
 
