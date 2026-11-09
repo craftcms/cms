@@ -64,6 +64,11 @@
     beforeSave?: () => Promise<boolean>;
     /** Prefixes the fields' ids, so they stay apart from the other side's. */
     fieldIdScope: string;
+    /**
+     * Whether the other side is saving, which reloads the page and with it this
+     * editor, so an edit made here meanwhile would be lost.
+     */
+    otherSideSaving?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -82,6 +87,8 @@
     (event: 'locked', locked: boolean): void;
     /** The form's values as they stand, as each edit changes them. */
     (event: 'values', values: UiValues): void;
+    /** Whether a save is under way, from when it's asked for until it lands. */
+    (event: 'saving', saving: boolean): void;
   }>();
 
   const contentEl = useTemplateRef<HTMLElement>('content');
@@ -221,6 +228,12 @@
 
   watch(values, (current) => emit('values', current), {immediate: true});
 
+  watch(
+    () => form.processing || savePending.value,
+    (saving) => emit('saving', saving),
+    {immediate: true}
+  );
+
   /**
    * Gives a field a value read from elsewhere, such as the other version's, as
    * if it were entered there. Returns what the field had before, to write back
@@ -235,7 +248,7 @@
       (node) => layoutUid(node) === uid
     )?.control?.path;
 
-    if (!path || locked.value || !renderer.value) {
+    if (!path || locked.value || props.otherSideSaving || !renderer.value) {
       return null;
     }
 
@@ -324,7 +337,7 @@
             type="button"
             :variant="ButtonVariant.Primary"
             .loading="form.processing || savePending"
-            .disabled="form.processing || savePending"
+            .disabled="form.processing || savePending || otherSideSaving"
             @click="save()"
           >
             {{ payload.editorActions.primary.label ?? t('Save') }}
@@ -348,7 +361,7 @@
       :payload="pane"
       :errors="errors"
       :modified="autosave.modified.value"
-      :read-only="workflowReviewLocked || releaseDraftLocked"
+      :read-only="workflowReviewLocked || releaseDraftLocked || otherSideSaving"
       :refresh="pane.refreshable ? refresh : undefined"
       :field-outlets="fieldOutlets"
       @change="onChange"

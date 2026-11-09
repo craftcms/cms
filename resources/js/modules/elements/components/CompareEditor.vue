@@ -25,6 +25,7 @@
     saveShortcutTarget?: () => ((event: KeyboardEvent) => void) | null;
     beforeSave?: () => Promise<boolean>;
     fieldIdScope: string;
+    otherSideSaving?: boolean;
   }>();
 
   const emit = defineEmits<{
@@ -34,6 +35,7 @@
     (event: 'edits', values: Record<string, string>): void;
     (event: 'locked', locked: boolean): void;
     (event: 'values', values: UiValues): void;
+    (event: 'saving', saving: boolean): void;
   }>();
 
   provide(ScreenPagePropsKey, () => props.editor as unknown as ScreenPageProps);
@@ -64,11 +66,13 @@
     :save-shortcut-target="saveShortcutTarget"
     :before-save="beforeSave"
     :field-id-scope="fieldIdScope"
+    :other-side-saving="otherSideSaving"
     @edited="emit('edited', $event)"
     @errors="emit('errors', $event)"
     @layout="emit('layout', $event)"
     @edits="emit('edits', $event)"
     @locked="emit('locked', $event)"
     @values="emit('values', $event)"
+    @saving="emit('saving', $event)"
   />
 </template>

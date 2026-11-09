@@ -283,3 +283,33 @@ it('marks a field a condition shows on the page changed when it differs from the
 
     assertNoJavaScriptErrors($page);
 });
+
+it('doesn’t let one side be edited while the other saves, which would lose the edit', function () {
+    $other = Entry::factory()->forSection($this->section)->forEntryType($this->entryType)
+        ->createElement(['title' => 'Shadow and Form']);
+    expect(Elements::saveElement($other))->toBeTrue();
+
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $this->entry->id, 'toId' => $other->id], false))
+        ->assertPresent('main[id]');
+
+    // Which sides' Summary fields can be edited, as A's Save button is clicked and until the page reloads.
+    $editable = $page->script('async () => {
+        const editable = () => [...document.querySelectorAll("input[name=\"fields[summary]\"]")]
+            .filter((input) => !input.readOnly && !input.disabled)
+            .map((input) => input.closest("[data-compare-side]").dataset.compareSide)
+            .sort()
+            .join();
+        const seen = [editable()];
+        [...document.querySelectorAll(".compare-footer__actions craft-button")]
+            .find((button) => button.textContent.trim() === "Save")
+            .click();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        seen.push(editable());
+
+        return seen;
+    }');
+
+    expect($editable)->toBe(['from,to', 'from']);
+
+    assertNoJavaScriptErrors($page);
+});

@@ -149,6 +149,15 @@
     to: false,
   });
 
+  /**
+   * Whether each side is saving, which reloads the page, so the other side
+   * can't be edited meanwhile: its edits would be lost with it.
+   */
+  const saving = reactive<Record<CompareSide, boolean>>({
+    from: false,
+    to: false,
+  });
+
   /** Each side's editor, while it has one. */
   const editors = shallowReactive<
     Record<CompareSide, InstanceType<typeof CompareEditor> | null>
@@ -343,7 +352,9 @@
 
   /** Whether a side can be edited here, for now. */
   const editable = (side: CompareSide): boolean =>
-    Boolean(props[side].editor) && !editorLocked[side];
+    Boolean(props[side].editor) &&
+    !editorLocked[side] &&
+    !saving[otherSide(side)];
 
   /** A side's form, with its values as they stand, to copy from. */
   function valuesUi(side: CompareSide): UiPayload {
@@ -1114,12 +1125,14 @@
           :save-shortcut-target="saveShortcutTargets[key]"
           :before-save="beforeSave[key]"
           :field-id-scope="`compare-${key}`"
+          :other-side-saving="saving[otherSide(key)]"
           @edited="edited[key] = $event"
           @errors="erroredUids[key] = $event"
           @edits="editedValues[key] = $event"
           @locked="editorLocked[key] = $event"
           @layout="liveUis[key] = $event"
           @values="liveValues[key] = $event"
+          @saving="saving[key] = $event"
         />
         <UiRenderer
           v-else-if="side.ui.nodes.length"
