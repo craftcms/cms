@@ -1071,6 +1071,7 @@ Craft 6 introduces a new validation system that uses Laravel's Validator instead
 
 #### Fields
 - Updated field index pagination to return Laravel-style pagination metadata and use the configured `pageTrigger` query parameter.
+- Added `CraftCms\Cms\Field\Concerns\ProvidesAssetSettings`, which gives fields that select or upload assets, such as rich text editors, the Markdown field’s “Available Volumes”, “Show unpermitted volumes”, “Selectable Assets Condition”, and “Upload Volume” settings, and resolves them into the asset sources, selection condition, and upload folder for the field’s input. ([#20521](https://github.com/craftcms/cms/pull/20521))
 - Removed `craft\controllers\FieldsController` in favor of `CraftCms\Cms\Http\Controllers\FieldsController`.
 - Removed `craft\controllers\MatrixController`. `CraftCms\Cms\Http\Controllers\MatrixController` should be used instead.
 - Removed `craft\controllers\RelationalFieldsController`. `CraftCms\Cms\Http\Controllers\RelationalFieldsController` should be used instead.

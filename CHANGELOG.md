@@ -316,6 +316,7 @@
 - Custom fields now have “Default Tip” and “Default Warning” settings. ([#19976](https://github.com/craftcms/cms/pull/19976))
 - Added `CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface`, for Table cell types that reference elements. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Added `CraftCms\Cms\Field\LinkResolver`, which normalizes, validates, and localizes link values for a set of link settings. ([#19998](https://github.com/craftcms/cms/pull/19998))
+- Added `CraftCms\Cms\Field\Concerns\ProvidesAssetSettings`, which gives fields that select or upload assets, such as rich text editors, the Markdown field’s “Available Volumes”, “Show unpermitted volumes”, “Selectable Assets Condition”, and “Upload Volume” settings, and resolves them into the asset sources, selection condition, and upload folder for the field’s input. ([#20521](https://github.com/craftcms/cms/pull/20521))
 - Added `CraftCms\Cms\Ui\Controls\Link::compact()`, which shows a link summary with a button that edits the link in a popover. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Added `CraftCms\Cms\Ui\Controls\Link::registeredTypes()`, which locks links whose type is no longer available. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Added `CraftCms\Cms\Ui\Controls\ElementSelect::thumbSize()`, `thumbSizes()`, and `resolveThumbSize()`. ([#20257](https://github.com/craftcms/cms/pull/20257))
