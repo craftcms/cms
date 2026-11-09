@@ -81,7 +81,7 @@
           {% for item in section.items %}
             <li>
               {# The footer isn’t sticky here: in a list of panes, a footer pinned to the viewport would cover the next pane’s content. #}
-              <craft-pane appearance="outline" class="[&::part(footer)]:static">
+              <craft-pane appearance="outline" class="[&::part(footer)]:static [&::part(footer)]:bg-[var(--c-surface-sunken)]">
                 <div class="grid gap-2">
                   <div class="flex flex-wrap items-start justify-between gap-2">
                     <div class="flex min-w-0 items-center gap-3">
