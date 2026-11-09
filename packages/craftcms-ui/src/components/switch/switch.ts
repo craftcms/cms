@@ -126,11 +126,17 @@ export default class CraftSwitch extends HasLabel(ChoiceInput(LitElement)) {
     super.connectedCallback();
     this.__setupExternalLabelClicks();
     this.addEventListener('keydown', this.__onKeydown);
+    // Capturing, so the hidden input posts the new state by the time the
+    // event bubbles out of the switch.
+    this.addEventListener('input', this.#onToggle, true);
+    this.addEventListener('change', this.#onToggle, true);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.removeEventListener('keydown', this.__onKeydown);
+    this.removeEventListener('input', this.#onToggle, true);
+    this.removeEventListener('change', this.#onToggle, true);
     this.__teardownExternalLabelClicks();
   }
 
@@ -375,6 +381,12 @@ export default class CraftSwitch extends HasLabel(ChoiceInput(LitElement)) {
       emitChange(this._inputNode);
     }
   }
+
+  #onToggle = (event: Event): void => {
+    if (event.target === this._inputNode) {
+      this.__syncHiddenInput();
+    }
+  };
 
   private __setupExternalLabelClicks(): void {
     const btn = this._inputNode;

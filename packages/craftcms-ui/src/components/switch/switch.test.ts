@@ -269,6 +269,29 @@ describe('craft-switch hidden input', () => {
     expect(hiddenInput(element)!.value).toBe('');
   });
 
+  it('posts the new state by the time its input and change events reach a listener', async () => {
+    const element = await createSwitch({name: 'foo'});
+    const seen: string[] = [];
+    for (const type of ['input', 'change']) {
+      document.body.addEventListener(type, () =>
+        seen.push(`${type}:${hiddenInput(element)!.value}`)
+      );
+    }
+
+    switchButton(element)?.click();
+    element.turnIndeterminate();
+    element.turnOn();
+    element.turnOff();
+
+    expect(seen).toEqual([
+      'input:1',
+      'change:1',
+      'change:-',
+      'change:1',
+      'change:',
+    ]);
+  });
+
   it('disables the hidden input when the switch is disabled', async () => {
     const element = await createSwitch({name: 'foo', disabled: ''});
     expect(hiddenInput(element)!.disabled).toBe(true);
