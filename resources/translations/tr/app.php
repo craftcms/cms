@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Gerekli',
     'Requirements' => 'Gereksinimler',
     'Requires PHP {version}' => 'PHP {version} gereklidir',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => '{name} kayıtları tekrar kaydediliyor',
     'Resaving {type} entries' => '{type} girişleri tekrar kaydediliyor.',
     'Resaving {type}' => '{type} yeniden kaydediliyor',
