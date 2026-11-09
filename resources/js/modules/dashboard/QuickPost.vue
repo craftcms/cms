@@ -2,7 +2,6 @@
   import {onBeforeUnmount, ref} from 'vue';
   import {actionClient, t} from '@craftcms/ui';
   import CreateEntryController from '@actions/Entries/CreateEntryController';
-  import {router} from '@inertiajs/vue3';
   import {useSlideoutOpener} from '@/common/slideouts';
   import type {DashboardWidget} from './types';
 
@@ -37,12 +36,9 @@
       const url = new URL(data.cpEditUrl, window.location.origin);
       url.searchParams.set('fresh', '1');
 
-      await open(url.toString(), {
-        opener,
-        onSaved: ({draft}) => {
-          if (!draft) router.reload({only: ['widgets']});
-        },
-      });
+      // Publishing it reloads the dashboard's widgets, as any element save
+      // does.
+      await open(url.toString(), {opener});
     } catch {
       if (!abort.signal.aborted) error.value = t('A server error occurred.');
     } finally {

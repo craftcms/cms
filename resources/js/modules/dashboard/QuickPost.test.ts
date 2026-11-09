@@ -2,21 +2,16 @@ import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, defineComponent, h, type App} from 'vue';
 import QuickPost from './QuickPost.vue';
 import type {DashboardWidget} from './types';
-import {SlideoutHost, closeAllSlideouts, useSlideout} from '@/common/slideouts';
+import {SlideoutHost, closeAllSlideouts} from '@/common/slideouts';
 import {setSlideoutPageLoader} from '@/common/slideouts/store';
 
 const state = vi.hoisted(() => ({
   post: vi.fn(),
-  reload: vi.fn(),
 }));
 vi.mock('@craftcms/ui', async () => ({
   ...(await vi.importActual('@craftcms/ui')),
   actionClient: {post: state.post},
   t: (message: string) => message,
-}));
-vi.mock('@inertiajs/vue3', async () => ({
-  ...(await vi.importActual('@inertiajs/vue3')),
-  router: {reload: state.reload},
 }));
 vi.mock('@actions/Entries/CreateEntryController', () => ({
   default: {
@@ -38,7 +33,7 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
-it('opens the created entry in a slideout and refreshes the dashboard after publishing', async () => {
+it('opens the created entry in a slideout', async () => {
   // Icons are external assets; the editor response is supplied below.
   vi.stubGlobal(
     'fetch',
@@ -47,17 +42,7 @@ it('opens the created entry in a slideout and refreshes the dashboard after publ
   setSlideoutPageLoader(async (href) => ({
     component: defineComponent({
       setup() {
-        const slideout = useSlideout()!;
-        return () =>
-          h('div', [
-            h('h1', 'Edit news draft'),
-            h(
-              'button',
-              {onClick: () => slideout.saved({draft: true})},
-              'Save draft'
-            ),
-            h('button', {onClick: () => slideout.saved({})}, 'Publish'),
-          ]);
+        return () => h('h1', 'Edit news draft');
       },
     }),
     props: {},
@@ -101,12 +86,4 @@ it('opens the created entry in a slideout and refreshes the dashboard after publ
       'Edit news draft'
     )
   );
-
-  const dialog = document.querySelector('[role=dialog]')!;
-  const buttons = Array.from(dialog.querySelectorAll('button'));
-  buttons.find((button) => button.textContent === 'Save draft')!.click();
-  expect(state.reload).not.toHaveBeenCalled();
-
-  buttons.find((button) => button.textContent === 'Publish')!.click();
-  expect(state.reload).toHaveBeenCalled();
 });
