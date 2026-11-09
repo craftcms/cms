@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where the PostgreSQL password was included in the error message when a database backup or restore command failed. ([#20503](https://github.com/craftcms/cms/issues/20503))
+
 ## 4.18.9 - 2026-09-17 [CRITICAL]
 
 - Added `craft\helpers\StringHelper::containsNewlines()`.
