@@ -473,7 +473,10 @@ class Yii2ServiceProvider extends ServiceProvider
 
             if (str_starts_with($name, 'get') && strlen($name) > 3 && $method->getNumberOfRequiredParameters() === 0) {
                 $property = lcfirst(substr($name, 3));
-                CraftVariable::macro($property, fn() => $behavior->$property);
+
+                if (!$reflection->hasMethod($property) || !$reflection->getMethod($property)->isPublic()) {
+                    CraftVariable::macro($property, fn() => $behavior->$property);
+                }
             }
         }
     }

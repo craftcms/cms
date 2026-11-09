@@ -17,6 +17,7 @@ afterEach(function() {
         $values['testVariable'],
         $values['testBehaviorValue'],
         $values['testBehaviorQuery'],
+        $values['getTestBehaviorQuery'],
         $values['getTestBehaviorGetter'],
         $values['testBehaviorGetter'],
         $values['testBehaviorMethod'],
@@ -42,6 +43,11 @@ it('exposes behaviors attached from the legacy init event', function() {
             public function testBehaviorQuery(array $criteria = []): string
             {
                 return 'query:' . implode(',', $criteria);
+            }
+
+            public function getTestBehaviorQuery(): string
+            {
+                return 'getter-query';
             }
 
             public function getTestBehaviorGetter(): string
