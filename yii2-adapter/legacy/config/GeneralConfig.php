@@ -25,6 +25,7 @@ use InvalidArgumentException;
 use ReflectionProperty;
 use RuntimeException;
 use yii\base\InvalidConfigException;
+use yii\validators\IpValidator;
 
 use function CraftCms\Cms\t;
 
@@ -67,6 +68,11 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     private array $deprecatedSettings = [];
 
     /**
+     * @var list<callable>|null Changes to Laravel’s state that settings make while [[holdSideEffects()]] runs
+     */
+    private static ?array $heldSideEffects = null;
+
+    /**
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
      * in Settings → General.
      *
@@ -101,7 +107,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      */
     public ?bool $generateTransformsBeforePageLoad = null {
         set {
-            $this->whenBooting(fn() => $value === null
+            self::whenBooting(fn() => $value === null
                 ? Context::forgetHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT)
                 : Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value));
 
@@ -363,15 +369,10 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * ```
      * :::
      *
-     * ::: tip
-     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
-     * unless this setting is set to `true`.
-     * :::
-     *
      * @group GraphQL
      *
      * @since 3.6.0
-     * @deprecated in 5.9.0
+     * @deprecated in 5.9.0. It no longer has any effect. Choose whether each GraphQL schema includes the `@transform` directive instead.
      */
     public bool $disableGraphqlTransformDirective = false;
 
@@ -839,7 +840,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('blowfishHashCost', 'Configure `hashing.bcrypt.rounds` or set the `BCRYPT_ROUNDS` environment variable instead.');
 
-        $this->whenBooting(fn() => ConfigFacade::set('hashing.bcrypt.rounds', $value));
+        self::whenBooting(fn() => ConfigFacade::set('hashing.bcrypt.rounds', $value));
 
         $this->blowfishHashCost = $value;
 
@@ -888,7 +889,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('devMode', 'Configure `app.debug` or set the `APP_DEBUG` environment variable instead.');
 
-        $this->whenBooting(fn() => ConfigFacade::set('app.debug', $value));
+        self::whenBooting(fn() => ConfigFacade::set('app.debug', $value));
 
         $this->devMode = $value;
 
@@ -936,7 +937,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('defaultCookieDomain', 'Configure `session.domain` or set the `SESSION_DOMAIN` environment variable instead.');
 
-        $this->whenBooting(fn() => ConfigFacade::set('session.domain', $value));
+        self::whenBooting(fn() => ConfigFacade::set('session.domain', $value));
 
         $this->defaultCookieDomain = $value;
 
@@ -974,7 +975,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
 
-        $this->whenBooting(fn() => ConfigFacade::set('auth.guards.craft.remember', floor($this->rememberedUserSessionDuration / 60)));
+        self::whenBooting(fn() => ConfigFacade::set('auth.guards.craft.remember', floor($this->rememberedUserSessionDuration / 60)));
 
         return $this;
     }
@@ -1009,7 +1010,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($value);
 
-        $this->whenBooting(fn() => ConfigFacade::set('auth.passwords.craft.expire', floor($this->verificationCodeDuration / 60)));
+        self::whenBooting(fn() => ConfigFacade::set('auth.passwords.craft.expire', floor($this->verificationCodeDuration / 60)));
 
         return $this;
     }
@@ -1021,17 +1022,16 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * ->disableGraphqlTransformDirective(true)
      * ```
      *
-     * ::: tip
-     * As of Craft 5.9.0, the `@transform` directive can be optionally included for each GraphQL schema,
-     * unless this setting is set to `true`.
-     * :::
-     *
      * @group GraphQL
      *
      * @see $disableGraphqlTransformDirective
+     * @deprecated in 5.9.0. It no longer has any effect. Choose whether each GraphQL schema includes the `@transform` directive instead.
      */
+    #[Deprecated(message: 'in 5.9.0. It no longer has any effect. Choose whether each GraphQL schema includes the `@transform` directive instead.')]
     public function disableGraphqlTransformDirective(bool $value = true): self
     {
+        $this->deprecate('disableGraphqlTransformDirective', 'It no longer has any effect. Choose whether each GraphQL schema includes the `@transform` directive instead.');
+
         $this->disableGraphqlTransformDirective = $value;
 
         return $this;
@@ -1112,7 +1112,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($value);
 
-        $this->whenBooting(fn() => ConfigFacade::set('auth.password_timeout', $this->elevatedSessionDuration === 0 ? -1 : $this->elevatedSessionDuration));
+        self::whenBooting(fn() => ConfigFacade::set('auth.password_timeout', $this->elevatedSessionDuration === 0 ? -1 : $this->elevatedSessionDuration));
 
         return $this;
     }
@@ -1265,7 +1265,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('phpSessionName', 'Configure `session.cookie` or set the `SESSION_COOKIE` environment variable instead.');
 
-        $this->whenBooting(fn() => ConfigFacade::set('session.cookie', $value));
+        self::whenBooting(fn() => ConfigFacade::set('session.cookie', $value));
 
         $this->phpSessionName = $value;
 
@@ -1499,7 +1499,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('securityKey', 'Configure `app.key` or set the `APP_KEY` environment variable instead.');
 
-        $this->whenBooting(fn() => ConfigFacade::set('app.key', $value));
+        self::whenBooting(fn() => ConfigFacade::set('app.key', $value));
 
         $this->securityKey = $value;
 
@@ -1531,10 +1531,32 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         $this->trustedHosts = $value;
 
         if (!empty($value)) {
-            $this->applyMiddlewareSetting('trustedHosts', $value);
+            $this->applyMiddlewareSetting('trustedHosts', self::trustedProxies($value));
         }
 
         return $this;
+    }
+
+    /**
+     * Converts trusted hosts to the proxies Laravel trusts.
+     *
+     * Network aliases such as `any` and `private` expand the way Yii’s IP validator expands them. Laravel trusts the
+     * same headers from every proxy, so a host’s own list of headers to trust is ignored.
+     *
+     * @param array<int|string, string|string[]> $hosts
+     * @return string[]
+     */
+    private static function trustedProxies(array $hosts): array
+    {
+        $networks = get_class_vars(IpValidator::class)['networks'];
+        $proxies = [];
+
+        foreach ($hosts as $host => $headers) {
+            $host = is_array($headers) ? $host : $headers;
+            array_push($proxies, ...(isset($networks[$host]) ? self::trustedProxies($networks[$host]) : [$host]));
+        }
+
+        return array_values(array_unique($proxies));
     }
 
     /**
@@ -1644,7 +1666,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->deprecate('useSecureCookies', 'Configure `session.secure` or set the `SESSION_SECURE_COOKIE` environment variable instead.');
 
-        $this->whenBooting(fn() => ConfigFacade::set('session.secure', $value === 'auto' ? null : $value));
+        self::whenBooting(fn() => ConfigFacade::set('session.secure', $value === 'auto' ? null : $value));
 
         $this->useSecureCookies = $value;
 
@@ -1835,12 +1857,22 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
         // The parent can’t restore these private properties on subclasses
         $config->middlewareSettings = $stateData['middlewareSettings'] ?? [];
         $config->deprecatedSettings = $stateData['deprecatedSettings'] ?? [];
-
-        foreach ($config->middlewareSettings as $setting => $value) {
-            $config->applyMiddlewareSetting($setting, $value);
-        }
+        $config->applyMiddlewareSettings();
 
         return $config;
+    }
+
+    /**
+     * Applies the middleware settings this config’s fluent methods applied again, including those applied before it
+     * was cloned.
+     *
+     * @internal
+     */
+    public function applyMiddlewareSettings(): void
+    {
+        foreach ($this->middlewareSettings as $setting => $value) {
+            $this->applyMiddlewareSetting($setting, $value);
+        }
     }
 
     /**
@@ -1854,14 +1886,54 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
+     * Runs a callback, and holds back the changes to Laravel’s state that settings make meanwhile, so they can be
+     * applied with [[applySideEffects()]] if the configs they were made on are kept.
+     *
+     * @template T
+     * @param callable(): T $callback
+     * @return array{T, list<callable>} The callback’s result, and the held changes
+     * @internal
+     */
+    public static function holdSideEffects(callable $callback): array
+    {
+        $held = self::$heldSideEffects;
+        self::$heldSideEffects = [];
+
+        try {
+            return [$callback(), self::$heldSideEffects];
+        } finally {
+            self::$heldSideEffects = $held;
+        }
+    }
+
+    /**
+     * Applies changes to Laravel’s state that were held back by [[holdSideEffects()]].
+     *
+     * @param list<callable> ...$sideEffects
+     * @internal
+     */
+    public static function applySideEffects(array ...$sideEffects): void
+    {
+        foreach (array_merge(...$sideEffects) as $callback) {
+            self::whenBooting($callback);
+        }
+    }
+
+    /**
      * Runs a callback that changes Laravel’s state, such as its config.
      *
      * Settings applied while config files load and providers register are deferred until the application starts
      * booting, so they run in order after Laravel’s config and facades are ready. Settings applied after that, such as
      * `CRAFT_` environment overrides, run immediately.
      */
-    private function whenBooting(callable $callback): void
+    private static function whenBooting(callable $callback): void
     {
+        if (self::$heldSideEffects !== null) {
+            self::$heldSideEffects[] = $callback;
+
+            return;
+        }
+
         $app = app();
 
         if ($app->bound(self::class . '::booting')) {
@@ -1878,7 +1950,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $this->middlewareSettings[$setting] = $value;
 
-        $this->whenBooting(function() use ($setting, $value): void {
+        self::whenBooting(function() use ($setting, $value): void {
             if ($setting === 'trustedHosts') {
                 TrustProxies::at($value);
             } elseif ($setting === 'secureHeaders') {

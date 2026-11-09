@@ -25,18 +25,19 @@ use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidFsException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
 use CraftCms\Cms\Mcp\AssetUploads as McpAssetUploads;
-use CraftCms\Cms\Mcp\Attributes\RequiresHttp;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
 use CraftCms\Cms\Mcp\Elements\Adapters\AssetAdapter;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\Schema\CustomFieldSchema;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
+use CraftCms\Cms\Mcp\StdioTransport;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Gate;
 use Mcp\Capability\Attribute\McpResourceTemplate;
 use Mcp\Capability\Attribute\McpTool;
@@ -77,8 +78,8 @@ readonly class Assets
         'description' => 'The file, from exactly one source: download_url, data, or path. The filename defaults to file_name, then to the URL or path basename.',
         'properties' => [
             'download_url' => ['type' => 'string', 'format' => 'uri', 'description' => 'Public HTTPS URL to download. Up to 3 redirects are followed.'],
-            'data' => ['type' => 'string', 'description' => 'Base64-encoded file contents, or a base64 data URL. Best for small files; use assets_upload_prepare for larger ones over HTTP.'],
-            'path' => ['type' => 'string', 'description' => 'Absolute path to a file within the Craft project, outside of system directories such as config/ and vendor/. Only supported by the stdio server (craft:mcp:serve).'],
+            'data' => ['type' => 'string', 'description' => 'Base64-encoded file contents, or a base64 data URL. Best for small files; use assets_upload_prepare for larger ones.'],
+            'path' => ['type' => 'string', 'description' => 'Absolute path to a file within the Craft project, outside of system directories such as config/ and vendor/. Only supported by the stdio server (craft:mcp:serve). Use assets_upload_prepare for files the server can’t read, such as those on the host of a container it runs in.'],
             'file_id' => ['type' => 'string', 'minLength' => 1],
             'mime_type' => ['type' => 'string'],
             'file_name' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255],
@@ -192,8 +193,7 @@ readonly class Assets
     }
 
     /** @return array{upload: array<string, mixed>} */
-    #[McpTool(name: 'assets_upload_prepare', description: 'Starts a short-lived, resumable HTTP upload. Provide folderId, volumeId, or fieldId (with elementId and siteId for the element the Assets field belongs to) for assets_create, or assetId for assets_replace. Complete the binary transfer using upload.urls and upload.transport with the MCP bearer token, then pass upload.id as uploadId to create or replace. Stdio clients and clients unable to transfer binary data use the file input on create or replace instead.')]
-    #[RequiresHttp]
+    #[McpTool(name: 'assets_upload_prepare', description: 'Starts a short-lived, resumable HTTP upload. Provide folderId, volumeId, or fieldId (with elementId and siteId for the element the Assets field belongs to) for assets_create, or assetId for assets_replace. Complete the binary transfer using upload.urls and upload.transport, sending the bearer token upload.authorization describes: the MCP access token over HTTP, or upload.authorization.token over stdio. Then pass upload.id as uploadId to create or replace. Clients unable to transfer binary data use the file input on create or replace instead.')]
     public function prepareUpload(
         #[Schema(minLength: 1, maxLength: 255)]
         string $filename,
@@ -213,6 +213,13 @@ readonly class Assets
         ?int $siteId = null,
     ): array {
         $actor = $this->actor->user();
+
+        // Over stdio, URLs are built from `app.url`, as there's no request to take the host from
+        $appUrl = parse_url((string) config('app.url')) ?: [];
+
+        if ($this->isStdio() && (! in_array(strtolower($appUrl['scheme'] ?? ''), ['http', 'https'], true) || ($appUrl['host'] ?? '') === '')) {
+            throw new ToolCallException('Uploads over stdio require an absolute HTTP or HTTPS site URL. Set the APP_URL environment variable, then restart the MCP server.');
+        }
 
         if ($assetId !== null) {
             if ($folderId !== null || $volumeId !== null || $fieldId !== null || $elementId !== null) {
@@ -262,7 +269,7 @@ readonly class Assets
      */
     #[McpTool(
         name: 'assets_create',
-        description: 'Creates an asset from exactly one source: a client-provided file reference, or a completed uploadId from the HTTP-only assets_upload_prepare tool. With a file reference, target exactly one of: folderId, volumeId (its root folder), or fieldId (an Assets field’s default upload location; pass elementId, and attributes.siteId if needed, for the element the field belongs to so dynamic subpaths resolve). Stdio clients and clients unable to transfer binary data use file references. Use elements_field_schema to discover custom fields.',
+        description: 'Creates an asset from exactly one source: a client-provided file reference, or a completed uploadId from the assets_upload_prepare tool. With a file reference, target exactly one of: folderId, volumeId (its root folder), or fieldId (an Assets field’s default upload location; pass elementId, and attributes.siteId if needed, for the element the field belongs to so dynamic subpaths resolve). Clients unable to transfer binary data use file references. Use elements_field_schema to discover custom fields.',
         meta: ['openai/fileParams' => ['file']],
     )]
     public function create(
@@ -348,7 +355,7 @@ readonly class Assets
      */
     #[McpTool(
         name: 'assets_replace',
-        description: 'Replaces an existing asset file while preserving its ID and references, using exactly one source: a client-provided file reference or a completed uploadId bound to assetId from the HTTP-only assets_upload_prepare tool. Stdio clients use file references. Uses the HTTP replacement behavior, including adopting the incoming filename, which may change the URL. Uploads are consumed once; inspect the asset after an ambiguous failure before retrying.',
+        description: 'Replaces an existing asset file while preserving its ID and references, using exactly one source: a client-provided file reference or a completed uploadId bound to assetId from the assets_upload_prepare tool. Uses the HTTP replacement behavior, including adopting the incoming filename, which may change the URL. Uploads are consumed once; inspect the asset after an ambiguous failure before retrying.',
         annotations: new ToolAnnotations(destructiveHint: true),
         meta: ['openai/fileParams' => ['file']],
     )]
@@ -571,7 +578,9 @@ readonly class Assets
     /** @return array<string, mixed> */
     private function serializeUploadSession(UploadSessionData $session): array
     {
-        $transferUrl = route('craft.mcp.uploads.transfer', ['upload' => $session->id]);
+        $stdio = $this->isStdio();
+        $routes = $stdio ? 'craft.mcp.stdio.uploads' : 'craft.mcp.uploads';
+        $transferUrl = route("$routes.transfer", ['upload' => $session->id]);
         $transport = $session->transport;
 
         if ($transport['type'] === 'tus') {
@@ -586,13 +595,17 @@ readonly class Assets
             'transport' => $transport,
             'urls' => [
                 'transfer' => $transferUrl,
-                'status' => route('craft.mcp.uploads.status', ['upload' => $session->id]),
-                'cancel' => route('craft.mcp.uploads.destroy', ['upload' => $session->id]),
+                'status' => route("$routes.status", ['upload' => $session->id]),
+                'cancel' => route("$routes.destroy", ['upload' => $session->id]),
             ],
-            'authorization' => [
-                'type' => 'bearer',
-                'source' => 'mcp',
-            ],
+            'authorization' => $stdio
+                ? ['type' => 'bearer', 'token' => $this->mcpAssetUploads->credential($session->id)]
+                : ['type' => 'bearer', 'source' => 'mcp'],
         ];
+    }
+
+    private function isStdio(): bool
+    {
+        return (bool) Context::getHidden(StdioTransport::ContextStdio);
     }
 }

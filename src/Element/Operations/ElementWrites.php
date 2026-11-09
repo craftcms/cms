@@ -40,6 +40,7 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
@@ -48,6 +49,7 @@ use CraftCms\Cms\Support\Url;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -115,9 +117,16 @@ readonly class ElementWrites
             }
             $generatedFieldValues = [];
             $updated = false;
+            $language = $siteElement->getSite()->getLanguage();
 
             foreach ($generatedFields as $field) {
-                $value = renderObjectTemplate($field['template'] ?? '', $siteElement, escaperStrategy: 'html');
+                $template = $field['template'] ?? '';
+                $value = I18N::withLocale($language, $language, fn () => renderObjectTemplate(
+                    $template,
+                    $siteElement,
+                    ElementHelper::objectTemplateDateVariables($siteElement, $template),
+                    escaperStrategy: 'html',
+                ));
                 $value = normalizeValue($value) ?? '';
 
                 if ($value !== ($content[$field['uid']] ?? '')) {
