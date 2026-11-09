@@ -6,17 +6,20 @@ use craft\elements\GlobalSet;
 use craft\fields\Matrix as LegacyMatrix;
 use craft\records\GlobalSet as GlobalSetRecord;
 use CraftCms\Cms\Auth\SessionAuth;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Http\Controllers\Elements\UpdateFieldLayoutController;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
@@ -120,6 +123,26 @@ it('renders legacy Matrix content read-only without granting editing permissions
 })->with([
     'cards' => LegacyMatrix::VIEW_MODE_CARDS,
     'index' => LegacyMatrix::VIEW_MODE_INDEX,
+]);
+
+it('shows nested entry validation errors in legacy field layout forms', function(string $fieldType) {
+    $entryType = EntryTypeModel::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([new EntryTitleField(['required' => true])]))
+        ->create(['name' => 'Card', 'handle' => 'card', 'hasTitleField' => true]);
+    $owner = EntryModel::factory()
+        ->withField('blocks', $fieldType, ['viewMode' => LegacyMatrix::VIEW_MODE_BLOCKS, 'entryTypes' => [$entryType->id]])
+        ->createElementWithFields()
+        ->element;
+    $uid = Str::uuid()->toString();
+    $owner->setFieldValue('blocks', ['entries' => ["uid:$uid" => ['type' => 'card', 'title' => '']], 'sortOrder' => [$uid]]);
+    $owner->setScenario(ElementRules::SCENARIO_LIVE);
+
+    expect(Elements::saveElement($owner))->toBeFalse()
+        ->and(new Crawler(FieldLayoutForm::fromLayout($owner->getFieldLayout(), $owner)->render())->filter('.error-list')->text())
+        ->toContain('The title field is required.');
+})->with([
+    'Matrix' => LegacyMatrix::class,
+    'plugin Matrix' => PluginMatrixUiField::class,
 ]);
 
 it('refreshes native Matrix controls after deletion in Global Set content forms', function(bool $insideBlock, string $viewMode, bool $plugin = false) {
