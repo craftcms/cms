@@ -321,15 +321,21 @@ describe('leaving a folder', () => {
 
   // Such as an Assets field's upload location within its volume.
   it('goes back to the volume’s root from the folder the modal opened in', async () => {
+    // Requested by its path, which the sidebar lists by the source's own key
     const index = mountIndex(assetsData(), {
       elementType: 'Asset',
-      source: volume.key,
+      source: `volume:xyz/${volume.key}`,
       folderId: 5,
     });
 
+    expect(index.activeSourceKey.value).toBe(volume.key);
+
     // Any request made before leaving it, such as reaching into subfolders
     index.setIncludeSubfolders(true);
-    expect(lastQuery()).toMatchObject({source: volume.key, folderId: 5});
+    expect(lastQuery()).toMatchObject({
+      source: `volume:xyz/${volume.key}`,
+      folderId: 5,
+    });
 
     index.changeSource(volume.key);
     expect(lastQuery()).toMatchObject({source: volume.key});
