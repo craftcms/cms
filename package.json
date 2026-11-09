@@ -82,7 +82,7 @@
     "vue-tsc": "^3.2.7"
   },
   "optionalDependencies": {
-    "@awesome.me/kit-ddaed3f5c5": "^1.0.81"
+    "@awesome.me/kit-ddaed3f5c5": "^1.0.110"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.8.1",
