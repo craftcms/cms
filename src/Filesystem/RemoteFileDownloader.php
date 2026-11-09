@@ -29,7 +29,7 @@ readonly class RemoteFileDownloader
      *
      * @param  int  $maxRedirects  The number of redirects to follow. Redirects from HTTPS to HTTP are never followed.
      */
-    public function download(string $url, string $path, int $maxBytes, int $maxRedirects = 0): void
+    public function download(string $url, string $path, int $maxBytes, int $maxRedirects = 0): Response
     {
         $https = strtolower((string) parse_url($url, PHP_URL_SCHEME)) === 'https';
 
@@ -67,6 +67,8 @@ readonly class RemoteFileDownloader
         if ($size > $maxBytes) {
             throw new RuntimeException('The file exceeds the maximum upload size.');
         }
+
+        return $response;
     }
 
     private function request(string $url, string $path, int $maxBytes): Response
