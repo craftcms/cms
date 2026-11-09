@@ -79,6 +79,9 @@
         custom.value =
           customAllowed.value && newValue !== '' && !isPreset(newValue);
       }
+      // Each emitted value is echoed once. A later write of the same value
+      // comes from elsewhere.
+      emittedValue = null;
     },
     {immediate: true}
   );

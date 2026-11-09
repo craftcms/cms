@@ -79,10 +79,11 @@ class Color extends Control implements ReadableValueControl, WritableValueContro
                 'data' => ['target-prefix' => "#$customId-"],
             ])
             ->toHtml().
-            // It starts from the current color, as picking "Custom…" changes
-            // nothing until another is entered. It isn't required: it's hidden
-            // until then, and a hidden required input stops the form submitting.
-            self::colorInput($control, $attributes, $name !== null ? "{$name}[custom]" : null, $value, false)
+            // Only a custom color fills it, as nothing here keeps it in step
+            // with another color picked in the select, which it would replace.
+            // It isn't required: it's hidden until "Custom…" is picked, and a
+            // hidden required input stops the form submitting.
+            self::colorInput($control, $attributes, $name !== null ? "{$name}[custom]" : null, $isCustom ? $value : null, false)
                 ->id($customId)
                 ->attributes([
                     'id' => "$customId-__custom__",

@@ -131,8 +131,9 @@ it('offers a custom color beside the palette when custom colors are allowed', fu
         ->and($input->attr('slot'))->toBe('after')
         ->and(str_contains((string) $input->attr('class'), 'hidden'))->toBe($selected !== '__custom__')
         ->and($input->filter('input')->attr('name'))->toBe('fields[color][custom]')
-        ->and($input->filter('input')->attr('value'))->toBe($value)
-        ->and($field->normalizeValue(['color' => $selected, 'custom' => $value], null)?->getHex())->toBe($value);
+        // Only a custom color fills it, so it can't post a color the select has moved on from.
+        ->and($input->filter('input')->attr('value'))->toBe($selected === '__custom__' ? $value : null)
+        ->and($field->normalizeValue(['color' => $selected, 'custom' => $input->filter('input')->attr('value')], null)?->getHex())->toBe($value);
 })->with([
     'a palette color' => ['#e5422b', '#e5422b'],
     'another color' => ['#123456', '__custom__'],

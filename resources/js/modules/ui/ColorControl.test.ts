@@ -122,6 +122,28 @@ describe('ColorControl', () => {
     expect(root.querySelector('craft-input-color')).not.toBeNull();
   });
 
+  it('takes a pasted color as "Custom…" after typing the same one', async () => {
+    const root = await mount({}, '#2563eb');
+    const select = root.querySelector('craft-select-color') as ColorSelect;
+    pick(select, '__custom__');
+    await nextTick();
+    pick(root.querySelector('craft-input-color') as ColorInput, '123456');
+    value.value = '123456';
+    await nextTick();
+
+    // As when a palette color is pasted in, then the typed one again.
+    value.value = '#e5422b';
+    await nextTick();
+    expect(select.modelValue).toBe('#e5422b');
+
+    value.value = '123456';
+    await nextTick();
+    expect(select.modelValue).toBe('__custom__');
+    expect(
+      (root.querySelector('craft-input-color') as ColorInput).modelValue
+    ).toBe('123456');
+  });
+
   it('shows a color from elsewhere as a preset or as "Custom…"', async () => {
     const root = await mount({}, '#123456', {required: true});
     const select = root.querySelector('craft-select-color') as ColorSelect;

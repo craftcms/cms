@@ -62,7 +62,7 @@ function scalarControlsUi(): Ui
             DateTime::make('datetime')->showTime()->showTimeZone()->minuteIncrement(15)->fullWidth(),
         ),
         Field::make('Time', Time::make('time')->step(60)),
-        Field::make('Color', Color::make('color')->presets(['#ff0000'])),
+        Field::make('Color', Color::make('color')),
         Field::make('Money',
             Money::make('price')->currency('EUR')->locale('nl_BE')->min(0),
         ),
