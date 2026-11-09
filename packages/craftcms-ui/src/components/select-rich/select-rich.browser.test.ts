@@ -269,6 +269,54 @@ function active(select: CraftSelectRich): string | undefined {
   return select.querySelector('craft-option[active]')?.textContent?.trim();
 }
 
+it('leaves hidden options out of keyboard selection, but still shows one that is selected', async () => {
+  document.body.innerHTML = `
+    <form>
+      <craft-select-rich name="fruit" label="Fruit">
+        <craft-option choice-value="apple" checked>Apple</craft-option>
+        <craft-option choice-value="banana" hidden>Banana</craft-option>
+        <craft-option choice-value="cherry">Cherry</craft-option>
+        <craft-option choice-value="damson" hidden>Damson</craft-option>
+      </craft-select-rich>
+    </form>`;
+  const form = document.querySelector('form')!;
+  const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
+  await select.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve));
+  const invoker = select.querySelector<HTMLElement>('craft-select-invoker')!;
+  invoker.focus();
+
+  await userEvent.keyboard('b');
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  await userEvent.keyboard('d');
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  expect(select.value).toBe('apple');
+
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Apple');
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Cherry');
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Cherry');
+  await userEvent.keyboard('{Home}');
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Cherry');
+  await userEvent.keyboard('{End}');
+  expect(active(select)).toBe('Cherry');
+  await userEvent.keyboard('{Enter}');
+  expect(select.value).toBe('cherry');
+
+  select.value = 'banana';
+  await select.updateComplete;
+  expect(invoker.textContent?.trim()).toBe('Banana');
+  expect(new FormData(form).get('fruit')).toBe('banana');
+
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBeUndefined();
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Apple');
+});
+
 it.each(['{Enter}', ' ', '{ArrowDown}', '{ArrowUp}'])(
   'opens on %s with the selected option active',
   async (key) => {

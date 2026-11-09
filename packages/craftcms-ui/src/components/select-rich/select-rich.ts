@@ -149,6 +149,11 @@ export default class CraftSelectRich extends FormAssociated(
     );
   }
 
+  /** The options the keyboard moves through: the ones that are showing. */
+  get #keyboardOptions(): CraftOption[] {
+    return this.#options.filter((option) => !option.hidden);
+  }
+
   get #checkedOption(): CraftOption | undefined {
     return this.#options.find((option) => option.checked);
   }
@@ -457,7 +462,8 @@ export default class CraftSelectRich extends FormAssociated(
       this.#typeahead.reset();
       this.#dropdown.show();
       document.addEventListener('pointerdown', this.#onDocumentPointerDown);
-      this.#setActive(this.#checkedOption);
+      const checked = this.#checkedOption;
+      this.#setActive(checked?.hidden ? undefined : checked);
       return;
     }
 
@@ -535,7 +541,7 @@ export default class CraftSelectRich extends FormAssociated(
     // Typing while closed selects, as it does on a native select.
     const match = this.#typeahead.match(
       event,
-      this.#options,
+      this.#keyboardOptions,
       this.#checkedOption
     );
     if (match) {
@@ -545,7 +551,7 @@ export default class CraftSelectRich extends FormAssociated(
   };
 
   #onOpenKeydown(event: KeyboardEvent): void {
-    const options = this.#options;
+    const options = this.#keyboardOptions;
 
     switch (event.key) {
       case 'ArrowDown':
