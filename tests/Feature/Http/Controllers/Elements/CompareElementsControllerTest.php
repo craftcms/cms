@@ -527,7 +527,9 @@ it('compares two sites, flagging only translations that are missing on one side'
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('from.siteName', $entry->getSite()->getName())
             ->where('to.siteName', 'Secondary')
-            ->where('to.editor.siteId', $translation->siteId))
+            ->where('to.editor.siteId', $translation->siteId)
+            // So a field a condition shows later isn't compared by its values, as the server doesn't.
+            ->where('translations', true))
         ->assertInertia(fn (AssertableInertia $page) => expect(changedFields($page, 'to'))->toMatchArray([
             'Summary' => false,
             'Tagline' => true,
@@ -860,6 +862,7 @@ it('flags every differing value between two separate entries in two sites, as ne
         'fromSiteId' => $a->siteId,
     ]))
         ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('translations', false))
         ->assertInertia(fn (AssertableInertia $page) => expect(changedFields($page, 'to'))->toMatchArray([
             'Summary' => true,
             'Tagline' => false,
