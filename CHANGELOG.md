@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## 4.18.9 - 2026-09-17
+## 4.18.9 - 2026-09-17 [CRITICAL]
 
 - Added `craft\helpers\StringHelper::containsNewlines()`.
 - Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SQL injection vulnerability. ([GHSA-mjj9-pjh4-r48g](https://github.com/craftcms/cms/security/advisories/GHSA-mjj9-pjh4-r48g))
