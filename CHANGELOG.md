@@ -30,6 +30,7 @@
 - Fixed a bug where authenticated GraphQL requests didn’t respect field layout conditions. Fields that are hidden from the user are now excluded from the schema, or resolve to `null` when their conditions are element-specific. Fields the user can’t edit are now excluded from mutation arguments, or result in an error when set if their conditions are element-specific. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where field values submitted for nested entries, Content Block fields, and addresses could be saved even if the user wasn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where MCP tools returned empty arrays for CKEditor field values.
+- Fixed a bug where `craft\db\Migration::archiveTableIfExists()` truncated archived table names, such as `webhoo_old` instead of `webhookgroups_old`. ([#20484](https://github.com/craftcms/cms/pull/20484))
 - Fixed a bug where the `elements_list`, `drafts_list`, `revisions_list`, `search_query`, and `craft_query` MCP tools returned only element metadata when `fields` was `null`, rather than all non-nested custom fields.
 - Fixed a bug where upload URLs from the `assets_upload_url` MCP tool returned 404 errors when the authenticated MCP server’s endpoint was within the control panel.
 - Added `craft\base\McpOutputFieldInterface`, which fields can implement to control how their values are returned by MCP tools.
@@ -46,6 +47,8 @@
 - Fixed a bug where Markdown field layout elements weren’t getting translated. ([#20408](https://github.com/craftcms/cms/discussions/20408))
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
 - Fixed an error that occurred when editing an address within a draft, if the owner element wasn’t saved in the primary site. ([#20413](https://github.com/craftcms/cms/issues/20413))
+- Fixed a bug where password reset and email verification URLs generated from the console, such as with `users/password-reset-url`, always pointed to the front end, even for users with control panel access. ([#16340](https://github.com/craftcms/cms/issues/16340))
+- Fixed a bug where the PostgreSQL password was included in the error message when a database backup or restore command failed. ([#20503](https://github.com/craftcms/cms/issues/20503))
 
 ## 5.12.0.1 - 2026-11-03
 
@@ -340,7 +343,7 @@
 
 - Fixed an error that could occur when registering or logging in with a passkey. ([#19657](https://github.com/craftcms/cms/issues/19657), [#19660](https://github.com/craftcms/cms/pull/19660))
 
-## 5.11.2 - 2026-09-17
+## 5.11.2 - 2026-09-17 [CRITICAL]
 
 - Improved the performance of loading project config data on PostgreSQL. ([#19572](https://github.com/craftcms/cms/pull/19572))
 - Added `craft\helpers\StringHelper::containsNewlines()`.
