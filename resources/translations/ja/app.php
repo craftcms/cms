@@ -2664,6 +2664,7 @@ return [
     'Required' => '必須',
     'Requirements' => '要件',
     'Requires PHP {version}' => 'PHP {version} が必要です',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => '{name}エントリを再保存中',
     'Resaving {type} entries' => '{type} エントリを再保存中',
     'Resaving {type}' => '{type}を再保存中',
