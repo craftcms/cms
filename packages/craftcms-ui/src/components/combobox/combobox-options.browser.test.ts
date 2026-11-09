@@ -99,7 +99,7 @@ describe.each([
     const control = await fixture([
       {label: 'Icon', value: 'icon', data: {icon: 'circle', color}},
     ]);
-    control.multipleChoice = true;
+    control.multiple = true;
     control.value = ['icon'];
     await control.updateComplete;
 

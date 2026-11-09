@@ -178,7 +178,7 @@ class Combobox extends ViewComponent
         return [
             'id' => $this->getId(),
             'name' => $this->name,
-            'multiple-choice' => $this->multiple,
+            'multiple' => $this->multiple,
             'value' => $this->multiple ? Json::encode($this->value ?? []) : $this->value,
             'options' => Json::encode($this->options),
             'placeholder' => $this->placeholder,

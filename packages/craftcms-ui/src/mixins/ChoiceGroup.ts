@@ -26,7 +26,7 @@ export declare class ChoiceGroupInterface extends FormControlInterface {
   value: string | string[];
   required: boolean;
   invalid: boolean;
-  readonly multipleChoice: boolean;
+  readonly multiple: boolean;
   get choices(): ChoiceInputInterface[];
   protected _onChoicesChanged(): void;
 }
@@ -60,7 +60,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
     /** Marks the choice as invalid: sets `aria-invalid` on the group. */
     @property({type: Boolean, reflect: true}) invalid = false;
 
-    readonly multipleChoice = multiple;
+    readonly multiple = multiple;
 
     /** The value last set from code, for choices that arrive after it. */
     #requested?: string[];

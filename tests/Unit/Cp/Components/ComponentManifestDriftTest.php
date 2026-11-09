@@ -199,7 +199,7 @@ function cpDriftWcOnlyAllowlist(): array
         'craft-textarea' => ['max-rows'],
         // `opened` and `focused` are runtime state. `invalid` follows a
         // validation response, which the client renders.
-        'craft-combobox' => ['invalid', 'open', 'focused'],
+        'craft-combobox' => ['invalid', 'open'],
         // The server checks the selected option rather than setting `value`.
         // `opened` is runtime state, and the builder has no required or
         // invalid state to pass on.

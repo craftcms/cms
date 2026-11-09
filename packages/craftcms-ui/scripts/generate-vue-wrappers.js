@@ -669,7 +669,7 @@ function generateComboboxWrapper(component) {
     defineProps<{
       error?: null | string;
       options?: ComboboxItem[];
-      multipleChoice?: boolean;
+      multiple?: boolean;
       requireOptionMatch?: boolean;
       showAllOnEmpty?: boolean;
       clearable?: boolean;
@@ -677,7 +677,7 @@ function generateComboboxWrapper(component) {
     }>(),
     {
       options: () => [],
-      multipleChoice: false,
+      multiple: false,
       requireOptionMatch: false,
       showAllOnEmpty: false,
       clearable: false,
@@ -692,13 +692,13 @@ function generateComboboxWrapper(component) {
 
 <template>
   <${component.tagName}
-    .multipleChoice="multipleChoice"
+    .multiple="multiple"
     .options="options"
     .requireOptionMatch="requireOptionMatch"
     .showAllOnEmpty="showAllOnEmpty"
     .clearable="clearable"
     .limit="limit"
-    .value="model ?? (props.multipleChoice ? [] : '')"
+    .value="model ?? (props.multiple ? [] : '')"
     @input="onInput"
     @change="onInput"
     :invalid="Boolean(error)"

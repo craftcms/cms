@@ -84,8 +84,7 @@ export const baseComboboxStyles = css`
 `;
 
 export const baseFieldStyles = css`
-  :host([invalid]),
-  :host([has-feedback-for='error']) {
+  :host([invalid]) {
     color: var(--c-color-danger-on-normal);
 
     ::slotted([slot='input']) {

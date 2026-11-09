@@ -15,7 +15,6 @@ export declare class NativeFieldInterface extends FormControlInterface {
   autocomplete?: string;
   required: boolean;
   invalid: boolean;
-  focused: boolean;
   get _inputNode(): NativeControl | undefined;
   protected _pushToControl(changed: PropertyValues): void;
 }
@@ -51,9 +50,6 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
 
     /** Marks the value as invalid: sets `aria-invalid` on the control. */
     @property({type: Boolean, reflect: true}) invalid = false;
-
-    /** Whether the control has focus. */
-    @property({type: Boolean, reflect: true}) focused = false;
 
     /**
      * Held until the host is connected with its control, since a `<select>`
@@ -93,7 +89,7 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
 
     #setValueKeepingCaret(control: NativeControl, value: string): void {
       if (
-        this.focused &&
+        control.matches(':focus') &&
         !(control instanceof HTMLSelectElement) &&
         control.selectionStart !== null
       ) {
@@ -165,7 +161,8 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
         return;
       }
 
-      this.focused = true;
+      // Styles keyed to keyboard focus on a slotted control can't read its
+      // :focus-visible from the shadow root.
       this.toggleAttribute(
         'focused-visible',
         this._inputNode.matches(':focus-visible')
@@ -177,7 +174,6 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
         return;
       }
 
-      this.focused = false;
       this.removeAttribute('focused-visible');
     };
 

@@ -156,9 +156,9 @@ describe('semantics', () => {
 
   it.each([false, true])(
     'names each option group after its label and exposes its options in it (multiple choice: %s)',
-    async (multipleChoice) => {
+    async (multiple) => {
       const {input} = await fixture((c) => {
-        c.multipleChoice = multipleChoice;
+        c.multiple = multiple;
         c.options = grouped;
       });
 
@@ -196,8 +196,8 @@ describe('semantics', () => {
       .not.toBeInTheDocument();
   });
 
-  it('marks its listbox multiselectable in multiple-choice mode', async () => {
-    const {listbox} = await fixture((c) => (c.multipleChoice = true));
+  it('marks its listbox multiselectable in multiple mode', async () => {
+    const {listbox} = await fixture((c) => (c.multiple = true));
 
     expect(listbox).toHaveAttribute('aria-multiselectable', 'true');
   });
@@ -340,16 +340,14 @@ describe('keyboard and focus', () => {
 
   it.each([false, true])(
     'returns focus to the textbox after an option is picked with a pointer (multiple choice: %s)',
-    async (multipleChoice) => {
-      const {control, input} = await fixture(
-        (c) => (c.multipleChoice = multipleChoice)
-      );
+    async (multiple) => {
+      const {control, input} = await fixture((c) => (c.multiple = multiple));
 
       await open(input);
       await userEvent.click(option(control, 'Cherry'));
       await settle();
 
-      expect(control.value).toEqual(multipleChoice ? ['cherry'] : 'cherry');
+      expect(control.value).toEqual(multiple ? ['cherry'] : 'cherry');
       expect(document.activeElement).toBe(input);
     }
   );
@@ -357,10 +355,10 @@ describe('keyboard and focus', () => {
   describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     it.each([false, true])(
       'shows a 3:1 focus ring around the field when focused from the keyboard (multiple choice: %s)',
-      async (multipleChoice) => {
+      async (multiple) => {
         const {control, input, surface, background} = await fixture((c) => {
-          c.multipleChoice = multipleChoice;
-          if (multipleChoice) {
+          c.multiple = multiple;
+          if (multiple) {
             c.value = ['apple', 'cherry'];
           }
         }, theme);
@@ -370,7 +368,7 @@ describe('keyboard and focus', () => {
         await settle();
         expect(document.activeElement).toBe(input);
 
-        const ringed = multipleChoice
+        const ringed = multiple
           ? control.shadowRoot!.querySelector<HTMLElement>(
               '.input-group__input'
             )!
@@ -393,7 +391,7 @@ describe('keyboard and focus', () => {
 
     it('shows a 3:1 focus ring on a token focused from the keyboard', async () => {
       const {control, surface, background} = await fixture((c) => {
-        c.multipleChoice = true;
+        c.multiple = true;
         c.value = ['apple', 'cherry'];
       }, theme);
       const token = control.querySelector('craft-combobox-token')!;
@@ -433,10 +431,10 @@ describe('announcements', () => {
 
   it.each([false, true])(
     'announces how many options there are when the list opens (multiple choice: %s)',
-    async (multipleChoice) => {
+    async (multiple) => {
       const {control, input} = await fixture((c) => {
-        c.multipleChoice = multipleChoice;
-        if (multipleChoice) {
+        c.multiple = multiple;
+        if (multiple) {
           c.value = ['apple'];
         }
       });
@@ -445,7 +443,7 @@ describe('announcements', () => {
 
       await vi.waitFor(() =>
         expect(liveRegion(control).textContent?.trim()).toBe(
-          multipleChoice ? '3 results' : '4 results'
+          multiple ? '3 results' : '4 results'
         )
       );
     }
@@ -490,7 +488,7 @@ describe('announcements', () => {
   ])('announces which values were removed with %s', async (how, message) => {
     document.documentElement.lang = 'en';
     const {control, input} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.clearable = true;
       c.value = ['apple', 'cherry'];
     });
@@ -516,7 +514,7 @@ describe('announcements', () => {
 
   it('announces the count again once typing follows a removal', async () => {
     const {control, input} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['apple', 'cherry'];
     });
 
@@ -532,7 +530,7 @@ describe('announcements', () => {
 
   it('announces the count once typing follows a removal, even when typing leaves it unchanged', async () => {
     const {control, input} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['cherry', 'apple'];
     });
 
@@ -549,7 +547,7 @@ describe('announcements', () => {
 
   it('announces the count when the list opens after the control is moved mid-removal', async () => {
     const {control, surface, input} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['cherry', 'apple'];
     });
 
@@ -591,7 +589,7 @@ describe('announcements', () => {
 describe('multiple choice', () => {
   it('lists the selected values, in the order they were chosen', async () => {
     await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['cherry', 'apple'];
     });
     const items = page.getByRole('list').getByRole('listitem');
@@ -603,7 +601,7 @@ describe('multiple choice', () => {
 
   it('names the combobox by the label and then the selected values, leaving out “Remove”', async () => {
     const {input, combobox} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['apple', 'cherry'];
     });
 
@@ -616,7 +614,7 @@ describe('multiple choice', () => {
 
   it('names the textbox by a wrapping field’s label and then its selected values', async () => {
     const {control, input} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['apple'];
     });
     control.removeAttribute('aria-labelledby');
@@ -633,7 +631,7 @@ describe('multiple choice', () => {
 
   it('renames the textbox as values are added and removed', async () => {
     const {input} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
     });
 
     await expect.element(input).toHaveAccessibleName('Fruit');
@@ -646,7 +644,7 @@ describe('multiple choice', () => {
 
   it('announces each value as it’s added, through a polite list that’s there before anything is chosen', async () => {
     const {control} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
     });
     const list = control.querySelector('ul')!;
 
@@ -665,7 +663,7 @@ describe('multiple choice', () => {
     'focuses the textbox after a token is removed with %s',
     async (how) => {
       const {control, input} = await fixture((c) => {
-        c.multipleChoice = true;
+        c.multiple = true;
         c.value = ['apple', 'cherry'];
       });
 
@@ -701,7 +699,7 @@ describe('pointer', () => {
 
   it('makes each token’s remove button at least 24 by 24 pixels, or leaves room for one', async () => {
     const {control} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['apple', 'cherry'];
     });
     const buttons = [...control.querySelectorAll('craft-combobox-token')].map(
@@ -731,12 +729,12 @@ describe('visual', () => {
   describe.each(['light', 'dark'])('in the %s theme', (theme) => {
     it.each([false, true])(
       'draws the textbox and popup borders at 3:1, and the footer text at 4.5:1 inside the popup (multiple choice: %s)',
-      async (multipleChoice) => {
+      async (multiple) => {
         const {control, input, background} = await fixture((c) => {
-          c.multipleChoice = multipleChoice;
+          c.multiple = multiple;
           c.limit = 2;
         }, theme);
-        const border = multipleChoice
+        const border = multiple
           ? control.shadowRoot!.querySelector('.input-group__input')!
           : input.closest('.form-control')!;
         await open(input);
@@ -794,7 +792,7 @@ describe('visual', () => {
     await cdp().send('Emulation.setEmulatedMedia', {
       features: [{name: 'forced-colors', value: 'active'}],
     });
-    const {control, input} = await fixture((c) => (c.multipleChoice = true));
+    const {control, input} = await fixture((c) => (c.multiple = true));
     await open(input);
 
     for (const element of [
@@ -808,9 +806,9 @@ describe('visual', () => {
     }
   });
 
-  it('draws one focus ring, around the field, when the multiple-choice textbox is focused', async () => {
+  it('draws one focus ring, around the field, when the multiple textbox is focused', async () => {
     const {control, input, surface} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['apple'];
     });
 
@@ -831,7 +829,7 @@ describe('visual', () => {
 
   it('rings only the token, not the field, when a token is focused', async () => {
     const {control, surface} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['apple'];
     });
 
@@ -854,7 +852,7 @@ describe('visual', () => {
       features: [{name: 'forced-colors', value: 'active'}],
     });
     const {control, surface, background} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.value = ['apple'];
     });
     const token = control.querySelector('craft-combobox-token')!;
@@ -929,7 +927,7 @@ describe('visual', () => {
     const long =
       'Supercalifragilistic option label that is far too long for a phone';
     const {control, input} = await fixture((c) => {
-      c.multipleChoice = true;
+      c.multiple = true;
       c.options = [...fruit, {label: long, value: 'long'}];
       c.value = ['long', 'apple'];
     });

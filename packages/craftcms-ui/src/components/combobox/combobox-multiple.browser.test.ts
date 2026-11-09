@@ -9,7 +9,7 @@ beforeEach(() => {
 
 async function fixture(configure: (control: CraftCombobox) => void = () => {}) {
   const control = document.createElement('craft-combobox');
-  control.multipleChoice = true;
+  control.multiple = true;
   control.requireOptionMatch = false;
   control.name = 'values';
   configure(control);
@@ -120,7 +120,7 @@ it('respects a disabled fieldset on initial connection and when toggled', async 
   form.append(fieldset);
   document.body.append(form);
   const control = document.createElement('craft-combobox');
-  control.multipleChoice = true;
+  control.multiple = true;
   control.requireOptionMatch = false;
   control.name = 'values';
   control.value = ['a'];
@@ -224,7 +224,7 @@ it('keeps saved values when the options are replaced', async () => {
 
 it('reads saved values from server-rendered attributes', async () => {
   document.body.innerHTML =
-    '<craft-combobox multiple-choice name="values" value=\'["a","b"]\' options=\'[{"value":"a","label":"Alpha"}]\'></craft-combobox>';
+    '<craft-combobox multiple name="values" value=\'["a","b"]\' options=\'[{"value":"a","label":"Alpha"}]\'></craft-combobox>';
   const control = document.querySelector('craft-combobox')!;
   await control.updateComplete;
   await new Promise((resolve) => setTimeout(resolve));

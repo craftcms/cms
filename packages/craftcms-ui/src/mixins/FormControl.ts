@@ -90,7 +90,7 @@ export const formControlStyles = css`
   :host(:disabled) .form-field__label ::slotted(*),
   :host(:disabled) .form-field__help-text ::slotted(*),
   :host(:disabled) .input-group ::slotted([slot='input']) {
-    color: var(--disabled-text-color, #767676);
+    color: var(--c-status-disabled-text);
   }
 
   :host([label-sr-only]) .form-field__label {

@@ -52,7 +52,7 @@ combobox.addEventListener('change', () => save(combobox.value));
 
 `input` fires on every alteration, typed or selected. Selecting an option makes it an `InputEvent` whose `inputType` is `insertReplacementText`, as picking a suggestion does on a native input, so a listener can tell a selection from typing. `change` fires when the value is committed — an option is chosen, or the field is left after typing. Both are dispatched from the component, so `event.target` is the combobox rather than the textbox inside it. Setting `value` from code fires neither, as on a native control.
 
-`value` is a string, or an array of strings with `multiple-choice`.
+`value` is a string, or an array of strings with `multiple`.
 
 ## In PHP
 

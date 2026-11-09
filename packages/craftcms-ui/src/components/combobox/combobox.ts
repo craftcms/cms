@@ -33,13 +33,13 @@ export interface ComboboxOptionData {
   hint?: string;
   /**
    * Renders a `craft-indicator` before the label, and on the option's
-   * `multiple-choice` token. `fill` takes what the component's own does: a
+   * `multiple` token. `fill` takes what the component's own does: a
    * status variant, a palette swatch, or any color.
    */
   indicator?: {fill?: string; appearance?: string} & Record<string, unknown>;
   /**
    * Name of a `craft-icon` rendered before the label, and while this option is
-   * selected, in the textbox or on its `multiple-choice` token.
+   * selected, in the textbox or on its `multiple` token.
    */
   icon?: string;
   /** The icon's color: a status variant, a palette swatch, or any color. */
@@ -135,7 +135,7 @@ interface EntryRun {
  * @slot feedback - Validation feedback.
  *
  * @attr {string} value - The initial value. A JSON array of values when
- *   `multiple-choice` is set, otherwise the value itself.
+ *   `multiple` is set, otherwise the value itself.
  *
  * @fires input - Emitted on every alteration to the value, typed or selected.
  *   Selecting an option makes it an `InputEvent` whose `inputType` is
@@ -167,8 +167,8 @@ export default class CraftCombobox extends FormControl(LitElement) {
    * Whether more than one option may be selected. Each selected value posts
    * as `name[]`.
    */
-  @property({type: Boolean, attribute: 'multiple-choice', reflect: true})
-  multipleChoice = false;
+  @property({type: Boolean, attribute: 'multiple', reflect: true})
+  multiple = false;
 
   /** Whether the value has to be one of the options, rather than free text. */
   @property({type: Boolean, attribute: 'require-option-match'})
@@ -200,18 +200,15 @@ export default class CraftCombobox extends FormControl(LitElement) {
   @property({type: Boolean, reflect: true, attribute: 'show-selected-hint'})
   showSelectedHint = false;
 
-  /** Whether the textbox has focus. */
-  @property({type: Boolean, reflect: true}) focused = false;
-
   #value: unknown = '';
 
   /**
    * The selected value: an option's value or free text, or with
-   * `multiple-choice`, a list of them.
+   * `multiple`, a list of them.
    */
   @property({attribute: 'value'})
   get value(): ComboboxValue {
-    return this.multipleChoice
+    return this.multiple
       ? toList(this.#value)
       : Array.isArray(this.#value)
         ? String(this.#value[0] ?? '')
@@ -271,7 +268,6 @@ export default class CraftCombobox extends FormControl(LitElement) {
       this.#internals = this.attachInternals();
     }
 
-    this.addEventListener('focusin', this.#onFocusIn);
     this.addEventListener('focusout', this.#onFocusOut);
   }
 
@@ -369,7 +365,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
   protected override willUpdate(changed: PropertyValues) {
     super.willUpdate(changed);
 
-    if (changed.has('multipleChoice')) {
+    if (changed.has('multiple')) {
       this.#value = this.value;
     }
   }
@@ -390,7 +386,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       changed.has('open') ||
       changed.has('value') ||
       changed.has('showSelectedHint') ||
-      changed.has('multipleChoice')
+      changed.has('multiple')
     ) {
       this.#renderOptions();
     }
@@ -402,7 +398,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       this.#syncTextbox();
     }
 
-    if (this.multipleChoice) {
+    if (this.multiple) {
       this.#syncSelection();
     } else {
       this.#selection?.remove();
@@ -427,7 +423,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       }
     }
 
-    if (this.multipleChoice) {
+    if (this.multiple) {
       listbox?.setAttribute('aria-multiselectable', 'true');
     } else {
       listbox?.removeAttribute('aria-multiselectable');
@@ -449,7 +445,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
   /**
    * Names the textbox and listbox. An `aria-labelledby` on the host names a
    * label the consumer renders itself — a table column heading, say — and
-   * takes the place of the label slot. In multiple-choice mode the textbox
+   * takes the place of the label slot. In multiple mode the textbox
    * is named by its label and then the selected values, so focusing it says
    * what's already chosen.
    */
@@ -548,17 +544,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
     }
   };
 
-  #onFocusIn = (event: FocusEvent): void => {
-    if (event.target === this._inputNode) {
-      this.focused = true;
-    }
-  };
-
   #onFocusOut = (event: FocusEvent): void => {
-    if (event.target === this._inputNode) {
-      this.focused = false;
-    }
-
     if (
       event.relatedTarget instanceof Node &&
       (this.contains(event.relatedTarget) ||
@@ -567,7 +553,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       return;
     }
 
-    if (this.multipleChoice && !this.requireOptionMatch) {
+    if (this.multiple && !this.requireOptionMatch) {
       this.#commitQuery();
     }
 
@@ -588,7 +574,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
     this.#filtering = true;
     this.#editing = true;
 
-    if (!this.multipleChoice && !this.requireOptionMatch) {
+    if (!this.multiple && !this.requireOptionMatch) {
       this.#setValue(this.#parse(query));
     }
 
@@ -604,7 +590,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
         previous[0]!.toLowerCase() !== query[0]!.toLowerCase());
 
     this.#setActive(
-      !this.multipleChoice && adding && query !== ''
+      !this.multiple && adding && query !== ''
         ? this.#options().find((option) => !option.disabled)
         : undefined
     );
@@ -645,7 +631,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
   #syncTextbox(): void {
     const input = this._inputNode;
 
-    if (!input || this.multipleChoice) {
+    if (!input || this.multiple) {
       return;
     }
 
@@ -686,7 +672,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
         break;
       case 'Backspace':
         if (
-          this.multipleChoice &&
+          this.multiple &&
           !this.#inactive &&
           (this._inputNode?.value ?? '') === ''
         ) {
@@ -734,7 +720,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       return;
     }
 
-    if (this.multipleChoice) {
+    if (this.multiple) {
       if (option) {
         if (!option.disabled) {
           this.#pick(option);
@@ -768,7 +754,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
     this.#pick(option);
     this._inputNode?.focus();
 
-    if (!this.multipleChoice) {
+    if (!this.multiple) {
       this.open = false;
     }
   };
@@ -777,7 +763,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
   #pick(option: CraftOption): void {
     const value = option.value;
 
-    if (this.multipleChoice) {
+    if (this.multiple) {
       const values = this.value as string[];
       if (!values.includes(value)) {
         this.#changeValues([...values, value], {
@@ -801,7 +787,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
   #commit(): void {
     this.#editing = false;
 
-    if (this.multipleChoice || sameValue(this.value, this.#committedValue)) {
+    if (this.multiple || sameValue(this.value, this.#committedValue)) {
       return;
     }
 
@@ -873,7 +859,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
   }
 
   #clear = (): void => {
-    if (this.multipleChoice) {
+    if (this.multiple) {
       this.#changeValues([]);
       return;
     }
@@ -977,7 +963,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
     }
 
     const query = this.#filtering ? (this._inputNode?.value ?? '') : '';
-    const selected = this.multipleChoice ? (this.value as string[]) : [];
+    const selected = this.multiple ? (this.value as string[]) : [];
     const matched = this.#matchedOptions(query).filter(
       (entry) => !selected.includes(entry.option.value)
     );
@@ -1001,7 +987,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       });
     }
 
-    const current = this.multipleChoice ? null : (this.value as string);
+    const current = this.multiple ? null : (this.value as string);
     const optionsTemplate = (run: EntryRun) =>
       repeat(
         run.entries,
@@ -1260,7 +1246,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
    * half-typed query never shows a stale option's icon.
    */
   #selectedOption(): ComboboxOption | undefined {
-    return this.multipleChoice || !this.#hasValue()
+    return this.multiple || !this.#hasValue()
       ? undefined
       : this.#option(this.value as string);
   }
@@ -1338,7 +1324,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
     this.#internals?.setFormValue?.(null);
     this.#syncInputs();
 
-    if (this.multipleChoice) {
+    if (this.multiple) {
       const missing =
         this.required &&
         !this.disabled &&

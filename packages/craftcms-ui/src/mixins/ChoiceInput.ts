@@ -25,7 +25,6 @@ export declare class ChoiceInputInterface extends FormControlInterface {
   name: string;
   required: boolean;
   invalid: boolean;
-  focused: boolean;
   get _inputNode(): ChoiceControlElement | undefined;
   protected get _defaultValue(): string;
   protected _pushToControl(changed: PropertyValues): void;
@@ -125,9 +124,6 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
 
     /** Marks the choice as invalid: sets `aria-invalid` on the control. */
     @property({type: Boolean, reflect: true}) invalid = false;
-
-    /** Whether the control has focus. */
-    @property({type: Boolean, reflect: true}) focused = false;
 
     /** A `checked` given before the control exists. */
     #pendingChecked?: boolean;
@@ -293,7 +289,8 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
         return;
       }
 
-      this.focused = true;
+      // Styles keyed to keyboard focus on a slotted control can't read its
+      // :focus-visible from the shadow root.
       this.toggleAttribute(
         'focused-visible',
         control.matches(':focus-visible')
@@ -305,7 +302,6 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
         return;
       }
 
-      this.focused = false;
       this.removeAttribute('focused-visible');
     };
 

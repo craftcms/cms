@@ -88,7 +88,7 @@ export default css`
     padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }
 
-  :host([multiple-choice]) .input-group__input {
+  :host([multiple]) .input-group__input {
     ${baseFormControlStyles}
     display: flex;
     flex-wrap: wrap;
@@ -97,20 +97,20 @@ export default css`
     padding: var(--c-spacing-xs);
   }
 
-  :host([multiple-choice][focused]) .input-group__input {
+  :host([multiple]) .input-group__input:has(.combobox__textbox:focus-within) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
   }
 
   /* The textbox is the .form-control here, so it carries the ring itself */
-  :host(:not([multiple-choice])) ::slotted(.form-control:focus-within) {
+  :host(:not([multiple])) ::slotted(.form-control:focus-within) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
   }
 
-  :host([multiple-choice][invalid]) .input-group__input {
+  :host([multiple][invalid]) .input-group__input {
     border-color: var(--c-color-danger-border-loud);
   }
 
@@ -120,11 +120,11 @@ export default css`
     min-width: 0;
   }
 
-  :host([multiple-choice]) .combobox__textbox {
+  :host([multiple]) .combobox__textbox {
     min-width: 8rem;
   }
 
-  :host([multiple-choice]) ::slotted(.form-control) {
+  :host([multiple]) ::slotted(.form-control) {
     height: calc(
       var(--c-input-height, var(--c-size-control-md)) - 2 *
         (var(--c-spacing-xs) + var(--_input-border-width))

@@ -91,7 +91,7 @@
     .readOnly="control.mode === 'readOnly'"
     .disabled="control.mode === 'disabled'"
     .invalid="invalid"
-    .multipleChoice="control.props.multiple ?? false"
+    .multiple="control.props.multiple ?? false"
     .value="modelValue"
     @input="onInput"
     @change="

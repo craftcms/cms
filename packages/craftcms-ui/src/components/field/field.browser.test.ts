@@ -75,7 +75,7 @@ it('describes a control after the main one by its instructions and errors, keepi
 it.each([false, true])(
   'labels a nested combobox and its listbox once (multiple: %s)',
   async (multiple) => {
-    document.body.innerHTML = `<craft-field label="Entry Type" label-sr-only><craft-combobox slot="input" ${multiple ? 'multiple-choice' : ''} options='[{"label":"Alpha","value":"a"}]'></craft-combobox></craft-field>`;
+    document.body.innerHTML = `<craft-field label="Entry Type" label-sr-only><craft-combobox slot="input" ${multiple ? 'multiple' : ''} options='[{"label":"Alpha","value":"a"}]'></craft-combobox></craft-field>`;
     const field = document.querySelector('craft-field')!;
     const combobox = document.querySelector('craft-combobox')!;
     await field.updateComplete;
