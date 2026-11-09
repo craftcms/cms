@@ -139,6 +139,40 @@ it('can update an existing entry', function () {
     expect($entry->title)->toBe('Updated Title');
 });
 
+it('validates all stored authors when no author params are posted', function () {
+    $this->section->update(['maxAuthors' => 3]);
+    Sections::refreshSections();
+    $authorIds = User::factory()->count(3)->create()->pluck('id')->all();
+    $entry = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->createElement();
+    $entry->setAuthorIds($authorIds);
+    Elements::saveElement($entry);
+
+    $this->section->update(['maxAuthors' => 2]);
+    Sections::refreshSections();
+
+    postJson(action(StoreEntryController::class), [
+        'entryId' => $entry->id,
+    ])->assertBadRequest()->assertJsonPath('errors.authorIds.0', 'Up to 2 authors are allowed.');
+
+    expect(Entry::find()->id($entry->id)->status(null)->one()->getAuthorIds())->toBe($authorIds);
+});
+
+it('saves posted authorIds in order', function () {
+    $this->section->update(['maxAuthors' => 3]);
+    Sections::refreshSections();
+    $entry = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->createElement();
+    $entry->setAuthorIds([$this->user->id]);
+    Elements::saveElement($entry);
+    [$first, $second] = User::factory()->count(2)->admin()->create()->pluck('id')->all();
+
+    postJson(action(StoreEntryController::class), [
+        'entryId' => $entry->id,
+        'authorIds' => [$second, $first],
+    ])->assertOk();
+
+    expect(Entry::find()->id($entry->id)->status(null)->one()->getAuthorIds())->toBe([$second, $first]);
+});
+
 it('saves canonical workflow changes as a draft', function () {
     $workflow = Workflow::query()->create([
         'name' => 'Editorial workflow',
