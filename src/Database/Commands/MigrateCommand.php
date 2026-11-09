@@ -157,7 +157,7 @@ class MigrateCommand extends Command implements Isolatable
 
         $message = match (true) {
             (bool) $this->option('track') => "Checking for pending {$this->option('track')} migrations",
-            (bool) $this->option('noContent') => 'Checking for pending Craft and plugin migrations',
+            $this->excludesContent() => 'Checking for pending Craft and plugin migrations',
             default => 'Checking for pending migrations',
         };
 
@@ -202,7 +202,7 @@ class MigrateCommand extends Command implements Isolatable
 
         $this->call(DownCommand::class);
 
-        $noBackup = $this->option('no-backup') ?? $this->option('noBackup');
+        $noBackup = $this->option('no-backup') || $this->option('noBackup');
         if (! $noBackup && ! $this->option('pretend') && ! $this->backup()) {
             $this->call(UpCommand::class);
 
@@ -252,8 +252,7 @@ class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        $noContent = $this->option('no-content') ?? $this->option('noContent');
-        if (! $noContent && (! $this->option('track') || $this->option('track') === 'content')) {
+        if (! $this->excludesContent() && (! $this->option('track') || $this->option('track') === 'content')) {
             $contentMigrations = $this->getMigrator('content')->getPendingMigrations();
             if (! empty($contentMigrations)) {
                 $migrationsByTrack['content'] = $contentMigrations;
@@ -285,6 +284,11 @@ class MigrateCommand extends Command implements Isolatable
                 $migrationsByTrack[$track] = $migrations;
             }
         }
+    }
+
+    private function excludesContent(): bool
+    {
+        return $this->option('no-content') || $this->option('noContent');
     }
 
     /**

@@ -778,7 +778,9 @@
 
 ### Bug Fixes
 - Fixed a bug where behaviors that plugins attach to `craft\web\twig\variables\CraftVariable`, such as Shopify’s `craft.shopifyProducts()`, weren’t available from the `craft` Twig variable, and couldn’t reach its methods and properties, such as `entries()`, through their owner, with the Yii adapter installed. ([#20537](https://github.com/craftcms/cms/pull/20537))
+- Fixed a bug where `craft:up` listed pending content migrations alongside Craft and plugin migrations, and backed up the database despite `--noBackup`, because `craft:migrate:all` ignored its deprecated `--noContent` and `--noBackup` options. ([#20538](https://github.com/craftcms/cms/pull/20538))
 - Fixed a bug where field layout forms created through the Yii adapter, such as with `craft\models\FieldLayout::createForm()`, didn’t show the element’s validation errors, including nested Matrix entries’ errors. ([#20518](https://github.com/craftcms/cms/pull/20518))
+- Fixed a bug where nested entries couldn’t be copied, so “Copy all entries” did nothing on Matrix fields in cards view. ([#20517](https://github.com/craftcms/cms/pull/20517))
 - Fixed a bug where custom field params were ignored on asset queries for subclasses of `Asset`, and on category and tag queries without a group, such as `craft\elements\Asset::find()->myField('value')` with the Yii adapter. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a validation error when saving Color fields created with `presets` or `defaultColor`. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a bug where `{% paginate %}` and `@craftPaginate` ignored queries’ `limit()` param, showing 15 results per page, and requests for a page past the last one showed no results. Queries’ `limit()` param sets the page size again, defaulting to 100, and out-of-range pages show the last page. ([#20511](https://github.com/craftcms/cms/pull/20511))
