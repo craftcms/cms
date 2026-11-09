@@ -93,25 +93,45 @@
   );
 
   // Cards saved in another tab are redrawn by their owner, once for all the
-  // cards saved together. Changes made here refresh it where they happen, as
-  // does an operation that's under way.
+  // cards saved together. Changes made here refresh it where they happen. One
+  // saved during an operation here is redrawn once the operation is done,
+  // since its refresh may have been sent before the save.
   let refreshQueued = false;
+  let changedDuringOperation = false;
+
+  function refreshForChangesElsewhere(): void {
+    if (!owner?.refresh || refreshQueued) {
+      return;
+    }
+    refreshQueued = true;
+    queueMicrotask(() => {
+      refreshQueued = false;
+      owner.refresh?.({changedElsewhere: true}).catch(() => {});
+    });
+  }
+
   tryOnScopeDispose(
     onElementChanged((id) => {
       const shown =
         id === null
           ? cards.value.length > 0
           : cards.value.some((card) => card.id === id);
-      if (!shown || !owner?.refresh || refreshQueued || operations.busy.value) {
+      if (!shown) {
         return;
       }
-      refreshQueued = true;
-      queueMicrotask(() => {
-        refreshQueued = false;
-        owner.refresh?.({changedElsewhere: true}).catch(() => {});
-      });
+      if (operations.busy.value) {
+        changedDuringOperation = true;
+        return;
+      }
+      refreshForChangesElsewhere();
     })
   );
+  watch(operations.busy, (busy) => {
+    if (!busy && changedDuringOperation) {
+      changedDuringOperation = false;
+      refreshForChangesElsewhere();
+    }
+  });
 
   useEventListener(window, 'craft:nested-validation', (event: Event) => {
     if (

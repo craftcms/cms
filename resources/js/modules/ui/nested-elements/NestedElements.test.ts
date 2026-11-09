@@ -181,6 +181,30 @@ describe('NestedElements', () => {
     expect(refresh).toHaveBeenCalledWith({changedElsewhere: true});
   });
 
+  it('redraws its cards after an operation when one is saved in another tab meanwhile', async () => {
+    window.confirm = vi.fn().mockReturnValue(true);
+    let finishRefresh!: () => void;
+    const refresh = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finishRefresh = resolve;
+        })
+    );
+    mount(refresh);
+    await nextTick();
+
+    action('Delete address')!.click();
+    await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
+    broadcaster.dispatchEvent(
+      new MessageEvent('message', {data: {event: 'saveElement', id: 14}})
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    finishRefresh();
+
+    await vi.waitFor(() => expect(refresh).toHaveBeenCalledTimes(2));
+    expect(refresh).toHaveBeenLastCalledWith({changedElsewhere: true});
+  });
+
   it('creates nested elements for a saved owner and edits them in a slideout', async () => {
     request.post.mockResolvedValue({
       data: {element: {id: 92, siteId: 1, draftId: 44}},
