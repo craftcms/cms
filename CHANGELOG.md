@@ -767,6 +767,8 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where custom field params were ignored on asset queries for subclasses of `Asset`, and on category and tag queries without a group, such as `craft\elements\Asset::find()->myField('value')` with the Yii adapter. ([#20513](https://github.com/craftcms/cms/pull/20513))
+- Fixed a validation error when saving Color fields created with `presets` or `defaultColor`. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a bug where `{% paginate %}` and `@craftPaginate` ignored queries’ `limit()` param, showing 15 results per page, and requests for a page past the last one showed no results. Queries’ `limit()` param sets the page size again, defaulting to 100, and out-of-range pages show the last page. ([#20511](https://github.com/craftcms/cms/pull/20511))
 - Fixed an error during application boot when the `aliases` general config setting contained a `null` path. Null paths now remove existing aliases. ([#20510](https://github.com/craftcms/cms/pull/20510))
 - Fixed a bug where field layout elements from plugins that only implement Craft 5’s `inputHtml()` or `formHtml()`, such as Shopify’s Variants, Options, Media, and Metafields elements, weren’t shown in element edit screens, with the Yii adapter installed. ([#20508](https://github.com/craftcms/cms/pull/20508))
