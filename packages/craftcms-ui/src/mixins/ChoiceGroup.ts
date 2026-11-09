@@ -67,13 +67,14 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
     }
 
     /**
-     * The values of the choices that are on: an array in a group where any
-     * number can be, and a string, empty when none is, where one can be.
+     * The values of the choices that are on, disabled or not: an array in a
+     * group where any number can be, and a string, empty when none is, where
+     * one can be.
      */
     @property({attribute: false})
     get value(): string | string[] {
       const values = this.choices
-        .filter((option) => option.checked && !option.disabled)
+        .filter((option) => option.checked)
         .map((option) => option.value);
 
       return multiple ? values : (values[0] ?? '');

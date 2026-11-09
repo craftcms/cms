@@ -150,6 +150,17 @@ describe('semantics', () => {
     expect(element.getAttribute('aria-invalid')).toBe('true');
   });
 
+  it('reports a checked option that is disabled as its value', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace(
+        'value="green" checked',
+        'value="green" checked disabled'
+      )
+    );
+
+    expect(element.value).toBe('green');
+  });
+
   it('disables every option', async () => {
     const element = await createFromMarkup(SSR_MARKUP);
     element.disabled = true;

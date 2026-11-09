@@ -124,4 +124,23 @@ describe('value', () => {
 
     expect(seen).toEqual([['image', 'video']]);
   });
+
+  it('keeps a checked, disabled option in the value', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace(
+        'value="image" checked',
+        'value="image" checked disabled'
+      )
+    );
+    const seen: string[][] = [];
+    element.addEventListener('change', () => seen.push(element.value));
+
+    element.querySelectorAll('input')[1]!.click();
+    element.value = seen[0]!;
+
+    expect(seen).toEqual([['image', 'video']]);
+    expect(
+      [...element.querySelectorAll('input')].map((input) => input.checked)
+    ).toEqual([true, true]);
+  });
 });
