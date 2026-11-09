@@ -424,6 +424,7 @@
 - Links are no longer underlined until they’re hovered, unless the “Underline links” accessibility preference is enabled, in which case they’re underlined until hovered. ([#19905](https://github.com/craftcms/cms/pull/19905))
 - The “License purchase required” screen is now shown in a centered pane, like other message pages.
 - The Plugin Store is now part of the control panel rather than a standalone app, with the store’s categories in the secondary nav, plugin pages whose Overview, Reviews, Editions, and Changelog tabs each have their own URL, and a cart that opens in a dialog from the store’s toolbar.
+- Plugins in the Plugin Store whose latest compatible release requires or suggests `craftcms/yii2-adapter` now show a “Requires the Yii2 adapter” notice, and installing them also installs the adapter, unless `composer.json` already requires it.
 - Field labels and headings throughout the control panel now consistently use title case.
 - Popovers, such as element index View menus, now grow into the room below or above them, rather than stopping at 40% of the window’s height. ([#20124](https://github.com/craftcms/cms/pull/20124))
 - The control panel’s navigation and details panes now have thin scrollbars, and scrolling past their ends no longer scrolls the page. ([#20011](https://github.com/craftcms/cms/issues/20011))

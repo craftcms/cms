@@ -68,6 +68,7 @@ const context: PluginStoreContext = {
   canTestEditions: true,
   phpVersion: '8.4.0',
   composerPhpVersion: '8.2.0',
+  yii2AdapterRequired: false,
   allowUpdates: true,
   cmsLicenseKey: null,
   craftIdEndpoint: 'https://console.craftcms.com',

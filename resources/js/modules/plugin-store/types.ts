@@ -9,6 +9,8 @@ export interface PluginStoreContext {
   canTestEditions: boolean;
   phpVersion: string;
   composerPhpVersion: string | null;
+  /** Whether composer.json already requires `craftcms/yii2-adapter`, so installs leave its constraint alone. */
+  yii2AdapterRequired: boolean;
   allowUpdates: boolean;
   cmsLicenseKey: string | null;
   craftIdEndpoint: string;
@@ -74,6 +76,8 @@ export interface Plugin extends PluginSummary {
   repository: string;
   version: string;
   latestCompatibleVersion: string | null;
+  /** Whether the latest compatible release requires or suggests `craftcms/yii2-adapter`. */
+  requiresYii2Adapter?: boolean;
   phpVersionCompatible: boolean;
   incompatiblePhpVersion: 'php' | 'composer' | null;
   phpConstraint: string | null;

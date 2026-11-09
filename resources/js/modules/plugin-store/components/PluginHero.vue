@@ -176,6 +176,9 @@
             :plugin="plugin"
           />
         </div>
+        <craft-callout v-if="plugin.requiresYii2Adapter" variant="warning">
+          {{ t('Requires the Yii2 adapter') }}
+        </craft-callout>
       </div>
     </div>
   </section>
