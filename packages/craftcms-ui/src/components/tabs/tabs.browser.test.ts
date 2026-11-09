@@ -136,6 +136,32 @@ it('moves focus with the selection', async () => {
   }
 });
 
+it('takes only the arrow keys along its own axis, leaving the others to the page', async () => {
+  const {element, tabs} = await strip();
+  const {userEvent} = await import('vite-plus/test/browser');
+  const spacer = document.createElement('div');
+  spacer.style.blockSize = '300vh';
+  document.body.append(spacer);
+  window.scrollTo(0, 0);
+
+  tabs[0]!.focus();
+  await userEvent.keyboard('{ArrowDown}');
+
+  await expect.poll(() => window.scrollY).toBeGreaterThan(0);
+  expect(element.selectedIndex).toBe(0);
+
+  element.setAttribute('placement', 'inline-start');
+  await element.updateComplete;
+  tabs[0]!.focus();
+  await userEvent.keyboard('{ArrowDown}');
+
+  await expect.poll(() => element.selectedIndex).toBe(1);
+  expect(document.activeElement).toBe(tabs[1]);
+
+  await userEvent.keyboard('{ArrowRight}');
+  expect(element.selectedIndex).toBe(1);
+});
+
 it('tabs from the selected tab into its panel and back', async () => {
   const {element, tabs, slottedPanels} = await strip();
   const {userEvent} = await import('vite-plus/test/browser');

@@ -58,15 +58,14 @@ const INLINE_PLACEMENTS: readonly TabsPlacementValue[] = [
   TabsPlacement.InlineEnd,
 ];
 
-/** Keys that move the selection along the strip. */
-const NAVIGATION_KEYS = new Set([
-  'ArrowLeft',
-  'ArrowRight',
-  'ArrowUp',
-  'ArrowDown',
-  'Home',
-  'End',
-]);
+/**
+ * Keys that move the selection along the strip, by the axis it runs along. The
+ * arrows across it are left to the page.
+ */
+const NAVIGATION_KEYS = {
+  horizontal: new Set(['ArrowLeft', 'ArrowRight', 'Home', 'End']),
+  vertical: new Set(['ArrowUp', 'ArrowDown', 'Home', 'End']),
+};
 
 /**
  * Slack, in pixels, when deciding whether a tab fits. Sub-pixel layout rounding
@@ -308,6 +307,10 @@ export default class CraftTabs extends LitElement {
     return INLINE_PLACEMENTS.includes(this.placement);
   }
 
+  get #navigationKeys(): Set<string> {
+    return NAVIGATION_KEYS[this.#inline ? 'vertical' : 'horizontal'];
+  }
+
   /**
    * How large the strip is. Expressed as a font size on the strip and nothing
    * else: `<craft-tab>`'s padding is `em`-based and the overflow invoker's
@@ -489,18 +492,16 @@ export default class CraftTabs extends LitElement {
 
   /**
    * Moves a selection that points at no usable tab — `-1`, an index past the
-   * end, a disabled tab, or a tab that has since been removed — onto the first
-   * enabled one: a tab strip always has a tab selected. Returns whether it
-   * moved, which requests another update.
+   * end, a disabled tab, a slotted tab without a panel, or a tab that has since
+   * been removed — onto the first usable one: a tab strip always has a tab
+   * selected. Returns whether it moved, which requests another update.
    */
   #normalizeSelection(): boolean {
-    const selected = this.#tabs[this.selectedIndex];
-
-    if (this.selectedIndex >= 0 && selected && !selected.disabled) {
+    if (this.#usable(this.selectedIndex)) {
       return false;
     }
 
-    const first = this.#tabs.findIndex((tab) => !tab.disabled);
+    const first = this.#tabs.findIndex((_, index) => this.#usable(index));
 
     if (first < 0 || first === this.selectedIndex) {
       return false;
@@ -509,6 +510,19 @@ export default class CraftTabs extends LitElement {
     this.selectedIndex = first;
 
     return true;
+  }
+
+  /**
+   * Whether a tab can be selected: it exists, isn't disabled, and has a panel.
+   * A slotted tab past the last panel is left inert. An external tab's panel
+   * may not have been rendered yet, so it isn't required.
+   */
+  #usable(index: number): boolean {
+    const tab = this.#tabs[index];
+
+    return (
+      !!tab && !tab.disabled && (this.#external || index < this.panels.length)
+    );
   }
 
   /** Exactly one tab is in the tab order: the selected one. */
@@ -579,7 +593,7 @@ export default class CraftTabs extends LitElement {
       const onClick = () => this.#select(index, true);
       const onKeydown = (event: KeyboardEvent) => {
         // Claim the keys we navigate with before they scroll the page.
-        if (NAVIGATION_KEYS.has(event.key)) {
+        if (this.#navigationKeys.has(event.key)) {
           event.preventDefault();
         }
       };
@@ -848,7 +862,7 @@ export default class CraftTabs extends LitElement {
   #selectFromMenu(index: number) {
     const tab = this.#tabs[index];
 
-    if (!tab || tab.disabled) {
+    if (!tab || !this.#usable(index)) {
       return;
     }
 
@@ -880,7 +894,7 @@ export default class CraftTabs extends LitElement {
   #select(index: number, withFocus: boolean) {
     const tab = this.#tabs[index];
 
-    if (!tab || tab.disabled) {
+    if (!tab || !this.#usable(index)) {
       return;
     }
 
@@ -892,7 +906,7 @@ export default class CraftTabs extends LitElement {
   }
 
   #handleKeyup(event: KeyboardEvent) {
-    if (!NAVIGATION_KEYS.has(event.key)) {
+    if (!this.#navigationKeys.has(event.key)) {
       return;
     }
 
@@ -911,7 +925,7 @@ export default class CraftTabs extends LitElement {
   #nextIndex(key: string): number {
     const tabs = this.#tabs;
     const selectable = (index: number) =>
-      tabs[index] && !tabs[index].disabled && !tabs[index].hidden;
+      this.#usable(index) && !tabs[index]!.hidden;
 
     if (key === 'Home') {
       return tabs.findIndex((_, index) => selectable(index));

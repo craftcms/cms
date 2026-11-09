@@ -486,6 +486,38 @@ describe('slotted mode', () => {
     warn.mockRestore();
   });
 
+  it('keeps a tab without a panel out of the selection and the tab order', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const element = document.createElement('craft-tabs') as CraftTabs;
+    element.label = 'Tabs';
+    element.innerHTML = `
+      <craft-tab slot="tab">One</craft-tab>
+      <craft-tab slot="tab">Two</craft-tab>
+      <div slot="panel">One</div>
+    `;
+    document.body.append(element);
+    await element.updateComplete;
+    const {tabs, panels} = parts(element);
+
+    tabs[1]!.click();
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+
+    arrow(tabs[0]!, 'ArrowRight');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+
+    element.selectedIndex = 1;
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+    expect(panels[0]!.hasAttribute('selected')).toBe(true);
+    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
+      '0',
+      '-1',
+    ]);
+    warn.mockRestore();
+  });
+
   it('hides the unselected panels', () => {
     expect(rules().get(".tabs__panels ::slotted([slot='panel'])")).toContain(
       'display: none'
