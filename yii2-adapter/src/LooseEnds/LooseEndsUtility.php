@@ -39,8 +39,7 @@ class LooseEndsUtility extends Utility
     #[Override]
     public static function icon(): string
     {
-        // Font Awesome 7.1 added `hand-shaka`, and Craft’s icon kit is still on 6.
-        return dirname(__DIR__, 2) . '/resources/icons/hand-shaka.svg';
+        return 'hand-shaka';
     }
 
     #[Override]
