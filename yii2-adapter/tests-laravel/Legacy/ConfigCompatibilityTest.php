@@ -268,6 +268,12 @@ it('does not apply settings that an application type overlay replaces', function
     ]],
 ]);
 
+it('applies the middleware settings a callable application type overlay keeps from the general config', function(): void {
+    new GeneralConfigCompatibility()->convert(['trustedHosts' => ['10.0.0.1']], fn(GeneralConfig $config) => clone $config);
+
+    expect(proxiedClient())->toBe(['203.0.113.5', 'forwarded.test']);
+});
+
 it('trusts the proxies that trusted hosts list', function(array $trustedHosts, array $client): void {
     GeneralConfig::create()->trustedHosts($trustedHosts);
 

@@ -75,6 +75,11 @@ readonly class GeneralConfigCompatibility
         if ($overlay !== $object && $overlay instanceof GeneralConfig) {
             LegacyGeneralConfig::applySideEffects($overlayEffects);
 
+            // A config the overlay returns may be a clone that keeps the discarded config's middleware settings
+            if ($overlay instanceof LegacyGeneralConfig) {
+                $overlay->applyMiddlewareSettings();
+            }
+
             return $overlay;
         }
 

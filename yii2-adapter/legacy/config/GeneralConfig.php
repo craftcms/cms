@@ -1857,12 +1857,22 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
 
         // The parent can’t restore this private property on subclasses
         $config->middlewareSettings = $stateData['middlewareSettings'] ?? [];
-
-        foreach ($config->middlewareSettings as $setting => $value) {
-            $config->applyMiddlewareSetting($setting, $value);
-        }
+        $config->applyMiddlewareSettings();
 
         return $config;
+    }
+
+    /**
+     * Applies the middleware settings this config’s fluent methods applied again, including those applied before it
+     * was cloned.
+     *
+     * @internal
+     */
+    public function applyMiddlewareSettings(): void
+    {
+        foreach ($this->middlewareSettings as $setting => $value) {
+            $this->applyMiddlewareSetting($setting, $value);
+        }
     }
 
     /**
