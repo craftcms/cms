@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Vereist',
     'Requirements' => 'Vereisten',
     'Requires PHP {version}' => 'Vereist PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Inhoud van {name} opnieuw opslaan',
     'Resaving {type} entries' => 'Invoer van type {type} wordt opnieuw opgeslagen',
     'Resaving {type}' => '{type} opnieuw opslaan',
