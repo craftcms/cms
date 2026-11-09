@@ -98,6 +98,26 @@ describe('semantics', () => {
       [...element.querySelectorAll('input')].map((input) => input.disabled)
     ).toEqual([true, true, true]);
   });
+
+  it('leaves options disabled on their own disabled when it is re-enabled', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace('value="image" checked', 'value="image" disabled')
+    );
+    element.disabled = true;
+    await element.updateComplete;
+
+    const addedDisabled = document.createElement('craft-checkbox');
+    addedDisabled.disabled = true;
+    element.append(addedDisabled, document.createElement('craft-checkbox'));
+    await new Promise((resolve) => setTimeout(resolve));
+
+    element.disabled = false;
+    await element.updateComplete;
+
+    expect(
+      [...element.querySelectorAll('input')].map((input) => input.disabled)
+    ).toEqual([true, false, true, false]);
+  });
 });
 
 describe('value', () => {

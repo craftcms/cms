@@ -57,6 +57,9 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
 
     #known = new Set<Element>();
 
+    /** Choices the group disabled, which it enables again with itself. */
+    #disabledByGroup = new WeakSet<ChoiceInputInterface>();
+
     #observer = new MutationObserver(() => this.#refreshChoices());
 
     /** The choices in the group, leaving out those of a group nested in it. */
@@ -138,7 +141,11 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
 
       if (changed.has('disabled') && changed.get('disabled') !== undefined) {
         for (const option of this.choices) {
-          option.disabled = this.disabled;
+          if (this.disabled) {
+            this.#disable(option);
+          } else if (this.#disabledByGroup.delete(option)) {
+            option.disabled = false;
+          }
         }
       }
 
@@ -179,6 +186,13 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       }
     }
 
+    #disable(option: ChoiceInputInterface): void {
+      if (!option.disabled) {
+        option.disabled = true;
+        this.#disabledByGroup.add(option);
+      }
+    }
+
     #apply(options: ChoiceInputInterface[], values: string[]): void {
       let found = false;
 
@@ -208,7 +222,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
           option.name = this.name;
         }
         if (this.disabled) {
-          option.disabled = true;
+          this.#disable(option);
         }
       }
 
