@@ -14,6 +14,10 @@ export default css`
     border-radius: var(--c-radius-sm);
   }
 
+  :host([hidden]) {
+    display: none;
+  }
+
   /* LionOption fills a checked option; here the check mark marks it */
   :host([checked]) {
     background-color: transparent;
@@ -57,6 +61,10 @@ export default css`
     align-items: center;
     gap: var(--c-spacing-sm);
     min-width: 0;
+  }
+
+  ::slotted([slot='badge']) {
+    flex: none;
   }
 
   @media (forced-colors: active) {

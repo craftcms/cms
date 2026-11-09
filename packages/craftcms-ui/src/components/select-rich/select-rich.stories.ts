@@ -27,6 +27,7 @@ const select = (args: Record<string, unknown>, options: unknown) => html`
   <craft-select-rich
     name="${(args.name as string) ?? ''}"
     ?small="${args.small}"
+    ?searchable="${args.searchable}"
     ?disabled="${args.disabled}"
   >
     <label slot="label">${args['label-slot']}</label>
@@ -116,6 +117,35 @@ export const WithHints: Story = {
         >
         <craft-option .choiceValue="${'docs'}" hint="89 entries"
           >Documentation</craft-option
+        >
+      `
+    ),
+};
+
+/** `searchable` leads the open list with a field that filters the options, hints included. */
+export const Searchable: Story = {
+  args: {name: 'column', 'label-slot': 'Column', searchable: true},
+  render: (args) =>
+    select(
+      args,
+      html`
+        <craft-option .choiceValue="${'title'}" hint="My first post"
+          >Title</craft-option
+        >
+        <craft-option .choiceValue="${'slug'}" hint="my-first-post"
+          >Slug</craft-option
+        >
+        <craft-option .choiceValue="${'author'}" hint="Jane Doe"
+          >Author</craft-option
+        >
+        <craft-option .choiceValue="${'date'}" hint="2026-01-14"
+          >Post Date</craft-option
+        >
+        <craft-option .choiceValue="${'body'}" hint="<p>Hello…</p>"
+          >Body</craft-option
+        >
+        <craft-option .choiceValue="${'tags'}" hint="news, craft"
+          >Tags</craft-option
         >
       `
     ),

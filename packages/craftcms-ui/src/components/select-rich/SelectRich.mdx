@@ -23,6 +23,14 @@ The invoker sizes itself to its content rather than to a fixed width, so a contr
 
 `small` renders it at the smaller size.
 
+## Searching
+
+`searchable` leads the open list with a search field, for a select with more options than you'd want to scroll. It filters the options by their label and hint, and by a `data-keywords` attribute for terms an option doesn't show. A badge or other slotted extra isn't matched.
+
+<Canvas of={SelectRichStories.Searchable} />
+
+Focus moves into the field when the list opens and stays there: the arrow keys move through the matches, Enter picks the highlighted one, and Escape clears the field, then closes the list. The field is a combobox controlling the listbox, so the highlighted option is announced as it moves.
+
 ## Accessibility
 
 Lion supplies the listbox semantics, the wiring between label, invoker, and options, and the keyboard model. Opening the list moves focus to the listbox, which tracks the highlighted option with `aria-activedescendant`.

@@ -23,6 +23,16 @@ Over a native `<option>`, two things:
 
 - **Arbitrary markup.** An icon, a status, a thumbnail — anything that helps a person recognize the entry.
 - **A hint.** Secondary text after the label, rendered quieter: a handle, a count, a short qualifier.
+- **A badge.** Anything in the `badge` slot is appended to the label. A select appends the selected option's badge to its value too, and cuts a long value short before the badge.
+
+```html
+<craft-option .choiceValue="${'username'}">
+  username
+  <craft-badge slot="badge" fill="blue" size="small" no-prefix
+    >Suggested</craft-badge
+  >
+</craft-option>
+```
 
 ## Responsive Layout
 

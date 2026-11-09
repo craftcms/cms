@@ -1,4 +1,4 @@
-import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it} from 'vite-plus/test';
 import {userEvent} from 'vite-plus/test/browser';
 import '../../styles/cp.css';
 import './select-rich.js';
@@ -170,4 +170,143 @@ it('posts nothing while disabled, including by a disabled fieldset', async () =>
   await select.updateComplete;
   expect(select.disabled).toBe(true);
   expect(new FormData(form).has('typeId')).toBe(false);
+});
+
+describe('searchable', () => {
+  async function searchable(): Promise<CraftSelectRich> {
+    document.body.innerHTML = `
+      <craft-select-rich label="Column" searchable>
+        <craft-option choice-value="title">Title</craft-option>
+        <craft-option choice-value="slug" hint="my-first-post">Slug<span slot="suffix">Title-like</span></craft-option>
+        <craft-option choice-value="body" data-keywords="content">Body</craft-option>
+      </craft-select-rich>`;
+    const select =
+      document.querySelector<CraftSelectRich>('craft-select-rich')!;
+    await select.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    return select;
+  }
+
+  const visible = (select: CraftSelectRich) =>
+    Array.from(select.querySelectorAll('craft-option'))
+      .filter((option) => option.checkVisibility())
+      .map((option) => option.textContent?.trim());
+
+  async function open(select: CraftSelectRich): Promise<HTMLInputElement> {
+    await userEvent.click(select.querySelector('lion-select-invoker')!);
+    await select.updateComplete;
+
+    return select.querySelector<HTMLInputElement>('[slot="search"] input')!;
+  }
+
+  it('focuses the search field on open', async () => {
+    const select = await searchable();
+    const input = await open(select);
+
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('filters the options by their text and keywords', async () => {
+    const select = await searchable();
+    await open(select);
+
+    await userEvent.keyboard('sl');
+    expect(visible(select)).toEqual(['SlugTitle-like']);
+
+    await userEvent.keyboard('{Backspace}{Backspace}content');
+    expect(visible(select)).toEqual(['Body']);
+  });
+
+  it('matches hints, but not slotted extras', async () => {
+    const select = await searchable();
+    await open(select);
+
+    await userEvent.keyboard('first-post');
+    expect(visible(select)).toEqual(['SlugTitle-like']);
+
+    await userEvent.keyboard('{Control>}a{/Control}{Backspace}like');
+    expect(visible(select)).toEqual([]);
+  });
+
+  it('says so when nothing matches', async () => {
+    const select = await searchable();
+    await open(select);
+
+    await userEvent.keyboard('zzz');
+
+    expect(visible(select)).toEqual([]);
+    expect(
+      select.querySelector('.select-rich__no-results')!.checkVisibility()
+    ).toBe(true);
+  });
+
+  it('picks the highlighted match with Enter', async () => {
+    const select = await searchable();
+    await open(select);
+
+    await userEvent.keyboard('o');
+    await userEvent.keyboard('{ArrowDown}{Enter}');
+
+    // "o" leaves Body and Slug, with Slug first highlighted, then Body.
+    expect(select.modelValue).toBe('body');
+    expect(select.opened).toBe(false);
+  });
+
+  it('stays closed after Enter picks a match, however long the key is held', async () => {
+    const select = await searchable();
+    await open(select);
+
+    await userEvent.keyboard('{Enter>}');
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await userEvent.keyboard('{/Enter}');
+
+    expect(select.opened).toBe(false);
+  });
+
+  it('clears the search with Escape before closing', async () => {
+    const select = await searchable();
+    const input = await open(select);
+
+    await userEvent.keyboard('sl{Escape}');
+    expect(input.value).toBe('');
+    expect(select.opened).toBe(true);
+    expect(visible(select)).toHaveLength(3);
+
+    await userEvent.keyboard('{Escape}');
+    expect(select.opened).toBe(false);
+  });
+
+  // A table resets its cell inputs' padding, which would run the text over the search icon.
+  it('leaves room for the search icon inside a table', async () => {
+    document.body.innerHTML = `
+      <craft-input-search size="small"></craft-input-search>
+      <table class="cp-table cp-table--editable"><tbody><tr><td>
+        <craft-select-rich label="Column" searchable>
+          <craft-option choice-value="title">Title</craft-option>
+        </craft-select-rich>
+      </td></tr></tbody></table>`;
+    const select =
+      document.querySelector<CraftSelectRich>('craft-select-rich')!;
+    await select.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+    const input = await open(select);
+    const standalone = document.querySelector(
+      'body > craft-input-search input'
+    )!;
+
+    expect(getComputedStyle(input).paddingInlineStart).toBe(
+      getComputedStyle(standalone).paddingInlineStart
+    );
+  });
+
+  it('starts unfiltered when reopened', async () => {
+    const select = await searchable();
+    await open(select);
+    await userEvent.keyboard('sl{Tab}');
+
+    await open(select);
+
+    expect(visible(select)).toHaveLength(3);
+  });
 });

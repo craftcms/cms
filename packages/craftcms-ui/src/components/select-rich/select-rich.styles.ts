@@ -23,6 +23,30 @@ export default css`
     max-inline-size: min(calc(360rem / 16), calc(100vw - var(--c-spacing-lg)));
   }
 
+  /* searchable: the field and the options share one panel */
+  :host([searchable]) #overlay-content-node-wrapper {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    border-radius: var(--c-radius-md);
+    background-color: var(--c-surface-overlay);
+    box-shadow: var(--c-shadow-sm);
+    max-height: calc(var(--c-spacing) * 72);
+  }
+
+  ::slotted([slot='search']) {
+    padding: var(--c-spacing-sm);
+    padding-block-end: 0;
+  }
+
+  :host([searchable]) ::slotted([slot='input']) {
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+    max-height: none;
+  }
+
   ::slotted([slot='input']) {
     display: grid;
     grid-template-columns: minmax(0, 1fr);

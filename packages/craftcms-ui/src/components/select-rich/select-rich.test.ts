@@ -79,6 +79,45 @@ describe('craft-select-rich', () => {
     expect(element.hasAttribute('small')).toBe(true);
   });
 
+  it('leads the list with a search field when searchable', async () => {
+    const element = await createSelectRich({searchable: ''});
+    const search = element.querySelector('[slot="search"]');
+
+    expect(search?.querySelector('craft-input-search')).toBeTruthy();
+    expect(
+      element.shadowRoot?.querySelector('slot[name="search"]')
+    ).toBeTruthy();
+
+    element.searchable = false;
+    await element.updateComplete;
+
+    expect(element.querySelector('[slot="search"]')).toBeNull();
+  });
+
+  it("keeps the search field out of the select's options", async () => {
+    const element = await createSelectRich({searchable: ''});
+
+    expect(
+      element.formElements.some((option) =>
+        option.matches('craft-input-search')
+      )
+    ).toBe(false);
+  });
+
+  it('closes from the search field on Escape once it is empty', async () => {
+    const element = await createSelectRich({searchable: ''});
+    const input = element.querySelector<HTMLInputElement>(
+      '[slot="search"] input'
+    )!;
+    element.opened = true;
+
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})
+    );
+
+    expect(element.opened).toBe(false);
+  });
+
   /**
    * The component registers its own elements into the shadow root rather than
    * relying on globally defined tags, which is how a rich option renders.

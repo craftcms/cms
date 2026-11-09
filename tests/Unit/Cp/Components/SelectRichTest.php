@@ -45,3 +45,10 @@ it('renders a disabled select', function () {
     expect(SelectRich::make()->name('x')->disabled()->toHtml())
         ->toContainTag('craft-select-rich', ['name' => 'x', 'disabled' => true]);
 });
+
+it('renders a searchable select', function () {
+    $crawler = new Crawler(SelectRich::make()->searchable()->toHtml());
+
+    expect($crawler->filter('craft-select-rich[searchable]'))->toHaveCount(1)
+        ->and(new Crawler(SelectRich::make()->toHtml())->filter('craft-select-rich[searchable]'))->toHaveCount(0);
+});

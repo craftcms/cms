@@ -5,9 +5,13 @@ import styles from './select-rich.styles.js';
 import CraftSelectInvoker from './select-invoker.js';
 import '../option/option.js';
 import '../icon/icon.js';
+import '../input-search/input-search.js';
+import type CraftInputSearch from '../input-search/input-search.js';
+import type {LionOption} from '@lion/ui/listbox.js';
 import {HasLabel} from '@src/mixins/HasLabel';
 import {FormAssociated} from '@src/mixins/FormAssociated';
 import {emitChange, emitInput} from '@src/utilities/form-events';
+import {t} from '@src/utilities/translate';
 
 /**
  * @summary A rich `<select>` replacement built on Lion's select-rich. Unlike a
@@ -33,11 +37,17 @@ import {emitChange, emitInput} from '@src/utilities/form-events';
  * control is left out of form submission. Supplied by the `FormAssociated`
  * mixin.
  *
+ * With `searchable`, the open list leads with a search field that filters
+ * the options by their label and hint, plus any `data-keywords`.
+ * Focus stays in the field while the arrow keys move through the matches and
+ * Enter picks one; Escape clears the field, then closes the list.
+ *
  * @fires change - When the user picks an option.
  * @fires input - When the user picks an option.
  *
  * @slot invoker - The element that opens the listbox (provided by default).
  * @slot input - The listbox node.
+ * @slot search - Supplied by the component when `searchable`.
  * @slot label - Field label.
  * @slot help-text - Supplementary help text.
  * @slot feedback - Validation feedback.
@@ -63,6 +73,20 @@ export default class CraftSelectRich extends FormAssociated(
 
   /** Renders the invoker at a smaller size. */
   @property({reflect: true, type: Boolean}) small = false;
+
+  /** Leads the open list with a search field that filters the options. */
+  @property({reflect: true, type: Boolean}) searchable = false;
+
+  #search?: HTMLElement;
+
+  #searchInput?: HTMLInputElement;
+
+  #searchField?: CraftInputSearch;
+
+  #noResults?: HTMLElement;
+
+  /** The options the filter hid, so it only ever un-hides its own. */
+  #filtered = new Set<LionOption>();
 
   #input?: HTMLInputElement;
 
@@ -130,6 +154,179 @@ export default class CraftSelectRich extends FormAssociated(
   override updated(changed: PropertyValues) {
     super.updated(changed);
     this.#syncInput();
+
+    if (changed.has('searchable')) {
+      this.#syncSearch();
+    }
+  }
+
+  /** While searching, focus stays in the field, so it owns the highlighted option. */
+  override get _activeDescendantOwnerNode(): HTMLElement {
+    return this.searchable && this.#searchInput
+      ? this.#searchInput
+      : super._activeDescendantOwnerNode;
+  }
+
+  override _setupOverlayCtrl() {
+    super._setupOverlayCtrl();
+    // Added after Lion's own listeners, so this focus wins over the listbox's.
+    this._overlayCtrl.addEventListener('show', this.#onOverlayShow);
+    this._overlayCtrl.addEventListener('hide', this.#onOverlayHide);
+  }
+
+  override _teardownOverlayCtrl() {
+    this._overlayCtrl?.removeEventListener('show', this.#onOverlayShow);
+    this._overlayCtrl?.removeEventListener('hide', this.#onOverlayHide);
+    super._teardownOverlayCtrl();
+  }
+
+  #onOverlayShow = () => {
+    if (this.searchable) {
+      this.#searchInput?.focus();
+    }
+  };
+
+  #onOverlayHide = () => {
+    if (this.#searchField) {
+      this.#searchField.modelValue = '';
+    }
+    this.#filter('');
+  };
+
+  #syncSearch() {
+    if (!this.searchable) {
+      this.#search?.remove();
+      this.#filter('');
+
+      return;
+    }
+
+    if (!this.#search) {
+      this.#search = this.#buildSearch();
+    }
+
+    // After the listbox, which Lion finds as the first `[slot="input"]` inside.
+    if (this.#search.parentNode !== this) {
+      this.append(this.#search);
+    }
+  }
+
+  // Light DOM rather than shadow, so the field's `aria-activedescendant` and
+  // `aria-controls` can point at the options.
+  #buildSearch(): HTMLElement {
+    const container = document.createElement('div');
+    container.slot = 'search';
+    container.className = 'select-rich__search';
+    // The search field is a form control too: kept from registering as an option.
+    container.addEventListener('form-element-register', (ev) =>
+      ev.stopPropagation()
+    );
+
+    const input = document.createElement('input');
+    input.slot = 'input';
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-expanded', 'true');
+    if (this._listboxNode?.id) {
+      input.setAttribute('aria-controls', this._listboxNode.id);
+    }
+    input.addEventListener('input', () => this.#filter(input.value));
+    input.addEventListener('keydown', this.#onSearchKeydown);
+
+    const field = document.createElement('craft-input-search');
+    field.setAttribute('size', 'small');
+    field.append(input);
+
+    const noResults = document.createElement('p');
+    noResults.className = 'select-rich__no-results';
+    noResults.textContent = t('No results');
+    noResults.hidden = true;
+    // Light DOM inside a slotted node, which the shadow styles can't reach.
+    noResults.style.cssText =
+      'margin: 0; padding: var(--c-spacing-sm) var(--c-spacing-md) 0; color: var(--c-text-quiet);';
+
+    container.append(field, noResults);
+
+    this.#searchInput = input;
+    this.#searchField = field;
+    this.#noResults = noResults;
+
+    return container;
+  }
+
+  #onSearchKeydown = (ev: KeyboardEvent) => {
+    switch (ev.key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+      case 'Enter':
+        // The listbox's own handling, minus type-ahead, which would fight the typing.
+        this._listboxOnKeyDown(ev);
+        if (ev.key === 'Enter') {
+          ev.preventDefault();
+          this.#swallowInvokerEnterKeyup();
+        }
+        break;
+      case 'Tab':
+        this.opened = false;
+        break;
+      case 'Escape':
+        // With text in it, the search field clears itself and stops the key first.
+        this.opened = false;
+        break;
+      /* no default */
+    }
+  };
+
+  /**
+   * Picking an option closes the list and moves focus to the invoker, which opens it
+   * again on Enter's keyup. Lion only guards against that for a moment, so a slow
+   * press would get past it.
+   */
+  #swallowInvokerEnterKeyup() {
+    const invoker = this._invokerNode;
+    const swallow = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter') {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      invoker.removeEventListener('keyup', swallow, {capture: true});
+    };
+
+    invoker.addEventListener('keyup', swallow, {capture: true});
+  }
+
+  #filter(rawValue: string) {
+    const value = rawValue.trim().toLowerCase();
+    let firstMatch = -1;
+
+    this.formElements.forEach((option: LionOption, index: number) => {
+      const haystack = searchText(option).toLowerCase();
+
+      if (!value || haystack.includes(value)) {
+        if (this.#filtered.delete(option)) {
+          option.hidden = false;
+          option.removeAttribute('aria-hidden');
+        }
+        if (firstMatch === -1 && !option.hidden) {
+          firstMatch = index;
+        }
+      } else if (!option.hidden) {
+        option.hidden = true;
+        // How Lion's arrow keys know to pass an option by.
+        option.setAttribute('aria-hidden', 'true');
+        this.#filtered.add(option);
+      }
+    });
+
+    if (this.#noResults) {
+      this.#noResults.hidden = firstMatch !== -1;
+    }
+
+    if (value) {
+      this.activeIndex = firstMatch;
+    }
   }
 
   #syncInput() {
@@ -210,12 +407,30 @@ export default class CraftSelectRich extends FormAssociated(
       <div class="input-group__input">
         <slot name="invoker"></slot>
         <div id="overlay-content-node-wrapper">
+          <slot name="search"></slot>
           <slot name="input"></slot>
           <slot id="options-outlet"></slot>
         </div>
       </div>
     `;
   }
+}
+
+/**
+ * What the filter matches an option on: its label and hint, plus its
+ * `data-keywords`, leaving out slotted extras such as a badge.
+ */
+function searchText(option: LionOption): string {
+  const label = Array.from(option.childNodes)
+    .filter((node) => !(node instanceof Element && node.slot))
+    .map((node) => node.textContent ?? '')
+    .join(' ');
+
+  return [
+    label,
+    (option as LionOption & {hint?: string | null}).hint ?? '',
+    option.getAttribute('data-keywords') ?? '',
+  ].join(' ');
 }
 
 if (!customElements.get('craft-select-rich')) {
