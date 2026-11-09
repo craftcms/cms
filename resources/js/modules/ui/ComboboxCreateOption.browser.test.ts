@@ -105,6 +105,17 @@ it('opens the create screen when its option is selected by keyboard', async () =
   expect(combobox.value).toBe('42');
 });
 
+it('doesn’t open the create screen when its label is typed', async () => {
+  const {combobox} = await fixture();
+  combobox.querySelector('input')!.focus();
+  await userEvent.keyboard('{Control>}a{/Control}');
+  await userEvent.keyboard('Create category');
+
+  expect(slideout.openSlideout).not.toHaveBeenCalled();
+  expect(combobox.querySelector('input')!.value).toBe('Create category');
+  await expect.element(page.getByRole('listbox')).toBeVisible();
+});
+
 it.each([false, true])(
   'keeps the prior selection until the created record is saved (multiple: %s)',
   async (multiple) => {

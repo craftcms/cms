@@ -102,6 +102,9 @@ function sameValue(a: ComboboxValue, b: ComboboxValue): boolean {
 
 const announcementTimeout = 5000;
 
+/** The `inputType` of the `input` a selected option causes. */
+const PICKED = 'insertReplacementText';
+
 interface VisibleEntry {
   groupLabel?: string;
   option: ComboboxOption;
@@ -136,6 +139,8 @@ interface EntryRun {
  *   `multiple-choice` is set, otherwise the value itself.
  *
  * @fires input - Emitted on every alteration to the value, typed or selected.
+ *   Selecting an option makes it an `InputEvent` whose `inputType` is
+ *   `insertReplacementText`, as picking a suggestion does on a native input.
  * @fires change - Emitted when the value is committed: an option is selected,
  *   or the field is left after typing.
  */
@@ -741,7 +746,10 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     if (this.multipleChoice) {
       const values = this.value as string[];
       if (!values.includes(value)) {
-        this.#changeValues([...values, value], {close: false});
+        this.#changeValues([...values, value], {
+          close: false,
+          inputType: PICKED,
+        });
       }
       return;
     }
@@ -749,7 +757,7 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     this.value = value;
     this.#filtering = false;
     this.#syncTextbox();
-    emitInput(this);
+    emitInput(this, PICKED);
     this.#commit();
   }
 
@@ -763,7 +771,10 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     emitChange(this);
   }
 
-  #changeValues(values: string[], {close = true} = {}): void {
+  #changeValues(
+    values: string[],
+    {close = true, inputType}: {close?: boolean; inputType?: string} = {}
+  ): void {
     if (this.#inactive) {
       return;
     }
@@ -783,7 +794,7 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     }
     this.#renderOptions();
     this.#syncInputs();
-    emitInput(this);
+    emitInput(this, inputType);
     this.#committedValue = this.value;
     // An `input` listener may have put the value back; that's no commit.
     if (sameValue(this.value, values)) {

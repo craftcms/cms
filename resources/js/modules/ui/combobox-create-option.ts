@@ -58,13 +58,22 @@ function insertBefore(
  * Opens the slideout for a "create" option when one was just picked, and puts
  * the previous value back. Call it from the combobox's `input` listener; the
  * value is restored before the combobox commits, so no `change` follows.
+ * Typing the option's label doesn't pick it.
  */
 export function handleCreateOption(
+  event: Event,
   combobox: CraftCombobox,
   options: ComboboxItem[],
   previousValue: string | string[],
   saved: (options: ComboboxItem[], value: string | string[]) => void
 ): boolean {
+  if (
+    !(event instanceof InputEvent) ||
+    event.inputType !== 'insertReplacementText'
+  ) {
+    return false;
+  }
+
   const value = combobox.value;
   const triggerValue = Array.isArray(value)
     ? value.find((item) => createOption(options, item))

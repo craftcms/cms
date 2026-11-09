@@ -50,6 +50,7 @@
     const combobox = event.currentTarget as ComboboxElement;
     if (
       handleCreateOption(
+        event,
         combobox,
         options.value,
         modelValue.value,

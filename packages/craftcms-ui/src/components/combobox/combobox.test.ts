@@ -365,6 +365,30 @@ describe('craft-combobox', () => {
     expect(combobox.value).toBe('My Site');
   });
 
+  it.each([false, true])(
+    'tells a selection’s input from typing’s by its inputType (multiple: %s)',
+    async (multiple) => {
+      const combobox = await createFixture((c) => {
+        c.multipleChoice = multiple;
+        c.options = [
+          {label: 'Online', value: '1'},
+          {label: 'Offline', value: '0'},
+        ];
+      });
+      const inputTypes: (string | null)[] = [];
+      combobox.addEventListener('input', (event) =>
+        inputTypes.push(event instanceof InputEvent ? event.inputType : null)
+      );
+
+      await typeQuery(combobox, 'Offline');
+      optionEls(combobox)
+        .find((el) => el.textContent?.trim() === 'Offline')!
+        .click();
+
+      expect(inputTypes).toEqual([null, 'insertReplacementText']);
+    }
+  );
+
   it('emits input for a typed (custom) value, not just selection', async () => {
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = false;
