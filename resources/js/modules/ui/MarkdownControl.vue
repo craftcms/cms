@@ -17,6 +17,11 @@
     types?: LinkTypeConfig[];
     showLabelField?: boolean;
     advancedFields?: string[];
+    assetSources?: string[];
+    assetCondition?: Record<string, unknown> | null;
+    assetAnyUploader?: boolean;
+    uploadFolderId?: number | null;
+    uploadSiteId?: number | null;
     textExpanderTriggers?: TextExpanderTriggers;
   };
 
@@ -47,6 +52,11 @@
     .linkTypes="control.props.types ?? []"
     .showLinkLabelField="control.props.showLabelField ?? false"
     .linkAdvancedFields="control.props.advancedFields ?? []"
+    .assetSources="control.props.assetSources ?? []"
+    .assetCondition="control.props.assetCondition ?? null"
+    .assetAnyUploader="control.props.assetAnyUploader ?? false"
+    .uploadFolderId="editable ? (control.props.uploadFolderId ?? null) : null"
+    .uploadSiteId="control.props.uploadSiteId ?? ''"
     sanitize-html
     .readonly="control.mode === 'readOnly'"
     .disabled="!editable && control.mode !== 'readOnly'"

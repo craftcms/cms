@@ -767,10 +767,20 @@ class Assets extends BaseRelationField
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array
     {
-        $folder = $this->_uploadFolder($element, false, false);
-        SessionAuth::authorize('saveAssets:'.$folder->getVolume()->uid);
+        try {
+            $folder = $this->_uploadFolder($element, false, false);
+            SessionAuth::authorize('saveAssets:'.$folder->getVolume()->uid);
+        } catch (InvalidFsException|InvalidSubpathException) {
+            // An unconfigured or broken location is reported by uiWarning(), and only matters when it's
+            // the one place assets can be selected from.
+            $folder = null;
+        }
 
         if ($this->restrictLocation) {
+            if (! $folder) {
+                return [];
+            }
+
             if (! $this->showUnpermittedVolumes) {
                 // Make sure they have permission to view the volume
                 // (Use restrictedLocationSource here because the actual folder could belong to a temp volume)
@@ -845,7 +855,8 @@ class Assets extends BaseRelationField
     #[Override]
     protected function selectControl(FieldContext $context): ElementSelect
     {
-        $control = AssetSelect::make($context->path);
+        $control = AssetSelect::make($context->path)
+            ->showFolders(! $this->restrictLocation || $this->allowSubfolders);
         $uploadVolume = $this->_uploadVolume();
 
         $canUpload = (

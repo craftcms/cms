@@ -3851,6 +3851,11 @@ describe('UiRenderer', () => {
           ],
           showLabelField: true,
           advancedFields: ['title'],
+          assetSources: ['volume:images'],
+          assetCondition: {class: 'AssetCondition'},
+          assetAnyUploader: true,
+          uploadFolderId: 7,
+          uploadSiteId: 2,
         },
         '<script>alert(1)</script> **Safe**',
       ],
@@ -4012,6 +4017,11 @@ describe('UiRenderer', () => {
           linkTypes: unknown[];
           showLinkLabelField: boolean;
           linkAdvancedFields: string[];
+          assetSources: string[];
+          assetCondition: Record<string, unknown> | null;
+          assetAnyUploader: boolean;
+          uploadFolderId: number | null;
+          uploadSiteId: number | string;
         }
       >('craft-markdown-field')
     ).toMatchObject({
@@ -4026,6 +4036,11 @@ describe('UiRenderer', () => {
       ],
       showLinkLabelField: true,
       linkAdvancedFields: ['title'],
+      assetSources: ['volume:images'],
+      assetCondition: {class: 'AssetCondition'},
+      assetAnyUploader: true,
+      uploadFolderId: 7,
+      uploadSiteId: 2,
     });
     expect(container.innerHTML).not.toContain('<script>alert(1)</script>');
     expect(

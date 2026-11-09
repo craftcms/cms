@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Ui\Controls;
 
+use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
@@ -38,6 +39,18 @@ class Markdown extends Control implements ReadableValueControl, WritableValueCon
 
     private bool $showStats = false;
 
+    /** @var list<string> */
+    private array $assetSources = [];
+
+    /** @var array<string, mixed>|null */
+    private ?array $assetCondition = null;
+
+    private bool $assetAnyUploader = false;
+
+    private ?int $uploadFolderId = null;
+
+    private ?int $uploadSiteId = null;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         $markdown = Html::tag('craft-markdown-field', Html::encode((string) ($value ?? '')), [
@@ -52,6 +65,11 @@ class Markdown extends Control implements ReadableValueControl, WritableValueCon
             'link-types' => Json::encode($control->props['types'] ?? []),
             'show-link-label-field' => $control->props['showLabelField'] ?? false,
             'link-advanced-fields' => Json::encode($control->props['advancedFields'] ?? []),
+            'asset-sources' => Json::encode($control->props['assetSources'] ?? []),
+            'asset-condition' => isset($control->props['assetCondition']) ? Json::encode($control->props['assetCondition']) : null,
+            'asset-any-uploader' => (bool) ($control->props['assetAnyUploader'] ?? false),
+            'upload-folder-id' => $attributes['name'] !== null ? ($control->props['uploadFolderId'] ?? null) : null,
+            'upload-site-id' => $control->props['uploadSiteId'] ?? null,
             'sanitize-html' => true,
             'disabled' => $attributes['name'] === null,
             'required' => $attributes['required'],
@@ -112,6 +130,53 @@ class Markdown extends Control implements ReadableValueControl, WritableValueCon
         return $this;
     }
 
+    /**
+     * Sets the asset sources the toolbar’s Asset button selects from. Without any, the button isn’t shown.
+     *
+     * @param  list<string>  $assetSources
+     */
+    public function assetSources(array $assetSources): static
+    {
+        $this->assetSources = $assetSources;
+
+        return $this;
+    }
+
+    /** Sets the condition assets have to meet to be selected. */
+    public function assetCondition(?ElementConditionInterface $condition): static
+    {
+        $this->assetCondition = $condition?->getConfig();
+
+        return $this;
+    }
+
+    /**
+     * Sets whether assets can be selected whoever uploaded them, leaving the asset condition to decide which
+     * ones the user can see.
+     */
+    public function assetAnyUploader(bool $assetAnyUploader = true): static
+    {
+        $this->assetAnyUploader = $assetAnyUploader;
+
+        return $this;
+    }
+
+    /** Sets the folder pasted and dropped files are uploaded to. Without one, files aren’t uploaded. */
+    public function uploadFolderId(?int $uploadFolderId): static
+    {
+        $this->uploadFolderId = $uploadFolderId;
+
+        return $this;
+    }
+
+    /** Sets the site the reference tags of uploaded assets point to. */
+    public function uploadSiteId(?int $uploadSiteId): static
+    {
+        $this->uploadSiteId = $uploadSiteId;
+
+        return $this;
+    }
+
     #[\Override]
     public function inputSchema(): array
     {
@@ -128,6 +193,11 @@ class Markdown extends Control implements ReadableValueControl, WritableValueCon
             'toolbarButtons' => $this->toolbarButtons,
             'showToolbar' => $this->showToolbar,
             'showStats' => $this->showStats,
+            'assetSources' => $this->assetSources,
+            'assetCondition' => $this->assetCondition,
+            'assetAnyUploader' => $this->assetAnyUploader,
+            'uploadFolderId' => $this->uploadFolderId,
+            'uploadSiteId' => $this->uploadSiteId,
             ...$this->linkFieldSettingsProps(),
             ...$this->textExpanderProps(),
         ]);

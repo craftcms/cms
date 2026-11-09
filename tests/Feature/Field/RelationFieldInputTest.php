@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Field\Assets;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Users;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Elements\User;
@@ -62,4 +67,31 @@ it('passes the asset upload and folder settings to the asset selector', function
         'showSourcePath' => false,
         'indexSettings' => ['showFolders' => false],
     ]);
+});
+
+it('limits an Assets field control to its restricted location and selection settings', function () {
+    $restrictedVolume = Volume::factory()->create();
+    VolumeFolder::factory()->create(['volumeId' => $restrictedVolume->id, 'path' => '']);
+    Volume::factory()->create();
+    $field = new Assets([
+        'handle' => 'files',
+        'restrictLocation' => true,
+        'restrictedLocationSource' => "volume:$restrictedVolume->uid",
+        'allowSubfolders' => false,
+        'selectionCondition' => [
+            'class' => AssetCondition::class,
+            'elementType' => Asset::class,
+            'conditionRules' => [['class' => FileTypeConditionRule::class, 'operator' => 'in', 'values' => ['image']]],
+        ],
+    ]);
+
+    $props = $field->uiControl(new FieldContext('files'))->props();
+
+    expect($props['sources'])->toBe(["volume:$restrictedVolume->uid"])
+        ->and($props['criteria'])->toBe(['uploaderId' => null])
+        ->and($props['selectionCondition']['conditionRules']['rules'][0])->toMatchArray([
+            'class' => FileTypeConditionRule::class,
+            'values' => ['image'],
+        ])
+        ->and($props['showFolders'])->toBeFalse();
 });

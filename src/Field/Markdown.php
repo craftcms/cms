@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -263,7 +264,57 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
             ->types($this->linkPickerConfig())
             ->showLabelField($this->linkSettingsShowLabelField)
             ->advancedFields($this->linkSettingsAdvancedFields)
+            ->assetSources($this->assetSourceKeys())
+            ->assetCondition($this->getAssetSelectionCondition())
+            // Let the selection condition determine whether they can view unpermitted files
+            ->assetAnyUploader()
+            ->uploadFolderId($this->uploadFolderId())
+            ->uploadSiteId($context->element->siteId ?? app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id)
             ->value($context->value instanceof MarkdownData ? $context->value->getRaw() : $context->value);
+    }
+
+    /** @return list<string> */
+    private function assetSourceKeys(): array
+    {
+        return $this->availableAssetVolumes()
+            ->map(fn (Volume $volume) => "volume:$volume->uid")
+            ->all();
+    }
+
+    private function uploadFolderId(): ?int
+    {
+        $volume = $this->uploadVolume();
+
+        if (! $volume || ! Gate::check("saveAssets:$volume->uid")) {
+            return null;
+        }
+
+        return Folders::getRootFolderByVolumeId($volume->id)?->id;
+    }
+
+    private function uploadVolume(): ?Volume
+    {
+        if (! $this->uploadVolume) {
+            return null;
+        }
+
+        return Volumes::getVolumeByUid($this->uploadVolume);
+    }
+
+    /** @return Collection<int, Volume> */
+    private function availableAssetVolumes(): Collection
+    {
+        $volumes = Volumes::getAllVolumes();
+
+        if ($this->availableVolumes !== '*') {
+            $volumes = $volumes->filter(fn (Volume $volume) => in_array($volume->uid, $this->availableVolumes, true));
+        }
+
+        if (! $this->showUnpermittedVolumes) {
+            $volumes = $volumes->filter(fn (Volume $volume) => Gate::check("viewAssets:$volume->uid"));
+        }
+
+        return $volumes->values();
     }
 
     #[Override]
@@ -634,55 +685,11 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
         ]);
     }
 
-    /** @return list<string> */
-    private function assetSourceKeys(): array
-    {
-        return $this->availableAssetVolumes()
-            ->map(fn (Volume $volume) => "volume:$volume->uid")
-            ->all();
-    }
-
     /** @return array{uploaderId: null} */
     private function assetSelectionCriteria(): array
     {
         // Let the selection condition determine whether they can view unpermitted files
         return ['uploaderId' => null];
-    }
-
-    private function uploadFolderId(): ?int
-    {
-        $volume = $this->uploadVolume();
-
-        if (! $volume || ! Gate::check("saveAssets:$volume->uid")) {
-            return null;
-        }
-
-        return Folders::getRootFolderByVolumeId($volume->id)?->id;
-    }
-
-    private function uploadVolume(): ?Volume
-    {
-        if (! $this->uploadVolume) {
-            return null;
-        }
-
-        return Volumes::getVolumeByUid($this->uploadVolume);
-    }
-
-    /** @return Collection<int, Volume> */
-    private function availableAssetVolumes(): Collection
-    {
-        $volumes = Volumes::getAllVolumes();
-
-        if ($this->availableVolumes !== '*') {
-            $volumes = $volumes->filter(fn (Volume $volume) => in_array($volume->uid, $this->availableVolumes, true));
-        }
-
-        if (! $this->showUnpermittedVolumes) {
-            $volumes = $volumes->filter(fn (Volume $volume) => Gate::check("viewAssets:$volume->uid"));
-        }
-
-        return $volumes->values();
     }
 
     /** @return list<Closure> */
