@@ -762,6 +762,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed an error during application boot when the `aliases` general config setting contained a `null` path. Null paths now remove existing aliases.
 - Fixed a bug where field layout elements from plugins that only implement Craft 5’s `inputHtml()` or `formHtml()`, such as Shopify’s Variants, Options, Media, and Metafields elements, weren’t shown in element edit screens, with the Yii adapter installed. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Fixed a bug where class-level Yii element event handlers attached to `craft\base\Element` or `craft\base\ElementInterface`, such as `afterSave` and `afterDelete` handlers, weren’t called, and handlers attached to native element classes were called several times. ([#20494](https://github.com/craftcms/cms/pull/20494))
 - Fixed a bug where `EVENT_AFTER_REQUEST` handlers and `Craft::$app->onAfterRequest()` callbacks weren’t called after console commands, and `onAfterRequest()` callbacks added by queued jobs weren’t called. They’re now called once the job that added them finishes. ([#20494](https://github.com/craftcms/cms/pull/20494))
