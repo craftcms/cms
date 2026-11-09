@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
@@ -16,7 +15,6 @@ use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Gql\Types\Generators\ColorDataType;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -325,114 +323,6 @@ class Color extends Field implements DefaultableFieldInterface, InlineEditableFi
                 }
             },
         ];
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        $id = $this->getInputId();
-
-        if (empty($this->palette)) {
-            return FormFields::colorHtml([
-                'id' => $id,
-                'describedBy' => $this->describedBy,
-                'name' => $this->handle,
-                'value' => $value?->getHex(),
-                'alpha' => $this->allowCustomAlpha,
-            ]);
-        }
-
-        /** @var ColorData|null $value */
-        $isInPalette = (
-            $value &&
-            Collection::make($this->palette)->contains('color', $value->getHex())
-        );
-        $isCustom = (
-            $value &&
-            $this->allowCustomColors &&
-            ! $isInPalette
-        );
-        $showBlankOption = (
-            ! $value ||
-            ! $this->layoutElement->required ||
-            (! $this->allowCustomColors && ! $isInPalette)
-        );
-
-        $html =
-            Html::beginTag('div', [
-                'class' => ['flex', 'flex-col', 'items-stretch'],
-                'style' => [
-                    'width' => '25em',
-                    'max-width' => '100%',
-                ],
-            ]).
-            FormFields::colorSelectFieldHtml([
-                'id' => $id,
-                'labelledBy' => $this->getLabelId(),
-                'describedBy' => $this->describedBy,
-                'class' => 'fullwidth',
-                'name' => "$this->handle[color]",
-                'options' => array_filter([
-                    ...array_map(
-                        fn (array $color) => [
-                            'label' => isset($color['label']) && $color['label'] !== ''
-                                ? t($color['label'], category: 'site')
-                                : $color['color'],
-                            'value' => $color['color'],
-                        ],
-                        $this->palette,
-                    ),
-                    $this->allowCustomColors ? [
-                        'label' => t('Custom…'),
-                        'value' => '__custom__',
-                    ] : null,
-                ]),
-                'withBlankOption' => $showBlankOption,
-                'value' => match (true) {
-                    $isInPalette => $value->getHex(),
-                    $isCustom => '__custom__',
-                    default => '__blank__',
-                },
-                'toggle' => $this->allowCustomColors,
-                'targetPrefix' => $this->allowCustomColors ? "$id-custom-" : null,
-            ]);
-
-        if ($this->allowCustomColors) {
-            $customLabelId = "$id-custom-label";
-            $html .=
-                Html::beginTag('div', [
-                    'id' => "$id-custom-__custom__",
-                    'class' => array_filter([
-                        'pane',
-                        'hairline',
-                        'py-s',
-                        'mt-0',
-                        'flex',
-                        'flex-inline',
-                        ! $isCustom ? 'hidden' : null,
-                    ]),
-                    'style' => [
-                        'width' => '25em',
-                        'max-width' => '100%',
-                        'padding-inline' => '9px',
-                    ],
-                ]).
-                Html::label(t('Custom color:'), "$id-custom-input")
-                    ->id($customLabelId).
-                FormFields::colorHtml([
-                    'id' => "$id-custom-input",
-                    'labelledBy' => $customLabelId,
-                    'describedBy' => $this->describedBy,
-                    'name' => "$this->handle[custom]",
-                    'value' => $isCustom ? $value->getHex() : null,
-                    'alpha' => $this->allowCustomAlpha,
-                ]).
-                Html::endTag('div');
-        } elseif ($value && ! $isInPalette) {
-            DeltaRegistry::setInitialValue($this->handle, $value->getHex());
-        }
-
-        return $html.Html::endTag('div');
     }
 
     #[Override]

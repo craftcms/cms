@@ -323,6 +323,7 @@
 - Added `CraftCms\Cms\FieldLayout\LayoutElements\BaseField::defaultTip()` and `defaultWarning()`.
 - `CraftCms\Cms\Field\Contracts\TableCellInterface::serializeValue()` can now return arrays. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Removed `CraftCms\Cms\Field\BaseRelationField::$inputTemplate` and `$settingsTemplate`. Relation fields that extend the Yii adapter’s base relation field classes can still set them; other relation fields that set `$inputTemplate` now throw an exception, and should override `CraftCms\Cms\Field\BaseRelationField::elementSelectHtml()` instead. ([#20275](https://github.com/craftcms/cms/pull/20275))
+- Craft’s field types, other than relation fields, no longer implement Craft 5’s `inputHtml()` methods, and link types no longer have an `inputHtml()` method. Built-in fields render through `uiControl()`, so calling `getInputHtml()` or `getInlineInputHtml()` on them through the Yii adapter no longer returns their input. Plugin fields that extend a built-in field type render its UI control in element edit forms, unless they implement their own `inputHtml()`, `getInputHtml()`, or `getInlineInputHtml()`. ([#20518](https://github.com/craftcms/cms/pull/20518))
 
 - Relational fields’ elements are no longer shown on white tiles, unless the element has a color of its own, so they take the colors around them.
 - Removed the “Copy value from site” field action. Field values can be copied between sites from the Compare screen instead. ([#20384](https://github.com/craftcms/cms/pull/20384))
@@ -770,6 +771,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where field layout forms created through the Yii adapter, such as with `craft\models\FieldLayout::createForm()`, didn’t show the element’s validation errors, including nested Matrix entries’ errors. ([#20518](https://github.com/craftcms/cms/pull/20518))
 - Fixed a bug where custom field params were ignored on asset queries for subclasses of `Asset`, and on category and tag queries without a group, such as `craft\elements\Asset::find()->myField('value')` with the Yii adapter. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a validation error when saving Color fields created with `presets` or `defaultColor`. ([#20513](https://github.com/craftcms/cms/pull/20513))
 - Fixed a bug where `{% paginate %}` and `@craftPaginate` ignored queries’ `limit()` param, showing 15 results per page, and requests for a page past the last one showed no results. Queries’ `limit()` param sets the page size again, defaulting to 100, and out-of-range pages show the last page. ([#20511](https://github.com/craftcms/cms/pull/20511))

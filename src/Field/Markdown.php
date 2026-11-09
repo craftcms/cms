@@ -25,10 +25,7 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Conditions;
-use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
-use CraftCms\Cms\Support\Facades\InputNamespace;
-use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -47,12 +44,10 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
@@ -582,107 +577,6 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): ?MarkdownData
     {
         return $this->normalizeMarkdownValue($value, true);
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->input($value, $element, $inline, false);
-    }
-
-    private function input(mixed $value, ?ElementInterface $element, bool $inline, bool $static): string
-    {
-        $id = $this->getInputId();
-        $placeholder = $this->placeholder !== null
-            ? t(Str::unescapeShortcodes($this->placeholder), category: 'site')
-            : null;
-        $assetSourceKeys = $this->assetSourceKeys();
-        $settings = [
-            'assetCondition' => $this->getAssetSelectionCondition()?->getConfig(),
-            'assetCriteria' => $this->assetSelectionCriteria(),
-            'assetSources' => $assetSourceKeys,
-            'describedBy' => $this->describedBy === null ? null : collect(explode(' ', $this->describedBy))
-                ->map(fn (string $id) => InputNamespace::namespaceId($id))
-                ->implode(' '),
-            'disabled' => $static,
-            'encode' => $this->encode,
-            'flavor' => $this->flavor,
-            'inlineOnly' => $this->inlineOnly,
-            'linkAdvancedFields' => $this->linkSettingsAdvancedFields,
-            'linkTypes' => $this->linkPickerConfig(),
-            'maxLength' => $static ? null : $this->charLimit,
-            'placeholder' => $placeholder,
-            'rows' => $this->initialRows,
-            'sanitizeHtml' => $this->sanitizeHtml,
-            'htmlSanitizer' => $this->htmlSanitizer,
-            'showLinkLabelField' => $this->linkSettingsShowLabelField,
-            'showStats' => $this->showStats,
-            'showToolbar' => $this->showToolbar && ! $inline && ! $static,
-            'toolbarButtons' => $assetSourceKeys === []
-                ? array_values(array_diff($this->toolbarButtons, [self::TOOLBAR_ASSET]))
-                : $this->toolbarButtons,
-            'uploadFolderId' => $static ? null : $this->uploadFolderId(),
-            'uploadSiteId' => $element->siteId ?? Sites::getCurrentSite()->id,
-            'value' => $this->rawValue($value),
-        ];
-
-        return template('_components/fieldtypes/Markdown/input', [
-            'id' => $id,
-            'name' => $this->handle,
-            'disabled' => $static,
-            'settings' => $settings,
-        ]);
-    }
-
-    /** @return list<string> */
-    private function assetSourceKeys(): array
-    {
-        return $this->availableAssetVolumes()
-            ->map(fn (Volume $volume) => "volume:$volume->uid")
-            ->all();
-    }
-
-    /** @return array{uploaderId: null} */
-    private function assetSelectionCriteria(): array
-    {
-        // Let the selection condition determine whether they can view unpermitted files
-        return ['uploaderId' => null];
-    }
-
-    private function uploadFolderId(): ?int
-    {
-        $volume = $this->uploadVolume();
-
-        if (! $volume || ! Gate::check("saveAssets:$volume->uid")) {
-            return null;
-        }
-
-        return Folders::getRootFolderByVolumeId($volume->id)?->id;
-    }
-
-    private function uploadVolume(): ?Volume
-    {
-        if (! $this->uploadVolume) {
-            return null;
-        }
-
-        return Volumes::getVolumeByUid($this->uploadVolume);
-    }
-
-    /** @return Collection<int, Volume> */
-    private function availableAssetVolumes(): Collection
-    {
-        $volumes = Volumes::getAllVolumes();
-
-        if ($this->availableVolumes !== '*') {
-            $volumes = $volumes->filter(fn (Volume $volume) => in_array($volume->uid, $this->availableVolumes, true));
-        }
-
-        if (! $this->showUnpermittedVolumes) {
-            $volumes = $volumes->filter(fn (Volume $volume) => Gate::check("viewAssets:$volume->uid"));
-        }
-
-        return $volumes->values();
     }
 
     /** @return list<Closure> */
