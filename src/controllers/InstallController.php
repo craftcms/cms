@@ -28,6 +28,7 @@ use PDOException;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -253,25 +254,30 @@ class InstallController extends Controller
         $configService = Craft::$app->getConfig();
 
         // Should we set the new DB config values?
+        $dbEnvVars = [];
         if ($this->request->getBodyParam('db-driver') !== null) {
-            // Set and save the new DB config values
+            if (!$this->_canControlDbConfig()) {
+                throw new BadRequestHttpException('The database connection settings can’t be changed.');
+            }
+
+            // Set the new DB config values, but don’t save them until Craft is installed with them
             $dbConfig = Craft::$app->getConfig()->getDb();
             $this->_populateDbConfig($dbConfig, 'db-');
 
             // If there's a DB_DSN environment variable, go with that
             if (App::env('CRAFT_DB_DSN') !== null) {
-                $configService->setDotEnvVar('CRAFT_DB_DSN', $dbConfig->dsn);
+                $dbEnvVars['CRAFT_DB_DSN'] = $dbConfig->dsn;
             } else {
-                $configService->setDotEnvVar('CRAFT_DB_DRIVER', $dbConfig->driver);
-                $configService->setDotEnvVar('CRAFT_DB_SERVER', $dbConfig->server);
-                $configService->setDotEnvVar('CRAFT_DB_PORT', (string)$dbConfig->port);
-                $configService->setDotEnvVar('CRAFT_DB_DATABASE', $dbConfig->database);
+                $dbEnvVars['CRAFT_DB_DRIVER'] = $dbConfig->driver;
+                $dbEnvVars['CRAFT_DB_SERVER'] = $dbConfig->server;
+                $dbEnvVars['CRAFT_DB_PORT'] = (string)$dbConfig->port;
+                $dbEnvVars['CRAFT_DB_DATABASE'] = $dbConfig->database;
             }
 
-            $configService->setDotEnvVar('CRAFT_DB_USER', $dbConfig->user);
-            $configService->setDotEnvVar('CRAFT_DB_PASSWORD', $dbConfig->password);
-            $configService->setDotEnvVar('CRAFT_DB_SCHEMA', $dbConfig->schema);
-            $configService->setDotEnvVar('CRAFT_DB_TABLE_PREFIX', $dbConfig->tablePrefix);
+            $dbEnvVars['CRAFT_DB_USER'] = $dbConfig->user;
+            $dbEnvVars['CRAFT_DB_PASSWORD'] = $dbConfig->password;
+            $dbEnvVars['CRAFT_DB_SCHEMA'] = $dbConfig->schema;
+            $dbEnvVars['CRAFT_DB_TABLE_PREFIX'] = $dbConfig->tablePrefix;
 
             // Update the db component based on new values
             $db = Craft::$app->getDb();
@@ -336,6 +342,11 @@ class InstallController extends Controller
             $migrator->addMigrationHistory($name);
         }
 
+        // Now save the new DB config values
+        foreach ($dbEnvVars as $name => $value) {
+            $configService->setDotEnvVar($name, $value);
+        }
+
         return $this->asSuccess();
     }
 
@@ -380,8 +391,9 @@ class InstallController extends Controller
             return false;
         }
 
-        // If the .env file doesn't exist, we definitely can't do anything about it
-        if (!file_exists(Craft::$app->getConfig()->getDotEnvPath())) {
+        // If the .env file doesn't exist or isn't writable, we definitely can't do anything about it
+        $path = Craft::$app->getConfig()->getDotEnvPath();
+        if (!file_exists($path) || !is_writable($path)) {
             return false;
         }
 

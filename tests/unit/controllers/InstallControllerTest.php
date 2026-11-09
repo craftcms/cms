@@ -10,7 +10,9 @@ namespace crafttests\unit\controllers;
 use Craft;
 use craft\controllers\InstallController;
 use craft\db\Connection;
+use craft\db\MigrationManager;
 use craft\helpers\App;
+use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\ServiceUnavailableHttpException;
 use yii\web\NotFoundHttpException;
@@ -24,6 +26,10 @@ use yii\web\NotFoundHttpException;
 class InstallControllerTest extends TestCase
 {
     private ?Connection $originalDb = null;
+    private ?MigrationManager $originalMigrator = null;
+    private ?Config $originalConfig = null;
+    private ?string $originalDotEnvAlias = null;
+    private ?string $originalRequestMethod = null;
 
     /**
      * The installer must stay closed outside Dev Mode, even when Craft thinks it isn’t installed,
@@ -62,6 +68,65 @@ class InstallControllerTest extends TestCase
     }
 
     /**
+     * Database connection settings posted to the installer must only be saved once Craft is installed with them.
+     */
+    public function testFailedInstallDoesNotSaveDbSettings(): void
+    {
+        $dotEnv = "CRAFT_DB_SERVER=original-server\n";
+        $dotEnvPath = tempnam(sys_get_temp_dir(), 'CraftInstallTest');
+        file_put_contents($dotEnvPath, $dotEnv);
+
+        $this->originalConfig = Craft::$app->getConfig();
+        $config = new Config();
+        foreach (['appType', 'env', 'configDir', 'appDefaultsDir'] as $property) {
+            if (isset($this->originalConfig->$property)) {
+                $config->$property = $this->originalConfig->$property;
+            }
+        }
+        $this->originalDotEnvAlias = Craft::getAlias('@dotenv', false) ?: null;
+        Craft::setAlias('@dotenv', $dotEnvPath);
+        Craft::$app->set('config', $config);
+
+        // Give the installer its own DB connection and migrator to point at the posted server
+        $this->originalDb = Craft::$app->getDb();
+        $this->originalMigrator = Craft::$app->getMigrator();
+        Craft::$app->set('db', Craft::createObject(App::dbConfig($config->getDb())));
+        Craft::$app->set('migrator', [
+            'class' => MigrationManager::class,
+            'track' => MigrationManager::TRACK_CRAFT,
+            'migrationNamespace' => 'craft\migrations',
+            'migrationPath' => '@app/migrations',
+        ]);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $request = Craft::$app->getRequest();
+        $request->getHeaders()->set('Accept', 'application/json');
+        $request->setBodyParams([
+            'db-driver' => $config->getDb()->driver,
+            'db-server' => '127.0.0.1',
+            'db-port' => '1',
+            'db-database' => 'craft',
+            'db-user' => 'attacker',
+            'db-password' => 'secret',
+            'db-tablePrefix' => 'evil',
+            'account-email' => 'admin@example.com',
+            'account-password' => 'password123',
+            'site-name' => 'Test',
+            'site-baseUrl' => '$PRIMARY_SITE_URL',
+            'site-language' => 'en-US',
+        ]);
+
+        try {
+            $response = $this->controller()->runAction('install');
+            self::assertSame(400, $response->getStatusCode());
+            self::assertSame($dotEnv, file_get_contents($dotEnvPath));
+            self::assertArrayNotHasKey('CRAFT_DB_SERVER', $_SERVER);
+        } finally {
+            unlink($dotEnvPath);
+        }
+    }
+
+    /**
      * Swaps in a DB connection that refuses connections, which is restored after the test.
      */
     private function useUnreachableDb(): void
@@ -82,12 +147,35 @@ class InstallControllerTest extends TestCase
         return $controller;
     }
 
+    protected function _before(): void
+    {
+        parent::_before();
+        $this->originalRequestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
+    }
+
     protected function _after(): void
     {
         if (isset($this->originalDb)) {
             Craft::$app->set('db', $this->originalDb);
         }
+        if (isset($this->originalMigrator)) {
+            Craft::$app->set('migrator', $this->originalMigrator);
+        }
+        if (isset($this->originalConfig)) {
+            Craft::$app->set('config', $this->originalConfig);
+            Craft::setAlias('@dotenv', $this->originalDotEnvAlias);
+        }
         Craft::$app->setIsInstalled(null);
+
+        $request = Craft::$app->getRequest();
+        $request->setBodyParams([]);
+        $request->getHeaders()->remove('Accept');
+        if ($this->originalRequestMethod === null) {
+            unset($_SERVER['REQUEST_METHOD']);
+        } else {
+            $_SERVER['REQUEST_METHOD'] = $this->originalRequestMethod;
+        }
+
         parent::_after();
     }
 }
