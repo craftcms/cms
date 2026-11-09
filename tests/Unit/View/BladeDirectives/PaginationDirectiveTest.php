@@ -17,6 +17,11 @@ beforeEach(function () {
 it('assigns pagination variables from a query', function () {
     $query = new class implements Builder
     {
+        public function getLimit(): int
+        {
+            return 2;
+        }
+
         public function paginate(?int $perPage = null, array|string $columns = ['*'], string $pageName = 'page', ?int $page = null): LengthAwarePaginator
         {
             return new LengthAwarePaginator(
