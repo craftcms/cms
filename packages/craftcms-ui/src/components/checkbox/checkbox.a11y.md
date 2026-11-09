@@ -24,7 +24,7 @@ Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/che
 - [x] Help text, from the `help-text` attribute or slot, is referenced by the input's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions). Verified by `names the input with its label and describes it with its help text` in `checkbox.test.ts`.
 - [x] `required` sets `aria-required="true"` on the input. Per WCAG 3.3.2 (Labels or Instructions). Verified by `marks the input required and invalid` in `checkbox.test.ts`.
 - [x] `invalid` sets `aria-invalid="true"` on the input, and removes it when cleared. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Verified by `marks the input required and invalid` in `checkbox.test.ts`.
-- [ ] Messages in the `feedback` slot are referenced by the input's `aria-describedby`. Per WCAG 3.3.1 (Error Identification). Not yet verified.
+- [x] Messages in the `feedback` slot show below the label and help text, and are referenced by the input's `aria-describedby`. Per WCAG 3.3.1 (Error Identification). Verified by `shows its feedback below the label and describes the input with it` in `checkbox.browser.test.ts`.
 
 ### Keyboard and focus
 

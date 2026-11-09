@@ -1,4 +1,4 @@
-import {css, LitElement, type PropertyValues} from 'lit';
+import {css, html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {ChoiceInput, choiceInputStyles} from '../../mixins/ChoiceInput.js';
 
@@ -14,6 +14,7 @@ import {ChoiceInput, choiceInputStyles} from '../../mixins/ChoiceInput.js';
  * @slot label - The checkbox's label, as an alternative to the `label`
  *   attribute.
  * @slot help-text - Guidance shown below the label.
+ * @slot feedback - Validation messages, shown below the help text.
  *
  * @fires {Event} input - When the user checks or unchecks it.
  * @fires {Event} change - When the user checks or unchecks it.
@@ -62,6 +63,10 @@ export default class CraftCheckbox extends ChoiceInput(LitElement) {
     }
   }
 
+  override render() {
+    return html`${super.render()} ${this._feedbackTemplate()}`;
+  }
+
   static override styles = [
     choiceInputStyles,
     css`
@@ -70,9 +75,9 @@ export default class CraftCheckbox extends ChoiceInput(LitElement) {
         display: grid;
         align-items: center;
         gap: 0 var(--_gap-x);
-        grid-template-areas: 'input label' '. help-text';
+        grid-template-areas: 'input label' '. help-text' '. feedback';
         grid-template-columns: auto 1fr;
-        grid-template-rows: repeat(2, auto);
+        grid-template-rows: repeat(3, auto);
       }
 
       ::slotted(label) {
@@ -84,6 +89,11 @@ export default class CraftCheckbox extends ChoiceInput(LitElement) {
         font-size: 1em;
         color: var(--c-text-quiet);
         grid-area: help-text;
+      }
+
+      .form-field__feedback {
+        flex-basis: 100%;
+        grid-area: feedback;
       }
     `,
   ];
