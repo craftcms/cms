@@ -130,7 +130,7 @@
                 {% set action = item.action %}
                 {% if action or item.resolveUrl or item.lastSeen %}
                   {% set srTitle = item.title|replace("`", "") %}
-                  <div slot="footer-content" class="flex flex-wrap items-center gap-2">
+                  <div slot="footer-content" class="flex grow flex-wrap items-center gap-2">
                     {% if (action.type ?? null) == 'fix' %}
                       <form method="post" action="{{ action.url }}">
                         {{ csrfInput() }}
