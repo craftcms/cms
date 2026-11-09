@@ -2355,6 +2355,48 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         return $resolved;
     }
 
+    /**
+     * The reverse of {@see resolveMappingKeys()}: keys each entry type by its uid, and its custom fields by
+     * theirs. Where both an entry type's handle and its uid are used, the uid's entry wins.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    #[Override]
+    public function uidMappingKeys(array $tree): array
+    {
+        $byUid = [];
+        $byHandle = [];
+        foreach ($this->getEntryTypes() as $entryType) {
+            $byUid[$entryType->uid] = $entryType;
+            $byHandle[$entryType->handle] = $entryType;
+        }
+
+        $converted = [];
+
+        foreach ($tree as $key => $value) {
+            $entryType = $byUid[$key] ?? $byHandle[$key] ?? null;
+
+            if (! $entryType || ! is_array($value)) {
+                $converted[$key] = $value;
+
+                continue;
+            }
+
+            if ($key !== $entryType->uid && array_key_exists($entryType->uid, $tree)) {
+                continue;
+            }
+
+            if (is_array($value['fields'] ?? null)) {
+                $value['fields'] = ImportHelper::uidMappingKeys($value['fields'], $entryType->getFieldLayout());
+            }
+
+            $converted[$entryType->uid] = $value;
+        }
+
+        return $converted;
+    }
+
     #[Override]
     public function validateMapping(mixed $value, string $attribute, Closure $fail, Validator $validator, array $params = []): bool
     {

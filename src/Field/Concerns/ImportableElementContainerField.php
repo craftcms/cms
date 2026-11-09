@@ -104,6 +104,23 @@ trait ImportableElementContainerField
     }
 
     /**
+     * @see ImportableElementContainerFieldInterface::uidMappingKeys()
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public function uidMappingKeys(array $tree): array
+    {
+        $provider = $this->getFieldLayoutProviders()[0] ?? null;
+
+        if ($provider && is_array($tree['fields'] ?? null)) {
+            $tree['fields'] = ImportHelper::uidMappingKeys($tree['fields'], $provider->getFieldLayout());
+        }
+
+        return $tree;
+    }
+
+    /**
      * By default, let mapping validation pass.
      *
      * @see ImportableElementContainerFieldInterface::validateMapping()

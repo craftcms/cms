@@ -326,6 +326,28 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
+    public function uidMappingKeys(array $tree): array
+    {
+        $tree = ImportHelper::uidMappingKeys($tree, self::normalizeFieldLayout($this->fieldLayout));
+        $targetClass = static::targetClass();
+
+        if (! is_subclass_of($targetClass, ImportableContainerPropertiesInterface::class)) {
+            return $tree;
+        }
+
+        foreach (ImportHelper::getImportableContainerProperties($this) as $prop) {
+            if (is_array($tree[$prop['name']] ?? null)) {
+                $tree[$prop['name']] = ImportHelper::uidMappingKeys(
+                    $tree[$prop['name']],
+                    $targetClass::getFieldLayoutForProperty($prop['name']),
+                );
+            }
+        }
+
+        return $tree;
+    }
+
+    #[Override]
     public function resolveMappingKeys(array $tree): array
     {
         $tree = ImportHelper::resolveMappingKeys($tree, self::normalizeFieldLayout($this->fieldLayout));

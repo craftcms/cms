@@ -835,6 +835,18 @@ abstract class BaseImporter
     }
 
     /**
+     * The reverse of {@see resolveMappingKeys()}: replaces any handle keys in a mapping tree with the uids
+     * the mapping screen keys them by. By default, the tree is returned unchanged.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public function uidMappingKeys(array $tree): array
+    {
+        return $tree;
+    }
+
+    /**
      * Returns the columns/properties/fields that we're importing into.
      *
      * @return list<MappingColumn|CompoundMappingColumn>

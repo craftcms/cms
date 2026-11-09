@@ -414,6 +414,54 @@ class ImportHelper
     }
 
     /**
+     * The reverse of {@see resolveMappingKeys()}: replaces custom field handles in a mapping tree with
+     * their layout element uids, which the mapping screen keys them by, so a mapping written with
+     * handles (in code, say) shows there. Where a tree has both for one field, the uid's entry wins.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public static function uidMappingKeys(array $tree, ?FieldLayout $fieldLayout): array
+    {
+        if (! $fieldLayout) {
+            return $tree;
+        }
+
+        $byUid = [];
+        $byHandle = [];
+        foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+            if ($layoutElement->uid !== null) {
+                $byUid[$layoutElement->uid] = $layoutElement;
+                $byHandle[$layoutElement->attribute()] = $layoutElement;
+            }
+        }
+
+        $converted = [];
+
+        foreach ($tree as $key => $value) {
+            $layoutElement = $byUid[$key] ?? $byHandle[$key] ?? null;
+
+            if (! $layoutElement) {
+                $converted[$key] = $value;
+
+                continue;
+            }
+
+            if ($key !== $layoutElement->uid && array_key_exists($layoutElement->uid, $tree)) {
+                continue;
+            }
+
+            $field = $layoutElement->getField();
+
+            $converted[$layoutElement->uid] = $field instanceof ImportableElementContainerFieldInterface && is_array($value)
+                ? $field->uidMappingKeys($value)
+                : $value;
+        }
+
+        return $converted;
+    }
+
+    /**
      * Rebuilds raw import data into the shape described by the map.
      *
      * @param  array<mixed>  $map

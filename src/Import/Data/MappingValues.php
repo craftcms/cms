@@ -49,14 +49,17 @@ readonly class MappingValues implements JsonSerializable
      */
     public static function fromImporter(BaseImporter $importer): self
     {
+        // the mapping screen keys custom fields by uid, so a mapping written with handles shows there too
+        $keys = $importer->uidMappingKeys(...);
+
         return new self(
-            map: $importer->map,
-            matchCriteria: $importer->matchCriteria ?? [],
-            clearableItems: $importer->clearableItems ?? [],
-            defaultValues: $importer->defaultValues ?? [],
-            keepMissingNestedElements: $importer instanceof ElementImporter ? $importer->keepMissingNestedElements ?? [] : [],
-            fieldSettings: $importer instanceof ElementImporter ? $importer->fieldSettings ?? [] : [],
-            templates: $importer->templates ?? [],
+            map: $keys($importer->map),
+            matchCriteria: $keys($importer->matchCriteria ?? []),
+            clearableItems: $keys($importer->clearableItems ?? []),
+            defaultValues: $keys($importer->defaultValues ?? []),
+            keepMissingNestedElements: $importer instanceof ElementImporter ? $keys($importer->keepMissingNestedElements ?? []) : [],
+            fieldSettings: $importer instanceof ElementImporter ? $keys($importer->fieldSettings ?? []) : [],
+            templates: $keys($importer->templates ?? []),
             matchMode: $importer instanceof ElementImporter ? $importer->matchMode->value : null,
         );
     }
