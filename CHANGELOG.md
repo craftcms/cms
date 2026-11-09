@@ -341,7 +341,7 @@
 
 - Fixed an error that could occur when registering or logging in with a passkey. ([#19657](https://github.com/craftcms/cms/issues/19657), [#19660](https://github.com/craftcms/cms/pull/19660))
 
-## 5.11.2 - 2026-09-17
+## 5.11.2 - 2026-09-17 [CRITICAL]
 
 - Improved the performance of loading project config data on PostgreSQL. ([#19572](https://github.com/craftcms/cms/pull/19572))
 - Added `craft\helpers\StringHelper::containsNewlines()`.
