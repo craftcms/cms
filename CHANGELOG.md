@@ -227,6 +227,7 @@
 - Asset folders’ labels are now links in thumbnail and card views. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Asset previews’ background gradients are now more transparent, and asset edit pages now have a hairline below the preview. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - The image editor’s header, tabs, controls, and footer now share the control panel’s standard container padding.
+- The image editor now asks in a control panel dialog, rather than the browser’s own confirmation prompt, before discarding changes when it’s closed or reset to the original. ([#20466](https://github.com/craftcms/cms/pull/20466))
 - Asset conditions, such as for index filters and Assets fields’ sources, now have an “Orientation” rule, which filters images by whether they’re landscape, portrait, or square. Images whose width and height differ by up to 2% count as square. ([#20114](https://github.com/craftcms/cms/pull/20114))
 - Asset edit pages’ Info panels now show what was found in images, apart from the rest of their metadata: their type, a bar of their main colors, each as wide as the share of the image it covers, and embedded metadata, such as their creator, copyright notice, the date they were taken, their camera, and a map of where they were taken, with a link to Google Maps. The panels’ “Location” item, and asset indexes’ “Location” column and card attribute, which show an asset’s folder, are now “Folder”. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Asset indexes can now show “Image Type”, “Colors”, “Creator”, “Credit”, “Copyright”, “Date Taken”, “Camera”, and “Embedded Keywords” columns and card attributes. ([#20103](https://github.com/craftcms/cms/pull/20103))
@@ -786,6 +787,7 @@
 - Fixed a bug where autosuggest fields saved an empty value when the typed text matched a suggestion without choosing it, such as an email address matching an environment variable’s value. ([#20476](https://github.com/craftcms/cms/pull/20476))
 - Fixed an error when force-uninstalling a plugin whose package had already been removed, such as with `craft:plugin:uninstall --force`, which left its install record behind. ([#20475](https://github.com/craftcms/cms/pull/20475))
 - Fixed a bug where workflow notifications showed an empty title (“”) for untitled drafts, such as new entries submitted for review before they had a title. ([#20465](https://github.com/craftcms/cms/pull/20465))
+- Fixed a bug where the image editor closed without asking, losing unsaved changes, when the tooltip on its Undo or Redo button closed. ([#20466](https://github.com/craftcms/cms/pull/20466))
 - Fixed a bug where spreadsheet cells containing line breaks or tabs were split across several Table field cells when pasted, with their quotes left in.
 - Fixed a bug where editable tables keyed by number, such as Yii adapter plugin fields’ tables, listed their rows in numeric order rather than their own order. ([#20479](https://github.com/craftcms/cms/pull/20479))
 - Fixed a bug where site error templates weren’t rendered, and unknown site URLs returned an empty 404 response. ([#20448](https://github.com/craftcms/cms/pull/20448))
