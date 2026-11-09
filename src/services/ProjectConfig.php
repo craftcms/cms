@@ -1695,7 +1695,7 @@ class ProjectConfig extends Component
                 // so case-insensitive file systems pick up the new name
                 foreach ($existingFilesByLowerPath[strtolower($filePath)] ?? [] as $existingFile) {
                     if ($existingFile !== $filePath) {
-                        FileHelper::unlink($existingFile);
+                        $this->deleteYamlFile($existingFile);
                         unset($existingFiles[$existingFile]);
                     }
                 }
@@ -1706,12 +1706,13 @@ class ProjectConfig extends Component
 
             // Delete stale files and any folders left empty
             foreach (array_keys($existingFiles) as $file) {
-                FileHelper::unlink($file);
+                $this->deleteYamlFile($file);
             }
             $dirs = FileHelper::findDirectories($basePath, ['except' => ['.*/']]);
             rsort($dirs);
             foreach ($dirs as $dir) {
-                if (FileHelper::isDirectoryEmpty($dir)) {
+                // Only remove folders with nothing left in them, including hidden files/folders
+                if (count(scandir($dir)) === 2) {
                     FileHelper::removeDirectory($dir);
                 }
             }
@@ -1727,6 +1728,13 @@ class ProjectConfig extends Component
         $this->trigger(self::EVENT_AFTER_WRITE_YAML_FILES);
 
         $this->_updateYaml = false;
+    }
+
+    private function deleteYamlFile(string $file): void
+    {
+        if (!FileHelper::unlink($file) && file_exists($file)) {
+            throw new ErrorException("Unable to delete \"$file\".");
+        }
     }
 
     /**

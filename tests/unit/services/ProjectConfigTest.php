@@ -285,6 +285,8 @@ class ProjectConfigTest extends TestCase
             FileHelper::writeToFile("$basePath/entryTypes/Foo--$entryTypeUid.yaml", "handle: Foo\n");
             FileHelper::writeToFile("$basePath/sections/old--cccccccc-cccc-4ccc-8ccc-cccccccccccc.yaml", "handle: old\n");
             FileHelper::writeToFile("$basePath/project.yaml", "dateModified: 0\n");
+            FileHelper::writeToFile("$basePath/globalSets/old--eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.yaml", "handle: old\n");
+            FileHelper::createDirectory("$basePath/globalSets/.hidden");
 
             $pc->writeYamlFiles(true);
 
@@ -297,6 +299,7 @@ class ProjectConfigTest extends TestCase
             ], $files);
             self::assertFileExists("$basePath/.gitignore");
             self::assertDirectoryDoesNotExist("$basePath/sections");
+            self::assertDirectoryExists("$basePath/globalSets/.hidden");
 
             // A failed write leaves the existing files in place
             $config['fields']['dddddddd-dddd-4ddd-8ddd-dddddddddddd'] = ['handle' => 'summary'];
