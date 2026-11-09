@@ -699,7 +699,7 @@
 - `CraftCms\Cms\Element\Element::attributes()` no longer includes elements’ internal state, such as `forceSave`, `siteSettingsId`, and `trackDraftChanges`, so it’s left out of MCP tools’ results, element responses, and exports. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - `craft\web\assets\prismjs\PrismJsAsset` no longer registers Prism, or Craft 5.12’s Prism shim. Plugins that rely on Prism should bundle it themselves, or use `Craft.highlighter` instead. ([#20088](https://github.com/craftcms/cms/pull/20088))
 - `craft\web\assets\pluginstore\PluginStoreAsset` is now deprecated and does nothing.
-- Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact.
+- Control panel screens from plugins that haven’t been updated for Craft 6 now render inside the control panel shell, with their tabs, assets, and JavaScript intact. Their `{% js %}` code and jQuery ready callbacks, such as `$(function () {…})`, run once the screen is in the page.
 - Element index screens from plugins that haven’t been updated for Craft 6 now use the new element index, with the element type’s sources in the secondary nav and a Customize Sources action.
 - System messages can now list the Twig variables they’re rendered with via a `variables` attribute, which the System Messages utility suggests while editing. Added `CraftCms\Cms\SystemMessage\SystemMessages::getTemplateVariables()`. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - `CraftCms\Cms\Element\Element::searchableAttributes()` is now `final`. `defineSearchableAttributes()` should be overridden instead, including by element types extending `craft\base\Element` through the Yii adapter.
