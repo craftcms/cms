@@ -428,3 +428,44 @@ it('moves focus to the first item when it opens with items from a provider', asy
 
   await expect.poll(focusedText).toBe('Duplicate');
 });
+
+it.each([
+  [
+    'is opened before its first update',
+    async () => {
+      await renderMenu(`
+        <craft-action-menu searchable opened>
+          <craft-button slot="invoker" type="button">Open</craft-button>
+          <div slot="content">
+            <craft-action-item>First</craft-action-item>
+          </div>
+        </craft-action-menu>
+      `);
+    },
+  ],
+  [
+    'is made searchable as it opens',
+    async () => {
+      const menu = await renderMenu(`
+        <craft-action-menu>
+          <craft-button slot="invoker" type="button">Open</craft-button>
+          <div slot="content">
+            <craft-action-item>First</craft-action-item>
+          </div>
+        </craft-action-menu>
+      `);
+      menu.searchable = true;
+      menu.opened = true;
+      await menu.updateComplete;
+    },
+  ],
+])(
+  'moves focus to the search field when a slotted menu %s',
+  async (_, open) => {
+    await open();
+
+    await expect
+      .element(page.getByRole('textbox', {name: 'Search'}))
+      .toHaveFocus();
+  }
+);

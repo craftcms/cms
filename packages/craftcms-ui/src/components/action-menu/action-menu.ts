@@ -307,10 +307,11 @@ export default class CraftActionMenu extends CraftPopover {
     super._teardownOverlay();
   }
 
-  // The earliest point the search input can reliably receive focus.
+  // The pane can show before this update's `firstUpdated()` or `updated()`
+  // adds the search input, so focus waits for the update to finish.
   protected override _overlayShown() {
     super._overlayShown();
-    this._onOverlayShow();
+    void this.updateComplete.then(this._onOverlayShow);
   }
 
   override firstUpdated(changed: PropertyValues) {
