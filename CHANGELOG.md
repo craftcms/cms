@@ -1245,6 +1245,9 @@
 - Fixed a bug where values cached through the Yii adapter with a Craft 6 cache dependency, such as element cache info, were never read back, so legacy plugins like Element API never got a cache hit. ([#20481](https://github.com/craftcms/cms/pull/20481))
 - Fixed a bug where headers and cache settings set with `CraftCms\Cms\Support\Facades\ResponseHeaders`, such as with the `{% header %}` and `{% expires %}` tags, weren’t applied to JSON, redirect, and file responses. ([#20482](https://github.com/craftcms/cms/pull/20482))
 - Fixed a bug where `Craft::$app->mailer` sent email through Laravel’s default mailer rather than the mailer chosen in Settings → Email, with the Yii adapter installed. ([#20488](https://github.com/craftcms/cms/pull/20488))
+- Fixed a bug where Yii adapter plugin commands with nested routes, such as `php craft feed-me/feeds/queue`, weren’t found when called with slashes.
+- Fixed an error that occurred when a Yii adapter plugin called `getAttributes()` on a native element.
+- Fixed an error that occurred when a Yii adapter plugin listed tag groups or global sets on a project without tags or global sets.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
