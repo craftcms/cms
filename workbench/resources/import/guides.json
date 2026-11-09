@@ -1,0 +1,108 @@
+[
+  {
+    "title": "Getting started with Craft",
+    "slug": "getting-started-with-craft",
+    "summary": "Install Craft, create your first section, and publish an entry.",
+    "difficulty": "beginner",
+    "featured": true,
+    "readingTime": 12,
+    "content": [
+      {
+        "type": "guideText",
+        "heading": "Welcome",
+        "body": "This guide walks through a fresh install."
+      },
+      {
+        "type": "guideQuote",
+        "quote": "Start small, then grow the model.",
+        "attribution": "The docs team"
+      },
+      {
+        "type": "guideStepGroup",
+        "body": "Set up your project",
+        "steps": [
+          {
+            "type": "guideStep",
+            "title": "Install Craft",
+            "body": "Run the installer from your terminal.",
+            "minutes": 5,
+            "optional": false,
+            "tips": [
+              {
+                "type": "guideTip",
+                "body": "Use DDEV for a local environment.",
+                "tone": "tip"
+              },
+              {
+                "type": "guideTip",
+                "body": "Back up before upgrading.",
+                "tone": "warning"
+              }
+            ]
+          },
+          {
+            "type": "guideCallout",
+            "tone": "information",
+            "body": "You can skip ahead if Craft is already installed."
+          },
+          {
+            "type": "guideStep",
+            "title": "Create a section",
+            "body": "Add a channel for your posts.",
+            "minutes": 3,
+            "optional": true,
+            "tips": [
+              {
+                "type": "guideTip",
+                "body": "Channels suit most content.",
+                "tone": "information"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "faq": [
+      {
+        "type": "guideFaqItem",
+        "question": "Do I need a database?",
+        "answer": "Yes, MySQL or PostgreSQL."
+      },
+      {
+        "type": "guideFaqItem",
+        "question": "Can I import content?",
+        "answer": "Yes, with an import plan."
+      }
+    ]
+  },
+  {
+    "title": "Content modeling basics",
+    "slug": "content-modeling-basics",
+    "summary": "Plan sections, entry types, and fields before you build.",
+    "difficulty": "intermediate",
+    "featured": false,
+    "readingTime": 20,
+    "content": [
+      {
+        "type": "guideText",
+        "heading": "Why model first",
+        "body": "A good model keeps templates simple."
+      },
+      {
+        "type": "guideStepGroup",
+        "body": "Sketch the model",
+        "steps": [
+          {
+            "type": "guideStep",
+            "title": "List your content",
+            "body": "Write down every kind of page.",
+            "minutes": 10,
+            "optional": false,
+            "tips": []
+          }
+        ]
+      }
+    ],
+    "faq": []
+  }
+]
