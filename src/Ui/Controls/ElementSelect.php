@@ -106,10 +106,14 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
                 : null,
             // The modal only needs the reference element's IDs, so pass them through rather than loading it again
             'jsSettings' => $control->props['referenceElement'] ?? [],
-            // Sent by AssetSelect, as the Vue control passes it to the selector modal
-            'modalSettings' => isset($control->props['showFolders'])
-                ? ['indexSettings' => ['showFolders' => (bool) $control->props['showFolders']]]
-                : [],
+            // Sent by AssetSelect, as the Vue control passes them to the selector modal
+            'modalSettings' => array_filter([
+                'indexSettings' => isset($control->props['showFolders'])
+                    ? ['showFolders' => (bool) $control->props['showFolders']]
+                    : null,
+                'defaultSource' => $control->props['defaultSource'] ?? null,
+                'defaultSourcePath' => $control->props['defaultSourcePath'] ?? null,
+            ], fn (mixed $setting) => $setting !== null),
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
             'single' => $control->props['single'] ?? false,

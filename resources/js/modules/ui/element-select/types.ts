@@ -97,4 +97,7 @@ export type ElementSelectProps = {
   /** What uploads are sent with: a `folderId`, or a `fieldId` with an `elementId` and `siteId`. */
   uploadParams?: Record<string, number> | null;
   showFolders?: boolean;
+  /** The source and folder path the selector modal opens in, such as the field's upload location. */
+  defaultSource?: string | null;
+  defaultSourcePath?: Array<Record<string, unknown>> | null;
 };

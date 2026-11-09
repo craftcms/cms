@@ -4,6 +4,7 @@ import {
   type ContentIndexData,
   type ElementIndexRow,
 } from '@/modules/elements/index/composables/useContentIndexData';
+import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
 import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
 import {isInteractiveClick} from '@/common/utils/dom';
 import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
@@ -90,11 +91,20 @@ export function useModalElementIndex(options: Options) {
     () => new Set(options.disabledFolderIds?.() ?? [])
   );
   const selectFolders = options.selectFolders ?? false;
+  // The source and folder the modal opened in, such as an Assets field's
+  // upload location, are where it starts rather than where it stays: they seed
+  // the query that switching sources and opening folders update.
+  const {source, folderId, ...params} = options.params;
   const index = useDetachedElementIndex({
     initial: options.initial,
+    initialQuery: Object.fromEntries(
+      Object.entries({source, folderId}).filter(
+        ([, value]) => value !== undefined && value !== null
+      )
+    ) as IndexQueryParams,
     fetch: async (query) => {
       const {data} = await actionClient.post(options.action, {
-        ...options.params,
+        ...params,
         ...query,
       });
 

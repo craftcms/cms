@@ -11,6 +11,7 @@ use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Users;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
@@ -117,4 +118,38 @@ it('limits an Assets field control to its restricted location and selection sett
 
     expect($settings['modalSettings']['indexSettings']['showFolders'])->toBeFalse()
         ->and($settings['referenceElementId'])->toBe($entry->id);
+});
+
+it('opens an Assets field control’s selector in its upload folder', function () {
+    $volume = Volume::factory()->create();
+    $root = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
+    $uploads = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'uploads',
+        'path' => 'uploads/',
+    ]);
+    $field = new Assets([
+        'handle' => 'files',
+        'restrictLocation' => true,
+        'restrictedLocationSource' => "volume:$volume->uid",
+        'allowSubfolders' => true,
+        'restrictedDefaultUploadSubpath' => 'uploads',
+    ]);
+    $context = new FieldContext('files', element: EntryModel::factory()->createElement());
+
+    $props = $field->uiControl($context)->props();
+
+    expect($props['defaultSource'])->toBe("volume:$volume->uid")
+        ->and(array_column($props['defaultSourcePath'], 'folderId'))->toBe([$root->id, $uploads->id]);
+
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([UiField::make('Files', $field->uiControl($context))]),
+        new UiContext(namespace: 'fields'),
+    );
+    $html = app(UiHtmlRenderer::class)->render($payload);
+    $settings = Json::decode(new Crawler($html)->filter('craft-asset-select-input')->attr('settings'));
+
+    expect($settings['modalSettings']['defaultSource'])->toBe("volume:$volume->uid")
+        ->and(Arr::last($settings['modalSettings']['defaultSourcePath'])['folderId'])->toBe($uploads->id);
 });

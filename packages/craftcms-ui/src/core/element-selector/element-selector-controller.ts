@@ -319,6 +319,26 @@ export class ElementSelectorController<
       params.showFolders = options.indexSettings.showFolders;
     }
 
+    // Start in `defaultSource`, within the last folder of `defaultSourcePath`,
+    // such as an Assets field's upload location. Legacy callers nest these
+    // under `indexSettings`.
+    const defaultSource =
+      options.defaultSource ??
+      (options.indexSettings.defaultSource as string | undefined);
+    const path = (options.defaultSourcePath ??
+      options.indexSettings.defaultSourcePath ??
+      []) as Array<{folderId?: unknown}>;
+
+    if (defaultSource) {
+      params.source = defaultSource;
+    }
+
+    const folderId = Number(path[path.length - 1]?.folderId);
+
+    if (Number.isFinite(folderId)) {
+      params.folderId = folderId;
+    }
+
     // The condition is evaluated on the server, against this element.
     if (options.referenceElementId) {
       params.referenceElementId = options.referenceElementId;
