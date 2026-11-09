@@ -240,6 +240,17 @@ export default class CraftSelectRich extends FormAssociated(
       this.#defaultValueRead = true;
     }
 
+    // A replaced active option hands over to its replacement, if there is one.
+    const active = this.#active;
+    if (active && !this.#options.includes(active)) {
+      this.#setActive(
+        this.#options.find(
+          (option) =>
+            option.choiceValue === active.choiceValue && !option.disabled
+        )
+      );
+    }
+
     this.#syncInvoker();
     this.#syncInput();
     this.requestUpdate();

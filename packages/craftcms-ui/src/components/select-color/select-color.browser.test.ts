@@ -136,6 +136,30 @@ it('emits input then change when a color is picked, but not when one is set', as
   expect(select.value).toBe('red');
 });
 
+it('keeps the highlighted color highlighted when the colors are replaced, and drops it once it’s gone', async () => {
+  const {page, userEvent} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `<craft-select-color label="Color" value="red" colors='["red","blue","green"]'></craft-select-color>`;
+  const select =
+    document.querySelector<CraftSelectColor>('craft-select-color')!;
+  await select.updateComplete;
+  const field = page.getByRole('combobox', {name: /^Color/});
+
+  await userEvent.click(field);
+  await userEvent.keyboard('{ArrowDown}');
+  select.colors = ['red', 'blue', 'yellow'];
+  await select.updateComplete;
+  const blue = page.getByRole('option', {name: 'Blue'}).element();
+  await expect.element(field).toHaveAttribute('aria-activedescendant', blue.id);
+  await expect.element(blue).toHaveAttribute('active');
+
+  select.colors = ['red', 'green'];
+  await select.updateComplete;
+  await expect.element(field).not.toHaveAttribute('aria-activedescendant');
+  await userEvent.keyboard('{Enter}');
+
+  expect(select.value).toBe('red');
+});
+
 it('selects no color until one is given', async () => {
   const {page} = await import('vite-plus/test/browser');
   document.body.innerHTML = `<craft-select-color label="Color"></craft-select-color>`;
