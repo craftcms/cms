@@ -73,13 +73,29 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
     /** Inputs given a `tabindex` to make unnamed radios one Tab stop. */
     #tabStopInputs = new WeakSet<HTMLElement>();
 
-    #observer = new MutationObserver(() => {
+    #observer = new MutationObserver((records) => {
       this.#refreshChoices();
 
-      // Checking a radio from code unchecks the others without telling them.
+      // A radio checked from code is on its own until its siblings are
+      // unchecked, which radios with a shared name do themselves.
       if (!multiple) {
-        for (const option of this.choices) {
-          option._syncFromControl?.();
+        const options = this.choices;
+        const checked = records
+          .map((record) => record.target as unknown as ChoiceInputInterface)
+          .reverse()
+          .find(
+            (option) =>
+              options.includes(option) &&
+              option.checked &&
+              (option as unknown as Element).hasAttribute('checked')
+          );
+
+        if (checked) {
+          this.#uncheckOthers(checked);
+        } else {
+          for (const option of options) {
+            option._syncFromControl?.();
+          }
         }
       }
 
@@ -365,6 +381,16 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       }
     };
 
+    /** Unchecks every radio but `option`, silently, as a shared name would. */
+    #uncheckOthers(option: ChoiceInputInterface): void {
+      for (const other of this.choices) {
+        if (other !== option && other.checked) {
+          other.checked = false;
+        }
+        other._syncFromControl?.();
+      }
+    }
+
     #onToggle = (event: Event): void => {
       const option = this.#choiceOf(event.target);
 
@@ -375,14 +401,8 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       this.#requested = undefined;
       option._syncFromControl();
 
-      // Checking a radio unchecks the others without telling them.
       if (!multiple && option.checked) {
-        for (const other of this.choices) {
-          if (other !== option) {
-            other.checked = false;
-            other._syncFromControl();
-          }
-        }
+        this.#uncheckOthers(option);
       }
 
       // Reading the value walks every choice, so do it once per toggle.

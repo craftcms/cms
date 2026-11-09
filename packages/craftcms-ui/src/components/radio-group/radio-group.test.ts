@@ -218,6 +218,27 @@ describe('value', () => {
     expect(events).toEqual([]);
   });
 
+  it('unchecks the others when a radio with no name is checked from code', async () => {
+    const element = await createFromMarkup(NAMELESS);
+    const radios = [...element.querySelectorAll('craft-radio')];
+    const events: string[] = [];
+    for (const type of ['input', 'change']) {
+      element.addEventListener(type, () => events.push(type));
+    }
+
+    radios[1]!.checked = true;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(element.value).toBe('m');
+    expect(radios.map((radio) => radio.checked)).toEqual([false, true, false]);
+    expect(radios.map((radio) => radio.hasAttribute('checked'))).toEqual([
+      false,
+      true,
+      false,
+    ]);
+    expect(events).toEqual([]);
+  });
+
   it('selects the option a value names, or none', async () => {
     const element = await createFromMarkup(NAMELESS);
 
