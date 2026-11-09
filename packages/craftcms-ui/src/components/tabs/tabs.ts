@@ -683,6 +683,12 @@ export default class CraftTabs extends LitElement {
       panel.toggleAttribute('selected', selected);
     });
 
+    if (!this.#external) {
+      slotted
+        .slice(this.#tabs.length)
+        .forEach((panel) => panel.removeAttribute('selected'));
+    }
+
     this.#syncTabindex();
   }
 

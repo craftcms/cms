@@ -407,6 +407,22 @@ it('moves the selection to the first tab when the selected slotted tab is remove
   expect(getComputedStyle(slottedPanels[0]!).display).not.toBe('none');
 });
 
+it('hides the panel left behind when the selected slotted tab is removed without it', async () => {
+  const {element, tabs, slottedPanels} = await strip();
+
+  element.selectedIndex = 2;
+  await element.updateComplete;
+  tabs[2]!.remove();
+
+  await expect.poll(() => element.selectedIndex).toBe(0);
+  await expect
+    .poll(() => slottedPanels.map((panel) => panel.hasAttribute('selected')))
+    .toEqual([true, false, false]);
+  expect(
+    slottedPanels.map((panel) => getComputedStyle(panel).display !== 'none')
+  ).toEqual([true, false, false]);
+});
+
 it('wires up a slotted panel that replaces one whose tab stays', async () => {
   const {element, tabs, slottedPanels} = await strip();
 
