@@ -106,7 +106,8 @@ export declare class FormAssociatedHost {
  * when its value changes — but a host that overrides `updated()` must chain to
  * `super.updated()`, or the value stops being posted. What a host must still
  * do is fire the events: native `input` on every alteration and native
- * `change` on commit, matching the control it behaves like.
+ * `change` on commit, matching the control it behaves like. Dispatched from
+ * the host, they post the value first, so their listeners read the new one.
  *
  * The analyzer does not follow members through a mixin, so a host documents
  * the two it gains with `@attr name` and `@attr disabled` on its own class
@@ -195,6 +196,18 @@ export const FormAssociated = <T extends Constructor<LitElement>>(Base: T) => {
     protected override updated(changed: PropertyValues) {
       super.updated(changed);
       this._syncFormValue();
+    }
+
+    /**
+     * Posts the value before the host's `input` or `change` goes out, so a
+     * listener that reads the form sees it, as it would a native input's.
+     */
+    override dispatchEvent(event: Event): boolean {
+      if (event.type === 'input' || event.type === 'change') {
+        this._syncFormValue();
+      }
+
+      return super.dispatchEvent(event);
     }
 
     /**

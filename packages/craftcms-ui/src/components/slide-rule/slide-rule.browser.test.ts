@@ -81,3 +81,22 @@ it('posts with the form its form attribute names', async () => {
   expect(posted('settings')).toBeNull();
   expect(posted('other')).toBe('12');
 });
+
+it('posts the new value before it emits input and change', async () => {
+  document.body.innerHTML =
+    '<form><craft-slide-rule name="angle" value="12"></craft-slide-rule></form>';
+  const rule = document.querySelector<CraftSlideRule>('craft-slide-rule')!;
+  await rule.updateComplete;
+  const posted: Record<string, unknown> = {};
+  for (const type of ['input', 'change']) {
+    rule.addEventListener(type, () => {
+      posted[type] = new FormData(rule.form!).get('angle');
+    });
+  }
+
+  slider(rule).dispatchEvent(
+    new KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true})
+  );
+
+  expect(posted).toEqual({input: '13', change: '13'});
+});

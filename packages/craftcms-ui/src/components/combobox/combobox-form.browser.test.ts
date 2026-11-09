@@ -193,3 +193,39 @@ it('posts nothing while disabled', async () => {
 
   expect(entries(form)).toEqual([]);
 });
+
+it.each([
+  ['typing', '2026-04'],
+  ['selecting', '2026-04'],
+  ['clearing', ''],
+])(
+  'posts the new value before it emits input and change when %s',
+  async (how, expected) => {
+    const {page, userEvent} = await import('vite-plus/test/browser');
+    const {control, form} = await fixture((c) => {
+      c.requireOptionMatch = false;
+      c.clearable = true;
+      c.setAttribute('value', '2026-01');
+    });
+    const posted: Record<string, unknown> = {};
+    for (const type of ['input', 'change']) {
+      control.addEventListener(type, () => {
+        posted[type] = new FormData(form).get('apiVersion');
+      });
+    }
+
+    const input = control.querySelector('input')!;
+    if (how === 'typing') {
+      await userEvent.clear(input);
+      await userEvent.type(input, '2026-04');
+      input.blur();
+    } else if (how === 'selecting') {
+      await userEvent.click(input);
+      await userEvent.click(page.getByRole('option', {name: '2026-04'}));
+    } else {
+      await userEvent.click(page.getByRole('button', {name: 'Clear'}));
+    }
+
+    expect(posted).toEqual({input: expected, change: expected});
+  }
+);
