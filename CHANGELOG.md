@@ -47,6 +47,7 @@
 - Fixed a bug where Markdown field layout elements weren’t getting translated. ([#20408](https://github.com/craftcms/cms/discussions/20408))
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
 - Fixed an error that occurred when editing an address within a draft, if the owner element wasn’t saved in the primary site. ([#20413](https://github.com/craftcms/cms/issues/20413))
+- Fixed a bug where password reset and email verification URLs generated from the console, such as with `users/password-reset-url`, always pointed to the front end, even for users with control panel access. ([#16340](https://github.com/craftcms/cms/issues/16340))
 
 ## 5.12.0.1 - 2026-11-03
 
