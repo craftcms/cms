@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Áskilið',
     'Requirements' => 'Kröfur',
     'Requires PHP {version}' => 'Krefst PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Endurvistar {name} færslur',
     'Resaving {type} entries' => 'Endurvistar {type} færslur',
     'Resaving {type}' => 'Endurvistar {type}',
