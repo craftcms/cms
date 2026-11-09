@@ -58,10 +58,15 @@ readonly class GeneralConfigCompatibility
             return $this->toConfigObject(array_merge($config, $overlay));
         }
 
+        // An object overlay replaces the config, as it did in Craft 5. It's returned before an array config is converted,
+        // so the replaced settings never reach setters with side effects.
+        if ($overlay instanceof GeneralConfig) {
+            return $overlay;
+        }
+
         $object = $this->toConfigObject($config);
         $overlay = $this->resolve($overlay, $object);
 
-        // An object overlay replaces the config, as it did in Craft 5
         if ($overlay instanceof GeneralConfig) {
             return $overlay;
         }

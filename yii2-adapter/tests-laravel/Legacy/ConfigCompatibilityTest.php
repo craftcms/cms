@@ -248,6 +248,15 @@ it('applies application type overlays on top of the general config', function(st
     'callable overlay' => "fn(\$config) => \$config->cacheDuration(60)",
 ]);
 
+it('does not apply base settings that an object application type overlay replaces', function(): void {
+    $overlay = GeneralConfig::create()->enableCsrfProtection(true);
+
+    $config = new GeneralConfigCompatibility()->convert(['enableCsrfProtection' => false], $overlay);
+
+    expect($config)->toBe($overlay)
+        ->and(app(PreventRequestForgery::class)->getExcludedPaths())->not->toContain('*');
+});
+
 it('trusts the proxies that trusted hosts list', function(array $trustedHosts, array $client): void {
     GeneralConfig::create()->trustedHosts($trustedHosts);
 
