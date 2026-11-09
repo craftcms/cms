@@ -1093,8 +1093,13 @@ export function useElementEditor({
       await autosave.save();
     }
 
-    // An edit made while that save was in flight is still waiting for its own.
-    return !autosave.hasPendingChanges.value && !hasUnsavedChanges();
+    // An edit made while that save was in flight is still waiting for its own,
+    // and a submission still in flight would be cancelled by another one.
+    return (
+      !form.processing &&
+      !autosave.hasPendingChanges.value &&
+      !hasUnsavedChanges()
+    );
   }
 
   function canSaveForShortcut(): boolean {

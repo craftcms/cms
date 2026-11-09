@@ -2357,6 +2357,17 @@ describe('useElementEditor', () => {
     expect(await settled).toBe(false);
   });
 
+  it('doesn’t report its edits settled while its own save is still submitting', async () => {
+    const {editor} = mount(payload({}));
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    // Another submission now would cancel this one before its result lands.
+    editor.save();
+
+    expect(await editor.settleChanges()).toBe(false);
+  });
+
   it('starts a workflow draft when Save beats the autosave debounce', async () => {
     vi.useFakeTimers();
 
