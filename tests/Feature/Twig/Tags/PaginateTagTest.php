@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Pagination\Paginator;
@@ -37,6 +38,30 @@ it('paginates with limit', function () {
     // 5 total users (1 from install + 4 created), limit 2 per page, page 1
     expect(trim((string) $result))->toContain('total:5')
         ->and(trim((string) $result))->toContain('page:2');
+});
+
+it('uses an element query limit as the page size', function () {
+    User::factory()->count(4)->create();
+    swapUrlRequest('/users?p=2');
+
+    $result = $this->manager->renderString(
+        '{% paginate query as pageInfo, items %}{{ pageInfo.currentPage }}/{{ pageInfo.totalPages }}:{{ items|length }}',
+        ['query' => UserElement::find()->limit(2)],
+    );
+
+    expect(trim((string) $result))->toBe('2/3:2');
+});
+
+it('clamps an out-of-range page to the last page', function () {
+    User::factory()->count(4)->create();
+    swapUrlRequest('/users?p=9');
+
+    $result = $this->manager->renderString(
+        '{% paginate query as pageInfo, items %}{{ pageInfo.currentPage }}/{{ pageInfo.totalPages }}:{{ items|length }}',
+        ['query' => UserElement::find()->limit(2)],
+    );
+
+    expect(trim((string) $result))->toBe('3/3:1');
 });
 
 it('uses paginate as default info variable with single-variable syntax', function () {

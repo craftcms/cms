@@ -767,6 +767,7 @@
 - Updated Fabric.js to v7. ([#19628](https://github.com/craftcms/cms/pull/19628))
 
 ### Bug Fixes
+- Fixed a bug where `{% paginate %}` and `@craftPaginate` ignored queries’ `limit()` param, showing 15 results per page, and requests for a page past the last one showed no results. Queries’ `limit()` param sets the page size again, defaulting to 100, and out-of-range pages show the last page. ([#20511](https://github.com/craftcms/cms/pull/20511))
 - Fixed an error during application boot when the `aliases` general config setting contained a `null` path. Null paths now remove existing aliases. ([#20510](https://github.com/craftcms/cms/pull/20510))
 - Fixed a bug where field layout elements from plugins that only implement Craft 5’s `inputHtml()` or `formHtml()`, such as Shopify’s Variants, Options, Media, and Metafields elements, weren’t shown in element edit screens, with the Yii adapter installed. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Fixed a bug where class-level Yii element event handlers attached to `craft\base\Element` or `craft\base\ElementInterface`, such as `afterSave` and `afterDelete` handlers, weren’t called, and handlers attached to native element classes were called several times. ([#20494](https://github.com/craftcms/cms/pull/20494))
