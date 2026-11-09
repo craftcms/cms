@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, defineComponent, h, type App} from 'vue';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
+import {broadcast} from '@/common/craft/broadcast';
 import {useDashboard} from './useDashboard';
 import type {DashboardWidget} from './types';
 
@@ -135,4 +136,27 @@ it('keeps a widget and its undo state unchanged when deletion fails', async () =
 
   expect(dashboard.widgets.value.map((item) => item.id)).toEqual([1]);
   expect(dashboard.deleted.value).toBeUndefined();
+});
+
+it('reloads its widgets once elements are saved, after any open settings close', async () => {
+  mount([widget(1), widget(2)]);
+  dashboard.settingsToggled(2, true);
+
+  broadcast({event: 'saveElement', id: 7});
+  broadcast({event: 'saveElement', id: 8});
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  expect(state.reload).not.toHaveBeenCalled();
+
+  dashboard.settingsToggled(2, false);
+
+  expect(state.reload).toHaveBeenCalledOnce();
+  expect(state.reload).toHaveBeenCalledWith({only: ['widgets']});
+
+  broadcast({event: 'saveElement', id: 7});
+  broadcast({event: 'saveElement', id: 8});
+  await vi.waitFor(() => expect(state.reload).toHaveBeenCalledTimes(2));
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  expect(state.reload).toHaveBeenCalledTimes(2);
 });

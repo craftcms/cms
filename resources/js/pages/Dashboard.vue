@@ -35,6 +35,7 @@
     reorder,
     resize,
     refreshGrid,
+    settingsToggled,
   } = useDashboard(props);
 
   /** Remounts a widget whenever its settings, data, or markup change. */
@@ -105,6 +106,7 @@
         @saved="saved(widget.id, $event)"
         @cancel="cancel(widget.id)"
         @resize="refreshGrid"
+        @settings="settingsToggled(widget.id, $event)"
       />
     </div>
   </CpContainer>

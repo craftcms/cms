@@ -1,6 +1,8 @@
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {useMessages} from '@/modules/messages/useMessages';
 import {provideHtmlWidgets} from './htmlWidgets';
+import {onElementChanged} from '@/modules/elements/element-instances';
+import {tryOnScopeDispose} from '@vueuse/core';
 
 import {
   computed,
@@ -121,6 +123,48 @@ export function useDashboard(props: {
   function refreshTypes() {
     router.reload({only: ['widgetTypes']});
   }
+
+  /**
+   * Widgets whose settings are open. A reload remounts the widgets whose data
+   * changed, which would close their settings, so it waits until none are.
+   */
+  const settingsOpen = new Set<number>();
+  let reloadQueued = false;
+  let reloadAfterSettings = false;
+
+  function settingsToggled(id: number, open: boolean) {
+    if (open) {
+      settingsOpen.add(id);
+    } else {
+      settingsOpen.delete(id);
+    }
+
+    if (!settingsOpen.size && reloadAfterSettings) {
+      reloadAfterSettings = false;
+      router.reload({only: ['widgets']});
+    }
+  }
+
+  // Widgets show elements, such as recent entries and drafts, so they're
+  // reloaded when elements are saved, here or in another tab, once for all
+  // the elements saved together.
+  tryOnScopeDispose(
+    onElementChanged(
+      () => {
+        if (settingsOpen.size) {
+          reloadAfterSettings = true;
+          return;
+        }
+        if (reloadQueued) return;
+        reloadQueued = true;
+        queueMicrotask(() => {
+          reloadQueued = false;
+          router.reload({only: ['widgets']});
+        });
+      },
+      {includeSelf: true}
+    )
+  );
 
   function saved(id: number, widget: DashboardWidget | false) {
     widgets.value = widgets.value.flatMap((current) =>
@@ -283,5 +327,6 @@ export function useDashboard(props: {
     reorder,
     resize,
     refreshGrid,
+    settingsToggled,
   };
 }
