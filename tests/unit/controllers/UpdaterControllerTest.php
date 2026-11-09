@@ -121,29 +121,29 @@ class UpdaterControllerTest extends TestCase
     }
 
     /**
-     * Project config syncs only require an admin, not `allowAdminChanges` or `allowUpdates`, so their inherited
-     * Composer actions must not run, even for data signed with the global key.
+     * Composer actions that a controller's own flow never uses must not run, even for data signed with the global key.
+     * Project config syncs don't check `allowAdminChanges` or `allowUpdates`, and plugin removals don't check `allowUpdates`.
      *
-     * @dataProvider configSyncComposerActionDataProvider
+     * @dataProvider unusedComposerActionDataProvider
      */
-    public function testConfigSyncCantRunComposer(string $actionId): void
+    public function testUnusedComposerActionsAreNotFound(string $class, string $controllerId, string $actionId): void
     {
         $this->loginAdmin();
-        Craft::$app->getConfig()->getGeneral()->allowAdminChanges = false;
         $data = Craft::$app->getSecurity()->hashData(Json::encode([
             'requirements' => ['foo/bar' => '1.0.0'],
             'packageName' => 'foo/bar',
         ]));
 
         $this->expectException(NotFoundHttpException::class);
-        $this->beforeAction(ConfigSyncController::class, 'config-sync', $actionId, $data);
+        $this->beforeAction($class, $controllerId, $actionId, $data);
     }
 
-    public static function configSyncComposerActionDataProvider(): array
+    public static function unusedComposerActionDataProvider(): array
     {
         return [
-            'composer-install' => [BaseUpdaterController::ACTION_COMPOSER_INSTALL],
-            'composer-remove' => [BaseUpdaterController::ACTION_COMPOSER_REMOVE],
+            'config-sync/composer-install' => [ConfigSyncController::class, 'config-sync', BaseUpdaterController::ACTION_COMPOSER_INSTALL],
+            'config-sync/composer-remove' => [ConfigSyncController::class, 'config-sync', BaseUpdaterController::ACTION_COMPOSER_REMOVE],
+            'pluginstore/remove/composer-install' => [RemoveController::class, 'pluginstore/remove', BaseUpdaterController::ACTION_COMPOSER_INSTALL],
         ];
     }
 
