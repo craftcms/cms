@@ -403,8 +403,13 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         $this->app->terminating(function(): void {
-            $this->app->make(LegacyUsage::class)->flush();
-            $this->triggerAfterRequestForLaravelRequest();
+            try {
+                $this->triggerAfterRequestForLaravelRequest();
+            } finally {
+                // After the after-request handlers, which can run compatibility paths too.
+                $this->app->make(LegacyUsage::class)->flush();
+            }
+
             Craft::getLogger()->flush(true);
         });
 

@@ -20,11 +20,13 @@ use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Database\DeprecatedTable;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use PhpToken;
 use ReflectionClass;
 use ReflectionProperty;
 use Throwable;
@@ -90,9 +92,21 @@ class LooseEndsChecks
 
         foreach (File::glob("$configPath/*.php") as $file) {
             $name = basename($file);
-            $config = $this->requireFile($file);
+            $config = $this->inspectConfigFile($file);
 
-            if (is_array($config) && array_key_exists('*', $config)) {
+            if ($config['legacyNames'] !== []) {
+                $findings[] = $this->finding(
+                    "config.legacy-classes:$name",
+                    Section::Config,
+                    Severity::Breaks,
+                    t('`config/craft/{file}` uses classes that the Yii2 adapter provides.', ['file' => $name], 'yii2-adapter'),
+                    t('Switch to their Craft 6 equivalents, such as `CraftCms\\Cms\\Config\\GeneralConfig` for `craft\\config\\GeneralConfig`, and `CraftCms\\Cms\\Support\\Env::get()` for `craft\\helpers\\App::env()`.', category: 'yii2-adapter'),
+                    detail: collect($config['legacyNames'])->map(fn(string $name) => "`$name`")->join(', '),
+                    file: $file,
+                );
+            }
+
+            if (in_array('*', $config['keys'] ?? [], true)) {
                 $findings[] = $this->finding(
                     "config.multi-environment:$name",
                     Section::Config,
@@ -107,9 +121,9 @@ class LooseEndsChecks
         $general = "$configPath/general.php";
 
         if (is_file($general)) {
-            $config = $this->requireFile($general);
+            $config = $this->inspectConfigFile($general);
 
-            if (is_callable($config)) {
+            if ($config['callable']) {
                 $findings[] = $this->finding(
                     'config.general-callable',
                     Section::Config,
@@ -120,8 +134,8 @@ class LooseEndsChecks
                 );
             }
 
-            if (is_array($config)) {
-                $renamed = array_values(array_intersect(array_keys($config), array_keys($this->renamedSettings())));
+            if ($config['keys'] !== null) {
+                $renamed = array_values(array_intersect($config['keys'], array_keys($this->renamedSettings())));
 
                 if ($renamed !== []) {
                     $findings[] = $this->finding(
@@ -156,7 +170,7 @@ class LooseEndsChecks
 
         $anchors = "$configPath/anchors.php";
 
-        if (is_file($anchors) && !empty($this->requireFile($anchors))) {
+        if (is_file($anchors) && !$this->inspectConfigFile($anchors)['empty']) {
             $findings[] = $this->finding(
                 'config.anchors',
                 Section::Config,
@@ -169,7 +183,7 @@ class LooseEndsChecks
 
         $routes = "$configPath/routes.php";
 
-        if (is_file($routes) && !empty($this->requireFile($routes))) {
+        if (is_file($routes) && !$this->inspectConfigFile($routes)['empty']) {
             $findings[] = $this->finding(
                 'config.routes',
                 Section::Config,
@@ -264,7 +278,14 @@ class LooseEndsChecks
         $vars = [];
 
         foreach (self::LEGACY_ENV_VARS as $legacy => $replacement) {
-            if (Env::get($legacy) !== null && Env::get($replacement) === null) {
+            $value = Env::get($legacy);
+
+            if ($replacement === 'DB_PREFIX') {
+                // Like the adapter, which applies a legacy prefix whenever `DB_PREFIX` is empty, with an underscore.
+                if ($value && !Env::get('DB_PREFIX')) {
+                    $vars[$legacy] = sprintf('DB_PREFIX=%s', Str::finish((string)$value, '_'));
+                }
+            } elseif ($value !== null && Env::get($replacement) === null) {
                 $vars[$legacy] = $replacement;
             }
         }
@@ -279,7 +300,7 @@ class LooseEndsChecks
                 Section::Config,
                 Severity::Breaks,
                 t('Craft 5 environment variables are set.', category: 'yii2-adapter'),
-                t('Rename each one to its Laravel equivalent.', category: 'yii2-adapter'),
+                t('Rename each one to its Laravel equivalent. Craft 5 added an underscore to the end of the table prefix, but `DB_PREFIX` is used as is, so include it there.', category: 'yii2-adapter'),
                 detail: collect($vars)->map(fn(string $new, string $old) => "`$old` → `$new`")->join(', '),
             ),
         ];
@@ -793,13 +814,111 @@ class LooseEndsChecks
 
 
 
-    private function requireFile(string $file): mixed
+    /**
+     * Reads what a config file returns from its source, without running it.
+     *
+     * Running a config file again after boot would apply its settings a second time, over the environment overrides
+     * already applied to them, and run any other code in it.
+     *
+     * @return array{
+     *     callable: bool,
+     *     keys: list<string>|null,
+     *     empty: bool,
+     *     legacyNames: list<string>,
+     * } `keys` holds the returned array’s top-level string keys, or null if it doesn’t return an array literal.
+     * `legacyNames` holds the classes from the `craft\` namespace, and the `Craft` class, that the file references.
+     */
+    private function inspectConfigFile(string $file): array
     {
+        $result = ['callable' => false, 'keys' => null, 'empty' => false, 'legacyNames' => []];
+
         try {
-            return (static fn(string $__file) => require $__file)($file);
+            $tokens = array_values(array_filter(
+                PhpToken::tokenize((string)file_get_contents($file)),
+                fn(PhpToken $token) => !$token->isIgnorable(),
+            ));
         } catch (Throwable) {
-            return null;
+            return $result;
         }
+
+        $legacyNames = [];
+        $braceDepth = 0;
+        $return = null;
+
+        foreach ($tokens as $i => $token) {
+            if ($token->is([T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED])) {
+                $name = ltrim($token->text, '\\');
+
+                if (str_starts_with(strtolower($name), 'craft\\')) {
+                    $legacyNames[$name] = true;
+                } elseif (strcasecmp($name, 'Craft') === 0 && ($tokens[$i + 1] ?? null)?->is(T_DOUBLE_COLON)) {
+                    $legacyNames['Craft'] = true;
+                }
+            } elseif ($token->text === '{' || $token->is([T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES])) {
+                $braceDepth++;
+            } elseif ($token->text === '}') {
+                $braceDepth--;
+            } elseif ($token->is(T_RETURN) && $braceDepth === 0) {
+                $return = $i;
+            }
+        }
+
+        $result['legacyNames'] = array_keys($legacyNames);
+
+        if ($return === null) {
+            return $result;
+        }
+
+        $i = $return + 1;
+
+        if (($tokens[$i] ?? null)?->is(T_STATIC)) {
+            $i++;
+        }
+
+        if (($tokens[$i] ?? null)?->is([T_FUNCTION, T_FN])) {
+            $result['callable'] = true;
+
+            return $result;
+        }
+
+        if (($tokens[$i] ?? null)?->is(T_ARRAY) && ($tokens[$i + 1] ?? null)?->text === '(') {
+            $i++;
+        } elseif (($tokens[$i] ?? null)?->text !== '[') {
+            return $result;
+        }
+
+        $keys = [];
+        $depth = 0;
+        $empty = true;
+
+        for (; $i < count($tokens); $i++) {
+            $text = $tokens[$i]->text;
+
+            if ($depth > 0) {
+                $empty = $empty && in_array($text, [']', ')'], true) && $depth === 1;
+            }
+
+            if (in_array($text, ['[', '(', '{'], true) || $tokens[$i]->is([T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES])) {
+                $depth++;
+            } elseif (in_array($text, [']', ')', '}'], true)) {
+                $depth--;
+
+                if ($depth === 0) {
+                    break;
+                }
+            } elseif (
+                $depth === 1 &&
+                $tokens[$i]->is(T_CONSTANT_ENCAPSED_STRING) &&
+                ($tokens[$i + 1] ?? null)?->is(T_DOUBLE_ARROW)
+            ) {
+                $keys[] = stripcslashes(substr($text, 1, -1));
+            }
+        }
+
+        $result['keys'] = $keys;
+        $result['empty'] = $empty;
+
+        return $result;
     }
 
     private function finding(

@@ -6,6 +6,7 @@ use Composer\InstalledVersions;
 use craft\config\GeneralConfig as LegacyGeneralConfig;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Yii2Adapter\Database\DeprecatedTable;
@@ -123,6 +124,55 @@ it('still reports removed settings once the config is cached', function(): void 
         ->toContain('`enableCsrfProtection`:');
 });
 
+it('reads config files without running them', function(): void {
+    $configPath = sys_get_temp_dir() . '/loose-ends-config-' . uniqid();
+    mkdir("$configPath/craft", recursive: true);
+    file_put_contents("$configPath/craft/general.php", <<<'PHP'
+        <?php
+        use craft\config\GeneralConfig;
+        $GLOBALS['looseEndsConfigRan'] = true;
+        return GeneralConfig::create()->devMode(\Craft::$app !== null);
+        PHP);
+    file_put_contents("$configPath/craft/custom.php", "<?php\nreturn ['*' => ['foo' => fn() => ['bar' => 1]], 'dev' => []];");
+    app()->useConfigPath($configPath);
+
+    try {
+        $findings = collect(app(LooseEndsChecks::class)->configFiles())->keyBy('key');
+    } finally {
+        File::deleteDirectory($configPath);
+    }
+
+    expect($GLOBALS)->not->toHaveKey('looseEndsConfigRan')
+        ->and($findings->get('config.legacy-classes:general.php')?->detail)->toBe('`craft\config\GeneralConfig`, `Craft`')
+        ->and($findings)->toHaveKey('config.multi-environment:custom.php')
+        ->not->toHaveKey('config.legacy-classes:custom.php');
+});
+
+it('reports a Craft 5 table prefix when `DB_PREFIX` is empty, with the underscore Craft 5 added', function(): void {
+    $set = function(string $name, ?string $value): void {
+        putenv($value === null ? $name : "$name=$value");
+
+        if ($value === null) {
+            unset($_ENV[$name], $_SERVER[$name]);
+        } else {
+            $_ENV[$name] = $_SERVER[$name] = $value;
+        }
+    };
+    $original = ['CRAFT_DB_TABLE_PREFIX' => getenv('CRAFT_DB_TABLE_PREFIX') ?: null, 'DB_PREFIX' => getenv('DB_PREFIX') ?: null];
+    $set('CRAFT_DB_TABLE_PREFIX', 'craft');
+    $set('DB_PREFIX', '');
+
+    try {
+        $detail = app(LooseEndsChecks::class)->legacyEnvVars()[0]->detail ?? '';
+    } finally {
+        foreach ($original as $name => $value) {
+            $set($name, $value);
+        }
+    }
+
+    expect($detail)->toContain('`CRAFT_DB_TABLE_PREFIX` → `DB_PREFIX=craft_`');
+});
+
 it('shows the removal steps once nothing depends on the adapter', function(): void {
     $html = LooseEndsUtility::contentHtml();
 
@@ -132,6 +182,10 @@ it('shows the removal steps once nothing depends on the adapter', function(): vo
         ->toContain('composer remove craftcms/yii2-adapter');
 
     $this->artisan('craft:yii2-adapter:cleanup')->assertSuccessful();
+
+    // Usage the request records after the cleanup must not create the table again.
+    LegacyUsage::record('project', 'Used by the project.', base_path('modules/Module.php'), 10);
+    app(LegacyUsage::class)->flush();
 
     expect(Schema::hasTable(LooseEndsStore::TABLE))->toBeFalse();
 });

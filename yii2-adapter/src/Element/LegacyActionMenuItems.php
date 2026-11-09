@@ -50,7 +50,7 @@ final class LegacyActionMenuItems
             return;
         }
 
-        $locations = $this->handlerLocations($event->element, 'defineActionMenuItems');
+        $locations = self::handlerLocations($event->element, 'defineActionMenuItems');
 
         foreach ($locations as [$file, $line]) {
             LegacyUsage::record(
@@ -386,7 +386,7 @@ final class LegacyActionMenuItems
      *
      * @return list<array{string, int}>
      */
-    private function handlerLocations(ElementInterface $element, string $name): array
+    public static function handlerLocations(ElementInterface $element, string $name): array
     {
         /** @var array<string, array<string, list<array{0: callable, 1: mixed}>>> $events */
         $events = new ReflectionProperty(YiiEvent::class, '_events')->getValue();

@@ -39,6 +39,11 @@ class LooseEndsStore
 
     private ?bool $tableExists = null;
 
+    /**
+     * Whether the table was dropped during this request, so usage recorded afterward doesn’t create it again.
+     */
+    private bool $dropped = false;
+
     public function tableExists(): bool
     {
         if ($this->tableExists !== null) {
@@ -58,6 +63,22 @@ class LooseEndsStore
             return;
         }
 
+        try {
+            $this->createTable();
+        } catch (Throwable $e) {
+            // Another request may have created it first.
+            $this->tableExists = null;
+
+            if (!$this->tableExists()) {
+                throw $e;
+            }
+        }
+
+        $this->tableExists = true;
+    }
+
+    private function createTable(): void
+    {
         Schema::create(self::TABLE, function(Blueprint $table) {
             $table->increments('id');
             $table->string('key');
@@ -70,8 +91,6 @@ class LooseEndsStore
             $table->dateTime('lastSeen');
             $table->unique(['key', 'fingerprint']);
         });
-
-        $this->tableExists = true;
     }
 
     /**
@@ -82,6 +101,7 @@ class LooseEndsStore
         Schema::dropIfExists(self::TABLE);
         Cache::forget(self::FINDING_COUNT_CACHE_KEY);
         $this->tableExists = false;
+        $this->dropped = true;
     }
 
     /**
@@ -91,27 +111,39 @@ class LooseEndsStore
      */
     public function recordUsages(array $usages): void
     {
+        if ($this->dropped) {
+            return;
+        }
+
         $now = Query::prepareDateForDb(CarbonImmutable::now());
 
         foreach ($usages as $usage) {
             $fingerprint = $this->fingerprint($usage['file'], $usage['line']);
+            $cacheKey = $this->cacheKey($usage['key'], $fingerprint);
 
-            if (!Cache::add($this->cacheKey($usage['key'], $fingerprint), true, self::USAGE_WRITE_INTERVAL)) {
+            if (!Cache::add($cacheKey, true, self::USAGE_WRITE_INTERVAL)) {
                 continue;
             }
 
-            $this->ensureTable();
+            try {
+                $this->ensureTable();
 
-            DB::table(self::TABLE)->upsert([
-                'key' => $usage['key'],
-                'fingerprint' => $fingerprint,
-                'section' => $usage['section']->value,
-                'severity' => $usage['severity']->value,
-                'message' => $usage['message'],
-                'file' => $usage['file'],
-                'line' => $usage['line'],
-                'lastSeen' => $now,
-            ], ['key', 'fingerprint'], ['message', 'lastSeen']);
+                DB::table(self::TABLE)->upsert([
+                    'key' => $usage['key'],
+                    'fingerprint' => $fingerprint,
+                    'section' => $usage['section']->value,
+                    'severity' => $usage['severity']->value,
+                    'message' => $usage['message'],
+                    'file' => $usage['file'],
+                    'line' => $usage['line'],
+                    'lastSeen' => $now,
+                ], ['key', 'fingerprint'], ['message', 'lastSeen']);
+            } catch (Throwable $e) {
+                // Let the next occurrence try again, rather than waiting out the interval.
+                Cache::forget($cacheKey);
+
+                throw $e;
+            }
         }
     }
 
