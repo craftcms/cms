@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Traits\Macroable;
@@ -17,6 +18,7 @@ use Illuminate\Support\Traits\Macroable;
 /**
  * @since 6.0.0
  */
+#[Scoped]
 class CraftVariable
 {
     use Macroable {

@@ -436,18 +436,18 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->afterResolving(CraftVariable::class, function() {
             $legacyVariable = new LegacyCraftVariable();
 
-            foreach (array_keys($legacyVariable->getComponents()) as $name) {
-                CraftVariable::macro($name, fn() => $legacyVariable->get($name));
-            }
-
             foreach ($legacyVariable->getBehaviors() as $behavior) {
                 $this->registerCraftVariableBehavior($behavior);
+            }
+
+            foreach (array_keys($legacyVariable->getComponents()) as $name) {
+                CraftVariable::macro($name, fn() => $legacyVariable->get($name));
             }
         });
     }
 
     /**
-     * Exposes the public properties and methods of a behavior attached to the legacy `craft` variable,
+     * Exposes the public properties, methods, and getters of a behavior attached to the legacy `craft` variable,
      * such as `craft.commerce` or `craft.shopifyProducts()`.
      */
     private function registerCraftVariableBehavior(Behavior $behavior): void
@@ -465,8 +465,15 @@ class Yii2ServiceProvider extends ServiceProvider
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             $name = $method->getName();
 
-            if (!$method->isStatic() && !method_exists(Behavior::class, $name)) {
-                CraftVariable::macro($name, fn(mixed ...$args) => $behavior->$name(...$args));
+            if ($method->isStatic() || method_exists(Behavior::class, $name)) {
+                continue;
+            }
+
+            CraftVariable::macro($name, fn(mixed ...$args) => $behavior->$name(...$args));
+
+            if (str_starts_with($name, 'get') && strlen($name) > 3 && $method->getNumberOfRequiredParameters() === 0) {
+                $property = lcfirst(substr($name, 3));
+                CraftVariable::macro($property, fn() => $behavior->$property);
             }
         }
     }

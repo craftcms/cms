@@ -7,9 +7,9 @@
 
 namespace craft\web\twig\variables;
 
-use BadMethodCallException;
 use craft\events\DefineBehaviorsEvent;
 use CraftCms\Cms\Auth\OAuth\OAuth;
+use CraftCms\Cms\Twig\Variables\CraftVariable as CoreCraftVariable;
 use CraftCms\Cms\Twig\Variables\Io;
 use yii\di\ServiceLocator;
 
@@ -53,7 +53,49 @@ class CraftVariable extends ServiceLocator
             return app()->$name(...$params);
         }
 
-        throw new BadMethodCallException("Method $name does not exist on CraftVariable.");
+        if ($this->hasMethod($name)) {
+            return parent::__call($name, $params);
+        }
+
+        return app(CoreCraftVariable::class)->$name(...$params);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __get($name)
+    {
+        if (!$this->has($name) && !$this->canGetProperty($name)) {
+            $craftVariable = app(CoreCraftVariable::class);
+
+            if (property_exists($craftVariable, $name)) {
+                return $craftVariable->$name;
+            }
+
+            if (CoreCraftVariable::hasMacro($name)) {
+                return $craftVariable->$name();
+            }
+        }
+
+        return parent::__get($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __isset($name)
+    {
+        if ($this->has($name) || $this->canGetProperty($name)) {
+            return parent::__isset($name);
+        }
+
+        $craftVariable = app(CoreCraftVariable::class);
+
+        if (property_exists($craftVariable, $name)) {
+            return isset($craftVariable->$name);
+        }
+
+        return CoreCraftVariable::hasMacro($name) && $craftVariable->$name() !== null;
     }
 
     /**
