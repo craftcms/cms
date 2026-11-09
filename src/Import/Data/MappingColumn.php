@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import\Data;
 
+use CraftCms\Cms\Import\DefaultValueInputs;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use JsonSerializable;
+use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\Optional;
 
 /**
@@ -15,6 +17,8 @@ use Spatie\TypeScriptTransformer\Attributes\Optional;
  * `prefixedHandleAsArray` is the column's path from the root of the mapping trees. The
  * `prefixedHandleFor*` strings are the bracket-named form inputs the column's values are posted under.
  *
+ * @phpstan-import-type DefaultValueInput from DefaultValueInputs
+ *
  * @since 6.0.0
  */
 readonly class MappingColumn implements JsonSerializable
@@ -22,6 +26,7 @@ readonly class MappingColumn implements JsonSerializable
     /**
      * @param  list<string>  $prefixedHandleAsArray
      * @param  list<FieldMappingSetting>|null  $importSettings
+     * @param  DefaultValueInput|null  $defaultValueInput
      */
     public function __construct(
         public string $handle,
@@ -48,12 +53,23 @@ readonly class MappingColumn implements JsonSerializable
         public ?string $prefixedHandleForKeepFlag = null,
         #[Optional]
         public ?array $importSettings = null,
+        /**
+         * The input a default value is entered with, matching the column's field type and settings; see
+         * `DefaultValueInputs`. Unset means the column takes no default.
+         */
+        #[Optional]
+        #[LiteralTypeScriptType("{type: 'text' | 'textarea' | 'email' | 'color' | 'number' | 'date' | 'datetime' | 'time' | 'lightswitch' | 'select' | 'multiselect', options?: Array<{value: string, label: string}>, placeholder?: string, maxLength?: number, min?: number | string, max?: number | string, step?: number, prefix?: string, suffix?: string, onLabel?: string, offLabel?: string}")]
+        public ?array $defaultValueInput = null,
+        /** The icon of the destination's field type, for telling columns apart at a glance. */
+        #[Optional]
+        public ?string $icon = null,
     ) {}
 
     /**
      * Creates a column, deriving its path and form input names from its prefixed handle.
      *
      * @param  list<FieldMappingSetting>|null  $importSettings
+     * @param  DefaultValueInput|null  $defaultValueInput
      * @param  bool  $withKeepInputs  Whether to include the keep-missing-nested-elements inputs, for a container field.
      */
     public static function make(
@@ -69,6 +85,8 @@ readonly class MappingColumn implements JsonSerializable
         ?string $fieldUid = null,
         ?array $importSettings = null,
         bool $withKeepInputs = false,
+        ?array $defaultValueInput = null,
+        ?string $icon = null,
     ): self {
         $prefixedHandle ??= $handle;
 
@@ -90,6 +108,8 @@ readonly class MappingColumn implements JsonSerializable
             prefixedHandleForKeep: $withKeepInputs ? Html::namespaceInputName($prefixedHandle, 'keepMissingNestedElements') : null,
             prefixedHandleForKeepFlag: $withKeepInputs ? Html::namespaceInputName($prefixedHandle.'[__keep__]', 'keepMissingNestedElements') : null,
             importSettings: $importSettings,
+            defaultValueInput: $defaultValueInput,
+            icon: $icon,
         );
     }
 
@@ -119,6 +139,8 @@ readonly class MappingColumn implements JsonSerializable
             'importSettings' => $this->importSettings === null
                 ? null
                 : array_map(fn (FieldMappingSetting $setting): array => $setting->jsonSerialize(), $this->importSettings),
+            'defaultValueInput' => $this->defaultValueInput,
+            'icon' => $this->icon,
         ];
 
         return $payload + Arr::whereNotNull($optional);

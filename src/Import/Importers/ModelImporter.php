@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Importers;
 
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\DefaultValueInputs;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\Import;
@@ -81,6 +82,7 @@ abstract class ModelImporter extends BaseImporter
             label: $col['name'],
             canBeMatchCriteria: $this->isTypeMatchable($col['type_name']),
             canBeCleared: $col['nullable'],
+            defaultValueInput: DefaultValueInputs::forColumnType($col['type_name']),
         ), $columns);
     }
 

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\FieldLayout\Concerns;
 
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\FieldMappingSetting;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\DefaultValueInputs;
 use CraftCms\Cms\Import\ImportHelper;
 
 /**
@@ -32,6 +34,9 @@ trait ImportableFieldLayoutElement
             prefixedHandle: ImportHelper::prefixedHandleForMapping($attribute, $ownerField, null, $fieldLayout, $provider, $prefix),
             canBeMatchCriteria: $this->canBeMatchCriteria(),
             canBeCleared: $this->canBeCleared(),
+            // native fields like Title and Slug hold text, so they read as Plain Text fields do
+            defaultValueInput: DefaultValueInputs::text(),
+            icon: PlainText::icon(),
         );
     }
 

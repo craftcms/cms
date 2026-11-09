@@ -3,11 +3,16 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Checkboxes;
 use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
+use CraftCms\Cms\Field\Date;
+use CraftCms\Cms\Field\Dropdown;
 use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Fields as FieldsService;
+use CraftCms\Cms\Field\Lightswitch;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
@@ -175,4 +180,97 @@ it('names the keep flag for a container field inside a content block without rep
     expect($col->prefixedHandle)->toBe("myContentBlock[fields][$elementUid]")
         ->and($col->prefixedHandleForKeepFlag)->toBe("keepMissingNestedElements[myContentBlock][fields][$elementUid][__keep__]")
         ->and($col->prefixedHandleAsArray)->toBe(['myContentBlock', 'fields', $elementUid]);
+});
+
+it('enters a field’s default value with the input its type and settings call for', function () {
+    $fields = [
+        Field::factory()->create(['name' => 'Plain Text', 'handle' => 'plainText', 'type' => PlainText::class]),
+        Field::factory()->create([
+            'name' => 'Notes',
+            'handle' => 'notes',
+            'type' => PlainText::class,
+            'settings' => ['multiline' => true, 'charLimit' => 200, 'placeholder' => 'Anything else?'],
+        ]),
+        Field::factory()->create([
+            'name' => 'Featured',
+            'handle' => 'featured',
+            'type' => Lightswitch::class,
+            'settings' => ['onLabel' => 'Yes', 'offLabel' => 'No'],
+        ]),
+        Field::factory()->create([
+            'name' => 'Reading Time',
+            'handle' => 'readingTime',
+            'type' => Number::class,
+            'settings' => ['min' => 1, 'max' => 60, 'decimals' => 1, 'suffix' => 'min'],
+        ]),
+        Field::factory()->create([
+            'name' => 'Published',
+            'handle' => 'published',
+            'type' => Date::class,
+            'settings' => ['showTime' => true],
+        ]),
+        Field::factory()->create([
+            'name' => 'Difficulty',
+            'handle' => 'difficulty',
+            'type' => Dropdown::class,
+            'settings' => ['options' => [
+                ['label' => 'Beginner', 'value' => 'beginner', 'default' => true],
+                ['label' => 'Advanced', 'value' => 'advanced', 'default' => false],
+            ]],
+        ]),
+        Field::factory()->create([
+            'name' => 'Topics',
+            'handle' => 'topics',
+            'type' => Checkboxes::class,
+            'settings' => ['options' => [
+                ['label' => 'News', 'value' => 'news', 'default' => false],
+            ]],
+        ]),
+        Field::factory()->create(['name' => 'Related', 'handle' => 'related', 'type' => EntriesField::class]),
+    ];
+    Fields::refreshFields();
+
+    $fieldLayoutModel = FieldLayout::factory()
+        ->withContentTab(array_map(fn ($field) => CustomField::make($field->handle), $fields))
+        ->create();
+
+    $fieldLayout = app(FieldsService::class)->getLayoutByUid($fieldLayoutModel->uid);
+    $cols = collect(ImportHelper::getDestinationColsForFieldLayout($fieldLayout))->keyBy('handle');
+
+    expect($cols['plainText']->defaultValueInput)->toBe(['type' => 'text'])
+        ->and($cols['notes']->defaultValueInput)->toBe(['type' => 'textarea', 'placeholder' => 'Anything else?', 'maxLength' => 200])
+        ->and($cols['featured']->defaultValueInput)->toBe(['type' => 'lightswitch', 'onLabel' => 'Yes', 'offLabel' => 'No'])
+        ->and($cols['readingTime']->defaultValueInput)->toBe(['type' => 'number', 'min' => 1, 'max' => 60, 'step' => 0.1, 'suffix' => 'min'])
+        ->and($cols['published']->defaultValueInput)->toBe(['type' => 'datetime'])
+        ->and($cols['difficulty']->defaultValueInput)->toBe([
+            'type' => 'select',
+            'options' => [
+                ['value' => 'beginner', 'label' => 'Beginner'],
+                ['value' => 'advanced', 'label' => 'Advanced'],
+            ],
+        ])
+        ->and($cols['topics']->defaultValueInput)->toBe([
+            'type' => 'multiselect',
+            'options' => [['value' => 'news', 'label' => 'News']],
+        ])
+        // no single value entered by hand suits a relation
+        ->and($cols['related']->defaultValueInput)->toBeNull();
+});
+
+it('gives each destination column its field type’s icon', function () {
+    $fields = [
+        Field::factory()->create(['name' => 'Plain Text', 'handle' => 'plainText', 'type' => PlainText::class]),
+        Field::factory()->create(['name' => 'Featured', 'handle' => 'featured', 'type' => Lightswitch::class]),
+    ];
+    Fields::refreshFields();
+
+    $fieldLayoutModel = FieldLayout::factory()
+        ->withContentTab(array_map(fn ($field) => CustomField::make($field->handle), $fields))
+        ->create();
+
+    $fieldLayout = app(FieldsService::class)->getLayoutByUid($fieldLayoutModel->uid);
+    $cols = collect(ImportHelper::getDestinationColsForFieldLayout($fieldLayout))->keyBy('handle');
+
+    expect($cols['plainText']->icon)->toBe(PlainText::icon())
+        ->and($cols['featured']->icon)->toBe(Lightswitch::icon());
 });

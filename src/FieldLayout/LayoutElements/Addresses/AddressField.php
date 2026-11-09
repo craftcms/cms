@@ -8,6 +8,7 @@ use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -15,6 +16,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\DefaultValueInputs;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -147,6 +149,8 @@ class AddressField extends BaseField implements ImportableFieldLayoutElementInte
                 prefixedHandle: ImportHelper::prefixedHandleForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix),
                 canBeMatchCriteria: false,
                 canBeCleared: true,
+                defaultValueInput: DefaultValueInputs::text(),
+                icon: PlainText::icon(),
             ), $parts),
         );
     }
