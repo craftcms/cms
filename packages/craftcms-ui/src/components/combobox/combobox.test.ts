@@ -179,7 +179,7 @@ describe('craft-combobox', () => {
       input.focus();
       await typeQuery(combobox, query);
       expect(activeIndex(combobox)).toBe(0);
-      expect(String(optionEls(combobox)[0]?.choiceValue)).toBe('markdown');
+      expect(String(optionEls(combobox)[0]?.value)).toBe('markdown');
       emitted = false;
       input.dispatchEvent(
         new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
@@ -215,14 +215,14 @@ describe('craft-combobox', () => {
     await typeQuery(combobox, 'exhibit');
 
     const options = optionEls(combobox);
-    expect(
-      String((options[0] as HTMLElement & {choiceValue: unknown}).choiceValue)
-    ).toBe('exhibit');
+    expect(String((options[0] as HTMLElement & {value: unknown}).value)).toBe(
+      'exhibit'
+    );
     expect(activeIndex(combobox)).toBe(0);
     expect(
       options.filter(
         (option) =>
-          option.hasAttribute('active') || option.hasAttribute('checked')
+          option.hasAttribute('active') || option.hasAttribute('selected')
       )
     ).toHaveLength(1);
   });

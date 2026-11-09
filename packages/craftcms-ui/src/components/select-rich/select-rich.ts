@@ -24,8 +24,8 @@ import {uniqueId} from '@src/utilities/unique-id';
  * indicators, hints), and the selected option's content is copied into the
  * field.
  *
- * Options rendered as markup take their value from a `choice-value`
- * attribute; in Lit templates, bind `.choiceValue`. With no option checked,
+ * Options rendered as markup take their value from a `value`
+ * attribute; in Lit templates, bind `.value`. With no option selected,
  * the first enabled one is.
  *
  * The field is a select-only combobox: it keeps focus while the listbox is
@@ -73,7 +73,7 @@ export default class CraftSelectRich extends FormAssociated(
 
   #value = '';
 
-  /** The checked option's value, or empty when none is. */
+  /** The selected option's value, or empty when none is. */
   @property()
   get value(): string {
     return this.#value;
@@ -93,7 +93,7 @@ export default class CraftSelectRich extends FormAssociated(
 
   #defaultValueRead = false;
 
-  /** Whether option `checked` changes are this component's own. */
+  /** Whether option `selected` changes are this component's own. */
   #applying = false;
 
   #typeahead = new Typeahead();
@@ -121,7 +121,7 @@ export default class CraftSelectRich extends FormAssociated(
 
   constructor() {
     super();
-    this.addEventListener('craft-checked-change', this.#onOptionChecked);
+    this.addEventListener('craft-selected-change', this.#onOptionSelected);
   }
 
   /** Creates the field when none is slotted. */
@@ -153,8 +153,8 @@ export default class CraftSelectRich extends FormAssociated(
     return this.#options.filter((option) => !option.hidden);
   }
 
-  get #checkedOption(): CraftOption | undefined {
-    return this.#options.find((option) => option.checked);
+  get #selectedOption(): CraftOption | undefined {
+    return this.#options.find((option) => option.selected);
   }
 
   get #disabled(): boolean {
@@ -166,7 +166,7 @@ export default class CraftSelectRich extends FormAssociated(
   }
 
   /**
-   * Whether the first enabled option is checked when the value matches none.
+   * Whether the first enabled option is selected when the value matches none.
    * A subclass that starts with nothing selected returns false.
    */
   protected get _selectsFirstOption(): boolean {
@@ -209,7 +209,7 @@ export default class CraftSelectRich extends FormAssociated(
     return null;
   }
 
-  /** Checks the option that was checked on load when the owning form resets. */
+  /** Selects the option that was selected on load when the owning form resets. */
   formResetCallback() {
     this.value = this.#defaultValue;
     this.#syncInput();
@@ -235,9 +235,9 @@ export default class CraftSelectRich extends FormAssociated(
     }
 
     if (this.#value === '') {
-      const checked = this.#checkedOption;
-      if (checked) {
-        this.#value = checked.choiceValue;
+      const selected = this.#selectedOption;
+      if (selected) {
+        this.#value = selected.value;
       }
     }
 
@@ -266,24 +266,24 @@ export default class CraftSelectRich extends FormAssociated(
   }
 
   /**
-   * Checks the option the value names. When options arrive and none of them
-   * matches, the first enabled one is checked instead.
+   * Selects the option the value names. When options arrive and none of them
+   * matches, the first enabled one is selected instead.
    */
   #applyValue({fallBackToFirst = false} = {}): void {
     const options = this.#options;
-    let match = options.find((option) => option.choiceValue === this.#value);
+    let match = options.find((option) => option.value === this.#value);
 
     if (!match && fallBackToFirst && this._selectsFirstOption) {
       match = options.find((option) => !option.disabled);
       if (match) {
-        this.#value = match.choiceValue;
+        this.#value = match.value;
       }
     }
 
     this.#applying = true;
     try {
       for (const option of options) {
-        option.checked = option === match;
+        option.selected = option === match;
       }
     } finally {
       this.#applying = false;
@@ -293,32 +293,32 @@ export default class CraftSelectRich extends FormAssociated(
     this.#syncInput();
   }
 
-  /** An option checked from outside, by setting its `checked`. */
-  #onOptionChecked = (event: Event): void => {
+  /** An option selected from outside, by setting its `selected`. */
+  #onOptionSelected = (event: Event): void => {
     const option = event.target as CraftOption;
 
     if (
       this.#applying ||
       option.parentElement !== this ||
       option.localName !== 'craft-option' ||
-      !option.checked
+      !option.selected
     ) {
       return;
     }
 
     const old = this.#value;
-    this.#value = option.choiceValue;
+    this.#value = option.value;
     this.#applyValue();
     this.requestUpdate('value', old);
   };
 
   /** Selects an option on the user's behalf. */
   #pick(option: CraftOption): void {
-    if (option.disabled || option.choiceValue === this.#value) {
+    if (option.disabled || option.value === this.#value) {
       return;
     }
 
-    this.value = option.choiceValue;
+    this.value = option.value;
     emitInput(this);
     emitChange(this);
   }
@@ -329,15 +329,15 @@ export default class CraftSelectRich extends FormAssociated(
       return;
     }
 
-    const checked = this.#checkedOption;
+    const selected = this.#selectedOption;
     const single = this.#singleOption;
 
     invoker.id ||= this._inputId;
     invoker.singleOption = single;
     invoker.disabled = this.#disabled;
     render(
-      checked
-        ? [...checked.childNodes].map((node) => node.cloneNode(true))
+      selected
+        ? [...selected.childNodes].map((node) => node.cloneNode(true))
         : '',
       invoker
     );
@@ -461,8 +461,8 @@ export default class CraftSelectRich extends FormAssociated(
       this.#typeahead.reset();
       this.#dropdown.show();
       document.addEventListener('pointerdown', this.#onDocumentPointerDown);
-      const checked = this.#checkedOption;
-      this.#setActive(checked?.hidden ? undefined : checked);
+      const selected = this.#selectedOption;
+      this.#setActive(selected?.hidden ? undefined : selected);
       return;
     }
 
@@ -541,7 +541,7 @@ export default class CraftSelectRich extends FormAssociated(
     const match = this.#typeahead.match(
       event,
       this.#keyboardOptions,
-      this.#checkedOption
+      this.#selectedOption
     );
     if (match) {
       event.preventDefault();

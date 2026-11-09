@@ -62,7 +62,7 @@ it('selects option values and excludes selected options', async () => {
   await control.updateComplete;
   expect(
     [...control.querySelectorAll('craft-option:not([hidden])')].map(
-      (option) => (option as HTMLElement & {choiceValue: string}).choiceValue
+      (option) => (option as HTMLElement & {value: string}).value
     )
   ).toEqual(['a']);
 });

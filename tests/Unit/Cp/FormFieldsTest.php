@@ -167,8 +167,8 @@ describe('customSelectFieldHtml', function () {
         $select = $crawler->filter('craft-field[data-attribute="typeId"] > craft-select-rich#entryType[slot="input"][name="typeId"]');
 
         expect($select)->toHaveCount(1)
-            ->and($select->filter('craft-option[choice-value="1"] craft-icon[name="newspaper"][data-color="blue"]'))->toHaveCount(1)
-            ->and($select->filter('craft-option[checked][choice-value="2"] em')->text())->toBe('News');
+            ->and($select->filter('craft-option[value="1"] craft-icon[name="newspaper"][data-color="blue"]'))->toHaveCount(1)
+            ->and($select->filter('craft-option[selected][value="2"] em')->text())->toBe('News');
     });
 
     it('checks nothing for an empty value and disables the select', function () {
@@ -180,7 +180,7 @@ describe('customSelectFieldHtml', function () {
         ]);
 
         expect($html)->toContainTag('craft-select-rich', ['disabled' => true])
-            ->and($html)->not->toContain(' checked');
+            ->and($html)->not->toContain(' selected');
     });
 });
 

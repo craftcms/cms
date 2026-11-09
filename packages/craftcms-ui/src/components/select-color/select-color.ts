@@ -180,7 +180,7 @@ export default class CraftSelectColor extends CraftSelectRich {
    * alongside the swatch (see `_swatchTemplate`).
    */
   protected _optionTemplate(color: string, label: string) {
-    return html`<craft-option .choiceValue=${color}>
+    return html`<craft-option .value=${color}>
       <span
         class="select-color__option"
         style="display:flex;align-items:center;gap:var(--c-spacing-sm);"

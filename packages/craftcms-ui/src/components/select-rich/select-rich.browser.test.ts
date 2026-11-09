@@ -16,8 +16,8 @@ afterEach(() => {
 async function fixture(): Promise<CraftSelectRich> {
   document.body.innerHTML = `
     <craft-select-rich label="Status">
-      <craft-option .choiceValue="all" checked>All</craft-option>
-      <craft-option .choiceValue="live">Live</craft-option>
+      <craft-option .value="all" selected>All</craft-option>
+      <craft-option .value="live">Live</craft-option>
     </craft-select-rich>`;
   const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
   await select.updateComplete;
@@ -57,8 +57,8 @@ it.each([
       <div style="padding-inline: 16px">
         <div class="container" style="inline-size: ${width}">
           <craft-select-rich label="Status">
-            <craft-option .choiceValue="short">Short</craft-option>
-            <craft-option .choiceValue="long" hint="${'x '.repeat(200)}">${'y'.repeat(300)}</craft-option>
+            <craft-option .value="short">Short</craft-option>
+            <craft-option .value="long" hint="${'x '.repeat(200)}">${'y'.repeat(300)}</craft-option>
           </craft-select-rich>
         </div>
       </div>`;
@@ -112,9 +112,9 @@ async function formFixture(): Promise<{
     <form>
       <fieldset>
         <craft-select-rich name="typeId" label="Entry Type">
-          <craft-option choice-value="1">Article</craft-option>
-          <craft-option choice-value="2" checked>News</craft-option>
-          <craft-option choice-value="3">Event</craft-option>
+          <craft-option value="1">Article</craft-option>
+          <craft-option value="2" selected>News</craft-option>
+          <craft-option value="3">Event</craft-option>
         </craft-select-rich>
       </fieldset>
     </form>`;
@@ -125,7 +125,7 @@ async function formFixture(): Promise<{
   return {form: document.querySelector('form')!, select};
 }
 
-it('posts the checked option through a native input', async () => {
+it('posts the selected option through a native input', async () => {
   const {form, select} = await formFixture();
 
   expect(new FormData(form).getAll('typeId')).toEqual(['2']);
@@ -174,7 +174,7 @@ it('doesn’t fire change for programmatic selection', async () => {
   };
   form.addEventListener('change', onChange);
 
-  select.querySelectorAll('craft-option')[0]!.checked = true;
+  select.querySelectorAll('craft-option')[0]!.selected = true;
   await select.updateComplete;
 
   expect(new FormData(form).get('typeId')).toBe('1');
@@ -183,7 +183,7 @@ it('doesn’t fire change for programmatic selection', async () => {
 it('goes back to its initial option on form reset', async () => {
   const {form, select} = await formFixture();
 
-  select.querySelectorAll('craft-option')[0]!.checked = true;
+  select.querySelectorAll('craft-option')[0]!.selected = true;
   await select.updateComplete;
   form.reset();
   await select.updateComplete;
@@ -215,9 +215,9 @@ it('posts nothing while disabled, including by a disabled fieldset', async () =>
 
 it('is a select-only combobox that keeps focus while its listbox is open', async () => {
   document.body.innerHTML = `<craft-select-rich label="Status" help-text="Pick one">
-      <craft-option choice-value="all">All</craft-option>
-      <craft-option choice-value="live" checked>Live</craft-option>
-      <craft-option choice-value="draft" disabled>Draft</craft-option>
+      <craft-option value="all">All</craft-option>
+      <craft-option value="live" selected>Live</craft-option>
+      <craft-option value="draft" disabled>Draft</craft-option>
     </craft-select-rich>`;
   await new Promise((r) => setTimeout(r, 100));
   const box = page.getByRole('combobox', {name: 'Status', expanded: false});
@@ -251,10 +251,10 @@ async function keyboardFixture(): Promise<CraftSelectRich> {
   document.body.innerHTML = `
     <button type="button">Before</button>
     <craft-select-rich label="Fruit">
-      <craft-option choice-value="apple">Apple</craft-option>
-      <craft-option choice-value="banana" disabled>Banana</craft-option>
-      <craft-option choice-value="cherry" checked>Cherry</craft-option>
-      <craft-option choice-value="damson">Damson</craft-option>
+      <craft-option value="apple">Apple</craft-option>
+      <craft-option value="banana" disabled>Banana</craft-option>
+      <craft-option value="cherry" selected>Cherry</craft-option>
+      <craft-option value="damson">Damson</craft-option>
     </craft-select-rich>
     <button type="button">After</button>`;
   const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
@@ -396,7 +396,7 @@ it('closes on Tab and moves focus on', async () => {
 it('keeps its role with a single option, read-only with nothing to open', async () => {
   document.body.innerHTML = `
     <craft-select-rich label="Site">
-      <craft-option choice-value="default">Default</craft-option>
+      <craft-option value="default">Default</craft-option>
     </craft-select-rich>`;
   const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
   await select.updateComplete;

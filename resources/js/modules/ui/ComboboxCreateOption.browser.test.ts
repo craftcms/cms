@@ -74,10 +74,8 @@ async function fixture(multiple = false, items: ComboboxItem[] = options) {
 
 function createOption(combobox: CraftCombobox): HTMLElement {
   return [
-    ...combobox.querySelectorAll<HTMLElement & {choiceValue: string}>(
-      'craft-option'
-    ),
-  ].find((option) => option.choiceValue.startsWith('__'))!;
+    ...combobox.querySelectorAll<HTMLElement & {value: string}>('craft-option'),
+  ].find((option) => option.value.startsWith('__'))!;
 }
 
 it('selects ordinary options without opening a slideout', async () => {

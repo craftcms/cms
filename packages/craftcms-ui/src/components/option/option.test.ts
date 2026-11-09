@@ -52,13 +52,13 @@ describe('craft-option', () => {
     ).toBeTruthy();
   });
 
-  it('carries its value as choiceValue, from the choice-value attribute too', async () => {
-    const element = await createOption({'choice-value': 'blog'});
+  it('carries its value, from the value attribute too', async () => {
+    const element = await createOption({value: 'blog'});
 
-    expect(element.choiceValue).toBe('blog');
+    expect(element.value).toBe('blog');
 
-    element.choiceValue = 'news';
+    element.value = 'news';
 
-    expect(element.choiceValue).toBe('news');
+    expect(element.value).toBe('news');
   });
 });

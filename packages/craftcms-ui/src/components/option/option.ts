@@ -22,7 +22,7 @@ import '../icon/icon.js';
  * @slot - The option's label and any markup that goes with it.
  * @slot suffix - Trailing content, shown after the label and hint.
  *
- * @fires craft-checked-change - `checked` changed. Bubbles, so the listbox
+ * @fires craft-selected-change - `selected` changed. Bubbles, so the listbox
  *   around the option hears it.
  *
  * @cssproperty --c-option-wide-threshold - Width, in pixels, past which the
@@ -47,24 +47,24 @@ export default class CraftOption extends LitElement {
   });
 
   /** The value the option selects. */
-  @property({attribute: 'choice-value'})
-  choiceValue = '';
+  @property()
+  value = '';
 
-  #checked = false;
+  #selected = false;
 
   /** Whether the option is selected. */
   @property({type: Boolean, reflect: true})
-  get checked(): boolean {
-    return this.#checked;
+  get selected(): boolean {
+    return this.#selected;
   }
 
-  set checked(checked: boolean) {
-    const old = this.#checked;
-    this.#checked = checked;
-    this.requestUpdate('checked', old);
+  set selected(selected: boolean) {
+    const old = this.#selected;
+    this.#selected = selected;
+    this.requestUpdate('selected', old);
 
-    if (old !== checked) {
-      this.dispatchEvent(new Event('craft-checked-change', {bubbles: true}));
+    if (old !== selected) {
+      this.dispatchEvent(new Event('craft-selected-change', {bubbles: true}));
     }
   }
 
@@ -108,8 +108,8 @@ export default class CraftOption extends LitElement {
   }
 
   protected override willUpdate(changed: PropertyValues) {
-    if (changed.has('checked')) {
-      this.setAttribute('aria-selected', String(this.checked));
+    if (changed.has('selected')) {
+      this.setAttribute('aria-selected', String(this.selected));
     }
 
     if (changed.has('disabled')) {
@@ -124,7 +124,7 @@ export default class CraftOption extends LitElement {
         ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
         <slot name="suffix"></slot>
       </div>
-      ${this.checked
+      ${this.selected
         ? html`<craft-icon class="check" name="check"></craft-icon>`
         : nothing}
     `;

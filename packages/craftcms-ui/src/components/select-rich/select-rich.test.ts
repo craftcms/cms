@@ -34,8 +34,8 @@ describe('craft-select-rich', () => {
     const element = await createSelectRich();
     element.insertAdjacentHTML(
       'beforeend',
-      '<craft-option choice-value="apple">Apple</craft-option>' +
-        '<craft-option choice-value="strawberry">Strawberry</craft-option>'
+      '<craft-option value="apple">Apple</craft-option>' +
+        '<craft-option value="strawberry">Strawberry</craft-option>'
     );
     await new Promise((resolve) => setTimeout(resolve));
     const invoker = element.querySelector('craft-select-invoker')!;

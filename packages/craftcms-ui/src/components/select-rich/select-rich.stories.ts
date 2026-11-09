@@ -42,11 +42,11 @@ const meta = {
     select(
       args,
       html`
-        <craft-option .choiceValue="${'apple'}">Apple</craft-option>
-        <craft-option .choiceValue="${'banana'}">Banana</craft-option>
-        <craft-option .choiceValue="${'cherry'}">Cherry</craft-option>
-        <craft-option .choiceValue="${'grape'}">Grape</craft-option>
-        <craft-option .choiceValue="${'mango'}">Mango</craft-option>
+        <craft-option .value="${'apple'}">Apple</craft-option>
+        <craft-option .value="${'banana'}">Banana</craft-option>
+        <craft-option .value="${'cherry'}">Cherry</craft-option>
+        <craft-option .value="${'grape'}">Grape</craft-option>
+        <craft-option .value="${'mango'}">Mango</craft-option>
       `
     ),
 } satisfies Meta<SelectRichArgs>;
@@ -64,19 +64,19 @@ export const RichOptions: Story = {
     select(
       args,
       html`
-        <craft-option .choiceValue="${'online'}">
+        <craft-option .value="${'online'}">
           <div class="flex items-center gap-1">
             <craft-indicator fill="success"></craft-indicator
             ><span>Online</span>
           </div>
         </craft-option>
-        <craft-option .choiceValue="${'maintenance'}">
+        <craft-option .value="${'maintenance'}">
           <div class="flex items-center gap-1">
             <craft-indicator fill="warning"></craft-indicator
             ><span>Maintenance</span>
           </div>
         </craft-option>
-        <craft-option .choiceValue="${'offline'}">
+        <craft-option .value="${'offline'}">
           <div class="flex items-center gap-1">
             <craft-indicator fill="danger"></craft-indicator
             ><span>Offline</span>
@@ -93,9 +93,9 @@ export const Small: Story = {
     select(
       args,
       html`
-        <craft-option .choiceValue="${'sm'}">Small</craft-option>
-        <craft-option .choiceValue="${'md'}">Medium</craft-option>
-        <craft-option .choiceValue="${'lg'}">Large</craft-option>
+        <craft-option .value="${'sm'}">Small</craft-option>
+        <craft-option .value="${'md'}">Medium</craft-option>
+        <craft-option .value="${'lg'}">Large</craft-option>
       `
     ),
 };
@@ -107,13 +107,9 @@ export const WithHints: Story = {
     select(
       args,
       html`
-        <craft-option .choiceValue="${'blog'}" hint="12 entries"
-          >Blog</craft-option
-        >
-        <craft-option .choiceValue="${'news'}" hint="4 entries"
-          >News</craft-option
-        >
-        <craft-option .choiceValue="${'docs'}" hint="89 entries"
+        <craft-option .value="${'blog'}" hint="12 entries">Blog</craft-option>
+        <craft-option .value="${'news'}" hint="4 entries">News</craft-option>
+        <craft-option .value="${'docs'}" hint="89 entries"
           >Documentation</craft-option
         >
       `

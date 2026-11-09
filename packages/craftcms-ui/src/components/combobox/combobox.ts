@@ -775,7 +775,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
 
   /** Selects an option on the user's behalf. */
   #pick(option: CraftOption): void {
-    const value = option.choiceValue;
+    const value = option.value;
 
     if (this.multipleChoice) {
       const values = this.value as string[];
@@ -897,13 +897,11 @@ export default class CraftCombobox extends FormControl(LitElement) {
   #activeOption(): CraftOption | undefined {
     return this.#activeValue === null
       ? undefined
-      : this.#options().find(
-          (option) => option.choiceValue === this.#activeValue
-        );
+      : this.#options().find((option) => option.value === this.#activeValue);
   }
 
   #setActive(option: CraftOption | undefined): void {
-    this.#activeValue = option?.choiceValue ?? null;
+    this.#activeValue = option?.value ?? null;
     activateOption(this.#options(), option, this._inputNode, {
       scroll: this.opened,
     });
@@ -1039,15 +1037,15 @@ export default class CraftCombobox extends FormControl(LitElement) {
     activateOption(this.#options(), active, this._inputNode, {scroll: false});
   }
 
-  #optionTemplate(option: ComboboxOption, checked: boolean) {
+  #optionTemplate(option: ComboboxOption, selected: boolean) {
     const data = option.data ?? {};
     const label = option.label;
     const isEnv = label.startsWith('$') || label.startsWith('@');
 
     return html`
       <craft-option
-        .choiceValue=${String(option.value)}
-        .checked=${checked}
+        .value=${String(option.value)}
+        .selected=${selected}
         .hint=${data.hint ?? null}
         ?disabled=${option.disabled ?? false}
       >

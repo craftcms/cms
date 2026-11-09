@@ -15,7 +15,7 @@ async function swatchEdges(): Promise<Record<string, string>> {
   await select.updateComplete;
   const edge = (value: string) => {
     const option = [...select.querySelectorAll('craft-option')].find(
-      (o) => (o as unknown as {choiceValue: string}).choiceValue === value
+      (o) => (o as unknown as {value: string}).value === value
     )!;
 
     return getComputedStyle(option.querySelector('.select-color__swatch')!)
@@ -70,7 +70,7 @@ it.each(['light', 'dark'])(
         card.shadowRoot!.querySelector('.card__header')!
       );
       const option = [...select.querySelectorAll('craft-option')].find(
-        (o) => (o as unknown as {choiceValue: string}).choiceValue === color
+        (o) => (o as unknown as {value: string}).value === color
       )!;
       const swatch = getComputedStyle(
         option.querySelector('.select-color__swatch')!

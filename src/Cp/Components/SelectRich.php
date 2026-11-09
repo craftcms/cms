@@ -125,8 +125,8 @@ class SelectRich extends ViewComponent
             $content .= $this->renderContent($option['label']);
 
             $options .= Html::tag('craft-option', $content, [
-                'choice-value' => (string) $option['value'],
-                'checked' => $this->value !== null && (string) $option['value'] === (string) $this->value,
+                'value' => (string) $option['value'],
+                'selected' => $this->value !== null && (string) $option['value'] === (string) $this->value,
                 'disabled' => $option['disabled'] ?? false,
                 'hint' => $option['hint'] ?? null,
             ]);

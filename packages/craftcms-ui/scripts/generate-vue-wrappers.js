@@ -617,7 +617,7 @@ function generateSelectRichWrapper(component) {
     <craft-option
       v-for="option in options"
       :key="option.value"
-      .choiceValue="String(option.value)"
+      .value="String(option.value)"
     >
       <slot name="option" :option="option">
         {{ option.label }}
