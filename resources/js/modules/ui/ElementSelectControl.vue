@@ -424,8 +424,11 @@
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,
+        ...props.control.props.referenceElement,
         showSiteMenu: props.control.props.showSiteMenu,
         indexSettings: {showFolders: props.control.props.showFolders ?? true},
+        defaultSource: props.control.props.defaultSource,
+        defaultSourcePath: props.control.props.defaultSourcePath,
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being
         // replaced, which would otherwise disable the obvious no-op choice.

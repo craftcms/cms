@@ -55,6 +55,9 @@ describe('uiControl', function () {
         $field = assetsField();
         $field->allowUploads = true;
         $field->defaultUploadLocationSource = null;
+        // Listed sources, shown whatever the permissions, resolve without the volumes table.
+        $field->sources = ['volume:uploads'];
+        $field->showUnpermittedVolumes = true;
 
         $control = $field->uiControl(new FieldContext(path: 'images'));
 

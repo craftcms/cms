@@ -266,8 +266,8 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        $sources = $this->allowMultipleSources ? $this->sources : $this->source;
-        $sources = $sources === '*' ? null : $sources;
+        $sources = $this->getInputSources($context->element);
+        $sources = $sources === '*' || $sources === [null] ? null : $sources;
         $sources = is_string($sources) ? [$sources] : $sources;
         $value = $context->value === null
             ? []
@@ -276,6 +276,9 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
         return $this->selectControl($context)
             ->elementType(static::elementType())
             ->sources($sources)
+            ->criteria($this->getInputSelectionCriteria())
+            ->selectionCondition($this->getSelectionCondition())
+            ->referenceElement($context->element)
             ->selectionLabel($this->selectionLabel ?? static::defaultSelectionLabel())
             ->limit($this->maxRelations)
             ->showSiteMenu($this->showSiteMenu)

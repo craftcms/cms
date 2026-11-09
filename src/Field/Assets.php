@@ -767,10 +767,20 @@ class Assets extends BaseRelationField
     #[Override]
     public function getInputSources(?ElementInterface $element = null): array
     {
-        $folder = $this->_uploadFolder($element, false, false);
-        SessionAuth::authorize('saveAssets:'.$folder->getVolume()->uid);
+        try {
+            $folder = $this->_uploadFolder($element, false, false);
+            SessionAuth::authorize('saveAssets:'.$folder->getVolume()->uid);
+        } catch (InvalidFsException|InvalidSubpathException) {
+            // An unconfigured or broken location is reported by uiWarning(), and only matters when it's
+            // the one place assets can be selected from.
+            $folder = null;
+        }
 
         if ($this->restrictLocation) {
+            if (! $folder) {
+                return [];
+            }
+
             if (! $this->showUnpermittedVolumes) {
                 // Make sure they have permission to view the volume
                 // (Use restrictedLocationSource here because the actual folder could belong to a temp volume)
@@ -797,7 +807,8 @@ class Assets extends BaseRelationField
             $sources = array_merge($this->sources);
         } else {
             $sources = [];
-            foreach (ElementSources::getSources(Asset::class) as $source) {
+            // The field context lists every volume, leaving showUnpermittedVolumes to decide below
+            foreach (ElementSources::getSources(Asset::class, ElementSources::CONTEXT_FIELD) as $source) {
                 if ($source['type'] !== ElementSources::TYPE_HEADING) {
                     $sources[] = $source['key'];
                 }
@@ -845,7 +856,15 @@ class Assets extends BaseRelationField
     #[Override]
     protected function selectControl(FieldContext $context): ElementSelect
     {
-        $control = AssetSelect::make($context->path);
+        $control = AssetSelect::make($context->path)
+            ->showFolders(! $this->restrictLocation || $this->allowSubfolders);
+
+        try {
+            $control->defaultSource(...$this->defaultSourceSettings($context->element));
+        } catch (InvalidFsException|InvalidSubpathException) {
+            // Reported by uiWarning(); the modal opens on its first source instead
+        }
+
         $uploadVolume = $this->_uploadVolume();
 
         $canUpload = (
@@ -932,15 +951,10 @@ class Assets extends BaseRelationField
             $variables['showSourcePath'] = false;
         }
 
-        if (! $this->restrictLocation || $this->allowSubfolders) {
-            $uploadFolder = $this->_uploadFolder($element, false);
-            if ($uploadFolder->volumeId) {
-                // If the location is restricted, don't go passed the base source folder
-                $baseUploadFolder = $this->restrictLocation ? $this->_uploadFolder($element, false, false) : null;
-                $folders = $this->_folderWithAncestors($uploadFolder, $baseUploadFolder);
-                $variables['defaultSource'] = $this->_sourceKeyByFolder($folders[0]);
-                $variables['defaultSourcePath'] = array_map(fn (VolumeFolder $folder) => $folder->getSourcePathInfo(), $folders);
-            }
+        [$defaultSource, $defaultSourcePath] = $this->defaultSourceSettings($element);
+        if ($defaultSource !== null) {
+            $variables['defaultSource'] = $defaultSource;
+            $variables['defaultSourcePath'] = $defaultSourcePath;
         }
 
         if (isset($variables['searchCriteria'])) {
@@ -949,6 +963,35 @@ class Assets extends BaseRelationField
         }
 
         return $variables;
+    }
+
+    /**
+     * Returns the source and folder path the selector modal should open in: the upload folder, within the restricted
+     * location if there is one, as in Craft 5. Without subfolders there's only the restricted location to open.
+     *
+     * @return array{0: string|null, 1: list<array<string, mixed>>|null}
+     *
+     * @throws InvalidFsException|InvalidSubpathException if the location is misconfigured
+     */
+    private function defaultSourceSettings(?ElementInterface $element): array
+    {
+        if ($this->restrictLocation && ! $this->allowSubfolders) {
+            return [null, null];
+        }
+
+        $uploadFolder = $this->_uploadFolder($element, false);
+        if (! $uploadFolder->volumeId) {
+            return [null, null];
+        }
+
+        // If the location is restricted, don't go passed the base source folder
+        $baseUploadFolder = $this->restrictLocation ? $this->_uploadFolder($element, false, false) : null;
+        $folders = $this->_folderWithAncestors($uploadFolder, $baseUploadFolder);
+
+        return [
+            $this->_sourceKeyByFolder($folders[0]),
+            array_map(fn (VolumeFolder $folder) => $folder->getSourcePathInfo(), $folders),
+        ];
     }
 
     /** @param array<string, mixed> $variables */
