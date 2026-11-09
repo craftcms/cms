@@ -240,7 +240,10 @@ readonly class StoreEntryController
     {
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
         $attributes = [
-            'authorIds' => $this->request->input('authors') ?? $this->request->input('author') ?? $entry->getAuthorId() ?? $currentUser->getCraftUserId(),
+            'authorIds' => $this->request->input('authorIds')
+                ?? $this->request->input('authors')
+                ?? $this->request->input('author')
+                ?? ($entry->getAuthorIds() ?: $currentUser->getCraftUserId()),
         ];
 
         foreach (['expiryDate', 'postDate', 'slug', 'title', 'typeId'] as $attribute) {
