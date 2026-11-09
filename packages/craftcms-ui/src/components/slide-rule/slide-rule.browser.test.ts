@@ -59,3 +59,25 @@ it('ends a drag the browser cancels, keeping the value it reached', async () => 
   expect(rule.value).toBe(reached);
   expect(events).toEqual(['change', 'craft-drag-end']);
 });
+
+it('posts with the form its form attribute names', async () => {
+  document.body.innerHTML =
+    '<form id="settings"></form><form id="other"><craft-slide-rule name="angle" value="12" form="settings"></craft-slide-rule></form>';
+  const rule = document.querySelector<CraftSlideRule>('craft-slide-rule')!;
+  await rule.updateComplete;
+  const posted = (id: string) =>
+    new FormData(document.querySelector<HTMLFormElement>(`#${id}`)!).get(
+      'angle'
+    );
+
+  expect(rule.form?.id).toBe('settings');
+  expect(posted('settings')).toBe('12');
+  expect(posted('other')).toBeNull();
+
+  rule.removeAttribute('form');
+  await rule.updateComplete;
+
+  expect(rule.form?.id).toBe('other');
+  expect(posted('settings')).toBeNull();
+  expect(posted('other')).toBe('12');
+});

@@ -137,6 +137,9 @@ export const FormAssociated = <T extends Constructor<LitElement>>(Base: T) => {
 
     @state() protected _formDisabled = false;
 
+    /** The `form` attribute, which the hidden inputs carry. */
+    @property({attribute: 'form'}) private _formAttribute: string | null = null;
+
     _formValue(): FormValue {
       return null;
     }
@@ -201,7 +204,8 @@ export const FormAssociated = <T extends Constructor<LitElement>>(Base: T) => {
     protected _syncFormValue(): void {
       const value = this.name && !this.disabled ? this._formValue() : null;
 
-      const posted = JSON.stringify([this.name, value]);
+      const form = this._formAttribute;
+      const posted = JSON.stringify([this.name, value, form]);
 
       if (
         (value === null && !this.#inputs) ||
@@ -224,17 +228,28 @@ export const FormAssociated = <T extends Constructor<LitElement>>(Base: T) => {
 
       render(
         Array.isArray(value)
-          ? html`<input type="hidden" name=${this.name} value="" />${value.map(
+          ? html`<input
+                type="hidden"
+                name=${this.name}
+                value=""
+                form=${form ?? nothing}
+              />${value.map(
                 (item) =>
                   html`<input
                     type="hidden"
                     name=${`${this.name}[]`}
+                    form=${form ?? nothing}
                     .value=${item}
                   />`
               )}`
           : value === null
             ? nothing
-            : html`<input type="hidden" name=${this.name} .value=${value} />`,
+            : html`<input
+                type="hidden"
+                name=${this.name}
+                form=${form ?? nothing}
+                .value=${value}
+              />`,
         this.#inputs
       );
     }
