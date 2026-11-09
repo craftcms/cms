@@ -409,8 +409,8 @@ it('keeps its role with a single option, read-only with nothing to open', async 
   expect(select.open).toBe(false);
 });
 
-it('marks the field invalid while `invalid` is set', async () => {
-  document.body.innerHTML = `<craft-select-rich label="Status" invalid><craft-option choice-value="all">All</craft-option></craft-select-rich>`;
+it('marks the field invalid while it is invalid', async () => {
+  document.body.innerHTML = `<craft-select-rich label="Status" invalid><craft-option value="all">All</craft-option></craft-select-rich>`;
   const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
   await select.updateComplete;
   const field = select.querySelector('craft-select-invoker')!;

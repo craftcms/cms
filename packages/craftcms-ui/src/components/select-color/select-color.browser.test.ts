@@ -208,9 +208,7 @@ it('fills hex colors’ swatches, checkers a transparent one, and selects a hex 
   await select.updateComplete;
   const swatch = (value: string) =>
     [...select.querySelectorAll('craft-option')]
-      .find(
-        (o) => (o as unknown as {choiceValue: string}).choiceValue === value
-      )!
+      .find((o) => (o as unknown as {value: string}).value === value)!
       .querySelector('.select-color__swatch')!;
 
   expect(getComputedStyle(swatch('#e5422b')).backgroundColor).toBe(

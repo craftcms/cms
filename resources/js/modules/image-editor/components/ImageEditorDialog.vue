@@ -813,7 +813,7 @@
     :label="
       confirming === 'reset' ? t('Reset to original') : t('Discard changes')
     "
-    .opened="confirmOpen"
+    .open="confirmOpen"
     @craft-hide.self="confirmOpen = false"
     @craft-after-hide.self="onConfirmationHidden"
   >

@@ -148,7 +148,7 @@ it('stays closed when an item is chosen while it is still opening', async () => 
   item.click();
   await new Promise((resolve) => setTimeout(resolve, 100));
 
-  expect(menu.opened).toBe(false);
+  expect(menu.open).toBe(false);
   expect(item.checkVisibility()).toBe(false);
 });
 

@@ -53,7 +53,7 @@ afterEach(async () => {
   const editor = document.querySelector<CraftDialog>('.image-editor-dialog');
 
   if (editor) {
-    editor.opened = false;
+    editor.open = false;
     await vi.waitFor(() =>
       expect(document.querySelector('.image-editor-dialog')).toBeNull()
     );
@@ -66,7 +66,7 @@ afterEach(async () => {
 
 function openDialogLabels(): string[] {
   return [...document.querySelectorAll<CraftDialog>('craft-dialog')]
-    .filter((dialog) => dialog.opened)
+    .filter((dialog) => dialog.open)
     .map((dialog) => dialog.label);
 }
 
@@ -115,16 +115,16 @@ it('confirms closing an edited image in a dialog of its own', async () => {
 });
 
 it('keeps the editor open when one of its tooltips hides', async () => {
-  const tooltip = editorDialog().querySelector<HTMLElement & {opened: boolean}>(
+  const tooltip = editorDialog().querySelector<HTMLElement & {open: boolean}>(
     'craft-tooltip'
   )!;
   const hidden = new Promise((resolve) =>
     tooltip.addEventListener('craft-after-hide', resolve, {once: true})
   );
 
-  tooltip.opened = true;
-  await vi.waitFor(() => expect(tooltip.opened).toBe(true));
-  tooltip.opened = false;
+  tooltip.open = true;
+  await vi.waitFor(() => expect(tooltip.open).toBe(true));
+  tooltip.open = false;
   await hidden;
   await new Promise((resolve) => setTimeout(resolve));
 
