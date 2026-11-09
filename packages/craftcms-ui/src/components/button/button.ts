@@ -41,7 +41,7 @@ const implicitSubmitters = new WeakMap<
   {button: HTMLButtonElement; owners: Set<CraftButton>}
 >();
 
-function createImplicitSubmitter(): HTMLButtonElement {
+function createImplicitSubmitter(activate: () => void): HTMLButtonElement {
   const button = document.createElement('button');
   button.type = 'submit';
   button.tabIndex = -1;
@@ -49,7 +49,13 @@ function createImplicitSubmitter(): HTMLButtonElement {
   button.style.cssText =
     'position:absolute;inset-block-start:0;inset-inline-start:0;width:1px;height:1px;padding:0;border:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;';
   // Its click is an implementation detail of the form, not one to listen for.
-  button.addEventListener('click', (event) => event.stopPropagation());
+  // The default `craft-button` is clicked instead, so its listeners can cancel
+  // the submit, as they could a native default button's.
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    activate();
+  });
   return button;
 }
 
@@ -74,34 +80,48 @@ function inDisabledFieldset(element: Element): boolean {
 
 /**
  * Buttons to recheck when a fieldset is enabled or disabled, which no event
- * reports. One observer serves them all.
+ * reports. One observer serves each document or shadow root, since an observer
+ * doesn't see into shadow roots.
  */
-const fieldsetWatchers = new Set<() => void>();
-let fieldsetObserver: MutationObserver | undefined;
+const fieldsetObservers = new WeakMap<
+  Node,
+  {observer: MutationObserver; watchers: Set<() => void>}
+>();
 
-function watchFieldsets(sync: () => void): void {
-  fieldsetWatchers.add(sync);
+function watchFieldsets(root: Node, sync: () => void): void {
+  let entry = fieldsetObservers.get(root);
 
-  if (!fieldsetObserver) {
-    fieldsetObserver = new MutationObserver((records) => {
+  if (!entry) {
+    const watchers = new Set<() => void>();
+    const observer = new MutationObserver((records) => {
       if (records.some((r) => r.target instanceof HTMLFieldSetElement)) {
-        fieldsetWatchers.forEach((watcher) => watcher());
+        watchers.forEach((watcher) => watcher());
       }
     });
-    fieldsetObserver.observe(document, {
+    observer.observe(root, {
       attributes: true,
       attributeFilter: ['disabled'],
       subtree: true,
     });
+    entry = {observer, watchers};
+    fieldsetObservers.set(root, entry);
   }
+
+  entry.watchers.add(sync);
 }
 
-function unwatchFieldsets(sync: () => void): void {
-  fieldsetWatchers.delete(sync);
+function unwatchFieldsets(root: Node, sync: () => void): void {
+  const entry = fieldsetObservers.get(root);
 
-  if (!fieldsetWatchers.size) {
-    fieldsetObserver?.disconnect();
-    fieldsetObserver = undefined;
+  if (!entry) {
+    return;
+  }
+
+  entry.watchers.delete(sync);
+
+  if (!entry.watchers.size) {
+    entry.observer.disconnect();
+    fieldsetObservers.delete(root);
   }
 }
 
@@ -213,10 +233,16 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     button: HTMLButtonElement;
     owners: Set<CraftButton>;
   }): void {
-    const [first] = [...entry.owners].sort((a, b) =>
+    const first = CraftButton.#defaultSubmitter(entry.owners);
+    entry.button.disabled = first ? first.#inactive : false;
+  }
+
+  /** A form's first submit `craft-button`, which Enter in a field clicks. */
+  static #defaultSubmitter(owners: Set<CraftButton>): CraftButton | undefined {
+    const [first] = [...owners].sort((a, b) =>
       a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
     );
-    entry.button.disabled = first ? first.#inactive : false;
+    return first;
   }
 
   constructor() {
@@ -282,7 +308,8 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
 
     this.#pendingFormAction = undefined;
 
-    if (event.defaultPrevented) {
+    // A button disabled by then does nothing, as a native one wouldn't.
+    if (event.defaultPrevented || this.#inactive) {
       return;
     }
 
@@ -298,13 +325,16 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
   /**
    * Marks the button `active` while it's pressed. A press that starts a
    * native drag, from a reorder handle say, never gets its mouseup, so the
-   * end of the drag releases it too.
+   * end of the drag releases it too. Releasing restores the value from before
+   * the press, so a toggle that was on is still on when its click asks to
+   * turn it off.
    */
   #onMouseDown = () => {
+    const wasActive = this.active;
     this.active = true;
 
     const release = () => {
-      this.active = false;
+      this.active = wasActive;
       document.removeEventListener('mouseup', release, true);
       document.removeEventListener('dragend', release, true);
     };
@@ -356,7 +386,8 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
 
     this.syncLinkHostState();
     this.#syncFieldsetDisabled();
-    watchFieldsets(this.#syncFieldsetDisabled);
+    this.#fieldsetRoot = this.getRootNode();
+    watchFieldsets(this.#fieldsetRoot, this.#syncFieldsetDisabled);
     this.#syncImplicitSubmitter();
     this.addEventListener('click', this.#handleToggleClick);
 
@@ -393,8 +424,15 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     this.#contentObserver = null;
     this.#stopAwaitingRender();
     this.#releaseImplicitSubmitter();
-    unwatchFieldsets(this.#syncFieldsetDisabled);
+
+    if (this.#fieldsetRoot) {
+      unwatchFieldsets(this.#fieldsetRoot, this.#syncFieldsetDisabled);
+      this.#fieldsetRoot = null;
+    }
   }
+
+  /** The document or shadow root watched for fieldsets changing. */
+  #fieldsetRoot: Node | null = null;
 
   /** The form this button registered an implicit submitter with. */
   #submitterForm: HTMLFormElement | null = null;
@@ -415,7 +453,11 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     let entry = implicitSubmitters.get(form);
 
     if (!entry) {
-      entry = {button: createImplicitSubmitter(), owners: new Set()};
+      const owners = new Set<CraftButton>();
+      const button = createImplicitSubmitter(() =>
+        CraftButton.#defaultSubmitter(owners)?.click()
+      );
+      entry = {button, owners};
       implicitSubmitters.set(form, entry);
     }
 
