@@ -7,12 +7,15 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 uses(DatabaseTestCase::class);
 
 afterEach(function() {
-    Schema::dropIfExists('legacymigration_articles');
+    foreach (['legacymigration_articles', 'legacymigration_articles_old', 'legacymigration_articles_old1'] as $table) {
+        Schema::dropIfExists($table);
+    }
 });
 
 it('runs legacy migrations that add foreign keys and drop tables', function() {
@@ -34,6 +37,26 @@ it('runs legacy migrations that add foreign keys and drop tables', function() {
     $migrator->runMigration((new MigrationWrapper(LegacyForeignKeyMigration::class))->silent(), 'down');
 
     expect(Schema::hasTable('legacymigration_articles'))->toBeFalse();
+});
+
+it('archives tables with an _old suffix', function() {
+    $migration = new class() extends Migration {
+    };
+
+    foreach (['First', 'Second'] as $title) {
+        $migration->archiveTableIfExists('{{%legacymigration_articles}}');
+        $migration->createTable('{{%legacymigration_articles}}', [
+            'id' => $migration->primaryKey(),
+            'title' => $migration->string(),
+        ]);
+        $migration->insert('{{%legacymigration_articles}}', ['title' => $title]);
+    }
+
+    $migration->archiveTableIfExists('{{%legacymigration_articles}}');
+
+    expect(DB::table('legacymigration_articles_old')->value('title'))->toBe('First')
+        ->and(DB::table('legacymigration_articles_old1')->value('title'))->toBe('Second')
+        ->and(Schema::hasTable('legacymigration_articles'))->toBeFalse();
 });
 
 it('rethrows exceptions from legacy migrations', function() {

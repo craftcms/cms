@@ -128,6 +128,20 @@ it('converts callable general config and application type overlays', function():
         ->and($config->cpTrigger)->toBe('console');
 });
 
+it('applies a deprecated anchors.php config file unless the general config sets anchors', function(array $general, string $expectedText): void {
+    $config = new GeneralConfigCompatibility()->applyAnchorsConfig(
+        new GeneralConfigCompatibility()->convert($general),
+        ['anchorLinkText' => 'File'],
+    );
+
+    expect($config->anchors->anchorLinkText)->toBe($expectedText)
+        ->and(collect(Deprecator::getRequestLogs())->firstWhere('key', 'config-anchors')?->message)
+        ->toContain('config/craft/anchors.php');
+})->with([
+    'without general.php anchors' => [[], 'File'],
+    'with general.php anchors' => [['anchors' => ['anchorLinkText' => 'General']], 'General'],
+]);
+
 it('loads a legacy general config without logging deprecations for settings it leaves alone', function(): void {
     Config::set('craft.general', GeneralConfig::create()->cpTrigger('control'));
 

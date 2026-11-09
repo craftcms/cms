@@ -64,8 +64,16 @@ it('defaults the authenticated server to the control panel without public regist
     'with public registration' => [true, '/mcp', '/mcp/auth'],
 ]);
 
-it('notes control panel endpoints and endpoints both servers share', function (array $values, array $notices): void {
+it('notes control panel endpoints, endpoints both servers share, and missing OAuth signing keys', function (array $values, array $notices, bool $keys = true): void {
     actingAs(User::find()->one());
+
+    if ($keys) {
+        $key = openssl_pkey_new(['private_key_bits' => 2048]);
+        openssl_pkey_export($key, $privateKey);
+        config()->set('passport.private_key', $privateKey);
+        config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    }
+
     $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
     $values = array_map(fn (mixed $value): mixed => is_string($value) ? str_replace('{cp}', $cpTrigger, $value) : $value, $values);
 
@@ -79,6 +87,7 @@ it('notes control panel endpoints and endpoints both servers share', function (a
     'control panel endpoint' => [['enabled' => true, 'route' => '/{cp}/mcp', 'publicEnabled' => false, 'publicRoute' => '/mcp'], ['mcp-route-cp-notice']],
     'shared endpoint' => [['enabled' => true, 'route' => '/mcp/', 'publicEnabled' => true, 'publicRoute' => '/mcp'], ['mcp-shared-endpoint-warning']],
     'shared endpoint with a disabled server' => [['enabled' => true, 'route' => '/mcp', 'publicEnabled' => false, 'publicRoute' => '/mcp'], []],
+    'missing OAuth signing keys' => [['enabled' => true, 'route' => '/mcp', 'publicEnabled' => false, 'publicRoute' => '/mcp'], ['mcp-oauth-keys-warning'], false],
 ]);
 
 it('sends requests to a shared endpoint by whether they carry a bearer token', function (): void {

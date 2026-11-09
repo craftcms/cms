@@ -1,0 +1,521 @@
+/**
+ * Which values the built-in controls take from other controls of their kind,
+ * decided from the value itself and the control's own settings: a value a
+ * control couldn't have been given by hand, such as multi-line text for a
+ * single-line input or an option it doesn't have, isn't pasted into it.
+ *
+ * Anything that depends on more than the value, such as the elements a
+ * relation field can select, is settled by the controls' value scopes.
+ */
+
+import {moneyAmount} from './money';
+import type {UiControlPayload, UiValue, UiValues} from './types';
+import type {UiValueAcceptor} from './valueAccess';
+
+type Props = Record<string, unknown>;
+type Scalar = string | number;
+
+function propsOf(control: UiControlPayload<object>): Props {
+  return control.props as Props;
+}
+
+function isBlank(value: UiValue | undefined): boolean {
+  return (
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    (Array.isArray(value) && value.length === 0)
+  );
+}
+
+function isRecord(value: UiValue | undefined): value is UiValues {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    !(value instanceof File)
+  );
+}
+
+function isScalar(value: UiValue | undefined): value is Scalar {
+  return typeof value === 'string' || typeof value === 'number';
+}
+
+/**
+ * Whether `value` is a finite decimal number, as a number input can hold it,
+ * not hex or `Infinity`, which `Number()` would also read.
+ */
+function isNumeric(value: UiValue | undefined): boolean {
+  return (
+    isScalar(value) &&
+    /^-?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?$/i.test(String(value)) &&
+    Number.isFinite(Number(value))
+  );
+}
+
+/**
+ * Whether `text` fits in `maxLength` characters, counted in code points, as
+ * PHP's `mb_strlen()` counts them.
+ */
+function fitsLength(text: string, maxLength: unknown): boolean {
+  return typeof maxLength !== 'number' || Array.from(text).length <= maxLength;
+}
+
+/**
+ * Whether `value` is between `min` and `max`: as numbers when they're
+ * numbers, or numeric strings beside a numeric value, and as strings
+ * otherwise, like dates and times are.
+ */
+function withinBounds(value: Scalar, min: unknown, max: unknown): boolean {
+  return [min, max].every((bound, index) => {
+    const numeric =
+      typeof bound === 'number' ||
+      (isNumeric(bound as UiValue) && isNumeric(value));
+    const order = numeric
+      ? Number(value) - Number(bound)
+      : typeof bound === 'string' && bound !== ''
+        ? String(value).localeCompare(bound)
+        : null;
+
+    return order === null || (index === 0 ? order >= 0 : order <= 0);
+  });
+}
+
+function isSingleLine(text: string): boolean {
+  return !/[\r\n]/.test(text);
+}
+
+/** Whether `text` has the format an input of `inputType` checks for. */
+function fitsInputType(text: string, inputType: unknown): boolean {
+  switch (inputType) {
+    case 'email':
+      return /^[^\s@]+@[^\s@]+$/.test(text);
+    case 'url':
+      return URL.canParse(text);
+    // Real dates and times, as date and time inputs hold them, such as
+    // `2026-11-13` and `14:30`
+    case 'date': {
+      const [, year, month, day] = (
+        /^(\d{4})-(\d{2})-(\d{2})$/.exec(text) ?? []
+      ).map(Number);
+      const leap = year! % 4 === 0 && (year! % 100 !== 0 || year! % 400 === 0);
+      const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+      return year! >= 1 && day! >= 1 && day! <= (days[month! - 1] ?? 0);
+    }
+    case 'time': {
+      const match = /^(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/.exec(text);
+
+      return (
+        match !== null &&
+        Number(match[1]) < 24 &&
+        Number(match[2]) < 60 &&
+        Number(match[3] ?? 0) < 60
+      );
+    }
+    default:
+      return true;
+  }
+}
+
+/** Whether `value` could be an option's value, which can be true or false. */
+function isOptionValue(value: UiValue | undefined): value is Scalar | boolean {
+  return isScalar(value) || typeof value === 'boolean';
+}
+
+/**
+ * The values of a list of options that can be chosen, flattening any option
+ * groups and leaving out disabled options.
+ */
+function optionValues(options: unknown): Set<string> {
+  const list = Array.isArray(options)
+    ? options
+    : options && typeof options === 'object'
+      ? Object.values(options)
+      : [];
+
+  return new Set(
+    list.flatMap(
+      (option: {value?: unknown; options?: unknown; disabled?: unknown}) =>
+        option && typeof option === 'object'
+          ? 'options' in option
+            ? [...optionValues(option.options)]
+            : option.value === undefined ||
+                option.value === null ||
+                option.disabled === true
+              ? []
+              : [String(option.value as Scalar)]
+          : []
+    )
+  );
+}
+
+/**
+ * Whether a choice has the shape a control holds: a list of values when it
+ * takes several, and one value otherwise.
+ */
+function fitsShape(value: UiValue, multiple: unknown): boolean {
+  return Array.isArray(value)
+    ? Boolean(multiple) && value.every(isOptionValue)
+    : !multiple && isOptionValue(value);
+}
+
+/** Whether a choice of `values` fits the options a control offers. */
+function fitsOptions(value: UiValue, options: unknown): boolean {
+  const offered = optionValues(options);
+
+  return (Array.isArray(value) ? value : [value]).every(
+    (item) => isOptionValue(item) && offered.has(String(item))
+  );
+}
+
+/** Plain text, and the inputs built on it, such as numbers, dates and times. */
+const text: UiValueAcceptor = (control, {value}) => {
+  if (isBlank(value)) {
+    return true;
+  }
+
+  const {maxLength, min, max, inputType} = propsOf(control);
+
+  return (
+    isScalar(value) &&
+    isSingleLine(String(value)) &&
+    fitsInputType(String(value), inputType) &&
+    fitsLength(String(value), maxLength) &&
+    withinBounds(value, min, max)
+  );
+};
+
+const number: UiValueAcceptor = (control, snapshot) =>
+  isBlank(snapshot.value) ||
+  (isNumeric(snapshot.value) && text(control, snapshot));
+
+const textarea: UiValueAcceptor = (control, {value}) => {
+  const {maxLength, singleLine} = propsOf(control);
+
+  return (
+    isBlank(value) ||
+    (typeof value === 'string' &&
+      (!singleLine || isSingleLine(value)) &&
+      fitsLength(value, maxLength))
+  );
+};
+
+const markdown: UiValueAcceptor = (control, {value}) =>
+  isBlank(value) ||
+  (typeof value === 'string' && fitsLength(value, propsOf(control).maxLength));
+
+const choice: UiValueAcceptor = (control, {value}) => {
+  const {options, multiple, allValue, allowCustom} = propsOf(control);
+
+  if (isBlank(value) || (multiple && allValue && value === allValue)) {
+    return true;
+  }
+
+  // Options added by hand can be added here too.
+  return (
+    fitsShape(value, multiple) &&
+    (Boolean(allowCustom) || fitsOptions(value, options))
+  );
+};
+
+/**
+ * Comboboxes' `limit` caps the options they list at once, not how many can
+ * be chosen, so it doesn't apply here.
+ */
+const combobox: UiValueAcceptor = (control, {value}) => {
+  const {options, multiple, requireOptionMatch} = propsOf(control);
+
+  return (
+    isBlank(value) ||
+    (fitsShape(value, multiple) &&
+      (!requireOptionMatch || fitsOptions(value, options)))
+  );
+};
+
+/** Dates and times, checked against the control's earliest and latest dates. */
+const dateTime: UiValueAcceptor = (control, {value}) => {
+  if (isBlank(value)) {
+    return true;
+  }
+
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const {date} = value;
+  const {min, max} = propsOf(control);
+
+  return (
+    isBlank(date) || (typeof date === 'string' && withinBounds(date, min, max))
+  );
+};
+
+const colorSelect: UiValueAcceptor = (control, {value}) => {
+  const {colors, allowTransparent} = propsOf(control);
+
+  return (
+    isBlank(value) ||
+    (value === 'transparent' && Boolean(allowTransparent)) ||
+    (typeof value === 'string' &&
+      (!Array.isArray(colors) || colors.includes(value)))
+  );
+};
+
+/**
+ * Whether `value` is a hex color, translucent only where `alpha` allows it,
+ * as the server's `ColorRule` checks it.
+ */
+function fitsColor(value: UiValue, alpha: unknown): boolean {
+  if (isBlank(value)) {
+    return true;
+  }
+
+  const hex =
+    typeof value === 'string'
+      ? /^#?([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(value)?.[1]
+      : undefined;
+
+  if (!hex) {
+    return false;
+  }
+
+  // Shorthand colors are expanded, and a fully opaque alpha channel dropped.
+  const full = hex.length <= 4 ? [...hex].map((c) => c + c).join('') : hex;
+
+  return full.length === 6 || Boolean(alpha) || /ff$/i.test(full);
+}
+
+const color: UiValueAcceptor = (control, {value}) =>
+  fitsColor(value, propsOf(control).alpha);
+
+const elementSelect: UiValueAcceptor = (control, {value}) => {
+  const {limit, single} = propsOf(control);
+  const count = Array.isArray(value) ? value.length : isBlank(value) ? 0 : 1;
+
+  return count <= (single ? 1 : typeof limit === 'number' ? limit : Infinity);
+};
+
+const link: UiValueAcceptor = (control, {value}) => {
+  if (isBlank(value)) {
+    return true;
+  }
+
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  if (isBlank(value.value)) {
+    return true;
+  }
+
+  const {types} = propsOf(control);
+
+  return (
+    Array.isArray(types) &&
+    types.some((type: {id?: unknown}) => type?.id === value.type)
+  );
+};
+
+const money: UiValueAcceptor = (control, {value}) => {
+  const amount = isRecord(value) ? value.value : value;
+
+  if (isBlank(amount)) {
+    return true;
+  }
+
+  // Amounts are formatted for the locale they were entered in, such as `1,999`.
+  const locale = isRecord(value) ? value.locale : propsOf(control).locale;
+  const number = isScalar(amount)
+    ? moneyAmount(
+        String(amount),
+        typeof locale === 'string' ? locale : undefined
+      )
+    : null;
+  const {min, max} = propsOf(control);
+
+  return number !== null && withinBounds(number, min, max);
+};
+
+/** Whether a table cell's value is one its column's input can hold. */
+type ColumnProps = {
+  type?: unknown;
+  options?: unknown;
+  min?: unknown;
+  max?: unknown;
+  html?: unknown;
+  alpha?: unknown;
+  types?: unknown;
+  radioMode?: unknown;
+};
+
+function fitsColumn(cell: UiValue, column: ColumnProps): boolean {
+  if (isBlank(cell)) {
+    return true;
+  }
+
+  // HTML columns draw their cells as markup, which only the server can be
+  // trusted to write.
+  if (column.type === 'html' || column.html) {
+    return false;
+  }
+
+  switch (column.type) {
+    case 'checkbox':
+    case 'lightswitch':
+      return [true, false, '1', 1, 0].includes(cell as never);
+    case 'select':
+    case 'radio':
+      return (
+        isOptionValue(cell) && optionValues(column.options).has(String(cell))
+      );
+    case 'number':
+      return (
+        isNumeric(cell) && withinBounds(cell as Scalar, column.min, column.max)
+      );
+    // Amounts are held with the locale they're formatted for.
+    case 'money': {
+      const amount = isRecord(cell) ? cell.value : cell;
+      const locale = isRecord(cell) ? cell.locale : undefined;
+
+      if (isBlank(amount)) {
+        return true;
+      }
+
+      const number = isScalar(amount)
+        ? moneyAmount(
+            String(amount),
+            typeof locale === 'string' ? locale : undefined
+          )
+        : null;
+
+      return number !== null && withinBounds(number, column.min, column.max);
+    }
+    case 'singleline':
+      return isScalar(cell) && isSingleLine(String(cell));
+    case 'email':
+    case 'url':
+      return (
+        isScalar(cell) &&
+        isSingleLine(String(cell)) &&
+        fitsInputType(String(cell), column.type)
+      );
+    // Text, not a structured value such as a Money cell's amount and locale
+    case 'multiline':
+      return isScalar(cell);
+    case 'date':
+    case 'time':
+      return isScalar(cell) && fitsInputType(String(cell), column.type);
+    case 'heading':
+    case 'hidden':
+    case 'icon':
+    case 'autosuggest':
+    case 'template':
+      return isScalar(cell) && isSingleLine(String(cell));
+    case 'color':
+      return fitsColor(cell, column.alpha);
+    // A link, of a type the column offers
+    case 'link':
+      return (
+        isRecord(cell) &&
+        (isBlank(cell.value) ||
+          (typeof cell.value === 'string' &&
+            Array.isArray(column.types) &&
+            column.types.includes(cell.type as never)))
+      );
+    // Columns with controls of their own, whose values can't be checked here
+    default:
+      return false;
+  }
+}
+
+const table: UiValueAcceptor = (control, {value}) => {
+  const {columns, keyed, minRows, maxRows, includeRowId} = propsOf(control) as {
+    columns?: Record<string, ColumnProps & {handle?: unknown}>;
+    keyed?: boolean;
+    minRows?: number;
+    maxRows?: number;
+    includeRowId?: boolean | string;
+  };
+  const rowCount =
+    isRecord(value) || Array.isArray(value) ? Object.keys(value).length : 0;
+
+  // Rows can't be deleted below the minimum, so they can't be pasted below it.
+  if (typeof minRows === 'number' && rowCount < minRows) {
+    return false;
+  }
+
+  if (isBlank(value)) {
+    return true;
+  }
+
+  if (!isRecord(value) && !Array.isArray(value)) {
+    return false;
+  }
+
+  const rows: UiValue[] = Object.values(value);
+
+  // Objects list integer-like keys first, in ascending order, so a keyed
+  // table's own row order can't be copied with its rows when any key is one,
+  // and pasting them would reorder them.
+  if (
+    !Array.isArray(value) &&
+    rows.length > 1 &&
+    Object.keys(value).some((key) => /^(?:0|[1-9]\d*)$/.test(key))
+  ) {
+    return false;
+  }
+
+  if (rows.length === 0) {
+    return true;
+  }
+
+  const rowIdKey = typeof includeRowId === 'string' ? includeRowId : 'rowId';
+  // Table fields' rows hold each cell under its column's handle too.
+  const handles = new Set(
+    Object.values(columns ?? {}).map((column) => column.handle)
+  );
+
+  return (
+    // A keyed table holds its rows by key, and others in a list.
+    Array.isArray(value) !== Boolean(keyed) &&
+    // A radio-mode column is checked in one row at most.
+    Object.entries(columns ?? {}).every(
+      ([key, column]) =>
+        !column.radioMode ||
+        rows.filter(
+          (row) => isRecord(row) && [true, '1', 1].includes(row[key] as never)
+        ).length <= 1
+    ) &&
+    (typeof maxRows !== 'number' || rows.length <= maxRows) &&
+    rows.every(
+      (row) =>
+        isRecord(row) &&
+        Object.entries(row).every(([key, cell]) =>
+          columns?.[key]
+            ? fitsColumn(cell, columns[key])
+            : handles.has(key) || (Boolean(includeRowId) && key === rowIdKey)
+        )
+    )
+  );
+};
+
+export const builtInValueAcceptors: Record<string, UiValueAcceptor> = {
+  'craft:text': text,
+  'craft:number': number,
+  'craft:range': number,
+  'craft:date': text,
+  'craft:time': text,
+  'craft:date-time': dateTime,
+  'craft:slug': text,
+  'craft:textarea': textarea,
+  'craft:markdown': markdown,
+  'craft:choice': choice,
+  'craft:combobox': combobox,
+  'craft:color-select': colorSelect,
+  'craft:color': color,
+  'craft:element-select': elementSelect,
+  'craft:link': link,
+  'craft:money': money,
+  'craft:table': table,
+};

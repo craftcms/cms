@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Config;
 
 use craft\config\GeneralConfig as LegacyGeneralConfig;
+use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -30,7 +31,10 @@ readonly class GeneralConfigCompatibility
             $overlay = $this->requireConfigFile($app, "general.$appType");
         }
 
-        Config::set('craft.general', $this->convert($config, $overlay));
+        Config::set('craft.general', $this->applyAnchorsConfig(
+            $this->convert($config, $overlay),
+            Config::get('craft.anchors'),
+        ));
     }
 
     /**
@@ -84,6 +88,24 @@ readonly class GeneralConfigCompatibility
         return is_array($config) && array_key_exists('*', $config)
             ? Arr::merge($config['*'], $config[$app->environment()] ?? [])
             : $config;
+    }
+
+    /**
+     * Applies a `config/craft/anchors.php` file left over from the Anchors plugin, unless the general config sets `anchors`.
+     */
+    public function applyAnchorsConfig(GeneralConfig $config, mixed $anchors): GeneralConfig
+    {
+        if (!is_array($anchors) || $anchors === []) {
+            return $config;
+        }
+
+        Deprecator::log('config-anchors', 'The `config/craft/anchors.php` config file is deprecated. Move its settings to the `anchors` setting in `config/craft/general.php`.');
+
+        if ($config->anchors == AnchorsConfig::create()) {
+            $config->anchors($anchors);
+        }
+
+        return $config;
     }
 
     private function resolve(mixed $config, GeneralConfig $default): GeneralConfig|array

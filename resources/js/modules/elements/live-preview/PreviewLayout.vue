@@ -7,7 +7,6 @@
    * Live Preview and a release preview share it, so both look and load the
    * same. Slideouts opened during either cover the editor.
    */
-  import {iframeResize} from 'iframe-resizer';
   import {t} from '@craftcms/ui';
   import {
     addModalAttributes,
@@ -450,46 +449,11 @@
   /*
    * Frames
    */
-  const resizerOptions = computed(() => {
-    const options = preview.iframeResizerOptions.value;
-
-    return options !== false ? options : null;
-  });
-
-  // The page inside doesn't always report a new height when the frame's width
-  // changes (a device switch, the divider, the window), so it's asked to.
-  const resizedFrames = new Map<number, HTMLIFrameElement>();
-  const frameWidths = new WeakMap<Element, number>();
-  const frameWidthObserver = new ResizeObserver((entries) => {
-    for (const {target, contentRect} of entries) {
-      const width = Math.round(contentRect.width);
-      const previous = frameWidths.get(target);
-      frameWidths.set(target, width);
-
-      if (previous !== undefined && previous !== width) {
-        (
-          target as HTMLIFrameElement & {iFrameResizer?: {resize(): void}}
-        ).iFrameResizer?.resize();
-      }
-    }
-  });
-
-  onBeforeUnmount(() => frameWidthObserver.disconnect());
-
   function onFrameMounted(
     frame: LivePreviewFrame,
     el: HTMLIFrameElement | null
   ): void {
-    if (!el) {
-      const resized = resizedFrames.get(frame.id);
-      if (resized) {
-        frameWidthObserver.unobserve(resized);
-        resizedFrames.delete(frame.id);
-      }
-      return;
-    }
-
-    if (el.dataset.lpFrame === String(frame.id)) {
+    if (!el || el.dataset.lpFrame === String(frame.id)) {
       return;
     }
 
@@ -500,27 +464,6 @@
         target: preview.activeTarget.value,
         iframe: el,
       });
-    }
-
-    if (resizerOptions.value) {
-      // Starts at the height of the frame it replaces, so the swap doesn't
-      // jump the scroll position.
-      const current = root.value?.querySelector<HTMLIFrameElement>(
-        'iframe.lp-frame--ready'
-      );
-      if (current) {
-        el.style.height = `${current.offsetHeight}px`;
-      }
-
-      iframeResize(
-        {
-          checkOrigin: false,
-          ...resizerOptions.value,
-        },
-        el
-      );
-      frameWidthObserver.observe(el);
-      resizedFrames.set(frame.id, el);
     }
   }
 
@@ -788,10 +731,7 @@
             <div
               v-show="hasTarget"
               class="lp-device"
-              :class="{
-                'lp-device--framed': layout,
-                'lp-device--scrolls': resizerOptions,
-              }"
+              :class="{'lp-device--framed': layout}"
               :style="deviceStyle"
             >
               <div class="lp-device__viewport" :style="viewportStyle">
@@ -816,7 +756,6 @@
                   :class="{'lp-frame--ready': frame.ready}"
                   :src="frame.url"
                   :title="t('Preview')"
-                  :scrolling="resizerOptions ? 'no' : undefined"
                   @load="
                     preview.frameLoaded(
                       frame.id,
@@ -1172,11 +1111,6 @@
       border-radius: calc(var(--lp-radius) - var(--lp-bezel));
       overflow: hidden;
     }
-  }
-
-  .lp-device--scrolls .lp-device__viewport {
-    align-items: start;
-    overflow-y: auto;
   }
 
   .lp-frame {

@@ -23,4 +23,11 @@ interface ReadableValueControl extends Control
      * @return list<string>
      */
     public function valueProps(): array;
+
+    /**
+     * Returns the value scope, which a {@see WritableValueControl} must share to be given the value, when the value
+     * only makes sense among controls configured alike — relations to elements a field’s settings let it select, or
+     * amounts in one currency, say.
+     */
+    public function getValueScope(): ?string;
 }

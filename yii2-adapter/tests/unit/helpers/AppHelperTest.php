@@ -41,7 +41,7 @@ class AppHelperTest extends TestCase
     }
 
     /**
-     * Mailer config is sourced from Laravel mail config/runtime.
+     * Mailer config takes the sender from the mail settings and the transport from Laravel’s mailer.
      */
     public function testMailerConfigIndexes(): void
     {
@@ -67,8 +67,8 @@ class AppHelperTest extends TestCase
         // Make sure its a component
         self::assertContains(Component::class, class_parents($result['class']));
         self::assertTrue(class_exists($result['class']));
-        self::assertSame(['mailer@craft.test' => 'Mailer Name'], $result['from']);
-        self::assertSame('reply@craft.test', $result['replyTo']);
+        self::assertSame(['legacy@craft.test' => 'Legacy Name'], $result['from']);
+        self::assertSame('legacy-reply@craft.test', $result['replyTo']);
         self::assertSame(app('mail.manager')->mailer()->getSymfonyTransport(), $result['transport']);
     }
 

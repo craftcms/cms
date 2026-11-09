@@ -110,6 +110,15 @@ export default css`
     min-height: var(--c-size-control-md);
   }
 
+  .cp-chip--xsmall {
+    --_thumb-size: calc(
+      var(--c-size-control-sm) - var(--_border-width) * 2 -
+        var(--_chip-block-padding) * 2
+    );
+    min-height: var(--c-size-control-sm);
+    font-size: var(--c-text-sm);
+  }
+
   .cp-chip--large {
     --_chip-spacing: 1em;
     --_thumb-size: calc(40rem / 16);
@@ -139,6 +148,10 @@ export default css`
   .cp-chip.cp-chip--thumb-xl,
   .cp-chip.cp-chip--thumb-2xl {
     --_radius: var(--c-radius-lg);
+  }
+
+  .cp-chip.cp-chip--rounded {
+    --_radius: var(--c-radius-full);
   }
 
   /* Alignment */

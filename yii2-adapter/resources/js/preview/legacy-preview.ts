@@ -64,8 +64,17 @@ export class LegacyPreview extends Base<LegacyPreviewSettings> {
   readonly #controller: LivePreviewController | null;
   readonly #stops: Array<() => void> = [];
 
-  /** Craft 5 exposed its `Craft.ElementEditor`; the Vue editor has none. */
-  readonly elementEditor = null;
+  /**
+   * Craft 5 exposed its `Craft.ElementEditor`. The Vue editor has none, so
+   * this has only what Live Preview listeners used it for: the token.
+   */
+  get elementEditor(): {getPreviewToken(): Promise<string>} | null {
+    const controller = this.#controller;
+
+    return controller
+      ? {getPreviewToken: () => controller.previewToken()}
+      : null;
+  }
 
   constructor(
     settings?: Partial<LegacyPreviewSettings>,

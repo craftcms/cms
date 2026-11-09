@@ -3182,7 +3182,7 @@ return [
     'Try again' => '重试',
     'Try another way' => '尝试其他方式',
     'Try for free' => '免费试用',
-    'Try running `composer install` from your terminal to resolve.' => '尝试从终端运行`composer install`来解决。',
+    'Try running `{command}` from your terminal to resolve.' => '尝试从终端运行`{command}`来解决。',
     'Try' => '尝试',
     'Trying again…' => '正在重试…',
     'Two-Step Verification Setup' => '两步验证设置',

@@ -22,6 +22,7 @@
   import {useAutopopulation} from './table/useAutopopulation';
   import {useTableRows} from './table/useTableRows';
   import {useTableBehavior} from './table/useTableBehavior';
+  import {parseTsv} from './table/tsv';
   import type {TableControlProps, TableRow, TableValue} from './table/types';
 
   const props = defineProps<{
@@ -210,13 +211,17 @@
     )
       return;
 
+    setCell(row, key, value);
+    commit(kind, [...props.control.path, rowKey(index), key]);
+  }
+
+  function setCell(row: TableRow, key: string, value: UiValue): void {
     autopopulation.update(row.id, row.value, key, value, autopopulations.value);
     if (props.control.props.columns[key]?.radioMode && value) {
       for (const other of rows.value) {
         if (other.id !== row.id) other.value[key] = false;
       }
     }
-    commit(kind, [...props.control.path, rowKey(index), key]);
   }
 
   async function addRow(): Promise<void> {
@@ -328,6 +333,29 @@
     )?.focus();
   }
 
+  const textTypes = [
+    'singleline',
+    'heading',
+    'multiline',
+    'number',
+    'email',
+    'url',
+  ];
+
+  /** Column types whose cells can't be typed into, so nothing pastes natively. */
+  const choiceTypes = ['checkbox', 'lightswitch', 'select'];
+
+  /**
+   * Column types that support each feature unless a column says otherwise.
+   * Pasted cells only go into column types that can tell whether the text
+   * fits (see `pastedValue()`), so dates, times, money, colors, and other
+   * structured values are left alone.
+   */
+  const featureTypes = {
+    enterNavigation: textTypes,
+    tsvPaste: [...textTypes, ...choiceTypes],
+  };
+
   function compatible(
     key: string,
     feature: 'tsvPaste' | 'enterNavigation'
@@ -340,15 +368,54 @@
     return (
       column?.[feature] === true ||
       (column?.[feature] === undefined &&
-        [
-          'singleline',
-          'heading',
-          'multiline',
-          'number',
-          'email',
-          'url',
-        ].includes(column?.type ?? ''))
+        featureTypes[feature].includes(column?.type ?? ''))
     );
+  }
+
+  /**
+   * The value a pasted cell gives a column, or `undefined` when the column
+   * can't take it: number columns only take numbers a number input accepts,
+   * checkbox and lightswitch columns take yes/no words, and dropdown columns
+   * take an enabled option's value or label.
+   */
+  function pastedValue(
+    key: string,
+    field: UiNodePayload,
+    text: string
+  ): UiValue | undefined {
+    const trimmed = text.trim();
+    switch (props.control.props.columns[key]!.type) {
+      case 'number':
+        return trimmed === '' ||
+          (/^-?(\d+(\.\d+)?|\.\d+)(e[-+]?\d+)?$/i.test(trimmed) &&
+            Number.isFinite(Number(trimmed)))
+          ? trimmed
+          : undefined;
+      case 'checkbox':
+      case 'lightswitch': {
+        const word = trimmed.toLowerCase();
+        if (['true', 'yes', 'on', '1', 'x'].includes(word)) return true;
+        if (['false', 'no', 'off', '0', ''].includes(word)) return false;
+        return undefined;
+      }
+      case 'select': {
+        const options = (
+          (field.control?.props.options ?? []) as Array<{
+            label?: string;
+            value?: UiValue;
+            disabled?: boolean;
+          }>
+        ).filter((option) => !option.disabled);
+        return (
+          options.find((option) => String(option.value) === trimmed) ??
+          options.find(
+            (option) => option.label?.toLowerCase() === trimmed.toLowerCase()
+          )
+        )?.value;
+      }
+      default:
+        return text;
+    }
   }
 
   async function navigate(
@@ -403,13 +470,15 @@
       return;
 
     const text = event.clipboardData?.getData('text/plain');
-    if (!text || (!text.includes('\t') && !text.includes('\n'))) return;
+    if (
+      !text ||
+      (!text.includes('\t') &&
+        !text.includes('\n') &&
+        !choiceTypes.includes(props.control.props.columns[key]!.type))
+    )
+      return;
 
-    const values = text
-      .replace(/\r\n?/g, '\n')
-      .replace(/\n$/, '')
-      .split('\n')
-      .map((line) => line.split('\t'));
+    const values = parseTsv(text);
     const start = visibleColumns.value.findIndex(([column]) => column === key);
     event.preventDefault();
     clearErrors();
@@ -419,7 +488,7 @@
         appendRow();
       }
       const row = rows.value[index + offset]!;
-      for (const [cellIndex, value] of cells.entries()) {
+      for (const [cellIndex, cellText] of cells.entries()) {
         const column = visibleColumns.value[start + cellIndex]?.[0];
         const field = renderedRows.value[index + offset]!.cells.get(
           column ?? ''
@@ -431,13 +500,8 @@
           !props.control.props.columns[column]?.static &&
           field?.control?.mode === 'editable'
         ) {
-          autopopulation.update(
-            row.id,
-            row.value,
-            column,
-            value,
-            autopopulations.value
-          );
+          const value = pastedValue(column, field, cellText);
+          if (value !== undefined) setCell(row, column, value);
         }
       }
     }

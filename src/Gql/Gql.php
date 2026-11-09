@@ -1088,7 +1088,7 @@ class Gql
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
-        $devMode = Cms::config()->devMode;
+        $devMode = app()->hasDebugModeEnabled();
 
         foreach ($errors as &$error) {
             $originException = $nextException = $error;

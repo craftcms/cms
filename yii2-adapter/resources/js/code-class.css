@@ -1,0 +1,11 @@
+/*
+ * Craft 5 rendered inputs and textareas with the `code` class, such as those
+ * from `_includes/forms` with `class: 'code'`, in a monospace font. Core no
+ * longer styles the class, so the adapter keeps it working. The size matches
+ * the components' `monospace` option.
+ */
+:is(input, textarea).code,
+.code :is(input, textarea) {
+  font-family: var(--c-font-mono, monospace);
+  font-size: 0.9em;
+}

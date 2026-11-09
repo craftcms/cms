@@ -168,7 +168,11 @@ class ConfigServiceProvider extends ServiceProvider
         }
 
         foreach ($config->aliases as $name => $value) {
-            Aliases::set($name, $value);
+            if ($value === null) {
+                Aliases::remove($name);
+            } else {
+                Aliases::set($name, $value);
+            }
         }
 
         $repository->set('craft.general', $config);

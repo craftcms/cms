@@ -10,7 +10,9 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Providers\CraftServiceProvider;
 use CraftCms\Cms\Site\Data\Site;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\DependencyAwareCache\CacheServiceProvider;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Inertia\ServiceProvider as InertiaServiceProvider;
@@ -36,6 +38,9 @@ abstract class PluginTestCase extends BaseTestCase
     #[Override]
     protected function defineEnvironment($app): void
     {
+        // Testbench's default user model can't receive the notifications that control panel pages load
+        $app->make(Repository::class)->set('auth.providers.users.model', User::class);
+
         $app->afterResolving(ProjectConfig::class, function (ProjectConfig $projectConfig): void {
             $projectConfig->writeYamlAutomatically = false;
         });
