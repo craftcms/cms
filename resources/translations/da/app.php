@@ -2664,6 +2664,7 @@ return [
     'Required' => 'Påkrævet',
     'Requirements' => 'Krav',
     'Requires PHP {version}' => 'Kræver PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Gemmer {name}-poster igen',
     'Resaving {type} entries' => 'Gemmer {type}-poster igen',
     'Resaving {type}' => 'Gemmer {type} igen',
