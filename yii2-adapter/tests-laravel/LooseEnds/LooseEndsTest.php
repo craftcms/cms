@@ -227,8 +227,8 @@ it('reports usage that couldn’t be saved, rather than claiming nothing depends
     // A table without the columns the store writes makes the write fail.
     Schema::create(LooseEndsStore::TABLE, fn(Blueprint $table) => $table->increments('id'));
 
+    // Saved by the report itself, which must then list the failure.
     LegacyUsage::record('project', 'Used by the project.', base_path('modules/Module.php'), 10);
-    app(LegacyUsage::class)->flush();
 
     expect(LooseEndsUtility::contentHtml())
         ->toContain('Usage of the Yii2 adapter couldn’t be saved.')

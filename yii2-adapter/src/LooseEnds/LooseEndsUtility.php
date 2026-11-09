@@ -66,15 +66,13 @@ class LooseEndsUtility extends Utility
      */
     public static function report(): array
     {
+        // Saved before the checks run, so they report a failure to save it.
+        app(LegacyUsage::class)->flush();
+
         $findings = app(LooseEndsChecks::class)->run();
-        $store = app(LooseEndsStore::class);
-        $usages = collect();
 
         // A failure to read recorded usage is left to surface, as an empty list would claim nothing depends on the adapter.
-        if (Cms::isInstalled()) {
-            app(LegacyUsage::class)->flush();
-            $usages = $store->usages();
-        }
+        $usages = Cms::isInstalled() ? app(LooseEndsStore::class)->usages() : collect();
 
         Cache::forever(LooseEndsStore::FINDING_COUNT_CACHE_KEY, count($findings));
 
