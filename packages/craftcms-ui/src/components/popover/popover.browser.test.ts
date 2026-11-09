@@ -426,3 +426,54 @@ it('closes on a close-overlay from its content, without passing it on', async ()
   expect(popover.opened).toBe(false);
   expect(passedOn).toEqual([]);
 });
+
+it('moves to a new anchor that keeps the same context element while open', async () => {
+  document.body.innerHTML = `
+    <textarea></textarea>
+    <craft-popover distance="4">
+      <div slot="content">Content</div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const textarea = document.querySelector('textarea')!;
+  popover.anchor = {
+    contextElement: textarea,
+    getBoundingClientRect: () => new DOMRect(20, 20, 0, 10),
+  };
+  await popover.show();
+
+  popover.anchor = {
+    contextElement: textarea,
+    getBoundingClientRect: () => new DOMRect(200, 150, 0, 10),
+  };
+  await popover.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const pane = popover.shadowRoot!.querySelector('.popover-pane')!;
+  const {left, top} = pane.getBoundingClientRect();
+  expect({x: Math.round(left), y: Math.round(top)}).toEqual({x: 200, y: 164});
+});
+
+it('opens without an error when removed before a pending show() updates', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content">Content</div>
+    </craft-popover>
+    <div id="elsewhere"></div>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+
+  const shown = popover.show();
+  popover.remove();
+
+  await expect(shown).resolves.toBeUndefined();
+
+  document.querySelector('#elsewhere')!.append(popover);
+  await popover.updateComplete;
+
+  expect(
+    popover
+      .shadowRoot!.querySelector('.overlay-layer')!
+      .matches(':popover-open')
+  ).toBe(true);
+});

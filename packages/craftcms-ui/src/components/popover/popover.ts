@@ -371,24 +371,29 @@ export default class CraftPopover extends LitElement {
 
     if (node === this.#invoker?.node) {
       this.#syncInvokerAria();
-      return;
+    } else {
+      this.#unbindInvoker();
+
+      if (node) {
+        this.#invoker = {
+          node,
+          ariaExpanded: node.getAttribute('aria-expanded'),
+          ownsAria: false,
+        };
+        node.addEventListener('click', this.#onInvokerClick);
+        node.addEventListener('keyup', this.#onEscape);
+        this.#syncInvokerAria();
+      }
     }
 
-    this.#unbindInvoker();
-
-    if (node) {
-      this.#invoker = {
-        node,
-        ariaExpanded: node.getAttribute('aria-expanded'),
-        ownsAria: false,
-      };
-      node.addEventListener('click', this.#onInvokerClick);
-      node.addEventListener('keyup', this.#onEscape);
-      this.#syncInvokerAria();
-    }
-
-    if (this.#popper && this.#reference) {
-      this.#popper.state.elements.reference = this.#reference as Element;
+    // A new virtual anchor can keep the invoker it had, as its context element.
+    const reference = this.#reference;
+    if (
+      this.#popper &&
+      reference &&
+      this.#popper.state.elements.reference !== reference
+    ) {
+      this.#popper.state.elements.reference = reference as Element;
       void this.#popper.update();
     }
   }
@@ -608,7 +613,8 @@ export default class CraftPopover extends LitElement {
     const wrapper = this.#wrapper;
     const reference = this.#reference;
 
-    if (!layer || !wrapper || this.#shown) {
+    // A detached layer can't enter the top layer. Reconnecting shows it.
+    if (!layer || !wrapper || this.#shown || !this.isConnected) {
       return;
     }
 
