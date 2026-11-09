@@ -275,6 +275,16 @@ export default class CraftPopover extends LitElement {
     this.#request(false);
   };
 
+  /**
+   * Focus leaving an invoker linked with `for` or `anchor` never reaches the
+   * host, so it's handled here. A slotted invoker's reaches the host itself.
+   */
+  #onInvokerFocusOut = (event: FocusEvent): void => {
+    if (!event.composedPath().includes(this)) {
+      this.#closeOnFocusOut(event);
+    }
+  };
+
   /** Whether `node`'s `aria-controls` names an element in the popover. */
   #controlsContent(node: Node): boolean {
     if (!(node instanceof Element)) {
@@ -408,6 +418,7 @@ export default class CraftPopover extends LitElement {
         };
         node.addEventListener('click', this.#onInvokerClick);
         node.addEventListener('keyup', this.#onEscape);
+        node.addEventListener('focusout', this.#onInvokerFocusOut);
         if (this.#shown) {
           this.#addPointerListeners(node);
         }
@@ -440,6 +451,7 @@ export default class CraftPopover extends LitElement {
     const {node, ariaExpanded, ownsAria} = this.#invoker;
     node.removeEventListener('click', this.#onInvokerClick);
     node.removeEventListener('keyup', this.#onEscape);
+    node.removeEventListener('focusout', this.#onInvokerFocusOut);
     this.#removePointerListeners(node);
     if (ownsAria) {
       this.#restoreAttribute(node, 'aria-expanded', ariaExpanded);

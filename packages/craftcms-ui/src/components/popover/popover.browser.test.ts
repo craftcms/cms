@@ -683,3 +683,59 @@ it('stays hidden when opened with no invoker, and shows against a virtual anchor
     .getBoundingClientRect();
   expect({x: Math.round(left), y: Math.round(top)}).toEqual({x: 200, y: 164});
 });
+
+it.each([
+  [
+    'an invoker linked with for',
+    `<button type="button">Before</button>
+    <button type="button" id="trigger">Open</button>
+    <craft-popover for="trigger">
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>`,
+  ],
+  [
+    'a slotted invoker',
+    `<button type="button">Before</button>
+    <craft-popover>
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>`,
+  ],
+])(
+  'closes when Shift+Tab moves focus from %s to an earlier control',
+  async (_, markup) => {
+    document.body.innerHTML = markup;
+    const popover = document.querySelector<CraftPopover>('craft-popover')!;
+    await popover.updateComplete;
+
+    await userEvent.click(page.getByRole('button', {name: 'Open'}));
+    expect(popover.opened).toBe(true);
+    await expect
+      .element(page.getByRole('button', {name: 'Open'}))
+      .toHaveFocus();
+
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+
+    await expect.poll(() => popover.opened).toBe(false);
+    await expect
+      .element(page.getByRole('button', {name: 'Before'}))
+      .toHaveFocus();
+  }
+);
+
+it('stays open when Tab moves focus from an invoker linked with for into its content', async () => {
+  document.body.innerHTML = `
+    <button type="button" id="trigger">Open</button>
+    <craft-popover for="trigger">
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+  await userEvent.keyboard('{Tab}');
+  await popover.updateComplete;
+
+  await expect.element(page.getByRole('button', {name: 'Pick'})).toHaveFocus();
+  expect(popover.opened).toBe(true);
+});
