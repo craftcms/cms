@@ -1,7 +1,9 @@
-import {createApp, defineComponent, h, nextTick, reactive} from 'vue';
+import {createApp, defineComponent, h, inject, nextTick, reactive} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {stubUiRenderer} from './renderer/context.test-support';
 import ActionMenuNode from './ActionMenuNode.vue';
+import {FieldActionItems} from './runtime';
+import type {ActionItems} from '@/common/types';
 import FieldNode from './FieldNode.vue';
 import {clearCopiedFieldValue, fieldValueFormats} from './copiedFieldValue';
 import type {UiChange, UiNodePayload, UiValues} from './types';
@@ -66,6 +68,25 @@ function fieldNode(
   } as UiNodePayload;
 }
 
+/**
+ * A control that shows a hidden item of its field's menu, as a Matrix shows
+ * its selection's items.
+ */
+const RevealingControl = defineComponent({
+  props: ['value'],
+  setup() {
+    const resolver = inject(FieldActionItems)!;
+    resolver.value = (items: ActionItems) =>
+      items.map((item) =>
+        (item as {label?: string}).label === 'Selected'
+          ? {...item, hidden: false}
+          : item
+      ) as ActionItems;
+
+    return () => h('div');
+  },
+});
+
 describe('FieldNode value clipboard', () => {
   let app: ReturnType<typeof createApp>;
   let container: HTMLElement;
@@ -111,6 +132,7 @@ describe('FieldNode value clipboard', () => {
       },
     });
     app.component('craft:element-select', ElementsControl);
+    app.component('craft:revealing', RevealingControl);
     app.component('craft:action-menu', ActionMenuNode);
     app.provide(...stubUiRenderer(values));
     app.mount(container);
@@ -183,6 +205,32 @@ describe('FieldNode value clipboard', () => {
     // Each field gets its own copy of the value
     (values.fields as {target: number[]}).target.push(11);
     expect((values.fields as {source: number[]}).source).toEqual([7, 9]);
+  });
+
+  it('keeps a menu its control shows hidden items in, without separators that separate nothing', async () => {
+    const values = reactive<UiValues>({fields: {target: []}});
+    const base = fieldNode('target', 'related-entries');
+    const node = {
+      ...base,
+      control: {...base.control!, component: 'craft:revealing'},
+    } as UiNodePayload;
+    const menu = node.children![0]!;
+    (menu.props as {items: object[]}).items.push(
+      {type: 'hr'},
+      {
+        type: 'button',
+        label: 'Selected',
+        action: {type: 'event', name: 'craft:selected'},
+        hidden: true,
+      }
+    );
+    mount(values, [node], vi.fn());
+
+    await vi.waitFor(() =>
+      expect(actionItem('target', 'Selected')?.hidden).toBe(false)
+    );
+    // Copy value is dropped and Paste value hidden, so nothing comes before it
+    expect(field('target').querySelector('craft-action-menu hr')).toBeNull();
   });
 
   it('copies relations as they’re selected now, not as the server last drew them', async () => {

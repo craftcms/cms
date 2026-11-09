@@ -6,6 +6,7 @@
   import {computed, inject} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItems} from '@/common/types';
+  import {withoutStraySeparators} from '@/modules/matrix/selection-menu';
   import {FieldActionItems} from './runtime';
   import type {UiNodePayload} from './types';
 
@@ -33,11 +34,12 @@
   );
 
   // A field's control may say what its menu should read (see FieldActionItems).
+  // Separators are left out where hidden items leave nothing to separate.
   const resolveItems = inject(FieldActionItems, undefined);
   const items = computed(() => {
     const items = props.node.props.items ?? [];
 
-    return resolveItems?.value?.(items) ?? items;
+    return withoutStraySeparators(resolveItems?.value?.(items) ?? items);
   });
 </script>
 

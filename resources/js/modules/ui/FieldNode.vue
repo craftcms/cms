@@ -28,6 +28,7 @@
     type ApplyAssistantProposalDetail,
   } from '@/modules/ai/assistant/context';
   import UiNodeList from './UiNodeList.vue';
+  import type {ActionItems} from '@/common/types';
   import {isCopiedText, pastesInto} from '@/common/craft/system-clipboard';
   import {
     copyFieldValue,
@@ -170,6 +171,11 @@
   });
   const override = computed(() => overrides[control.value.path.join('.')]);
   const copiedValue = useCopiedFieldValue();
+  /** How the field's control rewrites its menu, if it does (see FieldActionItems). */
+  const actionItemsResolver = shallowRef<
+    ((items: ActionItems) => ActionItems) | undefined
+  >();
+  provide(FieldActionItems, actionItemsResolver);
 
   /**
    * Whether the clipboard holds a value this field's control takes, on the
@@ -216,29 +222,23 @@
 
         return [item];
       });
-      // A separator with nothing shown on one side of it separates nothing.
-      const kept = filtered.filter(
-        (item, index) =>
-          item.type !== 'hr' ||
-          (filtered.slice(0, index).some(isShownAction) &&
-            filtered.slice(index + 1).some(isShownAction))
-      );
 
-      if (
-        kept.length === items.length &&
-        kept.every((item, i) => item === items[i])
-      ) {
-        return [child];
+      // A menu of hidden items would open empty, as the field's control
+      // leaves them: it may show some, as a Matrix does its selection's.
+      const resolved = (actionItemsResolver.value?.(
+        filtered as unknown as ActionItems
+      ) ?? filtered) as FieldActionItem[];
+      if (!resolved.some(isShownAction)) {
+        return [];
       }
 
-      // A menu of hidden items would open empty.
-      return kept.some(isShownAction)
-        ? [{...child, props: {...child.props, items: kept}}]
-        : [];
+      return filtered.length === items.length &&
+        filtered.every((item, i) => item === items[i])
+        ? [child]
+        : [{...child, props: {...child.props, items: filtered}}];
     });
   });
 
-  provide(FieldActionItems, shallowRef());
   // A nested UI's fields stay in its control, even when they share layout UIDs
   // with the form's own fields.
   provide(UiFieldOutletsKey, null);

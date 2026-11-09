@@ -296,6 +296,10 @@ describe('acceptsValue', () => {
     );
     // Listed 0, 2 whatever order they were copied in
     expect(takes(table, {2: {title: 'Tue'}, 0: {title: 'Sun'}})).toBe(false);
+    // Listed before string keys too
+    expect(takes(table, {row1: {title: 'Mon'}, 0: {title: 'Sun'}})).toBe(false);
+    // One row has no order to lose
+    expect(takes(table, {0: {title: 'Sun'}})).toBe(true);
   });
 
   it('takes no fewer rows than a table must have', () => {
