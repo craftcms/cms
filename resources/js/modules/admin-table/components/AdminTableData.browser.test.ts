@@ -444,9 +444,9 @@ it('explains blocked deletion on keyboard focus while keeping the row editable a
   expect(document.activeElement).toBe(button);
   const tooltip =
     row.querySelector<HTMLElementTagNameMap['craft-tooltip']>('craft-tooltip')!;
-  await vi.waitFor(() => expect(tooltip.opened).toBe(true));
+  await vi.waitFor(() => expect(tooltip.open).toBe(true));
   await userEvent.keyboard('{Escape}');
-  await vi.waitFor(() => expect(tooltip.opened).toBe(false));
+  await vi.waitFor(() => expect(tooltip.open).toBe(false));
   expect(document.activeElement).toBe(button);
 });
 

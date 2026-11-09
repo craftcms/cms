@@ -30,7 +30,7 @@
     class="cart-dialog"
     :label="t('Cart')"
     close-on-outside-click
-    .opened="opened"
+    .open="opened"
     @craft-hide="setOpened(false)"
   >
     <div class="cart">

@@ -69,7 +69,7 @@ export default class CraftSelectRich extends FormAssociated(
   @property({type: Boolean, reflect: true}) invalid = false;
 
   /** Whether the listbox is showing. */
-  @property({type: Boolean, reflect: true}) opened = false;
+  @property({type: Boolean, reflect: true}) open = false;
 
   #value = '';
 
@@ -351,7 +351,7 @@ export default class CraftSelectRich extends FormAssociated(
       invoker.removeAttribute('aria-activedescendant');
     } else {
       invoker.setAttribute('aria-haspopup', 'listbox');
-      invoker.setAttribute('aria-expanded', String(this.opened));
+      invoker.setAttribute('aria-expanded', String(this.open));
     }
 
     invoker.tabIndex = this.#disabled ? -1 : 0;
@@ -409,7 +409,7 @@ export default class CraftSelectRich extends FormAssociated(
     const pane = this.#pane;
     const invoker = this._inputNode;
 
-    if (!layer || !pane || !invoker || this.opened) {
+    if (!layer || !pane || !invoker || this.open) {
       return;
     }
 
@@ -430,8 +430,8 @@ export default class CraftSelectRich extends FormAssociated(
   protected override updated(changed: PropertyValues) {
     super.updated(changed);
 
-    if (changed.has('opened')) {
-      this.#onOpenedChanged();
+    if (changed.has('open')) {
+      this.#onOpenChanged();
     }
 
     if (
@@ -440,7 +440,7 @@ export default class CraftSelectRich extends FormAssociated(
       changed.has('readOnly') ||
       changed.has('invalid') ||
       changed.has('required') ||
-      changed.has('opened')
+      changed.has('open')
     ) {
       this.#syncInvoker();
     }
@@ -449,15 +449,15 @@ export default class CraftSelectRich extends FormAssociated(
       this.#syncInput();
     }
 
-    if (this.opened) {
+    if (this.open) {
       this.#dropdown.update();
     }
   }
 
-  #onOpenedChanged(): void {
+  #onOpenChanged(): void {
     const invoker = this._inputNode;
 
-    if (this.opened && !this.#inactive) {
+    if (this.open && !this.#inactive) {
       this.#typeahead.reset();
       this.#dropdown.show();
       document.addEventListener('pointerdown', this.#onDocumentPointerDown);
@@ -473,15 +473,15 @@ export default class CraftSelectRich extends FormAssociated(
     invoker?.removeAttribute('aria-activedescendant');
   }
 
-  #open(): void {
+  #show(): void {
     if (!this.#inactive) {
-      this.opened = true;
+      this.open = true;
     }
   }
 
   #onDocumentPointerDown = (event: PointerEvent): void => {
     if (!event.composedPath().includes(this)) {
-      this.opened = false;
+      this.open = false;
     }
   };
 
@@ -490,15 +490,15 @@ export default class CraftSelectRich extends FormAssociated(
       !(event.relatedTarget instanceof Node) ||
       !this.contains(event.relatedTarget)
     ) {
-      this.opened = false;
+      this.open = false;
     }
   };
 
   #onInvokerClick = (): void => {
-    if (this.opened) {
-      this.opened = false;
+    if (this.open) {
+      this.open = false;
     } else {
-      this.#open();
+      this.#show();
     }
   };
 
@@ -509,7 +509,7 @@ export default class CraftSelectRich extends FormAssociated(
   #setActive(option: CraftOption | undefined): void {
     this.#active = option;
     activateOption(this.#options, option, this._inputNode, {
-      scroll: this.opened,
+      scroll: this.open,
     });
   }
 
@@ -520,7 +520,7 @@ export default class CraftSelectRich extends FormAssociated(
       return;
     }
 
-    if (this.opened) {
+    if (this.open) {
       this.#onOpenKeydown(event);
       return;
     }
@@ -532,7 +532,7 @@ export default class CraftSelectRich extends FormAssociated(
       case 'ArrowUp':
         event.preventDefault();
         if (!event.repeat) {
-          this.#open();
+          this.#show();
         }
         return;
     }
@@ -589,7 +589,7 @@ export default class CraftSelectRich extends FormAssociated(
       case 'Escape':
         event.preventDefault();
         claimEscape(event);
-        this.opened = false;
+        this.open = false;
         return;
       case 'Tab':
         this.#commitActive();
@@ -607,7 +607,7 @@ export default class CraftSelectRich extends FormAssociated(
     if (this.#active) {
       this.#pick(this.#active);
     }
-    this.opened = false;
+    this.open = false;
   }
 
   #onListboxClick = (event: MouseEvent): void => {
@@ -620,7 +620,7 @@ export default class CraftSelectRich extends FormAssociated(
     }
 
     this.#pick(option);
-    this.opened = false;
+    this.open = false;
     this._inputNode?.focus();
   };
 

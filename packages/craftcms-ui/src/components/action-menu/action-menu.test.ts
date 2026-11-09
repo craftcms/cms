@@ -79,12 +79,12 @@ describe('slot-based content added after setup', () => {
       changed = (event as CustomEvent).detail.item;
     });
 
-    element.opened = true;
+    element.open = true;
     await element.updateComplete;
 
     added.click();
 
-    expect(element.opened).toBe(false);
+    expect(element.open).toBe(false);
     expect(changed).toBe(added);
   });
 });
@@ -171,13 +171,13 @@ describe('searchable (slot-based)', () => {
   it('resets the filter when the menu closes', async () => {
     const element = await createFromMarkup(slotBasedMarkup());
 
-    element.opened = true;
+    element.open = true;
     await element.updateComplete;
 
     typeIntoSearch(element, 'date');
     expect(visibleLabels(element)).toEqual(['Date']);
 
-    element.opened = false;
+    element.open = false;
     await element.updateComplete;
 
     expect(getSearchInput(element)!.value).toBe('');

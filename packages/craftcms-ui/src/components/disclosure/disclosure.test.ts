@@ -155,11 +155,11 @@ describe('craft-disclosure invoker', () => {
       expect(invoker.iconPosition).toBe('suffix');
       expect(invoker.icon).toBe('chevron-right');
 
-      element.opened = true;
+      element.open = true;
       await element.updateComplete;
       expect(invoker.icon).toBe('chevron-down');
 
-      element.opened = false;
+      element.open = false;
       await element.updateComplete;
       expect(invoker.icon).toBe('chevron-right');
     }
@@ -174,7 +174,7 @@ describe('craft-disclosure invoker', () => {
     invoker.slot = 'invoker';
     invoker.icon = 'chevron-right';
     element.append(invoker);
-    element.opened = true;
+    element.open = true;
     document.body.append(element);
     await element.updateComplete;
 
@@ -187,7 +187,7 @@ describe('craft-disclosure invoker', () => {
       '<craft-button slot="invoker" type="button" icon="gear">Settings</craft-button>'
     );
 
-    element.opened = true;
+    element.open = true;
     await element.updateComplete;
 
     expect(invoker.icon).toBe('gear');
@@ -205,7 +205,7 @@ describe('craft-disclosure slotted semantics', () => {
     ) as CraftDisclosure;
     element.innerHTML =
       '<button slot="invoker" type="button">More</button><div slot="content">Settings</div>';
-    element.opened = opened;
+    element.open = opened;
     document.body.append(element);
     await element.updateComplete;
 
@@ -244,7 +244,7 @@ describe('craft-disclosure slotted semantics', () => {
     invoker.click();
     await element.updateComplete;
 
-    expect(element.opened).toBe(true);
+    expect(element.open).toBe(true);
     expect(invoker.getAttribute('aria-expanded')).toBe('true');
     expect(content.style.display).toBe('');
   });
@@ -260,7 +260,7 @@ describe('craft-disclosure slotted semantics', () => {
   it('reports collapsed when opened is cleared', async () => {
     const {element, invoker} = await create(true);
 
-    (element as {opened: boolean | undefined}).opened = undefined;
+    (element as {open: boolean | undefined}).open = undefined;
     await element.updateComplete;
 
     expect(invoker.getAttribute('aria-expanded')).toBe('false');
@@ -275,6 +275,6 @@ describe('craft-disclosure slotted semantics', () => {
     invoker.click();
     await element.updateComplete;
 
-    expect(element.opened).toBe(true);
+    expect(element.open).toBe(true);
   });
 });

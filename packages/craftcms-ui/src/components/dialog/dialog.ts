@@ -49,7 +49,7 @@ function releasePageScroll(): void {
  * when a person genuinely has to deal with something before continuing, and
  * for anything less use a `craft-popover` or an inline `craft-callout`.
  *
- * Set the `open` attribute (or the `opened` property) to show it; default-slot
+ * Set `open` to show it; default-slot
  * children render as the body, `slot="footer"` children render in a footer, and
  * any descendant with `data-dialog="close"` closes the dialog when clicked.
  *
@@ -86,7 +86,7 @@ function releasePageScroll(): void {
  * @fires craft-before-hide - A dismissal was asked for, by the close button,
  *   Escape or the backdrop. Cancelable: call `preventDefault()` to keep the
  *   dialog open — for confirming away unsaved work, say. Does not fire when
- *   `opened` is set to false directly, which is a decision already made.
+ *   `open` is set to false directly, which is a decision already made.
  * @fires craft-hide - The dialog has closed.
  * @fires craft-after-show - The dialog has opened and finished updating.
  * @fires craft-after-hide - The dialog has closed and finished updating.
@@ -100,13 +100,8 @@ function releasePageScroll(): void {
 export default class CraftDialog extends LitElement {
   static override styles = [hostStyles, styles];
 
-  /**
-   * Whether the dialog is showing.
-   *
-   * Backed by the `open` attribute. Both spellings are public — `opened` is the
-   * property, `open` the attribute — and they stay in sync in both directions.
-   */
-  @property({type: Boolean, attribute: 'open', reflect: true}) opened = false;
+  /** Whether the dialog is showing. */
+  @property({type: Boolean, reflect: true}) open = false;
 
   /** Title shown in the dialog header. */
   @property() label = '';
@@ -188,7 +183,7 @@ export default class CraftDialog extends LitElement {
   protected readonly titleId = `craft-dialog-title-${++nextId}`;
 
   /**
-   * Mirrors `opened` so lifecycle events fire on a real transition rather than
+   * Mirrors `open` so lifecycle events fire on a real transition rather than
    * on the first render, where Lit reports every property as changed.
    */
   #lastOpened = false;
@@ -248,7 +243,7 @@ export default class CraftDialog extends LitElement {
 
   override render(): TemplateResult {
     return html`
-      ${this.nonModal && this.opened
+      ${this.nonModal && this.open
         ? html`<div
             class="backdrop"
             part="backdrop"
@@ -369,13 +364,13 @@ export default class CraftDialog extends LitElement {
       grips.target = surface;
     }
 
-    if (this.opened === this.#lastOpened) {
+    if (this.open === this.#lastOpened) {
       return;
     }
 
-    this.#lastOpened = this.opened;
-    this.opened ? this.#showDialog() : this.#hideDialog();
-    this.#emitLifecycle(this.opened);
+    this.#lastOpened = this.open;
+    this.open ? this.#showDialog() : this.#hideDialog();
+    this.#emitLifecycle(this.open);
   }
 
   #showDialog(): void {
@@ -470,7 +465,7 @@ export default class CraftDialog extends LitElement {
     this.#dispatch(opened ? 'craft-show' : 'craft-hide');
 
     void this.updateComplete.then(() => {
-      if (this.opened !== opened) {
+      if (this.open !== opened) {
         return;
       }
 
@@ -503,7 +498,7 @@ export default class CraftDialog extends LitElement {
     );
 
     if (allowed) {
-      this.opened = false;
+      this.open = false;
     }
   }
 
@@ -522,7 +517,7 @@ export default class CraftDialog extends LitElement {
    * syncing here covers that as well as any direct `dialogElement.close()`.
    */
   #onNativeClose = (): void => {
-    this.opened = false;
+    this.open = false;
   };
 
   /**
@@ -538,7 +533,7 @@ export default class CraftDialog extends LitElement {
    */
   #onHostKeydown = (event: KeyboardEvent): void => {
     if (
-      !this.opened ||
+      !this.open ||
       event.key !== 'Escape' ||
       event.defaultPrevented ||
       event.isComposing

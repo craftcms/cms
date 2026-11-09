@@ -172,7 +172,7 @@
 
     <!-- Filename conflict prompt shown while moving assets into a folder. -->
     <craft-dialog
-      .opened="conflictPrompt !== null"
+      .open="conflictPrompt !== null"
       :label="t('File already exists')"
       @craft-before-hide="resolveConflictChoice('cancel')"
     >
@@ -198,7 +198,7 @@
     </craft-dialog>
 
     <craft-dialog
-      .opened="dragFolderConflictPrompt !== null"
+      .open="dragFolderConflictPrompt !== null"
       :label="t('Folder already exists')"
       @craft-before-hide="resolveDragFolderConflictChoice('cancel')"
     >
@@ -221,7 +221,7 @@
 
     <!-- New subfolder prompt, opened from the current folder's breadcrumb menu. -->
     <craft-dialog
-      .opened="newFolderOpen"
+      .open="newFolderOpen"
       :label="t('New subfolder')"
       @craft-before-hide="closeNewFolder"
       @craft-after-show="focusNewFolderName"
@@ -250,7 +250,7 @@
     </craft-dialog>
 
     <craft-dialog
-      .opened="renameFolderId !== null"
+      .open="renameFolderId !== null"
       :label="t('Rename folder')"
       @craft-before-hide="closeRename"
     >
@@ -277,7 +277,7 @@
     </craft-dialog>
 
     <craft-dialog
-      .opened="renameAssetId !== null"
+      .open="renameAssetId !== null"
       :label="t('Rename file')"
       @craft-before-hide="closeRenameFile"
     >
@@ -304,7 +304,7 @@
     </craft-dialog>
 
     <craft-dialog
-      .opened="folderConflictPrompt !== null"
+      .open="folderConflictPrompt !== null"
       :label="t('Folder already exists')"
       @craft-before-hide="resolveFolderConflictChoice('cancel')"
     >

@@ -37,7 +37,7 @@ describe('when focus moves', () => {
     document.body.innerHTML = markup;
     const popover = document.querySelector<CraftPopover>('craft-popover')!;
     await popover.updateComplete;
-    popover.opened = true;
+    popover.open = true;
     await popover.updateComplete;
     return popover;
   }
@@ -61,7 +61,7 @@ describe('when focus moves', () => {
     expect(document.activeElement).toBe(
       popover.querySelector('[slot="invoker"]')
     );
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
   });
 
   it('closes once focus leaves, leaving focus on the next control', async () => {
@@ -76,7 +76,7 @@ describe('when focus moves', () => {
     page.getByRole('button', {name: 'Pick'}).element().focus();
     await userEvent.keyboard('{Tab}');
 
-    await expect.poll(() => popover.opened).toBe(false);
+    await expect.poll(() => popover.open).toBe(false);
     await expect
       .element(page.getByRole('button', {name: 'Next'}))
       .toHaveFocus();
@@ -94,7 +94,7 @@ describe('when focus moves', () => {
     document.getElementById('trigger')!.focus();
     await popover.updateComplete;
 
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
   });
 
   it('stays open when focus moves to another button that controls its content', async () => {
@@ -110,7 +110,7 @@ describe('when focus moves', () => {
     page.getByRole('button', {name: 'Show submenu'}).element().focus();
     await popover.updateComplete;
 
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
   });
 
   it('stays open while focus is in a popover nested in its content', async () => {
@@ -127,15 +127,15 @@ describe('when focus moves', () => {
     `);
     const inner = outer.querySelector<CraftPopover>('.inner')!;
     await inner.updateComplete;
-    inner.opened = true;
+    inner.open = true;
     await inner.updateComplete;
 
     page.getByRole('button', {name: 'Inner'}).element().focus();
     page.getByRole('button', {name: 'Deep'}).element().focus();
     await outer.updateComplete;
 
-    expect(outer.opened).toBe(true);
-    expect(inner.opened).toBe(true);
+    expect(outer.open).toBe(true);
+    expect(inner.open).toBe(true);
   });
 
   it('stays open when text in the panel is clicked', async () => {
@@ -153,7 +153,7 @@ describe('when focus moves', () => {
     await userEvent.click(page.getByText('Columns'));
     await popover.updateComplete;
 
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
   });
 });
 
@@ -179,7 +179,7 @@ it('returns focus to the invoker, and stays closed, when Enter inside it calls h
   await userEvent.keyboard('{Enter}');
   await popover.updateComplete;
 
-  expect(popover.opened).toBe(false);
+  expect(popover.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -193,14 +193,14 @@ it('returns focus to the invoker when Escape closes it from its slotted content'
   const popover = document.querySelector<CraftPopover>('craft-popover')!;
   const invoker = popover.querySelector<CraftButton>('craft-button')!;
   await invoker.updateComplete;
-  popover.opened = true;
+  popover.open = true;
   await popover.updateComplete;
 
   popover.querySelector<HTMLButtonElement>('.pick')!.focus();
   await userEvent.keyboard('{Escape}');
   await popover.updateComplete;
 
-  expect(popover.opened).toBe(false);
+  expect(popover.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -221,7 +221,7 @@ it('closes and keeps focus on the invoker when Escape is pressed there', async (
   await userEvent.keyboard('{Escape}');
   await popover.updateComplete;
 
-  expect(popover.opened).toBe(false);
+  expect(popover.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -252,7 +252,7 @@ it('lets one Escape close the popover around it after it was closed another way'
   await userEvent.keyboard('{Escape}');
   await outer.updateComplete;
 
-  expect(outer.opened).toBe(false);
+  expect(outer.open).toBe(false);
   expect(document.activeElement).toBe(outerInvoker);
 });
 
@@ -274,11 +274,11 @@ it('keeps Escape from reaching a container while it closes the popover', async (
   await popover.updateComplete;
 
   await userEvent.click(document.querySelector('craft-button')!);
-  await expect.poll(() => popover.opened).toBe(true);
+  await expect.poll(() => popover.open).toBe(true);
   popover.querySelector('input')!.focus();
   await userEvent.keyboard('{Escape}');
 
-  await expect.poll(() => popover.opened).toBe(false);
+  await expect.poll(() => popover.open).toBe(false);
 
   // Closed, the popover leaves Escape to the container.
   document.querySelector<HTMLElement>('craft-button')!.focus();
@@ -401,7 +401,7 @@ it('follows its invoker when moved while open', async () => {
   await popover.updateComplete;
   await new Promise((resolve) => requestAnimationFrame(resolve));
 
-  expect(popover.opened).toBe(true);
+  expect(popover.open).toBe(true);
   expect(offsetFromInvoker(popover, invoker)).toEqual({x: 0, y: 4});
 });
 
@@ -423,7 +423,7 @@ it('closes on a close-overlay from its content, without passing it on', async ()
     .dispatchEvent(new Event('close-overlay', {bubbles: true, composed: true}));
   await popover.updateComplete;
 
-  expect(popover.opened).toBe(false);
+  expect(popover.open).toBe(false);
   expect(passedOn).toEqual([]);
 });
 

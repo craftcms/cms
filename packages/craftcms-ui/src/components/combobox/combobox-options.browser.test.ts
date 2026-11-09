@@ -188,12 +188,12 @@ it('opens and closes its options from the chevron, focusing the textbox', async 
   await new Promise((resolve) => setTimeout(resolve, 50));
 
   expect(document.activeElement).toBe(control.querySelector('input'));
-  expect(control.opened).toBe(true);
+  expect(control.open).toBe(true);
 
   await userEvent.click(chevron);
   await new Promise((resolve) => setTimeout(resolve, 50));
 
-  expect(control.opened).toBe(false);
+  expect(control.open).toBe(false);
 });
 
 it('gives the whole end of the field beside the clear button to the chevron, with a text cursor', async () => {

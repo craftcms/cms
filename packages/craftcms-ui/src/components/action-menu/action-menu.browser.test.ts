@@ -115,7 +115,7 @@ describe('when disabled', () => {
     await userEvent.keyboard(' ');
     await menu.updateComplete;
 
-    expect(menu.opened).toBe(false);
+    expect(menu.open).toBe(false);
   });
 
   it('disables a generated invoker', async () => {
@@ -167,7 +167,7 @@ it('closes on Escape from an item and returns focus to the invoker', async () =>
   await expect.poll(focusedText).toBe('Duplicate');
   await userEvent.keyboard('{Escape}');
 
-  await expect.poll(() => menu.opened).toBe(false);
+  await expect.poll(() => menu.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -249,7 +249,7 @@ it('closes when Tab moves focus past its last item', async () => {
   await expect.poll(focusedText).toBe('Duplicate');
   await userEvent.keyboard('{Tab}');
 
-  await expect.poll(() => menu.opened).toBe(false);
+  await expect.poll(() => menu.open).toBe(false);
   await expect.element(page.getByRole('button', {name: 'Next'})).toHaveFocus();
 });
 
@@ -288,7 +288,7 @@ it('keeps items within the popover when their content is wide', async () => {
       </div>
     </craft-action-menu>
   `);
-  menu.opened = true;
+  menu.open = true;
   await menu.updateComplete;
   await new Promise((resolve) => requestAnimationFrame(resolve));
 
@@ -322,7 +322,7 @@ it('closes and returns focus to a craft-button invoker when an item is chosen wi
   await userEvent.keyboard('{Enter}');
   await menu.updateComplete;
 
-  expect(menu.opened).toBe(false);
+  expect(menu.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -348,8 +348,8 @@ it('spaces separators in slotted content, including ones added later, as it does
   ];
   await slotted.updateComplete;
   await generated.updateComplete;
-  slotted.opened = true;
-  generated.opened = true;
+  slotted.open = true;
+  generated.open = true;
   await slotted.updateComplete;
   await generated.updateComplete;
 
@@ -402,7 +402,7 @@ it.each(['light', 'dark'])(
     const menu =
       shadowRoot.querySelector<CraftActionMenu>('craft-action-menu')!;
     await menu.updateComplete;
-    menu.opened = true;
+    menu.open = true;
     await menu.updateComplete;
 
     const input = menu.querySelector<HTMLInputElement>(

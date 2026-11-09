@@ -90,7 +90,7 @@ export function handleCreateOption(
   }
 
   combobox.value = previousValue;
-  combobox.opened = false;
+  combobox.open = false;
 
   const {url, resultKey, labelField, valueField} = trigger.data.create;
   void openSlideout(url, {

@@ -458,7 +458,7 @@ describe('craft-text-expander', () => {
 
     expect(target.value).toBe('@brad');
     expect(options(expander)).toHaveLength(0);
-    expect(popover(expander).opened).toBe(false);
+    expect(popover(expander).open).toBe(false);
   });
 
   it('closes the popup with Escape', async () => {
@@ -476,7 +476,7 @@ describe('craft-text-expander', () => {
     );
 
     await vi.waitFor(() => expect(options(expander)).toHaveLength(0));
-    expect(popover(expander).opened).toBe(false);
+    expect(popover(expander).open).toBe(false);
   });
 
   it('closes the popup when clicking outside', async () => {
@@ -492,7 +492,7 @@ describe('craft-text-expander', () => {
     outside.dispatchEvent(new MouseEvent('mouseup', {bubbles: true}));
 
     await vi.waitFor(() => expect(options(expander)).toHaveLength(0));
-    expect(popover(expander).opened).toBe(false);
+    expect(popover(expander).open).toBe(false);
   });
 
   it('emits input for the final fallback replacement value', async () => {
@@ -589,12 +589,12 @@ describe('craft-text-expander', () => {
     target.dispatchEvent(tab);
     expect(tab.defaultPrevented).toBe(false);
     expect(target.value).toBe('@a');
-    expect(popover(expander).opened).toBe(true);
+    expect(popover(expander).open).toBe(true);
 
     target.blur();
     await Promise.resolve();
 
-    expect(popover(expander).opened).toBe(false);
+    expect(popover(expander).open).toBe(false);
     expect(options(expander)).toHaveLength(0);
   });
 

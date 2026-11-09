@@ -460,7 +460,7 @@ export const Overflow: Story = {
     // in the menu.
     // The menu closes behind the selection, and focus lands on the tab that
     // just came back into the strip.
-    await expect((menu as {opened?: boolean}).opened).toBe(false);
+    await expect((menu as {open?: boolean}).open).toBe(false);
     await expect(target.hasAttribute('hidden')).toBe(false);
     await expect(target.getAttribute('aria-selected')).toBe('true');
     await expect(document.activeElement).toBe(target);

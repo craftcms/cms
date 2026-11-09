@@ -16,7 +16,7 @@ it.each([['ltr'], ['rtl']])(
   'starts the hairline at the disclosure’s start edge, not inset (%s)',
   async (dir) => {
     document.body.innerHTML = `
-      <craft-disclosure label="Details" dir="${dir}" opened>
+      <craft-disclosure label="Details" dir="${dir}" open>
         <div slot="content">Content</div>
       </craft-disclosure>`;
     const disclosure =
@@ -63,7 +63,7 @@ it('points the closed chevron left in right-to-left text', async () => {
 
   expect(disclosure.querySelector('craft-button')!.icon).toBe('chevron-left');
 
-  disclosure.opened = true;
+  disclosure.open = true;
   await disclosure.updateComplete;
 
   expect(disclosure.querySelector('craft-button')!.icon).toBe('chevron-down');
@@ -71,7 +71,7 @@ it('points the closed chevron left in right-to-left text', async () => {
 
 it('fires craft-hide and craft-show on itself as its slotted content toggles', async () => {
   document.body.innerHTML = `
-    <craft-disclosure label="Details" opened>
+    <craft-disclosure label="Details" open>
       <div slot="content">Content</div>
     </craft-disclosure>`;
   const disclosure =
@@ -110,7 +110,7 @@ it('toggles from the keyboard, leaving focus on the invoker', async () => {
   invoker.focus();
 
   await userEvent.keyboard('{Enter}');
-  await expect.poll(() => disclosure.opened).toBe(true);
+  await expect.poll(() => disclosure.open).toBe(true);
   expect(invoker.matches(':focus-within, :focus')).toBe(true);
 
   // The expanded content follows the invoker in the Tab order.
@@ -119,7 +119,7 @@ it('toggles from the keyboard, leaving focus on the invoker', async () => {
 
   invoker.focus();
   await userEvent.keyboard(' ');
-  await expect.poll(() => disclosure.opened).toBe(false);
+  await expect.poll(() => disclosure.open).toBe(false);
   expect(invoker.matches(':focus-within, :focus')).toBe(true);
 
   // Collapsed content leaves the Tab order.

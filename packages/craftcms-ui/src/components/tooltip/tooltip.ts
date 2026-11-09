@@ -2,7 +2,7 @@ import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {createPopper, type Instance as PopperInstance} from '@popperjs/core';
 import {watchHover, type HoverWatcher} from '../../utilities/overlay-hover.js';
-import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
+import {announceOverlayState} from '../../utilities/overlay-events.js';
 import {claimEscape, isEscapeClaimed} from '../../utilities/overlay-escape.js';
 import {
   hideLayer,
@@ -30,11 +30,10 @@ import {uniqueId} from '../../utilities/unique-id.js';
  *   tooltip gets before its text wraps. The default keeps lines short enough
  *   to read easily, and within narrow viewports.
  *
- * @fires opened-changed - `opened` changed. `detail.opened` is the new state.
- * @fires before-opened - Its trigger or `show()` is about to open the tooltip.
- *   Cancelable. Setting `opened` doesn't fire it.
- * @fires before-closed - Its trigger, Escape or `hide()` is about to close the
- *   tooltip. Cancelable. Setting `opened` doesn't fire it.
+ * @fires craft-before-show - Its trigger or `show()` is about to open the
+ *   tooltip. Cancelable. Setting `open` doesn't fire it.
+ * @fires craft-before-hide - Its trigger, Escape or `hide()` is about to close
+ *   the tooltip. Cancelable. Setting `open` doesn't fire it.
  * @fires craft-show - The overlay is opening. Fires as the state flips.
  * @fires craft-after-show - The overlay has opened and its update has settled.
  * @fires craft-hide - The overlay is closing. Fires as the state flips.
@@ -71,7 +70,7 @@ export default class CraftTooltip extends LitElement {
   ];
 
   /** Whether the tooltip is showing. */
-  @property({type: Boolean, reflect: true}) opened = false;
+  @property({type: Boolean, reflect: true}) open = false;
 
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
@@ -109,7 +108,6 @@ export default class CraftTooltip extends LitElement {
 
   constructor() {
     super();
-    wireOverlayLifecycleEvents(this);
   }
 
   override requestUpdate(
@@ -119,10 +117,8 @@ export default class CraftTooltip extends LitElement {
   ): void {
     super.requestUpdate(name, oldValue, options);
 
-    if (name === 'opened' && this.opened !== oldValue) {
-      this.dispatchEvent(
-        new CustomEvent('opened-changed', {detail: {opened: this.opened}})
-      );
+    if (name === 'open') {
+      announceOverlayState(this);
     }
   }
 
@@ -270,14 +266,14 @@ export default class CraftTooltip extends LitElement {
         if (this.invoker !== this.#invoker?.node) {
           this.#bind();
         }
-        if (this.opened) {
+        if (this.open) {
           this.#showPane();
         }
         return;
       }
 
       this.#unbind();
-      this.opened = false;
+      this.open = false;
       this.#isSetUp = false;
     });
   }
@@ -302,8 +298,8 @@ export default class CraftTooltip extends LitElement {
       this.#bind();
     }
 
-    if (changed.has('opened')) {
-      if (this.opened) {
+    if (changed.has('open')) {
+      if (this.open) {
         this.#showPane();
       } else {
         this.#hidePane();
@@ -319,7 +315,7 @@ export default class CraftTooltip extends LitElement {
     this.#isSetUp = true;
     this.#bind();
 
-    if (this.opened) {
+    if (this.open) {
       this.#showPane();
     }
   }
@@ -395,7 +391,7 @@ export default class CraftTooltip extends LitElement {
 
     // An open tooltip may have no Popper yet, and one only follows the scroll
     // containers it found when created.
-    if (this.opened) {
+    if (this.open) {
       this.#popper?.destroy();
       this.#popper = null;
       this.#showPane();
@@ -441,28 +437,29 @@ export default class CraftTooltip extends LitElement {
   }
 
   /**
-   * Asks to open or close: announces it with a cancelable `before-*` event,
-   * then flips `opened`, which the update applies.
+   * Asks to open or close: announces it with a cancelable `craft-before-*`
+   * event, then flips `open`, which the update applies.
    */
   #request(opened: boolean): void {
-    if (opened === this.opened) {
+    if (opened === this.open) {
       return;
     }
 
-    const event = new CustomEvent(opened ? 'before-opened' : 'before-closed', {
-      cancelable: true,
-    });
+    const event = new CustomEvent(
+      opened ? 'craft-before-show' : 'craft-before-hide',
+      {cancelable: true}
+    );
     this.dispatchEvent(event);
 
     if (event.defaultPrevented) {
       return;
     }
 
-    this.opened = opened;
+    this.open = opened;
   }
 
   #onInvokerClick = (): void => {
-    this.#request(!this.opened);
+    this.#request(!this.open);
   };
 
   /**
@@ -470,7 +467,7 @@ export default class CraftTooltip extends LitElement {
    * press so a popover around the tooltip stays open.
    */
   #onEscape = (event: KeyboardEvent): void => {
-    if (event.key !== 'Escape' || !this.opened || isEscapeClaimed(event)) {
+    if (event.key !== 'Escape' || !this.open || isEscapeClaimed(event)) {
       return;
     }
 

@@ -153,13 +153,13 @@ it('exposes translation help on keyboard focus and dismisses it with Escape', as
   await expect.element(indicator).toHaveAccessibleName('Translated per site.');
   await userEvent.tab();
   expect(document.activeElement).toBe(indicator);
-  await expect.poll(() => tooltip.opened).toBe(true);
+  await expect.poll(() => tooltip.open).toBe(true);
   await expect
     .element(tooltip.querySelector<HTMLElement>('[slot="content"]')!)
     .toHaveTextContent('Translated per site.');
 
   await userEvent.keyboard('{Escape}');
-  await expect.poll(() => tooltip.opened).toBe(false);
+  await expect.poll(() => tooltip.open).toBe(false);
   expect(document.activeElement).toBe(indicator);
 
   await userEvent.tab();

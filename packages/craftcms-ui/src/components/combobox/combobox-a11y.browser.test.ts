@@ -125,7 +125,7 @@ describe('semantics', () => {
 
     await open(input);
 
-    expect(control.opened).toBe(true);
+    expect(control.open).toBe(true);
     await expect
       .element(page.getByRole('combobox', {name: 'Fruit', expanded: true}))
       .toBeInTheDocument();
@@ -256,7 +256,7 @@ describe('keyboard and focus', () => {
     await userEvent.keyboard('{Alt>}{ArrowDown}{/Alt}');
     await settle();
 
-    expect(control.opened).toBe(true);
+    expect(control.open).toBe(true);
     expect(activeOption(control)).toBeUndefined();
   });
 
@@ -333,7 +333,7 @@ describe('keyboard and focus', () => {
     await userEvent.tab();
     await settle();
 
-    expect(control.opened).toBe(false);
+    expect(control.open).toBe(false);
     expect(control.value).toBe('');
     expect(document.activeElement).toBe(surface.querySelectorAll('button')[1]);
   });
@@ -559,7 +559,7 @@ describe('announcements', () => {
     control.remove();
     surface.append(control);
     await control.updateComplete;
-    control.opened = false;
+    control.open = false;
     await settle();
     await open(input);
 
@@ -573,7 +573,7 @@ describe('announcements', () => {
     vi.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
 
     try {
-      control.opened = true;
+      control.open = true;
       await vi.advanceTimersByTimeAsync(0);
       expect(liveRegion(control).textContent?.trim()).toBe('4 results');
 

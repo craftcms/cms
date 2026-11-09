@@ -879,7 +879,7 @@ export default class CraftTabs extends LitElement {
     const menu = this.#overflowMenu;
 
     if (menu) {
-      menu.opened = false;
+      menu.open = false;
     }
 
     this.selectedIndex = index;

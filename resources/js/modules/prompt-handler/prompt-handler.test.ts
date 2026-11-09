@@ -4,7 +4,7 @@ import '@craftcms/ui/components/radio/radio';
 import '@craftcms/ui/components/radio-group/radio-group';
 import {PromptHandler} from './prompt-handler';
 
-type PromptDialog = HTMLElement & {opened: boolean};
+type PromptDialog = HTMLElement & {open: boolean};
 
 const choices = [
   {value: 'keepBoth', title: 'Keep both'},
@@ -119,6 +119,6 @@ describe('PromptHandler', () => {
 
     expect(dismissal.defaultPrevented).toBe(true);
     expect(done).not.toHaveBeenCalled();
-    expect(openDialog().opened).toBe(true);
+    expect(openDialog().open).toBe(true);
   });
 });

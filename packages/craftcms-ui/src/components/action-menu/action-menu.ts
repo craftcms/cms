@@ -187,7 +187,7 @@ export default class CraftActionMenu extends CraftPopover {
   private readonly _onItemClick = (event: Event): void => {
     const item = event.currentTarget as CraftActionItem;
 
-    this.opened = false;
+    this.open = false;
 
     // In data-driven mode the 'craft-select' event is dispatched from _renderItem
     // (which has access to the descriptor). For slot-based mode this is the
@@ -339,8 +339,8 @@ export default class CraftActionMenu extends CraftPopover {
     // Prevent opening while disabled, regardless of slot-based vs data-driven
     // mode — a consumer-slotted invoker shouldn't be able to open the menu
     // either.
-    if (changed.has('opened') && this.opened && this.disabled) {
-      this.opened = false;
+    if (changed.has('open') && this.open && this.disabled) {
+      this.open = false;
       return;
     }
 
@@ -353,7 +353,7 @@ export default class CraftActionMenu extends CraftPopover {
     // Re-evaluate a provider function each time the menu opens (before the
     // popover's `updated()` shows it), so it can return state-dependent items.
     const openingWithProvider =
-      changed.has('opened') && this.opened && this._hasActionsProvider();
+      changed.has('open') && this.open && this._hasActionsProvider();
 
     if (
       changed.has('actions') ||
@@ -379,7 +379,7 @@ export default class CraftActionMenu extends CraftPopover {
       this._syncInvokerDisabled();
     }
 
-    if (changed.has('opened') && !this.opened && changed.get('opened')) {
+    if (changed.has('open') && !this.open && changed.get('open')) {
       // The menu just closed — clear the search filter for the next open.
       this._resetSearchFilter();
     }
@@ -395,7 +395,7 @@ export default class CraftActionMenu extends CraftPopover {
     // After an on-open provider re-evaluation (done in `willUpdate`), the
     // generated content node is reused (only its children are swapped), so we
     // just need to (re)bind click listeners to the freshly created items.
-    if (changed.has('opened') && this.opened && this._hasActionsProvider()) {
+    if (changed.has('open') && this.open && this._hasActionsProvider()) {
       this._setupContent();
       this._addEventListeners();
     }
@@ -890,7 +890,7 @@ export default class CraftActionMenu extends CraftPopover {
    * invoker.
    */
   private _onOverlayShow = (): void => {
-    if (!this.opened) {
+    if (!this.open) {
       return;
     }
     if (this.searchable) {

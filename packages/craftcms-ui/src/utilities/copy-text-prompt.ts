@@ -49,7 +49,7 @@ export function showCopyTextPrompt(config: CopyTextPromptConfig): CraftDialog {
 
   // Legacy hid the modal once the value was copied.
   dialog.addEventListener('craft-copy', () => {
-    dialog.opened = false;
+    dialog.open = false;
   });
 
   // Nothing reopens it, so it goes once it has closed. The target check skips

@@ -100,12 +100,6 @@
     () => takeSnapshot()
   );
 
-  function onOpenedChanged(event: Event) {
-    if (event instanceof CustomEvent && event.detail?.opened) {
-      takeSnapshot();
-    }
-  }
-
   function onReorder(next: Array<CheckboxOption>) {
     // Keep the popover showing the order the user just dragged to.
     displayOptions.value = next;
@@ -138,7 +132,7 @@
 </script>
 
 <template>
-  <craft-popover @opened-changed="onOpenedChanged">
+  <craft-popover @craft-show.self="takeSnapshot">
     <craft-button
       type="button"
       slot="invoker"

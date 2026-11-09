@@ -120,9 +120,9 @@ describe('craft-popover', () => {
   it('tracks opened state through show() and hide()', async () => {
     const {popover} = await createFixture();
     await popover.show();
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
     await popover.hide();
-    expect(popover.opened).toBe(false);
+    expect(popover.open).toBe(false);
   });
 
   it('show()/hide() resolve and emit craft events', async () => {
@@ -175,9 +175,14 @@ describe('craft-popover', () => {
   it('announces a requested change once, before it happens', async () => {
     const {popover, button} = await createFixture();
     const events: string[] = [];
-    for (const type of ['before-opened', 'before-closed', 'opened-changed']) {
+    for (const type of [
+      'craft-before-show',
+      'craft-before-hide',
+      'craft-show',
+      'craft-hide',
+    ]) {
       popover.addEventListener(type, () =>
-        events.push(`${type}:${popover.opened}`)
+        events.push(`${type}:${popover.open}`)
       );
     }
 
@@ -186,23 +191,23 @@ describe('craft-popover', () => {
     await popover.hide();
 
     expect(events).toEqual([
-      'before-opened:false',
-      'opened-changed:true',
-      'before-closed:true',
-      'opened-changed:false',
+      'craft-before-show:false',
+      'craft-show:true',
+      'craft-before-hide:true',
+      'craft-hide:false',
     ]);
   });
 
-  it('stays closed when before-opened is cancelled', async () => {
+  it('stays closed when craft-before-show is cancelled', async () => {
     const {popover, button} = await createFixture();
-    popover.addEventListener('before-opened', (event) =>
+    popover.addEventListener('craft-before-show', (event) =>
       event.preventDefault()
     );
 
     button.click();
     await popover.updateComplete;
 
-    expect(popover.opened).toBe(false);
+    expect(popover.open).toBe(false);
   });
 
   it("doesn't open from a disabled invoker", async () => {
@@ -214,7 +219,7 @@ describe('craft-popover', () => {
     button.click();
     await popover.updateComplete;
 
-    expect(popover.opened).toBe(false);
+    expect(popover.open).toBe(false);
   });
 
   it('ignores invoker clicks when manual', async () => {
@@ -226,7 +231,7 @@ describe('craft-popover', () => {
     button.click();
     await popover.updateComplete;
 
-    expect(popover.opened).toBe(false);
+    expect(popover.open).toBe(false);
   });
 
   // Its wrapper would otherwise be announced as an unnamed group around the
@@ -244,10 +249,10 @@ describe('craft-popover', () => {
 
     button.click();
     await new Promise((resolve) => setTimeout(resolve));
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
 
     button.click();
     await new Promise((resolve) => setTimeout(resolve));
-    expect(popover.opened).toBe(false);
+    expect(popover.open).toBe(false);
   });
 });

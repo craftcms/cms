@@ -34,13 +34,13 @@ it('hides once the pointer leaves an invoker it was clicked on', async () => {
   await userEvent.click(invoker);
   await after(300);
 
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 
   await userEvent.hover(elsewhere);
   await after(100);
 
   expect(document.activeElement).toBe(invoker);
-  expect(tooltip.opened).toBe(false);
+  expect(tooltip.open).toBe(false);
 });
 
 it('stays open while the invoker has keyboard focus', async () => {
@@ -51,12 +51,12 @@ it('stays open while the invoker has keyboard focus', async () => {
   await userEvent.tab();
   await after(300);
 
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 
   await userEvent.hover(elsewhere);
   await after(100);
 
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 });
 
 it('wraps long content at a readable width', async () => {
@@ -67,8 +67,8 @@ it('wraps long content at a readable width', async () => {
   const [long, short] = document.querySelectorAll('craft-tooltip');
   await long!.updateComplete;
   await short!.updateComplete;
-  long!.opened = true;
-  short!.opened = true;
+  long!.open = true;
+  short!.open = true;
   await after(100);
 
   const longContent = long!.querySelector<HTMLElement>('[slot="content"]')!;
@@ -92,7 +92,7 @@ it('shows in full beside an invoker in a blurred backdrop that clips', async () 
     </div>`;
   const tooltip = document.querySelector('craft-tooltip')!;
   await tooltip.updateComplete;
-  tooltip.opened = true;
+  tooltip.open = true;
   await after(100);
 
   const invoker = document.querySelector('button')!.getBoundingClientRect();
@@ -141,15 +141,15 @@ it('moves its wiring and click toggle to the new invoker when for changes', asyn
 
   second.click();
   await after(50);
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 
   first.click();
   await after(50);
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 
   second.click();
   await tooltip.updateComplete;
-  expect(tooltip.opened).toBe(false);
+  expect(tooltip.open).toBe(false);
 });
 
 it('opens on click rather than hover once its trigger changes to click', async () => {
@@ -161,11 +161,11 @@ it('opens on click rather than hover once its trigger changes to click', async (
 
   await userEvent.hover(first);
   await after(300);
-  expect(tooltip.opened).toBe(false);
+  expect(tooltip.open).toBe(false);
 
   first.click();
   await tooltip.updateComplete;
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 });
 
 it('binds an invoker slotted in after it renders, in place of the old one', async () => {

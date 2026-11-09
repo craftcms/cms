@@ -364,12 +364,12 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
         ?.classList.remove('hidden');
 
       const restoreOnClose = (): void => {
-        if (!menu.opened) {
-          menu.removeEventListener('opened-changed', restoreOnClose);
+        if (!menu.open) {
+          menu.removeEventListener('craft-hide', restoreOnClose);
           this.#updateButtons();
         }
       };
-      menu.addEventListener('opened-changed', restoreOnClose);
+      menu.addEventListener('craft-hide', restoreOnClose);
     }
 
     // A replace that's abandoned — the menu closed without a pick — mustn't
@@ -377,16 +377,16 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     // item's click before that click reaches #handleMenuClick, so forget it a
     // task later, once the pick has been read.
     const forgetReplacing = (): void => {
-      if (!menu.opened) {
-        menu.removeEventListener('opened-changed', forgetReplacing);
+      if (!menu.open) {
+        menu.removeEventListener('craft-hide', forgetReplacing);
         setTimeout(() => {
           this.#replacing = null;
         });
       }
     };
-    menu.addEventListener('opened-changed', forgetReplacing);
+    menu.addEventListener('craft-hide', forgetReplacing);
 
-    menu.opened = true;
+    menu.open = true;
   }
 
   /**
@@ -609,7 +609,7 @@ export class ComponentSelect extends Base<ComponentSelectSettings> {
     // craft-action-menu only auto-closes for default-slot items; these live in
     // the content container, so close explicitly.
     if (this.#menu) {
-      this.#menu.opened = false;
+      this.#menu.open = false;
     }
 
     void this.addComponent(

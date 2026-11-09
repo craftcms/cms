@@ -59,7 +59,7 @@ export default class CraftDisclosure extends LitElement {
   `;
 
   /** Whether the content is shown (slotted mode). */
-  @property({type: Boolean, reflect: true}) opened = false;
+  @property({type: Boolean, reflect: true}) open = false;
 
   /** Text for the default invoker button (slotted mode). */
   @property() label = '';
@@ -97,17 +97,17 @@ export default class CraftDisclosure extends LitElement {
 
   /** Shows the content (slotted mode). */
   show() {
-    this.opened = true;
+    this.open = true;
   }
 
   /** Hides the content (slotted mode). */
   hide() {
-    this.opened = false;
+    this.open = false;
   }
 
   /** Flips the content between shown and hidden (slotted mode). */
   toggle = () => {
-    this.opened = !this.opened;
+    this.open = !this.open;
   };
 
   private get __invoker(): HTMLElement | undefined {
@@ -182,7 +182,7 @@ export default class CraftDisclosure extends LitElement {
       this.__defaultInvoker.setAttribute('size', this.size);
     }
 
-    if (changedProperties.has('opened') && !this.__externalTrigger) {
+    if (changedProperties.has('open') && !this.__externalTrigger) {
       this.__syncSlottedState();
       this.__syncInvokerChevron();
       this.__announceOpenedChange();
@@ -197,9 +197,9 @@ export default class CraftDisclosure extends LitElement {
     }
   }
 
-  /** Reports a slotted-mode change of `opened` as the public events. */
+  /** Reports a slotted-mode change of `open` as the public events. */
   private __announceOpenedChange() {
-    const opened = Boolean(this.opened);
+    const opened = Boolean(this.open);
     const previous = this.__announcedOpened;
     this.__announcedOpened = opened;
 
@@ -243,8 +243,8 @@ export default class CraftDisclosure extends LitElement {
   }
 
   private __syncSlottedState() {
-    this.__invoker?.setAttribute('aria-expanded', String(Boolean(this.opened)));
-    this.__content?.style.setProperty('display', this.opened ? '' : 'none');
+    this.__invoker?.setAttribute('aria-expanded', String(Boolean(this.open)));
+    this.__content?.style.setProperty('display', this.open ? '' : 'none');
   }
 
   private __ensureDefaultInvoker() {
@@ -285,7 +285,7 @@ export default class CraftDisclosure extends LitElement {
     const rtl = getComputedStyle(this).direction === 'rtl';
 
     invoker.iconPosition = 'suffix';
-    invoker.icon = this.opened
+    invoker.icon = this.open
       ? 'chevron-down'
       : rtl
         ? 'chevron-left'

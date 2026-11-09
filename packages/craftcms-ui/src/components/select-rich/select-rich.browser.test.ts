@@ -68,7 +68,7 @@ it.each([
     await select.updateComplete;
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    select.opened = true;
+    select.open = true;
     const listbox =
       select.shadowRoot!.querySelector<HTMLElement>('[role="listbox"]')!;
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -324,7 +324,7 @@ it.each(['{Enter}', ' ', '{ArrowDown}', '{ArrowUp}'])(
 
     await userEvent.keyboard(key);
 
-    expect(select.opened).toBe(true);
+    expect(select.open).toBe(true);
     expect(active(select)).toBe('Cherry');
   }
 );
@@ -362,11 +362,11 @@ it('selects with Enter, and closes without a change on Escape, keeping focus on 
   select.addEventListener('change', () => changes.push(select.value));
 
   await userEvent.keyboard('{Enter}{ArrowDown}{Escape}');
-  expect(select.opened).toBe(false);
+  expect(select.open).toBe(false);
   expect(select.value).toBe('cherry');
 
   await userEvent.keyboard('{Enter}{ArrowDown}{Enter}');
-  expect(select.opened).toBe(false);
+  expect(select.open).toBe(false);
   expect(select.value).toBe('damson');
   expect(changes).toEqual(['damson']);
   expect(document.activeElement).toBe(invoker);
@@ -389,7 +389,7 @@ it('closes on Tab and moves focus on', async () => {
   await userEvent.keyboard('{Enter}');
   await userEvent.tab();
 
-  expect(select.opened).toBe(false);
+  expect(select.open).toBe(false);
   expect(document.activeElement).toBe(document.querySelectorAll('button')[1]);
 });
 
@@ -406,7 +406,7 @@ it('keeps its role with a single option, read-only with nothing to open', async 
   await expect.element(field).toHaveAttribute('aria-readonly', 'true');
   await expect.element(field).not.toHaveAttribute('aria-haspopup');
   await userEvent.click(field);
-  expect(select.opened).toBe(false);
+  expect(select.open).toBe(false);
 });
 
 it('marks the field invalid while `invalid` is set', async () => {

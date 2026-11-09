@@ -108,7 +108,7 @@ it('shows complete, safe, accessible diagnostics after the real install menu clo
   const menu = item.closest('craft-action-menu')!;
   menu.querySelector('craft-button')!.click();
   await settle();
-  expect(menu.opened).toBe(true);
+  expect(menu.open).toBe(true);
   let resolveRequest!: (response: Response) => void;
   const request = new Promise<Response>((resolve) => {
     resolveRequest = resolve;
@@ -119,7 +119,7 @@ it('shows complete, safe, accessible diagnostics after the real install menu clo
   );
   item.shadowRoot!.querySelector('button')!.click();
   await settle();
-  expect(menu.opened).toBe(false);
+  expect(menu.open).toBe(false);
   const message =
     '<img src=x onerror=alert(1)>\n\n' +
     'x'.repeat(2000) +

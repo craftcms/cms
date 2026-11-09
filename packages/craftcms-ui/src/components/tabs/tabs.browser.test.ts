@@ -475,7 +475,7 @@ async function overflowingStrip(width: string): Promise<{
   container: HTMLElement;
   element: Strip;
   tabs: HTMLElement[];
-  menu: HTMLElement & {opened: boolean};
+  menu: HTMLElement & {open: boolean};
 }> {
   const container = document.createElement('div');
   container.style.inlineSize = width;
@@ -573,7 +573,7 @@ it('keeps focus in the open overflow menu while the strip resizes', async () => 
   }
 
   expect(tabs.filter((tab) => tab.hidden).length).toBe(collapsed);
-  expect(menu.opened).toBe(true);
+  expect(menu.open).toBe(true);
   expect(item.isConnected).toBe(true);
   expect(item.matches(':focus-within')).toBe(true);
 });
@@ -597,12 +597,12 @@ it('keeps its overflow menu’s events inside the strip', async () => {
     const target = tabs.filter((tab) => tab.hidden).at(-1)!;
 
     await userEvent.click(menu.querySelector('[slot="invoker"]')!);
-    await expect.poll(() => menu.opened).toBe(true);
+    await expect.poll(() => menu.open).toBe(true);
     const item = [...menu.querySelectorAll('craft-action-item')].find(
       (el) => el.textContent?.trim() === target.textContent
     )!;
     await userEvent.click(item);
-    await expect.poll(() => menu.opened).toBe(false);
+    await expect.poll(() => menu.open).toBe(false);
     await expect.poll(() => tabs.indexOf(target)).toBe(element.selectedIndex);
     await new Promise((resolve) => requestAnimationFrame(resolve));
 

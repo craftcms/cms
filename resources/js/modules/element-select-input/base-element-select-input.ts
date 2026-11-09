@@ -120,7 +120,7 @@ export interface BaseElementSelectInputSettings extends GarnishBaseSettings {
 }
 
 interface ActionMenuElement extends HTMLElement {
-  opened: boolean;
+  open: boolean;
 }
 
 const DEFAULTS: BaseElementSelectInputSettings = {
@@ -664,7 +664,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     // No public "opening" event, so watch the reflected `opened` attribute
     const observer = new MutationObserver(() => {
-      if (!actionMenu.opened) {
+      if (!actionMenu.open) {
         return;
       }
 
@@ -674,7 +674,7 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     });
     observer.observe(actionMenu, {
       attributes: true,
-      attributeFilter: ['opened'],
+      attributeFilter: ['open'],
     });
     this.#onChipCleanup(element, () => observer.disconnect());
   }

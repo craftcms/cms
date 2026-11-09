@@ -188,7 +188,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
   @property({type: Boolean, reflect: true}) invalid = false;
 
   /** Whether the listbox is showing. */
-  @property({type: Boolean, reflect: true}) opened = false;
+  @property({type: Boolean, reflect: true}) open = false;
 
   /** Shows a clear button when a value is present. */
   @property({type: Boolean, reflect: true}) clearable = false;
@@ -380,14 +380,14 @@ export default class CraftCombobox extends FormControl(LitElement) {
     const input = this._inputNode;
     const listbox = this.#listbox;
 
-    if (changed.has('opened')) {
-      this.#onOpenedChanged(changed.get('opened') as boolean | undefined);
+    if (changed.has('open')) {
+      this.#onOpenChanged(changed.get('open') as boolean | undefined);
     }
 
     if (
       changed.has('options') ||
       changed.has('limit') ||
-      changed.has('opened') ||
+      changed.has('open') ||
       changed.has('value') ||
       changed.has('showSelectedHint') ||
       changed.has('multipleChoice')
@@ -441,7 +441,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
         this.#selectedOption()?.data?.indicator != null
     );
 
-    if (this.opened) {
+    if (this.open) {
       this.#dropdown.update();
     }
   }
@@ -503,10 +503,10 @@ export default class CraftCombobox extends FormControl(LitElement) {
 
   // ─── Opening and closing ──────────────────────────────────────────────
 
-  #onOpenedChanged(was: boolean | undefined): void {
-    this._inputNode?.setAttribute('aria-expanded', String(this.opened));
+  #onOpenChanged(was: boolean | undefined): void {
+    this._inputNode?.setAttribute('aria-expanded', String(this.open));
 
-    if (this.opened) {
+    if (this.open) {
       this.#dropdown.show();
       document.addEventListener('pointerdown', this.#onDocumentPointerDown);
       return;
@@ -526,7 +526,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
 
   #onDocumentPointerDown = (event: PointerEvent): void => {
     if (!event.composedPath().includes(this)) {
-      this.opened = false;
+      this.open = false;
     }
   };
 
@@ -543,8 +543,8 @@ export default class CraftCombobox extends FormControl(LitElement) {
   }
 
   #onTextboxClick = (): void => {
-    if (!this.opened && this.#shouldOpen()) {
-      this.opened = true;
+    if (!this.open && this.#shouldOpen()) {
+      this.open = true;
     }
   };
 
@@ -571,7 +571,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       this.#commitQuery();
     }
 
-    this.opened = false;
+    this.open = false;
     this.#commit();
   };
 
@@ -592,7 +592,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       this.#setValue(this.#parse(query));
     }
 
-    this.opened = this.#shouldOpen();
+    this.open = this.#shouldOpen();
     this.#renderOptions();
 
     // Adding to the query makes its best match active, so Enter picks it.
@@ -675,14 +675,14 @@ export default class CraftCombobox extends FormControl(LitElement) {
         this.#onEnter(event);
         break;
       case 'Escape':
-        if (this.opened) {
+        if (this.open) {
           event.preventDefault();
           claimEscape(event);
-          this.opened = false;
+          this.open = false;
         }
         break;
       case 'Tab':
-        this.opened = false;
+        this.open = false;
         break;
       case 'Backspace':
         if (
@@ -705,12 +705,12 @@ export default class CraftCombobox extends FormControl(LitElement) {
     event.preventDefault();
 
     if (event.altKey) {
-      this.opened = event.key === 'ArrowDown';
+      this.open = event.key === 'ArrowDown';
       return;
     }
 
-    if (!this.opened) {
-      this.opened = true;
+    if (!this.open) {
+      this.open = true;
       return;
     }
 
@@ -724,9 +724,9 @@ export default class CraftCombobox extends FormControl(LitElement) {
   }
 
   #onEnter(event: KeyboardEvent): void {
-    const option = this.opened ? this.#activeOption() : undefined;
+    const option = this.open ? this.#activeOption() : undefined;
 
-    if (this.opened) {
+    if (this.open) {
       event.preventDefault();
     }
 
@@ -751,7 +751,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       this.#pick(option);
     }
 
-    this.opened = false;
+    this.open = false;
   }
 
   // ─── Selecting ────────────────────────────────────────────────────────
@@ -769,7 +769,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
     this._inputNode?.focus();
 
     if (!this.multipleChoice) {
-      this.opened = false;
+      this.open = false;
     }
   };
 
@@ -829,7 +829,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
     this.#lastQuery = '';
     this.#filtering = false;
     if (close) {
-      this.opened = false;
+      this.open = false;
     }
     this.#renderOptions();
     this.#syncInputs();
@@ -903,7 +903,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
   #setActive(option: CraftOption | undefined): void {
     this.#activeValue = option?.value ?? null;
     activateOption(this.#options(), option, this._inputNode, {
-      scroll: this.opened,
+      scroll: this.open,
     });
   }
 
@@ -1091,7 +1091,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
   #announcingRemoval = false;
 
   #announceMatches(count: number): void {
-    if (!this.opened && !this.#filtering) {
+    if (!this.open && !this.#filtering) {
       this.#announcedMatches = '';
       return;
     }
@@ -1155,7 +1155,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
     }
 
     event.preventDefault();
-    this.#openedOnIndicatorMousedown = this.opened;
+    this.#openedOnIndicatorMousedown = this.open;
     this._inputNode?.focus();
   };
 
@@ -1164,7 +1164,7 @@ export default class CraftCombobox extends FormControl(LitElement) {
       return;
     }
 
-    this.opened = !this.#openedOnIndicatorMousedown;
+    this.open = !this.#openedOnIndicatorMousedown;
   };
 
   // ─── Templates ────────────────────────────────────────────────────────

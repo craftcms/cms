@@ -443,7 +443,7 @@
     class="image-editor-dialog"
     data-theme="dark"
     fullscreen
-    .opened="opened"
+    .open="opened"
     :label="t('Edit Image')"
     @craft-after-show.self="editor.start"
     @craft-before-hide.self="onBeforeHide"

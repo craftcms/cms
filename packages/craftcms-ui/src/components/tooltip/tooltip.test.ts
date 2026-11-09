@@ -101,7 +101,7 @@ describe('craft-tooltip', () => {
     tooltip.remove();
     await new Promise((resolve) => setTimeout(resolve));
 
-    expect(tooltip.opened).toBe(false);
+    expect(tooltip.open).toBe(false);
   });
 
   it('resolves the invoker from the for attribute', async () => {
@@ -120,7 +120,7 @@ describe('craft-tooltip', () => {
     await tooltip.show();
     await new Promise((resolve) => setTimeout(resolve));
 
-    expect(tooltip.opened).toBe(true);
+    expect(tooltip.open).toBe(true);
     expect(events).toEqual(['craft-show', 'craft-after-show']);
   });
 
@@ -137,7 +137,7 @@ describe('craft-tooltip', () => {
     await tooltip.hide();
     await new Promise((resolve) => setTimeout(resolve));
 
-    expect(tooltip.opened).toBe(false);
+    expect(tooltip.open).toBe(false);
     expect(events).toEqual(['craft-hide', 'craft-after-hide']);
   });
 
@@ -146,10 +146,10 @@ describe('craft-tooltip', () => {
 
     button.click();
     await tooltip.updateComplete;
-    expect(tooltip.opened).toBe(true);
+    expect(tooltip.open).toBe(true);
 
     button.click();
     await tooltip.updateComplete;
-    expect(tooltip.opened).toBe(false);
+    expect(tooltip.open).toBe(false);
   });
 });

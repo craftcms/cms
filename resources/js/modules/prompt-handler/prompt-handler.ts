@@ -11,7 +11,7 @@ type ApplyToRemainingCheckbox = HTMLElement & {checked: boolean; label: string};
 type PromptDialog = HTMLElement & {
   label: string;
   noHeader: boolean;
-  opened: boolean;
+  open: boolean;
 };
 
 interface PromptChoice {
@@ -217,7 +217,7 @@ export class PromptHandler extends Base {
     });
 
     this.getPromptMount().append(dialog);
-    dialog.opened = true;
+    dialog.open = true;
   }
 
   _selectPromptChoice(choice: string, applyToRemaining: boolean): void {
@@ -228,7 +228,7 @@ export class PromptHandler extends Base {
       dialog.addEventListener('craft-after-hide', () => dialog.remove(), {
         once: true,
       });
-      dialog.opened = false;
+      dialog.open = false;
     }
 
     this.#promptCallback(choice, applyToRemaining);

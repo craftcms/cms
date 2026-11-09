@@ -479,7 +479,7 @@ describe('craft-combobox', () => {
     });
     const input = combobox.querySelector('input')!;
     input.focus();
-    expect(combobox.opened).toBe(false);
+    expect(combobox.open).toBe(false);
 
     input.dispatchEvent(
       new KeyboardEvent('keydown', {key: 'ArrowDown', bubbles: true})
@@ -487,7 +487,7 @@ describe('craft-combobox', () => {
     await combobox.updateComplete;
     await new Promise((resolve) => setTimeout(resolve));
 
-    expect(combobox.opened).toBe(true);
+    expect(combobox.open).toBe(true);
     expect(optionEls(combobox).length).toBe(2);
   });
 
@@ -507,7 +507,7 @@ describe('craft-combobox', () => {
       );
     });
     combobox.querySelector('input')!.click();
-    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+    await vi.waitFor(() => expect(combobox.open).toBe(true));
 
     expect(
       optionEls(combobox).map((option) => option.textContent?.trim())
@@ -527,7 +527,7 @@ describe('craft-combobox', () => {
 
     const input = combobox.querySelector('input')!;
     input.click();
-    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+    await vi.waitFor(() => expect(combobox.open).toBe(true));
 
     expect(
       optionEls(combobox).map((option) => option.textContent?.trim())
@@ -540,11 +540,11 @@ describe('craft-combobox', () => {
     ).toEqual(['Local']);
 
     optionEls(combobox)[0]!.click();
-    await vi.waitFor(() => expect(combobox.opened).toBe(false));
+    await vi.waitFor(() => expect(combobox.open).toBe(false));
     await combobox.updateComplete;
 
     input.click();
-    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+    await vi.waitFor(() => expect(combobox.open).toBe(true));
 
     expect(
       optionEls(combobox).map((option) => option.textContent?.trim())

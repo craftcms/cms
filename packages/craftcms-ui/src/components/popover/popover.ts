@@ -11,7 +11,7 @@ import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
 import {focusStaysWithin} from '@src/utilities/focus-out.js';
 import {claimEscape, isEscapeClaimed} from '@src/utilities/overlay-escape.js';
-import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
+import {announceOverlayState} from '@src/utilities/overlay-events.js';
 import {
   hideLayer,
   layerStyles,
@@ -113,11 +113,11 @@ const matchReferenceWidth: Partial<Modifier<'matchReferenceWidth', {}>> = {
  * </craft-popover>
  * ```
  *
- * @fires opened-changed - `opened` changed. `detail.opened` is the new state.
- * @fires before-opened - The invoker, Escape, an outside click or `show()` is
- *   about to open the popover. Cancelable. Setting `opened` doesn't fire it.
- * @fires before-closed - The invoker, Escape, an outside click or `hide()` is
- *   about to close the popover. Cancelable. Setting `opened` doesn't fire it.
+ * @fires craft-before-show - The invoker, Escape, an outside click or
+ *   `show()` is about to open the popover. Cancelable. Setting `open` doesn't
+ *   fire it. Doesn't bubble, so a dialog around the popover never mistakes it
+ *   for its own.
+ * @fires craft-before-hide - The same, for closing.
  * @fires craft-show - The overlay is opening. Fires as the state flips.
  * @fires craft-after-show - The overlay has opened and its update has settled.
  * @fires craft-hide - The overlay is closing. Fires as the state flips.
@@ -130,7 +130,7 @@ export default class CraftPopover extends LitElement {
   static override styles = [hostStyles, layerStyles, styles];
 
   /** Whether the popover is open. */
-  @property({type: Boolean, reflect: true}) opened = false;
+  @property({type: Boolean, reflect: true}) open = false;
 
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
@@ -189,7 +189,7 @@ export default class CraftPopover extends LitElement {
 
   #popper: PopperInstance | null = null;
 
-  /** Whether the pane is showing. Trails `opened` until the update runs. */
+  /** Whether the pane is showing. Trails `open` until the update runs. */
   #shown = false;
 
   /**
@@ -206,7 +206,6 @@ export default class CraftPopover extends LitElement {
 
   constructor() {
     super();
-    wireOverlayLifecycleEvents(this);
     this.addEventListener('keydown', this.#claimEscape);
     this.addEventListener('focusout', this.#closeOnFocusOut);
   }
@@ -226,7 +225,7 @@ export default class CraftPopover extends LitElement {
    * while focus is still in the content.
    */
   #closeOnFocusOut = (event: FocusEvent): void => {
-    if (!this.opened || !(event.relatedTarget instanceof Node)) {
+    if (!this.open || !(event.relatedTarget instanceof Node)) {
       return;
     }
 
@@ -273,10 +272,8 @@ export default class CraftPopover extends LitElement {
   ): void {
     super.requestUpdate(name, oldValue, options);
 
-    if (name === 'opened' && this.opened !== oldValue) {
-      this.dispatchEvent(
-        new CustomEvent('opened-changed', {detail: {opened: this.opened}})
-      );
+    if (name === 'open') {
+      announceOverlayState(this);
     }
   }
 
@@ -348,7 +345,7 @@ export default class CraftPopover extends LitElement {
 
   /** Opens the popover if it's closed, and closes it if it's open. */
   async toggle(): Promise<void> {
-    await (this.opened ? this.hide() : this.show());
+    await (this.open ? this.hide() : this.show());
   }
 
   /**
@@ -453,24 +450,25 @@ export default class CraftPopover extends LitElement {
   }
 
   /**
-   * Asks to open or close: announces it with a cancelable `before-*` event,
-   * then flips `opened`, which the update applies.
+   * Asks to open or close: announces it with a cancelable `craft-before-*`
+   * event, then flips `open`, which the update applies.
    */
   #request(opened: boolean): void {
-    if (opened === this.opened) {
+    if (opened === this.open) {
       return;
     }
 
-    const event = new CustomEvent(opened ? 'before-opened' : 'before-closed', {
-      cancelable: true,
-    });
+    const event = new CustomEvent(
+      opened ? 'craft-before-show' : 'craft-before-hide',
+      {cancelable: true}
+    );
     this.dispatchEvent(event);
 
     if (event.defaultPrevented) {
       return;
     }
 
-    this.opened = opened;
+    this.open = opened;
   }
 
   #onInvokerClick = (): void => {
@@ -485,7 +483,7 @@ export default class CraftPopover extends LitElement {
       return;
     }
 
-    this.#request(!this.opened);
+    this.#request(!this.open);
   };
 
   /** Whether a control inside the popover acted on the last Escape keydown. */
@@ -504,7 +502,7 @@ export default class CraftPopover extends LitElement {
 
     this.#escapeHandledInside = event.defaultPrevented;
 
-    if (this.opened) {
+    if (this.open) {
       event.preventDefault();
     }
   };
@@ -525,7 +523,7 @@ export default class CraftPopover extends LitElement {
       return;
     }
 
-    if (!this.opened) {
+    if (!this.open) {
       return;
     }
 
@@ -797,13 +795,13 @@ export default class CraftPopover extends LitElement {
       if (this.isConnected) {
         // Moved: `for` may name another element in the root it landed in.
         this._syncInvoker();
-        if (this.opened) {
+        if (this.open) {
           this.#showPane();
         }
         return;
       }
 
-      if (this.opened) {
+      if (this.open) {
         swallowHeldEnterKeyup();
       }
 
@@ -823,7 +821,7 @@ export default class CraftPopover extends LitElement {
     this._syncInvoker();
     this._setupOverlay();
 
-    if (this.opened) {
+    if (this.open) {
       this.#showPane();
     }
   }
@@ -874,8 +872,8 @@ export default class CraftPopover extends LitElement {
     }
 
     // The first render only reports the initial state.
-    if (changed.has('opened') && changed.get('opened') !== undefined) {
-      if (this.opened) {
+    if (changed.has('open') && changed.get('open') !== undefined) {
+      if (this.open) {
         this.#showPane();
       } else {
         this.#hidePane();
