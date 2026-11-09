@@ -50,11 +50,8 @@ class LooseEndsStore
             return $this->tableExists;
         }
 
-        try {
-            return $this->tableExists = Schema::hasTable(self::TABLE);
-        } catch (Throwable) {
-            return false;
-        }
+        // A failed check is left to surface, as reporting the table as missing would claim nothing was recorded.
+        return $this->tableExists = Schema::hasTable(self::TABLE);
     }
 
     public function ensureTable(): void
@@ -168,12 +165,9 @@ class LooseEndsStore
     {
         $count = (int)Cache::get(self::FINDING_COUNT_CACHE_KEY, 0);
 
-        if (!$this->tableExists()) {
-            return $count;
-        }
-
+        // Best-effort, as it’s only a badge.
         try {
-            return $count + DB::table(self::TABLE)->count();
+            return $this->tableExists() ? $count + DB::table(self::TABLE)->count() : $count;
         } catch (Throwable) {
             return $count;
         }
