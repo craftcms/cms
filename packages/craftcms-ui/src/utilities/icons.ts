@@ -68,7 +68,11 @@ async function requestIcon(url: string, flip: boolean): Promise<ResolvedIcon> {
     svg.setAttribute('part', 'svg');
 
     if (flip) {
-      svg.setAttribute('style', 'scale: -1 1');
+      const style = svg.getAttribute('style');
+      svg.setAttribute(
+        'style',
+        style ? `${style}; scale: -1 1` : 'scale: -1 1'
+      );
     }
 
     return html`${unsafeSVG(svg.outerHTML)}`;

@@ -99,8 +99,9 @@ function normalizeIconName(
   iconName = resolve(iconName);
   const flipped = FLIPPED_NAMES.get(iconName);
 
+  // getIconUrl() keeps the extension of a name with a folder, so leave it off.
   if (flipped !== undefined) {
-    return {name: `${flipped}${suffix}`, flip: true};
+    return {name: flipped, flip: true};
   }
 
   return {

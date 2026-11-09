@@ -36,6 +36,7 @@ describe('configureIcons', () => {
   it.each([
     ['structurertl', 'classic', 'solid', '/icons/solid/list-tree.svg'],
     ['share-flip', 'custom-icons', 'solid', '/icons/solid/share.svg'],
+    ['list-flip.svg', 'custom-icons', 'solid', '/icons/solid/list.svg'],
     [
       'custom-icons/sidebar-nav-flip-light',
       'classic',
@@ -57,6 +58,26 @@ describe('configureIcons', () => {
       );
     }
   );
+
+  it('keeps the icon’s own styles when mirroring it', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          new Response(
+            '<svg viewBox="0 0 512 512" style="fill: none; stroke: currentColor"><path d="M0 0h1"/></svg>'
+          )
+      )
+    );
+    configureIcons('/styled-icons');
+
+    const container = document.createElement('div');
+    render(await resolveIcon('share-flip'), container);
+
+    expect(container.querySelector('svg')?.getAttribute('style')).toBe(
+      'fill: none; stroke: currentColor; scale: -1 1'
+    );
+  });
 
   it('does not mirror the original icon once a flipped one has loaded', async () => {
     vi.stubGlobal('fetch', fetch);
