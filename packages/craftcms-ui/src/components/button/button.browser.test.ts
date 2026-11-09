@@ -911,6 +911,104 @@ describe('in a form', () => {
     expect(button.getAttribute('aria-disabled')).toBe('true');
   });
 
+  it('follows its fieldset being disabled or enabled just before a click', async () => {
+    const {form, submits} = await mountForm(
+      '<fieldset><craft-button type="submit">Save</craft-button></fieldset>'
+    );
+    const fieldset = form.querySelector('fieldset')!;
+    const button = form.querySelector('craft-button')!;
+    const onClick = vi.fn();
+    button.addEventListener('click', onClick);
+
+    fieldset.disabled = true;
+    button.click();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(onClick).not.toHaveBeenCalled();
+    expect(submits).toHaveLength(0);
+
+    fieldset.disabled = false;
+    button.click();
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(submits).toHaveLength(1);
+  });
+
+  it('keeps an aria-disabled its author set through being disabled and enabled', async () => {
+    const {form} = await mountForm(
+      '<fieldset><craft-button aria-disabled="true">Add</craft-button></fieldset>'
+    );
+    const fieldset = form.querySelector('fieldset')!;
+    const button = form.querySelector('craft-button')!;
+    const settle = async () => {
+      await new Promise((resolve) => setTimeout(resolve));
+      await button.updateComplete;
+    };
+
+    button.disabled = true;
+    await settle();
+    button.disabled = false;
+    await settle();
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+
+    fieldset.disabled = true;
+    await settle();
+    fieldset.disabled = false;
+    await settle();
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it.each([
+    [
+      'its submit button before a native one',
+      '<form id="f"><input name="a"><input name="b"><craft-button type="submit">Save</craft-button><button type="submit">Draft</button></form>',
+      'craft-button',
+    ],
+    [
+      'a native submit button before its own',
+      '<form id="f"><input name="a"><input name="b"><button type="submit">Draft</button><craft-button type="submit">Save</craft-button></form>',
+      'button',
+    ],
+    [
+      'its submit button before the form, from the form attribute',
+      '<craft-button type="submit" form="f">Save</craft-button><form id="f"><input name="a"><input name="b"><button type="submit">Draft</button></form>',
+      'craft-button',
+    ],
+    [
+      'a native submit button in the form, before its own after the form',
+      '<form id="f"><input name="a"><input name="b"><button type="submit">Draft</button></form><craft-button type="submit" form="f">Save</craft-button>',
+      'button',
+    ],
+    [
+      'a native submit button from the form attribute, before its own',
+      '<button type="submit" form="f">Draft</button><form id="f"><input name="a"><input name="b"><craft-button type="submit">Save</craft-button></form>',
+      'button',
+    ],
+  ])(
+    'lets Enter in a field click %s, as the first submit button',
+    async (_, markup, expected) => {
+      const {userEvent} = await import('vite-plus/test/browser');
+      document.body.innerHTML = markup;
+      const form = document.querySelector('form')!;
+      const craftButton = document.querySelector('craft-button')!;
+      const nativeButton = document.querySelector('button:not([aria-hidden])')!;
+      await craftButton.updateComplete;
+      const clicked: string[] = [];
+      craftButton.addEventListener('click', () => clicked.push('craft-button'));
+      nativeButton.addEventListener('click', () => clicked.push('button'));
+      const submits: SubmitEvent[] = [];
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submits.push(event);
+      });
+
+      form.querySelector('input')!.focus();
+      await userEvent.keyboard('{Enter}');
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(clicked).toEqual([expected]);
+      expect(submits).toHaveLength(1);
+    }
+  );
+
   it("stays enabled in a disabled fieldset's legend", async () => {
     const {submits} = await mountForm(
       '<fieldset disabled><legend><craft-button type="submit">Save</craft-button></legend></fieldset>'

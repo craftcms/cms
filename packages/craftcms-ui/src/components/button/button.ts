@@ -215,10 +215,12 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
 
   /**
    * Disabled by its own `disabled`, or by a disabled fieldset. A link isn't a
-   * form control, so a fieldset leaves it alone.
+   * form control, so a fieldset leaves it alone. The fieldsets are read as
+   * they are now, since `fieldsetDisabled` only catches up once the observer
+   * reports, and a click can come first.
    */
   get #inactive(): boolean {
-    return this.disabled || (this.fieldsetDisabled && !this.href);
+    return this.disabled || (!this.href && inDisabledFieldset(this));
   }
 
   #syncFieldsetDisabled = (): void => {
@@ -228,13 +230,50 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
   /**
    * Disables a form's hidden submitter while its first submit `craft-button`
    * is disabled, as a disabled default button blocks implicit submission.
+   *
+   * Enter clicks the form's first submit button, so the submitter goes right
+   * before the first native one that follows that `craft-button`, or at the
+   * end of the form when none does. It isn't put beside the `craft-button`
+   * itself, which may sit in a `craft-button-group` that lays out every child.
    */
-  static #updateImplicitSubmitter(entry: {
-    button: HTMLButtonElement;
-    owners: Set<CraftButton>;
-  }): void {
+  static #updateImplicitSubmitter(
+    form: HTMLFormElement,
+    entry: {button: HTMLButtonElement; owners: Set<CraftButton>}
+  ): void {
     const first = CraftButton.#defaultSubmitter(entry.owners);
     entry.button.disabled = first ? first.#inactive : false;
+
+    if (!first) {
+      return;
+    }
+
+    const native = [...form.elements].find(
+      (element) =>
+        element !== entry.button &&
+        (element instanceof HTMLButtonElement ||
+          element instanceof HTMLInputElement) &&
+        element.type === 'submit'
+    );
+
+    if (
+      native &&
+      first.compareDocumentPosition(native) & Node.DOCUMENT_POSITION_FOLLOWING
+    ) {
+      const id = native.getAttribute('form');
+      if (id === null) {
+        entry.button.removeAttribute('form');
+      } else {
+        entry.button.setAttribute('form', id);
+      }
+      if (entry.button.nextElementSibling !== native) {
+        native.before(entry.button);
+      }
+    } else {
+      entry.button.removeAttribute('form');
+      if (form.lastElementChild !== entry.button) {
+        form.append(entry.button);
+      }
+    }
   }
 
   /** A form's first submit `craft-button`, which Enter in a field clicks. */
@@ -462,9 +501,8 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     }
 
     entry.owners.add(this);
-    form.append(entry.button);
     this.#submitterForm = form;
-    CraftButton.#updateImplicitSubmitter(entry);
+    CraftButton.#updateImplicitSubmitter(form, entry);
   }
 
   #releaseImplicitSubmitter(): void {
@@ -482,7 +520,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     }
 
     entry.owners.delete(this);
-    CraftButton.#updateImplicitSubmitter(entry);
+    CraftButton.#updateImplicitSubmitter(form, entry);
 
     // Deferred: the form may be mid-removal itself, and a button moved within
     // it registers again before this runs.
@@ -547,7 +585,7 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
     } else if (inactivityChanged && this.#submitterForm) {
       const entry = implicitSubmitters.get(this.#submitterForm);
       if (entry) {
-        CraftButton.#updateImplicitSubmitter(entry);
+        CraftButton.#updateImplicitSubmitter(this.#submitterForm, entry);
       }
     }
 
@@ -555,8 +593,10 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
       // Only an `aria-disabled` it set itself is taken away again: an author
       // may mark an enabled button disabled to keep it focusable.
       if (this.#inactive) {
-        this.setAttribute('aria-disabled', 'true');
-        this.#ownsAriaDisabled = true;
+        if (this.getAttribute('aria-disabled') !== 'true') {
+          this.setAttribute('aria-disabled', 'true');
+          this.#ownsAriaDisabled = true;
+        }
       } else if (this.#ownsAriaDisabled) {
         this.removeAttribute('aria-disabled');
         this.#ownsAriaDisabled = false;
