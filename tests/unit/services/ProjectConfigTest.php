@@ -10,6 +10,7 @@ namespace crafttests\unit\services;
 use Codeception\Stub\Expected;
 use Craft;
 use craft\elements\Category;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
@@ -19,6 +20,7 @@ use craft\services\ProjectConfig;
 use craft\test\TestCase;
 use Exception;
 use UnitTester;
+use yii\base\Exception as YiiException;
 use yii\base\NotSupportedException;
 use yii\mutex\FileMutex;
 use yii\mutex\Mutex as YiiMutex;
@@ -254,6 +256,70 @@ class ProjectConfigTest extends TestCase
         $otherProcess->release(ProjectConfig::MUTEX_NAME);
     }
 
+    public function testWritingYamlFilesReplacesFilesWithoutClearingFolderFirst(): void
+    {
+        $globalProjectConfig = Craft::$app->getProjectConfig();
+        $originalFolderName = $globalProjectConfig->folderName;
+        $globalProjectConfig->folderName = 'project-' . StringHelper::randomString(8);
+        $basePath = Craft::$app->getPath()->getProjectConfigPath();
+
+        $entryTypeUid = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+        $fieldUid = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+        $config = [
+            'dateModified' => 1,
+            'entryTypes' => [$entryTypeUid => ['handle' => 'foo']],
+            'fields' => [$fieldUid => ['handle' => 'body']],
+        ];
+        $pc = $this->make(ProjectConfig::class, [
+            'getCurrentWorkingConfig' => function() use (&$config) {
+                return new ProjectConfigData($config);
+            },
+        ]);
+        $listFiles = fn() => array_map(
+            fn($file) => substr($file, strlen($basePath) + 1),
+            FileHelper::findFiles($basePath, ['except' => ['.gitignore']]),
+        );
+
+        try {
+            file_put_contents("$basePath/.gitignore", '');
+            FileHelper::writeToFile("$basePath/entryTypes/Foo--$entryTypeUid.yaml", "handle: Foo\n");
+            FileHelper::writeToFile("$basePath/sections/old--cccccccc-cccc-4ccc-8ccc-cccccccccccc.yaml", "handle: old\n");
+            FileHelper::writeToFile("$basePath/project.yaml", "dateModified: 0\n");
+
+            $pc->writeYamlFiles(true);
+
+            $files = $listFiles();
+            sort($files);
+            self::assertSame([
+                "entryTypes/foo--$entryTypeUid.yaml",
+                "fields/body--$fieldUid.yaml",
+                'project.yaml',
+            ], $files);
+            self::assertFileExists("$basePath/.gitignore");
+            self::assertDirectoryDoesNotExist("$basePath/sections");
+
+            // A failed write leaves the existing files in place
+            $config['fields']['dddddddd-dddd-4ddd-8ddd-dddddddddddd'] = ['handle' => 'summary'];
+            chmod("$basePath/fields", 0555);
+            try {
+                $pc->writeYamlFiles(true);
+                self::fail('writeYamlFiles() should have failed');
+            } catch (YiiException $e) {
+                self::assertStringContainsString('is not writable', $e->getMessage());
+            }
+            self::assertFileExists("$basePath/entryTypes/foo--$entryTypeUid.yaml");
+            self::assertFileExists("$basePath/project.yaml");
+            self::assertTrue($pc->getHadFileWriteIssues());
+        } finally {
+            if (is_dir("$basePath/fields")) {
+                chmod("$basePath/fields", 0775);
+            }
+            FileHelper::removeDirectory($basePath);
+            Craft::$app->getCache()->delete(ProjectConfig::FILE_ISSUES_CACHE_KEY);
+            $globalProjectConfig->folderName = $originalFolderName;
+        }
+    }
+
     public function testApplyingConfigChangesDoesNotExposePartialElementSourcesToSectionHandlers(): void
     {
         $projectConfig = new ProjectConfig();
@@ -277,9 +343,9 @@ class ProjectConfigTest extends TestCase
                 ]],
             ],
             'sections' => [
-                'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' => [
                     'siteSettings' => [
-                        'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' => [
+                        'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' => [
                             'hasUrls' => true,
                             'uriFormat' => 'test/{slug}',
                             'template' => 'test/_entry',

@@ -1655,10 +1655,15 @@ class ProjectConfig extends Component
         try {
             $basePath = Craft::$app->getPath()->getProjectConfigPath();
 
-            // Delete everything except hidden files/folders
-            FileHelper::clearDirectory($basePath, [
-                'except' => ['.*', '.*/'],
-            ]);
+            // Existing files get overwritten in place, and stale ones are only deleted once everything else
+            // has been written, so a failed write doesn't leave the folder empty (except hidden files/folders)
+            $existingFiles = [];
+            $existingFilesByLowerPath = [];
+            foreach (FileHelper::findFiles($basePath, ['except' => ['.*', '.*/']]) as $file) {
+                $file = FileHelper::normalizePath($file);
+                $existingFiles[$file] = true;
+                $existingFilesByLowerPath[strtolower($file)][] = $file;
+            }
 
             $projectConfigNames = $config->get(self::PATH_META_NAMES);
 
@@ -1680,26 +1685,40 @@ class ProjectConfig extends Component
             foreach ($splitConfig as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
-                $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
+                $filePath = FileHelper::normalizePath($basePath . DIRECTORY_SEPARATOR . $relativeFile);
                 $yamlContent = Yaml::dump($configData, 20, 2);
                 if (!empty($uids)) {
                     $yamlContent = preg_replace($uids, $replacements, $yamlContent);
                 }
+
+                // Delete any existing file whose name only differs in case (e.g. a renamed handle),
+                // so case-insensitive file systems pick up the new name
+                foreach ($existingFilesByLowerPath[strtolower($filePath)] ?? [] as $existingFile) {
+                    if ($existingFile !== $filePath) {
+                        FileHelper::unlink($existingFile);
+                        unset($existingFiles[$existingFile]);
+                    }
+                }
+
                 FileHelper::writeToFile($filePath, $yamlContent);
+                unset($existingFiles[$filePath]);
             }
-        } catch (Throwable $e) {
-            Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
-            if (isset($basePath)) {
-                // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
-                try {
-                    FileHelper::clearDirectory($basePath, [
-                        'except' => ['.*', '.*/'],
-                    ]);
-                } catch (Throwable $e) {
-                    // oh well
+
+            // Delete stale files and any folders left empty
+            foreach (array_keys($existingFiles) as $file) {
+                FileHelper::unlink($file);
+            }
+            $dirs = FileHelper::findDirectories($basePath, ['except' => ['.*/']]);
+            rsort($dirs);
+            foreach ($dirs as $dir) {
+                if (FileHelper::isDirectoryEmpty($dir)) {
+                    FileHelper::removeDirectory($dir);
                 }
             }
-            throw new Exception('Unable to write new project config files', 0, $e);
+        } catch (Throwable $e) {
+            // Don't use the YAML files until they've been written successfully
+            Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
+            throw new Exception("Unable to write new project config files: {$e->getMessage()}", 0, $e);
         }
 
         Craft::$app->getCache()->delete(self::FILE_ISSUES_CACHE_KEY);
