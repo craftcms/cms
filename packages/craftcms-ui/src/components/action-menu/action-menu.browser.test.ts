@@ -417,3 +417,14 @@ it.each(['light', 'dark'])(
     expect(contrast(placeholder.color, surface)).toBeGreaterThanOrEqual(4.5);
   }
 );
+
+it('moves focus to the first item when it opens with items from a provider', async () => {
+  const menu = document.createElement('craft-action-menu') as CraftActionMenu;
+  menu.actions = () => [{label: 'Duplicate'}, {label: 'Delete'}];
+  document.body.append(menu);
+  await menu.updateComplete;
+
+  await userEvent.click(page.getByRole('button', {name: 'Actions'}));
+
+  await expect.poll(focusedText).toBe('Duplicate');
+});

@@ -894,8 +894,20 @@ export default class CraftActionMenu extends CraftPopover {
     }
     if (this.searchable) {
       this._searchInput?.focus();
+      return;
+    }
+
+    // Items a provider has just rebuilt have no button to delegate focus to
+    // until they render.
+    const item = this._getNavigableItems()[0];
+    if (item?.hasUpdated === false) {
+      void item.updateComplete.then(() => {
+        if (this.opened) {
+          item.focus();
+        }
+      });
     } else {
-      this._getNavigableItems()[0]?.focus();
+      item?.focus();
     }
   };
 
