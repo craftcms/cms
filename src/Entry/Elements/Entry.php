@@ -2659,7 +2659,11 @@ JS;
         $title = I18N::withLocale(
             $site->getLanguage(),
             $site->getLanguage(),
-            fn () => renderObjectTemplate($entryType->titleFormat, $this),
+            fn () => renderObjectTemplate(
+                $entryType->titleFormat,
+                $this,
+                ElementHelper::objectTemplateDateVariables($this, $entryType->titleFormat),
+            ),
         );
         if ($title !== '') {
             $this->title = $title;
