@@ -242,6 +242,16 @@
    */
   const workflowActionsOnly = slideout?.workflowActionsOnly ?? false;
 
+  /**
+   * Whether the footer has nothing to offer: with only workflow actions
+   * allowed, there's no Cancel, so it's empty unless one of them is available.
+   */
+  const hideFooter = computed(
+    () =>
+      workflowActionsOnly &&
+      (editorLocked.value || !payload.editorActions.primary.panelId)
+  );
+
   const saveButtons = computed(() =>
     payload.editorActions.buttons.map((action) => ({
       label: action.label,
@@ -574,6 +584,7 @@
       editorLocked.value ||
       (workflowActionsOnly && !payload.editorActions.primary.panelId),
     handlesReadOnly: true,
+    hideFooter: hideFooter.value,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
@@ -674,8 +685,13 @@
     />
   </LayoutSlot>
 
-  <!-- Where the legacy editor puts its spinner and checkmark. -->
-  <LayoutSlot v-if="autosave.status.value !== 'idle'" name="footer-meta">
+  <!-- Where the legacy editor puts its spinner and checkmark, or beside the
+    title when there's no footer. Keyed, as a layout slot's name is read once. -->
+  <LayoutSlot
+    v-if="autosave.status.value !== 'idle'"
+    :key="hideFooter ? 'header' : 'footer'"
+    :name="hideFooter ? 'content-toolbar-meta' : 'footer-meta'"
+  >
     <AutosaveMessage
       :status="autosave.status.value"
       :saved-at="autosave.savedAt.value"
