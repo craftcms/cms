@@ -78,7 +78,7 @@
 
 #### Entries
 - Added support for disabling Matrix entries for individual sites. ([#19686](https://github.com/craftcms/cms/pull/19686))
-- Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. ([#17675](https://github.com/craftcms/cms/pull/17675))
+- Added the “Show the Post Date field” and “Show the Expiry Date field” entry type settings. Single and nested entries now have Post Date and Expiry Date fields too, unless their entry type hides them. ([#17675](https://github.com/craftcms/cms/pull/17675))
 - Added support for controller actions and named Laravel routes in section and Matrix site settings, via a single “Route To” setting in place of Craft 5’s template setting, which suggests the app’s named routes and controller actions as well as templates. ([#19762](https://github.com/craftcms/cms/pull/19762), [#19942](https://github.com/craftcms/cms/pull/19942))
 - Collapsed Matrix blocks are now remembered per site, like their enabled status. ([#20119](https://github.com/craftcms/cms/pull/20119))
 - Nested entry cards in revisions now have a violet “modified” bar when the entry was edited or added in that revision, as they already did in drafts.
