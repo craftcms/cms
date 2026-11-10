@@ -81,6 +81,8 @@
       context?: string;
       readOnly?: boolean;
       loading?: boolean;
+      /** See `DataTable`'s `placeholderRows`. */
+      placeholderRows?: number;
       interactionsDisabled?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
@@ -342,6 +344,7 @@
         :can-reorder-row="canReorderRow"
         :read-only="readOnly"
         :loading="loading"
+        :placeholder-rows="placeholderRows"
         :layout="layout"
         :spacing="spacing"
         :appearance="

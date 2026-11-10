@@ -1,23 +1,28 @@
 <script setup lang="ts">
   /**
-   * What running the plan would do to each of a step's first items, from the
-   * step as the form has it, with a button to see how each item's element
-   * would change.
+   * What running the plan would do to each of a step's items, a page at a
+   * time, from the step as the form has it, with a button to see how each
+   * item's element would change.
    */
   import '@craftcms/ui/components/badge/badge';
   import '@craftcms/ui/components/button/button';
-  import '@craftcms/ui/components/button-group/button-group';
   import '@craftcms/ui/components/field/field';
-  import '@craftcms/ui/components/spinner/spinner';
+  import '@craftcms/ui/components/icon/icon';
+  import '@craftcms/ui/components/tab/tab';
+  import '@craftcms/ui/components/tabs/tabs';
+  import '@craftcms/ui/components/tooltip/tooltip';
   import {Color, isHttpError, t} from '@craftcms/ui';
-  import {computed, shallowRef, watch} from 'vue';
-  import Select from '@/common/form/Select.vue';
+  import {computed, h, shallowReactive, shallowRef, watch} from 'vue';
+  import {useCraftTable} from '@/common/table/craftTable';
+  import {createCraftColumnHelper} from '@/common/table/createCraftColumnHelper';
+  import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import type {ImportStep} from '@/modules/import/mapping/types';
   import ItemPreviewModal from './ItemPreviewModal.vue';
   import {
     fetchStepPreview,
     resultFills,
     resultLabels,
+    type PreviewItem,
     type PreviewResult,
     type StepPreview,
   } from './plan-preview';
@@ -34,7 +39,7 @@
     stepSummaries?: Record<string, StepSummary>;
   }>();
 
-  /** The steps that run, with what they're called in the step menu, e.g. “1. Entries — Guides”. */
+  /** The steps that run, with their number in the plan and what their tab calls them, e.g. “Entries — Guides”. */
   const stepOptions = computed(() =>
     steps.flatMap((step, i) => {
       if (!step.enabled || !step.type) {
@@ -51,7 +56,8 @@
       return [
         {
           value: step.uid,
-          label: `${i + 1}. ${[type, ...settings].join(' — ')}`,
+          number: i + 1,
+          name: [type, ...settings].join(' — '),
           step,
         },
       ];
@@ -67,20 +73,53 @@
   );
 
   const preview = shallowRef<StepPreview | null>(null);
-  /** Which items the table lists, by their result. */
+  /** Which items the table pages through, by their result. */
   const filter = shallowRef<PreviewResult | 'all'>('all');
   const loading = shallowRef(false);
   let request = 0;
+  /** The steps whose previews found errors, as far as they've been previewed. */
+  const problemSteps = shallowReactive(new Set<string>());
+  /** The step the preview is of, which keeps its page as it's edited. */
+  let shownUid: string | null = null;
 
-  async function load(step: ImportStep): Promise<void> {
+  /** How many rows stand in for the page while it loads: as many as it will have, as far as that's known. */
+  const placeholderRows = shallowRef(10);
+
+  async function load(step: ImportStep, page = 0): Promise<void> {
     const current = ++request;
+    const size = preview.value?.pageSize ?? 10;
+    const known =
+      filter.value === 'all'
+        ? preview.value?.total
+        : preview.value?.counts?.[filter.value];
+    placeholderRows.value =
+      known === undefined
+        ? size
+        : Math.max(1, Math.min(size, known - page * size));
     loading.value = true;
 
     try {
-      const data = await fetchStepPreview(step);
+      const result = filter.value === 'all' ? null : filter.value;
+      const data = await fetchStepPreview(step, page, result);
 
-      if (current === request) {
-        preview.value = data;
+      if (current !== request) {
+        return;
+      }
+
+      // an edit to the step can leave nothing with the chosen result
+      if (result && !data.counts?.[result]) {
+        filter.value = 'all';
+        void load(step);
+
+        return;
+      }
+
+      preview.value = data;
+
+      if (data.counts?.problem) {
+        problemSteps.add(step.uid);
+      } else {
+        problemSteps.delete(step.uid);
       }
     } catch (error) {
       if (current === request) {
@@ -98,50 +137,216 @@
     }
   }
 
-  // reloads as the step is edited, but not when the list is merely re-rendered
+  const items = computed(() => preview.value?.items ?? []);
+  const page = computed(() => preview.value?.page ?? 0);
+  const pageSize = computed(() => preview.value?.pageSize ?? 10);
+  /** How many items have the chosen result, which are paged through. */
+  const matching = computed(() =>
+    filter.value === 'all'
+      ? (preview.value?.total ?? 0)
+      : (preview.value?.counts?.[filter.value] ?? 0)
+  );
+  const pageCount = computed(() => Math.ceil(matching.value / pageSize.value));
+
+  function showPage(index: number): void {
+    if (selected.value) {
+      load(selected.value.step, index);
+    }
+  }
+
+  // reloads as the step is edited, staying on its page, but not when the list is merely re-rendered
   watch(
     () => (selected.value ? JSON.stringify(selected.value.step) : null),
     () => {
-      filter.value = 'all';
-
       if (selected.value) {
-        load(selected.value.step);
+        load(
+          selected.value.step,
+          selected.value.value === shownUid ? page.value : 0
+        );
+        shownUid = selected.value.value;
       } else {
         preview.value = null;
+        shownUid = null;
       }
     },
     {immediate: true}
   );
 
-  const items = computed(() => preview.value?.items ?? []);
   const matchColumns = computed(() => preview.value?.matchColumns ?? []);
-
-  const filters = computed(() => {
-    const counts = new Map<PreviewResult, number>();
-    items.value.forEach((item) =>
-      counts.set(item.result, (counts.get(item.result) ?? 0) + 1)
-    );
-
-    return [
-      {value: 'all' as const, label: t('All'), count: items.value.length},
-      ...(Object.keys(resultLabels) as PreviewResult[])
-        .filter((result) => counts.has(result))
-        .map((result) => ({
-          value: result,
-          label: resultLabels[result],
-          count: counts.get(result)!,
-        })),
-    ];
-  });
-
-  const rows = computed(() =>
-    filter.value === 'all'
-      ? items.value
-      : items.value.filter((item) => item.result === filter.value)
+  /** Each match column's share of the table, which together leave the title at least as much as they take. */
+  const matchColumnWidth = computed(
+    () => `${Math.min(35, 50 / Math.max(1, matchColumns.value.length))}%`
   );
 
-  /** The previewed item's position among the rows, while the modal shows it. */
+  const filters = computed(() =>
+    (['all', ...Object.keys(resultLabels)] as Array<PreviewResult | 'all'>).map(
+      (value) => {
+        const count =
+          value === 'all'
+            ? (preview.value?.total ?? 0)
+            : (preview.value?.counts?.[value] ?? 0);
+
+        return {
+          value,
+          count,
+          label: value === 'all' ? t('All') : resultLabels[value],
+        };
+      }
+    )
+  );
+
+  const countFormat = new Intl.NumberFormat(
+    document.documentElement.lang || undefined
+  );
+
+  function showFilter(value: PreviewResult | 'all'): void {
+    if (value !== filter.value) {
+      filter.value = value;
+
+      if (selected.value) {
+        load(selected.value.step);
+      }
+    }
+  }
+
+  const stepIndex = computed(() =>
+    Math.max(
+      0,
+      stepOptions.value.findIndex(
+        (option) => option.value === selected.value?.value
+      )
+    )
+  );
+
+  function onStepShown(event: Event): void {
+    const index = (event.target as {selectedIndex?: number}).selectedIndex;
+    const option = index === undefined ? undefined : stepOptions.value[index];
+
+    if (option) {
+      selectedUid.value = option.value;
+    }
+  }
+
+  function panelId(uid: string): string {
+    return `plan-preview-step-${uid}`;
+  }
+
+  /** The page's items whose elements running the step would change, the only ones with something to compare. */
+  const previewable = computed(() =>
+    items.value.filter(
+      (item) => item.result !== 'skip' && item.result !== 'unchanged'
+    )
+  );
+
+  /** The previewed item's position among the previewable items, while the modal shows it. */
   const previewing = shallowRef<number | null>(null);
+
+  function previewButtonId(item: PreviewItem): string {
+    return `plan-preview-${selected.value?.value}-${item.index}`;
+  }
+
+  const columnHelper = createCraftColumnHelper<PreviewItem>();
+
+  const columns = computed(() =>
+    columnHelper.columns([
+      columnHelper.display({
+        id: 'result',
+        header: t('Result'),
+        meta: {columnClass: 'plan-preview__result-col'},
+        cell: ({row}) =>
+          h(
+            'craft-badge',
+            {fill: resultFills[row.original.result], 'no-prefix': ''},
+            resultLabels[row.original.result]
+          ),
+      }),
+      columnHelper.display({
+        id: 'title',
+        header: t('Title'),
+        meta: {columnClass: 'plan-preview__title-col'},
+        cell: ({row}) =>
+          row.original.title || h('span', {class: 'text-quiet'}, t('Untitled')),
+      }),
+      ...matchColumns.value.map((column) =>
+        columnHelper.display({
+          id: `match:${column.key}`,
+          header: () =>
+            h('span', {class: 'plan-preview__heading'}, [
+              column.label,
+              h(
+                'craft-badge',
+                {size: 'small', fill: Color.Accent, 'no-prefix': ''},
+                t('Match key')
+              ),
+            ]),
+          meta: {columnClass: 'plan-preview__match-col'},
+          cell: ({row}) =>
+            row.original.match[column.key]
+              ? h('code', {class: 'text-sm'}, row.original.match[column.key])
+              : null,
+        })
+      ),
+      columnHelper.display({
+        id: 'actions',
+        header: () => h('span', {class: 'sr-only'}, t('Actions')),
+        meta: {
+          columnClass: 'plan-preview__actions-col',
+          cellClass: 'plan-preview__actions',
+        },
+        cell: ({row}) =>
+          previewable.value.includes(row.original)
+            ? h('span', [
+                h('craft-button', {
+                  id: previewButtonId(row.original),
+                  type: 'button',
+                  icon: 'eye',
+                  variant: 'plain',
+                  size: 'small',
+                  'aria-label': t('Preview {item}', {
+                    item: row.original.title || t('Untitled'),
+                  }),
+                  onClick: () =>
+                    (previewing.value = previewable.value.indexOf(
+                      row.original
+                    )),
+                }),
+                h(
+                  'craft-tooltip',
+                  {for: previewButtonId(row.original)},
+                  t('Preview')
+                ),
+              ])
+            : null,
+      }),
+    ])
+  );
+
+  // paged on the server, which the table's own pagination state follows
+  const table = useCraftTable({
+    get data() {
+      return items.value;
+    },
+    getRowId: (row) => String(row.index),
+    get columns() {
+      return columns.value;
+    },
+    manualPagination: true,
+    get rowCount() {
+      return matching.value;
+    },
+    state: {
+      get pagination() {
+        return {pageIndex: page.value, pageSize: pageSize.value};
+      },
+    },
+    onPaginationChange: (updater) => {
+      const next =
+        typeof updater === 'function'
+          ? updater({pageIndex: page.value, pageSize: pageSize.value})
+          : updater;
+      showPage(next.pageIndex);
+    },
+  });
 </script>
 
 <template>
@@ -160,164 +365,204 @@
       {{ t('Add a step to see what running this plan would do.') }}
     </p>
     <div v-else slot="input" class="plan-preview__body">
-      <div class="plan-preview__bar">
-        <Select
-          v-if="stepOptions.length > 1"
-          small
-          :label="t('Step')"
-          label-sr-only
-          :options="stepOptions"
-          :model-value="selected?.value ?? ''"
-          @update:model-value="selectedUid = String($event)"
-        />
-        <craft-button-group
-          v-if="items.length"
-          role="group"
-          :aria-label="t('Show items')"
-        >
-          <craft-button
-            v-for="option in filters"
-            :key="option.value"
-            class="plan-preview__filter"
-            size="small"
-            :active="filter === option.value"
-            :aria-pressed="filter === option.value ? 'true' : 'false'"
-            @click="filter = option.value"
-          >
-            {{ option.label }}
-            <span class="plan-preview__count">{{ option.count }}</span>
-          </craft-button>
-        </craft-button-group>
-        <craft-spinner
-          v-if="loading"
-          visible
-          size="small"
-          :label="t('Loading')"
-        ></craft-spinner>
-      </div>
-
-      <p v-if="preview?.error" class="m-0 error" role="alert">
-        {{ preview.error }}
-      </p>
-      <p v-else-if="preview && !items.length" class="m-0 text-quiet">
-        {{ t('This step’s data has no items.') }}
-      </p>
-      <div v-else-if="items.length" class="plan-preview__scroll">
-        <table
-          class="plan-preview__table cp-table cp-table--auto cp-table--aligned"
-          :aria-busy="loading || undefined"
-        >
-          <thead>
-            <tr>
-              <th scope="col">{{ t('Title') }}</th>
-              <th v-for="column in matchColumns" :key="column.key" scope="col">
-                <span class="plan-preview__heading">
-                  {{ column.label }}
-                  <craft-badge size="small" :fill="Color.Accent" no-prefix>{{
-                    t('Match key')
-                  }}</craft-badge>
-                </span>
-              </th>
-              <th scope="col">{{ t('Result') }}</th>
-              <th scope="col">
-                <span class="sr-only">{{ t('Actions') }}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(item, position) in rows" :key="item.index">
-              <td>
-                <span v-if="item.title">{{ item.title }}</span>
-                <span v-else class="text-quiet">{{ t('Untitled') }}</span>
-              </td>
-              <td v-for="column in matchColumns" :key="column.key">
-                <code v-if="item.match[column.key]" class="text-sm">{{
-                  item.match[column.key]
-                }}</code>
-              </td>
-              <td>
-                <craft-badge
-                  size="small"
-                  :fill="resultFills[item.result]"
-                  no-prefix
-                  >{{ resultLabels[item.result] }}</craft-badge
-                >
-              </td>
-              <td class="plan-preview__actions">
-                <craft-button
-                  type="button"
-                  size="small"
-                  :aria-label="
-                    t('Preview {item}', {item: item.title || t('Untitled')})
-                  "
-                  @click="previewing = position"
-                  >{{ t('Preview') }}</craft-button
-                >
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p
-        v-if="preview?.total && preview.total > items.length"
-        class="m-0 text-sm text-quiet"
+      <craft-tabs
+        v-if="stepOptions.length > 1"
+        :label="t('Steps')"
+        sync-location-hash="false"
+        :selected-index="stepIndex"
+        @craft-tab-show="onStepShown"
       >
-        {{
-          t('Showing the first {count, number} of {total, number} items.', {
-            count: items.length,
-            total: preview.total,
-          })
-        }}
-      </p>
+        <craft-tab
+          v-for="option in stepOptions"
+          :key="option.value"
+          slot="tab"
+          :controls="panelId(option.value)"
+        >
+          <span slot="prefix" class="plan-preview__step-number">{{
+            option.number
+          }}</span>
+          {{ option.name }}
+          <craft-icon
+            v-if="problemSteps.has(option.value)"
+            slot="suffix"
+            name="triangle-exclamation"
+            data-color="danger"
+            :label="t('Has errors')"
+          ></craft-icon>
+        </craft-tab>
+      </craft-tabs>
+      <section
+        v-for="option in stepOptions"
+        :id="panelId(option.value)"
+        :key="option.value"
+        :class="{hidden: option.value !== selected?.value}"
+      >
+        <div v-if="option.value === selected?.value" class="plan-preview__step">
+          <p v-if="preview?.error" class="m-0 error" role="alert">
+            {{ preview.error }}
+          </p>
+          <p v-else-if="preview && !items.length" class="m-0 text-quiet">
+            {{ t('This step’s data has no items.') }}
+          </p>
+          <template v-else-if="items.length || loading">
+            <div
+              role="group"
+              :aria-label="t('Show items')"
+              class="plan-preview__chips"
+            >
+              <button
+                v-for="chip in filters"
+                :key="chip.value"
+                type="button"
+                class="plan-preview__chip"
+                :aria-pressed="filter === chip.value ? 'true' : 'false'"
+                :disabled="chip.value !== 'all' && !chip.count"
+                @click="showFilter(chip.value)"
+              >
+                <craft-badge
+                  :fill="
+                    chip.value === 'all' ? Color.Gray : resultFills[chip.value]
+                  "
+                  no-prefix
+                  >{{ chip.label }}
+                  <span
+                    v-if="preview?.counts"
+                    slot="suffix"
+                    class="plan-preview__chip-count"
+                    >{{ countFormat.format(chip.count) }}</span
+                  ></craft-badge
+                >
+              </button>
+            </div>
+            <AdminTable
+              class="plan-preview__table"
+              :style="{'--plan-preview-match-width': matchColumnWidth}"
+              :table="table"
+              :title="t('Items')"
+              layout="fixed"
+              spacing="compact"
+              :loading="loading"
+              :placeholder-rows="loading ? placeholderRows : 0"
+              :from="page * pageSize + 1"
+              :to="page * pageSize + items.length"
+              :total="matching"
+            />
+          </template>
+        </div>
+      </section>
     </div>
   </craft-field>
   <ItemPreviewModal
     v-if="selected"
     v-model="previewing"
     :step="selected.step"
-    :items="rows"
+    :items="previewable"
   />
 </template>
 
 <style scoped>
   .plan-preview__body {
+    --c-tabs-gap: var(--c-spacing-sm);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--c-spacing-md);
+    margin-block-start: var(--c-spacing-md);
+  }
+
+  /* fixed at every width, so the columns don't move as the filters and pages change what's in them */
+  .plan-preview__table :deep(table) {
+    table-layout: fixed;
+    min-inline-size: 36rem;
+  }
+
+  .plan-preview__table :deep(.plan-preview__title-col) {
+    width: auto;
+  }
+
+  .plan-preview__table :deep(.plan-preview__match-col) {
+    width: var(--plan-preview-match-width);
+  }
+
+  /* as wide as the widest result's badge, and the preview button */
+  .plan-preview__table :deep(.plan-preview__result-col) {
+    width: 8rem;
+  }
+
+  .plan-preview__table :deep(.plan-preview__actions-col) {
+    width: 3rem;
+  }
+
+  .plan-preview__step {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--c-spacing-md);
   }
 
-  .plan-preview__bar {
+  .plan-preview__step-number {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-inline-size: 1.25rem;
+    block-size: 1.25rem;
+    border-radius: var(--c-radius-full);
+    font-size: var(--c-text-xs);
+    font-weight: var(--font-weight-semibold);
+    font-variant-numeric: tabular-nums;
+    color: var(--c-color-neutral-on-normal);
+    background-color: var(--c-color-neutral-fill-normal);
+  }
+
+  craft-tab[selected] .plan-preview__step-number {
+    color: var(--c-color-accent-on-loud);
+    background-color: var(--c-color-accent-fill-loud);
+  }
+
+  .plan-preview__chips {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: var(--c-spacing-sm);
+    gap: var(--c-spacing-md);
   }
 
-  /* room for the buttons' focus rings, which the scrolling would clip, without moving the table */
-  .plan-preview__scroll {
-    --_ring: calc(var(--c-focus-outline-width) + var(--c-focus-outline-offset));
-    overflow-x: auto;
-    padding: var(--_ring);
-    margin: calc(var(--_ring) * -1);
+  /* the same badge the table shows each result in, as a button */
+  .plan-preview__chip {
+    display: inline-flex;
+    padding: 0;
+    font: inherit;
+    background: none;
+    border: 0;
+    border-radius: var(--c-radius-full);
+    cursor: pointer;
   }
 
-  .plan-preview__filter {
-    padding-inline: var(--c-spacing-md);
+  .plan-preview__chip:hover:not(:disabled, [aria-pressed='true'])
+    craft-badge::part(badge) {
+    border-color: var(--c-color-border-loud);
   }
 
-  .plan-preview__count {
-    margin-inline-start: var(--c-spacing-xs);
-    opacity: 0.7;
+  .plan-preview__chip[aria-pressed='true'] craft-badge::part(badge) {
+    color: var(--c-color-on-loud);
+    background-color: var(--c-color-fill-loud);
+    border-color: transparent;
   }
 
-  .plan-preview__heading {
+  .plan-preview__chip:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  .plan-preview__chip-count {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+  }
+
+  .plan-preview__table :deep(.plan-preview__heading) {
     display: inline-flex;
     align-items: center;
     gap: var(--c-spacing-xs);
   }
 
   /* cells clip their text, which would clip the button's focus ring along the table's edge */
-  .plan-preview__actions {
+  .plan-preview__table :deep(.plan-preview__actions) {
     text-align: end;
     overflow: visible;
   }

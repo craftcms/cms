@@ -30,8 +30,13 @@ export interface PreviewItem {
 export interface StepPreview {
   /** Why the step can't be previewed, if it can't. */
   error: string | null;
-  /** How many items the step's data has, of which the first are previewed. */
+  /** How many items the step's data has. */
   total?: number;
+  /** How many items have each result. */
+  counts?: Record<PreviewResult, number>;
+  /** The listed page's index, of the items with the result asked for, which is the last page when one past it was asked for. */
+  page?: number;
+  pageSize?: number;
   matchColumns?: Array<{key: string; label: string}>;
   items?: PreviewItem[];
 }
@@ -53,8 +58,16 @@ export interface ItemPreview {
   comparison?: ItemComparison | null;
 }
 
-export async function fetchStepPreview(step: ImportStep): Promise<StepPreview> {
-  const {data} = await actionClient.post(previewStepAction().url, {step});
+export async function fetchStepPreview(
+  step: ImportStep,
+  page = 0,
+  result: PreviewResult | null = null
+): Promise<StepPreview> {
+  const {data} = await actionClient.post(previewStepAction().url, {
+    step,
+    page,
+    result,
+  });
 
   return data as StepPreview;
 }
@@ -76,7 +89,7 @@ export const resultLabels: Record<PreviewResult, string> = {
   update: t('Update'),
   unchanged: t('No changes'),
   skip: t('Skip'),
-  problem: t('Problem'),
+  problem: t('Error'),
 };
 
 export const resultFills: Record<PreviewResult, ColorValue> = {

@@ -138,19 +138,7 @@
           >{{ resultLabels[result] }}</craft-badge
         >
       </div>
-      <div slot="header-actions" class="item-preview__nav">
-        <PaginationControls
-          v-if="position !== null"
-          controls-only
-          :page-index="position"
-          :page-size="1"
-          :page-count="items.length"
-          :page-label="t('Item')"
-          :current-page-label="t('Current item')"
-          :previous-page-label="t('Previous item')"
-          :next-page-label="t('Next item')"
-          @page-change="position = $event"
-        />
+      <div slot="header-actions">
         <craft-button
           type="button"
           icon="xmark-large"
@@ -199,9 +187,22 @@
           />
         </template>
       </div>
-      <p slot="footer-content" class="m-0 text-sm text-quiet">
+      <p slot="feedback" class="m-0 text-sm text-quiet">
         {{ t('Changed fields are highlighted. Nothing is saved.') }}
       </p>
+      <PaginationControls
+        v-if="position !== null"
+        slot="actions"
+        controls-only
+        :page-index="position"
+        :page-size="1"
+        :page-count="items.length"
+        :page-label="t('Item')"
+        :current-page-label="t('Current item')"
+        :previous-page-label="t('Previous item')"
+        :next-page-label="t('Next item')"
+        @page-change="position = $event"
+      />
     </craft-pane>
   </Modal>
 </template>
@@ -224,12 +225,6 @@
     align-items: center;
     gap: var(--c-spacing-sm);
     min-width: 0;
-  }
-
-  .item-preview__nav {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
   }
 
   .item-preview__body {
