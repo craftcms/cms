@@ -1304,11 +1304,10 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
   // ─── Forms ────────────────────────────────────────────────────────────
 
   #syncForm(): void {
-    const omit = !this.name || this.disabled || this.#fieldsetDisabled;
+    this.#internals?.setFormValue?.(null);
+    this.#syncInputs();
 
     if (this.multipleChoice) {
-      this.#internals?.setFormValue?.(null);
-      this.#syncInputs();
       const missing =
         this.required &&
         !this.disabled &&
@@ -1323,21 +1322,15 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
       return;
     }
 
-    this.#inputs?.remove();
-    this.#inputs = undefined;
     this.#internals?.setValidity?.({});
-    this.#internals?.setFormValue?.(omit ? null : (this.value as string));
   }
 
   /**
-   * Multiple choice posts through hidden inputs, so a page that serializes its
-   * form's native controls sees each value.
+   * Posts through hidden inputs rather than `ElementInternals`, so a page that
+   * serializes its form's native controls, such as with jQuery's
+   * `serialize()`, sees each value.
    */
   #syncInputs(): void {
-    if (!this.multipleChoice) {
-      return;
-    }
-
     if (!this.#inputs) {
       this.#inputs = document.createElement('span');
       this.#inputs.hidden = true;
@@ -1349,17 +1342,23 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     render(
       !this.name || this.disabled || this.#fieldsetDisabled
         ? nothing
-        : html`
-            <input type="hidden" name=${this.name} value="" />
-            ${(this.value as string[]).map(
-              (value) =>
-                html`<input
-                  type="hidden"
-                  name=${`${this.name}[]`}
-                  .value=${value}
-                />`
-            )}
-          `,
+        : !this.multipleChoice
+          ? html`<input
+              type="hidden"
+              name=${this.name}
+              .value=${this.value as string}
+            />`
+          : html`
+              <input type="hidden" name=${this.name} value="" />
+              ${(this.value as string[]).map(
+                (value) =>
+                  html`<input
+                    type="hidden"
+                    name=${`${this.name}[]`}
+                    .value=${value}
+                  />`
+              )}
+            `,
       this.#inputs
     );
   }

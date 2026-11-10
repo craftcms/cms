@@ -138,6 +138,25 @@ it('carries the new value in the form by the time input and change fire', async 
   expect(seen.splice(0)).toEqual(['input:', 'change:']);
 });
 
+it('posts a single value through one native input', async () => {
+  const {control, form} = await fixture((c) =>
+    c.setAttribute('value', '2026-01')
+  );
+  const native = () =>
+    [
+      ...form.querySelectorAll<HTMLInputElement>('input[name="apiVersion"]'),
+    ].map((input) => input.value);
+
+  expect(native()).toEqual(['2026-01']);
+  expect(entries(form)).toEqual([['apiVersion', '2026-01']]);
+
+  control.value = '2026-04';
+  await control.updateComplete;
+
+  expect(native()).toEqual(['2026-04']);
+  expect(entries(form)).toEqual([['apiVersion', '2026-04']]);
+});
+
 it('posts nothing while disabled', async () => {
   const {control, form} = await fixture((c) => {
     c.setAttribute('value', '2026-01');
