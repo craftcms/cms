@@ -36,11 +36,6 @@ class Transform extends Arguments
                 'type' => Type::string(),
                 'description' => 'The handle of the named transform to use.',
             ],
-            'transformer' => [
-                'name' => 'transformer',
-                'type' => Type::string(),
-                'description' => 'The asset transformer handle to use.',
-            ],
         ];
 
         foreach (app(AssetTransformers::class)->coreParameterRules() as $handle => $rules) {

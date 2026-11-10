@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Settings;
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Components\CopyAttribute;
@@ -42,7 +41,6 @@ class ImageTransformsController extends BaseAssetSettingsController
         private readonly GeneralConfig $generalConfig,
         private readonly UiResolver $uiResolver,
         private readonly AssetTransformers $assetTransformers,
-        private readonly AssetTransformDrivers $assetTransformDrivers,
     ) {}
 
     public function index(ImageTransforms $imageTransforms): CpScreenResponse
@@ -209,7 +207,6 @@ class ImageTransformsController extends BaseAssetSettingsController
             $images,
             $this->uiResolver,
             $this->assetTransformers,
-            $this->assetTransformDrivers,
             readOnly: ! $this->generalConfig->allowAdminChanges,
             values: $values,
         );

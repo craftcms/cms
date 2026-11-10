@@ -168,7 +168,6 @@ class DatabaseSeeder extends Seeder
                     'fsHandle' => 'assets',
                     'hasUrls' => true,
                     'subpath' => $handle,
-                    'assetTransformer' => 'craft',
                 ]);
 
                 if (! Volumes::saveVolume($volume)) {

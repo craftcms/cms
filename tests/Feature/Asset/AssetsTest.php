@@ -9,14 +9,13 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Events\PreviewHandlerResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
-use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Asset\Validation\AssetRules;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -131,7 +130,7 @@ it('uses ThumbUrlResolving event url when set', function () {
 it('renders non-image thumbnails and previews through the selected driver', function () {
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
-    Cms::config()->defaultAssetTransformer('test');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
     $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -155,7 +154,7 @@ it('uses file-kind images only when the selected driver does not support the sou
     new ControlPanelAssetTransformDriver(
         new NotSupportedException('unsupported'),
     )->register();
-    Cms::config()->defaultAssetTransformer('test');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
     $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -174,7 +173,7 @@ it('uses file-kind images only when the selected driver does not support the sou
 });
 
 it('does not disguise control-panel transform configuration failures as file-kind images', function () {
-    Cms::config()->defaultAssetTransformer('missing');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'missing');
     $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
     $asset = AssetModel::factory()->createElement([
@@ -185,9 +184,9 @@ it('does not disguise control-panel transform configuration failures as file-kin
     ]);
 
     expect(fn () => $this->assets->getThumbUrl($asset, 100))
-        ->toThrow(AssetTransformerNotFoundException::class)
+        ->toThrow(AssetTransformDriverNotFoundException::class)
         ->and(fn () => $this->assets->getImagePreviewUrl($asset, 1000, 1000))
-        ->toThrow(AssetTransformerNotFoundException::class);
+        ->toThrow(AssetTransformDriverNotFoundException::class);
 });
 
 it('dispatches PreviewHandlerResolving event', function () {
@@ -478,7 +477,7 @@ it('resets caches', function () {
 it('passes explicit modes and bounds to the driver without treating event mode as a control', function (ImageTransformMode $mode) {
     $driver = new ControlPanelAssetTransformDriver;
     $driver->register();
-    Cms::config()->defaultAssetTransformer('test');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
     $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
     $requests = [];
@@ -499,7 +498,7 @@ it('passes explicit modes and bounds to the driver without treating event mode a
 ]);
 
 it('honors empty thumbnail URL overrides without calling the driver', function () {
-    Cms::config()->defaultAssetTransformer('missing');
+    config()->set('filesystems.disks.local.asset_transformer', 'missing');
     $asset = AssetModel::factory()->createElement();
     Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) {
         $event->url = '';

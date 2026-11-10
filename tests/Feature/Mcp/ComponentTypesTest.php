@@ -56,8 +56,8 @@ it('describes field types and asset transform drivers', function (): void {
     expect($fieldTypes)->toContain(PlainText::class)
         ->and($plainText['multiline'])->toMatchArray(['type' => 'boolean', 'default' => false])
         ->and(array_column($plainText['uiMode']['oneOf'], 'const'))->toBe(['normal', 'enlarged'])
-        ->and($driver['settingsSchema']['properties']['hasUrls']['type'])->toBe('boolean')
-        ->and($driver)->toHaveKey('parametersSchema');
+        ->and($driver)->toHaveKey('parametersSchema')
+        ->and($driver)->not->toHaveKey('settingsSchema');
 
     ($this->call)('component_types_get', ['kind' => 'field', 'type' => 'Nope'])
         ->assertJsonPath('result.isError', true)

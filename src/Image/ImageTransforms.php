@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Image;
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
@@ -40,7 +39,6 @@ class ImageTransforms
         private readonly ProjectConfig $projectConfig,
         private readonly ElementCaches $elementCaches,
         private readonly AssetTransformers $assetTransformers,
-        private readonly AssetTransformDrivers $assetTransformDrivers,
     ) {}
 
     /**
@@ -79,7 +77,7 @@ class ImageTransforms
 
         $isValid = ! $runValidation || $transform->validate();
 
-        if ($runValidation && ! $this->prepareTransformerParameters($transform)) {
+        if ($runValidation && ! $this->prepareDriverParameters($transform)) {
             $isValid = false;
         }
 
@@ -244,46 +242,40 @@ class ImageTransforms
             ->firstOrNew();
     }
 
-    private function prepareTransformerParameters(ImageTransform $transform): bool
+    /**
+     * Validates a named transform’s custom parameters, which are keyed by driver name. Stored parameters for drivers
+     * that aren’t registered are kept unchanged.
+     */
+    private function prepareDriverParameters(ImageTransform $transform): bool
     {
         $isValid = true;
-        $parameterBuckets = [];
         $storedParameters = $transform->id
             ? ImageTransformModel::query()->find($transform->id)?->getAttribute('parameters')
             : [];
         $storedParameters = is_array($storedParameters) ? $storedParameters : [];
+        $definitions = $this->assetTransformers->definitions();
+        $parameterBuckets = array_filter(
+            Arr::except($storedParameters, array_keys($definitions)),
+            fn (mixed $parameters): bool => is_array($parameters) && $parameters !== [],
+        );
 
-        foreach ($this->assetTransformers->getAllAssetTransformers() as $assetTransformer) {
-            if (! $this->assetTransformDrivers->has($assetTransformer->driver)) {
-                $parameters = $storedParameters[$assetTransformer->uid] ?? [];
-
-                if (is_array($parameters) && $parameters !== []) {
-                    $parameterBuckets[$assetTransformer->uid] = $parameters;
-                }
-
-                continue;
-            }
-
+        foreach ($definitions as $driver => $definition) {
             try {
                 $parameters = $this->assetTransformers->validateParameters(
-                    $assetTransformer,
-                    $transform->getParametersForTransformer($assetTransformer->uid),
+                    $driver,
+                    $transform->getParametersForDriver($driver),
                 );
             } catch (InvalidAssetTransformException $exception) {
-                $transform->errors()->add("parameters.{$assetTransformer->uid}", $exception->getMessage());
+                $transform->errors()->add("parameters.{$driver}", $exception->getMessage());
                 $isValid = false;
 
                 continue;
             }
 
-            $parameterRules = $this->assetTransformDrivers
-                ->driver($assetTransformer->driver)
-                ->definition()
-                ->parameterRules;
-            $parameters = Arr::only($parameters, array_keys($parameterRules));
+            $parameters = Arr::only($parameters, array_keys($definition->parameterRules));
 
             if ($parameters !== []) {
-                $parameterBuckets[$assetTransformer->uid] = $parameters;
+                $parameterBuckets[$driver] = $parameters;
             }
         }
 

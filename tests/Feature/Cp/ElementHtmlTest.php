@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Models\Asset;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Events\ElementCardPartsResolving;
 use CraftCms\Cms\Cp\Events\ElementChipHtmlResolving;
 use CraftCms\Cms\Cp\Html\ElementHtml;
@@ -196,7 +195,7 @@ describe('elementCardHtml', function () {
 
     it('covers an asset’s card only with an opaque image that can fill it', function (string $filename, int $width, int $height, bool $covered, string $color = '#3a6ea5') {
         new ControlPanelAssetTransformDriver()->register();
-        Cms::config()->defaultAssetTransformer('test');
+        config()->set('filesystems.disks.local.asset_transformer', 'test');
         $asset = Asset::factory()->createElement(['filename' => $filename, 'width' => $width, 'height' => $height]);
         $luminance = [[[0.1, 0.6], null], [[0.02, 0.3], [0.05, 0.4]]];
         $asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [[$color]], luminance: $luminance));
@@ -219,7 +218,7 @@ describe('elementCardHtml', function () {
 
     it('covers an element’s card with the image its thumbnail field shows, with the cover or auto thumb style', function (int $width, string $style, bool $covered) {
         new ControlPanelAssetTransformDriver()->register();
-        Cms::config()->defaultAssetTransformer('test');
+        config()->set('filesystems.disks.local.asset_transformer', 'test');
         $luminance = [[[0.1, 0.6]], [[0.02, 0.3]]];
         $asset = Asset::factory()->createElement([
             'width' => $width,
@@ -246,7 +245,7 @@ describe('elementCardHtml', function () {
 
     it('covers an element’s card with the image from its first thumb source that has a thumbnail', function (bool $firstHasThumb, bool $covered) {
         new ControlPanelAssetTransformDriver()->register();
-        Cms::config()->defaultAssetTransformer('test');
+        config()->set('filesystems.disks.local.asset_transformer', 'test');
         $asset = Asset::factory()->createElement([
             'width' => 800,
             'height' => 600,
@@ -269,7 +268,7 @@ describe('elementCardHtml', function () {
 
     it('covers an element’s card with the image from a thumb source within a Content Block', function () {
         new ControlPanelAssetTransformDriver()->register();
-        Cms::config()->defaultAssetTransformer('test');
+        config()->set('filesystems.disks.local.asset_transformer', 'test');
         $asset = Asset::factory()->createElement([
             'width' => 800,
             'height' => 600,
@@ -302,7 +301,7 @@ describe('elementCardHtml', function () {
 
     it('covers a user’s card with their photo, with the cover thumb style', function (string $style, bool $covered) {
         new ControlPanelAssetTransformDriver()->register();
-        Cms::config()->defaultAssetTransformer('test');
+        config()->set('filesystems.disks.local.asset_transformer', 'test');
         $user = UserModel::factory()->createElement();
         $user->setPhoto(Asset::factory()->createElement([
             'width' => 800,
@@ -322,7 +321,7 @@ describe('elementCardHtml', function () {
 
     it('keeps an asset’s normal card when its volume uses the normal thumb style', function () {
         new ControlPanelAssetTransformDriver()->register();
-        Cms::config()->defaultAssetTransformer('test');
+        config()->set('filesystems.disks.local.asset_transformer', 'test');
         $asset = Asset::factory()->createElement(['filename' => 'photo.jpg', 'width' => 800, 'height' => 600]);
         $asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [['#3a6ea5']], luminance: [[[0.1, 0.6]]]));
         $asset->getFieldLayout()->setCardThumbStyle('normal');
@@ -332,7 +331,7 @@ describe('elementCardHtml', function () {
 
     it('covers asset cards with any image thumbnail, but not folder cards, when the volume uses the cover thumb style', function (string $filename, int $width, bool $isFolder, bool $covered) {
         new ControlPanelAssetTransformDriver()->register();
-        Cms::config()->defaultAssetTransformer('test');
+        config()->set('filesystems.disks.local.asset_transformer', 'test');
         $asset = Asset::factory()->createElement(['filename' => $filename, 'width' => $width, 'height' => 600]);
         $asset->analysis = new ImageAnalysis(colors: new ImageColors(grid: [['#3a6ea580']], luminance: [[[0.1, 0.6]]]));
         $asset->isFolder = $isFolder;
