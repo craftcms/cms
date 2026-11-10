@@ -20,6 +20,10 @@ import {
 import {classMap} from 'lit/directives/class-map.js';
 import {Appearance} from '@src/constants/appearances';
 import {
+  NavAppearance,
+  type NavAppearanceValue,
+} from '@src/constants/nav-appearances';
+import {
   flyoutHoverIntent,
   type HoverIntentMember,
 } from '@src/utilities/hover-intent.js';
@@ -46,6 +50,8 @@ import {
  *
  * @cssproperty [--c-nav-item-icon-color=inherit] - The icon's color while the
  *   item isn't `active` or hovered, which take the row's own color.
+ * @cssproperty [--c-nav-item-border-active=--c-color-accent-fill-loud] - Color
+ *   of the bar marking the current page in a `tabs` strip.
  */
 export default class CraftNavItem extends LitElement {
   static override styles = [visuallyHiddenStyles, styles];
@@ -109,6 +115,17 @@ export default class CraftNavItem extends LitElement {
   /** Whether the subnav starts open or closed. Active items always start open. */
   @property({reflect: true, attribute: 'initial-state'})
   initialState: 'open' | 'closed' = 'closed';
+
+  /**
+   * How the row is drawn: `list` (the default), a row in a column of them, or
+   * `tabs`, one of a horizontal strip, marked by a bar along the strip's rule
+   * rather than by a fill.
+   *
+   * Set by the `craft-nav-list` the item is in, which owns the layout the two
+   * halves have to agree on; see its `appearance`.
+   */
+  @property({reflect: true}) appearance: NavAppearanceValue =
+    NavAppearance.List;
 
   /**
    * Renders the item as a non-collapsible semantic group. When it has a

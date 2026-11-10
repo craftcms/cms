@@ -1,4 +1,5 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {contrast} from '../../../test/contrast';
 import type CraftNavItem from './nav-item.js';
 import {flyoutHoverIntent} from '@src/utilities/hover-intent.js';
 import './nav-item.js';
@@ -693,4 +694,60 @@ it('keeps its flyout’s and tooltip’s events inside the item', async () => {
   } finally {
     events.forEach((type) => document.removeEventListener(type, record));
   }
+});
+
+describe.each(['light', 'dark'])('in the %s theme', (theme) => {
+  async function strip(): Promise<{
+    surface: HTMLElement;
+    items: CraftNavItem[];
+  }> {
+    const surface = document.createElement('div');
+    surface.dataset.theme = theme;
+    surface.style.backgroundColor = 'var(--c-surface-default)';
+    surface.style.padding = '2rem';
+    surface.innerHTML = `
+      <craft-nav-list appearance="tabs">
+        <craft-nav-item href="/feeds" active current>Feeds</craft-nav-item>
+        <craft-nav-item href="/logs">Logs</craft-nav-item>
+      </craft-nav-list>
+    `;
+    document.body.append(surface);
+
+    const items = [...surface.querySelectorAll<CraftNavItem>('craft-nav-item')];
+    await Promise.all(items.map((item) => item.updateComplete));
+
+    return {surface, items};
+  }
+
+  it('marks the current page in a tab strip with a bar at 3:1, and only that page', async () => {
+    const {surface, items} = await strip();
+    const background = getComputedStyle(surface).backgroundColor;
+    const bar = (item: CraftNavItem) =>
+      getComputedStyle(item.shadowRoot!.querySelector('.nav-item')!, '::after');
+
+    await expect.poll(() => items[0]!.getAttribute('appearance')).toBe('tabs');
+
+    const current = bar(items[0]!);
+
+    expect(parseFloat(current.width)).toBeGreaterThan(0);
+    expect(parseFloat(current.height)).toBeGreaterThan(0);
+    expect(
+      contrast(current.backgroundColor, background)
+    ).toBeGreaterThanOrEqual(3);
+    expect(bar(items[1]!).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  });
+
+  it('marks the current page in a tab strip by weight as well as color', async () => {
+    const {items} = await strip();
+
+    await expect.poll(() => items[0]!.getAttribute('appearance')).toBe('tabs');
+
+    const weight = (item: CraftNavItem) =>
+      parseFloat(
+        getComputedStyle(item.shadowRoot!.querySelector('.nav-item')!)
+          .fontWeight
+      );
+
+    expect(weight(items[0]!)).toBeGreaterThan(weight(items[1]!));
+  });
 });

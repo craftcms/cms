@@ -476,4 +476,46 @@ export default css`
     font-weight: bold;
     line-height: 1;
   }
+
+  :host([appearance='tabs']),
+  :host([appearance='tabs']) .nav-item {
+    border-radius: 0;
+  }
+
+  :host([appearance='tabs']) .nav-item {
+    padding-inline: 0;
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  :host([appearance='tabs'][current]) .nav-item {
+    color: inherit;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  :host([appearance='tabs'][active]:not([current])) .nav-item::before {
+    display: none;
+  }
+
+  :host([appearance='tabs']) .nav-item::after {
+    content: '';
+    position: absolute;
+    inset-block-end: -1px;
+    inset-inline: 0;
+    block-size: calc(2rem / 16);
+    background-color: transparent;
+  }
+
+  :host([appearance='tabs'][current]) .nav-item::after {
+    background-color: var(
+      --c-nav-item-border-active,
+      var(--c-color-accent-fill-loud)
+    );
+  }
+
+  @media (forced-colors: active) {
+    :host([appearance='tabs'][current]) .nav-item::after {
+      background-color: Highlight;
+    }
+  }
 `;
