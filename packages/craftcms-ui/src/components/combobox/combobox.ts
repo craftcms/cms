@@ -586,7 +586,6 @@ export default class CraftCombobox extends FormAssociated(
         : undefined
     );
 
-    this.#syncForm();
     emitInput(this);
   };
 
@@ -769,7 +768,6 @@ export default class CraftCombobox extends FormAssociated(
     this.value = value;
     this.#filtering = false;
     this.#syncTextbox();
-    this.#syncForm();
     emitInput(this, PICKED);
     this.#commit();
   }
@@ -783,7 +781,6 @@ export default class CraftCombobox extends FormAssociated(
     }
 
     this.#committedValue = this.value;
-    this.#syncForm();
     emitChange(this);
   }
 
@@ -860,7 +857,6 @@ export default class CraftCombobox extends FormAssociated(
     this.#syncTextbox();
     this.#renderOptions();
     this._control?.focus();
-    this.#syncForm();
     emitInput(this);
     this.#commit();
   };

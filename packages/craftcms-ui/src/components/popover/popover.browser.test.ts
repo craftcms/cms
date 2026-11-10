@@ -709,14 +709,14 @@ it.each([
     await popover.updateComplete;
 
     await userEvent.click(page.getByRole('button', {name: 'Open'}));
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
     await expect
       .element(page.getByRole('button', {name: 'Open'}))
       .toHaveFocus();
 
     await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
 
-    await expect.poll(() => popover.opened).toBe(false);
+    await expect.poll(() => popover.open).toBe(false);
     await expect
       .element(page.getByRole('button', {name: 'Before'}))
       .toHaveFocus();
@@ -737,5 +737,5 @@ it('stays open when Tab moves focus from an invoker linked with for into its con
   await popover.updateComplete;
 
   await expect.element(page.getByRole('button', {name: 'Pick'})).toHaveFocus();
-  expect(popover.opened).toBe(true);
+  expect(popover.open).toBe(true);
 });

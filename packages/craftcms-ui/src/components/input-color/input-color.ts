@@ -277,8 +277,8 @@ export default class CraftInputColor extends CraftInput {
   protected _handlePickerChange(event: Event) {
     this._handlePickerInput(event);
 
-    if (this._inputNode) {
-      emitChange(this._inputNode);
+    if (this._control) {
+      emitChange(this._control);
     }
   }
 

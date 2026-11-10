@@ -122,12 +122,8 @@ it('carries the new value in the form by the time input and change fire', async 
 
   await userEvent.click(input);
   await userEvent.keyboard('{ArrowDown}');
-  [
-    ...control.querySelectorAll<HTMLElement & {choiceValue: string}>(
-      'craft-option'
-    ),
-  ]
-    .find((option) => option.choiceValue === '2026-04')!
+  [...control.querySelectorAll<HTMLElement & {value: string}>('craft-option')]
+    .find((option) => option.value === '2026-04')!
     .click();
   expect(seen.splice(0)).toEqual(['input:2026-04', 'change:2026-04']);
 

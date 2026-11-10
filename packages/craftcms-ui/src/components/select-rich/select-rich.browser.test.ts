@@ -273,10 +273,10 @@ it('leaves hidden options out of keyboard selection, but still shows one that is
   document.body.innerHTML = `
     <form>
       <craft-select-rich name="fruit" label="Fruit">
-        <craft-option choice-value="apple" checked>Apple</craft-option>
-        <craft-option choice-value="banana" hidden>Banana</craft-option>
-        <craft-option choice-value="cherry">Cherry</craft-option>
-        <craft-option choice-value="damson" hidden>Damson</craft-option>
+        <craft-option value="apple" selected>Apple</craft-option>
+        <craft-option value="banana" hidden>Banana</craft-option>
+        <craft-option value="cherry">Cherry</craft-option>
+        <craft-option value="damson" hidden>Damson</craft-option>
       </craft-select-rich>
     </form>`;
   const form = document.querySelector('form')!;
