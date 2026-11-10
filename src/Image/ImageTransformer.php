@@ -738,7 +738,7 @@ class ImageTransformer
 
     private function getTransformBasePath(Asset $asset): string
     {
-        return $asset->getVolume()->uid.DIRECTORY_SEPARATOR.($asset->folderPath ?? '');
+        return '_'.$asset->getVolume()->uid.DIRECTORY_SEPARATOR.($asset->folderPath ?? '');
     }
 
     private function transformDisk(Asset $asset, AssetTransformer $transformer): FilesystemAdapter
