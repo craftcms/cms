@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql;
 
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -499,6 +500,8 @@ class GqlHelper
      */
     public static function prepareTransformArguments(array $arguments): array|string
     {
+        // `immediately` controls generation rather than the transform itself.
+        unset($arguments['immediately']);
         $handle = $arguments['handle'] ?? null;
 
         if ($handle === null) {
@@ -513,14 +516,18 @@ class GqlHelper
 
     /**
      * @param  array<string, mixed>|string  $definition
+     * @param  bool  $immediately  Whether the `craft` transformer should generate the transform before returning its URL.
      */
     public static function resolveAssetTransform(
         Asset $asset,
         array|string $definition,
         string $field,
+        bool $immediately = false,
     ): mixed {
         try {
-            $result = $asset->transform($definition);
+            $result = $immediately
+                ? app(AssetTransformers::class)->withImmediateTransforms(fn () => $asset->transform($definition))
+                : $asset->transform($definition);
         } catch (NotSupportedException) {
             // Assets the transformer can’t transform, such as videos in a mixed Assets field, resolve untransformed.
             $result = null;
