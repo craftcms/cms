@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
+
 ## 6.0.0-beta.1 - 2026-11-10
 
 ### Control Panel
