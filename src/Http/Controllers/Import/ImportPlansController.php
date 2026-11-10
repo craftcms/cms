@@ -422,13 +422,6 @@ class ImportPlansController
             ? $element::find()->id($element->id)->siteId($element->siteId)->drafts(null)->status(null)->one()
             : null;
 
-        if ($existing !== null && ! $this->request->craftUser()?->can('view', $existing)) {
-            return $this->asJsonSuccess(null, [
-                ...$payload,
-                'error' => t('You don’t have permission to view the element this item matches.'),
-            ]);
-        }
-
         $blankData = [];
         $from = $existing ?? $importer->prepareNewRootElementForImport($blankData);
         // the import makes the changes
