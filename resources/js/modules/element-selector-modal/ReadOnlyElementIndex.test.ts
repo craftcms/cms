@@ -172,4 +172,31 @@ describe('ReadOnlyElementIndex', () => {
 
     expect(document.activeElement).toBe(host.querySelector('input'));
   });
+
+  it('leaves focus alone when the initial load fails while the user is elsewhere', async () => {
+    const other = document.createElement('input');
+    document.body.append(other);
+    other.focus();
+    post.mockRejectedValueOnce(new Error('offline'));
+    mount();
+    await flush();
+
+    expect(host.querySelector('[role="alert"]')).not.toBeNull();
+    expect(document.activeElement).toBe(other);
+    other.remove();
+  });
+
+  it('keeps focus on the retry button when the retry fails too', async () => {
+    post.mockRejectedValue(new Error('offline'));
+    mount();
+    await flush();
+
+    const retry = host.querySelector('craft-button') as HTMLElement;
+    retry.focus();
+    retry.click();
+    await flush();
+    await flush();
+
+    expect(document.activeElement).toBe(host.querySelector('craft-button'));
+  });
 });

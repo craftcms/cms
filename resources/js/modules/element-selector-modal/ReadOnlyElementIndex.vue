@@ -62,14 +62,24 @@
       }
     } catch {
       if (request === latestRequest) {
-        showFailure();
+        showFailure(restoreFocus);
       }
     }
   }
 
-  function showFailure(): void {
+  /**
+   * Moves focus to the retry button only when focus was in this index, or on
+   * the retry just clicked, so a background failure doesn't interrupt the user
+   * elsewhere on the screen.
+   */
+  function showFailure(hadFocus = false): void {
+    const focusWasHere =
+      hadFocus || Boolean(root.value?.contains(document.activeElement));
     failed.value = true;
-    void focusWithin('craft-button');
+
+    if (focusWasHere) {
+      void focusWithin('craft-button');
+    }
   }
 
   watch(
@@ -98,7 +108,7 @@
       :params="params"
       read-only
       :storage-key="storageKey"
-      @error="showFailure"
+      @error="showFailure()"
     />
     <ElementPickerPlaceholder v-else :element-type="elementType" />
   </div>
