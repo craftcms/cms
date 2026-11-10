@@ -164,7 +164,6 @@ class AssetUploads
     {
         // Uploads that start before the URL expires may finish after it
         $startedAt = time();
-        $this->assertReceivable($this->uploadRecord($id), $startedAt);
 
         // Buffer the body locally first, so oversized files never reach the filesystem
         $maxSize = ConfigHelper::sizeInBytes(Craft::$app->getConfig()->getGeneral()->maxUploadFileSize);
@@ -172,15 +171,6 @@ class AssetUploads
 
         try {
             $size = stream_copy_to_stream($stream, $buffer, $maxSize + 1);
-
-            if (!$size) {
-                throw new BadRequestHttpException('The request body was empty.');
-            }
-
-            if ($size > $maxSize) {
-                throw new HttpException(413, 'The file exceeds the maximum upload size.');
-            }
-
             $mutex = Craft::$app->getMutex();
 
             if (!$mutex->acquire("mcp-upload:$id", 5)) {
@@ -188,9 +178,18 @@ class AssetUploads
             }
 
             try {
-                // Another request may have stored a file since the first check
+                // Only read the record while holding the lock, since other requests may be rewriting or deleting it
                 $record = $this->uploadRecord($id);
                 $this->assertReceivable($record, $startedAt);
+
+                if (!$size) {
+                    throw new BadRequestHttpException('The request body was empty.');
+                }
+
+                if ($size > $maxSize) {
+                    throw new HttpException(413, 'The file exceeds the maximum upload size.');
+                }
+
                 $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
                 rewind($buffer);
                 $fs->writeFileFromStream($this->uploadPath($id), $buffer);
