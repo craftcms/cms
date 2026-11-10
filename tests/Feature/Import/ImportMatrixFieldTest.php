@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\FieldLayout\FieldPreviews;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
@@ -14,6 +18,7 @@ use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
+use CraftCms\Cms\Ui\Enums\ControlMode;
 use Illuminate\Support\Facades\Validator;
 
 beforeEach(function () {
@@ -87,6 +92,45 @@ it('imports an entry with a matrix field', function () {
 
     expect($entry)->not()->toBeNull();
     expect($entry->getFieldValue('myMatrix')->count())->toBe(1);
+});
+
+it('says which block keeps an entry from saving', function (string $viewMode) {
+    $this->matrixField->update(['settings' => [...$this->matrixField->settings, 'viewMode' => $viewMode]]);
+    Fields::refreshFields();
+
+    expect(fn () => $this->import->importItem($this->importer, ($this->entryData)([
+        ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
+        // the block's entry type requires a title
+        ['type' => 'thirdEt', 'fields' => ['plainText' => 'bar']],
+    ])))->toThrow(InvalidElementException::class, 'My Matrix › Third ET 2: ');
+})->with([Matrix::VIEW_MODE_CARDS, Matrix::VIEW_MODE_BLOCKS]);
+
+it('files a block’s errors under its field, saying which block they’re about', function () {
+    $preview = $this->import->previewItem($this->importer, ($this->entryData)([
+        ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
+        ['type' => 'thirdEt', 'fields' => ['plainText' => 'bar']],
+    ]));
+
+    expect($preview->errors)->toBe(['My Matrix › Third ET 2: The title field is required.'])
+        ->and(ElementImporter::errorsByField($preview->element))->toBe(['myMatrix' => ['Third ET 2: The title field is required.']]);
+});
+
+it('shows a block’s errors on the block’s own field when its blocks are shown inline', function () {
+    $this->matrixField->update(['settings' => [...$this->matrixField->settings, 'viewMode' => Matrix::VIEW_MODE_BLOCKS]]);
+    Fields::refreshFields();
+
+    $preview = $this->import->previewItem($this->importer, ($this->entryData)([
+        ['type' => 'secondEt', 'title' => 'block 1', 'fields' => ['plainText' => 'foo']],
+        ['type' => 'thirdEt', 'fields' => ['plainText' => 'bar']],
+    ]));
+    $element = $preview->element;
+    $ui = app(FieldPreviews::class)->compile($element, $element, 'to', ControlMode::ReadOnly, ElementImporter::errorsByField($element));
+    $block = array_search($element->getFieldValue('myMatrix')->getResultOverride()[1], Fields::getFieldByHandle('myMatrix')->inlineEntries($element), true);
+
+    expect($ui->errors)->toBe([[
+        'path' => ['to', 'fields', 'myMatrix', 'entries', $block, 'title'],
+        'messages' => ['The title field is required.'],
+    ]]);
 });
 
 it('imports multiple blocks of different entry types', function () {

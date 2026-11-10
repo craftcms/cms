@@ -7,6 +7,7 @@
   import '@craftcms/ui/components/badge/badge';
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/callout/callout';
+  import '@craftcms/ui/components/icon/icon';
   import '@craftcms/ui/components/pane/pane';
   import '@craftcms/ui/components/spinner/spinner';
   import {isHttpError, t} from '@craftcms/ui';
@@ -123,6 +124,7 @@
     :label="title"
     width="5xl"
     height="100vh"
+    resizable
     @close="position = null"
   >
     <craft-pane class="item-preview">
@@ -170,6 +172,12 @@
             class="item-preview__problems"
           >
             <craft-callout variant="danger" role="alert">
+              <craft-icon
+                slot="icon"
+                name="triangle-exclamation"
+                data-color="danger"
+                aria-hidden="true"
+              ></craft-icon>
               <p v-if="preview.error" class="m-0">{{ preview.error }}</p>
               <ul v-if="preview.errors?.length" class="m-0">
                 <li v-for="message in preview.errors" :key="message">

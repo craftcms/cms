@@ -174,13 +174,16 @@ readonly class FieldChangeComparisons
      *
      * @param  array{from: bool, to: bool}|null  $badged  The sides that badge their changed fields, when it's not for the
      *                                                    versions' kinds to say.
+     * @param  array{from?: array<string, list<string>>, to?: array<string, list<string>>}  $errors  The errors each side's
+     *                                                                                               fields show, by path, when
+     *                                                                                               not the versions' own.
      * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>, badged: array{from: bool, to: bool}}
      */
-    public function compareElements(ElementInterface $from, ElementInterface $to, ?array $badged = null): array
+    public function compareElements(ElementInterface $from, ElementInterface $to, ?array $badged = null, array $errors = []): array
     {
         $namespace = 'compare'.Str::random(8);
-        $fromPayload = $this->previews->compile($from, $from, "{$namespace}From", ControlMode::ReadOnly);
-        $toPayload = $this->previews->compile($to, $to, "{$namespace}To", ControlMode::ReadOnly);
+        $fromPayload = $this->previews->compile($from, $from, "{$namespace}From", ControlMode::ReadOnly, $errors['from'] ?? $from->uiErrors());
+        $toPayload = $this->previews->compile($to, $to, "{$namespace}To", ControlMode::ReadOnly, $errors['to'] ?? $to->uiErrors());
         $fromNodes = $fromPayload ? $this->previews->fieldNodes($fromPayload->nodes) : [];
         $toNodes = $toPayload ? $this->previews->fieldNodes($toPayload->nodes) : [];
         $pairs = [];
@@ -409,7 +412,7 @@ readonly class FieldChangeComparisons
             refreshable: false,
             nodes: $paneNodes,
             values: $payload->values ?? [],
-            errors: [],
+            errors: $payload->errors ?? [],
             globalErrors: [],
         );
     }

@@ -424,7 +424,9 @@ class ImportPlansController
         $blankData = [];
         $from = $existing ?? $importer->prepareNewRootElementForImport($blankData);
         // the import makes the changes
-        $comparison = $comparisons->compareElements($from, $element, ['from' => false, 'to' => true]);
+        $comparison = $comparisons->compareElements($from, $element, ['from' => false, 'to' => true], [
+            'to' => ElementImporter::errorsByField($element),
+        ]);
         $side = fn (string $label, mixed $ui): array => [
             'label' => $label,
             'edited' => false,

@@ -885,4 +885,18 @@ describe('previewing a step', function () {
         expect($toTitle)->toBeTrue()
             ->and($changedRows)->toHaveCount(1);
     });
+
+    it('shows an item’s errors on the fields they’re about', function () {
+        // the entry type requires a title, which the data doesn't have at that path
+        $response = $this->postJson(action([ImportPlansController::class, 'previewItem']), [
+            'step' => ($this->entryStep)(['map' => ['title' => 'heading', 'slug' => 'slug']]),
+            'index' => 1,
+        ]);
+
+        $response->assertOk();
+        $errors = collect($response->json('comparison.to.ui.errors'));
+
+        expect($response->json('result'))->toBe('problem')
+            ->and($errors->pluck('path')->map(fn (array $path) => end($path))->all())->toBe(['title']);
+    });
 });

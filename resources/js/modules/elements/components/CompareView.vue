@@ -46,6 +46,7 @@
   import type {UiValueSnapshot} from '@/modules/ui/valueAccess';
   import NestedEntryLinks from '@/modules/ui/NestedEntryLinks.vue';
   import type {NestedEntryScope} from '@/modules/ui/nestedEntryLinks';
+  import {nodeHasErrors} from '@/modules/ui/runtime';
   import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import {provideUiPreview} from '@/modules/ui/uiPreview';
   import {provideUiValueGroup} from '@/modules/ui/uiValueGroup';
@@ -74,7 +75,15 @@
   const edited = shallowRef(false);
 
   /** The layout UIDs of the editable side's fields with errors. */
-  const erroredUids = shallowRef<string[]>([]);
+  const editorErroredUids = shallowRef<string[]>([]);
+  /** The layout UIDs of the newer version's fields with errors, which a read-only version is sent with. */
+  const erroredUids = computed(() =>
+    props.to.editor
+      ? editorErroredUids.value
+      : fieldNodes(props.to.ui.nodes)
+          .filter((node) => nodeHasErrors(node, props.to.ui.errors))
+          .map(layoutUid)
+  );
   /** The fields edited on this screen: each one's value, as a canonical string, by layout UID. */
   const editedValues = shallowRef<Record<string, string>>({});
 
@@ -734,7 +743,7 @@
           :root="panels"
           :footer-targets="footerTargets"
           @edited="edited = $event"
-          @errors="erroredUids = $event"
+          @errors="editorErroredUids = $event"
           @edits="editedValues = $event"
           @locked="editorLocked = $event"
           @layout="liveToUi = $event"
