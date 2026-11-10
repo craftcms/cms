@@ -198,6 +198,9 @@ import {
       // Legacy inputs (e.g. element select inputs) announce changes with
       // jQuery's `.trigger('change')`, which native listeners never see.
       window.jQuery?.(this).on('change', this.handleLegacyChange);
+      // Legacy scripts (e.g. Behave.js) can edit a value on keydown without an
+      // `input` event. Craft 5's element editor picked those up on keyup.
+      this.addEventListener('keyup', this.handleLegacyChange);
       this.ready = this.mount();
     }
 
@@ -206,6 +209,7 @@ import {
       this.removeEventListener('input', this.handleInput);
       this.removeEventListener('change', this.handleInput);
       window.jQuery?.(this).off('change', this.handleLegacyChange);
+      this.removeEventListener('keyup', this.handleLegacyChange);
       this._form = null;
       this._runId++;
       this.dispose();
@@ -584,12 +588,15 @@ import {
   function isTypingEvent(event) {
     const target = event.target;
 
+    if (!['input', 'keyup'].includes(event.type)) {
+      return false;
+    }
+
     if (target instanceof HTMLTextAreaElement) {
-      return event.type === 'input';
+      return true;
     }
 
     return (
-      event.type === 'input' &&
       target instanceof HTMLInputElement &&
       ['text', 'email', 'url', 'tel', 'password', 'search'].includes(
         target.type
