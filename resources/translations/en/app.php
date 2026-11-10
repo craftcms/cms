@@ -2311,7 +2311,7 @@ return [
     'Never' => 'Never',
     'New Issues' => 'New Issues',
     'New Password' => 'New Password',
-    'New Tab' => 'New Tab',
+    'New tab' => 'New tab',
     'New category group' => 'New category group',
     'New category in the {group} category group' => 'New category in the {group} category group',
     'New category, choose a category group' => 'New category, choose a category group',
