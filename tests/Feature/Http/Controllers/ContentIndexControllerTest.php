@@ -74,7 +74,7 @@ it('includes table-row capabilities for page bulk actions', function () {
         );
 });
 
-it('includes the field layouts of table rows that can be compared', function () {
+it('includes the field layout IDs of table rows that can be compared', function () {
     $fixture = EntryModel::factory()
         ->withField('compareText', PlainText::class)
         ->createElementWithFields();
@@ -84,8 +84,7 @@ it('includes the field layouts of table rows that can be compared', function () 
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('data.0.id', $entry->id)
             ->where('data.0.capabilities.comparable', true)
-            ->where('data.0.fieldLayout.id', $entry->getFieldLayout()->id)
-            ->where('data.0.fieldLayout.fieldIds', [$fixture->field('compareText')->id])
+            ->where('data.0.fieldLayoutId', $entry->getFieldLayout()->id)
         );
 });
 

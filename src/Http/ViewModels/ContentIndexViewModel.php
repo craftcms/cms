@@ -18,7 +18,6 @@ use CraftCms\Cms\Element\ElementIndexSourceSettings;
 use CraftCms\Cms\Element\ElementIndexState;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -1760,20 +1759,13 @@ abstract class ContentIndexViewModel extends ViewModel
             ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
             ...$this->extraCapabilities($element),
         ];
-        $fieldLayout = $capabilities['comparable'] ? $element->getFieldLayout() : null;
 
         return [
             'label' => $element->getUiLabel(),
             ...$this->elementUrls($element),
             'capabilities' => $capabilities,
-            // So Compare is only offered for two elements with fields in common.
-            ...($fieldLayout ? ['fieldLayout' => [
-                'id' => $fieldLayout->id,
-                'fieldIds' => array_values(array_map(
-                    fn (FieldInterface $field): ?int => $field->id,
-                    $fieldLayout->getCustomFields(),
-                )),
-            ]] : []),
+            // So Compare is only offered for two elements with the same field layout.
+            ...($capabilities['comparable'] ? ['fieldLayoutId' => $element->getFieldLayout()?->id] : []),
             ...$this->extraRowData($element),
         ];
     }

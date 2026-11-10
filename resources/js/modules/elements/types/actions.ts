@@ -106,8 +106,8 @@ export interface ElementActionSelection {
   fieldId?: number | null;
   draftId?: number | null;
   revisionId?: number | null;
-  /** The element's field layout and the custom fields in it, on rows that can be compared. */
-  fieldLayout?: {id: number | null; fieldIds: number[]};
+  /** The element's field layout ID, on rows that can be compared. */
+  fieldLayoutId?: number | null;
   data?: {entryTypeId?: number | null};
   cardAttributes?: {
     data?: Record<string, unknown>;

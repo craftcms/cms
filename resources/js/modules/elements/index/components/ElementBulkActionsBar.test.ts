@@ -334,28 +334,13 @@ it('links Compare to the two selected elements in the index’s site, when their
 });
 
 it.each([
-  ['the same field layout', {id: 1, fieldIds: []}, {id: 1, fieldIds: []}, true],
-  [
-    'a field in common',
-    {id: 1, fieldIds: [5, 6]},
-    {id: 2, fieldIds: [7, 6]},
-    true,
-  ],
-  [
-    'no fields in common',
-    {id: 1, fieldIds: [5, 6]},
-    {id: 2, fieldIds: [7]},
-    false,
-  ],
-  [
-    'no field layouts',
-    {id: null, fieldIds: []},
-    {id: null, fieldIds: []},
-    false,
-  ],
+  ['the same field layout', 1, 1, true],
+  ['different field layouts', 1, 2, false],
+  ['no field layouts', null, null, false],
+  ['rows without field layout data', undefined, undefined, true],
 ])(
-  'offers Compare only for two elements with fields in common: %s',
-  async (_case, fromLayout, toLayout, listed) => {
+  'offers Compare only for two elements with the same field layout: %s',
+  async (_case, fromLayoutId, toLayoutId, listed) => {
     const container = mount(
       {
         key: 'compare',
@@ -368,8 +353,16 @@ it.each([
       {
         selectedIds: [11, 12],
         selectedElements: [
-          {id: 11, capabilities: {comparable: true}, fieldLayout: fromLayout},
-          {id: 12, capabilities: {comparable: true}, fieldLayout: toLayout},
+          {
+            id: 11,
+            capabilities: {comparable: true},
+            fieldLayoutId: fromLayoutId,
+          },
+          {
+            id: 12,
+            capabilities: {comparable: true},
+            fieldLayoutId: toLayoutId,
+          },
         ],
       }
     );
