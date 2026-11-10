@@ -12,6 +12,10 @@
 - MCP tools now return users’ addresses when `addresses` is included in `fields`.
 - The `asset_folders_list` MCP tool now accepts `null` for `criteria.parentId`, which lists volumes’ root folders.
 - The **My Account** → **Tokens** screen is now only shown to admins until OAuth signing keys are set up, and explains how to set them up. Token creation requests now return a 400 error rather than a server error until then. ([#20357](https://github.com/craftcms/cms/issues/20357))
+- The web-based installer is now only available when Dev Mode is enabled. Otherwise, Craft must be installed with the `install` CLI command.
+- The web-based installer’s actions are no longer available once Craft is installed, even when Dev Mode is enabled.
+- The web-based installer now responds with a 503 error when Craft can’t connect to the configured database, rather than offering to change the database connection settings.
+- The web-based installer now only saves database connection settings to the `.env` file once Craft has been installed with them, and no longer accepts them if the `.env` file isn’t writable.
 - Added `craft\config\McpConfig::filters()`. ([#20558](https://github.com/craftcms/cms/pull/20558))
 - Added `craft\base\McpOutputFieldInterface`, which fields can implement to control how their values are returned by MCP tools.
 - Added `craft\mcp\McpOutputContext`.
