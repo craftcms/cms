@@ -65,10 +65,10 @@ class EntryTypeEditViewModel extends ViewModel
         $ui = Ui::make([
             HiddenField::make('entryTypeId'),
             Field::make(t('Name'), Text::make('name')->autofocus())
-                ->instructions(t('What this {type} will be called in the control panel.', ['type' => Entry::lowerDisplayName()]))
+                ->instructions(t('What this entry type will be called in the control panel.'))
                 ->required(),
             Field::make(t('Handle'), $handle)
-                ->instructions(t('How you’ll refer to this {type} in the templates.', ['type' => Entry::lowerDisplayName()]))
+                ->instructions(t('How you’ll refer to this entry type in the templates.'))
                 ->required(),
             Field::make(t('Description'), MarkdownControl::make('description')->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->rows(1)),
             // Shown above the card designer, in the field layout designer’s
@@ -84,7 +84,7 @@ class EntryTypeEditViewModel extends ViewModel
             Field::make(t('UI Label Format'), Text::make('uiLabelFormat')
                 ->monospace()
                 ->textExpanderTriggers($objectTemplateTriggers))
-                ->instructions(t('How {type} of this type should be labeled in the control panel.', ['type' => Entry::lowerDisplayName()]))
+                ->instructions(t('How {type} of this type should be labeled in the control panel.', ['type' => Entry::pluralLowerDisplayName()]))
                 ->tip($objectTemplateTip),
         ]);
 

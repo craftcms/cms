@@ -107,7 +107,7 @@ readonly class SitesController
             ]))
             ->emptyMessage(t('No sites exist yet.'))
             ->unless($this->readOnly, fn (Table $table) => $table
-                ->createAction(t('New Site'), route('craft.cp.settings.sites.create', isset($group) ? ['groupId' => $group->id] : []))
+                ->createAction(t('New site'), route('craft.cp.settings.sites.create', isset($group) ? ['groupId' => $group->id] : []))
                 ->createActionInPageHeader()
                 ->deletable()
                 ->when(isset($group), fn (Table $table) => $table->reorderable(route('craft.cp.settings.sites.reorder'), t('New order saved.'))));
@@ -124,7 +124,7 @@ readonly class SitesController
             'nameTextExpanderTriggers' => Inertia::defer(fn () => SelectOptions::getEnvTextExpanderTriggers()),
             'group' => $group ?? null,
             'subnav' => [
-                new NavItem()->label(t('All Sites'))->href(Url::cpUrl('settings/sites'))->selected(! isset($group)),
+                new NavItem()->label(t('All sites'))->href(Url::cpUrl('settings/sites'))->selected(! isset($group)),
                 ...$groups->map(fn ($siteGroup) => new NavItem()
                     ->label($siteGroup->name)
                     ->href(Url::cpUrl('settings/sites', ['groupId' => $siteGroup->id]))

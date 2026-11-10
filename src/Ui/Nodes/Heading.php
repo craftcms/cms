@@ -32,8 +32,16 @@ class Heading implements Node
 
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
+        // Every level sits below the page title, which is `text-xl`.
+        $size = match ($node->props['level']) {
+            1 => 'text-xl',
+            2 => 'text-lg',
+            3 => 'text-base',
+            4, 5 => 'text-sm',
+            default => 'text-xs',
+        };
         $heading = Html::tag("h{$node->props['level']}", Html::encode($node->props['content']), [
-            'class' => ['my-0'],
+            'class' => ['my-0', $size],
         ]);
         $description = $node->props['description'] === null
             ? ''
