@@ -1390,9 +1390,6 @@
     .compare__row {
       /* A craft-icon is 1.25em wide, as the header's side icon is. */
       --compare-side-icon-column: calc(var(--c-size-icon-md) * 1.25);
-      --compare-side-indent: calc(
-        var(--compare-side-icon-column) + var(--c-spacing-sm)
-      );
     }
 
     .compare__cell {
@@ -1440,7 +1437,6 @@
       align-self: start;
       justify-self: center;
       display: flex;
-      margin-inline-start: var(--compare-side-indent);
       translate: 0 -50%;
     }
 
