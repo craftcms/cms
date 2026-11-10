@@ -406,24 +406,43 @@
   });
 
   /**
+   * What the version menus stick to the top of as it scrolls: the nearest
+   * ancestor that scrolls, such as the page's panel, or a modal's body.
+   */
+  function scroller(): HTMLElement | null {
+    for (
+      let element = root.value?.parentElement ?? null;
+      element;
+      element = element.parentElement
+    ) {
+      if (/(auto|scroll)/.test(getComputedStyle(element).overflowY)) {
+        return element;
+      }
+    }
+
+    return null;
+  }
+
+  /** The element whose scroll padding is set, so it's the one cleared. */
+  let paddedScroller: HTMLElement | null = null;
+
+  /**
    * Keeps fields that focus scrolls to clear of the version menus, while
-   * they're stuck to the top of the panel (WCAG 2.4.11).
+   * they're stuck to the top of what scrolls them (WCAG 2.4.11).
    */
   watch(headersHeight, (height) => {
-    const panel = root.value?.closest<HTMLElement>('.cp-body__panel');
     const sticky =
       headers.value && getComputedStyle(headers.value).position === 'sticky';
 
-    panel?.style.setProperty(
+    paddedScroller ??= scroller();
+    paddedScroller?.style.setProperty(
       'scroll-padding-block-start',
       sticky ? `${height}px` : ''
     );
   });
 
   onBeforeUnmount(() =>
-    root.value
-      ?.closest<HTMLElement>('.cp-body__panel')
-      ?.style.removeProperty('scroll-padding-block-start')
+    paddedScroller?.style.removeProperty('scroll-padding-block-start')
   );
 
   const forms = useTemplateRef<HTMLElement>('forms');
