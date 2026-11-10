@@ -168,15 +168,11 @@ class AssetTransformers extends Manager
         return $this->diskTransformerConfig($disk);
     }
 
-    /**
-     * @param  string|null  $transformer  A driver name that overrides the disk’s transformer.
-     */
     public function transform(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
-        ?string $transformer = null,
     ): AssetTransformResult {
-        $request = $this->request($asset, $definition, $this->transformerFor($asset, $transformer));
+        $request = $this->request($asset, $definition, $this->forAsset($asset));
 
         return $this->driver($request->transformer->driver)->transform($request);
     }
@@ -302,21 +298,9 @@ class AssetTransformers extends Manager
             : null;
     }
 
-    /**
-     * Returns the transformer for one request: the `transformer` argument if given, otherwise the asset’s disk’s.
-     *
-     * An argument naming the disk’s own driver keeps the disk’s settings. Any other driver name gets no inline
-     * settings, so a driver can hand a file to another one, such as `craft`.
-     */
-    private function transformerFor(Asset $asset, ?string $override): AssetTransformer
+    private function forAsset(Asset $asset): AssetTransformer
     {
-        $diskTransformer = $this->forDisk($asset->getVolume()->getResolvedFsTarget());
-
-        if ($override === null || $override === $diskTransformer->driver) {
-            return $diskTransformer;
-        }
-
-        return $this->validTransformer($override, 'the transformer argument', $diskTransformer);
+        return $this->forDisk($asset->getVolume()->getResolvedFsTarget());
     }
 
     /**
@@ -384,7 +368,7 @@ class AssetTransformers extends Manager
             try {
                 [$size, $unit] = AssetsHelper::parseSrcsetSize($definition);
             } catch (InvalidArgumentException) {
-                $transformer ??= $this->transformerFor($asset, null);
+                $transformer ??= $this->forAsset($asset);
                 $requests[] = $referenceRequest = $this->request($asset, $definition, $transformer);
 
                 continue;

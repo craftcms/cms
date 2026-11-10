@@ -308,7 +308,6 @@ it('does not use the legacy selector for typed transform calls', function(): voi
     try {
         expect($asset->transform($transform)->url)->toBe('/transforms/320x160.webp')
             ->and(app(AssetTransformers::class)->transform($asset, $transform)->url)->toBe('/transforms/320x160.webp')
-            ->and($asset->transform(['transform' => $transform], transformer: 'compatibility-test')->url)->toBe('/transforms/320x160.webp')
             ->and(Craft::$app->getImageTransforms()->getImageTransformer(RegisteredLegacyImageTransformer::class)->asset)->toBeNull();
     } finally {
         Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);

@@ -22,7 +22,6 @@ use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\File;
@@ -519,18 +518,12 @@ class GqlHelper
         array|string $definition,
         string $field,
     ): mixed {
-        $transformer = is_array($definition) ? Arr::pull($definition, 'transformer') : null;
-
-        if ($transformer !== null && ! is_string($transformer)) {
-            throw new InvalidArgumentException('The transform driver name must be a string.');
-        }
-
         return match ($field) {
-            'format' => File::getExtensionByMimeType($asset->transform($definition, $transformer)->mimeType),
-            'height' => $asset->transform($definition, $transformer)->height,
-            'mimeType' => $asset->transform($definition, $transformer)->mimeType,
-            'url' => $asset->transform($definition, $transformer)->url,
-            'width' => $asset->transform($definition, $transformer)->width,
+            'format' => File::getExtensionByMimeType($asset->transform($definition)->mimeType),
+            'height' => $asset->transform($definition)->height,
+            'mimeType' => $asset->transform($definition)->mimeType,
+            'url' => $asset->transform($definition)->url,
+            'width' => $asset->transform($definition)->width,
             default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
         };
     }

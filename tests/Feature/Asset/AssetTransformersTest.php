@@ -84,32 +84,15 @@ it('lets a scoped disk without a key follow the disk it wraps', function () {
         ->and($transformers->forDisk('loop-a')->driver)->toBe('craft');
 });
 
-it('picks the transformer argument, then the asset’s disk, then craft', function () {
+it('transforms with the asset’s disk’s transformer and its settings', function () {
     $diskDriver = registerDriver('disk-driver');
-    $explicit = registerDriver('explicit');
     $asset = assetOnDisk('transformer-source', ['asset_transformer' => ['driver' => 'disk-driver', 'zone' => 'disk']]);
 
     app(AssetTransformers::class)->transform($asset, ['width' => 100]);
-    app(AssetTransformers::class)->transform($asset, ['width' => 200], transformer: 'explicit');
 
     expect($diskDriver->request->parameters['width'])->toBe(100)
         ->and($diskDriver->request->asset)->toBe($asset)
-        ->and($diskDriver->request->transformer->settings)->toBe(['zone' => 'disk'])
-        ->and($explicit->request->parameters['width'])->toBe(200);
-});
-
-it('keeps the disk’s settings only when the argument names the disk’s own driver', function () {
-    $remote = registerDriver('remote');
-    $otherDriver = registerDriver('other');
-    $asset = assetOnDisk('transformer-source', ['asset_transformer' => ['driver' => 'remote', 'zone' => 'disk']]);
-    $transformers = app(AssetTransformers::class);
-
-    $transformers->transform($asset, [], transformer: 'remote');
-    $sameDriver = $remote->request->transformer;
-    $transformers->transform($asset, [], transformer: 'other');
-
-    expect($sameDriver->settings)->toBe(['zone' => 'disk'])
-        ->and($otherDriver->request->transformer)->toEqual(new AssetTransformer('other'));
+        ->and($diskDriver->request->transformer->settings)->toBe(['zone' => 'disk']);
 });
 
 it('throws for invalid transformer config with debug mode on', function (mixed $value, string $exception) {
@@ -139,27 +122,6 @@ it('logs invalid transformer config once and falls back to craft with debug mode
 
     expect($first)->toEqual(new AssetTransformer('craft'))
         ->and($second)->toEqual(new AssetTransformer('craft'));
-});
-
-it('throws for an unregistered transformer argument with debug mode on', function () {
-    config()->set('app.debug', true);
-    $asset = Asset::factory()->createElement();
-
-    expect(fn () => app(AssetTransformers::class)->transform($asset, [], transformer: 'missing'))
-        ->toThrow(AssetTransformDriverNotFoundException::class, 'transformer argument');
-});
-
-it('ignores an unregistered transformer argument with debug mode off, keeping the disk’s transformer', function () {
-    config()->set('app.debug', false);
-    $diskDriver = registerDriver('disk-driver');
-    $asset = assetOnDisk('transformer-source', ['asset_transformer' => ['driver' => 'disk-driver', 'zone' => 'disk']]);
-    Log::shouldReceive('warning')->twice();
-
-    app(AssetTransformers::class)->transform($asset, ['width' => 100], transformer: 'missing');
-    app(AssetTransformers::class)->transform($asset, ['width' => 100], transformer: 'missing');
-    app(AssetTransformers::class)->transform($asset, ['width' => 100], transformer: 'also-missing');
-
-    expect($diskDriver->request->transformer)->toEqual(new AssetTransformer('disk-driver', ['zone' => 'disk']));
 });
 
 it('keeps getUrl transform arguments with a deprecation warning', function () {
@@ -225,10 +187,11 @@ it('uses driver-specific named parameters', function () {
         ],
     ]);
     app(ImageTransforms::class)->saveTransform($transform);
-    $asset = Asset::factory()->createElement();
+    $firstAsset = assetOnDisk('first-source', ['asset_transformer' => 'first']);
+    $secondAsset = assetOnDisk('second-source', ['asset_transformer' => 'second']);
 
-    app(AssetTransformers::class)->transform($asset, ['transform' => 'hero'], transformer: 'first');
-    app(AssetTransformers::class)->transform($asset, ['transform' => 'hero'], transformer: 'second');
+    app(AssetTransformers::class)->transform($firstAsset, ['transform' => 'hero']);
+    app(AssetTransformers::class)->transform($secondAsset, ['transform' => 'hero']);
 
     expect($first->request->parameters)->toMatchArray(['width' => 1200, 'blur' => 8])
         ->and($first->request->parameters)->not->toHaveKey('sharpen')
@@ -238,11 +201,12 @@ it('uses driver-specific named parameters', function () {
 
 it('passes undeclared parameters without validating them', function () {
     $driver = registerDriver('remote', parameterRules: ['blur' => ['integer']]);
+    config()->set('filesystems.disks.local.asset_transformer', 'remote');
 
     app(AssetTransformers::class)->transform(Asset::factory()->createElement(), [
         'unknown' => 'passed-through',
         'blur' => 5,
-    ], transformer: 'remote');
+    ]);
 
     expect($driver->request->parameters)->toBe([
         'blur' => 5,
@@ -254,29 +218,30 @@ it('uses driver rules in place of conflicting core rules', function () {
     $driver = registerDriver('remote', parameterRules: [
         'quality' => [Rule::in([...range(1, 100), 'high', 'medium-high', 'medium-low', 'low'])],
     ]);
+    config()->set('filesystems.disks.local.asset_transformer', 'remote');
     $asset = Asset::factory()->createElement();
 
-    app(AssetTransformers::class)->transform($asset, ['quality' => 'high'], transformer: 'remote');
+    app(AssetTransformers::class)->transform($asset, ['quality' => 'high']);
 
     expect($driver->request->parameters['quality'])->toBe('high')
         ->and(fn () => app(AssetTransformers::class)->transform(
             $asset,
             ['quality' => 'maximum'],
-            transformer: 'remote',
         ))->toThrow(InvalidAssetTransformException::class);
 });
 
 it('passes complex custom parameters through without serializing or reusing them', function () {
     $driver = registerDriver('remote');
+    config()->set('filesystems.disks.local.asset_transformer', 'remote');
     $asset = Asset::factory()->createElement();
     $transformers = app(AssetTransformers::class);
     $first = fn () => 'first';
     $second = fn () => 'second';
 
-    $transformers->transform($asset, ['callback' => $first], transformer: 'remote');
+    $transformers->transform($asset, ['callback' => $first]);
     expect($driver->request->parameters['callback'])->toBe($first);
 
-    $transformers->transform($asset, ['callback' => $second], transformer: 'remote');
+    $transformers->transform($asset, ['callback' => $second]);
     expect($driver->request->parameters['callback'])->toBe($second);
 });
 
@@ -314,19 +279,20 @@ it('validates each normalized definition once across preloading and rendering', 
 
 it('revalidates definitions after replacing a driver', function () {
     registerDriver('remote');
+    config()->set('filesystems.disks.local.asset_transformer', 'remote');
     $asset = Asset::factory()->createElement();
     $transformers = app(AssetTransformers::class);
     $validator = Validator::getFacadeRoot();
     Validator::shouldReceive('make')->times(2)->andReturnUsing($validator->make(...));
 
-    $transformers->transform($asset, ['width' => 100], transformer: 'remote');
-    $transformers->transform($asset, ['width' => 100], transformer: 'remote');
+    $transformers->transform($asset, ['width' => 100]);
+    $transformers->transform($asset, ['width' => 100]);
 
     $transformers->forgetDrivers()->extend('remote', fn () => new TestAssetTransformDriver(
         new AssetTransformDriverDefinition(parameterRules: ['width' => ['integer', 'max:50']]),
     ));
 
-    expect(fn () => $transformers->transform($asset, ['width' => 100], transformer: 'remote'))
+    expect(fn () => $transformers->transform($asset, ['width' => 100]))
         ->toThrow(InvalidAssetTransformException::class);
 });
 
@@ -351,11 +317,11 @@ it('preserves parameter rules declared by a custom Craft driver definition', fun
 
 it('rejects invalid parameters', function () {
     registerDriver('remote');
+    config()->set('filesystems.disks.local.asset_transformer', 'remote');
 
     expect(fn () => app(AssetTransformers::class)->transform(
         Asset::factory()->createElement(),
         ['width' => 0],
-        transformer: 'remote',
     ))->toThrow(InvalidAssetTransformException::class);
 });
 

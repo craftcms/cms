@@ -413,7 +413,7 @@ class ImageTransforms extends Component
         // A transformer chosen by the disk, including an explicit `craft` one, takes precedence over the legacy one.
         $disk = $asset->getVolume()->getResolvedFsTarget();
 
-        if (($disk !== null && app(AssetTransformers::class)->configForDisk($disk) !== null) || $this->hasTransformerOverride($definition)) {
+        if ($disk !== null && app(AssetTransformers::class)->configForDisk($disk) !== null) {
             return null;
         }
 
@@ -445,20 +445,6 @@ class ImageTransforms extends Component
             $transformer === LegacyImageTransform::DEFAULT_TRANSFORMER ? null : $transformer,
             $definition,
         ];
-    }
-
-    private function hasTransformerOverride(mixed $definition): bool
-    {
-        if (!is_array($definition)) {
-            return false;
-        }
-
-        if (array_key_exists('transformer', $definition)) {
-            return true;
-        }
-
-        return array_key_exists('transform', $definition)
-            && $this->hasTransformerOverride($definition['transform']);
     }
 
     /** @return array<string, mixed> */
