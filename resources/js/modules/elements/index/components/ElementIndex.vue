@@ -594,7 +594,7 @@
         :item-label="elementIndex.elementLowerDisplayName"
         :items-label="elementIndex.elementPluralLowerDisplayName"
         :page-size-label="
-          t('{type} per Page', {type: elementIndex.elementPluralDisplayName})
+          t('{type} per page', {type: elementIndex.elementPluralDisplayName})
         "
         @page-size-change="table.setPageSize"
       />
