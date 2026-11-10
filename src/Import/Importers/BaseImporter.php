@@ -145,6 +145,13 @@ abstract class BaseImporter
     private array $afterItemImportedCallbacks = [];
 
     /**
+     * Whether items are being previewed rather than imported, as an import plan's Preview does. Nothing may be saved
+     * then, so field import handlers and transformers that would save something, such as an uploaded file, should
+     * leave it out instead.
+     */
+    public protected(set) bool $previewing = false;
+
+    /**
      * Sets `$this->uid` from a config array if provided.
      *
      * @param  array<string, mixed>|null  $config  Optional config array, potentially containing a `uid` key.
@@ -1201,6 +1208,28 @@ abstract class BaseImporter
     public function discardAfterItemImportedCallbacks(): void
     {
         $this->afterItemImportedCallbacks = [];
+    }
+
+    /**
+     * Runs a callback with {@see $previewing} set, and returns what it returns.
+     *
+     * @internal
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function preview(Closure $callback): mixed
+    {
+        $previewing = $this->previewing;
+        $this->previewing = true;
+
+        try {
+            return $callback();
+        } finally {
+            $this->previewing = $previewing;
+        }
     }
 
     /**

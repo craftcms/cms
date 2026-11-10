@@ -12,6 +12,7 @@ use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -203,6 +204,24 @@ it('creates a new asset when an incoming file matches one and that’s what the 
     expect($related->id)->not->toBe($existing->id)
         ->and($related->getFilename())->not->toBe('photo.txt')
         ->and($related->getContents())->toBe('incoming')
+        ->and(Asset::find()->id($existing->id)->one()->getContents())->toBe('original');
+});
+
+it('previews an item without uploading its files, relating only those already there', function () {
+    ($this->importEntry)('first entry', ['myAssets' => [($this->sourceFile)('photo.txt', 'original')]]);
+    $existing = ($this->entry)('first entry')->getFieldValue('myAssets')->one();
+
+    $preview = $this->import->previewItem($this->importer, [
+        'title' => 'second entry',
+        'sectionId' => $this->section->handle,
+        'typeId' => $this->entryType->handle,
+        'matchCriteria' => ['title' => 'title'],
+        'myAssets' => [($this->sourceFile)('photo.txt', 'incoming'), ($this->sourceFile)('new.txt')],
+    ]);
+
+    expect($preview->result)->toBe(ItemPreviewResult::New)
+        ->and($preview->element->getFieldValue('myAssets')->ids())->toBe([$existing->id])
+        ->and(Asset::find()->ids())->toBe([$existing->id])
         ->and(Asset::find()->id($existing->id)->one()->getContents())->toBe('original');
 });
 

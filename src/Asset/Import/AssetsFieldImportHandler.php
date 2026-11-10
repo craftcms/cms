@@ -78,6 +78,15 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
 
         $conflict = ImportFileConflict::tryFrom((string) ($importSettings['fileConflict'] ?? '')) ?? ImportFileConflict::UseExisting;
 
+        // a preview can't upload anything, so it only relates the files that are already there and would be reused
+        if ($importer->previewing) {
+            if ($conflict !== ImportFileConflict::KeepBoth && $rootOwner !== null) {
+                $items = $this->resolveExistingFiles($field, $items, $rootOwner);
+            }
+
+            return array_values(array_unique(array_filter($items, is_int(...))));
+        }
+
         // resolve files that are already there up front, so they don’t make the element look changed
         if ($conflict === ImportFileConflict::UseExisting && $rootOwner?->id) {
             $items = $this->resolveExistingFiles($field, $items, $rootOwner);

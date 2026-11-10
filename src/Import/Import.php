@@ -412,25 +412,29 @@ class Import
 
     /**
      * Returns what importing an item into an element would do, without saving anything. The item goes through
-     * everything `importItem()` puts it through, apart from the save, so the `ItemImporting` event still fires.
+     * everything `importItem()` puts it through, apart from the save, so the `ItemImporting` event still fires; the
+     * importer's `previewing` property tells listeners, transformers and field import handlers not to save anything
+     * themselves.
      *
      * @param  array<string, mixed>  $data  The raw item data.
      * @param  array<string, mixed>  $matchCriteria  As for `importItem()`.
      */
     public function previewItem(ElementImporter $importer, array $data, array $matchCriteria = []): ItemPreview
     {
-        $data = $this->prepareItem($importer, $data, $matchCriteria, null);
+        return $importer->preview(function () use ($importer, $data, $matchCriteria): ItemPreview {
+            $data = $this->prepareItem($importer, $data, $matchCriteria, null);
 
-        if ($data === null) {
-            return new ItemPreview(ItemPreviewResult::Skip, null);
-        }
+            if ($data === null) {
+                return new ItemPreview(ItemPreviewResult::Skip, null);
+            }
 
-        try {
-            return $importer->previewItem($data);
-        } finally {
-            // they'd save what goes with the element, such as a user's addresses
-            $importer->discardAfterItemImportedCallbacks();
-        }
+            try {
+                return $importer->previewItem($data);
+            } finally {
+                // they'd save what goes with the element, such as a user's addresses
+                $importer->discardAfterItemImportedCallbacks();
+            }
+        });
     }
 
     /**
