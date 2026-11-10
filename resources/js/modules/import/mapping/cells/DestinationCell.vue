@@ -88,6 +88,7 @@
   /* tighter lines for a name that wraps, with the first still centered on the cell's line, level with the controls */
   .destination-cell__label {
     display: flex;
+    flex-wrap: wrap;
     align-items: start;
     gap: var(--c-spacing-sm);
     margin-block-start: calc((var(--destination-cell-line) - 1lh) / 2);
@@ -105,5 +106,11 @@
 
   .destination-cell__text {
     min-width: 0;
+  }
+
+  /* a long handle wraps rather than running under the next column */
+  .destination-cell__text pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 </style>

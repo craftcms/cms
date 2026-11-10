@@ -79,7 +79,11 @@
       columnHelper.display({
         id: 'destination',
         header: t('Destination'),
-        meta: {cellTag: 'th', wrap: true, columnClass: 'mapping-table__main'},
+        meta: {
+          cellTag: 'th',
+          wrap: true,
+          columnClass: 'mapping-table__main mapping-table__destination',
+        },
         cell: ({row}) =>
           row.original.kind === 'heading'
             ? h('strong', row.original.label)
@@ -191,9 +195,14 @@
     text-align: start;
   }
 
+  /* enough for a field's name and handle, which a narrow table would otherwise squeeze into a sliver */
+  .mapping-table :deep(.mapping-table__destination) {
+    min-inline-size: 14rem;
+  }
+
   /* a box rather than a column width, which the two shares above would win over */
   .mapping-table :deep(.mapping-table__preview-box) {
-    inline-size: 280px;
+    inline-size: 15rem;
   }
 
   /* a cell that grows, such as a template with its tip, leaves the others at the top */
