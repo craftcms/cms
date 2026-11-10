@@ -205,6 +205,7 @@
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
         "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",
         "BulkOps": "CraftCms\\Cms\\Support\\Facades\\BulkOps",
+        "CacheControl": "CraftCms\\Cms\\Support\\Facades\\CacheControl",
         "Conditions": "CraftCms\\Cms\\Support\\Facades\\Conditions",
         "DeltaRegistry": "CraftCms\\Cms\\Support\\Facades\\DeltaRegistry",
         "Deprecator": "CraftCms\\Cms\\Support\\Facades\\Deprecator",

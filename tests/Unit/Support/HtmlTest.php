@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Http\Middleware\SetHeaders;
+use CraftCms\Cms\Http\Middleware\ApplyCacheControl;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,7 +13,7 @@ it('isolates CSRF cache headers to the request scope', function () {
     Html::csrfInput();
     app()->forgetScopedInstances();
 
-    $response = app(SetHeaders::class)->handle(
+    $response = app(ApplyCacheControl::class)->handle(
         request(),
         fn () => new Response(headers: ['Cache-Control' => 'public, max-age=3600']),
     );

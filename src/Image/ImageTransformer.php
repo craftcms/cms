@@ -25,8 +25,8 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\CacheControl;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
@@ -126,7 +126,7 @@ class ImageTransformer
 
                 // Prevent the page from being cached
                 if (! app()->runningInConsole()) {
-                    ResponseHeaders::noCache();
+                    CacheControl::setPrivate()->setNoCache()->setNoStore(reason: 'The response includes a pending image transform.');
                 }
 
                 // Return the temporary transform URL

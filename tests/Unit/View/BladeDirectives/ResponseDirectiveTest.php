@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Blade\BladeRenderer;
+use CraftCms\Cms\Http\Middleware\ApplyCacheControl;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
@@ -19,7 +20,10 @@ function renderBladeAndApplyHeaders(string $template): Response
 {
     app(BladeRenderer::class)->renderString($template);
 
-    return app(SetHeaders::class)->handle(Request::create('foo'), fn () => new Response);
+    return app(ApplyCacheControl::class)->handle(
+        Request::create('foo'),
+        fn ($request) => app(SetHeaders::class)->handle($request, fn () => new Response),
+    );
 }
 
 it('sets a response header', function () {
@@ -42,5 +46,17 @@ it('sets cache headers with duration', function () {
     $response = renderBladeAndApplyHeaders('@craftExpires(7200)');
 
     expect($response->headers->get('Cache-Control'))->toContain('max-age=7200')
-        ->and($response->headers->get('Pragma'))->toBe('cache');
+        ->and($response->headers->hasCacheControlDirective('public'))->toBeTrue();
 });
+
+it('uses the last expiry directive duration', function (string $template, ?int $maxAge) {
+    $response = renderBladeAndApplyHeaders($template);
+
+    expect($response->getMaxAge())->toBe($maxAge)
+        ->and($response->headers->hasCacheControlDirective('no-cache'))->toBe($maxAge === null)
+        ->and($response->headers->hasCacheControlDirective('no-store'))->toBe($maxAge === null)
+        ->and($response->isCacheable())->toBe($maxAge !== null);
+})->with([
+    ['@craftExpires(0) @craftExpires(7200)', 7200],
+    ['@craftExpires(7200) @craftExpires(0)', null],
+]);

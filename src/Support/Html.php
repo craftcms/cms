@@ -9,8 +9,8 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Facades\CacheControl;
 use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
@@ -219,7 +219,7 @@ class Html
             ?? (request()->isSiteRequest() && Cms::config()->asyncCsrfInputs);
 
         if (! $async) {
-            ResponseHeaders::noCache();
+            CacheControl::setPrivate()->setNoCache()->setNoStore(reason: 'The response includes a CSRF input.');
 
             return (string) csrf_field();
         }

@@ -10,6 +10,7 @@ use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
+use CraftCms\Cms\Http\Middleware\ApplyCacheControl;
 use CraftCms\Cms\Http\Middleware\AuthenticateCraftSession;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
@@ -45,6 +46,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance as LaravelMaintenanceMiddleware;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as LaravelRouteServiceProvider;
@@ -75,6 +77,8 @@ class RouteServiceProvider extends ServiceProvider
          * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
+        $kernel->addToMiddlewarePriorityBefore([EncryptCookies::class, StartSession::class, PreventRequestForgery::class], ApplyCacheControl::class);
+        $kernel->addToMiddlewarePriorityAfter(ApplyCacheControl::class, SetHeaders::class);
         $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSessionWithoutPersistence::class);
         $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartLazySession::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
@@ -230,6 +234,7 @@ class RouteServiceProvider extends ServiceProvider
         ])->each(fn (string $middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
         collect([
+            ApplyCacheControl::class,
             'web',
             AuthenticateCraftSession::class,
             RunQueue::class,

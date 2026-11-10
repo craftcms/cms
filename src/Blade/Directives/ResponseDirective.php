@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Blade\Directives;
 
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\CacheControl;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Url;
@@ -57,7 +58,7 @@ class ResponseDirective
             $duration = 0;
         }
 
-        ResponseHeaders::setCache($duration);
+        CacheControl::setDuration($duration);
     }
 
     public static function templateExit(?int $status = null, ?string $message = null): void

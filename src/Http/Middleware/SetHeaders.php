@@ -31,18 +31,8 @@ class SetHeaders
 
         $hasPreviewParam = $request->previewParam() !== null;
 
-        if ($request->isCpRequest() || $request->isActionRequest() || $hasPreviewParam || $this->responseHeaders->noCache) {
+        if ($request->isCpRequest() || $request->isActionRequest() || $hasPreviewParam) {
             $this->setNoCacheHeaders($response);
-        } elseif ($this->responseHeaders->duration !== null) {
-            if ($this->responseHeaders->duration <= 0) {
-                $this->setNoCacheHeaders($response);
-            } else {
-                $response->headers->set('Pragma', 'cache', $this->responseHeaders->replace);
-                $response
-                    ->setExpires(now()->addSeconds($this->responseHeaders->duration))
-                    ->setPublic()
-                    ->setMaxAge($this->responseHeaders->duration);
-            }
         }
 
         // Tell bots not to index/follow control panel and tokenized pages

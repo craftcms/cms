@@ -15,6 +15,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Http\Controllers\Assets\TransformController;
+use CraftCms\Cms\Http\Middleware\ApplyCacheControl;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
@@ -22,10 +23,12 @@ use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Facades\CacheControl;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 use function Pest\Laravel\getJson;
@@ -95,6 +98,35 @@ it('runs the configured Craft driver without changing transform identity', funct
         ->and($result->mimeType)->toBe('image/jpeg')
         ->and($result->width)->toBe(100)
         ->and($result->height)->toBe(100);
+});
+
+it('prohibits response storage while an image transform is pending', function () {
+    Queue::fake();
+    $asset = ($this->createImageAsset)();
+
+    Route::get('/pending-transform', function () use ($asset) {
+        CacheControl::setPublic()->setMaxAge(600)->setSharedMaxAge(900);
+        $consoleState = new ReflectionProperty(app(), 'isRunningInConsole');
+        $wasRunningInConsole = $consoleState->getValue(app());
+        $consoleState->setValue(app(), false);
+
+        try {
+            $url = $this->transformer->getTransformUrl($asset, new ImageTransform(['width' => 100]), false);
+        } finally {
+            $consoleState->setValue(app(), $wasRunningInConsole);
+        }
+
+        return response($url);
+    })->middleware(ApplyCacheControl::class);
+
+    $response = $this->get('/pending-transform')->assertOk();
+
+    expect($response->getContent())->toContain('transformId=')
+        ->and($response->headers->hasCacheControlDirective('private'))->toBeTrue()
+        ->and($response->headers->hasCacheControlDirective('no-cache'))->toBeTrue()
+        ->and($response->headers->hasCacheControlDirective('no-store'))->toBeTrue()
+        ->and($response->headers->hasCacheControlDirective('max-age'))->toBeFalse()
+        ->and($response->headers->hasCacheControlDirective('s-maxage'))->toBeFalse();
 });
 
 it('preserves lazy generation and queued recovery', function (?string $format, string $generation) {
