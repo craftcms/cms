@@ -20,6 +20,7 @@ use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -866,6 +867,44 @@ describe('previewing a step', function () {
 
         expect(EntryElement::find()->sectionId($this->section->id)->status(null)->count())->toBe(1)
             ->and(EntryElement::find()->id($this->existing->id)->status(null)->one()->title)->toBe('Old title');
+    });
+
+    it('previews a page of the items at a time, keeping to the last page', function (int $page) {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => ($this->entryStep)(['map' => ['title' => 'title']], ['source' => 'tests/Fixtures/Import/entries-many.json']),
+            'page' => $page,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('total'))->toBe(23)
+            ->and($response->json('page'))->toBe(2)
+            ->and($response->json('items.*.index'))->toBe([20, 21, 22])
+            ->and($response->json('items.*.title'))->toBe(['Entry 21', 'Entry 22', 'Entry 23']);
+    })->with([2, 9]);
+
+    it('counts every item’s result, and pages through those with one of them', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => $this->previewStep,
+            'result' => 'new',
+        ]);
+
+        $response->assertOk();
+        expect($response->json('counts'))->toBe(['new' => 2, 'update' => 1, 'unchanged' => 0, 'skip' => 0, 'problem' => 0])
+            ->and($response->json('items.*.index'))->toBe([0, 2]);
+    });
+
+    it('keeps a step’s results until its plan is saved', function () {
+        $results = fn () => $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => $this->previewStep,
+        ])->assertOk()->json('items.*.result');
+
+        expect($results())->toBe(['new', 'update', 'new']);
+
+        Elements::deleteElement($this->existing, hardDelete: true);
+        expect($results())->toBe(['new', 'update', 'new']);
+
+        ($this->saveImportPlan)([$this->previewStep])->assertSuccessful();
+        expect($results())->toBe(['new', 'new', 'new']);
     });
 
     it('compares an item’s element as it is with how the import would leave it', function () {

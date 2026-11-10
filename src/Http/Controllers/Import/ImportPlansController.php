@@ -20,13 +20,13 @@ use CraftCms\Cms\Http\ViewModels\ImportPlanEditViewModel;
 use CraftCms\Cms\Http\ViewModels\ImportPlanStepUiViewModel;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Data\ImportPlanIndexData;
-use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Data\MappingColumnGroup;
 use CraftCms\Cms\Import\Data\MappingValues;
 use CraftCms\Cms\Import\Data\NestedMappingPayload;
 use CraftCms\Cms\Import\Data\StepMappingPayload;
 use CraftCms\Cms\Import\Data\StepSummary;
 use CraftCms\Cms\Import\Data\StepUiPayload;
+use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
@@ -35,7 +35,6 @@ use CraftCms\Cms\Import\ImportPreviews;
 use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
-use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Ui\UiResolver;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -338,7 +337,8 @@ class ImportPlansController
     }
 
     /**
-     * Previews what running a step would do to its first items, for the plan's Preview section.
+     * Previews what running a step would do to its items, a page of those with a result at a time, for the plan's
+     * Preview section.
      */
     public function previewStep(ImportPreviews $previews): JsonResponse
     {
@@ -348,8 +348,13 @@ class ImportPlansController
             return $this->asJsonSuccess(null, ['error' => $importer]);
         }
 
+        $params = $this->request->validate([
+            'page' => ['nullable', 'integer', 'min:0'],
+            'result' => ['nullable', Rule::enum(ItemPreviewResult::class)],
+        ]);
+
         try {
-            $preview = $previews->previewStep($importer);
+            $preview = $previews->previewStep($importer, (int) ($params['page'] ?? 0), ItemPreviewResult::tryFrom((string) ($params['result'] ?? '')));
         } catch (Throwable $e) {
             return $this->asJsonSuccess(null, ['error' => $this->previewError($e)]);
         }
@@ -359,20 +364,14 @@ class ImportPlansController
         return $this->asJsonSuccess(null, [
             'error' => null,
             'total' => $preview['total'],
+            'counts' => $preview['counts'],
+            'page' => $preview['page'],
+            'pageSize' => ImportPreviews::PAGE_SIZE,
             'matchColumns' => array_map(fn (string $key): array => [
                 'key' => $key,
                 'label' => $labels[$key]['label'] ?? $key,
             ], $preview['matchKeys']),
-            'items' => array_map(fn (int $index, ItemPreview $item): array => [
-                'index' => $index,
-                'result' => $item->result->value,
-                'title' => $item->element?->getUiLabel(),
-                'match' => array_map(
-                    fn (mixed $value): string => is_scalar($value) ? (string) $value : (string) JsonSupport::encode($value),
-                    Arr::only($item->matchCriteria, $preview['matchKeys']),
-                ),
-                'errors' => $item->errors,
-            ], array_keys($preview['items']), $preview['items']),
+            'items' => $preview['items'],
         ]);
     }
 

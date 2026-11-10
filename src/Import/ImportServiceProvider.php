@@ -6,7 +6,10 @@ namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Import\Commands\RunImportPlanCommand;
 use CraftCms\Cms\Import\Commands\UnlockImportPlanCommand;
+use CraftCms\Cms\Import\Events\ImportFinished;
+use CraftCms\Cms\Import\Events\ImportPlanSaved;
 use CraftCms\Cms\SystemMessage\Commands\ImportSystemMessagesCommand;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -23,6 +26,7 @@ class ImportServiceProvider extends ServiceProvider
 
     /**
      * Registers the run/unlock import plan and system messages import commands; the other import commands are registered by their domains.
+     * Forgets steps' preview results once they're out of date.
      */
     public function boot(): void
     {
@@ -31,6 +35,10 @@ class ImportServiceProvider extends ServiceProvider
             UnlockImportPlanCommand::class,
             ImportSystemMessagesCommand::class,
         ]);
+
+        // a plan's steps can change, and a run changes the content they're previewed against
+        Event::listen(fn (ImportPlanSaved $event) => app(ImportPreviews::class)->forgetSteps($event->importPlan->steps ?? []));
+        Event::listen(fn (ImportFinished $event) => app(ImportPreviews::class)->forgetSteps($event->steps));
     }
 
     /**
