@@ -13,9 +13,9 @@ use Craft;
 use craft\helpers\ArrayHelper;
 use craft\helpers\HtmlPurifier;
 use craft\web\View;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Yii2Adapter\Cp\Html\ElementIndexHtml;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Twig\DeprecatedCallableInfo;
@@ -64,7 +64,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
     public function ucfirstFilter(mixed $string): string
     {
-        Deprecator::log('ucfirst', 'The `|ucfirst` filter has been deprecated. Use `|capitalize` instead.');
+        LegacyUsage::record('ucfirst', 'The `|ucfirst` filter has been deprecated. Use `|capitalize` instead.');
 
         return mb_ucfirst((string) $string);
     }
@@ -98,7 +98,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
     public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
-        Deprecator::log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
+        LegacyUsage::record('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
         $charset = $env->getCharset();
         if ($charset) {
             return mb_convert_case($string, MB_CASE_TITLE, $charset);

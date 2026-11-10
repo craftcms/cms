@@ -92,7 +92,8 @@ export function defineNestedElementsControlHost(
                 : null;
             return this.isConnected ? this.#preparedOwner : null;
           },
-          refresh: () => nativeOwner?.refresh?.() ?? this.#refresh(),
+          refresh: (options) =>
+            nativeOwner?.refresh?.(options) ?? this.#refresh(),
         };
         this.#app = createApp(
           defineComponent({

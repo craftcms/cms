@@ -137,7 +137,7 @@ it('routes an entry type select with a jsClass through the legacy template', fun
 
 it('selects the boolean menu option for the legacy value', function(string $value, string $expected) {
     expect(renderCpString("{% include '_includes/forms/booleanMenu' with {id: 'bm', name: 'enabled', value: $value} only %}"))
-        ->toContain("model-value=\"$expected\"");
+        ->toContain(" value=\"$expected\"");
 })->with([
     'true' => ['true', '1'],
     'false' => ['false', '0'],

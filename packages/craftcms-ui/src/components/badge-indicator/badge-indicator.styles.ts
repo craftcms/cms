@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
   .badge-indicator {
@@ -35,9 +36,12 @@ export default css`
   }
 
   .number {
-    display: inline-flex;
+    /* A block, so the trim applies; centers the digits on their cap height
+       rather than on a line box that includes descender space. */
+    display: block;
     font-size: var(--c-text-xs);
     font-weight: var(--font-weight-semibold);
     line-height: 1;
+    ${trimmedTextBoxStyles}
   }
 `;

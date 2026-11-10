@@ -37,7 +37,7 @@ describe('when focus moves', () => {
     document.body.innerHTML = markup;
     const popover = document.querySelector<CraftPopover>('craft-popover')!;
     await popover.updateComplete;
-    popover.opened = true;
+    popover.open = true;
     await popover.updateComplete;
     return popover;
   }
@@ -61,7 +61,7 @@ describe('when focus moves', () => {
     expect(document.activeElement).toBe(
       popover.querySelector('[slot="invoker"]')
     );
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
   });
 
   it('closes once focus leaves, leaving focus on the next control', async () => {
@@ -76,7 +76,7 @@ describe('when focus moves', () => {
     page.getByRole('button', {name: 'Pick'}).element().focus();
     await userEvent.keyboard('{Tab}');
 
-    await expect.poll(() => popover.opened).toBe(false);
+    await expect.poll(() => popover.open).toBe(false);
     await expect
       .element(page.getByRole('button', {name: 'Next'}))
       .toHaveFocus();
@@ -94,7 +94,7 @@ describe('when focus moves', () => {
     document.getElementById('trigger')!.focus();
     await popover.updateComplete;
 
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
   });
 
   it('stays open when focus moves to another button that controls its content', async () => {
@@ -110,7 +110,7 @@ describe('when focus moves', () => {
     page.getByRole('button', {name: 'Show submenu'}).element().focus();
     await popover.updateComplete;
 
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
   });
 
   it('stays open while focus is in a popover nested in its content', async () => {
@@ -127,15 +127,15 @@ describe('when focus moves', () => {
     `);
     const inner = outer.querySelector<CraftPopover>('.inner')!;
     await inner.updateComplete;
-    inner.opened = true;
+    inner.open = true;
     await inner.updateComplete;
 
     page.getByRole('button', {name: 'Inner'}).element().focus();
     page.getByRole('button', {name: 'Deep'}).element().focus();
     await outer.updateComplete;
 
-    expect(outer.opened).toBe(true);
-    expect(inner.opened).toBe(true);
+    expect(outer.open).toBe(true);
+    expect(inner.open).toBe(true);
   });
 
   it('stays open when text in the panel is clicked', async () => {
@@ -153,7 +153,7 @@ describe('when focus moves', () => {
     await userEvent.click(page.getByText('Columns'));
     await popover.updateComplete;
 
-    expect(popover.opened).toBe(true);
+    expect(popover.open).toBe(true);
   });
 });
 
@@ -179,7 +179,7 @@ it('returns focus to the invoker, and stays closed, when Enter inside it calls h
   await userEvent.keyboard('{Enter}');
   await popover.updateComplete;
 
-  expect(popover.opened).toBe(false);
+  expect(popover.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -193,14 +193,14 @@ it('returns focus to the invoker when Escape closes it from its slotted content'
   const popover = document.querySelector<CraftPopover>('craft-popover')!;
   const invoker = popover.querySelector<CraftButton>('craft-button')!;
   await invoker.updateComplete;
-  popover.opened = true;
+  popover.open = true;
   await popover.updateComplete;
 
   popover.querySelector<HTMLButtonElement>('.pick')!.focus();
   await userEvent.keyboard('{Escape}');
   await popover.updateComplete;
 
-  expect(popover.opened).toBe(false);
+  expect(popover.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -221,7 +221,7 @@ it('closes and keeps focus on the invoker when Escape is pressed there', async (
   await userEvent.keyboard('{Escape}');
   await popover.updateComplete;
 
-  expect(popover.opened).toBe(false);
+  expect(popover.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -252,7 +252,7 @@ it('lets one Escape close the popover around it after it was closed another way'
   await userEvent.keyboard('{Escape}');
   await outer.updateComplete;
 
-  expect(outer.opened).toBe(false);
+  expect(outer.open).toBe(false);
   expect(document.activeElement).toBe(outerInvoker);
 });
 
@@ -274,11 +274,11 @@ it('keeps Escape from reaching a container while it closes the popover', async (
   await popover.updateComplete;
 
   await userEvent.click(document.querySelector('craft-button')!);
-  await expect.poll(() => popover.opened).toBe(true);
+  await expect.poll(() => popover.open).toBe(true);
   popover.querySelector('input')!.focus();
   await userEvent.keyboard('{Escape}');
 
-  await expect.poll(() => popover.opened).toBe(false);
+  await expect.poll(() => popover.open).toBe(false);
 
   // Closed, the popover leaves Escape to the container.
   document.querySelector<HTMLElement>('craft-button')!.focus();
@@ -341,4 +341,401 @@ it('keeps to an explicit --popover-max-block-size', async () => {
   );
 
   expect(pane.height).toBe(120);
+});
+
+function offsetFromInvoker(popover: CraftPopover, invoker: Element) {
+  const pane = popover.shadowRoot!.querySelector('.popover-pane')!;
+  const paneRect = pane.getBoundingClientRect();
+  const invokerRect = invoker.getBoundingClientRect();
+
+  return {
+    x: Math.round(paneRect.left - invokerRect.left),
+    y: Math.round(paneRect.top - invokerRect.bottom),
+  };
+}
+
+it('opens below its invoker inside a transformed, clipping ancestor', async () => {
+  document.body.innerHTML = `
+    <div style="overflow: hidden; height: 60px; transform: translateZ(0); container-type: inline-size; margin: 40px">
+      <craft-popover distance="4">
+        <button slot="invoker" type="button">Open</button>
+        <div slot="content" style="height: 150px">Content</div>
+      </craft-popover>
+    </div>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const invoker = popover.querySelector('button')!;
+
+  await popover.show();
+
+  expect(offsetFromInvoker(popover, invoker)).toEqual({x: 0, y: 4});
+  const pane = popover.shadowRoot!.querySelector('.popover-pane')!;
+  const rect = pane.getBoundingClientRect();
+  // Painted on top rather than clipped by the 60px box.
+  expect(
+    pane.contains(
+      popover.shadowRoot!.elementFromPoint(
+        rect.left + 5,
+        rect.bottom - 5
+      ) as Node
+    ) ||
+      popover.contains(
+        document.elementFromPoint(rect.left + 5, rect.bottom - 5) as Node
+      )
+  ).toBe(true);
+});
+
+it('follows its invoker when moved while open', async () => {
+  document.body.innerHTML = `
+    <div id="a" style="padding: 10px">
+      <craft-popover distance="4">
+        <button slot="invoker" type="button">Open</button>
+        <div slot="content">Content</div>
+      </craft-popover>
+    </div>
+    <div id="b" style="padding: 120px"></div>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const invoker = popover.querySelector('button')!;
+  await popover.show();
+
+  document.querySelector('#b')!.append(popover);
+  await popover.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  expect(popover.open).toBe(true);
+  expect(offsetFromInvoker(popover, invoker)).toEqual({x: 0, y: 4});
+});
+
+it('closes on a close-overlay from its content, without passing it on', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content"><button type="button" class="done">Done</button></div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const passedOn: Event[] = [];
+  document.body.addEventListener('close-overlay', (event) =>
+    passedOn.push(event)
+  );
+  await popover.show();
+
+  popover
+    .querySelector('.done')!
+    .dispatchEvent(new Event('close-overlay', {bubbles: true, composed: true}));
+  await popover.updateComplete;
+
+  expect(popover.open).toBe(false);
+  expect(passedOn).toEqual([]);
+});
+
+it('moves to a new anchor that keeps the same context element while open', async () => {
+  document.body.innerHTML = `
+    <textarea></textarea>
+    <craft-popover distance="4">
+      <div slot="content">Content</div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const textarea = document.querySelector('textarea')!;
+  popover.anchor = {
+    contextElement: textarea,
+    getBoundingClientRect: () => new DOMRect(20, 20, 0, 10),
+  };
+  await popover.show();
+
+  popover.anchor = {
+    contextElement: textarea,
+    getBoundingClientRect: () => new DOMRect(200, 150, 0, 10),
+  };
+  await popover.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const pane = popover.shadowRoot!.querySelector('.popover-pane')!;
+  const {left, top} = pane.getBoundingClientRect();
+  expect({x: Math.round(left), y: Math.round(top)}).toEqual({x: 200, y: 164});
+});
+
+it('opens without an error when removed before a pending show() updates', async () => {
+  document.body.innerHTML = `
+    <craft-popover>
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content">Content</div>
+    </craft-popover>
+    <div id="elsewhere"></div>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+
+  const shown = popover.show();
+  popover.remove();
+
+  await expect(shown).resolves.toBeUndefined();
+
+  document.querySelector('#elsewhere')!.append(popover);
+  await popover.updateComplete;
+
+  expect(
+    popover
+      .shadowRoot!.querySelector('.overlay-layer')!
+      .matches(':popover-open')
+  ).toBe(true);
+});
+
+it('treats a click on an invoker linked while open as inside, with manual set', async () => {
+  document.body.innerHTML = `
+    <button type="button" id="first">First</button>
+    <button type="button" id="second">Second</button>
+    <craft-popover manual for="first">
+      <div slot="content">Content</div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.show();
+
+  popover.for = 'second';
+  await popover.updateComplete;
+  await userEvent.click(page.getByRole('button', {name: 'Second'}));
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(popover.open).toBe(true);
+});
+
+it.each([
+  [
+    'is linked to a wider invoker',
+    (popover: CraftPopover) => (popover.for = 'wide'),
+  ],
+  [
+    'has its invoker widened and is repositioned',
+    (popover: CraftPopover) => {
+      document.querySelector<HTMLElement>('#narrow')!.style.width = '300px';
+      popover.reposition();
+    },
+  ],
+])(
+  'stays as wide as its invoker with match-invoker-width when it %s while open',
+  async (_, change) => {
+    document.body.innerHTML = `
+      <button type="button" id="narrow" style="width: 100px">Narrow</button>
+      <button type="button" id="wide" style="width: 300px">Wide</button>
+      <craft-popover match-invoker-width for="narrow">
+        <div slot="content">Hi</div>
+      </craft-popover>`;
+    const popover = document.querySelector<CraftPopover>('craft-popover')!;
+    await popover.show();
+    const pane = popover.shadowRoot!.querySelector('.popover-pane')!;
+    expect(pane.getBoundingClientRect().width).toBe(100);
+
+    change(popover);
+    await popover.updateComplete;
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(pane.getBoundingClientRect().width).toBe(300);
+  }
+);
+
+it('follows an invoker linked while open when its scroll container scrolls', async () => {
+  document.body.innerHTML = `
+    <button type="button" id="first">First</button>
+    <div id="scroller" style="height: 150px; overflow: auto">
+      <div style="height: 400px; padding: 60px 20px 0">
+        <button type="button" id="second">Second</button>
+      </div>
+    </div>
+    <craft-popover distance="4" for="first">
+      <div slot="content">Content</div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const second = document.querySelector('#second')!;
+  await popover.show();
+
+  popover.for = 'second';
+  await popover.updateComplete;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  document.querySelector('#scroller')!.scrollTop = 40;
+
+  await expect
+    .poll(() => offsetFromInvoker(popover, second))
+    .toEqual({x: 0, y: 4});
+});
+
+it('positions an open popover against an invoker slotted after it opened', async () => {
+  document.body.innerHTML = `
+    <div style="padding: 100px">
+      <craft-popover distance="4">
+        <div slot="content">Content</div>
+      </craft-popover>
+    </div>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.show();
+
+  const invoker = document.createElement('button');
+  invoker.type = 'button';
+  invoker.slot = 'invoker';
+  invoker.textContent = 'Open';
+  popover.prepend(invoker);
+
+  await expect
+    .poll(() => offsetFromInvoker(popover, invoker))
+    .toEqual({x: 0, y: 4});
+});
+
+it('binds the invoker its for names in the shadow root it moves into', async () => {
+  document.body.innerHTML = `<div id="a"></div><div id="b"></div>`;
+  const rootA = document.querySelector('#a')!.attachShadow({mode: 'open'});
+  const rootB = document.querySelector('#b')!.attachShadow({mode: 'open'});
+  rootA.innerHTML = `
+    <button type="button" id="trigger">A</button>
+    <craft-popover for="trigger"><div slot="content">Content</div></craft-popover>`;
+  rootB.innerHTML = `<button type="button" id="trigger">B</button>`;
+  const popover = rootA.querySelector<CraftPopover>('craft-popover')!;
+  const buttonA = rootA.querySelector('button')!;
+  const buttonB = rootB.querySelector('button')!;
+  await popover.updateComplete;
+  expect(buttonA.getAttribute('aria-expanded')).toBe('false');
+
+  rootB.append(popover);
+
+  await expect.poll(() => buttonB.getAttribute('aria-expanded')).toBe('false');
+  expect(buttonA.hasAttribute('aria-expanded')).toBe(false);
+
+  buttonA.click();
+  await popover.updateComplete;
+  expect(popover.open).toBe(false);
+
+  buttonB.click();
+  await popover.updateComplete;
+  expect(popover.open).toBe(true);
+});
+
+function paneIsShown(popover: CraftPopover): boolean {
+  return popover.shadowRoot!.querySelector('.popover-pane')!.checkVisibility();
+}
+
+function trigger(): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.id = 'trigger';
+  button.textContent = 'Open';
+  return button;
+}
+
+it.each([
+  [
+    'its for names no element',
+    '<craft-popover distance="4" for="trigger">',
+    (popover: CraftPopover) => (popover.for = 'missing'),
+    (popover: CraftPopover) => (popover.for = 'trigger'),
+  ],
+  [
+    'its slotted invoker is removed',
+    '<craft-popover distance="4">',
+    (popover: CraftPopover) => popover.querySelector('#trigger')!.remove(),
+    (popover: CraftPopover) =>
+      popover.prepend(Object.assign(trigger(), {slot: 'invoker'})),
+  ],
+])(
+  'hides while open when %s, and shows again once it has one',
+  async (_, openTag, lose, regain) => {
+    document.body.innerHTML = `
+      <div style="padding: 100px">
+        <button type="button" id="trigger" slot="invoker">Open</button>
+        ${openTag}
+          <div slot="content">Content</div>
+        </craft-popover>
+      </div>`;
+    const popover = document.querySelector<CraftPopover>('craft-popover')!;
+    const first = document.querySelector('#trigger')!;
+    if (!popover.for) {
+      popover.prepend(first);
+    }
+    await popover.show();
+    expect(offsetFromInvoker(popover, first)).toEqual({x: 0, y: 4});
+
+    lose(popover);
+
+    await expect.poll(() => paneIsShown(popover)).toBe(false);
+    expect(popover.open).toBe(true);
+
+    regain(popover);
+
+    await expect
+      .poll(() =>
+        offsetFromInvoker(popover, document.querySelector('#trigger')!)
+      )
+      .toEqual({x: 0, y: 4});
+    expect(paneIsShown(popover)).toBe(true);
+  }
+);
+
+it('stays hidden when opened with no invoker, and shows against a virtual anchor alone', async () => {
+  document.body.innerHTML = `
+    <craft-popover distance="4">
+      <div slot="content">Content</div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.show();
+
+  expect(paneIsShown(popover)).toBe(false);
+
+  popover.anchor = {getBoundingClientRect: () => new DOMRect(200, 150, 0, 10)};
+  await popover.updateComplete;
+
+  await expect.poll(() => paneIsShown(popover)).toBe(true);
+  const {left, top} = popover
+    .shadowRoot!.querySelector('.popover-pane')!
+    .getBoundingClientRect();
+  expect({x: Math.round(left), y: Math.round(top)}).toEqual({x: 200, y: 164});
+});
+
+it.each([
+  [
+    'an invoker linked with for',
+    `<button type="button">Before</button>
+    <button type="button" id="trigger">Open</button>
+    <craft-popover for="trigger">
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>`,
+  ],
+  [
+    'a slotted invoker',
+    `<button type="button">Before</button>
+    <craft-popover>
+      <button slot="invoker" type="button">Open</button>
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>`,
+  ],
+])(
+  'closes when Shift+Tab moves focus from %s to an earlier control',
+  async (_, markup) => {
+    document.body.innerHTML = markup;
+    const popover = document.querySelector<CraftPopover>('craft-popover')!;
+    await popover.updateComplete;
+
+    await userEvent.click(page.getByRole('button', {name: 'Open'}));
+    expect(popover.open).toBe(true);
+    await expect
+      .element(page.getByRole('button', {name: 'Open'}))
+      .toHaveFocus();
+
+    await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+
+    await expect.poll(() => popover.open).toBe(false);
+    await expect
+      .element(page.getByRole('button', {name: 'Before'}))
+      .toHaveFocus();
+  }
+);
+
+it('stays open when Tab moves focus from an invoker linked with for into its content', async () => {
+  document.body.innerHTML = `
+    <button type="button" id="trigger">Open</button>
+    <craft-popover for="trigger">
+      <div slot="content"><button type="button">Pick</button></div>
+    </craft-popover>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  await popover.updateComplete;
+
+  await userEvent.click(page.getByRole('button', {name: 'Open'}));
+  await userEvent.keyboard('{Tab}');
+  await popover.updateComplete;
+
+  await expect.element(page.getByRole('button', {name: 'Pick'})).toHaveFocus();
+  expect(popover.open).toBe(true);
 });

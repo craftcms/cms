@@ -90,6 +90,29 @@ describe('indexParams', () => {
     );
   });
 
+  it('sends the reference element the condition is evaluated against', async () => {
+    const loadIndexBody = vi.fn(async () => body());
+    const controller = create({
+      condition: {x: 1},
+      referenceElementId: 12,
+      referenceElementOwnerId: 3,
+      referenceElementSiteId: 2,
+      loadIndexBody,
+    });
+
+    await controller.open();
+
+    expect(loadIndexBody).toHaveBeenCalledWith(
+      'element-selector-modals/body',
+      expect.objectContaining({
+        selectionCondition: {x: 1},
+        referenceElementId: 12,
+        referenceElementOwnerId: 3,
+        referenceElementSiteId: 2,
+      })
+    );
+  });
+
   it('identifies the index', () => {
     const controller = create({
       sources: ['section:a'],
@@ -101,7 +124,7 @@ describe('indexParams', () => {
       context: 'modal',
       elementType: ENTRY,
       sources: ['section:a'],
-      condition: {x: 1},
+      selectionCondition: {x: 1},
       criteria: {id: ['not', 12, 34]},
     });
   });
@@ -468,7 +491,7 @@ describe('open and close', () => {
       context: 'modal',
       elementType: ENTRY,
       sources: ['section:a'],
-      condition: undefined,
+      selectionCondition: undefined,
       criteria: {id: ['not', 12, 34]},
     });
   });

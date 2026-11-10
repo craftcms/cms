@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Mcp\Elements\BaseElementAdapter;
 use CraftCms\Cms\Mcp\Elements\ElementAdapterRegistry;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
@@ -32,14 +33,14 @@ it('describes each element type through elements_schema and the element type res
     $assets = McpRequest::send($this, 'resources/read', ['uri' => 'craft://element-types/assets'])->json('result.contents.0.text');
     $asset = McpRequest::send($this, 'resources/read', ['uri' => 'craft://element-types/asset'])->json('result.contents.0.text');
 
-    expect(json_decode($types, true)['types'])->toBe([
+    expect(Json::decode($types)['types'])->toBe([
         ['type' => 'entries', 'name' => 'Entries', 'elementType' => Entry::class, 'schema' => 'craft://element-types/entries'],
         ['type' => 'assets', 'name' => 'Assets', 'elementType' => Asset::class, 'schema' => 'craft://element-types/assets'],
         ['type' => 'users', 'name' => 'Users', 'elementType' => UserElement::class, 'schema' => 'craft://element-types/users'],
         ['type' => 'addresses', 'name' => 'Addresses', 'elementType' => Address::class, 'schema' => 'craft://element-types/addresses'],
     ])
-        ->and(json_decode($assets, true))->not->toHaveKey('createAttributes')
-        ->and(json_decode($assets, true)['notes'][0])->toContain('assets_create')
+        ->and(Json::decode($assets))->not->toHaveKey('createAttributes')
+        ->and(Json::decode($assets)['notes'][0])->toContain('assets_create')
         ->and($asset)->toBe($assets);
 
     ($this->call)('elements_schema', ['type' => 'entries'])

@@ -1,5 +1,5 @@
 import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
-import {userEvent} from 'vite-plus/test/browser';
+import {page, userEvent} from 'vite-plus/test/browser';
 import '../../styles/cp.css';
 import './select-rich.js';
 import type CraftSelectRich from './select-rich.js';
@@ -16,8 +16,8 @@ afterEach(() => {
 async function fixture(): Promise<CraftSelectRich> {
   document.body.innerHTML = `
     <craft-select-rich label="Status">
-      <craft-option .choiceValue="all" checked>All</craft-option>
-      <craft-option .choiceValue="live">Live</craft-option>
+      <craft-option .value="all" selected>All</craft-option>
+      <craft-option .value="live">Live</craft-option>
     </craft-select-rich>`;
   const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
   await select.updateComplete;
@@ -26,8 +26,7 @@ async function fixture(): Promise<CraftSelectRich> {
   return select;
 }
 
-// Lion's base styles hard-code light fills, which read as white-on-white
-// in the dark theme.
+// Unselected options take the listbox's fill, which reads in the dark theme.
 it('leaves unselected options unfilled', async () => {
   const select = await fixture();
   const option = select.querySelectorAll('craft-option')[1]!;
@@ -37,7 +36,7 @@ it('leaves unselected options unfilled', async () => {
 
 it('doesn’t light up the hovered invoker', async () => {
   const select = await fixture();
-  const invoker = select.querySelector<HTMLElement>('lion-select-invoker')!;
+  const invoker = select.querySelector<HTMLElement>('craft-select-invoker')!;
 
   await userEvent.hover(invoker);
 
@@ -58,8 +57,8 @@ it.each([
       <div style="padding-inline: 16px">
         <div class="container" style="inline-size: ${width}">
           <craft-select-rich label="Status">
-            <craft-option .choiceValue="short">Short</craft-option>
-            <craft-option .choiceValue="long" hint="${'x '.repeat(200)}">${'y'.repeat(300)}</craft-option>
+            <craft-option .value="short">Short</craft-option>
+            <craft-option .value="long" hint="${'x '.repeat(200)}">${'y'.repeat(300)}</craft-option>
           </craft-select-rich>
         </div>
       </div>`;
@@ -69,12 +68,13 @@ it.each([
     await select.updateComplete;
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    select.opened = true;
-    const listbox = select.querySelector<HTMLElement>('[slot="input"]')!;
+    select.open = true;
+    const listbox =
+      select.shadowRoot!.querySelector<HTMLElement>('[role="listbox"]')!;
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     const invoker = select
-      .querySelector<HTMLElement>('lion-select-invoker')!
+      .querySelector<HTMLElement>('craft-select-invoker')!
       .getBoundingClientRect();
     const list = listbox.getBoundingClientRect();
 
@@ -86,6 +86,24 @@ it.each([
   }
 );
 
+it('keeps its open list as wide as the field when the field widens', async () => {
+  await page.viewport(400, 640);
+  const select = await fixture();
+  const invoker = select.querySelector<HTMLElement>('craft-select-invoker')!;
+  const pane = select.shadowRoot!.querySelector<HTMLElement>(
+    '#overlay-content-node-wrapper'
+  )!;
+
+  await userEvent.click(invoker);
+  await expect.element(page.getByRole('listbox')).toBeVisible();
+  await page.viewport(800, 640);
+
+  await expect
+    .poll(() => pane.getBoundingClientRect().width)
+    .toBeGreaterThanOrEqual(invoker.getBoundingClientRect().width);
+  expect(invoker.getBoundingClientRect().width).toBeGreaterThan(400);
+});
+
 async function formFixture(): Promise<{
   form: HTMLFormElement;
   select: CraftSelectRich;
@@ -94,20 +112,20 @@ async function formFixture(): Promise<{
     <form>
       <fieldset>
         <craft-select-rich name="typeId" label="Entry Type">
-          <craft-option choice-value="1">Article</craft-option>
-          <craft-option choice-value="2" checked>News</craft-option>
-          <craft-option choice-value="3">Event</craft-option>
+          <craft-option value="1">Article</craft-option>
+          <craft-option value="2" selected>News</craft-option>
+          <craft-option value="3">Event</craft-option>
         </craft-select-rich>
       </fieldset>
     </form>`;
   const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
-  await select.registrationComplete;
   await select.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve));
 
   return {form: document.querySelector('form')!, select};
 }
 
-it('posts the checked option through a native input', async () => {
+it('posts the selected option through a native input', async () => {
   const {form, select} = await formFixture();
 
   expect(new FormData(form).getAll('typeId')).toEqual(['2']);
@@ -124,12 +142,29 @@ it('posts a newly picked option and fires change', async () => {
   form.addEventListener('change', () => events.push('change'));
   form.addEventListener('input', () => events.push('input'));
 
-  await userEvent.click(select.querySelector('lion-select-invoker')!);
+  await userEvent.click(select.querySelector('craft-select-invoker')!);
   await userEvent.click(select.querySelectorAll('craft-option')[2]!);
   await select.updateComplete;
 
   expect(new FormData(form).get('typeId')).toBe('3');
   expect(events).toEqual(['input', 'change']);
+});
+
+it('ignores a click on an option once it turns read-only while open', async () => {
+  const {form, select} = await formFixture();
+  const events: string[] = [];
+  form.addEventListener('change', () => events.push('change'));
+  form.addEventListener('input', () => events.push('input'));
+
+  await userEvent.click(select.querySelector('craft-select-invoker')!);
+  select.readOnly = true;
+  await select.updateComplete;
+  await userEvent.click(select.querySelectorAll('craft-option')[2]!);
+  await select.updateComplete;
+
+  expect(select.value).toBe('2');
+  expect(new FormData(form).get('typeId')).toBe('2');
+  expect(events).toEqual([]);
 });
 
 it('doesn’t fire change for programmatic selection', async () => {
@@ -139,7 +174,7 @@ it('doesn’t fire change for programmatic selection', async () => {
   };
   form.addEventListener('change', onChange);
 
-  select.querySelectorAll('craft-option')[0]!.checked = true;
+  select.querySelectorAll('craft-option')[0]!.selected = true;
   await select.updateComplete;
 
   expect(new FormData(form).get('typeId')).toBe('1');
@@ -148,12 +183,12 @@ it('doesn’t fire change for programmatic selection', async () => {
 it('goes back to its initial option on form reset', async () => {
   const {form, select} = await formFixture();
 
-  select.querySelectorAll('craft-option')[0]!.checked = true;
+  select.querySelectorAll('craft-option')[0]!.selected = true;
   await select.updateComplete;
   form.reset();
   await select.updateComplete;
 
-  expect(select.modelValue).toBe('2');
+  expect(select.value).toBe('2');
   expect(new FormData(form).get('typeId')).toBe('2');
 });
 
@@ -168,6 +203,221 @@ it('posts nothing while disabled, including by a disabled fieldset', async () =>
   await select.updateComplete;
   form.querySelector('fieldset')!.disabled = true;
   await select.updateComplete;
-  expect(select.disabled).toBe(true);
+  const invoker = select.querySelector('craft-select-invoker')!;
+  expect(invoker.getAttribute('aria-disabled')).toBe('true');
   expect(new FormData(form).has('typeId')).toBe(false);
+
+  form.querySelector('fieldset')!.disabled = false;
+  await select.updateComplete;
+  expect(invoker.hasAttribute('aria-disabled')).toBe(false);
+  expect(new FormData(form).getAll('typeId')).toEqual(['2']);
+});
+
+it('is a select-only combobox that keeps focus while its listbox is open', async () => {
+  document.body.innerHTML = `<craft-select-rich label="Status" help-text="Pick one">
+      <craft-option value="all">All</craft-option>
+      <craft-option value="live" selected>Live</craft-option>
+      <craft-option value="draft" disabled>Draft</craft-option>
+    </craft-select-rich>`;
+  await new Promise((r) => setTimeout(r, 100));
+  const box = page.getByRole('combobox', {name: 'Status', expanded: false});
+  await expect.element(box).toBeInTheDocument();
+  await expect.element(box).toHaveAccessibleDescription('Pick one');
+  await expect.element(box).toHaveTextContent('Live');
+  await userEvent.click(box);
+  await expect
+    .element(page.getByRole('combobox', {name: 'Status', expanded: true}))
+    .toBeInTheDocument();
+  await expect
+    .element(page.getByRole('listbox', {name: 'Status'}))
+    .toBeInTheDocument();
+  await expect
+    .element(page.getByRole('option', {name: 'Live', selected: true}))
+    .toBeInTheDocument();
+  await expect
+    .element(page.getByRole('option', {name: 'Draft', disabled: true}))
+    .toBeInTheDocument();
+  const invoker = document.querySelector('craft-select-invoker')!;
+  const active = invoker.getAttribute('aria-activedescendant');
+  expect(document.getElementById(active!)?.textContent).toBe('Live');
+  await userEvent.click(page.getByRole('option', {name: 'All'}));
+  expect(
+    document.querySelector<CraftSelectRich>('craft-select-rich')!.value
+  ).toBe('all');
+  expect(document.activeElement).toBe(invoker);
+});
+
+async function keyboardFixture(): Promise<CraftSelectRich> {
+  document.body.innerHTML = `
+    <button type="button">Before</button>
+    <craft-select-rich label="Fruit">
+      <craft-option value="apple">Apple</craft-option>
+      <craft-option value="banana" disabled>Banana</craft-option>
+      <craft-option value="cherry" selected>Cherry</craft-option>
+      <craft-option value="damson">Damson</craft-option>
+    </craft-select-rich>
+    <button type="button">After</button>`;
+  const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
+  await select.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve));
+  document.querySelector<HTMLElement>('craft-select-invoker')!.focus();
+
+  return select;
+}
+
+function active(select: CraftSelectRich): string | undefined {
+  return select.querySelector('craft-option[active]')?.textContent?.trim();
+}
+
+it('leaves hidden options out of keyboard selection, but still shows one that is selected', async () => {
+  document.body.innerHTML = `
+    <form>
+      <craft-select-rich name="fruit" label="Fruit">
+        <craft-option value="apple" selected>Apple</craft-option>
+        <craft-option value="banana" hidden>Banana</craft-option>
+        <craft-option value="cherry">Cherry</craft-option>
+        <craft-option value="damson" hidden>Damson</craft-option>
+      </craft-select-rich>
+    </form>`;
+  const form = document.querySelector('form')!;
+  const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
+  await select.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve));
+  const invoker = select.querySelector<HTMLElement>('craft-select-invoker')!;
+  invoker.focus();
+
+  await userEvent.keyboard('b');
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  await userEvent.keyboard('d');
+  await new Promise((resolve) => setTimeout(resolve, 600));
+  expect(select.value).toBe('apple');
+
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Apple');
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Cherry');
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Cherry');
+  await userEvent.keyboard('{Home}');
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Cherry');
+  await userEvent.keyboard('{End}');
+  expect(active(select)).toBe('Cherry');
+  await userEvent.keyboard('{Enter}');
+  expect(select.value).toBe('cherry');
+
+  select.value = 'banana';
+  await select.updateComplete;
+  expect(invoker.textContent?.trim()).toBe('Banana');
+  expect(new FormData(form).get('fruit')).toBe('banana');
+
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBeUndefined();
+  await userEvent.keyboard('{ArrowDown}');
+  expect(active(select)).toBe('Apple');
+});
+
+it.each(['{Enter}', ' ', '{ArrowDown}', '{ArrowUp}'])(
+  'opens on %s with the selected option active',
+  async (key) => {
+    const select = await keyboardFixture();
+
+    await userEvent.keyboard(key);
+
+    expect(select.open).toBe(true);
+    expect(active(select)).toBe('Cherry');
+  }
+);
+
+it('moves past disabled options, stops at the ends, and jumps with Home and End', async () => {
+  const select = await keyboardFixture();
+  await userEvent.keyboard('{Enter}');
+  const visited = [];
+  for (const key of [
+    'ArrowUp',
+    'ArrowUp',
+    'ArrowUp',
+    'End',
+    'ArrowDown',
+    'Home',
+  ]) {
+    await userEvent.keyboard(`{${key}}`);
+    visited.push(active(select));
+  }
+
+  expect(visited).toEqual([
+    'Apple',
+    'Apple',
+    'Apple',
+    'Damson',
+    'Damson',
+    'Apple',
+  ]);
+});
+
+it('selects with Enter, and closes without a change on Escape, keeping focus on the field', async () => {
+  const select = await keyboardFixture();
+  const invoker = select.querySelector('craft-select-invoker')!;
+  const changes: string[] = [];
+  select.addEventListener('change', () => changes.push(select.value));
+
+  await userEvent.keyboard('{Enter}{ArrowDown}{Escape}');
+  expect(select.open).toBe(false);
+  expect(select.value).toBe('cherry');
+
+  await userEvent.keyboard('{Enter}{ArrowDown}{Enter}');
+  expect(select.open).toBe(false);
+  expect(select.value).toBe('damson');
+  expect(changes).toEqual(['damson']);
+  expect(document.activeElement).toBe(invoker);
+});
+
+it('selects by type-ahead while closed and moves the highlight while open', async () => {
+  const select = await keyboardFixture();
+
+  await userEvent.keyboard('a');
+  expect(select.value).toBe('apple');
+
+  await userEvent.keyboard('{Enter}d');
+  expect(active(select)).toBe('Damson');
+  expect(select.value).toBe('apple');
+});
+
+it('closes on Tab and moves focus on', async () => {
+  const select = await keyboardFixture();
+
+  await userEvent.keyboard('{Enter}');
+  await userEvent.tab();
+
+  expect(select.open).toBe(false);
+  expect(document.activeElement).toBe(document.querySelectorAll('button')[1]);
+});
+
+it('keeps its role with a single option, read-only with nothing to open', async () => {
+  document.body.innerHTML = `
+    <craft-select-rich label="Site">
+      <craft-option value="default">Default</craft-option>
+    </craft-select-rich>`;
+  const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
+  await select.updateComplete;
+  await new Promise((resolve) => setTimeout(resolve));
+
+  const field = page.getByRole('combobox', {name: 'Site'});
+  await expect.element(field).toHaveAttribute('aria-readonly', 'true');
+  await expect.element(field).not.toHaveAttribute('aria-haspopup');
+  await userEvent.click(field);
+  expect(select.open).toBe(false);
+});
+
+it('marks the field invalid while it is invalid', async () => {
+  document.body.innerHTML = `<craft-select-rich label="Status" invalid><craft-option value="all">All</craft-option></craft-select-rich>`;
+  const select = document.querySelector<CraftSelectRich>('craft-select-rich')!;
+  await select.updateComplete;
+  const field = select.querySelector('craft-select-invoker')!;
+
+  expect(field.getAttribute('aria-invalid')).toBe('true');
+
+  select.invalid = false;
+  await select.updateComplete;
+  expect(field.hasAttribute('aria-invalid')).toBe(false);
 });

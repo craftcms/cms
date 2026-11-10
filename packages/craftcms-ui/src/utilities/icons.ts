@@ -1,18 +1,7 @@
-import {icons} from '@lion/ui/icon.js';
 import {html, nothing, type TemplateResult} from 'lit';
 import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
 
-export const CRAFT_ICON_NAMESPACE = 'craft';
-
 type ResolvedIcon = TemplateResult | typeof nothing;
-type LionIconResolver = (
-  iconset: string,
-  icon: string
-) =>
-  | TemplateResult
-  | Promise<TemplateResult>
-  | typeof nothing
-  | Promise<typeof nothing>;
 
 export type CraftIconResolver = (
   name: string,
@@ -20,29 +9,25 @@ export type CraftIconResolver = (
   variant: string
 ) => ResolvedIcon | Promise<ResolvedIcon>;
 
+/**
+ * Where to fetch an icon from, and whether to mirror it horizontally, for an
+ * icon drawn as the mirror image of another.
+ */
+export type CraftIconSource = {url: string; flip?: boolean};
+
 export type CraftIconUrlResolver = (
   name: string,
   family: string,
   variant: string
-) => string | null;
+) => string | CraftIconSource | null;
 
 /**
- * Module-level cache of icon fetches, keyed by URL. Failed fetches are
- * evicted so they can retry on the next request.
+ * Module-level cache of icon fetches, keyed by URL, plus `#flip` for mirrored
+ * icons. Failed fetches are evicted so they can retry on the next request.
  */
 const iconCache = new Map<string, Promise<ResolvedIcon>>();
 
-function getIconset(family: string, variant: string): string {
-  return `${family}/${variant}`;
-}
-
-function parseIconset(iconset: string): {family: string; variant: string} {
-  const [family = 'classic', variant = 'regular'] = iconset.split('/');
-
-  return {family, variant};
-}
-
-async function requestIcon(url: string): Promise<ResolvedIcon> {
+async function requestIcon(url: string, flip: boolean): Promise<ResolvedIcon> {
   try {
     const response = await fetch(url, {mode: 'cors'});
 
@@ -60,6 +45,14 @@ async function requestIcon(url: string): Promise<ResolvedIcon> {
 
     svg.setAttribute('fill', 'currentColor');
     svg.setAttribute('part', 'svg');
+
+    if (flip) {
+      const style = svg.getAttribute('style');
+      svg.setAttribute(
+        'style',
+        style ? `${style}; scale: -1 1` : 'scale: -1 1'
+      );
+    }
 
     return html`${unsafeSVG(svg.outerHTML)}`;
   } catch {
@@ -114,22 +107,25 @@ export function createUrlIconResolver(
   resolveUrl: CraftIconUrlResolver
 ): CraftIconResolver {
   return (name, family, variant) => {
-    const url = resolveUrl(name, family, variant);
+    const source = resolveUrl(name, family, variant);
 
-    if (url === null) {
+    if (source === null) {
       return nothing;
     }
 
-    let request = iconCache.get(url);
+    const {url, flip = false} =
+      typeof source === 'string' ? {url: source} : source;
+    const key = flip ? `${url}#flip` : url;
+    let request = iconCache.get(key);
 
     if (!request) {
-      request = requestIcon(url);
-      iconCache.set(url, request);
+      request = requestIcon(url, flip);
+      iconCache.set(key, request);
     }
 
     return request.then((icon) => {
       if (icon === nothing) {
-        iconCache.delete(url);
+        iconCache.delete(key);
       }
 
       return icon;
@@ -140,15 +136,10 @@ export function createUrlIconResolver(
 export const defaultIconResolver: CraftIconResolver =
   createUrlIconResolver(getIconUrl);
 
+let currentResolver: CraftIconResolver = defaultIconResolver;
+
 export function setIconResolver(resolver: CraftIconResolver) {
-  icons.removeIconResolver(CRAFT_ICON_NAMESPACE);
-  const lionResolver: LionIconResolver = (iconset, icon) => {
-    const {family, variant} = parseIconset(iconset);
-
-    return resolver(icon, family, variant) as ReturnType<LionIconResolver>;
-  };
-
-  icons.addIconResolver(CRAFT_ICON_NAMESPACE, lionResolver);
+  currentResolver = resolver;
 }
 
 export function resolveIcon(
@@ -156,9 +147,5 @@ export function resolveIcon(
   family: string = 'classic',
   variant: string = 'regular'
 ): Promise<ResolvedIcon> {
-  return Promise.resolve(
-    icons.resolveIcon(CRAFT_ICON_NAMESPACE, getIconset(family, variant), name)
-  ) as Promise<ResolvedIcon>;
+  return Promise.resolve(currentResolver(name, family, variant));
 }
-
-setIconResolver(defaultIconResolver);

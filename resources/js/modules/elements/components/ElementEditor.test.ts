@@ -330,7 +330,6 @@ function withPreviewTargets(): void {
     paramValue: 'param',
     siteTokenParam: 'siteToken',
     siteToken: null,
-    iframeResizerOptions: false,
   };
 }
 
@@ -593,19 +592,19 @@ it('asks before editing a reviewed draft in a scheduled release', async () => {
   mount('page');
   await nextTick();
 
-  const dialog = container.querySelector<HTMLElement & {opened?: boolean}>(
+  const dialog = container.querySelector<HTMLElement & {open?: boolean}>(
     'craft-dialog'
   )!;
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
 
   findButton('Start editing')!.click();
-  await vi.waitFor(() => expect(dialog.opened).toBe(true));
+  await vi.waitFor(() => expect(dialog.open).toBe(true));
   expect(dialog.textContent).toContain(
     'Unless it’s approved again before “Spring launch” publishes, the release will fail to publish.'
   );
 
   findButton('Cancel')!.click();
-  await vi.waitFor(() => expect(dialog.opened).toBe(false));
+  await vi.waitFor(() => expect(dialog.open).toBe(false));
   expect(state.editor.startEditingDraft).not.toHaveBeenCalled();
 });
 
@@ -624,14 +623,14 @@ it('doesn’t ask before editing a draft that already blocks its scheduled relea
   mount('page');
   await nextTick();
 
-  const dialog = container.querySelector<HTMLElement & {opened?: boolean}>(
+  const dialog = container.querySelector<HTMLElement & {open?: boolean}>(
     'craft-dialog'
   )!;
   findButton('Start editing')!.click();
   await nextTick();
   await nextTick();
 
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
 });
 
 it.each([

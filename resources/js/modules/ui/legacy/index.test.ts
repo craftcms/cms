@@ -121,7 +121,7 @@ describe('createSlidePicker', () => {
     expect(el.min).toBe(0);
     expect(el.max).toBe(100);
     expect(el.step).toBe(25);
-    expect(el.modelValue).toBe(50);
+    expect(el.value).toBe(50);
     expect(el.name).toBe('cols');
   });
 

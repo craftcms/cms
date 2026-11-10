@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, ref, useId, useTemplateRef, watch} from 'vue';
+  import {computed, nextTick, ref, useId, useTemplateRef, watch} from 'vue';
   import {commandShortcut, usesCommandKey} from '@/common/utils/keyShortcuts';
   import {useShortcut} from '@/common/shortcuts';
   import {t} from '@craftcms/ui';
@@ -208,10 +208,56 @@
     ? commandShortcut('Z', {shift: true})
     : `${commandShortcut('Y')} ${commandShortcut('Z', {shift: true})}`;
 
+  /**
+   * The edit that waits on the person saying yes: closing the editor, or
+   * resetting the image. Kept while the confirmation closes, so its text stays
+   * put until it's gone.
+   */
+  const confirming = ref<'close' | 'reset' | null>(null);
+  const confirmOpen = ref(false);
+  /** Set by the confirm button; the edit runs once the confirmation has closed. */
+  let confirmed = false;
+
+  function askToConfirm(action: 'close' | 'reset'): void {
+    confirming.value = action;
+    confirmed = false;
+    confirmOpen.value = true;
+  }
+
+  function onConfirm(): void {
+    confirmed = true;
+    confirmOpen.value = false;
+  }
+
+  /**
+   * Runs the confirmed edit only after the confirmation has handed focus back,
+   * so closing the editor returns focus to what opened it rather than into a
+   * dialog that has already gone.
+   */
+  async function onConfirmationHidden(): Promise<void> {
+    if (!confirmed) {
+      return;
+    }
+
+    confirmed = false;
+
+    if (confirming.value === 'close') {
+      opened.value = false;
+      return;
+    }
+
+    resetEditor();
+
+    // The reset button disables itself now there's nothing to reset, which
+    // would drop focus to the page.
+    await nextTick();
+    tabsEl.value?.querySelector<HTMLElement>('craft-tab[selected]')?.focus();
+  }
+
   /** Undo and redo, while the dialog is open. A field keeps its own undo for the text being typed into it. */
   const historyShortcut = {
     group: () => t('Image editor'),
-    isAvailable: () => opened.value,
+    isAvailable: () => opened.value && !confirmOpen.value,
     ignoreInputs: true,
   };
   useShortcut('Mod+Z', () => editor.undo(), {
@@ -224,12 +270,8 @@
   });
   useShortcut('Control+Y', () => editor.redo(), historyShortcut);
 
-  /** Discards every edit, after asking. The dialog stays open. */
-  function onReset(): void {
-    if (!window.confirm(t('Discard all changes to this image?'))) {
-      return;
-    }
-
+  /** Discards every edit. The dialog stays open. */
+  function resetEditor(): void {
     editor.reset();
 
     // The controls hold their own copy of what they last applied, so they follow
@@ -246,13 +288,9 @@
    * button, Escape and the backdrop — so this asks once for all of them.
    */
   function onBeforeHide(event: Event): void {
-    if (
-      editor.isDirty.value &&
-      !window.confirm(
-        t('Any changes will be lost if you close the image editor.')
-      )
-    ) {
+    if (editor.isDirty.value) {
       event.preventDefault();
+      askToConfirm('close');
     }
   }
 
@@ -402,13 +440,14 @@
 
 <template>
   <craft-dialog
+    class="image-editor-dialog"
     data-theme="dark"
     fullscreen
-    .opened="opened"
+    .open="opened"
     :label="t('Edit Image')"
-    @craft-after-show="editor.start"
-    @craft-before-hide="onBeforeHide"
-    @craft-hide="onDialogHide"
+    @craft-after-show.self="editor.start"
+    @craft-before-hide.self="onBeforeHide"
+    @craft-hide.self="onDialogHide"
   >
     <div class="flex flex-col h-full">
       <div class="image-editor">
@@ -534,7 +573,7 @@
                         <craft-radio
                           v-for="option in constraintOptions"
                           :key="option.key"
-                          .choiceValue="option.value"
+                          .value="option.value"
                           .checked="constraintKey === option.key"
                         >
                           <input
@@ -740,7 +779,7 @@
           type="button"
           icon="arrow-rotate-left"
           .disabled="!editor.isDirty.value"
-          @click="onReset"
+          @click="askToConfirm('reset')"
         >
           {{ t('Reset to original') }}
         </craft-button>
@@ -766,20 +805,58 @@
       </div>
     </div>
   </craft-dialog>
+
+  <!-- A sibling rather than a child, so its lifecycle events don't bubble
+    through the editor's dialog. -->
+  <craft-dialog
+    data-theme="dark"
+    :label="
+      confirming === 'reset' ? t('Reset to original') : t('Discard changes')
+    "
+    .open="confirmOpen"
+    @craft-hide.self="confirmOpen = false"
+    @craft-after-hide.self="onConfirmationHidden"
+  >
+    <p class="m-0">
+      {{
+        confirming === 'reset'
+          ? t('Discard all changes to this image?')
+          : t('Any changes will be lost if you close the image editor.')
+      }}
+    </p>
+    <craft-button
+      slot="footer"
+      type="button"
+      autofocus
+      @click="confirmOpen = false"
+    >
+      {{ t('Cancel') }}
+    </craft-button>
+    <craft-button
+      slot="footer"
+      type="button"
+      variant="danger"
+      @click="onConfirm"
+    >
+      {{
+        confirming === 'reset' ? t('Reset to original') : t('Discard changes')
+      }}
+    </craft-button>
+  </craft-dialog>
 </template>
 
 <style scoped lang="css">
   /* Every ancestor of `.image` needs a definite height: the editor measures it
      to size the canvas. The body is edge to edge; header and footer keep their
      padding. */
-  craft-dialog::part(body) {
+  .image-editor-dialog::part(body) {
     padding: 0;
   }
 
   /* The header, tab strip, panels and footer share the CP's container padding,
      so their contents line up along both edges. */
-  craft-dialog::part(header),
-  craft-dialog::part(footer),
+  .image-editor-dialog::part(header),
+  .image-editor-dialog::part(footer),
   .image-editor__sidebar craft-tabs::part(strip) {
     padding-inline: var(--cp-container-padding);
   }

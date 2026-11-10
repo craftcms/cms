@@ -6,17 +6,15 @@ export default css`
     align-items: center;
     column-gap: var(--c-spacing-sm);
     --c-option-wide-threshold: 640;
-    /* LionOption hard-codes a white fill */
-    background-color: transparent;
+    cursor: default;
     padding-inline: var(--c-spacing-md);
     padding-block: var(--c-spacing-sm);
     font: inherit;
     border-radius: var(--c-radius-sm);
   }
 
-  /* LionOption fills a checked option; here the check mark marks it */
-  :host([checked]) {
-    background-color: transparent;
+  :host([hidden]) {
+    display: none;
   }
 
   :host(:hover) {
@@ -41,6 +39,11 @@ export default css`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* The quieter hint loses too much contrast against the hover fill */
+  :host(:hover) .hint {
+    color: var(--c-color-neutral-on-normal);
   }
 
   :host([active]) .hint {

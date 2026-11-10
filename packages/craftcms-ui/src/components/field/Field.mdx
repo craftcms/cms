@@ -15,7 +15,7 @@ Label, instructions, tips, warnings, errors, and the status badge all come from 
 
 The shell never touches the slotted control's value, validation, or events. It provides the chrome and the label/description ARIA wiring, and nothing else.
 
-That is what makes it general: any control can go in the `input` slot — a Craft component, a Lion control, or a plain `<input>` — and get the same field treatment without the field knowing anything about it.
+That is what makes it general: any control can go in the `input` slot — a Craft component or a plain `<input>` — and get the same field treatment without the field knowing anything about it.
 
 <Canvas of={FieldStories.WithCraftInput} sourceState="shown" />
 
@@ -24,10 +24,10 @@ That is what makes it general: any control can go in the `input` slot — a Craf
 The field gives its label, instructions and errors to the control in the `input` slot, so a screen reader announces them when the control takes focus. How it does that depends on the control:
 
 - **A native control** (`<input>`, `<select>`, `<textarea>`) gets the field's `<label>` and an `aria-describedby`.
-- **A control built on Lion**, such as `craft-input` or `craft-select`, is handed the field's label, `help-text` and `feedback` elements, and attaches them to the element that takes focus.
+- **A Craft form control**, such as `craft-input` or `craft-select`, or a control that extends one, is handed the field's label, `help-text` and `feedback` elements, and attaches them to the element that takes focus.
 - **Any other control** isn't changed. The field gives itself `role="group"` and names that instead.
 
-The group fallback suits a control that is really several inputs, such as a set of checkboxes. Build a single custom control on Lion, or only its own label and description are announced. Extend an existing Craft control when yours is a variation of one, as [Select Color](?path=/docs/form-controls-select-controls-select-color--docs) extends `craft-select-rich`. Otherwise extend `LionField` and render the element people interact with into its `input` slot, as [Slide Picker](?path=/docs/form-controls-slide-picker--docs) does with its slider.
+The group fallback suits a control that is really several inputs, such as a set of checkboxes. Build a single custom control by extending the Craft control it's a variation of, as [Select Color](?path=/docs/form-controls-select-controls-select-color--docs) extends `craft-select-rich`, or only its own label and description are announced.
 
 ## Instructions, Tips, and Warnings
 
@@ -113,7 +113,7 @@ The field is where a control's accessible name and description come from, which 
 
 - **Every control in a form belongs in one.** A bare input has no name; wrapping it is the cheapest way to fix that.
 - **Use `fieldset` for groups.** A label pointing at the first of five checkboxes names that checkbox, not the group.
-- **Build custom single controls on Lion.** Otherwise the field can only name a group around them, and focusing the control doesn't announce the label, instructions or errors. See [Custom Controls](#custom-controls).
+- **Build custom single controls on a Craft control.** Otherwise the field can only name a group around them, and focusing the control doesn't announce the label, instructions or errors. See [Custom Controls](#custom-controls).
 - **`required` is announced,** not just marked with a symbol — so a person hears the requirement rather than needing to see the asterisk.
 - **Keep the label visible.** Set `label` on every field, and only use `label-sr-only` when the control's purpose is obvious without it, such as a search box beside its button.
 - **Set state on the control too.** The field never changes the slotted control, so put `required`, `readonly`, and `disabled` on the control as well as the field. That way the control itself is announced as required, read-only, or unavailable.

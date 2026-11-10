@@ -23,9 +23,9 @@ import CraftCombobox from '@craftcms/ui/vue/CraftCombobox.vue';
 import type {SelectItem} from '@/common/types';
 import useCraftData from '@/common/composables/useCraftData';
 
-/** A Lion form control, which labels its inner control through `addToAriaLabelledBy()`. */
+/** A form control, which labels its inner control through `addToAriaLabelledBy()`. */
 type LabelledFormControl = HTMLElement & {
-  addToAriaLabelledBy(element: HTMLElement, config?: {reorder?: boolean}): void;
+  addToAriaLabelledBy(element: HTMLElement): void;
 };
 
 type MaybeGetter<T> = T | (() => T);
@@ -258,7 +258,7 @@ export function useEditableTable<T extends object>(
             cellOptions?.ariaLabelledBy ?? tableHeaderId(table, column.id)
           );
           if (labelEl) {
-            switchEl.addToAriaLabelledBy(labelEl, {reorder: false});
+            switchEl.addToAriaLabelledBy(labelEl);
           }
         },
         'onUpdate:modelValue': (value: boolean | undefined) => {

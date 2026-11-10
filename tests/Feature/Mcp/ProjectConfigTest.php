@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Mcp\Capabilities\ProjectConfig as ProjectConfigCapability;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Json;
 
 it('reads and writes project config through MCP', function () {
     $projectConfig = app(ProjectConfig::class);
@@ -44,7 +45,7 @@ it('redacts credentials, including environment variable references', function ()
         'settings' => ['apiKey' => '•••••••••••', 'secretToken' => '•••••••••••••••', 'region' => 'us-east-1'],
     ])
         ->and($capability->get('plugins.mcpTest.settings.apiKey')['value'])->toBe('•••••••••••')
-        ->and(json_encode($capability->status()['status']['appliedChanges'], JSON_UNESCAPED_UNICODE))
+        ->and(Json::encode($capability->status()['status']['appliedChanges']))
         ->not->toContain('sk_live_123')
         ->not->toContain('ABCD-1234')
         ->not->toContain('MCP_TEST_TOKEN');

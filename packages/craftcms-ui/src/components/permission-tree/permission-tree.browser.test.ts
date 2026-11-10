@@ -14,7 +14,7 @@ it('draws its checkboxes like other checkboxes', async () => {
   const tree = document.querySelector<CraftPermissionTree>(
     'craft-permission-tree'
   )!;
-  tree.modelValue = ['viewEntries'];
+  tree.value = ['viewEntries'];
   tree.groups = [
     {
       handle: 'content',

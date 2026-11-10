@@ -17,6 +17,7 @@ use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Support\MessageBag as MessageBagContract;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
@@ -213,13 +214,14 @@ class Template
         HtmlStack::js($js, $position, $key);
     }
 
-    public static function script(string $script, int|Position $position = Position::BodyEnd): void
+    /** @param array<string, mixed> $options */
+    public static function script(string $script, int|Position $position = Position::BodyEnd, array $options = []): void
     {
         if (is_int($position)) {
             $position = Position::from($position);
         }
 
-        HtmlStack::script($script, $position);
+        HtmlStack::script($script, $position, $options);
     }
 
     /**
@@ -326,7 +328,14 @@ class Template
     /** @return array{Paginate, list<mixed>} */
     public static function paginateQuery(Builder $query): array
     {
-        $paginator = $query->paginate(pageName: $pageParam = Cms::config()->getPageTriggerParam());
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $perPage = $query->getLimit() ?: ($query instanceof EloquentBuilder ? $query->getModel()->getPerPage() : 100);
+        $paginator = $query->paginate($perPage, ['*'], $pageParam);
+
+        if ($paginator->currentPage() > $paginator->lastPage()) {
+            $paginator = $query->paginate($perPage, ['*'], $pageParam, $paginator->lastPage(), $paginator->total());
+        }
+
         $paginator->appends(Arr::except(request()->query(), $pageParam));
 
         return [

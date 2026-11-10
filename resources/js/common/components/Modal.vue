@@ -80,7 +80,7 @@
 
     const returnTo = invoker;
     invoker = null;
-    element.opened = false;
+    element.open = false;
     await element.updateComplete.then(() => {
       if (
         props.restoreFocus &&
@@ -213,7 +213,7 @@
       v-if="isActive"
       ref="dialog"
       :label="label"
-      .opened="true"
+      .open="true"
       no-header
       .closeOnOutsideClick="dismissible"
       :class="{'without-overlay': !overlay || isNested}"

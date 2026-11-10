@@ -1,7 +1,10 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import '@craftcms/ui/components/checkbox/checkbox';
+import '@craftcms/ui/components/radio/radio';
+import '@craftcms/ui/components/radio-group/radio-group';
 import {PromptHandler} from './prompt-handler';
 
-type PromptDialog = HTMLElement & {opened: boolean};
+type PromptDialog = HTMLElement & {open: boolean};
 
 const choices = [
   {value: 'keepBoth', title: 'Keep both'},
@@ -16,11 +19,10 @@ function openDialog(): PromptDialog {
 
 function choose(value: string, applyToRemaining = false): void {
   const dialog = openDialog();
-  const group = dialog.querySelector('craft-radio-group') as HTMLElement & {
-    modelValue: string;
-  };
-  group.modelValue = value;
-  group.dispatchEvent(new Event('model-value-changed'));
+  const radio = [
+    ...dialog.querySelectorAll<HTMLElement & {value: string}>('craft-radio'),
+  ].find((radio) => radio.value === value);
+  radio!.querySelector('input')!.click();
 
   const checkbox = dialog.querySelector('craft-checkbox') as HTMLElement & {
     checked: boolean;
@@ -117,6 +119,6 @@ describe('PromptHandler', () => {
 
     expect(dismissal.defaultPrevented).toBe(true);
     expect(done).not.toHaveBeenCalled();
-    expect(openDialog().opened).toBe(true);
+    expect(openDialog().open).toBe(true);
   });
 });

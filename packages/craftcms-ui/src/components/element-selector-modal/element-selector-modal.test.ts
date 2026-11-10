@@ -232,7 +232,7 @@ describe('unbound (attribute-driven)', () => {
     await modal.updateComplete;
 
     expect(seen).toHaveBeenCalledTimes(1);
-    expect(modal.opened).toBe(false);
+    expect(modal.open).toBe(false);
   });
 });
 
@@ -271,7 +271,7 @@ describe('busy', () => {
     await modal.updateComplete;
 
     expect(seen).not.toHaveBeenCalled();
-    expect(modal.opened).toBe(true);
+    expect(modal.open).toBe(true);
   });
 });
 
@@ -281,7 +281,7 @@ describe('bound to a controller', () => {
     const modal = await createModal((m) => bind(m, controller));
     await modal.updateComplete;
 
-    expect(modal.opened).toBe(true);
+    expect(modal.open).toBe(true);
     expect(modal.label).toBe('Choose an entry');
     expect(modal.showTitle).toBe(true);
     expect(button(modal, 'select').hasAttribute('disabled')).toBe(true);
@@ -331,7 +331,7 @@ describe('bound to a controller', () => {
     expect(controller.cancel).toHaveBeenCalledTimes(1);
     // The controller still reports open, so the modal stays open — that is what
     // lets it refuse a dismissal mid-save.
-    expect(modal.opened).toBe(true);
+    expect(modal.open).toBe(true);
   });
 
   it('closes when the controller says it has closed', async () => {
@@ -342,7 +342,7 @@ describe('bound to a controller', () => {
     controller.push({open: false});
     await modal.updateComplete;
 
-    expect(modal.opened).toBe(false);
+    expect(modal.open).toBe(false);
   });
 
   it('unsubscribes from the previous controller when rebound', async () => {

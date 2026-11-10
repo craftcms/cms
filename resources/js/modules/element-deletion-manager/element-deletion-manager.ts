@@ -224,7 +224,7 @@ export class ElementDeletionManager extends Base {
     });
 
     document.body.append(dialog);
-    dialog.opened = true;
+    dialog.open = true;
     this.modal = dialog;
 
     closeButton.addEventListener('click', () => {
@@ -238,7 +238,7 @@ export class ElementDeletionManager extends Base {
 
   hideModal(): void {
     if (this.modal) {
-      this.modal.opened = false;
+      this.modal.open = false;
     }
   }
 

@@ -298,7 +298,8 @@ export class ElementSelectorController<
       context: options.context ?? 'modal',
       elementType: this.elementType,
       sources: options.sources,
-      condition: options.condition,
+      // Kept apart from the filters' `condition`, which the user can change
+      selectionCondition: options.condition,
       criteria: {...options.criteria},
     };
 
@@ -317,6 +318,33 @@ export class ElementSelectorController<
 
     if (typeof options.indexSettings.showFolders === 'boolean') {
       params.showFolders = options.indexSettings.showFolders;
+    }
+
+    // Start in `defaultSource`, within the last folder of `defaultSourcePath`,
+    // such as an Assets field's upload location. Legacy callers nest these
+    // under `indexSettings`.
+    const defaultSource =
+      options.defaultSource ??
+      (options.indexSettings.defaultSource as string | undefined);
+    const path = (options.defaultSourcePath ??
+      options.indexSettings.defaultSourcePath ??
+      []) as Array<{folderId?: unknown}>;
+
+    if (defaultSource) {
+      params.source = defaultSource;
+    }
+
+    const folderId = Number(path[path.length - 1]?.folderId);
+
+    if (Number.isFinite(folderId)) {
+      params.folderId = folderId;
+    }
+
+    // The condition is evaluated on the server, against this element.
+    if (options.referenceElementId) {
+      params.referenceElementId = options.referenceElementId;
+      params.referenceElementOwnerId = options.referenceElementOwnerId ?? null;
+      params.referenceElementSiteId = options.referenceElementSiteId ?? null;
     }
 
     return params;

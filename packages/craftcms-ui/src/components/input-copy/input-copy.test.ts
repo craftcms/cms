@@ -62,14 +62,35 @@ describe('craft-input-copy', () => {
 
   it('updates the copy button when modelValue changes', async () => {
     const element = await createInputCopy();
-    element.modelValue = 'new value';
+    element.value = 'new value';
     await element.updateComplete;
     expect(copyButton(element)?.value).toBe('new value');
   });
 
+  it('copies the value its form resets it to, without emitting an edit', async () => {
+    const form = document.createElement('form');
+    form.innerHTML = '<craft-input-copy value="A"></craft-input-copy>';
+    document.body.append(form);
+    const element = form.querySelector('craft-input-copy')!;
+    await element.updateComplete;
+    element.value = 'B';
+    await element.updateComplete;
+    const events: string[] = [];
+    form.addEventListener('input', (event) => events.push(event.type));
+    form.addEventListener('change', (event) => events.push(event.type));
+
+    form.reset();
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+
+    expect(element.value).toBe('A');
+    expect(copyButton(element)?.value).toBe('A');
+    expect(events).toEqual([]);
+  });
+
   it('prefers copy-value over a changed modelValue', async () => {
     const element = await createInputCopy({'copy-value': 'fixed'});
-    element.modelValue = 'something else';
+    element.value = 'something else';
     await element.updateComplete;
     expect(copyButton(element)?.value).toBe('fixed');
   });

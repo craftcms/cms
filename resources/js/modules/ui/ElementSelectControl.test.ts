@@ -1,6 +1,7 @@
 import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {ConfigService} from '@craftcms/ui/services/Config';
+import '@craftcms/ui/components/checkbox/checkbox';
 import type {UiControlPayload} from './types';
 import {broadcast} from '@/common/craft/broadcast';
 import {provideUiPreview} from './uiPreview';
@@ -69,6 +70,13 @@ vi.mock(
     createElementSelectorModal: stub.createElementSelectorModal,
   })
 );
+
+/** Sets a `craft-checkbox` the way a user would, ending with its `change`. */
+function toggleCheckbox(box: Element, checked: boolean): void {
+  const input = box.querySelector('input')!;
+  input.checked = checked;
+  input.dispatchEvent(new Event('change', {bubbles: true}));
+}
 
 // `<craft-element-select-input>` is now an inert wrapper — the control renders
 // its own chips and drives its own modal — so an empty custom element is a
@@ -412,6 +420,29 @@ describe('ElementSelectControl', () => {
     settings.onSelect([{id: 9, label: 'Replacement', siteId: 1}]);
 
     expect(updates).toEqual([9]);
+  });
+
+  it('evaluates the selection condition against the reference element', async () => {
+    const root = await mount({
+      props: {
+        selectionCondition: {class: 'EntryCondition'},
+        referenceElement: {
+          referenceElementId: 12,
+          referenceElementOwnerId: 3,
+          referenceElementSiteId: 2,
+        },
+      },
+    });
+    addButton(root)!.click();
+    await flushSelector();
+
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    expect(settings).toMatchObject({
+      condition: {class: 'EntryCondition'},
+      referenceElementId: 12,
+      referenceElementOwnerId: 3,
+      referenceElementSiteId: 2,
+    });
   });
 
   it('clears a scalar selection to null', async () => {
@@ -1135,10 +1166,7 @@ describe('ElementSelectControl', () => {
       });
       const box = root.querySelector<HTMLElement>('.card-grid craft-checkbox')!;
 
-      Object.defineProperty(box, 'checked', {value: true, configurable: true});
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      toggleCheckbox(box, true);
       await nextTick();
 
       expect(
@@ -1373,15 +1401,8 @@ describe('ElementSelectControl', () => {
       return toolbarMenu(root);
     }
 
-    /** Reports a new checked state the way `craft-checkbox` does. */
     function check(box: HTMLElement, checked: boolean): void {
-      Object.defineProperty(box, 'checked', {
-        value: checked,
-        configurable: true,
-      });
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      toggleCheckbox(box, checked);
     }
 
     function selectFirstChip(root: HTMLElement): void {
@@ -1563,10 +1584,7 @@ describe('ElementSelectControl', () => {
       });
 
       const box = selectAllBox(root)!;
-      Object.defineProperty(box, 'checked', {value: true, configurable: true});
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      toggleCheckbox(box, true);
       await nextTick();
 
       return root;

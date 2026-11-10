@@ -21,7 +21,6 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins as PluginsService;
 use CraftCms\Cms\Plugin\PluginSettings;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
@@ -29,6 +28,7 @@ use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Yii2Adapter\Ui\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 use Illuminate\Database\Migrations\Migration;
@@ -147,7 +147,7 @@ class Plugin extends Module implements PluginInterface
      */
     public function getVersion(): string
     {
-        Deprecator::log('Plugin-getVersion', 'Calling ->getVersion() on a plugin is deprecated. The $version property should be used instead — Craft 6 plugins do not have this method.');
+        LegacyUsage::record('Plugin-getVersion', 'Calling ->getVersion() on a plugin is deprecated. The $version property should be used instead — Craft 6 plugins do not have this method.');
 
         return $this->version;
     }
@@ -159,7 +159,7 @@ class Plugin extends Module implements PluginInterface
      */
     public function setVersion($version): void
     {
-        Deprecator::log('Plugin-setVersion', 'Calling ->setVersion() on a plugin is deprecated. The $version property should be assigned instead — Craft 6 plugins do not have this method.');
+        LegacyUsage::record('Plugin-setVersion', 'Calling ->setVersion() on a plugin is deprecated. The $version property should be assigned instead — Craft 6 plugins do not have this method.');
 
         $this->version = is_scalar($version) ? (string)$version : (string)call_user_func($version, $this);
     }

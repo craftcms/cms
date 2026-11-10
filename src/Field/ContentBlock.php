@@ -415,6 +415,33 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             ->value([]);
     }
 
+    /**
+     * Moves the errors validation copied from an invalid block, keyed `handle.attribute`, onto the controls the block
+     * shows them on.
+     */
+    #[Override]
+    public function uiErrors(ElementInterface $element, array $errors): array
+    {
+        $blockErrors = [];
+        $prefix = "{$this->handle}.";
+
+        foreach ($errors as $key => $messages) {
+            if (str_starts_with((string) $key, $prefix)) {
+                $blockErrors[substr((string) $key, strlen($prefix))] = $messages;
+            }
+        }
+
+        if ($blockErrors === [] || ! ($block = $element->getFieldValue($this->handle)) instanceof ContentBlockElement) {
+            return $errors;
+        }
+
+        foreach (array_keys($blockErrors) as $attribute) {
+            unset($errors[$prefix.$attribute]);
+        }
+
+        return $this->addNestedUiErrors($errors, $block, $blockErrors, $this->handle);
+    }
+
     #[Override]
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {

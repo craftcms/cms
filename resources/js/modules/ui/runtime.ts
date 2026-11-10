@@ -1,4 +1,3 @@
-import {Validator} from '@lion/ui/form-core.js';
 import {type InjectionKey, type Ref} from 'vue';
 import type {
   CanonicalUiValue,
@@ -53,14 +52,6 @@ export const UiTableRefresh: InjectionKey<() => void> =
  */
 export const UiFieldIdScope: InjectionKey<string> = Symbol('UiFieldIdScope');
 
-class ServerError extends Validator {
-  static override validatorName = 'ServerError';
-
-  override execute(): boolean {
-    return true;
-  }
-}
-
 /**
  * The value a control should render with.
  *
@@ -93,27 +84,6 @@ export function controlValueAt(
 
   // SAFETY: what a Control ships as its empty value is a form value.
   return control.emptyValue as UiValue;
-}
-
-export function serverErrorValidators(invalid: boolean): Validator[] {
-  return invalid
-    ? [
-        new ServerError(undefined, {
-          getMessage: () => '',
-          visibilityDuration: Infinity,
-        }),
-      ]
-    : [];
-}
-
-export function ignoreModelValueInitialization(
-  callback: (event: Event) => void
-): (event: Event) => void {
-  return (event) => {
-    if (!(event instanceof CustomEvent) || !event.detail?.initialize) {
-      callback(event);
-    }
-  };
 }
 
 export function uiChangeFromEvent(change: UiChange | Event): UiChange | null {

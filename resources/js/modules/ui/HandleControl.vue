@@ -3,12 +3,7 @@
   import {toHandle} from '@craftcms/ui/utilities/string';
   import {useInputGenerator} from '@/common/composables/useInputGenerator';
   import type {UiChangeKind, UiControlPayload, UiPayload} from './types';
-  import {
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-    valueAt,
-  } from './runtime';
+  import {inputName, valueAt} from './runtime';
 
   type HandleControlProps = {
     source?: string[];
@@ -35,13 +30,14 @@
     }
   });
 
-  const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftInputHandle)) {
+  function onInput(event: Event): void {
+    const input = event.currentTarget;
+    if (!(input instanceof CraftInputHandle)) {
       throw new TypeError('Expected a handle input event target.');
     }
 
-    emit('update:value', String(event.target.modelValue ?? ''), 'typing');
-  });
+    emit('update:value', input.value, 'typing');
+  }
 
   function sourceValue(): string {
     const source = props.control.props.source;
@@ -60,14 +56,15 @@
 <template>
   <craft-input-handle
     :name="editable ? inputName(control.path) : ''"
-    .modelValue="String(value ?? '')"
+    .value="String(value ?? '')"
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
+    .autocomplete="'off'"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="control.mode === 'disabled'"
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onModelValueChanged"
+    :invalid="invalid"
+    @input="onInput"
     @change="generator.markDirty()"
   ></craft-input-handle>
 </template>

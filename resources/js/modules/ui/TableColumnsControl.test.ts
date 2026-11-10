@@ -69,11 +69,13 @@ async function changeEmptyLabel(
   panel: HTMLElement,
   value: string
 ): Promise<void> {
-  const input = panel.querySelector<HTMLElement & {modelValue: string}>(
+  const input = panel.querySelector<HTMLElement & {value: string}>(
     'craft-input[name="columns[col1][emptyLabel]"]'
   )!;
-  input.modelValue = value;
-  input.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+  input.value = value;
+  input
+    .querySelector('input, textarea, select')!
+    .dispatchEvent(new Event('input', {bubbles: true}));
   await settle();
 }
 
@@ -208,9 +210,9 @@ describe('Table column settings', () => {
     const settings = await configureColumn('Status');
 
     expect(
-      settings.querySelector<HTMLElement & {modelValue: string}>(
+      settings.querySelector<HTMLElement & {value: string}>(
         'craft-input[name="columns[col1][emptyLabel]"]'
-      )?.modelValue
+      )?.value
     ).toBe('Choose a status');
     await changeEmptyLabel(settings, 'No status');
     slideout.options!.apply();
@@ -294,33 +296,33 @@ describe('Table column settings', () => {
     addButton.focus();
     addButton.click();
     await settle();
-    const heading = form.querySelector<HTMLElement & {modelValue: string}>(
+    const heading = form.querySelector<HTMLElement & {value: string}>(
       'craft-input[name="columns[col1][heading]"]'
     )!;
     expect(heading).not.toBeNull();
     expect(document.activeElement).toBe(heading.querySelector('input'));
-    heading.modelValue = 'Publication status';
-    heading.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    heading.value = 'Publication status';
+    heading
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await settle();
     expect(new FormData(form).get('columns[col1][handle]')).toBe(
       'publicationStatus'
     );
     expect(new FormData(form).get('columns[col1][type]')).toBe('singleline');
 
-    const handle = form.querySelector<HTMLElement & {modelValue: string}>(
+    const handle = form.querySelector<HTMLElement & {value: string}>(
       'craft-input-handle[name="columns[col1][handle]"]'
     )!;
-    handle.modelValue = 'custom';
-    handle.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    handle.value = 'custom';
+    handle
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await settle();
-    heading.modelValue = 'Changed';
-    heading.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    heading.value = 'Changed';
+    heading
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await settle();
     expect(new FormData(form).get('columns[col1][handle]')).toBe('custom');
 

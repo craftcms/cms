@@ -5,8 +5,8 @@ import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import './slide-picker.js';
 
 /**
- * Lion's own `label` and `help-text` are slots here, so they are set through
- * the `label-slot` and `help-text-slot` args rather than as attributes.
+ * `label` and `help-text` can also be given as slots, through the `label-slot`
+ * and `help-text-slot` args.
  */
 const {events, args, argTypes, template} =
   getStorybookHelpers('craft-slide-picker');
@@ -39,7 +39,7 @@ export const ReadOnly: Story = {
     <craft-slide-picker
       label="Completion"
       readonly
-      model-value="60"
+      value="60"
     ></craft-slide-picker>
   `,
 };
@@ -49,7 +49,7 @@ export const FiveSteps: Story = {
     min: 0,
     max: 100,
     step: 20,
-    'model-value': 60,
+    value: 60,
     'label-slot': 'Completion',
   },
 };

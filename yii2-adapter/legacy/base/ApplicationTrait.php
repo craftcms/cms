@@ -76,7 +76,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Support\Facades\Log;
@@ -466,7 +466,7 @@ trait ApplicationTrait
      */
     public function getIsMultiSite(bool $refresh = false, bool $withTrashed = false): bool
     {
-        DeprecatorFacade::log('Craft::$app->getIsMultiSite()', 'Craft::$app->getIsMultiSite() is deprecated. Use Sites::isMultiSite() or craft.sites.isMultiSite() instead.');
+        LegacyUsage::record('Craft::$app->getIsMultiSite()', 'Craft::$app->getIsMultiSite() is deprecated. Use Sites::isMultiSite() or craft.sites.isMultiSite() instead.');
 
         return \CraftCms\Cms\Support\Facades\Sites::isMultiSite($refresh, $withTrashed);
     }
@@ -606,7 +606,7 @@ trait ApplicationTrait
      */
     public function getIsLive(): bool
     {
-        DeprecatorFacade::log('Craft::$app->getIsLive()', 'Craft::$app->getIsLive() is deprecated. Use ! app()->isDownForMaintenance() instead.');
+        LegacyUsage::record('Craft::$app->getIsLive()', 'Craft::$app->getIsLive() is deprecated. Use ! app()->isDownForMaintenance() instead.');
 
         return !app()->isDownForMaintenance();
     }
@@ -993,7 +993,7 @@ trait ApplicationTrait
      */
     public function getFields(): Fields
     {
-        DeprecatorFacade::log('Craft::$app->fields', 'Craft::$app->fields is deprecated. Use app(Fields::class) or craft.fields instead.');
+        LegacyUsage::record('Craft::$app->fields', 'Craft::$app->fields is deprecated. Use app(Fields::class) or craft.fields instead.');
 
         return $this->get('fields');
     }
@@ -1019,7 +1019,7 @@ trait ApplicationTrait
      */
     public function getFormattingLocale(): \craft\i18n\Locale
     {
-        DeprecatorFacade::log('Craft::$app->getFormattingLocale()', 'Craft::$app->getFormattingLocale() is deprecated. Use I18N::getFormattingLocale() or craft.i18n.getFormattingLocale instead.');
+        LegacyUsage::record('Craft::$app->getFormattingLocale()', 'Craft::$app->getFormattingLocale() is deprecated. Use I18N::getFormattingLocale() or craft.i18n.getFormattingLocale instead.');
 
         return $this->get('formattingLocale');
     }
@@ -1093,7 +1093,7 @@ trait ApplicationTrait
      */
     public function getLocale(): \craft\i18n\Locale
     {
-        DeprecatorFacade::log('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() or craft.i18n.getLocale instead.');
+        LegacyUsage::record('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() or craft.i18n.getLocale instead.');
 
         return $this->get('locale');
     }
@@ -1223,7 +1223,7 @@ trait ApplicationTrait
      */
     public function getSites(): Sites
     {
-        DeprecatorFacade::log('Craft::$app->sites', 'Craft::$app->sites is deprecated. Use app(Sites::class), app(SiteGroups::class) or craft.sites / craft.siteGroups instead.');
+        LegacyUsage::record('Craft::$app->sites', 'Craft::$app->sites is deprecated. Use app(Sites::class), app(SiteGroups::class) or craft.sites / craft.siteGroups instead.');
 
         return $this->get('sites');
     }

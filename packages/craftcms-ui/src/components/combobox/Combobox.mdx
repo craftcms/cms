@@ -13,13 +13,13 @@ Reach for it when a list is long enough that scanning it is work — sections, f
 
 ## Options as Data
 
-Unlike Lion's combobox, which expects every option authored as a slotted child, this takes an `options` array and renders only the matching subset as [Option](?path=/docs/form-controls-select-controls-option--docs) children.
+The combobox takes an `options` array and renders only the matching subset as [Option](?path=/docs/form-controls-select-controls-option--docs) children.
 
 <Canvas of={ComboboxStories.LargeList} sourceState="shown" />
 
 That is what makes a long list workable: the DOM holds the matches, not the source. `limit` caps how many are rendered at once, so a search matching hundreds of entries still produces a bounded list.
 
-Selection, keyboard navigation, and the ARIA wiring are still Lion's, over whatever subset is currently rendered.
+Keyboard navigation works over whatever subset is currently rendered.
 
 ## Rich Options
 
@@ -46,13 +46,13 @@ Offer it whenever no selection is a valid answer. Without it, a person who picks
 Bind the native events, the same two a text input gives you:
 
 ```js
-combobox.addEventListener('input', () => preview(combobox.modelValue));
-combobox.addEventListener('change', () => save(combobox.modelValue));
+combobox.addEventListener('input', () => preview(combobox.value));
+combobox.addEventListener('change', () => save(combobox.value));
 ```
 
-`input` fires on every alteration, typed or selected. `change` fires when the value is committed — an option is chosen, or the field is left after typing. Both are dispatched from the component, so `event.target` is the combobox rather than the textbox inside it.
+`input` fires on every alteration, typed or selected. Selecting an option makes it an `InputEvent` whose `inputType` is `insertReplacementText`, as picking a suggestion does on a native input, so a listener can tell a selection from typing. `change` fires when the value is committed — an option is chosen, or the field is left after typing. Both are dispatched from the component, so `event.target` is the combobox rather than the textbox inside it. Setting `value` from code fires neither, as on a native control.
 
-The control also emits `model-value-changed`. That is Lion's internal protocol name, carried because Lion's form system depends on it; prefer the native events.
+`value` is a string, or an array of strings with `multiple`.
 
 ## In PHP
 
@@ -88,7 +88,7 @@ An `optgroup` option, with its own `options`, groups the ones it holds.
 
 ## Accessibility
 
-Lion supplies the combobox pattern — the ARIA roles, the active-descendant handling, and the keyboard model. The requirements, and the gaps still open, are in `combobox.a11y.md`.
+The combobox follows the ARIA 1.2 combobox pattern: the textbox is the combobox and keeps focus, pointing at the active option with `aria-activedescendant`. The requirements, and the gaps still open, are in `combobox.a11y.md`.
 
 Give every combobox a visible label, through `label`, the `label` slot or `craft-field`. Don't rely on `placeholder`, which disappears as soon as someone types. If the label lives elsewhere, such as a table column heading, point a host `aria-labelledby` at it; an `aria-label` used instead must contain the text shown beside the field.
 

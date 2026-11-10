@@ -1,6 +1,54 @@
 import {css} from 'lit';
 import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
+/** What every button needs before its variant: box, sizer, hidden, disabled. */
+export const buttonBaseStyles = css`
+  :host {
+    position: relative;
+    display: inline-flex;
+    box-sizing: border-box;
+    vertical-align: middle;
+    line-height: 24px;
+    outline: none;
+    user-select: none;
+  }
+
+  /* A minimum hit area around the button (WCAG 2.5.5). */
+  :host::before {
+    content: '';
+    position: absolute;
+    /* Physical on purpose: paired with the translate below to center it. */
+    /* stylelint-disable liberty/use-logical-spec */
+    top: 50%;
+    left: 50%;
+    /* stylelint-enable liberty/use-logical-spec */
+    transform: translate(-50%, -50%);
+    min-height: 44px;
+    min-width: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  :host([hidden]) {
+    display: none;
+  }
+
+  :host([disabled]) {
+    pointer-events: none;
+  }
+
+  /* Its own rule: a browser without :state() drops the whole selector list. */
+  :host(:state(fieldset-disabled)) {
+    pointer-events: none;
+  }
+
+  .button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+`;
+
 export default css`
   :host {
     /* Necessary to use variables here to override the default active style specificity */
@@ -458,7 +506,7 @@ export default css`
     text-decoration: underline;
 
     &::before {
-      /* remove the sizer added by lion */
+      /* No minimum-target sizer around a text link. */
       display: none;
     }
 
@@ -552,9 +600,13 @@ export default css`
     border-color: var(--c-color-border-loud);
   }
 
-  /* After the variants, whose colors would otherwise paint over Lion's own
-     disabled rule and leave a disabled button looking enabled. */
+  /* Muted rather than recolored, so each variant keeps its own look. */
   :host([disabled]) {
+    opacity: 0.5;
+    user-select: none;
+  }
+
+  :host(:state(fieldset-disabled)) {
     opacity: 0.5;
     user-select: none;
   }
@@ -602,7 +654,7 @@ export default css`
   :host([href]:not([disabled])) {
     padding-inline: 0;
 
-    /* Lion's minimum-click-target overlay is positioned, so it paints above
+    /* The host's minimum-target sizer is positioned, so it paints above
        the (non-positioned) anchor and swallows every pointer click before it
        can activate the link. Recreate the overlay on the anchor instead, so
        the full target navigates. */
@@ -633,7 +685,7 @@ export default css`
     border-radius: inherit;
     outline: none;
 
-    /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
+    /* Same minimum click area as the host's :host::before (WCAG 2.5.5), but as
        part of the anchor so clicks on it follow the link. */
 
     &::before {

@@ -1,8 +1,12 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
-import {computeAccessibleName} from 'dom-accessibility-api';
+import {
+  computeAccessibleDescription,
+  computeAccessibleName,
+} from 'dom-accessibility-api';
 import type CraftField from './field.js';
-import {LionField} from '@lion/ui/form-core.js';
+import {LitElement} from 'lit';
+import {FormControl} from '@src/mixins/FormControl';
 import './field.js';
 import '../textarea/textarea.js';
 import '../input/input.js';
@@ -28,7 +32,7 @@ it('labels nested native controls', async () => {
   );
 });
 
-class TestSlider extends LionField {
+class TestSlider extends FormControl(LitElement) {
   override get slots() {
     return {
       ...super.slots,
@@ -44,7 +48,7 @@ class TestSlider extends LionField {
 }
 customElements.define('test-slider', TestSlider);
 
-it('hands its label and descriptions to a custom control built on LionField', async () => {
+it('hands its label and descriptions to a custom control built on FormControl', async () => {
   document.body.innerHTML =
     '<craft-field label="Card width" help-text="How many columns the card spans."><test-slider slot="input"></test-slider><ul slot="feedback"><li>Card width must be at least 2 columns.</li></ul></craft-field>';
   const field = document.querySelector('craft-field')!;
@@ -59,10 +63,22 @@ it('hands its label and descriptions to a custom control built on LionField', as
   expect(field.getAttribute('role')).toBeNull();
 });
 
+it('describes a control after the main one by its instructions and errors, keeping its own label', async () => {
+  document.body.innerHTML =
+    '<craft-field label="Color" help-text="The card’s accent."><craft-input slot="input"><input slot="input"></craft-input><craft-input slot="after" label="Custom color:"><input slot="input"></craft-input><ul slot="feedback"><li>Color is invalid.</li></ul></craft-field>';
+  const [main, after] = document.querySelectorAll('input');
+
+  await expect.element(main!).toHaveAccessibleName('Color');
+  await expect.element(after!).toHaveAccessibleName('Custom color:');
+  await expect
+    .element(after!)
+    .toHaveAccessibleDescription('The card’s accent. Color is invalid.');
+});
+
 it.each([false, true])(
   'labels a nested combobox and its listbox once (multiple: %s)',
   async (multiple) => {
-    document.body.innerHTML = `<craft-field label="Entry Type" label-sr-only><craft-combobox slot="input" ${multiple ? 'multiple-choice' : ''} options='[{"label":"Alpha","value":"a"}]'></craft-combobox></craft-field>`;
+    document.body.innerHTML = `<craft-field label="Entry Type" label-sr-only><craft-combobox slot="input" ${multiple ? 'multiple' : ''} options='[{"label":"Alpha","value":"a"}]'></craft-combobox></craft-field>`;
     const field = document.querySelector('craft-field')!;
     const combobox = document.querySelector('craft-combobox')!;
     await field.updateComplete;
@@ -122,6 +138,53 @@ describe('spacing', () => {
   });
 });
 
+it.each([
+  [
+    'a nested craft control',
+    '<craft-field label="Width"><craft-input slot="input"><input slot="input"></craft-input></craft-field>',
+    'input',
+  ],
+  [
+    'a group',
+    '<craft-field label="Width" fieldset><input slot="input" type="checkbox"></craft-field>',
+    'craft-field',
+  ],
+])(
+  'drops replaced and cleared labelled-by and described-by references from %s',
+  async (_case, markup, target) => {
+    document.body.innerHTML = `<span id="name-a">Alpha</span><span id="name-b">Beta</span><span id="desc-a">First</span><span id="desc-b">Second</span>${markup}`;
+    const field = document.querySelector<CraftField>('craft-field')!;
+    const element = document.querySelector<HTMLElement>(target)!;
+    await field.updateComplete;
+    const reference = async (
+      labelledBy: string | null,
+      describedBy: string | null
+    ) => {
+      field.labelledBy = labelledBy;
+      field.describedBy = describedBy;
+      await field.updateComplete;
+      return {
+        name: computeAccessibleName(element).trim(),
+        description: computeAccessibleDescription(element).trim(),
+      };
+    };
+
+    const first = await reference('name-a', 'desc-a');
+    expect(first.name).toContain('Alpha');
+    expect(first.description).toBe('First');
+
+    const replaced = await reference('name-b', 'desc-b');
+    expect(replaced.name).toContain('Beta');
+    expect(replaced.name).not.toContain('Alpha');
+    expect(replaced.description).toBe('Second');
+
+    expect(await reference(null, null)).toEqual({
+      name: 'Width',
+      description: '',
+    });
+  }
+);
+
 it('exposes translation help on keyboard focus and dismisses it with Escape', async () => {
   const field = document.createElement('craft-field');
   field.label = 'Title';
@@ -140,18 +203,50 @@ it('exposes translation help on keyboard focus and dismisses it with Escape', as
   await expect.element(indicator).toHaveAccessibleName('Translated per site.');
   await userEvent.tab();
   expect(document.activeElement).toBe(indicator);
-  await expect.poll(() => tooltip.opened).toBe(true);
+  await expect.poll(() => tooltip.open).toBe(true);
   await expect
     .element(tooltip.querySelector<HTMLElement>('[slot="content"]')!)
     .toHaveTextContent('Translated per site.');
 
   await userEvent.keyboard('{Escape}');
-  await expect.poll(() => tooltip.opened).toBe(false);
+  await expect.poll(() => tooltip.open).toBe(false);
   expect(document.activeElement).toBe(indicator);
 
   await userEvent.tab();
   expect(document.activeElement).toBe(field.querySelector('input'));
 });
+
+it.each([
+  ['an input', '<input slot="input" type="text">'],
+  [
+    'a craft-input',
+    '<craft-input slot="input"><input slot="input"></craft-input>',
+  ],
+])(
+  'keeps focus on the translation help when it is activated in a label for %s',
+  async (_case, control) => {
+    const field = document.createElement('craft-field');
+    field.label = 'Title';
+    field.translatable = true;
+    field.innerHTML = control;
+    document.body.append(field);
+    await field.updateComplete;
+    const indicator = field.querySelector('craft-tooltip craft-button')!;
+
+    await userEvent.click(indicator);
+    expect(document.activeElement).toBe(indicator);
+
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard(' ');
+    expect(document.activeElement).toBe(indicator);
+
+    const label = field._labelNode!;
+    await userEvent.click(label, {
+      position: {x: 1, y: label.getBoundingClientRect().height / 2},
+    });
+    await expect.element(field.querySelector('input')!).toHaveFocus();
+  }
+);
 
 it.each([
   ['a textarea', '<textarea slot="input" maxlength="100"></textarea>'],

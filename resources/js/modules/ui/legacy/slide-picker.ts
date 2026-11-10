@@ -37,7 +37,7 @@ export function createSlidePicker(
   el.min = min;
   el.max = max;
   el.step = step;
-  el.modelValue = value || 0;
+  el.value = value || 0;
   if (config.label) {
     el.label = config.label;
   }
@@ -65,7 +65,7 @@ export function createSlidePicker(
   }
 
   el.addEventListener('change', () => {
-    config.onChange?.(el.modelValue);
+    config.onChange?.(el.value);
   });
 
   return el;

@@ -24,11 +24,11 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCatalog;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCompatibility;
 use CraftCms\Yii2Adapter\Behavior\Mixins\LegacyBehaviorMixin;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Yii2Adapter\Mixins\AssetMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
@@ -49,7 +49,7 @@ readonly class CompatibilityMixins
         }
 
         Field::macro('trigger', function($name, mixed $event = null): void {
-            Deprecator::log('Field-trigger', 'Calling ->trigger on a Field is deprecated. Switch to component events instead.');
+            LegacyUsage::record('Field-trigger', 'Calling ->trigger on a Field is deprecated. Switch to component events instead.');
 
             $event ??= new YiiEvent();
 

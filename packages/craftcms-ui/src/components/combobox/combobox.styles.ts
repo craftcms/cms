@@ -15,9 +15,10 @@ export default css`
 
   ::slotted(.form-control) {
     ${baseComboboxStyles}
+    box-sizing: border-box;
   }
 
-  /* Lion sets the field's width as an inline min-width, which wins over this cap on wider fields */
+  /* The dropdown sets the field's width as an inline min-width, which wins over this cap on wider fields */
   #overlay-content-node-wrapper {
     max-inline-size: min(calc(360rem / 16), calc(100vw - var(--c-spacing-lg)));
     border: 1px solid var(--c-form-control-border-color);
@@ -30,6 +31,8 @@ export default css`
   ::slotted([slot='listbox']) {
     background: transparent;
     display: grid;
+    max-block-size: calc(200rem / 16);
+    overflow: auto;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--c-spacing-xs);
     padding: var(--c-spacing-sm);
@@ -85,7 +88,7 @@ export default css`
     padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }
 
-  :host([multiple-choice]) .input-group__input {
+  :host([multiple]) .input-group__input {
     ${baseFormControlStyles}
     display: flex;
     flex-wrap: wrap;
@@ -94,20 +97,20 @@ export default css`
     padding: var(--c-spacing-xs);
   }
 
-  :host([multiple-choice][focused]) .input-group__input {
+  :host([multiple]) .input-group__input:has(.combobox__textbox:focus-within) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
   }
 
-  /* Lion turns off the textbox's own outline, so draw the ring on its wrapper */
-  :host(:not([multiple-choice])) ::slotted(.form-control:focus-within) {
+  /* The textbox is the .form-control here, so it carries the ring itself */
+  :host(:not([multiple])) ::slotted(.form-control:focus-within) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
   }
 
-  :host([multiple-choice][has-feedback-for='error']) .input-group__input {
+  :host([multiple][invalid]) .input-group__input {
     border-color: var(--c-color-danger-border-loud);
   }
 
@@ -117,11 +120,11 @@ export default css`
     min-width: 0;
   }
 
-  :host([multiple-choice]) .combobox__textbox {
+  :host([multiple]) .combobox__textbox {
     min-width: 8rem;
   }
 
-  :host([multiple-choice]) ::slotted(.form-control) {
+  :host([multiple]) ::slotted(.form-control) {
     height: calc(
       var(--c-input-height, var(--c-size-control-md)) - 2 *
         (var(--c-spacing-xs) + var(--_input-border-width))

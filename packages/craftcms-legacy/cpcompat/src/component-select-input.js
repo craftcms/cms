@@ -377,11 +377,10 @@
               // Resolve from `$component` (the chip), not `this` — in case the
               // chip ends up getting assigned to a different component select.
               // `$component` stays put in the DOM even when the menu it's
-              // opened from gets relocated (both the legacy
-              // `Garnish.DisclosureMenu` and Lion's overlay, which backs
-              // `craft-action-menu`, move their open content elsewhere in the
-              // document), so traversing from it — rather than from the
-              // clicked item — works for either action-menu shape.
+              // opened from gets relocated (the legacy `Garnish.DisclosureMenu`
+              // moves its open content elsewhere in the document), so
+              // traversing from it — rather than from the clicked item —
+              // works for either action-menu shape.
               $component
                 .closest('.componentselect')
                 .data('componentSelect')

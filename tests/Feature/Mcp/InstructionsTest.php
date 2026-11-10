@@ -11,6 +11,7 @@ use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\Events\CollectingServerInstructions;
 use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
@@ -61,7 +62,7 @@ it('keeps startup instructions brief and delivers full guidance through the admi
         ->assertBadRequest()->assertJsonPath('error.message', 'Tool not found: "info_get".');
 })->with([
     'array config' => [fn (string $instructions): array => ['instructions' => $instructions]],
-    'JSON config' => [fn (string $instructions): string => json_encode(['instructions' => $instructions], JSON_THROW_ON_ERROR)],
+    'JSON config' => [fn (string $instructions): string => Json::encode(['instructions' => $instructions])],
     'fluent config' => [fn (string $instructions): McpConfig => McpConfig::create()->instructions($instructions)],
 ]);
 

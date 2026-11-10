@@ -80,9 +80,7 @@ it('adds a custom checkbox whose text is checked and emitted, leaving the group 
 
   expect(emitted.at(-1)).toEqual(['mine', 'new']);
   expect(
-    (group as HTMLElement & {formElements: HTMLElement[]}).formElements.map(
-      (element) => element.tagName.toLowerCase()
-    )
+    (group.choices as unknown as Element[]).map((element) => element.localName)
   ).toEqual(['craft-checkbox', 'craft-checkbox', 'craft-checkbox']);
 });
 
@@ -102,9 +100,7 @@ it('emits what’s typed into the custom radio, leaving the group to its radios'
 
   expect(emitted.at(-1)).toBe('new');
   expect(
-    (group as HTMLElement & {formElements: HTMLElement[]}).formElements.map(
-      (element) => element.tagName.toLowerCase()
-    )
+    (group.choices as unknown as Element[]).map((element) => element.localName)
   ).toEqual(['craft-radio', 'craft-radio']);
 });
 

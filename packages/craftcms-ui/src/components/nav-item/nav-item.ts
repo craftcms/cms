@@ -43,6 +43,9 @@ import {
  * @slot - The item's label.
  * @slot subnav - Nested `craft-nav-item`s, shown beneath the item or in a
  *   flyout beside it.
+ *
+ * @cssproperty [--c-nav-item-icon-color=inherit] - The icon's color while the
+ *   item isn't `active` or hovered, which take the row's own color.
  */
 export default class CraftNavItem extends LitElement {
   static override styles = [visuallyHiddenStyles, styles];
@@ -379,12 +382,15 @@ export default class CraftNavItem extends LitElement {
 
   // The overlay closes itself on Escape and outside clicks; follow it, or the
   // state would say open and the next hover wouldn't reopen it.
-  #onFlyoutOpenedChanged = (event: Event) => {
-    const opened = (event.target as {opened?: boolean}).opened === true;
+  #onFlyoutToggle = (event: Event) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
 
-    this.flyoutOpen = opened;
+    this.#stopOverlayEvent(event);
+    this.flyoutOpen = event.type === 'craft-show';
 
-    if (!opened) {
+    if (!this.flyoutOpen) {
       flyoutHoverIntent.notifyClosed(this.#hoverIntent);
     }
   };
@@ -550,10 +556,9 @@ export default class CraftNavItem extends LitElement {
         for="${this.itemId}"
         placement="right-start"
         without-invoker-aria
-        .opened="${this.flyoutOpen}"
-        @opened-changed="${this.#onFlyoutOpenedChanged}"
-        @craft-show=${this.#stopOverlayEvent}
-        @craft-hide=${this.#stopOverlayEvent}
+        .open="${this.flyoutOpen}"
+        @craft-show=${this.#onFlyoutToggle}
+        @craft-hide=${this.#onFlyoutToggle}
         @craft-after-show=${this.#stopOverlayEvent}
         @craft-after-hide=${this.#stopOverlayEvent}
       >

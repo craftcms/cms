@@ -54,7 +54,7 @@
 
     <craft-dialog
       :label="t('Edit a draft in a scheduled release?')"
-      .opened="settleScheduledEdit !== null"
+      .open="settleScheduledEdit !== null"
       @craft-hide="answerScheduledEdit(false)"
     >
       <p class="m-0">

@@ -82,7 +82,7 @@ window.addEventListener('craft:copy-text-prompt', ((ev: CustomEvent) => {
 
 /**
  * The `craft-field` the invoking menu item belongs to. `craft-action-menu`
- * keeps its content in place (Lion's dropdown config is local placement), so
+ * keeps its content in place, so
  * the item is still a descendant of the field it was rendered into.
  */
 function fieldFor(trigger: unknown): HTMLElement | null {

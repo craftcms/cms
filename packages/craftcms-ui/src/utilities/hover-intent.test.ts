@@ -128,6 +128,15 @@ describe('warm-up', () => {
     expect(parent.open).toBe(true);
   });
 
+  it('lets focus skip a warm-up the pointer already started', () => {
+    const {parent} = tree();
+
+    group.requestOpen(parent);
+    group.requestOpen(parent, {immediate: true});
+
+    expect(parent.open).toBe(true);
+  });
+
   it('abandons a warm-up the pointer walked away from', () => {
     const {parent} = tree();
 

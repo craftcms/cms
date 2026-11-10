@@ -87,12 +87,12 @@ export default class CraftInputPassword extends CraftInput {
 
   #syncPasswordRules() {
     if (this.passwordRules) {
-      this._inputNode?.setAttribute('passwordrules', this.passwordRules);
+      this._control?.setAttribute('passwordrules', this.passwordRules);
 
       return;
     }
 
-    this._inputNode?.removeAttribute('passwordrules');
+    this._control?.removeAttribute('passwordrules');
   }
 
   protected reveal = () => {
@@ -100,11 +100,9 @@ export default class CraftInputPassword extends CraftInput {
     this.type = this._visible ? 'text' : 'password';
   };
 
-  // Note: no leading/trailing whitespace inside the template — with
-  // `renderAsDirectHostChild` every root node is appended to the host, and
-  // text nodes don't get a slot attribute.
   protected renderSuffix = () => {
     return html`<craft-button
+      slot="suffix"
       type="button"
       icon
       size="small"
@@ -128,14 +126,7 @@ export default class CraftInputPassword extends CraftInput {
   override get slots() {
     return {
       ...super.slots,
-      // Render as a direct host child so the button itself carries
-      // slot="suffix", rather than being nested in SlotMixin's wrapper div.
-      suffix: () => {
-        return {
-          template: this.renderSuffix(),
-          renderAsDirectHostChild: true,
-        };
-      },
+      suffix: () => this.renderSuffix(),
     };
   }
 }

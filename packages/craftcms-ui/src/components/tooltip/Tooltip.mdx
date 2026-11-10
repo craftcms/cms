@@ -5,7 +5,7 @@ import * as TooltipStories from './tooltip.stories';
 
 # Tooltip
 
-`<craft-tooltip>` shows contextual text for an external trigger element referenced by id via the `for` attribute. It is built on [Lion's tooltip/overlay system](https://lion.js.org/components/tooltip/overview/) and supports `placement` (Popper placement strings) and `trigger` (`hover focus`, `click`, or `manual`). It emits `craft-show`, `craft-after-show`, `craft-hide`, and `craft-after-hide` events.
+`<craft-tooltip>` shows contextual text for an external trigger element referenced by id via the `for` attribute. It supports `placement` (Popper placement strings) and `trigger` (`hover focus`, `click`, or `manual`). It emits `craft-show`, `craft-after-show`, `craft-hide`, and `craft-after-hide` events. Its trigger, Escape, `show()` and `hide()` first fire a cancelable `craft-before-show` or `craft-before-hide` event; setting `open` doesn't.
 
 <Canvas of={TooltipStories.Playground} sourceState="shown" />
 

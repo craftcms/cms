@@ -1,31 +1,77 @@
-import {css, type PropertyValues} from 'lit';
+import {css, html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
-import {LionTooltip} from '@lion/ui/tooltip.js';
-import {withHoverInteraction} from '../../utilities/overlay-hover.js';
-import {wireOverlayLifecycleEvents} from '../../utilities/overlay-events.js';
-import {viewportEscapingModifiers} from '../../utilities/overlay-position.js';
+import {createPopper, type Instance as PopperInstance} from '@popperjs/core';
+import {watchHover, type HoverWatcher} from '../../utilities/overlay-hover.js';
+import {announceOverlayState} from '../../utilities/overlay-events.js';
+import {claimEscape, isEscapeClaimed} from '../../utilities/overlay-escape.js';
 import {
-  lowerOverlay,
-  raiseOverlay,
-  topLayerStyles,
-} from '../../utilities/overlay-top-layer.js';
+  hideLayer,
+  layerStyles,
+  overlayModifiers,
+  showLayer,
+  supportsPopover,
+} from '../../utilities/overlay-layer.js';
+import {uniqueId} from '../../utilities/unique-id.js';
 
 /**
  * craft-tooltip shows contextual text for an external trigger element
  * referenced by id.
  *
+ * The content gets `role="tooltip"`, and the invoker refers to it with
+ * `aria-describedby` (or `aria-labelledby`, with `invoker-relation="label"`),
+ * alongside any references it already has.
+ *
  * @example <craft-tooltip for="my-button" placement="right-start">Help text</craft-tooltip>
+ *
+ * @slot - The tooltip text.
+ * @slot invoker - The trigger, when it isn't named with `for`.
  *
  * @cssproperty [--c-tooltip-max-width=min(45ch, 100vw - 2rem)] - Widest the
  *   tooltip gets before its text wraps. The default keeps lines short enough
  *   to read easily, and within narrow viewports.
  *
+ * @fires craft-before-show - Its trigger or `show()` is about to open the
+ *   tooltip. Cancelable. Setting `open` doesn't fire it.
+ * @fires craft-before-hide - Its trigger, Escape or `hide()` is about to close
+ *   the tooltip. Cancelable. Setting `open` doesn't fire it.
  * @fires craft-show - The overlay is opening. Fires as the state flips.
  * @fires craft-after-show - The overlay has opened and its update has settled.
  * @fires craft-hide - The overlay is closing. Fires as the state flips.
  * @fires craft-after-hide - The overlay has closed and its update has settled.
  */
-export default class CraftTooltip extends LionTooltip {
+export default class CraftTooltip extends LitElement {
+  static override styles = [
+    layerStyles,
+    css`
+      :host {
+        display: contents;
+      }
+
+      :host([hidden]) {
+        display: none;
+      }
+
+      ::slotted([slot='content']) {
+        background-color: var(--c-color-black-fill-loud);
+        border: 1px solid var(--c-color-black-border-loud);
+        color: var(--c-color-black-on-loud);
+        padding: var(--c-tooltip-padding, calc(4rem / 16) calc(8rem / 16));
+        font-family: var(--c-font-body);
+        font-size: var(--c-text-base);
+        font-weight: 400;
+        line-height: 1.3;
+        border-radius: var(--c-radius-sm);
+        box-shadow: var(--c-shadow-md);
+        width: max-content;
+        max-inline-size: var(--c-tooltip-max-width, min(45ch, 100vw - 2rem));
+        overflow-wrap: break-word;
+      }
+    `,
+  ];
+
+  /** Whether the tooltip is showing. */
+  @property({type: Boolean, reflect: true}) open = false;
+
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
 
@@ -33,98 +79,51 @@ export default class CraftTooltip extends LionTooltip {
   @property({reflect: true}) placement = 'top';
 
   /**
-   * Space-separated triggers. `hover focus` (default) uses Lion's tooltip
-   * interaction; `click` toggles on invoker click; `manual` disables
-   * automatic triggers entirely.
+   * Space-separated triggers. `hover focus` (default) shows the tooltip while
+   * the invoker is hovered or has keyboard focus; `click` toggles it on
+   * invoker click; `manual` leaves it to `show()` and `hide()`.
    */
   @property({reflect: true}) trigger = 'hover focus';
 
+  /**
+   * Whether the tooltip describes its invoker (`description`, the default) or
+   * names it (`label`), for an invoker with no text of its own.
+   */
+  @property({attribute: 'invoker-relation'}) invokerRelation:
+    | 'description'
+    | 'label' = 'description';
+
   #contentWrapper: HTMLElement | null = null;
 
-  /** Lion's controller while it's wired up to the top layer. */
-  #layeredCtrl: EventTarget | null = null;
+  #contentId = uniqueId('tooltip');
 
-  #raise = () => raiseOverlay(this);
+  /** The invoker the tooltip is bound to, and the reference it added. */
+  #invoker: {node: HTMLElement; attribute: string} | null = null;
 
-  #lower = () => lowerOverlay(this);
+  #hover: HoverWatcher | null = null;
 
-  #onInvokerClick = () => {
-    this.opened = !this.opened;
-  };
+  #popper: PopperInstance | null = null;
 
-  /** The invoker the click listener is bound to, which `for` can change. */
-  #clickInvoker: HTMLElement | null = null;
+  #isSetUp = false;
 
   constructor() {
     super();
-    wireOverlayLifecycleEvents(this);
   }
 
-  static override get styles() {
-    return [
-      ...super.styles,
-      topLayerStyles,
-      css`
-        :host {
-          display: contents;
-        }
+  override requestUpdate(
+    name?: PropertyKey,
+    oldValue?: unknown,
+    options?: Parameters<LitElement['requestUpdate']>[2]
+  ): void {
+    super.requestUpdate(name, oldValue, options);
 
-        ::slotted([slot='content']) {
-          background-color: var(--c-color-black-fill-loud);
-          border: 1px solid var(--c-color-black-border-loud);
-          color: var(--c-color-black-on-loud);
-          padding: var(--c-tooltip-padding, calc(4rem / 16) calc(8rem / 16));
-          font-family: var(--c-font-body);
-          font-size: var(--c-text-base);
-          font-weight: 400;
-          line-height: 1.3;
-          border-radius: var(--c-radius-sm);
-          box-shadow: var(--c-shadow-md);
-          width: max-content;
-          max-inline-size: var(--c-tooltip-max-width, min(45ch, 100vw - 2rem));
-          overflow-wrap: break-word;
-        }
-      `,
-    ];
-  }
-
-  override connectedCallback() {
-    this.#ensureContentWrapper();
-    super.connectedCallback();
-  }
-
-  /**
-   * Lion expects tooltip content as a light-DOM child with `slot="content"`.
-   * Consumers put their content in the default slot, so wrap it on connect.
-   */
-  #ensureContentWrapper() {
-    if (this.#contentWrapper?.isConnected) {
-      return;
+    if (name === 'open') {
+      announceOverlayState(this);
     }
-
-    const wrapper = document.createElement('div');
-    wrapper.slot = 'content';
-    wrapper.append(
-      ...Array.from(this.childNodes).filter(
-        (node) => !(node instanceof Element) || node.slot === ''
-      )
-    );
-    this.append(wrapper);
-    this.#contentWrapper = wrapper;
   }
 
-  get #isClickTriggered(): boolean {
-    return this.trigger.split(' ').includes('click');
-  }
-
-  get #isManual(): boolean {
-    return this.trigger.split(' ').includes('manual');
-  }
-
-  // Resolve the external invoker via `for`, falling back to Lion's slotted
-  // `slot="invoker"` child.
-  // @ts-ignore Lion's JSDoc types this getter as always-defined.
-  override get _overlayInvokerNode(): HTMLElement | undefined {
+  /** The trigger: the `for` element, or a slotted `slot="invoker"` child. */
+  get invoker(): HTMLElement | undefined {
     if (this.for) {
       // When disconnected, getRootNode() may return a root (the element
       // itself or a bare DocumentFragment) without getElementById.
@@ -134,134 +133,392 @@ export default class CraftTooltip extends LionTooltip {
       }
       return (root.getElementById(this.for) as HTMLElement | null) ?? undefined;
     }
-    return super._overlayInvokerNode;
+
+    return Array.from(this.children).find(
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child.slot === 'invoker'
+    );
   }
 
-  // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
-  override _defineOverlayConfig() {
-    const config = {...super._defineOverlayConfig()};
+  get #content(): HTMLElement | null {
+    return this.#contentWrapper;
+  }
 
-    if (this.#isClickTriggered || this.#isManual) {
-      // Disable Lion's hover/focus interaction.
-      delete config.visibilityTriggerFunction;
-    } else {
-      // Lion defaults both delays to 300ms, which makes tooltips feel
-      // sluggish at both ends: slow to appear, and slow enough to leave that
-      // moving along a row of icons leaves the previous tooltip on screen
-      // beside the new one. Show immediately, and keep just enough of a delay
-      // out to not blink when the pointer clips an edge.
-      const {visibilityTriggerFunction} = withHoverInteraction({
-        delayIn: 200,
-        delayOut: 0,
-      });
-      config.visibilityTriggerFunction = visibilityTriggerFunction;
+  get #layer(): HTMLElement | null {
+    return (
+      this.shadowRoot?.querySelector<HTMLElement>('.overlay-layer') ?? null
+    );
+  }
+
+  get #positioned(): HTMLElement | null {
+    return (
+      this.shadowRoot?.querySelector<HTMLElement>('.overlay-position') ?? null
+    );
+  }
+
+  get #triggers(): string[] {
+    return this.trigger.split(' ');
+  }
+
+  /** Shows the tooltip, regardless of `trigger`. Resolves once it is open. */
+  async show(): Promise<void> {
+    this.#request(true);
+    await this.updateComplete;
+  }
+
+  /** Re-measures the tooltip's position, for content that changed size. */
+  reposition(): void {
+    void this.#popper?.update();
+  }
+
+  /** Hides the tooltip. Resolves once it is closed. */
+  async hide(): Promise<void> {
+    this.#request(false);
+    await this.updateComplete;
+  }
+
+  protected override render() {
+    // Nested below the layer for Popper's containing-block search; see
+    // craft-popover.
+    return html`
+      <slot name="invoker" @slotchange=${this.#onInvokerSlotChange}></slot>
+      <div
+        class="overlay-layer"
+        role="none"
+        popover=${supportsPopover ? 'manual' : nothing}
+      >
+        <div class="overlay-position">
+          <slot name="content" @slotchange=${this.#onContentSlotChange}></slot>
+        </div>
+      </div>
+    `;
+  }
+
+  #onInvokerSlotChange = (): void => {
+    if (this.#isSetUp && this.invoker !== this.#invoker?.node) {
+      this.#bind();
+    }
+  };
+
+  /**
+   * Takes up a `slot="content"` child that replaced the content, and refers
+   * the invoker to it in place of the old one.
+   */
+  #onContentSlotChange = (): void => {
+    const content = Array.from(this.children).find(
+      (child) => child instanceof HTMLElement && child.slot === 'content'
+    );
+
+    // Only a supplied element takes over. Content that was just removed, as
+    // when `textContent` is set, is left alone: happy-dom fires `slotchange`
+    // during the removal, and wrapping then would be removed in turn.
+    if (!content || !this.isConnected || content === this.#contentWrapper) {
+      return;
     }
 
+    const invoker = this.#invoker;
+    if (invoker) {
+      this.#removeReference(invoker.node, invoker.attribute);
+    }
+
+    this.#contentWrapper?.removeEventListener('keyup', this.#onEscape, true);
+    this.#contentWrapper = null;
+    this.#contentId = uniqueId('tooltip');
+    this.#ensureContentWrapper();
+
+    if (!invoker) {
+      if (this.#isSetUp) {
+        this.#bind();
+      }
+      return;
+    }
+
+    // The invoker stays bound, so its hover watcher keeps its state: a show
+    // still waiting on its delay goes ahead, and one dismissed with Escape
+    // stays dismissed.
+    this.#addReference(invoker.node, invoker.attribute);
+    this.#hover?.setContent(this.#contentWrapper!);
+    this.reposition();
+  };
+
+  override connectedCallback() {
+    // Content replaced while the tooltip was out of the document is taken up
+    // the way `slotchange` would, before it's mistaken for the content the
+    // invoker already refers to.
+    if (this.#contentWrapper && this.#contentWrapper.parentNode !== this) {
+      this.#onContentSlotChange();
+    }
+    this.#ensureContentWrapper();
+    super.connectedCallback();
+
+    if (this.hasUpdated && !this.#isSetUp) {
+      this.#setup();
+    }
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.#hidePane();
+
+    void this.updateComplete.then(() => {
+      if (this.isConnected) {
+        // Moved: `for` may name another element in the root it landed in.
+        if (this.invoker !== this.#invoker?.node) {
+          this.#bind();
+        }
+        if (this.open) {
+          this.#showPane();
+        }
+        return;
+      }
+
+      this.#unbind();
+      this.open = false;
+      this.#isSetUp = false;
+    });
+  }
+
+  protected override firstUpdated(changed: PropertyValues): void {
+    super.firstUpdated(changed);
+    this.#setup();
+  }
+
+  protected override updated(changed: PropertyValues): void {
+    super.updated(changed);
+
+    if (!this.#isSetUp) {
+      return;
+    }
+
+    if (
+      changed.has('for') ||
+      changed.has('trigger') ||
+      changed.has('invokerRelation')
+    ) {
+      this.#bind();
+    }
+
+    if (changed.has('open')) {
+      if (this.open) {
+        this.#showPane();
+      } else {
+        this.#hidePane();
+      }
+    }
+
+    if (changed.has('placement') && this.#popper) {
+      void this.#popper.setOptions(this.#popperOptions());
+    }
+  }
+
+  #setup(): void {
+    this.#isSetUp = true;
+    this.#bind();
+
+    if (this.open) {
+      this.#showPane();
+    }
+  }
+
+  /**
+   * Tooltip content goes in the default slot, so it's wrapped on connect,
+   * unless markup supplies a `slot="content"` element itself.
+   */
+  #ensureContentWrapper() {
+    if (this.#contentWrapper?.isConnected) {
+      return;
+    }
+
+    let wrapper = Array.from(this.children).find(
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child.slot === 'content'
+    );
+
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.slot = 'content';
+      wrapper.append(
+        ...Array.from(this.childNodes).filter(
+          (node) => !(node instanceof Element) || node.slot === ''
+        )
+      );
+      this.append(wrapper);
+    }
+
+    wrapper.id ||= this.#contentId;
+    this.#contentId = wrapper.id;
+    wrapper.setAttribute('role', 'tooltip');
+    this.#contentWrapper = wrapper;
+    wrapper.addEventListener('keyup', this.#onEscape, true);
+  }
+
+  /** Binds the current invoker, after dropping whatever was bound before. */
+  #bind(): void {
+    this.#unbind();
+
+    const node = this.invoker;
+    const content = this.#content;
+
+    // Rebinding to an invoker shows it again while it's still open.
+    if (!node || !content) {
+      this.#hidePane();
+      return;
+    }
+
+    const attribute =
+      this.invokerRelation === 'label' ? 'aria-labelledby' : 'aria-describedby';
+    this.#invoker = {node, attribute};
+    this.#addReference(node, attribute);
+
+    // Captured, so it runs before a popover sharing the invoker closes on the
+    // same press.
+    node.addEventListener('keyup', this.#onEscape, true);
+
+    if (this.#triggers.includes('click')) {
+      node.addEventListener('click', this.#onInvokerClick);
+    } else if (!this.#triggers.includes('manual')) {
+      // Shows promptly, and hides without a delay out so moving along a row
+      // of icons doesn't leave the previous tooltip beside the new one.
+      this.#hover = watchHover({
+        invoker: node,
+        content,
+        delayIn: 200,
+        delayOut: 0,
+        show: () => this.#request(true),
+        hide: () => this.#request(false),
+      });
+    }
+
+    // An open tooltip may have no Popper yet, and one only follows the scroll
+    // containers it found when created.
+    if (this.open) {
+      this.#popper?.destroy();
+      this.#popper = null;
+      this.#showPane();
+    }
+  }
+
+  #unbind(): void {
+    this.#hover?.teardown();
+    this.#hover = null;
+
+    if (!this.#invoker) {
+      return;
+    }
+
+    const {node, attribute} = this.#invoker;
+    node.removeEventListener('keyup', this.#onEscape, true);
+    node.removeEventListener('click', this.#onInvokerClick);
+    this.#removeReference(node, attribute);
+    this.#invoker = null;
+  }
+
+  #addReference(node: HTMLElement, attribute: string): void {
+    const ids = (node.getAttribute(attribute) ?? '').split(/\s+/);
+
+    if (!ids.includes(this.#contentId)) {
+      node.setAttribute(
+        attribute,
+        [...ids, this.#contentId].filter(Boolean).join(' ')
+      );
+    }
+  }
+
+  #removeReference(node: HTMLElement, attribute: string): void {
+    const ids = (node.getAttribute(attribute) ?? '')
+      .split(/\s+/)
+      .filter((id) => id && id !== this.#contentId);
+
+    if (ids.length) {
+      node.setAttribute(attribute, ids.join(' '));
+    } else {
+      node.removeAttribute(attribute);
+    }
+  }
+
+  /**
+   * Asks to open or close: announces it with a cancelable `craft-before-*`
+   * event, then flips `open`, which the update applies.
+   */
+  #request(opened: boolean): void {
+    if (opened === this.open) {
+      return;
+    }
+
+    const event = new CustomEvent(
+      opened ? 'craft-before-show' : 'craft-before-hide',
+      {cancelable: true}
+    );
+    this.dispatchEvent(event);
+
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    this.open = opened;
+  }
+
+  #onInvokerClick = (): void => {
+    this.#request(!this.open);
+  };
+
+  /**
+   * Closes on Escape released on the invoker or the content, and claims the
+   * press so a popover around the tooltip stays open.
+   */
+  #onEscape = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape' || !this.open || isEscapeClaimed(event)) {
+      return;
+    }
+
+    claimEscape(event);
+    this.#request(false);
+  };
+
+  #popperOptions() {
     return {
-      ...config,
-      popperConfig: {
-        ...config.popperConfig,
-        strategy: 'fixed',
-        placement: this.placement,
-        modifiers: [
-          ...(config.popperConfig?.modifiers ?? []),
-          // Lion's arrow mixin leaves 8px for an arrow tooltips don't draw.
-          // Sit at craft-popover's default distance instead, so a tooltip
-          // lines up with a flyout opened from the same row.
-          {name: 'offset', options: {offset: [0, 4]}},
-          ...viewportEscapingModifiers(),
-        ],
-      },
+      // Position relative to the viewport, which is also what the top layer
+      // places against.
+      strategy: 'fixed' as const,
+      placement: this.placement as PopperInstance['state']['placement'],
+      // craft-popover's default distance, so a tooltip lines up with a flyout
+      // opened from the same row.
+      modifiers: overlayModifiers(4),
     };
   }
 
-  // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
-  override _setupOpenCloseListeners() {
-    super._setupOpenCloseListeners();
-    this.#bindInvokerClick();
-  }
+  #showPane(): void {
+    const layer = this.#layer;
+    const positioned = this.#positioned;
+    const invoker = this.#invoker?.node;
 
-  // @ts-ignore Lion's OverlayMixin is typed via JSDoc.
-  override _teardownOpenCloseListeners() {
-    super._teardownOpenCloseListeners();
-    this.#unbindInvokerClick();
-  }
-
-  #bindInvokerClick() {
-    this.#unbindInvokerClick();
-
-    if (this.#isClickTriggered) {
-      this.#clickInvoker = this._overlayInvokerNode ?? null;
-      this.#clickInvoker?.addEventListener('click', this.#onInvokerClick);
-    }
-  }
-
-  #unbindInvokerClick() {
-    this.#clickInvoker?.removeEventListener('click', this.#onInvokerClick);
-    this.#clickInvoker = null;
-  }
-
-  override _setupOverlayCtrl() {
-    super._setupOverlayCtrl();
-
-    this.#layeredCtrl = this._overlayCtrl as unknown as EventTarget;
-    this.#layeredCtrl.addEventListener('before-show', this.#raise);
-    this.#layeredCtrl.addEventListener('hide', this.#lower);
-  }
-
-  override _teardownOverlayCtrl() {
-    this.#lower();
-    this.#layeredCtrl?.removeEventListener('before-show', this.#raise);
-    this.#layeredCtrl?.removeEventListener('hide', this.#lower);
-    this.#layeredCtrl = null;
-
-    super._teardownOverlayCtrl();
-  }
-
-  protected override updated(changed: PropertyValues) {
-    super.updated(changed);
-
-    // Until the controller is set up on first connect, it reads both itself.
+    // An update queued before removal still runs, and a disconnected layer
+    // can't be shown. Without an invoker there's nothing to show it beside.
     if (
-      !this._overlayCtrl ||
       !this.isConnected ||
-      !(changed.has('for') || changed.has('trigger'))
+      !layer ||
+      !positioned ||
+      !invoker ||
+      this.#popper
     ) {
       return;
     }
 
-    // `trigger` decides the hover/focus interaction, which the controller only
-    // reads from its config.
-    const {visibilityTriggerFunction} = this._defineOverlayConfig();
-
-    this.#unbindInvokerClick();
-    this._overlayCtrl.updateConfig({
-      invokerNode: this._overlayInvokerNode,
-      visibilityTriggerFunction,
-    });
-    this.#bindInvokerClick();
+    showLayer(layer);
+    this.#popper = createPopper(invoker, positioned, this.#popperOptions());
+    this.#popper.forceUpdate();
   }
 
-  /**
+  #hidePane(): void {
+    const layer = this.#layer;
 
-   * Shows the tooltip, regardless of `trigger`. Resolves once it is open.
+    this.#popper?.destroy();
+    this.#popper = null;
+    this.#hover?.reset();
 
-   */
-
-  async show(): Promise<void> {
-    this.opened = true;
-    await this.updateComplete;
-  }
-
-  /**
-
-   * Hides the tooltip. Resolves once it is closed.
-
-   */
-
-  async hide(): Promise<void> {
-    this.opened = false;
-    await this.updateComplete;
+    if (layer) {
+      hideLayer(layer);
+    }
   }
 }
 

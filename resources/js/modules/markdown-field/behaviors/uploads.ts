@@ -43,7 +43,11 @@ async function uploadFile(
 ): Promise<string> {
   const task = new FileUpload<UploadResult>(file, {
     url: store.url(),
-    parameters: {folderId: uploadFolderId},
+    // Saved in the site its reference points to
+    parameters: {
+      folderId: uploadFolderId,
+      ...(uploadSiteId ? {siteId: uploadSiteId} : {}),
+    },
   });
 
   try {

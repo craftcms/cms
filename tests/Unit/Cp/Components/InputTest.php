@@ -125,10 +125,10 @@ describe('input', function () {
 });
 
 describe('host attributes', function () {
-    it('mirrors Lion-synced control attributes onto the host', function () {
-        // Lion pushes type/placeholder/name/disabled/readonly from the host
-        // onto the slotted input on upgrade, so non-default values must be
-        // reflected there or the server-rendered attributes get clobbered.
+    it('mirrors control attributes onto the host', function () {
+        // The component pushes type/placeholder/name/disabled/readonly from
+        // the host onto the slotted input, so the host carries the same
+        // non-default values as the server-rendered input.
         $html = Input::make()
             ->id('i')
             ->type('password')
@@ -145,7 +145,7 @@ describe('host attributes', function () {
             ->and($html)->toMatch('/<craft-input[^>]* readonly/');
     });
 
-    it('omits Lion-default control attributes from the host', function () {
+    it('omits default control attributes from the host', function () {
         expect(Input::make()->id('i')->toHtml())
             ->toContain('<craft-input>');
     });

@@ -2665,6 +2665,7 @@ return [
     'Required' => 'Required',
     'Requirements' => 'Requirements',
     'Requires PHP {version}' => 'Requires PHP {version}',
+    'Requires the Yii2 adapter' => 'Requires the Yii2 adapter',
     'Resaving {name} entries' => 'Resaving {name} entries',
     'Resaving {type} entries' => 'Resaving {type} entries',
     'Resaving {type}' => 'Resaving {type}',

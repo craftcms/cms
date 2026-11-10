@@ -1,16 +1,14 @@
-import {LionCheckboxGroup} from '@lion/ui/checkbox-group.js';
-import {css} from 'lit';
+import {css, LitElement} from 'lit';
 import {baseFieldStyles} from '@src/styles/form.styles';
-import {SsrChoiceGroupMixin} from '@src/mixins/SsrChoiceGroupMixin';
-import {HasLabel} from '@src/mixins/HasLabel';
+import {ChoiceGroup} from '@src/mixins/ChoiceGroup';
+import {formControlStyles} from '@src/mixins/FormControl';
 
 /**
  * @summary A group of checkboxes sharing one name, for a choice where any
  * number of options can be selected.
  *
- * The group owns the name and the collected value, so its `modelValue` is the
- * array of what is checked. Use `craft-radio-group` when exactly one option
- * may be chosen.
+ * The group owns the name, and its `value` is the array of values that are
+ * checked. Use `craft-radio-group` when exactly one option may be chosen.
  *
  * A group rendered by the server adopts the name already on its inputs, so the
  * markup keeps posting the way it did before the component upgraded.
@@ -19,27 +17,32 @@ import {HasLabel} from '@src/mixins/HasLabel';
  * @slot label - The group's label.
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages for the group as a whole.
+ *
+ * @fires {Event} input - When the user checks or unchecks an option.
+ * @fires {Event} change - When the user checks or unchecks an option.
  */
-export default class CraftCheckboxGroup extends HasLabel(
-  SsrChoiceGroupMixin(LionCheckboxGroup, 'checkbox')
-) {
-  static override get styles() {
-    return [
-      ...LionCheckboxGroup.styles,
-      css`
-        ${baseFieldStyles}
+export default class CraftCheckboxGroup extends ChoiceGroup(LitElement, {
+  choice: 'craft-checkbox',
+  multiple: true,
+}) {
+  /** The values of the checked checkboxes, in order. Setting it checks those and clears the rest. */
+  declare value: string[];
 
-        .input-group {
-          display: grid;
-          gap: var(--c-spacing-sm);
-        }
+  static override styles = [
+    formControlStyles,
+    css`
+      ${baseFieldStyles}
 
-        ::slotted(label) {
-          font-weight: bold;
-        }
-      `,
-    ];
-  }
+      .input-group {
+        display: grid;
+        gap: var(--c-spacing-sm);
+      }
+
+      ::slotted(label) {
+        font-weight: bold;
+      }
+    `,
+  ];
 }
 
 if (!customElements.get('craft-checkbox-group')) {

@@ -11,10 +11,12 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Yii2Adapter\Ui\Enums\LegacyHtmlMode;
 use CraftCms\Yii2Adapter\Ui\LegacyHtml;
 use CraftCms\Yii2Adapter\Ui\Nodes\LegacyHtmlField;
 use InvalidArgumentException;
+use ReflectionFunction;
 
 /**
  * Renders field layout elements through their Craft 5 `formHtml()` and `inputHtml()` methods.
@@ -50,6 +52,15 @@ class LegacyLayoutElementHtml
         Closure $html,
         string|array|null $path = null,
     ): ?LegacyHtmlField {
+        // Attributed to the `formHtml()` or `inputHtml()` method the closure was created from.
+        $method = new ReflectionFunction($html);
+        LegacyUsage::record(
+            'field-layout-element-html',
+            'Field layout elements that render their HTML with `formHtml()` or `inputHtml()` are deprecated. Implement `uiNode()`, or `uiControl()` for fields, instead.',
+            $method->getFileName() ?: null,
+            $method->getStartLine() ?: null,
+        );
+
         $path ??= ['__legacyFieldLayout', $layoutElement->uid ?: throw new InvalidArgumentException('Legacy FieldLayout elements require stable UIDs.')];
 
         $mode = $context->ui->mode === ControlMode::Editable
