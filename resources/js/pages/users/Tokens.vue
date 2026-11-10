@@ -51,7 +51,7 @@
   });
   const revokeRequest = useHttp<
     {clientId: string; tokenId: string | null},
-    unknown
+    {redirect?: string}
   >({clientId: '', tokenId: null});
 
   // The groups and scopes shown in the modal. Existing tokens show the scopes
@@ -202,7 +202,12 @@
     revokeRequest.clientId = grant.clientId;
     revokeRequest.tokenId = grant.tokenId;
 
-    if (await revokeRequest.post(revokeAction().url)) {
+    const response = await revokeRequest.post(revokeAction().url);
+
+    // The screen goes away once there's nothing left to list or create.
+    if (response?.redirect) {
+      router.visit(response.redirect);
+    } else if (response) {
       router.reload({only: ['grants']});
     }
   }

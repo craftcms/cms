@@ -77,6 +77,46 @@ it('preserves hidden files and directories when replacing YAML exports', functio
     expect($storage->readYaml('project'))->toBe(['system' => ['name' => 'Example']]);
 });
 
+it('replaces YAML exports in place, and keeps them when a write fails', function () {
+    $entryTypeUid = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    $fieldUid = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    $config = [
+        'dateModified' => 1,
+        'entryTypes' => [$entryTypeUid => ['handle' => 'foo']],
+        'fields' => [$fieldUid => ['handle' => 'body']],
+    ];
+    $base = $this->directory.'/project';
+    File::writeToFile("$base/entryTypes/Foo--$entryTypeUid.yaml", "handle: Foo\n");
+    File::writeToFile("$base/sections/old--cccccccc-cccc-4ccc-8ccc-cccccccccccc.yaml", "handle: old\n");
+    File::writeToFile("$base/globalSets/old--eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee.yaml", "handle: old\n");
+    File::writeToFile("$base/globalSets/.hidden/file.txt", 'keep');
+
+    $storage = new ConfigStorage;
+    $storage->writeYaml('project', $config);
+
+    $files = collect(File::allFiles($base, true))->map->getRelativePathname()->sort()->values()->all();
+    expect($files)->toBe([
+        'entryTypes/foo--'.$entryTypeUid.'.yaml',
+        'fields/body--'.$fieldUid.'.yaml',
+        'globalSets/.hidden/file.txt',
+        'project.yaml',
+    ])->and(File::exists("$base/sections"))->toBeFalse();
+
+    // A failed write leaves the existing files in place
+    $config['fields']['dddddddd-dddd-4ddd-8ddd-dddddddddddd'] = ['handle' => 'summary'];
+    chmod("$base/fields", 0555);
+
+    try {
+        expect(fn () => $storage->writeYaml('project', $config))->toThrow(Exception::class, 'Unable to write new project config files: ');
+    } finally {
+        chmod("$base/fields", 0775);
+    }
+
+    expect(File::exists("$base/entryTypes/foo--$entryTypeUid.yaml"))->toBeTrue()
+        ->and(File::exists("$base/project.yaml"))->toBeTrue()
+        ->and(Cache::get(ProjectConfig::FILE_ISSUES_CACHE_KEY))->toBeTrue();
+})->skipOnWindows();
+
 it('uses configured Unix permissions for export and delta directories', function () {
     $mode = Cms::config()->defaultDirMode;
     $mask = umask(0);

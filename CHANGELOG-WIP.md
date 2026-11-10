@@ -122,6 +122,8 @@
 - The `loginPath` config setting is now `false` by default.
 - Added a **My Account → Tokens** screen, where users can create Laravel Passport personal access tokens with the scopes they choose from any of the APIs offered, behind an elevated session, rename them, and revoke them along with the apps they’ve authorized. It’s shown when an API offers personal access token scopes the user may grant, or when the user has authorized an app.
 - The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. Requests to create tokens are rejected with a 400 error until the keys are set up. ([#20357](https://github.com/craftcms/cms/issues/20357))
+- Fixed a bug where revoking the last token or authorized app on the **My Account** → **Tokens** screen led to a 403 error when the screen was no longer available, such as when GraphQL was disabled. ([#20531](https://github.com/craftcms/cms/issues/20531))
+- Fixed a bug where password reset and email verification URLs generated from the console, such as with `users/password-reset-url`, always pointed to the front end, even for users with control panel access. ([#16340](https://github.com/craftcms/cms/issues/16340))
 
 ### Conditions
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
@@ -312,6 +314,8 @@
 - MySQL database backups and restores now carry over SSL/TLS settings from the system’s MySQL option files, if the database connection doesn’t have any `PDO::MYSQL_ATTR_SSL_*` attributes set, and respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - Fixed a bug where multi-instance fields’ search keywords were indexed per field rather than per instance, so searching by one instance’s handle could match other instances’ values. ([#13991](https://github.com/craftcms/cms/pull/13991))
 - Garbage collection now always re-enables foreign key checks, even if it doesn’t finish. ([#20386](https://github.com/craftcms/cms/issues/20386))
+- Fixed a bug where the PostgreSQL password could be included in the error message when a database backup or restore command failed. ([#20503](https://github.com/craftcms/cms/issues/20503))
+- Fixed a bug where a failed project config YAML write left the `config/project/` folder empty. Existing files are now only replaced as new ones are written, and the error now includes its underlying cause. ([#20519](https://github.com/craftcms/cms/issues/20519))
 
 ### Extensibility
 
