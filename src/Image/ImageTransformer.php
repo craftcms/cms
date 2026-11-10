@@ -50,16 +50,6 @@ use function CraftCms\Cms\t;
  */
 class ImageTransformer
 {
-    /**
-     * Index keys written before rows recorded their output location: the transformer class names from Craft 5 and
-     * early Craft 6. Lookups never match them, so new rows are written, but cleanup and the `…ForIndex` methods treat
-     * them as the asset’s current transformer.
-     */
-    private const array LEGACY_OUTPUT_KEYS = [
-        'craft\\imagetransforms\\ImageTransformer',
-        ImageTransformer::class,
-    ];
-
     /** @var array<string, array<string, mixed>> */
     private array $eagerLoadedTransformIndexes = [];
 
@@ -902,10 +892,6 @@ class ImageTransformer
         // an `asset_transformer` key.
         $candidates = [$this->currentTransformer($asset), new AssetTransformer('craft')];
 
-        if ($index->outputKey === null || in_array($index->outputKey, self::LEGACY_OUTPUT_KEYS, true)) {
-            return $candidates[0];
-        }
-
         foreach ($candidates as $candidate) {
             if ($this->outputKey($asset, $candidate) === $index->outputKey) {
                 return $candidate;
@@ -984,12 +970,7 @@ class ImageTransformer
         if ($outputKey !== null) {
             $query->where('outputKey', $outputKey);
         } else {
-            $query->where(function (Builder $query): void {
-                $query
-                    ->whereNull('outputKey')
-                    ->orWhereIn('outputKey', self::LEGACY_OUTPUT_KEYS)
-                    ->orWhere('outputKey', 'like', 'craft:%');
-            });
+            $query->where('outputKey', 'like', 'craft:%');
         }
 
         return $query

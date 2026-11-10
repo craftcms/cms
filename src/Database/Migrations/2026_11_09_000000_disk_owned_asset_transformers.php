@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +11,8 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Asset transformers are now chosen per disk in config/filesystems.php, so this drops the transformer profiles that
- * earlier Craft 6 alphas stored in project config, along with everything keyed by their UIDs.
+ * earlier Craft 6 alphas stored in project config, along with everything keyed by their UIDs. It also clears the
+ * transform index, whose rows from Craft 5 and earlier alphas don't record where their files are stored.
  */
 return new class extends Migration
 {
@@ -52,15 +52,9 @@ return new class extends Migration
         }
 
         if (Schema::hasColumn(Table::IMAGETRANSFORMINDEX, 'transformer')) {
-            // Rows keyed by a profile UID can't be mapped to an output location. Their files stay where they are:
-            // local disks rediscover them, and remote disks regenerate them at the same paths.
-            DB::table(Table::IMAGETRANSFORMINDEX)
-                ->whereNotNull('transformer')
-                ->whereNotIn('transformer', [
-                    'craft\\imagetransforms\\ImageTransformer',
-                    ImageTransformer::class,
-                ])
-                ->delete();
+            // Rows keyed by a profile UID or a Craft 5 transformer class can't be mapped to an output location, so
+            // they're all dropped, and transforms are generated again as they're requested.
+            DB::table(Table::IMAGETRANSFORMINDEX)->delete();
 
             Schema::table(Table::IMAGETRANSFORMINDEX, fn (Blueprint $table) => $table->renameColumn('transformer', 'outputKey'));
         }

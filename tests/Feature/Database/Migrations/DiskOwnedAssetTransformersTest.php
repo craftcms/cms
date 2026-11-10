@@ -11,7 +11,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-it('drops alpha transformer profiles and everything keyed by their UIDs', function () {
+it('drops alpha transformer profiles, everything keyed by their UIDs, and the transform index', function () {
     $volume = VolumeModel::factory()->create();
     $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
     $profileUid = '0f7dbd20-f39e-57db-8b25-dcadccdd1733';
@@ -29,17 +29,16 @@ it('drops alpha transformer profiles and everything keyed by their UIDs', functi
         'dateUpdated' => now(),
         'uid' => $transformUid = (string) str()->uuid(),
     ]);
-    $indexRow = fn (?string $transformer): int => DB::table(Table::IMAGETRANSFORMINDEX)->insertGetId([
-        'assetId' => $asset->id,
-        'transformer' => $transformer,
-        'transformString' => '_100x_auto',
-        'dateCreated' => now(),
-        'dateUpdated' => now(),
-        'uid' => (string) str()->uuid(),
-    ]);
-    $profileRow = $indexRow($profileUid);
-    $craft5Row = $indexRow('craft\\imagetransforms\\ImageTransformer');
-    $nullRow = $indexRow(null);
+    foreach ([$profileUid, 'craft\\imagetransforms\\ImageTransformer', null] as $transformer) {
+        DB::table(Table::IMAGETRANSFORMINDEX)->insert([
+            'assetId' => $asset->id,
+            'transformer' => $transformer,
+            'transformString' => '_100x_auto',
+            'dateCreated' => now(),
+            'dateUpdated' => now(),
+            'uid' => (string) str()->uuid(),
+        ]);
+    }
 
     $projectConfig = app(ProjectConfig::class);
     $projectConfig->muteEvents = true;
@@ -63,9 +62,6 @@ it('drops alpha transformer profiles and everything keyed by their UIDs', functi
         ->and(DB::table(Table::IMAGETRANSFORMS)->where('id', $transformId)->value('parameters'))->toBeNull()
         ->and(Schema::hasColumn(Table::VOLUMES, 'assetTransformer'))->toBeFalse()
         ->and(Schema::hasColumn(Table::IMAGETRANSFORMINDEX, 'transformer'))->toBeFalse()
-        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->pluck('outputKey', 'id')->all())->toEqualCanonicalizing([
-            $craft5Row => 'craft\\imagetransforms\\ImageTransformer',
-            $nullRow => null,
-        ])
-        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $profileRow)->exists())->toBeFalse();
+        ->and(Schema::hasColumn(Table::IMAGETRANSFORMINDEX, 'outputKey'))->toBeTrue()
+        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->exists())->toBeFalse();
 });

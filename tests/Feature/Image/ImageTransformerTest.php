@@ -444,29 +444,6 @@ it('removes a stale index row on invalidation without reporting it', function ()
     Exceptions::assertNothingReported();
 });
 
-it('cleans up files for index rows written before rows recorded their output location', function (?string $legacyKey) {
-    $asset = ($this->createImageAsset)();
-    $disk = $asset->getVolume()->sourceDisk();
-    $disk->put(
-        $asset->getPath(),
-        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
-    );
-    app(CraftAssetTransformDriver::class)->withImmediateTransforms(
-        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
-    );
-    $transformPath = collect($disk->allFiles())->sole(fn (string $path): bool => $path !== $asset->getPath());
-    DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->update(['outputKey' => $legacyKey]);
-    Exceptions::fake();
-
-    event(new AssetTransformsInvalidating($asset));
-
-    expect($disk->exists($transformPath))->toBeFalse();
-    Exceptions::assertNothingReported();
-})->with([
-    'no key' => null,
-    'Craft 5 class name' => 'craft\\imagetransforms\\ImageTransformer',
-]);
-
 it('does not reuse a transform result older than the source Asset', function () {
     $asset = ($this->createImageAsset)();
     $disk = $asset->getVolume()->sourceDisk();
