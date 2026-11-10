@@ -10,7 +10,6 @@ use CraftCms\Cms\Console\CraftCommand;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Override;
-use Symfony\Component\Console\Input\InputOption;
 
 /**
  * @since 6.0.0
@@ -27,6 +26,7 @@ class IndexOneAssetCommand extends Command implements PromptsForMissingInput
         {--createMissingAssets=true : Auto-create new asset records when missing.}
         {--deleteMissingAssets=false : Delete all the asset records that have their files missing.}
         {--deleteEmptyFolders=false : Delete empty folders.}
+        {--cacheRemoteImages=false : Cache remote-stored images in the process.}
         {--analyzeImages=false : Sample missing image colors and metadata, and queue images for AI tasks.}
     ';
 
@@ -35,20 +35,6 @@ class IndexOneAssetCommand extends Command implements PromptsForMissingInput
 
     #[Override]
     protected $aliases = ['index-assets/one', 'index-assets'];
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        if (! app()->isEphemeral()) {
-            $this->getDefinition()->addOption(new InputOption(
-                name: 'cacheRemoteImages',
-                mode: InputOption::VALUE_OPTIONAL,
-                description: 'Cache remote-stored images in the process.',
-                default: 'false',
-            ));
-        }
-    }
 
     public function handle(Volumes $volumes): void
     {

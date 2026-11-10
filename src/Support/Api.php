@@ -287,6 +287,7 @@ class Api
             }
 
             try {
+                File::ensureDirectoryExists(dirname($path));
                 File::put($path, chunk_split($license, 50));
             } catch (Throwable $e) {
                 // log and keep going

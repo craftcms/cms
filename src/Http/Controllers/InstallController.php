@@ -246,7 +246,7 @@ readonly class InstallController
         $username = $request->input('account.username', $email);
         $siteUrl = $request->input('site.baseUrl');
 
-        if ($siteUrl && ! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
+        if ($siteUrl && ! in_array($siteUrl[0], ['@', '$'])) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path, overwrite: true);
                 $siteUrl = '$APP_URL';
@@ -298,19 +298,9 @@ readonly class InstallController
 
     private function canControlDbConfig(): bool
     {
-        // If this is ephemeral storage, then we can't be writing to a .env file
-        if (app()->isEphemeral()) {
-            return false;
-        }
-
-        // If the .env file doesn't exist or isn't writable, we definitely can't do anything about it
-        $path = app()->environmentFilePath();
-        if (! file_exists($path) || ! is_writable($path)) {
-            return false;
-        }
-
-        // Nothing else to worry about, thanks to `CRAFT_X` environment variable overrides
-        return true;
+        return ! app()->configurationIsCached()
+            && is_file(app()->environmentFilePath())
+            && is_writable(app()->environmentFilePath());
     }
 
     /**
