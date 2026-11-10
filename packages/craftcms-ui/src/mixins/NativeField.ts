@@ -122,6 +122,8 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
       this.addEventListener('input', this.#onInput);
       this.addEventListener('focusin', this.#onFocusIn);
       this.addEventListener('focusout', this.#onFocusOut);
+      this.#resetRoot = this.getRootNode();
+      this.#resetRoot.addEventListener('reset', this.#onReset, true);
     }
 
     override disconnectedCallback() {
@@ -129,11 +131,33 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
       this.removeEventListener('input', this.#onInput);
       this.removeEventListener('focusin', this.#onFocusIn);
       this.removeEventListener('focusout', this.#onFocusOut);
+      this.#resetRoot?.removeEventListener('reset', this.#onReset, true);
+      this.#resetRoot = undefined;
     }
+
+    /** Where the owning form's `reset` is heard, whichever form that is. */
+    #resetRoot?: Node;
 
     /** Re-renders on typing, so anything drawn from `value` follows it. */
     #onInput = (): void => {
       this.requestUpdate('value');
+    };
+
+    /**
+     * A form reset restores the control's value without an `input` or
+     * `change`, and only after `reset` has been dispatched, so anything drawn
+     * from `value` is re-rendered once it's done.
+     */
+    #onReset = (event: Event): void => {
+      if (event.target !== this._inputNode?.form) {
+        return;
+      }
+
+      setTimeout(() => {
+        if (!event.defaultPrevented) {
+          this.requestUpdate('value');
+        }
+      });
     };
 
     #onFocusIn = (event: FocusEvent): void => {
