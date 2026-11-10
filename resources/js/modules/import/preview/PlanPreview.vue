@@ -403,18 +403,12 @@
           :key="option.value"
           slot="tab"
           :controls="panelId(option.value)"
+          :has-errors="problemSteps.has(option.value) || undefined"
         >
           <span slot="prefix" class="plan-preview__step-number">{{
             option.number
           }}</span>
           {{ option.name }}
-          <craft-icon
-            v-if="problemSteps.has(option.value)"
-            slot="suffix"
-            name="triangle-exclamation"
-            data-color="danger"
-            :label="t('Has errors')"
-          ></craft-icon>
         </craft-tab>
       </craft-tabs>
       <section

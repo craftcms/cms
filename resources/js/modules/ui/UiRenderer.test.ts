@@ -2144,7 +2144,9 @@ describe('UiRenderer', () => {
     expect(tab?.nextElementSibling).toBe(seoTab);
     expect(tabButtons[0]?.getAttribute('aria-selected')).toBe('true');
     expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('false');
-    expect(tabButtons[1]?.querySelector('craft-icon')).not.toBeNull();
+    // the tab draws its own error icon
+    expect(tabButtons[1]?.hasAttribute('has-errors')).toBe(true);
+    expect(tabButtons[0]?.hasAttribute('has-errors')).toBe(false);
     // A tab's icon comes before its label; tabs without one get none.
     expect(
       tabButtons[0]

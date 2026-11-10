@@ -289,12 +289,6 @@
           slot="prefix"
         ></craft-icon>
         {{ tab.props.label }}
-        <craft-icon
-          v-if="nodeHasErrors(tab, errors)"
-          name="triangle-exclamation"
-          :label="t('Errors')"
-          slot="suffix"
-        />
       </craft-tab>
     </craft-tabs>
   </Teleport>

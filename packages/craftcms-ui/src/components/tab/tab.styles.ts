@@ -70,7 +70,8 @@ export default css`
     margin-inline-end: var(--c-spacing-sm);
   }
 
-  ::slotted([slot='suffix']) {
+  ::slotted([slot='suffix']),
+  .tab__error {
     align-self: center;
     margin-inline-start: var(--c-spacing-sm);
   }

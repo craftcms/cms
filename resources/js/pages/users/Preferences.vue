@@ -184,12 +184,6 @@
           :has-errors="tabHasErrors(tab.fields) || undefined"
         >
           {{ tab.label }}
-          <craft-icon
-            v-if="tabHasErrors(tab.fields)"
-            name="triangle-exclamation"
-            :label="t('Errors')"
-            slot="suffix"
-          />
         </craft-tab>
       </craft-tabs>
     </LayoutSlot>

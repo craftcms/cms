@@ -651,12 +651,6 @@
                 :label="t('Changed')"
               ></craft-indicator>
             </span>
-            <craft-icon
-              v-if="key === 'to' && erroredTabs.has(tab.key)"
-              name="triangle-exclamation"
-              :label="t('Errors')"
-              slot="suffix"
-            ></craft-icon>
           </craft-tab>
         </craft-tabs>
       </div>

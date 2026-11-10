@@ -1,7 +1,9 @@
 import type {CSSResultGroup} from 'lit';
-import {html, LitElement} from 'lit';
+import {html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 import {LightDomController} from '@src/controllers/LightDomController';
+import {t} from '@src/utilities/translate';
+import '../icon/icon.js';
 import hostStyles from '@src/styles/host.styles.js';
 import styles from './tab.styles.js';
 
@@ -19,8 +21,9 @@ import styles from './tab.styles.js';
  * @slot - The tab's label. Any inline content; keep it short enough to sit in
  *   a strip.
  * @slot prefix - Content before the label, such as an icon.
- * @slot suffix - Content after the label, such as an icon flagging errors in
- *   the tab's panel. Give an icon a `label` so its meaning is announced.
+ * @slot suffix - Content after the label. Give an icon a `label` so its
+ *   meaning is announced. A tab with `has-errors` shows its own error icon
+ *   before it.
  *
  * @cssproperty --c-tab-text-errors - Label color while `has-errors` is set.
  *   Defaults to `--c-color-danger-on-quiet`.
@@ -64,7 +67,11 @@ export default class CraftTab extends LitElement {
    */
   @property({reflect: true}) controls: string | null = null;
 
-  /** Whether the tab's panel has errors, which colors the tab as a field with errors is. */
+  /**
+   * Whether the tab's panel has errors, which colors the tab as a field with
+   * errors is, and adds an error icon named “Errors” after the label, so it
+   * isn't told by color alone.
+   */
   @property({type: Boolean, reflect: true, attribute: 'has-errors'})
   hasErrors = false;
 
@@ -87,7 +94,13 @@ export default class CraftTab extends LitElement {
     return html`<slot name="prefix" class="tab__prefix"></slot
       ><span class="tab__label" data-text="${this.textContent?.trim() ?? ''}"
         ><span class="tab__text"><slot></slot></span></span
-      ><slot name="suffix" class="tab__suffix"></slot>`;
+      >${this.hasErrors
+        ? html`<craft-icon
+            class="tab__error"
+            name="triangle-exclamation"
+            label=${t('Errors')}
+          ></craft-icon>`
+        : nothing}<slot name="suffix" class="tab__suffix"></slot>`;
   }
 }
 
