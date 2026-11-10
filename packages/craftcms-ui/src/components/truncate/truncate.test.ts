@@ -1,6 +1,7 @@
 import {beforeEach, describe, expect, it} from 'vitest';
 import type CraftTruncate from './truncate.js';
 import './truncate.js';
+import {whenIdle} from '@src/utilities/idle';
 
 async function fixture(text: string): Promise<CraftTruncate> {
   const el = document.createElement('craft-truncate') as CraftTruncate;
@@ -11,8 +12,8 @@ async function fixture(text: string): Promise<CraftTruncate> {
 }
 
 // happy-dom has no layout engine, so fake the inner span's metrics and nudge a
-// re-measure through a slotchange.
-function simulateOverflow(el: CraftTruncate, overflow: boolean) {
+// re-measure through a slotchange, which measures once the browser is idle.
+async function simulateOverflow(el: CraftTruncate, overflow: boolean) {
   const span = el.renderRoot.querySelector('.truncate') as HTMLElement;
   Object.defineProperty(span, 'scrollWidth', {
     value: overflow ? 500 : 100,
@@ -20,6 +21,7 @@ function simulateOverflow(el: CraftTruncate, overflow: boolean) {
   });
   Object.defineProperty(span, 'clientWidth', {value: 100, configurable: true});
   span.querySelector('slot')!.dispatchEvent(new Event('slotchange'));
+  await new Promise<void>((resolve) => whenIdle(resolve));
   return el.updateComplete;
 }
 

@@ -1,6 +1,7 @@
 import {html, LitElement} from 'lit';
 import {property, query, state} from 'lit/decorators.js';
 
+import {cancelIdle, whenIdle} from '@src/utilities/idle';
 import '../tooltip/tooltip';
 import styles from './truncate.styles.js';
 
@@ -40,6 +41,9 @@ export default class CraftTruncate extends LitElement {
 
   @query('.truncate') private content?: HTMLElement;
 
+  /** A measurement waiting for the browser to be idle. */
+  #pendingMeasure: number | undefined;
+
   #resizeObserver =
     typeof ResizeObserver !== 'undefined'
       ? new ResizeObserver(() => this.#measure())
@@ -54,6 +58,10 @@ export default class CraftTruncate extends LitElement {
 
   override disconnectedCallback() {
     this.#resizeObserver?.disconnect();
+    if (this.#pendingMeasure !== undefined) {
+      cancelIdle(this.#pendingMeasure);
+      this.#pendingMeasure = undefined;
+    }
     super.disconnectedCallback();
   }
 
@@ -74,8 +82,20 @@ export default class CraftTruncate extends LitElement {
     this.overflowing = !!el && el.scrollWidth > el.clientWidth;
   }
 
+  /**
+   * Re-measures once the browser is idle. A slot changes as content renders,
+   * before it's laid out, so measuring then would lay out the page early, and
+   * the overflow only decides whether there's a tooltip to hover.
+   */
   #onSlotChange() {
-    this.#measure();
+    if (this.#pendingMeasure !== undefined) {
+      return;
+    }
+
+    this.#pendingMeasure = whenIdle(() => {
+      this.#pendingMeasure = undefined;
+      this.#measure();
+    });
   }
 
   override render() {
