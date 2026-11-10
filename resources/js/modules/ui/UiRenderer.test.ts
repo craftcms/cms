@@ -2116,7 +2116,7 @@ describe('UiRenderer', () => {
     );
     const heading = tab?.querySelector('[data-ui-node="heading"]');
     expect(heading?.querySelector('h3')?.textContent).toBe('Details');
-    expect(heading?.querySelector('h3')?.classList).toContain('my-0');
+    expect(heading?.querySelector('h3')?.classList).toContain('cp-h3');
     expect(heading?.querySelector('p')?.textContent).toBe('Supporting copy.');
     expect(heading?.querySelector('p')?.classList).toContain('my-0');
     expect(heading?.classList).toContain('gap-1');

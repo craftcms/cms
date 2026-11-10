@@ -11,7 +11,9 @@
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
   craft-badge[fill='black'] > *
 ) {
-  --c-text-lg: calc(16rem / 16);
+  --c-text-xl: calc(20rem / 16);
+  --c-text-lg: calc(18rem / 16);
+  --c-text-md: calc(16rem / 16);
   --c-text-base: calc(14rem / 16);
   --c-text-sm: calc(12rem / 16);
   --c-text-xs: calc(9rem / 16);

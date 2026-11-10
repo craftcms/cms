@@ -73,7 +73,7 @@
       </craft-button>
     </div>
     <craft-card data-color="gray" v-show="screen !== 'home'">
-      <h2 slot="label" class="text-sm">{{ cardHeading }}</h2>
+      <h2 slot="label" class="cp-h4">{{ cardHeading }}</h2>
       <div v-show="screen !== 'home'" class="space-y-4">
         <SupportSearch
           v-show="!support"

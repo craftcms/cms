@@ -914,7 +914,7 @@
         class="compare__heading text-xl"
         v-html="t('Compare {element}', {element: elementChip})"
       ></h1>
-      <h1 v-else class="text-xl">{{ title }}</h1>
+      <h1 v-else class="cp-h1">{{ title }}</h1>
     </LayoutSlot>
 
     <LayoutSlot v-if="closeUrl" name="content-actions">

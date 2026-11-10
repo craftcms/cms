@@ -36,7 +36,7 @@
 
     <CpContainer>
       <craft-pane appearance="raised">
-        <h2 class="mb-3 text-lg">{{ t('Send a test email') }}</h2>
+        <h2 class="cp-h2 mb-3">{{ t('Send a test email') }}</h2>
 
         <div class="grid gap-3">
           <CraftInput

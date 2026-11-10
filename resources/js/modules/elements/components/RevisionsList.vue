@@ -46,7 +46,7 @@
         <hr v-if="index > 0" />
         <div class="revision-group">
           <div v-if="group.label" class="revision-group__heading">
-            <h3 class="text-xs font-bold">
+            <h3 class="cp-h6">
               {{ group.label }}
             </h3>
             <CpLink
