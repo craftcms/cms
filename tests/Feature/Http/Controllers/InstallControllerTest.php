@@ -61,6 +61,7 @@ it('503s if the configured database can’t be reached', function () {
 
 it('only saves posted db settings once Craft is installed with them', function () {
     $default = config('database.default');
+    $connections = config('database.connections');
     $envPath = app()->environmentPath();
     $envFile = app()->environmentFile();
     $dir = storage_path('runtime/install-env-'.uniqid());
@@ -95,6 +96,11 @@ it('only saves posted db settings once Craft is installed with them', function (
 
         expect(File::get("$dir/.env"))->toBe($dotEnv);
     } finally {
+        // The install action applies the posted settings to the `pgsql` and `db2` connections, which the tests
+        // also use when they run on PostgreSQL
+        config()->set('database.connections', $connections);
+        DB::purge('pgsql');
+        DB::purge('db2');
         DB::setDefaultConnection($default);
         config()->set('database.default', $default);
         app()->useEnvironmentPath($envPath);
