@@ -396,7 +396,7 @@ readonly class Assets
 
     private function assertAttributes(array $attributes): void
     {
-        $errors = (new \Mcp\Capability\Discovery\SchemaValidator())->validateAgainstJsonSchema($attributes, self::CreateAttributesSchema);
+        $errors = (new \Mcp\Capability\Discovery\SchemaValidator())->validateAgainstJsonSchema($attributes ?: (object) [], self::CreateAttributesSchema);
 
         if ($errors) {
             throw new ToolCallException('Invalid asset attributes.');

@@ -29,7 +29,7 @@ class StdioTransportTest extends TestCase
     {
         Craft::$app->getUser()->setIdentity(User::find()->admin()->one());
 
-        $input = fopen('php://memory', 'r+');
+        $input = tmpfile();
         foreach ([
             ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
                 'protocolVersion' => '2025-06-18',
