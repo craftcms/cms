@@ -37,6 +37,18 @@ uses(TestCase::class)->in('Feature');
 uses(UnitTestCase::class)->in('Unit');
 uses(BrowserTestCase::class)->in('Browser');
 
+// Collect cycles in bounded batches, rather than during each application boot.
+$testsSinceCollection = 0;
+pest()->beforeAll(fn () => gc_disable())
+    ->afterEach(function () use (&$testsSinceCollection) {
+        if (++$testsSinceCollection >= 50) {
+            gc_collect_cycles();
+            $testsSinceCollection = 0;
+        }
+    })
+    ->afterAll(fn () => gc_enable())
+    ->in('Feature', 'Unit');
+
 // pest-plugin-browser 5.2.0 and earlier start the Playwright server with `sh -c` and no `exec`, so stopping it at the
 // end of the run ends only the shell. Node keeps running, along with any copy of Pest's output pipe it inherited, so
 // `pest | tail` never returns. Starting it with `exec` makes the shell and the server one process. Remove this once
