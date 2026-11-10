@@ -26,14 +26,16 @@
     </head>
     <body>
         <x-inertia::app />
+        {{-- The page data carries the CP config once, as `craft.general`. It
+             fills `window.Craft` here, before the body's legacy and plugin
+             scripts read it, and the boot hands Inertia the parsed page. --}}
+        <script>
+          let CpPage = JSON.parse(document.querySelector('script[data-page="app"]').textContent);
+          Object.assign(window.Craft, CpPage.props.craft?.general);
+        </script>
         <cp-messages id="messages"></cp-messages>
         {!! $bodyHtml !!}
-        <script>
-          let CpConfig = {{ Illuminate\Support\Js::from(\CraftCms\Cms\Cp\Cp::config()) }};
-        </script>
-        <script
-            src="data:text/javascript;base64,{{ base64_encode('window.Cp.config(CpConfig); window.Cp.start()') }}"
-            defer
-        ></script>
+        {{-- A module, so it runs once the CP's own modules have loaded --}}
+        <script type="module">window.Cp.config(window.Craft); window.Cp.start(CpPage);</script>
     </body>
 </html>

@@ -73,12 +73,12 @@ const {default: Cp} = await import('./bootstrap/cp.js');
 
 window.Cp = Cp;
 
-// Legacy-rendered pages don't go through `app.blade.php`'s
-// `Cp.config(CpConfig); Cp.start()` boot, so initialize the modern services
-// here from `window.Craft` — the same `Cp::config()` payload, emitted by the
-// CpAsset bootstrap — or modules that rely on them (the action client,
-// elevated sessions, the queue) have no config on these pages. `init()`
-// only: `start()` mounts the Inertia app, which legacy pages must not do.
+// Legacy-rendered pages don't go through `app.blade.php`'s `Cp.start()` boot,
+// so initialize the modern services here from `window.Craft` — the same
+// `Cp::config()` payload, which `_layouts/base` writes — or modules that rely
+// on them (the action client, elevated sessions, the queue) have no config on
+// these pages. `init()` only: `start()` mounts the Inertia app, which legacy
+// pages must not do.
 Cp.config(window.Craft ?? {});
 Cp.init();
 
