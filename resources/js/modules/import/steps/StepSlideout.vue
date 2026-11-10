@@ -26,7 +26,6 @@
     validateStep,
     type StepSlideoutContext,
   } from './step-slideout';
-  import {openStepMapping, StepMappingUnavailableError} from './step-mapping';
   import InlineStepMapping from './InlineStepMapping.vue';
 
   const props = defineProps<{
@@ -49,9 +48,6 @@
 
   /** The step as it currently stands, including mapping the form doesn't render. */
   const step = ref<ImportStep>(context.step);
-  const mappingButton = ref<HTMLElement | null>(null);
-  const mappingMessage = ref<string | null>(null);
-  const openingMapping = ref(false);
 
   /**
    * Backs the shell's Apply button and gives it an accurate dirty check for the
@@ -90,21 +86,9 @@
   /** The step at a glance, as the server last reported it. */
   const summary = ref(context.summary);
 
-  /**
-   * Why the data source couldn't be read when the mapping was opened. It's only found out by
-   * reading the file, which refreshes don't do, so it stands until the source changes.
-   */
-  const sourceReadError = ref<{source: string | null; message: string} | null>(
-    null
-  );
-
   /** The validation errors, plus the data source's own problem under its field. */
   const formErrors = computed<UiPayload['errors']>(() => {
-    const message =
-      sourceError.value ??
-      (sourceReadError.value?.source === step.value.source
-        ? sourceReadError.value.message
-        : null);
+    const message = sourceError.value;
 
     if (
       !message ||
@@ -131,8 +115,6 @@
    * decides which data type fields it shows.
    */
   let checkedSource = context.step.source;
-  const checkingMap = ref(false);
-  let latestCheck = 0;
   /** Shared by refreshes and source checks, so whichever started last sets `canMap`. */
   let latestCanMap = 0;
 
@@ -190,57 +172,6 @@
     form.state = dirtyState(step.value);
   }
 
-  async function editMapping(): Promise<void> {
-    if (openingMapping.value) {
-      return;
-    }
-
-    syncFromForm();
-    mappingMessage.value = null;
-    openingMapping.value = true;
-
-    try {
-      await openStepMapping(
-        {
-          step: step.value,
-          editable: context.editable,
-          opener: mappingButton.value,
-          apply: (applied) => {
-            step.value = {
-              ...step.value,
-              settings: {...step.value.settings, ...applied},
-            };
-            form.state = dirtyState(step.value);
-          },
-        },
-        t('Edit mapping')
-      );
-    } catch (error) {
-      if (
-        error instanceof StepMappingUnavailableError &&
-        error.attribute === 'source'
-      ) {
-        sourceReadError.value = {
-          source: step.value.source,
-          message: error.message,
-        };
-
-        return;
-      }
-
-      mappingMessage.value =
-        error instanceof Error && error.message
-          ? error.message
-          : t('Couldn’t open the mapping.');
-    } finally {
-      openingMapping.value = false;
-    }
-  }
-
-  function fieldCount(count: number): string {
-    return t('{count, plural, =1{# field} other{# fields}}', {count});
-  }
-
   /** The step as the settings form endpoint expects it, with the mapping trees carried over. */
   function stepForRequest(settings: Record<string, unknown>): ImportStep {
     return {...step.value, settings: {...settings, ...mappingValues()}};
@@ -251,16 +182,11 @@
 
     const request = ++latestRefresh;
     const canMapRequest = ++latestCanMap;
-    const check = step.value.source !== checkedSource ? ++latestCheck : null;
     const type = step.value.type;
     checkedSource = step.value.source;
 
     if (type !== formType.value) {
       loadingType.value = true;
-    }
-
-    if (check !== null) {
-      checkingMap.value = true;
     }
 
     try {
@@ -283,10 +209,6 @@
     } finally {
       if (request === latestRefresh) {
         loadingType.value = false;
-      }
-
-      if (check === latestCheck) {
-        checkingMap.value = false;
       }
     }
   }
@@ -326,8 +248,6 @@
   /** Asks the server whether the step can be mapped, without rebuilding the form. */
   async function checkCanMap(): Promise<void> {
     const request = ++latestCanMap;
-    const check = ++latestCheck;
-    checkingMap.value = true;
 
     try {
       const response = await fetchStepUi(
@@ -340,10 +260,6 @@
       }
     } catch {
       // the last reported `canMap` still stands
-    } finally {
-      if (check === latestCheck) {
-        checkingMap.value = false;
-      }
     }
   }
 

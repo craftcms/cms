@@ -1,21 +1,25 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import type {UiPayload} from '@/modules/ui/types';
-import type {ImportStep} from '@/modules/import/mapping/types';
-import {StepMappingUnavailableError} from './step-mapping';
+import type {ImportStep, MappingValues} from '@/modules/import/mapping/types';
 import StepSlideout from './StepSlideout.vue';
 
 const state = vi.hoisted(() => ({
   layout: vi.fn(),
   fetchStepUi: vi.fn(),
   validateStep: vi.fn(),
-  openStepMapping: vi.fn(),
   errorHandler: vi.fn(),
   context: null as any,
   values: {} as Record<string, unknown>,
   refresh: null as ((values: unknown) => Promise<UiPayload>) | null,
   emitChange: null as (() => void) | null,
   errors: null as UiPayload['errors'] | null,
+  mapping: null as {
+    canMap: boolean;
+    editable: boolean;
+    step: ImportStep;
+  } | null,
+  changeMapping: null as ((values: Partial<MappingValues>) => void) | null,
 }));
 
 vi.mock('@/common/composables/useAppLayout', () => ({
@@ -28,9 +32,26 @@ vi.mock('@/common/slideouts', () => ({
   useSlideout: () => null,
 }));
 
-vi.mock('./step-mapping', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./step-mapping')>()),
-  openStepMapping: state.openStepMapping,
+// Stubbed so the test can read what the panel tells the mapping, and edit it.
+vi.mock('./InlineStepMapping.vue', () => ({
+  default: {
+    name: 'InlineStepMapping',
+    props: ['step', 'editable', 'canMap'],
+    emits: ['change'],
+    setup(props: any, {emit}: any) {
+      state.changeMapping = (values) => emit('change', values);
+
+      return () => {
+        state.mapping = {
+          canMap: props.canMap,
+          editable: props.editable,
+          step: props.step,
+        };
+
+        return h('section', {class: 'inline-step-mapping'});
+      };
+    },
+  },
 }));
 
 vi.mock('./step-slideout', () => ({
@@ -126,17 +147,9 @@ function mount(
   app.mount(container);
 }
 
-function mappingSection(): HTMLElement | null {
-  return container.querySelector('.step-mapping-summary');
-}
-
-function mappingButton(): HTMLElement & {disabled: boolean; loading: boolean} {
-  return mappingSection()!.querySelector(
-    'craft-button'
-  ) as unknown as HTMLElement & {
-    disabled: boolean;
-    loading: boolean;
-  };
+/** Whether the panel last told the mapping the step can be mapped. */
+function canMap(): boolean | undefined {
+  return state.mapping?.canMap;
 }
 
 function blur(path: string): void {
@@ -164,8 +177,9 @@ beforeEach(() => {
   state.layout.mockClear();
   state.fetchStepUi.mockReset();
   state.validateStep.mockReset();
-  state.openStepMapping.mockReset();
   state.errorHandler.mockReset();
+  state.mapping = null;
+  state.changeMapping = null;
   state.refresh = null;
   state.emitChange = null;
   state.errors = null;
@@ -186,54 +200,37 @@ it('renders the form and mapping inside the container field group, like other sl
 
   expect(group).not.toBeNull();
   expect(group!.querySelector('.ui-renderer')).not.toBeNull();
-  expect(group!.querySelector('.step-mapping-summary')).not.toBeNull();
+  expect(group!.querySelector('.inline-step-mapping')).not.toBeNull();
 });
 
-it('can’t add a mapping until an importer type is chosen', () => {
-  mount(false, null);
+it.each([true, false])(
+  'tells the mapping whether the step can be mapped (%s)',
+  (mappable) => {
+    mount(mappable);
 
-  expect(mappingButton().disabled).toBe(true);
-});
+    expect(canMap()).toBe(mappable);
+  }
+);
 
-it('shows the mapping section with a disabled button while the step can’t be mapped', () => {
-  mount(false);
-
-  expect(mappingSection()!.textContent).toContain('Field mapping');
-  expect(mappingButton().disabled).toBe(true);
-});
-
-it('enables the mapping button once the step can be mapped', () => {
-  mount(true);
-
-  expect(mappingButton().disabled).toBe(false);
-});
-
-it('enables the mapping button when a refresh reports the step as mappable', async () => {
-  mount(false);
-  state.fetchStepUi.mockResolvedValue(response(true));
-
-  await state.refresh!({settings: {}});
-  await nextTick();
-
-  expect(mappingButton().disabled).toBe(false);
-});
-
-it('lets a read-only step’s mapping be viewed', () => {
+it('tells the mapping whether the step can be edited', () => {
   mount(true, step.type, {}, false, {map: {title: 'name'}});
 
-  expect(mappingButton().disabled).toBe(false);
-  expect(mappingButton().textContent!.trim()).toBe('View mapping');
+  expect(state.mapping!.editable).toBe(false);
+  expect(state.mapping!.step.settings).toMatchObject({map: {title: 'name'}});
 });
 
-it('disables the mapping button again when a refresh reports it unmappable', async () => {
-  mount(true);
-  state.fetchStepUi.mockResolvedValue(response(false));
+it.each([true, false])(
+  'follows a refresh that reports whether the step can be mapped (%s)',
+  async (mappable) => {
+    mount(!mappable);
+    state.fetchStepUi.mockResolvedValue(response(mappable));
 
-  await state.refresh!({settings: {}});
-  await nextTick();
+    await state.refresh!({settings: {}});
+    await nextTick();
 
-  expect(mappingButton().disabled).toBe(true);
-});
+    expect(canMap()).toBe(mappable);
+  }
+);
 
 it('shows the data source’s problem under its field when a refresh reports one', async () => {
   mount(true);
@@ -247,7 +244,7 @@ it('shows the data source’s problem under its field when a refresh reports one
   expect(state.errors).toEqual([
     {path: ['source'], messages: ['File “people.csv” does not exist.']},
   ]);
-  expect(mappingButton().disabled).toBe(true);
+  expect(canMap()).toBe(false);
 });
 
 it('shows a spinner while the chosen type’s form loads, then lets the step be mapped', async () => {
@@ -267,14 +264,14 @@ it('shows a spinner while the chosen type’s form loads, then lets the step be 
   await nextTick();
 
   expect(spinner()).not.toBeNull();
-  expect(mappingButton().disabled).toBe(true);
+  expect(canMap()).toBe(false);
 
   loading.resolve(response(true));
   await refreshing;
   await nextTick();
 
   expect(spinner()).toBeNull();
-  expect(mappingButton().disabled).toBe(false);
+  expect(canMap()).toBe(true);
 });
 
 it('doesn’t show the spinner for a refresh that keeps the type', async () => {
@@ -312,7 +309,7 @@ it('ignores a refresh response that a newer one has overtaken', async () => {
   await stale;
   await nextTick();
 
-  expect(mappingButton().disabled).toBe(true);
+  expect(canMap()).toBe(false);
 });
 
 it('clears the spinner and leaves the step unmappable when a refresh fails', async () => {
@@ -333,7 +330,7 @@ it('clears the spinner and leaves the step unmappable when a refresh fails', asy
   await nextTick();
 
   expect(spinner()).toBeNull();
-  expect(mappingButton().disabled).toBe(true);
+  expect(canMap()).toBe(false);
 });
 
 it('refreshes the form to check whether the step can be mapped once the data source field loses focus', async () => {
@@ -349,14 +346,12 @@ it('refreshes the form to check whether the step can be mapped once the data sou
   expect(state.fetchStepUi.mock.calls[0]![0]).toMatchObject({
     source: 'other.csv',
   });
-  expect(mappingButton().loading).toBe(true);
 
   checking.resolve(response(true));
   await checking.promise;
   await nextTick();
 
-  expect(mappingButton().loading).toBe(false);
-  expect(mappingButton().disabled).toBe(false);
+  expect(canMap()).toBe(true);
 });
 
 it('doesn’t check again when the data source hasn’t changed', async () => {
@@ -396,8 +391,7 @@ it('lets a refresh that starts after a source check decide whether the step can 
   await checking.promise;
   await nextTick();
 
-  expect(mappingButton().disabled).toBe(true);
-  expect(mappingButton().loading).toBe(false);
+  expect(canMap()).toBe(false);
 });
 
 it('keeps the last reported state when the source check fails', async () => {
@@ -411,93 +405,8 @@ it('keeps the last reported state when the source check fails', async () => {
   await checking.promise.catch(() => {});
   await nextTick();
 
-  expect(mappingButton().disabled).toBe(false);
-  expect(mappingButton().loading).toBe(false);
+  expect(canMap()).toBe(true);
   expect(state.errorHandler).not.toHaveBeenCalled();
-});
-
-it('shows a spinner on the mapping button while the mapping slideout opens', async () => {
-  const opening = deferred<boolean>();
-  state.openStepMapping.mockReturnValue(opening.promise);
-  mount(true);
-
-  mappingButton().dispatchEvent(new Event('click'));
-  await nextTick();
-
-  expect(mappingButton().loading).toBe(true);
-
-  opening.resolve(true);
-  await opening.promise;
-  await nextTick();
-
-  expect(mappingButton().loading).toBe(false);
-});
-
-it('shows a data source that can’t be read under its field, not under the button', async () => {
-  state.openStepMapping.mockRejectedValue(
-    new StepMappingUnavailableError(
-      'The data in “people.csv” couldn’t be read.',
-      'source'
-    )
-  );
-  mount(true);
-
-  mappingButton().dispatchEvent(new Event('click'));
-  await nextTick();
-  await nextTick();
-
-  expect(state.errors).toEqual([
-    {
-      path: ['source'],
-      messages: ['The data in “people.csv” couldn’t be read.'],
-    },
-  ]);
-  expect(mappingSection()!.querySelector('[role="alert"]')).toBeNull();
-});
-
-it('reports a mapping slideout that fails to open and clears the spinner', async () => {
-  state.openStepMapping.mockRejectedValue(new Error('Request failed.'));
-  mount(true);
-
-  mappingButton().dispatchEvent(new Event('click'));
-  await nextTick();
-  await nextTick();
-
-  expect(mappingButton().loading).toBe(false);
-  expect(mappingSection()!.querySelector('[role="alert"]')!.textContent).toBe(
-    'Request failed.'
-  );
-  expect(state.errorHandler).not.toHaveBeenCalled();
-});
-
-it('clears a previous mapping error when trying again', async () => {
-  state.openStepMapping.mockRejectedValueOnce(new Error('Request failed.'));
-  state.openStepMapping.mockResolvedValueOnce(true);
-  mount(true);
-
-  mappingButton().dispatchEvent(new Event('click'));
-  await nextTick();
-  await nextTick();
-
-  mappingButton().dispatchEvent(new Event('click'));
-  await nextTick();
-
-  expect(mappingSection()!.querySelector('[role="alert"]')).toBeNull();
-});
-
-it('ignores repeat clicks on the mapping button while the slideout opens', async () => {
-  const opening = deferred<boolean>();
-  state.openStepMapping.mockReturnValue(opening.promise);
-  mount(true);
-
-  mappingButton().dispatchEvent(new Event('click'));
-  mappingButton().dispatchEvent(new Event('click'));
-  await nextTick();
-
-  expect(state.openStepMapping).toHaveBeenCalledOnce();
-
-  opening.resolve(true);
-  await opening.promise;
 });
 
 it('keeps the slideout open and shows the errors when the draft step is invalid', async () => {
@@ -559,14 +468,24 @@ it('is dirty once a setting really changes', async () => {
   expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(true);
 });
 
-it('isn’t dirty after opening the mapping and canceling it', async () => {
-  state.openStepMapping.mockResolvedValue(true);
+it('applies the mapping as it’s edited in place, with the form’s settings', async () => {
   mount(true, step.type, {entryType: 'blog'});
+  state.validateStep.mockResolvedValue(undefined);
 
-  mappingButton().dispatchEvent(new Event('click'));
-  await nextTick();
+  state.changeMapping!({map: {title: 'name'}});
   await nextTick();
 
-  expect(state.openStepMapping).toHaveBeenCalled();
-  expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(false);
+  expect(state.layout.mock.calls.at(-1)![0].form.isDirty).toBe(true);
+
+  await state.layout.mock.calls.at(-1)![0].onSave();
+
+  expect(state.context.apply).toHaveBeenCalledWith(
+    expect.objectContaining({
+      settings: expect.objectContaining({
+        entryType: 'blog',
+        map: {title: 'name'},
+      }),
+    }),
+    expect.anything()
+  );
 });
