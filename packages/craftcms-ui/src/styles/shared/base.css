@@ -623,11 +623,10 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
   }
 
   textarea,
-  /* These keep their own input styles: color inputs sit in padded cells, text inputs
-     outside editable tables are regular fields, and a search field needs room for its icon */
+  /* Color inputs sit in padded cells, and text inputs outside editable tables are regular fields, so both keep their own input styles */
   input:not([type='checkbox']):not([type='radio']):not(craft-input-color input):not(
-      craft-input-search input
-    ):not(.cp-table:not(.cp-table--editable) craft-input input) {
+      .cp-table:not(.cp-table--editable) craft-input input
+    ) {
     --c-focus-outline-offset: -2px;
     border: 0;
     padding-block: var(--_cell-spacing-block);

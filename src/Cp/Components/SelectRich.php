@@ -34,8 +34,6 @@ class SelectRich extends ViewComponent
 
     protected bool $small = false;
 
-    protected bool $searchable = false;
-
     protected function tagName(): string
     {
         return 'craft-select-rich';
@@ -88,14 +86,6 @@ class SelectRich extends ViewComponent
         return $this;
     }
 
-    /** Leads the open list with a search field that filters the options. */
-    public function searchable(bool $searchable = true): static
-    {
-        $this->searchable = $searchable;
-
-        return $this;
-    }
-
     #[\Override]
     protected function hostAttributes(): array
     {
@@ -105,7 +95,6 @@ class SelectRich extends ViewComponent
             'label' => $this->label,
             'label-sr-only' => $this->labelSrOnly,
             'small' => $this->small,
-            'searchable' => $this->searchable,
             'disabled' => $this->isDisabled(),
         ];
     }

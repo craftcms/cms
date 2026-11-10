@@ -40,8 +40,8 @@ vi.mock('./step-mapping', () => ({
   takeStepMappingContext: () => state.context,
 }));
 
-// The real element is Lion's select-rich, whose options register before its invoker
-// exists under happy-dom, so a bare element stands in for it.
+// The real elements are Lion's, whose options register before their invokers exist
+// under happy-dom, so bare elements stand in for them.
 vi.mock('@craftcms/ui/components/select-rich/select-rich', async () => {
   const {LitElement} = await import('lit');
   class CraftSelectRich extends LitElement {
@@ -53,6 +53,20 @@ vi.mock('@craftcms/ui/components/select-rich/select-rich', async () => {
   }
 
   return {default: CraftSelectRich};
+});
+
+vi.mock('@craftcms/ui/components/combobox/combobox', async () => {
+  const {LitElement} = await import('lit');
+  class CraftCombobox extends LitElement {
+    static override styles = [];
+    modelValue: unknown = '';
+    options: unknown[] = [];
+  }
+  if (!customElements.get('craft-combobox')) {
+    customElements.define('craft-combobox', CraftCombobox);
+  }
+
+  return {default: CraftCombobox};
 });
 
 // happy-dom has no `attachInternals()`, which the real element needs for form participation.
@@ -263,19 +277,23 @@ function chooseEmptyValueMode(mode: string): void {
   );
 }
 
-function sourceSelect(): HTMLElement & {modelValue?: string} {
+type SourceCombobox = HTMLElement & {
+  modelValue?: string;
+  options: Array<{value: string; data?: {hint?: string} | null}>;
+};
+
+function sourceSelect(): SourceCombobox {
   return cell('incoming').querySelector(
-    'craft-select-rich'
-  ) as unknown as HTMLElement & {modelValue?: string};
+    'craft-combobox'
+  ) as unknown as SourceCombobox;
 }
 
+/** Chooses a source column as a person does, which commits it with `change`. */
 function chooseSource(value: string): void {
   const host = sourceSelect();
   host.modelValue = value;
 
-  host.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
-  );
+  host.dispatchEvent(new Event('change', {bubbles: true}));
 }
 
 let app: ReturnType<typeof createApp>;
@@ -316,12 +334,6 @@ it('writes a chosen source column to the destination column’s path', async () 
   await nextTick();
 
   expect(apply().map).toEqual({title: 'name'});
-});
-
-it('lets the incoming data be searched for a source column', () => {
-  mount([title]);
-
-  expect((sourceSelect() as {searchable?: boolean}).searchable).toBe(true);
 });
 
 it('drops a row’s When empty rule, and the column for it, once rows are matched on it', async () => {
@@ -880,7 +892,7 @@ it('hands the step’s mapping trees back on apply', () => {
 it('opens a container column’s nested mapping against the draft step', () => {
   mount([outerMatrix]);
 
-  expect(container.querySelector('craft-select-rich')).toBeNull();
+  expect(container.querySelector('craft-combobox')).toBeNull();
 
   container
     .querySelector('tbody craft-button')!
@@ -894,45 +906,36 @@ it('opens a container column’s nested mapping against the draft step', () => {
   });
 });
 
-function badgedOptions(): string[] {
-  return [
-    ...sourceSelect().querySelectorAll(
-      'craft-option:has(> craft-badge[slot="badge"])'
-    ),
-  ].map(
-    (option) => (option as HTMLElement & {choiceValue: string}).choiceValue
-  );
+/** The source columns whose options say they're the suggested one. */
+function suggestedOptions(): string[] {
+  return sourceSelect()
+    .options.filter((option) => option.data?.hint?.startsWith('Suggested'))
+    .map((option) => option.value);
 }
 
-it('badges the suggested source column’s option, and goes on badging it once another is chosen', async () => {
+it('marks the suggested source column’s option, and goes on marking it once another is chosen', async () => {
   mount([title], {...emptyValues(), map: {title: 'name'}}, {title: true});
 
   expect(sourceSelect().modelValue).toBe('name');
-  expect(badgedOptions()).toEqual(['name']);
+  expect(suggestedOptions()).toEqual(['name']);
+  // the column's sample stays in the hint after it
   expect(
-    sourceSelect()
-      .querySelector('craft-badge[slot="badge"]')!
-      .getAttribute('size')
-  ).toBe('small');
-  expect(
-    sourceSelect()
-      .querySelector('craft-badge[slot="badge"]')!
-      .textContent!.trim()
-  ).toBe('Suggested');
+    sourceSelect().options.find((option) => option.value === 'name')?.data?.hint
+  ).toBe('Suggested · Ada Lovelace');
 
   chooseSource('email');
   await nextTick();
 
-  expect(badgedOptions()).toEqual(['name']);
+  expect(suggestedOptions()).toEqual(['name']);
 });
 
-it('badges no option for a column the user mapped themselves', () => {
+it('marks no option for a column the user mapped themselves', () => {
   mount([title], {...emptyValues(), map: {title: 'name'}});
 
-  expect(badgedOptions()).toEqual([]);
+  expect(suggestedOptions()).toEqual([]);
 });
 
-it('keeps a freshly guessed column selected and badged once the select renders', async () => {
+it('keeps a freshly guessed column selected and marked once the select renders', async () => {
   const values = cloneValues(emptyValues());
   const suggestedMap: SuggestedMap = {};
   applySuggestions(values.map, {title: 'name'}, suggestedMap);
@@ -940,7 +943,7 @@ it('keeps a freshly guessed column selected and badged once the select renders',
   mount([title], values, suggestedMap);
 
   expect(sourceSelect().modelValue).toBe('name');
-  expect(badgedOptions()).toEqual(['name']);
+  expect(suggestedOptions()).toEqual(['name']);
   expect(apply().map).toEqual({title: 'name'});
 });
 

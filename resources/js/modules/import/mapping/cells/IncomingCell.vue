@@ -4,10 +4,9 @@
    * for a container column, a nested mapping of its own. A template is entered in the
    * Preview column.
    */
-  import '@craftcms/ui/components/badge/badge';
-  import {Color, t} from '@craftcms/ui';
+  import {t} from '@craftcms/ui';
   import {computed, ref, watch} from 'vue';
-  import SelectRichCell from '@/common/table/cells/SelectRichCell.vue';
+  import ComboboxCell from '@/common/table/cells/ComboboxCell.vue';
   import {
     useMappingContext,
     type FieldMappingSetting,
@@ -25,7 +24,7 @@
 
   /**
    * The column the server suggested, which its option goes on saying in the list once
-   * another is chosen. The select shows the badge too while that option is selected.
+   * another is chosen.
    */
   const suggestedColumn = ref<string | null>(null);
 
@@ -39,6 +38,20 @@
     {immediate: true}
   );
 
+  /** The source columns, the suggested one saying so in its hint. */
+  const options = computed(() =>
+    context.sourceDataCols.map((option) =>
+      suggestedColumn.value !== null && option.value === suggestedColumn.value
+        ? {
+            ...option,
+            hint: option.hint
+              ? t('Suggested · {hint}', {hint: option.hint})
+              : t('Suggested'),
+          }
+        : option
+    )
+  );
+
   const importSettings = computed<FieldMappingSetting[]>(() =>
     mapValue.value !== '' ? (col.importSettings ?? []) : []
   );
@@ -47,25 +60,13 @@
 <template>
   <NestedMappingButton v-if="col.isContainer" :col="col" />
   <template v-else>
-    <SelectRichCell
+    <ComboboxCell
       :value="mapValue"
-      :options="context.sourceDataCols"
+      :options="options"
       :label="col.label"
       :disabled="!context.editable"
-      searchable
       @change="choose"
-    >
-      <template #option-badge="{option}">
-        <craft-badge
-          v-if="suggestedColumn !== null && option.value === suggestedColumn"
-          slot="badge"
-          :fill="Color.Accent"
-          :size.attr="'small'"
-          no-prefix
-          >{{ t('Suggested') }}</craft-badge
-        >
-      </template>
-    </SelectRichCell>
+    />
     <ImportSettings
       v-if="importSettings.length"
       :col="col"

@@ -11,8 +11,6 @@
     options: SelectCellOption[];
     label: string;
     disabled?: boolean;
-    /** Leads the open list with a field that filters the options. */
-    searchable?: boolean;
   }>();
 
   const emit = defineEmits<{change: [value: string]}>();
@@ -33,7 +31,6 @@
       class="cp-table-control__input"
       .modelValue="value"
       .disabled="disabled"
-      .searchable="searchable"
       :label="label"
       label-sr-only
       @model-value-changed="onChange"

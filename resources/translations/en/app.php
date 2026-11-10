@@ -3076,6 +3076,7 @@ return [
     'Successfully deactivated the user.' => 'Successfully deactivated the user.',
     'Suffix Text' => 'Suffix Text',
     'Suggested' => 'Suggested',
+    'Suggested · {hint}' => 'Suggested · {hint}',
     'Suggestions collapsed' => 'Suggestions collapsed',
     'Suspend' => 'Suspend',
     'Suspended' => 'Suspended',
