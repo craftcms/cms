@@ -20,6 +20,7 @@ use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformer;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -213,6 +214,27 @@ it('recreates the transform index when a named transform changed after indexing'
             ->count())
         ->toBe(1);
 });
+
+it('keeps named transform handles through the Craft driver unless parameters override them', function (mixed $definition, string $transformString) {
+    Queue::fake();
+    app(ImageTransforms::class)->saveTransform(new ImageTransform([
+        'name' => 'F1500',
+        'handle' => 'f1500',
+        'width' => 1500,
+        'mode' => 'fit',
+        'quality' => 100,
+    ]));
+    $asset = ($this->createImageAsset)();
+
+    app(AssetTransformers::class)->transform($asset, $definition);
+
+    expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->pluck('transformString')->all())
+        ->toBe([$transformString]);
+})->with([
+    'handle' => ['f1500', '_f1500'],
+    'transform key' => [['transform' => 'f1500'], '_f1500'],
+    'overridden' => [['transform' => 'f1500', 'width' => 800], '_800xAUTO_fit_center-center_100_none'],
+]);
 
 it('invalidates eager-loaded indexes older than the asset file', function () {
     $asset = ($this->createImageAsset)();

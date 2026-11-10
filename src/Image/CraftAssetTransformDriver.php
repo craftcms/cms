@@ -36,7 +36,7 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
             throw new NotSupportedException('The Asset cannot be manipulated as an image.');
         }
 
-        $transform = ImageTransform::fromParameters($request->parameters);
+        $transform = $request->namedTransform ?? ImageTransform::fromParameters($request->parameters);
         $immediately = Context::hasHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT)
             ? Context::getHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT) === true
             : ($request->transformer->settings['generate_transforms_before_page_load'] ?? false) === true;
@@ -85,8 +85,8 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         $groups = [];
 
         foreach ($requests as $request) {
-            $key = serialize($request->parameters);
-            $groups[$key]['transform'] ??= ImageTransform::fromParameters($request->parameters);
+            $key = $request->namedTransform?->handle.':'.serialize($request->parameters);
+            $groups[$key]['transform'] ??= $request->namedTransform ?? ImageTransform::fromParameters($request->parameters);
             $groups[$key]['assets'][$request->asset->id] = $request->asset;
         }
 

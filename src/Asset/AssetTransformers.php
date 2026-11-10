@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -425,7 +426,26 @@ class AssetTransformers extends Manager
             asset: $asset,
             transformer: $transformer,
             parameters: $parameters,
+            namedTransform: $this->namedTransform($definition),
         );
+    }
+
+    /**
+     * Returns the named Image Transform a definition uses without overriding any of its parameters.
+     */
+    private function namedTransform(#[\SensitiveParameter] mixed $definition): ?ImageTransform
+    {
+        if (is_array($definition)) {
+            return array_keys($definition) === ['transform'] ? $this->namedTransform($definition['transform']) : null;
+        }
+
+        if (! is_string($definition) && ! $definition instanceof ImageTransform) {
+            return null;
+        }
+
+        $transform = ImageTransformHelper::normalizeTransform($definition);
+
+        return ! empty($transform->handle) ? $transform : null;
     }
 
     /** @return array<string, mixed> */
