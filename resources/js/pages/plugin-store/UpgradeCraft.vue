@@ -112,7 +112,7 @@
     <ul v-else class="cms-editions">
       <li v-for="card in cards" :key="card.edition.handle" class="cms-edition">
         <div class="grid gap-sm">
-          <h2 class="m-0">{{ card.edition.name }}</h2>
+          <h2 class="cp-h2">{{ card.edition.name }}</h2>
           <p v-if="card.description" class="m-0">{{ card.description }}</p>
         </div>
 

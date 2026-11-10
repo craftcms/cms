@@ -364,7 +364,7 @@ class ReleaseViewModel extends ViewModel
         $description = $release->description === null || $this->editable()
             ? ''
             : Html::tag('section', implode('', [
-                Html::tag('h3', Html::encode(t('Description')), ['class' => 'font-bold text-xs mb-xs']),
+                Html::tag('h3', Html::encode(t('Description')), ['class' => 'cp-h6 mb-xs']),
                 Html::tag('div', HtmlSanitizers::sanitize(MarkdownParser::parse($release->description)), ['class' => 'markdown']),
             ]), ['class' => $dates === '' ? null : 'mt-lg']);
 

@@ -35,7 +35,7 @@
       class="changelog__release"
     >
       <div class="grid gap-xs content-start">
-        <h2 :id="release.version" class="m-0 text-lg">
+        <h2 :id="release.version" class="cp-h2">
           <a :href="`#${release.version}`">
             {{ t('Version {version}', {version: release.version}) }}
           </a>

@@ -422,7 +422,7 @@
                               >
                                 <template #title>
                                   <slot name="title">
-                                    <h1 class="text-xl">{{ pageTitle }}</h1>
+                                    <h1 class="cp-h1">{{ pageTitle }}</h1>
                                   </slot>
                                 </template>
                                 <template #actions>

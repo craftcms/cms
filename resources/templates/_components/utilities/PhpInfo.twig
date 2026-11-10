@@ -1,7 +1,7 @@
 <div class="grid gap-8">
   {% for section, values in phpInfo %}
     <div id="{{ section | id }}">
-      <h2 class="mb-2 text-lg">{{ section }}</h2>
+      <h2 class="cp-h2 mb-2">{{ section }}</h2>
       <table class="cp-table cp-table--fixed cp-table--aligned">
         <tbody>
           {% for key, value in values %}
