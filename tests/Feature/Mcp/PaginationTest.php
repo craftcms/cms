@@ -15,7 +15,7 @@ use CraftCms\Cms\User\Models\User;
 use Laravel\Passport\Passport;
 
 it('continues past an invisible page and stops after the last result without exposing the lookahead record', function (string $tool): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     app(ElementTypes::class)->register(TestPaginationElement::class);

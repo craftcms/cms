@@ -268,3 +268,10 @@ function buildExpectedUrl(string $url, string $scheme): string
 
     return str_replace(['{siteUrl}', '{cpUrl}'], [$siteUrl, $cpUrl], $url);
 }
+
+function passportKey(): OpenSSLAsymmetricKey
+{
+    static $key = openssl_pkey_new(['private_key_bits' => 2048]);
+
+    return $key;
+}
