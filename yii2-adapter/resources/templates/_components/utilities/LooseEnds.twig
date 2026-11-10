@@ -150,7 +150,7 @@
                         </craft-button>
                       </form>
                     {% elseif (action.type ?? null) == 'prompt' %}
-                      <craft-copy-button value="{{ action.prompt }}" variant="plain" flush="inline-start" size="medium" icon="robot" hide-tooltip>
+                      <craft-copy-button value="{{ action.prompt }}" variant="plain" flush="inline-start" size="medium" icon="sparkles" hide-tooltip>
                         {{ 'Copy prompt'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
                       </craft-copy-button>
                     {% endif %}
