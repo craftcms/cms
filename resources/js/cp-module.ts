@@ -59,6 +59,101 @@ export const DeleteButton = defineAsyncComponent(
   () => import('./modules/admin-table/components/DeleteButton.vue')
 );
 
+/** Building blocks for a plugin's own pages. */
+
+/** A link to another control panel page, loaded with Inertia. */
+export const CpLink = defineAsyncComponent(
+  () => import('./common/components/CpLink.vue')
+);
+
+/** Pads page content to line up with the control panel's header. */
+export const CpContainer = defineAsyncComponent(
+  () => import('./common/components/CpContainer.vue')
+);
+
+/** A dialog. Escape and the overlay close only the topmost one. */
+export const Modal = defineAsyncComponent(
+  () => import('./common/components/Modal.vue')
+);
+
+/** A modal holding a form, with a title and Cancel and Save buttons. */
+export const ModalForm = defineAsyncComponent(
+  () => import('./common/components/ModalForm.vue')
+);
+
+/** The Save button and save menu for an Inertia form. */
+export const FormActions = defineAsyncComponent(
+  () => import('./common/components/FormActions.vue')
+);
+
+/** Lists a failed save's errors, and moves focus to it. */
+export const ErrorSummary = defineAsyncComponent(
+  () => import('./common/form/ErrorSummary.vue')
+);
+
+/** A field's tip, with an optional “Learn more” link. */
+export const FieldTip = defineAsyncComponent(
+  () => import('./common/components/FieldTip.vue')
+);
+
+/** Shows the messages sent to a target beside the control that sent them. */
+export const InlineFlash = defineAsyncComponent(
+  () => import('./common/components/InlineFlash.vue')
+);
+
+/** Says settings can't be changed in this environment. */
+export const CalloutReadOnly = defineAsyncComponent(
+  () => import('./common/components/CalloutReadOnly.vue')
+);
+
+/** A loading placeholder block. */
+export const PlaceholderShape = defineAsyncComponent(
+  () => import('./common/components/PlaceholderShape.vue')
+);
+
+/** Syntax-highlighted code. */
+export const CodeHighlight = defineAsyncComponent(
+  () => import('./common/components/CodeHighlight.vue')
+);
+
+/** A button that opens a control panel page in a slideout. */
+export const SlideoutButton = defineAsyncComponent(
+  () => import('./common/components/SlideoutButton.vue')
+);
+
+/** Puts server-rendered markup on the page, with the assets it needs. */
+export const HtmlFragmentRenderer = defineAsyncComponent(
+  () => import('./common/components/HtmlFragmentRenderer.vue')
+);
+
+/** A dropdown that picks one option. */
+export const Select = defineAsyncComponent(
+  () => import('./common/form/Select.vue')
+);
+
+/** Checkboxes that pick several options, which can be sortable. */
+export const CheckboxGroup = defineAsyncComponent(
+  () => import('./common/form/CheckboxGroup.vue')
+);
+
+/** A text input that suggests values as the user types. */
+export const Combobox = defineAsyncComponent(
+  () => import('./common/form/CraftCombobox.vue')
+);
+
+/** Picks an icon from a searchable list. */
+export const IconPicker = defineAsyncComponent(
+  () => import('./common/form/IconPicker.vue')
+);
+
+/** Previous and next page buttons, a page number, and an optional page size. */
+export const PaginationControls = defineAsyncComponent(
+  () => import('./common/components/PaginationControls.vue')
+);
+
+export type {ModalProps, ModalWidth} from './common/components/modal';
+export type {HtmlFragment} from './common/types';
+
 export type {ActionItem, ActionItemLink} from './common/types';
 
 /**
@@ -149,6 +244,7 @@ export {
   type MessageType,
 } from './modules/messages/messages';
 export {useMessages} from './modules/messages/useMessages';
+export {messageTargetHeaders} from './modules/messages';
 export {announce} from './common/announcer';
 export type {AnnounceOptions} from './common/announcer';
 export {
@@ -443,6 +539,10 @@ export function cpConfig(): ConfigService {
 /** Slideouts, element editors, chip actions and thumbnails. */
 export {openSlideout, createElementEditor} from './common/slideouts';
 export type {ElementEditorPanel} from './common/slideouts';
+export type {
+  OpenSlideoutOptions,
+  SlideoutSaveResult,
+} from './common/slideouts/types';
 export {addActionsToChip, type ChipAction} from './common/craft/chip-actions';
 export {loadElementThumbs} from './modules/element-thumb-loader';
 export {openAssetImageEditor} from './modules/image-editor/open-asset-image-editor';

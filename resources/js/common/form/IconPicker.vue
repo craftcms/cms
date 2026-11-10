@@ -198,6 +198,9 @@
         >
       </div>
     </div>
+    <ul v-if="error" class="error-list" slot="feedback">
+      <li>{{ error }}</li>
+    </ul>
   </craft-input>
 
   <!-- Teleported: the picker usually sits inside a web component (a field,

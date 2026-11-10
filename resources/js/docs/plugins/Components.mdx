@@ -1,0 +1,79 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Components" />
+
+# Components
+
+The Vue components Craft's own pages are built from, exported from
+`@craftcms/cp`. Each has a page under **CP** with its props and examples.
+
+```vue
+<script setup lang="ts">
+  import {ref} from 'vue';
+  import {ModalForm, Select} from '@craftcms/cp';
+
+  const open = ref(false);
+  const section = ref('news');
+</script>
+
+<template>
+  <craft-button @click="open = true">Move entries</craft-button>
+  <ModalForm
+    :is-active="open"
+    title="Move entries"
+    submit-label="Move"
+    @close="open = false"
+    @submit="move"
+  >
+    <Select v-model="section" label="Section" :options="sections" />
+  </ModalForm>
+</template>
+```
+
+The `<craft-*>` web components (`<craft-button>`, `<craft-input>`,
+`<craft-callout>`…) are on every page already, and need no import.
+
+## Pages and layout
+
+| Component              | What it's for                                                              |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `CpContainer`          | Pads page content to line up with the control panel's header.              |
+| `CpLink`               | A link to another control panel page, loaded with Inertia.                 |
+| `CpButtonLink`         | A button that goes to another control panel page, or posts to one.         |
+| `SlideoutButton`       | A button that opens a control panel page in a slideout.                    |
+| `HtmlFragmentRenderer` | Puts markup the server rendered on the page, with the CSS and JS it needs. |
+
+## Dialogs
+
+| Component   | What it's for                                                     |
+| ----------- | ----------------------------------------------------------------- |
+| `Modal`     | A dialog. `width` is one of `ModalWidth`: `sm`…`7xl`, or `auto`.  |
+| `ModalForm` | A modal holding a form, with a title and Cancel and Save buttons. |
+
+## Forms
+
+| Component         | What it's for                                                            |
+| ----------------- | ------------------------------------------------------------------------ |
+| `FormActions`     | The Save button and save menu for an Inertia form.                       |
+| `ErrorSummary`    | Lists a failed save's errors above the form, and moves focus to it.      |
+| `Select`          | A dropdown that picks one option. Numeric options come back as numbers.  |
+| `CheckboxGroup`   | Checkboxes that pick several options. `sortable` lets people order them. |
+| `Combobox`        | A text input that suggests values as people type.                        |
+| `IconPicker`      | Picks an icon from a searchable list.                                    |
+| `FieldTip`        | A field's tip, with an optional “Learn more” link.                       |
+| `CalloutReadOnly` | Says settings can't be changed in this environment.                      |
+
+## Feedback and content
+
+| Component            | What it's for                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `InlineFlash`        | Shows messages sent to a target beside the control that sent them. Pair it with `messageTargetHeaders(target)` on the request. |
+| `PlaceholderShape`   | A loading placeholder, sized with a class.                                                                                     |
+| `CodeHighlight`      | Syntax-highlighted code, or a JSON value.                                                                                      |
+| `PaginationControls` | Previous and next page buttons, a page number, and an optional page size.                                                      |
+| `ActionMenu`         | A menu of `ActionItems`.                                                                                                       |
+
+## Tables and elements
+
+`AdminTable` covers most tables; see **CP/AdminTable/Guide**. `ElementIndexPage`
+and `ElementEditor` render Craft's element index and editor.

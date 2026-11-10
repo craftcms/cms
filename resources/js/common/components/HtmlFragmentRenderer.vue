@@ -7,16 +7,20 @@
     type AppendHtmlDisposer,
   } from '@craftcms/ui';
   import {onBeforeUnmount, ref, watch} from 'vue';
+  import type {HtmlFragment} from '@/common/types';
 
   const props = withDefaults(
     defineProps<{
-      fragment?: CraftCms.Cms.View.HtmlFragment | null;
-      /** Override loading while retaining stale-run cleanup and ready handling. */
+      fragment?: HtmlFragment | null;
+      /**
+       * Override loading while retaining stale-run cleanup and ready handling.
+       * Resolves with a function that removes what it added.
+       */
       render?: (
-        fragment: CraftCms.Cms.View.HtmlFragment,
+        fragment: HtmlFragment,
         container: HTMLElement,
         active: () => boolean
-      ) => Promise<AppendHtmlDisposer | undefined>;
+      ) => Promise<(() => void) | undefined>;
       /** Tag name for the container element. */
       as?: string;
     }>(),
