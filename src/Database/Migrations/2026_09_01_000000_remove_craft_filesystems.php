@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -34,28 +33,8 @@ return new class extends Migration
             $this->requireConfiguredDisk($volume['fs'] ?? null, $filesystems, $configuredDisks, $missingDisks);
         }
 
-        foreach ($volumes as $volume) {
-            if (is_array($volume)) {
-                $this->requireConfiguredDisk($volume['transformFs'] ?? null, $filesystems, $configuredDisks, $missingDisks);
-            }
-        }
-
         foreach (DB::table(Table::VOLUMES)->pluck('fs') as $reference) {
             $this->requireConfiguredDisk($reference, $filesystems, $configuredDisks, $missingDisks);
-        }
-
-        $transformerProblems = $this->transformDestinationProblems($volumes, $filesystems, $configuredDisks);
-
-        if ($missingDisks === [] && $transformerProblems !== []) {
-            $problems = Str::indent(implode("\n\n", $transformerProblems), '    ');
-
-            throw new RuntimeException(<<<MESSAGE
-                Volume transform filesystems have been removed. Transforms are now configured on each disk, with an `asset_transformer` key in config/filesystems.php.
-
-                $problems
-
-                Each environment's config/filesystems.php needs these keys. Then run the upgrade again.
-                MESSAGE);
         }
 
         if ($missingDisks !== []) {
@@ -80,7 +59,7 @@ return new class extends Migration
 
                 $suggestions
 
-                {$this->transformerProblemsNote($transformerProblems)}Then run the upgrade again.
+                Then run the upgrade again.
                 MESSAGE);
         }
 
@@ -128,135 +107,6 @@ return new class extends Migration
         } finally {
             $projectConfig->muteEvents = $muteEvents;
         }
-    }
-
-    /**
-     * Craft 5 volumes could store transforms on a separate filesystem and subpath. Those settings now belong to the
-     * `craft` transformer on the volume’s disk. Returns a message for each disk whose transformer doesn’t match.
-     *
-     * @param  array<string, mixed>  $volumes
-     * @param  array<string, array<string, mixed>>  $filesystems
-     * @param  array<string, mixed>  $configuredDisks
-     * @return list<string>
-     */
-    private function transformDestinationProblems(array $volumes, array $filesystems, array $configuredDisks): array
-    {
-        $volumesByDisk = [];
-
-        foreach ($volumes as $volume) {
-            if (! is_array($volume)) {
-                continue;
-            }
-
-            $disk = $this->diskName($volume['fs'] ?? null);
-            if ($disk === null) {
-                continue;
-            }
-
-            $outputDisk = $this->diskName($volume['transformFs'] ?? null);
-            $subpath = $this->normalizeSubpath(is_string($volume['transformSubpath'] ?? null) ? Env::parse($volume['transformSubpath']) : null);
-            $volumesByDisk[$disk][] = [
-                'name' => is_string($volume['name'] ?? null) ? $volume['name'] : $disk,
-                'location' => $outputDisk === null && $subpath === '' ? null : [
-                    'output_disk' => $outputDisk ?? $disk,
-                    'subpath' => $subpath,
-                    'has_urls' => $this->referenceHasUrls($outputDisk === null ? $volume['fs'] : $volume['transformFs'], $filesystems, $configuredDisks),
-                ],
-            ];
-        }
-
-        $problems = [];
-
-        foreach ($volumesByDisk as $disk => $diskVolumes) {
-            $locations = array_unique(array_map(
-                fn (array $volume): string => serialize($volume['location'] === null ? null : [$volume['location']['output_disk'], $volume['location']['subpath']]),
-                $diskVolumes,
-            ));
-
-            if (count($locations) > 1) {
-                // A disk has one transformer, so any choice the disk already makes is accepted. Transforms for the
-                // other volumes are regenerated there; transform paths include the volume UID, so they can't collide.
-                if (app(AssetTransformers::class)->configForDisk($disk) !== null) {
-                    continue;
-                }
-
-                $names = implode(', ', array_map(fn (array $volume): string => "“{$volume['name']}”", $diskVolumes));
-                $location = array_find(array_column($diskVolumes, 'location'), fn (?array $location): bool => $location !== null);
-                $problems[] = <<<MESSAGE
-                    The volumes $names share the [$disk] disk but stored transforms in different places. A disk has one transformer, so choose one location for all of them, such as by adding this to the [$disk] disk. Transforms for the other volumes will be generated again there.
-
-                    {$this->transformerSuggestion($location)}
-                    MESSAGE;
-
-                continue;
-            }
-
-            $location = $diskVolumes[0]['location'];
-
-            if ($location === null || $this->diskHasTransformDestination($disk, $location)) {
-                continue;
-            }
-
-            $problems[] = "Add this to the [$disk] disk:\n\n{$this->transformerSuggestion($location)}";
-        }
-
-        return $problems;
-    }
-
-    /** @param  array{output_disk: string, subpath: string, has_urls: bool}  $location */
-    private function transformerSuggestion(array $location): string
-    {
-        $settings = Str::indent(implode("\n", [
-            "'driver' => 'craft',",
-            $this->phpArrayLine('output_disk', $location['output_disk']),
-            ...($location['subpath'] !== '' ? [$this->phpArrayLine('subpath', $location['subpath'])] : []),
-            "'has_urls' => ".($location['has_urls'] ? 'true' : 'false').',',
-        ]), '    ');
-
-        return "'asset_transformer' => [\n$settings\n],";
-    }
-
-    /**
-     * Whether a disk’s transformer already stores files where a Craft 5 volume did, with the same URL behavior. A disk
-     * set to any other driver counts, since that was a deliberate choice, even if the driver isn’t registered yet.
-     *
-     * @param  array{output_disk: string, subpath: string, has_urls: bool}  $location
-     */
-    private function diskHasTransformDestination(string $disk, array $location): bool
-    {
-        $config = app(AssetTransformers::class)->configForDisk($disk);
-        $config = is_string($config) ? ['driver' => $config] : $config;
-
-        if (! is_array($config)) {
-            return false;
-        }
-
-        if (($config['driver'] ?? null) !== 'craft') {
-            return true;
-        }
-
-        $subpath = $config['subpath'] ?? null;
-
-        return ($config['output_disk'] ?? null) === $location['output_disk']
-            && $this->normalizeSubpath(is_string($subpath) ? $subpath : null) === $location['subpath']
-            && (($config['has_urls'] ?? false) === true) === $location['has_urls'];
-    }
-
-    private function normalizeSubpath(?string $subpath): string
-    {
-        return trim(str_replace('\\', '/', $subpath ?? ''), '/');
-    }
-
-    /** @param list<string> $problems */
-    private function transformerProblemsNote(array $problems): string
-    {
-        if ($problems === []) {
-            return '';
-        }
-
-        $problems = Str::indent(implode("\n\n", $problems), '    ');
-
-        return "Volume transform filesystems have also been removed. Transforms are now configured on each disk, with an `asset_transformer` key:\n\n$problems\n\n";
     }
 
     /**

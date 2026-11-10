@@ -276,132 +276,13 @@ test('falls back to a manual TODO for a missing filesystem of an unrecognized ty
         ->toContain('create this manually'));
 });
 
-test('requires an asset_transformer for a Craft 5 volume with a separate transform filesystem', function () {
-    foreach (['volume-source', 'volume-transforms'] as $disk) {
-        config()->set("filesystems.disks.$disk", [
-            'driver' => 'local',
-            'root' => storage_path("framework/testing/migrations/$disk"),
-        ]);
-    }
-    $volume = Volume::factory()->create(['fs' => 'volume-source']);
-    $projectConfig = mockCraft5TransformProjectConfig();
-    $projectConfig->shouldNotReceive('set');
-    $projectConfig->shouldNotReceive('remove');
-
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
-
-    expect(fn () => $migration->up())
-        ->toThrow(fn (RuntimeException $exception) => expect(str_replace("\r\n", "\n", $exception->getMessage()))
-            ->toContain('Add this to the [volume-source] disk:')
-            ->toContain("'asset_transformer' => [")
-            ->toContain("'driver' => 'craft',")
-            ->toContain("'output_disk' => 'volume-transforms',")
-            ->toContain("'subpath' => 'transforms',")
-            ->toContain("'has_urls' => true,")
-            ->toContain('Each environment'))
-        ->and($volume->refresh()->fs)->toBe('volume-source');
-});
-
-test('accepts a Craft 5 transform filesystem once the disk has a matching asset_transformer', function () {
+test('doesn’t require a disk or asset_transformer for a Craft 5 volume’s transform filesystem', function () {
     config()->set('filesystems.disks.volume-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/migrations/volume-source'),
-        'asset_transformer' => ['driver' => 'craft', 'output_disk' => 'volume-transforms', 'subpath' => '/transforms/', 'has_urls' => true],
     ]);
-    config()->set('filesystems.disks.volume-transforms', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/migrations/volume-transforms'),
-    ]);
+    config()->offsetUnset('filesystems.disks.volume-transforms');
     Volume::factory()->create(['fs' => 'volume-source']);
-    expectCraft5TransformMigrationToPass(mockCraft5TransformProjectConfig());
-
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
-    $migration->up();
-});
-
-test('requires has_urls to match the Craft 5 transform filesystem', function () {
-    config()->set('filesystems.disks.volume-source', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/migrations/volume-source'),
-        'asset_transformer' => ['driver' => 'craft', 'output_disk' => 'volume-transforms', 'subpath' => 'transforms'],
-    ]);
-    config()->set('filesystems.disks.volume-transforms', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/migrations/volume-transforms'),
-    ]);
-    Volume::factory()->create(['fs' => 'volume-source']);
-    $projectConfig = mockCraft5TransformProjectConfig();
-    $projectConfig->shouldNotReceive('set');
-
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
-
-    expect(fn () => $migration->up())->toThrow(RuntimeException::class, "'has_urls' => true,");
-});
-
-test('accepts a disk set to another transform driver, even one that isn’t registered yet', function () {
-    config()->set('app.debug', false);
-    config()->set('filesystems.disks.volume-source', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/migrations/volume-source'),
-        'asset_transformer' => 'not-registered-yet',
-    ]);
-    config()->set('filesystems.disks.volume-transforms', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/migrations/volume-transforms'),
-    ]);
-    Volume::factory()->create(['fs' => 'volume-source']);
-    expectCraft5TransformMigrationToPass(mockCraft5TransformProjectConfig());
-
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
-    $migration->up();
-});
-
-dataset('craft5 volumes sharing a disk', [[[
-    'images' => ['name' => 'Images', 'fs' => 'volume-source', 'transformFs' => 'volume-transforms', 'transformSubpath' => 'transforms'],
-    'documents' => ['name' => 'Documents', 'fs' => 'volume-source'],
-]]]);
-
-test('suggests one location for volumes that shared a disk but stored transforms in different places', function (array $volumes) {
-    foreach (['volume-source', 'volume-transforms'] as $disk) {
-        config()->set("filesystems.disks.$disk", [
-            'driver' => 'local',
-            'root' => storage_path("framework/testing/migrations/$disk"),
-        ]);
-    }
-    Volume::factory()->create(['fs' => 'volume-source']);
-    mockCraft5TransformProjectConfig($volumes)->shouldNotReceive('set');
-
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
-
-    expect(fn () => $migration->up())
-        ->toThrow(fn (RuntimeException $exception) => expect($exception->getMessage())
-            ->toContain('“Images”, “Documents” share the [volume-source] disk')
-            ->toContain("'output_disk' => 'volume-transforms',"));
-})->with('craft5 volumes sharing a disk');
-
-test('accepts volumes that shared a disk but stored transforms in different places once the disk has a transformer', function (array $volumes) {
-    config()->set('filesystems.disks.volume-source', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/migrations/volume-source'),
-        'asset_transformer' => ['driver' => 'craft', 'output_disk' => 'volume-transforms'],
-    ]);
-    config()->set('filesystems.disks.volume-transforms', [
-        'driver' => 'local',
-        'root' => storage_path('framework/testing/migrations/volume-transforms'),
-    ]);
-    Volume::factory()->create(['fs' => 'volume-source']);
-    expectCraft5TransformMigrationToPass(mockCraft5TransformProjectConfig($volumes));
-
-    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
-    $migration->up();
-})->with('craft5 volumes sharing a disk');
-
-/**
- * @param  array<string, array<string, mixed>>|null  $volumes
- * @return ProjectConfig&MockInterface
- */
-function mockCraft5TransformProjectConfig(?array $volumes = null): ProjectConfig
-{
     /** @var ProjectConfig&MockInterface $projectConfig */
     $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
     $projectConfig->muteEvents = false;
@@ -409,7 +290,7 @@ function mockCraft5TransformProjectConfig(?array $volumes = null): ProjectConfig
         'volume-source' => ['settings' => ['hasUrls' => true]],
         'volume-transforms' => ['settings' => ['hasUrls' => true]],
     ]);
-    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn($volumes ?? [
+    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn([
         'volume' => [
             'name' => 'Images',
             'fs' => 'volume-source',
@@ -417,15 +298,17 @@ function mockCraft5TransformProjectConfig(?array $volumes = null): ProjectConfig
             'transformSubpath' => 'transforms',
         ],
     ]);
-    app()->instance(ProjectConfig::class, $projectConfig);
-
-    return $projectConfig;
-}
-
-/** @param  ProjectConfig&MockInterface  $projectConfig */
-function expectCraft5TransformMigrationToPass(ProjectConfig $projectConfig): void
-{
-    $projectConfig->shouldReceive('set')->once()->with(ProjectConfig::PATH_VOLUMES, Mockery::type('array'), Mockery::type('string'));
+    $projectConfig->shouldReceive('set')->once()->with(
+        ProjectConfig::PATH_VOLUMES,
+        Mockery::on(fn (array $volumes): bool => $volumes['volume']['fs'] === 'volume-source'
+            && $volumes['volume']['transformFs'] === 'volume-transforms'
+            && $volumes['volume']['transformSubpath'] === 'transforms'),
+        Mockery::type('string'),
+    );
     $projectConfig->shouldReceive('remove')->once()->with('fs', Mockery::type('string'));
     $projectConfig->shouldReceive('saveModifiedConfigData')->once();
-}
+    app()->instance(ProjectConfig::class, $projectConfig);
+
+    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+    $migration->up();
+});

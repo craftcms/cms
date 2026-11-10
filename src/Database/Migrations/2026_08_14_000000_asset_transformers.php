@@ -17,8 +17,8 @@ return new class extends Migration
             });
         }
 
-        // Craft 5's transformFs and transformSubpath stay in project config, where 2026_09_01_000000_remove_craft_filesystems
-        // checks that each volume's disk has a matching asset_transformer.
+        // Craft 5's transformFs and transformSubpath stay in project config, where the Yii adapter's deprecated volume
+        // transform filesystem methods read them.
         if (Schema::hasColumn(Table::VOLUMES, 'transformFs')) {
             Schema::table(Table::VOLUMES, function (Blueprint $table): void {
                 $table->dropColumn('transformFs');
