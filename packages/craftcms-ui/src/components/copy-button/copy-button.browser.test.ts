@@ -93,12 +93,12 @@ it('keeps its tooltip for the copy outcome when told to hide it', async () => {
   await userEvent.hover(button);
   await new Promise((resolve) => setTimeout(resolve, 300));
 
-  expect(tooltip.opened).toBe(false);
+  expect(tooltip.open).toBe(false);
   // It still describes the button, so it has nothing to say until a copy.
   expect(tooltip.textContent?.trim()).toBe('');
 
   await button.showStatus('success');
 
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
   expect(tooltip.textContent?.trim()).toBe('Copied');
 });

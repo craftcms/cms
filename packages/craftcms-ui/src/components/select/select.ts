@@ -1,10 +1,10 @@
 import styles from './select.styles.js';
-import {LionSelect} from '@lion/ui/select.js';
-import {html} from 'lit';
+import {html, LitElement} from 'lit';
 import '../option/option.js';
 import '../icon/icon.js';
 import {property} from 'lit/decorators.js';
-import {HasLabel} from '@src/mixins/HasLabel';
+import {formControlStyles} from '@src/mixins/FormControl';
+import {NativeField} from '@src/mixins/NativeField';
 
 /**
  * @summary A dropdown built on the native `<select>`, with Craft's field
@@ -23,16 +23,18 @@ import {HasLabel} from '@src/mixins/HasLabel';
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
  */
-export default class CraftSelect extends HasLabel(LionSelect) {
-  static override get styles() {
-    return [...super.styles, styles];
+export default class CraftSelect extends NativeField(LitElement) {
+  static override styles = [formControlStyles, styles];
+
+  override get _control(): HTMLSelectElement | undefined {
+    return super._control as HTMLSelectElement | undefined;
   }
 
   /** Renders the control at a smaller size. */
   @property({reflect: true, type: Boolean}) small = false;
 
   // oxlint-disable-next-line class-methods-use-this
-  override _inputGroupInputTemplate() {
+  protected override _inputGroupInputTemplate() {
     return html`
       <div class="input-group__input">
         <slot name="input"></slot>
@@ -53,6 +55,5 @@ if (!customElements.get('craft-select')) {
 declare global {
   interface HTMLElementTagNameMap {
     'craft-select': CraftSelect;
-    // 'craft-select-invoker': CraftSelectInvoker;
   }
 }

@@ -168,11 +168,14 @@ readonly class FieldChangeComparisons
     }
 
     /**
-     * Compares every field in two versions of an element, which can be in different sites, as two read-only forms
-     * whose fields are in the same order: the newer version’s, followed by fields only the older version has. Changed
-     * fields are badged on the sides {@see self::badgedSides()} picks, and no field has a status.
+     * Compares every field in two versions of an element, which can be in different sites, or in two separate elements,
+     * as two read-only forms whose fields are in the same order: the newer version’s, followed by fields only the older
+     * version has. Changed fields are badged on the sides {@see self::badgedSides()} picks, and no field has a status.
      *
-     * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>, badged: array{from: bool, to: bool}}
+     * The `counterparts` pair each side's fields with the other side's by the same rules as the rows, by their layout
+     * element UIDs, wherever those differ, so a field a condition shows only once the page has loaded finds its row.
+     *
+     * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>, badged: array{from: bool, to: bool}, counterparts: array{from: array<string, string>, to: array<string, string>}}
      */
     public function compareElements(ElementInterface $from, ElementInterface $to): array
     {
@@ -241,7 +244,29 @@ readonly class FieldChangeComparisons
             'to' => $this->pane($toPayload, $paneNodes['to']),
             'rows' => $rows,
             'badged' => $badged,
+            'counterparts' => ['from' => $this->counterparts($from, $to), 'to' => $this->counterparts($to, $from)],
         ];
+    }
+
+    /**
+     * Returns the UIDs of the fields in one element's layout, conditional ones included, by which the other element's
+     * layout has the same field under another UID.
+     *
+     * @return array<string, string>
+     */
+    private function counterparts(ElementInterface $element, ElementInterface $other): array
+    {
+        $counterparts = [];
+
+        foreach ($element->getFieldLayout()?->getElementsByType(BaseField::class) ?? [] as $layoutElement) {
+            $match = $this->previews->matchingLayoutElement($other, $layoutElement);
+
+            if ($match && $match->uid !== $layoutElement->uid) {
+                $counterparts[(string) $layoutElement->uid] = (string) $match->uid;
+            }
+        }
+
+        return $counterparts;
     }
 
     /**
@@ -252,11 +277,16 @@ readonly class FieldChangeComparisons
      * - Of a revision and the current element, the current element.
      * - Of a draft and the current element or a revision, the draft.
      * - Of the user’s unsaved edits and the current element or a revision, the edits.
+     * - Of two separate elements, both.
      *
      * @return array{from: bool, to: bool}
      */
     public function badgedSides(ElementInterface $from, ElementInterface $to): array
     {
+        if ($from->getCanonicalId() !== $to->getCanonicalId()) {
+            return ['from' => true, 'to' => true];
+        }
+
         $kind = fn (ElementInterface $element): string => match (true) {
             $element->getIsRevision() => 'revision',
             $element->isProvisionalDraft => 'edits',
@@ -298,8 +328,7 @@ readonly class FieldChangeComparisons
 
     /**
      * Returns whether a field changed between two versions, or `null` when that can’t be told from their form values.
-     * Translations are meant to differ, so between sites only a value missing on one side counts as a change, and a
-     * field that isn’t translated, which both sites of a version share, hasn’t changed.
+     * Between sites, a field that isn’t translated, which both sites of a version share, hasn’t changed.
      */
     private function changed(
         BaseField $layoutElement,
@@ -314,7 +343,8 @@ readonly class FieldChangeComparisons
             return true;
         }
 
-        $otherSite = $from->siteId !== $to->siteId;
+        // Two separate elements' values are compared as they are, in whichever sites.
+        $otherSite = $from->siteId !== $to->siteId && $from->getCanonicalId() === $to->getCanonicalId();
 
         if ($otherSite && $from->id === $to->id && ! ($toNode->props['translatable'] ?? false)) {
             return false;
@@ -322,11 +352,7 @@ readonly class FieldChangeComparisons
 
         [$unchanged] = $this->compareNodes($layoutElement, [$fromPayload, $fromNode], $from, [$toPayload, $toNode], $to);
 
-        return match (true) {
-            $unchanged === null => null,
-            $otherSite => $this->isEmpty($fromPayload, $fromNode, $from, $layoutElement) !== $this->isEmpty($toPayload, $toNode, $to, $layoutElement),
-            default => ! $unchanged,
-        };
+        return $unchanged === null ? null : ! $unchanged;
     }
 
     /**
@@ -402,17 +428,6 @@ readonly class FieldChangeComparisons
             errors: [],
             globalErrors: [],
         );
-    }
-
-    private function isEmpty(?UiPayload $payload, ?NodePayload $node, ElementInterface $element, BaseField $layoutElement): bool
-    {
-        if ($node && $this->loadsOwnValues($node) && ($nested = $this->nestedElements($element, $layoutElement)) !== null) {
-            return $nested === [];
-        }
-
-        $value = $payload && $node ? data_get($payload->values, $node->control->path ?? []) : null;
-
-        return $value === null || $value === '' || $value === [];
     }
 
     /**

@@ -3,6 +3,7 @@ import type CraftCombobox from './combobox.js';
 import type {ComboboxItem} from './combobox.js';
 import './combobox.js';
 import type CraftOptionGroup from '../option/option-group.js';
+import type CraftOption from '../option/option.js';
 
 function makeOptions(count: number): ComboboxItem[] {
   return Array.from({length: count}, (_, i) => ({
@@ -21,15 +22,19 @@ async function createFixture(
   document.body.append(combobox);
 
   await combobox.updateComplete;
-  // Allow Lion's slot/registration and our option render to settle.
+  // Let the option render settle.
   await new Promise((resolve) => setTimeout(resolve));
   await combobox.updateComplete;
   return combobox;
 }
 
-function optionEls(combobox: CraftCombobox): HTMLElement[] {
+function optionEls(combobox: CraftCombobox): CraftOption[] {
   const node = combobox.querySelector('[role=listbox]')!;
   return Array.from(node.querySelectorAll('craft-option'));
+}
+
+function activeIndex(combobox: CraftCombobox): number {
+  return optionEls(combobox).findIndex((option) => option.active);
 }
 
 async function typeQuery(combobox: CraftCombobox, value: string) {
@@ -85,8 +90,6 @@ describe('craft-combobox', () => {
   });
 
   it('re-renders cleanly across successive filters without duplicating text', async () => {
-    // Regression: Lion's match-highlighting used to mutate option DOM and
-    // collide with our lit-html render, producing e.g. "Option 000Option 300".
     const combobox = await createFixture((c) => {
       c.limit = 10;
       c.options = makeOptions(301);
@@ -130,7 +133,7 @@ describe('craft-combobox', () => {
     expect(group.querySelectorAll('craft-option')).toHaveLength(2);
   });
 
-  it('sets modelValue to the option value (not its label) when chosen', async () => {
+  it('sets value to the option value (not its label) when chosen', async () => {
     const combobox = await createFixture((c) => {
       // label !== value, and custom values allowed (the General.vue "live" case)
       c.options = [
@@ -140,7 +143,7 @@ describe('craft-combobox', () => {
     });
 
     let emitted = false;
-    combobox.addEventListener('model-value-changed', () => {
+    combobox.addEventListener('change', () => {
       emitted = true;
     });
 
@@ -151,7 +154,7 @@ describe('craft-combobox', () => {
     await combobox.updateComplete;
     await new Promise((resolve) => setTimeout(resolve));
 
-    expect(combobox.modelValue).toBe('0');
+    expect(combobox.value).toBe('0');
     expect(emitted).toBe(true);
   });
 
@@ -165,18 +168,18 @@ describe('craft-combobox', () => {
           {label: 'Markdown', value: 'markdown'},
           {label: 'Plain Text', value: 'plain-text'},
         ];
-        c.modelValue = 'plain-text';
+        c.value = 'plain-text';
       });
       let emitted = false;
-      combobox.addEventListener('model-value-changed', () => {
+      combobox.addEventListener('change', () => {
         emitted = true;
       });
 
       const input = combobox.querySelector('input')!;
       input.focus();
       await typeQuery(combobox, query);
-      expect(combobox.activeIndex).toBe(0);
-      expect(String(combobox.formElements[0]?.choiceValue)).toBe('markdown');
+      expect(activeIndex(combobox)).toBe(0);
+      expect(String(optionEls(combobox)[0]?.value)).toBe('markdown');
       emitted = false;
       input.dispatchEvent(
         new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
@@ -184,7 +187,7 @@ describe('craft-combobox', () => {
       await combobox.updateComplete;
       await new Promise((resolve) => setTimeout(resolve));
 
-      expect(combobox.modelValue).toBe('markdown');
+      expect(combobox.value).toBe('markdown');
       expect(input.value).toBe('Markdown');
       expect(emitted).toBe(true);
     }
@@ -212,14 +215,14 @@ describe('craft-combobox', () => {
     await typeQuery(combobox, 'exhibit');
 
     const options = optionEls(combobox);
-    expect(
-      String((options[0] as HTMLElement & {choiceValue: unknown}).choiceValue)
-    ).toBe('exhibit');
-    expect(combobox.activeIndex).toBe(0);
+    expect(String((options[0] as HTMLElement & {value: unknown}).value)).toBe(
+      'exhibit'
+    );
+    expect(activeIndex(combobox)).toBe(0);
     expect(
       options.filter(
         (option) =>
-          option.hasAttribute('active') || option.hasAttribute('checked')
+          option.hasAttribute('active') || option.hasAttribute('selected')
       )
     ).toHaveLength(1);
   });
@@ -230,7 +233,7 @@ describe('craft-combobox', () => {
         {label: 'Plain Text', value: 'plain-text', data: {icon: 'i-cursor'}},
         {label: 'Money', value: 'money', data: {icon: 'euro-sign'}},
       ];
-      c.modelValue = 'money';
+      c.value = 'money';
     });
 
     const icon = combobox.shadowRoot?.querySelector('craft-icon.prefix');
@@ -244,7 +247,7 @@ describe('craft-combobox', () => {
         {label: 'Plain Text', value: 'plain-text', data: {icon: 'i-cursor'}},
         {label: 'Money', value: 'money', data: {icon: 'euro-sign'}},
       ];
-      c.modelValue = 'plain-text';
+      c.value = 'plain-text';
     });
 
     const money = optionEls(combobox).find(
@@ -265,7 +268,7 @@ describe('craft-combobox', () => {
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = false;
       c.options = [{label: 'Money', value: 'money', data: {icon: 'euro-sign'}}];
-      c.modelValue = 'money';
+      c.value = 'money';
     });
 
     await typeQuery(combobox, 'Mon');
@@ -280,18 +283,18 @@ describe('craft-combobox', () => {
       c.options = [{label: 'Online', value: '1'}];
     });
     await typeQuery(combobox, '$MY_ENV_VAR');
-    expect(combobox.modelValue).toBe('$MY_ENV_VAR');
+    expect(combobox.value).toBe('$MY_ENV_VAR');
 
     // A matching label still maps to its value.
     await typeQuery(combobox, 'Online');
-    expect(combobox.modelValue).toBe('1');
+    expect(combobox.value).toBe('1');
   });
 
   it('clears the value via the clear button', async () => {
     const combobox = await createFixture((c) => {
       c.clearable = true;
       c.options = [{label: 'Canada', value: 'ca'}];
-      c.modelValue = 'ca';
+      c.value = 'ca';
     });
     await combobox.updateComplete;
     await new Promise((resolve) => setTimeout(resolve));
@@ -303,21 +306,21 @@ describe('craft-combobox', () => {
     clear!.click();
     await combobox.updateComplete;
 
-    expect(combobox.modelValue).toBe('');
+    expect(combobox.value).toBe('');
   });
 
   it('keeps a matching requireOptionMatch value when options are present first', async () => {
     // Regression: a value resolved before options existed was cleared to "".
-    // The wrapper now sets options before modelValue; mirror that here.
+    // The wrapper now sets options before value; mirror that here.
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = true;
       c.options = [
         {label: 'English (US)', value: 'en-US'},
         {label: 'French', value: 'fr'},
       ];
-      c.modelValue = 'en-US';
+      c.value = 'en-US';
     });
-    expect(combobox.modelValue).toBe('en-US');
+    expect(combobox.value).toBe('en-US');
   });
 
   it('displays the matching option label for an initial value', async () => {
@@ -326,10 +329,10 @@ describe('craft-combobox', () => {
       {label: 'Online', value: '1'},
       {label: 'Offline', value: '0'},
     ];
-    combobox.modelValue = '1';
+    combobox.value = '1';
 
     await vi.waitFor(() => {
-      expect(combobox.modelValue).toBe('1');
+      expect(combobox.value).toBe('1');
       expect(combobox.querySelector('input')?.value).toBe('Online');
     });
   });
@@ -344,7 +347,7 @@ describe('craft-combobox', () => {
       },
     ];
     combobox.showSelectedHint = true;
-    combobox.modelValue = 'uploads';
+    combobox.value = 'uploads';
 
     await vi.waitFor(() => {
       expect(combobox.querySelector('input')?.value).toBe(
@@ -357,39 +360,51 @@ describe('craft-combobox', () => {
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = false;
       c.options = [{label: '$SITE_NAME', value: '$SITE_NAME'}];
-      c.modelValue = 'My Site';
+      c.value = 'My Site';
     });
-    expect(combobox.modelValue).toBe('My Site');
+    expect(combobox.value).toBe('My Site');
   });
 
-  it('emits model-value-changed for a typed (custom) value, not just selection', async () => {
-    // Lion only emits by repropagating a checked option's event; free text
-    // (requireOptionMatch=false) has no option to repropagate, so without our
-    // fix the model updates silently and v-model bindings never see it.
+  it.each([false, true])(
+    'tells a selection’s input from typing’s by its inputType (multiple: %s)',
+    async (multiple) => {
+      const combobox = await createFixture((c) => {
+        c.multiple = multiple;
+        c.options = [
+          {label: 'Online', value: '1'},
+          {label: 'Offline', value: '0'},
+        ];
+      });
+      const inputTypes: (string | null)[] = [];
+      combobox.addEventListener('input', (event) =>
+        inputTypes.push(event instanceof InputEvent ? event.inputType : null)
+      );
+
+      await typeQuery(combobox, 'Offline');
+      optionEls(combobox)
+        .find((el) => el.textContent?.trim() === 'Offline')!
+        .click();
+
+      expect(inputTypes).toEqual([null, 'insertReplacementText']);
+    }
+  );
+
+  it('emits input for a typed (custom) value, not just selection', async () => {
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = false;
       c.options = [{label: 'Online', value: '1'}];
     });
-    const fired: Array<{value: unknown; changeSource?: string}> = [];
-    combobox.addEventListener('model-value-changed', (event) => {
-      fired.push({
-        value: combobox.modelValue,
-        changeSource: (event as CustomEvent).detail?.changeSource,
-      });
-    });
+    const fired: unknown[] = [];
+    combobox.addEventListener('input', () => fired.push(combobox.value));
 
     const input = combobox.querySelector('input')!;
     input.focus();
     input.value = '$MY_ENV';
     input.dispatchEvent(new Event('input', {bubbles: true}));
     await combobox.updateComplete;
-    await new Promise((resolve) => setTimeout(resolve));
 
-    expect(combobox.modelValue).toBe('$MY_ENV');
-    expect(fired).toContainEqual({
-      value: '$MY_ENV',
-      changeSource: 'input',
-    });
+    expect(combobox.value).toBe('$MY_ENV');
+    expect(fired).toEqual(['$MY_ENV']);
   });
 
   it('emits native input while typing and change when the field is left', async () => {
@@ -406,10 +421,10 @@ describe('craft-combobox', () => {
     });
     combobox.addEventListener('change', () => order.push('change'));
 
-    // Cast rather than reaching through `_inputNode` directly, which is
+    // Cast rather than reaching through `_control` directly, which is
     // protected — the older tests in this file predate that being checked.
-    const input = (combobox as unknown as {_inputNode: HTMLInputElement})
-      ._inputNode;
+    const input = (combobox as unknown as {_control: HTMLInputElement})
+      ._control;
     for (const value of ['h', 'ht']) {
       input.focus();
       input.value = value;
@@ -421,28 +436,27 @@ describe('craft-combobox', () => {
     // Typing alters but does not commit.
     expect(order).toEqual(['input', 'input']);
 
-    combobox.dispatchEvent(new Event('blur'));
+    input.dispatchEvent(new FocusEvent('focusout', {bubbles: true}));
     expect(order).toEqual(['input', 'input', 'change']);
 
     // Leaving again without an edit commits nothing.
-    combobox.dispatchEvent(new Event('blur'));
+    input.dispatchEvent(new FocusEvent('focusout', {bubbles: true}));
     expect(order).toEqual(['input', 'input', 'change']);
   });
 
   it('keeps updating the model past the first keystroke, even with a v-model write-back', async () => {
-    // Regression: list-mode autocomplete stopped syncing typed text into the
-    // model after the first character, and a bound v-model writing .modelValue
-    // back used to wedge further edits.
+    // A bound v-model writes the value back on every event; that mustn't
+    // wedge further edits.
     const combobox = await createFixture((c) => {
       c.requireOptionMatch = false;
       c.options = [{label: 'Online', value: '1'}];
     });
     const input = combobox.querySelector('input')!;
     // Simulate the Vue two-way binding writing the value back on each event.
-    combobox.addEventListener('model-value-changed', () => {
-      const v = combobox.modelValue;
+    combobox.addEventListener('input', () => {
+      const v = combobox.value;
       queueMicrotask(() => {
-        combobox.modelValue = v;
+        combobox.value = v;
       });
     });
 
@@ -452,7 +466,7 @@ describe('craft-combobox', () => {
       input.dispatchEvent(new Event('input', {bubbles: true}));
       await combobox.updateComplete;
       await new Promise((resolve) => setTimeout(resolve));
-      expect(combobox.modelValue).toBe(v);
+      expect(combobox.value).toBe(v);
     }
   });
 
@@ -465,15 +479,15 @@ describe('craft-combobox', () => {
     });
     const input = combobox.querySelector('input')!;
     input.focus();
-    expect(combobox.opened).toBe(false);
+    expect(combobox.open).toBe(false);
 
     input.dispatchEvent(
-      new KeyboardEvent('keyup', {key: 'ArrowDown', bubbles: true})
+      new KeyboardEvent('keydown', {key: 'ArrowDown', bubbles: true})
     );
     await combobox.updateComplete;
     await new Promise((resolve) => setTimeout(resolve));
 
-    expect(combobox.opened).toBe(true);
+    expect(combobox.open).toBe(true);
     expect(optionEls(combobox).length).toBe(2);
   });
 
@@ -484,7 +498,7 @@ describe('craft-combobox', () => {
         {label: 'Select a filesystem', value: ''},
         {label: 'Create a new filesystem…', value: '__add__'},
       ];
-      c.modelValue = '';
+      c.value = '';
     });
 
     await vi.waitFor(() => {
@@ -493,7 +507,7 @@ describe('craft-combobox', () => {
       );
     });
     combobox.querySelector('input')!.click();
-    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+    await vi.waitFor(() => expect(combobox.open).toBe(true));
 
     expect(
       optionEls(combobox).map((option) => option.textContent?.trim())
@@ -508,12 +522,12 @@ describe('craft-combobox', () => {
         {label: 'Create a new filesystem…', value: '__add__'},
       ];
       c.showSelectedHint = true;
-      c.modelValue = 'disk:s3';
+      c.value = 'disk:s3';
     });
 
     const input = combobox.querySelector('input')!;
     input.click();
-    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+    await vi.waitFor(() => expect(combobox.open).toBe(true));
 
     expect(
       optionEls(combobox).map((option) => option.textContent?.trim())
@@ -526,11 +540,11 @@ describe('craft-combobox', () => {
     ).toEqual(['Local']);
 
     optionEls(combobox)[0]!.click();
-    await vi.waitFor(() => expect(combobox.opened).toBe(false));
+    await vi.waitFor(() => expect(combobox.open).toBe(false));
     await combobox.updateComplete;
 
     input.click();
-    await vi.waitFor(() => expect(combobox.opened).toBe(true));
+    await vi.waitFor(() => expect(combobox.open).toBe(true));
 
     expect(
       optionEls(combobox).map((option) => option.textContent?.trim())
@@ -549,39 +563,33 @@ describe('craft-combobox', () => {
   });
 });
 
-it('adopts a model value naming an option from a replaced option set', async () => {
-  // The field editor swaps the whole option set when the field type changes and
-  // writes the new value in the same tick. Lit patches the option elements in
-  // place, so without keying they never disconnect, Lion never re-registers
-  // them, and the combobox silently keeps — and keeps announcing — the previous
-  // value. The next form refresh then posts the old field type.
+it('adopts a value naming an option from a replaced option set', async () => {
+  // The field editor swaps the whole option set when the field type changes
+  // and writes the new value in the same tick.
   const combobox = await createFixture((c) => {
     c.options = [
       {label: 'Plain Text', value: 'plain'},
       {label: 'Dropdown', value: 'dropdown'},
     ];
-    c.modelValue = 'plain';
+    c.value = 'plain';
   });
 
   const announced: Array<string | string[]> = [];
-  combobox.addEventListener('model-value-changed', () => {
-    announced.push(combobox.modelValue);
-  });
+  combobox.addEventListener('input', () => announced.push(combobox.value));
+  combobox.addEventListener('change', () => announced.push(combobox.value));
 
   combobox.options = [
     {label: 'Matrix', value: 'matrix'},
     {label: 'Money', value: 'money'},
   ];
-  combobox.modelValue = 'matrix';
+  combobox.value = 'matrix';
 
   await combobox.updateComplete;
   await new Promise((resolve) => setTimeout(resolve));
   await combobox.updateComplete;
 
-  expect(combobox.modelValue).toBe('matrix');
-  // Nothing stale escapes: the bound v-model is written on every announcement,
-  // so an interim one carrying the previous value lands in the form's values
-  // and marks it changed before being corrected.
-  expect(announced).toEqual(['matrix']);
+  expect(combobox.value).toBe('matrix');
+  // Setting the value from code is silent, as on a native control.
+  expect(announced).toEqual([]);
   expect(combobox.querySelector('input')?.value).toBe('Matrix');
 });

@@ -412,10 +412,8 @@ class Input extends ViewComponent
             'monospace' => $this->monospace,
             'inline-suffix' => $this->inlineSuffix,
             'hidden-input' => $this->hiddenInput,
-            // Lion pushes these host properties onto the slotted input when
-            // the element upgrades (LionInput::updated()), overwriting the
-            // server-rendered attributes with its defaults — so any
-            // non-default value must also live on the host. The native input
+            // The component pushes the host properties it's given onto the
+            // slotted input, and styles itself from them. The native input
             // keeps them too, for pre-upgrade correctness (form posts,
             // password masking, CSS).
             'type' => $this->type !== 'text' ? $this->type : null,

@@ -46,11 +46,8 @@ export default class CraftInputHandle extends CraftInput {
   override updated(changedProperties: Map<string, unknown>) {
     super.updated(changedProperties);
 
-    this._inputNode?.setAttribute(
-      'autocorrect',
-      this.autocorrect ? 'on' : 'off'
-    );
-    this._inputNode?.setAttribute('autocapitalize', this.autocapitalize);
+    this._control?.setAttribute('autocorrect', this.autocorrect ? 'on' : 'off');
+    this._control?.setAttribute('autocapitalize', this.autocapitalize);
   }
 }
 

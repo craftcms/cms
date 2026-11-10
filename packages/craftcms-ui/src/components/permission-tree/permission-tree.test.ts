@@ -13,7 +13,7 @@ describe('craft-permission-tree', () => {
       'craft-permission-tree'
     ) as CraftPermissionTree;
     element.name = 'permissions';
-    element.modelValue = ['viewEntries', 'editEntries'];
+    element.value = ['viewEntries', 'editEntries'];
     element.lockedPermissions = ['deleteentries'];
     element.groups = [
       {
@@ -49,10 +49,10 @@ describe('craft-permission-tree', () => {
       ...element.shadowRoot!.querySelectorAll<CraftCheckbox>('craft-checkbox'),
     ];
     const view = checkboxes.find(
-      (checkbox) => checkbox.choiceValue === 'viewEntries'
+      (checkbox) => checkbox.value === 'viewEntries'
     )!;
     const inherited = checkboxes.find(
-      (checkbox) => checkbox.choiceValue === 'deleteEntries'
+      (checkbox) => checkbox.value === 'deleteEntries'
     )!;
 
     expect(inherited.checked).toBe(true);
@@ -68,13 +68,10 @@ describe('craft-permission-tree', () => {
       ['permissions[]', 'editEntries'],
     ]);
 
-    view.checked = false;
-    view.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
-    );
+    view.querySelector('input')!.click();
     await element.updateComplete;
 
-    expect(element.modelValue).toEqual([]);
+    expect(element.value).toEqual([]);
     expect(
       [...element.querySelectorAll<HTMLInputElement>('input')].map(
         (input) => input.value
@@ -87,7 +84,7 @@ describe('craft-permission-tree', () => {
       'craft-permission-tree'
     ) as CraftPermissionTree;
     element.name = 'permissions';
-    element.modelValue = ['viewEntries'];
+    element.value = ['viewEntries'];
     element.groups = [
       {
         handle: 'content',
@@ -107,14 +104,11 @@ describe('craft-permission-tree', () => {
 
     const checkbox =
       element.shadowRoot!.querySelector<CraftCheckbox>('craft-checkbox')!;
-    checkbox.checked = false;
-    checkbox.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
-    );
+    checkbox.querySelector('input')!.click();
     await element.updateComplete;
 
     // Each toggle is a commit, so the pair fires together.
     expect(order).toEqual(['input', 'change']);
-    expect(element.modelValue).toEqual([]);
+    expect(element.value).toEqual([]);
   });
 });

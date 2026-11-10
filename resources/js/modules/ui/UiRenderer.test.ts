@@ -103,6 +103,18 @@ interface SelectedElement {
   siteId?: number;
 }
 
+/** Sets a checkbox or switch the way a user would, ending with its `change`. */
+function toggleChoice(
+  choice: Element & {checked: boolean},
+  checked: boolean
+): void {
+  choice.checked = checked;
+  required(
+    choice.querySelector('[slot="input"]'),
+    'Expected the choice control.'
+  ).dispatchEvent(new Event('change', {bubbles: true}));
+}
+
 function required<T>(value: T | null | undefined, message: string): T {
   if (value === null || value === undefined) {
     throw new Error(message);
@@ -359,7 +371,7 @@ vi.mock('../editable-table', () => ({
 
           const combobox = document.createElement('craft-combobox');
           combobox.name = `${baseName}[${rowId}][${key}]`;
-          combobox.modelValue = stringValue;
+          combobox.value = stringValue;
           cell.append(combobox);
           continue;
         }
@@ -1130,11 +1142,11 @@ describe('UiRenderer', () => {
     app.unmount();
     await mount(status);
 
-    const combobox = container.querySelector<
-      HTMLElement & {modelValue: string}
-    >('craft-combobox')!;
+    const combobox = container.querySelector<HTMLElement & {value: string}>(
+      'craft-combobox'
+    )!;
     await vi.waitFor(() => {
-      expect(combobox.modelValue).toBe('1');
+      expect(combobox.value).toBe('1');
       expect(combobox.querySelector('input')?.value).toBe('Online');
     });
   });
@@ -2453,13 +2465,11 @@ describe('UiRenderer', () => {
     await mount(refreshable, {refresh});
 
     const combobox = required(
-      container.querySelector<HTMLElement & {modelValue: string}>(
-        'craft-combobox'
-      ),
+      container.querySelector<HTMLElement & {value: string}>('craft-combobox'),
       'Expected the UI mode combobox.'
     );
     await vi.waitFor(() => {
-      expect(combobox.modelValue).toBe('enlarged');
+      expect(combobox.value).toBe('enlarged');
       expect(container.querySelectorAll('craft-option')).toHaveLength(2);
     });
     await new Promise((resolve) => setTimeout(resolve));
@@ -2478,7 +2488,7 @@ describe('UiRenderer', () => {
     ]);
   });
 
-  it('uses the combobox change source instead of event timing', async () => {
+  it('reports input on the combobox as typing', async () => {
     const onChange = vi.fn();
     app.unmount();
     const refreshable = clonePayload();
@@ -2495,20 +2505,13 @@ describe('UiRenderer', () => {
     await mount(refreshable, {onChange});
 
     const combobox = required(
-      container.querySelector<HTMLElement & {modelValue: string}>(
-        'craft-combobox'
-      ),
+      container.querySelector<HTMLElement & {value: string}>('craft-combobox'),
       'Expected the UI mode combobox.'
     );
     onChange.mockClear();
-    combobox.modelValue = 'custom';
+    combobox.value = 'custom';
     await Promise.resolve();
-    combobox.dispatchEvent(
-      new CustomEvent('model-value-changed', {
-        bubbles: true,
-        detail: {changeSource: 'input'},
-      })
-    );
+    combobox.dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
 
     expect(onChange).toHaveBeenCalledWith(
@@ -2567,10 +2570,7 @@ describe('UiRenderer', () => {
         ),
         'Expected the action lightswitch.'
       );
-      lightswitch.checked = true;
-      lightswitch.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      toggleChoice(lightswitch, true);
       await nextTick();
 
       expect(refresh).toHaveBeenCalledTimes(expectedRefreshes);
@@ -2787,10 +2787,7 @@ describe('UiRenderer', () => {
       container.querySelector('craft-switch'),
       'Expected the lightswitch control.'
     );
-    lightswitch.checked = false;
-    lightswitch.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    toggleChoice(lightswitch, false);
     await nextTick();
 
     expect(refresh).toHaveBeenCalledOnce();
@@ -3503,7 +3500,7 @@ describe('UiRenderer', () => {
 
     expect(switchElement.indeterminate).toBe(true);
     expect(switchElement.size).toBe('small');
-    expect(switchElement.checkedValue).toBe('yes');
+    expect(switchElement.value).toBe('yes');
     expect(switchElement.indeterminateValue).toBe('maybe');
     expect(switchElement.onLabel).toBe('On');
     expect(switchElement.offLabel).toBe('Off');
@@ -3773,10 +3770,10 @@ describe('UiRenderer', () => {
     money.dispatchEvent(new Event('input', {bubbles: true}));
 
     const color = container.querySelector('craft-input-color')!;
-    color.modelValue = '00ff00';
-    color.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    color.value = '00ff00';
+    color
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     expect(new FormData(form).getAll('settings[tags][]')).toEqual(['b']);
     expect(Object.fromEntries(new FormData(form))).toMatchObject({
@@ -3820,7 +3817,7 @@ describe('UiRenderer', () => {
       expect(
         container.querySelector<HTMLInputElement>('input[type="time"]')?.value
       ).toBe('14:30');
-      expect(container.querySelector('craft-input-color')?.modelValue).toBe(
+      expect(container.querySelector('craft-input-color')?.value).toBe(
         'ff0000'
       );
     }
@@ -4158,15 +4155,15 @@ describe('UiRenderer', () => {
       },
     });
     const addressLine = required(
-      container.querySelector<HTMLElement & {modelValue: string}>(
+      container.querySelector<HTMLElement & {value: string}>(
         'craft-input[name="settings[address][addressLine1]"]'
       ),
       'Expected the address line input.'
     );
-    addressLine.modelValue = 'Changed address';
-    addressLine.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    addressLine.value = 'Changed address';
+    addressLine
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     expect(renderer.currentValues()).toMatchObject({
       settings: {address: {addressLine1: 'Changed address'}},
@@ -4208,12 +4205,12 @@ describe('UiRenderer', () => {
         data: {fieldDefinitions: selectLocalityFields},
       });
     const administrativeArea = container.querySelector<
-      HTMLElement & {modelValue: string}
+      HTMLElement & {value: string}
     >('craft-select[name="settings[address][administrativeArea]"]')!;
-    administrativeArea.modelValue = 'BE-WBR';
-    administrativeArea.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    administrativeArea.value = 'BE-WBR';
+    administrativeArea
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
     expect(request).toHaveBeenCalledWith('addresses/fields', {
       namespace: 'settings[address]',
@@ -4224,10 +4221,10 @@ describe('UiRenderer', () => {
       settings: {address: {locality: 'Antwerp'}},
     });
 
-    administrativeArea.modelValue = 'BE-VAN';
-    administrativeArea.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    administrativeArea.value = 'BE-VAN';
+    administrativeArea
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
     await vi.waitFor(() =>
       expect(renderer.currentValues()).toMatchObject({
@@ -4267,9 +4264,9 @@ describe('UiRenderer', () => {
         ).toBe(true)
       );
       expect(
-        container.querySelector<HTMLElement & {modelValue: unknown}>(
+        container.querySelector<HTMLElement & {value: unknown}>(
           '.address-fields craft-input'
-        )?.modelValue
+        )?.value
       ).toBe('Museumstraat 1');
 
       const refreshed = structuredClone(nonEditable);
@@ -4622,19 +4619,9 @@ describe('UiRenderer', () => {
     await mount(emptyMoney, {onMutation: (value) => (mutation = value)});
     await nextTick();
 
-    // The control announces itself once as it's populated. happy-dom won't
-    // bootstrap the underlying form control far enough to fire that on its own,
-    // so raise it exactly as the browser does — the field is still empty, and
-    // the announcement is not marked as coming from a person.
-    const control = required(
+    required(
       container.querySelector('craft-input-money'),
       'Expected the money control.'
-    );
-    control.dispatchEvent(
-      new CustomEvent('model-value-changed', {
-        bubbles: true,
-        detail: {isTriggeredByUser: false},
-      })
     );
     await nextTick();
 
@@ -4778,22 +4765,22 @@ describe('UiRenderer', () => {
       ).querySelectorAll<
         HTMLElement & {
           checked: boolean;
-          choiceValue: string;
+          value: string;
           disabled: boolean;
         }
       >('craft-checkbox'),
     ];
-    expect(checkboxes.map((checkbox) => checkbox.choiceValue)).toEqual([
+    expect(checkboxes.map((checkbox) => checkbox.value)).toEqual([
       'viewEntries',
       'editEntries',
       'deleteEntries',
     ]);
     const edit = required(
-      checkboxes.find((checkbox) => checkbox.choiceValue === 'editEntries'),
+      checkboxes.find((checkbox) => checkbox.value === 'editEntries'),
       'Expected the edit entries permission.'
     );
     const inherited = required(
-      checkboxes.find((checkbox) => checkbox.choiceValue === 'deleteEntries'),
+      checkboxes.find((checkbox) => checkbox.value === 'deleteEntries'),
       'Expected the delete entries permission.'
     );
 
@@ -4803,10 +4790,7 @@ describe('UiRenderer', () => {
       'viewEntries',
     ]);
 
-    edit.checked = true;
-    edit.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
-    );
+    toggleChoice(edit, true);
     await nextTick();
 
     expect(renderer.currentValues()).toEqual({

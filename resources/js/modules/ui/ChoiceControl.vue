@@ -13,10 +13,14 @@
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {Required} from '@lion/ui/form-core.js';
-  import {computed, inject, nextTick, ref, watch} from 'vue';
+  import {computed, inject, nextTick, ref, useId, watch} from 'vue';
   import type {UiControlPayload, UiValue} from './types';
-  import {FieldLabelSrOnly, inputName, serverErrorValidators} from './runtime';
+  import {
+    FieldLabelSrOnly,
+    inputName,
+    scopedId,
+    UiFieldIdScope,
+  } from './runtime';
 
   type ChoiceValue = boolean | number | string;
   type ChoicePresentation = CraftCms.Cms.Ui.Enums.ChoicePresentation;
@@ -106,22 +110,22 @@
     emitEvent(event, value);
   }
   const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
+  const id = useId();
+  const fieldIdScope = inject(UiFieldIdScope, undefined);
+
+  /**
+   * The name the radios post under. Radios with the same name in a form are
+   * one group, so where a field renders more than once in a form, such as on
+   * each side of the Compare screen, each copy's radios are scoped apart.
+   */
+  const radioName = computed(() =>
+    scopedId(fieldIdScope, inputName(props.control.path))
+  );
 
   /** Whether a button shows only its option's icon, named by the label. */
   function iconOnly(option: ChoiceOption): boolean {
     return option.icon !== undefined && props.control.props.iconsOnly !== false;
   }
-
-  // Lion skips other validators for an empty select. The field renders the
-  // server's message; this validator keeps the native invalid state in sync.
-  const selectValidators = computed(() =>
-    props.invalid && props.required
-      ? [
-          new Required(undefined, {getMessage: () => ''}),
-          ...serverErrorValidators(true),
-        ]
-      : serverErrorValidators(props.invalid)
-  );
 
   /**
    * A leading blank keeps an unset value from looking like the first real
@@ -245,9 +249,7 @@
     savedCustomRadioOption ? inputValue(savedCustomRadioOption.value) : ''
   );
   const customRadioSelected = ref(savedCustomRadioOption !== undefined);
-  const customRadioId = computed(
-    () => `ui-${props.control.path.join('-')}-custom`
-  );
+  const customRadioId = `${id}-custom`;
 
   function onCustomRadioChecked(): void {
     customRadioSelected.value = true;
@@ -334,7 +336,7 @@
   const addOptionButton = ref<HTMLElement | null>(null);
 
   function customOptionId(option: CustomOption): string {
-    return `ui-${props.control.path.join('-')}-custom-${option.key}`;
+    return `${id}-custom-${option.key}`;
   }
 
   /** Emits the checked options followed by the checked custom options' text. */
@@ -430,7 +432,7 @@
   }
 
   function optionId(index: number): string {
-    return `ui-${props.control.path.join('-')}-${index}`;
+    return `${id}-${index}`;
   }
 
   /**
@@ -533,22 +535,11 @@
     Array.isArray(props.value) ? props.value.map(inputValue) : []
   );
 
-  function onCheckboxSelectValue(event: Event): void {
-    // Its checkboxes fire their own `model-value-changed`, which bubbles up
-    // to this listener too.
-    const select = event.currentTarget;
-    if (
-      event.target !== select ||
-      !(select instanceof HTMLElement) ||
-      select.localName !== 'craft-checkbox-select'
-    ) {
-      return;
-    }
-
-    // SAFETY: Checked by tag name above.
-    const element = select as CraftCheckboxSelect;
+  function onCheckboxSelectChange(event: Event): void {
+    // SAFETY: The listener is bound to the `craft-checkbox-select`.
+    const element = event.currentTarget as CraftCheckboxSelect;
     order.value = element.options.map((option) => option.value);
-    emit('update:value', element.modelValue);
+    emit('update:value', element.value);
   }
 </script>
 
@@ -563,8 +554,7 @@
     "
     .disabled="!editable"
     :required="editable && required"
-    .validators="selectValidators"
-    .submitted="invalid"
+    :invalid="invalid"
   >
     <select
       slot="input"
@@ -666,8 +656,8 @@
     :aria-invalid="invalid ? 'true' : undefined"
     :aria-required="required ? 'true' : undefined"
     .options="selectOptionsInOrder"
-    .modelValue="groupValue"
-    @model-value-changed="onCheckboxSelectValue"
+    .value="groupValue"
+    @change="onCheckboxSelectChange"
   ></craft-checkbox-select>
   <component
     :is="control.props.multiple ? 'craft-checkbox-group' : 'craft-radio-group'"
@@ -675,14 +665,15 @@
     :appearance="groupAppearance()"
     :name="
       editable
-        ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
+        ? control.props.multiple
+          ? `${inputName(control.path)}[]`
+          : radioName
         : ''
     "
     :required="editable && required"
     .disabled="!editable"
-    :aria-invalid="invalid ? 'true' : undefined"
+    .invalid="invalid"
     :aria-required="required ? 'true' : undefined"
-    .validators="serverErrorValidators(invalid)"
   >
     <input
       v-if="control.props.multiple && editable"
@@ -702,7 +693,7 @@
             : undefined
         "
         .disabled="!editable || option.disabled"
-        .choiceValue="inputValue(option.value)"
+        .value="inputValue(option.value)"
         .checked="selected(option.value)"
       >
         <span
@@ -735,7 +726,9 @@
           :type="control.props.multiple ? 'checkbox' : 'radio'"
           :name="
             editable
-              ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
+              ? control.props.multiple
+                ? `${inputName(control.path)}[]`
+                : radioName
               : ''
           "
           :value="inputValue(option.value)"
@@ -778,7 +771,7 @@
       >
         <craft-checkbox
           .disabled="!editable"
-          .choiceValue="option.text"
+          .value="option.text"
           .checked="option.checked"
         >
           <input
@@ -795,14 +788,11 @@
             {{ t('Custom:') }}
           </label>
         </craft-checkbox>
-        <!-- Lion's choice groups only accept checkboxes or radios as
-             registered fields, so the text field mustn't register with it. -->
-        <div @form-element-register.stop>
+        <div>
           <craft-input
             :label="t('Custom:')"
             label-sr-only
             .inputSize="'small'"
-            .modelValue="option.text"
             .disabled="!editable || !option.checked"
           >
             <input
@@ -840,14 +830,14 @@
     >
       <craft-radio
         .disabled="!editable"
-        .choiceValue="customRadioText"
+        .value="customRadioText"
         .checked="customRadioSelected"
       >
         <input
           slot="input"
           :id="customRadioId"
           type="radio"
-          :name="editable ? inputName(control.path) : ''"
+          :name="editable ? radioName : ''"
           :value="customRadioText"
           :checked="customRadioSelected"
           :disabled="!editable"
@@ -855,13 +845,11 @@
         />
         <label slot="label" :for="customRadioId">{{ t('Custom:') }}</label>
       </craft-radio>
-      <!-- See the custom checkboxes above. -->
-      <div @form-element-register.stop>
+      <div>
         <craft-input
           :label="t('Custom:')"
           label-sr-only
           .inputSize="'small'"
-          .modelValue="customRadioText"
           .disabled="!editable"
         >
           <input

@@ -134,7 +134,7 @@ describe('craft-nav-item flyout', () => {
     await hover(item, 'mouseenter');
 
     expect(item.flyoutOpen).toBe(true);
-    expect(flyout(item)!.opened).toBe(true);
+    expect(flyout(item)!.open).toBe(true);
     expect(
       item.shadowRoot!.querySelector('.nav-item')!.getAttribute('aria-expanded')
     ).toBe('true');
@@ -205,7 +205,7 @@ describe('craft-nav-item flyout', () => {
     await item.updateComplete;
 
     expect(item.flyoutOpen).toBe(false);
-    expect(flyout(item)!.opened).toBe(false);
+    expect(flyout(item)!.open).toBe(false);
   });
 
   it('cancels a pending close when the pointer comes back', async () => {

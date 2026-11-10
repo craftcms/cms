@@ -1,11 +1,9 @@
 <script setup lang="ts">
-  import {nextTick, ref, shallowRef, watch} from 'vue';
+  import {nextTick, ref, watch} from 'vue';
   import {t} from '@craftcms/ui';
   import CraftTextarea from '@craftcms/ui/vue/CraftTextarea.vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import CraftCheckbox from '@craftcms/ui/vue/CraftCheckbox.vue';
-  import CraftInputFile from '@craftcms/ui/vue/CraftInputFile.vue';
-  import type InputFileElement from '@craftcms/ui/components/input-file/input-file';
   import {useForm} from '@inertiajs/vue3';
   import CraftSupportController from '@actions/Dashboard/Widgets/CraftSupportController';
   import type {SupportData} from './types';
@@ -27,7 +25,7 @@
     attachAdditionalFile: null as File | null,
   });
 
-  const attachments = shallowRef<InputFileElement['modelValue']>([]);
+  const fileInput = ref<HTMLInputElement>();
   const sending = defineModel<boolean>('sending', {default: false});
 
   watch(
@@ -50,8 +48,7 @@
   function submit() {
     if (form.processing || !message.value) return;
 
-    const file = attachments.value[0];
-    form.attachAdditionalFile = file instanceof File ? file : null;
+    form.attachAdditionalFile = fileInput.value?.files?.[0] ?? null;
 
     form
       .transform((values) => ({
@@ -65,7 +62,10 @@
         onSuccess: () => {
           message.value = '';
           form.reset('attachAdditionalFile');
-          attachments.value = [];
+
+          if (fileInput.value) {
+            fileInput.value.value = '';
+          }
         },
       });
   }
@@ -117,12 +117,28 @@
             :disabled="sending"
             :label="t('Include your template files')"
           ></CraftCheckbox>
-          <CraftInputFile
-            v-model="attachments"
-            :error="form.errors.attachAdditionalFile"
+          <craft-field
             :label="t('Attach an additional file')"
-            :disabled="sending"
-          ></CraftInputFile>
+            :has-errors="Boolean(form.errors.attachAdditionalFile)"
+          >
+            <input
+              ref="fileInput"
+              slot="input"
+              type="file"
+              name="attachAdditionalFile"
+              :disabled="sending"
+              :aria-invalid="
+                form.errors.attachAdditionalFile ? 'true' : undefined
+              "
+            />
+            <ul
+              v-if="form.errors.attachAdditionalFile"
+              slot="feedback"
+              class="error-list"
+            >
+              <li>{{ form.errors.attachAdditionalFile }}</li>
+            </ul>
+          </craft-field>
         </div>
       </craft-disclosure>
       <craft-callout

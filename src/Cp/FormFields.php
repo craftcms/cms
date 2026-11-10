@@ -2134,7 +2134,7 @@ JS, Json::encode(InputNamespace::namespaceId($id)), Json::encode(InputNamespace:
      * Three legacy config keys have no equivalent and are ignored: `inputProps`
      * /`inputAttributes`, `style`, and `class` — the combobox owns its own
      * markup. `size`, `maxlength` and `autofocus` are likewise dropped, since
-     * Lion owns the textbox.
+     * the combobox owns the textbox.
      *
      * `limit` changes meaning: Craft 5 capped each section separately
      * (defaulting to 5), while the combobox caps the whole rendered list. A

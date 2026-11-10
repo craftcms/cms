@@ -226,7 +226,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('/', [RemoveController::class, 'index']);
         Route::post(BaseUpdaterController::ACTION_PRECHECK, [RemoveController::class, 'precheck']);
         Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [RemoveController::class, 'recheckComposer']);
-        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [RemoveController::class, 'composerInstall']);
         Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [RemoveController::class, 'composerRemove']);
         Route::post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
     });
@@ -242,6 +241,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('preview/{id}{slug?}', PreviewElementController::class)->where($idSlugParams);
     Route::get('edit/{id}{slug?}', ElementRedirectController::class)->where($idSlugParams);
     Route::get('compare/{id}', CompareElementsController::class)->whereNumber('id')->name('elements.compare');
+    Route::get('compare/{fromId}/{toId}', CompareElementsController::class)->whereNumber(['fromId', 'toId'])->name('elements.compare-elements');
     Route::get('edit/{uid}', ElementRedirectController::class);
     Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
     Route::get('entries/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
@@ -331,8 +331,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::post(ConfigSyncController::ACTION_INSTALL_PLUGIN, [ConfigSyncController::class, 'installPlugin']);
             Route::post(BaseUpdaterController::ACTION_PRECHECK, [ConfigSyncController::class, 'precheck']);
             Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
             Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
         });
 

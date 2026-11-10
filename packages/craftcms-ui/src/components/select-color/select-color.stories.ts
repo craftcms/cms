@@ -12,9 +12,8 @@ import type CraftSelectColor from './select-color.js';
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `select-color.ts` surfaces it here without touching this file.
  *
- * The template is written out rather than generated: the value is bound as the
- * `modelValue` property so an empty selection can be `null`, which an attribute
- * cannot express.
+ * The template is written out rather than generated, so the value is bound as
+ * a property.
  */
 const {args, argTypes} =
   getStorybookHelpers<CraftSelectColor>('craft-select-color');
@@ -24,14 +23,14 @@ type SelectColorArgs = CraftSelectColor & typeof args;
 const meta = {
   title: 'Form Controls/Select Controls/Select Color',
   component: 'craft-select-color',
-  args: {...args, label: 'Color', name: 'color', 'model-value': 'red'},
+  args: {...args, label: 'Color', name: 'color', value: 'red'},
   argTypes,
   render: (args) => html`
     <craft-select-color
       label="${args.label ?? ''}"
       name="${args.name ?? 'color'}"
       ?allow-transparent="${args['allow-transparent']}"
-      .modelValue="${args['model-value'] ?? null}"
+      .value="${args.value ?? ''}"
     ></craft-select-color>
   `,
 } satisfies Meta<SelectColorArgs>;
@@ -44,23 +43,23 @@ export const Default: Story = {
   play: async ({canvasElement}) => {
     const host = canvasElement.querySelector('craft-select-color')!;
 
-    await expect((host as {modelValue?: unknown}).modelValue).toBe('red');
+    await expect((host as {value?: unknown}).value).toBe('red');
   },
 };
 
 /** Nothing selected — the invoker shows the placeholder with no swatch. */
 export const Empty: Story = {
-  args: {'model-value': null},
+  args: {value: ''},
   play: async ({canvasElement}) => {
     const host = canvasElement.querySelector('craft-select-color')!;
 
-    await expect((host as {modelValue?: unknown}).modelValue).toBe('');
+    await expect((host as {value?: unknown}).value).toBe('');
   },
 };
 
 /** Preselected blue, so the blue swatch appears in the invoker. */
 export const Preselected: Story = {
-  args: {'model-value': 'blue'},
+  args: {value: 'blue'},
 };
 
 /**
@@ -68,7 +67,7 @@ export const Preselected: Story = {
  * checkerboard.
  */
 export const AllowTransparent: Story = {
-  args: {'allow-transparent': true, 'model-value': '__blank__'},
+  args: {'allow-transparent': true, value: '__blank__'},
   play: async ({canvasElement}) => {
     const host = canvasElement.querySelector('craft-select-color')!;
 
@@ -76,11 +75,11 @@ export const AllowTransparent: Story = {
     await expect((host as {allowTransparent?: boolean}).allowTransparent).toBe(
       true
     );
-    await expect((host as {modelValue?: unknown}).modelValue).toBe('__blank__');
+    await expect((host as {value?: unknown}).value).toBe('__blank__');
   },
 };
 
 /** The same option offered but nothing selected yet. */
 export const AllowTransparentEmpty: Story = {
-  args: {'allow-transparent': true, 'model-value': null},
+  args: {'allow-transparent': true, value: ''},
 };

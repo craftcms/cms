@@ -20,29 +20,34 @@ function labelNode(element: CraftInput): HTMLElement {
   return element.querySelector(':scope > [slot="label"]')!;
 }
 
-async function mutationsFlushed(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve));
+function rendersLabel(element: CraftInput): boolean {
+  return element.shadowRoot!.querySelector('.form-field__label') !== null;
 }
 
-describe('HasLabel', () => {
-  it('is absent when there is no label', async () => {
+async function mutationsFlushed(element: CraftInput): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve));
+  await element.updateComplete;
+}
+
+describe('FormControl label', () => {
+  it('is not rendered when there is no label', async () => {
     const element = await create((el) =>
       el.setAttribute('aria-label', 'Title')
     );
 
-    expect(element.hasAttribute('has-label')).toBe(false);
+    expect(rendersLabel(element)).toBe(false);
   });
 
-  it('is present when a label attribute is set', async () => {
+  it('is rendered when a label attribute is set', async () => {
     const element = await create((el) => el.setAttribute('label', 'Title'));
 
-    expect(element.hasAttribute('has-label')).toBe(true);
+    expect(rendersLabel(element)).toBe(true);
   });
 
   it('ignores a blank label', async () => {
     const element = await create((el) => el.setAttribute('label', '   '));
 
-    expect(element.hasAttribute('has-label')).toBe(false);
+    expect(rendersLabel(element)).toBe(false);
   });
 
   it('follows the label property', async () => {
@@ -50,14 +55,14 @@ describe('HasLabel', () => {
 
     element.label = 'Title';
     await element.updateComplete;
-    expect(element.hasAttribute('has-label')).toBe(true);
+    expect(rendersLabel(element)).toBe(true);
 
     element.label = '';
     await element.updateComplete;
-    expect(element.hasAttribute('has-label')).toBe(false);
+    expect(rendersLabel(element)).toBe(false);
   });
 
-  it('is present when a slotted label has text', async () => {
+  it('is rendered when a slotted label has text', async () => {
     const element = await create((el) => {
       const label = document.createElement('label');
       label.slot = 'label';
@@ -65,10 +70,10 @@ describe('HasLabel', () => {
       el.append(label);
     });
 
-    expect(element.hasAttribute('has-label')).toBe(true);
+    expect(rendersLabel(element)).toBe(true);
   });
 
-  it('is present when a slotted label only contains an element', async () => {
+  it('is rendered when a slotted label only contains an element', async () => {
     const element = await create((el) => {
       const label = document.createElement('label');
       label.slot = 'label';
@@ -76,18 +81,18 @@ describe('HasLabel', () => {
       el.append(label);
     });
 
-    expect(element.hasAttribute('has-label')).toBe(true);
+    expect(rendersLabel(element)).toBe(true);
   });
 
   it('follows changes to the slotted label made outside of Lit', async () => {
     const element = await create();
 
     labelNode(element).textContent = 'Title';
-    await mutationsFlushed();
-    expect(element.hasAttribute('has-label')).toBe(true);
+    await mutationsFlushed(element);
+    expect(rendersLabel(element)).toBe(true);
 
     labelNode(element).textContent = '';
-    await mutationsFlushed();
-    expect(element.hasAttribute('has-label')).toBe(false);
+    await mutationsFlushed(element);
+    expect(rendersLabel(element)).toBe(false);
   });
 });

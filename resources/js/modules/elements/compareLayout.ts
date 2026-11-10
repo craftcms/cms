@@ -1,3 +1,4 @@
+import {t} from '@craftcms/ui/utilities/translate';
 import {canonical, valueAt} from '@/modules/ui/runtime';
 import type {
   UiNodePayload,
@@ -91,7 +92,9 @@ function formTabs(ui: UiPayload): FormTab[] {
  * the older version's that it doesn't have after the tab before them in the
  * older version, noting which versions have each. A tab is the same on both
  * sides when it's the same layout tab, or failing that, has the same label.
- * Tabs without any of the comparison's fields are left out.
+ * Tabs without any of the comparison's fields are left out, and sidebar tabs
+ * come after the rest, together, as the screen groups them at the end of each
+ * tab strip.
  */
 export function compareTabs(
   from: UiPayload,
@@ -132,25 +135,27 @@ export function compareTabs(
     }
   });
 
-  return tabs.flatMap((tab, index) => {
-    const tabRows = rowsByTab.get(tab);
+  return tabs
+    .flatMap((tab, index) => {
+      const tabRows = rowsByTab.get(tab);
 
-    return tabRows
-      ? [
-          {
-            key: tab.uid ?? `tab-${index}`,
-            label: tab.label,
-            icon: tab.icon,
-            rows: tabRows,
-            sides: {
-              from: [...fromTabs.values()].includes(tab),
-              to: toTabs.has(tab),
+      return tabRows
+        ? [
+            {
+              key: tab.uid ?? `tab-${index}`,
+              label: tab.label,
+              icon: tab.icon,
+              rows: tabRows,
+              sides: {
+                from: [...fromTabs.values()].includes(tab),
+                to: toTabs.has(tab),
+              },
+              sidebar: tab.sidebar,
             },
-            sidebar: tab.sidebar,
-          },
-        ]
-      : [];
-  });
+          ]
+        : [];
+    })
+    .sort((a, b) => Number(a.sidebar) - Number(b.sidebar));
 }
 
 /** The keys of the tabs that hold a field the newer version has errors in. */
@@ -212,38 +217,66 @@ export function withServerTabFields(
   };
 }
 
+/** The side across from `side`. */
+export const otherSide = (side: CompareSide): CompareSide =>
+  side === 'from' ? 'to' : 'from';
+
+/** The key of a row's field on one side. */
+const uidKey = (side: CompareSide) =>
+  side === 'from' ? ('fromUid' as const) : ('toUid' as const);
+
 /**
- * The comparison's rows for the newer version's form as it stands. A field
- * the form no longer shows, as a condition hides it, leaves its row with only
- * the older version's field, if any, and one it newly shows takes the older
- * version's row for the same field, or a new row after the field before it.
- * Whether a newly paired field changed isn't known until the page reloads.
+ * The comparison's rows for one side's form as it stands. A field the form no
+ * longer shows, as a condition hides it, leaves its row with only the other
+ * side's field, if any, and one it newly shows takes the other side's row for
+ * the same field, or a new row after the field before it. Whether a newly
+ * paired field changed is what `differs` says of the pair, or else isn't known
+ * until the page reloads. `counterparts` names the other side's field by its
+ * own UID, where the two differ, as fields of two separate elements' layouts
+ * can.
  */
-export function liveRows(rows: CompareRow[], to: UiPayload): CompareRow[] {
-  const shown = fieldUids(to.nodes);
+export function liveRows(
+  rows: CompareRow[],
+  ui: UiPayload,
+  side: CompareSide = 'to',
+  counterparts: Record<string, string> = {},
+  differs: (fromUid: string, toUid: string) => boolean | null = () => null
+): CompareRow[] {
+  const own = uidKey(side);
+  const other = uidKey(otherSide(side));
+  const shown = fieldUids(ui.nodes);
   const shownSet = new Set(shown);
   const result = rows.flatMap((row): CompareRow[] => {
-    if (row.toUid === null || shownSet.has(row.toUid)) {
+    if (row[own] === null || shownSet.has(row[own])) {
       return [row];
     }
 
-    return row.fromUid === null ? [] : [{...row, toUid: null, changed: true}];
+    return row[other] === null ? [] : [{...row, [own]: null, changed: true}];
   });
   let previous = -1;
 
   for (const uid of shown) {
-    let index = result.findIndex((row) => row.toUid === uid);
+    let index = result.findIndex((row) => row[own] === uid);
 
     if (index < 0) {
       index = result.findIndex(
-        (row) => row.toUid === null && row.fromUid === uid
+        (row) => row[own] === null && row[other] === (counterparts[uid] ?? uid)
       );
 
       if (index >= 0) {
-        result[index] = {...result[index]!, toUid: uid, changed: null};
+        const paired = {...result[index]!, [own]: uid};
+        result[index] = {
+          ...paired,
+          changed: differs(paired.fromUid!, paired.toUid!),
+        };
       } else {
         index = previous + 1;
-        result.splice(index, 0, {fromUid: null, toUid: uid, changed: true});
+        result.splice(index, 0, {
+          fromUid: null,
+          toUid: null,
+          [own]: uid,
+          changed: true,
+        });
       }
     }
 
@@ -259,15 +292,28 @@ export const sideIcons: Record<CompareSide, string> = {
   to: 'circle-b',
 };
 
+/** The letters those icons show, which name the sides when nothing else tells them apart. */
+export const sideLetters: Record<CompareSide, string> = {from: 'A', to: 'B'};
+
 /**
- * A side's form without its fields' “Compare changes” action, which the
+ * A read-only side's form, badged where `changed` says its fields changed as
+ * the comparison stands, and without their “Compare changes” action, which the
  * screen already is.
  */
-export function withoutCompareActions(ui: UiPayload): UiPayload {
+export function readOnlyPane(
+  ui: UiPayload,
+  changed: Record<string, boolean | null>
+): UiPayload {
   const strip = (nodes: UiNodePayload[]): UiNodePayload[] =>
     nodes.map((node) =>
       node.control
-        ? withoutCompareAction(node)
+        ? withoutCompareAction({
+            ...node,
+            props: {
+              ...node.props,
+              labelBadge: changed[layoutUid(node)] ? t('Changed') : null,
+            },
+          })
         : {...node, children: node.children && strip(node.children)}
     );
 
@@ -379,41 +425,49 @@ export function editedFields(
 }
 
 /**
- * The older version's value of a field, read to copy into the newer one, when
- * the older one's value can be read, the newer one takes it (see
- * `acceptsValue()`), and it isn't the newer one's already.
+ * One side's value of a field, read to copy into the other side's, when it can
+ * be read, the other side's field takes it (see `acceptsValue()`), and it
+ * isn't that field's value already.
  *
- * @param current The newer field's value as it stands, as a canonical string,
- *   when it's been edited since `to` was rendered.
+ * @param current The value of the field it's copied into as it stands, as a
+ *   canonical string, when it's been edited since its form was rendered.
+ * @param into The side it's copied into, which the newer version is unless
+ *   said otherwise.
  */
 export function copyableValue(
   row: CompareRow,
   from: UiPayload,
   to: UiPayload,
-  current?: string
+  current?: string,
+  into: CompareSide = 'to'
 ): UiValueSnapshot | undefined {
   if (row.fromUid === null || row.toUid === null) {
     return undefined;
   }
 
-  const fromControl = fieldNodes(from.nodes).find(
-    (node) => layoutUid(node) === row.fromUid
-  )?.control;
-  const toControl = fieldNodes(to.nodes).find(
-    (node) => layoutUid(node) === row.toUid
-  )?.control;
+  const sides = {
+    from: {ui: from, uid: row.fromUid},
+    to: {ui: to, uid: row.toUid},
+  };
+  const [source, target] = [sides[otherSide(into)], sides[into]].map(
+    ({ui, uid}) => ({
+      ui,
+      control: fieldNodes(ui.nodes).find((node) => layoutUid(node) === uid)
+        ?.control,
+    })
+  );
 
-  if (!fromControl || !toControl) {
+  if (!source?.control || !target?.control) {
     return undefined;
   }
 
-  const snapshot = readControlValue(fromControl, from.values);
+  const snapshot = readControlValue(source.control, source.ui.values);
 
   if (
     !snapshot ||
-    !acceptsValue(toControl, fromControl, snapshot) ||
+    !acceptsValue(target.control, source.control, snapshot) ||
     canonical(snapshot.value) ===
-      (current ?? canonical(valueAt(to.values, toControl.path)))
+      (current ?? canonical(valueAt(target.ui.values, target.control.path)))
   ) {
     return undefined;
   }

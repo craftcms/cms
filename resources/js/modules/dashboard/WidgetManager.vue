@@ -30,8 +30,9 @@
 <template>
   <craft-popover
     placement="bottom-end"
-    .opened="opened"
-    @opened-changed="opened = $event.detail.opened"
+    .open="opened"
+    @craft-show.self="opened = true"
+    @craft-hide.self="opened = false"
   >
     <craft-button
       slot="invoker"
@@ -82,16 +83,12 @@
             :min="1"
             :max="Math.min(columns, widget.maxColspan)"
             :step="1"
-            .modelValue="Math.min(widget.colspan, columns)"
+            .value="Math.min(widget.colspan, columns)"
             .disabled="busy"
             :label="`${t('Number of columns')} ${widgetName(widget)}`"
             label-sr-only
             @change="
-              emit(
-                'resize',
-                widget,
-                ($event.target as CraftSlidePicker).modelValue
-              )
+              emit('resize', widget, ($event.target as CraftSlidePicker).value)
             "
           ></craft-slide-picker>
           <craft-button

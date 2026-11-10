@@ -17,7 +17,7 @@
   },
 ] %}
 
-<div v-pre class="loose-ends grid gap-8 max-w-4xl">
+<div v-pre class="loose-ends grid gap-8">
   {% if outstanding == 0 %}
     <section aria-labelledby="loose-ends-done" class="grid gap-6">
       <craft-callout variant="success">
@@ -68,7 +68,7 @@
             {{ section.label }}
             {# Heading-sized: the badge’s own size and count font are set inside it, so they’re overridden here. #}
             <craft-badge-indicator
-              class="inline-flex [--c-text-xs:var(--c-text-base)] [&::part(badge)]:box-border [&::part(badge)]:min-h-6 [&::part(badge)]:py-0 [&::part(badge)]:min-w-7 [&::part(badge)]:px-2"
+              class="[--c-text-xs:var(--c-text-base)] [&::part(badge)]:box-border [&::part(badge)]:min-h-6 [&::part(badge)]:py-0 [&::part(badge)]:min-w-7 [&::part(badge)]:px-2"
               variant="inverse"
               badge-count="{{ count }}"
               max="Infinity"
@@ -150,7 +150,7 @@
                         </craft-button>
                       </form>
                     {% elseif (action.type ?? null) == 'prompt' %}
-                      <craft-copy-button value="{{ action.prompt }}" variant="plain" flush="inline-start" size="medium" icon="robot" hide-tooltip>
+                      <craft-copy-button value="{{ action.prompt }}" variant="plain" flush="inline-start" size="medium" icon="sparkles" hide-tooltip>
                         {{ 'Copy prompt'|t('yii2-adapter') }}<span class="sr-only"> {{ srTitle }}</span>
                       </craft-copy-button>
                     {% endif %}

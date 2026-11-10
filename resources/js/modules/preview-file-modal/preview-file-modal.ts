@@ -27,7 +27,7 @@ declare const Craft: any;
 
 /** A `craft-dialog`. */
 interface PreviewDialog extends HTMLElement {
-  opened: boolean;
+  open: boolean;
   noHeader: boolean;
   closeOnOutsideClick: boolean;
   label: string;
@@ -157,7 +157,7 @@ export class PreviewFileModal {
     window.addEventListener('resize', this.#onWindowResize);
 
     document.body.append(this.dialog);
-    this.dialog.opened = true;
+    this.dialog.open = true;
     void this.dialog.updateComplete?.then(() => {
       const footer = this.dialog.shadowRoot?.querySelector('[part="footer"]');
       if (footer && !this.#destroyed) {
@@ -216,7 +216,7 @@ export class PreviewFileModal {
   hide(): void {
     if (!this.visible) return;
     this.visible = false;
-    this.dialog.opened = false;
+    this.dialog.open = false;
   }
 
   /** Closes the preview immediately, without returning focus. */

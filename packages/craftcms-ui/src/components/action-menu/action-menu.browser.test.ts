@@ -115,7 +115,7 @@ describe('when disabled', () => {
     await userEvent.keyboard(' ');
     await menu.updateComplete;
 
-    expect(menu.opened).toBe(false);
+    expect(menu.open).toBe(false);
   });
 
   it('disables a generated invoker', async () => {
@@ -148,7 +148,7 @@ it('stays closed when an item is chosen while it is still opening', async () => 
   item.click();
   await new Promise((resolve) => setTimeout(resolve, 100));
 
-  expect(menu.opened).toBe(false);
+  expect(menu.open).toBe(false);
   expect(item.checkVisibility()).toBe(false);
 });
 
@@ -167,7 +167,7 @@ it('closes on Escape from an item and returns focus to the invoker', async () =>
   await expect.poll(focusedText).toBe('Duplicate');
   await userEvent.keyboard('{Escape}');
 
-  await expect.poll(() => menu.opened).toBe(false);
+  await expect.poll(() => menu.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -249,7 +249,7 @@ it('closes when Tab moves focus past its last item', async () => {
   await expect.poll(focusedText).toBe('Duplicate');
   await userEvent.keyboard('{Tab}');
 
-  await expect.poll(() => menu.opened).toBe(false);
+  await expect.poll(() => menu.open).toBe(false);
   await expect.element(page.getByRole('button', {name: 'Next'})).toHaveFocus();
 });
 
@@ -288,7 +288,7 @@ it('keeps items within the popover when their content is wide', async () => {
       </div>
     </craft-action-menu>
   `);
-  menu.opened = true;
+  menu.open = true;
   await menu.updateComplete;
   await new Promise((resolve) => requestAnimationFrame(resolve));
 
@@ -322,7 +322,7 @@ it('closes and returns focus to a craft-button invoker when an item is chosen wi
   await userEvent.keyboard('{Enter}');
   await menu.updateComplete;
 
-  expect(menu.opened).toBe(false);
+  expect(menu.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -348,8 +348,8 @@ it('spaces separators in slotted content, including ones added later, as it does
   ];
   await slotted.updateComplete;
   await generated.updateComplete;
-  slotted.opened = true;
-  generated.opened = true;
+  slotted.open = true;
+  generated.open = true;
   await slotted.updateComplete;
   await generated.updateComplete;
 
@@ -402,7 +402,7 @@ it.each(['light', 'dark'])(
     const menu =
       shadowRoot.querySelector<CraftActionMenu>('craft-action-menu')!;
     await menu.updateComplete;
-    menu.opened = true;
+    menu.open = true;
     await menu.updateComplete;
 
     const input = menu.querySelector<HTMLInputElement>(
@@ -415,5 +415,57 @@ it.each(['light', 'dark'])(
 
     expect(placeholder.opacity).toBe('1');
     expect(contrast(placeholder.color, surface)).toBeGreaterThanOrEqual(4.5);
+  }
+);
+
+it('moves focus to the first item when it opens with items from a provider', async () => {
+  const menu = document.createElement('craft-action-menu') as CraftActionMenu;
+  menu.actions = () => [{label: 'Duplicate'}, {label: 'Delete'}];
+  document.body.append(menu);
+  await menu.updateComplete;
+
+  await userEvent.click(page.getByRole('button', {name: 'Actions'}));
+
+  await expect.poll(focusedText).toBe('Duplicate');
+});
+
+it.each([
+  [
+    'is opened before its first update',
+    async () => {
+      await renderMenu(`
+        <craft-action-menu searchable open>
+          <craft-button slot="invoker" type="button">Open</craft-button>
+          <div slot="content">
+            <craft-action-item>First</craft-action-item>
+          </div>
+        </craft-action-menu>
+      `);
+    },
+  ],
+  [
+    'is made searchable as it opens',
+    async () => {
+      const menu = await renderMenu(`
+        <craft-action-menu>
+          <craft-button slot="invoker" type="button">Open</craft-button>
+          <div slot="content">
+            <craft-action-item>First</craft-action-item>
+          </div>
+        </craft-action-menu>
+      `);
+      menu.searchable = true;
+      menu.open = true;
+      await menu.updateComplete;
+    },
+  ],
+])(
+  'moves focus to the search field when a slotted menu %s',
+  async (_, open) => {
+    await open();
+
+    await expect
+      .element(page.getByRole('textbox', {name: 'Search'}))
+      .toHaveFocus();
   }
 );

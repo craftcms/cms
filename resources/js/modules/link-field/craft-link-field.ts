@@ -222,15 +222,9 @@ class CraftLinkField extends LitElement {
   }
 
   private handleValueChange(event: Event): void {
-    if (
-      !(event.target instanceof HTMLElement) ||
-      this.isInitialization(event)
-    ) {
-      return;
-    }
     // SAFETY: This handler is registered only on the craft-input value control.
-    const input = event.target as HTMLElementTagNameMap['craft-input'];
-    this.value = this.inputValue(input);
+    const input = event.currentTarget as HTMLElementTagNameMap['craft-input'];
+    this.value = input.value;
     this.valueError = '';
     this.defaultLabel = this.defaultLabelFor(
       this.normalizeTextValue(this.value)
@@ -238,21 +232,11 @@ class CraftLinkField extends LitElement {
     this.change('typing');
   }
 
-  private inputValue(input: HTMLElementTagNameMap['craft-input']): string {
-    return String(input.modelValue ?? '');
-  }
-
   private handleLabelChange(event: Event): void {
-    if (
-      !(event.target instanceof HTMLElement) ||
-      this.isInitialization(event)
-    ) {
-      return;
-    }
     // SAFETY: this handler is registered only on the craft-input label control.
-    this.label = this.inputValue(
-      event.target as HTMLElementTagNameMap['craft-input']
-    );
+    this.label = (
+      event.currentTarget as HTMLElementTagNameMap['craft-input']
+    ).value;
     this.change('typing');
   }
 
@@ -260,18 +244,12 @@ class CraftLinkField extends LitElement {
     attribute: Exclude<keyof LinkAttributes, 'download'>
   ): (event: Event) => void {
     return (event) => {
-      if (
-        !(event.target instanceof HTMLElement) ||
-        this.isInitialization(event)
-      ) {
-        return;
-      }
       // SAFETY: this handler is registered only on craft-input controls.
       this.linkAttributes = {
         ...this.linkAttributes,
-        [attribute]: this.inputValue(
-          event.target as HTMLElementTagNameMap['craft-input']
-        ),
+        [attribute]: (
+          event.currentTarget as HTMLElementTagNameMap['craft-input']
+        ).value,
       };
       this.change('typing');
     };
@@ -281,25 +259,15 @@ class CraftLinkField extends LitElement {
     update: (checked: boolean) => Partial<LinkAttributes>
   ): (event: Event) => void {
     return (event) => {
-      if (
-        !(event.target instanceof HTMLElement) ||
-        this.isInitialization(event)
-      ) {
-        return;
-      }
       // SAFETY: this handler is registered only on craft-switch controls.
-      const {checked} = event.target as HTMLElementTagNameMap['craft-switch'];
+      const {checked} =
+        event.currentTarget as HTMLElementTagNameMap['craft-switch'];
       this.linkAttributes = {
         ...this.linkAttributes,
-        ...update(Boolean(checked)),
+        ...update(checked),
       };
       this.change('discrete');
     };
-  }
-
-  /** Lion fires `model-value-changed` once as a control sets up; that isn't an edit. */
-  private isInitialization(event: Event): boolean {
-    return event instanceof CustomEvent && Boolean(event.detail?.initialize);
   }
 
   private async chooseElement(event: Event): Promise<void> {
@@ -557,7 +525,7 @@ class CraftLinkField extends LitElement {
         ${this.renderLabel(t('Link Type'))}
         <craft-select
           slot="input"
-          .modelValue=${this.typeId}
+          .value=${this.typeId}
           .disabled=${this.disabled}
         >
           <select
@@ -619,10 +587,10 @@ class CraftLinkField extends LitElement {
           data-link-value
           type=${inputType}
           inputmode=${inputMode ?? nothing}
-          aria-invalid=${this.valueError ? 'true' : nothing}
-          .modelValue=${this.value}
+          ?invalid=${Boolean(this.valueError)}
+          .value=${this.value}
           .disabled=${this.disabled}
-          @model-value-changed=${this.handleValueChange}
+          @input=${this.handleValueChange}
         ></craft-input>
         ${this.renderValueError('feedback')}
       </craft-field>
@@ -656,9 +624,9 @@ class CraftLinkField extends LitElement {
         placeholder=${options.placeholder ?? nothing}
         type="text"
         ?monospace=${options.code}
-        .modelValue=${this.linkAttributes[attribute]}
+        .value=${this.linkAttributes[attribute] ?? ''}
         .disabled=${this.disabled}
-        @model-value-changed=${this.handleAttributeInput(attribute)}
+        @input=${this.handleAttributeInput(attribute)}
       ></craft-input>
     `;
   }
@@ -680,7 +648,7 @@ class CraftLinkField extends LitElement {
             label=${t('Open in a new tab')}
             .checked=${this.linkAttributes.target === '_blank'}
             .disabled=${this.disabled}
-            @model-value-changed=${this.handleSwitch((checked) => ({
+            @change=${this.handleSwitch((checked) => ({
               target: checked ? '_blank' : '',
             }))}
           ></craft-switch>
@@ -711,7 +679,7 @@ class CraftLinkField extends LitElement {
             label=${t('Download')}
             .checked=${this.linkAttributes.download}
             .disabled=${this.disabled}
-            @model-value-changed=${this.handleSwitch((download) => ({
+            @change=${this.handleSwitch((download) => ({
               download,
             }))}
           ></craft-switch>
@@ -760,9 +728,9 @@ class CraftLinkField extends LitElement {
                   label=${t('Label')}
                   type="text"
                   placeholder=${this.defaultLabel || nothing}
-                  .modelValue=${this.label}
+                  .value=${this.label}
                   .disabled=${this.disabled}
-                  @model-value-changed=${this.handleLabelChange}
+                  @input=${this.handleLabelChange}
                 ></craft-input>
               `
             : nothing}

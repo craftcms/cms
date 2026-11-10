@@ -96,7 +96,7 @@ it.each([
     button.shadowRoot!.querySelector<HTMLElement>('craft-button')!.focus();
     await userEvent.keyboard('{Enter}');
     // The menu moves focus to its first item once it's fully shown, which can
-    // be after `opened` flips; focusing an item before then loses the race.
+    // be after `open` flips; focusing an item before then loses the race.
     await vi.waitFor(() =>
       expect(button.shadowRoot!.activeElement?.localName).toBe(
         'craft-action-item'

@@ -46,7 +46,7 @@ class HttpTransportMiddleware
                     ...$mirroredHeaders,
                 ],
             ),
-            new DnsRebindingProtectionMiddleware($hosts),
+            new DnsRebindingProtectionMiddleware(allowedHosts: $hosts, allowedOrigins: $origins),
         ];
     }
 

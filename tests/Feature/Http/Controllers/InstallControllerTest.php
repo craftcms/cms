@@ -9,10 +9,12 @@ use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
@@ -35,6 +37,76 @@ it('503s if debug is disabled', function () {
     config()->set('app.debug', false);
 
     get(action([InstallController::class, 'index']))->assertServiceUnavailable();
+});
+
+it('503s if the configured database can’t be reached', function () {
+    $default = config('database.default');
+    config()->set('database.connections.unreachable', [
+        'driver' => 'pgsql',
+        'host' => '127.0.0.1',
+        'port' => 1,
+        'database' => 'craft',
+        'username' => 'craft',
+        'password' => '',
+    ]);
+    DB::setDefaultConnection('unreachable');
+
+    try {
+        expect(fn () => app(InstallController::class))
+            ->toThrow(fn (HttpException $e) => expect($e->getStatusCode())->toBe(503));
+    } finally {
+        DB::setDefaultConnection($default);
+    }
+});
+
+it('only saves posted db settings once Craft is installed with them', function () {
+    $default = config('database.default');
+    $connections = config('database.connections');
+    $envPath = app()->environmentPath();
+    $envFile = app()->environmentFile();
+    $dir = storage_path('runtime/install-env-'.uniqid());
+    File::ensureDirectoryExists($dir);
+    $dotEnv = "DB_HOST=original-host\n";
+    File::put("$dir/.env", $dotEnv);
+    app()->useEnvironmentPath($dir);
+    app()->loadEnvironmentFrom('.env');
+
+    try {
+        postJson(action([InstallController::class, 'install']), [
+            'db' => [
+                'driver' => 'pgsql',
+                'host' => '127.0.0.1',
+                'port' => 1,
+                'database' => 'craft',
+                'username' => 'attacker',
+                'password' => 'secret',
+                'prefix' => 'evil',
+            ],
+            'account' => [
+                'email' => 'admin@example.com',
+                'username' => 'admin',
+                'password' => 'password123',
+            ],
+            'site' => [
+                'name' => 'Test',
+                'baseUrl' => '$APP_URL',
+                'language' => 'en-US',
+            ],
+        ])->assertBadRequest();
+
+        expect(File::get("$dir/.env"))->toBe($dotEnv);
+    } finally {
+        // The install action applies the posted settings to the `pgsql` and `db2` connections, which the tests
+        // also use when they run on PostgreSQL
+        config()->set('database.connections', $connections);
+        DB::purge('pgsql');
+        DB::purge('db2');
+        DB::setDefaultConnection($default);
+        config()->set('database.default', $default);
+        app()->useEnvironmentPath($envPath);
+        app()->loadEnvironmentFrom($envFile);
+        File::deleteDirectory($dir);
+    }
 });
 
 it('shows the install page', function () {

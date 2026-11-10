@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 
@@ -179,7 +180,18 @@ class ConfigStorage
 
         try {
             File::makeDirectory($directory);
-            $this->clearVisibleFiles($directory);
+
+            // Existing files get overwritten in place, and stale ones are only deleted once everything else
+            // has been written, so a failed write doesn’t leave the folder empty (except hidden files/folders)
+            $staleFiles = [];
+            $existingFilesByLowerPath = [];
+
+            foreach (Finder::create()->files()->in($directory) as $file) {
+                $path = File::normalizePath($file->getPathname());
+                $staleFiles[$path] = true;
+                $existingFilesByLowerPath[strtolower($path)][] = $path;
+            }
+
             $names = $data['meta']['__names__'] ?? [];
 
             foreach (ProjectConfigHelper::splitConfigIntoComponents($data) as $filename => $component) {
@@ -189,19 +201,42 @@ class ConfigStorage
 
                     return $name === '' ? $line[0] : $line[0].' # '.$name;
                 }, $yaml);
-                File::writeToFile($directory.'/'.$filename, $yaml);
+                $path = File::normalizePath($directory.'/'.$filename);
+
+                // Delete any existing file whose name only differs in case (e.g. a renamed handle),
+                // so case-insensitive file systems pick up the new name
+                foreach ($existingFilesByLowerPath[strtolower($path)] ?? [] as $existingFile) {
+                    if ($existingFile !== $path) {
+                        $this->deleteFile($existingFile);
+                        unset($staleFiles[$existingFile]);
+                    }
+                }
+
+                File::writeToFile($path, $yaml);
+                unset($staleFiles[$path]);
+            }
+
+            foreach (array_keys($staleFiles) as $file) {
+                $this->deleteFile($file);
+            }
+
+            // Remove folders left empty, deepest first, but not ones that still have hidden files/folders
+            $directories = array_map(
+                fn (SplFileInfo $dir): string => $dir->getPathname(),
+                iterator_to_array(Finder::create()->directories()->in($directory), false),
+            );
+            rsort($directories);
+
+            foreach ($directories as $dir) {
+                if (count(scandir($dir) ?: []) === 2) {
+                    File::deleteDirectory($dir);
+                }
             }
         } catch (Throwable $exception) {
+            // Don’t use the YAML files until they’ve been written successfully
             Cache::put(ProjectConfig::FILE_ISSUES_CACHE_KEY, true, ProjectConfig::CACHE_DURATION);
 
-            // Remove any files already written so Craft cannot apply an incomplete config.
-            try {
-                $this->clearVisibleFiles($directory);
-            } catch (Throwable $cleanupException) {
-                report($cleanupException);
-            }
-
-            throw new Exception('Unable to write new project config files', 0, $exception);
+            throw new Exception("Unable to write new project config files: {$exception->getMessage()}", 0, $exception);
         }
 
         Cache::forget(ProjectConfig::FILE_ISSUES_CACHE_KEY);
@@ -260,10 +295,10 @@ class ConfigStorage
         File::writeToFile($path, Yaml::dump(['dateApplied' => now()->format('Y-m-d H:i:s'), 'changes' => $entries], 20, 2));
     }
 
-    private function clearVisibleFiles(string $directory): void
+    private function deleteFile(string $file): void
     {
-        if (! File::cleanDirectory($directory, except: ['.*'])) {
-            throw new RuntimeException("Unable to clear $directory.");
+        if (! File::delete($file) && File::exists($file)) {
+            throw new RuntimeException("Unable to delete \"$file\".");
         }
     }
 }

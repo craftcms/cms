@@ -382,12 +382,15 @@ export default class CraftNavItem extends LitElement {
 
   // The overlay closes itself on Escape and outside clicks; follow it, or the
   // state would say open and the next hover wouldn't reopen it.
-  #onFlyoutOpenedChanged = (event: Event) => {
-    const opened = (event.target as {opened?: boolean}).opened === true;
+  #onFlyoutToggle = (event: Event) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
 
-    this.flyoutOpen = opened;
+    this.#stopOverlayEvent(event);
+    this.flyoutOpen = event.type === 'craft-show';
 
-    if (!opened) {
+    if (!this.flyoutOpen) {
       flyoutHoverIntent.notifyClosed(this.#hoverIntent);
     }
   };
@@ -553,10 +556,9 @@ export default class CraftNavItem extends LitElement {
         for="${this.itemId}"
         placement="right-start"
         without-invoker-aria
-        .opened="${this.flyoutOpen}"
-        @opened-changed="${this.#onFlyoutOpenedChanged}"
-        @craft-show=${this.#stopOverlayEvent}
-        @craft-hide=${this.#stopOverlayEvent}
+        .open="${this.flyoutOpen}"
+        @craft-show=${this.#onFlyoutToggle}
+        @craft-hide=${this.#onFlyoutToggle}
         @craft-after-show=${this.#stopOverlayEvent}
         @craft-after-hide=${this.#stopOverlayEvent}
       >

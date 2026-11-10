@@ -18,7 +18,6 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Override;
@@ -57,7 +56,20 @@ class UpdaterController extends BaseUpdaterController
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
 
         if ($request->has('install') && $this->request->fullUrlIs(action([self::class, 'index']))) {
-            abort_unless($request->craftUser()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
+            $this->requirePerformUpdates();
+        }
+
+        $action = $request->route()->getActionMethod();
+
+        if (
+            in_array($action, ['composerInstall', 'composerRemove', 'revert'], true) &&
+            (! $generalConfig->allowUpdates || ! $generalConfig->allowAdminChanges)
+        ) {
+            abort(403, 'Updates are disabled.');
+        }
+
+        if ($action === 'revert' && $this->legacyData) {
+            $this->requirePerformUpdates();
         }
     }
 
@@ -69,7 +81,7 @@ class UpdaterController extends BaseUpdaterController
     {
         $this->data = $this->initialData();
         $state = $this->realInitialState();
-        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+        $state['data'] = $this->hashedData();
 
         return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),

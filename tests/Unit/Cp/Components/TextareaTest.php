@@ -122,10 +122,10 @@ describe('host attributes', function () {
         expect($html)->toContain('<craft-textarea>');
     });
 
-    it('mirrors Lion-synced control attributes onto the host', function () {
-        // Lion pushes placeholder/name/disabled/readonly/rows from the host
-        // onto the slotted textarea on upgrade, so non-default values must be
-        // reflected there or the server-rendered attributes get clobbered.
+    it('mirrors control attributes onto the host', function () {
+        // The component pushes placeholder/name/disabled/readonly/rows from
+        // the host onto the slotted textarea, so the host carries the same
+        // non-default values as the server-rendered textarea.
         $html = Textarea::make()
             ->id('i')
             ->placeholder('Enter a value')

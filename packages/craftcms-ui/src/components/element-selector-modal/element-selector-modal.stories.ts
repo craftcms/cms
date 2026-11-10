@@ -87,7 +87,7 @@ const meta = {
         ${stubIndex(args.rows)}
       </craft-element-selector-modal>
 
-      <craft-button @click=${() => (modal().opened = true)}>
+      <craft-button @click=${() => (modal().open = true)}>
         Open selector
       </craft-button>
     `;
@@ -103,7 +103,7 @@ async function openAndMeasure(canvasElement: HTMLElement) {
     'craft-element-selector-modal'
   ) as CraftElementSelectorModal;
 
-  element.opened = true;
+  element.open = true;
   await element.updateComplete;
   await new Promise((resolve) => requestAnimationFrame(resolve));
 
@@ -238,7 +238,7 @@ export const BoundToAController: Story = {
       'craft-element-selector-modal'
     ) as CraftElementSelectorModal;
 
-    await waitFor(() => expect(element.opened).toBe(true));
+    await waitFor(() => expect(element.open).toBe(true));
 
     // `showModal()` puts it in the top layer; `:modal` is the observable proof,
     // and it is the reason the non-modal escape hatch exists for legacy content.
@@ -258,8 +258,8 @@ export const BoundToAController: Story = {
       expect(selectButton.hasAttribute('disabled')).toBe(false)
     );
 
-    // Real hit-testing, not just a dispatched click: Lion's LionButton base
-    // paints an absolutely-positioned :host::before 44px click target, which has
+    // Real hit-testing, not just a dispatched click: craft-button paints an
+    // absolutely-positioned :host::before 44px click target, which has
     // previously swallowed pointer events aimed at content inside a shadow root.
     // elementFromPoint is what catches that; element.click() would not.
     const box = selectButton.getBoundingClientRect();

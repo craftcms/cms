@@ -82,15 +82,12 @@
   },
   "homepage": "https://github.com/craftcms/npm-packages#readme",
   "peerDependencies": {
-    "@lion/ui": "0.x",
     "lit": "3.x"
   },
   "devDependencies": {
     "@adobe/leonardo-contrast-colors": "^1.1.0",
     "@arethetypeswrong/cli": "^0.18.2",
     "@custom-elements-manifest/analyzer": "^0.11.0",
-    "@lion/ui": "catalog:",
-    "@open-wc/dedupe-mixin": "^2.0.1",
     "@shoelace-style/shoelace": "^2.20.1",
     "@storybook/addon-a11y": "catalog:",
     "@storybook/addon-docs": "catalog:",

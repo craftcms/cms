@@ -42,12 +42,6 @@ let nextTreeId = 0;
  * @fires input - Emitted when a permission is toggled.
  * @fires change - Emitted when a permission is toggled. Each toggle is a
  *   commit, so it follows each `input`.
- * @fires model-value-changed - Fired when the selected permissions change.
- *
- * `model-value-changed` is Lion's own protocol name, not one this package
- * chose, and it is kept because Lion's form system dispatches and listens for
- * it. Prefer the native events above: they are the contract this package
- * supports, and they carry the component as `event.target`.
  */
 export default class CraftPermissionTree extends LitElement {
   static override styles = [
@@ -105,7 +99,7 @@ export default class CraftPermissionTree extends LitElement {
   @property({type: Array}) groups: PermissionTreeGroup[] = [];
 
   /** Directly selected permission keys. */
-  @property({type: Array, attribute: 'model-value'}) modelValue: string[] = [];
+  @property({type: Array}) value: string[] = [];
 
   /** Inherited permission keys, displayed as selected and disabled. */
   @property({type: Array, attribute: 'locked-permissions'})
@@ -123,7 +117,7 @@ export default class CraftPermissionTree extends LitElement {
     super.updated(changedProperties);
 
     if (
-      changedProperties.has('modelValue') ||
+      changedProperties.has('value') ||
       changedProperties.has('groups') ||
       changedProperties.has('name') ||
       changedProperties.has('disabled')
@@ -192,10 +186,11 @@ export default class CraftPermissionTree extends LitElement {
                 class=${level > 0 ? 'indented' : ''}
                 style=${`--permission-level: ${level}`}
                 .label=${permission.label}
-                .choiceValue=${permissionKey}
+                .value=${permissionKey}
                 .checked=${selected}
                 .disabled=${disabled || this.#isLocked(permissionKey, locked)}
-                @model-value-changed=${(event: Event) =>
+                @input=${(event: Event) => event.stopPropagation()}
+                @change=${(event: Event) =>
                   this.#setPermissionSelected(
                     event,
                     permissionKey,
@@ -250,7 +245,7 @@ export default class CraftPermissionTree extends LitElement {
 
   #isSelected(permission: string, locked: Set<string>) {
     return (
-      this.modelValue.includes(permission) || this.#isLocked(permission, locked)
+      this.value.includes(permission) || this.#isLocked(permission, locked)
     );
   }
 
@@ -261,7 +256,7 @@ export default class CraftPermissionTree extends LitElement {
 
     return (
       selectable.length > 0 &&
-      selectable.every((permission) => this.modelValue.includes(permission))
+      selectable.every((permission) => this.value.includes(permission))
     );
   }
 
@@ -272,13 +267,13 @@ export default class CraftPermissionTree extends LitElement {
 
     if (this.#allSelected(permissionKeys, locked)) {
       const removed = new Set(selectable);
-      this.#setModelValue(
-        this.modelValue.filter((permission) => !removed.has(permission))
+      this.#setValue(
+        this.value.filter((permission) => !removed.has(permission))
       );
       return;
     }
 
-    this.#setModelValue([...new Set([...this.modelValue, ...selectable])]);
+    this.#setValue([...new Set([...this.value, ...selectable])]);
   }
 
   #setPermissionSelected(
@@ -294,10 +289,10 @@ export default class CraftPermissionTree extends LitElement {
     }
 
     const selected = (event.currentTarget as CraftCheckbox).checked;
-    const index = this.modelValue.indexOf(permission);
+    const index = this.value.indexOf(permission);
 
     if (selected && index === -1) {
-      this.#setModelValue([...this.modelValue, permission]);
+      this.#setValue([...this.value, permission]);
       return;
     }
 
@@ -306,7 +301,7 @@ export default class CraftPermissionTree extends LitElement {
     }
 
     const removed = new Set([permission, ...this.#nestedKeys(nested)]);
-    this.#setModelValue(this.modelValue.filter((value) => !removed.has(value)));
+    this.#setValue(this.value.filter((value) => !removed.has(value)));
   }
 
   #nestedKeys(permissions: PermissionTreeItems): string[] {
@@ -316,18 +311,11 @@ export default class CraftPermissionTree extends LitElement {
     ]);
   }
 
-  #setModelValue(modelValue: string[]) {
-    this.modelValue = modelValue;
-    this.dispatchEvent(
-      new CustomEvent('model-value-changed', {
-        bubbles: true,
-        composed: true,
-        detail: {isTriggeredByUser: true},
-      })
-    );
+  #setValue(value: string[]) {
+    this.value = value;
 
-    // The public contract. Toggling a permission is a commit, so the pair
-    // fires together, the way a checkbox group's does.
+    // Toggling a permission is a commit, so the pair fires together, the way
+    // a checkbox group's does.
     emitInput(this);
     emitChange(this);
   }
@@ -344,7 +332,7 @@ export default class CraftPermissionTree extends LitElement {
     this.#appendHiddenInput(this.name, '');
     const permissionKeys = new Set(this.groups.flatMap((group) => group.keys));
 
-    for (const permission of this.modelValue) {
+    for (const permission of this.value) {
       if (permissionKeys.has(permission)) {
         this.#appendHiddenInput(`${this.name}[]`, permission);
       }

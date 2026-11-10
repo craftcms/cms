@@ -1,6 +1,6 @@
 # `craft-select` accessibility
 
-Shares `HasLabel` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. This file covers only what the select adds.
+Shares `FormControl` with `craft-input`; see `input.a11y.md` for label, help text and error requirements. This file covers only what the select adds.
 
 The control is the native `<select>` in the `input` slot, so the browser supplies its role, keyboard model, type-ahead and popup. The component draws only the field chrome and a chevron around it.
 

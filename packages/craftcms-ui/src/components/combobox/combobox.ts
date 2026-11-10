@@ -1,5 +1,4 @@
-import {LionCombobox} from '@lion/ui/combobox.js';
-import {html, nothing, render} from 'lit';
+import {html, LitElement, nothing, render, type PropertyValues} from 'lit';
 import {property, state} from 'lit/decorators.js';
 import {repeat} from 'lit/directives/repeat.js';
 import styles from './combobox.styles.js';
@@ -12,10 +11,21 @@ import './combobox-token.js';
 import '../icon/icon.js';
 import '../indicator/indicator.js';
 import '../button/button.js';
-import {HasLabel} from '@src/mixins/HasLabel';
+import {formControlStyles, type SlotFactory} from '@src/mixins/FormControl';
+import {FormControl} from '@src/mixins/FormControl';
+import {FormAssociated, type FormValue} from '@src/mixins/FormAssociated';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {colors} from '@src/constants/colors';
 import {variants} from '@src/constants/variants';
+import {claimEscape} from '@src/utilities/overlay-escape';
+import {layerStyles} from '@src/utilities/overlay-layer';
+import {Dropdown} from '@src/utilities/overlay-dropdown';
+import {
+  activateOption,
+  listboxOptions,
+  stepOption,
+} from '@src/utilities/listbox';
+import {uniqueId} from '@src/utilities/unique-id';
 
 export interface ComboboxOptionData {
   /** Extra text matched against the query, in addition to label/value. */
@@ -24,13 +34,13 @@ export interface ComboboxOptionData {
   hint?: string;
   /**
    * Renders a `craft-indicator` before the label, and on the option's
-   * `multiple-choice` token. `fill` takes what the component's own does: a
+   * `multiple` token. `fill` takes what the component's own does: a
    * status variant, a palette swatch, or any color.
    */
   indicator?: {fill?: string; appearance?: string} & Record<string, unknown>;
   /**
    * Name of a `craft-icon` rendered before the label, and while this option is
-   * selected, in the textbox or on its `multiple-choice` token.
+   * selected, in the textbox or on its `multiple` token.
    */
   icon?: string;
   /** The icon's color: a status variant, a palette swatch, or any color. */
@@ -54,6 +64,8 @@ export interface ComboboxOptGroup {
 
 export type ComboboxItem = ComboboxOption | ComboboxOptGroup;
 
+export type ComboboxValue = string | string[];
+
 /**
  * Resolves a palette or variant name to its loud fill token, as
  * `craft-indicator` does, and passes any other color through.
@@ -65,7 +77,33 @@ function iconColor(color: string): string {
     : color;
 }
 
+/** A `value` attribute or property, read as a list of values. */
+function toList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map(String);
+  }
+
+  if (typeof value !== 'string' || value === '') {
+    return [];
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+
+    return Array.isArray(parsed) ? parsed.map(String) : [value];
+  } catch {
+    return [value];
+  }
+}
+
+function sameValue(a: ComboboxValue, b: ComboboxValue): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 const announcementTimeout = 5000;
+
+/** The `inputType` of the `input` a selected option causes. */
+const PICKED = 'insertReplacementText';
 
 interface VisibleEntry {
   groupLabel?: string;
@@ -82,82 +120,72 @@ interface EntryRun {
  * @summary A combobox with type-ahead filtering and optional multiple selection.
  * @since 1.0
  *
- * Unlike Lion's combobox (which expects every option authored as a slotted
- * child), `craft-combobox` takes an `options` array property and renders only
- * the matching subset — capped at {@link limit} — as `craft-option` children.
- * This keeps the DOM node count bounded even when the source list has hundreds
- * of entries. Lion still drives selection, keyboard navigation, and a11y over
- * the rendered set.
+ * Takes an `options` array and renders only the matching subset — capped at
+ * {@link limit} — as `craft-option` children, which keeps the DOM bounded
+ * even when the source list has hundreds of entries.
+ *
+ * Focus stays in the textbox, which points at the active option with
+ * `aria-activedescendant`.
  *
  * @dependency craft-option
  * @dependency craft-indicator
  *
- * @slot input - The text input (provided by Lion).
+ * @slot input - The textbox (provided by default).
  * @slot label - Field label.
  * @slot after - Supplementary content rendered below the field.
  * @slot feedback - Validation feedback.
  *
+ * @attr {string} value - The initial value. A JSON array of values when
+ *   `multiple` is set, otherwise the value itself.
+ *
  * @fires input - Emitted on every alteration to the value, typed or selected.
+ *   Selecting an option makes it an `InputEvent` whose `inputType` is
+ *   `insertReplacementText`, as picking a suggestion does on a native input.
  * @fires change - Emitted when the value is committed: an option is selected,
  *   or the field is left after typing.
- * @attr model-value - The initial value. A JSON array of values when
- *   `multiple-choice` is set, otherwise the value itself.
- *
- * @fires model-value-changed - The selection changed. Bubbles, so a form can
- *   listen for it once on an ancestor rather than per field.
- *
- * `model-value-changed` is Lion's own protocol name, not one this package
- * chose, and it is kept because Lion's form system dispatches and listens for
- * it. Prefer the native events above: they are the contract this package
- * supports, and they carry the component as `event.target`.
  */
-export default class CraftCombobox extends HasLabel(LionCombobox) {
-  /** Lets the combobox post its value with its form, through `ElementInternals`. */
-  static formAssociated = true;
-
-  static override get properties() {
-    return {modelValue: {attribute: 'model-value'}};
-  }
-
-  /**
-   * Whether more than one option may be selected. Each selected value posts
-   * as `name[]`.
-   */
-  @property({type: Boolean, attribute: 'multiple-choice', reflect: true})
-  override multipleChoice = false;
-
-  /** Whether the form refuses to submit without a value. */
-  @property({type: Boolean}) required = false;
-
-  private internals?: ElementInternals;
-  private inputs?: HTMLSpanElement;
-  private initialValues: string[] = [];
-  private fieldsetDisabled = false;
-  private changingValues = false;
-
-  override attributeChangedCallback(
-    name: string,
-    old: string | null,
-    value: string | null
-  ) {
-    if (name === 'model-value') {
-      this.modelValue = this.hasAttribute('multiple-choice')
-        ? JSON.parse(value ?? '[]')
-        : (value ?? '');
-      return;
-    }
-    super.attributeChangedCallback(name, old, value);
-  }
-
-  static override get styles() {
-    return [...super.styles, visuallyHiddenStyles, styles];
-  }
+export default class CraftCombobox extends FormAssociated(
+  FormControl(LitElement)
+) {
+  static override styles = [
+    formControlStyles,
+    visuallyHiddenStyles,
+    layerStyles,
+    styles,
+  ];
 
   /** Options to render. Groups are supported via `type: 'optgroup'`. */
   @property({type: Array}) options: ComboboxItem[] = [];
 
   /** Maximum number of matching options rendered at once (performance guard). */
   @property({type: Number}) limit = 150;
+
+  /**
+   * Whether more than one option may be selected. Each selected value posts
+   * as `name[]`.
+   */
+  @property({type: Boolean, attribute: 'multiple', reflect: true})
+  multiple = false;
+
+  /** Whether the value has to be one of the options, rather than free text. */
+  @property({type: Boolean, attribute: 'require-option-match'})
+  requireOptionMatch = false;
+
+  /**
+   * Lists every option while the textbox is empty. Otherwise the list closes
+   * when the textbox is emptied, and opens from the keyboard or the chevron.
+   */
+  @property({type: Boolean, attribute: 'show-all-on-empty'})
+  showAllOnEmpty = false;
+
+  /** Whether the form refuses to submit without a value. */
+  @property({type: Boolean}) required = false;
+
+  /** Marks the value as invalid: sets `aria-invalid` on the textbox. */
+  @property({type: Boolean, reflect: true}) invalid = false;
+
+  /** Whether the listbox is showing. */
+  @property({type: Boolean, reflect: true}) open = false;
 
   /** Shows a clear button when a value is present. */
   @property({type: Boolean, reflect: true}) clearable = false;
@@ -169,402 +197,690 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   @property({type: Boolean, reflect: true, attribute: 'show-selected-hint'})
   showSelectedHint = false;
 
-  declare private pendingModelValue: string | string[];
-
-  override get modelValue(): string | string[] {
-    return super.modelValue;
-  }
-
-  override set modelValue(value: string | string[]) {
-    this.pendingModelValue = value;
-    super.modelValue = value;
-  }
+  #value: unknown = '';
 
   /**
-   * Lion's `modelValue` falls back to the typed text when no option is
-   * checked, but its `serializedValue` only reads a checked option, so it is
-   * empty while typed text merely matches one. Serializers that read it (the
-   * legacy HTML bridge's, for one) then dropped a typed value.
+   * The selected value: an option's value or free text, or with
+   * `multiple`, a list of them.
    */
-  override get serializedValue(): string {
-    return this.multipleChoice ||
-      this.requireOptionMatch ||
-      typeof this.modelValue !== 'string'
-      ? super.serializedValue
-      : this.modelValue;
+  @property({attribute: 'value'})
+  get value(): ComboboxValue {
+    return this.multiple
+      ? toList(this.#value)
+      : Array.isArray(this.#value)
+        ? String(this.#value[0] ?? '')
+        : String(this.#value ?? '');
   }
 
-  override set serializedValue(value: string) {
-    super.serializedValue = value;
+  set value(value: ComboboxValue) {
+    const old = this.value;
+    this.#value = value ?? '';
+
+    if (sameValue(old, this.value)) {
+      return;
+    }
+
+    // Typed text that stays in the textbox goes on filtering the options.
+    const text = this._control?.value;
+    this.#syncTextbox();
+    if (this._control?.value !== text) {
+      this.#filtering = false;
+    }
+    this.requestUpdate('value', old);
+
+    // A value set from script isn't an edit to commit on blur.
+    if (!this.#editing) {
+      this.#committedValue = this.value;
+    }
   }
+
+  /** Whether the user has changed the value since it was last committed. */
+  #editing = false;
+
+  /** The `aria-labelledby` ids the textbox got from the host and selection. */
+  #addedLabelledBy: string[] = [];
+
+  #initialValue: ComboboxValue = '';
+  #fieldsetDisabled = false;
+  #filtering = false;
+  #committedValue: ComboboxValue = '';
+  #activeValue: string | null = null;
+  #lastQuery = '';
+  #dropdown = new Dropdown(() => {
+    const layer =
+      this.renderRoot.querySelector<HTMLElement>('.overlay-layer') ?? null;
+    const pane = this.#popup;
+    const reference =
+      this.renderRoot.querySelector('.input-group__input') ?? null;
+
+    return layer && pane && reference ? {layer, pane, reference} : undefined;
+  });
 
   constructor() {
     super();
-    // Configure validators on construction.
-    this.defaultValidators = [];
-    // We own filtering (see `matchCondition`), so keep Lion in list mode and
-    // avoid its inline-autofill, which would fight our pre-filtered set.
-    this.autocomplete = 'list';
-    this.selectionFollowsFocus = false;
 
-    // Lion announces while it still holds the previous value: a requested value
-    // is only adopted once the option naming it registers, so until then
-    // `pendingModelValue` runs ahead of `modelValue`. A bound v-model writes
-    // every announcement straight back, so letting that one out puts the old
-    // value into the consumer's state and marks it changed. Registered in the
-    // constructor so it precedes any listener the consumer attaches.
-    this.addEventListener('model-value-changed', (event: Event) => {
-      if (this.changingValues) {
-        event.stopImmediatePropagation();
-        return;
-      }
-      if (
-        event.target === this &&
-        !(event as CustomEvent).detail?.isTriggeredByUser &&
-        this.pendingModelValue !== undefined &&
-        JSON.stringify(this.modelValue) !==
-          JSON.stringify(this.pendingModelValue)
-      ) {
-        event.stopImmediatePropagation();
-        return;
-      }
-      if (
-        event.target === this &&
-        (event as CustomEvent).detail?.isTriggeredByUser
-      ) {
-        this.pendingModelValue = this.multipleChoice
-          ? [...this.selectedValues]
-          : this.modelValue;
-
-        if (this.multipleChoice) {
-          this.syncInputs();
-          this.dispatchEvent(
-            new Event('change', {bubbles: true, composed: true})
-          );
-        }
-      }
-    });
-    this.addEventListener('focusout', (event) => {
-      if (
-        this.multipleChoice &&
-        !this.requireOptionMatch &&
-        !(
-          event.relatedTarget instanceof Node &&
-          this.contains(event.relatedTarget)
-        )
-      ) {
-        this.commitQuery();
-      }
-    });
+    this.addEventListener('focusout', this.#onFocusOut);
   }
 
-  /** Last model value we've announced via `model-value-changed`. */
-  #lastNotifiedValue: unknown = undefined;
+  /** Creates the textbox and the listbox when none is slotted. */
+  override get slots(): Record<string, SlotFactory> {
+    return {
+      ...super.slots,
+      input: () => {
+        const input = document.createElement('input');
+        input.autocomplete = 'off';
+        return input;
+      },
+      listbox: () => document.createElement('div'),
+    };
+  }
 
-  /** Last model value announced as committed, via native `change`. */
-  #committedValue: unknown = undefined;
+  override get _control(): HTMLInputElement | undefined {
+    const node = super._control;
 
-  #filtering = false;
+    return node instanceof HTMLInputElement
+      ? node
+      : (node?.querySelector('input') ?? undefined);
+  }
 
-  override firstUpdated(changed: Map<PropertyKey, unknown>) {
-    super.firstUpdated(changed);
-    this._inputNode?.addEventListener('input', this.#onInput);
-    // Same reason as `#onInput`: the textbox lives in the light DOM, so its own
-    // `change` on blur would reach consumers with the textbox as `target`.
-    // `#commit()` is what announces a commit from the host.
-    this._inputNode?.addEventListener('change', (event) =>
-      event.stopPropagation()
+  /** The listbox, in the light DOM so the textbox can reference its options. */
+  get #listbox(): HTMLElement | undefined {
+    return (
+      this.querySelector<HTMLElement>(':scope > [slot=listbox]') ?? undefined
     );
-    // Keep our notion of the last-announced value in sync with every
-    // model-value-changed the component emits — Lion's (on selection) and ours
-    // (on free-text, below) — so we never double-announce the same value.
-    this.addEventListener('model-value-changed', () => {
-      this.#lastNotifiedValue = this.modelValue;
+  }
 
-      // Typing announces its own `input` from `#onInput` and commits on blur;
-      // anything else reaching here is a selection, which is both at once.
-      if (!this.#typing) {
-        emitInput(this);
-        this.#commit();
-      }
-    });
+  get #popup(): HTMLElement | null {
+    return this.renderRoot.querySelector<HTMLElement>(
+      '#overlay-content-node-wrapper'
+    );
+  }
 
-    // A typed value commits when the field is left, as a text input's does.
-    this.addEventListener('blur', () => this.#commit());
+  override connectedCallback() {
+    super.connectedCallback();
 
-    this.#lastNotifiedValue = this.modelValue;
-    this.#committedValue = this.modelValue;
+    const input = this._control;
+    const listbox = this.#listbox;
+
+    if (input && listbox) {
+      this.#setupTextbox(input, listbox);
+    }
+
     this.#renderOptions();
-    this.#adoptPendingModelValue();
-    if (this.multipleChoice) {
-      this.initialValues = [
-        ...(Array.isArray(this.pendingModelValue)
-          ? this.pendingModelValue
-          : []),
-      ];
+    this.#syncTextbox();
+  }
+
+  override disconnectedCallback() {
+    if (this.#announceTimeout !== null) {
+      clearTimeout(this.#announceTimeout);
+      this.#announceTimeout = null;
+    }
+    this.#announcingRemoval = false;
+    this.#announcedMatches = '';
+    this.announcement = '';
+    this.#dropdown.hide();
+    document.removeEventListener('pointerdown', this.#onDocumentPointerDown);
+    super.disconnectedCallback();
+  }
+
+  #setupTextbox(input: HTMLInputElement, listbox: HTMLElement): void {
+    if (input.dataset.comboboxTextbox !== undefined) {
+      return;
+    }
+    input.dataset.comboboxTextbox = '';
+
+    listbox.id ||= uniqueId('listbox');
+    listbox.setAttribute('role', 'listbox');
+    listbox.addEventListener('mousedown', (event) => event.preventDefault());
+    listbox.addEventListener('click', this.#onListboxClick);
+
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-haspopup', 'listbox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-controls', listbox.id);
+    input.setAttribute('aria-expanded', 'false');
+    input.addEventListener('input', this.#onInput);
+    input.addEventListener('keydown', this.#onKeydown);
+    input.addEventListener('click', this.#onTextboxClick);
+    // The textbox's own `change` on blur would reach consumers with the
+    // textbox as `target`; the host announces its own commits.
+    input.addEventListener('change', (event) => event.stopPropagation());
+  }
+
+  protected override firstUpdated(changed: PropertyValues) {
+    super.firstUpdated(changed);
+    this.#initialValue = this.value;
+    this.#committedValue = this.value;
+  }
+
+  protected override willUpdate(changed: PropertyValues) {
+    super.willUpdate(changed);
+
+    if (changed.has('multiple')) {
+      this.#value = this.value;
     }
   }
 
-  /**
-   * Re-applies the value the `model-value` attribute asked for.
-   *
-   * Lion adopts a value once an option names it, and on an element upgraded
-   * from server-rendered markup the attribute lands before the options exist,
-   * so the value is dropped. Nothing has been announced yet at this point, so
-   * this is silent.
-   */
-  #adoptPendingModelValue(): void {
-    if (
-      this.pendingModelValue === undefined ||
-      JSON.stringify(this.modelValue) === JSON.stringify(this.pendingModelValue)
-    ) {
-      return;
-    }
-
-    const pending = this.pendingModelValue;
-    this.changingValues = true;
-
-    try {
-      this.modelValue = pending;
-    } finally {
-      this.changingValues = false;
-    }
-
-    this.#lastNotifiedValue = this.modelValue;
-    this.#committedValue = this.modelValue;
-  }
-
-  /** Emits native `change` when the value has moved since the last commit. */
-  #commit(): void {
-    // Multiple choice announces its own `change` once per user edit (see the
-    // constructor), and its array value never compares equal here anyway.
-    if (this.multipleChoice) {
-      return;
-    }
-
-    if (this.modelValue === this.#committedValue) {
-      return;
-    }
-
-    this.#committedValue = this.modelValue;
-    emitChange(this);
-  }
-
-  override updated(changed: Map<PropertyKey, unknown>) {
+  protected override updated(changed: PropertyValues) {
     super.updated(changed);
-    this.#syncFormValue();
-    if (this.multipleChoice) {
+
+    const input = this._control;
+    const listbox = this.#listbox;
+
+    if (changed.has('open')) {
+      this.#onOpenChanged(changed.get('open') as boolean | undefined);
+    }
+
+    if (
+      changed.has('options') ||
+      changed.has('limit') ||
+      changed.has('open') ||
+      changed.has('value') ||
+      changed.has('showSelectedHint') ||
+      changed.has('multiple')
+    ) {
+      this.#renderOptions();
+    }
+
+    if (
+      (changed.has('options') || changed.has('showSelectedHint')) &&
+      !this.#filtering
+    ) {
+      this.#syncTextbox();
+    }
+
+    if (this.multiple) {
       this.#syncSelection();
     } else {
       this.#selection?.remove();
       this.#selection = undefined;
     }
-    // An `aria-labelledby` on the host names a label the consumer renders
-    // itself — a table column heading, say — rather than one in the `label`
-    // slot. Lion rewrites the textbox's own `aria-labelledby` from its (empty)
-    // label on every update, so this has to be reapplied after `super`.
+
+    this._reflectAriaReferences();
+
+    if (input) {
+      input.placeholder = this.placeholder;
+      input.disabled = this.disabled || this.#fieldsetDisabled;
+      input.readOnly = this.readOnly;
+      if (this.invalid) {
+        input.setAttribute('aria-invalid', 'true');
+      } else {
+        input.removeAttribute('aria-invalid');
+      }
+      if (this.required) {
+        input.setAttribute('aria-required', 'true');
+      } else {
+        input.removeAttribute('aria-required');
+      }
+    }
+
+    if (this.multiple) {
+      listbox?.setAttribute('aria-multiselectable', 'true');
+    } else {
+      listbox?.removeAttribute('aria-multiselectable');
+    }
+
+    this.#syncValidity();
+
+    this.toggleAttribute(
+      'has-prefix-icon',
+      this.#selectedOption()?.data?.icon != null ||
+        this.#selectedOption()?.data?.indicator != null
+    );
+
+    if (this.open) {
+      this.#dropdown.update();
+    }
+  }
+
+  /**
+   * Names the textbox and listbox. An `aria-labelledby` on the host names a
+   * label the consumer renders itself — a table column heading, say — and
+   * takes the place of the label slot. In multiple mode the textbox
+   * is named by its label and then the selected values, so focusing it says
+   * what's already chosen.
+   */
+  protected override _reflectAriaReferences(): void {
+    const input = this._control;
+
+    // The base keeps ids it didn't write, so the ones added here last time
+    // come off first; otherwise a host label that's gone would stay.
+    if (input && this.#addedLabelledBy.length) {
+      const kept = (input.getAttribute('aria-labelledby') ?? '')
+        .split(/\s+/)
+        .filter((id) => id && !this.#addedLabelledBy.includes(id));
+      if (kept.length) {
+        input.setAttribute('aria-labelledby', kept.join(' '));
+      } else {
+        input.removeAttribute('aria-labelledby');
+      }
+    }
+
+    super._reflectAriaReferences();
+
+    if (!input) {
+      return;
+    }
+
     const selectionId = this.#selection?.id;
+    this.#addedLabelledBy = [
+      ...(this.getAttribute('aria-labelledby') ?? '').split(/\s+/),
+      selectionId ?? '',
+    ].filter(Boolean);
     const labelledBy = (
       this.getAttribute('aria-labelledby') ||
-      this._inputNode?.getAttribute('aria-labelledby') ||
+      input.getAttribute('aria-labelledby') ||
       ''
     )
       .split(' ')
       .filter((id) => id && id !== selectionId)
       .join(' ');
-    // In multiple-choice mode the textbox is named by its label and then the
-    // selected values, so focusing it says what's already chosen.
-    const textboxLabelledBy = selectionId
-      ? `${labelledBy} ${selectionId}`.trim()
-      : labelledBy;
-    this._inputNode?.setAttribute('aria-labelledby', textboxLabelledBy);
-    // Lion names the listbox after its own label only, which is empty when a
-    // wrapping craft-field provides the label.
-    this._listboxNode?.setAttribute('aria-labelledby', labelledBy);
-    // In Chromium, Lion puts the combobox role on the textbox's wrapper (the
-    // ARIA 1.1 pattern), which needs the same name as the textbox: it's the
-    // name a screen reader announces when the textbox is focused.
-    this._comboboxNode?.setAttribute('aria-labelledby', textboxLabelledBy);
-    if (this.multipleChoice) {
-      this.syncInputs();
-      this._inputNode.removeAttribute('name');
-      this._inputNode.disabled = this.disabled || this.fieldsetDisabled;
-      const missing =
-        this.required && !this.inactive && this.selectedValues.length === 0;
-      this.internals ??= this.attachInternals();
-      this.internals.setValidity(
-        missing ? {valueMissing: true} : {},
-        missing ? t('This field is required.') : '',
-        this._inputNode
-      );
-    }
-    if (changed.has('opened') && !this.opened) {
-      this.#filtering = false;
-    }
-    if (changed.has('placeholder')) {
-      this._inputNode.placeholder = this.placeholder;
-    }
-    if (
-      changed.has('options') ||
-      changed.has('limit') ||
-      changed.has('opened') ||
-      changed.has('modelValue') ||
-      changed.has('showSelectedHint') ||
-      changed.has('multipleChoice')
-    ) {
-      this.#renderOptions();
-    }
-    if (changed.has('options') || changed.has('modelValue')) {
-      // The prefix icon is absolutely positioned over the slotted input, so
-      // the input only gets its leading padding while an icon is showing.
-      this.toggleAttribute(
-        'has-prefix-icon',
-        this.#selectedOption()?.data?.icon != null ||
-          this.#selectedOption()?.data?.indicator != null
-      );
-    }
-  }
 
-  /**
-   * Registers an option with the combobox. Called by Lion as options render.
-   */
-  override addFormElement(child: unknown, indexToInsertAt?: number) {
-    super.addFormElement(
-      child as Parameters<LionCombobox['addFormElement']>[0],
-      indexToInsertAt
+    input.setAttribute(
+      'aria-labelledby',
+      selectionId ? `${labelledBy} ${selectionId}`.trim() : labelledBy
     );
-    const option = child as CraftOption;
-    option.updateComplete.then(() => {
-      if (this.multipleChoice) {
-        option.checked =
-          Array.isArray(this.pendingModelValue) &&
-          this.pendingModelValue.includes(String(option.choiceValue));
-        return;
-      }
-      if (String(option.choiceValue) !== String(this.pendingModelValue)) {
-        return;
-      }
+    this.#listbox?.setAttribute('aria-labelledby', labelledBy);
 
-      super.modelValue = this.pendingModelValue;
-      this._setTextboxValue(this._getTextboxValueFromOption(option));
-    });
+    const label = this.getAttribute('aria-label');
+    if (label) {
+      input.setAttribute('aria-label', label);
+    }
   }
 
-  #typing = false;
+  // ─── Opening and closing ──────────────────────────────────────────────
 
-  #onInput = (event: Event) => {
-    // Lion keeps its textbox in the light DOM, so the input's own event would
-    // reach consumers with the textbox as `target` rather than this component.
-    // Claim it here and re-emit from the host; listeners bound to the textbox
-    // itself (Lion's own) still run.
+  #onOpenChanged(was: boolean | undefined): void {
+    this._control?.setAttribute('aria-expanded', String(this.open));
+
+    if (this.open) {
+      this.#dropdown.show();
+      document.addEventListener('pointerdown', this.#onDocumentPointerDown);
+      return;
+    }
+
+    this.#dropdown.hide();
+    document.removeEventListener('pointerdown', this.#onDocumentPointerDown);
+
+    if (was) {
+      this.#setActive(undefined);
+      if (this.#filtering) {
+        this.#filtering = false;
+        this.#syncTextbox();
+      }
+    }
+  }
+
+  #onDocumentPointerDown = (event: PointerEvent): void => {
+    if (!event.composedPath().includes(this)) {
+      this.open = false;
+    }
+  };
+
+  get #inactive(): boolean {
+    return this.disabled || this.readOnly || this.#fieldsetDisabled;
+  }
+
+  /** Whether the list opens for what the textbox now holds. */
+  #shouldOpen(): boolean {
+    return (
+      !this.#inactive &&
+      ((this._control?.value ?? '') !== '' || this.showAllOnEmpty)
+    );
+  }
+
+  #onTextboxClick = (): void => {
+    if (!this.open && this.#shouldOpen()) {
+      this.open = true;
+    }
+  };
+
+  #onFocusOut = (event: FocusEvent): void => {
+    if (
+      event.relatedTarget instanceof Node &&
+      (this.contains(event.relatedTarget) ||
+        this.renderRoot.contains(event.relatedTarget))
+    ) {
+      return;
+    }
+
+    if (this.multiple && !this.requireOptionMatch) {
+      this.#commitQuery();
+    }
+
+    this.open = false;
+    this.#commit();
+  };
+
+  // ─── Typing ───────────────────────────────────────────────────────────
+
+  #onInput = (event: Event): void => {
+    // The textbox's own event would reach consumers with the textbox as
+    // `target`; the host re-emits it as its own.
     event.stopPropagation();
 
-    this.#typing = true;
-    try {
-      this.#filtering = true;
-      this.#renderOptions();
-      if (!this.multipleChoice && !this.requireOptionMatch) {
-        this.#syncModelFromInput();
-      }
-    } finally {
-      this.#typing = false;
+    const query = this._control?.value ?? '';
+    const previous = this.#lastQuery;
+    this.#lastQuery = query;
+    this.#filtering = true;
+    this.#editing = true;
+
+    if (!this.multiple && !this.requireOptionMatch) {
+      this.#setValue(this.#parse(query));
     }
+
+    this.open = this.#shouldOpen();
+    this.#renderOptions();
+
+    // Adding to the query makes its best match active, so Enter picks it.
+    // Deleting doesn't, so Backspace never selects something by accident.
+    const adding =
+      previous.length < query.length ||
+      (previous !== '' &&
+        query !== '' &&
+        previous[0]!.toLowerCase() !== query[0]!.toLowerCase());
+
+    this.#setActive(
+      !this.multiple && adding && query !== ''
+        ? this.#options().find((option) => !option.disabled)
+        : undefined
+    );
 
     emitInput(this);
   };
 
   /**
-   * Keep the model value in sync with typed (free-text) input.
-   *
-   * With `autocomplete='list'` Lion only re-derives a custom value from the
-   * textbox inside its autoselect branch (which list mode disables), so a
-   * typed value stops updating the model after the first keystroke. And even
-   * when the model does change for free text, Lion never emits
-   * `model-value-changed` for it — that only happens by repropagating a
-   * *selected option's* event. So we own both here: derive the model from the
-   * textbox each keystroke, then announce it (matching Lion's dispatch shape;
-   * `target === this` makes Lion's child-repropagation handler ignore it, so it
-   * reaches application listeners — the Vue v-model — without looping).
-   *
-   * Driving the model from the raw input each keystroke also means an external
-   * `.modelValue` write-back (from the bound v-model) can't wedge editing:
-   * the next keystroke recomputes from the actual textbox value.
+   * Maps typed text to a value: an option's value when the text is that
+   * option's label as the textbox would show it, and the text itself
+   * otherwise, so free text and environment variables pass through.
    */
-  #syncModelFromInput() {
-    const parsed = this.parser(this._inputNode?.value ?? '');
-    if (parsed !== this.modelValue) {
-      this.modelValue = parsed;
+  #parse(text: string): string {
+    const target = text.trim();
+
+    if (target !== '') {
+      for (const option of this.#allOptions()) {
+        if (this.#displayLabel(option) === target) {
+          return option.value;
+        }
+      }
     }
 
-    this._notifyModelValueChanged();
+    return text;
   }
 
-  protected _notifyModelValueChanged(): void {
-    if (
-      JSON.stringify(this.modelValue) !==
-      JSON.stringify(this.#lastNotifiedValue)
-    ) {
-      this.#lastNotifiedValue = this.modelValue;
-      this.dispatchEvent(
-        new CustomEvent('model-value-changed', {
-          bubbles: true,
-          composed: true,
-          detail: {
-            formPath: [this],
-            isTriggeredByUser: true,
-            changeSource: this.multipleChoice ? 'selection' : 'input',
-          },
-        })
+  /** Sets the value from the user, without rewriting the textbox. */
+  #setValue(value: ComboboxValue): void {
+    const old = this.value;
+    this.#value = value;
+    if (!sameValue(old, this.value)) {
+      this.requestUpdate('value', old);
+    }
+  }
+
+  /** Shows the value in the textbox: the selected option's label, or the text. */
+  #syncTextbox(): void {
+    const input = this._control;
+
+    if (!input || this.multiple) {
+      return;
+    }
+
+    const value = this.value as string;
+    const option = this.#option(value);
+    const text = option ? this.#displayLabel(option) : value;
+
+    if (input.value !== text) {
+      input.value = text;
+    }
+    this.#lastQuery = text;
+  }
+
+  // ─── Keyboard ─────────────────────────────────────────────────────────
+
+  #onKeydown = (event: KeyboardEvent): void => {
+    if (event.isComposing) {
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+        this.#onArrow(event);
+        break;
+      case 'Enter':
+        this.#onEnter(event);
+        break;
+      case 'Escape':
+        if (this.open) {
+          event.preventDefault();
+          claimEscape(event);
+          this.open = false;
+        }
+        break;
+      case 'Tab':
+        this.open = false;
+        break;
+      case 'Backspace':
+        if (
+          this.multiple &&
+          !this.#inactive &&
+          (this._control?.value ?? '') === ''
+        ) {
+          event.preventDefault();
+          this.#changeValues((this.value as string[]).slice(0, -1));
+        }
+        break;
+    }
+  };
+
+  #onArrow(event: KeyboardEvent): void {
+    if (this.#inactive) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (event.altKey) {
+      this.open = event.key === 'ArrowDown';
+      return;
+    }
+
+    if (!this.open) {
+      this.open = true;
+      return;
+    }
+
+    this.#setActive(
+      stepOption(
+        this.#options(),
+        this.#activeOption(),
+        event.key === 'ArrowDown' ? 1 : -1
+      )
+    );
+  }
+
+  #onEnter(event: KeyboardEvent): void {
+    const option = this.open ? this.#activeOption() : undefined;
+
+    if (this.open) {
+      event.preventDefault();
+    }
+
+    if (this.#inactive) {
+      return;
+    }
+
+    if (this.multiple) {
+      if (option) {
+        if (!option.disabled) {
+          this.#pick(option);
+        }
+        return;
+      }
+
+      event.preventDefault();
+      this.#commitQuery();
+      return;
+    }
+
+    if (option && !option.disabled) {
+      this.#pick(option);
+    }
+
+    this.open = false;
+  }
+
+  // ─── Selecting ────────────────────────────────────────────────────────
+
+  #onListboxClick = (event: MouseEvent): void => {
+    const option = (event.target as Element | null)?.closest<CraftOption>(
+      'craft-option'
+    );
+
+    if (!option || option.disabled || this.#inactive) {
+      return;
+    }
+
+    this.#pick(option);
+    this._control?.focus();
+
+    if (!this.multiple) {
+      this.open = false;
+    }
+  };
+
+  /** Selects an option on the user's behalf. */
+  #pick(option: CraftOption): void {
+    const value = option.value;
+
+    if (this.multiple) {
+      const values = this.value as string[];
+      if (!values.includes(value)) {
+        this.#changeValues([...values, value], {
+          close: false,
+          inputType: PICKED,
+        });
+      }
+      return;
+    }
+
+    this.#editing = true;
+    this.value = value;
+    this.#filtering = false;
+    this.#syncTextbox();
+    emitInput(this, PICKED);
+    this.#commit();
+  }
+
+  /** Emits `change` when the value has moved since the last commit. */
+  #commit(): void {
+    this.#editing = false;
+
+    if (this.multiple || sameValue(this.value, this.#committedValue)) {
+      return;
+    }
+
+    this.#committedValue = this.value;
+    emitChange(this);
+  }
+
+  #changeValues(
+    values: string[],
+    {close = true, inputType}: {close?: boolean; inputType?: string} = {}
+  ): void {
+    if (this.#inactive) {
+      return;
+    }
+
+    const removed = (this.value as string[]).filter(
+      (value) => !values.includes(value)
+    );
+
+    this.value = values;
+    if (this._control) {
+      this._control.value = '';
+    }
+    this.#lastQuery = '';
+    this.#filtering = false;
+    if (close) {
+      this.open = false;
+    }
+    this.#renderOptions();
+    this._syncFormValue();
+    emitInput(this, inputType);
+    this.#committedValue = this.value;
+    // An `input` listener may have put the value back; that's no commit.
+    if (sameValue(this.value, values)) {
+      emitChange(this);
+    }
+    this._control?.focus();
+
+    // The list of values announces additions only; a removed value leaves no
+    // node behind to announce, so say what went.
+    if (removed.length) {
+      this.#announce(
+        t('Removed {name}', {
+          name: new Intl.ListFormat(
+            document.documentElement.lang || undefined,
+            {type: 'conjunction'}
+          ).format(removed.map((value) => this.#valueLabel(value))),
+        }),
+        true
       );
     }
   }
 
-  /**
-   * We filter the source array ourselves and only render matches, so every
-   * rendered option is already a match — never let Lion hide one (its default
-   * label-substring check would drop keyword-only matches).
-   */
-  override matchCondition(option: CraftOption) {
-    return !this.multipleChoice || !option.hidden;
-  }
+  /** Adds the typed text as a value, when it's allowed to be one. */
+  #commitQuery(): void {
+    const query = this._control?.value ?? '';
 
-  override _autoSelectCondition() {
-    return !this.multipleChoice;
-  }
-
-  /**
-   * Lion highlights the matched substring by mutating each option's DOM
-   * (bolding text and moving children into an a11y span). We render option
-   * content ourselves with lit-html and reconcile on every keystroke, so those
-   * mutations detach lit-html's tracked nodes and corrupt the output — stale
-   * text is left behind and new text is appended (e.g. "Option 000Option 300").
-   * Disable the highlight entirely; we own the option content. The visibility
-   * toggling in `_onFilterMatch`/`_onFilterUnmatch` is untouched (and moot,
-   * since we only render matches).
-   */
-  override _highlightMatchedOption() {}
-
-  override _unhighlightMatchedOption() {}
-
-  /**
-   * Open the listbox on Down/Up arrow even when the textbox is empty, so
-   * keyboard users can browse the options (the standard combobox affordance).
-   * Lion otherwise only opens an empty field when `showAllOnEmpty` is set.
-   */
-  override _showOverlayCondition(options: {
-    currentValue?: string;
-    lastKey?: string;
-  }) {
-    if (
-      !this.disabled &&
-      !this.readOnly &&
-      (options.lastKey === 'ArrowDown' || options.lastKey === 'ArrowUp')
-    ) {
-      return true;
+    if (this.#inactive || query === '') {
+      return;
     }
 
-    return super._showOverlayCondition(options);
+    const option = this.#option(query);
+    if (option?.disabled || (this.requireOptionMatch && !option)) {
+      return;
+    }
+
+    this.#changeValues([...new Set([...(this.value as string[]), query])]);
   }
+
+  #clear = (): void => {
+    if (this.multiple) {
+      this.#changeValues([]);
+      return;
+    }
+
+    this.#editing = true;
+    this.value = '';
+    this.#syncTextbox();
+    this.#renderOptions();
+    this._control?.focus();
+    emitInput(this);
+    this.#commit();
+  };
+
+  // ─── The active option ────────────────────────────────────────────────
+
+  #options(): CraftOption[] {
+    return listboxOptions(this.#listbox);
+  }
+
+  #activeOption(): CraftOption | undefined {
+    return this.#activeValue === null
+      ? undefined
+      : this.#options().find((option) => option.value === this.#activeValue);
+  }
+
+  #setActive(option: CraftOption | undefined): void {
+    this.#activeValue = option?.value ?? null;
+    activateOption(this.#options(), option, this._control, {
+      scroll: this.open,
+    });
+  }
+
+  // ─── Rendering the options ────────────────────────────────────────────
 
   #matchedOptions(query: string): VisibleEntry[] {
     const q = query.trim().toLowerCase();
@@ -627,36 +943,22 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     );
   }
 
-  #renderOptions() {
-    const node = this._listboxNode as HTMLElement | undefined;
+  #renderOptions(): void {
+    const node = this.#listbox;
     if (!node) {
       return;
     }
 
-    const query = this.#filtering ? (this._inputNode?.value ?? '') : '';
-    const selected = this.multipleChoice
-      ? Array.isArray(this.pendingModelValue)
-        ? this.pendingModelValue
-        : this.selectedValues
-      : [];
+    const query = this.#filtering ? (this._control?.value ?? '') : '';
+    const selected = this.multiple ? (this.value as string[]) : [];
     const matched = this.#matchedOptions(query).filter(
       (entry) => !selected.includes(entry.option.value)
     );
     const visible = matched.slice(0, this.limit);
-
-    const options = [...this.#allOptions()];
-    const entries: VisibleEntry[] = [
-      ...selected.map((value) => ({
-        option: options.find((option) => option.value === value) ?? {
-          value,
-          label: value,
-        },
-      })),
-      ...visible,
-    ];
     const runs: EntryRun[] = [];
     const occurrences = new Map<string, number>();
-    for (const entry of entries) {
+
+    for (const entry of visible) {
       const last = runs.at(-1);
       if (last && last.groupLabel === entry.groupLabel) {
         last.entries.push(entry);
@@ -671,6 +973,8 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         entries: [entry],
       });
     }
+
+    const current = this.multiple ? null : (this.value as string);
     const optionsTemplate = (run: EntryRun) =>
       repeat(
         run.entries,
@@ -678,15 +982,13 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
         (entry) =>
           this.#optionTemplate(
             entry.option,
-            selected.includes(entry.option.value)
+            current !== null && String(entry.option.value) === current
           )
       );
 
     this.overflowTotal = matched.length > this.limit ? matched.length : 0;
     this.#announceMatches(matched.length);
 
-    // Retain selected option elements while filtering: Lion derives checked
-    // values from registered options, including selections outside the limit.
     render(
       html`${repeat(
         runs,
@@ -700,18 +1002,23 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
       )}`,
       node
     );
+
+    const active = this.#activeOption();
+    if (this.#activeValue !== null && !active) {
+      this.#activeValue = null;
+    }
+    activateOption(this.#options(), active, this._control, {scroll: false});
   }
 
-  #optionTemplate(option: ComboboxOption, selected = false) {
+  #optionTemplate(option: ComboboxOption, selected: boolean) {
     const data = option.data ?? {};
     const label = option.label;
     const isEnv = label.startsWith('$') || label.startsWith('@');
 
     return html`
       <craft-option
-        ?hidden=${selected}
-        aria-hidden=${selected ? 'true' : nothing}
-        .choiceValue=${String(option.value)}
+        .value=${String(option.value)}
+        .selected=${selected}
         .hint=${data.hint ?? null}
         ?disabled=${option.disabled ?? false}
       >
@@ -738,50 +1045,12 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   }
 
   #hasValue(): boolean {
-    return this.multipleChoice
-      ? this.selectedValues.length > 0
-      : this.modelValue !== '' && this.modelValue != null;
+    const value = this.value;
+
+    return Array.isArray(value) ? value.length > 0 : value !== '';
   }
 
-  #clear = () => {
-    if (this.multipleChoice) {
-      this.changeValues([]);
-      return;
-    }
-    this.modelValue = '';
-    if (this._inputNode) {
-      this._inputNode.value = '';
-    }
-    this.#renderOptions();
-    this._inputNode?.focus();
-  };
-
-  /** Whether the listbox was open when the chevron was pressed. */
-  #openedOnIndicatorMousedown = false;
-
-  /**
-   * The chevron sits beside the textbox rather than over it, so a click on it
-   * focuses the textbox and toggles the listbox, as a select's arrow would.
-   * The toggle waits for the click, because Lion closes the listbox on a
-   * mouseup outside the textbox.
-   */
-  #onIndicatorMousedown = (event: MouseEvent) => {
-    if (event.button !== 0 || this.inactive) {
-      return;
-    }
-
-    event.preventDefault();
-    this.#openedOnIndicatorMousedown = Boolean(this.opened);
-    this._inputNode?.focus();
-  };
-
-  #onIndicatorClick = () => {
-    if (this.inactive) {
-      return;
-    }
-
-    this.opened = !this.#openedOnIndicatorMousedown;
-  };
+  // ─── Announcements ────────────────────────────────────────────────────
 
   @state()
   private announcement = '';
@@ -791,19 +1060,11 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   /** The match count last announced while the list was open, if any. */
   #announcedMatches = '';
 
-  override disconnectedCallback() {
-    if (this.#announceTimeout !== null) {
-      clearTimeout(this.#announceTimeout);
-      this.#announceTimeout = null;
-    }
-    this.#announcingRemoval = false;
-    this.#announcedMatches = '';
-    this.announcement = '';
-    super.disconnectedCallback();
-  }
+  /** Whether the live region is showing which values were just removed. */
+  #announcingRemoval = false;
 
   #announceMatches(count: number): void {
-    if (!this.opened && !this.#filtering) {
+    if (!this.open && !this.#filtering) {
       this.#announcedMatches = '';
       return;
     }
@@ -818,17 +1079,13 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     if (message === this.#announcedMatches) {
       return;
     }
-    // Backspace reopens the list on keyup, which would talk over the removal
-    // it just announced; the count is announced once typing starts.
+    // A removal announces itself; the count waits until typing starts.
     if (this.#announcingRemoval && !this.#filtering) {
       return;
     }
     this.#announcedMatches = message;
     this.#announce(message);
   }
-
-  /** Whether the live region is showing which values were just removed. */
-  #announcingRemoval = false;
 
   #announce(message: string, removal = false): void {
     this.#announcingRemoval = removal;
@@ -855,31 +1112,37 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   @state()
   private overflowTotal = 0;
 
-  override _overlayListboxTemplate() {
-    return html`
-      <div
-        id="overlay-content-node-wrapper"
-        role="dialog"
-        aria-label="${this.msgLit('lion-combobox:optionsPopup')}"
-      >
-        <slot name="listbox"></slot>
-        ${this.overflowTotal
-          ? html`<div class="combobox__footer" aria-hidden="true">
-              ${t(
-                'Showing {shown} of {total} — keep typing to narrow results.',
-                {shown: this.limit, total: this.overflowTotal}
-              )}
-            </div>`
-          : nothing}
-      </div>
-      <slot id="options-outlet"></slot>
-      <div class="cp-visually-hidden" aria-live="polite" aria-atomic="true">
-        ${this.announcement}
-      </div>
-    `;
-  }
+  // ─── The chevron ──────────────────────────────────────────────────────
 
-  override _inputGroupInputTemplate() {
+  /** Whether the listbox was open when the chevron was pressed. */
+  #openedOnIndicatorMousedown = false;
+
+  /**
+   * The chevron sits beside the textbox rather than over it, so a press on it
+   * focuses the textbox and a click toggles the listbox, as a select's arrow
+   * would.
+   */
+  #onIndicatorMousedown = (event: MouseEvent) => {
+    if (event.button !== 0 || this.#inactive) {
+      return;
+    }
+
+    event.preventDefault();
+    this.#openedOnIndicatorMousedown = this.open;
+    this._control?.focus();
+  };
+
+  #onIndicatorClick = () => {
+    if (this.#inactive) {
+      return;
+    }
+
+    this.open = !this.#openedOnIndicatorMousedown;
+  };
+
+  // ─── Templates ────────────────────────────────────────────────────────
+
+  protected override _inputGroupInputTemplate() {
     const selectedData = this.#selectedOption()?.data;
     const icon = selectedData?.icon;
     const color = selectedData?.color;
@@ -904,7 +1167,7 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
                 </span>`
               : nothing}
           <slot name="input"></slot>
-          ${this.clearable && this.#hasValue() && !this.inactive
+          ${this.clearable && this.#hasValue() && !this.#inactive
             ? html`<craft-button
                 class="clear"
                 type="button"
@@ -930,281 +1193,34 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
           ></craft-icon>
         </div>
       </div>
+      <div class="overlay-layer" role="none" popover="manual">
+        <div id="overlay-content-node-wrapper">
+          <slot name="listbox"></slot>
+          ${this.overflowTotal
+            ? html`<div class="combobox__footer" aria-hidden="true">
+                ${t(
+                  'Showing {shown} of {total} — keep typing to narrow results.',
+                  {shown: this.limit, total: this.overflowTotal}
+                )}
+              </div>`
+            : nothing}
+        </div>
+      </div>
+      <div class="cp-visually-hidden" aria-live="polite" aria-atomic="true">
+        ${this.announcement}
+      </div>
     `;
   }
 
-  private get selectedValues(): string[] {
-    return Array.isArray(this.modelValue) ? this.modelValue : [];
-  }
+  // ─── Values and labels ────────────────────────────────────────────────
 
-  private get inactive(): boolean {
-    return this.disabled || this.readOnly || this.fieldsetDisabled;
-  }
-
-  private valueLabel(value: string): string {
+  #valueLabel(value: string): string {
     return this.#option(value)?.label ?? value;
   }
 
   #option(value: string): ComboboxOption | undefined {
-    return [...this.#allOptions()].find((option) => option.value === value);
-  }
-
-  /**
-   * Publishes the value for native form submission.
-   *
-   * The host carries the `name` and the class declares `formAssociated`, but a
-   * single-choice combobox never told `ElementInternals` what its value was, so
-   * it contributed nothing to a native POST — a form read with `FormData`, or a
-   * page that posts itself rather than going through an Inertia form, saw the
-   * field as absent and left the old value in place. Multiple choice has its
-   * own hidden inputs; this is the single-choice equivalent.
-   */
-  #syncFormValue() {
-    if (this.multipleChoice) {
-      return;
-    }
-
-    /**
-     * `ElementInternals` is the whole mechanism here, so without it there is
-     * nothing to publish. happy-dom doesn't implement `attachInternals()`, and
-     * this runs from `updated()` on every render — so an unguarded call made
-     * rendering a combobox throw outright in any test using that environment.
-     */
-    if (typeof this.attachInternals !== 'function') {
-      return;
-    }
-
-    this.internals ??= this.attachInternals();
-
-    const omit = !this.name || this.disabled || this.fieldsetDisabled;
-    const value = typeof this.modelValue === 'string' ? this.modelValue : '';
-
-    this.internals.setFormValue(omit ? null : value);
-  }
-
-  /**
-   * The selected values, as a list in the light DOM so the textbox's
-   * `aria-labelledby` can reach it. It's a polite live region, so a value is
-   * announced as it's added.
-   */
-  #selection?: HTMLUListElement;
-
-  #syncSelection() {
-    if (!this.#selection) {
-      this.#selection = document.createElement('ul');
-      this.#selection.slot = 'selection';
-      this.#selection.id = `selection-${this._inputId}`;
-      // Safari drops the list role from a list without bullets.
-      this.#selection.setAttribute('role', 'list');
-      this.#selection.setAttribute('aria-live', 'polite');
-      this.#selection.setAttribute('aria-atomic', 'false');
-      this.append(this.#selection);
-    }
-    render(
-      repeat(
-        this.selectedValues,
-        (value) => value,
-        (value) => html`
-          <li>
-            <craft-combobox-token
-              ?removable=${!this.inactive}
-              @craft-remove=${() =>
-                this.changeValues(
-                  this.selectedValues.filter((item) => item !== value)
-                )}
-            >
-              ${this.#decorationTemplate(this.#option(value)?.data ?? {})}
-              ${this.valueLabel(value)}
-            </craft-combobox-token>
-          </li>
-        `
-      ),
-      this.#selection
-    );
-  }
-
-  private syncInputs() {
-    if (!this.inputs) {
-      this.inputs = document.createElement('span');
-      this.inputs.hidden = true;
-      this.inputs.slot = 'native-inputs';
-      this.inputs.setAttribute('data-combobox-inputs', '');
-      this.append(this.inputs);
-    }
-    // Detached controls can still be serialized by their host.
-    render(
-      !this.name || this.disabled || this.fieldsetDisabled
-        ? nothing
-        : html`
-            <input type="hidden" name=${this.name} value="" />
-            ${this.selectedValues.map(
-              (value) =>
-                html`<input
-                  type="hidden"
-                  name=${`${this.name}[]`}
-                  .value=${value}
-                />`
-            )}
-          `,
-      this.inputs
-    );
-  }
-
-  /** Restores the initial selection when the owning form is reset. */
-  formResetCallback() {
-    if (this.multipleChoice) {
-      this.modelValue = [...this.initialValues];
-      this.value = '';
-      this.syncInputs();
-
-      return;
-    }
-
-    this.#syncFormValue();
-  }
-
-  /** Tracks whether an ancestor `<fieldset>` has disabled the control. */
-  formDisabledCallback(disabled: boolean) {
-    this.fieldsetDisabled = disabled;
-    this.requestUpdate();
-    if (this.multipleChoice) {
-      this.syncInputs();
-    }
-  }
-
-  private changeValues(values: string[]) {
-    if (this.inactive) {
-      return;
-    }
-    const removed = this.selectedValues.filter(
-      (value) => !values.includes(value)
-    );
-    this.changingValues = true;
-    try {
-      this.modelValue = values;
-    } finally {
-      this.changingValues = false;
-    }
-    this.value = '';
-    this.opened = false;
-    this.#renderOptions();
-    this.syncInputs();
-    this._notifyModelValueChanged();
-    this._inputNode.focus();
-    // The list of values announces additions only; a removed value leaves no
-    // node behind to announce, so say what went.
-    if (removed.length) {
-      this.#announce(
-        t('Removed {name}', {
-          name: new Intl.ListFormat(
-            document.documentElement.lang || undefined,
-            {
-              type: 'conjunction',
-            }
-          ).format(removed.map((value) => this.valueLabel(value))),
-        }),
-        true
-      );
-    }
-  }
-
-  private commitQuery() {
-    const value = this.value;
-    if (this.inactive || value === '') {
-      return;
-    }
-    const option = [...this.#allOptions()].find(
-      (option) => option.value === value
-    );
-    if (option?.disabled || (this.requireOptionMatch && !option)) {
-      return;
-    }
-    this.changeValues([...new Set([...this.selectedValues, value])]);
-  }
-
-  override _listboxOnKeyDown(event: KeyboardEvent) {
-    if (!this.multipleChoice) {
-      super._listboxOnKeyDown(event);
-      return;
-    }
-    if (this.inactive || event.isComposing) {
-      return;
-    }
-    if (event.key === 'Backspace' && this.value === '') {
-      event.preventDefault();
-      this.changeValues(this.selectedValues.slice(0, -1));
-      return;
-    }
-    const option = this.formElements[this.activeIndex];
-    if (
-      event.key === 'Enter' &&
-      (!this.opened ||
-        !option ||
-        option.hidden ||
-        option.hasAttribute('aria-hidden'))
-    ) {
-      event.preventDefault();
-      this.commitQuery();
-      return;
-    }
-    super._listboxOnKeyDown(event);
-  }
-
-  override _syncToTextboxMultiple() {}
-
-  override _resetListboxOptions() {
-    super._resetListboxOptions();
-    this.hideSelectedOptions();
-  }
-
-  override _handleAutocompletion() {
-    super._handleAutocompletion();
-    this.hideSelectedOptions();
-  }
-
-  private hideSelectedOptions() {
-    if (!this.multipleChoice) {
-      return;
-    }
-    // Lion shows every option for an empty query, regardless of matchCondition.
-    for (const option of this.formElements) {
-      if (option.hidden) {
-        option.setAttribute('aria-hidden', 'true');
-        option.removeAttribute('aria-posinset');
-        option.removeAttribute('aria-setsize');
-      }
-    }
-    const visible = this.formElements.filter(
-      (option) => !option.hasAttribute('aria-hidden')
-    );
-    visible.forEach((option, index) => {
-      option.setAttribute('aria-posinset', String(index + 1));
-      option.setAttribute('aria-setsize', String(visible.length));
-    });
-  }
-
-  /**
-   * Lion drives a single-select combobox's model value off the textbox string.
-   * Because we display each option's label (not its value), map a displayed
-   * label back to its option value here so `modelValue` is the option's value —
-   * e.g. selecting "Online" yields `'1'`, not `'Online'`. Text that matches no
-   * option label is passed through as a custom value (`requireOptionMatch`
-   * false), preserving free-text/env-var entry.
-   */
-  override parser(value: string | Array<string>) {
-    if (typeof value === 'string' && value !== '') {
-      const match = this.#optionByLabel(value);
-      return match ? match.value : value;
-    }
-
-    return super.parser(value);
-  }
-
-  #optionByLabel(label: string): ComboboxOption | undefined {
-    const target = label.trim();
-
     for (const option of this.#allOptions()) {
-      if (this.#displayLabel(option) === target) {
+      if (String(option.value) === value) {
         return option;
       }
     }
@@ -1213,24 +1229,13 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
   }
 
   /**
-   * The option the model value currently holds, if any. Free text (which the
-   * model also carries, `requireOptionMatch` being false) matches nothing, so
-   * a half-typed query never shows a stale option's icon.
+   * The option the value holds, if any. Free text matches nothing, so a
+   * half-typed query never shows a stale option's icon.
    */
   #selectedOption(): ComboboxOption | undefined {
-    if (this.multipleChoice || !this.#hasValue()) {
-      return undefined;
-    }
-
-    const target = String(this.modelValue);
-
-    for (const option of this.#allOptions()) {
-      if (String(option.value) === target) {
-        return option;
-      }
-    }
-
-    return undefined;
+    return this.multiple || !this.#hasValue()
+      ? undefined
+      : this.#option(this.value as string);
   }
 
   /** Every option in source order, with groups flattened. */
@@ -1244,46 +1249,103 @@ export default class CraftCombobox extends HasLabel(LionCombobox) {
     }
   }
 
-  /**
-   * With `autocomplete='list'`, Lion only reflects the model value into the
-   * textbox while the field is blurred. Selecting an option refocuses the
-   * input, so on overlay close the condition was false and the chosen label
-   * never appeared. Force the sync when a selection commits (overlay close);
-   * typing is unaffected — that path never runs with the `overlay-close`
-   * phase, and the overlay-close sync is already gated on a real selection
-   * (`checkedIndex !== -1`), so custom/free-text entry is preserved.
-   */
-  override _syncToTextboxCondition(
-    modelValue: string | string[],
-    oldModelValue: string | string[],
-    config: {phase?: string} = {}
-  ) {
-    if (config.phase === 'overlay-close') {
-      return true;
-    }
-
-    return super._syncToTextboxCondition(modelValue, oldModelValue, config);
-  }
-
-  /**
-   * Override to use the option's text content instead of choiceValue.
-   */
-  override _getTextboxValueFromOption(option: CraftOption) {
-    if (option) {
-      const label = option.textContent?.trim() || '';
-
-      return this.showSelectedHint && option.hint
-        ? `${label} – ${option.hint}`
-        : label;
-    }
-
-    return super._getTextboxValueFromOption(option);
-  }
-
   #displayLabel(option: ComboboxOption): string {
     return this.showSelectedHint && option.data?.hint
       ? `${option.label} – ${option.data.hint}`
       : option.label;
+  }
+
+  // ─── Multiple choice ──────────────────────────────────────────────────
+
+  /**
+   * The selected values, as a list in the light DOM so the textbox's
+   * `aria-labelledby` can reach it. It's a polite live region, so a value is
+   * announced as it's added.
+   */
+  #selection?: HTMLUListElement;
+
+  #syncSelection(): void {
+    if (!this.#selection) {
+      this.#selection = document.createElement('ul');
+      this.#selection.slot = 'selection';
+      this.#selection.id = `selection-${this._inputId}`;
+      // Safari drops the list role from a list without bullets.
+      this.#selection.setAttribute('role', 'list');
+      this.#selection.setAttribute('aria-live', 'polite');
+      this.#selection.setAttribute('aria-atomic', 'false');
+      this.append(this.#selection);
+    }
+
+    const values = this.value as string[];
+    render(
+      repeat(
+        values,
+        (value) => value,
+        (value) => html`
+          <li>
+            <craft-combobox-token
+              ?removable=${!this.#inactive}
+              @craft-remove=${() =>
+                this.#changeValues(
+                  (this.value as string[]).filter((item) => item !== value)
+                )}
+            >
+              ${this.#decorationTemplate(this.#option(value)?.data ?? {})}
+              ${this.#valueLabel(value)}
+            </craft-combobox-token>
+          </li>
+        `
+      ),
+      this.#selection
+    );
+  }
+
+  /** Focuses the textbox, as a `craft-field` does when its label is clicked. */
+  override focus(options?: FocusOptions): void {
+    this._control?.focus(options);
+  }
+
+  // ─── Forms ────────────────────────────────────────────────────────────
+
+  #syncValidity(): void {
+    const missing =
+      this.multiple &&
+      this.required &&
+      !this.disabled &&
+      !this.readOnly &&
+      !this.#fieldsetDisabled &&
+      (this.value as string[]).length === 0;
+
+    this._setValidity(
+      missing ? {valueMissing: true} : {},
+      missing ? t('This field is required.') : '',
+      this._control
+    );
+  }
+
+  override _formValue(): FormValue {
+    if (this.#fieldsetDisabled) {
+      return null;
+    }
+
+    return this.multiple
+      ? [...(this.value as string[])]
+      : (this.value as string);
+  }
+
+  /** Restores the initial value when the owning form is reset. */
+  formResetCallback(): void {
+    this.value = this.#initialValue;
+    this.#committedValue = this.value;
+    this.#syncTextbox();
+    this._syncFormValue();
+  }
+
+  /** Tracks whether an ancestor `<fieldset>` has disabled the control. */
+  formDisabledCallback(disabled: boolean): void {
+    this.#fieldsetDisabled = disabled;
+    this.requestUpdate();
+    this._syncFormValue();
   }
 }
 

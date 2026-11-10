@@ -167,7 +167,7 @@ class SelectColor extends ViewComponent
         return [
             'id' => $this->getId(),
             'name' => $this->name,
-            'model-value' => $this->value,
+            'value' => $this->value,
             'label' => $this->label,
             'allow-transparent' => $this->allowTransparent,
             'blank-label' => $this->blankLabel,
@@ -176,7 +176,7 @@ class SelectColor extends ViewComponent
             'labels' => $this->labels !== [] ? Json::encode($this->labels) : null,
             'required' => $this->required,
             'readonly' => $this->readOnly,
-            'aria-invalid' => $this->invalid ? 'true' : null,
+            'invalid' => $this->invalid,
             'disabled' => $this->isDisabled(),
             'described-by' => $this->describedBy,
             'labelled-by' => $this->labelledBy,

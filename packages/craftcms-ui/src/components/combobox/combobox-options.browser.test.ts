@@ -86,7 +86,7 @@ describe.each([
     const control = await fixture([
       {label: 'Icon', value: 'icon', data: {icon: 'circle', color}},
     ]);
-    control.modelValue = 'icon';
+    control.value = 'icon';
     await control.updateComplete;
 
     expect(
@@ -99,8 +99,8 @@ describe.each([
     const control = await fixture([
       {label: 'Icon', value: 'icon', data: {icon: 'circle', color}},
     ]);
-    control.multipleChoice = true;
-    control.modelValue = ['icon'];
+    control.multiple = true;
+    control.value = ['icon'];
     await control.updateComplete;
 
     expect(
@@ -126,7 +126,7 @@ it('shows the selected option’s indicator while closed', async () => {
     {label: 'Online', value: 'true', data: {indicator: {fill: 'success'}}},
     {label: 'Offline', value: 'false', data: {indicator: {fill: 'danger'}}},
   ]);
-  control.modelValue = 'false';
+  control.value = 'false';
   await control.updateComplete;
 
   const indicator = control.shadowRoot!.querySelector(
@@ -180,7 +180,7 @@ it('opens and closes its options from the chevron, focusing the textbox', async 
     {label: 'Anthropic', value: 'anthropic'},
     {label: 'Azure', value: 'azure'},
   ]);
-  control.modelValue = 'anthropic';
+  control.value = 'anthropic';
   await control.updateComplete;
   const chevron = control.shadowRoot!.querySelector<HTMLElement>('.indicator')!;
 
@@ -188,12 +188,12 @@ it('opens and closes its options from the chevron, focusing the textbox', async 
   await new Promise((resolve) => setTimeout(resolve, 50));
 
   expect(document.activeElement).toBe(control.querySelector('input'));
-  expect(control.opened).toBe(true);
+  expect(control.open).toBe(true);
 
   await userEvent.click(chevron);
   await new Promise((resolve) => setTimeout(resolve, 50));
 
-  expect(control.opened).toBe(false);
+  expect(control.open).toBe(false);
 });
 
 it('gives the whole end of the field beside the clear button to the chevron, with a text cursor', async () => {

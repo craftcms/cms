@@ -210,8 +210,8 @@ describe('Legacy HTML UI Control', () => {
   });
 
   it('ignores unnamed controls like a native form submission', async () => {
-    // An element select input's search box is a `craft-input`, whose Lion base
-    // writes its empty `name` onto the native input.
+    // An element select input's search box is a `craft-input` whose native
+    // input has an empty `name`.
     const {container, form, mutation, submitted} = await mount(
       {
         html: '<input type="hidden" name="fields[topics]" value=""><input type="hidden" name="fields[topics][]" value="7"><craft-input><input slot="input" type="text" name="" value="tech"></craft-input>',

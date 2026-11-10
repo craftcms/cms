@@ -175,7 +175,7 @@
       v-else
       :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
       :label="node.props.collapsible ? node.props.label : undefined"
-      .opened="
+      .open="
         node.props.collapsible ? (node.props.expanded ?? false) : undefined
       "
       :class="{

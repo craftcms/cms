@@ -18,7 +18,7 @@ use Illuminate\Testing\TestResponse;
 use Laravel\Passport\Passport;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 
@@ -76,7 +76,7 @@ it('rejects element tool inputs that the type does not accept', function (string
     'unknown type' => ['elements_get', ['type' => 'widgets', 'id' => 1], 'Unsupported element type [widgets]. Supported types: entries, assets, users, addresses.'],
     'criteria of the wrong type' => ['elements_list', ['type' => 'entries', 'criteria' => ['sectionId' => 'news']], 'Invalid criteria for entries: /sectionId:'],
     'missing create attribute' => ['elements_create', ['type' => 'entries', 'attributes' => ['title' => 'No section']], 'Invalid attributes for entries:'],
-    'undeclared update attribute' => ['elements_update', ['type' => 'addresses', 'id' => 1, 'attributes' => ['id' => 2]], 'Invalid attributes for addresses: Additional object properties are not allowed: ["id"]'],
+    'undeclared update attribute' => ['elements_update', ['type' => 'addresses', 'id' => 1, 'attributes' => ['id' => 2]], 'Invalid attributes for addresses: Object contains unexpected additional properties: `id`'],
     'context for a type with one layout' => ['elements_field_schema', ['type' => 'users', 'context' => ['sectionId' => 1]], 'Users do not accept a field-schema context.'],
     'asset creation without a file' => ['elements_create', ['type' => 'assets', 'attributes' => ['title' => 'Logo']], 'Create assets with assets_create, which accepts the file to upload.'],
 ]);
@@ -98,7 +98,7 @@ it('manages element types that plugins register with an adapter', function (): v
         ->assertJsonPath('result.structuredContent.element.title', 'Cog');
     ($this->call)('elements_update', ['type' => 'widgets', 'id' => $created['id'], 'attributes' => ['slug' => 'cog']])
         ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Invalid attributes for widgets: Additional object properties are not allowed: ["slug"]. Call elements_schema for the accepted attributes.');
+        ->assertJsonPath('result.content.0.text', 'Invalid attributes for widgets: Object contains unexpected additional properties: `slug`. Call elements_schema for the accepted attributes.');
     ($this->call)('elements_schema', ['type' => 'widgets'])
         ->assertJsonPath('result.structuredContent.criteria.properties.level.anyOf.0.type', 'integer')
         ->assertJsonPath('result.structuredContent.attributes.properties.structureId.type', ['integer', 'null'])

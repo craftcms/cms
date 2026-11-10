@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
@@ -166,4 +168,75 @@ it('renders without the navigation while a Craft update is pending', function ()
     post(cp_url('updates'))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.nav', []));
+});
+
+test('data encrypted with the app key can’t reach Composer anonymously', function (string $action) {
+    // The `|hash` filter encrypts any string with the app key
+    $composer = $this->mock(Composer::class);
+    $composer->shouldNotReceive('install');
+    $composer->shouldNotReceive('uninstall');
+    auth()->logout();
+
+    postJson(action([UpdaterController::class, $action]), [
+        'data' => Crypt::encrypt(Json::encode([
+            'requirements' => ['foo/bar' => '1.0.0'],
+            'current' => ['foo/bar' => '1.0.0'],
+            'packageName' => 'foo/bar',
+        ])),
+    ])->assertForbidden();
+})->with(['composerInstall', 'composerRemove', 'revert']);
+
+test('data encrypted with the app key reaches Composer for users who can perform updates', function () {
+    // Updates from a Craft version that predates updater keys hand the next step data encrypted with the app key
+    $this->mock(Composer::class)
+        ->shouldReceive('install')->once()->with(['foo/bar' => '1.0.0'], Mockery::any());
+
+    $response = postJson(action([UpdaterController::class, 'composerInstall']), [
+        'data' => Crypt::encrypt(Json::encode([
+            'requirements' => ['foo/bar' => '1.0.0'],
+            'reverted' => false,
+        ])),
+    ])->assertOk();
+
+    // Responses stay encrypted with the app key, so a version that predates updater keys can take the next step
+    expect(Json::decode(Crypt::decrypt($response->json('data'))))->toHaveKey('requirements');
+});
+
+test('Composer actions need updates and admin changes to be allowed', function (string $action, string $setting) {
+    $composer = $this->mock(Composer::class);
+    $composer->shouldNotReceive('install');
+    $composer->shouldNotReceive('uninstall');
+    Cms::config()->$setting = false;
+
+    postJson(action([UpdaterController::class, $action]), [
+        'data' => $this->hashedData,
+    ])->assertForbidden();
+})->with(['composerInstall', 'composerRemove', 'revert'])->with(['allowUpdates', 'allowAdminChanges']);
+
+test('pending migrations can still be finished anonymously with updates disabled', function () {
+    Cms::config()->allowUpdates = false;
+    auth()->logout();
+
+    postJson(action([UpdaterController::class, 'migrate']), [
+        'data' => Crypt::encrypt(Json::encode(['migrate' => []])),
+    ])->assertOk()
+        ->assertJsonPath('finished', true);
+});
+
+test('updater data can’t be replayed to another updater controller', function () {
+    $data = post(action([UpdaterController::class, 'index']))->inertiaProps('initialState.data');
+
+    postJson(action([UpdaterController::class, 'finish']), compact('data'))->assertOk();
+
+    postJson(action([RemoveController::class, 'finish']), compact('data'))
+        ->assertJsonValidationErrors(['data']);
+});
+
+test('precheck rejects data with nothing to update', function () {
+    // The updater index hands this out anonymously when there's nothing to update
+    auth()->logout();
+    $data = post(action([UpdaterController::class, 'index']))->inertiaProps('initialState.data');
+
+    postJson(action([UpdaterController::class, 'precheck']), compact('data'))
+        ->assertJsonValidationErrors(['data']);
 });

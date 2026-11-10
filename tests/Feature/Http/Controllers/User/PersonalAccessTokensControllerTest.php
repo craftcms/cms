@@ -18,12 +18,13 @@ use Inertia\Testing\AssertableInertia;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 
+use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
 use function Pest\Laravel\postJson;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     openssl_pkey_export($key, $privateKey);
     config()->set('passport.private_key', $privateKey);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
@@ -119,6 +120,12 @@ it('lists authorized MCP clients for users who can’t create tokens', function 
             ->where('grants.0.name', 'MCP client')
             ->where('grants.0.scopes', ['mcp' => ['mcp:read']])
             ->where('craft.currentUser.showTokens', true));
+
+    // Revoking the last grant takes the screen away, so the user is sent to their account instead
+    postJson(action([PersonalAccessTokensController::class, 'destroy']), ['clientId' => (string) $client->id])
+        ->assertOk()
+        ->assertJsonPath('redirect', cp_url('myaccount'));
+    get(action([PersonalAccessTokensController::class, 'index']))->assertForbidden();
 });
 
 it('only shows the screen to admins, to explain how to set up keys, without valid signing keys', function (?string $privateKey): void {

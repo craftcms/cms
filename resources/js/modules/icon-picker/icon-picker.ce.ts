@@ -10,8 +10,9 @@ import IconPicker from '@/common/form/IconPicker.vue';
  *
  * Settings come from attributes; the component renders its own form-postable
  * control (`craft-input` with `hidden-input` + `name`), so the value posts with
- * no separate hidden input here. Model changes re-emit as a bubbling `change`
- * CustomEvent for legacy listeners. The per-instance Vue app is unmounted on
+ * no separate hidden input here. Each pick or removal bubbles out as the
+ * input's own `input` and `change`, once the input has the new value. The
+ * per-instance Vue app is unmounted on
  * disconnect (e.g. an editable-table row removal) to avoid leaks.
  */
 export default class CraftIconPicker extends HTMLElement {
@@ -31,12 +32,9 @@ export default class CraftIconPicker extends HTMLElement {
       freeOnly: this.hasAttribute('free-only'),
       sets: this.#sets(),
       disabled: this.hasAttribute('disabled'),
+      // Only the initial value: with no `onUpdate:modelValue` listener, the
+      // picker keeps its own model, which is what its input posts.
       modelValue: this.getAttribute('value') ?? '',
-      'onUpdate:modelValue': (value: string) => {
-        this.dispatchEvent(
-          new CustomEvent('change', {bubbles: true, detail: {value}})
-        );
-      },
     });
 
     this.#app.mount(this);

@@ -83,7 +83,7 @@
         placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
         :readonly="readOnly"
         maxlength="29"
-        @blur="handleBlur"
+        @focusout="handleBlur"
         :style="{
           width: `36ch`,
         }"
