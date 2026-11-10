@@ -42,6 +42,22 @@ describe('craft-input', () => {
     expect(native(element).id).not.toBe('');
   });
 
+  it('clears its label and help text when their attributes are removed', async () => {
+    const element = await createInput(
+      {label: 'Handle', 'help-text': 'Lowercase'},
+      ''
+    );
+
+    element.removeAttribute('label');
+    element.removeAttribute('help-text');
+    await element.updateComplete;
+
+    expect(element.label).toBe('');
+    expect(element.helpText).toBe('');
+    expect(element.querySelector('[slot="label"]')!.textContent).toBe('');
+    expect(element.querySelector('[slot="help-text"]')!.textContent).toBe('');
+  });
+
   it('defaults to a medium control', async () => {
     expect((await createInput()).size).toBe('medium');
   });

@@ -137,9 +137,11 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       return this.#label ?? this._labelNode?.textContent ?? '';
     }
 
-    set label(value: string) {
+    set label(value: string | null) {
       const old = this.label;
-      this.#label = value;
+      // A removed attribute arrives as `null`, which clears it; `undefined`
+      // still falls back to the slotted node's text.
+      this.#label = value === null ? '' : value;
       this.requestUpdate('label', old);
     }
 
@@ -149,9 +151,11 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       return this.#helpText ?? this._helpTextNode?.textContent ?? '';
     }
 
-    set helpText(value: string) {
+    set helpText(value: string | null) {
       const old = this.helpText;
-      this.#helpText = value;
+      // A removed attribute arrives as `null`, which clears it; `undefined`
+      // still falls back to the slotted node's text.
+      this.#helpText = value === null ? '' : value;
       this.requestUpdate('helpText', old);
     }
 
