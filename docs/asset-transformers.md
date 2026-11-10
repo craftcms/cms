@@ -11,9 +11,8 @@ These docs use three terms:
 - A **driver** is the PHP class behind a transformer, registered under a **driver name** such as `craft` or `imgix`. You
   only need drivers when you write or register one (see [Implementing a custom driver](#implementing-a-custom-driver)).
 
-Transformers have no names of their own. A string such as `'imgix'` is shorthand for `['driver' => 'imgix']`: that driver
-with no inline settings, so it uses its own config. This differs from `Storage::disk('s3')` or `Mail::mailer('ses')`, where
-the string names a disk or mailer configured elsewhere.
+Where a transformer is expected, a string names a driver, the same way a disk's `'driver' => 's3'` does. `'imgix'` means
+`['driver' => 'imgix']`: the `imgix` driver with no inline settings, so it uses its own config.
 
 `CraftCms\Cms\Asset\AssetTransformers` handles all three. It registers drivers with `extend()`, resolves a disk's transformer
 with `forDisk()`, and runs transforms with `transform()`.
