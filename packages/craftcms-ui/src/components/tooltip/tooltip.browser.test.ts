@@ -531,3 +531,22 @@ it('stays open for a keyboard-focused invoker after its content is replaced', as
   expect(document.activeElement).toBe(invoker);
   expect(tooltip.opened).toBe(true);
 });
+
+it('still opens when its content is replaced while it waits to show', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {invoker, elsewhere, tooltip} = await render();
+
+  await userEvent.hover(elsewhere);
+  await userEvent.tab();
+  expect(tooltip.opened).toBe(false);
+
+  const replacement = document.createElement('div');
+  replacement.slot = 'content';
+  replacement.textContent = 'New activity';
+  tooltip.querySelector('[slot="content"]')!.replaceWith(replacement);
+  await after(300);
+
+  expect(document.activeElement).toBe(invoker);
+  expect(tooltip.opened).toBe(true);
+  expect(invoker.getAttribute('aria-describedby')).toBe(replacement.id);
+});

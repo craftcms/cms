@@ -12,6 +12,11 @@ type HoverOptions = {
 export type HoverWatcher = {
   /** Forgets the hover and focus state, for an overlay closed some other way. */
   reset(): void;
+  /**
+   * Watches hover on new content in place of the old, keeping the hover and
+   * focus state and any show or hide still waiting on its delay.
+   */
+  setContent(content: HTMLElement): void;
   teardown(): void;
 };
 
@@ -103,17 +108,14 @@ export function watchHover({
     }
   };
 
-  const listeners: [HTMLElement, string][] = [
-    [content, 'mouseenter'],
-    [content, 'mouseleave'],
-    [invoker, 'mouseenter'],
-    [invoker, 'mouseleave'],
-    [invoker, 'focusin'],
-    [invoker, 'focusout'],
-  ];
+  const contentTypes = ['mouseenter', 'mouseleave'];
+  const invokerTypes = ['mouseenter', 'mouseleave', 'focusin', 'focusout'];
 
-  for (const [node, type] of listeners) {
-    node.addEventListener(type, update);
+  for (const type of contentTypes) {
+    content.addEventListener(type, update);
+  }
+  for (const type of invokerTypes) {
+    invoker.addEventListener(type, update);
   }
 
   return {
@@ -121,10 +123,20 @@ export function watchHover({
       isFocused = false;
       isHovered = false;
     },
+    setContent(next) {
+      for (const type of contentTypes) {
+        content.removeEventListener(type, update);
+        next.addEventListener(type, update);
+      }
+      content = next;
+    },
     teardown() {
       clearTimeout(delay);
-      for (const [node, type] of listeners) {
-        node.removeEventListener(type, update);
+      for (const type of contentTypes) {
+        content.removeEventListener(type, update);
+      }
+      for (const type of invokerTypes) {
+        invoker.removeEventListener(type, update);
       }
     },
   };

@@ -220,15 +220,29 @@ export default class CraftTooltip extends LitElement {
       return;
     }
 
-    this.#unbind();
+    const invoker = this.#invoker;
+    if (invoker) {
+      this.#removeReference(invoker.node, invoker.attribute);
+    }
+
     this.#contentWrapper?.removeEventListener('keyup', this.#onEscape, true);
     this.#contentWrapper = null;
     this.#contentId = uniqueId('tooltip');
     this.#ensureContentWrapper();
 
-    if (this.#isSetUp) {
-      this.#bind();
+    if (!invoker) {
+      if (this.#isSetUp) {
+        this.#bind();
+      }
+      return;
     }
+
+    // The invoker stays bound, so its hover watcher keeps its state: a show
+    // still waiting on its delay goes ahead, and one dismissed with Escape
+    // stays dismissed.
+    this.#addReference(invoker.node, invoker.attribute);
+    this.#hover?.setContent(this.#contentWrapper!);
+    this.reposition();
   };
 
   override connectedCallback() {
