@@ -20,6 +20,7 @@ use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
@@ -406,29 +407,65 @@ it('reuses transforms when only has_urls or immediate generation changes', funct
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->count())->toBe(1);
 });
 
-it('re-targets a stale index row to the current output location', function () {
+it('re-targets an index row whose output disk is no longer configured', function () {
     $asset = ($this->createImageAsset)();
     $output = useTransformOutputDisk($asset);
+    useScopedTransformOutputDisk('old');
     $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
 
-    useScopedTransformOutputDisk('new');
+    forgetTransformOutputScopedDisk();
     $this->transformer->getTransformUrlForIndex($asset, $index, true);
 
     expect($output->allFiles())->toHaveCount(1)
-        ->and($output->allFiles()[0])->toStartWith('new/');
+        ->and($output->allFiles()[0])->not->toStartWith('old/');
 });
 
 it('removes a stale index row on invalidation without reporting it', function () {
     $asset = ($this->createImageAsset)();
     useTransformOutputDisk($asset);
+    useScopedTransformOutputDisk('old');
     $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
-    useScopedTransformOutputDisk('new');
+    forgetTransformOutputScopedDisk();
     Exceptions::fake();
 
     event(new AssetTransformsInvalidating($asset));
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
     Exceptions::assertNothingReported();
+});
+
+it('generates a deferred transform on the output disk passed to the transformer argument', function () {
+    Queue::fake();
+    $asset = ($this->createImageAsset)();
+    $output = useTransformOutputDisk($asset);
+    config()->set('filesystems.disks.test-disk', Arr::except(config('filesystems.disks.test-disk'), 'asset_transformer'));
+
+    app(AssetTransformers::class)->transform($asset, ['width' => 100], ['driver' => 'craft', 'output_disk' => 'transform-output']);
+    $indexId = DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->sole()->id;
+    app()->call(new GenerateImageTransform($indexId)->handle(...));
+
+    expect($output->allFiles())->toHaveCount(1)
+        ->and($asset->getVolume()->sourceDisk()->allFiles())->toBe([$asset->getPath()])
+        ->and($this->transformer->getTransformIndexModelById($indexId)->fileExists)->toBeTrue();
+});
+
+it('generates a transform passed to the transformer argument with has_urls before the page loads', function () {
+    Queue::fake();
+    $asset = ($this->createImageAsset)();
+    $output = useTransformOutputDisk($asset);
+    config()->set('filesystems.disks.transform-output.url', 'https://transforms.example.test');
+    Storage::forgetDisk('transform-output');
+    config()->set('filesystems.disks.test-disk', Arr::except(config('filesystems.disks.test-disk'), 'asset_transformer'));
+
+    $url = app(AssetTransformers::class)->transform($asset, ['width' => 100], [
+        'driver' => 'craft',
+        'output_disk' => 'transform-output',
+        'has_urls' => true,
+    ])->url;
+
+    expect($url)->toStartWith('https://transforms.example.test/')
+        ->and($output->allFiles())->toHaveCount(1);
+    Queue::assertNothingPushed();
 });
 
 it('does not reuse a transform result older than the source Asset', function () {
@@ -603,6 +640,13 @@ function useTransformOutputDisk(Asset $asset): Filesystem
     );
 
     return $output;
+}
+
+/** Removes the scoped output disk and stores transforms on the disk it wrapped. */
+function forgetTransformOutputScopedDisk(): void
+{
+    config()->set('filesystems.disks', Arr::except(config('filesystems.disks'), 'transform-output-scoped'));
+    config()->set('filesystems.disks.test-disk.asset_transformer.output_disk', 'transform-output');
 }
 
 function useScopedTransformOutputDisk(string $prefix): void

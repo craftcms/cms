@@ -62,6 +62,7 @@ it('resolves transform result fields for a capable non-image driver', function (
         {
             asset(id: {$asset->id}) {
                 url(width: 320)
+                custom: url(transformer: "gql", width: 640)
                 width(width: 320)
                 height(height: 180)
                 format(format: "webp")
@@ -74,6 +75,7 @@ it('resolves transform result fields for a capable non-image driver', function (
         GQL)
         ->assertOk()
         ->assertJsonPath('data.asset.url', '/gql-transform.webp')
+        ->assertJsonPath('data.asset.custom', '/gql-transform.webp')
         ->assertJsonPath('data.asset.width', 320)
         ->assertJsonPath('data.asset.height', 180)
         ->assertJsonPath('data.asset.format', 'webp')
@@ -81,7 +83,9 @@ it('resolves transform result fields for a capable non-image driver', function (
         ->assertJsonPath('data.transformed.url', '/gql-transform.webp');
 });
 
-it('applies parameter overrides to named transforms', function () {
+it('applies transformer and parameter overrides to named transforms', function () {
+    $driver = new GqlAssetTransformDriver('/explicit-transform.webp');
+    app(AssetTransformers::class)->extend('explicit-gql', fn () => $driver);
     app(ImageTransforms::class)->saveTransform(new ImageTransform([
         'name' => 'Thumbnail',
         'handle' => 'thumbnail',
@@ -93,16 +97,14 @@ it('applies parameter overrides to named transforms', function () {
     graphQL(<<<GQL
         {
             asset(id: {$asset->id}) {
-                url(handle: "thumbnail", width: 480)
-                width(handle: "thumbnail", width: 480)
+                url(handle: "thumbnail", transformer: "explicit-gql", width: 480)
+                width(handle: "thumbnail", transformer: "explicit-gql", width: 480)
             }
         }
         GQL)
         ->assertOk()
-        ->assertJsonPath('data.asset.url', '/gql-transform.webp')
+        ->assertJsonPath('data.asset.url', '/explicit-transform.webp')
         ->assertJsonPath('data.asset.width', 480);
-
-    expect($this->driver->request->parameters['width'])->toBe(480);
 });
 
 it('keeps Asset field resolution order-independent', function () {

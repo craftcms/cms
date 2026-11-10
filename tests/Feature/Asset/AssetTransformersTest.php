@@ -84,15 +84,40 @@ it('lets a scoped disk without a key follow the disk it wraps', function () {
         ->and($transformers->forDisk('loop-a')->driver)->toBe('craft');
 });
 
-it('transforms with the asset’s disk’s transformer and its settings', function () {
+it('picks the transformer argument, then the asset’s disk, then craft', function () {
     $diskDriver = registerDriver('disk-driver');
+    $explicit = registerDriver('explicit');
     $asset = assetOnDisk('transformer-source', ['asset_transformer' => ['driver' => 'disk-driver', 'zone' => 'disk']]);
 
     app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+    app(AssetTransformers::class)->transform($asset, ['width' => 200], transformer: 'explicit');
+    $named = $explicit->request;
+    app(AssetTransformers::class)->transform($asset, ['width' => 300], transformer: ['driver' => 'explicit', 'zone' => 'call']);
 
     expect($diskDriver->request->parameters['width'])->toBe(100)
         ->and($diskDriver->request->asset)->toBe($asset)
-        ->and($diskDriver->request->transformer->settings)->toBe(['zone' => 'disk']);
+        ->and($diskDriver->request->transformer->settings)->toBe(['zone' => 'disk'])
+        ->and($named->parameters['width'])->toBe(200)
+        ->and($named->transformer)->toEqual(new AssetTransformer('explicit'))
+        ->and($explicit->request->parameters['width'])->toBe(300)
+        ->and($explicit->request->transformer)->toEqual(new AssetTransformer('explicit', ['zone' => 'call']));
+});
+
+it('keeps the disk’s settings only when the argument names the disk’s own driver, and uses an array as given', function () {
+    $remote = registerDriver('remote');
+    $otherDriver = registerDriver('other');
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => ['driver' => 'remote', 'zone' => 'disk']]);
+    $transformers = app(AssetTransformers::class);
+
+    $transformers->transform($asset, [], transformer: 'remote');
+    $sameDriver = $remote->request->transformer;
+    $transformers->transform($asset, [], transformer: ['driver' => 'remote', 'other' => 'call']);
+    $sameDriverArray = $remote->request->transformer;
+    $transformers->transform($asset, [], transformer: 'other');
+
+    expect($sameDriver->settings)->toBe(['zone' => 'disk'])
+        ->and($sameDriverArray->settings)->toBe(['other' => 'call'])
+        ->and($otherDriver->request->transformer)->toEqual(new AssetTransformer('other'));
 });
 
 it('throws for invalid transformer config with debug mode on', function (mixed $value, string $exception) {
@@ -122,6 +147,29 @@ it('logs invalid transformer config once and falls back to craft with debug mode
 
     expect($first)->toEqual(new AssetTransformer('craft'))
         ->and($second)->toEqual(new AssetTransformer('craft'));
+});
+
+it('throws for an unregistered transformer argument with debug mode on', function () {
+    config()->set('app.debug', true);
+    $asset = Asset::factory()->createElement();
+
+    expect(fn () => app(AssetTransformers::class)->transform($asset, [], transformer: 'missing'))
+        ->toThrow(AssetTransformDriverNotFoundException::class, 'transformer argument')
+        ->and(fn () => app(AssetTransformers::class)->transform($asset, [], transformer: ['output_disk' => 'x']))
+        ->toThrow(InvalidAssetTransformException::class, 'transformer argument');
+});
+
+it('ignores an unregistered transformer argument with debug mode off, keeping the disk’s transformer', function () {
+    config()->set('app.debug', false);
+    $diskDriver = registerDriver('disk-driver');
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => ['driver' => 'disk-driver', 'zone' => 'disk']]);
+    Log::shouldReceive('warning')->twice();
+
+    app(AssetTransformers::class)->transform($asset, ['width' => 100], transformer: 'missing');
+    app(AssetTransformers::class)->transform($asset, ['width' => 100], transformer: 'missing');
+    app(AssetTransformers::class)->transform($asset, ['width' => 100], transformer: 'also-missing');
+
+    expect($diskDriver->request->transformer)->toEqual(new AssetTransformer('disk-driver', ['zone' => 'disk']));
 });
 
 it('keeps getUrl transform arguments with a deprecation warning', function () {

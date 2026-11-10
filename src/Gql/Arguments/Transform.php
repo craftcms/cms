@@ -36,6 +36,11 @@ class Transform extends Arguments
                 'type' => Type::string(),
                 'description' => 'The handle of the named transform to use.',
             ],
+            'transformer' => [
+                'name' => 'transformer',
+                'type' => Type::string(),
+                'description' => 'The transform driver to use, overriding the transformer configured on the asset’s disk.',
+            ],
         ];
 
         foreach (app(AssetTransformers::class)->coreParameterRules() as $handle => $rules) {

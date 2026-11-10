@@ -2163,10 +2163,15 @@ class Asset extends Element
         $this->_uploader = $uploader;
     }
 
+    /**
+     * @param  string|array<string, mixed>|null  $transformer  A driver name or array to use instead of the disk’s transformer.
+     */
     #[AllowedInSandbox]
-    public function transform(#[\SensitiveParameter] mixed $definition): AssetTransformResult
-    {
-        return app(AssetTransformers::class)->transform($this, $definition);
+    public function transform(
+        #[\SensitiveParameter] mixed $definition,
+        #[\SensitiveParameter] string|array|null $transformer = null,
+    ): AssetTransformResult {
+        return app(AssetTransformers::class)->transform($this, $definition, $transformer);
     }
 
     protected function _tryTransform(

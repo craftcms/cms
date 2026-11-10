@@ -168,11 +168,15 @@ class AssetTransformers extends Manager
         return $this->diskTransformerConfig($disk);
     }
 
+    /**
+     * @param  string|array<string, mixed>|null  $transformer  A driver name or array to use instead of the disk’s transformer.
+     */
     public function transform(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
+        #[\SensitiveParameter] string|array|null $transformer = null,
     ): AssetTransformResult {
-        $request = $this->request($asset, $definition, $this->forAsset($asset));
+        $request = $this->request($asset, $definition, $this->transformerFor($asset, $transformer));
 
         return $this->driver($request->transformer->driver)->transform($request);
     }
@@ -301,6 +305,24 @@ class AssetTransformers extends Manager
     private function forAsset(Asset $asset): AssetTransformer
     {
         return $this->forDisk($asset->getVolume()->getResolvedFsTarget());
+    }
+
+    /**
+     * Returns the transformer for one request: the `transformer` argument if given, otherwise the asset’s disk’s.
+     *
+     * An argument naming the disk’s own driver keeps the disk’s settings. An array is used as given.
+     *
+     * @param  string|array<string, mixed>|null  $override
+     */
+    private function transformerFor(Asset $asset, string|array|null $override): AssetTransformer
+    {
+        $diskTransformer = $this->forAsset($asset);
+
+        if ($override === null || $override === $diskTransformer->driver) {
+            return $diskTransformer;
+        }
+
+        return $this->validTransformer($override, 'the transformer argument', $diskTransformer);
     }
 
     /**

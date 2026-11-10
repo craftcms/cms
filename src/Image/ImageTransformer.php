@@ -112,6 +112,12 @@ class ImageTransformer
         }
 
         if (! $index->fileExists) {
+            // A deferred URL is resolved from the index row later, which can't recover a `transformer` argument's
+            // `has_urls`, so generate those transforms now.
+            if (! $immediately && $transformHasUrls && ! $this->transformHasUrlsForIndex($asset, $index)) {
+                $immediately = true;
+            }
+
             if (! $immediately) {
                 // Add a Generate Image Transform job to the queue, in case the temp URL never gets requested
                 dispatch(new GenerateImageTransform(
@@ -194,7 +200,7 @@ class ImageTransformer
     }
 
     /**
-     * Returns the URL for an index row’s transform. A stale row, whose output location is no longer configured, is
+     * Returns the URL for an index row’s transform. A stale row, whose output disk is no longer configured, is
      * re-targeted to the asset’s current transformer, so a cached temporary URL still resolves.
      */
     public function getTransformUrlForIndex(Asset $asset, ImageTransformIndex $index, bool $immediately): string
@@ -258,8 +264,8 @@ class ImageTransformer
         $transformer ??= $this->matchingTransformerForIndex($asset, $transformIndex);
 
         if ($transformer === null) {
-            // A stale row: its output location is no longer configured, so its file can’t be located. Leaving files
-            // behind after an output location changes is expected, so this isn’t reported.
+            // A stale row: its output disk is no longer configured, so its file can’t be located. Leaving files behind
+            // after an output disk is removed is expected, so this isn’t reported.
             return;
         }
 
@@ -843,14 +849,22 @@ class ImageTransformer
     }
 
     /**
-     * Returns the transformer that created an index row, or `null` if the row is stale: no current `craft`
-     * transformer for the asset stores files where the row says.
+     * Returns the transformer that created an index row, or `null` if the row is stale: its output disk is no longer
+     * configured.
      */
     private function matchingTransformerForIndex(Asset $asset, ImageTransformIndex $index): ?AssetTransformer
     {
-        // The `craft` defaults match rows written for another driver handing files to `craft`, or before the disk set
-        // an `asset_transformer` key.
+        // The disk's own transformer comes first, so its other settings, such as `has_urls`, apply. The `craft`
+        // defaults match rows written for another driver handing files to `craft`, or before the disk set an
+        // `asset_transformer` key. Any other row was written for an `output_disk`, such as one passed to the
+        // `transformer` argument, so it matches that disk.
         $candidates = [$this->currentTransformer($asset), new AssetTransformer('craft')];
+
+        foreach (config('filesystems.disks', []) as $disk => $config) {
+            if (is_array($config)) {
+                $candidates[] = new AssetTransformer('craft', ['output_disk' => (string) $disk]);
+            }
+        }
 
         foreach ($candidates as $candidate) {
             if ($this->outputKey($asset, $candidate) === $index->outputKey) {

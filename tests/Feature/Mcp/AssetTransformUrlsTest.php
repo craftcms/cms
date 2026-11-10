@@ -37,9 +37,9 @@ beforeEach(function () {
 
 it('returns usable preview URLs through MCP for named and inline transforms', function (
     array|string $transform,
-    bool $immediate,
+    ?string $transformer,
 ): void {
-    if ($immediate) {
+    if ($transformer !== null) {
         config()->set('filesystems.disks.transform-preview.asset_transformer', [
             'driver' => 'craft',
             'generate_transforms_before_page_load' => true,
@@ -60,10 +60,11 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
 
     $result = McpRequest::send($this, 'tools/call', [
         'name' => 'assets_transform_url',
-        'arguments' => [
+        'arguments' => array_filter([
             'uid' => $this->asset->uid,
             'transform' => $transform,
-        ],
+            'transformer' => $transformer,
+        ], static fn (mixed $value): bool => $value !== null),
     ])
         ->assertOk()
         ->assertJsonPath('result.isError', false)
@@ -72,7 +73,7 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
         ->assertJsonPath('result.structuredContent.height', 80)
         ->json('result.structuredContent');
 
-    Queue::assertPushedTimes(GenerateImageTransform::class, $immediate ? 0 : 1);
+    Queue::assertPushedTimes(GenerateImageTransform::class, $transformer === null ? 1 : 0);
 
     $response = $this->get($result['url'])
         ->assertOk()
@@ -82,8 +83,8 @@ it('returns usable preview URLs through MCP for named and inline transforms', fu
     expect($dimensions[0])->toBe(160)
         ->and($dimensions[1])->toBe(80);
 })->with([
-    'named transform with deferred generation' => ['thumbnail', false],
-    'inline transform on a disk that generates immediately' => [['width' => 160, 'height' => 80, 'format' => 'png'], true],
+    'named transform with deferred generation' => ['thumbnail', null],
+    'inline transform on a disk that generates immediately' => [['width' => 160, 'height' => 80, 'format' => 'png'], 'craft'],
 ]);
 
 it('requires asset view permission before generating a preview', function (): void {
