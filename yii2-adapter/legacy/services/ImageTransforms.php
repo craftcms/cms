@@ -405,12 +405,6 @@ class ImageTransforms extends Component
     }
 
     /** @param class-string<ImageTransformerInterface> $transformer */
-    private function legacyAssetTransformer(string $transformer): AssetTransformer
-    {
-        return new AssetTransformer(driver: $transformer);
-    }
-
-    /** @param class-string<ImageTransformerInterface> $transformer */
     private function legacyTransformRequest(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
@@ -422,7 +416,7 @@ class ImageTransforms extends Component
             return null;
         }
 
-        $assetTransformer = $this->legacyAssetTransformer($transformer);
+        $assetTransformer = new AssetTransformer(driver: $transformer);
 
         return new AssetTransformRequest(
             asset: $asset,

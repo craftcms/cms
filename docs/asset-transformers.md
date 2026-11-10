@@ -94,8 +94,9 @@ Craft checks a transformer when it resolves one, not at boot, so drivers that pa
 has no string `driver` key:
 
 - With debug mode on, Craft throws an `AssetTransformDriverNotFoundException` or `InvalidAssetTransformException` naming the
-  disk.
-- Otherwise, Craft logs a warning naming the disk, once per request, and uses the `craft` transformer with its defaults.
+  disk or the `transformer` argument.
+- Otherwise, Craft logs a warning, once per process for each invalid value. A disk then uses the `craft` transformer with
+  its defaults, and a `transformer` argument is ignored in favor of the disk's transformer.
 
 ## Transform definitions
 

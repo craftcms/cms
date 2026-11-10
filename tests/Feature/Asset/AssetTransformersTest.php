@@ -141,11 +141,25 @@ it('logs invalid transformer config once and falls back to craft with debug mode
         ->and($second)->toEqual(new AssetTransformer('craft'));
 });
 
-it('applies the same rule to an unregistered transformer argument', function () {
+it('throws for an unregistered transformer argument with debug mode on', function () {
+    config()->set('app.debug', true);
     $asset = Asset::factory()->createElement();
 
     expect(fn () => app(AssetTransformers::class)->transform($asset, [], transformer: 'missing'))
         ->toThrow(AssetTransformDriverNotFoundException::class, 'transformer argument');
+});
+
+it('ignores an unregistered transformer argument with debug mode off, keeping the disk’s transformer', function () {
+    config()->set('app.debug', false);
+    $diskDriver = registerDriver('disk-driver');
+    $asset = assetOnDisk('transformer-source', ['asset_transformer' => ['driver' => 'disk-driver', 'zone' => 'disk']]);
+    Log::shouldReceive('warning')->twice();
+
+    app(AssetTransformers::class)->transform($asset, ['width' => 100], transformer: 'missing');
+    app(AssetTransformers::class)->transform($asset, ['width' => 100], transformer: 'missing');
+    app(AssetTransformers::class)->transform($asset, ['width' => 100], transformer: 'also-missing');
+
+    expect($diskDriver->request->transformer)->toEqual(new AssetTransformer('disk-driver', ['zone' => 'disk']));
 });
 
 it('keeps getUrl transform arguments with a deprecation warning', function () {
@@ -298,15 +312,14 @@ it('validates each normalized definition once across preloading and rendering', 
         ->and($driver->request->parameters)->toBe(['width' => 200]);
 });
 
-it('revalidates definitions after resetting or replacing a driver', function () {
+it('revalidates definitions after replacing a driver', function () {
     registerDriver('remote');
     $asset = Asset::factory()->createElement();
     $transformers = app(AssetTransformers::class);
     $validator = Validator::getFacadeRoot();
-    Validator::shouldReceive('make')->times(3)->andReturnUsing($validator->make(...));
+    Validator::shouldReceive('make')->times(2)->andReturnUsing($validator->make(...));
 
     $transformers->transform($asset, ['width' => 100], transformer: 'remote');
-    $transformers->reset();
     $transformers->transform($asset, ['width' => 100], transformer: 'remote');
 
     $transformers->forgetDrivers()->extend('remote', fn () => new TestAssetTransformDriver(

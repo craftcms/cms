@@ -121,6 +121,12 @@ it('provides named transform magic properties', function(): void {
         ->and($asset->{'transform:card'}->getUrl())->toBe('/transforms/400x200.webp');
 });
 
+it('reports Craft’s transformer class on transform index rows', function(): void {
+    $index = new ImageTransformIndex(['outputKey' => 'craft:local:0123456789abcdef']);
+
+    expect($index->transformer)->toBe(LegacyCraftImageTransformer::class);
+});
+
 it('returns legacy models from named transform getters', function(): void {
     app(ImageTransforms::class)->saveTransform(new ImageTransform([
         'name' => 'Legacy Card',

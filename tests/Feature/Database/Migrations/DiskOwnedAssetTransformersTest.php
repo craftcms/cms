@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume as VolumeModel;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -15,7 +16,6 @@ it('drops alpha transformer profiles and everything keyed by their UIDs', functi
     $asset = Asset::factory()->createElement(['volumeId' => $volume->id]);
     $profileUid = '0f7dbd20-f39e-57db-8b25-dcadccdd1733';
 
-    // Recreate the alpha schema: the volume setting and the profile-keyed index column.
     Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->string('assetTransformer')->nullable());
     Schema::table(Table::IMAGETRANSFORMINDEX, fn (Blueprint $table) => $table->renameColumn('outputKey', 'transformer'));
     DB::table(Table::VOLUMES)->where('id', $volume->id)->update(['assetTransformer' => 'imgix']);
@@ -24,7 +24,7 @@ it('drops alpha transformer profiles and everything keyed by their UIDs', functi
         'handle' => 'hero',
         'mode' => 'crop',
         'position' => 'center-center',
-        'parameters' => json_encode([$profileUid => ['blur' => 5]]),
+        'parameters' => Json::encode([$profileUid => ['blur' => 5]]),
         'dateCreated' => now(),
         'dateUpdated' => now(),
         'uid' => $transformUid = (string) str()->uuid(),

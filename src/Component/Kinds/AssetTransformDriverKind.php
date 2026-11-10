@@ -15,7 +15,7 @@ use CraftCms\Cms\Ui\SettingsSchema;
 readonly class AssetTransformDriverKind implements ComponentKind
 {
     public function __construct(
-        private AssetTransformers $drivers,
+        private AssetTransformers $transformers,
         private SettingsSchema $settingsSchema,
     ) {}
 
@@ -41,7 +41,7 @@ readonly class AssetTransformDriverKind implements ComponentKind
 
     public function types(?string $scope): array
     {
-        return collect($this->drivers->definitions())
+        return collect($this->transformers->definitions())
             ->map(static fn ($definition, string $name): array => ['type' => $name, 'name' => $name])
             ->sortBy('name')
             ->values()
@@ -50,7 +50,7 @@ readonly class AssetTransformDriverKind implements ComponentKind
 
     public function describe(string $type, ?string $scope): array
     {
-        $definition = $this->drivers->definitions()[$type];
+        $definition = $this->transformers->definitions()[$type];
 
         return [
             'parametersSchema' => $this->settingsSchema->fromUi(array_values($definition->parameterFields)),

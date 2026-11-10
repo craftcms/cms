@@ -55,7 +55,7 @@ class AssetTransformers extends Manager
     /** @var WeakMap<AssetTransformDriver, array<string, array<string, mixed>>> */
     private WeakMap $validatedParameters;
 
-    /** @var array<string, true> Sources whose invalid transformer config has already been logged. */
+    /** @var array<string, true> Invalid transformer config warnings already logged by this process. */
     private array $reportedInvalidConfig = [];
 
     public function __construct(Container $container)
@@ -156,7 +156,7 @@ class AssetTransformers extends Manager
             return new AssetTransformer('craft');
         }
 
-        return $this->validTransformer($config, "the [{$disk}] disk’s asset_transformer");
+        return $this->validTransformer($config, "the [{$disk}] disk’s asset_transformer", new AssetTransformer('craft'));
     }
 
     /**
@@ -271,12 +271,6 @@ class AssetTransformers extends Manager
         return $parameters;
     }
 
-    public function reset(): void
-    {
-        $this->validatedParameters = new WeakMap;
-        $this->reportedInvalidConfig = [];
-    }
-
     protected function createCraftDriver(): AssetTransformDriver
     {
         return $this->container->make(CraftAssetTransformDriver::class);
@@ -322,15 +316,16 @@ class AssetTransformers extends Manager
             return $diskTransformer;
         }
 
-        return $this->validTransformer($override, 'the transformer argument');
+        return $this->validTransformer($override, 'the transformer argument', $diskTransformer);
     }
 
     /**
      * @param  string  $source  Where the config came from, for error messages.
+     * @param  AssetTransformer  $fallback  Used instead when debug mode is off.
      *
      * @throws InvalidAssetTransformException|AssetTransformDriverNotFoundException
      */
-    private function validTransformer(mixed $config, string $source): AssetTransformer
+    private function validTransformer(mixed $config, string $source, AssetTransformer $fallback): AssetTransformer
     {
         try {
             $transformer = $this->transformerFromConfig($config, $source);
@@ -345,12 +340,14 @@ class AssetTransformers extends Manager
                 throw $exception;
             }
 
-            if (! isset($this->reportedInvalidConfig[$source])) {
-                $this->reportedInvalidConfig[$source] = true;
-                Log::warning("{$exception->getMessage()} Using the [craft] driver instead.");
+            $message = "{$exception->getMessage()} Using the [{$fallback->driver}] driver instead.";
+
+            if (! isset($this->reportedInvalidConfig[$message])) {
+                $this->reportedInvalidConfig[$message] = true;
+                Log::warning($message);
             }
 
-            return new AssetTransformer('craft');
+            return $fallback;
         }
     }
 

@@ -52,7 +52,8 @@ class ImageTransformer
 {
     /**
      * Index keys written before rows recorded their output location: the transformer class names from Craft 5 and
-     * early Craft 6. These rows use the asset’s current transformer.
+     * early Craft 6. Lookups never match them, so new rows are written, but cleanup and the `…ForIndex` methods treat
+     * them as the asset’s current transformer.
      */
     private const array LEGACY_OUTPUT_KEYS = [
         'craft\\imagetransforms\\ImageTransformer',
@@ -267,9 +268,8 @@ class ImageTransformer
         $transformer ??= $this->matchingTransformerForIndex($asset, $transformIndex);
 
         if ($transformer === null) {
-            // A stale row: its output location is no longer configured, so its file can’t be located.
-            $this->reportCleanupFailure($asset);
-
+            // A stale row: its output location is no longer configured, so its file can’t be located. Leaving files
+            // behind after an output location changes is expected, so this isn’t reported.
             return;
         }
 
@@ -898,6 +898,8 @@ class ImageTransformer
      */
     private function matchingTransformerForIndex(Asset $asset, ImageTransformIndex $index): ?AssetTransformer
     {
+        // The `craft` defaults match rows written for another driver handing files to `craft`, or before the disk set
+        // an `asset_transformer` key.
         $candidates = [$this->currentTransformer($asset), new AssetTransformer('craft')];
 
         if ($index->outputKey === null || in_array($index->outputKey, self::LEGACY_OUTPUT_KEYS, true)) {

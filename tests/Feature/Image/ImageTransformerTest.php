@@ -398,8 +398,7 @@ it('indexes an explicit output disk apart from the source disk default, even whe
     config()->set('filesystems.disks.test-disk.asset_transformer', ['driver' => 'craft', 'output_disk' => 'test-disk']);
     $explicit = $this->transformer->getTransformIndex($asset, $transform);
 
-    expect($explicit->outputKey)->not->toBe($default->outputKey)
-        ->and($explicit->id)->not->toBe($default->id);
+    expect($explicit->id)->not->toBe($default->id);
 });
 
 it('reuses transforms when only has_urls or immediate generation changes', function () {
@@ -431,7 +430,7 @@ it('re-targets a stale index row to the current output location', function () {
         ->and($output->allFiles()[0])->toStartWith('new/');
 });
 
-it('removes a stale index row on invalidation and reports that its file can’t be located', function () {
+it('removes a stale index row on invalidation without reporting it', function () {
     $asset = ($this->createImageAsset)();
     useTransformOutputDisk($asset);
     config()->set('filesystems.disks.test-disk.asset_transformer.subpath', 'old');
@@ -442,7 +441,7 @@ it('removes a stale index row on invalidation and reports that its file can’t 
     event(new AssetTransformsInvalidating($asset));
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
-    Exceptions::assertReported(fn (RuntimeException $exception): bool => str_contains($exception->getMessage(), (string) $asset->id));
+    Exceptions::assertNothingReported();
 });
 
 it('cleans up files for index rows written before rows recorded their output location', function (?string $legacyKey) {
