@@ -2333,12 +2333,18 @@ XML;
 
         if (! $isNew && $changePassword && isset($newPassword) && ! app()->runningInConsole()) {
             $guard = craftAuth();
+            $currentUser = $guard->user();
 
-            if (! method_exists($guard, 'logoutOtherDevices')) {
-                throw new LogicException('Craft auth guard does not support logging out other devices.');
+            if ($currentUser instanceof UserModel && $currentUser->id === $this->id) {
+                if (! method_exists($guard, 'logoutOtherDevices')) {
+                    throw new LogicException('Craft auth guard does not support logging out other devices.');
+                }
+
+                // The guard verifies the password against its own (stale) user model, then rehashes and saves it
+                $currentUser->password = $this->password;
+                $guard->logoutOtherDevices($newPassword);
+                $this->password = $currentUser->password;
             }
-
-            $guard->logoutOtherDevices($newPassword);
         }
 
         if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {
