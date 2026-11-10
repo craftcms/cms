@@ -12,6 +12,10 @@
 - The `asset_folders_list` MCP tool now accepts `null` for `criteria.parentId`, which lists volumes’ root folders.
 - `craft\elements\Asset::canSave()` now returns `true` for users’ own assets in their temporary upload folder.
 - The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. Requests to create tokens are now rejected with a 400 error until the keys are set up. ([#20357](https://github.com/craftcms/cms/issues/20357))
+- The web-based installer is now only available when Dev Mode is enabled. Otherwise, Craft must be installed with the `install` CLI command.
+- The web-based installer now responds with a 503 error when Craft can’t connect to the configured database, rather than offering to change the database connection settings.
+- The web-based installer now only saves database connection settings to the `.env` file once Craft has been installed with them, and no longer accepts them if the `.env` file isn’t writable.
+- Sendmail commands that reference environment variables or aliases are now validated against the allowed commands, unless the entire command is set by an environment variable, such as `$SENDMAIL_COMMAND` or `${SENDMAIL_COMMAND}`.
 - Fixed a bug where saving user or group permissions dropped stored permissions whose plugins hadn’t registered them for the current request, such as when using the `user_permissions_group_set` MCP tool over stdio. The MCP permission tools now also reject unknown permissions rather than ignoring them. ([#20434](https://github.com/craftcms/cms/pull/20434))
 - Fixed a bug where OAuth discovery metadata for front-end resources, such as the GraphQL API, revealed the control panel URL. Their OAuth endpoints are now advertised as site action URLs, and OAuth discovery metadata is only served from its `.well-known` URLs and no longer includes the request’s site or preview tokens.
 - Fixed a bug where the authenticated MCP server returned a server error rather than an OAuth challenge to requests without an access token when OAuth signing keys hadn’t been set up, so MCP clients couldn’t tell that it requires signing in. The **Settings** → **MCP** screen now explains how to set up the keys when they’re missing or invalid.
@@ -49,11 +53,6 @@
 - Fixed an error that occurred when editing an address within a draft, if the owner element wasn’t saved in the primary site. ([#20413](https://github.com/craftcms/cms/issues/20413))
 - Fixed a bug where password reset and email verification URLs generated from the console, such as with `users/password-reset-url`, always pointed to the front end, even for users with control panel access. ([#16340](https://github.com/craftcms/cms/issues/16340))
 - Fixed a bug where the PostgreSQL password was included in the error message when a database backup or restore command failed. ([#20503](https://github.com/craftcms/cms/issues/20503))
-- The web-based installer is now only available when Dev Mode is enabled. Otherwise, Craft must be installed with the `install` command.
-- The web-based installer now responds with a 503 error when Craft can’t connect to the configured database, rather than offering to change the database connection settings.
-- The web-based installer now only saves database connection settings to the `.env` file once Craft has been installed with them, and no longer accepts them if the `.env` file isn’t writable.
-- Sendmail commands that reference environment variables or aliases are now validated against the allowed commands, unless the entire command is set by an environment variable, such as `$SENDMAIL_COMMAND` or `${SENDMAIL_COMMAND}`.
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
 
 ## 5.12.0.1 - 2026-11-03
 
