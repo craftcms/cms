@@ -38,6 +38,7 @@ it('can get key from file', function () {
     File::delete($this->license->keyPath());
     expect($this->license->key())->toBeNull();
 
+    File::ensureDirectoryExists(dirname($this->license->keyPath()));
     File::put(
         $this->license->keyPath(),
         $key = Str::random(250),

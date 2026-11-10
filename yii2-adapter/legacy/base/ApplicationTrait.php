@@ -90,7 +90,6 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
-use craft\helpers\FileHelper;
 use craft\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\queue\Queue;
@@ -1398,10 +1397,6 @@ trait ApplicationTrait
      */
     private function _postInit(): void
     {
-        if (!app()->isEphemeral()) {
-            $this->ensureResourcePathExists();
-        }
-
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
@@ -1410,22 +1405,6 @@ trait ApplicationTrait
         // Fire an 'init' event
         if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
             $this->trigger(WebApplication::EVENT_INIT);
-        }
-    }
-
-    /**
-     * Ensures that the resources folder exists and is writable.
-     *
-     * @throws InvalidConfigException
-     */
-    protected function ensureResourcePathExists(): void
-    {
-        $generalConfig = Cms::config();
-
-        $resourceBasePath = Aliases::get($generalConfig->resourceBasePath ?? '@webroot/cpresources');
-
-        if (! @FileHelper::createDirectory($resourceBasePath)) {
-            throw new InvalidConfigException("$resourceBasePath doesn’t exist.");
         }
     }
 

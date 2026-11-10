@@ -43,13 +43,10 @@ class AssetManager extends \yii\web\AssetManager
     /**
      * @inheritdoc
      */
-    public function publish($path, $options = []): array
+    public function init(): void
     {
-        if (app()->isEphemeral()) {
-            return [$path, $this->getPublishedUrl($path)];
-        }
-
-        return parent::publish($path, $options);
+        FileHelper::createDirectory(Aliases::get($this->basePath), $this->dirMode);
+        parent::init();
     }
 
     /**
@@ -72,7 +69,7 @@ class AssetManager extends \yii\web\AssetManager
             return $this->_addBuildIdParam(craftAsset($assetPath));
         }
 
-        if ($publish === true && !app()->isEphemeral()) {
+        if ($publish === true) {
             [, $url] = $this->publish($path);
         } else {
             $url = parent::getPublishedUrl($path);

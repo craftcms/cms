@@ -74,7 +74,6 @@ class AssetIndexes extends Utility
             ':existingSessions' => $existingIndexingSessions,
             ':volumeOptions' => $volumeOptions,
             'dateFormat' => $dateFormat,
-            ':isEphemeral' => app()->isEphemeral(),
         ]);
     }
 }
