@@ -17,11 +17,13 @@ use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
+use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -212,7 +214,7 @@ it('recreates the transform index when a named transform changed after indexing'
         ->toBe(1);
 });
 
-it('invalidates stale eager-loaded indexes when dateModified is a string', function () {
+it('invalidates eager-loaded indexes older than the asset file', function () {
     $asset = ($this->createImageAsset)();
     $transform = new ImageTransform([
         'width' => 100,
@@ -221,14 +223,9 @@ it('invalidates stale eager-loaded indexes when dateModified is a string', funct
     ]);
 
     $index = $this->transformer->getTransformIndex($asset, $transform);
+    $asset->dateModified = now()->addMinute();
 
-    $this->transformer->eagerLoadTransforms(
-        [$transform],
-        [[
-            'id' => $asset->id,
-            'dateModified' => now()->utc()->addMinute()->toDateTimeString(),
-        ]]
-    );
+    $this->transformer->eagerLoadTransforms([$transform], [$asset]);
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
 });
@@ -442,6 +439,26 @@ it('removes a stale index row on invalidation without reporting it', function ()
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
     Exceptions::assertNothingReported();
+});
+
+it('reports a deleted transform’s path without a subpath that doesn’t apply', function () {
+    $asset = ($this->createImageAsset)();
+    $disk = $asset->getVolume()->sourceDisk();
+    $disk->put(
+        $asset->getPath(),
+        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
+    );
+    config()->set('filesystems.disks.test-disk.asset_transformer', ['driver' => 'craft', 'subpath' => '_transforms']);
+    app(CraftAssetTransformDriver::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
+    );
+    $transformPath = collect($disk->allFiles())->sole(fn (string $path): bool => $path !== $asset->getPath());
+    Event::fake([DeletingTransformedImage::class]);
+
+    event(new AssetTransformsInvalidating($asset));
+
+    Event::assertDispatched(fn (DeletingTransformedImage $event): bool => str_replace('\\', '/', $event->path) === $transformPath);
+    expect($disk->exists($transformPath))->toBeFalse();
 });
 
 it('does not reuse a transform result older than the source Asset', function () {

@@ -282,7 +282,7 @@ class ImageTransformer
 
     /**
      * @param  ImageTransform[]  $transforms
-     * @param  array<Asset|array<string, mixed>>  $assets  Assets, or asset rows with at least `id` (legacy callers)
+     * @param  Asset[]  $assets
      */
     public function eagerLoadTransforms(
         array $transforms,
@@ -291,16 +291,9 @@ class ImageTransformer
     ): void {
         // Index the assets by ID, along with the output location each one's transforms are indexed under
         $assetsById = Arr::keyBy($assets, 'id');
-        $rowAssetIds = array_keys(array_filter($assetsById, fn (mixed $asset): bool => ! $asset instanceof Asset));
-        $elementsById = array_filter($assetsById, fn (mixed $asset): bool => $asset instanceof Asset);
-
-        if ($rowAssetIds !== []) {
-            $elementsById += Arr::keyBy(Asset::find()->id($rowAssetIds)->site('*')->unique()->status(null)->all(), 'id');
-        }
-
         $outputKeysByAssetId = array_map(
             fn (Asset $asset): string => $this->outputKey($asset, $transformer ?? $this->currentTransformer($asset)),
-            $elementsById,
+            $assetsById,
         );
 
         if ($outputKeysByAssetId === []) {
@@ -611,22 +604,15 @@ class ImageTransformer
         return $index;
     }
 
-    /** @param array<string,mixed>|Asset $asset */
-    private function validateTransformIndexResult(ImageTransformIndex $result, ImageTransform $transform, array|Asset $asset): bool
+    private function validateTransformIndexResult(ImageTransformIndex $result, ImageTransform $transform, Asset $asset): bool
     {
         if ($result->dateIndexed === null) {
             return true;
         }
 
-        $dateModified = Arr::get($asset, 'dateModified');
-
-        if (is_string($dateModified) || is_numeric($dateModified)) {
-            $dateModified = DateTimeHelper::toDateTime($dateModified);
-        }
-
         if (
-            $dateModified instanceof DateTimeInterface &&
-            $result->dateIndexed->getTimestamp() < $dateModified->getTimestamp()
+            $asset->dateModified !== null &&
+            $result->dateIndexed->getTimestamp() < $asset->dateModified->getTimestamp()
         ) {
             return false;
         }
@@ -818,7 +804,8 @@ class ImageTransformer
     }
 
     /**
-     * Returns the `craft` driver’s output disk, output subpath, and whether the output disk has public URLs.
+     * Returns the `craft` driver’s output disk, output subpath, and whether the output disk has public URLs. The subpath
+     * and URL setting only apply with an output disk.
      *
      * @param  array<string,mixed>  $settings
      * @return array{string|null,string|null,bool}
@@ -836,7 +823,10 @@ class ImageTransformer
             throw new FilesystemException('The configured asset transform output subpath is invalid.');
         }
 
-        $disk = $disk === '' ? null : $disk;
+        if ($disk === null || $disk === '') {
+            return [null, null, false];
+        }
+
         $subpath = trim(str_replace('\\', '/', $subpath), '/');
         $subpath = $subpath === '' ? null : $subpath;
 

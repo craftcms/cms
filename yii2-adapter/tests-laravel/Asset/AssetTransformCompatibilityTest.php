@@ -127,6 +127,17 @@ it('reports Craft’s transformer class on transform index rows', function(): vo
     expect($index->transformer)->toBe(LegacyCraftImageTransformer::class);
 });
 
+it('eager-loads built-in transform indexes for Craft 5 asset rows', function(): void {
+    $asset = ($this->asset)(['filename' => 'rows.jpg']);
+    $transformer = new LegacyCraftImageTransformer();
+    $index = $transformer->getTransformIndex($asset, ['width' => 320]);
+    DB::table(Table::ASSETS)->where('id', $asset->id)->update(['dateModified' => now()->utc()->addMinute()->toDateTimeString()]);
+
+    $transformer->eagerLoadTransforms([$index->getTransform()], [['id' => $asset->id]]);
+
+    expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
+});
+
 it('returns legacy models from named transform getters', function(): void {
     app(ImageTransforms::class)->saveTransform(new ImageTransform([
         'name' => 'Legacy Card',
