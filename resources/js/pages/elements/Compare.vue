@@ -743,6 +743,31 @@
     box: 'border-box',
   });
 
+  const {width: compareWidth} = useElementSize(root);
+  /**
+   * Whether the sides are stacked, as the `compare` container query below
+   * 48rem has them.
+   */
+  const stacked = computed(
+    () =>
+      compareWidth.value > 0 &&
+      compareWidth.value <
+        48 * parseFloat(getComputedStyle(document.documentElement).fontSize)
+  );
+
+  /**
+   * A copy button's arrow, pointing at the side it copies into. Stacked, it's
+   * an up or down arrow rather than a rotated one, which rasterizes a pixel
+   * off-center.
+   */
+  function copyIcon(into: CompareSide): string {
+    if (stacked.value) {
+      return into === 'to' ? 'arrow-down' : 'arrow-up';
+    }
+
+    return into === 'to' ? 'arrow-right' : 'arrow-left';
+  }
+
   /**
    * Keeps fields that focus scrolls to clear of the version menus, while
    * they're stuck to the top of the panel (WCAG 2.4.11).
@@ -1082,7 +1107,7 @@
                   type="button"
                   variant="outline"
                   size="xsmall"
-                  :icon="into === 'to' ? 'arrow-right' : 'arrow-left'"
+                  :icon="copyIcon(into)"
                   :aria-label="copyLabel(rowIndex, into)"
                   @click="copyInto(rowIndex, into)"
                 ></craft-button>
@@ -1438,10 +1463,6 @@
       justify-self: center;
       display: flex;
       translate: 0 -50%;
-    }
-
-    .compare__copy craft-button::part(prefix) {
-      rotate: 90deg;
     }
 
     .compare__footer-actions-cell {
