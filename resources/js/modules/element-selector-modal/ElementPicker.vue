@@ -147,6 +147,7 @@
         :item-behavior="index.itemBehavior"
         :contained="!readOnly"
         :selectable="!readOnly"
+        :toolbar-as-form="!readOnly"
         :show-sites="!selectFolders"
         @site-change="index.changeSite"
         @dblclick="onDblClick"

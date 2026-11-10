@@ -293,3 +293,21 @@ describe('read-only indexes', function () {
         expect($props['pagination']['total'])->toBe(1);
     });
 });
+
+describe('read-only card view', function () {
+    beforeEach(function () {
+        $this->cardContent = fn (bool $readOnly) => ($this->postBody)([
+            'elementType' => User::class,
+            'viewMode' => 'cards',
+            'readOnly' => $readOnly,
+        ])->json('props.data.0.cardContentHtml');
+    });
+
+    it('links card titles to their elements', function () {
+        expect(($this->cardContent)(true))->toContain('href="');
+    });
+
+    it('leaves card titles unlinked when selecting', function () {
+        expect(($this->cardContent)(false))->not->toContain('href="');
+    });
+});

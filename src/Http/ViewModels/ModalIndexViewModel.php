@@ -320,11 +320,17 @@ class ModalIndexViewModel extends ContentIndexViewModel
     {
         $folderUrl = $this->folderLinkUrl($element);
 
-        return $folderUrl === null ? [] : [
-            'hyperlink' => true,
-            'hyperlinkUrl' => $folderUrl,
-            'hyperlinkAttributes' => ['data-folder-link' => true],
-        ];
+        if ($folderUrl !== null) {
+            return [
+                'hyperlink' => true,
+                'hyperlinkUrl' => $folderUrl,
+                'hyperlinkAttributes' => ['data-folder-link' => true],
+            ];
+        }
+
+        $editUrl = $this->readOnly && ! $element->trashed ? $this->editUrl($element) : null;
+
+        return $editUrl === null ? [] : ['hyperlink' => true, 'hyperlinkUrl' => $editUrl];
     }
 
     /**
