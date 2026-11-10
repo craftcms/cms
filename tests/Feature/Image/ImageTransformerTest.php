@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\AssetIndexer;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\AssetIndexData;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Cms;
@@ -106,7 +108,7 @@ it('preserves lazy generation and queued recovery', function (?string $format, s
     $index = $this->transformer->getTransformIndex($asset, $transform);
     $expectedExtension = $format ?? 'jpg';
     $expectedMime = $format === 'webp' ? 'image/webp' : 'image/jpeg';
-    $path = $this->volume->uid.'/'.$index->transformString.'/'.($format === 'webp' ? $asset->id.'/' : '').'transform-test.'.$expectedExtension;
+    $path = '_'.$this->volume->uid.'/'.$index->transformString.'/'.($format === 'webp' ? $asset->id.'/' : '').'transform-test.'.$expectedExtension;
 
     expect($result->url)->not->toBeEmpty();
     Queue::assertPushed(GenerateImageTransform::class, fn (GenerateImageTransform $job) => $job->transformId === $index->id);
@@ -391,8 +393,31 @@ it('stores transforms at the root of the volume’s own disk, outside its subpat
     $transformPath = collect(Storage::disk('test-disk')->allFiles())
         ->sole(fn (string $path): bool => $path !== 'uploads/'.$asset->getPath());
 
-    expect($transformPath)->toStartWith($volume->uid.'/')
-        ->and($url)->toStartWith('https://example.test/image-transformer-test/'.$volume->uid.'/');
+    expect($transformPath)->toStartWith('_'.$volume->uid.'/')
+        ->and($url)->toStartWith('https://example.test/image-transformer-test/_'.$volume->uid.'/');
+});
+
+it('excludes generated transform directories from asset indexing with the default transformer', function () {
+    $asset = ($this->createImageAsset)();
+    $disk = $asset->getVolume()->sourceDisk();
+    $disk->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+    $disk->put('photos/original.txt', 'original');
+    $disk->put('_visible.txt', 'visible');
+
+    app(CraftAssetTransformDriver::class)->withImmediateTransforms(
+        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 190, 'height' => 190]),
+    );
+
+    expect($disk->allFiles())->toHaveCount(4);
+
+    $session = app(AssetIndexer::class)->startIndexingSession(
+        volumes: [$asset->volumeId],
+        cacheRemoteImages: false,
+        listEmptyFolders: true,
+    );
+
+    expect(AssetIndexData::where('sessionId', $session->id)->orderBy('uri')->pluck('uri')->all())
+        ->toBe(['_visible.txt', 'photos', 'photos/original.txt', 'transform-test.jpg']);
 });
 
 it('reuses transforms when only has_urls or immediate generation changes', function () {
