@@ -283,6 +283,36 @@ describe('Legacy HTML UI Control', () => {
     expect(mutation.value).toEqual({fields: {keywords: ['5', '6']}});
   });
 
+  it('publishes edits legacy scripts make on keydown without an input event', async () => {
+    const {container, mutation} = await mount(
+      {
+        html: '<textarea name="fields[notes]">Hello</textarea>',
+        headHtml: '',
+        bodyHtml: '',
+      },
+      {
+        path: ['fields', 'notes'],
+        values: {fields: {notes: {'fields[notes]': 'Hello'}}},
+      }
+    );
+    await container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-legacy-html-control'
+    )!.ready;
+    const textarea = container.querySelector('textarea')!;
+
+    // A key that changes nothing, such as an arrow key
+    textarea.dispatchEvent(new KeyboardEvent('keyup', {bubbles: true}));
+    await nextTick();
+    expect(mutation.value).toEqual({});
+
+    // What Behave.js does on Backspace: it sets the value itself
+    textarea.value = 'Hell';
+    textarea.dispatchEvent(new KeyboardEvent('keyup', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation.value).toEqual({fields: {notes: 'Hell'}});
+  });
+
   it('restores list inputs from an already-expanded value', async () => {
     // After an autosave, the island remounts with the value it last published
     // (expanded), not the server's flat input names.
