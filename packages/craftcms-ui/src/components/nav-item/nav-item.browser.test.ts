@@ -718,13 +718,22 @@ function label(item: CraftNavItem): HTMLElement {
   return item.shadowRoot!.querySelector('.nav-item__action-item')!;
 }
 
-it('sits a tab’s label evenly inside the row that fills behind it', async () => {
+it('draws the current tab’s bar across its label and no further', async () => {
   const items = await tabStrip();
-  const box = row(items[1]!).getBoundingClientRect();
-  const text = label(items[1]!).getBoundingClientRect();
+  const bar = getComputedStyle(row(items[0]!), '::after');
+  const text = label(items[0]!).getBoundingClientRect();
 
-  expect(text.left - box.left).toBeGreaterThan(1);
-  expect(text.left - box.left).toBeCloseTo(box.right - text.right, 1);
+  expect(parseFloat(bar.width)).toBeCloseTo(text.width, 0);
+});
+
+it('leaves a tab unfilled on hover, as a tab strip is', async () => {
+  const items = await tabStrip();
+  const {userEvent} = await import('vite-plus/test/browser');
+  const transparent = 'rgba(0, 0, 0, 0)';
+
+  await userEvent.hover(items[1]!);
+
+  expect(getComputedStyle(row(items[1]!)).backgroundColor).toBe(transparent);
 });
 
 it('keeps a tab’s label at the edge of the strip, padding and all', async () => {

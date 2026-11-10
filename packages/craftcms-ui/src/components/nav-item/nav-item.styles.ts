@@ -191,7 +191,7 @@ export default css`
   }
 
   /* Not on the page you're on: its selected fill is the state to show. */
-  :host(:not([current]))
+  :host(:not([current], [appearance='tabs']))
     .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)) {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
   }
@@ -482,12 +482,11 @@ export default css`
     border-radius: 0;
   }
 
-  /* Padding for the hover fill, given back as margin so labels still line up
-     with the content around the strip. */
+  /* No gap, so the empty suffix column doesn't carry one and leave the bar
+     below wider than the label it marks. */
   :host([appearance='tabs']) .nav-item {
     gap: 0;
-    padding-inline: var(--c-spacing-md);
-    margin-inline: calc(var(--c-spacing-md) * -1);
+    padding-inline: 0;
     border-color: transparent;
     background-color: transparent;
   }
