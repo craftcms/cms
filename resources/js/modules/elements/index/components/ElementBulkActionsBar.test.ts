@@ -332,3 +332,49 @@ it('links Compare to the two selected elements in the index’s site, when their
   expect(href.searchParams.get('fromSiteId')).toBe('2');
   expect(href.searchParams.get('siteId')).toBe('3');
 });
+
+it.each([
+  ['the same field layout', {id: 1, fieldIds: []}, {id: 1, fieldIds: []}, true],
+  [
+    'a field in common',
+    {id: 1, fieldIds: [5, 6]},
+    {id: 2, fieldIds: [7, 6]},
+    true,
+  ],
+  [
+    'no fields in common',
+    {id: 1, fieldIds: [5, 6]},
+    {id: 2, fieldIds: [7]},
+    false,
+  ],
+  [
+    'no field layouts',
+    {id: null, fieldIds: []},
+    {id: null, fieldIds: []},
+    false,
+  ],
+])(
+  'offers Compare only for two elements with fields in common: %s',
+  async (_case, fromLayout, toLayout, listed) => {
+    const container = mount(
+      {
+        key: 'compare',
+        label: 'Compare',
+        selectionAttribute: 'comparable',
+        selectionCount: 2,
+        action: {type: 'event', name: 'craft:compare-elements'},
+      },
+      {},
+      {
+        selectedIds: [11, 12],
+        selectedElements: [
+          {id: 11, capabilities: {comparable: true}, fieldLayout: fromLayout},
+          {id: 12, capabilities: {comparable: true}, fieldLayout: toLayout},
+        ],
+      }
+    );
+    await nextTick();
+
+    expect(container.querySelector('craft-action-item') !== null).toBe(listed);
+  }
+);
