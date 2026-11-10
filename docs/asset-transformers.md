@@ -18,7 +18,6 @@ inline settings, the same way a disk is written:
     'uploads' => ['driver' => 's3', /* ... */, 'asset_transformer' => [
         'driver' => 'craft',
         'output_disk' => 'transforms',
-        'subpath' => '_transforms',
     ]],
 
     // A scoped disk without the key uses the key of the disk it wraps: `remote-images`.
@@ -77,29 +76,34 @@ The `craft` driver generates transforms with Craft's own image processing. It ac
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `output_disk` | The source disk | The disk to store generated transforms on. |
-| `subpath` | None | A path on `output_disk` to store them below. Ignored without `output_disk`. |
+| `output_disk` | The source disk | The disk to store generated transforms on. To store them below a path, use a `scoped` disk. |
 | `has_urls` | `false` | Whether `output_disk` serves public URLs. Without `output_disk`, the volume's setting applies. |
 | `generate_transforms_before_page_load` | `false` | Generate each transform before returning its URL, instead of on its first request. |
 
 ```php
+'transforms' => ['driver' => 'scoped', 'disk' => 's3', 'prefix' => '_transforms'],
+
 'uploads' => [
     'driver' => 's3',
     // ...
     'asset_transformer' => [
         'driver' => 'craft',
         'output_disk' => 'transforms',
-        'subpath' => '_transforms',
         'has_urls' => true,
     ],
 ],
 ```
 
+A Craft 5 volume's Transform Filesystem and Transform Subpath become a `scoped` disk like this one.
+
 Use `env()` for values that differ between environments.
 
-Changing `output_disk` or `subpath` makes Craft generate new transforms in the new location. Craft doesn't delete the
-old files, so clear them yourself. Changing `has_urls` or `generate_transforms_before_page_load` keeps existing
-transforms.
+Pointing `output_disk` at a different disk makes Craft generate new transforms there. Craft doesn't delete the old
+files, so clear them yourself. Changing `has_urls` or `generate_transforms_before_page_load` keeps existing transforms.
+
+Changing a disk's own config, such as a `scoped` disk's `prefix` or a bucket, doesn't. Clear the asset transform index
+afterwards, with `php artisan craft:clear-caches transform-indexes` or Utilities → Caches, so transforms are generated
+again in the new location.
 
 To generate transforms immediately inside a callback, whatever the setting, use
 `CraftAssetTransformDriver::withImmediateTransforms()`.
