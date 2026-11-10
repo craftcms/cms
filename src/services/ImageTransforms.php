@@ -456,6 +456,26 @@ class ImageTransforms extends Component
     }
 
     /**
+     * Eager-loads all transform indexes for the given list of assets.
+     *
+     * @param array $assets
+     * @return void
+     * @throws InvalidConfigException
+     * @since 5.9.0
+     */
+    public function eagerLoadAllTransforms(array $assets): void
+    {
+        if (empty($assets)) {
+            return;
+        }
+
+        $transformer = $this->getImageTransformer(ImageTransformer::class);
+        if ($transformer instanceof EagerImageTransformerInterface) {
+            $transformer->eagerLoadAllTransforms($assets);
+        }
+    }
+
+    /**
      * @template T of ImageTransformerInterface
      * @param class-string<T> $type
      * @param array $config
