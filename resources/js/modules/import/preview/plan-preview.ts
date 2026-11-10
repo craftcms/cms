@@ -30,13 +30,19 @@ export interface PreviewItem {
 export interface StepPreview {
   /** Why the step can't be previewed, if it can't. */
   error: string | null;
-  /** How many items the step's data has. */
+  /** How many of the step's items were previewed, from the first. */
   total?: number;
+  /** How many items the step's data has, which can be more than were previewed. */
+  itemCount?: number;
   /** How many items have each result. */
   counts?: Record<PreviewResult, number>;
   /** The listed page's index, of the items with the result asked for, which is the last page when one past it was asked for. */
   page?: number;
   pageSize?: number;
+  /** How many of the items paged through would change their elements, which are the ones with something to compare. */
+  previewable?: number;
+  /** How many of those come before the listed page. */
+  previewableBefore?: number;
   matchColumns?: Array<{key: string; label: string}>;
   items?: PreviewItem[];
 }
@@ -58,15 +64,22 @@ export interface ItemPreview {
   comparison?: ItemComparison | null;
 }
 
+/**
+ * Fetches a page of a step's preview: the page asked for, or, given
+ * `previewableIndex`, the one with that item among those with something to
+ * compare.
+ */
 export async function fetchStepPreview(
   step: ImportStep,
   page = 0,
-  result: PreviewResult | null = null
+  result: PreviewResult | null = null,
+  previewableIndex: number | null = null
 ): Promise<StepPreview> {
   const {data} = await actionClient.post(previewStepAction().url, {
     step,
     page,
     result,
+    previewableIndex,
   });
 
   return data as StepPreview;

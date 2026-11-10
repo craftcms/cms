@@ -351,10 +351,16 @@ class ImportPlansController
         $params = $this->request->validate([
             'page' => ['nullable', 'integer', 'min:0'],
             'result' => ['nullable', Rule::enum(ItemPreviewResult::class)],
+            'previewableIndex' => ['nullable', 'integer', 'min:0'],
         ]);
 
         try {
-            $preview = $previews->previewStep($importer, (int) ($params['page'] ?? 0), ItemPreviewResult::tryFrom((string) ($params['result'] ?? '')));
+            $preview = $previews->previewStep(
+                $importer,
+                (int) ($params['page'] ?? 0),
+                ItemPreviewResult::tryFrom((string) ($params['result'] ?? '')),
+                previewableIndex: isset($params['previewableIndex']) ? (int) $params['previewableIndex'] : null,
+            );
         } catch (Throwable $e) {
             return $this->asJsonSuccess(null, ['error' => $this->previewError($e)]);
         }
@@ -364,9 +370,12 @@ class ImportPlansController
         return $this->asJsonSuccess(null, [
             'error' => null,
             'total' => $preview['total'],
+            'itemCount' => $preview['itemCount'],
             'counts' => $preview['counts'],
             'page' => $preview['page'],
             'pageSize' => ImportPreviews::PAGE_SIZE,
+            'previewable' => $preview['previewable'],
+            'previewableBefore' => $preview['previewableBefore'],
             'matchColumns' => array_map(fn (string $key): array => [
                 'key' => $key,
                 'label' => $labels[$key]['label'] ?? $key,

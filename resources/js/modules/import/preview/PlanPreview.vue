@@ -73,6 +73,8 @@
   );
 
   const preview = shallowRef<StepPreview | null>(null);
+  /** The previewed item's position among the page's previewable items, while the modal shows it. */
+  const previewing = shallowRef<number | null>(null);
   /** Which items the table pages through, by their result. */
   const filter = shallowRef<PreviewResult | 'all'>('all');
   const loading = shallowRef(false);
@@ -85,7 +87,16 @@
   /** How many rows stand in for the page while it loads: as many as it will have, as far as that's known. */
   const placeholderRows = shallowRef(10);
 
-  async function load(step: ImportStep, page = 0): Promise<void> {
+  /**
+   * Loads a page of the step's preview: the one asked for, or, given
+   * `previewableIndex`, the one with that item among those with something to
+   * compare, which the modal then shows.
+   */
+  async function load(
+    step: ImportStep,
+    page = 0,
+    previewableIndex: number | null = null
+  ): Promise<void> {
     const current = ++request;
     const size = preview.value?.pageSize ?? 10;
     const known =
@@ -100,7 +111,7 @@
 
     try {
       const result = filter.value === 'all' ? null : filter.value;
-      const data = await fetchStepPreview(step, page, result);
+      const data = await fetchStepPreview(step, page, result, previewableIndex);
 
       if (current !== request) {
         return;
@@ -115,6 +126,12 @@
       }
 
       preview.value = data;
+
+      if (previewableIndex !== null) {
+        const shown = previewableIndex - (data.previewableBefore ?? 0);
+        previewing.value =
+          shown >= 0 && shown < previewable.value.length ? shown : null;
+      }
 
       if (data.counts?.problem) {
         problemSteps.add(step.uid);
@@ -154,15 +171,27 @@
     }
   }
 
+  /** Moves the modal to an item on another page. */
+  function previewOnPage(previewableIndex: number): void {
+    if (selected.value) {
+      load(selected.value.step, page.value, previewableIndex);
+    }
+  }
+
   // reloads as the step is edited, staying on its page, but not when the list is merely re-rendered
   watch(
     () => (selected.value ? JSON.stringify(selected.value.step) : null),
     () => {
       if (selected.value) {
-        load(
-          selected.value.step,
-          selected.value.value === shownUid ? page.value : 0
-        );
+        const sameStep = selected.value.value === shownUid;
+
+        // another step's preview, and its messages, don't stand in for this one's while it loads
+        if (!sameStep) {
+          preview.value = null;
+          previewing.value = null;
+        }
+
+        load(selected.value.step, sameStep ? page.value : 0);
         shownUid = selected.value.value;
       } else {
         preview.value = null;
@@ -237,9 +266,6 @@
       (item) => item.result !== 'skip' && item.result !== 'unchanged'
     )
   );
-
-  /** The previewed item's position among the previewable items, while the modal shows it. */
-  const previewing = shallowRef<number | null>(null);
 
   function previewButtonId(item: PreviewItem): string {
     return `plan-preview-${selected.value?.value}-${item.index}`;
@@ -434,6 +460,21 @@
                 >
               </button>
             </div>
+            <p
+              v-if="
+                preview?.itemCount !== undefined &&
+                preview.total !== undefined &&
+                preview.itemCount > preview.total
+              "
+              class="m-0 text-sm text-quiet"
+            >
+              {{
+                t(
+                  'Previewing the first {total, number} of {count, number} items.',
+                  {total: preview.total, count: preview.itemCount}
+                )
+              }}
+            </p>
             <AdminTable
               class="plan-preview__table"
               :style="{'--plan-preview-match-width': matchColumnWidth}"
@@ -457,6 +498,9 @@
     v-model="previewing"
     :step="selected.step"
     :items="previewable"
+    :offset="preview?.previewableBefore ?? 0"
+    :total="preview?.previewable ?? previewable.length"
+    @navigate="previewOnPage"
   />
 </template>
 

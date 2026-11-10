@@ -30,8 +30,14 @@ const items: PreviewItem[] = [0, 1, 2].map((index) => ({
   errors: [],
 }));
 
-function mount(start: number | null): void {
+const navigated: number[] = [];
+
+function mount(
+  start: number | null,
+  pages: {offset?: number; total?: number} = {}
+): void {
   position.value = start;
+  navigated.length = 0;
   container = document.createElement('div');
   document.body.append(container);
   const app = createApp({
@@ -39,6 +45,8 @@ function mount(start: number | null): void {
       h(ItemPreviewModal, {
         step: {uid: 'step'} as ImportStep,
         items,
+        ...pages,
+        onNavigate: (index: number) => navigated.push(index),
         modelValue: position.value,
         'onUpdate:modelValue': (value: number | null) =>
           (position.value = value),
@@ -104,5 +112,29 @@ it('swaps the arrows in a right-to-left language', () => {
   mount(1);
 
   press('ArrowLeft');
+  expect(position.value).toBe(2);
+});
+
+it('asks for the next or previous page at the ends of the one it has', async () => {
+  // the page holds items 10 to 12 of 25
+  mount(2, {offset: 10, total: 25});
+
+  press('ArrowRight');
+  expect(navigated).toEqual([13]);
+  expect(position.value).toBe(2);
+
+  position.value = 0;
+  await nextTick();
+  press('ArrowLeft');
+  expect(navigated).toEqual([13, 9]);
+});
+
+it('stops at the last item of all the pages', () => {
+  // the last page holds items 22 to 24 of 25
+  mount(2, {offset: 22, total: 25});
+
+  press('ArrowRight');
+
+  expect(navigated).toEqual([]);
   expect(position.value).toBe(2);
 });

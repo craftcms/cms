@@ -3,6 +3,8 @@
    * How running a step would change one of its items' elements, as the
    * Compare screen shows two versions of one, with arrows (on screen and on
    * the keyboard) and an item number to move through the step's other items.
+   * It's handed one page of them; moving past either end of it asks for the
+   * page with the item moved to.
    */
   import '@craftcms/ui/components/badge/badge';
   import '@craftcms/ui/components/button/button';
@@ -25,14 +27,43 @@
     type PreviewItem,
   } from './plan-preview';
 
-  const {step, items} = defineProps<{
+  const {
+    step,
+    items,
+    offset = 0,
+    total,
+  } = defineProps<{
     step: ImportStep;
-    /** The items it moves through, in order. */
+    /** The page of the items it moves through, in order. */
     items: PreviewItem[];
+    /** How many of the items it moves through come before the page. */
+    offset?: number;
+    /** How many items it moves through, across every page. */
+    total?: number;
+  }>();
+
+  const emit = defineEmits<{
+    /** Asks for the page with the item at this position among them all. */
+    navigate: [index: number];
   }>();
 
   /** The shown item's position in `items`, or `null` while it's closed. */
   const position = defineModel<number | null>({required: true});
+
+  const count = computed(() => total ?? offset + items.length);
+
+  /** Shows the item at a position among them all, asking for its page when it's on another. */
+  function moveTo(index: number): void {
+    if (index < 0 || index >= count.value) {
+      return;
+    }
+
+    if (index >= offset && index < offset + items.length) {
+      position.value = index - offset;
+    } else {
+      emit('navigate', index);
+    }
+  }
 
   const item = computed(() =>
     position.value === null ? null : (items[position.value] ?? null)
@@ -102,14 +133,14 @@
       event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0;
     // in a right-to-left language the next item is to the left
     const rtl = document.documentElement.dir === 'rtl';
-    const next = position.value + (rtl ? -step : step);
+    const next = offset + position.value + (rtl ? -step : step);
 
-    if (step === 0 || next < 0 || next >= items.length) {
+    if (step === 0 || next < 0 || next >= count.value) {
       return;
     }
 
     event.preventDefault();
-    position.value = next;
+    moveTo(next);
   });
 
   const title = computed(
@@ -194,14 +225,14 @@
         v-if="position !== null"
         slot="actions"
         controls-only
-        :page-index="position"
+        :page-index="offset + position"
         :page-size="1"
-        :page-count="items.length"
+        :page-count="count"
         :page-label="t('Item')"
         :current-page-label="t('Current item')"
         :previous-page-label="t('Previous item')"
         :next-page-label="t('Next item')"
-        @page-change="position = $event"
+        @page-change="moveTo"
       />
     </craft-pane>
   </Modal>

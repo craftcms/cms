@@ -882,6 +882,21 @@ describe('previewing a step', function () {
             ->and($response->json('items.*.title'))->toBe(['Entry 21', 'Entry 22', 'Entry 23']);
     })->with([2, 9]);
 
+    it('lists the page with an item the preview modal moves to from another page', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => ($this->entryStep)(['map' => ['title' => 'title']], ['source' => 'tests/Fixtures/Import/entries-many.json']),
+            'page' => 0,
+            'previewableIndex' => 15,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('page'))->toBe(1)
+            ->and($response->json('previewable'))->toBe(23)
+            ->and($response->json('previewableBefore'))->toBe(10)
+            ->and($response->json('itemCount'))->toBe(23)
+            ->and($response->json('items.5.index'))->toBe(15);
+    });
+
     it('counts every item’s result, and pages through those with one of them', function () {
         $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [
             'step' => $this->previewStep,
