@@ -149,7 +149,7 @@
     "rector": "rector",
     "tests": [
       "Composer\\Config::disableProcessTimeout",
-      "./vendor/bin/pest --parallel --processes=4 --compact"
+      "./vendor/bin/pest --parallel --processes=auto --max-processes=4 --compact"
     ],
     "tests-browser": [
       "Composer\\Config::disableProcessTimeout",
