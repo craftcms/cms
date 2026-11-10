@@ -410,9 +410,10 @@ class ImageTransforms extends Component
         #[\SensitiveParameter] mixed $definition,
         string $transformer,
     ): ?AssetTransformRequest {
-        $diskTransformer = app(AssetTransformers::class)->forDisk($asset->getVolume()->getResolvedFsTarget());
+        // A transformer chosen by the disk, including an explicit `craft` one, takes precedence over the legacy one.
+        $disk = $asset->getVolume()->getResolvedFsTarget();
 
-        if ($diskTransformer->driver !== 'craft' || $this->hasTransformerOverride($definition)) {
+        if (($disk !== null && app(AssetTransformers::class)->configForDisk($disk) !== null) || $this->hasTransformerOverride($definition)) {
             return null;
         }
 
