@@ -980,6 +980,11 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
           'button-content': true,
           'button-content--spaced-prefix': hasPrefix && this._content.label,
           'button-content--spaced-suffix': hasSuffix && this._content.label,
+          'button-content--icon-only':
+            !!this.icon &&
+            !this._content.label &&
+            !this._content.prefix &&
+            !this._content.suffix,
           'button-content--start': this.align === 'start',
           'button-content--end': this.align === 'end',
           'a11y-error': this._hasAccessibilityError,
