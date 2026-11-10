@@ -687,6 +687,7 @@
 - Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
 
 ### Extensibility
+- Added `CraftCms\Cms\Utility\Utility::contentMaxWidth()`, which utilities can override to cap their page’s content at the control panel’s readable width and center it, as the System Messages and Yii2 Loose Ends utilities now do.
 - Added `CraftCms\Cms\Field\Contracts\FieldInterface::uiErrors()`, which fields that show nested elements’ fields, such as Matrix and Content Block fields, can use to show the nested elements’ validation errors on those fields in the element editor. ([#20522](https://github.com/craftcms/cms/pull/20522))
 - Added `CraftCms\Cms\Route\RedirectRule` and `CraftCms\Cms\Route\Events\Redirecting`, which apply and customize `config/redirects.php` rules. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Added `CraftCms\Cms\Element\Element::query()`. Static calls to element classes that aren’t macros, such as `Entry::section('news')`, now return a new element query, as they do on Eloquent models. ([#20450](https://github.com/craftcms/cms/pull/20450))
