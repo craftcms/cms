@@ -266,7 +266,6 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
     protected override updated(changed: PropertyValues) {
       super.updated(changed);
       this.#renderTemplateSlots();
-      this._reflectAriaReferences();
 
       if (
         changed.has('label') &&
@@ -283,6 +282,8 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       ) {
         this._helpTextNode.textContent = this.helpText;
       }
+
+      this._reflectAriaReferences();
     }
 
     #createSlots(): void {
@@ -442,8 +443,15 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
         }
       };
 
-      write('aria-labelledby', this.#labelledNodes);
-      write('aria-describedby', this.#describedNodes);
+      // The control's own label and help text only count while they have
+      // something to say, so an empty one doesn't stand in for another name.
+      const counts = (node: HTMLElement) =>
+        (node !== this._labelNode && node !== this._helpTextNode) ||
+        node.textContent!.trim() !== '' ||
+        node.childElementCount > 0;
+
+      write('aria-labelledby', this.#labelledNodes.filter(counts));
+      write('aria-describedby', this.#describedNodes.filter(counts));
     }
 
     protected override render(): unknown {

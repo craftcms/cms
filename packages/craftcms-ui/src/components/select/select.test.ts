@@ -37,6 +37,25 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+describe('craft-select references', () => {
+  it('names the control by its label only while the label has text', async () => {
+    const element = await createSelect(
+      {},
+      '<select slot="input" aria-label="Quality Preset"><option>Low</option></select>'
+    );
+    expect(native(element).hasAttribute('aria-labelledby')).toBe(false);
+
+    element.label = 'Quality';
+    await element.updateComplete;
+    const label = element.querySelector('[slot="label"]')!;
+    expect(native(element).getAttribute('aria-labelledby')).toBe(label.id);
+
+    element.label = '';
+    await element.updateComplete;
+    expect(native(element).hasAttribute('aria-labelledby')).toBe(false);
+  });
+});
+
 describe('craft-select', () => {
   /**
    * The native `<select>` is slotted rather than rendered, so the component
