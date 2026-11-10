@@ -319,6 +319,10 @@ class TestCase extends Orchestra
                         $connectionConfig['synchronous'],
                     );
 
+                    // Disposable databases need rollback, not durability after a process or machine crash.
+                    $connectionConfig['journal_mode'] = 'MEMORY';
+                    $connectionConfig['synchronous'] = 'OFF';
+
                     ConnectionConfig::ensureSqliteDatabaseFile((string) ($connectionConfig['database'] ?? ''));
                 }
 
