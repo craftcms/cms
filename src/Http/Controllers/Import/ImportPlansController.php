@@ -399,7 +399,7 @@ class ImportPlansController
         $payload = [
             'error' => null,
             'result' => $preview->result->value,
-            'title' => $preview->element?->getUiLabel(),
+            'title' => ImportPreviews::itemTitle($preview->element),
             'errors' => $preview->errors,
             'comparison' => null,
         ];

@@ -936,6 +936,7 @@ describe('previewing a step', function () {
         $errors = collect($response->json('comparison.to.ui.errors'));
 
         expect($response->json('result'))->toBe('problem')
+            ->and($response->json('title'))->toBeNull()
             ->and($errors->pluck('path')->map(fn (array $path) => end($path))->all())->toBe(['title']);
     });
 });

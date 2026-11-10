@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Enums\ItemPreviewResult;
@@ -139,6 +140,19 @@ readonly class ImportPreviews
     }
 
     /**
+     * What an item's element is called, or `null` when it has no title yet, which the preview labels as untitled
+     * however it's shown, rather than with each element type's own placeholder.
+     */
+    public static function itemTitle(?ElementInterface $element): ?string
+    {
+        if ($element === null) {
+            return null;
+        }
+
+        return $element::hasTitles() ? ($element->title ?: null) : $element->getUiLabel();
+    }
+
+    /**
      * @param  list<string>  $matchKeys
      * @return array{index: int, result: string, title: string|null, match: array<string, string>, errors: list<string>}
      */
@@ -147,7 +161,7 @@ readonly class ImportPreviews
         return [
             'index' => $index,
             'result' => $preview->result->value,
-            'title' => $preview->element?->getUiLabel(),
+            'title' => self::itemTitle($preview->element),
             'match' => array_map(
                 fn (mixed $value): string => is_scalar($value) ? (string) $value : (string) Json::encode($value),
                 Arr::only($preview->matchCriteria, $matchKeys),
