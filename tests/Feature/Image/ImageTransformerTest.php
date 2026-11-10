@@ -17,13 +17,11 @@ use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
-use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\Jobs\GenerateImageTransform;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -258,15 +256,19 @@ it('uses Craft driver output disk settings', function () {
         'root' => storage_path('framework/testing/image-transformer-test/configured-source'),
         'asset_transformer' => [
             'driver' => 'craft',
-            'output_disk' => 'configured-transform-target',
+            'output_disk' => 'configured-transform-output',
             'has_urls' => true,
-            'subpath' => 'transforms',
         ],
     ]);
     config()->set('filesystems.disks.configured-transform-target', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/configured-target'),
         'url' => 'https://transforms.example.test',
+    ]);
+    config()->set('filesystems.disks.configured-transform-output', [
+        'driver' => 'scoped',
+        'disk' => 'configured-transform-target',
+        'prefix' => 'transforms',
     ]);
     Storage::disk('configured-transform-source')->deleteDirectory('');
     Storage::disk('configured-transform-target')->deleteDirectory('');
@@ -376,24 +378,6 @@ it('reports Craft cleanup failures with redacted context', function () {
         && ! str_contains($exception->getMessage(), '/secret/source/path.jpg'));
 });
 
-it('generates transforms at a new location when the output subpath changes', function () {
-    $asset = ($this->createImageAsset)();
-    $output = useTransformOutputDisk($asset);
-    $transform = fn () => app(CraftAssetTransformDriver::class)->withImmediateTransforms(
-        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
-    );
-
-    config()->set('filesystems.disks.test-disk.asset_transformer.subpath', 'first');
-    $transform();
-    config()->set('filesystems.disks.test-disk.asset_transformer.subpath', 'second');
-    $transform();
-    $files = $output->allFiles();
-
-    expect($files)->toHaveCount(2)
-        ->and(collect($files)->map(fn (string $path): string => explode('/', $path)[0])->sort()->values()->all())->toBe(['first', 'second'])
-        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('assetId', $asset->id)->distinct()->count('outputKey'))->toBe(2);
-});
-
 it('indexes an explicit output disk apart from the source disk default, even when it names the same disk', function () {
     // The default stores transforms below the volume's subpath; an explicit `output_disk` doesn't.
     $asset = ($this->createImageAsset)();
@@ -425,10 +409,9 @@ it('reuses transforms when only has_urls or immediate generation changes', funct
 it('re-targets a stale index row to the current output location', function () {
     $asset = ($this->createImageAsset)();
     $output = useTransformOutputDisk($asset);
-    config()->set('filesystems.disks.test-disk.asset_transformer.subpath', 'old');
     $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
 
-    config()->set('filesystems.disks.test-disk.asset_transformer.subpath', 'new');
+    useScopedTransformOutputDisk('new');
     $this->transformer->getTransformUrlForIndex($asset, $index, true);
 
     expect($output->allFiles())->toHaveCount(1)
@@ -438,35 +421,14 @@ it('re-targets a stale index row to the current output location', function () {
 it('removes a stale index row on invalidation without reporting it', function () {
     $asset = ($this->createImageAsset)();
     useTransformOutputDisk($asset);
-    config()->set('filesystems.disks.test-disk.asset_transformer.subpath', 'old');
     $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
-    config()->set('filesystems.disks.test-disk.asset_transformer.subpath', 'new');
+    useScopedTransformOutputDisk('new');
     Exceptions::fake();
 
     event(new AssetTransformsInvalidating($asset));
 
     expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $index->id)->exists())->toBeFalse();
     Exceptions::assertNothingReported();
-});
-
-it('reports a deleted transform’s path without a subpath that doesn’t apply', function () {
-    $asset = ($this->createImageAsset)();
-    $disk = $asset->getVolume()->sourceDisk();
-    $disk->put(
-        $asset->getPath(),
-        file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
-    );
-    config()->set('filesystems.disks.test-disk.asset_transformer', ['driver' => 'craft', 'subpath' => '_transforms']);
-    app(CraftAssetTransformDriver::class)->withImmediateTransforms(
-        fn () => app(AssetTransformers::class)->transform($asset, ['width' => 100]),
-    );
-    $transformPath = collect($disk->allFiles())->sole(fn (string $path): bool => $path !== $asset->getPath());
-    Event::fake([DeletingTransformedImage::class]);
-
-    event(new AssetTransformsInvalidating($asset));
-
-    Event::assertDispatched(fn (DeletingTransformedImage $event): bool => str_replace('\\', '/', $event->path) === $transformPath);
-    expect($disk->exists($transformPath))->toBeFalse();
 });
 
 it('does not reuse a transform result older than the source Asset', function () {
@@ -641,4 +603,14 @@ function useTransformOutputDisk(Asset $asset): Filesystem
     );
 
     return $output;
+}
+
+function useScopedTransformOutputDisk(string $prefix): void
+{
+    config()->set('filesystems.disks.transform-output-scoped', [
+        'driver' => 'scoped',
+        'disk' => 'transform-output',
+        'prefix' => $prefix,
+    ]);
+    config()->set('filesystems.disks.test-disk.asset_transformer.output_disk', 'transform-output-scoped');
 }

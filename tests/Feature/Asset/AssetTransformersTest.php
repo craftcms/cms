@@ -41,7 +41,7 @@ it('reads a driver name or an array with inline settings from the disk', functio
     config()->set('filesystems.disks.inline', ['driver' => 'local', 'asset_transformer' => [
         'driver' => 'craft',
         'output_disk' => 'transforms',
-        'subpath' => '_transforms',
+        'has_urls' => true,
     ]]);
     config()->set('filesystems.disks', [
         ...config('filesystems.disks'),
@@ -52,7 +52,7 @@ it('reads a driver name or an array with inline settings from the disk', functio
     expect($transformers->forDisk('named'))->toEqual(new AssetTransformer('imgix'))
         ->and($transformers->forDisk('inline'))->toEqual(new AssetTransformer('craft', [
             'output_disk' => 'transforms',
-            'subpath' => '_transforms',
+            'has_urls' => true,
         ]))
         ->and($transformers->forDisk('dotted.disk')->driver)->toBe('imgix');
 });
@@ -105,7 +105,7 @@ it('throws for invalid transformer config with debug mode on', function (mixed $
     'unregistered driver' => ['missing', AssetTransformDriverNotFoundException::class],
     'a case variant of craft' => ['CRAFT', AssetTransformDriverNotFoundException::class],
     'a name with no letters' => ['-', AssetTransformDriverNotFoundException::class],
-    'array without a driver' => [['subpath' => 'x'], InvalidAssetTransformException::class],
+    'array without a driver' => [['has_urls' => true], InvalidAssetTransformException::class],
     'empty string' => ['', InvalidAssetTransformException::class],
 ]);
 

@@ -60,7 +60,6 @@ describe('generate', function () {
             'asset_transformer' => [
                 'driver' => 'craft',
                 'output_disk' => 'configured-private-target',
-                'subpath' => 'transforms',
             ],
         ]);
         config()->set('filesystems.disks.configured-private-target', [

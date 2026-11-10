@@ -266,13 +266,10 @@ class ImageTransformer
         $diskPath = $this->getTransformBasePath($asset).$this->getTransformSubpath($asset, $transformIndex);
 
         try {
-            $subPath = $this->outputSettings($transformer->settings)[1];
-            $path = ($subPath ? $subPath.DIRECTORY_SEPARATOR : '').$diskPath;
-
             event(new DeletingTransformedImage(
                 asset: $asset,
                 imageTransformIndex: $transformIndex,
-                path: $path,
+                path: $diskPath,
             ));
             $this->transformDisk($asset, $transformer)->delete($diskPath);
         } catch (Throwable) {
@@ -773,7 +770,7 @@ class ImageTransformer
 
     private function transformDisk(Asset $asset, AssetTransformer $transformer): FilesystemAdapter
     {
-        [$diskReference, $subpath] = $this->outputSettings($transformer->settings);
+        $diskReference = $this->outputDisk($transformer);
 
         if ($diskReference === null) {
             return $asset->getVolume()->sourceDisk();
@@ -784,53 +781,28 @@ class ImageTransformer
             throw new FilesystemException('The configured asset transform output disk does not exist.');
         }
 
-        if ($subpath === null) {
-            return Storage::disk($diskName);
-        }
-
-        $disk = Storage::build(['driver' => 'scoped', 'disk' => $diskName, 'prefix' => $subpath]);
-        if (! $disk instanceof FilesystemAdapter) {
-            throw new FilesystemException('Unable to create the scoped asset transform output disk.');
-        }
-
-        return $disk;
+        return Storage::disk($diskName);
     }
 
     private function transformHasUrls(Asset $asset, AssetTransformer $transformer): bool
     {
-        [$diskReference, , $hasUrls] = $this->outputSettings($transformer->settings);
-
-        return $diskReference === null ? $asset->getVolume()->sourceHasUrls() : $hasUrls;
+        return $this->outputDisk($transformer) === null
+            ? $asset->getVolume()->sourceHasUrls()
+            : ($transformer->settings['has_urls'] ?? false) === true;
     }
 
     /**
-     * Returns the `craft` driver’s output disk, output subpath, and whether the output disk has public URLs. The subpath
-     * and URL setting only apply with an output disk.
-     *
-     * @param  array<string,mixed>  $settings
-     * @return array{string|null,string|null,bool}
+     * Returns the `craft` driver’s `output_disk`, or `null` to store transforms on the volume’s source disk.
      */
-    private function outputSettings(array $settings): array
+    private function outputDisk(AssetTransformer $transformer): ?string
     {
-        $disk = $settings['output_disk'] ?? null;
-        $subpath = $settings['subpath'] ?? '';
+        $disk = $transformer->settings['output_disk'] ?? null;
 
         if ($disk !== null && ! is_string($disk)) {
             throw new FilesystemException('The configured asset transform output disk is invalid.');
         }
 
-        if (! is_string($subpath)) {
-            throw new FilesystemException('The configured asset transform output subpath is invalid.');
-        }
-
-        if ($disk === null || $disk === '') {
-            return [null, null, false];
-        }
-
-        $subpath = trim(str_replace('\\', '/', $subpath), '/');
-        $subpath = $subpath === '' ? null : $subpath;
-
-        return [$disk, $subpath, ($settings['has_urls'] ?? false) === true];
+        return $disk === '' ? null : $disk;
     }
 
     private function deleteTransformIndexDataByAssetId(int $assetId): void
@@ -857,19 +829,17 @@ class ImageTransformer
     }
 
     /**
-     * Returns the index key for an asset’s transforms: its source disk plus a hash of where the transformer stores
-     * files. Changing the output disk or subpath changes the key, so new transforms are generated at the new location.
+     * Returns the index key for an asset’s transforms: its source disk plus a hash of the output disk. Changing the
+     * output disk changes the key, so new transforms are generated there. Changing a disk’s own config, such as a scoped
+     * disk’s `prefix`, doesn’t.
      */
     private function outputKey(Asset $asset, AssetTransformer $transformer): string
     {
-        [$outputDisk, $subpath] = $this->outputSettings($transformer->settings);
         $sourceDisk = $asset->getVolume()->getResolvedFsTarget() ?? '';
 
         // Without an output disk, transforms are stored on the volume's source disk, below the volume's subpath. That
         // must hash differently from an explicit `output_disk` naming the same disk, which doesn't use that subpath.
-        $location = $outputDisk === null ? null : [$outputDisk, $subpath];
-
-        return 'craft:'.$sourceDisk.':'.substr(hash('sha256', serialize($location)), 0, 16);
+        return 'craft:'.$sourceDisk.':'.substr(hash('sha256', serialize($this->outputDisk($transformer))), 0, 16);
     }
 
     /**

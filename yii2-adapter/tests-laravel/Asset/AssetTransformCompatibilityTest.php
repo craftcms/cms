@@ -293,7 +293,7 @@ it('selects the volume before the legacy transformer candidate', function(string
     }
 })->with([
     'another driver' => 'compatibility-test',
-    'explicit craft' => [['driver' => 'craft', 'subpath' => '_transforms']],
+    'explicit craft' => [['driver' => 'craft']],
 ]);
 
 it('does not use the legacy selector for typed transform calls', function(): void {
