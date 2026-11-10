@@ -1302,7 +1302,7 @@ export default class CraftCombobox extends FormAssociated(
 
   /** Focuses the textbox, as a `craft-field` does when its label is clicked. */
   override focus(options?: FocusOptions): void {
-    this._inputNode?.focus(options);
+    this._control?.focus(options);
   }
 
   // ─── Forms ────────────────────────────────────────────────────────────

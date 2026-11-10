@@ -517,7 +517,7 @@ it('stays open for a keyboard-focused invoker after its content is replaced', as
   await userEvent.hover(elsewhere);
   await userEvent.tab();
   await after(300);
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 
   const replacement = document.createElement('div');
   replacement.slot = 'content';
@@ -531,7 +531,7 @@ it('stays open for a keyboard-focused invoker after its content is replaced', as
   await after(100);
 
   expect(document.activeElement).toBe(invoker);
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 });
 
 it('still opens when its content is replaced while it waits to show', async () => {
