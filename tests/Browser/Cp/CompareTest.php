@@ -359,3 +359,32 @@ it('keeps each side’s radio buttons to that side', function () {
 
     assertNoJavaScriptErrors($page);
 });
+
+it('keeps what keyboard focus moves to clear of the version menus in the stacked layout', function () {
+    $draft = compareDraft('Opens in May');
+
+    // Narrow enough to stack the sides, and short enough that the page scrolls.
+    $page = visitCompare($draft)->resize(600, 420);
+    $summary = 'document.querySelector("[data-compare-side=to] input[name=\"fields[summary]\"]")';
+    $shiftTab = fn () => $page->withKeyDown('Shift', fn ($page) => $page->withKeyDown('Tab', fn () => null));
+
+    // Shift+Tab from B's summary moves focus to the field's actions. With them scrolled just under the stuck version
+    // menus, still within the panel, the browser only scrolls them clear if it knows the menus are there.
+    $page->script("() => $summary.focus()");
+    $shiftTab();
+    $page->script("() => {
+        const panel = document.querySelector('.cp-body__panel');
+        panel.scrollBy(0, document.activeElement.getBoundingClientRect().top - panel.getBoundingClientRect().top - 5);
+        $summary.focus({preventScroll: true});
+    }");
+    $shiftTab();
+
+    $clearance = $page->script('() => Math.round(
+        document.activeElement.getBoundingClientRect().top -
+        document.querySelector(".compare__headers").getBoundingClientRect().bottom
+    )');
+
+    expect($clearance)->toBeGreaterThanOrEqual(0);
+
+    assertNoJavaScriptErrors($page);
+});
