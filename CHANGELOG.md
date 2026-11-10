@@ -651,6 +651,7 @@
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Buttons and menu items with keyboard shortcuts now announce them to assistive technology, including the Save menu’s items, inline editing’s and modals’ Save buttons, and comments’ Comment buttons. On a Mac, the ⌥, ⇧, and ⌘ symbols are read as “Option”, “Shift”, and “Command”. ([#20219](https://github.com/craftcms/cms/pull/20219))
 - Disabled menu items can now be reached with the arrow keys and <kbd>Tab</kbd>, and are announced as unavailable, rather than being skipped.
+- Menu buttons without text or a label, such as the arrow half of split Save buttons on plugin screens, are now named “More actions” for screen readers. ([#20576](https://github.com/craftcms/cms/pull/20576))
 - Callouts’ buttons now move below their text when there isn’t room for both side by side, rather than squeezing the text, such as on narrow screens.
 - Opening a slideout no longer focuses its resize handle. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Page and source items in the Customize Sources modal now show a focus ring around the whole row, including their drag handle and action menu. ([#20085](https://github.com/craftcms/cms/pull/20085))

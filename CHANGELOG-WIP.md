@@ -166,6 +166,7 @@
 - Improved the accessibility of the control panel, including element indexes, element edit screens, and the login page. ([#19025](https://github.com/craftcms/cms/pull/19025), [#19520](https://github.com/craftcms/cms/pull/19520), [#19699](https://github.com/craftcms/cms/pull/19699), [#19749](https://github.com/craftcms/cms/pull/19749), [#19785](https://github.com/craftcms/cms/pull/19785))
 - Added a “Skip to messages” link, and errors are now announced to screen readers immediately.
 - Action menu buttons no longer announce a menu pop-up.
+- Menu buttons without text or a label, such as the arrow half of split Save buttons on plugin screens, are now named “More actions” for screen readers. ([#20576](https://github.com/craftcms/cms/pull/20576))
 - Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - The current user’s own First Name and Last Name fields, and the Full Name, First Name, Last Name, and Organization fields of their own addresses, now have `autocomplete` tokens, so browsers and password managers can fill them in. ([#20407](https://github.com/craftcms/cms/pull/20407))
 

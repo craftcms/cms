@@ -42,6 +42,35 @@ describe('MenuBtn init / ARIA', () => {
     expect(menuBtn.menu.$options).toHaveLength(3);
   });
 
+  it('names a button that has no text or label', () => {
+    vi.stubGlobal('Craft', {
+      t: (category: string, message: string) => `${category}:${message}`,
+    });
+    const {btn} = buildMenuBtn();
+    new MenuBtn(btn);
+    expect(btn.getAttribute('aria-label')).toBe('app:More actions');
+    vi.unstubAllGlobals();
+  });
+
+  it.each([
+    ['text', (btn: HTMLElement) => (btn.textContent = 'Actions')],
+    [
+      'aria-label',
+      (btn: HTMLElement) => btn.setAttribute('aria-label', 'Sort'),
+    ],
+    [
+      'aria-labelledby',
+      (btn: HTMLElement) => btn.setAttribute('aria-labelledby', 'heading'),
+    ],
+    ['title', (btn: HTMLElement) => (btn.title = 'Sort')],
+  ])('leaves a button named by its %s alone', (_, name) => {
+    const {btn} = buildMenuBtn();
+    name(btn);
+    const label = btn.getAttribute('aria-label');
+    new MenuBtn(btn);
+    expect(btn.getAttribute('aria-label')).toBe(label);
+  });
+
   it('warns and no-ops without a DOM element', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const menuBtn = new MenuBtn(null);
