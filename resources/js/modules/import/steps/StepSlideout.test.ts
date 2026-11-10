@@ -20,6 +20,7 @@ const state = vi.hoisted(() => ({
     step: ImportStep;
   } | null,
   changeMapping: null as ((values: Partial<MappingValues>) => void) | null,
+  templateErrors: vi.fn(),
 }));
 
 vi.mock('@/common/composables/useAppLayout', () => ({
@@ -38,8 +39,9 @@ vi.mock('./InlineStepMapping.vue', () => ({
     name: 'InlineStepMapping',
     props: ['step', 'editable', 'canMap'],
     emits: ['change'],
-    setup(props: any, {emit}: any) {
+    setup(props: any, {emit, expose}: any) {
       state.changeMapping = (values) => emit('change', values);
+      expose({showTemplateErrors: state.templateErrors});
 
       return () => {
         state.mapping = {
@@ -178,6 +180,7 @@ beforeEach(() => {
   state.fetchStepUi.mockReset();
   state.validateStep.mockReset();
   state.errorHandler.mockReset();
+  state.templateErrors.mockReset();
   state.mapping = null;
   state.changeMapping = null;
   state.refresh = null;
@@ -420,6 +423,32 @@ it('keeps the slideout open and shows the errors when the draft step is invalid'
   await nextTick();
 
   expect(state.context.apply).not.toHaveBeenCalled();
+  expect(state.errors).toEqual([
+    {path: ['source'], messages: ['Source must be provided.']},
+  ]);
+});
+
+it('shows a template’s errors on its column in the mapping, which the form doesn’t render', async () => {
+  mount(true);
+  state.validateStep.mockRejectedValue({
+    response: {
+      data: {
+        errors: {
+          source: ['Source must be provided.'],
+          'settings.templates.title': ['Unexpected “}”.'],
+        },
+      },
+    },
+  });
+
+  const onSave = state.layout.mock.calls.at(-1)![0].onSave;
+  await onSave();
+  await nextTick();
+
+  expect(state.context.apply).not.toHaveBeenCalled();
+  expect(state.templateErrors).toHaveBeenCalledWith({
+    title: ['Unexpected “}”.'],
+  });
   expect(state.errors).toEqual([
     {path: ['source'], messages: ['Source must be provided.']},
   ]);

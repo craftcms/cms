@@ -263,11 +263,37 @@
     }
   }
 
-  function setErrors(next: Record<string, string | string[]>): void {
-    errors.value = Object.entries(next).map(([path, messages]) => ({
+  const mapping = ref<InstanceType<typeof InlineStepMapping> | null>(null);
+
+  /**
+   * Shows the server's errors on the form, and those about the templates, which the form
+   * doesn't render, on their columns in the mapping, focusing the first.
+   */
+  async function showErrors(
+    next: Record<string, string | string[]>
+  ): Promise<void> {
+    const prefix = 'settings.templates.';
+    const formEntries: Array<[string, string[]]> = [];
+    const templateErrors: Record<string, string[]> = {};
+
+    for (const [path, messages] of Object.entries(next)) {
+      const list = Array.isArray(messages) ? messages : [messages];
+
+      if (path.startsWith(prefix)) {
+        templateErrors[path.slice(prefix.length)] = list;
+      } else {
+        formEntries.push([path, list]);
+      }
+    }
+
+    errors.value = formEntries.map(([path, messages]) => ({
       path: path.split('.'),
-      messages: Array.isArray(messages) ? messages : [messages],
+      messages,
     }));
+
+    if (Object.keys(templateErrors).length) {
+      await mapping.value?.showTemplateErrors(templateErrors);
+    }
   }
 
   async function done(): Promise<void> {
@@ -278,10 +304,11 @@
       try {
         await validateStep(step.value);
       } catch (error: any) {
-        const responseErrors = error?.response?.data?.errors;
+        const responseErrors: Record<string, string | string[]> | undefined =
+          error?.response?.data?.errors;
 
         if (responseErrors) {
-          setErrors(responseErrors);
+          await showErrors(responseErrors);
         }
 
         return;
@@ -311,6 +338,7 @@
       >
         <template #mapping>
           <InlineStepMapping
+            ref="mapping"
             :step="step"
             :editable="context.editable"
             :can-map="canMap"

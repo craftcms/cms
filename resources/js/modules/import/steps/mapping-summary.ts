@@ -79,8 +79,10 @@ export function summarizeMapping(
     const key = path.join('.');
     const known = labels[key];
     const defaultValue = getAt(trees.defaultValues, path);
+    // an empty default is left out on import, as if there were none
     const hasDefault =
-      typeof defaultValue === 'string' || typeof defaultValue === 'number';
+      (typeof defaultValue === 'string' && defaultValue !== '') ||
+      typeof defaultValue === 'number';
     const criterion = getAt(trees.matchCriteria, path);
     // a container's own criterion is a tree of its nested columns' criteria
     const matchKey = typeof criterion !== 'object' && isChecked(criterion);

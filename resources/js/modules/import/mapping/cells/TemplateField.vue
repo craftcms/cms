@@ -52,7 +52,7 @@
 <template>
   <craft-field
     class="template-field"
-    :label="t('Template')"
+    :label="t('Template for {field}', {field: col.label})"
     label-sr-only
     :has-errors="errors.length > 0"
     width="full"

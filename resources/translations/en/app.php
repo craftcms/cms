@@ -3105,6 +3105,7 @@ return [
     'Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.' => 'Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key.',
     'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.' => 'Template that defines the {name} field’s custom “translation key” format. Values will be copied to all sites that produce the same key.',
     'Template' => 'Template',
+    'Template for {field}' => 'Template for {field}',
     'Templates' => 'Templates',
     'Temporary Uploads' => 'Temporary Uploads',
     'Test Recipient' => 'Test Recipient',

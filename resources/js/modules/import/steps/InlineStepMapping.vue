@@ -1,12 +1,17 @@
 <script setup lang="ts">
   /**
    * Loads a step's mapping structure and edits the mapping in place. It loads again when
-   * what the step imports, or where from, changes, since that changes the columns.
+   * anything about the step besides its mapping changes, such as what it imports, where
+   * from, or which entry type, since that can change the columns.
    */
   import '@craftcms/ui/components/spinner/spinner';
   import {t} from '@craftcms/ui';
   import {shallowRef, watch} from 'vue';
-  import type {ImportStep, MappingValues} from '@/modules/import/mapping/types';
+  import type {
+    ImportStep,
+    MappingValues,
+    MappingValueTree,
+  } from '@/modules/import/mapping/types';
   import {fetchStepMapping, type StepMappingPayload} from './step-mapping';
   import StepMappingEditor from './StepMappingEditor.vue';
 
@@ -24,9 +29,52 @@
   const error = shallowRef<string | null>(null);
   /** Remounts the editor for each load, so it starts from that load's trees. */
   const loadCount = shallowRef(0);
+  const editor = shallowRef<InstanceType<typeof StepMappingEditor> | null>(
+    null
+  );
+
+  /** The settings the mapping edits, which don't change its structure. */
+  const mappingTrees: MappingValueTree[] = [
+    'map',
+    'matchCriteria',
+    'clearableItems',
+    'defaultValues',
+    'keepMissingNestedElements',
+    'fieldSettings',
+    'templates',
+    'matchMode',
+  ];
+
+  /** Everything about the step that can change its columns: all of it but its mapping. */
+  function structureKey(): string {
+    // PHP sends empty settings as `[]`
+    const settings: Record<string, unknown> = Array.isArray(step.settings)
+      ? {}
+      : {...step.settings};
+
+    for (const tree of mappingTrees) {
+      delete settings[tree];
+    }
+
+    return JSON.stringify({
+      type: step.type,
+      source: step.source,
+      transformer: step.transformer,
+      settings,
+    });
+  }
+
+  /** Shows the server's errors for the step's templates on their columns. */
+  async function showTemplateErrors(
+    errors: Record<string, string[]>
+  ): Promise<void> {
+    await editor.value?.showTemplateErrors(errors);
+  }
+
+  defineExpose({showTemplateErrors});
 
   watch(
-    [() => canMap, () => step.type, () => step.source],
+    [() => canMap, structureKey],
     async ([mappable], _previous, onCleanup) => {
       let current = true;
       onCleanup(() => (current = false));
@@ -70,6 +118,7 @@
     <p v-if="error" class="m-0 error" role="alert">{{ error }}</p>
     <StepMappingEditor
       v-if="data"
+      ref="editor"
       :key="loadCount"
       :data="data"
       :step="step"
