@@ -72,8 +72,7 @@ class Sendmail extends BaseTransportAdapter
             ['command'],
             'in',
             'range' => fn() => $this->_allowedCommands(),
-            // Commands set entirely by an environment variable are trusted, but nothing more than that
-            'when' => fn() => !preg_match('/^\$(\w+|\{\w+})$/', $this->getUnparsedAttribute('command') ?? ''),
+            'when' => fn() => $this->getUnparsedAttribute('command') === null,
         ];
         return $rules;
     }
