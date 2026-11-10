@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.12.1 - 2026-11-10
 
 - Renamed Craft’s MCP tools to use snake_case, such as `elements_list` instead of `elements.list`, since some MCP clients reject or rename tools with dots in their names. Public MCP server approvals are updated automatically. Plugins should name their MCP tools the same way, such as `my_plugin_orders_list`. ([#20351](https://github.com/craftcms/cms/issues/20351))
 - The `assets_create` and `assets_replace` MCP tools now accept base64-encoded data, local file paths (stdio only), and single-use upload URLs, in addition to download URLs. Download URLs no longer require a `file_id`, and now follow up to 3 redirects.
