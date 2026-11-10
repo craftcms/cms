@@ -15,6 +15,7 @@ use craft\helpers\App;
 use craft\services\Config;
 use craft\test\TestCase;
 use craft\web\ServiceUnavailableHttpException;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -51,8 +52,21 @@ class InstallControllerTest extends TestCase
 
     public function testInstallerAllowedInDevMode(): void
     {
+        Craft::$app->setIsInstalled(false);
         $controller = $this->controller();
         self::assertTrue($controller->beforeAction($controller->createAction('install')));
+    }
+
+    /**
+     * The installer must stay closed once Craft is installed, even in Dev Mode.
+     */
+    public function testInstallerUnavailableWhenInstalled(): void
+    {
+        Craft::$app->setIsInstalled(true);
+        $controller = $this->controller();
+
+        $this->expectException(BadRequestHttpException::class);
+        $controller->beforeAction($controller->createAction('install'));
     }
 
     /**
@@ -98,6 +112,7 @@ class InstallControllerTest extends TestCase
             'migrationPath' => '@app/migrations',
         ]);
 
+        Craft::$app->setIsInstalled(false);
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $request = Craft::$app->getRequest();
         $request->getHeaders()->set('Accept', 'application/json');

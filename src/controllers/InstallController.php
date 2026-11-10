@@ -64,6 +64,10 @@ class InstallController extends Controller
             throw new ServiceUnavailableHttpException('Craft can’t connect to the database.');
         }
 
+        if (Craft::$app->getIsInstalled()) {
+            throw new BadRequestHttpException('Craft is already installed');
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         };

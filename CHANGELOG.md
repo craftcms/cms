@@ -13,6 +13,7 @@
 - `craft\elements\Asset::canSave()` now returns `true` for users’ own assets in their temporary upload folder.
 - The **My Account** → **Tokens** screen is now only shown to admins when OAuth signing keys haven’t been set up yet, and explains how to set them up, rather than failing with a server error when a token is created. Requests to create tokens are now rejected with a 400 error until the keys are set up. ([#20357](https://github.com/craftcms/cms/issues/20357))
 - The web-based installer is now only available when Dev Mode is enabled. Otherwise, Craft must be installed with the `install` CLI command.
+- The web-based installer’s actions are no longer available once Craft is installed, even when Dev Mode is enabled.
 - The web-based installer now responds with a 503 error when Craft can’t connect to the configured database, rather than offering to change the database connection settings.
 - The web-based installer now only saves database connection settings to the `.env` file once Craft has been installed with them, and no longer accepts them if the `.env` file isn’t writable.
 - Fixed a bug where saving user or group permissions dropped stored permissions whose plugins hadn’t registered them for the current request, such as when using the `user_permissions_group_set` MCP tool over stdio. The MCP permission tools now also reject unknown permissions rather than ignoring them. ([#20434](https://github.com/craftcms/cms/pull/20434))
