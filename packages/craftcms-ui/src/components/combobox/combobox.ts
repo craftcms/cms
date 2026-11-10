@@ -234,7 +234,15 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
       this.#filtering = false;
     }
     this.requestUpdate('value', old);
+
+    // A value set from script isn't an edit to commit on blur.
+    if (!this.#editing) {
+      this.#committedValue = this.value;
+    }
   }
+
+  /** Whether the user has changed the value since it was last committed. */
+  #editing = false;
 
   #internals?: ElementInternals;
   #inputs?: HTMLSpanElement;
@@ -558,6 +566,7 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     const previous = this.#lastQuery;
     this.#lastQuery = query;
     this.#filtering = true;
+    this.#editing = true;
 
     if (!this.multipleChoice && !this.requireOptionMatch) {
       this.#setValue(this.#parse(query));
@@ -759,6 +768,7 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
       return;
     }
 
+    this.#editing = true;
     this.value = value;
     this.#filtering = false;
     this.#syncTextbox();
@@ -769,6 +779,8 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
 
   /** Emits `change` when the value has moved since the last commit. */
   #commit(): void {
+    this.#editing = false;
+
     if (this.multipleChoice || sameValue(this.value, this.#committedValue)) {
       return;
     }
@@ -846,6 +858,7 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
       return;
     }
 
+    this.#editing = true;
     this.value = '';
     this.#syncTextbox();
     this.#renderOptions();

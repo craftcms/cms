@@ -124,6 +124,7 @@ it('doesn’t open the create screen when its label is typed', async () => {
   await userEvent.keyboard('{Tab}');
   await vi.waitFor(() => expect(combobox.opened).toBe(false));
   expect(selection.value).toBe('Create category');
+  expect(changes).toHaveBeenLastCalledWith('Create category', 'discrete');
   expect(changes.mock.calls.map(([value]) => value)).not.toContain('__add__');
   expect(new FormData(container as HTMLFormElement).getAll('category')).toEqual(
     ['Create category']

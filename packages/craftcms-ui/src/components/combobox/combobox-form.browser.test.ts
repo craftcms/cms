@@ -157,6 +157,32 @@ it('posts a single value through one native input', async () => {
   expect(entries(form)).toEqual([['apiVersion', '2026-04']]);
 });
 
+it('stays silent when left unedited after its value is set from script', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {control} = await fixture((c) => {
+    c.setAttribute('value', '2026-01');
+    c.requireOptionMatch = false;
+  });
+  const events: string[] = [];
+  control.addEventListener('input', () => events.push('input'));
+  control.addEventListener('change', () =>
+    events.push(`change:${control.value}`)
+  );
+  const after = document.createElement('button');
+  document.body.append(after);
+
+  control.value = '2026-04';
+  await control.updateComplete;
+  control.querySelector('input')!.focus();
+  after.focus();
+  expect(events).toEqual([]);
+
+  await userEvent.click(control.querySelector('input')!);
+  await userEvent.keyboard('{Control>}a{/Control}x');
+  after.focus();
+  expect(events).toEqual(['input', 'change:x']);
+});
+
 it('posts nothing while disabled', async () => {
   const {control, form} = await fixture((c) => {
     c.setAttribute('value', '2026-01');
