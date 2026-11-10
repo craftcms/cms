@@ -85,6 +85,9 @@ it.each([false, true])(
       await page
         .getByRole('textbox', {name: 'Database File Path'})
         .fill('custom.sqlite');
+      await page
+        .getByRole('textbox', {name: 'Prefix', exact: true})
+        .fill('cms_');
       await page.getByRole('button', {name: 'Next', exact: true}).click();
     }
 
@@ -119,7 +122,7 @@ it.each([false, true])(
       expect(payload.db).toEqual({
         driver: 'sqlite',
         database: 'custom.sqlite',
-        prefix: '',
+        prefix: 'cms_',
       });
     } else {
       expect(payload).not.toHaveProperty('db');
