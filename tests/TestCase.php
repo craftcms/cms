@@ -28,6 +28,8 @@ use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\Tests\Support\SkipsRepeatedDstHour;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Cache\ArrayStore;
+use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Application;
@@ -44,10 +46,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
+use Mcp\Capability\Discovery\CachedDiscoverer;
+use Mcp\Capability\Discovery\Discoverer;
+use Mcp\Capability\Discovery\DiscovererInterface;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
 use Pdo\Pgsql;
+use Psr\Log\NullLogger;
 use ReflectionProperty;
 
 class TestCase extends Orchestra
@@ -247,6 +253,14 @@ class TestCase extends Orchestra
     #[Override]
     protected function defineEnvironment($app): void
     {
+        // Cache only file discovery across applications, not per-user filtering or plugin registrations.
+        static $discoverer = new CachedDiscoverer(
+            new Discoverer,
+            new CacheRepository(new ArrayStore(serializesValues: true)),
+            new NullLogger,
+        );
+        $app->instance(DiscovererInterface::class, $discoverer);
+
         $projectConfigFolder = 'project';
 
         if (($token = getenv('TEST_TOKEN')) !== false) {
