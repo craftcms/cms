@@ -251,7 +251,7 @@
       </template>
     </CpContainer>
 
-    <CpConatiner>
+    <CpContainer>
       <template v-if="nonEditableImportPlans.length">
         <div>
           <h2>{{ t('Non-Editable Import Plans') }}</h2>
@@ -265,6 +265,6 @@
         </div>
         <AdminTable :table="nonEditableTable" :reorderable="false"></AdminTable>
       </template>
-    </CpConatiner>
+    </CpContainer>
   </div>
 </template>
