@@ -45,6 +45,25 @@ it('marks non-container fields as not a container', function () {
     expect($col->fieldUid)->toBeNull();
 });
 
+it('marks the columns of fields the layout requires as required', function () {
+    $required = Field::factory()->create(['handle' => 'requiredText', 'type' => PlainText::class]);
+    $optional = Field::factory()->create(['handle' => 'optionalText', 'type' => PlainText::class]);
+    Fields::refreshFields();
+
+    $fieldLayoutModel = FieldLayout::factory()
+        ->withContentTab([
+            CustomField::make($required->handle)->required(),
+            CustomField::make($optional->handle),
+        ])
+        ->create();
+
+    $fieldLayout = app(FieldsService::class)->getLayoutByUid($fieldLayoutModel->uid);
+    $cols = collect(ImportHelper::getDestinationColsForFieldLayout($fieldLayout));
+
+    expect($cols->firstWhere('handle', 'requiredText')->jsonSerialize())->toHaveKey('required', true)
+        ->and($cols->firstWhere('handle', 'optionalText')->jsonSerialize())->not->toHaveKey('required');
+});
+
 it('marks ImportableElementContainerFieldInterface fields as containers with a fieldUid', function () {
     $entryType = EntryType::factory()->create(['name' => 'Block', 'handle' => 'block']);
 

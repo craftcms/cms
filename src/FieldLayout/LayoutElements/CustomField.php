@@ -1070,6 +1070,7 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             withKeepInputs: $isContainer,
             defaultValueInput: $isContainer ? null : DefaultValueInputs::forField($field),
             icon: $field::icon(),
+            required: $this->required,
         );
     }
 

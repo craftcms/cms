@@ -1,11 +1,11 @@
 <script setup lang="ts">
   /**
-   * A destination column's field type icon, name and handle, badged when rows are
-   * matched on it or when that's all it can be used for.
+   * A destination column's field type icon, name and handle, marked when its field is
+   * required, and badged when rows are matched on it or when that's all it can be used for.
    */
   import '@craftcms/ui/components/badge/badge';
   import '@craftcms/ui/components/icon/icon';
-  import '@craftcms/ui/components/info-icon/info-icon';
+  import '@craftcms/ui/components/visually-hidden/visually-hidden';
   import {Color, t} from '@craftcms/ui';
   import {computed} from 'vue';
   import {isMatchKey} from '../matching';
@@ -32,6 +32,14 @@
       <div class="destination-cell__label">
         <div>
           {{ col.label }}
+          <template v-if="col.required">
+            <craft-visually-hidden>{{ t('Required') }}</craft-visually-hidden>
+            <craft-icon
+              name="asterisk"
+              data-color="danger"
+              aria-hidden="true"
+            ></craft-icon>
+          </template>
         </div>
         <span v-if="matched || isMatchOnly" class="destination-cell__badges">
           <craft-badge
@@ -39,18 +47,11 @@
             size="small"
             :fill="Color.Accent"
             no-prefix
-            >{{ t('Match Key') }}</craft-badge
+            >{{ t('Match key') }}</craft-badge
           >
-          <template v-else>
-            <craft-badge size="small" fill="gray" no-prefix>{{
-              t('Match only')
-            }}</craft-badge>
-            <craft-info-icon>{{
-              t(
-                'This value can only be used to match against an existing element.'
-              )
-            }}</craft-info-icon>
-          </template>
+          <craft-badge v-else size="small" fill="gray" no-prefix>{{
+            t('Match only')
+          }}</craft-badge>
         </span>
       </div>
       <pre class="text-quiet font-normal">{{ col.handle }}</pre>

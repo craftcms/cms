@@ -57,7 +57,7 @@
           size="small"
           :fill="Color.Accent"
           no-prefix
-          >{{ t('Match Key') }}</craft-badge
+          >{{ t('Match key') }}</craft-badge
         >
       </div>
     </th>

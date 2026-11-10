@@ -8,6 +8,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\FieldMappingSetting;
 use CraftCms\Cms\Import\Data\MappingColumn;
@@ -37,6 +38,7 @@ trait ImportableFieldLayoutElement
             // native fields like Title and Slug hold text, so they read as Plain Text fields do
             defaultValueInput: DefaultValueInputs::text(),
             icon: PlainText::icon(),
+            required: $this instanceof BaseField && $this->required,
         );
     }
 

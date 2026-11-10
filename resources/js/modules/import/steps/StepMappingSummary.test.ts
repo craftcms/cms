@@ -151,7 +151,7 @@ it('badges the destinations rows are matched on as Match Keys, inline in their r
     )
   ).toEqual([true, false, false]);
   expect(container.querySelector('craft-badge')!.textContent!.trim()).toBe(
-    'Match Key'
+    'Match key'
   );
 });
 
@@ -222,7 +222,7 @@ it('shows each destination’s field type icon, the same for a match key, which 
     [...container.querySelectorAll('tbody tr')][0]!.querySelector(
       'craft-badge'
     )!.textContent
-  ).toContain('Match Key');
+  ).toContain('Match key');
 });
 
 it('lists every mapping with no toggle when it has no limit', () => {

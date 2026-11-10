@@ -63,6 +63,9 @@ readonly class MappingColumn implements JsonSerializable
         /** The icon of the destination's field type, for telling columns apart at a glance. */
         #[Optional]
         public ?string $icon = null,
+        /** Whether the destination's field is required in its layout. */
+        #[Optional]
+        public ?bool $required = null,
     ) {}
 
     /**
@@ -87,6 +90,7 @@ readonly class MappingColumn implements JsonSerializable
         bool $withKeepInputs = false,
         ?array $defaultValueInput = null,
         ?string $icon = null,
+        ?bool $required = null,
     ): self {
         $prefixedHandle ??= $handle;
 
@@ -110,6 +114,7 @@ readonly class MappingColumn implements JsonSerializable
             importSettings: $importSettings,
             defaultValueInput: $defaultValueInput,
             icon: $icon,
+            required: $required,
         );
     }
 
@@ -141,6 +146,7 @@ readonly class MappingColumn implements JsonSerializable
                 : array_map(fn (FieldMappingSetting $setting): array => $setting->jsonSerialize(), $this->importSettings),
             'defaultValueInput' => $this->defaultValueInput,
             'icon' => $this->icon,
+            'required' => $this->required ?: null,
         ];
 
         return $payload + Arr::whereNotNull($optional);

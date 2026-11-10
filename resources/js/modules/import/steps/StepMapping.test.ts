@@ -727,7 +727,7 @@ function destinationBadges(): string[] {
   );
 }
 
-it('badges a column rows are matched on as a Match Key, in place of Match only', async () => {
+it('badges a column rows are matched on as a Match key, in place of Match only', async () => {
   mount([
     col({prefixedHandle: 'id', canBeSet: false, canBeMatchCriteria: true}),
   ]);
@@ -739,7 +739,7 @@ it('badges a column rows are matched on as a Match Key, in place of Match only',
   tickMatch(true);
   await nextTick();
 
-  expect(destinationBadges()).toEqual(['Match Key']);
+  expect(destinationBadges()).toEqual(['Match key']);
   expect(
     container.querySelector('tbody th craft-badge')!.getAttribute('fill')
   ).toBe('blue');
@@ -748,6 +748,24 @@ it('badges a column rows are matched on as a Match Key, in place of Match only',
   await nextTick();
 
   expect(destinationBadges()).toEqual(['Match only']);
+});
+
+it('marks the destinations whose fields are required, after their label', () => {
+  mount([
+    col({prefixedHandle: 'title', label: 'Title', required: true}),
+    col({prefixedHandle: 'summary', label: 'Summary'}),
+  ]);
+
+  const [title, summary] = [
+    ...container.querySelectorAll('tbody th .destination-cell__label > div'),
+  ];
+
+  expect(title!.textContent!.replace(/\s+/g, ' ').trim()).toBe(
+    'Title Required'
+  );
+  expect(title!.lastElementChild!.localName).toBe('craft-icon');
+  expect(title!.lastElementChild!.getAttribute('data-color')).toBe('danger');
+  expect(summary!.querySelector('craft-icon')).toBeNull();
 });
 
 it('offers no Match checkbox to a mapped column that can’t be matched on, or to one that isn’t mapped', () => {
