@@ -92,7 +92,9 @@ function formTabs(ui: UiPayload): FormTab[] {
  * the older version's that it doesn't have after the tab before them in the
  * older version, noting which versions have each. A tab is the same on both
  * sides when it's the same layout tab, or failing that, has the same label.
- * Tabs without any of the comparison's fields are left out.
+ * Tabs without any of the comparison's fields are left out, and sidebar tabs
+ * come after the rest, together, as the screen groups them at the end of each
+ * tab strip.
  */
 export function compareTabs(
   from: UiPayload,
@@ -133,25 +135,27 @@ export function compareTabs(
     }
   });
 
-  return tabs.flatMap((tab, index) => {
-    const tabRows = rowsByTab.get(tab);
+  return tabs
+    .flatMap((tab, index) => {
+      const tabRows = rowsByTab.get(tab);
 
-    return tabRows
-      ? [
-          {
-            key: tab.uid ?? `tab-${index}`,
-            label: tab.label,
-            icon: tab.icon,
-            rows: tabRows,
-            sides: {
-              from: [...fromTabs.values()].includes(tab),
-              to: toTabs.has(tab),
+      return tabRows
+        ? [
+            {
+              key: tab.uid ?? `tab-${index}`,
+              label: tab.label,
+              icon: tab.icon,
+              rows: tabRows,
+              sides: {
+                from: [...fromTabs.values()].includes(tab),
+                to: toTabs.has(tab),
+              },
+              sidebar: tab.sidebar,
             },
-            sidebar: tab.sidebar,
-          },
-        ]
-      : [];
-  });
+          ]
+        : [];
+    })
+    .sort((a, b) => Number(a.sidebar) - Number(b.sidebar));
 }
 
 /** The keys of the tabs that hold a field the newer version has errors in. */

@@ -159,6 +159,35 @@ describe('compareTabs', () => {
     ]);
   });
 
+  it('keeps the sidebar tabs of both versions after the rest', () => {
+    const sidebarTab = (uid: string, label: string, fields: string[]) => {
+      const node = tab(uid, label, fields);
+
+      return {...node, props: {...node.props, sidebar: true}};
+    };
+    const from = form([
+      tab('main', 'Main', ['body']),
+      sidebarTab('links', 'Links', ['url']),
+      tab('extra', 'Extra', ['notes']),
+    ]);
+    const to = form([
+      tab('content', 'Content', ['title']),
+      tab('visit', 'Visit', ['venue']),
+      sidebarTab('seo', 'SEO', ['metaTitle']),
+    ]);
+
+    expect(
+      compareTabs(from, to, [
+        row(null, 'title'),
+        row('body', null),
+        row(null, 'venue'),
+        row('url', null),
+        row('notes', null),
+        row(null, 'metaTitle'),
+      ]).map((compareTab) => compareTab.key)
+    ).toEqual(['main', 'extra', 'content', 'visit', 'links', 'seo']);
+  });
+
   it('keeps fields that aren’t in a tab together, unlabeled', () => {
     const to = form([field('title'), field('summary')]);
 
