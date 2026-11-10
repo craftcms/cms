@@ -21,7 +21,7 @@ async function simulateOverflow(el: CraftTruncate, overflow: boolean) {
   });
   Object.defineProperty(span, 'clientWidth', {value: 100, configurable: true});
   span.querySelector('slot')!.dispatchEvent(new Event('slotchange'));
-  await new Promise<void>((resolve) => whenIdle(resolve));
+  await new Promise<void>((resolve) => whenIdle(() => resolve()));
   return el.updateComplete;
 }
 

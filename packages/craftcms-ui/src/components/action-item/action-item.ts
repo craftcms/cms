@@ -39,6 +39,32 @@ const INTERACTIVE = [
   'craft-switch',
 ].join(', ');
 
+/** Items in closed menus waiting to render, in the order they arrived. */
+const waitingItems = new Set<CraftActionItem>();
+
+/** The idle callback that renders {@link waitingItems}. */
+let renderWaitingHandle: number | undefined;
+
+/**
+ * Renders waiting items until the idle period runs out, then waits for the
+ * next one. Rendering them together, rather than one per idle callback, lets
+ * other idle work that reads styles find them settled.
+ */
+function renderWaitingItems(deadline?: IdleDeadline): void {
+  renderWaitingHandle = undefined;
+
+  for (const item of waitingItems) {
+    item.renderNow();
+    if (deadline && deadline.timeRemaining() <= 0) {
+      break;
+    }
+  }
+
+  if (waitingItems.size) {
+    renderWaitingHandle = whenIdle(renderWaitingItems);
+  }
+}
+
 /**
  * @summary A single entry in a menu, rendered as a button or — when `href` is
  * set — as a link. Action items carry an optional leading icon, a label, an
@@ -225,12 +251,17 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     }
 
     return new Promise<void>((resolve) => {
-      const handle = whenIdle(() => this.#releaseFirstRender?.());
       this.#releaseFirstRender = () => {
         this.#releaseFirstRender = null;
-        cancelIdle(handle);
+        waitingItems.delete(this);
+        if (!waitingItems.size && renderWaitingHandle !== undefined) {
+          cancelIdle(renderWaitingHandle);
+          renderWaitingHandle = undefined;
+        }
         resolve();
       };
+      waitingItems.add(this);
+      renderWaitingHandle ??= whenIdle(renderWaitingItems);
     }).then(() => super.scheduleUpdate());
   }
 

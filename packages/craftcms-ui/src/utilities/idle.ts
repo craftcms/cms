@@ -1,10 +1,11 @@
 /**
- * Runs a callback once the browser is idle. Without `requestIdleCallback`,
- * the next task stands in for idle time.
+ * Runs a callback once the browser is idle, with the deadline for that idle
+ * period. Without `requestIdleCallback`, the next task stands in for idle
+ * time, and there's no deadline.
  *
  * @returns A handle for {@link cancelIdle}.
  */
-export function whenIdle(callback: () => void): number {
+export function whenIdle(callback: (deadline?: IdleDeadline) => void): number {
   return typeof requestIdleCallback === 'function'
     ? requestIdleCallback(callback)
     : window.setTimeout(callback);
