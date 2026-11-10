@@ -31,6 +31,12 @@ export default class CraftSelectInvoker extends LionSelectInvoker {
   /** Picks up badge content that changes while its option stays selected. */
   #selectedObserver = new MutationObserver(() => this.#syncBadge());
 
+  override connectedCallback() {
+    super.connectedCallback();
+    // reconnected after a move, such as a table row reordered, with the same option selected
+    this.#observeSelected();
+  }
+
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.#selectedObserver.disconnect();
@@ -40,13 +46,21 @@ export default class CraftSelectInvoker extends LionSelectInvoker {
     super.updated(changed);
 
     if (changed.has('selectedElement')) {
-      this.#selectedObserver.disconnect();
-
-      if (this.selectedElement) {
-        this.#selectedObserver.observe(this.selectedElement, {childList: true});
-      }
-
+      this.#observeSelected();
       this.#syncBadge();
+    }
+  }
+
+  /** Watches the selected option's content, its badge's text included. */
+  #observeSelected(): void {
+    this.#selectedObserver.disconnect();
+
+    if (this.selectedElement) {
+      this.#selectedObserver.observe(this.selectedElement, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
     }
   }
 

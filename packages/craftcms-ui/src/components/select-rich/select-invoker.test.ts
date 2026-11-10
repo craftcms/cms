@@ -54,6 +54,31 @@ describe('craft-select-rich invoker', () => {
     );
   });
 
+  it('follows the selected option’s badge after being moved, and as its text changes', async () => {
+    const invoker = await createInvoker(
+      'username<span slot="badge">Suggested</span>'
+    );
+    const option = invoker.selectedElement as unknown as HTMLElement;
+    const elsewhere = document.createElement('div');
+    document.body.append(elsewhere);
+
+    // a keyed reorder moves the invoker with the same option still selected
+    elsewhere.append(invoker);
+    option.insertAdjacentHTML('beforeend', '<span slot="badge">New</span>');
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(
+      [...invoker.querySelectorAll('[slot="badge"]')].map(
+        (badge) => badge.textContent
+      )
+    ).toEqual(['Suggested', 'New']);
+
+    option.querySelector('[slot="badge"]')!.firstChild!.textContent = 'Picked';
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(invoker.querySelector('[slot="badge"]')!.textContent).toBe('Picked');
+  });
+
   it('leaves the badge out when the selected option has none', async () => {
     const invoker = await createInvoker('username');
 
