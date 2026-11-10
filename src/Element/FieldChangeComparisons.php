@@ -328,8 +328,7 @@ readonly class FieldChangeComparisons
 
     /**
      * Returns whether a field changed between two versions, or `null` when that can’t be told from their form values.
-     * Translations are meant to differ, so between sites only a value missing on one side counts as a change, and a
-     * field that isn’t translated, which both sites of a version share, hasn’t changed.
+     * Between sites, a field that isn’t translated, which both sites of a version share, hasn’t changed.
      */
     private function changed(
         BaseField $layoutElement,
@@ -353,11 +352,7 @@ readonly class FieldChangeComparisons
 
         [$unchanged] = $this->compareNodes($layoutElement, [$fromPayload, $fromNode], $from, [$toPayload, $toNode], $to);
 
-        return match (true) {
-            $unchanged === null => null,
-            $otherSite => $this->isEmpty($fromPayload, $fromNode, $from, $layoutElement) !== $this->isEmpty($toPayload, $toNode, $to, $layoutElement),
-            default => ! $unchanged,
-        };
+        return $unchanged === null ? null : ! $unchanged;
     }
 
     /**
@@ -433,17 +428,6 @@ readonly class FieldChangeComparisons
             errors: [],
             globalErrors: [],
         );
-    }
-
-    private function isEmpty(?UiPayload $payload, ?NodePayload $node, ElementInterface $element, BaseField $layoutElement): bool
-    {
-        if ($node && $this->loadsOwnValues($node) && ($nested = $this->nestedElements($element, $layoutElement)) !== null) {
-            return $nested === [];
-        }
-
-        $value = $payload && $node ? data_get($payload->values, $node->control->path ?? []) : null;
-
-        return $value === null || $value === '' || $value === [];
     }
 
     /**

@@ -94,11 +94,6 @@
      * which pair a field a condition newly shows with the other side's.
      */
     counterparts: Record<CompareSide, Record<string, string>>;
-    /**
-     * Whether the sides are one element in two sites, whose fields the server
-     * compares as translations, missing or not, rather than by their values.
-     */
-    translations: boolean;
     /** Where closing the screen goes. */
     closeUrl: string | null;
     /** The element's chip, as server-rendered HTML, for the heading: B's, of two elements. */
@@ -215,15 +210,8 @@
     loaded.value[side].get(uid) ??
     shownValues.value[side].get(uid);
 
-  /**
-   * Whether a pair of fields' values differ, or `null` when either can't be
-   * read, or when the server wouldn't compare them by their values.
-   */
+  /** Whether a pair of fields' values differ, or `null` when either can't be read. */
   function valuesDiffer(fromUid: string, toUid: string): boolean | null {
-    if (props.translations) {
-      return null;
-    }
-
     const from = currentValue('from', fromUid);
     const to = currentValue('to', toUid);
 

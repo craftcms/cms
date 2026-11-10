@@ -516,10 +516,10 @@ it('lists the current entry’s own revision only when it’s being compared', f
         )->toContain("Revision $current->revisionNum"));
 });
 
-it('compares two sites, flagging only translations that are missing on one side', function () {
+it('compares two sites, flagging translations that differ but not fields the sites share', function () {
     $entry = comparedEntry(['summary' => 'Twelve works on paper', 'tagline' => 'Drawing as light', 'venue' => 'Main campus']);
     $translation = Entry::find()->id($entry->id)->siteId($this->secondarySite->id)->status(null)->one();
-    $translation->setFieldValues(['summary' => 'Douze œuvres sur papier', 'tagline' => '']);
+    $translation->setFieldValues(['summary' => 'Douze œuvres sur papier', 'tagline' => 'Drawing as light']);
     expect(Elements::saveElement($translation))->toBeTrue();
 
     get(compareScreenUrl($entry, ['siteId' => $translation->siteId, 'fromSiteId' => $entry->siteId]))
@@ -527,12 +527,10 @@ it('compares two sites, flagging only translations that are missing on one side'
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('from.siteName', $entry->getSite()->getName())
             ->where('to.siteName', 'Secondary')
-            ->where('to.editor.siteId', $translation->siteId)
-            // So a field a condition shows later isn't compared by its values, as the server doesn't.
-            ->where('translations', true))
+            ->where('to.editor.siteId', $translation->siteId))
         ->assertInertia(fn (AssertableInertia $page) => expect(changedFields($page, 'to'))->toMatchArray([
-            'Summary' => false,
-            'Tagline' => true,
+            'Summary' => true,
+            'Tagline' => false,
             'Venue' => false,
         ]));
 });
@@ -862,7 +860,6 @@ it('flags every differing value between two separate entries in two sites, as ne
         'fromSiteId' => $a->siteId,
     ]))
         ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('translations', false))
         ->assertInertia(fn (AssertableInertia $page) => expect(changedFields($page, 'to'))->toMatchArray([
             'Summary' => true,
             'Tagline' => false,
