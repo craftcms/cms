@@ -8,7 +8,6 @@ use craft\config\GeneralConfig as LegacyGeneralConfig;
 use CraftCms\Cms\Config\AnchorsConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Config;
@@ -78,8 +77,6 @@ readonly class GeneralConfigCompatibility
             return $this->toConfigObject($this->resolve($config, LegacyGeneralConfig::create()));
         }
 
-        Deprecator::log('config-general-app-type', 'Using general.web.php and general.console.php configuration files is deprecated.');
-
         // An object overlay replaces the config, as it did in Craft 5, so the config is never resolved or converted
         if ($overlay instanceof GeneralConfig) {
             return $overlay;
@@ -137,8 +134,6 @@ readonly class GeneralConfigCompatibility
             return $config;
         }
 
-        Deprecator::log('config-anchors', 'The `config/craft/anchors.php` config file is deprecated. Move its settings to the `anchors` setting in `config/craft/general.php`.');
-
         if ($config->anchors == AnchorsConfig::create()) {
             $config->anchors($anchors);
         }
@@ -149,7 +144,6 @@ readonly class GeneralConfigCompatibility
     private function resolve(mixed $config, GeneralConfig $default): GeneralConfig|array
     {
         if (is_callable($config)) {
-            Deprecator::log('config-general-callable', 'Returning a callable from general.php is deprecated.');
             $config = $config($default);
         }
 

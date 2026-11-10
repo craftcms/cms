@@ -11,9 +11,9 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Shared\Enums\Color;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Crypt;
 use ReflectionFunction;
@@ -50,10 +50,10 @@ final class LegacyActionMenuItems
             return;
         }
 
-        $locations = $this->handlerLocations($event->element, 'defineActionMenuItems');
+        $locations = self::handlerLocations($event->element, 'defineActionMenuItems');
 
         foreach ($locations as [$file, $line]) {
-            Deprecator::log(
+            LegacyUsage::record(
                 'Element::EVENT_DEFINE_ACTION_MENU_ITEMS',
                 sprintf(
                     '`craft\base\Element::EVENT_DEFINE_ACTION_MENU_ITEMS` has been deprecated. Listen for `%s` and add action menu descriptors instead.',
@@ -96,7 +96,7 @@ final class LegacyActionMenuItems
             $file = $method->getFileName() ?: null;
             $line = $method->getStartLine() ?: null;
 
-            Deprecator::log(
+            LegacyUsage::record(
                 "{$method->class}::{$method->name}",
                 sprintf(
                     '`%s::%s()` items are being converted to action menu descriptors by the Yii2 adapter. Override `extraActionMenuDescriptors()` to provide them directly.',
@@ -149,16 +149,19 @@ final class LegacyActionMenuItems
             if ($descriptor === null) {
                 $label = $this->label($item) ?? $item['id'] ?? '(unlabeled)';
 
-                Deprecator::log(
-                    "action-menu-item:$label",
-                    sprintf(
-                        'The “%s” action menu item can’t be shown in the Inertia element editor or element chips because it relies on JavaScript. Give it a `url` or `action`, or add it as a descriptor via `%s`.',
-                        $label,
-                        ElementActionMenuDescriptorsResolving::class,
-                    ),
-                    $file,
-                    $line,
-                );
+                // Without a source, the call stack would blame whatever rendered the menu, not the handler that added the item.
+                if ($file !== null) {
+                    LegacyUsage::record(
+                        "action-menu-item:$label",
+                        sprintf(
+                            'The “%s” action menu item can’t be shown in the Inertia element editor or element chips because it relies on JavaScript. Give it a `url` or `action`, or add it as a descriptor via `%s`.',
+                            $label,
+                            ElementActionMenuDescriptorsResolving::class,
+                        ),
+                        $file,
+                        $line,
+                    );
+                }
 
                 continue;
             }
@@ -386,7 +389,7 @@ final class LegacyActionMenuItems
      *
      * @return list<array{string, int}>
      */
-    private function handlerLocations(ElementInterface $element, string $name): array
+    public static function handlerLocations(ElementInterface $element, string $name): array
     {
         /** @var array<string, array<string, list<array{0: callable, 1: mixed}>>> $events */
         $events = new ReflectionProperty(YiiEvent::class, '_events')->getValue();

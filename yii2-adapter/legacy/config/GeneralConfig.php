@@ -13,7 +13,6 @@ use craft\services\Config;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use DateInterval;
 use Deprecated;
 use Illuminate\Contracts\Foundation\Application;
@@ -61,6 +60,12 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * when it’s restored
      */
     private array $middlewareSettings = [];
+
+    /**
+     * @var array<string, string> Settings that Craft no longer supports which have been set, with guidance on
+     * replacing each one
+     */
+    private array $deprecatedSettings = [];
 
     /**
      * @var bool Whether [[holdSideEffects()]] is running
@@ -1859,8 +1864,9 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     {
         $config = parent::__set_state($stateData);
 
-        // The parent can’t restore this private property on subclasses
+        // The parent can’t restore these private properties on subclasses
         $config->middlewareSettings = $stateData['middlewareSettings'] ?? [];
+        $config->deprecatedSettings = $stateData['deprecatedSettings'] ?? [];
         $config->applyMiddlewareSettings();
 
         return $config;
@@ -1997,13 +2003,21 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
-     * Logs a deprecation warning for a config setting that was set.
+     * Returns the settings that Craft no longer supports which have been set, with guidance on replacing each one.
+     *
+     * @return array<string, string>
+     * @internal
+     */
+    public function getDeprecatedSettings(): array
+    {
+        return $this->deprecatedSettings;
+    }
+
+    /**
+     * Records that a setting Craft no longer supports was set, for the Yii2 Loose Ends utility.
      */
     private function deprecate(string $setting, string $guidance): void
     {
-        app()->booted(fn() => Deprecator::log(
-            "generalConfig.$setting",
-            "The `$setting` config setting is deprecated. $guidance",
-        ));
+        $this->deprecatedSettings[$setting] = $guidance;
     }
 }

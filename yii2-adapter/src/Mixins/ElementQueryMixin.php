@@ -7,7 +7,7 @@ namespace CraftCms\Yii2Adapter\Mixins;
 use Closure;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use function CraftCms\Yii2Adapter\Helpers\Queries\buildCondition;
 
 class ElementQueryMixin
@@ -15,7 +15,7 @@ class ElementQueryMixin
     public function getCachedResult(): Closure
     {
         return function() {
-            Deprecator::log('ElementQuery-getCachedResult', 'Calling ->getCachedResult on an ElementQuery is deprecated. Use ->getResultOverride() instead.');
+            LegacyUsage::record('ElementQuery-getCachedResult', 'Calling ->getCachedResult on an ElementQuery is deprecated. Use ->getResultOverride() instead.');
 
             /** @phpstan-ignore-next-line */
             return $this->getResultOverride();
@@ -25,7 +25,7 @@ class ElementQueryMixin
     public function setCachedResult(): Closure
     {
         return function(array $elements) {
-            Deprecator::log('ElementQuery-setCachedResult', 'Calling ->setCachedResult on an ElementQuery is deprecated. Use ->setResultOverride() instead.');
+            LegacyUsage::record('ElementQuery-setCachedResult', 'Calling ->setCachedResult on an ElementQuery is deprecated. Use ->setResultOverride() instead.');
 
             /** @phpstan-ignore-next-line */
             $this->setResultOverride($elements);
@@ -35,7 +35,7 @@ class ElementQueryMixin
     public function clearCachedResult(): Closure
     {
         return function() {
-            Deprecator::log('ElementQuery-clearCachedResult', 'Calling ->clearCachedResult on an ElementQuery is deprecated. Use ->clearResultOverride() instead.');
+            LegacyUsage::record('ElementQuery-clearCachedResult', 'Calling ->clearCachedResult on an ElementQuery is deprecated. Use ->clearResultOverride() instead.');
 
             /** @phpstan-ignore-next-line */
             $this->clearResultOverride();
@@ -45,7 +45,7 @@ class ElementQueryMixin
     public function collect(): Closure
     {
         return function() {
-            Deprecator::log('ElementQuery-collect', 'Calling ->collect on an ElementQuery is deprecated. ElementQuery now returns a collection by default.');
+            LegacyUsage::record('ElementQuery-collect', 'Calling ->collect on an ElementQuery is deprecated. ElementQuery now returns a collection by default.');
 
             /** @phpstan-ignore-next-line */
             return $this->get();
@@ -55,7 +55,7 @@ class ElementQueryMixin
     public function scalar(): Closure
     {
         return function() {
-            Deprecator::log('ElementQuery-scalar', 'Calling ->scalar on an ElementQuery is deprecated. Use ->pluck($column)->first() for the raw value, or ->value($column) for the element’s value.');
+            LegacyUsage::record('ElementQuery-scalar', 'Calling ->scalar on an ElementQuery is deprecated. Use ->pluck($column)->first() for the raw value, or ->value($column) for the element’s value.');
 
             /** @phpstan-ignore-next-line */
             $row = $this->toBase()->first();
@@ -68,7 +68,7 @@ class ElementQueryMixin
     public function column(): Closure
     {
         return function($column) {
-            Deprecator::log('ElementQuery-column', 'Calling ->column on an ElementQuery is deprecated. Use ->pluck($column) instead.');
+            LegacyUsage::record('ElementQuery-column', 'Calling ->column on an ElementQuery is deprecated. Use ->pluck($column) instead.');
 
             /** @phpstan-ignore-next-line */
             return $this->pluck($this->query->getColumns()[0])->all();
@@ -78,7 +78,7 @@ class ElementQueryMixin
     public function pairs(): Closure
     {
         return function() {
-            Deprecator::log('ElementQuery-pairs', 'Calling ->pairs on an ElementQuery is deprecated. Use ->pluck($value, $key) instead.');
+            LegacyUsage::record('ElementQuery-pairs', 'Calling ->pairs on an ElementQuery is deprecated. Use ->pluck($value, $key) instead.');
 
             /** @phpstan-ignore-next-line */
             return $this->pluck($this->query->getColumns()[1], $this->query->getColumns()[0])->all();
@@ -88,7 +88,7 @@ class ElementQueryMixin
     public function addOrderBy(): Closure
     {
         return function($columns) {
-            Deprecator::log('ElementQuery-addOrderBy', 'Calling ->addOrderBy on an ElementQuery is deprecated. Use ->orderBy($column) instead.');
+            LegacyUsage::record('ElementQuery-addOrderBy', 'Calling ->addOrderBy on an ElementQuery is deprecated. Use ->orderBy($column) instead.');
 
             foreach (Arr::wrap($columns) as $column) {
                 /** @phpstan-ignore-next-line */
@@ -102,7 +102,7 @@ class ElementQueryMixin
     public function afterPopulate(): Closure
     {
         return function(array $elements) {
-            Deprecator::log('ElementQuery-afterPopulate', 'Calling ->afterPopulate on an ElementQuery is deprecated.');
+            LegacyUsage::record('ElementQuery-afterPopulate', 'Calling ->afterPopulate on an ElementQuery is deprecated.');
 
             /** @phpstan-ignore-next-line */
             return $this->hydrate($elements);
@@ -112,7 +112,7 @@ class ElementQueryMixin
     public function andWhere(): Closure
     {
         return function($condition) {
-            Deprecator::log('ElementQuery-andWhere', 'Calling ->andWhere on an ElementQuery is deprecated. Use ->where() instead.');
+            LegacyUsage::record('ElementQuery-andWhere', 'Calling ->andWhere on an ElementQuery is deprecated. Use ->where() instead.');
 
             [$sql, $bindings] = buildCondition($condition);
 
@@ -128,7 +128,7 @@ class ElementQueryMixin
     public function filterWhere(): Closure
     {
         return function($condition) {
-            Deprecator::log('ElementQuery-filterWhere', 'Calling ->filterWhere on an ElementQuery is deprecated.');
+            LegacyUsage::record('ElementQuery-filterWhere', 'Calling ->filterWhere on an ElementQuery is deprecated.');
 
             $condition = ElementQueryMixin::filterCondition($condition);
 
@@ -155,7 +155,7 @@ class ElementQueryMixin
     public function andFilterWhere(): Closure
     {
         return function($condition) {
-            Deprecator::log('ElementQuery-andFilterWhere', 'Calling ->andFilterWhere on an ElementQuery is deprecated. Use ->where() instead.');
+            LegacyUsage::record('ElementQuery-andFilterWhere', 'Calling ->andFilterWhere on an ElementQuery is deprecated. Use ->where() instead.');
 
             $condition = ElementQueryMixin::filterCondition($condition);
 
@@ -177,7 +177,7 @@ class ElementQueryMixin
     public function orFilterWhere(): Closure
     {
         return function($condition) {
-            Deprecator::log('ElementQuery-orFilterWhere', 'Calling ->orFilterWhere on an ElementQuery is deprecated. Use ->orWhere() instead.');
+            LegacyUsage::record('ElementQuery-orFilterWhere', 'Calling ->orFilterWhere on an ElementQuery is deprecated. Use ->orWhere() instead.');
 
             $condition = ElementQueryMixin::filterCondition($condition);
 
@@ -199,7 +199,7 @@ class ElementQueryMixin
     public function emulateExecution(): Closure
     {
         return function($value = true) {
-            Deprecator::log('ElementQuery-emulateExecution', 'Calling ->emulateExecution on an ElementQuery is deprecated.');
+            LegacyUsage::record('ElementQuery-emulateExecution', 'Calling ->emulateExecution on an ElementQuery is deprecated.');
 
             if ($value) {
                 /** @phpstan-ignore-next-line */
@@ -225,7 +225,7 @@ class ElementQueryMixin
     public function joinElementTable(): Closure
     {
         return function(string $table) {
-            Deprecator::log(
+            LegacyUsage::record(
                 'ElementQuery-joinElementTable',
                 'Calling ->joinElementTable on an ElementQuery is deprecated. Declare the table with the `$table` property on the element query class instead.',
             );

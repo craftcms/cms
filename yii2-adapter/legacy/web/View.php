@@ -18,7 +18,6 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Support\Html;
@@ -44,6 +43,7 @@ use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
 use CraftCms\Cms\View\TemplateRoots;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use Twig\Error\LoaderError as TwigLoaderError;
@@ -298,7 +298,7 @@ class View extends \yii\web\View
      */
     public function getTwig(?string $templateMode = null): Environment
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::getTwig()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::get()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::getTwig()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::get()` instead.');
 
         $mode = TemplateMode::tryFrom($templateMode) ?? TemplateMode::get();
 
@@ -314,7 +314,7 @@ class View extends \yii\web\View
      */
     public function setTwig(Environment $twig): void
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::setTwig()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::set()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::setTwig()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::set()` instead.');
 
         app(Twig::class)->set($twig);
     }
@@ -326,7 +326,7 @@ class View extends \yii\web\View
      */
     public function createTwig(): Environment
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::createTwig()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::create()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::createTwig()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::create()` instead.');
 
         return app(Twig::class)->create();
     }
@@ -339,7 +339,7 @@ class View extends \yii\web\View
      */
     public function registerTwigExtension(ExtensionInterface $extension): void
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::registerTwigExtension()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::registerExtension()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::registerTwigExtension()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::registerExtension()` instead.');
 
         app(Twig::class)->registerExtension($extension);
     }
@@ -353,7 +353,7 @@ class View extends \yii\web\View
      */
     public function registerCpTwigExtension(ExtensionInterface $extension): void
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::registerCpTwigExtension()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::registerExtension($extension, TemplateMode::Cp)` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::registerCpTwigExtension()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::registerExtension($extension, TemplateMode::Cp)` instead.');
 
         app(Twig::class)->registerExtension($extension, TemplateMode::Cp);
     }
@@ -367,7 +367,7 @@ class View extends \yii\web\View
      */
     public function registerSiteTwigExtension(ExtensionInterface $extension): void
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::registerSiteTwigExtension()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::registerExtension($extension, TemplateMode::Site)` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::registerSiteTwigExtension()` has been deprecated. Use `CraftCms\Cms\Twig\Twig::registerExtension($extension, TemplateMode::Site)` instead.');
 
         app(Twig::class)->registerExtension($extension, TemplateMode::Site);
     }
@@ -380,7 +380,7 @@ class View extends \yii\web\View
      */
     public function getIsRenderingTemplate(): bool
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::isRenderingTemplate()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::getIsRenderingTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::isRenderingTemplate()` instead.');
 
         return Template::isRenderingTemplate();
     }
@@ -402,7 +402,7 @@ class View extends \yii\web\View
      */
     public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderTemplate()` or the `template()` helper instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::renderTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderTemplate()` or the `template()` helper instead.');
 
         $templateMode = $templateMode
             ? TemplateMode::from($templateMode)
@@ -431,7 +431,7 @@ class View extends \yii\web\View
      */
     public function renderSandboxedTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderSandboxedTemplate()` or the `sandboxedTemplate()` helper instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::renderSandboxedTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderSandboxedTemplate()` or the `sandboxedTemplate()` helper instead.');
 
         return Template::renderSandboxedTemplate($template, $variables, $templateMode ? TemplateMode::from($templateMode) : null);
     }
@@ -444,7 +444,7 @@ class View extends \yii\web\View
      */
     public function getIsRenderingPageTemplate(): bool
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingPageTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::isRenderingPageTemplate()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::getIsRenderingPageTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::isRenderingPageTemplate()` instead.');
 
         return Template::isRenderingPageTemplate();
     }
@@ -459,7 +459,7 @@ class View extends \yii\web\View
      */
     public function getIsRenderingStringTemplate(): bool
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::getIsRenderingStringTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::isRenderingStringTemplate()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::getIsRenderingStringTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::isRenderingStringTemplate()` instead.');
 
         return Template::isRenderingStringTemplate();
     }
@@ -481,7 +481,7 @@ class View extends \yii\web\View
      */
     public function renderPageTemplate(string $template, array $variables = [], ?string $templateMode = null): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderPageTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderPageTemplate()` or the `pageTemplate()` helper instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::renderPageTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderPageTemplate()` or the `pageTemplate()` helper instead.');
 
         return Template::renderPageTemplate(
             $template,
@@ -507,7 +507,7 @@ class View extends \yii\web\View
      */
     public function renderString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderString()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderTwigString()` or the `renderString()` helper instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::renderString()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderTwigString()` or the `renderString()` helper instead.');
 
         return Template::renderTwigString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
     }
@@ -531,7 +531,7 @@ class View extends \yii\web\View
      */
     public function renderSandboxedString(string $template, array $variables = [], string $templateMode = TemplateMode::Site->value, bool $escapeHtml = false): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedString()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderSandboxedString()` or the `renderSandboxedString()` helper instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::renderSandboxedString()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderSandboxedString()` or the `renderSandboxedString()` helper instead.');
 
         return Template::renderSandboxedString($template, $variables, TemplateMode::from($templateMode), $escapeHtml);
     }
@@ -560,7 +560,7 @@ class View extends \yii\web\View
      */
     public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = TemplateMode::Site->value): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderObjectTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderObjectTemplate()` or the `renderObjectTemplate()` helper instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::renderObjectTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderObjectTemplate()` or the `renderObjectTemplate()` helper instead.');
 
         return Template::renderObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
     }
@@ -588,7 +588,7 @@ class View extends \yii\web\View
         array $variables = [],
         string $templateMode = TemplateMode::Site->value,
     ): string {
-        Deprecator::log(__METHOD__, '`craft\web\View::renderSandboxedObjectTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderSandboxedObjectTemplate()` or the `renderSandboxedObjectTemplate()` helper instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::renderSandboxedObjectTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::renderSandboxedObjectTemplate()` or the `renderSandboxedObjectTemplate()` helper instead.');
 
         return Template::renderSandboxedObjectTemplate($template, $object, $variables, TemplateMode::from($templateMode));
     }
@@ -603,7 +603,7 @@ class View extends \yii\web\View
      */
     public function normalizeObjectTemplate(string $template): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::normalizeObjectTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::normalizeObjectTemplate()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::normalizeObjectTemplate()` has been deprecated. Use `CraftCms\Cms\View\TemplateManager::normalizeObjectTemplate()` instead.');
 
 
 
@@ -1445,7 +1445,7 @@ class View extends \yii\web\View
      */
     public function getHeadHtml(bool $clear = true): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::getHeadHtml()` has been deprecated. Use `CraftCms\Cms\View\HtmlStack::headHtml()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::getHeadHtml()` has been deprecated. Use `CraftCms\Cms\View\HtmlStack::headHtml()` instead.');
 
         return $this->registry()->headHtml(clear: $clear);
     }
@@ -1463,7 +1463,7 @@ class View extends \yii\web\View
      */
     public function getBodyHtml(bool $clear = true): string
     {
-        Deprecator::log(__METHOD__, '`craft\web\View::getBodyHtml()` has been deprecated. Use `CraftCms\Cms\View\HtmlStack::bodyHtml()` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\web\View::getBodyHtml()` has been deprecated. Use `CraftCms\Cms\View\HtmlStack::bodyHtml()` instead.');
 
         return $this->registry()->bodyHtml(clear: $clear);
     }
@@ -2220,7 +2220,7 @@ JS;
      */
     public function elementChipHtml(array $context): ?string
     {
-        Deprecator::log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
+        LegacyUsage::record('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
 
         if (!isset($context['element'])) {
             return null;

@@ -536,6 +536,10 @@
 - Added the `appearance` and `size` properties to `<craft-disclosure>`. `appearance="plain"` drops the content’s hairline and indent, and `size` sizes the default toggle. ([#19942](https://github.com/craftcms/cms/pull/19942))
 - Added the `hyperlinkUrl`, `hyperlinkTag`, and `hyperlinkAttributes` config options to `CraftCms\Cms\Cp\Html\ElementHtml::elementChipHtml()`, and the `bare` prop to the `CpLink` Vue component. ([#19932](https://github.com/craftcms/cms/pull/19932))
 - Added the `label` attribute to `<craft-tabs>`, and `CraftCms\Cms\Cp\Components\Tabs::label()`, which set the tab list’s accessible name.
+- Added the `label` property to `<craft-copy-button>`, which sets an icon-only button’s accessible name. ([#20501](https://github.com/craftcms/cms/pull/20501))
+- Added the `icon` property to `<craft-copy-button>`, which replaces its copy icon. ([#20501](https://github.com/craftcms/cms/pull/20501))
+- Added the `flush` property to `<craft-copy-button>`, which works like `<craft-button>`’s. ([#20501](https://github.com/craftcms/cms/pull/20501))
+- Added the `hide-tooltip` attribute to `<craft-copy-button>`, which hides its tooltip until something is copied. ([#20501](https://github.com/craftcms/cms/pull/20501))
 - Added `CraftCms\Cms\Http\Responses\CpScreenResponse::ui()`, for rendering UI definitions or resolved payloads. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Added `CraftCms\Cms\Cp\Data\ActionItem::$status` and `status()`. ([#19892](https://github.com/craftcms/cms/pull/19892))
 - Added `craft.cp.selectize()` and `CraftCms\Cms\Cp\FormFields::selectizeFromConfig()`, which render the legacy selectize variables as a combobox.
@@ -769,6 +773,8 @@
 - MySQL database backups and restores now respect the `PDO::MYSQL_ATTR_SSL_CAPATH` and `PDO::MYSQL_ATTR_SSL_CIPHER` database connection attributes. ([#19366](https://github.com/craftcms/cms/pull/19366))
 - The database table prefix is now set with the `DB_PREFIX` environment variable. The installer saved it to `DB_TABLE_PREFIX`, and now also appends an underscore, like the `craft:setup:db-creds` command. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - When `craftcms/yii2-adapter` is installed and no table prefix is configured, the `CRAFT_DB_TABLE_PREFIX` and `DB_TABLE_PREFIX` environment variables are applied with a trailing underscore, like Craft 5. ([#20192](https://github.com/craftcms/cms/pull/20192))
+- Added the Yii2 Loose Ends utility, which the Yii adapter registers. It lists what in the project still depends on the adapter, including configuration, content, project code that has run the adapter’s compatibility features, and plugins and packages that require or suggest it, along with any updates that no longer need it. Items can be fixed in place, updated, or copied as a prompt for an AI agent, and once nothing is left, the utility lists the steps to uninstall the adapter. ([#20501](https://github.com/craftcms/cms/pull/20501))
+- The Yii adapter no longer logs deprecation warnings when the project relies on its compatibility features. They’re listed in the Yii2 Loose Ends utility instead, and usage that comes from plugins and other packages isn’t reported. ([#20501](https://github.com/craftcms/cms/pull/20501))
 - Added `CraftCms\Cms\Support\Query::prepareDateForDb()`, which converts a date to the UTC string Craft stores dates as, for writing or comparing it with the query builder. ([#20053](https://github.com/craftcms/cms/pull/20053))
 - Added `CraftCms\Cms\Update\Maintenance`, which turns maintenance mode on and off. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added the `craft:project-config:check` command, which checks project config schema compatibility without applying changes.
@@ -819,7 +825,7 @@
 - Fixed a bug where macros registered on one element query, element, or component class, such as `EntryQuery` or a field type, were available on all of them, and macros registered on `Element` didn’t apply to users. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Fixed a bug where Carbon dates passed to `CraftCms\Cms\Field\Field::serializeValue()` were serialized as arrays rather than ISO-8601 strings, so Yii adapter plugin fields that stored dates couldn’t load them back. ([#20477](https://github.com/craftcms/cms/pull/20477))
 - Fixed a bug where Craft 5 config settings that were deprecated or removed were ignored when set from an array-based general config with the Yii adapter installed.
-- Fixed a bug where deprecated config settings didn’t log deprecation warnings when they were set from environment variables or after the application had booted.
+- Fixed a bug where deprecated config settings weren’t reported when they were set from environment variables or after the application had booted.
 - Fixed an error that occurred when a Craft 5 general config called `enableBasicHttpAuth()` or `tempAssetUploadFs()` with the Yii adapter installed.
 - Fixed a bug where editable tables in Yii adapter plugin fields, such as those rendered with `craft\helpers\Cp::editableTableFieldHtml()`, showed no rows in element editors, and saving the element cleared them. ([#20478](https://github.com/craftcms/cms/pull/20478))
 - Fixed a bug where CSRF protection stayed off when the `enableCsrfProtection` config setting was set to `false` and then back to `true`, such as with a `CRAFT_ENABLE_CSRF_PROTECTION` environment variable, with the Yii adapter installed. ([#20451](https://github.com/craftcms/cms/pull/20451))
@@ -1293,6 +1299,7 @@
 - Fixed an error that occurred when a Yii adapter plugin called `getAttributes()` on a native element. ([#20507](https://github.com/craftcms/cms/pull/20507))
 - Fixed an error that occurred when a Yii adapter plugin listed tag groups or global sets on a project without tags or global sets. ([#20507](https://github.com/craftcms/cms/pull/20507))
 - Fixed a bug where Money fields’ inputs held their minimum and maximum amounts in the currency’s minor units, such as cents. ([#20449](https://github.com/craftcms/cms/pull/20449))
+- Fixed a bug where `<craft-badge-indicator>` counts sat slightly above center. ([#20501](https://github.com/craftcms/cms/pull/20501))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

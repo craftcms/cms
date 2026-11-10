@@ -13,35 +13,30 @@ use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\test\TestCase;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
-use CraftCms\Cms\Deprecator\Deprecator;
+use crafttests\_support\LegacyUsageSpy;
 use yii\base\Event;
 
 class MailerHelperTest extends TestCase
 {
-    public function testRegisteredMailerTransportsAreIgnoredAndWarnedOnce(): void
+    public function testRegisteredMailerTransportsAreIgnoredAndReported(): void
     {
-        /** @var Deprecator $deprecator */
-        $deprecator = app(Deprecator::class);
+        $usage = LegacyUsageSpy::bind();
 
         Event::on(MailerHelper::class, MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS, function(RegisterComponentTypesEvent $event) {
             $event->types[] = \stdClass::class;
         });
 
-        $types = MailerHelper::allMailerTransportTypes();
-        MailerHelper::allMailerTransportTypes();
+        try {
+            $types = MailerHelper::allMailerTransportTypes();
 
-        self::assertContains(Sendmail::class, $types);
-        self::assertContains(Smtp::class, $types);
-        self::assertNotContains(\stdClass::class, $types);
-
-        $matches = array_filter(
-            $deprecator->getRequestLogs(),
-            fn($log) => $log->key === 'MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS',
-        );
-
-        self::assertCount(1, $matches);
-
-        Event::off(MailerHelper::class, MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS);
+            self::assertContains(Sendmail::class, $types);
+            self::assertContains(Smtp::class, $types);
+            self::assertNotContains(\stdClass::class, $types);
+            self::assertContains('MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS', $usage->keys);
+        } finally {
+            Event::off(MailerHelper::class, MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS);
+            LegacyUsageSpy::unbind();
+        }
     }
 
     public function testCreateTransportAdapterFailsLoudlyForUnsupportedTypes(): void

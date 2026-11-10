@@ -6,7 +6,7 @@ namespace CraftCms\Yii2Adapter\Mixins;
 
 use Closure;
 use CraftCms\Cms\Element\Element;
-use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use Throwable;
 
 class ElementMixin
@@ -17,6 +17,8 @@ class ElementMixin
     public function getAttributes(): Closure
     {
         return function(?array $names = null, array $except = []): array {
+            LegacyUsage::record(__METHOD__, 'Elements’ `getAttributes()` method has been deprecated. Read the attributes directly, or use `toArray()`, instead.');
+
             /**
              * @var Element $this
              *
@@ -43,7 +45,7 @@ class ElementMixin
     public function getSourceId(): Closure
     {
         return function(): ?int {
-            Deprecator::log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
+            LegacyUsage::record(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
 
             /**
              * @var Element $this
@@ -57,7 +59,7 @@ class ElementMixin
     public function getSourceUid(): Closure
     {
         return function(): ?string {
-            Deprecator::log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
+            LegacyUsage::record(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
 
             /**
              * @var Element $this

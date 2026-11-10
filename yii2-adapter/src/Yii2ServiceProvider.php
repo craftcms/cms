@@ -50,6 +50,7 @@ use CraftCms\Yii2Adapter\Asset\LegacyAssetFileKinds;
 use CraftCms\Yii2Adapter\Asset\LegacyAssetTransforms;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
+use CraftCms\Yii2Adapter\Console\AdapterCleanupCommand;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddTagsSupportCommand;
@@ -80,6 +81,8 @@ use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
 use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
 use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
+use CraftCms\Yii2Adapter\LooseEnds\LooseEndsUtility;
 use CraftCms\Yii2Adapter\Mail\LegacyTransportCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
@@ -173,6 +176,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
+        $this->callAfterResolving(UtilityTypes::class, fn(UtilityTypes $types) => $types->register(LooseEndsUtility::class));
         $this->app->singleton(Conditions::class, LegacyConditions::class);
         $this->callAfterResolving(UiNodeTypes::class, fn(UiNodeTypes $types) => $types->register(LegacyHtmlField::class));
         $this->callAfterResolving(UiControlTypes::class, fn(UiControlTypes $types) => $types->register(LegacyHtmlControl::class));
@@ -368,6 +372,7 @@ class Yii2ServiceProvider extends ServiceProvider
             DropCategoriesSupportCommand::class,
             DropGlobalSetsSupportCommand::class,
             DropTagsSupportCommand::class,
+            AdapterCleanupCommand::class,
             MigrateSessionsTableCommand::class,
             OffCommand::class,
             OnCommand::class,
@@ -399,18 +404,31 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         $this->app->terminating(function(): void {
-            $this->triggerAfterRequest();
+            try {
+                $this->triggerAfterRequest();
+            } finally {
+                // After the after-request handlers, which can run compatibility paths too.
+                $this->app->make(LegacyUsage::class)->flush();
+            }
+
             Craft::getLogger()->flush(true);
         });
 
         // A worker runs many jobs, so onAfterRequest() callbacks run after the job that added them, as Laravel's
         // defer() callbacks do. EVENT_AFTER_REQUEST handlers still fire once, as they'd fire again after every job.
+        // Legacy usage is saved after each job too, rather than when the worker exits.
         Event::listen(function(JobAttempted $event): void {
-            if (in_array($event->connectionName, ['sync', 'deferred'], true) || !Craft::$app instanceof YiiApplication) {
+            if (in_array($event->connectionName, ['sync', 'deferred'], true)) {
                 return;
             }
 
-            Craft::$app->runAfterRequestCallbacks();
+            try {
+                if (Craft::$app instanceof YiiApplication) {
+                    Craft::$app->runAfterRequestCallbacks();
+                }
+            } finally {
+                $this->app->make(LegacyUsage::class)->flush();
+            }
         });
 
         if (!$this->app->runningInConsole()) {
