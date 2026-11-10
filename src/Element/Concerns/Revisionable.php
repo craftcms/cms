@@ -7,9 +7,12 @@ namespace CraftCms\Cms\Element\Concerns;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\ElementCapability;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
+use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -105,6 +108,80 @@ trait Revisionable
         return t('Revision {num}', [
             'num' => $this->revisionNum,
         ]);
+    }
+
+    /**
+     * Makes sure the element has at least one revision before it’s saved, so its current state isn’t lost.
+     */
+    public function ensureInitialRevision(): void
+    {
+        if (! $this->shouldSaveRevision()) {
+            return;
+        }
+
+        $hasRevisions = static::find()
+            ->revisionOf($this)
+            ->site('*')
+            ->status(null)
+            ->exists();
+
+        if ($hasRevisions) {
+            return;
+        }
+
+        /** @var static|null $current */
+        $current = static::find()
+            ->id($this->id)
+            ->site('*')
+            ->status(null)
+            ->one();
+
+        // May be null if the element is currently stored as an unpublished draft
+        if ($current) {
+            app(Revisions::class)->createRevision(
+                $current,
+                $current->initialRevisionCreatorId(),
+                sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated, withTimeZone: true)),
+            );
+        }
+    }
+
+    /**
+     * Saves a new revision of the element, if it gets revisions.
+     */
+    public function handleRevisionSave(): void
+    {
+        if ($this->shouldSaveRevision()) {
+            app(Revisions::class)->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
+        }
+    }
+
+    /**
+     * Returns the user ID that an element’s first revision should be attributed to, when it’s created for an
+     * element that was saved before it had any revisions. It’s called on the element as currently stored, not the one
+     * being saved.
+     *
+     * Returning `null` attributes it to the current user.
+     */
+    protected function initialRevisionCreatorId(): ?int
+    {
+        return null;
+    }
+
+    /**
+     * Returns whether a revision should be saved when the element is saved.
+     */
+    private function shouldSaveRevision(): bool
+    {
+        return
+            $this->id &&
+            ! $this->propagating &&
+            ! $this->resaving &&
+            $this->getIsCanonical() &&
+            $this->hasRevisions() &&
+            // Nested elements owned by a draft or revision shouldn't get their own revisions
+            // (see https://github.com/craftcms/cms/issues/20151)
+            ! ElementHelper::isDraftOrRevision($this);
     }
 
     public function handleRevisionDelete(): void
