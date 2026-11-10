@@ -283,6 +283,10 @@ it('routes registered legacy image transformers through adapter drivers', functi
             ->and($transformer->transform->width)->toBe(320)
             ->and($transformer->immediately)->toBeFalse()
             ->and($generatedUrl)->toBe('/legacy/320%20image.jpg');
+
+        app(AssetTransformers::class)->withImmediateTransforms(fn() => $asset->getUrl($transform));
+
+        expect($transformer->immediately)->toBeTrue();
     } finally {
         Event::off(LegacyAsset::class, LegacyAsset::EVENT_AFTER_GENERATE_TRANSFORM, $after);
         Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);

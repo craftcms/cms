@@ -105,7 +105,7 @@ location. Craft doesn't delete the old files, so clear them yourself. Changing `
 `generate_transforms_before_page_load` keeps existing transforms.
 
 To generate transforms immediately inside a callback, whatever the setting, use
-`CraftAssetTransformDriver::withImmediateTransforms()`.
+`AssetTransformers::withImmediateTransforms()`.
 
 ## Writing a driver
 
@@ -179,6 +179,12 @@ This example needs a public source URL. For private Assets, upload the source or
 
 Values saved in these fields override the transform's core values when this driver runs. GraphQL's transform arguments
 only include core parameters. Validate any undeclared parameters your driver uses.
+
+### Immediate generation
+
+`$request->immediately` is `true` when the caller wants the transform generated before its URL is returned, such as
+within `AssetTransformers::withImmediateTransforms()`, `false` when it explicitly doesn't, and `null` when it has no preference. Drivers that generate transforms when their URL is
+first requested can honor it; others can ignore it.
 
 ### Settings
 

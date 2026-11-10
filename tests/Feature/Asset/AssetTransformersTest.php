@@ -187,22 +187,40 @@ it('lets the Craft driver control immediate generation', function () {
     ]);
     $deferred = new AssetTransformer('craft', ['generate_transforms_before_page_load' => false]);
     $immediate = new AssetTransformer('craft', ['generate_transforms_before_page_load' => true]);
-    $request = fn (AssetTransformer $transformer) => new AssetTransformRequest(
+    $request = fn (AssetTransformer $transformer, ?bool $immediately = null) => new AssetTransformRequest(
         $asset,
         $transformer,
         ['width' => 320],
+        immediately: $immediately,
     );
 
     $driver->transform($request($deferred));
     $driver->transform($request($immediate));
-    Context::scope(
-        fn () => $driver->transform($request($immediate)),
-        hidden: [CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT => false],
-    );
-    $driver->withImmediateTransforms(fn () => $driver->transform($request($deferred)));
+    $driver->transform($request($immediate, false));
+    $driver->transform($request($deferred, true));
     $driver->transform($request($deferred));
 
     expect($immediateValues)->toBe([false, true, false, true, false]);
+});
+
+it('passes immediate generation requests to drivers', function () {
+    $driver = registerDriver('remote');
+    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    $asset = Asset::factory()->createElement();
+    $immediately = function (callable $transform) use ($driver): ?bool {
+        $transform();
+
+        return $driver->request->immediately;
+    };
+
+    expect($immediately(fn () => $asset->transform(['width' => 320])))->toBeNull()
+        ->and($immediately(fn () => app(AssetTransformers::class)->withImmediateTransforms(
+            fn () => $asset->transform(['width' => 320]),
+        )))->toBeTrue()
+        ->and($immediately(fn () => Context::scope(
+            fn () => $asset->transform(['width' => 320]),
+            hidden: [AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT => false],
+        )))->toBeFalse();
 });
 
 it('uses driver-specific named parameters', function () {

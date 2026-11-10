@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\SystemMessage;
 
-use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\TemplateMode;
@@ -15,7 +15,7 @@ use CraftCms\Cms\View\TemplateMode;
 readonly class SystemMessageRenderContext
 {
     public function __construct(
-        private CraftAssetTransformDriver $assetTransformDriver,
+        private AssetTransformers $assetTransformers,
         private Sites $sites,
         private Twig $twig,
     ) {}
@@ -45,7 +45,7 @@ readonly class SystemMessageRenderContext
 
             app()->setLocale($language);
 
-            return $this->assetTransformDriver->withImmediateTransforms($callback);
+            return $this->assetTransformers->withImmediateTransforms($callback);
         } finally {
             app()->setLocale($originalLanguage);
 
