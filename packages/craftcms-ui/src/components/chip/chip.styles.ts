@@ -74,6 +74,19 @@ export default css`
     overflow: clip;
   }
 
+  /* The focus ring for a link in the label, drawn around the whole chip. The
+     link's own ring would be clipped by the chip and its body, which clip to
+     keep the label's ellipsis; an element's own outline isn't. The link's
+     own ring is turned off meanwhile, so the two don't overlap. */
+  :host([data-link-focus-visible]) {
+    --c-focus-outline-style: none;
+  }
+
+  :host([data-link-focus-visible]) .cp-chip {
+    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
   :host([full-width]) .cp-chip {
     display: flex;
     flex: 1 1 auto;

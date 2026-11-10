@@ -26,6 +26,14 @@ export default class CraftInfoIcon extends LitElement {
     :host {
       display: inline-flex;
     }
+
+    /* A real 24×24 box around the icon, which keeps its own size. A real box
+       takes up the room it needs, so nothing beside it can overlap it, as
+       something could overlap a hit area drawn past a smaller box. */
+    craft-button {
+      min-inline-size: var(--c-size-touch-target-sm);
+      min-block-size: var(--c-size-touch-target-sm);
+    }
   `;
 
   static #openInstance: CraftInfoIcon | null = null;

@@ -430,7 +430,9 @@ export default class CraftButton extends HasShortcut(
    * Size of the button. Defaults to "medium".
    *
    * `xsmall` draws below the 24px minimum target size, so it keeps a
-   * `--c-size-touch-target-sm` hit area around the smaller visible box.
+   * `--c-size-touch-target-sm` hit area around the smaller visible box. Use it
+   * only where nothing else comes within 12px of its center; beside another
+   * target, use `small` or larger, a real 24×24 box.
    */
   @property({reflect: true}) size:
     | 'zero'

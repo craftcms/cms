@@ -46,6 +46,14 @@ export default class CraftInputPassword extends CraftInput {
           border: none;
         }
 
+        /* The shared suffix rule stretches the button to the field's height,
+           with no minimum of its own. Positioned as this suffix is, there's
+           nothing to stretch against, so it would shrink to its icon. Same
+           selector, so this wins. */
+        :host(:not([inline-suffix])) ::slotted(craft-button[slot='suffix']) {
+          min-height: var(--c-size-touch-target-sm);
+        }
+
         ::slotted(.form-control) {
           ${baseFormControlStyles}
           --_input-end-end-radius: var(

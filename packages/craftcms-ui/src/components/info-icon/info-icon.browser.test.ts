@@ -32,3 +32,26 @@ it('hides its tooltip on a click outside it, but not on one inside it', async ()
   await userEvent.click(outside);
   await expect.poll(() => tooltip.opened).toBe(false);
 });
+
+it('gives the button a target of at least 24×24 CSS px, all of which opens it', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  await import('../../styles/cp.css');
+  const element = document.createElement('craft-info-icon') as CraftInfoIcon;
+  element.textContent = 'Shown in the entry index.';
+  document.body.append(element);
+  await element.updateComplete;
+
+  const tooltip =
+    element.shadowRoot!.querySelector<CraftTooltip>('craft-tooltip')!;
+  const button = element.shadowRoot!.querySelector('craft-button')!;
+  const box = button.getBoundingClientRect();
+
+  expect(box.width).toBeGreaterThanOrEqual(24);
+  expect(box.height).toBeGreaterThanOrEqual(24);
+
+  // Near the corner, well outside the icon itself.
+  await userEvent.click(button, {
+    position: {x: box.width - 2, y: box.height - 2},
+  });
+  await expect.poll(() => tooltip.opened).toBe(true);
+});

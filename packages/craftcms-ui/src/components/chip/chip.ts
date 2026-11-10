@@ -419,8 +419,31 @@ export default class CraftChip extends LitElement {
     </div>`;
   }
 
+  /**
+   * Marks the host `data-link-focus-visible` while a link in the chip's label
+   * has keyboard focus, so the chip draws the focus ring around itself. The
+   * link's own ring falls outside the label, which the chip clips to keep
+   * its ellipsis.
+   */
+  #onFocusIn = (event: FocusEvent): void => {
+    const target = event.target as Element;
+    const inLabel = target.closest('craft-chip > *')?.matches(':not([slot])');
+    this.toggleAttribute(
+      'data-link-focus-visible',
+      target !== this &&
+        Boolean(inLabel) &&
+        target.matches('a[href]:focus-visible')
+    );
+  };
+
+  #onFocusOut = (): void => {
+    this.removeAttribute('data-link-focus-visible');
+  };
+
   override connectedCallback() {
     super.connectedCallback();
+    this.addEventListener('focusin', this.#onFocusIn);
+    this.addEventListener('focusout', this.#onFocusOut);
 
     if (this.hasUpdated) {
       this.#thumbLoader = new ThumbnailLoader();
@@ -429,6 +452,8 @@ export default class CraftChip extends LitElement {
   }
 
   override disconnectedCallback() {
+    this.removeEventListener('focusin', this.#onFocusIn);
+    this.removeEventListener('focusout', this.#onFocusOut);
     this.#thumbLoader.destroy();
     super.disconnectedCallback();
   }

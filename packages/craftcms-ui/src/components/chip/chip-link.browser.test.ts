@@ -119,3 +119,61 @@ it('gives a colored, non-plain chip’s links its text color and an underline un
     )
   ).toBeGreaterThanOrEqual(4.5);
 });
+
+/** A plain chip with a link in its label, as an element chip is in a breadcrumb. */
+async function linkedChip(): Promise<{
+  chip: HTMLElement;
+  link: HTMLAnchorElement;
+  box: HTMLElement;
+}> {
+  document.body.innerHTML = `
+    <button type="button" id="before">Before</button>
+    <craft-chip appearance="plain">
+      <craft-truncate class="label"><a class="label-link" href="#"><span>admin</span></a></craft-truncate>
+      <button type="button" slot="suffix" id="suffix">More</button>
+    </craft-chip>`;
+  const chip = document.querySelector<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-chip')!;
+  await chip.updateComplete;
+
+  return {
+    chip,
+    link: chip.querySelector('a')!,
+    box: chip.shadowRoot!.querySelector<HTMLElement>('.cp-chip')!,
+  };
+}
+
+it('draws the focus ring around the chip when its link has keyboard focus, where the chip can’t clip it', async () => {
+  const {chip, link, box} = await linkedChip();
+  document.getElementById('before')!.focus();
+
+  await userEvent.tab();
+
+  expect(document.activeElement).toBe(link);
+  expect(chip.hasAttribute('data-link-focus-visible')).toBe(true);
+  expect(getComputedStyle(box).outlineStyle).toBe('solid');
+  expect(parseFloat(getComputedStyle(box).outlineWidth)).toBeGreaterThan(0);
+  // The link's own ring is off meanwhile, so there's only one.
+  expect(getComputedStyle(link).outlineStyle).toBe('none');
+});
+
+it('stops drawing the ring once the link loses focus', async () => {
+  const {chip, box} = await linkedChip();
+  document.getElementById('before')!.focus();
+  await userEvent.tab();
+
+  await userEvent.tab();
+
+  expect(document.activeElement?.id).toBe('suffix');
+  expect(chip.hasAttribute('data-link-focus-visible')).toBe(false);
+  expect(getComputedStyle(box).outlineStyle).not.toBe('solid');
+});
+
+it('doesn’t draw the link’s ring for a control in another slot', async () => {
+  const {chip} = await linkedChip();
+
+  document.getElementById('suffix')!.focus();
+
+  expect(chip.hasAttribute('data-link-focus-visible')).toBe(false);
+});
