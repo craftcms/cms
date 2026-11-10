@@ -3,6 +3,7 @@
   import '@craftcms/ui/components/button-group/button-group';
   import '@craftcms/ui/components/icon/icon';
   import {t} from '@craftcms/ui/utilities/translate';
+  import {cancelIdle, whenIdle} from '@craftcms/ui/utilities/idle';
   import {
     computed,
     onBeforeUnmount,
@@ -158,21 +159,6 @@
         renderTab(uid);
       }
     });
-  }
-
-  /** Without `requestIdleCallback`, the next task stands in for idle time. */
-  function whenIdle(callback: () => void): number {
-    return typeof window.requestIdleCallback === 'function'
-      ? window.requestIdleCallback(callback)
-      : window.setTimeout(callback);
-  }
-
-  function cancelIdle(handle: number): void {
-    if (typeof window.cancelIdleCallback === 'function') {
-      window.cancelIdleCallback(handle);
-    } else {
-      window.clearTimeout(handle);
-    }
   }
 
   /** Whether a node holds the field, or the input, `id` names. */

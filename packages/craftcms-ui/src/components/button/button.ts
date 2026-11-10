@@ -2,6 +2,7 @@ import {html, LitElement, nothing} from 'lit';
 import {property, state, query} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
 import {linkRel, linkTarget, newTabCue} from '@src/utilities/external-links';
+import {whenIdle} from '@src/utilities/idle';
 import styles, {buttonBaseStyles} from './button.styles.js';
 import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
@@ -122,15 +123,6 @@ function unwatchFieldsets(root: Node, sync: () => void): void {
   if (!entry.watchers.size) {
     entry.observer.disconnect();
     fieldsetObservers.delete(root);
-  }
-}
-
-/** Runs a callback once the browser is idle, or in the next task without `requestIdleCallback`. */
-function whenIdle(callback: () => void): void {
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(callback);
-  } else {
-    setTimeout(callback);
   }
 }
 
