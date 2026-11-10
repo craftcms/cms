@@ -1,5 +1,7 @@
 # Release Notes for Craft CMS 6
 
+## Unreleased
+
 ## 6.0.0-beta.1 - 2026-11-10
 
 ### Control Panel
