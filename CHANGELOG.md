@@ -1304,6 +1304,7 @@
 - Fixed an error that occurred when a Yii adapter plugin listed tag groups or global sets on a project without tags or global sets. ([#20507](https://github.com/craftcms/cms/pull/20507))
 - Fixed a bug where Money fields’ inputs held their minimum and maximum amounts in the currency’s minor units, such as cents. ([#20449](https://github.com/craftcms/cms/pull/20449))
 - Fixed a bug where `<craft-badge-indicator>` counts sat slightly above center. ([#20501](https://github.com/craftcms/cms/pull/20501))
+- Fixed a bug where Single and nested entries’ Post Date and Expiry Date fields weren’t shown, regardless of their entry type’s “Show the Post Date field” and “Show the Expiry Date field” settings, and Single entries’ expiry dates were cleared when they were saved. ([#17675](https://github.com/craftcms/cms/pull/17675#issuecomment-6762381837))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

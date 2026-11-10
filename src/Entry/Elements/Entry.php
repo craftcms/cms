@@ -2303,40 +2303,40 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                                 : ControlMode::Editable),
                     );
             }
+        }
 
-            if ($this->getType()->showPostDateField) {
-                $nodes[] = Field::make(t('Post Date'))
-                    ->icon('calendar')
-                    ->control(
-                        DateTime::make('postDate')
-                            ->showTime()
-                            ->fullWidth()
-                            // Stored times aren't constrained to a picker step, and
-                            // the screen submits natively — a coarser increment
-                            // would make any off-step value fail validation and
-                            // silently block saving.
-                            ->minuteIncrement(1)
-                            ->value(self::dateTimeControlValue($this->postDate))
-                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                    );
-            }
+        if ($this->getType()->showPostDateField) {
+            $nodes[] = Field::make(t('Post Date'))
+                ->icon('calendar')
+                ->control(
+                    DateTime::make('postDate')
+                        ->showTime()
+                        ->fullWidth()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
+                        ->value(self::dateTimeControlValue($this->postDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
 
-            if ($this->getType()->showExpiryDateField) {
-                $nodes[] = Field::make(t('Expiry Date'))
-                    ->icon('calendar-xmark')
-                    ->control(
-                        DateTime::make('expiryDate')
-                            ->showTime()
-                            ->fullWidth()
-                            // Stored times aren't constrained to a picker step, and
-                            // the screen submits natively — a coarser increment
-                            // would make any off-step value fail validation and
-                            // silently block saving.
-                            ->minuteIncrement(1)
-                            ->value(self::dateTimeControlValue($this->expiryDate))
-                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                    );
-            }
+        if ($this->getType()->showExpiryDateField) {
+            $nodes[] = Field::make(t('Expiry Date'))
+                ->icon('calendar-xmark')
+                ->control(
+                    DateTime::make('expiryDate')
+                        ->showTime()
+                        ->fullWidth()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
+                        ->value(self::dateTimeControlValue($this->expiryDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
         }
 
         return $nodes;
@@ -2495,39 +2495,39 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     ]);
                 })();
             }
+        }
 
-            DeltaRegistry::withActive(true, function () {
-                DeltaRegistry::registerName('postDate');
-                DeltaRegistry::registerName('expiryDate');
-            });
+        DeltaRegistry::withActive(true, function () {
+            DeltaRegistry::registerName('postDate');
+            DeltaRegistry::registerName('expiryDate');
+        });
 
-            // Post Date
-            if ($this->getType()->showPostDateField) {
-                $fields['postDate'] = FormFields::dateTimeFieldHtml([
-                    'status' => $this->getAttributeStatus('postDate'),
-                    'label' => t('Post Date'),
-                    'id' => 'postDate',
-                    'name' => 'postDate',
-                    'value' => $this->postDate,
-                    'width' => 'full',
-                    'errors' => $this->errors()->get('postDate'),
-                    'disabled' => $static,
-                ]);
-            }
+        // Post Date
+        if ($this->getType()->showPostDateField) {
+            $fields['postDate'] = FormFields::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('postDate'),
+                'label' => t('Post Date'),
+                'id' => 'postDate',
+                'name' => 'postDate',
+                'value' => $this->postDate,
+                'width' => 'full',
+                'errors' => $this->errors()->get('postDate'),
+                'disabled' => $static,
+            ]);
+        }
 
-            // Expiry Date
-            if ($this->getType()->showExpiryDateField) {
-                $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
-                    'status' => $this->getAttributeStatus('expiryDate'),
-                    'label' => t('Expiry Date'),
-                    'id' => 'expiryDate',
-                    'name' => 'expiryDate',
-                    'value' => $this->expiryDate,
-                    'width' => 'full',
-                    'errors' => $this->errors()->get('expiryDate'),
-                    'disabled' => $static,
-                ]);
-            }
+        // Expiry Date
+        if ($this->getType()->showExpiryDateField) {
+            $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('expiryDate'),
+                'label' => t('Expiry Date'),
+                'id' => 'expiryDate',
+                'name' => 'expiryDate',
+                'value' => $this->expiryDate,
+                'width' => 'full',
+                'errors' => $this->errors()->get('expiryDate'),
+                'disabled' => $static,
+            ]);
         }
 
         $fields[] = parent::metaFieldsHtml($static);
@@ -2735,7 +2735,6 @@ JS;
             // Section type-specific stuff
             if ($section->type === SectionType::Single) {
                 $this->setAuthorId(null);
-                $this->expiryDate = null;
             }
         }
 
