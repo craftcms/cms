@@ -298,6 +298,7 @@
 
 ### System
 - Removed the `CRAFT_EPHEMERAL` environment setting and `craft\helpers\App::isEphemeral()`. Temporary files now follow Laravel’s storage path; project config writes and asset publishing use their normal behavior regardless of storage persistence.
+- Added the `publishAssetBundlesAtRuntime` config setting and the `craft:asset-bundles:publish` command, so deployments that can’t write to `resourceBasePath` can publish legacy asset bundles at build time. When `publishAssetBundlesAtRuntime` is disabled, published bundle URLs are based on paths rather than modification times, so they match between build and runtime.
 - The database table prefix is now set with the `DB_PREFIX` environment variable. When `craftcms/yii2-adapter` is installed, Craft 5’s `CRAFT_DB_TABLE_PREFIX` and `DB_TABLE_PREFIX` environment variables are still applied, with a trailing underscore. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Image assets now store color data sampled from their file when it’s uploaded, replaced, or indexed, including the image’s dominant color, a grid of the average colors of its regions, its main colors and how much of the image each covers, and how light its regions are. Control panel uploads sample it in the browser. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#20103](https://github.com/craftcms/cms/pull/20103))

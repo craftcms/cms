@@ -15,6 +15,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -38,6 +39,22 @@ class AssetManager extends \yii\web\AssetManager
      */
     public bool $cacheSourcePaths = true;
 
+    /**
+     * @var bool Whether asset bundles should be published to [[basePath]] when they’re used.
+     *
+     * When this is `false`, nothing is written to [[basePath]]. Bundles must be published ahead of time with
+     * `craft:asset-bundles:publish`, and URLs use [[$stableHashes|stable hashes]].
+     * @since 6.0.0
+     */
+    public bool $publishAtRuntime = true;
+
+    /**
+     * @var bool Whether published directory hashes should be based only on source paths relative to the project root,
+     * so they match between the build and runtime environments. Always enabled when [[$publishAtRuntime]] is `false`.
+     * @since 6.0.0
+     */
+    public bool $stableHashes = false;
+
     private const CACHE_TAG = 'assetmanager';
 
     /**
@@ -45,8 +62,23 @@ class AssetManager extends \yii\web\AssetManager
      */
     public function init(): void
     {
-        FileHelper::createDirectory(Aliases::get($this->basePath), $this->dirMode);
+        if ($this->publishAtRuntime) {
+            FileHelper::createDirectory(Aliases::get($this->basePath), $this->dirMode);
+        }
+
         parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function publish($path, $options = []): array
+    {
+        if (!$this->publishAtRuntime) {
+            return [Aliases::get($path), $this->getPublishedUrl($path)];
+        }
+
+        return parent::publish($path, $options);
     }
 
     /**
@@ -102,6 +134,13 @@ class AssetManager extends \yii\web\AssetManager
         }
 
         $dir = is_file($path) ? dirname($path) : $path;
+
+        if ($this->stableHashes || !$this->publishAtRuntime) {
+            $relativePath = Str::after(FileHelper::normalizePath($dir), FileHelper::normalizePath(base_path()) . DIRECTORY_SEPARATOR);
+
+            return sprintf('%x', crc32(str_replace('\\', '/', $relativePath) . '|' . $this->linkAssets));
+        }
+
         $alias = Craft::alias($dir);
         $hash = sprintf('%x', crc32($alias . '|' . FileHelper::lastModifiedTime($path) . '|' . $this->linkAssets));
 

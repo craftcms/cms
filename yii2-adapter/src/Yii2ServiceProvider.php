@@ -60,6 +60,7 @@ use CraftCms\Yii2Adapter\Console\LegacyCommandCompatibility;
 use CraftCms\Yii2Adapter\Console\MigrateSessionsTableCommand;
 use CraftCms\Yii2Adapter\Console\OffCommand;
 use CraftCms\Yii2Adapter\Console\OnCommand;
+use CraftCms\Yii2Adapter\Console\PublishAssetBundlesCommand;
 use CraftCms\Yii2Adapter\Console\RepairCategoryGroupStructureCommand;
 use CraftCms\Yii2Adapter\Cp\Html\LegacyMenuHtml;
 use CraftCms\Yii2Adapter\Cp\LegacySettings;
@@ -371,6 +372,7 @@ class Yii2ServiceProvider extends ServiceProvider
             MigrateSessionsTableCommand::class,
             OffCommand::class,
             OnCommand::class,
+            PublishAssetBundlesCommand::class,
             RepairCategoryGroupStructureCommand::class,
         ]);
 

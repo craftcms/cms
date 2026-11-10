@@ -632,6 +632,7 @@ class App
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
             'appendTimestamp' => true,
+            'publishAtRuntime' => $generalConfig->publishAssetBundlesAtRuntime,
             'bundles' => [
                 YiiJqueryAsset::class => [
                     'sourcePath' => null,

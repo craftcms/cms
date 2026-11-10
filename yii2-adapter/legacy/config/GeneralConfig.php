@@ -281,6 +281,26 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public string $resourceBaseUrl = '@web/cpresources';
 
     /**
+     * @var bool Whether legacy asset bundles should be published to <config5:resourceBasePath> when they’re used.
+     *
+     * Disable this on deployments that can’t write to <config5:resourceBasePath>, and run
+     * `php artisan craft:asset-bundles:publish` at build time instead.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->publishAssetBundlesAtRuntime(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PUBLISH_ASSET_BUNDLES_AT_RUNTIME=false
+     * ```
+     * :::
+     *
+     * @group Environment
+     * @since 6.0.0
+     */
+    public bool $publishAssetBundlesAtRuntime = true;
+
+    /**
      * {@inheritdoc}
      */
     protected ?string $filename = Config::CATEGORY_GENERAL;
@@ -1596,6 +1616,25 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public function resourceBaseUrl(string $value): self
     {
         $this->resourceBaseUrl = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether legacy asset bundles should be published to <config5:resourceBasePath> when they’re used.
+     *
+     * ```php
+     * ->publishAssetBundlesAtRuntime(false)
+     * ```
+     *
+     * @group Environment
+     * @since 6.0.0
+     *
+     * @see $publishAssetBundlesAtRuntime
+     */
+    public function publishAssetBundlesAtRuntime(bool $value = true): self
+    {
+        $this->publishAssetBundlesAtRuntime = $value;
 
         return $this;
     }
