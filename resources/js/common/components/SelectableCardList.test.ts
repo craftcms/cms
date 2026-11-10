@@ -1,5 +1,6 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, describe, expect, it} from 'vite-plus/test';
+import '@craftcms/ui/components/checkbox/checkbox';
 import SelectableCardList from './SelectableCardList.vue';
 import {
   useSelectable,
@@ -57,14 +58,13 @@ describe('SelectableCardList', () => {
 
   /**
    * The way a browser does it: the click lands first (carrying the modifier
-   * keys), then the checkbox settles and reports. `craft-checkbox` also re-fires
-   * on programmatic `.checked` writes, so ordering these the other way round
-   * moves the selection anchor before the shift state is known.
+   * keys), then the checkbox settles and reports.
    */
   function check(box: Element, {shiftKey = false} = {}): void {
     box.dispatchEvent(new MouseEvent('click', {bubbles: true, shiftKey}));
-    Object.assign(box, {checked: true});
-    box.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+    const input = box.querySelector('input')!;
+    input.checked = true;
+    input.dispatchEvent(new Event('change', {bubbles: true}));
   }
 
   it('selects through the checkbox and marks the item', async () => {

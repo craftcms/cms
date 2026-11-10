@@ -443,7 +443,7 @@
     class="image-editor-dialog"
     data-theme="dark"
     fullscreen
-    .opened="opened"
+    .open="opened"
     :label="t('Edit Image')"
     @craft-after-show.self="editor.start"
     @craft-before-hide.self="onBeforeHide"
@@ -573,7 +573,7 @@
                         <craft-radio
                           v-for="option in constraintOptions"
                           :key="option.key"
-                          .choiceValue="option.value"
+                          .value="option.value"
                           .checked="constraintKey === option.key"
                         >
                           <input
@@ -813,7 +813,7 @@
     :label="
       confirming === 'reset' ? t('Reset to original') : t('Discard changes')
     "
-    .opened="confirmOpen"
+    .open="confirmOpen"
     @craft-hide.self="confirmOpen = false"
     @craft-after-hide.self="onConfirmationHidden"
   >

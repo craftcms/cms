@@ -277,7 +277,7 @@
         <div role="status" :class="{'mt-lg': newToken}">
           <craft-callout v-if="newToken" variant="success">
             <div class="grid gap-md">
-              <craft-input-copy .modelValue="newToken" monospace>
+              <craft-input-copy .value="newToken" monospace>
                 <label slot="label">{{ t('New token') }}</label>
               </craft-input-copy>
               <p>
@@ -371,7 +371,7 @@
               <craft-checkbox
                 v-for="scope in group.scopes"
                 :key="scope.value"
-                .choiceValue="scope.value"
+                .value="scope.value"
                 :disabled="!!editing"
               >
                 <label slot="label">{{ scope.label }}</label>

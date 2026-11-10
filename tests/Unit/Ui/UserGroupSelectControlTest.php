@@ -60,8 +60,8 @@ it('resolves user groups while storing their project-config UIDs', function () {
         ])
         ->and($payload->values['settings']['groups'])->toBe([$editors->uid])
         ->and($combobox)->toHaveCount(1)
-        ->and($combobox->attr('multiple-choice'))->not->toBeNull()
-        ->and(json_decode((string) $combobox->attr('model-value'), true))->toBe([$editors->uid]);
+        ->and($combobox->attr('multiple'))->not->toBeNull()
+        ->and(json_decode((string) $combobox->attr('value'), true))->toBe([$editors->uid]);
 
     $readOnly = app(UiResolver::class)->resolve($ui, new UiContext(
         namespace: 'settings',

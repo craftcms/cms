@@ -136,7 +136,7 @@ export default class CraftCopyButton extends LitElement {
     if (this.hideTooltip) {
       await this.tooltipEl?.show();
     } else {
-      this.tooltipEl?.repositionOverlay();
+      this.tooltipEl?.reposition();
     }
 
     this.#restTimer = setTimeout(() => {

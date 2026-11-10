@@ -4,7 +4,7 @@ import {Meta} from '@storybook/addon-docs/blocks';
 
 # Vue Wrappers
 
-The components are web components, so they work in a Vue template as they are. The wrappers exist for the one thing that does not carry over: `v-model` on a Lion-based form control.
+The components are web components, so they work in a Vue template as they are. The wrappers exist for the one thing that does not carry over: `v-model` on a form control.
 
 ```js
 import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
@@ -16,22 +16,22 @@ import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
 
 ## Why they are needed
 
-Lion holds a form control's value in a `modelValue` **property** and announces changes with a `model-value-changed` event. Vue's `v-model` on a custom element binds an attribute and listens for `update:modelValue`, so the two do not meet: the value never reaches the element, and a change never comes back.
+A form control's value is a **property** — `value` for most controls and groups, `checked` for a checkbox or switch — and Vue's `v-model` on a custom element binds an attribute and listens for `update:modelValue`, so the two do not meet: the value never reaches the element, and a change never comes back.
 
-Each wrapper is a thin single-file component that does the bridging — binds `.modelValue` as a property, listens for `model-value-changed`, and writes the result back through `defineModel()`. It also forwards an `error` prop into the control's `feedback` slot, so validation messages render the way the design system expects.
+Each wrapper is a thin single-file component that does the bridging — binds the value as a property, listens for the control's native `input` or `change` event, and writes the result back through `defineModel()`. It also forwards an `error` prop into the control's `feedback` slot, and marks the control `invalid`, so validation messages render the way the design system expects.
 
-One subtlety they handle for you: Lion emits a `model-value-changed` on mount carrying the element's own default, before Vue's binding has settled. The wrappers ignore that one — `detail.initialize` marks it — because acting on it would clobber the bound value with an empty default the moment the component appeared.
+Setting the value from code fires no event, as on a native input, so binding the model never echoes back as a change.
 
 ## What is wrapped
 
 Only the controls that need the bridge, seventeen in all:
 
-| Kind    | Components                                                                                                                                                                                             |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Value   | `CraftInput`, `CraftInputColor`, `CraftInputHandle`, `CraftInputMoney`, `CraftInputPassword`, `CraftTextarea`, `CraftSelect`, `CraftSelectRich`, `CraftCombobox`, `CraftInputFile`, `CraftSelectColor` |
-| Checked | `CraftSwitch`, `CraftCheckbox`                                                                                                                                                                         |
-| Group   | `CraftCheckboxGroup`, `CraftPermissionTree`, `CraftRadioGroup`                                                                                                                                         |
-| Chrome  | `CraftField`                                                                                                                                                                                           |
+| Kind    | Components                                                                                                                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Value   | `CraftInput`, `CraftInputColor`, `CraftInputHandle`, `CraftInputMoney`, `CraftInputPassword`, `CraftTextarea`, `CraftSelect`, `CraftSelectRich`, `CraftCombobox`, `CraftSelectColor` |
+| Checked | `CraftSwitch`, `CraftCheckbox`                                                                                                                                                       |
+| Group   | `CraftCheckboxGroup`, `CraftPermissionTree`, `CraftRadioGroup`                                                                                                                       |
+| Chrome  | `CraftField`                                                                                                                                                                         |
 
 Everything else — buttons, chips, cards, menus, overlays — has no value to bind, so there is no wrapper and none is needed. Use the custom element directly.
 
@@ -53,4 +53,4 @@ Both the wrappers and the type declarations come out of `scripts/generate-vue-wr
 node scripts/generate-vue-wrappers.js
 ```
 
-The wrappers bridge `model-value-changed` because that is what Lion's form system speaks internally. Outside Vue, prefer the native `input` and `change` events the controls emit — see [Combobox](?path=/docs/form-controls-select-controls-combobox--docs) for the distinction.
+Outside Vue, prefer the native `input` and `change` events the controls emit — see [Combobox](?path=/docs/form-controls-select-controls-combobox--docs) for the distinction.

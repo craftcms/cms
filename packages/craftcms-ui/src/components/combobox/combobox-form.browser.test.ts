@@ -27,8 +27,6 @@ async function fixture(
   form.append(control);
   document.body.append(form);
   await control.updateComplete;
-  // Lion adopts a requested `model-value` only once the option naming it has
-  // registered, so the value lands a tick after the first render.
   await new Promise((resolve) => requestAnimationFrame(resolve));
   await control.updateComplete;
 
@@ -39,14 +37,14 @@ const entries = (form: HTMLFormElement) => [...new FormData(form).entries()];
 
 it('posts its value under the host name', async () => {
   const {control, form} = await fixture((c) =>
-    c.setAttribute('model-value', '2026-01')
+    c.setAttribute('value', '2026-01')
   );
 
   expect(entries(form)).toEqual([['apiVersion', '2026-01']]);
 
   // Changing the selection changes what the form carries, so a save writes the
   // value the field is showing.
-  control.modelValue = '2026-04';
+  control.value = '2026-04';
   await control.updateComplete;
 
   expect(entries(form)).toEqual([['apiVersion', '2026-04']]);
@@ -55,20 +53,20 @@ it('posts its value under the host name', async () => {
 it('posts a custom value when it does not match an option', async () => {
   const {control, form} = await fixture((c) => {
     c.requireOptionMatch = false;
-    c.setAttribute('model-value', '$SHOPIFY_API_VERSION');
+    c.setAttribute('value', '$SHOPIFY_API_VERSION');
   });
 
   expect(entries(form)).toEqual([['apiVersion', '$SHOPIFY_API_VERSION']]);
-  expect(control.modelValue).toBe('$SHOPIFY_API_VERSION');
+  expect(control.value).toBe('$SHOPIFY_API_VERSION');
 });
 
 it('posts a value its markup carried, with the options as markup too', async () => {
-  // How a server-rendered page arrives: both `model-value` and `options` are
+  // How a server-rendered page arrives: both `value` and `options` are
   // attributes on the element, and it upgrades with them already set.
   const options = JSON.stringify([
     {label: '$SHOPIFY_API_VERSION', value: '$SHOPIFY_API_VERSION'},
   ]);
-  document.body.innerHTML = `<form><craft-combobox name="folderPath" model-value="@webroot/cache/blitz" allow-custom-choice options='${options}'></craft-combobox></form>`;
+  document.body.innerHTML = `<form><craft-combobox name="folderPath" value="@webroot/cache/blitz" options='${options}'></craft-combobox></form>`;
 
   const form = document.querySelector('form')!;
   const control = document.querySelector('craft-combobox') as CraftCombobox;
@@ -76,7 +74,7 @@ it('posts a value its markup carried, with the options as markup too', async () 
   await new Promise((resolve) => requestAnimationFrame(resolve));
   await control.updateComplete;
 
-  expect(control.modelValue).toBe('@webroot/cache/blitz');
+  expect(control.value).toBe('@webroot/cache/blitz');
   expect(entries(form)).toEqual([['folderPath', '@webroot/cache/blitz']]);
 });
 
@@ -106,9 +104,84 @@ it('serializes typed text that matches an option without choosing it', async () 
   });
 });
 
+it('carries the new value in the form by the time input and change fire', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {control, form} = await fixture((c) => {
+    c.setAttribute('value', '2026-01');
+    c.requireOptionMatch = false;
+    c.clearable = true;
+    c.showAllOnEmpty = true;
+  });
+  const seen: string[] = [];
+  for (const type of ['input', 'change']) {
+    control.addEventListener(type, () =>
+      seen.push(`${type}:${new FormData(form).get('apiVersion')}`)
+    );
+  }
+  const input = control.querySelector('input')!;
+
+  await userEvent.click(input);
+  await userEvent.keyboard('{ArrowDown}');
+  [...control.querySelectorAll<HTMLElement & {value: string}>('craft-option')]
+    .find((option) => option.value === '2026-04')!
+    .click();
+  expect(seen.splice(0)).toEqual(['input:2026-04', 'change:2026-04']);
+
+  await userEvent.keyboard('{Control>}a{/Control}x');
+  expect(seen.splice(0)).toEqual(['input:x']);
+
+  control.shadowRoot!.querySelector<HTMLElement>('.clear')!.click();
+  expect(seen.splice(0)).toEqual(['input:', 'change:']);
+});
+
+it('posts a single value through one native input', async () => {
+  const {control, form} = await fixture((c) =>
+    c.setAttribute('value', '2026-01')
+  );
+  const native = () =>
+    [
+      ...form.querySelectorAll<HTMLInputElement>('input[name="apiVersion"]'),
+    ].map((input) => input.value);
+
+  expect(native()).toEqual(['2026-01']);
+  expect(entries(form)).toEqual([['apiVersion', '2026-01']]);
+
+  control.value = '2026-04';
+  await control.updateComplete;
+
+  expect(native()).toEqual(['2026-04']);
+  expect(entries(form)).toEqual([['apiVersion', '2026-04']]);
+});
+
+it('stays silent when left unedited after its value is set from script', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {control} = await fixture((c) => {
+    c.setAttribute('value', '2026-01');
+    c.requireOptionMatch = false;
+  });
+  const events: string[] = [];
+  control.addEventListener('input', () => events.push('input'));
+  control.addEventListener('change', () =>
+    events.push(`change:${control.value}`)
+  );
+  const after = document.createElement('button');
+  document.body.append(after);
+
+  control.value = '2026-04';
+  await control.updateComplete;
+  control.querySelector('input')!.focus();
+  after.focus();
+  expect(events).toEqual([]);
+
+  await userEvent.click(control.querySelector('input')!);
+  await userEvent.keyboard('{Control>}a{/Control}x');
+  after.focus();
+  expect(events).toEqual(['input', 'change:x']);
+});
+
 it('posts nothing while disabled', async () => {
   const {control, form} = await fixture((c) => {
-    c.setAttribute('model-value', '2026-01');
+    c.setAttribute('value', '2026-01');
     c.disabled = true;
   });
 
@@ -116,3 +189,39 @@ it('posts nothing while disabled', async () => {
 
   expect(entries(form)).toEqual([]);
 });
+
+it.each([
+  ['typing', '2026-04'],
+  ['selecting', '2026-04'],
+  ['clearing', ''],
+])(
+  'posts the new value before it emits input and change when %s',
+  async (how, expected) => {
+    const {page, userEvent} = await import('vite-plus/test/browser');
+    const {control, form} = await fixture((c) => {
+      c.requireOptionMatch = false;
+      c.clearable = true;
+      c.setAttribute('value', '2026-01');
+    });
+    const posted: Record<string, unknown> = {};
+    for (const type of ['input', 'change']) {
+      control.addEventListener(type, () => {
+        posted[type] = new FormData(form).get('apiVersion');
+      });
+    }
+
+    const input = control.querySelector('input')!;
+    if (how === 'typing') {
+      await userEvent.clear(input);
+      await userEvent.type(input, '2026-04');
+      input.blur();
+    } else if (how === 'selecting') {
+      await userEvent.click(input);
+      await userEvent.click(page.getByRole('option', {name: '2026-04'}));
+    } else {
+      await userEvent.click(page.getByRole('button', {name: 'Clear'}));
+    }
+
+    expect(posted).toEqual({input: expected, change: expected});
+  }
+);

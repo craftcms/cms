@@ -67,8 +67,7 @@
 
   /**
    `v-once` on the invoker slot is load-bearing, not an optimization.
-   `craft-action-menu` (Lion `OverlayMixin`) imperatively relocates/restructures
-   its own light DOM. If Vue keeps the invoker in its reactive patch path, a
+   `craft-action-menu` imperatively restructures its own light DOM. If Vue keeps the invoker in its reactive patch path, a
    later re-render patches the invoker's slot fragment against DOM the element
    moved and throws "Cannot read properties of null (reading 'insertBefore')".
    Being passive isn't enough: Vue's block optimization flattens dynamic

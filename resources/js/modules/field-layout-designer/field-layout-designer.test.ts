@@ -7,7 +7,7 @@ const {openSlideout} = vi.hoisted(() => ({openSlideout: vi.fn()}));
 
 vi.mock('@/common/slideouts', () => ({openSlideout}));
 
-// `craft-select-color` renders a form-associated `craft-select-rich`, which
+// `craft-select-color` is a form-associated `craft-select-rich`, which
 // calls attachInternals(), which happy-dom doesn't implement. Same stub
 // UiRenderer.test.ts uses, kept for the whole file because the element
 // renders after the test that creates it returns.
@@ -236,15 +236,12 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
       </div>
     </form>`;
   const control = (key: string) =>
-    document.querySelector<HTMLElement & {modelValue: string}>(
+    document.querySelector<HTMLElement & {value: string}>(
       `[data-ui-control-path='["${key}"]']`
     )!;
-  control('name').modelValue = 'Article';
-  control('color').modelValue = 'rose';
-  control('icon').modelValue = 'newspaper';
-  // A select applies its value once its options have registered.
-  await (control('color') as unknown as {registrationComplete: Promise<void>})
-    .registrationComplete;
+  control('name').value = 'Article';
+  control('color').value = 'rose';
+  control('icon').value = 'newspaper';
 
   // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
   const designer = Object.create(
@@ -269,8 +266,8 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
   expect(chip.querySelector('craft-icon')).toBeNull();
   expect(chip.textContent).toBe('Title');
 
-  control('color').modelValue = '';
-  control('icon').modelValue = '';
+  control('color').value = '';
+  control('icon').value = '';
   designer.syncPreviewAppearance();
 
   expect(card.hasAttribute('data-color')).toBe(false);
@@ -278,7 +275,7 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
   expect(header.querySelector('craft-icon')).toBeNull();
   expect(header.textContent).toBe('Article');
 
-  control('color').modelValue = '__blank__';
+  control('color').value = '__blank__';
   designer.syncPreviewAppearance();
 
   expect(card.hasAttribute('data-color')).toBe(false);

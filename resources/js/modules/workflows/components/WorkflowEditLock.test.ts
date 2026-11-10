@@ -70,7 +70,7 @@ const button = (label: string): HTMLElement =>
     (element) => element.textContent?.trim() === label
   )!;
 const dialog = () =>
-  container.querySelector<HTMLElement & {opened?: boolean}>('craft-dialog')!;
+  container.querySelector<HTMLElement & {open?: boolean}>('craft-dialog')!;
 
 it('asks before reopening a draft that’s ready for its scheduled release, and leaves it locked if told not to', async () => {
   const startEditing = mount('scheduled', []);
@@ -78,13 +78,13 @@ it('asks before reopening a draft that’s ready for its scheduled release, and 
   button('Start editing').click();
   await nextTick();
 
-  expect(dialog().opened).toBe(true);
+  expect(dialog().open).toBe(true);
   expect(dialog().textContent).toContain('“Spring launch”');
 
   button('Cancel').click();
   await nextTick();
 
-  expect(dialog().opened).toBe(false);
+  expect(dialog().open).toBe(false);
   expect(requestSpy).not.toHaveBeenCalled();
   expect(startEditing).not.toHaveBeenCalled();
 });
@@ -113,5 +113,5 @@ it.each([
   button('Start editing').click();
 
   await vi.waitFor(() => expect(startEditing).toHaveBeenCalledOnce());
-  expect(dialog().opened).toBe(false);
+  expect(dialog().open).toBe(false);
 });

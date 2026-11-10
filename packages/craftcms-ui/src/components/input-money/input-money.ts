@@ -190,7 +190,7 @@ export default class CraftInputMoney extends CraftInput {
   }
 
   #input(): MaskedInput | undefined {
-    return this._inputNode as MaskedInput | undefined;
+    return this._control as MaskedInput | undefined;
   }
 
   #applyMask() {
@@ -200,7 +200,7 @@ export default class CraftInputMoney extends CraftInput {
       return;
     }
 
-    const value = String(this.modelValue ?? '');
+    const value = this.value;
     const format = this.#format;
     input.inputmask?.remove();
     // Seed the value before masking. `setValue()` afterwards would dispatch a
@@ -220,11 +220,10 @@ export default class CraftInputMoney extends CraftInput {
   }
 
   #hasValue(): boolean {
-    return this.modelValue !== '' && this.modelValue != null;
+    return this.value !== '';
   }
 
   #clear = () => {
-    this.modelValue = '';
     this.value = '';
     this.#input()?.inputmask?.setValue('');
     this.#input()?.focus();

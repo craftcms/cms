@@ -539,8 +539,7 @@ describe('[disabled]', () => {
   });
 
   it('keeps the variant’s own fill rather than repainting it', async () => {
-    // Lion's own disabled rule paints a flat gray; the variants override it, so
-    // muting is what has to carry the state.
+    // Muting carries the state, not a flat gray fill.
     const {enabled, disabled} = await mountPair('fill');
 
     expect(getComputedStyle(disabled).backgroundColor).toBe(
@@ -665,6 +664,475 @@ describe('craft-button link padding', () => {
       )
     ).toBe('0px');
   });
+});
+
+describe('in a form', () => {
+  async function mountForm(markup: string): Promise<{
+    form: HTMLFormElement;
+    submits: SubmitEvent[];
+  }> {
+    document.body.innerHTML = `<form>${markup}</form>`;
+    const form = document.querySelector('form')!;
+    await Promise.all(
+      [...form.querySelectorAll('craft-button')].map((b) => b.updateComplete)
+    );
+    const submits: SubmitEvent[] = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submits.push(event);
+    });
+    return {form, submits};
+  }
+
+  it('submits its form when a submit button is clicked', async () => {
+    const {submits} = await mountForm(
+      '<craft-button type="submit">Save</craft-button>'
+    );
+
+    document.querySelector('craft-button')!.click();
+
+    expect(submits).toHaveLength(1);
+  });
+
+  it('submits when the click lands on an element in its label', async () => {
+    const {submits} = await mountForm(
+      '<craft-button type="submit"><span>Save</span></craft-button>'
+    );
+
+    document
+      .querySelector('craft-button span')!
+      .dispatchEvent(new MouseEvent('click', {bubbles: true, composed: true}));
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(submits).toHaveLength(1);
+  });
+
+  it.each([
+    ['click()', (button: HTMLElement) => button.click()],
+    [
+      'a dispatched click',
+      (button: HTMLElement) =>
+        button.dispatchEvent(
+          new MouseEvent('click', {bubbles: true, cancelable: true})
+        ),
+    ],
+  ])('does not submit when a listener cancels %s', async (_, click) => {
+    const {form, submits} = await mountForm(
+      '<craft-button type="submit">Save</craft-button>'
+    );
+    form.addEventListener('click', (event) => event.preventDefault());
+
+    click(document.querySelector('craft-button')!);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(submits).toHaveLength(0);
+  });
+
+  it('lets a later listener cancel a click() that a listener repeats', async () => {
+    const {form, submits} = await mountForm(
+      '<craft-button type="submit">Save</craft-button>'
+    );
+    const button = document.querySelector('craft-button')!;
+    button.addEventListener('click', () => button.click());
+    form.addEventListener('click', (event) => event.preventDefault());
+
+    button.click();
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(submits).toHaveLength(0);
+  });
+
+  it('checks the form is valid before submitting it', async () => {
+    const {submits} = await mountForm(
+      '<input required><craft-button type="submit">Save</craft-button>'
+    );
+
+    document.querySelector('craft-button')!.click();
+
+    expect(submits).toHaveLength(0);
+  });
+
+  it('resets its form when a reset button is clicked', async () => {
+    const {form} = await mountForm(
+      '<input value="a"><craft-button type="reset">Reset</craft-button>'
+    );
+    const input = form.querySelector('input')!;
+    input.value = 'b';
+
+    document.querySelector('craft-button')!.click();
+
+    expect(input.value).toBe('a');
+  });
+
+  it('leaves its form alone as a plain button', async () => {
+    const {submits} = await mountForm('<craft-button>Add</craft-button>');
+
+    document.querySelector('craft-button')!.click();
+
+    expect(submits).toHaveLength(0);
+  });
+
+  it('does not submit while disabled, even when the pointer reaches it', async () => {
+    const {submits} = await mountForm(
+      '<craft-button type="submit" disabled focusable-when-disabled>Save</craft-button>'
+    );
+
+    document
+      .querySelector('craft-button')!
+      .dispatchEvent(new MouseEvent('click', {bubbles: true, composed: true}));
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(submits).toHaveLength(0);
+  });
+
+  it.each([
+    ['click()', (button: HTMLElement) => button.click()],
+    [
+      'a dispatched click',
+      (button: HTMLElement) =>
+        button.dispatchEvent(new MouseEvent('click', {bubbles: true})),
+    ],
+  ])(
+    'does not submit when a listener disables it during %s',
+    async (_, click) => {
+      const {form, submits} = await mountForm(
+        '<craft-button type="submit">Save</craft-button>'
+      );
+      const button = form.querySelector('craft-button')!;
+      button.addEventListener('click', () => {
+        button.disabled = true;
+      });
+
+      click(button);
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(submits).toHaveLength(0);
+    }
+  );
+
+  it('lets a click listener on its submit button cancel Enter in a field', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const {form, submits} = await mountForm(
+      '<input name="a"><input name="b"><craft-button type="submit">Save</craft-button>'
+    );
+    const onClick = vi.fn((event: Event) => event.preventDefault());
+    form.querySelector('craft-button')!.addEventListener('click', onClick);
+
+    form.querySelector('input')!.focus();
+    await userEvent.keyboard('{Enter}');
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(submits).toHaveLength(0);
+  });
+
+  it('lets Enter in a field submit the form', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const {form, submits} = await mountForm(
+      '<input name="a"><input name="b"><craft-button type="submit">Save</craft-button>'
+    );
+
+    form.querySelector('input')!.focus();
+    await userEvent.keyboard('{Enter}');
+
+    expect(submits).toHaveLength(1);
+  });
+
+  it('does not let Enter in a field submit while its submit button is disabled', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const {form, submits} = await mountForm(
+      '<input name="a"><input name="b"><craft-button type="submit" disabled>Save</craft-button>'
+    );
+
+    form.querySelector('input')!.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(submits).toHaveLength(0);
+
+    const button = form.querySelector('craft-button')!;
+    button.disabled = false;
+    await button.updateComplete;
+    await userEvent.keyboard('{Enter}');
+    expect(submits).toHaveLength(1);
+  });
+
+  it('submits the form its form attribute names', async () => {
+    document.body.innerHTML =
+      '<form id="other"><input name="a"></form><craft-button type="submit" form="other">Save</craft-button>';
+    const form = document.querySelector('form')!;
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+    const submits: SubmitEvent[] = [];
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      submits.push(event);
+    });
+
+    expect(button.form).toBe(form);
+    button.click();
+    expect(submits).toHaveLength(1);
+
+    const {userEvent} = await import('vite-plus/test/browser');
+    form.querySelector('input')!.focus();
+    await userEvent.keyboard('{Enter}');
+    expect(submits).toHaveLength(2);
+  });
+
+  it('is disabled by a disabled fieldset around it, until it is enabled', async () => {
+    const {form, submits} = await mountForm(
+      '<fieldset disabled><input name="a"><craft-button type="submit">Save</craft-button></fieldset>'
+    );
+    const fieldset = form.querySelector('fieldset')!;
+    const button = form.querySelector('craft-button')!;
+    await button.updateComplete;
+
+    expect(button.tabIndex).toBe(-1);
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    button.click();
+    expect(submits).toHaveLength(0);
+
+    fieldset.disabled = false;
+    await new Promise((resolve) => setTimeout(resolve));
+    await button.updateComplete;
+
+    expect(button.tabIndex).toBe(0);
+    expect(button.hasAttribute('aria-disabled')).toBe(false);
+    button.click();
+    expect(submits).toHaveLength(1);
+  });
+
+  it('follows a fieldset around it in a shadow root', async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    host.attachShadow({mode: 'open'}).innerHTML =
+      '<fieldset disabled><craft-button>Add</craft-button></fieldset>';
+    const fieldset = host.shadowRoot!.querySelector('fieldset')!;
+    const button = host.shadowRoot!.querySelector('craft-button')!;
+    await button.updateComplete;
+    const settle = async () => {
+      await new Promise((resolve) => setTimeout(resolve));
+      await button.updateComplete;
+    };
+
+    expect(button.tabIndex).toBe(-1);
+
+    fieldset.disabled = false;
+    await settle();
+    expect(button.tabIndex).toBe(0);
+
+    fieldset.disabled = true;
+    await settle();
+    expect(button.tabIndex).toBe(-1);
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('follows its fieldset being disabled or enabled just before a click', async () => {
+    const {form, submits} = await mountForm(
+      '<fieldset><craft-button type="submit">Save</craft-button></fieldset>'
+    );
+    const fieldset = form.querySelector('fieldset')!;
+    const button = form.querySelector('craft-button')!;
+    const onClick = vi.fn();
+    button.addEventListener('click', onClick);
+
+    fieldset.disabled = true;
+    button.click();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(onClick).not.toHaveBeenCalled();
+    expect(submits).toHaveLength(0);
+
+    fieldset.disabled = false;
+    button.click();
+    expect(onClick).toHaveBeenCalledOnce();
+    expect(submits).toHaveLength(1);
+  });
+
+  it('keeps an aria-disabled its author set through being disabled and enabled', async () => {
+    const {form} = await mountForm(
+      '<fieldset><craft-button aria-disabled="true">Add</craft-button></fieldset>'
+    );
+    const fieldset = form.querySelector('fieldset')!;
+    const button = form.querySelector('craft-button')!;
+    const settle = async () => {
+      await new Promise((resolve) => setTimeout(resolve));
+      await button.updateComplete;
+    };
+
+    button.disabled = true;
+    await settle();
+    button.disabled = false;
+    await settle();
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+
+    fieldset.disabled = true;
+    await settle();
+    fieldset.disabled = false;
+    await settle();
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it.each([
+    [
+      'its submit button before a native one',
+      '<form id="f"><input name="a"><input name="b"><craft-button type="submit">Save</craft-button><button type="submit">Draft</button></form>',
+      'craft-button',
+    ],
+    [
+      'a native submit button before its own',
+      '<form id="f"><input name="a"><input name="b"><button type="submit">Draft</button><craft-button type="submit">Save</craft-button></form>',
+      'button',
+    ],
+    [
+      'its submit button before the form, from the form attribute',
+      '<craft-button type="submit" form="f">Save</craft-button><form id="f"><input name="a"><input name="b"><button type="submit">Draft</button></form>',
+      'craft-button',
+    ],
+    [
+      'a native submit button in the form, before its own after the form',
+      '<form id="f"><input name="a"><input name="b"><button type="submit">Draft</button></form><craft-button type="submit" form="f">Save</craft-button>',
+      'button',
+    ],
+    [
+      'a native submit button from the form attribute, before its own',
+      '<button type="submit" form="f">Draft</button><form id="f"><input name="a"><input name="b"><craft-button type="submit">Save</craft-button></form>',
+      'button',
+    ],
+    [
+      'its submit button before a native one in a disabled fieldset',
+      '<form id="f"><input name="a"><input name="b"><craft-button type="submit">Save</craft-button><fieldset disabled><button type="submit">Draft</button></fieldset></form>',
+      'craft-button',
+    ],
+    [
+      'a native submit button after the form, before its own',
+      '<form id="f"><input name="a"><input name="b"></form><button type="submit" form="f">Draft</button><craft-button type="submit" form="f">Save</craft-button>',
+      'button',
+    ],
+  ])(
+    'lets Enter in a field click %s, as the first submit button',
+    async (_, markup, expected) => {
+      const {userEvent} = await import('vite-plus/test/browser');
+      document.body.innerHTML = markup;
+      const form = document.querySelector('form')!;
+      const craftButton = document.querySelector('craft-button')!;
+      const nativeButton = document.querySelector('button:not([aria-hidden])')!;
+      await craftButton.updateComplete;
+      const clicked: string[] = [];
+      craftButton.addEventListener('click', () => clicked.push('craft-button'));
+      nativeButton.addEventListener('click', () => clicked.push('button'));
+      const submits: SubmitEvent[] = [];
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submits.push(event);
+      });
+
+      form.querySelector('input')!.focus();
+      await userEvent.keyboard('{Enter}');
+      await new Promise((resolve) => setTimeout(resolve));
+
+      expect(clicked).toEqual([expected]);
+      expect(submits).toHaveLength(1);
+    }
+  );
+
+  it("stays enabled in a disabled fieldset's legend", async () => {
+    const {submits} = await mountForm(
+      '<fieldset disabled><legend><craft-button type="submit">Save</craft-button></legend></fieldset>'
+    );
+
+    document.querySelector('craft-button')!.click();
+
+    expect(submits).toHaveLength(1);
+  });
+
+  it('takes its hidden submitter away with the last submit button', async () => {
+    const {form} = await mountForm(
+      '<craft-button type="submit">Save</craft-button><craft-button type="submit">Publish</craft-button>'
+    );
+    const [save, publish] = form.querySelectorAll('craft-button');
+    const submitters = () => form.querySelectorAll('button').length;
+
+    expect(submitters()).toBe(1);
+    save!.remove();
+    await Promise.resolve();
+    expect(submitters()).toBe(1);
+    publish!.type = 'button';
+    await publish!.updateComplete;
+    await Promise.resolve();
+    expect(submitters()).toBe(0);
+  });
+});
+
+describe('keyboard', () => {
+  it.each(['{Enter}', ' '])('clicks on %s', async (key) => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    document.body.innerHTML = '<craft-button>Add</craft-button>';
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+    const onClick = vi.fn();
+    button.addEventListener('click', onClick);
+
+    await userEvent.tab();
+    await userEvent.keyboard(key);
+
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it('clicks once on Enter as a link', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    document.body.innerHTML = '<craft-button href="#here">Go</craft-button>';
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+    const onClick = vi.fn((event: Event) => event.preventDefault());
+    button.addEventListener('click', onClick);
+
+    await userEvent.tab();
+    await userEvent.keyboard('{Enter}');
+
+    expect(onClick).toHaveBeenCalledOnce();
+  });
+
+  it('is pressed while Space is held, without scrolling the page', async () => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    document.body.innerHTML = '<craft-button>Add</craft-button>';
+    const button = document.querySelector('craft-button')!;
+    await button.updateComplete;
+    let scrolled = true;
+    button.addEventListener('keydown', (event) => {
+      scrolled = !event.defaultPrevented;
+    });
+
+    await userEvent.tab();
+    await userEvent.keyboard('[Space>]');
+    expect(button.active).toBe(true);
+    expect(scrolled).toBe(false);
+
+    await userEvent.keyboard('[/Space]');
+    expect(button.active).toBe(false);
+  });
+});
+
+describe('toggle', () => {
+  it.each([
+    [false, true],
+    [true, false],
+  ])(
+    'asks for the opposite state when clicked while active is %s',
+    async (active, asked) => {
+      const {userEvent} = await import('vite-plus/test/browser');
+      document.body.innerHTML = '<craft-button toggle>Bold</craft-button>';
+      const button = document.querySelector('craft-button')!;
+      button.active = active;
+      await button.updateComplete;
+      const requests: boolean[] = [];
+      button.addEventListener('craft-toggle', (event) => {
+        requests.push((event as CustomEvent<{active: boolean}>).detail.active);
+      });
+
+      await userEvent.click(button);
+
+      expect(requests).toEqual([asked]);
+      expect(button.active).toBe(active);
+    }
+  );
 });
 
 describe('craft-button link keyboard focus', () => {

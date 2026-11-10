@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import CraftInputMoney from '@craftcms/ui/components/input-money/input-money';
   import type {UiControlPayload, UiValue} from './types';
-  import {inputName, isRecord, serverErrorValidators} from './runtime';
+  import {inputName, isRecord} from './runtime';
 
   type MoneyValue = {value: string | null; locale: string};
   type MoneyControlProps = {
@@ -41,11 +41,12 @@
   }
 
   const onInput = (event: Event) => {
-    if (!(event.target instanceof CraftInputMoney)) {
+    const input = event.currentTarget;
+    if (!(input instanceof CraftInputMoney)) {
       throw new TypeError('Expected a money input event target.');
     }
 
-    const modelValue = event.target.modelValue;
+    const amount = input.value;
 
     emit(
       'update:value',
@@ -53,8 +54,7 @@
         // Report an empty amount the same way the server sends one. Reshaping
         // it into `''` reads as a real edit the moment the field is populated
         // on load, marking the form dirty before anyone has touched it.
-        value:
-          modelValue == null || modelValue === '' ? null : String(modelValue),
+        value: amount === '' ? null : amount,
         locale: moneyValue().locale,
       },
       'typing'
@@ -68,7 +68,7 @@
       :label="label"
       label-sr-only
       :name="editable ? `${inputName(control.path)}[value]` : ''"
-      .modelValue="moneyValue().value"
+      .value="moneyValue().value ?? ''"
       :min="control.props.min"
       :max="control.props.max"
       :step="control.props.step"
@@ -79,8 +79,8 @@
       :required="editable && required"
       :readonly="control.mode === 'readOnly'"
       .disabled="control.mode === 'disabled'"
-      .validators="serverErrorValidators(invalid)"
-      @model-value-changed="onInput"
+      :invalid="invalid"
+      @input="onInput"
     ></craft-input-money>
     <input
       v-if="editable"

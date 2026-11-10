@@ -15,7 +15,7 @@ it.each(['light', 'dark'])(
     control.options = [{label: 'One', value: '1'}];
     document.querySelector('[data-theme]')!.append(control);
     await control.updateComplete;
-    control.opened = true;
+    control.open = true;
     await control.updateComplete;
 
     const listbox = control.querySelector('[slot="listbox"]')!;

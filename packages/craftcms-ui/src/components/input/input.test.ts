@@ -1,5 +1,4 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
-import {Required} from '@lion/ui/form-core.js';
 
 import './input.js';
 import type CraftInput from './input.js';
@@ -15,14 +14,14 @@ async function createInput(
   element.innerHTML = innerHTML;
   document.body.append(element);
   await element.updateComplete;
-  // Lion wires the label and feedback relations after its own first update,
-  // so give it a turn before reading them.
+  // The label and feedback relations are wired after the first update, so
+  // give them a turn before reading them.
   await new Promise((resolve) => setTimeout(resolve, 0));
   await element.updateComplete;
   return element;
 }
 
-/** Lion's native input, which is the element the component drives. */
+/** The native input, which is the element the component drives. */
 function native(element: CraftInput): HTMLInputElement {
   return element.querySelector('input')!;
 }
@@ -37,20 +36,36 @@ describe('craft-input', () => {
     const label = element.querySelector('label')!;
 
     expect(native(element)).toBeTruthy();
-    // Lion rewrites the label's `for` to the id it generated for the input,
-    // which is what makes clicking the label focus the field.
+    // The label points at the input's id, which is what makes clicking the
+    // label focus the field.
     expect(label.getAttribute('for')).toBe(native(element).id);
     expect(native(element).id).not.toBe('');
+  });
+
+  it('clears its label and help text when their attributes are removed', async () => {
+    const element = await createInput(
+      {label: 'Handle', 'help-text': 'Lowercase'},
+      ''
+    );
+
+    element.removeAttribute('label');
+    element.removeAttribute('help-text');
+    await element.updateComplete;
+
+    expect(element.label).toBe('');
+    expect(element.helpText).toBe('');
+    expect(element.querySelector('[slot="label"]')!.textContent).toBe('');
+    expect(element.querySelector('[slot="help-text"]')!.textContent).toBe('');
   });
 
   it('defaults to a medium control', async () => {
     expect((await createInput()).size).toBe('medium');
   });
 
-  it('carries the value as Lion s modelValue', async () => {
+  it('writes its value to the native input', async () => {
     const element = await createInput();
 
-    element.modelValue = 'entryType';
+    element.value = 'entryType';
     await element.updateComplete;
 
     expect(native(element).value).toBe('entryType');
@@ -142,41 +157,173 @@ describe('craft-input', () => {
   });
 });
 
-describe('craft-input aria-invalid', () => {
-  it('synchronizes aria-invalid with the native input', async () => {
+describe('craft-input references', () => {
+  it('is described by feedback added, replaced or removed after it renders', async () => {
     const element = await createInput();
-    const input = native(element);
+    const described = () => native(element).getAttribute('aria-describedby');
+    const feedback = () => {
+      const list = document.createElement('ul');
+      list.slot = 'feedback';
+      list.innerHTML = '<li>Handle is required.</li>';
+      return list;
+    };
 
-    element.setAttribute('aria-invalid', 'true');
-    await element.updateComplete;
-    expect(input.getAttribute('aria-invalid')).toBe('true');
+    const first = feedback();
+    element.append(first);
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(described()).toBe(first.id);
 
-    element.setAttribute('aria-invalid', 'false');
-    await element.updateComplete;
-    expect(input.getAttribute('aria-invalid')).toBe('false');
+    const second = feedback();
+    first.replaceWith(second);
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(described()).toBe(second.id);
+
+    second.remove();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(described()).toBeNull();
   });
 
-  it('preserves validation-managed aria-invalid without an override', async () => {
+  it('drops aria-describedby once nothing describes the input', async () => {
+    const element = await createInput(
+      {},
+      '<label slot="label">Handle</label><div slot="help-text">Lowercase</div>'
+    );
+    const help = element.querySelector<HTMLElement>('[slot="help-text"]')!;
+    expect(native(element).getAttribute('aria-describedby')).toBe(help.id);
+
+    element.removeFromAriaDescribedBy(help);
+    expect(native(element).hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  it('gives each id-less name and description its own id', async () => {
+    const element = await createInput(
+      {},
+      '<label slot="label">Handle</label><div slot="help-text">Lowercase</div>'
+    );
+    const span = (text: string) => {
+      const node = document.createElement('span');
+      node.textContent = text;
+      element.append(node);
+      return node;
+    };
+
+    element.addToAriaLabelledBy(span('First'));
+    element.addToAriaDescribedBy(span('Second'));
+    element.addToAriaDescribedBy(span('Third'));
+
+    const resolve = (attribute: string) =>
+      native(element)
+        .getAttribute(attribute)!
+        .split(' ')
+        .map((id) => document.getElementById(id)?.textContent);
+    expect(resolve('aria-labelledby')).toEqual(['Handle', 'First']);
+    expect(resolve('aria-describedby')).toEqual([
+      'Lowercase',
+      'Second',
+      'Third',
+    ]);
+  });
+
+  it('keeps the references the control arrived with alongside its own', async () => {
+    document.body.innerHTML =
+      '<span id="col-heading">Width</span><span id="col-note">In pixels</span>';
+    const element = await createInput(
+      {},
+      '<input slot="input" aria-labelledby="col-heading" aria-describedby="col-note">'
+    );
+    const resolve = (attribute: string) =>
+      native(element)
+        .getAttribute(attribute)!
+        .split(' ')
+        .map((id) => document.getElementById(id)?.textContent);
+    expect(resolve('aria-labelledby')).toEqual(['Width']);
+    expect(resolve('aria-describedby')).toEqual(['In pixels']);
+
+    const note = document.createElement('span');
+    note.textContent = 'Whole numbers';
+    element.append(note);
+    element.addToAriaDescribedBy(note);
+    expect(resolve('aria-describedby')).toEqual(['In pixels', 'Whole numbers']);
+
+    element.removeFromAriaDescribedBy(note);
+    expect(resolve('aria-describedby')).toEqual(['In pixels']);
+  });
+
+  it('announces feedback politely only while the field has focus', async () => {
+    const element = await createInput(
+      {},
+      '<label slot="label">Handle</label><div slot="feedback">Required</div>'
+    );
+    const feedback = element.querySelector('[slot="feedback"]')!;
+
+    native(element).dispatchEvent(new FocusEvent('focusin', {bubbles: true}));
+    expect(feedback.getAttribute('aria-live')).toBe('polite');
+
+    native(element).dispatchEvent(new FocusEvent('focusout', {bubbles: true}));
+    expect(feedback.getAttribute('aria-live')).toBe('assertive');
+  });
+});
+
+describe('craft-input invalid', () => {
+  it('marks the native input invalid', async () => {
     const element = await createInput();
     const input = native(element);
-    element.modelValue = '';
-    element.validators = [new Required()];
-    element.submitted = true;
-    await element.updateComplete;
-    await element.updateComplete;
 
-    expect(input.getAttribute('aria-invalid')).toBe('true');
-
-    element.setAttribute('aria-invalid', 'false');
-    await element.updateComplete;
-    expect(input.getAttribute('aria-invalid')).toBe('false');
-
-    element.removeAttribute('aria-invalid');
+    element.invalid = true;
     await element.updateComplete;
     expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(element.hasAttribute('invalid')).toBe(true);
 
-    element.placeholder = 'Unrelated update';
+    element.invalid = false;
     await element.updateComplete;
-    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(input.hasAttribute('aria-invalid')).toBe(false);
+  });
+});
+
+describe('craft-input server-rendered control', () => {
+  async function createServerRendered(
+    hostAttributes: string,
+    inputAttributes: string
+  ): Promise<{element: CraftInput; input: HTMLInputElement}> {
+    // Parsed before it's connected, as a server-rendered page is by the time
+    // the component's script runs.
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <craft-input ${hostAttributes}>
+        <input slot="input" ${inputAttributes}>
+      </craft-input>`;
+    document.body.append(...container.childNodes);
+    const element = document.querySelector('craft-input') as CraftInput;
+    await element.updateComplete;
+
+    return {element, input: element.querySelector('input')!};
+  }
+
+  it("keeps the control's own attributes the host doesn't set", async () => {
+    const {input} = await createServerRendered(
+      '',
+      'type="password" name="secret" placeholder="Hidden" readonly disabled required'
+    );
+
+    expect(input.type).toBe('password');
+    expect(input.name).toBe('secret');
+    expect(input.placeholder).toBe('Hidden');
+    expect(input.readOnly).toBe(true);
+    expect(input.disabled).toBe(true);
+    expect(input.required).toBe(true);
+  });
+
+  it('applies what the host does set', async () => {
+    const {element, input} = await createServerRendered(
+      'name="title" placeholder="Title"',
+      'name="old"'
+    );
+
+    expect(input.name).toBe('title');
+    expect(input.placeholder).toBe('Title');
+
+    element.disabled = true;
+    await element.updateComplete;
+    expect(input.disabled).toBe(true);
   });
 });

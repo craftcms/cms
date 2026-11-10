@@ -15,7 +15,7 @@ async function swatchEdges(): Promise<Record<string, string>> {
   await select.updateComplete;
   const edge = (value: string) => {
     const option = [...select.querySelectorAll('craft-option')].find(
-      (o) => (o as unknown as {choiceValue: string}).choiceValue === value
+      (o) => (o as unknown as {value: string}).value === value
     )!;
 
     return getComputedStyle(option.querySelector('.select-color__swatch')!)
@@ -70,7 +70,7 @@ it.each(['light', 'dark'])(
         card.shadowRoot!.querySelector('.card__header')!
       );
       const option = [...select.querySelectorAll('craft-option')].find(
-        (o) => (o as unknown as {choiceValue: string}).choiceValue === color
+        (o) => (o as unknown as {value: string}).value === color
       )!;
       const swatch = getComputedStyle(
         option.querySelector('.select-color__swatch')!
@@ -92,19 +92,20 @@ it.each(['light', 'dark'])(
 it('takes its name and description from a surrounding field', async () => {
   const {page} = await import('vite-plus/test/browser');
   await import('../field/field.js');
-  document.body.innerHTML = `<craft-field label="Card color" help-text="The color of the entry type's cards."><craft-select-color slot="input" model-value="red"></craft-select-color><ul slot="feedback" class="errors"><li>Pick a color.</li></ul></craft-field>`;
+  document.body.innerHTML = `<craft-field label="Card color" help-text="The color of the entry type's cards."><craft-select-color slot="input" value="red"></craft-select-color><ul slot="feedback" class="errors"><li>Pick a color.</li></ul></craft-field>`;
 
-  const button = page.getByRole('button', {name: /^Card color/});
+  const field = page.getByRole('combobox', {name: /^Card color/});
 
-  await expect.element(button).toHaveAccessibleName(/^Card color\b.*Red/);
+  await expect.element(field).toHaveAccessibleName('Card color');
+  await expect.element(field).toHaveTextContent('Red');
   await expect
-    .element(button)
+    .element(field)
     .toHaveAccessibleDescription(
       /The color of the entry type's cards\..*Pick a color\./
     );
 });
 
-it('focuses its button when the field label is clicked', async () => {
+it('focuses its field when the field label is clicked', async () => {
   const {page} = await import('vite-plus/test/browser');
   await import('../field/field.js');
   document.body.innerHTML = `<craft-field label="Card color"><craft-select-color slot="input"></craft-select-color></craft-field>`;
@@ -112,7 +113,7 @@ it('focuses its button when the field label is clicked', async () => {
   await page.getByText('Card color', {exact: true}).click();
 
   await expect
-    .element(page.getByRole('button', {name: /^Card color/}))
+    .element(page.getByRole('combobox', {name: /^Card color/}))
     .toHaveFocus();
 });
 
@@ -126,13 +127,37 @@ it('emits input then change when a color is picked, but not when one is set', as
   select.addEventListener('input', () => events.push('input'));
   select.addEventListener('change', () => events.push('change'));
 
-  select.modelValue = 'green';
+  select.value = 'green';
   await select.updateComplete;
-  await userEvent.click(page.getByRole('button', {name: /^Color/}));
+  await userEvent.click(page.getByRole('combobox', {name: /^Color/}));
   await userEvent.click(page.getByRole('option', {name: 'Red'}));
 
   expect(events).toEqual(['input', 'change']);
-  expect(select.modelValue).toBe('red');
+  expect(select.value).toBe('red');
+});
+
+it('keeps the highlighted color highlighted when the colors are replaced, and drops it once it’s gone', async () => {
+  const {page, userEvent} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `<craft-select-color label="Color" value="red" colors='["red","blue","green"]'></craft-select-color>`;
+  const select =
+    document.querySelector<CraftSelectColor>('craft-select-color')!;
+  await select.updateComplete;
+  const field = page.getByRole('combobox', {name: /^Color/});
+
+  await userEvent.click(field);
+  await userEvent.keyboard('{ArrowDown}');
+  select.colors = ['red', 'blue', 'yellow'];
+  await select.updateComplete;
+  const blue = page.getByRole('option', {name: 'Blue'}).element();
+  await expect.element(field).toHaveAttribute('aria-activedescendant', blue.id);
+  await expect.element(blue).toHaveAttribute('active');
+
+  select.colors = ['red', 'green'];
+  await select.updateComplete;
+  await expect.element(field).not.toHaveAttribute('aria-activedescendant');
+  await userEvent.keyboard('{Enter}');
+
+  expect(select.value).toBe('red');
 });
 
 it('selects no color until one is given', async () => {
@@ -140,9 +165,9 @@ it('selects no color until one is given', async () => {
   document.body.innerHTML = `<craft-select-color label="Color"></craft-select-color>`;
   const select =
     document.querySelector<CraftSelectColor>('craft-select-color')!;
-  await select.registrationComplete;
+  await select.updateComplete;
 
-  expect(select.modelValue).toBe('');
+  expect(select.value).toBe('');
   await expect
     .element(page.getByRole('option', {name: 'Red', includeHidden: true}))
     .toHaveAttribute('aria-selected', 'false');
@@ -150,13 +175,14 @@ it('selects no color until one is given', async () => {
 
 it('is named and described by the elements its host references', async () => {
   const {page} = await import('vite-plus/test/browser');
-  document.body.innerHTML = `<table><thead><tr><th id="color-heading">Card color</th></tr></thead><tbody><tr><td><craft-select-color model-value="red" labelled-by="color-heading" described-by="color-help"></craft-select-color></td></tr></tbody></table><p id="color-help">The color of the entry type's cards.</p>`;
+  document.body.innerHTML = `<table><thead><tr><th id="color-heading">Card color</th></tr></thead><tbody><tr><td><craft-select-color value="red" labelled-by="color-heading" described-by="color-help"></craft-select-color></td></tr></tbody></table><p id="color-help">The color of the entry type's cards.</p>`;
 
-  const button = page.getByRole('button', {name: /^Card color/});
+  const field = page.getByRole('combobox', {name: /^Card color/});
 
-  await expect.element(button).toHaveAccessibleName(/^Card color\b.*Red/);
+  await expect.element(field).toHaveAccessibleName('Card color');
+  await expect.element(field).toHaveTextContent('Red');
   await expect
-    .element(button)
+    .element(field)
     .toHaveAccessibleDescription("The color of the entry type's cards.");
 });
 
@@ -165,7 +191,7 @@ it('names each option by its color in text', async () => {
   document.body.innerHTML = `<craft-select-color label="Color" allow-transparent blank-label="No color" allow-custom colors='["red","#e5422b","#2563eb"]' labels='{"#e5422b":"Craft red"}'></craft-select-color>`;
   const select =
     document.querySelector<CraftSelectColor>('craft-select-color')!;
-  await select.registrationComplete;
+  await select.updateComplete;
 
   const names = page
     .getByRole('option', {includeHidden: true})
@@ -176,15 +202,13 @@ it('names each option by its color in text', async () => {
 });
 
 it('fills hex colors’ swatches, checkers a transparent one, and selects a hex color by its value', async () => {
-  document.body.innerHTML = `<craft-select-color label="Color" colors='["#e5422b","#2563eb","transparent"]' model-value="#2563eb"></craft-select-color>`;
+  document.body.innerHTML = `<craft-select-color label="Color" colors='["#e5422b","#2563eb","transparent"]' value="#2563eb"></craft-select-color>`;
   const select =
     document.querySelector<CraftSelectColor>('craft-select-color')!;
-  await select.registrationComplete;
+  await select.updateComplete;
   const swatch = (value: string) =>
     [...select.querySelectorAll('craft-option')]
-      .find(
-        (o) => (o as unknown as {choiceValue: string}).choiceValue === value
-      )!
+      .find((o) => (o as unknown as {value: string}).value === value)!
       .querySelector('.select-color__swatch')!;
 
   expect(getComputedStyle(swatch('#e5422b')).backgroundColor).toBe(
@@ -196,5 +220,5 @@ it('fills hex colors’ swatches, checkers a transparent one, and selects a hex 
   expect(getComputedStyle(swatch('transparent')).backgroundImage).toContain(
     'linear-gradient'
   );
-  expect(select.modelValue).toBe('#2563eb');
+  expect(select.value).toBe('#2563eb');
 });

@@ -32,7 +32,7 @@ describe('HandleControl', () => {
   });
 
   it('renders and submits handles generated from a relative source until directly edited', async () => {
-    const handle = container.querySelector<HTMLElement & {modelValue: string}>(
+    const handle = container.querySelector<HTMLElement & {value: string}>(
       'craft-input-handle'
     )!;
     const name = container.querySelector<HTMLInputElement>(
@@ -49,7 +49,7 @@ describe('HandleControl', () => {
     await nextTick();
     await nextTick();
 
-    expect(handle.modelValue).toBe('firstGeneratedHandle');
+    expect(handle.value).toBe('firstGeneratedHandle');
     expect(new FormData(form).get('settings[identity][handle]')).toBe(
       'firstGeneratedHandle'
     );
@@ -59,12 +59,12 @@ describe('HandleControl', () => {
     await nextTick();
     await nextTick();
 
-    expect(handle.modelValue).toBe('secondGeneratedHandle');
+    expect(handle.value).toBe('secondGeneratedHandle');
 
-    handle.modelValue = 'customHandle';
-    handle.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    handle.value = 'customHandle';
+    handle
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     handle.dispatchEvent(new Event('change', {bubbles: true}));
     await nextTick();
 
@@ -73,7 +73,7 @@ describe('HandleControl', () => {
     await nextTick();
     await nextTick();
 
-    expect(handle.modelValue).toBe('customHandle');
+    expect(handle.value).toBe('customHandle');
     expect(new FormData(form).get('settings[identity][handle]')).toBe(
       'customHandle'
     );

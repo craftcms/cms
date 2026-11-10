@@ -93,8 +93,8 @@ emitChange(this); // the value was committed
 | `format`           | `formatNumber()`, plus `cpHumanizer` for durations.                                                                                                  |
 | `escapeHtml`       | Escapes HTML special characters in a string.                                                                                                         |
 | `thumbnail-loader` | `ThumbnailLoader` and `ThumbnailWorker`, which fetch and swap element thumbnails.                                                                    |
-| `overlay-events`   | `wireOverlayLifecycleEvents()` — see below.                                                                                                          |
+| `overlay-events`   | `announceOverlayState()` — see below.                                                                                                                |
 | `overlay-position` | `viewportEscapingModifiers` — Popper modifiers that let a fixed-strategy overlay escape a clipping ancestor.                                         |
 | `api`              | `actionClient` and `apiClient` for CP action requests and the Craft API, built on the `http` client (`createHttpClient`, `isHttpError`, `isCancel`). |
 
-`wireOverlayLifecycleEvents(host)` is what gives [Dialog](?path=/docs/components-dialog--docs), [Popover](?path=/docs/components-popover--docs), and [Tooltip](?path=/docs/components-tooltip--docs) their four lifecycle events. It bridges Lion's `opened-changed` to `craft-show` and `craft-hide` as the state flips, then `craft-after-show` and `craft-after-hide` once the update settles. Call it once from a constructor to give an overlay component the same contract.
+`announceOverlayState(host)` is what gives [Popover](?path=/docs/components-popover--docs) and [Tooltip](?path=/docs/components-tooltip--docs) their four lifecycle events: `craft-show` or `craft-hide` as `open` flips, then `craft-after-show` or `craft-after-hide` once the update settles. Call it whenever `open` may have changed, such as from `requestUpdate()`, to give an overlay component the same contract.

@@ -15,13 +15,11 @@ For anything less, a [Popover](?path=/docs/components-popover--docs) or an inlin
 
 ## Opening and Closing
 
-Set the `open` attribute to show it.
-
-The attribute is `open`, but the property is **`opened`**, not `open`. The two stay in sync in both directions.
+Set `open`, the attribute or the property, to show it.
 
 ```js
 dialog.setAttribute('open', ''); // shows it
-dialog.opened = false; // hides it
+dialog.open = false; // hides it
 ```
 
 Any descendant carrying `data-dialog="close"` closes the dialog when clicked, so a close button needs no wiring.

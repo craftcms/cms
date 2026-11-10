@@ -6,7 +6,7 @@
     {% set selectedPermissions = Request.input('permissions', []) %}
 {% endif %}
 
-{% set modelValue = [] %}
+{% set value = [] %}
 
 {% for group in permissions %}
     {# Include a placeholder for the user group being created? #}
@@ -17,14 +17,14 @@
         })) %}
     {% endif %}
 
-    {% set modelValue = modelValue|merge(selectedPermissions is not null
+    {% set value = value|merge(selectedPermissions is not null
         ? selectedPermissions|filter(permission => permission in group.keys)
         : (subject ? group.keys|filter(permission => subject.can(permission)) : [])) %}
 {% endfor %}
 
 {{ ui('permission-tree', {
     groups: permissions,
-    modelValue: modelValue,
+    value: value,
     lockedPermissions: groupPermissions ?? [],
     name: disabled ? null : permissionName,
     disabled: disabled,

@@ -17,7 +17,7 @@ it('renders permission groups and selected values through the web component', fu
     ]));
     $crawler = new Crawler(PermissionTree::make()
         ->groups([$group])
-        ->modelValue(['viewEntries', 'outsideGroup'])
+        ->value(['viewEntries', 'outsideGroup'])
         ->lockedPermissions(['editEntries'])
         ->name('settings[permissions]')
         ->toHtml());

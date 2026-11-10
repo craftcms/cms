@@ -33,7 +33,7 @@ declare const Craft: any;
 
 /** A `craft-dialog`. */
 interface CpModalDialog extends HTMLElement {
-  opened: boolean;
+  open: boolean;
   noHeader: boolean;
   label: string;
 }
@@ -184,7 +184,7 @@ export class CpModal extends Base {
     });
 
     document.body.append(this.dialog);
-    this.dialog.opened = true;
+    this.dialog.open = true;
     this.visible = true;
 
     void this.load();
@@ -487,7 +487,7 @@ export class CpModal extends Base {
     dialog.addEventListener('craft-after-hide', () => dialog.remove(), {
       once: true,
     });
-    dialog.opened = false;
+    dialog.open = false;
 
     if (!this.succeeded) {
       this.trigger('cancel');

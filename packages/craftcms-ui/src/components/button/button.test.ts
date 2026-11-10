@@ -235,12 +235,43 @@ describe('craft-button link semantics', () => {
     expect(element.type).toBe('button');
   });
 
-  it('keeps Lion button semantics when there is no href', async () => {
+  it('is a button and a tab stop when there is no href', async () => {
     const element = await createButton();
     expect(element.getAttribute('role')).toBe('button');
     expect(element.tabIndex).toBe(0);
-    // Defaults to "button" even though we extend LionButtonSubmit.
     expect(element.type).toBe('button');
+  });
+
+  it('keeps a role its author set', async () => {
+    const element = await createButton({role: 'tab'});
+    expect(element.getAttribute('role')).toBe('tab');
+  });
+
+  it('says it is disabled until it is enabled again', async () => {
+    const element = await createButton({disabled: ''});
+    expect(element.getAttribute('aria-disabled')).toBe('true');
+
+    element.disabled = false;
+    await element.updateComplete;
+
+    expect(element.hasAttribute('aria-disabled')).toBe(false);
+    expect(element.tabIndex).toBe(0);
+  });
+
+  it('keeps an aria-disabled its author set on an enabled button', async () => {
+    const element = await createButton({'aria-disabled': 'true'});
+    expect(element.getAttribute('aria-disabled')).toBe('true');
+    expect(element.tabIndex).toBe(0);
+  });
+
+  it('ignores click() while disabled', async () => {
+    const element = await createButton({disabled: ''});
+    const onClick = vi.fn();
+    element.addEventListener('click', onClick);
+
+    element.click();
+
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('honors an explicit type="submit"', async () => {
@@ -667,7 +698,7 @@ describe('craft-button icon spacing', () => {
 
 describe('craft-button press state', () => {
   it('clears the press when a native drag ends instead of a mouseup', async () => {
-    // A drag handle never gets the mouseup Lion waits for; without this it
+    // A drag handle never gets the mouseup the press waits for; without this it
     // stays `active`, looking selected, until the next click anywhere.
     const button = await createButton();
 

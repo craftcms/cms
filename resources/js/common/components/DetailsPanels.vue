@@ -388,7 +388,7 @@
       :label="openPanel?.label ?? ''"
       no-header
       close-on-outside-click
-      .opened="openPanelId !== null"
+      .open="openPanelId !== null"
       .returnFocus="dialogReturnFocus"
       @craft-show="onDialogShow"
       @craft-hide="onDialogHide"

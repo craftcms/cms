@@ -128,5 +128,5 @@ it('focuses a combobox cell’s textbox rather than its clear button', async () 
   await new Promise((resolve) => setTimeout(resolve, 50));
 
   expect(document.activeElement).toBe(input);
-  expect(combobox.opened).toBe(true);
+  expect(combobox.open).toBe(true);
 });

@@ -15,7 +15,7 @@ beforeEach(() => {
   Object.values(messages).forEach((fn) => fn.mockReset());
 });
 
-type Dialog = HTMLElement & {opened: boolean; label: string};
+type Dialog = HTMLElement & {open: boolean; label: string};
 
 let request: ReturnType<typeof vi.spyOn>;
 
@@ -95,7 +95,7 @@ describe('CpModal', () => {
       data: 'ns%5BnewOwner%5D=1',
       headers: {'X-Craft-Namespace': 'ns'},
     });
-    expect(dialog().opened).toBe(false);
+    expect(dialog().open).toBe(false);
   });
 
   it('submits spaces and plus signs as typed', async () => {
@@ -126,12 +126,12 @@ describe('CpModal', () => {
 
     expect(dismissal.defaultPrevented).toBe(true);
     expect(confirm).toHaveBeenCalled();
-    expect(dialog().opened).toBe(true);
+    expect(dialog().open).toBe(true);
 
     confirm.mockReturnValue(true);
     button('Cancel').click();
 
-    expect(dialog().opened).toBe(false);
+    expect(dialog().open).toBe(false);
     expect(onCancel).toHaveBeenCalled();
   });
 });

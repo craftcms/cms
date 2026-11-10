@@ -1,5 +1,6 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import '@craftcms/ui/components/checkbox/checkbox';
 import type {useReorderableRows} from '@/common/composables/useReorderableRows';
 import DataTable from './DataTable.vue';
 import {useCraftTable} from '@/common/table/craftTable';
@@ -105,16 +106,8 @@ it.each(['readOnly', 'interactionsDisabled'] as const)(
     const {root, selection, table} = mountTable({[option]: true});
     selection.selection.select(1, true);
     await nextTick();
-    const all = root.querySelector<HTMLElement & {checked: boolean}>(
-      'thead craft-checkbox'
-    )!;
-    all.checked = true;
-    all.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
-    const row = root.querySelector<HTMLElement & {checked: boolean}>(
-      'tbody craft-checkbox'
-    )!;
-    row.checked = false;
-    row.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+    toggle(root.querySelector('thead craft-checkbox')!, true);
+    toggle(root.querySelector('tbody craft-checkbox')!, false);
     root.querySelector('tbody tr')!.dispatchEvent(
       new KeyboardEvent('keydown', {
         key: ' ',
@@ -159,11 +152,7 @@ it('marks no rows clickable while selection is read-only', async () => {
 
 it('selects eligible rows through the shared select-all checkbox', async () => {
   const {root, selection} = mountTable({excludeSecond: true});
-  const all = root.querySelector<HTMLElement & {checked: boolean}>(
-    'thead craft-checkbox'
-  )!;
-  all.checked = true;
-  all.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+  toggle(root.querySelector('thead craft-checkbox')!, true);
   await nextTick();
 
   expect(selection.selectedIds.value).toEqual([1, 3]);
@@ -242,3 +231,10 @@ it('reports a drop among rows after one that can’t be reordered by their index
 
   expect(onReorder).toHaveBeenCalledWith(1, 2);
 });
+
+/** Sets a checkbox the way a user would, ending with its `change`. */
+function toggle(checkbox: Element, checked: boolean): void {
+  const input = checkbox.querySelector('input')!;
+  input.checked = checked;
+  input.dispatchEvent(new Event('change', {bubbles: true}));
+}

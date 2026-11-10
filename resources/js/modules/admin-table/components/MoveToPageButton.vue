@@ -34,19 +34,13 @@
     popover.value?.hide();
   }
 
-  function onOpenedChanged(event: CustomEvent<boolean>): void {
-    if (event.detail) {
-      targetPageRaw.value = props.currentPage;
-    }
+  function onShow(): void {
+    targetPageRaw.value = props.currentPage;
   }
 </script>
 
 <template>
-  <craft-popover
-    ref="popover"
-    placement="bottom-end"
-    @opened-changed="onOpenedChanged"
-  >
+  <craft-popover ref="popover" placement="bottom-end" @craft-show.self="onShow">
     <!-- The popover relocates its invoker; v-once prevents Vue patching the moved DOM.
       Styled to match `craft-action-item`'s row rather than actually being one:
       `craft-action-menu` finds every `craft-action-item` in its content — including one
