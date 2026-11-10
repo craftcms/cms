@@ -117,16 +117,37 @@
     return !(props.selectsAll && item.action?.type === 'event');
   }
 
+  const COMPARE_EVENT = 'craft:compare-elements';
+
+  /**
+   * Whether the selected elements have fields the Compare screen can line up:
+   * the same field layout, or a custom field in common. Rows that don't name
+   * their layout are taken to.
+   */
+  const selectionSharesFields = computed(() => {
+    const [from, to] = props.selectedElements.map(
+      (element) => element.fieldLayout
+    );
+
+    return (
+      !from ||
+      !to ||
+      (from.id !== null && from.id === to.id) ||
+      from.fieldIds.some((id) => to.fieldIds.includes(id))
+    );
+  });
+
   const availableActions = computed(() =>
     (props.actions ?? []).filter(
       (item) =>
         appliesToSelection(item) &&
         availableForSelection(item) &&
-        selectionAllows(item, props.selectedElements)
+        selectionAllows(item, props.selectedElements) &&
+        (item.action?.type !== 'event' ||
+          item.action.name !== COMPARE_EVENT ||
+          selectionSharesFields.value)
     )
   );
-
-  const COMPARE_EVENT = 'craft:compare-elements';
 
   /**
    * Where Compare goes: the Compare screen with the two selected elements side
