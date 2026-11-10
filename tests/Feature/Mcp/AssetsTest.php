@@ -363,7 +363,7 @@ it('creates assets from local project files through the stdio server', function 
     $directory = base_path('mcp-upload-test');
     File::ensureDirectoryExists($directory);
     File::put("$directory/local.txt", 'Local content');
-    $input = fopen('php://memory', 'r+');
+    $input = tmpfile();
     fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
         ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25',
@@ -378,7 +378,7 @@ it('creates assets from local project files through the stdio server', function 
     ])));
     rewind($input);
     $outputPath = tempnam(sys_get_temp_dir(), 'mcp-stdio');
-    app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen($outputPath, 'w')));
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen($outputPath, 'w')));
 
     try {
         $this->artisan('craft:mcp:serve', ['--user' => User::query()->firstOrFail()->username])->assertSuccessful();
@@ -399,7 +399,7 @@ it('creates assets from local project files through the stdio server', function 
 
 it('prepares uploads over stdio that clients transfer with the upload’s own credential', function (): void {
     $serve = function (string $tool, array $arguments): array {
-        $input = fopen('php://memory', 'r+');
+        $input = tmpfile();
         fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
             ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
                 'protocolVersion' => '2025-11-25',
@@ -411,7 +411,7 @@ it('prepares uploads over stdio that clients transfer with the upload’s own cr
         ])));
         rewind($input);
         $outputPath = tempnam(sys_get_temp_dir(), 'mcp-stdio');
-        app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen($outputPath, 'w')));
+        app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen($outputPath, 'w')));
         $this->artisan('craft:mcp:serve', ['--user' => User::query()->firstOrFail()->username])->assertSuccessful();
         $response = collect(file($outputPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
             ->map(static fn (string $line): array => Json::decode($line))

@@ -56,7 +56,7 @@
     "league/commonmark": "^2.8",
     "league/flysystem-path-prefixing": "^3.31",
     "league/uri": "^7.0",
-    "mcp/sdk": "0.8.1",
+    "mcp/sdk": "0.9.0",
     "moneyphp/money": "^4.0",
     "phpoffice/phpspreadsheet": "^5.3",
     "pragmarx/google2fa": "^9.0",

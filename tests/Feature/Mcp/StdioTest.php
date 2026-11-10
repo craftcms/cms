@@ -24,20 +24,26 @@ use Illuminate\Support\Facades\Notification;
 beforeEach(function (): void {
     Notification::fake();
 
-    $this->serve = function (string $user, array $messages): array {
-        $input = fopen('php://memory', 'r+');
-        fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
-            ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
-                'protocolVersion' => '2025-11-25',
-                'capabilities' => (object) [],
-                'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
-            ]],
-            ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
-            ...$messages,
-        ])));
+    $this->serve = function (string $user, array $messages, bool $modern = false): array {
+        $messages = $modern
+            ? array_map(static fn (array $message): array => array_merge_recursive($message, ['params' => ['_meta' => [
+                'io.modelcontextprotocol/protocolVersion' => '2026-07-28',
+                'io.modelcontextprotocol/clientCapabilities' => (object) [],
+            ]]]), $messages)
+            : [
+                ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+                    'protocolVersion' => '2025-11-25',
+                    'capabilities' => (object) [],
+                    'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+                ]],
+                ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+                ...$messages,
+            ];
+        $input = tmpfile();
+        fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, $messages)));
         rewind($input);
         $outputPath = tempnam(sys_get_temp_dir(), 'mcp-stdio');
-        app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen($outputPath, 'w')));
+        app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen($outputPath, 'w')));
 
         $this->artisan('craft:mcp:serve', ['--user' => $user])->assertSuccessful();
 
@@ -73,7 +79,7 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
         ->and($editorResponses['configuration_list']['error']['message'])->toBe('Tool not found: "configuration_list".');
 });
 
-it('attributes every message’s activity to the named user and the MCP origin', function (): void {
+it('attributes every message’s activity to the named user and the MCP origin', function (bool $modern): void {
     $user = User::query()->firstOrFail();
     $entry = Entry::factory()->createElement(['title' => 'Release notes']);
     $comment = static fn (string $id, string $markdown): array => [
@@ -83,7 +89,7 @@ it('attributes every message’s activity to the named user and the MCP origin',
         'params' => ['name' => 'activity_comments_create', 'arguments' => ['type' => 'entries', 'id' => $entry->id, 'markdown' => $markdown]],
     ];
 
-    $responses = ($this->serve)((string) $user->id, [$comment('first', 'First'), $comment('second', 'Second')]);
+    $responses = ($this->serve)((string) $user->id, [$comment('first', 'First'), $comment('second', 'Second')], $modern);
 
     $events = ActivityEvent::query()->eventTypes(CommentCreated::class)->get();
 
@@ -92,11 +98,11 @@ it('attributes every message’s activity to the named user and the MCP origin',
         ->and($events)->toHaveCount(2)
         ->and($events->pluck('actorId')->unique()->all())->toBe([$user->id])
         ->and($events->pluck('snapshots.origin')->all())->toBe(['MCP', 'MCP']);
-});
+})->with(['handshake era' => false, '2026-07-28 era' => true]);
 
 it('refuses to serve missing or inactive users', function (Closure $user, string $message): void {
     Edition::set(Edition::Pro);
-    app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, fopen('php://memory', 'r'), fopen('php://memory', 'w')));
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport(fopen('php://memory', 'r'), fopen('php://memory', 'w')));
 
     $this->artisan('craft:mcp:serve', ['--user' => $user()])
         ->expectsOutputToContain($message)
@@ -108,7 +114,7 @@ it('refuses to serve missing or inactive users', function (Closure $user, string
 ]);
 
 it('saves project config changes before responding, rather than when the server stops', function (): void {
-    $input = fopen('php://memory', 'r+');
+    $input = tmpfile();
     fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
         ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25',
@@ -122,7 +128,7 @@ it('saves project config changes before responding, rather than when the server 
     StdioTestOutput::$saved = [];
     stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
     $this->beforeApplicationDestroyed(fn () => stream_wrapper_unregister('stdio-test-output'));
-    app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen('stdio-test-output://', 'w')));
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen('stdio-test-output://', 'w')));
 
     $this->artisan('craft:mcp:serve', ['--user' => User::query()->where('admin', true)->firstOrFail()->username])->assertSuccessful();
 
@@ -159,7 +165,7 @@ class StdioTestOutput
     }
 }
 
-it('sees sections added since an earlier message read element sources', function (): void {
+it('sees sections added since an earlier message read element sources', function (bool $modern): void {
     EntryElement::sources(ElementSources::CONTEXT_MODAL);
     $section = Section::factory()->create();
 
@@ -173,8 +179,8 @@ it('sees sections added since an earlier message read element sources', function
             'handle' => 'related',
             'settings' => ['sources' => ["section:$section->uid"]],
         ]]],
-    ]]);
+    ]], $modern);
 
     expect($responses['create']['result']['isError'])->toBeFalse()
         ->and($responses['create']['result']['structuredContent']['item']['settings']['sources'])->toBe(["section:$section->uid"]);
-});
+})->with(['handshake era' => false, '2026-07-28 era' => true]);
