@@ -35,6 +35,8 @@ class Tab extends ViewComponent
 
     protected ?string $controls = null;
 
+    protected bool $hasErrors = false;
+
     protected function tagName(): string
     {
         return 'craft-tab';
@@ -90,6 +92,14 @@ class Tab extends ViewComponent
         return $this->controls;
     }
 
+    /** Whether the tab's panel has errors, which colors the tab as a field with errors is. */
+    public function hasErrors(bool $hasErrors = true): static
+    {
+        $this->hasErrors = $hasErrors;
+
+        return $this;
+    }
+
     /**
      * `slot` is fixed rather than merged from {@see ViewComponent::slot()}: a
      * tab is only ever a `tab`-slotted child of `<craft-tabs>`, and landing in
@@ -102,6 +112,7 @@ class Tab extends ViewComponent
             'slot' => 'tab',
             'disabled' => $this->isDisabled(),
             'controls' => $this->controls,
+            'has-errors' => $this->hasErrors,
         ];
     }
 }
