@@ -341,9 +341,13 @@ readonly class AssetUploadHandler
         abort_unless($asset !== null, 404, 'Asset not found.');
         Gate::authorize('replaceFile', $asset);
 
-        $asset->uploadSource = $file;
         $asset->uploadAnalysis = $analysis;
-        $this->assets->replaceAssetFile($asset, $file->localPath(), $file->filename, $file->mimeType());
+
+        try {
+            $this->assets->replaceAssetFile($asset, $file, $file->filename, $file->mimeType());
+        } finally {
+            $file->release();
+        }
 
         if ($asset->errors()->isNotEmpty()) {
             return $this->failure($asset);

@@ -26,6 +26,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -113,19 +114,35 @@ class Assets
         return $query->count();
     }
 
-    public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename, ?string $mimeType = null): void
+    /**
+     * Replaces an asset’s file with a file on the server, or a staged upload, which is copied into the volume without
+     * being downloaded where possible.
+     */
+    public function replaceAssetFile(Asset $asset, string|UploadedFile $file, string $filename, ?string $mimeType = null): void
     {
         event($event = new AssetReplacing(
             asset: $asset,
-            replaceWith: $pathOnServer,
+            replaceWith: $file,
             filename: $filename,
         ));
 
         $filename = $event->filename;
 
-        $asset->tempFilePath = $pathOnServer;
+        if ($file instanceof UploadedFile) {
+            $asset->uploadSource = $file;
+            // A listener that read the upload’s path downloaded it, and may have changed it, so save it from there
+            $pathOnServer = $file->isDownloaded() ? $file->localPath() : null;
+        } else {
+            $pathOnServer = $file;
+        }
+
+        if ($pathOnServer !== null) {
+            $asset->tempFilePath = $pathOnServer;
+            $mimeType = File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType;
+        }
+
         $asset->newFilename = $filename;
-        $asset->setMimeType(File::getMimeType($pathOnServer, checkExtension: false) ?? $mimeType);
+        $asset->setMimeType($mimeType ?? ($file instanceof UploadedFile ? $file->mimeType() : null));
         $asset->uploaderId = currentUser()?->getCraftUserId();
         $asset->avoidFilenameConflicts = true;
         $asset->ruleset->useScenario(AssetRules::SCENARIO_REPLACE);

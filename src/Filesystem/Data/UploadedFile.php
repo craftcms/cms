@@ -185,6 +185,14 @@ class UploadedFile
     }
 
     /**
+     * Returns whether the file has been downloaded to the server, by {@see localPath()}.
+     */
+    public function isDownloaded(): bool
+    {
+        return $this->localPath !== null;
+    }
+
+    /**
      * Returns the image’s width and height, read from the start of the file, or `null` if they can’t be read that way.
      *
      * @return array{int, int}|null

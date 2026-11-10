@@ -9,6 +9,8 @@ use CraftCms\Cms\Asset\Data\AssetIngest;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\AssetIngestStatus;
+use CraftCms\Cms\Asset\Enums\FileKind;
+use CraftCms\Cms\Asset\Events\AssetReplacing;
 use CraftCms\Cms\Asset\Folders;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
@@ -27,6 +29,7 @@ use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\Filesystem as Flysystem;
@@ -318,5 +321,46 @@ describe('images staged on a remote filesystem', function () {
             ->and($asset->analysis?->metadata?->description)->toBe('Boats at dusk')
             ->and($asset->alt)->toBe('Boats at dusk');
         Queue::assertNotPushed(AnalyzeImage::class);
+    });
+
+    describe('replacing an asset’s file', function () {
+        beforeEach(function () {
+            actingAs(UserElement::findOne());
+            $this->asset = ($this->ingestImage)(sanitize: false);
+            $disk = Storage::disk('asset-ingest-remote');
+            $disk->put('staged/notes.txt', 'replacement notes');
+            $this->replacement = Mockery::mock(UploadedFile::class, [$disk, 'staged/notes.txt', 'notes.txt'])->makePartial();
+        });
+
+        it('copies the staged file into the volume without downloading it', function () {
+            $oldPath = $this->asset->getPath();
+
+            $result = app(AssetUploadHandler::class)->replace($this->asset->id, $this->replacement);
+
+            $this->replacement->shouldNotHaveReceived('localPath');
+            $asset = Asset::find()->id($this->asset->id)->one();
+            expect($result->status)->toBe(200)
+                ->and($asset->getFilename())->toBe('notes.txt')
+                ->and($asset->kind)->toBe(FileKind::Text->value)
+                ->and($asset->getWidth())->toBeNull()
+                ->and($asset->size)->toBe(strlen('replacement notes'))
+                ->and(Storage::disk('asset-ingest-destination')->get($asset->getPath()))->toBe('replacement notes')
+                ->and(Storage::disk('asset-ingest-destination')->exists($oldPath))->toBeFalse();
+        });
+
+        it('stores the file AssetReplacing listeners were given, as they may have changed it', function () {
+            Event::listen(AssetReplacing::class, function (AssetReplacing $event): void {
+                file_put_contents($event->replaceWith, 'changed by a listener');
+            });
+
+            $result = app(AssetUploadHandler::class)->replace($this->asset->id, $this->replacement);
+
+            $this->replacement->shouldHaveReceived('localPath');
+            $asset = Asset::find()->id($this->asset->id)->one();
+            expect($result->status)->toBe(200)
+                ->and($asset->getFilename())->toBe('notes.txt')
+                ->and(Storage::disk('asset-ingest-destination')->get($asset->getPath()))->toBe('changed by a listener')
+                ->and($this->replacement->isDownloaded())->toBeFalse();
+        });
     });
 });

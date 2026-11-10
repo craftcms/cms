@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Asset\Events;
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Filesystem\Data\UploadedFile;
 use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
@@ -16,9 +17,24 @@ class AssetReplacing
 {
     use ValidatableEvent;
 
+    /**
+     * The path to the new file on the server. A staged upload is only downloaded when this is read.
+     */
+    public string $replaceWith {
+        get => $this->replaceWith ??= $this->upload->localPath();
+    }
+
+    private ?UploadedFile $upload = null;
+
     public function __construct(
         public Asset $asset,
-        public string $replaceWith,
+        string|UploadedFile $replaceWith,
         public string $filename,
-    ) {}
+    ) {
+        if ($replaceWith instanceof UploadedFile) {
+            $this->upload = $replaceWith;
+        } else {
+            $this->replaceWith = $replaceWith;
+        }
+    }
 }

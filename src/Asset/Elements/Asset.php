@@ -3555,6 +3555,7 @@ CSS,
             isset($this->newFilename, $this->_filename) &&
             $this->newFilename !== '' &&
             ! isset($this->tempFilePath) &&
+            $this->uploadSource === null &&
             pathinfo($this->newFilename, PATHINFO_EXTENSION) === ''
         ) {
             $extension = pathinfo($this->_filename, PATHINFO_EXTENSION);
@@ -3576,18 +3577,19 @@ CSS,
             $this->newFolderId = $this->newFilename = null;
         }
 
-        // Get the (new?) folder ID
+        // Get the (new?) folder ID and filename
         if (isset($this->newLocation)) {
-            [$folderId] = AssetsHelper::parseFileLocation($this->newLocation);
+            [$folderId, $filename] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
+            $filename = $this->_filename;
         }
 
         // A staged image is downloaded when it's on hand anyway, or has to be: to clean it, which would strip its
         // metadata if it weren't read first, or to read its dimensions when they can't be read from the start of the
         // file. Otherwise, such as for an image uploaded straight to a remote filesystem, it's left where it is, and a
         // queue job samples its colors and metadata instead.
-        if ($this->uploadSource !== null && AssetsHelper::getFileKindByExtension($this->_filename) === FileKind::Image->value) {
+        if ($this->uploadSource !== null && AssetsHelper::getFileKindByExtension($filename) === FileKind::Image->value) {
             if ($this->uploadSource->isLocal() || $this->shouldSanitizeUpload()) {
                 $this->tempFilePath ??= $this->uploadSource->localPath();
             } elseif (($this->_uploadDimensions = $this->uploadSource->imageSize()) === null) {
@@ -4211,6 +4213,7 @@ CSS,
         $this->_volume = $newVolume;
 
         if ($this->uploadSource !== null && $tempPath === null) {
+            $this->kind = AssetsHelper::getFileKindByExtension($filename);
             $this->size = $this->uploadSource->size();
             $this->dateModified = Date::createFromTimestampUTC($this->uploadSource->disk->lastModified($this->uploadSource->path));
             [$this->_width, $this->_height] = $this->_uploadDimensions ?? [null, null];
