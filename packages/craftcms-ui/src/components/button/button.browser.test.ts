@@ -1197,7 +1197,7 @@ describe('text box', () => {
     const capTop = rect.top + parseFloat(style.paddingTop);
     const capBottom = rect.bottom - parseFloat(style.paddingBottom);
     const context = document.createElement('canvas').getContext('2d')!;
-    context.font = style.font;
+    context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
     const capHeight = context.measureText('H').actualBoundingBoxAscent;
 
     expect(Math.abs(capBottom - capTop - capHeight)).toBeLessThan(1.5);
