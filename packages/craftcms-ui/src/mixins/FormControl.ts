@@ -181,6 +181,12 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     #describedNodes: HTMLElement[] = [];
 
+    /** The feedback in the description, swapped when it's replaced. */
+    #describedFeedback?: HTMLElement;
+
+    /** Feedback can come and go after connection, such as errors shown later. */
+    #feedbackObserver = new MutationObserver(() => this.#describeFeedback());
+
     /** The ids this control last wrote to each reference attribute. */
     #writtenReferences = new Map<string, string[]>();
 
@@ -244,6 +250,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
       super.connectedCallback();
       this.#createSlots();
       this._enhanceLightDomA11y();
+      this.#feedbackObserver.observe(this, {childList: true});
       this._labelNode?.addEventListener('click', this.#onLabelClick);
       this.addEventListener('focusin', this.#onFocusChange);
       this.addEventListener('focusout', this.#onFocusChange);
@@ -251,6 +258,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     override disconnectedCallback() {
       super.disconnectedCallback();
+      this.#feedbackObserver.disconnect();
       this._labelNode?.removeEventListener('click', this.#onLabelClick);
       this.removeEventListener('focusin', this.#onFocusChange);
       this.removeEventListener('focusout', this.#onFocusChange);
@@ -347,7 +355,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
      * help text and feedback to its name and description.
      */
     protected _enhanceLightDomA11y(): void {
-      const {_inputNode, _labelNode, _helpTextNode, _feedbackNode} = this;
+      const {_inputNode, _labelNode, _helpTextNode} = this;
 
       _inputNode?.classList.add('form-control');
 
@@ -364,9 +372,7 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
         this.addToAriaDescribedBy(_helpTextNode, {idPrefix: 'help-text'});
       }
 
-      if (_feedbackNode) {
-        this.addToAriaDescribedBy(_feedbackNode, {idPrefix: 'feedback'});
-      }
+      this.#describeFeedback();
 
       for (const name of ADDITIONAL_SLOTS) {
         const node = this.#slotted(name);
@@ -379,6 +385,24 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
           this.addToAriaDescribedBy(node, {idPrefix: name});
         }
       }
+    }
+
+    #describeFeedback(): void {
+      const feedback = this._feedbackNode;
+
+      if (feedback === this.#describedFeedback) {
+        return;
+      }
+
+      if (this.#describedFeedback) {
+        this.removeFromAriaDescribedBy(this.#describedFeedback);
+      }
+
+      if (feedback) {
+        this.addToAriaDescribedBy(feedback, {idPrefix: 'feedback'});
+      }
+
+      this.#describedFeedback = feedback;
     }
 
     addToAriaLabelledBy(

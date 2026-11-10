@@ -26,7 +26,7 @@ The `FormControl` mixin does the label, help text and feedback wiring. `HasLabel
 - [ ] Help text, from the `help-text` attribute or slot, is referenced by the native input's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions). Not yet verified.
 - [ ] A `Required` validator sets `aria-required="true"` on the native input, and removes it when the validator is removed. Per WCAG 3.3.2 (Labels or Instructions) and 4.1.2 (Name, Role, Value). Not yet verified.
 - [x] While an error is shown, the native input carries `aria-invalid="true"`, from the host's `invalid` property, and loses it once the error clears. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Verified by `marks the native input invalid` in `input.test.ts`.
-- [ ] Validation messages in the `feedback` slot are referenced by the native input's `aria-describedby`. Per WCAG 3.3.1 (Error Identification). Not yet verified.
+- [x] Validation messages in the `feedback` slot are referenced by the native input's `aria-describedby`, including ones shown, replaced or removed after it renders. Per WCAG 3.3.1 (Error Identification). Verified by `is described by feedback added, replaced or removed after it renders` in `input.test.ts`.
 - [ ] Validation messages are announced when they appear: the `feedback` slot is `aria-live="polite"` while focus is in the control and `assertive` once it leaves. Per WCAG 4.1.3 (Status Messages). Not yet verified.
 
 ### Keyboard and focus

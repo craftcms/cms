@@ -158,6 +158,31 @@ describe('craft-input', () => {
 });
 
 describe('craft-input references', () => {
+  it('is described by feedback added, replaced or removed after it renders', async () => {
+    const element = await createInput();
+    const described = () => native(element).getAttribute('aria-describedby');
+    const feedback = () => {
+      const list = document.createElement('ul');
+      list.slot = 'feedback';
+      list.innerHTML = '<li>Handle is required.</li>';
+      return list;
+    };
+
+    const first = feedback();
+    element.append(first);
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(described()).toBe(first.id);
+
+    const second = feedback();
+    first.replaceWith(second);
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(described()).toBe(second.id);
+
+    second.remove();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(described()).toBeNull();
+  });
+
   it('drops aria-describedby once nothing describes the input', async () => {
     const element = await createInput(
       {},
