@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Це поле обов\'язкове.',
     'This is a read-only view.' => 'Це подання лише для читання.',
     'This link type is no longer available.' => 'Цей тип посилання більше недоступний.',
-    'This option is disabled for ephemeral environments.' => 'Цей параметр вимкнено для ефемерних середовищ.',
     'This page' => 'Ця сторінка',
     'This release already contains a draft for that element.' => 'У цьому релізі вже є чернетка для цього елемента.',
     'This release cannot be published in its current state.' => 'Цей реліз не можна опублікувати в поточному стані.',

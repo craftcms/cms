@@ -245,7 +245,6 @@ class ProjectConfig
     public function __construct(GeneralConfig $generalConfig)
     {
         $this->readOnly = Cms::isInstalled() && ! $generalConfig->allowAdminChanges;
-        $this->writeYamlAutomatically = ! app()->isEphemeral();
         $this->handlers = new ChangeHandlers;
         $this->storage = new ConfigStorage;
 

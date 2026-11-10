@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Ce champ est obligatoire.',
     'This is a read-only view.' => 'Ceci est une vue en lecture seule.',
     'This link type is no longer available.' => 'Ce type de lien n’est plus disponible.',
-    'This option is disabled for ephemeral environments.' => 'Cette option est désactivée pour les environnements éphémères.',
     'This page' => 'Cette page',
     'This release already contains a draft for that element.' => 'Ce lancement contient déjà un brouillon pour cet élément.',
     'This release cannot be published in its current state.' => 'Ce lancement ne peut pas être publié dans son état actuel.',

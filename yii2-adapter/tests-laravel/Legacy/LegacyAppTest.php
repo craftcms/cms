@@ -5,12 +5,14 @@ declare(strict_types=1);
 use craft\base\Plugin;
 use craft\controllers\UsersController;
 use craft\services\Announcements;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\View\Enums\Position;
 use CraftCms\Yii2Adapter\LegacyApp;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 it('only merges configuration for the current application type', function() {
     config()->set('craft.app.web.id', 'web-app');
@@ -73,6 +75,27 @@ it('does not resolve a second legacy app while loading legacy plugins', function
 it('exposes the announcement service through the legacy application', function() {
     expect(Craft::$app->getAnnouncements())->toBeInstanceOf(Announcements::class)
         ->and(Craft::$app->announcements)->toBe(Craft::$app->getAnnouncements());
+});
+
+it('creates the resource directory when assets are used rather than when the app boots', function() {
+    $directory = storage_path('runtime/legacy-assets-' . uniqid());
+    Cms::config()->resourceBasePath = "$directory/published";
+    app()->forgetInstance('Craft');
+    new LegacyApp()->register($this->app);
+
+    try {
+        $craft = app('Craft');
+        expect(File::exists("$directory/published"))->toBeFalse();
+
+        File::ensureDirectoryExists($directory);
+        File::put("$directory/source.js", 'window.legacyAsset = true;');
+        [$path, $url] = $craft->getAssetManager()->publish("$directory/source.js");
+
+        expect(File::get($path))->toBe('window.legacyAsset = true;')
+            ->and(parse_url($url, PHP_URL_PATH))->toEndWith('/source.js');
+    } finally {
+        File::deleteDirectory($directory);
+    }
 });
 
 it('retains the legacy mark announcements action', function() {

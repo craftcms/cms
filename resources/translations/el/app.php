@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Αυτό το πεδίο είναι υποχρεωτικό.',
     'This is a read-only view.' => 'Αυτή είναι προβολή μόνο για ανάγνωση.',
     'This link type is no longer available.' => 'Αυτός ο τύπος συνδέσμου δεν είναι πλέον διαθέσιμος.',
-    'This option is disabled for ephemeral environments.' => 'Αυτή η επιλογή είναι απενεργοποιημένη για εφήμερα περιβάλλοντα.',
     'This page' => 'Αυτή η σελίδα',
     'This release already contains a draft for that element.' => 'Αυτή η κυκλοφορία περιέχει ήδη πρόχειρο για αυτό το στοιχείο.',
     'This release cannot be published in its current state.' => 'Αυτή η κυκλοφορία δεν μπορεί να δημοσιευτεί στην τρέχουσα κατάστασή της.',

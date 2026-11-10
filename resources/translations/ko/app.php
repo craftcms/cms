@@ -807,7 +807,6 @@ return [
     'This field is required.' => '이 필드는 필수입니다.',
     'This is a read-only view.' => '읽기 전용 보기입니다.',
     'This link type is no longer available.' => '이 링크 유형은 더 이상 사용할 수 없습니다.',
-    'This option is disabled for ephemeral environments.' => '이 옵션은 임시 환경에서 비활성화되어 있습니다.',
     'This page' => '이 페이지',
     'This release already contains a draft for that element.' => '이 릴리스에는 해당 요소의 드래프트가 이미 포함되어 있습니다.',
     'This release cannot be published in its current state.' => '현재 상태에서는 이 릴리스를 게시할 수 없습니다.',

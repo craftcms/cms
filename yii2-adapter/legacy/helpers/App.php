@@ -517,17 +517,6 @@ class App
     }
 
     /**
-     * Returns whether Craft is running on an environment with ephemeral storage.
-     *
-     * @return bool
-     * @since 3.4.0
-     */
-    public static function isEphemeral(): bool
-    {
-        return app()->isEphemeral();
-    }
-
-    /**
      * Returns whether Craft is running in a [DDEV](https://ddev.com) project.
      *
      * @since 5.13.0
@@ -847,7 +836,6 @@ class App
         return [
             'class' => \craft\services\ProjectConfig::class,
             'readOnly' => Cms::isInstalled() && !Cms::config()->allowAdminChanges,
-            'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }
 

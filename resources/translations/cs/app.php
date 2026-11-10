@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Toto pole je povinné.',
     'This is a read-only view.' => 'Toto je zobrazení pouze pro čtení.',
     'This link type is no longer available.' => 'Tento typ odkazu již není dostupný.',
-    'This option is disabled for ephemeral environments.' => 'Tato možnost je v dočasných prostředích vypnutá.',
     'This page' => 'Tato stránka',
     'This release already contains a draft for that element.' => 'Toto vydání již obsahuje koncept tohoto prvku.',
     'This release cannot be published in its current state.' => 'Toto vydání nelze v jeho současném stavu publikovat.',

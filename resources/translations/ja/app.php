@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'このフィールドは必須です。',
     'This is a read-only view.' => 'これは読み取り専用のビューです。',
     'This link type is no longer available.' => 'このリンクタイプは利用できなくなりました。',
-    'This option is disabled for ephemeral environments.' => 'このオプションは一時的な環境では無効です。',
     'This page' => 'このページ',
     'This release already contains a draft for that element.' => 'このリリースにはすでにそのエレメントの下書きが含まれています。',
     'This release cannot be published in its current state.' => 'このリリースは現在の状態では公開できません。',

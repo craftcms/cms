@@ -807,7 +807,6 @@ return [
     'This field is required.' => '此字段为必填项。',
     'This is a read-only view.' => '这是只读视图。',
     'This link type is no longer available.' => '此链接类型已不可用。',
-    'This option is disabled for ephemeral environments.' => '此选项在临时环境中已禁用。',
     'This page' => '本页',
     'This release already contains a draft for that element.' => '此发行版已包含该元素的草稿。',
     'This release cannot be published in its current state.' => '此发行版在当前状态下无法发布。',

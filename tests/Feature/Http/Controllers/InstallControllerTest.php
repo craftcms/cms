@@ -74,6 +74,39 @@ it('provides driver-specific db defaults to the install page', function () {
         ->assertOk();
 });
 
+it('rejects submitted database config when environment edits are unavailable', function (string $environment) {
+    $directory = storage_path('runtime/install-env-'.uniqid());
+    File::ensureDirectoryExists($directory);
+    app()->useEnvironmentPath($directory)->loadEnvironmentFrom('.env');
+
+    if ($environment !== 'missing') {
+        File::put("$directory/.env", 'APP_NAME=Unchanged');
+    }
+
+    if ($environment === 'cached') {
+        app()->instance('config_loaded_from_cache', true);
+    } elseif ($environment === 'read-only') {
+        chmod("$directory/.env", 0444);
+    }
+
+    try {
+        postJson(action([InstallController::class, 'install']), [
+            'db' => ['driver' => 'sqlite', 'database' => "$directory/database.sqlite"],
+        ])->assertBadRequest()
+            ->assertJsonPath('message', 'Database configuration must be set in the environment before installing Craft.');
+
+        expect(File::exists("$directory/database.sqlite"))->toBeFalse();
+
+        if ($environment !== 'missing') {
+            expect(File::get("$directory/.env"))->toBe('APP_NAME=Unchanged');
+        } else {
+            expect(File::exists("$directory/.env"))->toBeFalse();
+        }
+    } finally {
+        File::deleteDirectory($directory);
+    }
+})->with(['missing', 'cached', 'read-only']);
+
 it('can validate the db', function () {
     $connection = config('database.default');
     $driver = Config::get("database.connections.{$connection}.driver");

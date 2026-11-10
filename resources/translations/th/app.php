@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'ต้องกรอกฟิลด์นี้',
     'This is a read-only view.' => 'นี่คือมุมมองแบบอ่านอย่างเดียว',
     'This link type is no longer available.' => 'ประเภทลิงก์นี้ไม่พร้อมใช้งานแล้ว',
-    'This option is disabled for ephemeral environments.' => 'ตัวเลือกนี้ถูกปิดใช้งานสำหรับสภาพแวดล้อมชั่วคราว',
     'This page' => 'หน้านี้',
     'This release already contains a draft for that element.' => 'รีลีสนี้มีแบบร่างขององค์ประกอบดังกล่าวอยู่แล้ว',
     'This release cannot be published in its current state.' => 'ไม่สามารถเผยแพร่รีลีสนี้ในสถานะปัจจุบันได้',

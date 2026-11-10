@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Este campo es obligatorio.',
     'This is a read-only view.' => 'Esta es una vista de solo lectura.',
     'This link type is no longer available.' => 'Este tipo de enlace ya no está disponible.',
-    'This option is disabled for ephemeral environments.' => 'Esta opción está desactivada en los entornos efímeros.',
     'This page' => 'Esta página',
     'This release already contains a draft for that element.' => 'Este lanzamiento ya contiene un borrador para ese elemento.',
     'This release cannot be published in its current state.' => 'Este lanzamiento no se puede publicar en su estado actual.',

@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Dette felt er påkrævet.',
     'This is a read-only view.' => 'Dette er en skrivebeskyttet visning.',
     'This link type is no longer available.' => 'Denne linktype er ikke længere tilgængelig.',
-    'This option is disabled for ephemeral environments.' => 'Denne indstilling er deaktiveret i midlertidige miljøer.',
     'This page' => 'Denne side',
     'This release already contains a draft for that element.' => 'Denne udgivelse indeholder allerede en kladde for det element.',
     'This release cannot be published in its current state.' => 'Denne udgivelse kan ikke publiceres i sin nuværende tilstand.',

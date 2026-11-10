@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Dit veld is verplicht.',
     'This is a read-only view.' => 'Dit is een alleen-lezenweergave.',
     'This link type is no longer available.' => 'Dit linktype is niet meer beschikbaar.',
-    'This option is disabled for ephemeral environments.' => 'Deze optie is uitgeschakeld voor tijdelijke omgevingen.',
     'This page' => 'Deze pagina',
     'This release already contains a draft for that element.' => 'Deze release bevat al een concept voor dat element.',
     'This release cannot be published in its current state.' => 'Deze release kan in de huidige staat niet worden gepubliceerd.',

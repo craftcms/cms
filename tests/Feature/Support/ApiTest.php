@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
@@ -29,16 +30,26 @@ it('can get headers', function () {
 it('can process response headers', function () {
     expect(Cache::has('editionTestableDomain@localhost'))->toBeFalse();
 
-    $key = Str::random();
+    $key = Str::random(250);
+    $directory = storage_path('runtime/license-'.Str::random());
+    $previousPath = getenv('CRAFT_LICENSE_KEY_PATH');
+    putenv("CRAFT_LICENSE_KEY_PATH=$directory/license.key");
 
-    $this->api->processResponseHeaders([
-        'X-Craft-Allow-Trials' => true,
-        'X-Craft-License' => $key,
-        'X-Craft-License-Domain' => 'foo.cloud',
-    ]);
+    try {
+        $this->api->processResponseHeaders([
+            'X-Craft-Allow-Trials' => true,
+            'X-Craft-License' => $key,
+            'X-Craft-License-Domain' => 'foo.cloud',
+        ]);
 
-    expect(Cache::get('editionTestableDomain@localhost'))->toBe(1);
-    expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
+        expect(Cache::get('editionTestableDomain@localhost'))->toBe(1);
+        expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
+        expect($this->license->key())->toBe($key);
+        expect(File::get("$directory/license.key"))->toBe(chunk_split($key, 50));
+    } finally {
+        putenv($previousPath === false ? 'CRAFT_LICENSE_KEY_PATH' : "CRAFT_LICENSE_KEY_PATH=$previousPath");
+        File::deleteDirectory($directory);
+    }
 });
 
 it('can get license info', function () {

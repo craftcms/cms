@@ -808,7 +808,6 @@ return [
     'This field is required.' => 'This field is required.',
     'This is a read-only view.' => 'This is a read-only view.',
     'This link type is no longer available.' => 'This link type is no longer available.',
-    'This option is disabled for ephemeral environments.' => 'This option is disabled for ephemeral environments.',
     'This page' => 'This page',
     'This release already contains a draft for that element.' => 'This release already contains a draft for that element.',
     'This release cannot be published in its current state.' => 'This release cannot be published in its current state.',

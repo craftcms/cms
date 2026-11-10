@@ -182,6 +182,12 @@ readonly class InstallController
 
         // Should we set the new DB config values?
         if ($request->has('db.driver')) {
+            if (! $this->canControlDbConfig()) {
+                return new JsonResponse([
+                    'message' => 'Database configuration must be set in the environment before installing Craft.',
+                ], 400);
+            }
+
             $data = $this->validateDbData($request->input('db'));
 
             if ($data['driver'] === 'sqlite') {
@@ -223,7 +229,7 @@ readonly class InstallController
         $username = $request->input('account.username', $email);
         $siteUrl = $request->input('site.baseUrl');
 
-        if (! in_array($siteUrl[0], ['@', '$']) && ! app()->isEphemeral()) {
+        if (! in_array($siteUrl[0], ['@', '$'])) {
             try {
                 Env::writeVariable('APP_URL', $siteUrl, $path, overwrite: true);
                 $siteUrl = '$APP_URL';
@@ -270,18 +276,9 @@ readonly class InstallController
 
     private function canControlDbConfig(): bool
     {
-        // If this is ephemeral storage, then we can't be writing to a .env file
-        if (app()->isEphemeral()) {
-            return false;
-        }
-
-        // If the .env file doesn't exist, we definitely can't do anything about it
-        if (! file_exists(app()->environmentFilePath())) {
-            return false;
-        }
-
-        // Nothing else to worry about, thanks to `CRAFT_X` environment variable overrides
-        return true;
+        return ! app()->configurationIsCached()
+            && is_file(app()->environmentFilePath())
+            && is_writable(app()->environmentFilePath());
     }
 
     /**

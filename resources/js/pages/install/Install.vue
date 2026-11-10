@@ -204,7 +204,14 @@
 
       <!-- Installing -->
       <template v-else-if="isCurrent('installing')">
-        <InstallingScreen :data="formData" @success="goToNext()" />
+        <InstallingScreen
+          :data="{
+            account: formData.account,
+            site: formData.site,
+            ...(showDbScreen ? {db: formData.db} : {}),
+          }"
+          @success="goToNext()"
+        />
       </template>
 
       <!-- Form screens -->

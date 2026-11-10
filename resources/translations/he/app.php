@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'שדה זה נדרש.',
     'This is a read-only view.' => 'זוהי תצוגה לקריאה בלבד.',
     'This link type is no longer available.' => 'סוג קישור זה כבר לא זמין.',
-    'This option is disabled for ephemeral environments.' => 'אפשרות זו מושבתת בסביבות זמניות.',
     'This page' => 'דף זה',
     'This release already contains a draft for that element.' => 'גרסה זו כבר מכילה טיוטה עבור רכיב זה.',
     'This release cannot be published in its current state.' => 'לא ניתן לפרסם גרסה זו במצבה הנוכחי.',

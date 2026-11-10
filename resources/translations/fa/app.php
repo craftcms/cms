@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'این فیلد اجباری است.',
     'This is a read-only view.' => 'این یک نمای فقط‌خواندنی است.',
     'This link type is no longer available.' => 'این نوع پیوند دیگر در دسترس نیست.',
-    'This option is disabled for ephemeral environments.' => 'این گزینه برای محیط‌های موقت غیرفعال است.',
     'This page' => 'این صفحه',
     'This release already contains a draft for that element.' => 'این ریلیز از قبل یک پیش‌نویس برای آن مؤلفه دارد.',
     'This release cannot be published in its current state.' => 'این ریلیز در وضعیت فعلی قابل انتشار نیست.',

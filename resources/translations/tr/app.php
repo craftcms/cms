@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Bu alan zorunludur.',
     'This is a read-only view.' => 'Bu salt okunur bir görünümdür.',
     'This link type is no longer available.' => 'Bu bağlantı türü artık kullanılamıyor.',
-    'This option is disabled for ephemeral environments.' => 'Bu seçenek geçici ortamlarda devre dışıdır.',
     'This page' => 'Bu sayfa',
     'This release already contains a draft for that element.' => 'Bu sürüm, o öge için zaten bir taslak içeriyor.',
     'This release cannot be published in its current state.' => 'Bu sürüm mevcut durumunda yayınlanamaz.',

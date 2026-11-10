@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Это поле обязательно.',
     'This is a read-only view.' => 'Это представление только для чтения.',
     'This link type is no longer available.' => 'Этот тип ссылки больше недоступен.',
-    'This option is disabled for ephemeral environments.' => 'Этот параметр отключен для эфемерных сред.',
     'This page' => 'Эта страница',
     'This release already contains a draft for that element.' => 'В этом релизе уже есть черновик для этого элемента.',
     'This release cannot be published in its current state.' => 'Этот релиз нельзя опубликовать в текущем состоянии.',

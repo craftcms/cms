@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Ez a mező kötelező.',
     'This is a read-only view.' => 'Ez egy csak olvasható nézet.',
     'This link type is no longer available.' => 'Ez a hivatkozástípus már nem érhető el.',
-    'This option is disabled for ephemeral environments.' => 'Ez a beállítás ideiglenes környezetekben le van tiltva.',
     'This page' => 'Ez az oldal',
     'This release already contains a draft for that element.' => 'Ez a kiadás már tartalmaz vázlatot ehhez az elemhez.',
     'This release cannot be published in its current state.' => 'Ez a kiadás jelenlegi állapotában nem tehető közzé.',

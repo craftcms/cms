@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'هذا الحقل مطلوب.',
     'This is a read-only view.' => 'هذا عرض للقراءة فقط.',
     'This link type is no longer available.' => 'لم يعد نوع الرابط هذا متاحًا.',
-    'This option is disabled for ephemeral environments.' => 'هذا الخيار معطّل للبيئات المؤقتة.',
     'This page' => 'هذه الصفحة',
     'This release already contains a draft for that element.' => 'يحتوي هذا الإصدار بالفعل على مسودة لذلك العنصر.',
     'This release cannot be published in its current state.' => 'لا يمكن نشر هذا الإصدار في حالته الحالية.',

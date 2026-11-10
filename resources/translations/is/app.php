@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Þessi reitur er nauðsynlegur.',
     'This is a read-only view.' => 'Þetta er skrifvarið yfirlit.',
     'This link type is no longer available.' => 'Þessi tenglategund er ekki lengur tiltæk.',
-    'This option is disabled for ephemeral environments.' => 'Þessi valkostur er óvirkur fyrir skammlíf umhverfi.',
     'This page' => 'Þessi síða',
     'This release already contains a draft for that element.' => 'Þessi útgáfa inniheldur þegar drög fyrir það frumefni.',
     'This release cannot be published in its current state.' => 'Ekki er hægt að birta þessa útgáfu í núverandi ástandi.',

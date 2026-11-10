@@ -807,7 +807,6 @@ return [
     'This field is required.' => 'Det här fältet är obligatoriskt.',
     'This is a read-only view.' => 'Det här är en skrivskyddad vy.',
     'This link type is no longer available.' => 'Den här länktypen är inte längre tillgänglig.',
-    'This option is disabled for ephemeral environments.' => 'Det här alternativet är inaktiverat för tillfälliga miljöer.',
     'This page' => 'Den här sidan',
     'This release already contains a draft for that element.' => 'Den här releasen innehåller redan ett utkast för det elementet.',
     'This release cannot be published in its current state.' => 'Den här releasen kan inte publiceras i sitt nuvarande skick.',
