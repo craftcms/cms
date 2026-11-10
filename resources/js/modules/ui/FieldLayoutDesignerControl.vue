@@ -116,10 +116,11 @@
       }
 
       const hasErrors = keys.some((key) => errorKeys.includes(key));
+      tab.toggleAttribute('has-errors', hasErrors);
       let icon = tab.querySelector(':scope > [data-fld-tab-error]');
       if (hasErrors && !icon) {
         icon = document.createElement('craft-icon');
-        icon.setAttribute('name', 'circle-exclamation');
+        icon.setAttribute('name', 'triangle-exclamation');
         icon.setAttribute('slot', 'suffix');
         icon.setAttribute('label', t('Errors'));
         icon.setAttribute('data-fld-tab-error', '');

@@ -69,7 +69,7 @@ it('flags the designer tabs that have errors', async () => {
       `craft-tab[data-fld-tab="${tab}"] > [data-fld-tab-error]`
     );
 
-  expect(icon('content')?.getAttribute('name')).toBe('circle-exclamation');
+  expect(icon('content')?.getAttribute('name')).toBe('triangle-exclamation');
   expect(icon('content')?.getAttribute('slot')).toBe('suffix');
   expect(icon('appearance')).toBeNull();
 

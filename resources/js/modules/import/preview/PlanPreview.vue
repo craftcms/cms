@@ -316,7 +316,9 @@
     gap: var(--c-spacing-xs);
   }
 
+  /* cells clip their text, which would clip the button's focus ring along the table's edge */
   .plan-preview__actions {
     text-align: end;
+    overflow: visible;
   }
 </style>

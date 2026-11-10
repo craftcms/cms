@@ -95,6 +95,14 @@ export default css`
     font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
   }
 
+  :host([has-errors]) {
+    color: var(--c-tab-text-errors, var(--c-color-danger-on-quiet));
+  }
+
+  :host([has-errors][selected])::after {
+    background-color: var(--c-tab-text-errors, var(--c-color-danger-on-quiet));
+  }
+
   /*
    * Out of hit-testing, not just dimmed: <craft-tabs> binds its click handler
    * to every tab, so a disabled tab that still takes pointer events would

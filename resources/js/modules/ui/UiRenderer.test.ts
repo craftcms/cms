@@ -1004,6 +1004,46 @@ describe('UiRenderer', () => {
     expect(labelSrOnly('visible', 'craft-select')).toBe(false);
   });
 
+  it('marks only the tabs holding a field with errors', async () => {
+    const tab = (uid: string, field: string): UiPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+      component: 'craft:tab',
+      uid,
+      props: {label: uid},
+      children: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: field},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+            component: 'craft:text',
+            props: {},
+            path: [field],
+            mode: 'editable',
+            deltaGroup: [field],
+          },
+        },
+      ],
+    });
+    app.unmount();
+    await mount({
+      scope: [],
+      refreshable: false,
+      nodes: [tab('content', 'title'), tab('seo', 'summary')],
+      values: {title: '', summary: ''},
+      errors: [{path: ['title'], messages: ['Title cannot be blank.']}],
+      globalErrors: [],
+    });
+
+    const hasErrors = (label: string) =>
+      [...container.querySelectorAll('craft-tab')]
+        .find((element) => element.textContent?.trim() === label)!
+        .hasAttribute('has-errors');
+    expect(hasErrors('content')).toBe(true);
+    expect(hasErrors('seo')).toBe(false);
+  });
+
   it('renders a field in its outlet, where it still edits the form’s value', async () => {
     const outlet = document.createElement('div');
     document.body.append(outlet);

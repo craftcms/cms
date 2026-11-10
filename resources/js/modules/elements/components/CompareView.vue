@@ -598,6 +598,9 @@
             :key="tab.key"
             slot="tab"
             :controls="panelId(tab)"
+            :has-errors="
+              (key === 'to' && erroredTabs.has(tab.key)) || undefined
+            "
             :class="{
               'compare__tab--absent': !tab.sides[key],
               'compare__tab--sidebar-start': tab.key === firstSidebarTabKey,
@@ -631,7 +634,7 @@
             </span>
             <craft-icon
               v-if="key === 'to' && erroredTabs.has(tab.key)"
-              name="circle-exclamation"
+              name="triangle-exclamation"
               :label="t('Errors')"
               slot="suffix"
             ></craft-icon>

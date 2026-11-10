@@ -278,6 +278,7 @@
         slot="tab"
         :key="tab.uid"
         :controls="`${tabPanelId(tab)}-tab`"
+        :has-errors="nodeHasErrors(tab, errors) || undefined"
         :class="{
           'ui-node-list__tab--sidebar-start': tab.uid === firstSidebarTabUid,
         }"
@@ -290,7 +291,7 @@
         {{ tab.props.label }}
         <craft-icon
           v-if="nodeHasErrors(tab, errors)"
-          name="circle-exclamation"
+          name="triangle-exclamation"
           :label="t('Errors')"
           slot="suffix"
         />

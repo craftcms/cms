@@ -181,11 +181,12 @@
           :key="tab.id"
           slot="tab"
           :controls="tab.id"
+          :has-errors="tabHasErrors(tab.fields) || undefined"
         >
           {{ tab.label }}
           <craft-icon
             v-if="tabHasErrors(tab.fields)"
-            name="circle-exclamation"
+            name="triangle-exclamation"
             :label="t('Errors')"
             slot="suffix"
           />
