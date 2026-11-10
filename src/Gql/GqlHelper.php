@@ -21,6 +21,7 @@ use CraftCms\Cms\Gql\Directives\Directive;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
 use CraftCms\Cms\Gql\Gql as GqlService;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -518,12 +519,19 @@ class GqlHelper
         array|string $definition,
         string $field,
     ): mixed {
+        try {
+            $result = $asset->transform($definition);
+        } catch (NotSupportedException) {
+            // Assets the transformer can’t transform, such as videos in a mixed Assets field, resolve untransformed.
+            $result = null;
+        }
+
         return match ($field) {
-            'format' => File::getExtensionByMimeType($asset->transform($definition)->mimeType),
-            'height' => $asset->transform($definition)->height,
-            'mimeType' => $asset->transform($definition)->mimeType,
-            'url' => $asset->transform($definition)->url,
-            'width' => $asset->transform($definition)->width,
+            'format' => $result ? File::getExtensionByMimeType($result->mimeType) : $asset->getFormat(),
+            'height' => $result ? $result->height : $asset->getHeight(),
+            'mimeType' => $result ? $result->mimeType : $asset->getMimeType(),
+            'url' => $result ? $result->url : $asset->getUrl(),
+            'width' => $result ? $result->width : $asset->getWidth(),
             default => throw new InvalidArgumentException("Unsupported transformed Asset field [{$field}]."),
         };
     }

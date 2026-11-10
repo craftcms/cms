@@ -34,6 +34,7 @@ use CraftCms\Cms\Image\Events\DeletingTransformedImage;
 use CraftCms\Cms\Image\Events\ImageTransforming;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Yii2Adapter\Asset\ImageTransformers;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
@@ -220,6 +221,36 @@ it('reports legacy URL failures and returns null', function(): void {
 
     expect($asset->getUrl(['width' => 320]))->toBeNull();
     Exceptions::assertReported(AssetTransformFailedException::class);
+});
+
+it('returns the source URL for assets the transformer can’t transform', function(): void {
+    Exceptions::fake();
+    app(AssetTransformers::class)->forgetDrivers()->extend('craft', fn() => new UnsupportedCompatibilityAssetTransformDriver());
+    config()->set('filesystems.disks.uploads', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-transform-compatibility'),
+        'url' => 'https://example.test/uploads',
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true]);
+    $attributes = [
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'clip.mp4',
+        'kind' => 'video',
+    ];
+    $native = Asset::find()->id(AssetModel::factory()->create([
+        ...$attributes,
+        'id' => Element::factory()->set('type', Asset::class),
+    ])->id)->one();
+    $legacy = ($this->asset)($attributes);
+
+    $html = app(TemplateManager::class)->renderString(
+        '{% do native.setTransform({ width: 320 }) %}{% do legacy.setTransform({ width: 320 }) %}{{ native.url }} {{ legacy.url }}',
+        ['native' => $native, 'legacy' => $legacy],
+    );
+
+    expect($html)->toBe('https://example.test/uploads/clip.mp4 https://example.test/uploads/clip.mp4');
+    Exceptions::assertNothingReported();
 });
 
 it('routes registered legacy image transformers through adapter drivers', function(): void {
@@ -546,6 +577,15 @@ class FailingCompatibilityAssetTransformDriver extends CompatibilityAssetTransfo
     public function transform(AssetTransformRequest $request): AssetTransformResult
     {
         throw new AssetTransformFailedException('Failed');
+    }
+}
+
+class UnsupportedCompatibilityAssetTransformDriver extends CompatibilityAssetTransformDriver
+{
+    #[Override]
+    public function transform(AssetTransformRequest $request): AssetTransformResult
+    {
+        throw new NotSupportedException('Unsupported');
     }
 }
 

@@ -14,14 +14,17 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -136,6 +139,34 @@ it('keeps getUrl transform arguments with a deprecation warning', function () {
         ->and($driver->request->transformer->driver)->toBe('remote')
         ->and($driver->request->parameters)->toBe(['width' => 320])
         ->and($deprecation?->message)->toBe('Passing transform arguments to `Asset::getUrl()` is deprecated. Use `Asset::transform()->url` instead.');
+});
+
+it('returns the source values for assets the transformer can’t transform', function () {
+    Exceptions::fake();
+    config()->set('filesystems.disks.uploads', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-transformers'),
+        'url' => 'https://example.test/uploads',
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true]);
+    $asset = Asset::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'clip.mp4',
+        'kind' => 'video',
+        'width' => 1920,
+        'height' => 1080,
+    ]);
+    $transform = ['width' => 320, 'format' => 'webp'];
+
+    expect($asset->getUrl($transform))->toBe('https://example.test/uploads/clip.mp4')
+        ->and($asset->getWidth($transform))->toBe(1920)
+        ->and($asset->getHeight($transform))->toBe(1080)
+        ->and($asset->getFormat($transform))->toBe('mp4')
+        ->and($asset->getMimeType($transform))->toBe($asset->getMimeType())
+        ->and(fn () => $asset->transform($transform))->toThrow(NotSupportedException::class);
+
+    Exceptions::assertNothingReported();
 });
 
 it('lets the Craft driver control immediate generation', function () {

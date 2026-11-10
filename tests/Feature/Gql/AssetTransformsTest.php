@@ -9,6 +9,8 @@ use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
 
@@ -79,6 +81,47 @@ it('resolves transform result fields for a capable non-image driver', function (
         ->assertJsonPath('data.asset.format', 'webp')
         ->assertJsonPath('data.asset.mimeType', 'image/webp')
         ->assertJsonPath('data.transformed.url', '/gql-transform.webp');
+});
+
+it('resolves source values for Assets the transformer can’t transform', function () {
+    config()->set('filesystems.disks.uploads', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/gql-asset-transforms'),
+        'url' => 'https://example.test/uploads',
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true]);
+    $asset = Asset::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'clip.mp4',
+        'kind' => 'video',
+        'width' => 1920,
+        'height' => 1080,
+    ]);
+    gqlActivateFullAccessSchema();
+
+    graphQL(<<<GQL
+        {
+            asset(id: {$asset->id}) {
+                url(width: 320)
+                width @transform(width: 320)
+                height(width: 320)
+                format(format: "webp")
+                mimeType @transform(width: 320)
+            }
+            transformed: asset(id: {$asset->id}) @transform(width: 200) {
+                url
+            }
+        }
+        GQL)
+        ->assertOk()
+        ->assertJsonMissingPath('errors')
+        ->assertJsonPath('data.asset.url', 'https://example.test/uploads/clip.mp4')
+        ->assertJsonPath('data.asset.width', 1920)
+        ->assertJsonPath('data.asset.height', 1080)
+        ->assertJsonPath('data.asset.format', 'mp4')
+        ->assertJsonPath('data.asset.mimeType', $asset->getMimeType())
+        ->assertJsonPath('data.transformed.url', 'https://example.test/uploads/clip.mp4');
 });
 
 it('applies parameter overrides to named transforms', function () {
