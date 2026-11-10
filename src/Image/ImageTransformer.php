@@ -779,7 +779,7 @@ class ImageTransformer
             return $asset->getVolume()->sourceDisk();
         }
 
-        $diskName = $asset->getVolume()->resolveStorageTargetKey($diskReference);
+        $diskName = $asset->getVolume()->resolveStorageTargetKey($diskReference, parse: false);
         if ($diskName === null) {
             throw new FilesystemException('The configured asset transform output disk does not exist.');
         }

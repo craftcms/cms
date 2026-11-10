@@ -324,19 +324,27 @@ it('does not reuse similar transform results across output locations', function 
         ->and(Storage::disk('second-transform-target')->allFiles())->toHaveCount(1);
 });
 
-it('fails when the configured Craft driver output disk is missing', function () {
+it('fails when the configured Craft driver output disk doesn’t name a disk', function (string $outputDisk) {
+    putenv('CRAFT_TEST_TRANSFORM_OUTPUT_DISK=test-disk');
     config()->set('filesystems.disks.missing-transform-target-source', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/image-transformer-test/missing-target-source'),
-        'asset_transformer' => ['driver' => 'craft', 'output_disk' => 'missing-transform-target'],
+        'asset_transformer' => ['driver' => 'craft', 'output_disk' => $outputDisk],
     ]);
     $volume = Volume::factory()->create([
         'fs' => 'missing-transform-target-source',
     ]);
     $asset = AssetModel::factory()->createElement(['volumeId' => $volume->id]);
 
-    app(AssetTransformers::class)->transform($asset, ['width' => 100]);
-})->throws(FilesystemException::class);
+    try {
+        app(AssetTransformers::class)->transform($asset, ['width' => 100]);
+    } finally {
+        putenv('CRAFT_TEST_TRANSFORM_OUTPUT_DISK');
+    }
+})->throws(FilesystemException::class)->with([
+    'missing disk' => 'missing-transform-target',
+    'environment variable reference' => '$CRAFT_TEST_TRANSFORM_OUTPUT_DISK',
+]);
 
 it('cleans the Craft transform index when an Asset is invalidated', function () {
     $asset = ($this->createImageAsset)();
