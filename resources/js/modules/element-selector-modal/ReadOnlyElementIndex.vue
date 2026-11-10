@@ -1,6 +1,13 @@
 <script setup lang="ts">
   import {actionClient, ButtonVariant, t} from '@craftcms/ui';
-  import {computed, ref, shallowRef, watch} from 'vue';
+  import {
+    computed,
+    nextTick,
+    ref,
+    shallowRef,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
   import ElementPicker from './ElementPicker.vue';
   import ElementPickerPlaceholder from './ElementPickerPlaceholder.vue';
@@ -29,9 +36,15 @@
   const initial = shallowRef<ContentIndexData | null>(null);
   const failed = ref(false);
   const generation = ref(0);
+  const root = useTemplateRef<HTMLElement>('root');
   let latestRequest = 0;
 
-  async function load(): Promise<void> {
+  async function focusWithin(selector: string): Promise<void> {
+    await nextTick();
+    root.value?.querySelector<HTMLElement>(selector)?.focus();
+  }
+
+  async function load(restoreFocus = false): Promise<void> {
     const request = ++latestRequest;
     initial.value = null;
     failed.value = false;
@@ -42,12 +55,21 @@
       if (request === latestRequest) {
         initial.value = data.props as ContentIndexData;
         generation.value++;
+
+        if (restoreFocus) {
+          void focusWithin('input, button, a[href]');
+        }
       }
     } catch {
       if (request === latestRequest) {
-        failed.value = true;
+        showFailure();
       }
     }
+  }
+
+  function showFailure(): void {
+    failed.value = true;
+    void focusWithin('craft-button');
   }
 
   watch(
@@ -58,24 +80,26 @@
 </script>
 
 <template>
-  <div v-if="failed" role="alert" class="flex items-center gap-md">
-    <span>{{ t('The list couldn’t be loaded.') }}</span>
-    <craft-button
-      type="button"
-      :variant="ButtonVariant.Plain"
-      @click="load()"
-      >{{ t('Try again') }}</craft-button
-    >
+  <div ref="root">
+    <div v-if="failed" role="alert" class="flex items-center gap-md">
+      <span>{{ t('The list couldn’t be loaded.') }}</span>
+      <craft-button
+        type="button"
+        :variant="ButtonVariant.Plain"
+        @click="load(true)"
+        >{{ t('Try again') }}</craft-button
+      >
+    </div>
+    <ElementPicker
+      v-else-if="initial"
+      :key="generation"
+      :action="action"
+      :initial="initial"
+      :params="params"
+      read-only
+      :storage-key="storageKey"
+      @error="showFailure"
+    />
+    <ElementPickerPlaceholder v-else :element-type="elementType" />
   </div>
-  <ElementPicker
-    v-else-if="initial"
-    :key="generation"
-    :action="action"
-    :initial="initial"
-    :params="params"
-    read-only
-    :storage-key="storageKey"
-    @error="failed = true"
-  />
-  <ElementPickerPlaceholder v-else :element-type="elementType" />
 </template>

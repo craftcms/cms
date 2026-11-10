@@ -26,7 +26,7 @@ vi.mock('./ElementPicker.vue', async () => {
 
         return () => {
           picker.props = props as Record<string, any>;
-          return create('div', {class: 'picker-stub'});
+          return create('div', {class: 'picker-stub'}, [create('input')]);
         };
       },
     }),
@@ -153,5 +153,23 @@ describe('ReadOnlyElementIndex', () => {
 
     expect(post).toHaveBeenCalledTimes(2);
     expect(host.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('moves focus to the retry button on failure and back into the index after retrying', async () => {
+    post.mockResolvedValue(response('first'));
+    mount();
+    await flush();
+    (host.querySelector('input') as HTMLElement).focus();
+
+    picker.emit?.('error', new Error('offline'));
+    await flush();
+
+    expect(document.activeElement).toBe(host.querySelector('craft-button'));
+
+    (host.querySelector('craft-button') as HTMLElement).click();
+    await flush();
+    await flush();
+
+    expect(document.activeElement).toBe(host.querySelector('input'));
   });
 });
