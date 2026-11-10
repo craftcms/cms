@@ -59,7 +59,6 @@ import './modules/prompt-handler/index';
 import './modules/link-field/index';
 import './modules/cp-modal/index';
 import './modules/grid/index';
-import './modules/chart/index';
 import './modules/element-thumb-loader/index';
 import './modules/asset-mover/index';
 import './modules/element-selector-modal/index';
@@ -67,7 +66,6 @@ import './modules/element-select-input/index';
 import './modules/preview-file-modal/index';
 import './modules/asset-select-input/index';
 import './modules/element-deletion-manager/index';
-import './modules/uploader/index';
 
 const {default: Cp} = await import('./bootstrap/cp.js');
 

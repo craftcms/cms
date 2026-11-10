@@ -930,7 +930,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Removed the `Craft.Accordion` and `Craft.EnvVarGenerator` control panel JavaScript classes. ([#19323](https://github.com/craftcms/cms/pull/19323))
 - Removed the classic (pre-3.2) `Craft.LivePreview` control panel JavaScript class, which Craft hasn’t used since 3.2. ([#19964](https://github.com/craftcms/cms/pull/19964))
 - Removed the `Craft.ImageUpload` control panel JavaScript class.
-- `Craft.AssetImageEditor`, `Craft.GroupedEntryTypeManager`, `Craft.RecoveryCodesSetup`, `Craft.SortableCheckboxSelect`, and `Craft.TagSelectInput` are now provided by the Yii2 adapter.
+- `Craft.AssetImageEditor`, `Craft.charts`, `Craft.GroupedEntryTypeManager`, `Craft.RecoveryCodesSetup`, `Craft.SortableCheckboxSelect`, `Craft.TagSelectInput`, and `Craft.Uploaders` are now provided by the Yii2 adapter.
 - The legacy element index is now rendered only by the Yii2 adapter, through the `elementIndex()` Twig function and `craft\helpers\Cp::elementIndexHtml()`. Templates that extend `_layouts/elementindex` always get the Vue element index.
 - The legacy element index JavaScript is now provided by the Yii2 adapter: `Craft.createElementIndex()`, `Craft.registerElementIndexClass()`, `Craft.BaseElementIndex`, `Craft.BaseElementIndexView` and its subclasses, `Craft.AssetIndex`, `Craft.CategoryIndex`, `Craft.EntryIndex`, `Craft.UserIndex`, `Craft.Structure`, `Craft.StructureDrag`, `Craft.ProgressBar`, `Craft.ElementTableSorter`, `Craft.IntervalManager`, `Craft.PromptHandler`, and `Craft.openCustomizeSourcesModal()`.
 - `Craft.AdminTable` and `Craft.DataTableSorter` are now provided by the Yii2 adapter.

@@ -5061,6 +5061,8 @@ describe('UiRenderer', () => {
     );
     components.install(app);
     app.mount(container);
+    // The lazily registered controls render once their chunks load.
+    await vi.dynamicImportSettled();
     await nextTick();
     renderer = rendererRef.value;
   }
