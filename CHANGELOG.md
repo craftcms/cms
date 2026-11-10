@@ -220,9 +220,10 @@
 
 ### Assets
 - Asset transformers are now chosen per filesystem disk, with an `asset_transformer` key on disks in `config/filesystems.php`, rather than with transformer profiles. The key takes a transform driver name, or an array with a `driver` key and inline settings. Disks without the key use the `craft` transformer, and `scoped` disks without it use the disk they wrap.
+- `asset.transform()`’s `transformer` argument now takes a transform driver name, or an array with a `driver` key and inline settings, like a disk’s `asset_transformer` key. GraphQL transforms’ and the `assets_transform_url` MCP tool’s `transformer` arguments take a driver name.
 - The `craft` asset transformer’s settings are now `output_disk`, `has_urls`, and `generate_transforms_before_page_load` keys in a disk’s `asset_transformer` array. To store transforms below a path, set `output_disk` to a `scoped` disk. Pointing `output_disk` at a different disk generates new transforms there.
 - An `asset_transformer` value that names an unregistered driver, or is malformed, now throws an exception when debug mode is enabled. Otherwise it’s logged, and the disk uses the `craft` transformer.
-- Removed Settings → Assets → Asset Transformers, volumes’ “Asset Transformer” setting, the `defaultAssetTransformer` config setting, the `transformer` argument for `asset.transform()`, GraphQL transforms, and the `assets_transform_url` MCP tool, and asset transformers from the MCP server’s `configuration_*` tools and the command palette. Transformer profiles, volumes’ transformer selections, and named image transforms’ custom parameters are removed from project config when updating.
+- Removed Settings → Assets → Asset Transformers, volumes’ “Asset Transformer” setting, the `defaultAssetTransformer` config setting, and asset transformers from the MCP server’s `configuration_*` tools and the command palette. Transformer profiles, volumes’ transformer selections, and named image transforms’ custom parameters are removed from project config when updating.
 - Volumes’ “Transform Filesystem” and “Transform Subpath” settings from Craft 5 aren’t carried over, so transforms are stored on the volume’s own disk unless its `asset_transformer` sets `output_disk`. Upgrading clears the transform index, so transforms are generated again as they’re requested.
 - Named image transforms’ custom parameters are now keyed by transform driver name.
 - Text file previews now have “Copy” and “Close” buttons. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -695,7 +696,7 @@
 - `CraftCms\Cms\Asset\AssetTransformers` now extends `Illuminate\Support\Manager` and registers asset transform drivers itself. Removed `CraftCms\Cms\Asset\AssetTransformDrivers`; its methods are now on `AssetTransformers`.
 - Added `CraftCms\Cms\Asset\AssetTransformers::forDisk()` and `configForDisk()`.
 - `CraftCms\Cms\Asset\Data\AssetTransformer` is now a readonly value object with `driver` and `settings` properties.
-- Removed the `transformer` argument from `CraftCms\Cms\Asset\Elements\Asset::transform()` and `AssetTransformers::transform()`.
+- `CraftCms\Cms\Asset\Elements\Asset::transform()` and `AssetTransformers::transform()`’s `transformer` argument now takes a transform driver name, or an array with a `driver` key and inline settings.
 - `AssetTransformers::parameterRules()`, `parameterFields()`, and `validateParameters()` now take a driver name rather than an `AssetTransformer`.
 - Removed `CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition::$name` and `$settingsFields`. The Control Panel labels asset transform drivers by their driver names.
 - Renamed `CraftCms\Cms\Image\Data\ImageTransform::getParametersForTransformer()` to `getParametersForDriver()`.

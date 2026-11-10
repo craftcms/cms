@@ -28,13 +28,35 @@ inline settings, the same way a disk is written:
 Volumes on the same disk share its transformer. To give one volume a different transformer, point it at its own disk,
 such as a `scoped` disk that wraps the shared one.
 
+### Overriding the transformer for one transform
+
+Pass the `transformer` argument to use another transformer for one transform. It takes the same values as the disk key:
+
+```php
+$asset->transform(['width' => 1200], transformer: 'pdf-thumbnails')->url;
+
+$asset->transform(['width' => 1200], transformer: ['driver' => 'craft', 'output_disk' => 'public-transforms'])->url;
+```
+
+```twig
+{{ asset.transform({ width: 1200 }, transformer: { driver: 'craft', output_disk: 'public-transforms' }).url }}
+```
+
+An array is used as given, without the disk's settings. A driver name gets no inline settings, so the driver reads its
+own config, unless it names the disk's own driver, which keeps the disk's settings. GraphQL's `transformer` argument and
+the `assets_transform_url` MCP tool take a driver name only.
+
+Craft can't recover an override's `has_urls` when a transform is generated after the page loads, so an override with
+`has_urls` generates its transforms before the page loads.
+
 ### Invalid configuration
 
 Craft checks a transformer when it's first used, not at boot. If an `asset_transformer` value isn't a driver name or an
-array with a `driver` key, or names a driver that isn't registered:
+array with a `driver` key, or names a driver that isn't registered (as can the `transformer` argument):
 
 - With debug mode on, Craft throws an `InvalidAssetTransformException` or `AssetTransformDriverNotFoundException`.
-- Otherwise, Craft logs a warning once per process, and the disk falls back to the `craft` driver with its defaults.
+- Otherwise, Craft logs a warning once per process. The disk falls back to the `craft` driver with its defaults, and
+  an invalid `transformer` argument is ignored.
 
 ## Transform definitions
 
@@ -226,7 +248,7 @@ public function boot(AssetTransformers $transformers): void
 }
 ```
 
-Then set `'asset_transformer' => 'remote-images'` on a disk.
+Then set `'asset_transformer' => 'remote-images'` on a disk, or pass `transformer: 'remote-images'`.
 
 Craft reuses one driver instance per name, so don't keep request state on it.
 
