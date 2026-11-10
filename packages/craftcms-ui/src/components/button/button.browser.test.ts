@@ -488,6 +488,33 @@ describe('[size=xsmall]', () => {
     expect(above).toBe(button);
     expect(below).toBe(button);
   });
+
+  it('keeps an icon a whole number of pixels inside its borders, so 1x screens draw it centered', async () => {
+    // Set as a property, as frameworks such as Vue do, which leaves no `icon`
+    // attribute. At the control panel's text size, 0.8em put it 2.52px in.
+    const holder = document.createElement('div');
+    holder.style.fontSize = '14px';
+    const button = document.createElement('craft-button') as CraftButton;
+    button.setAttribute('variant', 'outline');
+    button.setAttribute('size', 'xsmall');
+    button.setAttribute('aria-label', 'Copy');
+    button.icon = 'arrow-down';
+    holder.append(button);
+    document.body.append(holder);
+    await import('../../styles/shared/tokens.css');
+    await button.updateComplete;
+
+    const box = button.getBoundingClientRect();
+    const border = parseFloat(getComputedStyle(button).borderTopWidth);
+    const icon = button
+      .shadowRoot!.querySelector('craft-icon')!
+      .getBoundingClientRect();
+    const above = icon.top - box.top - border;
+    const below = box.bottom - border - icon.bottom;
+
+    expect(above).toBe(below);
+    expect(Number.isInteger(above)).toBe(true);
+  });
 });
 
 describe('[disabled]', () => {

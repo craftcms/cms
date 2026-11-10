@@ -290,6 +290,21 @@ export default css`
     line-height: 1;
   }
 
+  /* An xsmall button's own icon is half its height rather than 0.8em, so it
+     sits a whole number of pixels inside the borders (3px in a 16px button).
+     0.8em would put it a fraction of a pixel in, which 1x screens round off
+     center. Keyed on the content rather than \`[icon]\`, which isn't there
+     when \`icon\` is set as a property. */
+  :host([size~='xsmall']) .button-content--icon-only craft-icon {
+    --c-icon-size: calc(var(--_height) / 2);
+  }
+
+  /* The icon is 1.25em wide and 1em tall (see craft-icon). */
+  :host([size~='xsmall'][icon]:empty) {
+    --_flush-inline: calc(var(--_height) * 3 / 16);
+    --_flush-block: calc(var(--_height) / 4);
+  }
+
   /*
   Variants (appearance × palette)
    */
