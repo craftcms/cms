@@ -51,6 +51,7 @@
 - Fixed a bug where password reset and email verification URLs generated from the console, such as with `users/password-reset-url`, always pointed to the front end, even for users with control panel access. ([#16340](https://github.com/craftcms/cms/issues/16340))
 - Fixed a bug where the PostgreSQL password was included in the error message when a database backup or restore command failed. ([#20503](https://github.com/craftcms/cms/issues/20503))
 - Fixed a bug where a failed project config YAML write left the `config/project/` folder empty. Existing files are now only replaced as new ones are written, and the error now includes its underlying cause. ([#20519](https://github.com/craftcms/cms/issues/20519))
+- Updated `mcp/sdk` to 0.9.0. MCP tools that declare an `outputSchema` now return an error if their structured content doesn’t match it.
 
 ## 5.12.0.1 - 2026-11-03
 

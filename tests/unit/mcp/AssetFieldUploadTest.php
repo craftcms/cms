@@ -210,7 +210,7 @@ class AssetFieldUploadTest extends TestCase
 
     private function callTool(string $name, array $arguments): array
     {
-        $input = fopen('php://memory', 'r+');
+        $input = tmpfile();
         foreach ([
             ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
                 'protocolVersion' => '2025-06-18',

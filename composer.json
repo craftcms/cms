@@ -48,7 +48,7 @@
     "illuminate/support": "^10.49",
     "league/oauth2-server": "^9.0",
     "league/uri": "^7.0",
-    "mcp/sdk": "0.8.1",
+    "mcp/sdk": "0.9.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
     "monolog/monolog": "^3.0",
