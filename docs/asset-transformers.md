@@ -29,34 +29,13 @@ inline settings, the same way a disk is written:
 Volumes on the same disk share its transformer. To give one volume a different transformer, point it at its own disk,
 such as a `scoped` disk that wraps the shared one.
 
-To use a different driver for one transform, pass its name as the `transformer` argument:
-
-```php
-$url = $asset->transform(['width' => 1200, 'format' => 'webp'], transformer: 'remote-images')->url;
-```
-
-```twig
-{{ asset.transform({ width: 1200, format: 'webp' }, transformer: 'remote-images').url }}
-```
-
-```graphql
-{
-  asset(id: 42) {
-    url(transformer: "remote-images", width: 1200, format: "webp")
-  }
-}
-```
-
-The driver then runs with no inline settings. If the argument names the disk's own driver, the disk's settings still apply.
-
 ### Invalid configuration
 
 Craft checks a transformer when it's first used, not at boot. If an `asset_transformer` value isn't a driver name or an
-array with a `driver` key, or names a driver that isn't registered (as can the `transformer` argument):
+array with a `driver` key, or names a driver that isn't registered:
 
 - With debug mode on, Craft throws an `InvalidAssetTransformException` or `AssetTransformDriverNotFoundException`.
-- Otherwise, Craft logs a warning once per process. The disk falls back to the `craft` driver with its defaults, and
-  an invalid `transformer` argument is ignored.
+- Otherwise, Craft logs a warning once per process, and the disk falls back to the `craft` driver with its defaults.
 
 ## Transform definitions
 
@@ -243,7 +222,7 @@ public function boot(AssetTransformers $transformers): void
 }
 ```
 
-Then set `'asset_transformer' => 'remote-images'` on a disk, or pass `transformer: 'remote-images'`.
+Then set `'asset_transformer' => 'remote-images'` on a disk.
 
 Craft reuses one driver instance per name, so don't keep request state on it.
 
