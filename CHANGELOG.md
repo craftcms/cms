@@ -23,7 +23,7 @@
 - Added `craft\mcp\serializers\ElementSerializer::serializeNestedValue()` and `summarize()`.
 - Added `craft\services\ProjectConfig::acquireLock()`. ([#20440](https://github.com/craftcms/cms/pull/20440))
 - `craft\elements\Asset::canSave()` now returns `true` for users’ own assets in their temporary upload folder.
-- Updated `mcp/sdk` to 0.9.0. MCP tools that declare an `outputSchema` now return an error if their structured content doesn’t match it.
+- Updated `mcp/sdk` to 0.9. MCP tools that declare an `outputSchema` now return an error if their structured content doesn’t match it.
 - Fixed a bug where authenticated GraphQL requests didn’t respect field layout conditions. Hidden fields are now excluded from the schema (or resolve to `null` for element-specific conditions), and non-editable fields are excluded from mutation arguments (or error when set). ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where field values submitted for nested entries, Content Block fields, and addresses could be saved even if the user wasn’t permitted to see or edit the fields, per their field layout conditions. ([#20391](https://github.com/craftcms/cms/pull/20391))
 - Fixed a bug where OAuth discovery metadata for front-end resources, such as the GraphQL API, revealed the control panel URL. OAuth endpoints for front-end resources are now advertised as action URLs, and discovery metadata is only served from `.well-known` URLs.
