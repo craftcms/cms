@@ -115,6 +115,8 @@
   provideUiPreview();
 
   const sideKeys = ['from', 'to'] as const;
+  /** The order of a row's copy buttons, by the side each copies into. */
+  const copyIntoOrder = ['to', 'from'] as const;
 
   const root = useTemplateRef<HTMLElement>('root');
   const panels = useTemplateRef<HTMLElement>('panels');
@@ -1067,8 +1069,14 @@
             v-if="copyValues.to.has(rowIndex) || copyValues.from.has(rowIndex)"
             class="compare__copy"
           >
-            <template v-for="into in sideKeys" :key="into">
-              <template v-if="copyValues[into].has(rowIndex)">
+            <!-- Copying into B comes first: → then ←, or ↓ then ↑ stacked. -->
+            <template v-for="into in copyIntoOrder" :key="into">
+              <!-- Each button masks the hairline behind it, but not the gap
+                   between them. -->
+              <span
+                v-if="copyValues[into].has(rowIndex)"
+                class="compare__copy-button"
+              >
                 <craft-button
                   :id="`compare-copy-${into}-${rowIndex}`"
                   type="button"
@@ -1081,7 +1089,7 @@
                 <craft-tooltip :for="`compare-copy-${into}-${rowIndex}`">{{
                   copyLabel(rowIndex, into)
                 }}</craft-tooltip>
-              </template>
+              </span>
             </template>
           </span>
         </div>
@@ -1252,12 +1260,12 @@
   .compare__copy {
     display: none;
     gap: var(--c-spacing-md);
-    border-radius: var(--c-radius-md);
-    background-color: var(--c-surface-default);
   }
 
-  .compare__row--changed .compare__copy {
-    background-color: inherit;
+  .compare__copy-button {
+    display: flex;
+    border-radius: var(--c-radius-md);
+    background-color: var(--compare-row-background, var(--c-surface-default));
   }
 
   .compare__copy craft-button {
@@ -1284,6 +1292,15 @@
     pointer-events: none;
   }
 
+  /* Each side's buttons sit under its column, as its header does. */
+  .compare__footer-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .compare__footer-actions-cell--to {
+    grid-column: 2;
+  }
+
   .compare__footer-notices-cell,
   .compare__footer-actions-cell {
     min-width: 0;
@@ -1301,8 +1318,14 @@
     pointer-events: auto;
   }
 
-  .compare__footer-actions-cell:not(:has(.compare-footer__actions)) {
+  .compare__footer-actions:not(:has(.compare-footer__actions)) {
     display: none;
+  }
+
+  /* A side without buttons keeps its column, empty. */
+  .compare__footer-actions-cell:not(:has(.compare-footer__actions))
+    > .compare__side-icon {
+    visibility: hidden;
   }
 
   .compare__row + .compare__row {
@@ -1310,7 +1333,7 @@
   }
 
   .compare__row--changed {
-    background-color: light-dark(
+    --compare-row-background: light-dark(
       color-mix(
         in oklab,
         var(--c-color-violet-fill-quiet) 40%,
@@ -1322,6 +1345,8 @@
         var(--c-surface-default)
       )
     );
+
+    background-color: var(--compare-row-background);
   }
 
   @media (forced-colors: active) {
@@ -1440,11 +1465,6 @@
     .compare__footer-actions-cell :deep(.compare-footer__actions) {
       padding-inline-start: 0;
     }
-
-    .compare__footer-actions-cell
-      + .compare__footer-actions-cell:has(.compare-footer__actions) {
-      border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    }
   }
 
   @container compare (width >= 48rem) {
@@ -1479,8 +1499,7 @@
       scale: -1 1;
     }
 
-    .compare__footer-notices,
-    .compare__footer-actions {
+    .compare__footer-notices {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -1488,10 +1507,6 @@
     .compare__footer-actions-cell--to {
       grid-column: 2;
       border-inline-start: 1px solid var(--compare-hairline);
-    }
-
-    .compare__footer-actions-cell:not(:has(.compare-footer__actions)) {
-      display: block;
     }
 
     .compare__row + .compare__row {
