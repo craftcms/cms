@@ -416,8 +416,8 @@ it('excludes generated transform directories from asset indexing with the defaul
         listEmptyFolders: true,
     );
 
-    expect(AssetIndexData::where('sessionId', $session->id)->orderBy('uri')->pluck('uri')->all())
-        ->toBe(['_visible.txt', 'photos', 'photos/original.txt', 'transform-test.jpg']);
+    expect(AssetIndexData::where('sessionId', $session->id)->pluck('uri')->all())
+        ->toEqualCanonicalizing(['_visible.txt', 'photos', 'photos/original.txt', 'transform-test.jpg']);
 });
 
 it('reuses transforms when only has_urls or immediate generation changes', function () {
