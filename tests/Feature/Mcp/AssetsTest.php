@@ -77,7 +77,7 @@ it('creates an asset from a completed upload session once', function () {
 
     app(Uploads::class)->transfer($request, $upload['id']);
 
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $created = McpRequest::send($this, 'tools/call', [
@@ -93,7 +93,7 @@ it('creates an asset from a completed upload session once', function () {
 });
 
 it('accepts client file references through MCP and stores the downloaded bytes', function (array $reference, ?string $filename): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     Http::fake(['https://files.example.test/*' => Http::response('Downloaded content')]);
@@ -164,7 +164,7 @@ it('sets and clears an image’s focal point through elements_update', function 
         file: ['download_url' => 'https://files.example.test/download', 'file_id' => 'file_image', 'file_name' => 'image.png'],
         volumeId: $this->folder->volumeId,
     )['asset']['id'];
-    config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
+    config()->set('passport.public_key', openssl_pkey_get_details(passportKey())['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $update = fn (mixed $focalPoint) => McpRequest::send($this, 'tools/call', [
         'name' => 'elements_update',
@@ -201,7 +201,7 @@ it('sets an asset’s uploader through elements_update', function (bool $peer, b
         volumeId: $this->folder->volumeId,
     )['asset']['id'];
     $other = User::factory()->create();
-    config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
+    config()->set('passport.public_key', openssl_pkey_get_details(passportKey())['key']);
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
     $update = fn (mixed $uploaderId) => McpRequest::send($this, 'tools/call', [
         'name' => 'elements_update',
@@ -622,7 +622,7 @@ describe('file replacement', function (): void {
     });
 
     it('replaces the stored bytes through MCP while preserving the asset identity, metadata and entry references', function (string $source): void {
-        $key = openssl_pkey_new(['private_key_bits' => 2048]);
+        $key = passportKey();
         config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
         Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
         $originalId = $this->asset->id;

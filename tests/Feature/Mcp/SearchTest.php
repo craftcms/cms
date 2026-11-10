@@ -43,7 +43,7 @@ it('searches across element types through MCP', function () {
     $pluginElement = new TestMcpSearchElement(['title' => $query]);
     app(Elements::class)->saveElement($pluginElement);
 
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
 

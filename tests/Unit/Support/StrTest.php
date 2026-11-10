@@ -61,8 +61,8 @@ test('convertToUtf8', function (string $expected, string $string) {
     ['😂😁', '😂😁'],
     ['Foo © bar 𝌆 baz ☃ qux', 'Foo © bar 𝌆 baz ☃ qux'],
     ['İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±', 'İnanç Esasları" shown as "Ä°nanÃ§ EsaslarÄ±'],
-    ['Café terrace', "Caf\xe9 terrace"],
-    ['“Quoted”', "\x93Quoted\x94"],
+    'Latin-1 text' => ['Café terrace', "Caf\xe9 terrace"],
+    'Windows-1252 quotes' => ['“Quoted”', "\x93Quoted\x94"],
 ]);
 
 test('convertToUtf8 accepts explicit source encoding', function () {
@@ -327,7 +327,7 @@ test('stripPrivateAndUnassignedChars', function (string $expected, string $str) 
     ['Apple', "\u{F8FF}Apple"],
     ['ab', "a\u{E000}\u{F0000}\u{10FFFD}b"],
     ['ab', "a\u{0378}b"],
-    ['ab', "a\u{FFFE}b"],
+    'Unicode noncharacter' => ['ab', "a\u{FFFE}b"],
     ['Ünïcödé 😀 こんにちは', 'Ünïcödé 😀 こんにちは'],
 ]);
 
