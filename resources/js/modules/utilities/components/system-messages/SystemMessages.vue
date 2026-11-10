@@ -66,7 +66,7 @@
 <template>
   <div id="messages" class="grid gap-6">
     <section v-for="message in localMessages" :key="message.key">
-      <h2 class="text-lg mb-2">{{ message.heading }}</h2>
+      <h2 class="cp-h2 mb-2">{{ message.heading }}</h2>
       <craft-card>
         <span slot="label" class="font-medium">{{ message.subject }}</span>
 
