@@ -59,6 +59,22 @@ it('titles a utility subpage, with a breadcrumb back to the utility', function (
         );
 });
 
+it('caps and centers a utility’s content only when the utility asks', function () {
+    get('/admin/utilities/system-messages')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('contentMaxWidth', true)
+            ->etc()
+        );
+
+    get('/admin/utilities/deprecation-errors')
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('contentMaxWidth', false)
+            ->etc()
+        );
+});
+
 it('leaves the utilities nav to the main navigation', function () {
     // The utilities hang off the Utilities item in `Cp\Navigation` now, so the
     // page no longer describes a nav of its own — and without a `subnav` prop

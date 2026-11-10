@@ -54,6 +54,12 @@ class LooseEndsUtility extends Utility
         return template('yii2-adapter/_components/utilities/LooseEnds', self::report());
     }
 
+    #[Override]
+    public static function contentMaxWidth(): bool
+    {
+        return true;
+    }
+
     /**
      * Runs the checks, and returns the report.
      *

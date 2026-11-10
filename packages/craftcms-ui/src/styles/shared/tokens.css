@@ -75,7 +75,7 @@
 
   /* Shadows */
   --c-shadow-sunken: inset 0 2px 4px
-    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+    rgb(var(--c-shadow-tint) / calc(0.05 * var(--c-shadow-multiplier)));
   --c-shadow-raised: var(--c-shadow-sm);
   --c-shadow-overlay: var(--c-shadow-lg);
 
@@ -129,29 +129,39 @@
   --c-size-footer: calc(54rem / 16);
 
   /*
-    Craft's box shadows scale their opacity by this, so each theme can deepen
-    them all at once. Tailwind's own --shadow-* stay stock. Declared here
-    rather than in variables.css so a themed subtree re-resolves them against
-    its own multiplier.
+    Craft's box shadows scale their opacity by this, and take their color from
+    the tint, so each theme can deepen and tint them all at once. Tailwind's
+    own --shadow-* stay stock. Declared here rather than in variables.css so a
+    themed subtree re-resolves them against its own multiplier and tint.
   */
   --c-shadow-multiplier: 1;
-  --c-shadow-2xs: 0 1px rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+  --c-shadow-tint: 34 44 82;
+  --c-shadow-2xs: 0 1px
+    rgb(var(--c-shadow-tint) / calc(0.05 * var(--c-shadow-multiplier)));
   --c-shadow-xs: 0 1px 2px 0
-    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+    rgb(var(--c-shadow-tint) / calc(0.05 * var(--c-shadow-multiplier)));
   --c-shadow-sm:
-    0 1px 3px 0 rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
-    0 1px 2px -1px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
+    0 1px 3px 0
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier))),
+    0 1px 2px -1px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-md:
-    0 4px 6px -1px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
-    0 2px 4px -2px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
+    0 4px 6px -1px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier))),
+    0 2px 4px -2px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-lg:
-    0 10px 15px -3px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
-    0 4px 6px -4px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
+    0 10px 15px -3px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier))),
+    0 4px 6px -4px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-xl:
-    0 20px 25px -5px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
-    0 8px 10px -6px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
+    0 20px 25px -5px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier))),
+    0 8px 10px -6px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-2xl: 0 25px 50px -12px
-    rgb(0 0 0 / calc(0.25 * var(--c-shadow-multiplier)));
+    rgb(var(--c-shadow-tint) / calc(0.25 * var(--c-shadow-multiplier)));
 
   /**
   Status
@@ -244,7 +254,7 @@
   --c-input-radius: var(--c-form-control-radius);
   --c-input-spacing-inline: var(--c-form-control-spacing-inline);
   --c-input-shadow: inset 0 2px 4px
-    rgb(0 0 0 / calc(0.08 * var(--c-shadow-multiplier)));
+    rgb(var(--c-shadow-tint) / calc(0.08 * var(--c-shadow-multiplier)));
 
   /* Checkbox */
   --c-checkbox-size: var(--c-size-control-xs);
@@ -281,8 +291,6 @@
   --c-pane-border-style: solid;
   --c-pane-border-color: transparent;
   --c-pane-radius: var(--c-radius-md);
-  --c-pane-shadow:
-    0 0 0 1px var(--gray-200), 0 2px 12px hsl(from var(--gray-200) h s l / 50%);
 
   /* Layers (z-index), lowest to highest.
      Only for things that stack against other parts of the page; a component
@@ -317,7 +325,7 @@
   --c-modal-text: var(--c-text-default);
   --c-modal-radius: var(--c-radius-lg);
   /* A hairline, on top of the shadow, so modals keep an edge in either theme. */
-  --c-modal-ring: 0 0 0 1px rgb(0 0 0 / 18%);
+  --c-modal-ring: 0 0 0 1px rgb(var(--c-shadow-tint) / 18%);
   --c-modal-padding: var(--c-pane-padding);
   --c-modal-header-height: calc(
     var(--c-size-control-sm) + var(--c-modal-padding) * 2 + 1px
@@ -326,7 +334,8 @@
 
   /* Slideouts */
   --c-slideout-shadow:
-    0 0 0 1px rgb(0 0 0 / calc(0.25 * var(--c-shadow-multiplier))),
+    0 0 0 1px
+      rgb(var(--c-shadow-tint) / calc(0.25 * var(--c-shadow-multiplier))),
     var(--c-shadow-2xl);
 }
 
@@ -385,6 +394,7 @@
 
   /* Shadows read fainter against dark surfaces. */
   --c-shadow-multiplier: 1.5;
+  --c-shadow-tint: 2 6 20;
   --c-modal-ring: 0 0 0 1px rgb(255 255 255 / 25%);
 
   --c-border-raised-selected: var(--color-base-500);
