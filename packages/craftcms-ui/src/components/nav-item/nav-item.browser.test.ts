@@ -696,6 +696,49 @@ it('keeps its flyout’s and tooltip’s events inside the item', async () => {
   }
 });
 
+async function tabStrip(): Promise<CraftNavItem[]> {
+  document.body.innerHTML = `
+    <craft-nav-list appearance="tabs">
+      <craft-nav-item href="/feeds" active current>Feeds</craft-nav-item>
+      <craft-nav-item href="/logs">Logs</craft-nav-item>
+    </craft-nav-list>
+  `;
+
+  const items = [...document.querySelectorAll<CraftNavItem>('craft-nav-item')];
+  await Promise.all(items.map((item) => item.updateComplete));
+
+  return items;
+}
+
+function row(item: CraftNavItem): HTMLElement {
+  return item.shadowRoot!.querySelector('.nav-item')!;
+}
+
+function label(item: CraftNavItem): HTMLElement {
+  return item.shadowRoot!.querySelector('.nav-item__action-item')!;
+}
+
+it('sits a tab’s label evenly inside the row that fills behind it', async () => {
+  const items = await tabStrip();
+  const box = row(items[1]!).getBoundingClientRect();
+  const text = label(items[1]!).getBoundingClientRect();
+
+  expect(text.left - box.left).toBeGreaterThan(1);
+  expect(text.left - box.left).toBeCloseTo(box.right - text.right, 1);
+});
+
+it('keeps a tab’s label at the edge of the strip, padding and all', async () => {
+  const items = await tabStrip();
+
+  items.forEach((item) => {
+    const host = item.getBoundingClientRect();
+    const text = label(item).getBoundingClientRect();
+
+    expect(text.left - host.left).toBeLessThanOrEqual(1);
+    expect(host.right - text.right).toBeLessThanOrEqual(1);
+  });
+});
+
 describe.each(['light', 'dark'])('in the %s theme', (theme) => {
   async function strip(): Promise<{
     surface: HTMLElement;

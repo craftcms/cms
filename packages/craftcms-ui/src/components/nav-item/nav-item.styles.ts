@@ -482,8 +482,12 @@ export default css`
     border-radius: 0;
   }
 
+  /* Padding for the hover fill, given back as margin so labels still line up
+     with the content around the strip. */
   :host([appearance='tabs']) .nav-item {
-    padding-inline: 0;
+    gap: 0;
+    padding-inline: var(--c-spacing-md);
+    margin-inline: calc(var(--c-spacing-md) * -1);
     border-color: transparent;
     background-color: transparent;
   }
