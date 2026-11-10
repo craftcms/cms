@@ -154,13 +154,14 @@ describe('downloadAsset', function () {
             ->and($location->query()->get('X-Amz-Signature'))->not->toBeEmpty();
     });
 
-    it('streams the file when the disk does not provide temporary URLs', function () {
+    it('streams the file when the disk is not S3, even if it provides temporary URLs', function () {
         $asset = AssetModel::factory()->createElement([
             'volumeId' => $this->volume->id,
             'folderId' => $this->folder->id,
             'filename' => 'local.txt',
         ]);
         Storage::disk('test-disk')->put($asset->getPath(), 'local contents');
+        Storage::disk('test-disk')->buildTemporaryUrlsUsing(fn () => 'https://example.test/signed');
 
         $response = post(action([ActionController::class, 'downloadAsset']), [
             'assetId' => $asset->id,

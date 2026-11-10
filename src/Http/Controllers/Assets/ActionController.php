@@ -17,7 +17,7 @@ use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
-use Illuminate\Filesystem\LocalFilesystemAdapter;
+use Illuminate\Filesystem\AwsS3V3Adapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -156,9 +156,9 @@ readonly class ActionController
             $asset = reset($assets);
             $disk = $asset->getVolume()->sourceDisk();
 
-            // Let the browser fetch the file straight from remote storage rather than proxying it through PHP.
-            // Local disks are skipped: their temporary URLs are served by PHP anyway and can't force a download.
-            if ($disk->providesTemporaryUrls() && ! $disk instanceof LocalFilesystemAdapter) {
+            // Let the browser fetch the file straight from S3 rather than proxying it through PHP.
+            // Other drivers may ignore the S3 response options and serve the file inline, so they keep streaming.
+            if ($disk instanceof AwsS3V3Adapter) {
                 $filename = $asset->getFilename();
                 $url = $disk->temporaryUrl($asset->getPath(), now()->addHour(), [
                     'ResponseContentDisposition' => HeaderUtils::makeDisposition(
