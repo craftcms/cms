@@ -553,7 +553,7 @@ it('still opens when its content is replaced while it waits to show', async () =
   await after(300);
 
   expect(document.activeElement).toBe(invoker);
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
   expect(invoker.getAttribute('aria-describedby')).toBe(replacement.id);
 });
 
