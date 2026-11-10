@@ -7,10 +7,19 @@ body {
   width: 100%;
   overflow-x: hidden;
   font-family: var(--c-font-body, sans-serif);
+  /* Inter's contextual alternates draw typed `->` and `=>` as arrows. */
+  font-variant-ligatures: no-contextual;
   font-size: var(--c-text-base);
   line-height: var(--c-leading-normal);
   color: var(--c-text-default);
   -webkit-font-smoothing: subpixel-antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-variant-ligatures: inherit;
 }
 
 [data-theme] {
