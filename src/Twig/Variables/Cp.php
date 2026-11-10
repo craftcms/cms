@@ -368,6 +368,20 @@ class Cp extends Component
     }
 
     /**
+     * Whether this render is handing its fragments to the Inertia shell rather
+     * than building a document of its own.
+     *
+     * What the shell draws for itself, the screen leaves out — its save
+     * controls above all, which the shell renders in the content footer.
+     *
+     * @see LegacyScreenFragments
+     */
+    public function collectsScreenFragments(): bool
+    {
+        return app(LegacyScreenFragments::class)->enabled();
+    }
+
+    /**
      * The marker `_layouts/elementindex` puts in its own content block.
      *
      * @see BridgedScreen::CONTENT_SENTINEL

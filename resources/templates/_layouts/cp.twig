@@ -371,8 +371,11 @@ window.LOCATION_HASH = document.location.hash ? decodeURIComponent(document.loca
 {% endblock %}
 
 
+{# The Inertia shell renders a full-page form's save controls in the content
+   footer, so a screen collected into it leaves this to the shell and carries
+   only what the screen itself put here. #}
 {% block actionButton %}
-    {% if fullPageForm %}
+    {% if fullPageForm and not craft.cp.collectsScreenFragments() %}
         <div class="btngroup">
             {% block submitButton %}
                 <button type="submit" class="btn submit">{{ submitButtonLabel ?? 'Save'|t('app') }}</button>
