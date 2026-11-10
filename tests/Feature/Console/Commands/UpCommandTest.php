@@ -47,7 +47,7 @@ it('runs registered tasks in the order they were added, with their output below 
     UpCommand::add('Running a command', 'test:up-task');
 
     expect(Artisan::call('craft:up', ['--noBackup' => true]))->toBe(0)
-        ->and(Artisan::output())->toMatch('/Running a closure[^\n]*DONE\n.*Closure warning.*Running a command[^\n]*DONE\n.*Command message/s');
+        ->and(Artisan::output())->toMatch('/Running a closure[^\n]*DONE\R.*Closure warning.*Running a command[^\n]*DONE\R.*Command message/s');
 });
 
 it('fails when a registered task fails, but still runs the tasks after it', function (Closure|string $failingTask) {
