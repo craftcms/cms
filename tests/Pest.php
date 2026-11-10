@@ -55,6 +55,9 @@ if (PHP_OS_FAMILY !== 'Windows' && version_compare(InstalledVersions::getVersion
 // MCP routes follow the MCP settings, and tests start from cached routes registered before any settings existed.
 pest()->beforeEach(fn () => enableMcp())->in('Feature/Mcp');
 
+// Tests that exercise the external MCP server explicitly clear this cache.
+pest()->beforeEach(fn () => cache()->put('craftcms-mcp-tools', []))->in('Feature/Ai');
+
 /**
  * Saves MCP settings, enabling the authenticated server by default, and registers the routes they call for.
  *
