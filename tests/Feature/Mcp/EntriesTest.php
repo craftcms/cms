@@ -258,7 +258,7 @@ it('accepts Matrix entries only in the format the field schema describes', funct
 
     expect(fn () => $elements->validate('entries', id: $created['id'], fields: [
         'contentBlocks' => ['entries' => [['body' => ['richText' => '<p>Example body</p>']]], 'sortOrder' => ['new:1']],
-    ]))->toThrow(ToolCallException::class, 'Invalid fields: /contentBlocks/entries/0: Additional object properties are not allowed: ["body"]');
+    ]))->toThrow(ToolCallException::class, 'Invalid fields: /contentBlocks/entries/0: Object contains unexpected additional properties: `body`');
 });
 
 it('accepts times of day for Time fields in Matrix entries', function (): void {

@@ -355,7 +355,7 @@ it('answers CORS preflight requests without authentication or collecting user in
     ])
         ->assertNoContent()
         ->assertHeader('Access-Control-Allow-Origin', 'https://craft.test')
-        ->assertHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id');
+        ->assertHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id, WWW-Authenticate');
 
     expect(explode(', ', $response->headers->get('Access-Control-Allow-Methods')))->toContain('DELETE')
         ->and(explode(', ', $response->headers->get('Access-Control-Allow-Headers')))->toContain('Mcp-Session-Id', 'Mcp-Param-Cursor');
