@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Composer\InstalledVersions;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
@@ -189,10 +188,6 @@ expect()->extend('toContainTag', function (string $tag, array $attributes = []) 
     ));
 
     return $this;
-});
-
-beforeEach(function () {
-    app()->forgetInstance(GeneralConfig::class);
 });
 
 /**

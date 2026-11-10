@@ -22,13 +22,11 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
 use CraftCms\Cms\Tests\Support\GuardsUtcDateBindings;
 use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\Tests\Support\SkipsRepeatedDstHour;
-use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -45,7 +43,6 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -136,10 +133,6 @@ class TestCase extends Orchestra
             app(Search::class)->useFullText = false;
         }
 
-        File::cleanDirectory(config_path('craft/'.app(ProjectConfig::class)->folderName));
-
-        File::cleanDirectory(storage_path('runtime/compiled_classes'));
-
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
@@ -147,16 +140,6 @@ class TestCase extends Orchestra
         Http::preventStrayRequests();
 
         $this->withoutVite();
-
-        // Always start with a fresh default admin user
-        if ($user = User::first()) {
-            $user->update([
-                'username' => 'craftcms',
-                'password' => Hash::make('craftcms2018!!'),
-                'email' => 'support@craftcms.com',
-                'admin' => true,
-            ]);
-        }
     }
 
     protected function connectionsToTransact(): array
@@ -206,7 +189,6 @@ class TestCase extends Orchestra
         $resets = [
             [Element::class, 'sources', []],
             [BaseElementLinkType::class, 'fetchedElements', []],
-            [Typecast::class, 'types', []],
             [PHP::class, 'basePaths', []],
             [FieldLayoutComponent::class, 'defaultElementConditions', []],
             [CustomField::class, 'defaultElementEditConditions', []],
