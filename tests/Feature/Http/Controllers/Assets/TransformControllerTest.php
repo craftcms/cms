@@ -136,7 +136,7 @@ describe('generate', function () {
 
             public function definition(): AssetTransformDriverDefinition
             {
-                return new AssetTransformDriverDefinition('Controller test');
+                return new AssetTransformDriverDefinition;
             }
 
             public function transform(AssetTransformRequest $request): AssetTransformResult

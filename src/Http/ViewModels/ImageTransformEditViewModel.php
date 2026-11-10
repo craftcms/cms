@@ -118,7 +118,7 @@ class ImageTransformEditViewModel extends ViewModel
                 $ui->add(Group::make("asset-transform-driver-{$driver}", [
                     Scope::make(['parameters', $driver], $fields),
                 ])
-                    ->label($definition->label));
+                    ->label($driver));
             }
         }
 

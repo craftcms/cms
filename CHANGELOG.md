@@ -697,7 +697,7 @@
 - `CraftCms\Cms\Asset\Data\AssetTransformer` is now a readonly value object with `driver` and `settings` properties.
 - `CraftCms\Cms\Asset\Elements\Asset::transform()` and `AssetTransformers::transform()`’s `transformer` argument is now a transform driver name.
 - `AssetTransformers::parameterRules()`, `parameterFields()`, and `validateParameters()` now take a driver name rather than an `AssetTransformer`.
-- Renamed `CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition::$name` to `$label`, and removed `$settingsFields`.
+- Removed `CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition::$name` and `$settingsFields`. The Control Panel labels asset transform drivers by their driver names.
 - Renamed `CraftCms\Cms\Image\Data\ImageTransform::getParametersForTransformer()` to `getParametersForDriver()`.
 - Renamed `CraftCms\Cms\Image\Data\ImageTransformIndex::$transformer` to `$outputKey`, and the `imagetransformindex` table’s `transformer` column to `outputKey`.
 - Removed `CraftCms\Cms\Asset\AssetTransformerRegistry`, `CraftCms\Cms\Asset\Events\AssetTransformerUpdating`, `AssetTransformerDeleting`, `CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException`, `CraftCms\Cms\Config\GeneralConfig::$defaultAssetTransformer`, `CraftCms\Cms\Asset\Data\Volume::$assetTransformer`, `getAssetTransformerHandle()`, and `CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ASSET_TRANSFORMERS`.

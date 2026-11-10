@@ -27,7 +27,7 @@ class ControlPanelAssetTransformDriver implements AssetTransformDriver
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition('Control panel test');
+        return new AssetTransformDriverDefinition;
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult

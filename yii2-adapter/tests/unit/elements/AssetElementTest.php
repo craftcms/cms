@@ -50,7 +50,7 @@ class AssetElementTest extends TestCase
         app(AssetTransformers::class)->extend('test', fn() => new class() implements AssetTransformDriver {
             public function definition(): AssetTransformDriverDefinition
             {
-                return new AssetTransformDriverDefinition('Test');
+                return new AssetTransformDriverDefinition();
             }
 
             public function transform(AssetTransformRequest $request): AssetTransformResult

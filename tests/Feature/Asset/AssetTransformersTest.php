@@ -270,7 +270,7 @@ it('reuses validated Craft transform definitions across assets', function () {
     $transformers = app(AssetTransformers::class);
     $assets = [Asset::factory()->createElement(), Asset::factory()->createElement()];
     $driver = Mockery::mock(CraftAssetTransformDriver::class);
-    $driver->shouldReceive('definition')->once()->andReturn(new AssetTransformDriverDefinition('Craft'));
+    $driver->shouldReceive('definition')->once()->andReturn(new AssetTransformDriverDefinition);
     $driver->shouldReceive('transform')->twice()->andReturn(new AssetTransformResult('/thumbnail.jpg', 'image/jpeg'));
     $transformers->extend('craft', fn () => $driver);
 
@@ -310,7 +310,7 @@ it('revalidates definitions after resetting or replacing a driver', function () 
     $transformers->transform($asset, ['width' => 100], transformer: 'remote');
 
     $transformers->forgetDrivers()->extend('remote', fn () => new TestAssetTransformDriver(
-        new AssetTransformDriverDefinition('Remote', parameterRules: ['width' => ['integer', 'max:50']]),
+        new AssetTransformDriverDefinition(parameterRules: ['width' => ['integer', 'max:50']]),
     ));
 
     expect(fn () => $transformers->transform($asset, ['width' => 100], transformer: 'remote'))
@@ -322,7 +322,7 @@ it('preserves parameter rules declared by a custom Craft driver definition', fun
     {
         public function definition(): AssetTransformDriverDefinition
         {
-            return new AssetTransformDriverDefinition('Custom Craft', parameterRules: [
+            return new AssetTransformDriverDefinition(parameterRules: [
                 'width' => [Rule::in(['auto'])],
             ]);
         }
@@ -431,7 +431,7 @@ function registerDriver(
     array $parameterRules = [],
     ?TestAssetTransformDriver $driver = null,
 ): TestAssetTransformDriver {
-    $driver ??= new TestAssetTransformDriver(new AssetTransformDriverDefinition(ucfirst($name), $parameterRules));
+    $driver ??= new TestAssetTransformDriver(new AssetTransformDriverDefinition($parameterRules));
     app(AssetTransformers::class)->extend($name, fn () => $driver);
 
     return $driver;
@@ -447,7 +447,7 @@ class TestAssetTransformDriver implements AssetTransformDriver
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return $this->driverDefinition ?? new AssetTransformDriverDefinition('Test');
+        return $this->driverDefinition ?? new AssetTransformDriverDefinition;
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult

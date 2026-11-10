@@ -130,7 +130,7 @@ class SystemMessageAssetTransformDriver implements AssetTransformDriver
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition('System message');
+        return new AssetTransformDriverDefinition;
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult

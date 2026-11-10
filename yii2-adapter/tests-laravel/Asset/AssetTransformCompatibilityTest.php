@@ -540,7 +540,7 @@ class CompatibilityAssetTransformDriver implements AssetTransformDriver
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition('Compatibility test');
+        return new AssetTransformDriverDefinition();
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult

@@ -42,7 +42,7 @@ readonly class AssetTransformDriverKind implements ComponentKind
     public function types(?string $scope): array
     {
         return collect($this->drivers->definitions())
-            ->map(static fn ($definition, string $name): array => ['type' => $name, 'name' => $definition->label])
+            ->map(static fn ($definition, string $name): array => ['type' => $name, 'name' => $name])
             ->sortBy('name')
             ->values()
             ->all();

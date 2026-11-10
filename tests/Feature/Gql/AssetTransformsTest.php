@@ -157,7 +157,7 @@ class GqlAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTran
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition('GraphQL', [
+        return new AssetTransformDriverDefinition([
             'ratio' => ['numeric'],
         ]);
     }

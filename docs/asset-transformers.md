@@ -8,14 +8,12 @@ These docs use three terms:
 - A **transform** is one operation, or its definition: inline parameters or a named Image Transform.
 - A **transformer** is what a disk (or one call) uses to run transforms: a driver plus that driver's inline settings,
   written as `['driver' => 'craft', ...settings]`, the same way a disk is written as `['driver' => 's3', ...settings]`.
-- A **driver** is the PHP class behind a transformer, registered under a **driver name** such as `craft` or `imgix`. You
-  only need drivers when you write or register one (see [Implementing a custom driver](#implementing-a-custom-driver)).
+- A **driver** is the PHP class behind a transformer, registered under a **driver name** such as `craft` or
+  `remote-images`. You only need drivers when you write or register one (see
+  [Implementing a custom driver](#implementing-a-custom-driver)).
 
-Where a transformer is expected, a string names a driver, the same way a disk's `'driver' => 's3'` does. `'imgix'` means
-`['driver' => 'imgix']`: the `imgix` driver with no inline settings.
-
-`CraftCms\Cms\Asset\AssetTransformers` handles all three. It registers drivers with `extend()`, resolves a disk's transformer
-with `forDisk()`, and runs transforms with `transform()`.
+Where a transformer is expected, a string names a driver, the same way a disk's `'driver' => 's3'` does.
+`'remote-images'` means `['driver' => 'remote-images']`: the `remote-images` driver with no inline settings.
 
 ## Choosing a transformer per disk
 
@@ -28,8 +26,8 @@ stored on it:
     // No key: the `craft` transformer, with its defaults.
     'local' => ['driver' => 'local', 'root' => storage_path('app/public')],
 
-    // Shorthand for ['driver' => 'imgix']: the imgix driver, with no inline settings.
-    's3' => ['driver' => 's3', /* ... */, 'asset_transformer' => 'imgix'],
+    // Shorthand for ['driver' => 'remote-images']: the remote-images driver, with no inline settings.
+    's3' => ['driver' => 's3', /* ... */, 'asset_transformer' => 'remote-images'],
 
     // A driver plus inline settings.
     'uploads' => ['driver' => 's3', /* ... */, 'asset_transformer' => [
@@ -38,7 +36,7 @@ stored on it:
         'subpath' => '_transforms',
     ]],
 
-    // A scoped disk without the key follows the disk it wraps, so this uses `imgix`.
+    // A scoped disk without the key follows the disk it wraps, so this uses `remote-images`.
     'blog' => ['driver' => 'scoped', 'disk' => 's3', 'prefix' => 'blog'],
 ],
 ```
@@ -56,14 +54,14 @@ Craft chooses one transformer for each request, in this order:
    name or an inline array.
 3. The `craft` transformer, with its defaults.
 
-When the `transformer` argument names the disk's own driver, the disk's inline settings still apply. Any other driver name
-gets no inline settings. To use different inline settings, such as another `output_disk`, define another disk.
+The `transformer` argument only picks a driver. If it's the driver the disk already uses, nothing changes. Otherwise, that
+driver runs with its defaults, without the disk's settings.
 
 ```php
 $result = $asset->transform([
     'width' => 1200,
     'format' => 'webp',
-], transformer: 'imgix');
+], transformer: 'remote-images');
 
 $url = $result->url;
 ```
@@ -74,7 +72,7 @@ Twig uses the same named argument:
 <img src="{{ asset.transform({
     width: 1200,
     format: 'webp',
-}, transformer: 'imgix').url }}" alt="">
+}, transformer: 'remote-images').url }}" alt="">
 ```
 
 GraphQL accepts a driver name:
@@ -82,7 +80,7 @@ GraphQL accepts a driver name:
 ```graphql
 query {
   asset(id: 42) {
-    url(transformer: "imgix", width: 1200, format: "webp")
+    url(transformer: "remote-images", width: 1200, format: "webp")
   }
 }
 ```
@@ -98,9 +96,6 @@ has no string `driver` key:
 - With debug mode on, Craft throws an `AssetTransformDriverNotFoundException` or `InvalidAssetTransformException` naming the
   disk.
 - Otherwise, Craft logs a warning naming the disk, once per request, and uses the `craft` transformer with its defaults.
-
-Craft can't detect a misspelled key name, such as `asset_transfomer`, because disks carry keys for other packages too. A disk
-with a misspelled key uses the `craft` transformer.
 
 ## Transform definitions
 
@@ -203,7 +198,6 @@ class RemoteImageDriver implements AssetTransformDriver
     public function definition(): AssetTransformDriverDefinition
     {
         return new AssetTransformDriverDefinition(
-            label: t('Remote Images', category: 'remote-images'),
             parameterRules: [
                 'devicePixelRatio' => ['numeric', 'between:1,4'],
             ],
@@ -246,9 +240,9 @@ service's supported flow.
 
 ### The driver definition
 
-`AssetTransformDriverDefinition` defines the driver's label and parameters:
+`AssetTransformDriverDefinition` defines the driver's parameters. The Control Panel labels the driver by its driver name, like
+it labels disks.
 
-- `label` is the name that the Control Panel displays.
 - `parameterRules` maps parameter names to Laravel validation rules.
 - `parameterFields` maps parameter names to the `Field` nodes shown in named Image Transform forms.
 
@@ -263,14 +257,14 @@ which arrive in `$request->transformer->settings`:
 
 ```php
 'asset_transformer' => [
-    'driver' => 'imgix',
-    'domain' => env('IMGIX_DOMAIN'),
-    'key' => env('IMGIX_KEY'),
+    'driver' => 'remote-images',
+    'endpoint' => env('REMOTE_IMAGES_ENDPOINT'),
+    'key' => env('REMOTE_IMAGES_KEY'),
 ],
 ```
 
-A driver can also fall back to a shared config, such as an `imgix` entry in `config/services.php`, so disks that use the
-same account don't repeat its settings. Inline settings should win over it, the way Laravel's SES and Postmark mail
+A driver can also fall back to a shared config, such as a `remote_images` entry in `config/services.php`, so disks that
+use the same account don't repeat its settings. Inline settings should win over it, the way Laravel's SES and Postmark mail
 transports merge mailer settings over `services.php`. Validate inline settings before using them, since Craft passes them
 through unchanged.
 

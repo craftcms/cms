@@ -449,7 +449,6 @@ class NamedTransformTestDriver implements AssetTransformDriver
     public function definition(): AssetTransformDriverDefinition
     {
         return new AssetTransformDriverDefinition(
-            'Named Transform Test',
             parameterRules: ['blur' => ['integer', 'min:1']],
         );
     }

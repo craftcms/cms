@@ -364,7 +364,6 @@ class ControllerAssetTransformDriver implements AssetTransformDriver
     public function definition(): AssetTransformDriverDefinition
     {
         return new AssetTransformDriverDefinition(
-            'Custom',
             parameterRules: [
                 'blur' => ['integer', 'min:1'],
                 'quality' => [Rule::in([...range(1, 100), 'high', 'medium-high', 'medium-low', 'low'])],

@@ -16,8 +16,6 @@ use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\File;
 use Illuminate\Support\Facades\Context;
 
-use function CraftCms\Cms\t;
-
 /**
  * @since 6.0.0
  */
@@ -29,7 +27,7 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition(t('Craft'));
+        return new AssetTransformDriverDefinition;
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
