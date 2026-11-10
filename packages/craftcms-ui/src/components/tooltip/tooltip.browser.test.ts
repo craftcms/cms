@@ -536,14 +536,18 @@ it('still opens when its content is replaced while it waits to show', async () =
   const {userEvent} = await import('vite-plus/test/browser');
   const {invoker, elsewhere, tooltip} = await render();
 
-  await userEvent.hover(elsewhere);
-  await userEvent.tab();
-  expect(tooltip.opened).toBe(false);
-
   const replacement = document.createElement('div');
   replacement.slot = 'content';
   replacement.textContent = 'New activity';
-  tooltip.querySelector('[slot="content"]')!.replaceWith(replacement);
+  // Replaced in the same task as the focus, so well within the show's delay.
+  invoker.addEventListener(
+    'focusin',
+    () => tooltip.querySelector('[slot="content"]')!.replaceWith(replacement),
+    {once: true}
+  );
+
+  await userEvent.hover(elsewhere);
+  await userEvent.tab();
   await after(300);
 
   expect(document.activeElement).toBe(invoker);
