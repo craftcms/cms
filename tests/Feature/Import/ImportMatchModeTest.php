@@ -8,10 +8,12 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Import\Enums\MatchMode;
+use CraftCms\Cms\Import\Events\ItemImported;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\Support\ImportFixtures;
+use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->import = app(Import::class);
@@ -58,6 +60,7 @@ it('creates new elements and updates matched ones by default', function () {
 });
 
 it('only creates new elements, leaving matched ones untouched', function () {
+    Event::fake([ItemImported::class]);
     $importer = ($this->importer)(MatchMode::CreateOnly);
 
     $this->import->importItem($importer, ($this->row)('existing entry', 'updated'));
@@ -65,6 +68,10 @@ it('only creates new elements, leaving matched ones untouched', function () {
 
     expect(($this->entry)('existing entry')->getFieldValue('myPlainText'))->toBeNull()
         ->and(($this->entry)('new entry'))->not->toBeNull();
+
+    // the row left out isn't reported as imported, as a canceled one isn't
+    Event::assertDispatchedTimes(ItemImported::class, 1);
+    Event::assertDispatched(fn (ItemImported $event) => $event->importedItem?->title === 'new entry');
 });
 
 it('only updates matched elements, creating nothing new', function () {

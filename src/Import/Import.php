@@ -405,6 +405,13 @@ class Import
             throw $e;
         }
 
+        // an element importer whose match mode leaves the item out imports nothing, like a canceled item
+        if ($importedItem === null && $importer instanceof ElementImporter) {
+            $importer->discardAfterItemImportedCallbacks();
+
+            return;
+        }
+
         $importer->runAfterItemImportedCallbacks($importedItem);
 
         event(new ItemImported($importer, $data, $runId, $importedItem));

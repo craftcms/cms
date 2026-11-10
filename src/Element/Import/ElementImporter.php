@@ -485,6 +485,12 @@ abstract class ElementImporter extends BaseImporter
         return $this->withLocalFile(fn (string $filePath) => Import::getDataHeadings($filePath, $this));
     }
 
+    /**
+     * Imports an item into the element it matches or a new one, returning that element, or `null` when the match mode
+     * leaves the item out.
+     *
+     * @param  array<string, mixed>  $data
+     */
     #[Override]
     public function importItem(array $data): ?ElementInterface
     {
