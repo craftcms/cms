@@ -39,13 +39,35 @@
   const root = useTemplateRef<HTMLElement>('root');
   let latestRequest = 0;
 
-  async function focusWithin(selector: string): Promise<void> {
-    await nextTick();
-    root.value?.querySelector<HTMLElement>(selector)?.focus();
+  function focusIsInside(): boolean {
+    return Boolean(root.value?.contains(document.activeElement));
   }
 
-  async function load(restoreFocus = false): Promise<void> {
+  /** Whether focus is on nothing in particular, or still in this index. */
+  function focusIsFree(): boolean {
+    const active = document.activeElement;
+
+    return !active || active === document.body || focusIsInside();
+  }
+
+  /**
+   * Puts focus back after the index's content was replaced, but only if the
+   * user hadn't moved on in the meantime.
+   */
+  async function restoreFocus(selector: string): Promise<void> {
+    await nextTick();
+
+    if (focusIsFree()) {
+      root.value?.querySelector<HTMLElement>(selector)?.focus();
+    }
+  }
+
+  const focusableControl =
+    'input:not([disabled]), button:not([disabled]), a[href]';
+
+  async function load(retried = false): Promise<void> {
     const request = ++latestRequest;
+    const hadFocus = retried || focusIsInside();
     initial.value = null;
     failed.value = false;
 
@@ -56,29 +78,27 @@
         initial.value = data.props as ContentIndexData;
         generation.value++;
 
-        if (restoreFocus) {
-          void focusWithin('input, button, a[href]');
+        if (hadFocus) {
+          void restoreFocus(focusableControl);
         }
       }
     } catch {
       if (request === latestRequest) {
-        showFailure(restoreFocus);
+        showFailure(hadFocus);
       }
     }
   }
 
   /**
-   * Moves focus to the retry button only when focus was in this index, or on
-   * the retry just clicked, so a background failure doesn't interrupt the user
+   * Moves focus to the retry button when focus was in this index, or on the
+   * retry just clicked, so a background failure doesn't interrupt the user
    * elsewhere on the screen.
    */
-  function showFailure(hadFocus = false): void {
-    const focusWasHere =
-      hadFocus || Boolean(root.value?.contains(document.activeElement));
+  function showFailure(hadFocus = focusIsInside()): void {
     failed.value = true;
 
-    if (focusWasHere) {
-      void focusWithin('craft-button');
+    if (hadFocus) {
+      void restoreFocus('craft-button');
     }
   }
 

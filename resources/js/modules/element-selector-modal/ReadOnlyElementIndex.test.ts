@@ -199,4 +199,40 @@ describe('ReadOnlyElementIndex', () => {
 
     expect(document.activeElement).toBe(host.querySelector('craft-button'));
   });
+
+  it('leaves focus alone when the user moves on while a retry loads', async () => {
+    let resolveRetry!: (value: unknown) => void;
+    post.mockRejectedValueOnce(new Error('offline'));
+    post.mockImplementationOnce(
+      () => new Promise((resolve) => (resolveRetry = resolve))
+    );
+    mount();
+    await flush();
+
+    (host.querySelector('craft-button') as HTMLElement).click();
+    await flush();
+    const other = document.createElement('input');
+    document.body.append(other);
+    other.focus();
+    resolveRetry(response('recovered'));
+    await flush();
+    await flush();
+
+    expect(document.activeElement).toBe(other);
+    other.remove();
+  });
+
+  it('keeps focus in the index when its criteria change', async () => {
+    post.mockResolvedValue(response('first'));
+    mount();
+    await flush();
+    (host.querySelector('input') as HTMLElement).focus();
+
+    criteria.value = {customerId: 2};
+    await flush();
+    await flush();
+    await flush();
+
+    expect(document.activeElement).toBe(host.querySelector('input'));
+  });
 });
