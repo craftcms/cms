@@ -67,6 +67,12 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
 
     #known = new Set<Element>();
 
+    /**
+     * Whether the group has had a name. From then on it names its choices,
+     * with an empty name too, rather than taking one from their inputs.
+     */
+    #named = false;
+
     /** Choices the group disabled, which it enables again with itself. */
     #disabledByGroup = new WeakSet<ChoiceInputInterface>();
 
@@ -182,7 +188,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
     protected override updated(changed: PropertyValues) {
       super.updated(changed);
 
-      if (changed.has('name') && this.name) {
+      if (changed.has('name') && this.#named) {
         for (const option of this.choices) {
           option.name = this.name;
         }
@@ -224,6 +230,10 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
 
     #adoptName(): void {
       if (this.name) {
+        this.#named = true;
+      }
+
+      if (this.#named) {
         return;
       }
 
@@ -284,7 +294,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       this.#known = new Set(choices as never[]);
 
       for (const option of added) {
-        if (this.name) {
+        if (this.#named) {
           option.name = this.name;
         }
         if (this.disabled) {
