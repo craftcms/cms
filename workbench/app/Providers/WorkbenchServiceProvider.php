@@ -106,6 +106,10 @@ class WorkbenchServiceProvider extends ServiceProvider
                         ->icon('flask')
                         ->subnav($subnav),
                     new NavItem()
+                        ->label('Headings')
+                        ->href('workbench/headings')
+                        ->icon('heading'),
+                    new NavItem()
                         ->label('Layout Slots')
                         ->href('workbench/layout-slots')
                         ->icon('table-layout'),
