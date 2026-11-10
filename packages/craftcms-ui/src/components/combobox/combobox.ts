@@ -1296,6 +1296,11 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
     );
   }
 
+  /** Focuses the textbox, as a `craft-field` does when its label is clicked. */
+  override focus(options?: FocusOptions): void {
+    this._inputNode?.focus(options);
+  }
+
   // ─── Forms ────────────────────────────────────────────────────────────
 
   #syncForm(): void {

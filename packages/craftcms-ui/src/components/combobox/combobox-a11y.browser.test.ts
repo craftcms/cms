@@ -217,6 +217,26 @@ describe('semantics', () => {
 });
 
 describe('keyboard and focus', () => {
+  it('focuses the textbox when the host is focused or a wrapping field’s label is clicked', async () => {
+    const field = document.createElement('craft-field');
+    field.setAttribute('label', 'Fruit');
+    const control = document.createElement('craft-combobox') as CraftCombobox;
+    control.slot = 'input';
+    control.options = fruit;
+    field.append(control);
+    document.body.append(field);
+    await control.updateComplete;
+    await settle();
+    const input = control.querySelector('input')!;
+
+    control.focus();
+    expect(document.activeElement).toBe(input);
+
+    input.blur();
+    await page.getByText('Fruit', {exact: true}).click();
+    expect(document.activeElement).toBe(input);
+  });
+
   it('keeps focus in the textbox and points it at the active option', async () => {
     const {control, input} = await fixture();
 
