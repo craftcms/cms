@@ -550,3 +550,19 @@ it('still opens when its content is replaced while it waits to show', async () =
   expect(tooltip.opened).toBe(true);
   expect(invoker.getAttribute('aria-describedby')).toBe(replacement.id);
 });
+
+it('refers its invoker to content replaced while it was out of the document', async () => {
+  const {invoker, tooltip} = await render();
+
+  const replacement = document.createElement('div');
+  replacement.slot = 'content';
+  replacement.id = 'replacement';
+  replacement.textContent = 'New activity';
+  tooltip.remove();
+  tooltip.querySelector('[slot="content"]')!.replaceWith(replacement);
+  document.body.append(tooltip);
+  await tooltip.updateComplete;
+  await after(0);
+
+  expect(invoker.getAttribute('aria-describedby')).toBe('replacement');
+});

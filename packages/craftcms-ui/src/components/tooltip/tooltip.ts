@@ -246,6 +246,12 @@ export default class CraftTooltip extends LitElement {
   };
 
   override connectedCallback() {
+    // Content replaced while the tooltip was out of the document is taken up
+    // the way `slotchange` would, before it's mistaken for the content the
+    // invoker already refers to.
+    if (this.#contentWrapper && this.#contentWrapper.parentNode !== this) {
+      this.#onContentSlotChange();
+    }
     this.#ensureContentWrapper();
     super.connectedCallback();
 
