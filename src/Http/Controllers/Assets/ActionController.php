@@ -17,11 +17,13 @@ use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Filesystem\LocalFilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Uri;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
 use ZipArchive;
 
@@ -152,6 +154,23 @@ readonly class ActionController
         // If only one asset was selected, send it back unzipped
         if (count($assets) === 1) {
             $asset = reset($assets);
+            $disk = $asset->getVolume()->sourceDisk();
+
+            // Let the browser fetch the file straight from remote storage rather than proxying it through PHP.
+            // Local disks are skipped: their temporary URLs are served by PHP anyway and can't force a download.
+            if ($disk->providesTemporaryUrls() && ! $disk instanceof LocalFilesystemAdapter) {
+                $filename = $asset->getFilename();
+                $url = $disk->temporaryUrl($asset->getPath(), now()->addHour(), [
+                    'ResponseContentDisposition' => HeaderUtils::makeDisposition(
+                        HeaderUtils::DISPOSITION_ATTACHMENT,
+                        $filename,
+                        str_replace('%', '', Str::ascii($filename)),
+                    ),
+                    'ResponseContentType' => $asset->getMimeType(),
+                ]);
+
+                return redirect()->away($url, 303, ['Cache-Control' => 'no-store, private']);
+            }
 
             return response()->streamDownload(function () use ($asset) {
                 $stream = $asset->getStream();

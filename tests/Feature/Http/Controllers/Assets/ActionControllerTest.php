@@ -10,8 +10,11 @@ use CraftCms\Cms\Http\Controllers\Assets\ActionController;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Uri;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\post;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -118,6 +121,52 @@ describe('downloadAsset', function () {
     it('validates download asset input', function () {
         postJson(action([ActionController::class, 'downloadAsset']))
             ->assertJsonValidationErrors(['assetId']);
+    });
+
+    it('redirects to a temporary URL when the disk provides them', function () {
+        config()->set('filesystems.disks.test-s3', [
+            'driver' => 's3',
+            'key' => 'test-key',
+            'secret' => 'test-secret',
+            'region' => 'us-east-1',
+            'bucket' => 'test-bucket',
+        ]);
+        $volume = Volume::factory()->create(['fs' => 'test-s3', 'subpath' => 'volume-subpath']);
+        $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => 'résumé.pdf',
+        ]);
+
+        $response = post(action([ActionController::class, 'downloadAsset']), [
+            'assetId' => $asset->id,
+        ])->assertRedirect();
+
+        expect($response->getStatusCode())->toBe(303)
+            ->and($response->headers->get('Cache-Control'))->toContain('no-store');
+
+        $location = Uri::of($response->headers->get('Location'));
+        expect($location->host())->toBe('test-bucket.s3.amazonaws.com')
+            ->and(rawurldecode($location->path()))->toBe('volume-subpath/'.$asset->getPath())
+            ->and($location->query()->get('response-content-disposition'))
+            ->toBe("attachment; filename=resume.pdf; filename*=utf-8''r%C3%A9sum%C3%A9.pdf")
+            ->and($location->query()->get('X-Amz-Signature'))->not->toBeEmpty();
+    });
+
+    it('streams the file when the disk does not provide temporary URLs', function () {
+        $asset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $this->folder->id,
+            'filename' => 'local.txt',
+        ]);
+        Storage::disk('test-disk')->put($asset->getPath(), 'local contents');
+
+        $response = post(action([ActionController::class, 'downloadAsset']), [
+            'assetId' => $asset->id,
+        ])->assertOk()->assertDownload('local.txt');
+
+        expect($response->streamedContent())->toBe('local contents');
     });
 });
 
