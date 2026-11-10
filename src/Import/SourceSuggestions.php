@@ -138,10 +138,15 @@ class SourceSuggestions
 
     /**
      * Whether files inside a folder may be imported. Asked of a path inside it, since a folder that merely
-     * contains a system folder, such as the project root, is otherwise restricted itself.
+     * contains a system folder, such as the project root, is otherwise restricted itself. The folder is
+     * resolved first, as the made-up path inside it can't be, so a symlink to a restricted folder isn't browsed.
      */
     private static function isBrowsable(string $directory): bool
     {
-        return BaseImporter::isFilepathAllowed(rtrim($directory, '/').'/x');
+        $realPath = realpath($directory);
+
+        return $realPath !== false
+            && BaseImporter::isFilepathAllowed(rtrim($directory, '/').'/x')
+            && BaseImporter::isFilepathAllowed(rtrim($realPath, '/').'/x');
     }
 }
