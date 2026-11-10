@@ -181,7 +181,8 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
 
     #describedNodes: HTMLElement[] = [];
 
-    #writtenReferences = new Set<string>();
+    /** The ids this control last wrote to each reference attribute. */
+    #writtenReferences = new Map<string, string[]>();
 
     /** Slots the consumer supplied, which are never generated. */
     #suppliedSlots = new Set<string>();
@@ -432,13 +433,22 @@ export const FormControl = <T extends Constructor<LitElement>>(Base: T) => {
         return;
       }
 
-      // An empty list only clears a reference this control wrote, so one the
-      // markup arrived with stays.
+      // Only the ids this control wrote are replaced, so ones the markup or
+      // anything else put there stay, ahead of the control's own.
       const write = (attribute: string, nodes: HTMLElement[]) => {
-        if (nodes.length) {
-          control.setAttribute(attribute, nodes.map((n) => n.id).join(' '));
-          this.#writtenReferences.add(attribute);
-        } else if (this.#writtenReferences.delete(attribute)) {
+        const own = nodes.map((n) => n.id);
+        const written = this.#writtenReferences.get(attribute) ?? [];
+        const ids = new Set([
+          ...(control.getAttribute(attribute) ?? '')
+            .split(/\s+/)
+            .filter((id) => id && !written.includes(id)),
+          ...own,
+        ]);
+        this.#writtenReferences.set(attribute, own);
+
+        if (ids.size) {
+          control.setAttribute(attribute, [...ids].join(' '));
+        } else if (written.length) {
           control.removeAttribute(attribute);
         }
       };

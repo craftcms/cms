@@ -199,6 +199,31 @@ describe('craft-input references', () => {
     ]);
   });
 
+  it('keeps the references the control arrived with alongside its own', async () => {
+    document.body.innerHTML =
+      '<span id="col-heading">Width</span><span id="col-note">In pixels</span>';
+    const element = await createInput(
+      {},
+      '<input slot="input" aria-labelledby="col-heading" aria-describedby="col-note">'
+    );
+    const resolve = (attribute: string) =>
+      native(element)
+        .getAttribute(attribute)!
+        .split(' ')
+        .map((id) => document.getElementById(id)?.textContent);
+    expect(resolve('aria-labelledby')).toEqual(['Width']);
+    expect(resolve('aria-describedby')).toEqual(['In pixels']);
+
+    const note = document.createElement('span');
+    note.textContent = 'Whole numbers';
+    element.append(note);
+    element.addToAriaDescribedBy(note);
+    expect(resolve('aria-describedby')).toEqual(['In pixels', 'Whole numbers']);
+
+    element.removeFromAriaDescribedBy(note);
+    expect(resolve('aria-describedby')).toEqual(['In pixels']);
+  });
+
   it('announces feedback politely only while the field has focus', async () => {
     const element = await createInput(
       {},
