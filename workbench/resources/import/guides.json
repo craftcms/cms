@@ -19,7 +19,8 @@
       },
       {
         "type": "guideStepGroup",
-        "body": "Set up your project",
+        "title": "Set up your project",
+        "body": "Get Craft running and give it somewhere to put content.",
         "steps": [
           {
             "type": "guideStep",
@@ -90,7 +91,8 @@
       },
       {
         "type": "guideStepGroup",
-        "body": "Sketch the model",
+        "title": "Sketch the model",
+        "body": "Decide what your content is made of before building it.",
         "steps": [
           {
             "type": "guideStep",

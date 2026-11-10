@@ -54,7 +54,7 @@ class ImportPlansSeeder extends Seeder
         ];
 
         $threeLevels = $oneLevel;
-        $threeLevels['guideContent']['guideStepGroup'] = ['fields' => [
+        $threeLevels['guideContent']['guideStepGroup'] = ['title' => 'content.title', 'fields' => [
             'blockBody' => 'content.body',
             'guideSteps' => [
                 'guideStep' => [
@@ -78,6 +78,11 @@ class ImportPlansSeeder extends Seeder
             ],
         ]];
 
+        // the steps' and questions' required titles come from paths the data doesn't have, so their errors show up nested
+        $nestedErrors = $threeLevels;
+        $nestedErrors['guideContent']['guideStepGroup']['fields']['guideSteps']['guideStep']['title'] = 'content.steps.heading';
+        unset($nestedErrors['guideFaq']['guideFaqItem']['title']);
+
         $this->plan('Guides: flat fields', 'guidesFlat', 'Maps a guide’s own fields, with its slug made from a template.', $flat, [
             'matchCriteria' => ['slug' => '1'],
             'matchMode' => 'updateOnly',
@@ -89,6 +94,9 @@ class ImportPlansSeeder extends Seeder
             'matchCriteria' => ['slug' => '1'],
             'clearableItems' => ['guideReadingTime' => '1'],
             'defaultValues' => ['guideDifficulty' => 'beginner'],
+        ]);
+        $this->plan('Guides: nested errors', 'guidesNestedErrors', 'Leaves the steps’ and questions’ titles unmapped, to show where nested entries fail validation.', $nestedErrors, [
+            'matchCriteria' => ['slug' => '1'],
         ]);
     }
 
