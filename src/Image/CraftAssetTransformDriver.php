@@ -85,14 +85,13 @@ class CraftAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTr
         $groups = [];
 
         foreach ($requests as $request) {
-            $key = serialize([$request->transformer->settings, $request->parameters]);
+            $key = serialize($request->parameters);
             $groups[$key]['transform'] ??= ImageTransform::fromParameters($request->parameters);
-            $groups[$key]['transformer'] ??= $request->transformer;
             $groups[$key]['assets'][$request->asset->id] = $request->asset;
         }
 
         foreach ($groups as $group) {
-            $this->imageTransformer->eagerLoadTransforms([$group['transform']], array_values($group['assets']), $group['transformer']);
+            $this->imageTransformer->eagerLoadTransforms([$group['transform']], array_values($group['assets']));
         }
     }
 }

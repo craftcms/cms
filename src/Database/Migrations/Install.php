@@ -306,7 +306,6 @@ class Install extends Migration
         Schema::create(Table::IMAGETRANSFORMINDEX, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('assetId');
-            $table->string('outputKey')->nullable();
             $table->string('filename')->nullable();
             $table->string('format')->nullable();
             $table->string('transformString');

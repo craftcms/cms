@@ -11,7 +11,7 @@ class ImageTransformIndexMixin
 {
     /**
      * Craft 5’s `ImageTransformIndex::$transformer` held the transformer class. Every index row now belongs to Craft’s
-     * own transformer, which is keyed by its output location in `$outputKey` instead.
+     * own transformer.
      */
     public function getTransformer(): Closure
     {

@@ -122,7 +122,7 @@ it('provides named transform magic properties', function(): void {
 });
 
 it('reports Craft’s transformer class on transform index rows', function(): void {
-    $index = new ImageTransformIndex(['outputKey' => 'craft:local:0123456789abcdef']);
+    $index = new ImageTransformIndex();
 
     expect($index->transformer)->toBe(LegacyCraftImageTransformer::class);
 });
@@ -293,7 +293,7 @@ it('selects the volume before the legacy transformer candidate', function(string
     }
 })->with([
     'another driver' => 'compatibility-test',
-    'explicit craft' => [['driver' => 'craft', 'subpath' => '_transforms']],
+    'explicit craft' => [['driver' => 'craft']],
 ]);
 
 it('does not use the legacy selector for typed transform calls', function(): void {
@@ -383,43 +383,6 @@ it('keeps unexpected legacy transformer exceptions observable', function(): void
     } finally {
         Event::off(LegacyImageTransforms::class, LegacyImageTransforms::EVENT_REGISTER_IMAGE_TRANSFORMERS);
     }
-});
-
-it('keeps the built-in Craft transform index facade scoped to Craft rows', function(): void {
-    $asset = ($this->asset)(['filename' => 'indexed.jpg']);
-    $transformer = new LegacyCraftImageTransformer();
-    $index = $transformer->getTransformIndex($asset, ['width' => 320]);
-    $foreignId = DB::table(Table::IMAGETRANSFORMINDEX)->insertGetId([
-        'assetId' => $asset->id,
-        'outputKey' => 'plugin\\ForeignTransformer',
-        'filename' => 'foreign.jpg',
-        'transformString' => '_320x_auto',
-        'dateCreated' => now(),
-        'dateUpdated' => now(),
-        'uid' => (string) str()->uuid(),
-    ]);
-    $index->fileExists = true;
-    $transformer->storeTransformIndexData($index);
-    $foreignIndex = new ImageTransformIndex([
-        'id' => $foreignId,
-        'assetId' => $asset->id,
-        'outputKey' => 'plugin\\ForeignTransformer',
-        'filename' => 'foreign.jpg',
-        'transformString' => '_320x_auto',
-        'fileExists' => true,
-    ]);
-    $foreignIndex->setTransform(new ImageTransform(['width' => 320]));
-    $transformer->storeTransformIndexData($foreignIndex);
-
-    expect($transformer->getTransformIndexModelById($index->id)->fileExists)->toBeTrue()
-        ->and($index->outputKey)->toStartWith('craft:local:')
-        ->and($transformer->getTransformIndexModelById($foreignId))->toBeNull()
-        ->and($transformer->getPendingTransformIndexIds())->not->toContain($foreignId)
-        ->and(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $foreignId)->value('fileExists'))->toBe(0);
-
-    $transformer->invalidateAssetTransforms($asset);
-
-    expect(DB::table(Table::IMAGETRANSFORMINDEX)->where('id', $foreignId)->exists())->toBeTrue();
 });
 
 it('bridges mutable built-in transform event payloads', function(): void {

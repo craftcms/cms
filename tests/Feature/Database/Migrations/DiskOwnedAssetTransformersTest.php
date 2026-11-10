@@ -17,7 +17,7 @@ it('drops alpha transformer profiles, everything keyed by their UIDs, and the tr
     $profileUid = '0f7dbd20-f39e-57db-8b25-dcadccdd1733';
 
     Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->string('assetTransformer')->nullable());
-    Schema::table(Table::IMAGETRANSFORMINDEX, fn (Blueprint $table) => $table->renameColumn('outputKey', 'transformer'));
+    Schema::table(Table::IMAGETRANSFORMINDEX, fn (Blueprint $table) => $table->string('transformer')->nullable());
     DB::table(Table::VOLUMES)->where('id', $volume->id)->update(['assetTransformer' => 'imgix']);
     $transformId = DB::table(Table::IMAGETRANSFORMS)->insertGetId([
         'name' => 'Hero',
@@ -62,6 +62,5 @@ it('drops alpha transformer profiles, everything keyed by their UIDs, and the tr
         ->and(DB::table(Table::IMAGETRANSFORMS)->where('id', $transformId)->value('parameters'))->toBeNull()
         ->and(Schema::hasColumn(Table::VOLUMES, 'assetTransformer'))->toBeFalse()
         ->and(Schema::hasColumn(Table::IMAGETRANSFORMINDEX, 'transformer'))->toBeFalse()
-        ->and(Schema::hasColumn(Table::IMAGETRANSFORMINDEX, 'outputKey'))->toBeTrue()
         ->and(DB::table(Table::IMAGETRANSFORMINDEX)->exists())->toBeFalse();
 });

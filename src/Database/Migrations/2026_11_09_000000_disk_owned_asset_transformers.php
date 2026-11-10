@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Asset transformers are now chosen per disk in config/filesystems.php, so this drops the transformer profiles that
  * earlier Craft 6 alphas stored in project config, along with everything keyed by their UIDs. It also clears the
- * transform index, whose rows from Craft 5 and earlier alphas don't record where their files are stored.
+ * transform index, whose rows from Craft 5 and earlier alphas may point at transform locations that no longer apply.
  */
 return new class extends Migration
 {
@@ -52,11 +52,11 @@ return new class extends Migration
         }
 
         if (Schema::hasColumn(Table::IMAGETRANSFORMINDEX, 'transformer')) {
-            // Rows keyed by a profile UID or a Craft 5 transformer class can't be mapped to an output location, so
-            // they're all dropped, and transforms are generated again as they're requested.
+            // Rows keyed by a profile UID or a Craft 5 transformer class may point at a transform location that no longer
+            // applies, so they're all dropped, and transforms are generated again as they're requested.
             DB::table(Table::IMAGETRANSFORMINDEX)->delete();
 
-            Schema::table(Table::IMAGETRANSFORMINDEX, fn (Blueprint $table) => $table->renameColumn('transformer', 'outputKey'));
+            Schema::table(Table::IMAGETRANSFORMINDEX, fn (Blueprint $table) => $table->dropColumn('transformer'));
         }
     }
 
