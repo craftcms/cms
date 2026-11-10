@@ -6,6 +6,7 @@
 @import './shared/colorable.css' layer(theme);
 @import './shared/base.css' layer(base);
 @import './shared/choice-inputs.css' layer(base);
+@import './shared/kbd.css' layer(base);
 
 @font-face {
   font-family: 'Inter';

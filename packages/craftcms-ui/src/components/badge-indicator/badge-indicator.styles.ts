@@ -46,6 +46,7 @@ export default css`
     font-size: var(--c-text-xs);
     font-weight: var(--font-weight-semibold);
     line-height: 1;
+    font-variant-numeric: tabular-nums;
     ${trimmedTextBoxStyles}
   }
 `;

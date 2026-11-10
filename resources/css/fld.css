@@ -777,7 +777,6 @@ body:not(.dragging) .fld-element {
 
   /* TODO: no token yet for --padding */
   padding-inline: var(--padding);
-  box-shadow: var(--c-pane-shadow);
   background-color: var(--c-color-neutral-fill-quiet);
   z-index: 3;
 }
