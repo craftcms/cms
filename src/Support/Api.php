@@ -287,8 +287,7 @@ class Api
             }
 
             try {
-                File::ensureDirectoryExists(dirname($path));
-                File::put($path, chunk_split($license, 50));
+                File::writeToFile($path, chunk_split($license, 50));
             } catch (Throwable $e) {
                 // log and keep going
                 Log::error("Could not write new license key to $path: {$e->getMessage()}\nLicense key: $license", [__METHOD__]);
