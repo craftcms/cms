@@ -7,41 +7,23 @@
     useReorderableItems,
     type DropState,
   } from '@/common/composables/useReorderableItems';
-  import type {Selectable} from '@/common/composables/useSelectable';
+  import {
+    useSelectable,
+    type Selectable,
+  } from '@/common/composables/useSelectable';
   import {isInteractiveClick} from '@/common/utils/dom';
   import CpLink from '@/common/components/CpLink.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
-
-  /**
-   * The element data a chip draws. Everything past `id` and `label` is optional.
-   */
-  export interface ChipElement {
-    id: number;
-    label: string;
-    siteId?: number | string | null;
-    /**
-     * Already resolved to a fill and a label — which statuses exist, and what
-     * they're called, is an element-type concern the server settles.
-     */
-    status?: {fill: string; label: string; draft: boolean} | null;
-    thumbHtml?: string;
-    /** A Craft color name, such as an entry's type color. */
-    color?: string | null;
-    /** Where the element is edited, which a `linked` chip's label goes to. */
-    cpEditUrl?: string | null;
-    /**
-     * The element's structure level. Elements deeper than the one before them
-     * are nested under it, as a relation field that maintains hierarchy shows
-     * them.
-     */
-    level?: number | null;
-  }
+  import type {ChipElement} from '@/modules/elements/types/element-data';
 
   const props = withDefaults(
     defineProps<{
       data?: Array<ChipElement>;
-      /** Selection, usually from `useElementList`. */
-      selection: Selectable<any>;
+      /**
+       * Selection, usually from `useElementList`. Pass one to read or change
+       * what's selected; without one, the chips keep their own.
+       */
+      selection?: Selectable<any>;
       selectable?: boolean;
       readOnly?: boolean;
       /** Lay the chips out in a wrapping row rather than stacked. */
@@ -146,6 +128,11 @@
     emit('reorder', index, target);
   }
 
+  const ownSelection = useSelectable({
+    ids: () => props.data.map((element) => element.id),
+  });
+  const activeSelection = computed(() => props.selection ?? ownSelection);
+
   /** Selection is offered, and not frozen. */
   const canSelect = computed(() => props.selectable && !props.readOnly);
 
@@ -154,7 +141,7 @@
       return;
     }
 
-    props.selection.handleClick(element.id, event);
+    activeSelection.value.handleClick(element.id, event);
   }
 
   function onSelectedChange(
@@ -165,7 +152,7 @@
       return;
     }
 
-    props.selection.setChecked(element.id, detail.selected, {
+    activeSelection.value.setChecked(element.id, detail.selected, {
       shiftKey: detail.shiftKey,
     });
   }
@@ -228,7 +215,7 @@
         :data-site-id="element.siteId ?? undefined"
         :data-color="element.color ?? undefined"
         .selectable="canSelect"
-        .selected="selection.isSelected(element.id)"
+        .selected="activeSelection.isSelected(element.id)"
         :select-label="t('Select {label}', {label: labelFor(element)})"
         .showStatus="!!element.status"
         .showThumb="!!element.thumbHtml"
@@ -309,7 +296,7 @@
         class="element-chips__children"
         nested
         :data="descendants"
-        :selection="selection"
+        :selection="activeSelection"
         :selectable="selectable"
         :read-only="readOnly"
         :linked="linked"

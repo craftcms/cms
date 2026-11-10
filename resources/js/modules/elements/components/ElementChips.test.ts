@@ -137,6 +137,19 @@ describe('ElementChips', () => {
       ]);
     });
 
+    it('keeps its own selection when none is passed', async () => {
+      const {root} = mount({selection: undefined});
+
+      chips(root)[0]!.dispatchEvent(clickEvent('click'));
+      await nextTick();
+
+      expect(chips(root).map((chip) => chip.hasAttribute('selected'))).toEqual([
+        true,
+        false,
+        false,
+      ]);
+    });
+
     it('selects on a click on the chip body', async () => {
       const {root, selection} = mount();
 

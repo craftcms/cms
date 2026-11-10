@@ -209,8 +209,35 @@ export {
 
 export {
   createCraftColumnHelper,
+  type AccessorParam,
   type CraftColumnHelper,
 } from './common/table/createCraftColumnHelper';
+
+/**
+ * The table `AdminTable` draws with, for a table that needs its own toolbar
+ * or footer. Pass it a `useCraftTable` table, and `useTableRowSelection` for
+ * selectable rows.
+ */
+export const DataTable = defineAsyncComponent(
+  () => import('./common/components/DataTable.vue')
+);
+export {
+  useTableRowSelection,
+  type TableRowSelection,
+  type TableRowSelectionOptions,
+} from './common/composables/useTableRowSelection';
+
+/**
+ * Selecting items in any ordered list the way the control panel does: click,
+ * Cmd/Ctrl-click, Shift-click ranges, checkboxes and the keyboard.
+ */
+export {
+  useSelectable,
+  type Selectable,
+  type SelectableId,
+  type SelectableOptions,
+  type SelectableStore,
+} from './common/composables/useSelectable';
 
 export {
   TableAppearance,
@@ -259,6 +286,38 @@ export type {
   CopiedElementInfo,
   CopiedElementsListener,
 } from './modules/elements/clipboard';
+
+/**
+ * Lists of elements, drawn as chips, thumbnail tiles or cards. On the server,
+ * `ElementHtml::presentation()` gives each element's data.
+ */
+export const ElementList = defineAsyncComponent(
+  () => import('./modules/elements/components/ElementList.vue')
+);
+export const ElementChips = defineAsyncComponent(
+  () => import('./modules/elements/components/ElementChips.vue')
+);
+export {
+  useElementList,
+  type ElementListOptions,
+  type ElementListState,
+  type ElementListViewMode,
+} from './modules/elements/composables/useElementList';
+export type {
+  ChipElement,
+  ListElement,
+} from './modules/elements/types/element-data';
+
+/** The bar a list shows while items are selected, with its "Actions" menu. */
+export const BulkActionsBar = defineAsyncComponent(
+  () => import('./modules/elements/components/BulkActionsBarShell.vue')
+);
+
+/** Keeping chips, cards and element data current as elements are saved. */
+export {
+  onElementChanged,
+  refreshElementInstances,
+} from './modules/elements/element-instances';
 export {highlighter} from './common/utils/highlight-code';
 
 export {CraftAuthChallengeForm as AuthChallengeForm} from './modules/auth/components/auth-challenge-form';

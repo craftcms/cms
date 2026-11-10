@@ -1,0 +1,125 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Element Lists" />
+
+# Element lists
+
+`ElementList` draws a list of elements the way relation fields do: as chips in
+the `list` and `list-inline` view modes, thumbnail tiles in `thumbs`, and cards
+in `cards` and `cards-grid`. `ElementChips` draws chips on their own.
+
+For a full element index, with sources, search and filters, use
+`ElementIndexPage` instead.
+
+## The data
+
+On the server, `ElementHtml::presentation()` gives the data each element is
+drawn from. Pass the view mode the list will show, so card markup is only built
+for card views.
+
+```php
+use CraftCms\Cms\Cp\Html\ElementHtml;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+
+public function show(Exhibit $exhibit, ElementHtml $elementHtml): CpScreenResponse
+{
+    return new CpScreenResponse()
+        ->title($exhibit->title)
+        ->inertiaPage('my-plugin/Exhibit', [
+            'artworks' => array_map(
+                fn (ElementInterface $artwork): array => $elementHtml->presentation($artwork, 'cards-grid'),
+                $exhibit->getArtworks(),
+            ),
+        ]);
+}
+```
+
+## The page
+
+`useElementList()` keeps the list's state: the view mode, and a selection.
+Pass its `selection` to the list when the page needs to know what's selected.
+A list without one keeps its own.
+
+```vue
+<script setup lang="ts">
+  import {computed} from 'vue';
+  import {
+    ElementList,
+    openSlideout,
+    useElementList,
+    type ListElement,
+  } from '@craftcms/cp';
+
+  const props = defineProps<{artworks: ListElement[]}>();
+
+  const list = useElementList({
+    ids: () => props.artworks.map((artwork) => artwork.id),
+    viewMode: 'cards-grid',
+    selectable: false,
+  });
+
+  function edit(artwork: ListElement) {
+    if (artwork.cpEditUrl) {
+      openSlideout(artwork.cpEditUrl);
+    }
+  }
+</script>
+
+<template>
+  <ElementList
+    :data="artworks"
+    :view-mode="list.viewMode.value"
+    :selection="list.selection"
+    @edit="edit"
+  />
+</template>
+```
+
+| Prop / event | What it does                                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `data`       | The elements, in display order, as `ElementHtml::presentation()` gave them.                                        |
+| `viewMode`   | `list`, `list-inline`, `thumbs`, `cards` or `cards-grid`.                                                          |
+| `selection`  | Optional. From `useElementList()` or `useSelectable()`, to read or change what's selected.                         |
+| `selectable` | Lets people select elements by clicking, with Cmd/Ctrl and Shift for more.                                         |
+| `sortable`   | Lets people drag elements into a new order. The list emits `reorder(from, to)`; move the element in your own data. |
+| `thumbSize`  | The chips' or tiles' thumbnail size.                                                                               |
+| `@edit`      | A double-click on an element, with its data.                                                                       |
+| `#actions`   | Controls for each element, given `{element, index}`.                                                               |
+
+## Selecting and acting on elements
+
+With `selectable`, `list.selection.selectedIds` holds what's selected. Show a
+`BulkActionsBar` while there's a selection:
+
+```vue
+<BulkActionsBar
+  :selected-count="list.selection.selectedIds.value.length"
+  :actions="bulkActions"
+  @clear="list.selection.clear()"
+/>
+```
+
+## Keeping it current
+
+`onElementChanged()` calls you when an element is saved in any tab, or with
+`{includeSelf: true}` in this one too, so the page can reload its data:
+
+```ts
+import {onBeforeUnmount} from 'vue';
+import {router} from '@inertiajs/vue3';
+import {onElementChanged} from '@craftcms/cp';
+
+const stop = onElementChanged(() => router.reload({only: ['artworks']}));
+onBeforeUnmount(stop);
+```
+
+`refreshElementInstances(id)` re-renders the chips and cards for an element that
+the server drew as HTML, such as ones inside an `HtmlFragmentRenderer`.
+
+## Card markup
+
+Cards show the HTML the server rendered for them, and the control panel
+compiles it as a Vue template so it can use Craft's components. Element types
+and plugins that change card markup should treat it the same way: no
+user-supplied markup in it unescaped.

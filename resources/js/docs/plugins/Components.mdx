@@ -75,5 +75,16 @@ The `<craft-*>` web components (`<craft-button>`, `<craft-input>`,
 
 ## Tables and elements
 
-`AdminTable` covers most tables; see **CP/AdminTable/Guide**. `ElementIndexPage`
-and `ElementEditor` render Craft's element index and editor.
+| Component          | What it's for                                                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AdminTable`       | Tables like the ones on Craft's settings pages. See **CP/AdminTable/Guide**.                                                                 |
+| `DataTable`        | The table `AdminTable` draws with, for a page that needs its own toolbar or footer. Pair it with `useCraftTable` and `useTableRowSelection`. |
+| `ElementList`      | Elements as chips, thumbnail tiles or cards. See **Plugins/Element Lists**.                                                                  |
+| `ElementChips`     | Elements as chips.                                                                                                                           |
+| `BulkActionsBar`   | The bar a list shows while items are selected, with its “Actions” menu.                                                                      |
+| `ElementIndexPage` | Craft's element index, with sources, search and filters.                                                                                     |
+| `ElementEditor`    | Craft's element editor.                                                                                                                      |
+
+`useSelectable()` gives any list Craft's selection: click, Cmd/Ctrl-click,
+Shift-click ranges, checkboxes and the keyboard. See
+**Composables/useSelectable Overview**.

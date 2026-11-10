@@ -4,34 +4,12 @@
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
   import ElementChips from '@/modules/elements/components/ElementChips.vue';
   import ElementThumbs from '@/modules/elements/components/ElementThumbs.vue';
-  import type {Selectable} from '@/common/composables/useSelectable';
+  import {
+    useSelectable,
+    type Selectable,
+  } from '@/common/composables/useSelectable';
   import type {ElementListViewMode} from '@/modules/elements/composables/useElementList';
-
-  /**
-   * The element data a list renders. Which parts are needed depends on the view
-   * mode — card modes want the `card*` parts, thumbs wants `thumbHtml` — and the
-   * server only renders the ones the active mode uses.
-   */
-  interface ListElement {
-    id: number;
-    label: string;
-    siteId?: number | string | null;
-    status?: {fill: string; label: string; draft: boolean} | null;
-    url?: string | null;
-    cardAttributes?: Record<
-      string,
-      string | number | boolean | null | undefined
-    >;
-    cardHeaderHtml?: string;
-    cardActionsHtml?: string;
-    cardThumbHtml?: string;
-    thumbAlignment?: string;
-    cardContentHtml?: string;
-    cardFooterHtml?: string;
-    thumbHtml?: string;
-    /** Nests list chips by structure level; see `ElementChips`. */
-    level?: number | null;
-  }
+  import type {ListElement} from '@/modules/elements/types/element-data';
 
   const props = withDefaults(
     defineProps<{
@@ -40,8 +18,11 @@
       viewMode: ElementListViewMode;
       /** The chips' or thumbnail tiles' thumbnail size; each body has its own default. */
       thumbSize?: ChipThumbSizeValue;
-      /** Selection, usually from `useElementList`. */
-      selection: Selectable<any>;
+      /**
+       * Selection, usually from `useElementList`. Pass one to read or change
+       * what's selected; without one, the list keeps its own.
+       */
+      selection?: Selectable<any>;
       selectable?: boolean;
       selectAll?: boolean;
       readOnly?: boolean;
@@ -58,6 +39,11 @@
     }
   );
 
+  const ownSelection = useSelectable({
+    ids: () => props.data.map((element) => element.id),
+  });
+  const activeSelection = computed(() => props.selection ?? ownSelection);
+
   // Thumbs link any tile with a `url`. In a relational field, clicking an
   // element selects or edits it, so the tiles shouldn't navigate away.
   const thumbsData = computed(() =>
@@ -68,6 +54,24 @@
     (event: 'edit', element: ListElement): void;
     (event: 'reorder', startIndex: number, finishIndex: number): void;
   }>();
+
+  type ElementSlotProps = {element: ListElement; index: number};
+
+  defineSlots<{
+    /** Controls for each element: a chip's trailing actions, or a card's or tile's action area. */
+    actions?(props: ElementSlotProps): unknown;
+    /** Before each chip's label. List views only. */
+    prefix?(props: ElementSlotProps): unknown;
+    /** After each chip. List views only. */
+    append?(props: ElementSlotProps): unknown;
+    /** Shown in card and thumbnail views when there are no elements. */
+    empty?(): unknown;
+  }>();
+
+  /** Cards and thumbs pass their own element shape; slots get the one we were given. */
+  function slotProps(index: number): ElementSlotProps {
+    return {element: props.data[index]!, index};
+  }
 
   /** Cards and thumbs report their own element shape; edit the one we were given. */
   function edit(id: string | number): void {
@@ -83,7 +87,7 @@
   <ElementCards
     v-if="viewMode === 'cards' || viewMode === 'cards-grid'"
     :data="data"
-    :selection="selection"
+    :selection="activeSelection"
     :selectable="selectable"
     :select-all="selectAll"
     :read-only="readOnly"
@@ -95,8 +99,8 @@
       (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
     "
   >
-    <template #actions="slotProps"
-      ><slot name="actions" v-bind="slotProps"></slot
+    <template #actions="{index}"
+      ><slot name="actions" v-bind="slotProps(index)"></slot
     ></template>
     <template #empty><slot name="empty"></slot></template>
   </ElementCards>
@@ -104,7 +108,7 @@
   <ElementThumbs
     v-else-if="viewMode === 'thumbs'"
     :data="thumbsData"
-    :selection="selection"
+    :selection="activeSelection"
     :selectable="selectable"
     :select-all="selectAll"
     :read-only="readOnly"
@@ -117,8 +121,8 @@
       (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
     "
   >
-    <template #actions="slotProps"
-      ><slot name="actions" v-bind="slotProps"></slot
+    <template #actions="{index}"
+      ><slot name="actions" v-bind="slotProps(index)"></slot
     ></template>
     <template #empty><slot name="empty"></slot></template>
   </ElementThumbs>
@@ -126,7 +130,7 @@
   <ElementChips
     v-else
     :data="data"
-    :selection="selection"
+    :selection="activeSelection"
     :selectable="selectable"
     :read-only="readOnly"
     :inline="viewMode === 'list-inline'"
@@ -137,14 +141,26 @@
       (startIndex, finishIndex) => $emit('reorder', startIndex, finishIndex)
     "
   >
-    <template #prefix="slotProps"
-      ><slot name="prefix" v-bind="slotProps"></slot
+    <template #prefix="{element, index}"
+      ><slot
+        name="prefix"
+        :element="element as ListElement"
+        :index="index"
+      ></slot
     ></template>
-    <template #append="slotProps"
-      ><slot name="append" v-bind="slotProps"></slot
+    <template #append="{element, index}"
+      ><slot
+        name="append"
+        :element="element as ListElement"
+        :index="index"
+      ></slot
     ></template>
-    <template #suffix="slotProps"
-      ><slot name="actions" v-bind="slotProps"></slot
+    <template #suffix="{element, index}"
+      ><slot
+        name="actions"
+        :element="element as ListElement"
+        :index="index"
+      ></slot
     ></template>
   </ElementChips>
 </template>

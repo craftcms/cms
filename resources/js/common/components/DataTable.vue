@@ -21,7 +21,6 @@
     useTemplateRef,
     watch,
   } from 'vue';
-  import type {NestedReorderDirection} from '@craftcms/ui';
   import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
   import {useReorderableRows} from '@/common/composables/useReorderableRows';
   import {
@@ -454,7 +453,7 @@
           </th>
           <template v-if="!readOnly && reorderable">
             <th class="cell cell--header">
-              <span class="sr-only">Reorder</span>
+              <span class="sr-only">{{ t('Reorder') }}</span>
             </th>
           </template>
           <th
