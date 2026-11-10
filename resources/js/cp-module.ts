@@ -1,6 +1,17 @@
-import {defineAsyncComponent} from 'vue';
+import {defineAsyncComponent, type Ref} from 'vue';
 import {ConfigService} from '@craftcms/ui/services/Config';
+import type {InertiaForm} from '@inertiajs/vue3';
+import useInternalCraftData, {
+  type CpUser as InternalCpUser,
+  type CraftData as InternalCraftData,
+} from './common/composables/useCraftData';
+import type {UrlMethodPair} from '@inertiajs/core';
 import {assistantApi} from './bootstrap/assistant';
+import type {FormSaveOptions} from './common/types';
+import {
+  useSettingsSave as useSettingsSaveWith,
+  type UseSettingsSaveOptions,
+} from './modules/settings/composables/useSettingsSave';
 import {FileUpload, UploadError, registerTransport} from './upload-client';
 import {
   closeCommandPalette,
@@ -262,7 +273,163 @@ export {
   type AppendHtmlDisposer,
 } from '@craftcms/ui/utilities/dom';
 export {actionClient, http} from '@craftcms/ui';
-export {getActionUrl, getCpUrl, getUrl} from './common/craft/url';
+export {getActionUrl, getCpUrl, getSiteUrl, getUrl} from './common/craft/url';
+
+/** Telling a failed request from a cancelled one, and the types `http` uses. */
+export {
+  HttpCancelledError,
+  HttpError,
+  isCancel,
+  isHttpError,
+  type HttpClient,
+  type HttpErrorCode,
+  type HttpHeaders,
+  type HttpParams,
+  type HttpRequestConfig,
+  type HttpResponse,
+} from '@craftcms/ui/utilities/api/http';
+
+/** Requests as reactive state: data, error, loading and the rest. */
+export {
+  useActionClient,
+  useFetch,
+  usePost,
+  type FetchState,
+  type UseFetchOptions,
+  type UseFetchReturn,
+} from './common/composables/useFetch';
+
+/** Dates, numbers and money in the user's formatting locale. */
+export {
+  formatCurrency,
+  formatDate,
+  formatNumber,
+  formattingLocale,
+} from '@craftcms/ui/utilities/format';
+
+/** Handles, slugs and environment variable names, as Craft makes them. */
+export {
+  asciiString,
+  toEnvVar,
+  toHandle,
+  toUriFormat,
+} from '@craftcms/ui/utilities/string';
+export {useInputGenerator} from './common/composables/useInputGenerator';
+
+/** The signed-in user, as plugins see them. */
+export type CpUser = Pick<
+  InternalCpUser,
+  'id' | 'username' | 'email' | 'name' | 'admin'
+>;
+
+/**
+ * The parts of the control panel's page data plugins can rely on. The page
+ * carries more, for the control panel's own use.
+ */
+export interface CraftData {
+  currentUser: CpUser | null;
+  site: InternalCraftData['site'];
+  system: InternalCraftData['system'];
+  app: InternalCraftData['app'];
+  allowAdminChanges: boolean;
+  devMode: boolean;
+  maintenanceMode: boolean;
+  orientation: 'ltr' | 'rtl';
+}
+
+/** The control panel's page data, as refs that follow the page. */
+export const useCraftData: () => {
+  [Key in keyof CraftData]-?: Readonly<Ref<CraftData[Key]>>;
+} = useInternalCraftData;
+
+/**
+ * Saves a settings form the way Craft's own settings screens do: Cmd/Ctrl + S,
+ * elevated sessions, validation errors, and saving from a slideout without
+ * leaving the page behind it. `action` returns where to submit, such as a
+ * Wayfinder route.
+ */
+export function useSettingsSave<T extends object>(
+  form: InertiaForm<T>,
+  action: () => UrlMethodPair | string,
+  options: UseSettingsSaveOptions<T> = {}
+): {save: (options?: FormSaveOptions) => void} {
+  return useSettingsSaveWith(form, action, options);
+}
+export type {UseSettingsSaveOptions};
+
+/** Browser storage scoped to this Craft install. */
+export {
+  useLocalStorage,
+  useSessionStorage,
+  useStorage,
+} from './common/composables/useStorage';
+
+/** Keyboard shortcuts, listed in the command palette's shortcut list. */
+export {
+  registerShortcut,
+  useShortcut,
+  type ShortcutCallback,
+  type ShortcutOptions,
+  type ShortcutRegistration,
+} from './common/shortcuts';
+export {commandShortcut, usesCommandKey} from './common/utils/keyShortcuts';
+
+/** Messages to the control panel's other tabs, such as "this entry was saved". */
+export {
+  broadcast,
+  onBroadcast,
+  type BroadcastMessage,
+  type OnBroadcastOptions,
+} from './common/craft/broadcast';
+
+/** Layout: the control panel's breakpoints and writing direction. */
+export {useCpBreakpoints} from './common/composables/useCpBreakpoints';
+export {isRtl, startSide} from './common/craft/direction';
+
+/** Focus handling for overlays a plugin builds itself. */
+export {focusableWithin, trapFocus} from '@craftcms/ui/utilities/focus-trap';
+export {
+  focusReturnFor,
+  type FocusReturnResolver,
+} from '@craftcms/ui/utilities/focus-return';
+
+/** Reading forms and showing a value to copy. */
+export {
+  isVisible,
+  serializeFormInputs,
+  serializeFormInputsAsObject,
+} from '@craftcms/ui/utilities/dom';
+export {
+  showCopyTextPrompt,
+  type CopyTextPromptConfig,
+} from '@craftcms/ui/utilities/copy-text-prompt';
+
+/** Element type names, and custom elements that boot a controller around server-rendered markup. */
+export {elementTypeName} from './common/craft/element-types';
+export {ControllerElement, defineElement} from './common/web-components';
+
+/** The shapes of the menus, options, sites and forms the components above take. */
+export type {
+  ActionItemBadge,
+  ActionItemButton,
+  ActionItemGroup,
+  ActionItemHr,
+  ActionItems,
+  BaseOption,
+  BreadcrumbItem,
+  CheckboxOption,
+  ChipIndicator,
+  FormAction,
+  FormSaveOptions,
+  OptionData,
+  SelectItem,
+  SelectOptGroup,
+  SelectOption,
+  Site,
+  SiteGroup,
+  UserGroup,
+} from './common/types';
+export type {QueryParams, QueryValue} from './common/types/query';
 
 /**
  * The control panel's own config — `siteId`, `sites`, `userIsAdmin`,

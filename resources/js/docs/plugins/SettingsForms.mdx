@@ -1,0 +1,86 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Settings Forms" />
+
+# Settings forms
+
+`useSettingsSave()` saves an Inertia form the way Craft's own settings screens
+do:
+
+- <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> saves, and the shortcut is
+  listed in the command palette.
+- Validation errors land on the form's fields.
+- The user is asked for their password first when the change needs an
+  elevated session.
+- In a slideout, saving posts without navigating, so the page behind the
+  slideout stays as it was.
+
+## The controller
+
+Save, then answer with `asSuccess()` from the `RespondsWithFlash` trait. It
+redirects back with a success message for a page, and answers JSON for a
+slideout. Validation errors work as they do anywhere in Laravel.
+
+```php
+use CraftCms\Cms\Http\RespondsWithFlash;
+
+class SettingsController
+{
+    use RespondsWithFlash;
+
+    public function save(SettingsRequest $request): Response
+    {
+        $this->settings->save($request->validated());
+
+        return $this->asSuccess(t('Settings saved.', category: 'my-plugin'));
+    }
+}
+```
+
+## The page
+
+```vue
+<script setup lang="ts">
+  import {useForm} from '@inertiajs/vue3';
+  import {getActionUrl, useAppLayout, useSettingsSave} from '@craftcms/cp';
+
+  const props = defineProps<{settings: {apiKey: string; syncDaily: boolean}}>();
+
+  const form = useForm({...props.settings});
+
+  const {save} = useSettingsSave(
+    form,
+    () => ({
+      url: getActionUrl('my-plugin/settings/save'),
+      method: 'post',
+    }),
+    {
+      // Ask for the user's password before saving a changed API key.
+      elevatedFields: ['apiKey'],
+    }
+  );
+
+  // Connects the screen's Save button to this form.
+  useAppLayout({form, onSave: save});
+</script>
+```
+
+`action` is a function returning where to submit: a URL, or `{url, method}`
+such as a Wayfinder route returns.
+
+## Options
+
+| Option                      | What it does                                                                   |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| `transform(data)`           | Changes what's posted, such as adding values read from server-rendered markup. |
+| `elevatedFields`            | Fields whose change needs an elevated session, or `'*'` for any change.        |
+| `passwordConfirmation`      | The same, with your own `required(data)` check and `minimumRemainingSeconds`.  |
+| `onBeforeSave()`            | Runs before every save, including from the shortcut.                           |
+| `prepare()`                 | Awaited before submitting. Resolve `false` to call the save off.               |
+| `onSuccess(data)`           | Runs after a slideout save, with the response's data.                          |
+| `onError(data)`             | Runs when a save fails validation.                                             |
+| `keyboardShortcutEnabled()` | Whether <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>S</kbd> may save right now.      |
+
+`save(options)` takes `redirect`, `keepOpen`, `preserveScroll`,
+`preserveState`, extra `data`, and an `action` to submit to instead. Its type is
+`FormSaveOptions`.

@@ -1,0 +1,211 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Utilities" />
+
+# Utilities
+
+The helpers Craft's own pages use, from `@craftcms/cp`. Importing them from
+there, rather than bundling copies from npm, keeps a plugin on the control
+panel's own instances: one keyboard shortcut manager, one request client, one
+set of user settings.
+
+## Requests
+
+`http` sends requests with the control panel's CSRF token and headers, and
+`actionClient` sends them to controller actions. A request that fails rejects
+with an `HttpError`; one that's cancelled rejects with an `HttpCancelledError`.
+
+```ts
+import {actionClient, isCancel, isHttpError, showError} from '@craftcms/cp';
+
+try {
+  const {data} = await actionClient.post('my-plugin/exhibits/save', exhibit);
+} catch (error) {
+  if (isCancel(error)) return;
+  if (isHttpError(error) && error.response?.status === 400) {
+    showError(error.response.data.message);
+  }
+}
+```
+
+In a component, `useFetch()` keeps a request as reactive state. It sends again
+when its URL or `params` change, and cancels a request that's been superseded:
+
+```vue
+<script setup lang="ts">
+  import {computed, ref} from 'vue';
+  import {getActionUrl, useFetch} from '@craftcms/cp';
+
+  const status = ref('live');
+  const {data, isLoading, error, refetch} = useFetch<Exhibit[]>(
+    getActionUrl('my-plugin/exhibits'),
+    {params: computed(() => ({status: status.value}))}
+  );
+</script>
+```
+
+| Export                             | What it does                                                                                                                                               |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useFetch(url, options)`           | Sends straight away unless `immediate: false`. `url` and `params` can be refs. Options include `enabled`, `debounce`, `transform`, `onSuccess`, `onError`. |
+| `usePost(url, options)`            | `useFetch` that posts. It doesn't send straight away; call `execute(data)`.                                                                                |
+| `useActionClient(action, options)` | `usePost` for a controller action, such as `'my-plugin/exhibits/save'`.                                                                                    |
+| `isHttpError`, `isCancel`          | Tell a failed request from a cancelled one.                                                                                                                |
+| `HttpError`, `HttpCancelledError`  | The errors themselves, for `instanceof`.                                                                                                                   |
+| types                              | `UseFetchOptions`, `UseFetchReturn`, `FetchState`, `HttpRequestConfig`, `HttpResponse`, `HttpClient`…                                                      |
+
+## Page data
+
+`useCraftData()` reads the data every control panel page carries: the current
+user, the site, Craft's edition, whether settings can be changed. Each
+property is a ref that follows the page.
+
+```ts
+import {useCraftData} from '@craftcms/cp';
+
+const {currentUser, allowAdminChanges} = useCraftData();
+const canEditSettings = computed(
+  () => allowAdminChanges.value && currentUser.value?.admin
+);
+```
+
+| Property            | What it is                                                                     |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `currentUser`       | The signed-in user's `id`, `username`, `email`, `name` and `admin`, or `null`. |
+| `site`              | The site being worked in: `id`, `name`, `handle` and `url`, or `null`.         |
+| `system`            | The system's `name` and `icon`.                                                |
+| `app`               | Craft's `version`, and its `edition` as `name`, `handle` and `value`.          |
+| `allowAdminChanges` | Whether settings can be changed in this environment.                           |
+| `devMode`           | Whether Dev Mode is on.                                                        |
+| `maintenanceMode`   | Whether the system is in maintenance mode.                                     |
+| `orientation`       | `'ltr'` or `'rtl'`, the control panel language's writing direction.            |
+
+The page carries more than this, for the control panel's own use. Only these
+are typed, and only these are kept stable.
+
+`cpConfig()` reads the config the control panel booted with, outside a
+component.
+
+## Formatting
+
+| Export                                     | What it does                                                                            |
+| ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `formatDate(value, options?)`              | A date in the user's formatting locale. Long dates by default, e.g. “October 30, 2026”. |
+| `formatNumber(number, format?)`            | A number with thousand separators. `format` takes d3-style patterns, such as `',.2f'`.  |
+| `formatCurrency(value, currency, locale?)` | An amount of money. Whole amounts drop their cents.                                     |
+| `formattingLocale()`                       | The locale those use: the user's formatting locale, then the control panel's.           |
+
+## Handles and slugs
+
+| Export                                | What it does                                                                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `toHandle(value, options?)`           | A handle, as Craft makes them from names: `'Opening Hours'` → `'openingHours'`. `handleCasing` can be `'snake'` or `'pascal'`. |
+| `toUriFormat(value)`                  | A URI slug: `'Opening Hours'` → `'opening-hours'`.                                                                             |
+| `toEnvVar(value, options?)`           | An environment variable name: `'Api Key'` → `'API_KEY'`, with an optional `prefix` and `suffix`.                               |
+| `asciiString(value)`                  | Accented and other extended characters as plain ASCII.                                                                         |
+| `useInputGenerator(source, onUpdate)` | Fills one field from another, such as a handle from a name, until the user edits it. Call `markDirty()` when they do.          |
+
+```ts
+import {toHandle, useInputGenerator} from '@craftcms/cp';
+
+const handleGenerator = useInputGenerator(
+  () => form.name,
+  (name) => (form.handle = toHandle(name))
+);
+// On the handle input: @input="handleGenerator.markDirty()"
+```
+
+## Keyboard shortcuts
+
+Shortcuts registered here share Craft's own, and those with a `description` are
+listed in the command palette's “Keyboard shortcuts”.
+
+```ts
+import {t, useShortcut} from '@craftcms/cp';
+
+useShortcut('Mod+E', () => openExport(), {
+  description: () => t('Export exhibits', {}, 'my-plugin'),
+  group: () => t('Exhibits', {}, 'my-plugin'),
+});
+```
+
+`useShortcut()` unregisters when the component unmounts; `registerShortcut()`
+returns `{unregister}`. `Mod` is Command on Apple platforms and Ctrl elsewhere.
+`commandShortcut('S')` gives the matching `aria-keyshortcuts` value, and
+`usesCommandKey()` says which one the platform uses.
+
+## Other tabs
+
+`broadcast()` tells the control panel's other tabs that something changed, and
+`onBroadcast()` listens. Craft broadcasts `saveElement` when an element is
+saved, among others.
+
+```ts
+import {broadcast, onBroadcast} from '@craftcms/cp';
+
+broadcast({event: 'my-plugin:exhibit-saved', id: exhibit.id});
+
+const stop = onBroadcast('my-plugin:exhibit-saved', ({id}) => refresh(id));
+```
+
+A tab doesn't hear its own messages unless the listener passes
+`{includeSelf: true}`.
+
+## Storage
+
+`useLocalStorage(key, initial)`, `useSessionStorage(key, initial)` and
+`useStorage(key, initial, storage)` keep a ref in browser storage, under a key
+scoped to this Craft install, so two installs on one domain don't share it.
+Start keys with your plugin's handle.
+
+## Layout and direction
+
+| Export               | What it does                                                                  |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `useCpBreakpoints()` | The control panel's breakpoints (`sm`…`2xl`), as VueUse's `useBreakpoints()`. |
+| `isRtl()`            | Whether the control panel's language reads right to left.                     |
+| `startSide()`        | `'left'` or `'right'`: the side lines of text start on.                       |
+
+## Focus, forms and copying
+
+| Export                                   | What it does                                                                                |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `trapFocus(host)`                        | Keeps Tab and Shift+Tab inside an overlay you built. Returns a function that releases it.   |
+| `focusableWithin(host)`                  | The elements inside `host` that can take focus.                                             |
+| `focusReturnFor(trigger)`                | Where focus should go when an overlay opened from `trigger` closes, even after a re-render. |
+| `serializeFormInputs(container)`         | The inputs inside `container`, as a query string.                                           |
+| `serializeFormInputsAsObject(container)` | The same, as an object.                                                                     |
+| `isVisible(el)`                          | Whether an element is shown.                                                                |
+| `showCopyTextPrompt({label, value})`     | A dialog showing a value with a Copy button, such as a URL or token.                        |
+| `elementTypeName(type, plural?)`         | An element type's lowercase name for use mid-sentence, such as “entry” or “entries”.        |
+| `getSiteUrl(path, params?)`              | A front-end URL, alongside `getUrl`, `getCpUrl` and `getActionUrl`.                         |
+
+## Custom elements around server-rendered markup
+
+`ControllerElement` is the base for a custom element that wraps markup the
+server rendered and boots a controller around it, the way Craft's
+`<craft-field-layout-designer>` does. It boots when the markup is in place,
+including markup a slideout or an Inertia visit adds later, and calls the
+controller's `destroy()` when the element is removed. `defineElement(tag, ctor)`
+defines it once, however many times the module runs.
+
+```ts
+import {ControllerElement, defineElement} from '@craftcms/cp';
+
+class ExhibitMap extends ControllerElement<ExhibitMapController> {
+  protected readonly rootSelector = '.exhibit-map';
+
+  protected create(root: HTMLElement) {
+    return new ExhibitMapController(root, JSON.parse(this.dataset.settings!));
+  }
+}
+
+defineElement('my-plugin-exhibit-map', ExhibitMap);
+```
+
+## Types
+
+The shapes Craft's components and helpers take: `ActionItems` and the rest of
+the `ActionItem*` types for menus, `SelectOption`, `SelectOptGroup`,
+`SelectItem`, `CheckboxOption` and `BaseOption` for options, `BreadcrumbItem`,
+`ChipIndicator`, `Site`, `SiteGroup`, `UserGroup`, `FormAction`,
+`FormSaveOptions` and `QueryParams`.
