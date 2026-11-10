@@ -6,6 +6,8 @@ import '../../styles/cp.css';
 import '../icon/icon.js';
 import '../radio/radio.js';
 import './radio-group.js';
+import '../checkbox/checkbox.js';
+import '../checkbox-group/checkbox-group.js';
 import {contrast} from '../../../test/contrast';
 import {
   PALETTE_SAMPLE,
@@ -629,3 +631,62 @@ it.each(['cards', 'card-group'])(
     expect(rows(radios)).toBeGreaterThan(1);
   }
 );
+
+it('follows its form back to its first selection when the form is reset', async () => {
+  const template = document.createElement('template');
+  template.innerHTML = `
+    <form>
+      <craft-radio-group appearance="button-group" label="Theme">
+        <craft-radio>
+          <input slot="input" type="radio" name="theme" value="light" checked>
+          <label slot="label">Light</label>
+        </craft-radio>
+        <craft-radio>
+          <input slot="input" type="radio" name="theme" value="dark">
+          <label slot="label">Dark</label>
+        </craft-radio>
+      </craft-radio-group>
+      <craft-checkbox-group label="Kinds">
+        <craft-checkbox>
+          <input slot="input" type="checkbox" name="kinds[]" value="image" checked>
+          <label slot="label">Image</label>
+        </craft-checkbox>
+        <craft-checkbox>
+          <input slot="input" type="checkbox" name="kinds[]" value="video">
+          <label slot="label">Video</label>
+        </craft-checkbox>
+      </craft-checkbox-group>
+      <button type="reset">Reset</button>
+    </form>
+  `;
+  document.body.append(template.content);
+  const radioGroup = document.querySelector('craft-radio-group')!;
+  const checkboxGroup = document.querySelector('craft-checkbox-group')!;
+  const choices = [
+    ...document.querySelectorAll<CraftRadio>('craft-radio, craft-checkbox'),
+  ];
+  await settle();
+
+  await userEvent.click(choices[1]!.querySelector('input')!);
+  await userEvent.click(choices[3]!.querySelector('input')!);
+  expect(radioGroup.value).toBe('dark');
+  expect(checkboxGroup.value).toEqual(['image', 'video']);
+
+  await userEvent.click(document.querySelector('button')!);
+  await settle();
+
+  expect(radioGroup.value).toBe('light');
+  expect(checkboxGroup.value).toEqual(['image']);
+  expect(choices.map((choice) => choice.checked)).toEqual([
+    true,
+    false,
+    true,
+    false,
+  ]);
+  expect(choices.map((choice) => choice.hasAttribute('checked'))).toEqual([
+    true,
+    false,
+    true,
+    false,
+  ]);
+});

@@ -142,6 +142,9 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
 
     #adopted?: ChoiceControlElement;
 
+    /** Where a form reset is heard: the tree the input and its form share. */
+    #resetRoot?: Node;
+
     override get _inputNode(): ChoiceControlElement | undefined {
       return super._inputNode as ChoiceControlElement | undefined;
     }
@@ -162,10 +165,13 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
       this.addEventListener('change', this.#onChange);
       this.addEventListener('focusin', this.#onFocusIn);
       this.addEventListener('focusout', this.#onFocusOut);
+      this.#resetRoot = this.getRootNode();
+      this.#resetRoot.addEventListener('reset', this.#onReset, true);
     }
 
     override disconnectedCallback() {
       super.disconnectedCallback();
+      this.#resetRoot?.removeEventListener('reset', this.#onReset, true);
       this.removeEventListener('change', this.#onChange);
       this.removeEventListener('focusin', this.#onFocusIn);
       this.removeEventListener('focusout', this.#onFocusOut);
@@ -270,6 +276,13 @@ export const ChoiceInput = <T extends Constructor<LitElement>>(Base: T) => {
     #onChange = (event: Event): void => {
       if (event.target === this._inputNode) {
         this._syncFromControl();
+      }
+    };
+
+    /** A form reset puts the input back silently, once its event is done. */
+    #onReset = (event: Event): void => {
+      if (event.target === this.#nativeInput?.form) {
+        setTimeout(() => this._syncFromControl());
       }
     };
 
