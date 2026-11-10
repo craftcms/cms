@@ -74,6 +74,19 @@ test('maxPowerCaptain', function () {
     ini_set('max_execution_time', $oldMaxExecution);
 });
 
+test('maxPowerCaptain respects phpMaxExecutionTime', function () {
+    $oldMaxExecution = ini_get('max_execution_time');
+    Cms::config()->phpMaxExecutionTime = 55;
+
+    try {
+        maxPowerCaptain();
+
+        expect(ini_get('max_execution_time'))->toBe('55');
+    } finally {
+        set_time_limit((int) $oldMaxExecution);
+    }
+});
+
 test('silence', function () {
     expect(silence(fn () => 'foo'))->toBe('foo');
     expect(silence(function () {}))->toBeNull();

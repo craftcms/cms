@@ -2072,6 +2072,28 @@ class GeneralConfig extends BaseConfig
     public string $partialTemplatesPath = '_partials';
 
     /**
+     * @var int|null The number of seconds Craft will give PHP to run during long operations such as image processing,
+     *               migrations and running queue jobs. Defaults to `null`, which means no time limit.
+     *
+     * Set this when the server or platform stops PHP after a fixed amount of time, such as PHP-FPM’s
+     * `request_terminate_timeout` or a serverless function’s timeout, so PHP fails first with an error that gets logged.
+     * Craft passes this value to [set_time_limit()](https://php.net/manual/en/function.set-time-limit.php), which
+     * restarts PHP’s timer, so leave room for time the request may have already used.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->phpMaxExecutionTime(55)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PHP_MAX_EXECUTION_TIME=55
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public ?int $phpMaxExecutionTime = null;
+
+    /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
      *                  unzipping and updating. Defaults to an empty string, which means it will use as much memory as it can.
      *
@@ -5378,6 +5400,30 @@ class GeneralConfig extends BaseConfig
     public function partialTemplatesPath(string $value): self
     {
         $this->partialTemplatesPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The number of seconds Craft will give PHP to run during long operations such as image processing, migrations
+     * and running queue jobs. Defaults to `null`, which means no time limit.
+     *
+     * Set this when the server or platform stops PHP after a fixed amount of time, such as PHP-FPM’s
+     * `request_terminate_timeout` or a serverless function’s timeout, so PHP fails first with an error that gets logged.
+     * Craft passes this value to [set_time_limit()](https://php.net/manual/en/function.set-time-limit.php), which
+     * restarts PHP’s timer, so leave room for time the request may have already used.
+     *
+     * ```php
+     * ->phpMaxExecutionTime(55)
+     * ```
+     *
+     * @group System
+     *
+     * @see $phpMaxExecutionTime
+     */
+    public function phpMaxExecutionTime(?int $value): self
+    {
+        $this->phpMaxExecutionTime = $value;
 
         return $this;
     }

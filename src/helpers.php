@@ -176,8 +176,9 @@ function normalizeVersion(string $version): string
 
 /**
  * Sets PHP’s memory limit to the maximum specified by the
- * <config5:phpMaxMemoryLimit> config setting, and gives the script an
- * unlimited amount of time to execute.
+ * <config5:phpMaxMemoryLimit> config setting, and gives the script the
+ * number of seconds set by the `phpMaxExecutionTime` config setting to
+ * execute, or an unlimited amount of time if it isn’t set.
  */
 function maxPowerCaptain(): void
 {
@@ -190,7 +191,7 @@ function maxPowerCaptain(): void
     }
 
     // Try to reset time limit
-    if (! function_exists('set_time_limit') || ! @set_time_limit(0)) {
+    if (! function_exists('set_time_limit') || ! @set_time_limit(Cms::config()->phpMaxExecutionTime ?? 0)) {
         Log::warning('set_time_limit() is not available', [__METHOD__]);
     }
 }
