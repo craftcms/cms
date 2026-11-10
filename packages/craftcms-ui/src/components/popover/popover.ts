@@ -1,29 +1,27 @@
-import {html, LitElement, type PropertyValues} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
-import {OverlayMixin, withDropdownConfig} from '@lion/ui/overlays.js';
-// Named explicitly so the emitted .d.ts can reference Lion's mixin
-// constructor by package specifier instead of a pnpm store path (TS2883).
-import type {} from '@open-wc/dedupe-mixin';
-import type {Modifier, VirtualElement} from '@popperjs/core';
+import {
+  createPopper,
+  type Instance as PopperInstance,
+  type Modifier,
+  type Options as PopperOptions,
+  type VirtualElement,
+} from '@popperjs/core';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
 import {focusStaysWithin} from '@src/utilities/focus-out.js';
-import {wireOverlayLifecycleEvents} from '@src/utilities/overlay-events.js';
-import {viewportEscapingModifiers} from '@src/utilities/overlay-position.js';
+import {claimEscape, isEscapeClaimed} from '@src/utilities/overlay-escape.js';
+import {announceOverlayState} from '@src/utilities/overlay-events.js';
 import {
-  lowerOverlay,
-  raiseOverlay,
-  topLayerStyles,
-} from '@src/utilities/overlay-top-layer.js';
+  hideLayer,
+  layerStyles,
+  overlayModifiers,
+  showLayer,
+  supportsPopover,
+  VIEWPORT_MARGIN,
+} from '@src/utilities/overlay-layer.js';
 import hostStyles from '@src/styles/host.styles';
 import styles from './popover.styles.js';
-
-/**
- * How far the pane stays from the viewport's edge when it's sized to fit,
- * matching the padding Lion gives Popper's `flip`. Any less and the fitted
- * pane would count as overflowing, flipping it to the other side.
- */
-const VIEWPORT_MARGIN = 16;
 
 /**
  * Caps the pane at the room left between it and the viewport edge it opens
@@ -31,7 +29,9 @@ const VIEWPORT_MARGIN = 16;
  * below it can use it rather than stopping at the stylesheet's `40vh`. An
  * explicit `--popover-max-block-size` still wins.
  *
- * Measured from where Popper has just placed the pane, so it follows a flip.
+ * Measured from where Popper has just placed the pane, so it follows a flip,
+ * and kept to `flip`'s own margin so the fitted pane doesn't count as
+ * overflowing and flip back.
  * Changing the cap changes the pane's height, which a `top` placement is
  * positioned by, so the popper updates once more when it does.
  */
@@ -67,34 +67,39 @@ const fitAvailableBlockSize: Partial<Modifier<'fitAvailableBlockSize', {}>> = {
   },
 };
 
-/** Lion's own default, for pages that don't load the CP tokens. */
-const DEFAULT_POPOVER_LAYER = 9999;
-
 /**
- * The popover layer from `--c-layer-popover`. Lion writes the overlay's
- * z-index as an inline number, so the token has to be read rather than
- * referenced.
+ * Keeps a `match-invoker-width` pane at least as wide as its reference after
+ * the reference is resized or replaced. Popper measured the pane at its old
+ * width, so it updates once more when the width changes.
  */
-function popoverLayer(): number {
-  const value = parseInt(
-    getComputedStyle(document.documentElement).getPropertyValue(
-      '--c-layer-popover'
-    ),
-    10
-  );
+const matchReferenceWidth: Partial<Modifier<'matchReferenceWidth', {}>> = {
+  name: 'matchReferenceWidth',
+  enabled: true,
+  phase: 'main',
+  fn: ({state, instance}) => {
+    const style = state.elements.popper.style;
+    const previous = style.minWidth;
+    style.minWidth = `${state.rects.reference.width}px`;
 
-  return Number.isNaN(value) ? DEFAULT_POPOVER_LAYER : value;
-}
+    if (style.minWidth !== previous) {
+      void instance.update();
+    }
+  },
+};
 
 /**
- * @summary A non-modal popover built on Lion's overlay system.
+ * @summary A non-modal popover.
  *
  * Overlays content on top of the page without affecting document flow.
  * The trigger can be a slotted `invoker` child, an external element
  * referenced by id (`for`), or passed directly (`anchor`). Clicking it
  * toggles the popover; Escape and outside clicks dismiss it.
  *
- * Emits `craft-show`/`craft-after-show`/`craft-hide`/`craft-after-hide`.
+ * The open pane is promoted to the browser's top layer, so it isn't clipped
+ * by an ancestor's overflow or held under a sibling's stacking context. Its
+ * content stays where it was slotted.
+ *
+ * A `close-overlay` event dispatched from inside the content closes it.
  *
  * @slot invoker - The element that triggers the popover (e.g. a button).
  * @slot content - The popup content shown when opened. Default-slot children
@@ -108,16 +113,24 @@ function popoverLayer(): number {
  * </craft-popover>
  * ```
  *
+ * @fires craft-before-show - The invoker, Escape, an outside click or
+ *   `show()` is about to open the popover. Cancelable. Setting `open` doesn't
+ *   fire it. Doesn't bubble, so a dialog around the popover never mistakes it
+ *   for its own.
+ * @fires craft-before-hide - The same, for closing.
  * @fires craft-show - The overlay is opening. Fires as the state flips.
  * @fires craft-after-show - The overlay has opened and its update has settled.
  * @fires craft-hide - The overlay is closing. Fires as the state flips.
  * @fires craft-after-hide - The overlay has closed and its update has settled.
  */
-export default class CraftPopover extends OverlayMixin(LitElement) {
+export default class CraftPopover extends LitElement {
   // `hostStyles` for its box-sizing reset, which a shadow root doesn't inherit
   // from the page: without it the pane's 1px border sits outside its width and
   // it overshoots whatever it was sized to.
-  static override styles = [hostStyles, topLayerStyles, styles];
+  static override styles = [hostStyles, layerStyles, styles];
+
+  /** Whether the popover is open. */
+  @property({type: Boolean, reflect: true}) open = false;
 
   /** Id of the trigger element within the same document/shadow root. */
   @property({reflect: true}) for?: string;
@@ -143,33 +156,56 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   /** Distance in pixels between the popover and its anchor. */
   @property({type: Number}) distance = 4;
 
-  /** Whether the overlay should match the invoker's width. */
+  /** Whether the overlay should be at least as wide as its invoker. */
   @property({attribute: 'match-invoker-width', type: Boolean, reflect: true})
   matchInvokerWidth = false;
 
-  /** Accepted for API compatibility; craft-popover never renders an arrow. */
-  @property({type: Boolean, attribute: 'without-arrow'}) withoutArrow = false;
-
   /**
-   * Stops the overlay writing `aria-expanded` and `aria-controls` onto its
-   * invoker. Set it when the invoker is a positioning anchor rather than the
-   * control itself: a generic element can't carry those attributes, and only
-   * the consumer knows which of its own elements can.
+   * Stops the popover writing `aria-expanded` onto its invoker. Set it when
+   * the invoker is a positioning anchor rather than the control itself: a
+   * generic element can't carry that state, and only the consumer knows which
+   * of its own elements can.
    */
   @property({type: Boolean, attribute: 'without-invoker-aria', reflect: true})
   withoutInvokerAria = false;
 
+  /**
+   * Stops clicks on the invoker toggling the popover, leaving it to be opened
+   * and closed from code. Escape and outside clicks still close it.
+   */
+  @property({type: Boolean, reflect: true}) manual = false;
+
   #contentWrapper: HTMLElement | null = null;
 
-  /** Lion's controller while it's wired up to the top layer. */
-  #layeredCtrl: EventTarget | null = null;
+  /**
+   * The invoker the listeners are bound to, its own `aria-expanded`, and
+   * whether the popover is the one writing that attribute now.
+   */
+  #invoker: {
+    node: HTMLElement;
+    ariaExpanded: string | null;
+    ownsAria: boolean;
+  } | null = null;
 
-  /** Whether focus was in the content when the popover began to close. */
-  #closingWithFocusInContent = false;
+  #popper: PopperInstance | null = null;
+
+  /** Whether the pane is showing. Trails `open` until the update runs. */
+  #shown = false;
+
+  /**
+   * Whether the pane was kept hidden for want of an anchor or invoker, and so
+   * shows once one arrives if the popover is still open.
+   */
+  #awaitingReference = false;
+
+  #isSetUp = false;
+
+  #pointerDownInside = false;
+
+  #pointerUpInside = false;
 
   constructor() {
     super();
-    wireOverlayLifecycleEvents(this);
     this.addEventListener('keydown', this.#claimEscape);
     this.addEventListener('focusout', this.#closeOnFocusOut);
   }
@@ -184,23 +220,33 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
    * the same click would open it again. So does any other button whose
    * `aria-controls` points into the content, such as a disclosure button kept
    * apart from the positioning anchor. Focus moving to nothing, as when
-   * someone clicks text in the panel, is left to Lion's outside click and
+   * someone clicks text in the panel, is left to the outside click and
    * window blur. Focus stays where it went, since `#returnFocus` only acts
    * while focus is still in the content.
    */
   #closeOnFocusOut = (event: FocusEvent): void => {
-    if (!this.opened || !(event.relatedTarget instanceof Node)) {
+    if (!this.open || !(event.relatedTarget instanceof Node)) {
       return;
     }
 
     if (
-      focusStaysWithin(event, this, this._overlayInvokerNode) ||
+      focusStaysWithin(event, this, this.invoker) ||
       this.#controlsContent(event.relatedTarget)
     ) {
       return;
     }
 
-    this.opened = false;
+    this.#request(false);
+  };
+
+  /**
+   * Focus leaving an invoker linked with `for` or `anchor` never reaches the
+   * host, so it's handled here. A slotted invoker's reaches the host itself.
+   */
+  #onInvokerFocusOut = (event: FocusEvent): void => {
+    if (!event.composedPath().includes(this)) {
+      this.#closeOnFocusOut(event);
+    }
   };
 
   /** Whether `node`'s `aria-controls` names an element in the popover. */
@@ -219,197 +265,46 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
       });
   }
 
-  /**
-   * Lion closes the popover on Escape's keyup, so its keydown would otherwise
-   * reach an ancestor's own Escape handling, such as a panel that closes on it.
-   * Marking it handled leaves the key to the popover alone.
-   */
-  #claimEscape = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && this.opened) {
-      event.preventDefault();
+  override requestUpdate(
+    name?: PropertyKey,
+    oldValue?: unknown,
+    options?: Parameters<LitElement['requestUpdate']>[2]
+  ): void {
+    super.requestUpdate(name, oldValue, options);
+
+    if (name === 'open') {
+      announceOverlayState(this);
     }
-  };
-
-  override _setupOverlayCtrl() {
-    super._setupOverlayCtrl();
-
-    this.#layeredCtrl = this._overlayCtrl as unknown as EventTarget;
-    this.#layeredCtrl.addEventListener('before-show', this.#raise);
-    this.#layeredCtrl.addEventListener('before-hide', swallowHeldEnterKeyup);
-    this.#layeredCtrl.addEventListener('before-hide', this.#noteFocus);
-    this.#layeredCtrl.addEventListener('hide', this.#lower);
-    this.#layeredCtrl.addEventListener('hide', this.#returnFocus);
-    this.#layeredCtrl.addEventListener('hide', this.#passOnEscape);
-    this.#layeredCtrl.addEventListener('before-show', this.#noteOpening);
-    this.#layeredCtrl.addEventListener('show', this.#closeIfClosedWhileOpening);
   }
 
-  override _teardownOverlayCtrl() {
-    // Removed while open, it never reaches `before-hide`, where the guard
-    // usually goes, so the Enter that chose an item can still click whatever
-    // takes focus next.
-    if (this._overlayCtrl?.isShown) {
-      swallowHeldEnterKeyup();
-    }
+  /** The element the popover is positioned against. */
+  get #reference(): HTMLElement | VirtualElement | undefined {
+    return this.anchor ?? this.invoker;
+  }
 
-    this.#lower();
-    this.#layeredCtrl?.removeEventListener('before-show', this.#raise);
-    this.#layeredCtrl?.removeEventListener(
-      'before-hide',
-      swallowHeldEnterKeyup
+  /** The element promoted to the top layer. */
+  get #layer(): HTMLElement | null {
+    return (
+      this.shadowRoot?.querySelector<HTMLElement>('.overlay-layer') ?? null
     );
-    this.#layeredCtrl?.removeEventListener('before-hide', this.#noteFocus);
-    this.#layeredCtrl?.removeEventListener('hide', this.#lower);
-    this.#layeredCtrl?.removeEventListener('hide', this.#returnFocus);
-    this.#layeredCtrl?.removeEventListener('hide', this.#passOnEscape);
-    this.#layeredCtrl?.removeEventListener('before-show', this.#noteOpening);
-    this.#layeredCtrl?.removeEventListener(
-      'show',
-      this.#closeIfClosedWhileOpening
+  }
+
+  /** The element Popper positions, inside the layer. */
+  get #wrapper(): HTMLElement | null {
+    return (
+      this.shadowRoot?.querySelector<HTMLElement>('.overlay-position') ?? null
     );
-    this.#layeredCtrl = null;
+  }
 
-    super._teardownOverlayCtrl();
+  get #pane(): HTMLElement | null {
+    return this.shadowRoot?.querySelector<HTMLElement>('.popover-pane') ?? null;
   }
 
   /**
-   * Whether focus is in the popover's content, slotted or not. Lion only
-   * checks its own content node, in the shadow root, so it misses slotted
-   * content and leaves focus on a hidden element when the popover closes.
+   * The element that opens the popover: an explicit anchor first, then `for`,
+   * then a slotted `slot="invoker"` child.
    */
-  #hasFocusInContent(): boolean {
-    const active = (this.getRootNode() as Document | ShadowRoot).activeElement;
-    if (!active) {
-      return false;
-    }
-
-    const invoker = this._overlayInvokerNode;
-    if (invoker && (invoker === active || invoker.contains(active))) {
-      return false;
-    }
-
-    return active === this || this.contains(active);
-  }
-
-  #noteFocus = (): void => {
-    this.#closingWithFocusInContent = this.#hasFocusInContent();
-  };
-
-  /**
-   * Returns focus to the invoker once the popover has closed, if focus was in
-   * the content and hasn't since gone somewhere that can hold it. Judged the
-   * same way as `craft-dialog`'s return, with `isFocusable()`.
-   */
-  #returnFocus = (): void => {
-    if (!this.#closingWithFocusInContent) {
-      return;
-    }
-
-    this.#closingWithFocusInContent = false;
-    if (isFocusable(document.activeElement) && !this.#hasFocusInContent()) {
-      return;
-    }
-
-    (
-      this._overlayCtrl as unknown as {elementToFocusAfterHide?: HTMLElement}
-    ).elementToFocusAfterHide?.focus();
-  };
-
-  /**
-   * Lets Escape on the invoker of a closed popover reach the popover around
-   * it. Lion only skips a closed overlay's Escape handler once Escape itself
-   * closed it; closed any other way, the handler claims the next Escape, so
-   * the outer popover needs a second press.
-   */
-  #passOnEscape = (): void => {
-    (
-      this._overlayCtrl as unknown as {__escKeyHandlerCalled: boolean}
-    ).__escKeyHandlerCalled = true;
-  };
-
-  /** Whether Lion's `show()` is still running. */
-  #opening = false;
-
-  /**
-   * Whether the popover is still opening. `opened` only turns true once it has
-   * finished, so until then setting it to false does nothing; use `hide()`.
-   */
-  protected get _isOpening(): boolean {
-    return this.#opening;
-  }
-
-  /** Whether the popover was closed while {@link #opening}. */
-  #closedWhileOpening = false;
-
-  #noteOpening = (event: Event): void => {
-    if (!event.defaultPrevented) {
-      this.#opening = true;
-      this.#closedWhileOpening = false;
-    }
-  };
-
-  /**
-   * Lion's `show()` sets `opened` once it finishes, even when `hide()` closed
-   * the popover in the meantime, which would show it again. Choosing a menu
-   * item right after opening the menu does that.
-   */
-  #closeIfClosedWhileOpening = (): void => {
-    this.#opening = false;
-    if (this.#closedWhileOpening) {
-      this.#closedWhileOpening = false;
-      this.opened = false;
-    }
-  };
-
-  #raise = () => raiseOverlay(this);
-
-  #lower = () => lowerOverlay(this);
-
-  // @ts-expect-error – Lion expects this to return an OverlayConfig
-  _defineOverlayConfig() {
-    return {
-      ...withDropdownConfig(),
-      zIndex: popoverLayer(),
-      handlesAccessibility: !this.withoutInvokerAria,
-      inheritsReferenceWidth: this.matchInvokerWidth
-        ? ('min' as const)
-        : ('none' as const),
-      popperConfig: {
-        // Position relative to the viewport so the overlay escapes any
-        // overflow-clipping / scrolling ancestor (e.g. a popover whose pane has
-        // `overflow: auto`). Without this, a popover nested inside another
-        // popover's scroll container gets clipped.
-        strategy: 'fixed' as const,
-        placement: this.placement,
-        modifiers: [
-          {
-            name: 'offset',
-            options: {
-              offset: [0, this.distance],
-            },
-          },
-          ...viewportEscapingModifiers(),
-          fitAvailableBlockSize,
-        ],
-      },
-    };
-  }
-
-  /**
-   * The popover content lives in the shadow DOM so the component can provide
-   * the scrollable `.content` wrapper (with body/footer slots). Lion's default
-   * getter only looks for a light-DOM `[slot="content"]` child, so we point it
-   * at the shadow node instead. Lion positions `#overlay-content-node-wrapper`
-   * around it, mirroring how LionSelectRich handles shadow-DOM content.
-   */
-  protected override get _overlayContentNode(): HTMLElement {
-    return this.shadowRoot?.querySelector('.popover-pane') as HTMLElement;
-  }
-
-  // Resolve the invoker: explicit anchor first, then `for`, then a slotted
-  // `slot="invoker"` child.
-  // @ts-ignore Lion's JSDoc types this getter as always-defined.
-  override get _overlayInvokerNode(): HTMLElement | undefined {
+  get invoker(): HTMLElement | undefined {
     if (this.anchor instanceof HTMLElement) {
       return this.anchor;
     }
@@ -425,42 +320,517 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
       }
       return (root.getElementById(this.for) as HTMLElement | null) ?? undefined;
     }
-    return super._overlayInvokerNode;
+    return Array.from(this.children).find(
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child.slot === 'invoker'
+    );
   }
 
-  get _overlayReferenceNode(): HTMLElement | undefined {
-    return this.anchor as HTMLElement | undefined;
+  /** Opens the popover. Resolves once it has opened. */
+  async show(): Promise<void> {
+    this.#request(true);
+    await this.updateComplete;
   }
 
-  // The pane is a disclosure panel, not a dialog. Lion gives overlay content
-  // that has no role `role="dialog"`, so `role="none"` claims it first, while
-  // Lion still keeps the invoker's `aria-expanded` in sync.
+  /** Closes the popover. Resolves once it has closed. */
+  async hide(): Promise<void> {
+    this.#request(false);
+    await this.updateComplete;
+  }
+
+  /** Re-measures the pane's position, for an anchor that has moved. */
+  reposition(): void {
+    void this.#popper?.update();
+  }
+
+  /** Opens the popover if it's closed, and closes it if it's open. */
+  async toggle(): Promise<void> {
+    await (this.open ? this.hide() : this.show());
+  }
+
+  /**
+   * Called once the popover is wired to its invoker, after its first render
+   * and again after it's reconnected following a removal.
+   */
+  protected _setupOverlay(): void {}
+
+  /** Called when the popover is removed from the document for good. */
+  protected _teardownOverlay(): void {}
+
+  /** Called once the pane is showing and positioned. */
+  protected _overlayShown(): void {}
+
+  /**
+   * Re-binds the popover to its current invoker. Call it after replacing the
+   * invoker by means a slot change doesn't report.
+   */
+  protected _syncInvoker(): void {
+    const node = this.invoker ?? null;
+
+    if (node === this.#invoker?.node) {
+      this.#syncInvokerAria();
+    } else {
+      this.#unbindInvoker();
+
+      if (node) {
+        this.#invoker = {
+          node,
+          ariaExpanded: node.getAttribute('aria-expanded'),
+          ownsAria: false,
+        };
+        node.addEventListener('click', this.#onInvokerClick);
+        node.addEventListener('keyup', this.#onEscape);
+        node.addEventListener('focusout', this.#onInvokerFocusOut);
+        if (this.#shown) {
+          this.#addPointerListeners(node);
+        }
+        this.#syncInvokerAria();
+      }
+    }
+
+    // A new virtual anchor can keep the invoker it had, as its context element.
+    // A Popper only follows the scroll containers it found when created.
+    const reference = this.#reference;
+    if (!reference) {
+      if (this.#shown) {
+        this.#hidePane();
+        this.#awaitingReference = true;
+      }
+    } else if (this.#shown) {
+      if (this.#popper?.state.elements.reference !== reference) {
+        this.#position();
+      }
+    } else if (this.#awaitingReference && this.open) {
+      this.#showPane();
+    }
+  }
+
+  #unbindInvoker(): void {
+    if (!this.#invoker) {
+      return;
+    }
+
+    const {node, ariaExpanded, ownsAria} = this.#invoker;
+    node.removeEventListener('click', this.#onInvokerClick);
+    node.removeEventListener('keyup', this.#onEscape);
+    node.removeEventListener('focusout', this.#onInvokerFocusOut);
+    this.#removePointerListeners(node);
+    if (ownsAria) {
+      this.#restoreAttribute(node, 'aria-expanded', ariaExpanded);
+    }
+    this.#invoker = null;
+  }
+
+  #restoreAttribute(node: HTMLElement, name: string, value: string | null) {
+    if (value === null) {
+      node.removeAttribute(name);
+    } else {
+      node.setAttribute(name, value);
+    }
+  }
+
+  #syncInvokerAria(): void {
+    if (!this.#invoker) {
+      return;
+    }
+
+    const invoker = this.#invoker;
+
+    if (!this.withoutInvokerAria) {
+      invoker.node.setAttribute('aria-expanded', String(this.#shown));
+      invoker.ownsAria = true;
+    } else if (invoker.ownsAria) {
+      this.#restoreAttribute(
+        invoker.node,
+        'aria-expanded',
+        invoker.ariaExpanded
+      );
+      invoker.ownsAria = false;
+    }
+  }
+
+  /**
+   * Asks to open or close: announces it with a cancelable `craft-before-*`
+   * event, then flips `open`, which the update applies.
+   */
+  #request(opened: boolean): void {
+    if (opened === this.open) {
+      return;
+    }
+
+    const event = new CustomEvent(
+      opened ? 'craft-before-show' : 'craft-before-hide',
+      {cancelable: true}
+    );
+    this.dispatchEvent(event);
+
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    this.open = opened;
+  }
+
+  #onInvokerClick = (): void => {
+    const invoker = this.#invoker?.node;
+
+    if (
+      this.manual ||
+      !invoker ||
+      (invoker as HTMLButtonElement).disabled ||
+      invoker.getAttribute('aria-disabled') === 'true'
+    ) {
+      return;
+    }
+
+    this.#request(!this.open);
+  };
+
+  /** Whether a control inside the popover acted on the last Escape keydown. */
+  #escapeHandledInside = false;
+
+  /**
+   * The popover closes on Escape's keyup, so its keydown would otherwise reach
+   * an ancestor's own Escape handling, such as a panel that closes on it.
+   * Marking it handled leaves the key to the popover alone — unless something
+   * inside, such as a combobox closing its list, already took it.
+   */
+  #claimEscape = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') {
+      return;
+    }
+
+    this.#escapeHandledInside = event.defaultPrevented;
+
+    if (this.open) {
+      event.preventDefault();
+    }
+  };
+
+  /**
+   * Closes on an Escape released in the content or on the invoker. A nested
+   * popover that closes on it marks the event, so the one around it stays
+   * open; a closed popover's invoker passes it on to the popover around it.
+   */
+  #onEscape = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape' || isEscapeClaimed(event)) {
+      return;
+    }
+
+    if (this.#escapeHandledInside) {
+      this.#escapeHandledInside = false;
+      claimEscape(event);
+      return;
+    }
+
+    if (!this.open) {
+      return;
+    }
+
+    claimEscape(event);
+    this.#request(false);
+  };
+
+  #onCloseOverlay = (event: Event): void => {
+    event.stopPropagation();
+    this.#request(false);
+  };
+
+  #onPointerDownInside = (): void => {
+    this.#pointerDownInside = true;
+  };
+
+  #onPointerUpInside = (): void => {
+    this.#pointerUpInside = true;
+  };
+
+  /**
+   * Closes on a click that both started and ended outside the content and the
+   * invoker. The document sees the mouseup first, in its capture phase, so the
+   * decision waits a task for the inside listeners to report.
+   */
+  #onDocumentPointerUp = (): void => {
+    setTimeout(() => {
+      if (!this.#pointerDownInside && !this.#pointerUpInside) {
+        this.#request(false);
+      }
+
+      this.#pointerDownInside = false;
+      this.#pointerUpInside = false;
+    });
+  };
+
+  /** Focus leaving the window, into another frame or app, closes it too. */
+  #onWindowBlur = (): void => {
+    setTimeout(() => this.#request(false));
+  };
+
+  #addPointerListeners(node: HTMLElement): void {
+    node.addEventListener('mousedown', this.#onPointerDownInside, true);
+    node.addEventListener('mouseup', this.#onPointerUpInside, true);
+  }
+
+  #removePointerListeners(node: HTMLElement): void {
+    node.removeEventListener('mousedown', this.#onPointerDownInside, true);
+    node.removeEventListener('mouseup', this.#onPointerUpInside, true);
+  }
+
+  /**
+   * Whether focus is in the popover's content, slotted or not, rather than on
+   * its invoker.
+   */
+  #hasFocusInContent(): boolean {
+    const active = (this.getRootNode() as Document | ShadowRoot).activeElement;
+    if (!active) {
+      return false;
+    }
+
+    const invoker = this.invoker;
+    if (invoker && (invoker === active || invoker.contains(active))) {
+      return false;
+    }
+
+    return active === this || this.contains(active);
+  }
+
+  #popperOptions(): Partial<PopperOptions> {
+    return {
+      // Position relative to the viewport, which is also what the top layer
+      // places against.
+      strategy: 'fixed',
+      placement: this.placement,
+      modifiers: [
+        ...overlayModifiers(this.distance),
+        fitAvailableBlockSize,
+        ...(this.matchInvokerWidth ? [matchReferenceWidth] : []),
+      ],
+    };
+  }
+
+  /** Sizes the pane to at least its reference's width, when asked to. */
+  #syncReferenceWidth(): void {
+    const wrapper = this.#wrapper;
+    const reference = this.#reference;
+
+    if (!wrapper) {
+      return;
+    }
+
+    if (this.matchInvokerWidth && reference) {
+      wrapper.style.minWidth = `${reference.getBoundingClientRect().width}px`;
+      wrapper.style.width = 'auto';
+    } else {
+      wrapper.style.removeProperty('min-width');
+      wrapper.style.removeProperty('width');
+    }
+  }
+
+  /** Positions the pane against the current reference with a new Popper. */
+  #position(): void {
+    const wrapper = this.#wrapper;
+    const reference = this.#reference;
+
+    this.#popper?.destroy();
+    this.#popper = null;
+
+    if (!wrapper) {
+      return;
+    }
+
+    this.#syncReferenceWidth();
+
+    if (reference) {
+      this.#popper = createPopper(
+        reference as Element,
+        wrapper,
+        this.#popperOptions()
+      );
+      this.#popper.forceUpdate();
+    }
+  }
+
+  #showPane(): void {
+    const layer = this.#layer;
+    const wrapper = this.#wrapper;
+
+    // A detached layer can't enter the top layer. Reconnecting shows it.
+    if (!layer || !wrapper || this.#shown || !this.isConnected) {
+      return;
+    }
+
+    // Without an anchor or invoker there's nothing to show it beside.
+    this.#awaitingReference = !this.#reference;
+    if (this.#awaitingReference) {
+      return;
+    }
+
+    showLayer(layer);
+
+    this.#shown = true;
+    this.#syncInvokerAria();
+    this.#position();
+
+    this.#addPointerListeners(wrapper);
+    if (this.#invoker) {
+      this.#addPointerListeners(this.#invoker.node);
+    }
+    document.documentElement.addEventListener(
+      'mouseup',
+      this.#onDocumentPointerUp,
+      true
+    );
+    window.addEventListener('blur', this.#onWindowBlur);
+
+    this._overlayShown();
+  }
+
+  #hidePane({restoreFocus = true} = {}): void {
+    const layer = this.#layer;
+    const wrapper = this.#wrapper;
+
+    if (!layer || !wrapper || !this.#shown) {
+      return;
+    }
+
+    const focusWasInContent = restoreFocus && this.#hasFocusInContent();
+    swallowHeldEnterKeyup();
+
+    hideLayer(layer);
+    this.#popper?.destroy();
+    this.#popper = null;
+    this.#shown = false;
+    this.#syncInvokerAria();
+
+    this.#removePointerListeners(wrapper);
+    if (this.#invoker) {
+      this.#removePointerListeners(this.#invoker.node);
+    }
+    document.documentElement.removeEventListener(
+      'mouseup',
+      this.#onDocumentPointerUp,
+      true
+    );
+    window.removeEventListener('blur', this.#onWindowBlur);
+    this.#pointerDownInside = false;
+    this.#pointerUpInside = false;
+
+    if (focusWasInContent) {
+      this.#returnFocus();
+    }
+  }
+
+  /**
+   * Returns focus to the invoker once the popover has closed with focus in its
+   * content, unless focus has since gone somewhere that can hold it. Judged the
+   * same way as `craft-dialog`'s return, with `isFocusable()`.
+   */
+  #returnFocus(): void {
+    if (isFocusable(document.activeElement) && !this.#hasFocusInContent()) {
+      return;
+    }
+
+    const invoker = this.invoker;
+    invoker?.focus();
+    invoker?.scrollIntoView({block: 'nearest'});
+  }
+
+  // The pane is a disclosure panel, not a dialog, so it takes no role.
   protected override render(): unknown {
     return html`
-      <slot name="invoker"></slot>
+      <slot name="invoker" @slotchange=${this.#onInvokerSlotChange}></slot>
       <slot name="backdrop"></slot>
-      <div id="overlay-content-node-wrapper">
-        <div class="popover-pane" part="popup" role="none">
-          <slot name="content">
-            <slot name="content-body"></slot>
-            <slot name="content-footer"></slot>
-          </slot>
+      <!--
+        Popper looks for the pane's containing block up its ancestors, and the
+        shadow root ends that search. Nesting the positioned element below the
+        layer keeps the search from leaving through the host and landing on a
+        transformed ancestor the top layer has already escaped.
+      -->
+      <div
+        class="overlay-layer"
+        role="none"
+        popover=${supportsPopover ? 'manual' : nothing}
+      >
+        <div class="overlay-position">
+          <div
+            class="popover-pane"
+            part="popup"
+            @keyup=${this.#onEscape}
+            @close-overlay=${this.#onCloseOverlay}
+          >
+            <slot name="content">
+              <slot name="content-body"></slot>
+              <slot name="content-footer"></slot>
+            </slot>
+          </div>
         </div>
       </div>
     `;
   }
 
+  #onInvokerSlotChange = (): void => {
+    if (this.#isSetUp) {
+      this._syncInvoker();
+    }
+  };
+
   override connectedCallback() {
     this.#ensureContentWrapper();
     super.connectedCallback();
+
+    // A popover moved in the DOM is disconnected and reconnected without
+    // another first render.
+    if (this.hasUpdated && !this.#isSetUp) {
+      this.#setup();
+    }
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+
+    // Leaving the document drops the pane from the top layer. A popover that's
+    // only being moved shows it again from where it lands.
+    this.#hidePane({restoreFocus: false});
+
+    void this.updateComplete.then(() => {
+      if (this.isConnected) {
+        // Moved: `for` may name another element in the root it landed in.
+        this._syncInvoker();
+        if (this.open) {
+          this.#showPane();
+        }
+        return;
+      }
+
+      if (this.open) {
+        swallowHeldEnterKeyup();
+      }
+
+      this.#unbindInvoker();
+      this._teardownOverlay();
+      this.#isSetUp = false;
+    });
+  }
+
+  protected override firstUpdated(changed: PropertyValues): void {
+    super.firstUpdated(changed);
+    this.#setup();
+  }
+
+  #setup(): void {
+    this.#isSetUp = true;
+    this._syncInvoker();
+    this._setupOverlay();
+
+    if (this.open) {
+      this.#showPane();
+    }
   }
 
   /**
-   * Lion expects popover content as a light-DOM child with `slot="content"`.
-   * Consumers may put their content in the default slot, so wrap it on
-   * connect. Whitespace-only default content is left alone — a generated
-   * (empty) `slot="content"` element would otherwise suppress the shadow
-   * slot's `content-body`/`content-footer` fallback.
+   * Popover content may be in the default slot rather than `slot="content"`,
+   * so it's wrapped on connect. Whitespace-only default content is left alone:
+   * a generated, empty `slot="content"` element would otherwise suppress the
+   * shadow slot's `content-body`/`content-footer` fallback.
    */
   #ensureContentWrapper() {
     if (this.#contentWrapper?.isConnected) {
@@ -489,57 +859,36 @@ export default class CraftPopover extends OverlayMixin(LitElement) {
   protected override updated(changed: PropertyValues) {
     super.updated(changed);
 
-    if (!this._overlayCtrl) {
+    if (!this.#isSetUp) {
       return;
     }
 
     if (changed.has('for') || changed.has('anchor')) {
-      this._overlayCtrl.updateConfig({
-        invokerNode: this._overlayInvokerNode,
-        referenceNode: this._overlayReferenceNode,
-      });
+      this._syncInvoker();
     }
 
-    // `_defineOverlayConfig()` is read once, when the controller is built, so
-    // without this a `placement`, `distance` or `match-invoker-width` set or
-    // changed after that point is simply never applied — the overlay keeps
-    // whatever it was given first.
+    if (changed.has('withoutInvokerAria')) {
+      this.#syncInvokerAria();
+    }
+
+    // The first render only reports the initial state.
+    if (changed.has('open') && changed.get('open') !== undefined) {
+      if (this.open) {
+        this.#showPane();
+      } else {
+        this.#hidePane();
+      }
+    }
+
     if (
-      changed.has('placement') ||
-      changed.has('distance') ||
-      changed.has('matchInvokerWidth') ||
-      changed.has('withoutInvokerAria')
+      this.#popper &&
+      (changed.has('placement') ||
+        changed.has('distance') ||
+        changed.has('matchInvokerWidth'))
     ) {
-      this._overlayCtrl.updateConfig(this._defineOverlayConfig());
+      this.#syncReferenceWidth();
+      void this.#popper.setOptions(this.#popperOptions());
     }
-  }
-
-  /**
-
-   * Opens the popover. Resolves once the overlay has finished opening.
-
-   */
-
-  async show(): Promise<void> {
-    this.opened = true;
-    await this.updateComplete;
-    await this.open();
-  }
-
-  /**
-
-   * Closes the popover. Resolves once the overlay has finished closing.
-
-   */
-
-  async hide(): Promise<void> {
-    if (this.#opening) {
-      this.#closedWhileOpening = true;
-    }
-
-    this.opened = false;
-    await this.updateComplete;
-    await this.close();
   }
 }
 

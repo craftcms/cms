@@ -23,7 +23,7 @@ it('orders by each column and direction without logging a deprecation', function
 
 it('declares items for every array in tool input schemas', function () {
     Edition::set(Edition::Pro);
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 
@@ -49,7 +49,7 @@ it('declares items for every array in tool input schemas', function () {
 
 it('names every tool in snake_case', function () {
     Edition::set(Edition::Pro);
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 

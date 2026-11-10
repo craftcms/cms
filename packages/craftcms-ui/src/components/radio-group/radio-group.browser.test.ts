@@ -6,6 +6,8 @@ import '../../styles/cp.css';
 import '../icon/icon.js';
 import '../radio/radio.js';
 import './radio-group.js';
+import '../checkbox/checkbox.js';
+import '../checkbox-group/checkbox-group.js';
 import {contrast} from '../../../test/contrast';
 import {
   PALETTE_SAMPLE,
@@ -80,11 +82,67 @@ it('moves the selection with the arrow keys', async () => {
   await userEvent.keyboard('{ArrowRight}');
   await settle();
   expect(document.activeElement).toBe(inputs[2]);
-  expect(group.modelValue).toBe('end');
+  expect(group.value).toBe('end');
 
   await userEvent.tab();
   expect(inputs).not.toContain(document.activeElement);
 });
+
+it.each([
+  ['share a name', ' name="size"', ' name="color"'],
+  ['have no name', '', ''],
+])(
+  'makes each group one Tab stop whose arrow keys select its next enabled option, when its radios %s',
+  async (_, sizeName, colorName) => {
+    document.body.innerHTML = `
+      <button>Before</button>
+      <craft-radio-group label="Size"${sizeName}>
+        <craft-radio value="s" label="Small"></craft-radio>
+        <craft-radio value="m" label="Medium" disabled></craft-radio>
+        <craft-radio value="l" label="Large" checked></craft-radio>
+      </craft-radio-group>
+      <craft-radio-group label="Color"${colorName}>
+        <craft-radio value="r" label="Red"></craft-radio>
+        <craft-radio value="g" label="Green"></craft-radio>
+      </craft-radio-group>
+      <button>After</button>`;
+    const [size, color] = document.querySelectorAll('craft-radio-group');
+    const [before, after] = document.querySelectorAll('button');
+    await Promise.all([size!.updateComplete, color!.updateComplete]);
+    await settle();
+    const [s, , l, r, g] = document.querySelectorAll('input');
+    before!.focus();
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(l);
+
+    await userEvent.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(s);
+    expect(size!.value).toBe('s');
+
+    await userEvent.keyboard('{ArrowRight}');
+    expect(document.activeElement).toBe(l);
+    expect(size!.value).toBe('l');
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(r);
+    expect(color!.value).toBe('');
+
+    await userEvent.keyboard(' ');
+    expect(color!.value).toBe('r');
+
+    await userEvent.keyboard('{ArrowUp}');
+    expect(document.activeElement).toBe(g);
+    expect([size!.value, color!.value]).toEqual(['l', 'g']);
+
+    await userEvent.tab();
+    expect(document.activeElement).toBe(after);
+
+    await settle();
+    await userEvent.tab({shift: true});
+    expect(document.activeElement).toBe(g);
+  }
+);
 
 it('draws the focus ring around the focused button', async () => {
   const {radios, inputs} = await render();
@@ -112,7 +170,7 @@ it('selects an option when its button is clicked', async () => {
   await parkPointer();
   await settle();
 
-  expect(group.modelValue).toBe('start');
+  expect(group.value).toBe('start');
 });
 
 it('joins the buttons, rounding only the outer corners', async () => {
@@ -313,7 +371,7 @@ it('lays wrapped cards out in the order the arrow keys follow', async () => {
   expect(document.activeElement).toBe(inputs[1]);
   await userEvent.keyboard('{ArrowRight}');
   await settle();
-  expect(group.modelValue).toBe('cards-grid');
+  expect(group.value).toBe('cards-grid');
 });
 
 it('selects an option when its illustration is clicked', async () => {
@@ -332,7 +390,7 @@ it('selects an option when its illustration is clicked', async () => {
   await parkPointer();
   await settle();
 
-  expect(group.modelValue).toBe('blocks');
+  expect(group.value).toBe('blocks');
 });
 
 it('draws the focus ring around the focused card', async () => {
@@ -557,6 +615,30 @@ it('draws a wrapped button group as separate buttons', async () => {
   );
 });
 
+it('keeps a button group joined in a flex row that sizes it to its content', async () => {
+  const {group, radios} = await render('button-group');
+  const row = document.createElement('div');
+  row.style.display = 'flex';
+  group.replaceWith(row);
+  row.append(group);
+  // A fractional row width, which `clientWidth` would round down.
+  for (const radio of radios) {
+    radio.style.inlineSize = '50.1px';
+  }
+
+  let flips = 0;
+  const observer = new MutationObserver(() => flips++);
+  observer.observe(group, {attributeFilter: ['data-wrapped']});
+  for (let frame = 0; frame < 5; frame++) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+  await settle();
+  observer.disconnect();
+
+  expect(group.hasAttribute('data-wrapped')).toBe(false);
+  expect(flips).toBe(0);
+});
+
 it.each(['cards', 'card-group'])(
   'shrinks %s to fit a grid parent narrower than the row',
   async (appearance) => {
@@ -573,3 +655,62 @@ it.each(['cards', 'card-group'])(
     expect(rows(radios)).toBeGreaterThan(1);
   }
 );
+
+it('follows its form back to its first selection when the form is reset', async () => {
+  const template = document.createElement('template');
+  template.innerHTML = `
+    <form>
+      <craft-radio-group appearance="button-group" label="Theme">
+        <craft-radio>
+          <input slot="input" type="radio" name="theme" value="light" checked>
+          <label slot="label">Light</label>
+        </craft-radio>
+        <craft-radio>
+          <input slot="input" type="radio" name="theme" value="dark">
+          <label slot="label">Dark</label>
+        </craft-radio>
+      </craft-radio-group>
+      <craft-checkbox-group label="Kinds">
+        <craft-checkbox>
+          <input slot="input" type="checkbox" name="kinds[]" value="image" checked>
+          <label slot="label">Image</label>
+        </craft-checkbox>
+        <craft-checkbox>
+          <input slot="input" type="checkbox" name="kinds[]" value="video">
+          <label slot="label">Video</label>
+        </craft-checkbox>
+      </craft-checkbox-group>
+      <button type="reset">Reset</button>
+    </form>
+  `;
+  document.body.append(template.content);
+  const radioGroup = document.querySelector('craft-radio-group')!;
+  const checkboxGroup = document.querySelector('craft-checkbox-group')!;
+  const choices = [
+    ...document.querySelectorAll<CraftRadio>('craft-radio, craft-checkbox'),
+  ];
+  await settle();
+
+  await userEvent.click(choices[1]!.querySelector('input')!);
+  await userEvent.click(choices[3]!.querySelector('input')!);
+  expect(radioGroup.value).toBe('dark');
+  expect(checkboxGroup.value).toEqual(['image', 'video']);
+
+  await userEvent.click(document.querySelector('button')!);
+  await settle();
+
+  expect(radioGroup.value).toBe('light');
+  expect(checkboxGroup.value).toEqual(['image']);
+  expect(choices.map((choice) => choice.checked)).toEqual([
+    true,
+    false,
+    true,
+    false,
+  ]);
+  expect(choices.map((choice) => choice.hasAttribute('checked'))).toEqual([
+    true,
+    false,
+    true,
+    false,
+  ]);
+});

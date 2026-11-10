@@ -56,7 +56,7 @@
     "league/commonmark": "^2.8",
     "league/flysystem-path-prefixing": "^3.31",
     "league/uri": "^7.0",
-    "mcp/sdk": "0.8.1",
+    "mcp/sdk": "~0.9.0",
     "moneyphp/money": "^4.0",
     "phpoffice/phpspreadsheet": "^5.3",
     "pragmarx/google2fa": "^9.0",
@@ -149,13 +149,13 @@
     "rector": "rector",
     "tests": [
       "Composer\\Config::disableProcessTimeout",
-      "./vendor/bin/pest --parallel --processes=4 --compact"
+      "./vendor/bin/pest --parallel --processes=auto --max-processes=4 --compact"
     ],
     "tests-browser": [
       "Composer\\Config::disableProcessTimeout",
       "./vendor/bin/pest tests/Browser"
     ],
-    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel",
+    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration \"$(pwd)/yii2-adapter/phpunit.xml.dist\" --test-directory ./tests-laravel",
     "post-autoload-dump": [
       "@clear",
       "@prepare"

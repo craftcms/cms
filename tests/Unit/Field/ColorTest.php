@@ -108,8 +108,8 @@ it('picks the color from the palette when custom colors aren’t allowed', funct
         ->and($control->inputSchema())->toBe(['type' => 'string', 'enum' => ['#e5422b', '#2563eb']])
         ->and($select->attr('colors'))->toBe('["#e5422b","#2563eb"]')
         ->and($select->attr('labels'))->toBe('{"#e5422b":"Craft red"}')
-        ->and($select->attr('model-value'))->toBe('#e5422b')
-        ->and($select->attr('aria-invalid'))->toBe('true')
+        ->and($select->attr('value'))->toBe('#e5422b')
+        ->and($select->attr('invalid'))->not->toBeNull()
         ->and($crawler->filter('craft-input-color'))->toHaveCount(0);
 });
 
@@ -124,7 +124,7 @@ it('offers a custom color beside the palette when custom colors are allowed', fu
 
     expect($select->attr('allow-custom'))->not->toBeNull()
         ->and($select->attr('name'))->toBe('fields[color][color]')
-        ->and($select->attr('model-value'))->toBe($selected)
+        ->and($select->attr('value'))->toBe($selected)
         // "Custom…" reveals the custom color, as a field toggle.
         ->and($select->attr('class'))->toContain('fieldtoggle')
         ->and($select->attr('data-target-prefix').'__custom__')->toBe('#'.$input->attr('id'))

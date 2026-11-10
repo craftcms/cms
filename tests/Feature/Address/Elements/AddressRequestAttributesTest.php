@@ -35,3 +35,92 @@ it('prefers top-level attributes over the nested address fields', function () {
 
     expect($address->locality)->toBe('Salem');
 });
+
+it('drops a province from the previous country’s list when the country changes', function () {
+    $address = new Address(['countryCode' => 'US']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => 'AR'],
+    ]);
+
+    expect($address->countryCode)->toBe('CA')
+        ->and($address->administrativeArea)->toBeNull();
+});
+
+it('drops a province with surrounding spaces from the previous country’s list', function () {
+    $address = new Address(['countryCode' => 'US']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => ' AR '],
+    ]);
+
+    expect($address->administrativeArea)->toBeNull();
+});
+
+it('keeps a province that belongs to the new country', function () {
+    $address = new Address(['countryCode' => 'US']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => 'NS'],
+    ]);
+
+    expect($address->administrativeArea)->toBe('NS');
+});
+
+it('keeps a province with surrounding spaces that belongs to the new country', function () {
+    $address = new Address(['countryCode' => 'US']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => ' NS '],
+    ]);
+
+    expect($address->administrativeArea)->toBe(' NS ');
+});
+
+it('keeps an unrecognized province when the country is unchanged', function () {
+    $address = new Address(['countryCode' => 'CA', 'administrativeArea' => 'XX']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'CA',
+        'address' => ['administrativeArea' => 'XX'],
+    ]);
+
+    expect($address->administrativeArea)->toBe('XX');
+});
+
+it('drops a province from the previous country’s list when the new country has no list', function () {
+    $address = new Address(['countryCode' => 'US']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'DE',
+        'address' => ['administrativeArea' => 'AR'],
+    ]);
+
+    expect($address->administrativeArea)->toBeNull();
+});
+
+it('keeps a typed administrative area when neither country lists it', function () {
+    $address = new Address(['countryCode' => 'DE']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => 'FR',
+        'address' => ['administrativeArea' => 'Bretagne'],
+    ]);
+
+    expect($address->administrativeArea)->toBe('Bretagne');
+});
+
+it('keeps the administrative area when the country is cleared', function () {
+    $address = new Address(['countryCode' => 'US', 'administrativeArea' => 'OR']);
+
+    $address->setAttributesFromRequest([
+        'countryCode' => '',
+        'address' => ['administrativeArea' => 'OR'],
+    ]);
+
+    expect($address->administrativeArea)->toBe('OR');
+});

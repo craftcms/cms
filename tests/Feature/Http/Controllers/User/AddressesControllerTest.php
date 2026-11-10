@@ -69,6 +69,7 @@ test('index cards carry the nested actions the shared manager runs', function ()
                 'copyable' => true,
                 'duplicatable' => true,
                 'deletable' => true,
+                'comparable' => false,
             ]));
 });
 

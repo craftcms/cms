@@ -15,7 +15,7 @@ export interface InputPasswordConfig {
  * Creates a `<craft-input-password>` — the client-side twin of the PHP
  * `InputPassword` component (a text input with a built-in reveal toggle). The
  * native input lives in the light DOM as the component's form control; the
- * Lion-pushed control props are also mirrored on the host.
+ * control props are mirrored on the host too, as the server renders them.
  */
 export function createInputPassword(
   config: InputPasswordConfig = {}

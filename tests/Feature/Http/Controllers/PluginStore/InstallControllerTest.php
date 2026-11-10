@@ -95,7 +95,9 @@ test('index', function () {
 });
 
 test('index requires the Yii2 adapter alongside plugins that need it', function (array $input, array $composerRequire, array $requirements) {
-    $this->partialMock(Composer::class)->shouldReceive('getConfig')->andReturn(['require' => $composerRequire]);
+    $composer = $this->partialMock(Composer::class);
+    $composer->shouldReceive('getConfig')->andReturn(['require' => $composerRequire]);
+    $composer->shouldReceive('install')->once()->with($requirements, Mockery::any());
 
     $state = postJson(action([InstallController::class, 'index']), [
         'packageName' => 'craftcms/test-plugin',
@@ -105,7 +107,9 @@ test('index requires the Yii2 adapter alongside plugins that need it', function 
         ...$input,
     ])->viewData('state');
 
-    expect(Json::decode(Crypt::decrypt($state['data']))['requirements'])->toBe($requirements);
+    postJson(action([InstallController::class, 'composerInstall']), [
+        'data' => $state['data'],
+    ])->assertOk();
 })->with([
     'required' => [['requiresYii2Adapter' => '1'], [], ['craftcms/test-plugin' => '^1.0.0', 'craftcms/yii2-adapter' => '*']],
     'required and already in composer.json' => [['requiresYii2Adapter' => '1'], ['craftcms/yii2-adapter' => '^6.0'], ['craftcms/test-plugin' => '^1.0.0']],

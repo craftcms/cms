@@ -221,6 +221,30 @@ it('throws a command failed exception when backup shell command fails', function
     }
 });
 
+it('redacts the PostgreSQL password when a backup command fails', function (string $backupCommand, string $password, array $secrets) {
+    Cms::config()->backupCommand = $backupCommand.' '.backupsTestPhpCommand('exit(1);');
+
+    try {
+        app(Backups::class)->backupTo(
+            $this->tempDir.'/failure.sql',
+            backupsTestPgsqlConnection(['password' => $password]),
+        );
+        $this->fail('Expected backupTo() to throw CommandFailedException.');
+    } catch (CommandFailedException $e) {
+        expect($e->command)->toContain('PGPASSWORD=');
+
+        foreach ($secrets as $secret) {
+            expect($e->command)->not->toContain($secret)
+                ->and($e->getMessage())->not->toContain($secret);
+        }
+    }
+})->with([
+    'single quotes, password with a space' => ["PGPASSWORD='{password}'", 'hunter2 secret', ['hunter2', 'secret']],
+    'single quotes, password with a single quote' => ["PGPASSWORD='{password}'", "before'after-secret", ['before', 'after-secret']],
+    'double quotes, password with a space' => ['PGPASSWORD="{password}"', 'hunter2 secret', ['hunter2', 'secret']],
+    'no quotes' => ['PGPASSWORD={password}', 'hunter2-secret', ['hunter2-secret']],
+]);
+
 it('uses mysql default command generation for closure commands and respects event-mutated ignore tables', function () {
     $capturedDefaultCommand = null;
     $connection = backupsTestMysqlConnection();

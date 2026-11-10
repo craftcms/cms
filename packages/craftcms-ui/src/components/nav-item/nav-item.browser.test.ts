@@ -665,11 +665,11 @@ it('keeps its flyout’s and tooltip’s events inside the item', async () => {
     const branch = await railFixture();
     branch.flyoutOpen = true;
     await expect
-      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.opened)
+      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.open)
       .toBe(true);
     branch.flyoutOpen = false;
     await expect
-      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.opened)
+      .poll(() => branch.shadowRoot!.querySelector('craft-popover')!.open)
       .toBe(false);
 
     const leaf = document.createElement('craft-nav-item') as CraftNavItem;

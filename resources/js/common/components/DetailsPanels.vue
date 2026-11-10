@@ -12,9 +12,7 @@
   import '@craftcms/ui/components/disclosure/disclosure';
   import {t} from '@craftcms/ui';
   import {useEventListener, useLocalStorage} from '@vueuse/core';
-  import '@craftcms/ui/components/dialog/dialog';
   import {
-    computed,
     nextTick,
     onBeforeUnmount,
     onMounted,
@@ -32,6 +30,7 @@
     PreferredPanel,
     ScreenPanels,
   } from '@/common/composables/screenPanels';
+  import {usePageClickOutside} from '@/common/composables/usePageClickOutside';
   import {initialOf} from '@/common/utils/initialIcon';
   import type {DetailsPanel} from './detailsPanels';
 
@@ -113,89 +112,6 @@
    */
   const overlaid = useScreenDetailsOverlay();
 
-  /**
-   * With the rail kept apart from the panels, as on a page, a panel that
-   * overlays the content is modal: the panels move into a `craft-dialog`,
-   * which makes the rest of the page inert, stops it scrolling, and closes on
-   * Escape or a click outside. Panels beside their rail, as in a slideout or
-   * a preview's editor, stay as they are.
-   */
-  const isModal = computed(() => rail !== null && (overlaid?.value ?? false));
-  const dialogBody = useTemplateRef<HTMLElement>('dialogBody');
-
-  const openPanel = computed(() => findPanel(openPanelId.value));
-
-  /** A panel to move focus into once the dialog has opened, and taken focus itself. */
-  let focusOnDialogShow: {panelId: string; focus?: PanelFocusTarget} | null =
-    null;
-
-  // Menus and popovers in a panel fire `craft-show` and `craft-hide` too, and
-  // theirs bubble up through the dialog, so only the dialog's own count.
-  function onDialogShow(event: Event): void {
-    if (event.target !== event.currentTarget) {
-      return;
-    }
-
-    const pending = focusOnDialogShow;
-    focusOnDialogShow = null;
-
-    if (pending !== null) {
-      focusPanelNow(pending.panelId, pending.focus);
-    }
-  }
-
-  /**
-   * The dialog closed itself, on Escape or a click outside. It hands focus
-   * back to where it was when it opened.
-   */
-  function onDialogHide(event: Event): void {
-    if (event.target !== event.currentTarget) {
-      return;
-    }
-
-    if (openPanelId.value !== null) {
-      close(openPanelId.value, false);
-    }
-  }
-
-  /** The panel last opened, whose trigger takes focus when nothing else can. */
-  let lastOpenPanelId: string | null = null;
-
-  watch(openPanelId, (panelId) => {
-    if (panelId !== null) {
-      lastOpenPanelId = panelId;
-    }
-  });
-
-  /**
-   * Where focus goes as the dialog closes: back to what opened it, or, when
-   * that wasn't something focusable, such as a tap that doesn't focus on iOS,
-   * to the panel's trigger.
-   */
-  function dialogReturnFocus(opener: HTMLElement | null): HTMLElement | null {
-    if (opener && opener !== document.body && opener.isConnected) {
-      return opener;
-    }
-
-    return lastOpenPanelId
-      ? document.getElementById(triggerId(lastOpenPanelId))
-      : null;
-  }
-
-  // Leaving the dialog for the column, as the page widens, keeps focus in the
-  // open panel.
-  watch(isModal, async (modal, wasModal) => {
-    if (modal || !wasModal || openPanelId.value === null) {
-      return;
-    }
-
-    await nextTick();
-
-    if (!document.activeElement || document.activeElement === document.body) {
-      focusPanelNow(openPanelId.value);
-    }
-  });
-
   watch(
     () => overlaid?.value ?? false,
     (isOverlaid) => props.registry.setOverlaid(isOverlaid),
@@ -207,25 +123,16 @@
     void nextTick(() => document.getElementById(id)?.focus());
   }
 
-  function focusPanelNow(panelId: string, focus?: PanelFocusTarget): void {
-    const panel = findPanel(panelId);
-
-    (
-      focus?.() ??
-      panel?.initialFocus?.() ??
-      (panel && document.getElementById(panel.headingId))
-    )?.focus();
-  }
-
   function focusPanel(panelId: string, focus?: PanelFocusTarget): void {
-    // The dialog moves focus into itself as it opens, so this waits for that.
-    if (isModal.value) {
-      focusOnDialogShow = {panelId, focus};
+    void nextTick(() => {
+      const panel = findPanel(panelId);
 
-      return;
-    }
-
-    void nextTick(() => focusPanelNow(panelId, focus));
+      (
+        focus?.() ??
+        panel?.initialFocus?.() ??
+        (panel && document.getElementById(panel.headingId))
+      )?.focus();
+    });
   }
 
   function open(
@@ -325,6 +232,16 @@
     }
   }
 
+  const content = useTemplateRef<HTMLElement>('content');
+
+  // A panel overlaying a page closes on a click elsewhere on it.
+  usePageClickOutside(
+    () => [content.value, rail ? document.querySelector(rail) : null],
+    () =>
+      rail !== null && (overlaid?.value ?? false) && openPanelId.value !== null,
+    () => close(openPanelId.value!, false)
+  );
+
   useEventListener(window, 'hashchange', () => {
     if (!props.syncLocationHash) {
       return;
@@ -363,47 +280,29 @@
 
 <template>
   <div class="details-panels">
-    <!-- Panels come first: each trigger finds its panel by id when it connects.
-         While modal, they're moved into the dialog rather than re-rendered, so
-         the content each `ScreenPanel` moved into them stays put. -->
-    <Teleport :to="dialogBody ?? 'body'" :disabled="!isModal || !dialogBody">
-      <div
-        class="details-panels__content"
-        :hidden="openPanelId === null || undefined"
-      >
-        <section
-          v-for="panel in visiblePanels"
-          :id="panelElementId(panel.id)"
-          :key="panel.id"
-          :ref="sectionRef(panel.id)"
-          :aria-labelledby="panel.headingId"
-          :hidden="openPanelId !== panel.id"
-          @keydown="onPanelKeydown($event, panel.id)"
-        ></section>
-      </div>
-    </Teleport>
-    <craft-dialog
-      v-if="isModal"
-      class="details-panels__dialog"
-      :label="openPanel?.label ?? ''"
-      no-header
-      close-on-outside-click
-      .opened="openPanelId !== null"
-      .returnFocus="dialogReturnFocus"
-      @craft-show="onDialogShow"
-      @craft-hide="onDialogHide"
+    <!-- Panels come first: each trigger finds its panel by id when it connects. -->
+    <div
+      ref="content"
+      class="details-panels__content"
+      :hidden="openPanelId === null || undefined"
     >
-      <div ref="dialogBody" class="details-panels__dialog-body"></div>
-    </craft-dialog>
-    <!-- Open, the column folds out for the panel; in the dialog, it stays
-         folded. -->
+      <section
+        v-for="panel in visiblePanels"
+        :id="panelElementId(panel.id)"
+        :key="panel.id"
+        :ref="sectionRef(panel.id)"
+        :aria-labelledby="panel.headingId"
+        :hidden="openPanelId !== panel.id"
+        @keydown="onPanelKeydown($event, panel.id)"
+      ></section>
+    </div>
     <Teleport defer :to="rail ?? 'body'" :disabled="!rail">
       <div
         class="details-panels__rail"
         :class="{'details-panels__rail--detached': rail}"
         role="group"
         :aria-label="t('Details')"
-        :data-open="String(openPanelId !== null && !isModal)"
+        :data-open="String(openPanelId !== null)"
       >
         <craft-disclosure
           v-for="panel in visiblePanels"
@@ -460,52 +359,6 @@
     }
   }
 
-  /* A sheet along the inline end, as tall as what's on screen, set in from
-     the edges it sits against. */
-  .details-panels__dialog {
-    --_inset: var(--c-spacing-md);
-    --c-dialog-inline-size: min(calc(90vw - var(--_inset)), calc(400rem / 16));
-    --c-dialog-min-inline-size: 0;
-    --c-dialog-max-inline-size: calc(90vw - var(--_inset));
-    --c-dialog-block-size: calc(
-      var(--cp-visible-viewport-height, 100dvh) -
-        var(--cp-debug-bar-height, 0px) - 2 * var(--_inset)
-    );
-    --c-dialog-max-block-size: var(--c-dialog-block-size);
-  }
-
-  /*
-    With the keyboard open, iOS pans the screen behind the dialog with any
-    drag, however the page is locked, and too early for a script to stop it.
-    No touch on the dialog or its backdrop pans; scroll areas inside are scroll
-    containers of their own, so dragging in them still scrolls them.
-  */
-  .details-panels__dialog::part(dialog) {
-    touch-action: none;
-    margin-block: calc(var(--cp-visible-viewport-top, 0px) + var(--_inset)) auto;
-    margin-inline: auto var(--_inset);
-  }
-
-  /*
-    The page dims itself instead: with the keyboard open, iOS shows the page
-    past where a backdrop reaches, through its translucent toolbar.
-  */
-  .details-panels__dialog::part(dialog)::backdrop {
-    background-color: transparent;
-  }
-
-  .details-panels__dialog::part(body) {
-    display: flex;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .details-panels__dialog-body {
-    display: flex;
-    flex: 1;
-    min-inline-size: 0;
-  }
-
   .details-panels__content[hidden],
   .details-panels__content > section[hidden] {
     display: none;
@@ -514,7 +367,7 @@
   .details-panels__rail {
     display: flex;
     flex-direction: column;
-    gap: var(--c-spacing-md);
+    gap: var(--c-spacing-xs);
     box-sizing: border-box;
     inline-size: var(--cp-rail-width);
     padding: var(--c-spacing-md);
@@ -529,16 +382,27 @@
   }
 
   .details-panels__trigger {
+    --c-icon-size: 1em;
     display: grid;
     inline-size: var(--c-size-touch-target);
     aspect-ratio: 1;
     padding: 0;
     place-items: center;
-    border: 1px solid var(--c-color-border-quiet);
+    border: 1px solid transparent;
     border-radius: var(--c-radius-md);
-    background-color: var(--c-surface-raised);
-    color: inherit;
+    background-color: transparent;
+    color: var(--color-slate-700);
+    font-size: var(--c-text-base);
     cursor: pointer;
+  }
+
+  .details-panels__trigger:not([aria-expanded='true']) {
+    --c-focus-outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
+  .details-panels__trigger:not([aria-expanded='true']):hover {
+    background-color: color-mix(in srgb, currentColor, transparent 95%);
+    color: inherit;
   }
 
   .details-panels__trigger[aria-expanded='true'] {

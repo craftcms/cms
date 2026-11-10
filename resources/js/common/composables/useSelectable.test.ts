@@ -273,8 +273,7 @@ describe('useSelectable', () => {
       expect(selection.selectedIds.value).toEqual([]);
     });
 
-    // Lion re-fires `model-value-changed` when `.checked` is set programmatically.
-    it('ignores a re-fire whose value already matches, leaving the anchor put', () => {
+    it('ignores a value that already matches, leaving the anchor put', () => {
       const selection = useSelectable({ids: [1, 2, 3]});
 
       selection.setChecked(3, true);

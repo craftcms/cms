@@ -12,7 +12,6 @@ use craft\config\GeneralConfig;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Email\Data\EmailSettings;
 use CraftCms\Cms\Email\Data\MailSettings;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\SystemMessage\Actions\FormatSystemMessageMailAction;
@@ -20,6 +19,7 @@ use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
 use CraftCms\Cms\SystemMessage\Mailables\SystemMessageMailable;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateMode;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use yii\base\InvalidConfigException;
 use yii\mail\MailEvent;
@@ -111,14 +111,14 @@ class Mailer extends \yii\symfonymailer\Mailer
         ]));
 
         if ($this->template) {
-            Deprecator::log(
+            LegacyUsage::record(
                 'craft\\mail\\Mailer::$template',
                 '`craft\\mail\\Mailer::$template` is deprecated. Set the template via the email settings in Settings → Email instead.',
             );
         }
 
         if (!empty($this->siteOverrides)) {
-            Deprecator::log(
+            LegacyUsage::record(
                 'craft\\mail\\Mailer::$siteOverrides',
                 '`craft\\mail\\Mailer::$siteOverrides` is deprecated. Use the email settings in Settings → Email instead.',
             );

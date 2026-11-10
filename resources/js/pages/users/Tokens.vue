@@ -51,7 +51,7 @@
   });
   const revokeRequest = useHttp<
     {clientId: string; tokenId: string | null},
-    unknown
+    {redirect?: string}
   >({clientId: '', tokenId: null});
 
   // The groups and scopes shown in the modal. Existing tokens show the scopes
@@ -202,7 +202,12 @@
     revokeRequest.clientId = grant.clientId;
     revokeRequest.tokenId = grant.tokenId;
 
-    if (await revokeRequest.post(revokeAction().url)) {
+    const response = await revokeRequest.post(revokeAction().url);
+
+    // The screen goes away once there's nothing left to list or create.
+    if (response?.redirect) {
+      router.visit(response.redirect);
+    } else if (response) {
       router.reload({only: ['grants']});
     }
   }
@@ -277,7 +282,7 @@
         <div role="status" :class="{'mt-lg': newToken}">
           <craft-callout v-if="newToken" variant="success">
             <div class="grid gap-md">
-              <craft-input-copy .modelValue="newToken" monospace>
+              <craft-input-copy .value="newToken" monospace>
                 <label slot="label">{{ t('New token') }}</label>
               </craft-input-copy>
               <p>
@@ -371,7 +376,7 @@
               <craft-checkbox
                 v-for="scope in group.scopes"
                 :key="scope.value"
-                .choiceValue="scope.value"
+                .value="scope.value"
                 :disabled="!!editing"
               >
                 <label slot="label">{{ scope.label }}</label>

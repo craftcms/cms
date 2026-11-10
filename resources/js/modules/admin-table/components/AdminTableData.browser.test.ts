@@ -325,15 +325,14 @@ it('shows the empty state right under the column headers, without an empty row',
 });
 
 async function setControl(host: HTMLElement, selector: string, value: string) {
-  const control = host.querySelector<HTMLElement & {modelValue: string}>(
-    selector
-  )!;
+  const control = host.querySelector<HTMLElement & {value: string}>(selector)!;
   await (control as typeof control & {updateComplete: Promise<boolean>})
     .updateComplete;
-  control.modelValue = value;
-  control.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true})
-  );
+  control.value = value;
+  const target =
+    control.querySelector('input:not([type="hidden"]), select') ?? control;
+  target.dispatchEvent(new Event('input', {bubbles: true}));
+  target.dispatchEvent(new Event('change', {bubbles: true}));
   await nextTick();
 }
 function rowNames(host: HTMLElement) {
@@ -445,9 +444,9 @@ it('explains blocked deletion on keyboard focus while keeping the row editable a
   expect(document.activeElement).toBe(button);
   const tooltip =
     row.querySelector<HTMLElementTagNameMap['craft-tooltip']>('craft-tooltip')!;
-  await vi.waitFor(() => expect(tooltip.opened).toBe(true));
+  await vi.waitFor(() => expect(tooltip.open).toBe(true));
   await userEvent.keyboard('{Escape}');
-  await vi.waitFor(() => expect(tooltip.opened).toBe(false));
+  await vi.waitFor(() => expect(tooltip.open).toBe(false));
   expect(document.activeElement).toBe(button);
 });
 
@@ -763,9 +762,9 @@ it('renders the initial server page and updates it through Inertia without echoi
   expect(rowNames(host)).toEqual(['Loaded']);
   expect(get).not.toHaveBeenCalled();
   expect(
-    host.querySelector<HTMLElement & {modelValue: string}>(
+    host.querySelector<HTMLElement & {value: string}>(
       'craft-input-search[name=search]'
-    )?.modelValue
+    )?.value
   ).toBe('Article');
   get.mockImplementationOnce((_url, _query, visit) => {
     options.rows = [{id: 1, name: 'Filtered'}];
@@ -815,9 +814,9 @@ it('renders the initial server page and updates it through Inertia without echoi
   await nextTick();
   expect(rowNames(host)).toEqual(['Loaded']);
   expect(
-    host.querySelector<HTMLElement & {modelValue: string}>(
+    host.querySelector<HTMLElement & {value: string}>(
       'craft-input-search[name=search]'
-    )?.modelValue
+    )?.value
   ).toBe('Article');
   await new Promise((resolve) => setTimeout(resolve, 350));
   expect(get).toHaveBeenCalledTimes(1);
@@ -935,9 +934,9 @@ it('keeps a newer search while an earlier Inertia response updates the node', as
   visits[0]!.onFinish();
 
   expect(
-    host.querySelector<HTMLElement & {modelValue: string}>(
+    host.querySelector<HTMLElement & {value: string}>(
       'craft-input-search[name=search]'
-    )?.modelValue
+    )?.value
   ).toBe('Latest');
   await vi.waitFor(() => expect(get.mock.lastCall?.[1].search).toBe('Latest'));
 
@@ -948,9 +947,9 @@ it('keeps a newer search while an earlier Inertia response updates the node', as
 
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Latest response']));
   expect(
-    host.querySelector<HTMLElement & {modelValue: string}>(
+    host.querySelector<HTMLElement & {value: string}>(
       'craft-input-search[name=search]'
-    )?.modelValue
+    )?.value
   ).toBe('Latest');
 });
 

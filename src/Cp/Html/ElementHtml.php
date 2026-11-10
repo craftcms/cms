@@ -1246,7 +1246,7 @@ readonly class ElementHtml
         );
     }
 
-    /** @return array{copyable: bool, duplicatable: bool, deletable: bool} */
+    /** @return array{copyable: bool, duplicatable: bool, deletable: bool, comparable: bool} */
     public function elementCapabilities(ElementInterface $element, string $context): array
     {
         $user = currentUser();
@@ -1257,6 +1257,8 @@ readonly class ElementHtml
             'copyable' => $editable && $administrative && Gate::check('copy', $element),
             'duplicatable' => $editable && $administrative && Gate::check('duplicate', $element),
             'deletable' => $editable && $administrative && Gate::check('delete', $element),
+            // The Compare screen shows elements with their own edit pages, so not nested ones, nor unpublished drafts.
+            'comparable' => $editable && $context === 'index' && $element->id !== null && ! $element->getIsUnpublishedDraft(),
         ];
     }
 

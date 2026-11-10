@@ -2,10 +2,22 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Assets;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Users;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -62,4 +74,82 @@ it('passes the asset upload and folder settings to the asset selector', function
         'showSourcePath' => false,
         'indexSettings' => ['showFolders' => false],
     ]);
+});
+
+it('limits an Assets field control to its restricted location and selection settings', function () {
+    $restrictedVolume = Volume::factory()->create();
+    VolumeFolder::factory()->create(['volumeId' => $restrictedVolume->id, 'path' => '']);
+    Volume::factory()->create();
+    $field = new Assets([
+        'handle' => 'files',
+        'restrictLocation' => true,
+        'restrictedLocationSource' => "volume:$restrictedVolume->uid",
+        'allowSubfolders' => false,
+        'selectionCondition' => [
+            'class' => AssetCondition::class,
+            'elementType' => Asset::class,
+            'conditionRules' => [['class' => FileTypeConditionRule::class, 'operator' => 'in', 'values' => ['image']]],
+        ],
+    ]);
+
+    $entry = EntryModel::factory()->createElement();
+
+    $props = $field->uiControl(new FieldContext('files', element: $entry))->props();
+
+    expect($props['sources'])->toBe(["volume:$restrictedVolume->uid"])
+        ->and($props['referenceElement'])->toBe([
+            'referenceElementId' => $entry->id,
+            'referenceElementOwnerId' => null,
+            'referenceElementSiteId' => $entry->siteId,
+        ])
+        ->and($props['criteria'])->toBe(['uploaderId' => null])
+        ->and($props['selectionCondition']['conditionRules']['rules'][0])->toMatchArray([
+            'class' => FileTypeConditionRule::class,
+            'values' => ['image'],
+        ])
+        ->and($props['showFolders'])->toBeFalse();
+
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([UiField::make('Files', $field->uiControl(new FieldContext('files', element: $entry)))]),
+        new UiContext(namespace: 'fields'),
+    );
+    $html = app(UiHtmlRenderer::class)->render($payload);
+    $settings = Json::decode(new Crawler($html)->filter('craft-asset-select-input')->attr('settings'));
+
+    expect($settings['modalSettings']['indexSettings']['showFolders'])->toBeFalse()
+        ->and($settings['referenceElementId'])->toBe($entry->id);
+});
+
+it('opens an Assets field control’s selector in its upload folder', function () {
+    $volume = Volume::factory()->create();
+    $root = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
+    $uploads = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'uploads',
+        'path' => 'uploads/',
+    ]);
+    $field = new Assets([
+        'handle' => 'files',
+        'restrictLocation' => true,
+        'restrictedLocationSource' => "volume:$volume->uid",
+        'allowSubfolders' => true,
+        'restrictedDefaultUploadSubpath' => 'uploads',
+    ]);
+    $context = new FieldContext('files', element: EntryModel::factory()->createElement());
+
+    $props = $field->uiControl($context)->props();
+
+    expect($props['defaultSource'])->toBe("volume:$volume->uid")
+        ->and(array_column($props['defaultSourcePath'], 'folderId'))->toBe([$root->id, $uploads->id]);
+
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([UiField::make('Files', $field->uiControl($context))]),
+        new UiContext(namespace: 'fields'),
+    );
+    $html = app(UiHtmlRenderer::class)->render($payload);
+    $settings = Json::decode(new Crawler($html)->filter('craft-asset-select-input')->attr('settings'));
+
+    expect($settings['modalSettings']['defaultSource'])->toBe("volume:$volume->uid")
+        ->and(Arr::last($settings['modalSettings']['defaultSourcePath'])['folderId'])->toBe($uploads->id);
 });

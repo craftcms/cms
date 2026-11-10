@@ -1133,6 +1133,20 @@ describe('SlideoutPanel', () => {
     ).toContain('/admin/edit/25');
   });
 
+  it('leaves out the footer when a screen hides it through useAppLayout', async () => {
+    const Screen = defineComponent({
+      setup() {
+        useAppLayout(() => ({hideFooter: true}));
+
+        return () => h('div');
+      },
+    });
+    const {root} = await mountPanel(Screen, {});
+    await nextTick();
+
+    expect(root.querySelector('.slideout-screen__footer')).toBeNull();
+  });
+
   it('reads the edit URL from the slideout props', async () => {
     const {root} = await mountPanel(defineComponent({render: () => h('div')}), {
       screen: {editUrl: '/admin/entries/5'},

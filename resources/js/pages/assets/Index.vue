@@ -46,9 +46,7 @@
   });
 
   function setIncludeSubfolders(event: Event) {
-    const includeSubfolders = Boolean(
-      (event.target as {checked?: boolean} | null)?.checked
-    );
+    const includeSubfolders = (event.target as HTMLInputElement).checked;
     const url = new URL(window.location.href);
     url.searchParams.delete(pageParam());
     if (includeSubfolders) {
@@ -149,7 +147,7 @@
           v-if="page.props.search && page.props.canSearchSubfolders"
           class="mt-md"
           .checked="page.props.includeSubfolders"
-          @model-value-changed="setIncludeSubfolders"
+          @change="setIncludeSubfolders"
         >
           <label slot="label">{{ t('Search in subfolders') }}</label>
         </craft-checkbox>
@@ -174,7 +172,7 @@
 
     <!-- Filename conflict prompt shown while moving assets into a folder. -->
     <craft-dialog
-      .opened="conflictPrompt !== null"
+      .open="conflictPrompt !== null"
       :label="t('File already exists')"
       @craft-before-hide="resolveConflictChoice('cancel')"
     >
@@ -200,7 +198,7 @@
     </craft-dialog>
 
     <craft-dialog
-      .opened="dragFolderConflictPrompt !== null"
+      .open="dragFolderConflictPrompt !== null"
       :label="t('Folder already exists')"
       @craft-before-hide="resolveDragFolderConflictChoice('cancel')"
     >
@@ -223,7 +221,7 @@
 
     <!-- New subfolder prompt, opened from the current folder's breadcrumb menu. -->
     <craft-dialog
-      .opened="newFolderOpen"
+      .open="newFolderOpen"
       :label="t('New subfolder')"
       @craft-before-hide="closeNewFolder"
       @craft-after-show="focusNewFolderName"
@@ -234,7 +232,6 @@
           v-model="newFolderName"
           :label="t('Folder Name')"
           :error="newFolderError"
-          :aria-invalid="newFolderError ? 'true' : 'false'"
           autofocus
         />
       </form>
@@ -253,7 +250,7 @@
     </craft-dialog>
 
     <craft-dialog
-      .opened="renameFolderId !== null"
+      .open="renameFolderId !== null"
       :label="t('Rename folder')"
       @craft-before-hide="closeRename"
     >
@@ -262,7 +259,6 @@
           v-model="renameName"
           :label="t('Folder Name')"
           :error="renameError"
-          :aria-invalid="renameError ? 'true' : 'false'"
           autofocus
         />
       </form>
@@ -281,7 +277,7 @@
     </craft-dialog>
 
     <craft-dialog
-      .opened="renameAssetId !== null"
+      .open="renameAssetId !== null"
       :label="t('Rename file')"
       @craft-before-hide="closeRenameFile"
     >
@@ -290,7 +286,6 @@
           v-model="renameFilename"
           :label="t('Filename')"
           :error="renameFileError"
-          :aria-invalid="renameFileError ? 'true' : 'false'"
           autofocus
         />
       </form>
@@ -309,7 +304,7 @@
     </craft-dialog>
 
     <craft-dialog
-      .opened="folderConflictPrompt !== null"
+      .open="folderConflictPrompt !== null"
       :label="t('Folder already exists')"
       @craft-before-hide="resolveFolderConflictChoice('cancel')"
     >

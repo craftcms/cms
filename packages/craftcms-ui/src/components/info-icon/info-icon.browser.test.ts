@@ -21,16 +21,16 @@ it('hides its tooltip on a click outside it, but not on one inside it', async ()
   const button = element.shadowRoot!.querySelector('craft-button')!;
 
   await userEvent.click(button);
-  await expect.poll(() => tooltip.opened).toBe(true);
+  await expect.poll(() => tooltip.open).toBe(true);
 
   tooltip.dispatchEvent(
     new PointerEvent('pointerdown', {bubbles: true, composed: true})
   );
   await tooltip.updateComplete;
-  expect(tooltip.opened).toBe(true);
+  expect(tooltip.open).toBe(true);
 
   await userEvent.click(outside);
-  await expect.poll(() => tooltip.opened).toBe(false);
+  await expect.poll(() => tooltip.open).toBe(false);
 });
 
 it('gives the button a target of at least 24×24 CSS px, all of which opens it', async () => {
@@ -53,5 +53,5 @@ it('gives the button a target of at least 24×24 CSS px, all of which opens it',
   await userEvent.click(button, {
     position: {x: box.width - 2, y: box.height - 2},
   });
-  await expect.poll(() => tooltip.opened).toBe(true);
+  await expect.poll(() => tooltip.open).toBe(true);
 });

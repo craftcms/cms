@@ -5,7 +5,11 @@ import OverType, {
 import {t} from '@craftcms/ui';
 import {LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {createAssetController, type AssetController} from './behaviors/assets';
+import {
+  createAssetController,
+  type AssetController,
+  type AssetReferenceElement,
+} from './behaviors/assets';
 import {registerLinkPasteBehavior} from './behaviors/link-paste';
 import {
   createLinkPopoverController,
@@ -60,6 +64,9 @@ class MarkdownField extends LitElement {
 
   @property({attribute: 'asset-condition', type: Object})
   assetCondition: Record<string, unknown> | null = null;
+
+  @property({attribute: 'asset-reference-element', type: Object})
+  assetReferenceElement: AssetReferenceElement | null = null;
 
   @property({attribute: 'asset-sources', type: Array})
   assetSources: string[] = [];
@@ -235,7 +242,8 @@ class MarkdownField extends LitElement {
       this.assetAnyUploader ? {uploaderId: null} : {},
       this.assetCondition,
       this.assetSources,
-      previewController
+      previewController,
+      () => this.assetReferenceElement
     );
     this.cleanups = [
       () => previewController.destroy(),
@@ -333,7 +341,7 @@ class MarkdownField extends LitElement {
   private statsFormatter: NonNullable<Options['statsFormatter']> = (stats) => {
     return `
       <div class="overtype-stat">
-        <span>${stats.chars} ${t('chars')}, ${stats.words} ${t('words')}, ${stats.lines} ${t('lines')}</span>
+        <span>${t('{num, number} {num, plural, =1{char} other{chars}}', {num: stats.chars})}, ${t('{num, number} {num, plural, =1{word} other{words}}', {num: stats.words})}, ${t('{num, number} {num, plural, =1{line} other{lines}}', {num: stats.lines})}</span>
       </div>
       <div class="overtype-stat">${t('Line')} ${stats.line}, ${t('Col')} ${stats.column}</div>
     `;

@@ -1,4 +1,3 @@
-import {Validator} from '@lion/ui/form-core.js';
 import {type InjectionKey, type Ref} from 'vue';
 import type {
   CanonicalUiValue,
@@ -46,13 +45,12 @@ export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
 export const UiTableRefresh: InjectionKey<() => void> =
   Symbol('UiTableRefresh');
 
-class ServerError extends Validator {
-  static override validatorName = 'ServerError';
-
-  override execute(): boolean {
-    return true;
-  }
-}
+/**
+ * A prefix for the ids of the fields and tab panels rendered within, for a form
+ * shown beside another form with the same layout, such as the Compare screen's
+ * two editors, so each id stays its own. See {@link scopedId}.
+ */
+export const UiFieldIdScope: InjectionKey<string> = Symbol('UiFieldIdScope');
 
 /**
  * The value a control should render with.
@@ -86,27 +84,6 @@ export function controlValueAt(
 
   // SAFETY: what a Control ships as its empty value is a form value.
   return control.emptyValue as UiValue;
-}
-
-export function serverErrorValidators(invalid: boolean): Validator[] {
-  return invalid
-    ? [
-        new ServerError(undefined, {
-          getMessage: () => '',
-          visibilityDuration: Infinity,
-        }),
-      ]
-    : [];
-}
-
-export function ignoreModelValueInitialization(
-  callback: (event: Event) => void
-): (event: Event) => void {
-  return (event) => {
-    if (!(event instanceof CustomEvent) || !event.detail?.initialize) {
-      callback(event);
-    }
-  };
 }
 
 export function uiChangeFromEvent(change: UiChange | Event): UiChange | null {
@@ -151,6 +128,11 @@ export function fieldId(path: string[]): string {
   );
 
   return `ui-${encoded.join('-')}`;
+}
+
+/** An id within a {@link UiFieldIdScope}, when there is one. */
+export function scopedId(scope: string | undefined, id: string): string {
+  return scope ? `${scope}-${id}` : id;
 }
 
 /** The id of the control's own input, which sits inside that field. */

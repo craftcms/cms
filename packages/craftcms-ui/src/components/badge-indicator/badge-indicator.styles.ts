@@ -1,6 +1,11 @@
 import {css} from 'lit';
+import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
+  :host {
+    display: inline-flex;
+  }
+
   .badge-indicator {
     --_badge-color: var(--c-color-info-fill-loud);
     --_text-color: var(--c-color-info-on-loud);
@@ -35,9 +40,13 @@ export default css`
   }
 
   .number {
-    display: inline-flex;
+    /* A block, so the trim applies; centers the digits on their cap height
+       rather than on a line box that includes descender space. */
+    display: block;
     font-size: var(--c-text-xs);
     font-weight: var(--font-weight-semibold);
     line-height: 1;
+    font-variant-numeric: tabular-nums;
+    ${trimmedTextBoxStyles}
   }
 `;

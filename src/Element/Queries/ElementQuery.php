@@ -355,16 +355,25 @@ class ElementQuery extends Component implements \Illuminate\Contracts\Database\Q
 
     protected function initTraits(): void
     {
+        /** @var array<class-string, list<string>> $initializers */
+        static $initializers = [];
+
         $class = static::class;
 
-        $uses = class_uses_recursive($class);
+        if (! isset($initializers[$class])) {
+            $uses = class_uses_recursive($class);
+            $conventionalInitMethods = array_map(static fn ($trait) => 'init'.class_basename($trait), $uses);
+            $initializers[$class] = [];
 
-        $conventionalInitMethods = array_map(static fn ($trait) => 'init'.class_basename($trait), $uses);
-
-        foreach (new ReflectionClass($class)->getMethods() as $method) {
-            if (in_array($method->getName(), $conventionalInitMethods)) {
-                $this->{$method->getName()}();
+            foreach (new ReflectionClass($class)->getMethods() as $method) {
+                if (in_array($method->getName(), $conventionalInitMethods)) {
+                    $initializers[$class][] = $method->getName();
+                }
             }
+        }
+
+        foreach ($initializers[$class] as $method) {
+            $this->{$method}();
         }
     }
 

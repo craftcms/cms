@@ -22,14 +22,14 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
 use CraftCms\Cms\Tests\Support\GuardsUtcDateBindings;
 use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
 use CraftCms\Cms\Tests\Support\SkipsRepeatedDstHour;
-use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Cache\ArrayStore;
+use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Application;
@@ -45,12 +45,15 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Mcp\Capability\Discovery\CachedDiscoverer;
+use Mcp\Capability\Discovery\Discoverer;
+use Mcp\Capability\Discovery\DiscovererInterface;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
 use Pdo\Pgsql;
+use Psr\Log\NullLogger;
 use ReflectionProperty;
 
 class TestCase extends Orchestra
@@ -136,10 +139,6 @@ class TestCase extends Orchestra
             app(Search::class)->useFullText = false;
         }
 
-        File::cleanDirectory(config_path('craft/'.app(ProjectConfig::class)->folderName));
-
-        File::cleanDirectory(storage_path('runtime/compiled_classes'));
-
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
@@ -147,16 +146,6 @@ class TestCase extends Orchestra
         Http::preventStrayRequests();
 
         $this->withoutVite();
-
-        // Always start with a fresh default admin user
-        if ($user = User::first()) {
-            $user->update([
-                'username' => 'craftcms',
-                'password' => Hash::make('craftcms2018!!'),
-                'email' => 'support@craftcms.com',
-                'admin' => true,
-            ]);
-        }
     }
 
     protected function connectionsToTransact(): array
@@ -206,7 +195,6 @@ class TestCase extends Orchestra
         $resets = [
             [Element::class, 'sources', []],
             [BaseElementLinkType::class, 'fetchedElements', []],
-            [Typecast::class, 'types', []],
             [PHP::class, 'basePaths', []],
             [FieldLayoutComponent::class, 'defaultElementConditions', []],
             [CustomField::class, 'defaultElementEditConditions', []],
@@ -265,6 +253,14 @@ class TestCase extends Orchestra
     #[Override]
     protected function defineEnvironment($app): void
     {
+        // Cache only file discovery across applications, not per-user filtering or plugin registrations.
+        static $discoverer = new CachedDiscoverer(
+            new Discoverer,
+            new CacheRepository(new ArrayStore(serializesValues: true)),
+            new NullLogger,
+        );
+        $app->instance(DiscovererInterface::class, $discoverer);
+
         $projectConfigFolder = 'project';
 
         if (($token = getenv('TEST_TOKEN')) !== false) {
@@ -322,6 +318,10 @@ class TestCase extends Orchestra
                         $connectionConfig['pragmas'],
                         $connectionConfig['synchronous'],
                     );
+
+                    // Disposable databases need rollback, not durability after a process or machine crash.
+                    $connectionConfig['journal_mode'] = 'MEMORY';
+                    $connectionConfig['synchronous'] = 'OFF';
 
                     ConnectionConfig::ensureSqliteDatabaseFile((string) ($connectionConfig['database'] ?? ''));
                 }

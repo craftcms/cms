@@ -18,7 +18,7 @@ async function openDialog(
   dialog.label = 'Test dialog';
   configure(dialog);
   document.body.append(dialog);
-  dialog.opened = true;
+  dialog.open = true;
   await dialog.updateComplete;
   return dialog;
 }
@@ -59,7 +59,7 @@ it('centers a modal dialog in the viewport', async () => {
   dialog.label = 'Centered dialog';
   dialog.textContent = 'Dialog content';
   document.body.append(dialog);
-  dialog.opened = true;
+  dialog.open = true;
   await dialog.updateComplete;
 
   const bounds = dialog
@@ -143,14 +143,14 @@ it('returns focus to the invoker on close', async () => {
   const dialog = document.createElement('craft-dialog') as CraftDialog;
   dialog.label = 'Test dialog';
   document.body.append(dialog);
-  invoker.addEventListener('click', () => (dialog.opened = true));
+  invoker.addEventListener('click', () => (dialog.open = true));
 
   await userEvent.click(invoker);
   await dialog.updateComplete;
   await userEvent.click(shadow(dialog, '.close'));
   await dialog.updateComplete;
 
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
   expect(document.activeElement).toBe(invoker);
 });
 
@@ -186,7 +186,7 @@ it('leaves focus alone when it is outside the dialog at close', async () => {
   });
 
   outside.focus();
-  dialog.opened = false;
+  dialog.open = false;
   await dialog.updateComplete;
 
   expect(document.activeElement).toBe(outside);
@@ -209,7 +209,7 @@ it('applies returnFocus when the native dialog is closed directly', async () => 
   await closed;
   await dialog.updateComplete;
 
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
   expect(document.activeElement).toBe(target);
 });
 
@@ -233,7 +233,7 @@ it('leaves focus on the opener when a non-modal dialog closes natively with focu
   await closed;
   await dialog.updateComplete;
 
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
   expect(returnFocus).not.toHaveBeenCalled();
   expect(document.activeElement).toBe(opener);
 });
@@ -245,7 +245,7 @@ it('keeps the native return target when returnFocus returns nothing', async () =
   dialog.label = 'Test dialog';
   dialog.returnFocus = () => null;
   document.body.append(dialog);
-  invoker.addEventListener('click', () => (dialog.opened = true));
+  invoker.addEventListener('click', () => (dialog.open = true));
 
   await userEvent.click(invoker);
   await dialog.updateComplete;
@@ -281,7 +281,7 @@ async function openFromMenuItem(): Promise<{
   };
   const dialog = document.querySelector('craft-dialog') as CraftDialog;
   item.action = {type: 'event', name: 'test:open-dialog'};
-  window.addEventListener('test:open-dialog', () => (dialog.opened = true), {
+  window.addEventListener('test:open-dialog', () => (dialog.open = true), {
     once: true,
   });
   await menu.updateComplete;
@@ -292,7 +292,7 @@ async function openFromMenuItem(): Promise<{
   item.focus();
   await userEvent.keyboard('{Enter}');
   await dialog.updateComplete;
-  expect(dialog.opened).toBe(true);
+  expect(dialog.open).toBe(true);
 
   return {dialog, menuInvoker};
 }
@@ -303,7 +303,7 @@ it('returns focus to the action menu invoker after a menu item opens it', async 
   await userEvent.keyboard('{Escape}');
   await dialog.updateComplete;
 
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
   expect(document.activeElement).toBe(menuInvoker);
 });
 
@@ -312,7 +312,7 @@ it('returns focus to the action menu invoker when focus left the dialog before i
 
   (deepActiveElement() as HTMLElement).blur();
   expect(document.activeElement).not.toBe(dialog);
-  dialog.opened = false;
+  dialog.open = false;
   await dialog.updateComplete;
 
   expect(document.activeElement).toBe(menuInvoker);
@@ -329,7 +329,7 @@ it('returns focus to the action menu invoker when the native dialog closes by it
   await closed;
   await dialog.updateComplete;
 
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
   expect(document.activeElement).toBe(menuInvoker);
 });
 
@@ -346,7 +346,7 @@ it('returns focus to a popover’s button once a dialog opened from inside it cl
   const dialog = document.querySelector('craft-dialog') as CraftDialog;
   popover
     .querySelector('[slot="content"] button')!
-    .addEventListener('click', () => (dialog.opened = true));
+    .addEventListener('click', () => (dialog.open = true));
   const opener = page.getByRole('button', {name: 'Edit columns'});
   await popover.updateComplete;
 
@@ -355,12 +355,12 @@ it('returns focus to a popover’s button once a dialog opened from inside it cl
   await userEvent.click(opener);
 
   await expect.poll(() => document.activeElement).toBe(dialog);
-  await expect.poll(() => popover.opened).toBe(false);
+  await expect.poll(() => popover.open).toBe(false);
 
   await userEvent.keyboard('{Escape}');
   await dialog.updateComplete;
 
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
   expect(document.activeElement).toBe(
     popover.querySelector('[slot="invoker"]')
   );
@@ -394,7 +394,7 @@ it.each([
     const dialog = document.querySelector('craft-dialog') as CraftDialog;
     popover
       .querySelector('[slot="content"] button')!
-      .addEventListener('click', () => (dialog.opened = true));
+      .addEventListener('click', () => (dialog.open = true));
     const opener = page.getByRole('button', {name: 'Edit columns'});
     await popover.updateComplete;
 
@@ -403,12 +403,12 @@ it.each([
     await userEvent.click(opener);
 
     await expect.poll(() => document.activeElement).toBe(dialog);
-    await expect.poll(() => popover.opened).toBe(false);
+    await expect.poll(() => popover.open).toBe(false);
 
     await userEvent.keyboard('{Escape}');
     await dialog.updateComplete;
 
-    expect(dialog.opened).toBe(false);
+    expect(dialog.open).toBe(false);
     await expect
       .element(page.getByRole('button', {name: 'View'}))
       .toHaveFocus();
@@ -424,7 +424,7 @@ it('closes on Escape through craft-before-hide', async () => {
   await dialog.updateComplete;
 
   expect(asked).toBe(1);
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
 });
 
 it('stays open on Escape when craft-before-hide is canceled', async () => {
@@ -433,7 +433,7 @@ it('stays open on Escape when craft-before-hide is canceled', async () => {
   const dialog = document.createElement('craft-dialog') as CraftDialog;
   dialog.label = 'Test dialog';
   document.body.append(dialog);
-  invoker.addEventListener('click', () => (dialog.opened = true));
+  invoker.addEventListener('click', () => (dialog.open = true));
   dialog.addEventListener('craft-before-hide', (event) =>
     event.preventDefault()
   );
@@ -443,7 +443,7 @@ it('stays open on Escape when craft-before-hide is canceled', async () => {
   await userEvent.keyboard('{Escape}');
   await dialog.updateComplete;
 
-  expect(dialog.opened).toBe(true);
+  expect(dialog.open).toBe(true);
   expect(shadow<HTMLDialogElement>(dialog, 'dialog').open).toBe(true);
 });
 
@@ -464,7 +464,7 @@ it('handles Escape itself in modal mode, not through the platform', async () => 
   await dialog.updateComplete;
 
   expect(escape.defaultPrevented).toBe(true);
-  expect(dialog.opened).toBe(false);
+  expect(dialog.open).toBe(false);
 });
 
 it('leaves Escape to content that claims it', async () => {
@@ -482,7 +482,7 @@ it('leaves Escape to content that claims it', async () => {
   );
   await dialog.updateComplete;
 
-  expect(dialog.opened).toBe(true);
+  expect(dialog.open).toBe(true);
 });
 
 it('lets the keyboard reach a scrolling body with nothing focusable', async () => {
@@ -512,7 +512,7 @@ it('contains Tab in a non-modal dialog and releases it on close', async () => {
   await userEvent.keyboard('{Tab}');
   expect(document.activeElement).toBe(inside);
 
-  dialog.opened = false;
+  dialog.open = false;
   await dialog.updateComplete;
   inside.blur();
   await userEvent.keyboard('{Tab}');
@@ -649,12 +649,12 @@ describe('closing with a held key', () => {
     let count = 0;
     opener.addEventListener('click', () => {
       count++;
-      dialog.opened = true;
+      dialog.open = true;
     });
 
     await opener.updateComplete;
     opener.focus();
-    dialog.opened = true;
+    dialog.open = true;
     await dialog.updateComplete;
 
     return {opener, dialog, openCount: () => count};
@@ -671,7 +671,7 @@ describe('closing with a held key', () => {
     await userEvent.keyboard('{Enter}');
     await dialog.updateComplete;
 
-    expect(dialog.opened).toBe(false);
+    expect(dialog.open).toBe(false);
     expect(document.activeElement).toBe(opener);
     expect(openCount()).toBe(0);
   });
@@ -680,14 +680,14 @@ describe('closing with a held key', () => {
     const {dialog, openCount} = await fixture();
     const pick = dialog.querySelector<HTMLButtonElement>('.pick')!;
     pick.addEventListener('click', () => {
-      dialog.opened = false;
+      dialog.open = false;
     });
 
     pick.focus();
     await userEvent.keyboard('{Enter}');
     await dialog.updateComplete;
 
-    expect(dialog.opened).toBe(false);
+    expect(dialog.open).toBe(false);
     expect(openCount()).toBe(0);
   });
 
@@ -701,14 +701,14 @@ describe('closing with a held key', () => {
     await dialog.updateComplete;
 
     expect(openCount()).toBe(1);
-    expect(dialog.opened).toBe(true);
+    expect(dialog.open).toBe(true);
   });
 
   it('gives up waiting for the keyup once the window loses focus', async () => {
     const {dialog, openCount} = await fixture();
     const pick = dialog.querySelector<HTMLButtonElement>('.pick')!;
     pick.addEventListener('click', () => {
-      dialog.opened = false;
+      dialog.open = false;
     });
 
     pick.focus();
@@ -724,7 +724,7 @@ describe('closing with a held key', () => {
     const {dialog, openCount} = await fixture();
     const pick = dialog.querySelector<HTMLButtonElement>('.pick')!;
     pick.addEventListener('click', () => {
-      dialog.opened = false;
+      dialog.open = false;
     });
 
     pick.focus();

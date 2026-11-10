@@ -30,7 +30,7 @@ const meta = {
   argTypes,
   render: ({label, open}) => {
     return html`
-      <craft-action-menu ?opened="${open}">
+      <craft-action-menu ?open="${open}">
         <craft-button type="button" icon type="button" slot="invoker">
           <craft-icon name="ellipsis"></craft-icon>
           <span class="sr-only">Open Menu</span>

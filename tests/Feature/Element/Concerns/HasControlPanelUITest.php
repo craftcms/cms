@@ -16,13 +16,19 @@ use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements as ElementsFacade;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Event;
 
@@ -389,6 +395,47 @@ describe('getSidebarHtml', function () {
 
         expect((string) $html)->toContain('Appended');
     });
+
+    test('shows Post Date and Expiry Date per the entry type', function (string $context, bool $showPostDate, bool $showExpiryDate) {
+        $entryType = EntryType::factory()->create([
+            'handle' => 'block',
+            'showPostDateField' => $showPostDate,
+            'showExpiryDateField' => $showExpiryDate,
+        ]);
+
+        if ($context === 'single') {
+            $section = Section::factory()->withEntryTypes($entryType)->create(['type' => SectionType::Single]);
+            $entry = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement();
+        } else {
+            $blocksField = Field::factory()->create([
+                'handle' => 'blocks',
+                'type' => Matrix::class,
+                'settings' => ['entryTypes' => [$entryType->id]],
+            ]);
+            Fields::refreshFields();
+            $pageType = EntryType::factory()->withField($blocksField)->create();
+            EntryTypes::refreshEntryTypes();
+            $section = Section::factory()->withEntryTypes($pageType)->create();
+
+            $page = new Entry(['sectionId' => $section->id, 'typeId' => $pageType->id, 'title' => 'Page']);
+            $page->setFieldValue('blocks', ['new1' => ['type' => 'block', 'title' => 'Block']]);
+            expect(ElementsFacade::saveElement($page))->toBeTrue();
+            $entry = Entry::find()->ownerId($page->id)->one();
+        }
+
+        $html = (string) $entry->getSidebarHtml(false);
+        $paths = collect($entry->sidebarUi()->nodes())
+            ->map(fn ($node) => $node instanceof UiField ? $node->getControl()?->path() : null)
+            ->all();
+
+        expect(str_contains($html, 'id="postDate-date"'))->toBe($showPostDate)
+            ->and(str_contains($html, 'id="expiryDate-date"'))->toBe($showExpiryDate)
+            ->and(in_array('postDate', $paths, true))->toBe($showPostDate)
+            ->and(in_array('expiryDate', $paths, true))->toBe($showExpiryDate);
+    })->with(['nested', 'single'])->with([
+        'post date only' => [true, false],
+        'expiry date only' => [false, true],
+    ]);
 });
 
 describe('getMetadata', function () {

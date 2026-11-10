@@ -7,10 +7,24 @@ body {
   width: 100%;
   overflow-x: hidden;
   font-family: var(--c-font-body, sans-serif);
+  /* Inter's contextual alternates draw typed `->` and `=>` as arrows. */
+  font-variant-ligatures: no-contextual;
   font-size: var(--c-text-base);
   line-height: var(--c-leading-normal);
   color: var(--c-text-default);
-  -webkit-font-smoothing: subpixel-antialiased;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select,
+textarea {
+  font-variant-ligatures: inherit;
+}
+
+:where(table, time) {
+  font-variant-numeric: tabular-nums;
 }
 
 [data-theme] {
@@ -145,17 +159,6 @@ fieldset {
     var(--c-color-fill-loud)
   );
   border-radius: var(--c-radius-sm);
-}
-
-kbd {
-  font-family: var(--c-font-mono);
-  font-size: 0.85em;
-  padding-inline: 0.4em;
-  border: 1px solid var(--c-color-neutral-border-quiet);
-  border-block-end-width: 2px;
-  border-radius: var(--c-radius-sm);
-  box-shadow: var(--c-shadow-xs);
-  white-space: nowrap;
 }
 
 /* Captures a colored element's palette where it's set, so descendants that
@@ -632,6 +635,11 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     margin: 0;
     width: 100%;
     height: 100%;
+  }
+
+  /* The rule above overrides the combobox's room for its prefix icon, so restore it */
+  craft-combobox[has-prefix-icon] > input.form-control[data-combobox-textbox] {
+    padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }
 
   textarea {

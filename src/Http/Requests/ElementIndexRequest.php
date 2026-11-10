@@ -53,12 +53,26 @@ class ElementIndexRequest extends FormRequest
     }
 
     /**
-     * Returns the condition that should be applied to the element query.
+     * Returns the condition that should be applied to the element query, such as the filters the user chose.
      */
     public function condition(): ?ElementConditionInterface
     {
+        return $this->conditionFromInput('condition');
+    }
+
+    /**
+     * Returns the condition elements must match to be selected, such as a relation field's selection condition. It
+     * applies along with {@see condition()}, which the user can change through the index's filters.
+     */
+    public function selectionCondition(): ?ElementConditionInterface
+    {
+        return $this->conditionFromInput('selectionCondition');
+    }
+
+    private function conditionFromInput(string $param): ?ElementConditionInterface
+    {
         $this->validate([
-            'condition' => ['nullable', function (string $attribute, mixed $value, Closure $fail): void {
+            $param => ['nullable', function (string $attribute, mixed $value, Closure $fail): void {
                 if (! is_array($value) && ! is_string($value)) {
                     $fail(t('The {attribute} field must be a string or array.', ['attribute' => $attribute]));
 
@@ -79,7 +93,7 @@ class ElementIndexRequest extends FormRequest
         ]);
 
         /** @var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
-        $conditionConfig = $this->input('condition');
+        $conditionConfig = $this->input($param);
 
         if (! $conditionConfig) {
             return null;

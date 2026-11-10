@@ -1,6 +1,12 @@
 import {css} from 'lit';
 
 export default css`
+  /* Matches the space before each separator: a crumb's own gap and the
+     separator's margin (see craft-breadcrumb-item). */
+  :host {
+    gap: var(--c-spacing-md);
+  }
+
   .breadcrumbs {
     display: flex;
     align-items: center;

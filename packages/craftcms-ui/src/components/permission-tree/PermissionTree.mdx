@@ -14,11 +14,11 @@ There are no stories on this page: the component takes a full permission structu
 
 ```js
 tree.groups = [...];              // the permission structure
-tree.modelValue = [...];          // the permissions currently granted
+tree.value = [...];               // the permissions currently granted
 tree.lockedPermissions = [...];   // permissions that cannot be changed
 ```
 
-`groups`, `modelValue`, and `locked-permissions` carry the data. All three are properties as well as attributes, so bind them rather than serializing.
+`groups`, `value`, and `locked-permissions` carry the data. All three are properties as well as attributes, so bind them rather than serializing.
 
 ## Nesting
 
@@ -74,14 +74,12 @@ A tree this size is hard to navigate by ear regardless. Where a screen offers on
 Each toggle is a commit, so the tree emits `input` and `change` together:
 
 ```js
-tree.addEventListener('change', () => save(tree.modelValue));
+tree.addEventListener('change', () => save(tree.value));
 ```
-
-It also emits `model-value-changed`, Lion's internal protocol name. Prefer the native events.
 
 ## Properties
 
-Five attributes cover the data and the field wiring: `groups`, `model-value`,
+Five attributes cover the data and the field wiring: `groups`, `value`,
 `locked-permissions`, `name`, and `disabled`.
 
 <ArgTypes of="craft-permission-tree" />

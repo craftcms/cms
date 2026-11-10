@@ -65,12 +65,8 @@
     },
   });
 
-  function onSubjectChanged(event: CustomEvent<{initialize?: boolean}>): void {
-    if (event.detail?.initialize) {
-      return;
-    }
-
-    form.subject = String((event.target as CraftInput).modelValue ?? '');
+  function onSubjectChanged(event: Event): void {
+    form.subject = (event.currentTarget as CraftInput).value;
   }
 
   async function loadLanguage(value: string): Promise<void> {
@@ -120,12 +116,12 @@
       >
         <craft-input
           slot="input"
-          .modelValue="form.subject"
+          .value="form.subject"
           maxlength="1000"
           required
           .disabled="loader.processing"
-          :aria-invalid="form.errors.subject ? 'true' : undefined"
-          @model-value-changed="onSubjectChanged"
+          :invalid="Boolean(form.errors.subject)"
+          @input="onSubjectChanged"
         >
           <input :id="subjectId" slot="input" />
         </craft-input>

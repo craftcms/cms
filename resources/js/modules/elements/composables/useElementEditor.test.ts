@@ -306,6 +306,33 @@ describe('useElementEditor', () => {
     }
   );
 
+  it('only submits Cmd+S on a draft in review once editing it is started', async () => {
+    const {editor} = mount(
+      payload({
+        workflow: {
+          current: {
+            status: 'pending',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+          draftReviews: [],
+        },
+      })
+    );
+    const save = interceptSave();
+    onTestFinished(save.restore);
+    const shortcut = () =>
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', {key: 's', ctrlKey: true})
+      );
+
+    shortcut();
+    expect(save.calls()).toBe(0);
+
+    editor.startEditingDraft();
+    await nextTick();
+    shortcut();
+    expect(save.calls()).toBe(1);
+  });
+
   it('prepares an unchanged nested owner with the enclosing editable Matrix values', async () => {
     vi.stubGlobal('Craft', {
       systemUid: 'test',
@@ -483,8 +510,12 @@ describe('useElementEditor', () => {
       registerUiComponents(components);
       defineEntryFieldLayoutUiHost(components);
       vi.stubGlobal('Cp', {$components: components});
-      vi.resetModules();
-      await import('../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js');
+      // A fresh copy of the legacy script, registering into these components.
+      // Only that module: resetting them all would hand the lazily loaded
+      // controls a second copy of the renderer they render inside.
+      await import(
+        /* @vite-ignore */ `../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js?flat=${flat}`
+      );
       onTestFinished(() => {
         vi.unstubAllGlobals();
       });
@@ -581,6 +612,7 @@ describe('useElementEditor', () => {
         'craft-legacy-html-control'
       ) as HTMLElement & {ready: Promise<void>};
       await legacy.ready;
+      await vi.dynamicImportSettled();
       await nextTick();
       const host = container!.querySelector('craft-entry-field-layout-ui')!;
       const input = container!.querySelector<HTMLInputElement>(
@@ -1280,11 +1312,39 @@ describe('useElementEditor', () => {
 
     expect(editor.activity.isStale.value).toBe(false);
 
-    // Something that changes it afterwards is still someone else's edit.
+    // Something that changes it afterwards is still someone else's edit,
+    // even when it redraws the nested element it saved.
     serverStamp = 3;
+    await editor.nestedOwnerEditor.refresh!({changedElsewhere: true});
     await editor.activity.poll();
 
     expect(editor.activity.isStale.value).toBe(true);
+  });
+
+  it('refreshes once for nested fields that hear of the same saves elsewhere', async () => {
+    postSpy.mockImplementation(async () => ({
+      data: {ui: fieldLayout('Original title')},
+    }));
+    const {editor} = mount(payload({ui: fieldLayout('Original title')}));
+    postSpy.mockClear();
+
+    const fieldHears = () =>
+      new Promise<void>((resolve) =>
+        setTimeout(
+          () =>
+            void editor.nestedOwnerEditor.refresh!({
+              changedElsewhere: true,
+            }).then(resolve),
+          50
+        )
+      );
+    await Promise.all([fieldHears(), fieldHears()]);
+
+    expect(
+      postSpy.mock.calls.filter(([url]) =>
+        String(url).includes('update-field-layout')
+      )
+    ).toHaveLength(1);
   });
 
   it('doesn’t report a discarded draft as someone else’s edit', async () => {
@@ -2212,6 +2272,50 @@ describe('useElementEditor', () => {
     vi.useRealTimers();
   });
 
+  it('waits for a draft write already on its way, and applies the draft it creates', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
+    );
+    const response = deferred<{data: Record<string, unknown>}>();
+    let requestSignal: AbortSignal | undefined;
+    postSpy.mockImplementationOnce(
+      (_url: string, _data: unknown, {signal}: {signal: AbortSignal}) => {
+        requestSignal = signal;
+
+        return response.promise;
+      }
+    );
+
+    await typeTitle('First edit');
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    await typeTitle('Second edit');
+
+    const save = interceptSave();
+    onTestFinished(() => save.restore());
+    editor.save();
+
+    expect(save.calls()).toBe(0);
+    expect(requestSignal?.aborted).toBe(false);
+
+    response.resolve({data: {draftId: 7}});
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(save.calls()).toBe(1);
+    expect(save.last().url).toBe('/actions/elements/apply-draft');
+    expect(save.last().data).toMatchObject({draftId: 7, provisional: 1});
+    expect(JSON.stringify(save.last().data)).toContain('Second edit');
+    // The edit made while the draft write was out goes with the submission,
+    // not with a draft write of its own.
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(postSpy).toHaveBeenCalledTimes(1);
+  });
+
   /**
    * Saving before the debounce has run leaves a save armed against the draft
    * the submission is about to consume. It describes values this save is
@@ -2246,6 +2350,126 @@ describe('useElementEditor', () => {
 
     save.restore();
     vi.useRealTimers();
+  });
+
+  it('holds a save, and the action it was for, until beforeSave settles the edits still on the autosave debounce', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    // The way the Compare screen waits for its other side to settle its edits.
+    let allow!: (proceed: boolean) => void;
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')}),
+      null,
+      {
+        beforeSave: () =>
+          new Promise<boolean>((resolve) => {
+            allow = resolve;
+          }),
+      }
+    );
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    await typeTitle('Edited title');
+    editor.submitAction({
+      label: 'Save and add another',
+      actionUrl: '/actions/entries/save-and-add-another',
+      params: {addAnother: 1},
+      redirect: null,
+    });
+    await nextTick();
+
+    expect(save.calls()).toBe(0);
+    expect(await editor.settleChanges()).toBe(true);
+    expect(postSpy).toHaveBeenCalledOnce();
+    expect(postSpy.mock.calls[0]![1]).toMatchObject({title: 'Edited title'});
+
+    allow(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(save.calls()).toBe(1);
+    expect(save.last().url).toBe('/actions/entries/save-and-add-another');
+    expect(save.last().data).toMatchObject({addAnother: 1});
+  });
+
+  it('submits once when saved again while beforeSave still waits', async () => {
+    let allow!: (proceed: boolean) => void;
+    const beforeSave = vi.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          allow = resolve;
+        })
+    );
+    const {editor} = mount(payload({}), null, {beforeSave});
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    editor.save();
+    editor.save();
+    allow(true);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(beforeSave).toHaveBeenCalledOnce();
+    expect(save.calls()).toBe(1);
+  });
+
+  it('drops a save still waiting on beforeSave once the editor is removed', async () => {
+    let allow!: (proceed: boolean) => void;
+    const {editor} = mount(payload({}), null, {
+      beforeSave: () =>
+        new Promise<boolean>((resolve) => {
+          allow = resolve;
+        }),
+    });
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    editor.save();
+    app!.unmount();
+    app = undefined;
+    allow(true);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(save.calls()).toBe(0);
+  });
+
+  it('doesn’t report its edits settled while one made during their autosave is still pending', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    let respond!: () => void;
+    postSpy.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          respond = () => resolve({data: {draftId: 7}});
+        })
+    );
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
+    );
+
+    await typeTitle('Edited title');
+    const settled = editor.settleChanges();
+    await typeTitle('Edited title again');
+    respond();
+
+    expect(await settled).toBe(false);
+  });
+
+  it('doesn’t report its edits settled while its own save is still submitting', async () => {
+    const {editor} = mount(payload({}));
+    const save = interceptSave();
+    onTestFinished(save.restore);
+
+    // Another submission now would cancel this one before its result lands.
+    editor.save();
+
+    expect(await editor.settleChanges()).toBe(false);
   });
 
   it('starts a workflow draft when Save beats the autosave debounce', async () => {

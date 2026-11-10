@@ -15,7 +15,7 @@ beforeEach(function (): void {
         'root' => storage_path('framework/testing/mcp-volumes'),
     ]);
     Storage::fake('mcp-volumes');
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 });

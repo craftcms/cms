@@ -167,6 +167,29 @@ describe('ActionMenu', () => {
     });
   });
 
+  it('keeps the default invoker’s label up to date', async () => {
+    const label = ref('Actions for Lighthouses');
+    const container = document.createElement('div');
+    document.body.append(container);
+    const app = createApp({
+      render: () => h(ActionMenu, {actions: [], label: label.value}),
+    });
+    app.mount(container);
+    teardown = () => {
+      app.unmount();
+      container.remove();
+    };
+
+    label.value = 'Actions for Lighthouses of Maine';
+    await nextTick();
+
+    expect(
+      container
+        .querySelector('craft-action-menu > [slot="invoker"]')
+        ?.getAttribute('aria-label')
+    ).toBe('Actions for Lighthouses of Maine');
+  });
+
   it('renders a display item as its component', async () => {
     const {menu} = mount([
       {

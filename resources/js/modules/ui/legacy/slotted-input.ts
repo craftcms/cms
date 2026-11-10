@@ -14,7 +14,7 @@ export interface SlottedInputConfig {
 }
 
 /**
- * Builds the native `<input slot="input">` that a Lion-based control (craft-input,
+ * Builds the native `<input slot="input">` that a text control (craft-input,
  * craft-input-password, craft-input-color) adopts as its form control. The
  * jQuery-free equivalent of the subset of `Craft.ui.createTextInput` these
  * factories relied on.

@@ -33,7 +33,7 @@ class Heading implements Node
     public static function renderHtml(NodePayload $node, UiPayload $payload, UiHtmlRenderer $renderer): string
     {
         $heading = Html::tag("h{$node->props['level']}", Html::encode($node->props['content']), [
-            'class' => ['my-0'],
+            'class' => ["cp-h{$node->props['level']}"],
         ]);
         $description = $node->props['description'] === null
             ? ''

@@ -35,11 +35,11 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\Site\Data\Site;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Twig\Exceptions\TemplateLoaderException;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Yii2Adapter\Cp\Html\ElementIndexHtml;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use Dom\Element as DomElement;
 use Dom\HTMLDocument;
 use Illuminate\Support\Collection;
@@ -447,7 +447,7 @@ class Cp
      */
     public static function fieldHtml(string|callable $input, array $config = []): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::fieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Field` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::fieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Field` component instead.');
 
         return FormFields::fieldHtml(input: $input, config: $config);
     }
@@ -457,7 +457,7 @@ class Cp
      */
     public static function buttonHtml(array $config): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::buttonHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Button` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::buttonHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Button` component instead.');
 
         return FormFields::buttonFromConfig(config: $config)->toHtml();
     }
@@ -467,7 +467,7 @@ class Cp
      */
     public static function buttonGroupHtml(array $config): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::buttonGroupHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\ButtonGroup` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::buttonGroupHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\ButtonGroup` component instead.');
 
         return FormFields::buttonGroupFromConfig(config: $config)->toHtml();
     }
@@ -477,7 +477,7 @@ class Cp
      */
     public static function buttonGroupFieldHtml(array $config): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::buttonGroupFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\ButtonGroup` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::buttonGroupFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\ButtonGroup` component instead.');
 
         return FormFields::buttonGroupFieldHtml(config: $config);
     }
@@ -487,7 +487,7 @@ class Cp
      */
     public static function checkboxFieldHtml(array $config): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::checkboxFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Checkbox` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::checkboxFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Checkbox` component instead.');
 
         return FormFields::checkboxFieldHtml(config: $config);
     }
@@ -497,7 +497,7 @@ class Cp
      */
     public static function checkboxSelectFieldHtml(array $config): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::checkboxSelectFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\CheckboxSelect` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::checkboxSelectFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\CheckboxSelect` component instead.');
 
         return FormFields::checkboxSelectFieldHtml(config: $config);
     }
@@ -507,7 +507,7 @@ class Cp
      */
     public static function checkboxGroupHtml(array $config): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::checkboxGroupHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\CheckboxGroup` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::checkboxGroupHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\CheckboxGroup` component instead.');
 
         return FormFields::checkboxGroupFromConfig(config: $config)->toHtml();
     }
@@ -517,7 +517,7 @@ class Cp
      */
     public static function checkboxGroupFieldHtml(array $config): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::checkboxGroupFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\CheckboxGroup` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::checkboxGroupFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\CheckboxGroup` component instead.');
 
         return FormFields::checkboxGroupFieldHtml(config: $config);
     }
@@ -583,7 +583,7 @@ class Cp
      */
     public static function lightswitchHtml(array $config): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::lightswitchHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Lightswitch` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::lightswitchHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Lightswitch` component instead.');
 
         return FormFields::lightswitchFromConfig(config: $config)->toHtml();
     }
@@ -593,7 +593,7 @@ class Cp
      */
     public static function lightswitchFieldHtml(array $config): string
     {
-        Deprecator::log(__METHOD__, '`craft\helpers\Cp::lightswitchFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Lightswitch` component instead.');
+        LegacyUsage::record(__METHOD__, '`craft\helpers\Cp::lightswitchFieldHtml()` has been deprecated. Use the `CraftCms\Cms\Cp\Components\Lightswitch` component instead.');
 
         return FormFields::lightswitchFieldHtml(config: $config);
     }

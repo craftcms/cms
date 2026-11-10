@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
@@ -21,7 +22,7 @@ use CraftCms\Cms\User\UserPermissions;
 use Laravel\Passport\Passport;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
 });
 
@@ -53,7 +54,7 @@ it('returns readable resource links alongside element list data and checks acces
         ->assertJsonPath('result.content.1.mimeType', 'application/json')
         ->json('result');
 
-    expect(json_decode($listed['content'][0]['text'], true, flags: JSON_THROW_ON_ERROR))
+    expect(Json::decode($listed['content'][0]['text']))
         ->toBe($listed['structuredContent']);
 
     $resource = McpRequest::send($this, 'resources/read', ['uri' => $uri])
@@ -61,7 +62,7 @@ it('returns readable resource links alongside element list data and checks acces
         ->assertJsonPath('result.contents.0.uri', $uri)
         ->json('result.contents.0.text');
 
-    expect(json_decode($resource, true, flags: JSON_THROW_ON_ERROR)[$singular]['id'])->toBe($element->id);
+    expect(Json::decode($resource)[$singular]['id'])->toBe($element->id);
 
     $actor->admin = false;
     $actor->save();
@@ -127,7 +128,7 @@ it('reads entry type field layouts through their owner identifiers and requires 
         ->assertOk()
         ->assertJsonPath('result.contents.0.uri', $uri)
         ->json('result.contents.0.text');
-    $data = json_decode($resource, true, flags: JSON_THROW_ON_ERROR);
+    $data = Json::decode($resource);
 
     expect($data['fieldLayout']['id'])->toBe($layout->id)
         ->and($data['fieldLayout']['uid'])->toBe($layout->uid)

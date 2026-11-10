@@ -2,7 +2,14 @@
   import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId, watch} from 'vue';
+  import {
+    computed,
+    defineAsyncComponent,
+    reactive,
+    ref,
+    useId,
+    watch,
+  } from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
@@ -10,17 +17,23 @@
   import type {UiChangeKind, UiControlPayload} from './types';
   import {inputName} from './runtime';
   import {useUiPreview} from './uiPreview';
-  import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
   import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
   import {useElementPresentations} from '@/modules/elements/element-presentations';
+  import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
   import type {
     ElementPresentation,
     ElementSelectProps,
   } from './element-select/types';
+
+  // Only Assets fields that allow uploads render it, so it brings Uppy with it
+  // on demand.
+  const AssetUploadButton = defineAsyncComponent(
+    () => import('@/pages/assets/AssetUploadButton.vue')
+  );
 
   const props = defineProps<{
     control: UiControlPayload<ElementSelectProps>;
@@ -226,54 +239,11 @@
     }))
   );
 
-  const FOCUSABLE = 'a[href], button, input, select, textarea, [tabindex]';
-
-  /**
-   * Keeps keyboard focus when refetched presentations redraw the same
-   * elements. Card parts are compiled as templates, so new markup remounts
-   * them, and a focused link inside goes with it; focus moves to its
-   * counterpart unless it went somewhere else.
-   */
-  let focusBeforeRedraw: {
-    element: Element;
-    index: number;
-    ids: string;
-  } | null = null;
-  watch(
+  // Refetched presentations redraw the same elements without losing focus.
+  useFocusThroughRedraw(
+    () => dropZone.value,
     listData,
-    () => {
-      const root = dropZone.value;
-      const focused = document.activeElement;
-      focusBeforeRedraw =
-        root && focused && root.contains(focused)
-          ? {
-              element: focused,
-              index: [...root.querySelectorAll(FOCUSABLE)].indexOf(focused),
-              ids: ids.value.join(),
-            }
-          : null;
-    },
-    {flush: 'pre'}
-  );
-  watch(
-    listData,
-    () => {
-      const before = focusBeforeRedraw;
-      focusBeforeRedraw = null;
-      const active = document.activeElement;
-      if (
-        !before ||
-        before.ids !== ids.value.join() ||
-        before.element.isConnected ||
-        (active && active !== document.body)
-      ) {
-        return;
-      }
-      dropZone.value
-        ?.querySelectorAll<HTMLElement>(FOCUSABLE)
-        [before.index]?.focus();
-    },
-    {flush: 'post'}
+    () => ids.value.join()
   );
 
   const list = useElementList({
@@ -424,8 +394,11 @@
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,
+        ...props.control.props.referenceElement,
         showSiteMenu: props.control.props.showSiteMenu,
         indexSettings: {showFolders: props.control.props.showFolders ?? true},
+        defaultSource: props.control.props.defaultSource,
+        defaultSourcePath: props.control.props.defaultSourcePath,
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being
         // replaced, which would otherwise disable the obvious no-op choice.

@@ -94,7 +94,6 @@
     "@inertiajs/core": "^3.0.3",
     "@inertiajs/vite": "^3.0.3",
     "@inertiajs/vue3": "^3.0.3",
-    "@lion/ui": "catalog:",
     "@simplewebauthn/browser": "catalog:",
     "@tanstack/ai": "^1.0.0",
     "@tanstack/ai-vue": "^1.0.0",

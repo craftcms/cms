@@ -33,6 +33,7 @@ final readonly class ClientAction
      * @param  array<string, mixed>  $detail  Extra detail for the event.
      * @param  bool  $bulk  Whether the action can be performed on more than one element at once.
      * @param  string|null  $selectionAttribute  A capability every selected element needs for the action, such as `hasUrl`.
+     * @param  int|null  $selectionCount  How many elements must be selected for the action, when it takes an exact number.
      */
     public function __construct(
         public string $key,
@@ -42,6 +43,7 @@ final readonly class ClientAction
         public bool $bulk = true,
         public bool $destructive = false,
         public ?string $selectionAttribute = null,
+        public ?int $selectionCount = null,
     ) {}
 
     /**
@@ -54,6 +56,20 @@ final readonly class ClientAction
             label: t('Copy'),
             event: 'craft:copy-elements',
             selectionAttribute: 'copyable',
+        );
+    }
+
+    /**
+     * Opens the Compare screen with the two selected elements side by side.
+     */
+    public static function compare(): self
+    {
+        return new self(
+            key: 'compare',
+            label: t('Compare'),
+            event: 'craft:compare-elements',
+            selectionAttribute: 'comparable',
+            selectionCount: 2,
         );
     }
 
@@ -97,6 +113,7 @@ final readonly class ClientAction
             'variant' => $this->destructive ? 'danger' : null,
             'bulk' => $this->bulk ? null : false,
             'selectionAttribute' => $this->selectionAttribute,
+            'selectionCount' => $this->selectionCount,
             'action' => array_filter([
                 'type' => 'event',
                 'name' => $this->event,

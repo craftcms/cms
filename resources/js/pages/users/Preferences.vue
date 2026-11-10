@@ -248,18 +248,18 @@
             appearance="button-group"
             name="theme"
             :label="t('Theme')"
-            .modelValue="form.theme"
-            @model-value-changed="
+            .value="form.theme"
+            @change="
               (event: Event) =>
                 (form.theme = (
-                  event.target as HTMLElement & {modelValue: string}
-                ).modelValue)
+                  event.currentTarget as HTMLElement & {value: string}
+                ).value)
             "
           >
             <craft-radio
               v-for="option in page.props.themeOptions"
               :key="option.value"
-              .choiceValue="option.value"
+              .value="option.value"
               .checked="form.theme === option.value"
             >
               <input
@@ -322,18 +322,18 @@
             appearance="button-group"
             :name="setting.name"
             :label="setting.label"
-            .modelValue="form[setting.name]"
-            @model-value-changed="
+            .value="form[setting.name]"
+            @change="
               (event: Event) =>
                 (form[setting.name] = (
-                  event.target as HTMLElement & {modelValue: string}
-                ).modelValue)
+                  event.currentTarget as HTMLElement & {value: string}
+                ).value)
             "
           >
             <craft-radio
               v-for="option in setting.options"
               :key="option.value"
-              .choiceValue="option.value"
+              .value="option.value"
               .checked="form[setting.name] === option.value"
             >
               <input

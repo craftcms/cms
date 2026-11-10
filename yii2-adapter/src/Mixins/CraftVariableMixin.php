@@ -13,12 +13,15 @@ use CraftCms\Cms\Support\Typecast;
 use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
 use CraftCms\Yii2Adapter\Element\Queries\GlobalSetQuery;
 use CraftCms\Yii2Adapter\Element\Queries\TagQuery;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 
 class CraftVariableMixin
 {
     public function rebrand(): Closure
     {
         return function() {
+            LegacyUsage::record('craft-variable.rebrand', '`craft.rebrand` is used. Set the `cpIconUrl` and `cpLogoUrl` general config settings instead.');
+
             return app()->make(Rebrand::class);
         };
     }
@@ -26,6 +29,8 @@ class CraftVariableMixin
     public function app(): Closure
     {
         return function() {
+            LegacyUsage::record('craft-variable.app', '`craft.app` is used. Use Craft’s Twig variables and functions, or `app()`, instead.');
+
             return Craft::$app;
         };
     }
@@ -40,6 +45,7 @@ class CraftVariableMixin
          * @deprecated in 6.0.0
          */
         return function(array $criteria = []): CategoryQuery {
+            LegacyUsage::record('craft-variable.categories', '`craft.categories` is used. Query entries with `craft.entries` instead.');
             $query = Category::find();
             Typecast::configure($query, $criteria);
             return $query;
@@ -57,6 +63,7 @@ class CraftVariableMixin
          * @deprecated in 6.0.0
          */
         return function(array $criteria = []): GlobalSetQuery {
+            LegacyUsage::record('craft-variable.globalSets', '`craft.globalSets` is used. Query entries with `craft.entries` instead.');
             $query = GlobalSet::find();
             Typecast::configure($query, $criteria);
             return $query;
@@ -73,6 +80,7 @@ class CraftVariableMixin
          * @deprecated in 6.0.0
          */
         return function(array $criteria = []): TagQuery {
+            LegacyUsage::record('craft-variable.tags', '`craft.tags` is used. Query entries with `craft.entries` instead.');
             $query = Tag::find();
             Typecast::configure($query, $criteria);
             return $query;

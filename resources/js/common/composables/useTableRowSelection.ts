@@ -75,14 +75,9 @@ export function useTableRowSelection<TData extends Record<string, any>>(
     selection.clear();
   }
 
-  // craft-checkbox (Lion) fires `model-value-changed` on programmatic `.checked`
-  // updates too, so only act when the incoming value actually differs.
   function onToggleAllSelected(checked: boolean) {
     if (readOnly.value) return;
-    const t = toValue(table);
-    if (checked !== t.getIsAllRowsSelected()) {
-      t.toggleAllRowsSelected(checked);
-    }
+    toValue(table).toggleAllRowsSelected(checked);
   }
 
   function selectRow(

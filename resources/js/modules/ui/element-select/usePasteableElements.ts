@@ -88,6 +88,8 @@ export function usePasteableElements(options: {
       sources: field.sources,
       criteria: field.criteria,
       condition: field.selectionCondition,
+      ...field.referenceElement,
+      showFolders: field.showFolders,
       siteId: Craft.siteId ?? null,
       viewMode: field.viewMode,
       thumbSize: field.thumbSize,

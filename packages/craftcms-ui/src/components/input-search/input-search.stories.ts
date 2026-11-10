@@ -12,8 +12,8 @@ import type CraftInputSearch from './input-search.js';
  * `args` and `argTypes` are derived from the custom elements manifest, so the
  * controls and the API tables follow the component's JSDoc.
  *
- * The template is written out rather than generated: the value is Lion's
- * `modelValue`, a property rather than an attribute.
+ * The template is written out rather than generated: the value is the
+ * `value` property rather than an attribute.
  */
 const {args, argTypes} =
   getStorybookHelpers<CraftInputSearch>('craft-input-search');
@@ -28,7 +28,7 @@ const meta = {
   render: (args) => html`
     <craft-input-search
       ?disabled="${args.disabled}"
-      .modelValue="${args.value ?? ''}"
+      .value="${args.value ?? ''}"
     ></craft-input-search>
   `,
 } satisfies Meta<CraftInputSearchArgs>;
@@ -57,7 +57,7 @@ export const CustomLabel: Story = {
 /** Other suffix content, such as a filter button or a spinner, follows the clear button. */
 export const WithSuffix: Story = {
   render: () => html`
-    <craft-input-search .modelValue="${'Annual report'}">
+    <craft-input-search .value="${'Annual report'}">
       <craft-button
         slot="suffix"
         type="button"

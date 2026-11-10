@@ -6,9 +6,17 @@
  * `input` does, and a form-level listener sees them from anywhere in the tree.
  */
 
-/** Emitted on every alteration to the value, while it is still being made. */
-export const emitInput = (host: HTMLElement): void => {
-  host.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
+/**
+ * Emitted on every alteration to the value, while it is still being made.
+ * Given an `inputType`, it's an `InputEvent` carrying it, as a native input's
+ * is: `insertReplacementText` marks a value picked rather than typed.
+ */
+export const emitInput = (host: HTMLElement, inputType?: string): void => {
+  host.dispatchEvent(
+    inputType === undefined
+      ? new Event('input', {bubbles: true, composed: true})
+      : new InputEvent('input', {bubbles: true, composed: true, inputType})
+  );
 };
 
 /**

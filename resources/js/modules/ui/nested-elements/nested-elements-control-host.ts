@@ -2,7 +2,14 @@ import type {CpComponentRegistry} from '@/bootstrap/components';
 import UpdateFieldLayoutController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/UpdateFieldLayoutController';
 import {actionClient, appendBodyHtml, appendHeadHtml, t} from '@craftcms/ui';
 import {serializeFormInputs} from '@craftcms/ui/utilities/dom';
-import {createApp, defineComponent, h, shallowRef, type App} from 'vue';
+import {
+  createApp,
+  defineAsyncComponent,
+  defineComponent,
+  h,
+  shallowRef,
+  type App,
+} from 'vue';
 import {prepareHtmlNestedOwner} from '@/modules/elements/html-nested-owner';
 import {
   requestNestedOwnerEditor,
@@ -11,8 +18,15 @@ import {
 } from '@/modules/elements/nested-owner';
 import {inputName, pathsMatch, visitControls} from '../runtime';
 import type {UiControlPayload, UiPayload} from '../types';
-import NestedElements from './NestedElements.vue';
 import type {NestedElementsProps} from './nested-elements';
+
+/**
+ * Loaded once a nested element field connects, rather than with every page
+ * that defines the host.
+ */
+const NestedElements = defineAsyncComponent(
+  () => import('./NestedElements.vue')
+);
 
 /** Mounts native field-layout controls without replacing their surrounding HTML form. */
 export function defineNestedElementsControlHost(
@@ -92,7 +106,8 @@ export function defineNestedElementsControlHost(
                 : null;
             return this.isConnected ? this.#preparedOwner : null;
           },
-          refresh: () => nativeOwner?.refresh?.() ?? this.#refresh(),
+          refresh: (options) =>
+            nativeOwner?.refresh?.(options) ?? this.#refresh(),
         };
         this.#app = createApp(
           defineComponent({

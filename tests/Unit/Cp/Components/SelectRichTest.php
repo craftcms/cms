@@ -21,10 +21,10 @@ it('renders options with their values and checks the selected one', function () 
 
     expect($crawler->filter('craft-select-rich#entryType[name="typeId"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-option'))->toHaveCount(3)
-        ->and($crawler->filter('craft-option[checked]')->attr('choice-value'))->toBe('2')
-        ->and($crawler->filter('craft-option[checked]')->attr('hint'))->toBe('news')
-        ->and($crawler->filter('craft-option[checked]')->text())->toBe('News & Updates')
-        ->and($crawler->filter('craft-option[choice-value="3"][disabled]'))->toHaveCount(1);
+        ->and($crawler->filter('craft-option[selected]')->attr('value'))->toBe('2')
+        ->and($crawler->filter('craft-option[selected]')->attr('hint'))->toBe('news')
+        ->and($crawler->filter('craft-option[selected]')->text())->toBe('News & Updates')
+        ->and($crawler->filter('craft-option[value="3"][disabled]'))->toHaveCount(1);
 });
 
 it('renders option icons and trusted label markup', function () {
@@ -35,10 +35,10 @@ it('renders option icons and trusted label markup', function () {
         ])
         ->toHtml());
 
-    expect($crawler->filter('craft-option[choice-value="a"] craft-icon[name="newspaper"][data-color="red"]'))->toHaveCount(1)
-        ->and($crawler->filter('craft-option[choice-value="a"] b')->text())->toBe('Bold')
-        ->and($crawler->filter('craft-option[choice-value="b"] b'))->toHaveCount(0)
-        ->and($crawler->filter('craft-option[checked]'))->toHaveCount(0);
+    expect($crawler->filter('craft-option[value="a"] craft-icon[name="newspaper"][data-color="red"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-option[value="a"] b')->text())->toBe('Bold')
+        ->and($crawler->filter('craft-option[value="b"] b'))->toHaveCount(0)
+        ->and($crawler->filter('craft-option[selected]'))->toHaveCount(0);
 });
 
 it('renders a disabled select', function () {

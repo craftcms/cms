@@ -9,7 +9,6 @@ use craft\base\BaseFsInterface;
 use craft\fs\bridge\LegacyFsFlysystemAdapter;
 use craft\fs\bridge\LegacyFsPathPrefixedAdapter;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\FilesystemAdapter as LaravelFilesystemAdapter;
 use Illuminate\Filesystem\FilesystemManager;
@@ -32,15 +31,6 @@ readonly class FilesystemCompatibility
             if (!$filesystem instanceof BaseFsInterface) {
                 throw new InvalidArgumentException("Craft filesystem [$handle] does not implement the legacy filesystem API.");
             }
-
-            Deprecator::log(
-                sprintf('filesystem-bridge:%s', $filesystem::class),
-                sprintf(
-                    'Filesystem [%s] uses the deprecated legacy filesystem API. Update `%s::getDiskConfig()` to return a native Laravel disk configuration.',
-                    $handle,
-                    $filesystem::class,
-                ),
-            );
 
             return $legacyFilesystemAdapter($filesystem, $config);
         });

@@ -174,17 +174,17 @@ export class CardViewDesigner extends Base {
   /** Reflects changes to the Name, Color, and Icon controls in the preview card. */
   listenToAppearanceControls(): void {
     // The container may not be in the form yet, so listen on the document.
-    document.addEventListener('model-value-changed', this.onAppearanceChange);
+    document.addEventListener('input', this.onAppearanceChange);
   }
 
-  // The control's field re-dispatches the event, so it may come from either.
+  // Typing reaches here from the native input inside the control.
   onAppearanceChange = (ev: Event): void => {
     const target = ev.target;
     if (
       target instanceof Node &&
       (['name', 'color', 'icon'] as const).some((key) => {
         const control = this.appearanceControl(key);
-        return control !== null && target.contains(control);
+        return control !== null && control.contains(target);
       })
     ) {
       this.syncIconThumbOption();
@@ -195,7 +195,7 @@ export class CardViewDesigner extends Base {
   /** The value of the Name, Color, or Icon control, or `''` if there isn't one. */
   appearanceValue(key: 'name' | 'color' | 'icon'): string {
     return String(
-      (this.appearanceControl(key) as any)?.modelValue ?? ''
+      (this.appearanceControl(key) as {value?: unknown} | null)?.value ?? ''
     ).trim();
   }
 
@@ -355,7 +355,7 @@ export class CardViewDesigner extends Base {
 
   updateCardViewConfig(): void {
     this.designer.updateConfig((config: any) => {
-      config.cardView = this.$libraryContainer.modelValue;
+      config.cardView = this.$libraryContainer.value;
       return config;
     });
   }
@@ -483,7 +483,7 @@ export class CardViewDesigner extends Base {
   }
 
   thumbSources(): string[] {
-    return this.$thumbSources?.modelValue ?? [];
+    return this.$thumbSources?.value ?? [];
   }
 
   manageThumbnails(): void {
@@ -573,10 +573,7 @@ export class CardViewDesigner extends Base {
     this.abortController?.abort();
     this.previewCardObserver.disconnect();
     this.themeObserver.disconnect();
-    document.removeEventListener(
-      'model-value-changed',
-      this.onAppearanceChange
-    );
+    document.removeEventListener('input', this.onAppearanceChange);
 
     if (this.$container) {
       cvdData.delete(this.$container);

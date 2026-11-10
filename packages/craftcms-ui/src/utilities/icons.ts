@@ -1,18 +1,7 @@
-import {icons} from '@lion/ui/icon.js';
 import {html, nothing, type TemplateResult} from 'lit';
 import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
 
-export const CRAFT_ICON_NAMESPACE = 'craft';
-
 type ResolvedIcon = TemplateResult | typeof nothing;
-type LionIconResolver = (
-  iconset: string,
-  icon: string
-) =>
-  | TemplateResult
-  | Promise<TemplateResult>
-  | typeof nothing
-  | Promise<typeof nothing>;
 
 export type CraftIconResolver = (
   name: string,
@@ -37,16 +26,6 @@ export type CraftIconUrlResolver = (
  * icons. Failed fetches are evicted so they can retry on the next request.
  */
 const iconCache = new Map<string, Promise<ResolvedIcon>>();
-
-function getIconset(family: string, variant: string): string {
-  return `${family}/${variant}`;
-}
-
-function parseIconset(iconset: string): {family: string; variant: string} {
-  const [family = 'classic', variant = 'regular'] = iconset.split('/');
-
-  return {family, variant};
-}
 
 async function requestIcon(url: string, flip: boolean): Promise<ResolvedIcon> {
   try {
@@ -157,15 +136,10 @@ export function createUrlIconResolver(
 export const defaultIconResolver: CraftIconResolver =
   createUrlIconResolver(getIconUrl);
 
+let currentResolver: CraftIconResolver = defaultIconResolver;
+
 export function setIconResolver(resolver: CraftIconResolver) {
-  icons.removeIconResolver(CRAFT_ICON_NAMESPACE);
-  const lionResolver: LionIconResolver = (iconset, icon) => {
-    const {family, variant} = parseIconset(iconset);
-
-    return resolver(icon, family, variant) as ReturnType<LionIconResolver>;
-  };
-
-  icons.addIconResolver(CRAFT_ICON_NAMESPACE, lionResolver);
+  currentResolver = resolver;
 }
 
 export function resolveIcon(
@@ -173,9 +147,5 @@ export function resolveIcon(
   family: string = 'classic',
   variant: string = 'regular'
 ): Promise<ResolvedIcon> {
-  return Promise.resolve(
-    icons.resolveIcon(CRAFT_ICON_NAMESPACE, getIconset(family, variant), name)
-  ) as Promise<ResolvedIcon>;
+  return Promise.resolve(currentResolver(name, family, variant));
 }
-
-setIconResolver(defaultIconResolver);

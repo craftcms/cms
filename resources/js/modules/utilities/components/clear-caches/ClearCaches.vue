@@ -36,7 +36,7 @@
 
 <template>
   <div>
-    <h2 class="text-lg mb-3">{{ t('Clear Caches') }}</h2>
+    <h2 class="cp-h2 mb-3">{{ t('Clear Caches') }}</h2>
 
     <Form
       method="post"
@@ -62,7 +62,7 @@
       />
 
       <div class="mt-4 flex gap-2 items-center">
-        <craft-button type="submit" .loading="processing">
+        <craft-button type="submit" variant="accent" .loading="processing">
           {{ t('Clear caches') }}
         </craft-button>
         <TransitionFade>
@@ -84,7 +84,7 @@
   <hr class="my-lg" />
 
   <div class="py-4">
-    <h2 class="text-lg mb-3">{{ t('Invalidate Data Caches') }}</h2>
+    <h2 class="cp-h2 mb-3">{{ t('Invalidate Data Caches') }}</h2>
 
     <Form
       method="post"
@@ -111,7 +111,7 @@
 
       <div class="mt-4">
         <div class="flex gap-2 items-center">
-          <craft-button type="submit" .loading="processing">
+          <craft-button type="submit" variant="accent" .loading="processing">
             {{ t('Invalidate caches') }}
           </craft-button>
           <TransitionFade>

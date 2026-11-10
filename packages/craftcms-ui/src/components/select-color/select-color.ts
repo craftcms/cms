@@ -1,7 +1,6 @@
 import {html, nothing, render, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {colors as paletteColors} from '@src/constants/colors';
-import {HostAriaReferences} from '@src/mixins/HostAriaReferences';
 import {t} from '@src/utilities/translate';
 import CraftSelectRich from '../select-rich/select-rich.js';
 import styles from './select-color.styles.js';
@@ -27,12 +26,12 @@ function isHex(color: string): boolean {
  * Everything else, including the label, help text, validation and the way a
  * surrounding `craft-field` names it, comes from {@link CraftSelectRich}.
  * Outside a field, `labelled-by` and `described-by` on the host name and
- * describe the button after elements elsewhere, such as a table column
- * heading.
+ * describe the field after elements elsewhere, such as a table column
+ * heading. No color is selected until one is given.
  *
  * @since 1.0
  *
- * @attr model-value - The selected color.
+ * @attr value - The selected color.
  * @attr labelled-by - Ids of elements elsewhere that label the control, such
  *   as a table column heading.
  * @attr described-by - Ids of elements elsewhere that describe the control.
@@ -40,12 +39,6 @@ function isHex(color: string): boolean {
  * @fires input - Emitted when a color is picked.
  * @fires change - Emitted when a color is picked. Picking is a commit, so it
  *   follows each `input`.
- * @fires model-value-changed - The selected color changed.
- *
- * `model-value-changed` is Lion's own protocol name, not one this package
- * chose, and it is kept because Lion's form system dispatches and listens for
- * it. Prefer the native events above: they are the contract this package
- * supports, and they carry the component as `event.target`.
  *
  * @cssproperty [--c-select-color-swatch-edge=rgb(0 0 0 / 15%)] - Edge of the
  *   no-color swatch, which would otherwise blend into a dark surface. The dark
@@ -53,12 +46,8 @@ function isHex(color: string): boolean {
  * @cssproperty [--c-select-color-swatch-ring=transparent] - Ring around every
  *   swatch. The dark theme sets a faint one.
  */
-export default class CraftSelectColor extends HostAriaReferences(
-  CraftSelectRich
-) {
-  static override get styles() {
-    return [...super.styles, styles];
-  }
+export default class CraftSelectColor extends CraftSelectRich {
+  static override styles = [...CraftSelectRich.styles, styles];
 
   /**
    * When enabled, a blank option (labeled {@link blankLabel}) is prepended
@@ -95,9 +84,8 @@ export default class CraftSelectColor extends HostAriaReferences(
   @property({type: Object})
   labels: Record<string, string> = {};
 
-  /** Marks the control as required. */
-  @property({type: Boolean, reflect: true})
-  required = false;
+  /** The options this component rendered. */
+  #renderedOptions: Element[] = [];
 
   /**
    * Renders a color swatch for the given color value. The special `__blank__`
@@ -107,11 +95,9 @@ export default class CraftSelectColor extends HostAriaReferences(
    * border alike.
    *
    * Structural styling is applied inline (rather than via the component's
-   * scoped stylesheet) so the rendered node stays self-contained when Lion's
-   * `LionSelectInvoker` clones the selected option's child nodes into the
-   * invoker's shadow root, where this component's class rules don't apply.
-   * The CSS custom properties referenced here are inherited through the shadow
-   * boundary, so they still resolve in the invoker.
+   * scoped stylesheet) so the rendered node stays self-contained when the
+   * rich select copies the selected option's content into its field, where
+   * this component's class rules don't apply.
    */
   protected _swatchTemplate(color: string) {
     // The "Custom…" option has no color of its own, so it keeps the swatch's
@@ -190,11 +176,11 @@ export default class CraftSelectColor extends HostAriaReferences(
 
   /**
    * Builds a single `<craft-option>` for a color value. The wrapper's flex
-   * layout is applied inline so it survives being cloned into the invoker's
-   * shadow root alongside the swatch (see `_swatchTemplate`).
+   * layout is applied inline so it survives being copied into the field
+   * alongside the swatch (see `_swatchTemplate`).
    */
   protected _optionTemplate(color: string, label: string) {
-    return html`<craft-option .choiceValue=${color}>
+    return html`<craft-option .value=${color}>
       <span
         class="select-color__option"
         style="display:flex;align-items:center;gap:var(--c-spacing-sm);"
@@ -207,35 +193,14 @@ export default class CraftSelectColor extends HostAriaReferences(
     </craft-option>`;
   }
 
-  /**
-   * The rich select only adopts a `model-value` once its options exist, so the
-   * attribute is applied as a property, which waits for them.
-   */
-  static override get observedAttributes() {
-    return [...super.observedAttributes, 'model-value'];
-  }
-
-  override attributeChangedCallback(
-    name: string,
-    old: string | null,
-    value: string | null
-  ) {
-    if (name === 'model-value') {
-      this.modelValue = value ?? '';
-      return;
-    }
-    super.attributeChangedCallback(name, old, value);
-  }
-
-  constructor() {
-    super();
-    /** No color is picked until one is asked for. */
-    this.hasNoDefaultSelected = true;
+  protected override get _selectsFirstOption(): boolean {
+    return false;
   }
 
   override connectedCallback() {
-    super.connectedCallback();
+    // Rendered first, so the rich select finds them as it connects.
     this.#renderOptions();
+    super.connectedCallback();
   }
 
   override updated(changed: PropertyValues<this>) {
@@ -252,12 +217,12 @@ export default class CraftSelectColor extends HostAriaReferences(
     }
   }
 
-  /** Renders the options into the listbox, as `craft-combobox` does. */
+  /**
+   * Renders the options as the host's children. Each render goes through a
+   * fresh container, since the host's own render part belongs to its slots.
+   */
   #renderOptions() {
-    if (!this._listboxNode) {
-      return;
-    }
-
+    const container = document.createElement('div');
     render(
       html`${this.allowTransparent
         ? this._optionTemplate('__blank__', this.blankLabel ?? t('Transparent'))
@@ -269,8 +234,14 @@ export default class CraftSelectColor extends HostAriaReferences(
       )}${this.allowCustom
         ? this._optionTemplate('__custom__', t('Custom…'))
         : nothing}`,
-      this._listboxNode
+      container
     );
+
+    for (const option of this.#renderedOptions) {
+      option.remove();
+    }
+    this.#renderedOptions = [...container.children];
+    this.append(...this.#renderedOptions);
   }
 }
 

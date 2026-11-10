@@ -32,29 +32,19 @@
   import AssistantApprovals, {
     type AssistantApproval,
   } from './AssistantApprovals.vue';
-  import ElementCards from '@/modules/elements/components/ElementCards.vue';
-  import ElementChips, {
-    type ChipElement,
-  } from '@/modules/elements/components/ElementChips.vue';
-  import {useSelectable} from '@/common/composables/useSelectable';
-  import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpLink from '@/common/components/CpLink.vue';
   import MessageBubble from '@/common/components/MessageBubble.vue';
   import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
   import CommentField from '@/common/components/CommentField.vue';
-  import {
-    createElementActionMenu,
-    type ElementActionMenuItem,
-  } from '@/modules/elements/composables/useElementActionMenu';
   import AssistantChipStatus from './AssistantChipStatus.vue';
   import AssistantMentionHighlights from './AssistantMentionHighlights.vue';
   import AssistantContextPicker from './AssistantContextPicker.vue';
   import AssistantProposals from './AssistantProposals.vue';
-  import {
-    AssistantRequestError,
-    assistantConnection,
-    renderMarkdown,
-  } from './assistant';
+  import AssistantShownElements, {
+    type ShownElement,
+  } from './AssistantShownElements.vue';
+  import {AssistantRequestError} from './assistant';
+  import {assistantConnection, renderMarkdown} from './chat';
   import {
     assistantFieldUrl,
     contextRequest,
@@ -479,12 +469,6 @@
     return ownTools[name]?.icon ?? 'wrench';
   }
 
-  /** An element a `show_elements` call showed, with what its chip’s menu offers. */
-  type ShownElement = ChipElement & {actions?: ElementActionMenuItem[]};
-
-  /** One dispatcher for every shown element’s menu. */
-  const toActionItems = createElementActionMenu();
-
   /** The elements a `show_elements` call showed, as chips draw them. */
   function elementsOf(output: unknown): ShownElement[] {
     const elements = (resultOf(output) as {elements?: unknown} | null)
@@ -498,6 +482,13 @@
     return (resultOf(output) as {view?: unknown} | null)?.view === 'cards'
       ? 'cards'
       : 'list';
+  }
+
+  /** The thumbnail size a `show_elements` call’s elements were drawn at. */
+  function thumbSizeOf(output: unknown): string | null {
+    const size = (resultOf(output) as {thumbSize?: unknown} | null)?.thumbSize;
+
+    return typeof size === 'string' ? size : null;
   }
 
   /** A setting a `show_components` call showed, as its chip draws it. */
@@ -616,9 +607,6 @@
       focus();
     }
   }
-
-  /** Shown elements can’t be selected. */
-  const noSelection = useSelectable<number>({ids: [], enabled: false});
 
   /** What a tool call did, is doing, or is waiting to do. */
   function toolActivity(part: {
@@ -862,54 +850,16 @@
               :call-id="entry.part.id"
               @status="status = $event"
             />
-            <template
+            <AssistantShownElements
               v-if="
                 entry.part.name === 'show_elements' &&
                 elementsOf(entry.part.output).length
               "
-            >
-              <div
-                v-if="viewOf(entry.part.output) === 'cards'"
-                class="assistant-chat__cards"
-              >
-                <ElementCards
-                  :data="elementsOf(entry.part.output)"
-                  :selection="noSelection"
-                  read-only
-                  single-column
-                  :render-server-actions="false"
-                >
-                  <template #actions="{element}">
-                    <ActionMenu
-                      v-if="(element as ShownElement).actions?.length"
-                      :actions="
-                        toActionItems((element as ShownElement).actions!)
-                      "
-                      :label="
-                        t('Actions for {name}', {name: element?.label ?? ''})
-                      "
-                    />
-                  </template>
-                </ElementCards>
-              </div>
-              <ElementChips
-                v-else
-                class="assistant-chat__cards"
-                :data="elementsOf(entry.part.output)"
-                :selection="noSelection"
-                read-only
-                linked
-              >
-                <template #suffix="{element}">
-                  <ActionMenu
-                    v-if="(element as ShownElement).actions?.length"
-                    :actions="toActionItems((element as ShownElement).actions!)"
-                    :label="t('Actions for {name}', {name: element.label})"
-                    flush="inline-start"
-                  />
-                </template>
-              </ElementChips>
-            </template>
+              class="assistant-chat__cards"
+              :elements="elementsOf(entry.part.output)"
+              :view="viewOf(entry.part.output)"
+              :thumb-size="thumbSizeOf(entry.part.output)"
+            />
             <ul
               v-if="
                 entry.part.name === 'show_components' &&

@@ -29,6 +29,24 @@ class AssetSelect extends ElementSelect
 
     private bool $showFolders = true;
 
+    private ?string $defaultSource = null;
+
+    /** @var list<array<string, mixed>>|null */
+    private ?array $defaultSourcePath = null;
+
+    /**
+     * Sets the source and folder path the selector modal opens in, such as the field's upload location.
+     *
+     * @param  list<array<string, mixed>>|null  $path  The folders' source path info, from the source's folder down
+     */
+    public function defaultSource(?string $source, ?array $path = null): static
+    {
+        $this->defaultSource = $source;
+        $this->defaultSourcePath = $path;
+
+        return $this;
+    }
+
     public function showFolders(bool $showFolders = true): static
     {
         $this->showFolders = $showFolders;
@@ -65,6 +83,8 @@ class AssetSelect extends ElementSelect
             'canUpload' => $this->canUpload,
             'uploadParams' => $this->uploadParams ?: null,
             'showFolders' => $this->showFolders,
+            'defaultSource' => $this->defaultSource,
+            'defaultSourcePath' => $this->defaultSourcePath,
         ];
     }
 }

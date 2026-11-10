@@ -8,8 +8,8 @@
 
 namespace craft\markdown;
 
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Markdown as MarkdownFacade;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 
 abstract class BaseMarkdownParser
 {
@@ -50,7 +50,7 @@ abstract class BaseMarkdownParser
     protected function logIgnoredSettings(): void
     {
         if (!$this->html5) {
-            Deprecator::log(
+            LegacyUsage::record(
                 sprintf('%s::$html5', static::class),
                 sprintf('`%s::$html5` is deprecated and ignored. HTML5 output is always used.', static::class),
             );

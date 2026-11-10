@@ -6,7 +6,6 @@ namespace CraftCms\Yii2Adapter\Config;
 
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Config;
@@ -42,8 +41,6 @@ readonly class MultiEnvironmentConfigCompatibility
             if (!array_key_exists('*', $config)) {
                 continue;
             }
-
-            Deprecator::log("config-{$file}", 'Using multi-environment config files is deprecated.', $file->getPathname());
 
             $merged = Arr::merge($config['*'], $config[$environment] ?? []);
 

@@ -768,22 +768,6 @@ class GeneralConfig extends BaseConfig
     public ?string $customIconPath = null;
 
     /**
-     * @var string The asset transformer to use when none is selected explicitly.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->defaultAssetTransformer('craft')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_ASSET_TRANSFORMER=craft
-     * ```
-     * :::
-     *
-     * @group Assets
-     */
-    public string $defaultAssetTransformer = 'craft';
-
-    /**
      * @var string The two-letter country code that addresses will be set to by default.
      *
      * See <https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2> for a list of acceptable country codes.
@@ -3977,24 +3961,6 @@ class GeneralConfig extends BaseConfig
     public function customIconPath(?string $value): self
     {
         $this->customIconPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The asset transformer to use when none is selected explicitly.
-     *
-     * @group Assets
-     *
-     * @see $defaultAssetTransformer
-     */
-    public function defaultAssetTransformer(string $value): self
-    {
-        if ($value === '') {
-            throw new RuntimeException('`defaultAssetTransformer` cannot be empty.');
-        }
-
-        $this->defaultAssetTransformer = $value;
 
         return $this;
     }

@@ -26,6 +26,9 @@ function compositeControlsUi(): Ui
                 ->placeholder('Write <Markdown>')
                 ->toolbarButtons(['bold', 'link'])
                 ->showStats()
+                ->assetSources(['volume:images'])
+                ->assetAnyUploader()
+                ->uploadFolderId(7)
                 ->textExpanderTriggers([
                     ['trigger' => '@', 'boundary' => 'whitespace', 'label' => 'People', 'options' => [
                         ['label' => 'Ada Lovelace', 'value' => '@ada'],
@@ -138,10 +141,11 @@ it('passes table column info to the client as HTML', function () {
 
 it('renders composite Controls with nested submission names and escaped values', function () {
     $crawler = compositeControlsCrawler();
-    $markdown = $crawler->filter('craft-markdown-field[name="settings[body]"][sanitize-html][show-stats]');
+    $markdown = $crawler->filter('craft-markdown-field[name="settings[body]"][sanitize-html][show-stats][asset-any-uploader][upload-folder-id="7"]');
     $textExpander = $crawler->filter('craft-text-expander');
 
     expect($markdown)->toHaveCount(1)
+        ->and(json_decode($markdown->attr('asset-sources'), true))->toBe(['volume:images'])
         ->and($textExpander)->toHaveCount(1)
         ->and($textExpander->attr('for'))->toBe($markdown->attr('id'))
         ->and($textExpander->attr('slot'))->toBe('input')
@@ -149,7 +153,7 @@ it('renders composite Controls with nested submission names and escaped values',
         ->and(json_decode($crawler->filter('craft-table-ui')->attr('data-payload'), true)['nodes'][0]['control']['props']['addRowLabel'])->toBe('Add a coupon')
         ->and($crawler->filter('craft-link-field[name="settings[link]"][model-value]'))->toHaveCount(1)
         ->and($crawler->filter('input[name="settings[address][addressLine1]"][value="123 Main Street"]'))->toHaveCount(1)
-        ->and($crawler->filter('craft-combobox[name="settings[address][administrativeArea]"][model-value="CA"]'))->toHaveCount(1)
+        ->and($crawler->filter('craft-combobox[name="settings[address][administrativeArea]"][value="CA"]'))->toHaveCount(1)
         ->and($crawler->filter('craft-icon-picker[name="settings[icon]"][value="star"][free-only]'))->toHaveCount(1)
         ->and($crawler->html())->toContain('Enter a valid link.', 'Choose an address.', 'Unmatched error.')
         ->and($crawler->html())->not->toContain('<script>');
@@ -160,6 +164,7 @@ it('displays composite values without submitting them in non-editable modes', fu
 
     expect($crawler->filter('input:not([disabled])[name], textarea:not([disabled])[name], select:not([disabled])[name]')->each(fn (Crawler $node) => $node->outerHtml()))->toBe([])
         ->and($crawler->filter('craft-markdown-field')->text())->toContain('**Safe**')
+        ->and($crawler->filter('craft-markdown-field[upload-folder-id]'))->toHaveCount(0)
         ->and(json_decode($crawler->filter('craft-table-ui')->attr('data-payload'), true)['nodes'][0]['control']['mode'])->toBe($mode->value)
         ->and($crawler->filter('craft-link-field[disabled][model-value]'))->toHaveCount(1)
         ->and($crawler->filter('input[value="123 Main Street"][disabled]'))->toHaveCount(1)

@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {html, render} from 'lit';
 
 import './select.js';
 import type CraftSelect from './select.js';
@@ -36,6 +37,25 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+describe('craft-select references', () => {
+  it('names the control by its label only while the label has text', async () => {
+    const element = await createSelect(
+      {},
+      '<select slot="input" aria-label="Quality Preset"><option>Low</option></select>'
+    );
+    expect(native(element).hasAttribute('aria-labelledby')).toBe(false);
+
+    element.label = 'Quality';
+    await element.updateComplete;
+    const label = element.querySelector('[slot="label"]')!;
+    expect(native(element).getAttribute('aria-labelledby')).toBe(label.id);
+
+    element.label = '';
+    await element.updateComplete;
+    expect(native(element).hasAttribute('aria-labelledby')).toBe(false);
+  });
+});
+
 describe('craft-select', () => {
   /**
    * The native `<select>` is slotted rather than rendered, so the component
@@ -64,7 +84,26 @@ describe('craft-select', () => {
     native(element).dispatchEvent(new Event('change', {bubbles: true}));
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('en-US');
+    expect(element.value).toBe('en-US');
+  });
+
+  it('selects a value set before its options are rendered', async () => {
+    const languages = ['fr-FR', 'en-US'];
+    render(
+      html`<craft-select .value=${'en-US'}>
+        <select slot="input">
+          ${languages.map(
+            (language) => html`<option value=${language}>${language}</option>`
+          )}
+        </select>
+      </craft-select>`,
+      document.body
+    );
+    const element = document.querySelector('craft-select')!;
+    await element.updateComplete;
+
+    expect(native(element).value).toBe('en-US');
+    expect(element.value).toBe('en-US');
   });
 
   it('reflects small so the stylesheet can act on it', async () => {

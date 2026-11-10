@@ -235,6 +235,11 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
     return this.container!;
   }
 
+  /** {@link container} as a jQuery collection, for legacy code that reads `$container`. */
+  get $container(): any {
+    return this.container ? jq()?.(this.container) : null;
+  }
+
   /**
    * Place this panel at `index` of `total`, counting from the oldest.
    *

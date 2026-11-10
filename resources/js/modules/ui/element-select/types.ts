@@ -66,6 +66,12 @@ export type ElementSelectProps = {
   sources: string[] | null;
   criteria: UiProperties;
   selectionCondition?: UiProperties;
+  /** The element the selection condition is evaluated against, such as the one being edited. */
+  referenceElement?: {
+    referenceElementId: number;
+    referenceElementOwnerId: number | null;
+    referenceElementSiteId: number | null;
+  };
   selectionLabel: string;
   limit: number | null;
   single?: boolean;
@@ -91,4 +97,7 @@ export type ElementSelectProps = {
   /** What uploads are sent with: a `folderId`, or a `fieldId` with an `elementId` and `siteId`. */
   uploadParams?: Record<string, number> | null;
   showFolders?: boolean;
+  /** The source and folder path the selector modal opens in, such as the field's upload location. */
+  defaultSource?: string | null;
+  defaultSourcePath?: Array<Record<string, unknown>> | null;
 };

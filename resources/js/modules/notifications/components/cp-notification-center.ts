@@ -30,7 +30,6 @@ class CpNotificationCenter extends LitElement {
 
     .notification-trigger__badge {
       --badge-border-width: 2px;
-      display: inline-flex;
       position: absolute;
       inset-block-start: 0;
       inset-inline-end: 0;

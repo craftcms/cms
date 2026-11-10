@@ -128,15 +128,30 @@
   );
 
   const buttonLabel = computed(() => (model.value ? t('Change') : t('Choose')));
+  const field = ref<HTMLElement>();
+
+  /**
+   * Picking an icon is an edit, so once the value has reached the input it's
+   * announced the way typing would announce it.
+   */
+  function announceChange(): void {
+    void nextTick(() => {
+      const input = field.value?.querySelector('input');
+      input?.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
+      input?.dispatchEvent(new Event('change', {bubbles: true}));
+    });
+  }
 
   function choose(name: string) {
     modalActive.value = false;
     model.value = name;
+    announceChange();
     chooseButton.value?.focus();
   }
 
   function removeIcon() {
     model.value = '';
+    announceChange();
     nextTick(() => {
       chooseButton.value?.focus();
     });
@@ -145,15 +160,16 @@
 
 <template>
   <craft-input
+    ref="field"
     v-bind="$attrs"
     :id="id"
     :label="label"
     :name="name"
     :aria-labelledby="labelledBy"
     :aria-describedby="describedBy"
-    :has-feedback-for="error ? 'error' : ''"
+    :invalid="Boolean(error)"
     hidden-input
-    .modelValue="model"
+    .value="model"
     .disabled="disabled"
   >
     <div class="flex gap-2 items-center" slot="before">

@@ -19,6 +19,8 @@
     fieldId,
     inputId,
     nodeHasErrors,
+    scopedId,
+    UiFieldIdScope,
     uiTabPanelId,
     visitControls,
   } from './runtime';
@@ -47,6 +49,7 @@
    * tabs leave the hash alone.
    */
   const isSlideout = useIsSlideout();
+  const idScope = inject(UiFieldIdScope, undefined);
 
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
@@ -180,7 +183,9 @@
     let found = false;
 
     visitControls([node], (control) => {
-      found ||= fieldId(control.path) === id || inputId(control.path) === id;
+      found ||=
+        scopedId(idScope, fieldId(control.path)) === id ||
+        scopedId(idScope, inputId(control.path)) === id;
     });
 
     return found;
@@ -236,7 +241,7 @@
   });
 
   function tabPanelId(tab: (typeof tabs.value)[number]): string {
-    return uiTabPanelId(tab.uid, props.scope);
+    return scopedId(idScope, uiTabPanelId(tab.uid, props.scope));
   }
 
   function panelAttributes(node: UiNodePayload): {id?: string} {
@@ -244,7 +249,9 @@
       return {};
     }
 
-    return {id: `${uiTabPanelId(node.uid, props.scope)}-tab`};
+    return {
+      id: `${scopedId(idScope, uiTabPanelId(node.uid, props.scope))}-tab`,
+    };
   }
 
   /**

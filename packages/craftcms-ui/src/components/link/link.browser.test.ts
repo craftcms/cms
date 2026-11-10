@@ -97,7 +97,7 @@ function wait(ms: number) {
 
 async function hoverOpen() {
   await userEvent.hover(link().querySelector('a')!);
-  await vi.waitFor(() => expect(popover().opened).toBe(true));
+  await vi.waitFor(() => expect(popover().open).toBe(true));
 }
 
 async function tabToDetailsButton() {
@@ -122,7 +122,7 @@ it('reaches the details button, then the link, from the keyboard', async () => {
 
   expect(document.activeElement).toBe(link().querySelector('a'));
   await wait(linkHoverIntent.options.warmUpDelay + 100);
-  expect(popover().opened).toBe(false);
+  expect(popover().open).toBe(false);
 });
 
 it('moves on to the link after the open panel', async () => {
@@ -142,7 +142,7 @@ it('opens the details with Enter, keeping focus on the button and copying nothin
   await userEvent.keyboard('{Enter}');
   await settle();
 
-  expect(popover().opened).toBe(true);
+  expect(popover().open).toBe(true);
   expect(shadowPath()).toEqual(['craft-link', 'craft-button']);
   expect(copied).toEqual([]);
 });
@@ -259,17 +259,17 @@ it('closes with Escape and returns focus to the details button', async () => {
   await userEvent.keyboard('{Enter}');
   await settle();
   await userEvent.keyboard('{Tab}');
-  await vi.waitFor(() => expect(tooltip('open-button').opened).toBe(true));
+  await vi.waitFor(() => expect(tooltip('open-button').open).toBe(true));
   await userEvent.keyboard('{Escape}');
   await settle();
 
-  expect(tooltip('open-button').opened).toBe(false);
-  expect(popover().opened).toBe(true);
+  expect(tooltip('open-button').open).toBe(false);
+  expect(popover().open).toBe(true);
 
   await userEvent.keyboard('{Escape}');
   await settle();
 
-  expect(popover().opened).toBe(false);
+  expect(popover().open).toBe(false);
   expect(shadowPath()).toEqual(['craft-link', 'craft-button']);
 });
 
@@ -279,13 +279,13 @@ it('closes once focus leaves the panel, leaving focus where it went', async () =
   await settle();
   await userEvent.keyboard('{Tab}');
   await settle();
-  expect(popover().opened).toBe(true);
+  expect(popover().open).toBe(true);
 
   const anchor = link().querySelector('a')!;
   anchor.focus();
   await settle();
 
-  expect(popover().opened).toBe(false);
+  expect(popover().open).toBe(false);
   expect(document.activeElement).toBe(anchor);
 });
 
@@ -297,7 +297,7 @@ it('shows a tooltip on each of the panel buttons', async () => {
     ['copy-button', 'Copy'],
   ] as const) {
     await userEvent.hover(link().shadowRoot!.getElementById(id)!);
-    await vi.waitFor(() => expect(tooltip(id).opened).toBe(true));
+    await vi.waitFor(() => expect(tooltip(id).open).toBe(true));
     expect(tooltip(id).textContent!.trim()).toBe(text);
   }
 });
@@ -326,9 +326,9 @@ it('opens the details once the pointer rests on the link for the warm-up', async
   await userEvent.hover(link().querySelector('a')!);
   await wait(150);
 
-  expect(popover().opened).toBe(false);
+  expect(popover().open).toBe(false);
 
-  await vi.waitFor(() => expect(popover().opened).toBe(true), {
+  await vi.waitFor(() => expect(popover().open).toBe(true), {
     timeout: slowWarmUp + 1000,
   });
   expect(document.activeElement).toBe(document.body);
@@ -338,7 +338,7 @@ it('opens the details when the link fits, too', async () => {
   link().parentElement!.style.width = '60rem';
   await userEvent.hover(link().querySelector('a')!);
 
-  await vi.waitFor(() => expect(popover().opened).toBe(true));
+  await vi.waitFor(() => expect(popover().open).toBe(true));
 });
 
 it('leaves the details closed when the pointer moves off before the warm-up', async () => {
@@ -347,7 +347,7 @@ it('leaves the details closed when the pointer moves off before the warm-up', as
   await userEvent.hover(document.querySelector('.before')!);
   await wait(slowWarmUp + 100);
 
-  expect(popover().opened).toBe(false);
+  expect(popover().open).toBe(false);
 });
 
 it('ignores touch', async () => {
@@ -357,7 +357,7 @@ it('ignores touch', async () => {
   );
   await wait(100);
 
-  expect(popover().opened).toBe(false);
+  expect(popover().open).toBe(false);
 });
 
 it('keeps hover-opened details open while the pointer is on them', async () => {
@@ -367,14 +367,14 @@ it('keeps hover-opened details open while the pointer is on them', async () => {
   );
   await wait(400);
 
-  expect(popover().opened).toBe(true);
+  expect(popover().open).toBe(true);
 });
 
 it('closes hover-opened details once the pointer leaves', async () => {
   await hoverOpen();
   await userEvent.hover(document.querySelector('.before')!);
 
-  await vi.waitFor(() => expect(popover().opened).toBe(false));
+  await vi.waitFor(() => expect(popover().open).toBe(false));
 });
 
 it('closes hover-opened details with Escape without moving focus', async () => {
@@ -384,7 +384,7 @@ it('closes hover-opened details with Escape without moving focus', async () => {
   await userEvent.keyboard('{Escape}');
   await settle();
 
-  expect(popover().opened).toBe(false);
+  expect(popover().open).toBe(false);
   expect(document.activeElement).toBe(before);
 });
 
@@ -396,7 +396,7 @@ it('keeps hover-opened details open once the details button is clicked', async (
   await userEvent.hover(document.querySelector('.before')!);
   await wait(400);
 
-  expect(popover().opened).toBe(true);
+  expect(popover().open).toBe(true);
 });
 
 it('opens other links straight away once warm, closing the last', async () => {
@@ -405,21 +405,21 @@ it('opens other links straight away once warm, closing the last', async () => {
   await hoverSecondLink();
   await wait(100);
 
-  expect(popover(secondLink()).opened).toBe(true);
-  expect(popover().opened).toBe(false);
+  expect(popover(secondLink()).open).toBe(true);
+  expect(popover().open).toBe(false);
 });
 
 it('waits out the warm-up again once the cool-down passes', async () => {
   setHoverTiming({closeDelay: 0, coolDownDelay: 100});
   await hoverOpen();
   await userEvent.hover(document.querySelector('.before')!);
-  await vi.waitFor(() => expect(popover().opened).toBe(false));
+  await vi.waitFor(() => expect(popover().open).toBe(false));
   await wait(200);
   setHoverTiming({warmUpDelay: slowWarmUp});
   await hoverSecondLink();
   await wait(150);
 
-  expect(popover(secondLink()).opened).toBe(false);
+  expect(popover(secondLink()).open).toBe(false);
 });
 
 it('opens the details from the pointer resting on the details button too', async () => {
@@ -427,7 +427,7 @@ it('opens the details from the pointer resting on the details button too', async
     link().shadowRoot!.querySelector<HTMLElement>('[slot="invoker"]')!
   );
 
-  await vi.waitFor(() => expect(popover().opened).toBe(true));
+  await vi.waitFor(() => expect(popover().open).toBe(true));
 });
 
 it('keeps the details within their panel inside a container that never wraps', async () => {

@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Element\FieldChangeComparisons;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
@@ -1007,13 +1008,24 @@ JS, [
      * A Ui matches errors to Controls by path, so an attribute validated
      * under one name but posted under another — an asset's `newLocation` versus
      * its `newFilename` field — needs remapping here, or its messages never
-     * reach the field that produced them.
+     * reach the field that produced them. Custom fields rekey the errors they
+     * added themselves; see {@see FieldInterface::uiErrors()}.
      *
      * @return array<string, list<string>>
      */
     public function uiErrors(): array
     {
-        return $this->errors()->getMessages();
+        $errors = $this->errors()->getMessages();
+
+        if ($errors === []) {
+            return $errors;
+        }
+
+        foreach ($this->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            $errors = $field->uiErrors($this, $errors);
+        }
+
+        return $errors;
     }
 
     /**
@@ -1421,7 +1433,7 @@ JS, [
                     $element = $this->getCanonical(true);
                     $revision = $element->getCurrentRevision();
                 }
-                if (! isset($revision)) {
+                if (! isset($revision) || ($revision->revisionNotes ?? '') === '') {
                     return false;
                 }
 
