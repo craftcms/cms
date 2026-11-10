@@ -111,3 +111,10 @@ export function createElementDetailsPanelRegistry(): ElementDetailsPanelRegistry
 }
 
 export const elementDetailsPanelRegistry = createElementDetailsPanelRegistry();
+
+/** Adds a panel to the details column of every element editor it's visible in. */
+export function registerElementDetailsPanel(
+  descriptor: ElementDetailsPanelDescriptor
+): void {
+  elementDetailsPanelRegistry.register(descriptor);
+}

@@ -26,20 +26,21 @@ it('uses the published Craft Vite manifest as its asset version', function () {
     }
 });
 
-it('shares the CP\'s Vue build and components with plugin bundles through the import map', function () {
+it('shares the CP\'s Vue, Inertia and components with plugin bundles through the import map', function () {
     $publicPath = storage_path('framework/testing/inertia-assets');
     $originalPublicPath = public_path();
 
     File::deleteDirectory($publicPath);
     File::ensureDirectoryExists("{$publicPath}/vendor/craft/build");
-    File::put("{$publicPath}/vendor/craft/build/manifest.json", '{"resources/js/vue.ts":{"file":"assets/vue-abc123.js","isEntry":true},"resources/js/cp-module.ts":{"file":"assets/cp-module-def456.js","isEntry":true},"resources/js/garnish.ts":{"file":"assets/garnish-ghi789.js","isEntry":true}}');
+    File::put("{$publicPath}/vendor/craft/build/manifest.json", '{"resources/js/vue.ts":{"file":"assets/vue-abc123.js","isEntry":true},"resources/js/cp-module.ts":{"file":"assets/cp-module-def456.js","isEntry":true},"resources/js/garnish.ts":{"file":"assets/garnish-ghi789.js","isEntry":true},"resources/js/inertia.ts":{"file":"assets/inertia-jkl012.js","isEntry":true}}');
     app()->usePublicPath($publicPath);
 
     try {
         expect(Cp::sharedModules())->toHaveKey('vue')
             ->and(Cp::sharedModules()['vue'])->toEndWith('/vendor/craft/build/assets/vue-abc123.js')
             ->and(Cp::sharedModules()['@craftcms/cp'])->toEndWith('/vendor/craft/build/assets/cp-module-def456.js')
-            ->and(Cp::sharedModules()['@craftcms/garnish'])->toEndWith('/vendor/craft/build/assets/garnish-ghi789.js');
+            ->and(Cp::sharedModules()['@craftcms/garnish'])->toEndWith('/vendor/craft/build/assets/garnish-ghi789.js')
+            ->and(Cp::sharedModules()['@inertiajs/vue3'])->toEndWith('/vendor/craft/build/assets/inertia-jkl012.js');
     } finally {
         app()->usePublicPath($originalPublicPath);
         File::deleteDirectory($publicPath);

@@ -1,0 +1,113 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Getting Started" />
+
+# Building control panel UI in a plugin
+
+A plugin's control panel JavaScript runs on the same Vue app, router and
+components as Craft's own pages. The control panel shares them through an
+[import map](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap),
+so a plugin's bundle leaves them out and imports them by name.
+
+| Module              | What it is                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `vue`               | The control panel's Vue.                                                                                                        |
+| `@inertiajs/vue3`   | The control panel's Inertia: `router`, `usePage`, `useForm`, `Link`, `Head` and the rest, connected to the page the CP mounted. |
+| `@craftcms/cp`      | Craft's components, composables and utilities, and the functions that add a plugin's pages and components to the control panel. |
+| `@craftcms/garnish` | Garnish, for drag-and-drop, menus and modals built on it.                                                                       |
+
+The `<craft-*>` web components (`<craft-button>`, `<craft-input>`,
+`<craft-icon>`…) are defined on every control panel page. Use them as tags;
+there's nothing to import.
+
+## Loading your bundle
+
+List your entry points in your plugin class's `$vite` property. Craft adds
+them to every control panel page, after its own scripts and before it boots:
+
+```php
+class Plugin extends \CraftCms\Cms\Plugin\Plugin
+{
+    protected array $vite = ['resources/js/cp.ts'];
+}
+```
+
+While Vite's dev server runs, Craft loads your entries from it, through the
+`public/hot` file the Laravel Vite plugin writes.
+
+## Leaving the shared modules out of your build
+
+Mark the shared modules external, and have Vue treat `craft-*` tags as web
+components:
+
+```js
+// vite.config.js
+import {defineConfig} from 'vite';
+import laravel from 'laravel-vite-plugin';
+import vue from '@vitejs/plugin-vue';
+
+export default defineConfig({
+  plugins: [
+    laravel({input: ['resources/js/cp.ts']}),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag.startsWith('craft-'),
+        },
+      },
+    }),
+  ],
+  build: {
+    rollupOptions: {
+      external: ['vue', '@inertiajs/vue3', '@craftcms/cp', '@craftcms/garnish'],
+    },
+  },
+});
+```
+
+Bundling your own copy of any of them breaks things in ways that are hard to
+spot: a second Vue can't render Craft's components, and a second Inertia isn't
+connected to the page, so its `router.visit()` and `usePage()` do nothing
+useful.
+
+## When your code runs
+
+Your entry points run before the control panel boots, so register pages,
+components and the rest from a module's top level:
+
+```ts
+// resources/js/cp.ts
+import {registerComponent, registerPage} from '@craftcms/cp';
+
+registerPage('my-plugin/Settings', () => import('./pages/Settings.vue'));
+registerComponent('my-plugin:notice', () => import('./Notice.vue'));
+```
+
+For work that needs the control panel to be running, use `onBooting()` or
+`onBooted()`. Each runs its callback straight away if the control panel has
+already reached that point.
+
+`window.Cp.booting()` and `window.Cp.booted()` still work, but a callback
+registered after that point never runs. Prefer the functions above.
+
+| Function    | Runs                                                                                    |
+| ----------- | --------------------------------------------------------------------------------------- |
+| `onBooting` | Once the control panel's config and services are set up, before the Inertia app mounts. |
+| `onBooted`  | Once the Inertia app has mounted and the first page is showing.                         |
+
+```ts
+import {onBooted} from '@craftcms/cp';
+import {router} from '@inertiajs/vue3';
+
+onBooted(() => {
+  router.on('navigate', (event) => trackPageView(event.detail.page.url));
+});
+```
+
+## Next
+
+- **Plugins/Pages & Components**: Inertia pages and the components the server
+  refers to by name.
+- **Plugins/Element Details Panels**: adding a panel to the element editor.
+- **Plugins/AI Assistant**: adding to the assistant's context.
+- **CP/AdminTable/Guide**: tables like the ones on Craft's settings pages.

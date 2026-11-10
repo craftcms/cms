@@ -101,3 +101,16 @@ export function createCpComponentRegistry(): CpComponentRegistry {
 }
 
 export const cpComponentRegistry = createCpComponentRegistry();
+
+/**
+ * Makes `component` available to every CP app under `name`, which is how the
+ * server refers to it: a UI node or control's `component`, a dashboard
+ * widget's, or one resolved with `resolveComponent(name)`. Prefix names with
+ * the plugin's handle, such as `my-plugin:notice`.
+ */
+export function registerComponent(
+  name: string,
+  component: CpComponentRegistration
+): void {
+  cpComponentRegistry.register(name, component);
+}

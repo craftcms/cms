@@ -1,5 +1,6 @@
 import {defineAsyncComponent} from 'vue';
 import {ConfigService} from '@craftcms/ui/services/Config';
+import {assistantApi} from './bootstrap/assistant';
 import {FileUpload, UploadError, registerTransport} from './upload-client';
 import {
   closeCommandPalette,
@@ -193,6 +194,57 @@ export const CommandPalette = {
 
 export type * from './modules/command-palette/types';
 export type {CommandPaletteRegistration} from './modules/command-palette/registry';
+
+/**
+ * Where a plugin adds to the control panel: its Inertia pages, the components
+ * the server refers to by name, element details panels, and work to do around
+ * the CP's boot. Plugin bundles run before the CP boots, so registering from a
+ * module's top level is fine.
+ */
+export {onBooted, onBooting} from './bootstrap/lifecycle';
+export {registerPage, type PageRegistration} from './bootstrap/inertia-pages';
+export {
+  registerComponent,
+  type CpComponentLoader,
+  type CpComponentRegistration,
+} from './bootstrap/components';
+export {
+  registerElementDetailsPanel,
+  type ElementDetailsPanelContext,
+  type ElementDetailsPanelDescriptor,
+  type ElementDetailsPanelStatus,
+} from './bootstrap/element-details-panels';
+export type {ElementEditPayload} from './modules/elements/composables/useElementEditor';
+
+/**
+ * The AI assistant: adds to the context the chat sends, offers context in its
+ * message box's Add menu and as-you-type suggestions, and opens the chat.
+ */
+export const Assistant = {
+  addContext: assistantApi.addContext,
+  getContext: assistantApi.getContext,
+  removeContext: assistantApi.removeContext,
+  registerContextSource: assistantApi.registerContextSource,
+  registerTextExpander: assistantApi.registerTextExpander,
+  open: assistantApi.open,
+};
+export type {
+  AssistantContextSource,
+  AssistantTextExpander,
+} from './bootstrap/assistant';
+export type {
+  AssistantContextInput,
+  AssistantContextItem,
+} from './modules/ai/assistant/context';
+
+/**
+ * The Craft UIs mounted in the control panel, and how a plugin's own controls
+ * take part in copying and pasting field values.
+ */
+export {uiValues as UiValues} from './modules/ui/ui-values';
+export type {UiValueChangeDetail, UiValueSource} from './modules/ui/ui-values';
+export type {UiValueAcceptor, UiValueSnapshot} from './modules/ui/valueAccess';
+export type {UiValuePreview} from './modules/ui/valuePreviews';
 
 /**
  * The utilities a plugin's own bundle needs to behave like control panel code:

@@ -291,13 +291,13 @@ Register the Vue components from the plugin's existing Control Panel asset bundl
 asset loader:
 
 ```ts
-Cp.booting((cp) => {
-  cp.$components.register('my-plugin:notice', NoticeNode)
-  cp.$components.register('my-plugin:slug', SlugControl)
-})
+import {registerComponent} from '@craftcms/cp'
+
+registerComponent('my-plugin:notice', NoticeNode)
+registerComponent('my-plugin:slug', SlugControl)
 ```
 
-The registry also accepts lazy component loaders. Register components before the Inertia application mounts.
+`registerComponent()` also accepts lazy component loaders, such as `() => import('./SlugControl.vue')`.
 
 A Control component rendered by the core `Field` Node receives `control`, `value`, `label`, `editable`, `invalid`,
 `required`, full `values` and `errors`, touched paths, and the containing scope. Emit `update:value` with the canonical
@@ -328,7 +328,7 @@ the absolute scope containing that Control. `kind` is `typing` or `discrete`. `v
 Control's canonical value. For composite Controls it may be an object or array, not a string.
 
 For the initial value or to read another path after a change, use `ui.getValue(path)`. Plugin scripts can discover UIs
-that have already mounted with `Cp.$ui.active()`; it returns the currently mounted renderer handles. The same handle
+that have already mounted with `UiValues.active()` from `@craftcms/cp`; it returns the currently mounted renderer handles. The same handle
 remains valid as its values change and is removed from `active()` when the renderer unmounts. Reads return snapshots,
 not mutable access to renderer state. Batch updates made through the renderer's `setValues()` are visible in full to
 every event listener. Initial rendering, unchanged values, server refreshes, and `resetValues()` do not emit change
@@ -357,19 +357,19 @@ to their field's UID). A Control component can narrow that further, and change h
 the "copied" card, which shows their text by default:
 
 ```ts
-Cp.booting((cp) => {
-  // Whether `control` takes this copied value, such as one that fits its max length.
-  cp.$ui.registerValueAcceptor('my-plugin:slug', (control, {value}) =>
-    typeof value === 'string' && value.length <= control.props.maxLength,
-  )
+import {UiValues} from '@craftcms/cp'
 
-  // A node to show in place of the value's text, or `null` to show the text.
-  // It's only for looking at: it can't take focus, and screen readers read the text.
-  cp.$ui.registerValuePreview('my-plugin:slug', ({value}) => {
-    const code = document.createElement('code')
-    code.textContent = String(value)
-    return code
-  })
+// Whether `control` takes this copied value, such as one that fits its max length.
+UiValues.registerValueAcceptor('my-plugin:slug', (control, {value}) =>
+  typeof value === 'string' && value.length <= control.props.maxLength,
+)
+
+// A node to show in place of the value's text, or `null` to show the text.
+// It's only for looking at: it can't take focus, and screen readers read the text.
+UiValues.registerValuePreview('my-plugin:slug', ({value}) => {
+  const code = document.createElement('code')
+  code.textContent = String(value)
+  return code
 })
 ```
 

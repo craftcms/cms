@@ -1,0 +1,101 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Pages & Components" />
+
+# Pages and components
+
+## Pages
+
+A control panel screen whose content is a Vue page names the page on the
+server, and the plugin registers the component for that name in the browser.
+
+```php
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+
+public function index(): CpScreenResponse
+{
+    return new CpScreenResponse()
+        ->title('Exhibits')
+        ->inertiaPage('my-plugin/Exhibits', [
+            'exhibits' => $exhibits,
+        ]);
+}
+```
+
+```ts
+import {registerPage} from '@craftcms/cp';
+
+registerPage('my-plugin/Exhibits', () => import('./pages/Exhibits.vue'));
+```
+
+`registerPage()` takes the component itself, or a function that loads it, so
+the page's code is only fetched when it's first visited. The page gets the
+props the server passed, plus `title` and `crumbs`.
+
+Craft's own pages win over a plugin's page with the same name, and registering
+a different component under a name that's taken throws. Start names with your
+plugin's handle.
+
+The page renders inside the control panel's screen layout: header, breadcrumbs,
+secondary nav and details column. Fill its regions with `craft:layout-slot`,
+and add details panels with `craft:screen-panel`, as **docs/layout-slots.md**
+describes. Those components only render on a page your plugin registered.
+
+## Components the server names
+
+Some of what the server sends names a Vue component to draw it with: a UI
+node or control (**docs/ui.md**), a dashboard widget, a workflow
+stage's actions. Register the component under that name:
+
+```ts
+import {registerComponent} from '@craftcms/cp';
+import NoticeNode from './NoticeNode.vue';
+
+registerComponent('my-plugin:notice', NoticeNode);
+registerComponent('my-plugin:slug', () => import('./SlugControl.vue'));
+```
+
+Like pages, components can be registered as loaders. Registering a different
+component under a name that's taken throws, so prefix names with your plugin's
+handle and a colon.
+
+Registered components are available in every Vue app in the control panel,
+including slideouts and modals, by name:
+
+```vue
+<script setup lang="ts">
+  import {resolveComponent} from 'vue';
+
+  const LayoutSlot = resolveComponent('craft:layout-slot');
+</script>
+```
+
+| Function            | Takes                                                                 |
+| ------------------- | --------------------------------------------------------------------- |
+| `registerPage`      | `(name, component \| loader)`. `PageRegistration` is its type.        |
+| `registerComponent` | `(name, component \| loader)`. `CpComponentRegistration` is its type. |
+
+## Field values in your controls
+
+`UiValues` from `@craftcms/cp` lists the Craft UIs mounted in the control
+panel, and lets your controls decide which copied field values they take and
+how those values are previewed:
+
+| Member                                     | What it does                                                            |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| `UiValues.active()`                        | The UIs mounted now, each with its `root` element and `getValue(path)`. |
+| `UiValues.registerValueAcceptor(name, fn)` | Decides whether the controls drawn by `name` take a copied value.       |
+| `UiValues.registerValuePreview(name, fn)`  | Draws a preview of a value copied from the controls drawn by `name`.    |
+
+```ts
+import {UiValues} from '@craftcms/cp';
+
+UiValues.registerValueAcceptor(
+  'my-plugin:slug',
+  (control, {value}) =>
+    typeof value === 'string' && value.length <= control.props.maxLength
+);
+```
+
+**docs/ui.md** covers controls, the `craft:ui-value-change` event and
+previews in full.

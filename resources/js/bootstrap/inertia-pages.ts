@@ -1,4 +1,4 @@
-import type {DefineComponent} from 'vue';
+import type {Component, DefineComponent} from 'vue';
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -133,4 +133,18 @@ export async function resolveInertiaPage(
   }
 
   throw new Error(`Page not found: ${name}`);
+}
+
+/** A page component, or a function that loads one, such as a dynamic `import()`. */
+export type PageRegistration =
+  | Component
+  | (() => MaybePromise<Component | {default: Component}>);
+
+/**
+ * Makes `page` the component the CP renders for the Inertia page `name`, the
+ * name a plugin's controller passes to `Inertia::render()`. Core pages win over
+ * a plugin page of the same name, so prefix names with the plugin's handle.
+ */
+export function registerPage(name: string, page: PageRegistration): void {
+  inertiaPageRegistry.register(name, page as InertiaPageRegistration);
 }

@@ -52,19 +52,8 @@ Reach for the Vue component directly when a page needs something the PHP definit
 ## Using it from a plugin
 
 The control panel publishes `@craftcms/cp` through its import map, alongside
-`vue`. Import from it and leave both out of your bundle so your page runs on the
-CP's own copies:
-
-```js
-// vite.config.js
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      external: ['vue', '@craftcms/cp'],
-    },
-  },
-});
-```
+`vue` and `@inertiajs/vue3`. Leave them out of your bundle, as
+**Plugins/Getting Started** shows, and import from them:
 
 ```ts
 import {AdminTable, createCraftColumnHelper, useCraftTable} from '@craftcms/cp';
@@ -80,11 +69,9 @@ import {AdminTable, createCraftColumnHelper, useCraftTable} from '@craftcms/cp';
 | `TableSpacing`            | Values for the `spacing` prop.                                                                                                                                                                                                                                             |
 | types                     | `CraftTableOptions`, `CraftTableInertiaOptions`, `CraftTableFeatures`, `CraftColumnMeta`, `CraftColumnHelper`, `PaginationData`, `SortItem`, `TableSpacingValue`, and TanStack's `Table`, `Row`, `CellContext`, `ColumnDef`, `PaginationState`, `SortingState`, `Updater`. |
 
-Don't import Inertia's router or `Link` from your own `@inertiajs/vue3`. A
-second copy isn't connected to the page the CP mounted. The table makes its own
-visits, `DeleteButton` and `useInertiaReorder` cover deleting and reordering,
-and `CpButtonLink` covers other links and actions; `method` and `data` pass
-through to Inertia's `Link`:
+The table makes its own visits, and `DeleteButton` and `useInertiaReorder`
+cover deleting and reordering. `CpButtonLink` covers other links and actions;
+`method` and `data` pass through to Inertia's `Link`:
 
 ```vue
 <CpButtonLink href="/admin/my-plugin/widgets/reset" method="post">

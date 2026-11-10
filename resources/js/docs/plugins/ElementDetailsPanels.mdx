@@ -1,0 +1,56 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Element Details Panels" />
+
+# Element details panels
+
+The element editor's details column holds panels: the element's metadata, its
+activity, its workflow. A plugin adds its own with
+`registerElementDetailsPanel()`:
+
+```ts
+import {registerElementDetailsPanel, t} from '@craftcms/cp';
+import SeoPanel from './SeoPanel.vue';
+
+registerElementDetailsPanel({
+  id: 'my-plugin:seo',
+  get label() {
+    return t('SEO');
+  },
+  icon: 'magnifying-glass',
+  component: SeoPanel,
+  order: 20,
+  // Not for elements the user can only view.
+  visible: (payload) => !payload.readOnly,
+  props: ({payload, active}) => ({
+    elementId: payload.elementId,
+    siteId: payload.siteId,
+    active,
+  }),
+});
+```
+
+| Property                 | Description                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `id`                     | Required. A plugin-scoped identifier. Registering a different panel with the same `id` throws.         |
+| `label`                  | Required. The panel's name in the details column. A getter keeps it translated.                        |
+| `icon`                   | Required. The panel's icon.                                                                            |
+| `component`              | Required. Draws the panel's content.                                                                   |
+| `headerActionsComponent` | Controls drawn at the end of the panel's header. It gets the same props as `component`.                |
+| `order`                  | Where the panel goes among the others. Lower comes first.                                              |
+| `visible`                | Whether the panel shows for an element, from its `ElementEditPayload`. Defaults to always.             |
+| `status`                 | A status shown with the panel's name, as `{label, indicator}`, or `null` for none.                     |
+| `props`                  | The props `component` gets, from an `ElementDetailsPanelContext`. Without it, the component gets none. |
+
+`ElementDetailsPanelContext` has:
+
+| Property        | Description                                                                              |
+| --------------- | ---------------------------------------------------------------------------------------- |
+| `payload`       | The element editor's `ElementEditPayload`: the element's ID, type, site, draft and more. |
+| `active`        | Whether this panel is the open one, so it can load its content when it's first opened.   |
+| `refreshToken`  | Changes after each save and `updatePayload()`, so a panel can reload what it shows.      |
+| `updatePayload` | Merges changes into the payload, such as ones an endpoint of your plugin returned.       |
+| `submitAction`  | Submits the element editor's form to a controller action, the way its own buttons do.    |
+
+To add panels to a page your plugin owns, use `craft:screen-panel` instead
+(**docs/layout-slots.md**).
