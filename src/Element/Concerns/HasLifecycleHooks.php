@@ -28,6 +28,8 @@ trait HasLifecycleHooks
      */
     public function beforeSave(bool $isNew): bool
     {
+        $this->ensureInitialRevision();
+
         // Tell the fields about it
         if (! array_all($this->fieldLayoutFields(), fn ($field) => $field->beforeElementSave($this, $isNew))) {
             return false;
@@ -74,6 +76,7 @@ trait HasLifecycleHooks
         event(new ElementLifecyclePropagated($this, $isNew));
 
         $this->handleDraftSave();
+        $this->handleRevisionSave();
     }
 
     /**
