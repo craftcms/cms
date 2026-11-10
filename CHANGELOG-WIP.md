@@ -217,6 +217,7 @@
 - The `elements_list`, `drafts_list`, `revisions_list`, `search_query`, and `craft_query` MCP tools return all non-nested custom fields when `fields` is `null`. ([#20463](https://github.com/craftcms/cms/pull/20463))
 - The `asset_folders_list` MCP tool accepts `null` for `criteria.parentId`, which lists volumes’ root folders. ([#20464](https://github.com/craftcms/cms/pull/20464))
 - The authenticated MCP server returns an OAuth challenge to requests without an access token when OAuth signing keys haven’t been set up, so MCP clients can tell that it requires signing in, and Settings → MCP explains how to set up the keys. ([#20455](https://github.com/craftcms/cms/pull/20455))
+- Updated `mcp/sdk` to 0.9. MCP tools that declare an `outputSchema` now return an error if their structured content doesn’t match it.
 
 #### General
 - Replaced Craft’s system status with Laravel maintenance mode, including an admin-only Maintenance Mode control in General Settings.
