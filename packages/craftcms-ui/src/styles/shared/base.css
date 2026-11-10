@@ -637,6 +637,11 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     height: 100%;
   }
 
+  /* The rule above overrides the combobox's room for its prefix icon, so restore it */
+  craft-combobox[has-prefix-icon] > input.form-control[data-combobox-textbox] {
+    padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
+  }
+
   textarea {
     resize: none;
     line-height: 1.2;

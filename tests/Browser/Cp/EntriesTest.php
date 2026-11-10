@@ -27,7 +27,7 @@ beforeEach(function () {
 
 it('creates an entry', function () {
     visitCp('content/entries/articles')
-        ->click('#main >> role=link[name="New Entry"]')
+        ->click('#main >> role=link[name="New entry"]')
         ->assertSeeIn('#main h1', 'Create a new entry')
         ->type('input[name="title"]', 'Hello world')
         ->click('#main >> role=button[name="Create entry"]')

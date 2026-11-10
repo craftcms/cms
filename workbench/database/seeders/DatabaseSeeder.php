@@ -363,6 +363,8 @@ MARKDOWN,
         $user = User::query()->firstOrFail();
         $editor = UserFactory::new()->admin()->createElement([
             'fullName' => 'Ada Lovelace',
+            'firstName' => 'Ada',
+            'lastName' => 'Lovelace',
             'username' => 'ada',
             'email' => 'ada@example.com',
         ]);

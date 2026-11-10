@@ -86,7 +86,7 @@
   <div class="project-config-utility grid grid-cols-1 gap-8">
     <!-- YAML Changes Section -->
     <section class="config-section">
-      <h2 class="mb-2">{{ sectionTitle }}</h2>
+      <h2 class="mb-2 text-lg">{{ sectionTitle }}</h2>
       <p v-html="sectionDescription"></p>
 
       <div class="mt-3">
@@ -176,7 +176,7 @@
     <!-- Rebuild Config Section -->
     <template v-if="!readOnly">
       <section class="config-section">
-        <h2 class="mb-2">{{ t('Rebuild the Config') }}</h2>
+        <h2 class="mb-2 text-lg">{{ t('Rebuild the Config') }}</h2>
         <p>
           {{
             t(
@@ -219,7 +219,7 @@
 
     <!-- Loaded Config Section -->
     <section class="config-section">
-      <h2 class="mb-2">{{ t('Loaded Project Config Data') }}</h2>
+      <h2 class="mb-2 text-lg">{{ t('Loaded Project Config Data') }}</h2>
       <!-- craft-pane makes its own scroll container the tab stop -->
       <craft-pane
         variant="code"

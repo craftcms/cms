@@ -53,7 +53,7 @@
           :sources="indexState.sources"
           :source="indexState.source ?? undefined"
           :publishable-sections="publishableSections"
-          :element-display-name="indexState.elementDisplayName"
+          :element-display-name="indexState.elementLowerDisplayName"
         />
       </template>
     </ElementIndexPage>

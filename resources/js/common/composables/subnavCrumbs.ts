@@ -72,8 +72,11 @@ export function withSubnavCrumbs(
     return crumbs;
   }
 
+  // A grouped nav's trail starts at the group, so the page's crumb can match
+  // any level of it, not just the first.
   const last = crumbs.at(-1);
-  const overlaps = last != null && last.label === derived[0]!.label;
+  const overlaps =
+    last != null && derived.some((crumb) => crumb.label === last.label);
 
   return [...(overlaps ? crumbs.slice(0, -1) : crumbs), ...derived];
 }
