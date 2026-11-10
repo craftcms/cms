@@ -227,7 +227,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('/', [RemoveController::class, 'index']);
         Route::post(BaseUpdaterController::ACTION_PRECHECK, [RemoveController::class, 'precheck']);
         Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [RemoveController::class, 'recheckComposer']);
-        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [RemoveController::class, 'composerInstall']);
         Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [RemoveController::class, 'composerRemove']);
         Route::post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
     });
@@ -333,8 +332,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::post(ConfigSyncController::ACTION_INSTALL_PLUGIN, [ConfigSyncController::class, 'installPlugin']);
             Route::post(BaseUpdaterController::ACTION_PRECHECK, [ConfigSyncController::class, 'precheck']);
             Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
             Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
         });
 
