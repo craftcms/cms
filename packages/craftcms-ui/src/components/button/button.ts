@@ -309,7 +309,9 @@ export default class CraftButton extends HasShortcut(Actionable(LitElement)) {
 
   /** Clicks the button, unless it's disabled. */
   override click(): void {
-    if (this.#inactive) {
+    // A listener's own click() is suppressed by the browser, and must leave
+    // the outer click's form action for after every listener has seen it.
+    if (this.#inactive || this.#clicking) {
       return;
     }
 

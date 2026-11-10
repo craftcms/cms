@@ -728,6 +728,20 @@ describe('in a form', () => {
     expect(submits).toHaveLength(0);
   });
 
+  it('lets a later listener cancel a click() that a listener repeats', async () => {
+    const {form, submits} = await mountForm(
+      '<craft-button type="submit">Save</craft-button>'
+    );
+    const button = document.querySelector('craft-button')!;
+    button.addEventListener('click', () => button.click());
+    form.addEventListener('click', (event) => event.preventDefault());
+
+    button.click();
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(submits).toHaveLength(0);
+  });
+
   it('checks the form is valid before submitting it', async () => {
     const {submits} = await mountForm(
       '<input required><craft-button type="submit">Save</craft-button>'
