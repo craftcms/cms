@@ -3,7 +3,9 @@ import jquery from 'jquery';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createCpComponentRegistry} from '@/bootstrap/components';
 import UiRenderer from '@/modules/ui/UiRenderer.vue';
-import type {UiPayload} from '@/modules/ui/types';
+import {registerUiComponents} from '@/modules/ui/register';
+import {defineTableUiHost} from '@/modules/ui/table-ui-host';
+import type {UiControlPayload, UiPayload} from '@/modules/ui/types';
 
 const apps: Array<ReturnType<typeof createApp>> = [];
 
@@ -311,6 +313,21 @@ describe('Legacy HTML UI Control', () => {
     await nextTick();
 
     expect(mutation.value).toEqual({fields: {notes: 'Hell'}});
+
+    // The editor resetting the value, as discarding changes does, isn't an edit
+    const control = container.querySelector<HTMLElement & {value: unknown}>(
+      'craft-legacy-html-control'
+    )!;
+    const published = vi.fn();
+    control.addEventListener('change', (event) => {
+      if (event instanceof CustomEvent) published();
+    });
+    control.value = {'fields[notes]': 'Hello'};
+    textarea.dispatchEvent(new KeyboardEvent('keyup', {bubbles: true}));
+    await nextTick();
+
+    expect(textarea.value).toBe('Hello');
+    expect(published).not.toHaveBeenCalled();
   });
 
   it('restores list inputs from an already-expanded value', async () => {
@@ -448,6 +465,81 @@ describe('Legacy HTML UI Control', () => {
     ).toContain('Title is invalid.');
   });
 
+  it('keeps a native table and its focus when a save re-renders it, and settles the edits the save wrote', async () => {
+    const table = (title: string) => {
+      const host = document.createElement('craft-table-ui');
+      host.setAttribute('name', 'fields[rows]');
+      host.dataset.payload = JSON.stringify(tablePayload(title));
+
+      return host.outerHTML;
+    };
+    const registry = createCpComponentRegistry();
+    registerUiComponents(registry);
+    defineTableUiHost(registry);
+    const fragment = {html: table('Alpha'), headHtml: '', bodyHtml: ''};
+    const {container} = await mount(fragment, {
+      values: {__legacy: {'fields[rows][0][title]': 'Alpha'}},
+    });
+    const host = container.querySelector<HTMLElement & {ready: Promise<void>}>(
+      'craft-table-ui'
+    )!;
+    await host.ready;
+    const input = await vi.waitFor(() => {
+      const input = container.querySelector<HTMLInputElement>(
+        'input[name="fields[rows][0][title]"]'
+      );
+      expect(input).not.toBeNull();
+
+      return input!;
+    });
+    const modified = () =>
+      [...host.querySelectorAll<HTMLElement & {status?: string}>('craft-field')]
+        .map((field) => field.getAttribute('status') ?? field.status)
+        .includes('modified');
+
+    input.focus();
+    input.value = 'Edited';
+    input.dispatchEvent(new InputEvent('input', {bubbles: true}));
+    await nextTick();
+    expect(modified()).toBe(true);
+
+    const control = container.querySelector<
+      HTMLElement & {
+        _control: UiControlPayload;
+        control: UiControlPayload;
+        ready: Promise<void>;
+      }
+    >('craft-legacy-html-control')!;
+    control.control = {
+      ...control._control,
+      props: {
+        ...control._control.props,
+        fragment: {...fragment, html: table('Edited')},
+      },
+    };
+    await control.ready;
+    await nextTick();
+
+    expect(input.isConnected).toBe(true);
+    expect(document.activeElement).toBe(input);
+    expect(input.value).toBe('Edited');
+    expect(modified()).toBe(false);
+
+    // Typed away from the saved value and back, then saved: the response
+    // renders the same table again
+    for (const value of ['Other', 'Edited']) {
+      input.value = value;
+      input.dispatchEvent(new InputEvent('input', {bubbles: true}));
+      await nextTick();
+    }
+    expect(modified()).toBe(true);
+
+    control.control = {...control._control};
+    await nextTick();
+
+    expect(modified()).toBe(false);
+  });
+
   it('refreshes through the shared UI scope protocol', async () => {
     vi.useFakeTimers();
     const refresh = vi.fn();
@@ -494,6 +586,65 @@ describe('Legacy HTML UI Control', () => {
     vi.useRealTimers();
   });
 });
+
+function tablePayload(title: string): UiPayload {
+  const field = (path: string[]) => ({
+    type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+    component: 'craft:field',
+    props: {label: 'Title'},
+    control: {
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+      component: 'craft:text',
+      props: {},
+      path,
+      mode: 'editable' as const,
+      deltaGroup: ['rows'],
+    },
+  });
+
+  return {
+    scope: [],
+    refreshable: false,
+    values: {rows: [{title}]},
+    errors: [],
+    globalErrors: [],
+    nodes: [
+      {
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Rows'},
+        control: {
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
+          component: 'craft:table',
+          nestsUis: true,
+          path: ['rows'],
+          deltaGroup: ['rows'],
+          mode: 'editable',
+          props: {
+            columns: {title: {type: 'singleline', heading: 'Title'}},
+            allowAdd: false,
+            allowDelete: false,
+            allowReorder: false,
+            keyed: false,
+            defaultValues: {title: ''},
+            rowTemplate: {
+              scope: [],
+              refreshable: false,
+              nodes: [field(['title'])],
+            },
+          },
+          uis: [
+            {
+              scope: ['rows', '0'],
+              refreshable: false,
+              nodes: [field(['rows', '0', 'title'])],
+            },
+          ],
+        },
+      },
+    ],
+  };
+}
 
 async function mount(
   fragment: {

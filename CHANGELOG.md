@@ -1306,6 +1306,7 @@
 - Fixed a bug where `<craft-badge-indicator>` counts sat slightly above center. ([#20501](https://github.com/craftcms/cms/pull/20501))
 - Fixed a bug where Single and nested entries’ Post Date and Expiry Date fields weren’t shown, regardless of their entry type’s “Show the Post Date field” and “Show the Expiry Date field” settings, and Single entries’ expiry dates were cleared when they were saved. ([#17675](https://github.com/craftcms/cms/pull/17675#issuecomment-6762381837))
 - Fixed a bug where saving an element while it was being autosaved could leave the latest changes out of the save, and show older values as unsaved changes after a reload.
+- Fixed a bug where tables in Yii adapter plugin fields were rebuilt each time the element was autosaved, which moved focus out of the table and dropped what was typed next, and could leave the field marked as edited after saving.
 
 ## 6.0.0-alpha.20 - 2026-10-07
 
