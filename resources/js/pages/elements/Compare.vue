@@ -1301,6 +1301,11 @@
       var(--c-text-quiet) 70%,
       var(--c-field-modified-indicator)
     );
+
+    /* Its icon is 0.8em tall: 8px leaves 3px either side within the 16px
+       button's borders, which lands on whole pixels at any density, where
+       xsmall's 8.96px leaves 2.52px, which 1x screens round off center. */
+    font-size: 10px;
   }
 
   .compare__footer {
