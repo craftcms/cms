@@ -244,6 +244,9 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
   /** Whether the user has changed the value since it was last committed. */
   #editing = false;
 
+  /** The `aria-labelledby` ids the textbox got from the host and selection. */
+  #addedLabelledBy: string[] = [];
+
   #internals?: ElementInternals;
   #inputs?: HTMLSpanElement;
   #initialValue: ComboboxValue = '';
@@ -452,14 +455,32 @@ export default class CraftCombobox extends HasLabel(FormControl(LitElement)) {
    * what's already chosen.
    */
   protected override _reflectAriaReferences(): void {
+    const input = this._inputNode;
+
+    // The base keeps ids it didn't write, so the ones added here last time
+    // come off first; otherwise a host label that's gone would stay.
+    if (input && this.#addedLabelledBy.length) {
+      const kept = (input.getAttribute('aria-labelledby') ?? '')
+        .split(/\s+/)
+        .filter((id) => id && !this.#addedLabelledBy.includes(id));
+      if (kept.length) {
+        input.setAttribute('aria-labelledby', kept.join(' '));
+      } else {
+        input.removeAttribute('aria-labelledby');
+      }
+    }
+
     super._reflectAriaReferences();
 
-    const input = this._inputNode;
     if (!input) {
       return;
     }
 
     const selectionId = this.#selection?.id;
+    this.#addedLabelledBy = [
+      ...(this.getAttribute('aria-labelledby') ?? '').split(/\s+/),
+      selectionId ?? '',
+    ].filter(Boolean);
     const labelledBy = (
       this.getAttribute('aria-labelledby') ||
       input.getAttribute('aria-labelledby') ||
