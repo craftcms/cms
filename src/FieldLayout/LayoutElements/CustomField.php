@@ -12,16 +12,23 @@ use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\MissingField;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Import\Data\CompoundMappingColumn;
+use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\FieldSelect;
@@ -53,7 +60,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class CustomField extends BaseField
+class CustomField extends BaseField implements ImportableFieldLayoutElementInterface
 {
     private static UserCondition $defaultEditCondition;
 
@@ -1032,5 +1039,90 @@ class CustomField extends BaseField
         }
 
         return $items;
+    }
+
+    #[Override]
+    public function getFieldsForMapping(FieldLayout $fieldLayout, ?FieldInterface $ownerField, mixed $provider, ?string $prefix = null): MappingColumn|CompoundMappingColumn|null
+    {
+        // getField() needs to be called before label() or we won't always get the label.
+        $field = $this->fieldOrNull();
+
+        if ($field === null) {
+            return null;
+        }
+
+        $attribute = $this->attribute();
+        $isContainer = $field instanceof ImportableElementContainerFieldInterface;
+
+        // key the mapping by the layout element’s uid, because its handle can be overridden at any time
+        // (see ImportHelper::resolveMappingKeys())
+        return MappingColumn::make(
+            handle: $attribute,
+            label: (string) $this->label(),
+            prefixedHandle: ImportHelper::prefixedHandleForMapping($this->uid ?? $attribute, $ownerField, $field, $fieldLayout, $provider, $prefix),
+            isContainer: $isContainer,
+            canBeMatchCriteria: $this->canBeMatchCriteria(),
+            canBeCleared: $this->canBeCleared(),
+            canKeepMissingNestedElements: $this->canKeepMissingNestedElements(),
+            fieldUid: $isContainer ? $field->uid : null,
+            importSettings: $this->getImportMappingExtraSettings($field),
+            withKeepInputs: $isContainer,
+        );
+    }
+
+    #[Override]
+    public function canBeMatchCriteria(): bool
+    {
+        $field = $this->fieldOrNull();
+
+        return $field !== null
+            && ! $field instanceof ImportableElementContainerFieldInterface
+            && ! $field instanceof BaseRelationField;
+    }
+
+    #[Override]
+    public function canBeCleared(): bool
+    {
+        $field = $this->fieldOrNull();
+
+        return $field !== null && ! $field instanceof ImportableElementContainerFieldInterface;
+    }
+
+    /**
+     * Returns whether this field supports keeping nested elements missing from imported data.
+     * Only container fields (Matrix, Addresses) that declare support for it do.
+     */
+    public function canKeepMissingNestedElements(): bool
+    {
+        $field = $this->fieldOrNull();
+
+        return $field instanceof ImportableElementContainerFieldInterface && $field->canKeepMissingNestedElements();
+    }
+
+    #[Override]
+    public function getImportMappingExtraSettings(?FieldInterface $field = null): array
+    {
+        $field ??= $this->fieldOrNull();
+
+        if ($field === null) {
+            return [];
+        }
+
+        return [
+            ...$field->importMappingSettings(),
+            ...(Import::getFieldImportHandlerFor($field)?->mappingSettings($field) ?? []),
+        ];
+    }
+
+    /**
+     * Returns the field, or null if it can't be found.
+     */
+    private function fieldOrNull(): ?FieldInterface
+    {
+        try {
+            return $this->getField();
+        } catch (FieldNotFoundException) {
+            return null;
+        }
     }
 }

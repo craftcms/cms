@@ -24,6 +24,7 @@ use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\Events\ElementCriteriaResolving;
 use CraftCms\Cms\Element\Jobs\LocalizeRelations;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -39,6 +40,8 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\BaseField;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Import\Data\FieldMappingSetting;
+use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
 use CraftCms\Cms\Structure\Structures;
 use CraftCms\Cms\Support\Arr;
@@ -46,6 +49,7 @@ use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Gql;
+use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -1236,6 +1240,209 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
         }
 
         return true;
+    }
+
+    #[Override]
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): mixed
+    {
+        // A cleared relation field arrives as null, which normalizeValue() reads as “never set” and
+        // resolves back to the stored relations; an empty list is what actually clears them - the
+        // same translation normalizeValueFromRequest() does for the control panel.
+        $value = $importer->listValue($value) ?? [];
+        $matchBy = $importSettings['matchBy'] ?? 'id';
+
+        if (! is_string($matchBy) || $matchBy === 'id' || ! array_key_exists($matchBy, $this->importMatchAttributes())) {
+            return $value;
+        }
+
+        return $this->importedElementIds(array_values(Arr::wrap($value)), $matchBy, $rootOwner);
+    }
+
+    #[Override]
+    public function importMappingSettings(): array
+    {
+        $attributes = $this->importMatchAttributes();
+
+        if (count($attributes) < 2) {
+            return [];
+        }
+
+        return [
+            new FieldMappingSetting(
+                name: 'matchBy',
+                label: t('Match related elements by'),
+                options: array_map(fn (string $attribute, string $label) => ['value' => $attribute, 'label' => $label], array_keys($attributes), $attributes),
+                default: 'id',
+                instructions: t('Which of the related elements’ values the incoming data holds. Elements are looked up among those the field lets you select; live ones come first, then the one with the lowest ID.'),
+            ),
+        ];
+    }
+
+    /**
+     * Returns the attributes that incoming values can identify related elements by, when the field is imported into,
+     * keyed by element query param, with their labels. `id` must come first.
+     *
+     * @return array<string, string>
+     */
+    protected function importMatchAttributes(): array
+    {
+        $attributes = ['id' => t('ID')];
+
+        if (static::elementType()::hasTitles()) {
+            $attributes['title'] = t('Title');
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Looks up the elements an import’s values identify by an attribute, among those the field lets you select, and
+     * returns their IDs in the order of the values. A value matching several elements gets the first live one, or else
+     * the first one, by ID; a value matching none is left out and logged.
+     *
+     * @param  list<mixed>  $values
+     * @return list<int>
+     */
+    private function importedElementIds(array $values, string $attribute, ?ElementInterface $rootOwner): array
+    {
+        $values = array_values(array_unique(array_filter(
+            array_map(fn (mixed $value) => is_scalar($value) ? trim((string) $value) : '', $values),
+            fn (string $value) => $value !== '',
+        )));
+
+        if ($values === []) {
+            return [];
+        }
+
+        $ids = $this->selectableElementIds($values, $attribute, $rootOwner, live: true);
+        $missing = array_values(array_filter($values, fn (string $value) => ! isset($ids[mb_strtolower($value)])));
+
+        // values without a live match fall back to elements in any status, as the element selector offers them too
+        if ($missing !== []) {
+            $ids += $this->selectableElementIds($missing, $attribute, $rootOwner, live: false);
+        }
+
+        $elementIds = [];
+
+        foreach ($values as $value) {
+            $id = $ids[mb_strtolower($value)] ?? null;
+
+            if ($id === null) {
+                ImportLog::warning("No element with the $attribute “{$value}” can be related by the “{$this->handle}” field, so it was skipped.");
+
+                continue;
+            }
+
+            $elementIds[] = $id;
+        }
+
+        return array_values(array_unique($elementIds));
+    }
+
+    /**
+     * Returns the lowest ID of the selectable elements whose attribute matches each value, keyed by lowercased value.
+     *
+     * Elements are queried as the field’s element selector lists them: from the field’s input sources, with its
+     * selection condition and criteria, in its target site, as canonical elements and unpublished drafts.
+     *
+     * @param  list<string>  $values
+     * @return array<string, int>
+     */
+    private function selectableElementIds(array $values, string $attribute, ?ElementInterface $rootOwner, bool $live): array
+    {
+        $elementType = static::elementType();
+        $elementIndexes = app(ElementIndexes::class);
+        $condition = $this->getSelectionCondition();
+
+        if ($condition instanceof ElementCondition) {
+            $condition->forQuery = true;
+            $condition->referenceElement = $rootOwner;
+        }
+
+        $ids = [];
+
+        foreach ($this->importSources($rootOwner) as $source) {
+            $query = $elementIndexes->buildQueryState(
+                elementType: $elementType,
+                source: $source,
+                condition: $condition,
+                baseCriteria: [
+                    ...$elementIndexes->baseCriteria($elementType),
+                    ...$this->importLookupCriteria(),
+                    'siteId' => $this->targetSiteId($rootOwner),
+                ],
+            )['query'];
+
+            if (! $live) {
+                $query->status(null);
+            }
+
+            $elements = $query
+                // the leading `or` keeps a value such as “and” from being read as the list's glue; commas are only
+                // special in a string param, so their escaping (which an array keeps) is undone
+                ->{$attribute}(['or', ...array_map(fn (string $value) => str_replace('\\,', ',', Query::escapeParam($value)), $values)])
+                ->reorder()
+                ->orderBy('elements.id')
+                ->all();
+
+            foreach ($elements as $element) {
+                $key = mb_strtolower((string) $element->{$attribute});
+
+                if (! isset($ids[$key]) || $element->id < $ids[$key]) {
+                    $ids[$key] = $element->id;
+                }
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Returns the keys of the sources an import can relate elements from: those the field is configured with.
+     *
+     * Unlike `getInputSources()`, they aren't narrowed to what the current user may view, as an import usually runs
+     * without one (in a queue job or from the CLI); who may create and run import plans is decided by their own
+     * permissions.
+     *
+     * @return list<string|null>|string|null
+     */
+    protected function importSourceKeys(?ElementInterface $rootOwner): array|string|null
+    {
+        return $this->allowMultipleSources ? $this->sources : [$this->source];
+    }
+
+    /**
+     * Returns the criteria, beyond each source’s own, that an import’s lookup of related elements applies.
+     *
+     * @return array<string, mixed>
+     */
+    protected function importLookupCriteria(): array
+    {
+        return $this->getInputSelectionCriteria();
+    }
+
+    /**
+     * Returns the sources the field is configured with, which an import can relate elements from.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function importSources(?ElementInterface $rootOwner): array
+    {
+        $elementType = static::elementType();
+        $sourceKeys = $this->importSourceKeys($rootOwner);
+
+        if ($sourceKeys === '*' || $sourceKeys === null) {
+            // the user's temporary uploads aren't part of what an import can relate
+            return ElementSources::getSources($elementType, ElementSources::CONTEXT_FIELD)
+                ->filter(fn (array $source) => isset($source['key']) && $source['key'] !== 'temp')
+                ->values()
+                ->all();
+        }
+
+        return array_values(array_filter(array_map(
+            fn (?string $key) => $key !== null ? ElementSources::findSource($elementType, $key, ElementSources::CONTEXT_FIELD) : null,
+            (array) $sourceKeys,
+        )));
     }
 
     #[Override]

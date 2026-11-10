@@ -17,6 +17,7 @@ use Override;
  * @method static \CraftCms\Cms\Asset\Data\Volume|null getVolumeById(int $volumeId)
  * @method static \CraftCms\Cms\Asset\Data\Volume|null getVolumeByUid(string $volumeUid)
  * @method static \CraftCms\Cms\Asset\Data\Volume|null getVolumeByHandle(string $handle)
+ * @method static \CraftCms\Cms\Asset\Data\Volume|null resolveVolume(mixed $volume, \CraftCms\Cms\Shared\Enums\ModelIdentifier[]|null $by = null)
  * @method static \CraftCms\Cms\Asset\Data\Volume getTemporaryVolume()
  * @method static \CraftCms\Cms\Asset\Data\Volume|null getUserPhotoVolume()
  * @method static bool saveVolume(\CraftCms\Cms\Asset\Data\Volume $volume, bool $runValidation = true)

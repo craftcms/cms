@@ -1,0 +1,229 @@
+import type {
+  MappingColumn,
+  MappingColumnEntry,
+  CompoundMappingColumn,
+  MappingValues,
+  ImportStep,
+} from './types';
+
+/**
+ * Reads a column's value out of one of the mapping trees. A missing branch reads as
+ * `null` rather than throwing, since the trees only hold what has been mapped so far.
+ */
+export function getAt(
+  tree: Record<string, unknown> | null | undefined,
+  path: string[]
+): unknown {
+  return path.reduce<unknown>(
+    (value, part) =>
+      value !== null && typeof value === 'object'
+        ? (value as Record<string, unknown>)[part]
+        : undefined,
+    tree
+  );
+}
+
+/** Writes a column's value into one of the mapping trees, creating branches as needed. */
+export function setAt(
+  tree: Record<string, unknown>,
+  path: string[],
+  value: unknown
+): void {
+  const leaf = path[path.length - 1]!;
+  let branch = tree;
+
+  for (const part of path.slice(0, -1)) {
+    const next = branch[part];
+
+    if (next === null || typeof next !== 'object' || Array.isArray(next)) {
+      branch[part] = {};
+    }
+
+    branch = branch[part] as Record<string, unknown>;
+  }
+
+  branch[leaf] = value;
+}
+
+/**
+ * A container's own keep-missing decision lives under a reserved `__keep__` leaf,
+ * because the container's handle also has to hold its nested containers' decisions.
+ */
+export function keepFlagPath(col: MappingColumn): string[] {
+  return [...col.prefixedHandleAsArray, '__keep__'];
+}
+
+/**
+ * Match criteria and clearable items are stored loosely — `1`, `'1'`, or the mapped
+ * column's name once `normalizeMatchCriteriaFromImporterConfig()` has resolved it.
+ * The screen only cares whether they are set.
+ */
+export function isChecked(value: unknown): boolean {
+  return (
+    value !== undefined && value !== null && value !== '' && value !== false
+  );
+}
+
+/**
+ * The value a `craft-checkbox` should write into one of the trees: `1` and `''`
+ * rather than booleans, which is what `validateMap()` and the importer read back.
+ *
+ * Read off `currentTarget` — the `craft-checkbox` the listener is bound to, which
+ * mirrors its slotted input's state. `target` is the host for an event Lion raises
+ * itself and the input for one that bubbles up from it, so it can't be relied on.
+ */
+export function checkedValue(event: Event): string {
+  const checkbox = event.currentTarget as {checked?: boolean} | null;
+
+  return checkbox?.checked ? '1' : '';
+}
+
+/** Whether a `destinationCols` entry is a compound column, mapped through several subfields. */
+export function isCompoundMappingColumn(
+  entry: MappingColumnEntry
+): entry is CompoundMappingColumn {
+  return 'subfields' in entry;
+}
+
+/** Whether a `destinationCols` entry is a single column rather than a compound one. */
+export function isMappingColumn(
+  entry: MappingColumnEntry
+): entry is MappingColumn {
+  return !isCompoundMappingColumn(entry);
+}
+
+/**
+ * Rewrites every array in a tree as an object.
+ *
+ * PHP has one array type, so an empty tree — or any empty branch within one — reaches
+ * the client as `[]` rather than `{}`. Writing a handle key onto a JS array succeeds
+ * in memory but `JSON.stringify` drops it, so the edit would silently never reach the
+ * server. The trees are only ever handle-keyed maps, so nothing here is a real list.
+ */
+export function toObjectTree<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return Object.fromEntries(
+      value.map((item, index) => [index, toObjectTree(item)])
+    ) as T;
+  }
+
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, toObjectTree(item)])
+    ) as T;
+  }
+
+  return value;
+}
+
+/**
+ * A structural copy of the trees, so a nested panel can be canceled without a trace.
+ *
+ * Round-tripped through JSON rather than `structuredClone()`, which can't clone the
+ * reactive proxies the screens hold these in.
+ */
+export function cloneValues(values: MappingValues): MappingValues {
+  return toObjectTree(JSON.parse(JSON.stringify(values)) as MappingValues);
+}
+
+/**
+ * A structural copy of one step, so a slideout can be canceled without a trace.
+ *
+ * Round-tripped through JSON rather than `structuredClone()`, which can't clone the
+ * reactive proxies the screens hold these in.
+ */
+export function cloneStep(step: ImportStep): ImportStep {
+  return JSON.parse(JSON.stringify(step)) as ImportStep;
+}
+
+/** A structural copy of a list of steps, as {@link cloneStep} copies one. */
+export function cloneSteps(steps: ImportStep[]): ImportStep[] {
+  return JSON.parse(JSON.stringify(steps)) as ImportStep[];
+}
+
+/**
+ * Fills in every leaf of `map` that doesn't have a value yet from `suggestions`, and
+ * records each leaf it fills in `flags`.
+ *
+ * An explicit choice — saved, or made earlier in this editing session — is neither
+ * overwritten nor flagged as a guess. The server can't work that out on its own, since
+ * it only ever sees the saved map, so the flags have to come from the pass that writes
+ * the values.
+ */
+export function applySuggestions(
+  map: Record<string, unknown>,
+  suggestions: Record<string, unknown>,
+  flags: Record<string, unknown>
+): void {
+  for (const [key, suggested] of Object.entries(suggestions)) {
+    const current = map[key];
+
+    if (
+      suggested !== null &&
+      typeof suggested === 'object' &&
+      !Array.isArray(suggested)
+    ) {
+      if (
+        current === null ||
+        typeof current !== 'object' ||
+        Array.isArray(current)
+      ) {
+        map[key] = {};
+      }
+
+      if (
+        flags[key] === null ||
+        typeof flags[key] !== 'object' ||
+        Array.isArray(flags[key])
+      ) {
+        flags[key] = {};
+      }
+
+      applySuggestions(
+        map[key] as Record<string, unknown>,
+        suggested as Record<string, unknown>,
+        flags[key] as Record<string, unknown>
+      );
+
+      continue;
+    }
+
+    if (current === undefined || current === null || current === '') {
+      map[key] = suggested;
+      flags[key] = true;
+    }
+  }
+}
+
+/**
+ * A stable serialization of a step or its mapping trees, for unsaved-changes checks.
+ *
+ * Raw `JSON.stringify` reads as an edit when nothing meaningful changed: keys come back
+ * in another order once the form folds its values in, PHP sends an empty tree as `[]`,
+ * and clearing a control leaves `''` on a key that was never there. Keys are sorted and
+ * empty values and branches dropped, so only a real difference changes the result.
+ */
+export function dirtyState(value: unknown): string {
+  return JSON.stringify(withoutEmpties(value) ?? null);
+}
+
+function withoutEmpties(value: unknown): unknown {
+  if (value === null || value === undefined || value === '') {
+    return undefined;
+  }
+
+  if (typeof value !== 'object') {
+    return value;
+  }
+
+  const entries = Array.isArray(value)
+    ? value.map((item, index) => [String(index), item] as const)
+    : Object.entries(value as Record<string, unknown>);
+
+  const kept = entries
+    .map(([key, item]) => [key, withoutEmpties(item)] as const)
+    .filter(([, item]) => item !== undefined)
+    .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
+
+  return kept.length ? Object.fromEntries(kept) : undefined;
+}

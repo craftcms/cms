@@ -521,10 +521,23 @@ class Assets extends BaseRelationField
 
     /**
      * Resolve source path for uploading for this field.
+     *
+     * @param  ElementInterface|null  $element  The element the upload location is resolved for.
+     * @param  bool  $createDynamicFolders  Whether missing folders should be created in the process.
      */
-    public function resolveDynamicPathToFolderId(?ElementInterface $element = null): int
+    public function resolveDynamicPathToFolderId(?ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
-        return $this->_uploadFolder($element)->id;
+        return $this->_uploadFolder($element, $createDynamicFolders)->id;
+    }
+
+    /**
+     * Returns the file extensions allowed by the field’s file type restrictions, or an empty array if there aren’t any.
+     *
+     * @return string[]
+     */
+    public function getAllowedExtensions(): array
+    {
+        return $this->_getAllowedExtensions();
     }
 
     #[Override]
@@ -1331,5 +1344,34 @@ class Assets extends BaseRelationField
         }
 
         return $folders;
+    }
+
+    #[Override]
+    protected function importSourceKeys(?ElementInterface $rootOwner): array|string|null
+    {
+        // a restricted field only relates assets from its location, which must be a valid volume
+        if ($this->restrictLocation) {
+            return [$this->_sourceKeyByFolder($this->_uploadFolder($rootOwner, false, false))];
+        }
+
+        return $this->sources;
+    }
+
+    #[Override]
+    protected function importLookupCriteria(): array
+    {
+        // a volume or folder source lists only its own folder; an import relates assets from its subfolders too
+        return [...parent::importLookupCriteria(), 'includeSubfolders' => true];
+    }
+
+    #[Override]
+    protected function importMatchAttributes(): array
+    {
+        // matching by ID leaves plain strings as files to upload (see AssetsFieldImportHandler)
+        return [
+            'id' => t('ID or file'),
+            'title' => t('Title'),
+            'filename' => t('Filename'),
+        ];
     }
 }

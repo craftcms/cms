@@ -18,10 +18,12 @@ use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\Concerns\ImportableElementContainerField;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
@@ -31,9 +33,13 @@ use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Address as AddressGqlInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Address as AddressResolver;
 use CraftCms\Cms\Gql\Types\Input\Addresses as AddressesInput;
+use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Number;
@@ -69,8 +75,10 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
+class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, ImportableElementContainerFieldInterface, MergeableFieldInterface
 {
+    use ImportableElementContainerField;
+
     public const string VIEW_MODE_CARDS = 'cards';
 
     public const string VIEW_MODE_INDEX = 'index';
@@ -423,7 +431,7 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
      * @param  array<array-key, array<string, mixed>>  $value
      * @return list<Address>
      */
-    private function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
+    public function createAddressesFromSerializedData(array $value, ElementInterface $element, bool $fromRequest): array
     {
         // Was the value posted in the new (delta) format, and by UUID or ID?
         ['delta' => $delta, 'uids' => $uids, 'entries' => $newAddressData, 'sortOrder' => $newSortOrder] =
@@ -564,6 +572,12 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
             // The Address UI control nests the address format fields under an `address` key
             if (isset($addressData['address']) && is_array($addressData['address'])) {
                 $addressData += $addressData['address'];
+            }
+
+            // Import data may nest latitude & longitude under a `latLong` key (the name of the
+            // layout element); the Lat/Long control itself posts them as flat inputs
+            if (isset($addressData['latLong']) && is_array($addressData['latLong'])) {
+                $addressData += $addressData['latLong'];
             }
 
             foreach ($nativeFields as $field) {
@@ -986,6 +1000,18 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
     }
 
     #[Override]
+    public function canKeepMissingNestedElements(): bool
+    {
+        return true;
+    }
+
+    #[Override]
+    public function setKeepMissingNestedElements(bool $keep): void
+    {
+        $this->addressManager()->keepOtherNestedElements = $keep;
+    }
+
+    #[Override]
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (! parent::beforeElementDelete($element)) {
@@ -1005,5 +1031,77 @@ class Addresses extends Field implements EagerLoadingFieldInterface, ElementCont
         $this->addressManager()->restoreNestedElements($element);
 
         parent::afterElementRestore($element);
+    }
+
+    /**
+     * Normalizes value so that it can be imported into an Addresses-type field.
+     *
+     * The value has to be an array of addresses, either as a list or in the nested element
+     * `{entries, sortOrder}` format. An address's custom field values can be given loose or under a "fields" key.
+     *
+     * @return array<int|string, array<string, mixed>>
+     */
+    #[Override]
+    public function normalizeValueForImport(mixed $value, BaseImporter $importer, ?ElementInterface $rootOwner = null, array $importSettings = []): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $normalizedValue = [];
+        $fieldLayout = app(\CraftCms\Cms\Address\Addresses::class)->getFieldLayout();
+        $i = 0;
+
+        $delta = ElementHelper::nestedElementDelta($value);
+        // if there's only one address, and it's not wrapped in its own array, do that
+        // this will happen with csv or json where we have "addresses": {"title": ...}
+        if (isset($delta['entries']['countryCode'])) {
+            $addresses = [$delta['entries']];
+        } else {
+            $addresses = $delta['entries'];
+        }
+
+        foreach ($addresses as $address) {
+            if (! is_array($address)) {
+                continue;
+            }
+
+            // skip this row if everything other than the reserved matchCriteria key is empty
+            if (ImportHelper::isEmptyImportEntryData(Arr::except($address, ['matchCriteria']))) {
+                continue;
+            }
+
+            $addressElement = null;
+
+            // try to match existing address entries,
+            // but only if owner already has an ID; no point trying to match nested entry for a brand new owner element
+            if (($rootOwner?->id)) {
+                $criteria = [];
+
+                if (! empty($address['matchCriteria'])) {
+                    $criteria = $address['matchCriteria'];
+                }
+
+                if (! empty($criteria)) {
+                    $query = Address::find()
+                        ->fieldId($this->id)
+                        ->ownerId($rootOwner->id);
+
+                    Typecast::configure($query, $criteria);
+                    $addressElement = $query->one();
+                }
+            }
+
+            // use the matched address's ID, or generate a new key
+            $newKey = $addressElement->id ?? 'new:'.++$i;
+
+            Arr::forget($address, ['matchCriteria']);
+
+            $data = $this->normalizeNestedEntryForImport($address, $importer, $fieldLayout, $addressElement, $importSettings['fields'] ?? []);
+            Typecast::properties(Address::class, $data);
+            $normalizedValue[$newKey] = $data;
+        }
+
+        return $normalizedValue;
     }
 }

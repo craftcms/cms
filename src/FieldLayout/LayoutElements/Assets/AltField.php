@@ -9,6 +9,8 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
+use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextareaField;
 use CraftCms\Cms\Http\Controllers\Assets\GenerateAltTextController;
 use CraftCms\Cms\Support\Arr;
@@ -23,8 +25,10 @@ use function CraftCms\Cms\t;
 /**
  * @since 6.0.0
  */
-class AltField extends TextareaField
+class AltField extends TextareaField implements ImportableFieldLayoutElementInterface
 {
+    use ImportableFieldLayoutElement;
+
     #[Override]
     public string $attribute = 'alt';
 
