@@ -791,6 +791,7 @@
 - Updated Font Awesome to v7. Parts of some icons now extend a little beyond their icon’s box, rather than being clipped. ([#20520](https://github.com/craftcms/cms/pull/20520))
 
 ### Bug Fixes
+- Fixed a bug where count badges in the control panel nav, and unread markers in the notification center, sat a little below the middle of their rows.
 - Fixed a bug where behaviors that plugins attach to `craft\web\twig\variables\CraftVariable`, such as Shopify’s `craft.shopifyProducts()`, weren’t available from the `craft` Twig variable, and couldn’t reach its methods and properties, such as `entries()`, through their owner, with the Yii adapter installed. ([#20537](https://github.com/craftcms/cms/pull/20537))
 - Fixed a bug where Markdown fields’ “Available Volumes”, “Show unpermitted volumes”, “Selectable Assets Condition”, and “Upload Volume” settings had no effect in element editors, so the toolbar never showed the Asset button and pasted or dropped files weren’t uploaded. ([#20521](https://github.com/craftcms/cms/pull/20521))
 - Fixed a bug where relation fields’ “Selectable {type} Condition” settings, Assets fields’ “Restrict assets to a single location”, “Allow subfolders”, and “Show unpermitted volumes” settings, and Entries fields’ “Show unpermitted sections” setting had no effect when selecting elements in element editors, and Assets fields’ selector modals opened on Temporary Uploads rather than the field’s upload location. ([#20521](https://github.com/craftcms/cms/pull/20521))

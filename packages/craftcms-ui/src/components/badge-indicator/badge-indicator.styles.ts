@@ -2,6 +2,10 @@ import {css} from 'lit';
 import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
 export default css`
+  :host {
+    display: inline-flex;
+  }
+
   .badge-indicator {
     --_badge-color: var(--c-color-info-fill-loud);
     --_text-color: var(--c-color-info-on-loud);
