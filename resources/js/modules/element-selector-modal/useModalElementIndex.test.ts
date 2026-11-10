@@ -276,6 +276,25 @@ describe('double-clicking', () => {
     ).not.toBeNull();
   });
 
+  it('reports a failed request to onError', async () => {
+    const onError = vi.fn();
+    const failure = new Error('offline');
+    post.mockRejectedValueOnce(failure);
+    scope = effectScope();
+    const index = scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData(),
+        params: {elementType: 'Asset'},
+        onError,
+      })
+    )!;
+
+    await index.visitor.visit({});
+
+    expect(onError).toHaveBeenCalledWith(failure);
+  });
+
   it('chooses nothing from a control inside an asset', () => {
     const index = mountIndex();
 

@@ -75,6 +75,7 @@
     :params="params"
     read-only
     :storage-key="storageKey"
+    @error="failed = true"
   />
   <ElementPickerPlaceholder v-else :element-type="elementType" />
 </template>

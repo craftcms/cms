@@ -83,6 +83,8 @@ interface Options {
   readOnly?: boolean;
   /** Keeps this index's view mode, columns and sort apart from other indexes of its element type. */
   storageKey?: string;
+  /** Called when a request for the index fails, instead of the failure going unhandled. */
+  onError?: (cause: unknown) => void;
 }
 
 /** Adds modal fetching and selection rules to the shared detached index. */
@@ -106,6 +108,7 @@ export function useModalElementIndex(options: Options) {
     },
     readOnly: options.readOnly,
     storageKey: options.storageKey,
+    onError: options.onError,
     enableRowSelection: (row) =>
       !options.readOnly &&
       (selectFolders

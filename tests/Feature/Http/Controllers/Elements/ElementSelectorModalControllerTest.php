@@ -194,6 +194,14 @@ describe('asset folders', function () {
             ->and($thumb['labelLinkAttributes'])->toBe(['data-folder-link' => '']);
     });
 
+    it('keeps folder links in read-only mode', function () {
+        Folders::ensureFolderByFullPathAndVolume('a-subfolder', $this->volume);
+
+        $title = ($this->postAssets)(['readOnly' => true])['data'][0]['title'];
+
+        expect($title)->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/');
+    });
+
     it('lists the requested subfolder, with a trail back to the volume root', function () {
         Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
         $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);

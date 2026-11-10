@@ -3,7 +3,10 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import ReadOnlyElementIndex from './ReadOnlyElementIndex.vue';
 
 const post = vi.hoisted(() => vi.fn());
-const picker = vi.hoisted(() => ({props: null as Record<string, any> | null}));
+const picker = vi.hoisted(() => ({
+  props: null as Record<string, any> | null,
+  emit: null as ((event: string, payload?: unknown) => void) | null,
+}));
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
@@ -17,7 +20,10 @@ vi.mock('./ElementPicker.vue', async () => {
     default: define({
       name: 'ElementPickerStub',
       props: ['action', 'initial', 'params', 'readOnly', 'storageKey'],
-      setup(props) {
+      emits: ['error'],
+      setup(props, {emit}) {
+        picker.emit = emit as (event: string, payload?: unknown) => void;
+
         return () => {
           picker.props = props as Record<string, any>;
           return create('div', {class: 'picker-stub'});
@@ -130,5 +136,22 @@ describe('ReadOnlyElementIndex', () => {
 
     expect(host.querySelector('[role="alert"]')).toBeNull();
     expect(picker.props?.initial).toEqual({marker: 'recovered'});
+  });
+
+  it('shows the error and retry when the picker’s row request fails', async () => {
+    post.mockResolvedValue(response('first'));
+    mount();
+    await flush();
+
+    picker.emit?.('error', new Error('offline'));
+    await flush();
+
+    expect(host.querySelector('[role="alert"]')).not.toBeNull();
+
+    (host.querySelector('craft-button') as HTMLElement).click();
+    await flush();
+
+    expect(post).toHaveBeenCalledTimes(2);
+    expect(host.querySelector('[role="alert"]')).toBeNull();
   });
 });

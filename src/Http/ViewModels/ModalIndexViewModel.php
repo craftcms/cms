@@ -155,12 +155,8 @@ class ModalIndexViewModel extends ContentIndexViewModel
     #[\Override]
     protected function titleLinkHtml(ElementInterface $element): string
     {
-        if ($this->readOnly) {
-            return parent::titleLinkHtml($element);
-        }
-
         if (! $element instanceof Asset || ! $element->isFolder) {
-            return $this->chipHtml($element);
+            return $this->readOnly ? parent::titleLinkHtml($element) : $this->chipHtml($element);
         }
 
         $folderUrl = $this->folderUrl($element);

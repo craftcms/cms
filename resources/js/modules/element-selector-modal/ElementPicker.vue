@@ -34,6 +34,8 @@
     (event: 'source-change', source: SourceItem | null): void;
     /** The trail from the volume root to the folder on screen. */
     (event: 'folder-path-change', path: FolderCrumb[]): void;
+    /** A request for the index failed. */
+    (event: 'error', cause: unknown): void;
   }>();
 
   const index = useModalElementIndex({
@@ -45,6 +47,7 @@
     disabledFolderIds: () => props.disabledFolderIds ?? [],
     readOnly: props.readOnly,
     storageKey: props.storageKey,
+    onError: props.readOnly ? (cause) => emit('error', cause) : undefined,
   });
 
   const {selectedElements, hasSelection, clearSelection, folderBreadcrumbs} =
