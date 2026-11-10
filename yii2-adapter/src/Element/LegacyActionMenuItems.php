@@ -149,16 +149,19 @@ final class LegacyActionMenuItems
             if ($descriptor === null) {
                 $label = $this->label($item) ?? $item['id'] ?? '(unlabeled)';
 
-                LegacyUsage::record(
-                    "action-menu-item:$label",
-                    sprintf(
-                        'The “%s” action menu item can’t be shown in the Inertia element editor or element chips because it relies on JavaScript. Give it a `url` or `action`, or add it as a descriptor via `%s`.',
-                        $label,
-                        ElementActionMenuDescriptorsResolving::class,
-                    ),
-                    $file,
-                    $line,
-                );
+                // Without a source, the call stack would blame whatever rendered the menu, not the handler that added the item.
+                if ($file !== null) {
+                    LegacyUsage::record(
+                        "action-menu-item:$label",
+                        sprintf(
+                            'The “%s” action menu item can’t be shown in the Inertia element editor or element chips because it relies on JavaScript. Give it a `url` or `action`, or add it as a descriptor via `%s`.',
+                            $label,
+                            ElementActionMenuDescriptorsResolving::class,
+                        ),
+                        $file,
+                        $line,
+                    );
+                }
 
                 continue;
             }

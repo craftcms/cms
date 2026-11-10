@@ -8,7 +8,9 @@ use craft\events\DefineMenuItemsEvent;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\User\Models\User;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use Illuminate\Support\Facades\Crypt;
 
@@ -63,6 +65,27 @@ it('drops legacy items that rely on JavaScript', function(): void {
     });
 
     expect(legacyMenuDescriptor($this->entry, 'Do the thing'))->toBeNull();
+});
+
+it('doesn’t blame project code for JavaScript items when several handlers could have added them', function(): void {
+    Event::on(LegacyEntry::class, LegacyEntry::EVENT_DEFINE_ACTION_MENU_ITEMS, function(DefineMenuItemsEvent $event) {
+        $event->items[] = ['id' => 'my-plugin-action', 'label' => 'Do the thing'];
+    });
+    Event::on(LegacyEntry::class, LegacyEntry::EVENT_DEFINE_ACTION_MENU_ITEMS, function(DefineMenuItemsEvent $event) {
+        $event->items[] = ['label' => 'Docs', 'url' => 'https://example.com/docs'];
+    });
+
+    // Project code that renders the menu, which neither handler is part of.
+    $file = base_path('RenderActionMenu.php');
+    File::put($file, '<?php return fn($entry) => $entry->actionMenuDescriptors();');
+
+    try {
+        (require $file)($this->entry);
+    } finally {
+        File::delete($file);
+    }
+
+    expect(collect(app(LegacyUsage::class)->pending())->where('file', 'RenderActionMenu.php'))->toBeEmpty();
 });
 
 it('converts items a plugin element type adds by overriding the legacy methods', function(): void {
