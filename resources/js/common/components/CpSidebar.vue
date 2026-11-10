@@ -9,6 +9,7 @@
   import {type CraftData} from '@/common/composables/useCraftData';
   import {usePage} from '@inertiajs/vue3';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import {usePageClickOutside} from '@/common/composables/usePageClickOutside';
 
   const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
@@ -32,7 +33,21 @@
     }
   );
 
-  const {toggle: toggleSidebar, icon} = useGlobalSidebar();
+  const {
+    toggle: toggleSidebar,
+    close: closeSidebar,
+    icon,
+    toggleButton,
+  } = useGlobalSidebar();
+
+  // Floating, it closes on a click elsewhere on the page. The header's toggle
+  // counts as inside, so it doesn't close the sidebar only to reopen it.
+  const nav = useTemplateRef<HTMLElement>('nav');
+  usePageClickOutside(
+    () => [nav.value, toggleButton.value],
+    () => sidebar.mode === 'floating' && sidebar.visibility === 'visible',
+    closeSidebar
+  );
 
   const collapseItem = useTemplateRef<HTMLElement>('collapseItem');
 
@@ -73,6 +88,7 @@
 
 <template>
   <nav
+    ref="nav"
     class="cp-sidebar"
     :data-visibility="sidebar.visibility"
     :data-mode="sidebar.mode"
