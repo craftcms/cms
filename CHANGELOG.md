@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where files sent to `assets_upload_url` MCP upload URLs couldn’t be used by `assets_create` or `assets_replace` on load-balanced sites, when requests reached different servers. Uploads are now stored in the temporary asset upload filesystem (`tempAssetUploadFs`).
+- MCP upload URLs now respond with JSON errors, rather than HTML pages, when an upload is expired, already used, or too large.
+
 ## 5.12.1 - 2026-11-10
 
 - Renamed Craft’s MCP tools to use snake_case, such as `elements_list` instead of `elements.list`, since some MCP clients reject or rename tools with dots in their names. Public MCP server approvals are updated automatically. Plugins should name their MCP tools the same way, such as `my_plugin_orders_list`. ([#20351](https://github.com/craftcms/cms/issues/20351))

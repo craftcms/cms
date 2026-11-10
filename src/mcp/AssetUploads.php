@@ -6,6 +6,7 @@ namespace craft\mcp;
 
 use Closure;
 use Craft;
+use craft\base\FsInterface;
 use craft\elements\User;
 use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
@@ -23,6 +24,11 @@ use GuzzleHttp\Psr7\UriResolver;
 use GuzzleHttp\TransferStats;
 use Mcp\Exception\ToolCallException;
 use Throwable;
+use yii\web\BadRequestHttpException;
+use yii\web\ConflictHttpException;
+use yii\web\GoneHttpException;
+use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * Turns client file references into bounded, temporary files for asset persistence.
@@ -35,6 +41,8 @@ class AssetUploads
 {
     private const MaxRedirects = 3;
     private const UploadTtl = 'PT15M';
+    private const UploadDir = 'mcp-uploads';
+    private const StaleUploadAge = 86400;
     private const UploadIdPattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/';
 
     private UrlValidator $urlValidator;
@@ -98,6 +106,10 @@ class AssetUploads
     /**
      * Reserves an upload for the user, returning a single-use URL that accepts the file as a raw PUT request body.
      *
+     * The upload’s record and file live in the temporary asset upload filesystem, and its token in the database, so
+     * the request reserving the upload, the PUT request, and the request claiming the upload can each be handled by
+     * a different server.
+     *
      * @return array{upload_id: string, upload_url: string, method: string, expires_at: string, max_size: int}
      */
     public function createUpload(User $user, string $baseUrl): array
@@ -117,17 +129,20 @@ class AssetUploads
             throw new ToolCallException('You are not authorized to upload assets.');
         }
 
-        $this->deleteStaleUploads();
-
         $id = StringHelper::UUID();
         $expiresAt = DateTimeHelper::currentUTCDateTime()->add(new DateInterval(self::UploadTtl));
-        $token = Craft::$app->getTokens()->createToken(['mcp/upload', ['uploadId' => $id]], 1, $expiresAt);
+        // The record enforces the expiry and single use, so the token outlives them, and late or repeated requests
+        // still reach the upload action and get a JSON error rather than Craft’s invalid token error page.
+        $tokenExpiresAt = DateTimeHelper::currentUTCDateTime()->modify(sprintf('+%d seconds', self::StaleUploadAge));
+        $token = Craft::$app->getTokens()->createToken(['mcp/upload', ['uploadId' => $id]], null, $tokenExpiresAt);
 
         if ($token === false) {
             throw new ToolCallException('Could not create an upload URL.');
         }
 
-        FileHelper::writeToFile($this->uploadPath($id) . '.json', Json::encode(['userId' => $user->id]));
+        $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+        $fs->write($this->uploadPath($id) . '.json', Json::encode(['userId' => $user->id, 'expiresAt' => $expiresAt->getTimestamp()]));
+        $this->deleteStaleUploads($fs);
 
         return [
             'upload_id' => $id,
@@ -143,35 +158,70 @@ class AssetUploads
      *
      * @param  resource  $stream
      * @return int The number of bytes stored.
+     * @throws HttpException if the upload can't be received
      */
     public function receiveUpload(string $id, $stream): int
     {
-        $path = $this->uploadPath($id);
+        // Uploads that start before the URL expires may finish after it
+        $startedAt = time();
+        $this->assertReceivable($this->uploadRecord($id), $startedAt);
 
-        if (!preg_match(self::UploadIdPattern, $id) || !is_file("$path.json") || file_exists($path)) {
-            throw new ToolCallException('This upload URL is not valid.');
-        }
-
-        // Stream to a staging file, so the upload can't be claimed until it's complete
+        // Buffer the body locally first, so oversized files never reach the filesystem
         $maxSize = ConfigHelper::sizeInBytes(Craft::$app->getConfig()->getGeneral()->maxUploadFileSize);
-        $target = @fopen("$path.part", 'xb');
-
-        if ($target === false) {
-            throw new ToolCallException('This upload URL is not valid.');
-        }
+        $buffer = tmpfile();
 
         try {
-            $size = stream_copy_to_stream($stream, $target, $maxSize + 1);
-        } finally {
-            fclose($target);
-        }
+            $size = stream_copy_to_stream($stream, $buffer, $maxSize + 1);
 
-        if ($size === false || $size > $maxSize || $size === 0 || !rename("$path.part", $path)) {
-            @unlink("$path.part");
-            throw new ToolCallException($size ? 'The file exceeds the maximum upload size.' : 'The request body was empty.');
+            if (!$size) {
+                throw new BadRequestHttpException('The request body was empty.');
+            }
+
+            if ($size > $maxSize) {
+                throw new HttpException(413, 'The file exceeds the maximum upload size.');
+            }
+
+            $mutex = Craft::$app->getMutex();
+
+            if (!$mutex->acquire("mcp-upload:$id", 5)) {
+                throw new ConflictHttpException('Another request is uploading to this URL.');
+            }
+
+            try {
+                // Another request may have stored a file since the first check
+                $record = $this->uploadRecord($id);
+                $this->assertReceivable($record, $startedAt);
+                $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+                rewind($buffer);
+                $fs->writeFileFromStream($this->uploadPath($id), $buffer);
+                // Only record the size once the file is stored, so the upload can't be claimed until it's complete
+                $fs->write($this->uploadPath($id) . '.json', Json::encode($record + ['size' => $size]));
+            } finally {
+                $mutex->release("mcp-upload:$id");
+            }
+        } finally {
+            fclose($buffer);
         }
 
         return $size;
+    }
+
+    /**
+     * @throws HttpException
+     */
+    private function assertReceivable(?array $record, int $time): void
+    {
+        if (!$record) {
+            throw new NotFoundHttpException('This upload URL is not valid, or its upload was already used. Request a new upload URL with assets_upload_url.');
+        }
+
+        if (isset($record['size'])) {
+            throw new ConflictHttpException('A file was already uploaded to this URL.');
+        }
+
+        if (($record['expiresAt'] ?? 0) < $time) {
+            throw new GoneHttpException('This upload URL has expired. Request a new upload URL with assets_upload_url.');
+        }
     }
 
     private function assertFilename(mixed $filename): string
@@ -342,25 +392,62 @@ class AssetUploads
 
     private function claimUpload(string $id, string $path, int $maxSize): void
     {
-        $upload = $this->uploadPath($id);
-        $meta = preg_match(self::UploadIdPattern, $id) && is_file("$upload.json") ? Json::decode((string)file_get_contents("$upload.json")) : null;
+        $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+        $mutex = Craft::$app->getMutex();
 
-        if (!$meta || ($meta['userId'] ?? null) !== Craft::$app->getUser()->getId()) {
-            throw new ToolCallException('Upload not found. Request a new upload URL with assets_upload_url.');
+        if (!$mutex->acquire("mcp-upload:$id", 5)) {
+            throw new ToolCallException('The upload is still being received. Try again.');
         }
 
-        if (!is_file($upload)) {
-            throw new ToolCallException('Nothing has been uploaded yet. Send the file to upload_url with a PUT request first.');
+        try {
+            $record = $this->uploadRecord($id);
+
+            if (!$record || ($record['userId'] ?? null) !== Craft::$app->getUser()->getId()) {
+                throw new ToolCallException('Upload not found. Request a new upload URL with assets_upload_url.');
+            }
+
+            if (!isset($record['size'])) {
+                throw new ToolCallException('Nothing has been uploaded yet. Send the file to upload_url with a PUT request first.');
+            }
+
+            // Each upload can only be used once
+            $fs->deleteFile($this->uploadPath($id) . '.json');
+        } finally {
+            $mutex->release("mcp-upload:$id");
         }
 
-        // Each upload can only be used once
-        unlink("$upload.json");
+        $source = $fs->getFileStream($this->uploadPath($id));
+        $target = fopen($path, 'wb');
 
-        if (!rename($upload, $path)) {
-            throw new ToolCallException('The uploaded file could not be read.');
+        try {
+            if ($target === false || stream_copy_to_stream($source, $target, $maxSize + 1) === false) {
+                throw new ToolCallException('The uploaded file could not be read.');
+            }
+        } finally {
+            fclose($source);
+            is_resource($target) && fclose($target);
         }
 
+        $fs->deleteFile($this->uploadPath($id));
         $this->assertSize($path, $maxSize);
+    }
+
+    /**
+     * Returns an upload’s record: the ID of the user who reserved it, when its upload URL expires, and once a file
+     * has been uploaded, its size.
+     *
+     * @return array{userId: int, expiresAt: int, size?: int}|null
+     */
+    private function uploadRecord(string $id): ?array
+    {
+        if (!preg_match(self::UploadIdPattern, $id)) {
+            return null;
+        }
+
+        $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+        $path = $this->uploadPath($id) . '.json';
+
+        return $fs->fileExists($path) ? Json::decode($fs->read($path)) : null;
     }
 
     private function assertSize(string $path, int $maxSize): void
@@ -372,20 +459,20 @@ class AssetUploads
         }
     }
 
+    /** Returns an upload’s path within the temporary asset upload filesystem. */
     private function uploadPath(string $id): string
     {
-        return Craft::$app->getPath()->getTempPath() . "/mcp-uploads/$id";
+        return self::UploadDir . "/$id";
     }
 
     /** Deletes uploads that were never claimed. */
-    private function deleteStaleUploads(): void
+    private function deleteStaleUploads(FsInterface $fs): void
     {
-        $dir = dirname($this->uploadPath('x'));
-        $cutoff = time() - 86400;
+        $cutoff = time() - self::StaleUploadAge;
 
-        foreach (glob("$dir/*") ?: [] as $file) {
-            if (filemtime($file) < $cutoff) {
-                @unlink($file);
+        foreach ($fs->getFileList(self::UploadDir, false) as $listing) {
+            if (!$listing->getIsDir() && $listing->getDateModified() < $cutoff) {
+                $fs->deleteFile($listing->getUri());
             }
         }
     }
