@@ -65,7 +65,8 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
     /** The value last set from code, for choices that arrive after it. */
     #requested?: string[];
 
-    #known = new Set<Element>();
+    /** The choices, in order, as of the last refresh. */
+    #known: ChoiceInputInterface[] = [];
 
     /**
      * Whether the group has had a name. From then on it names its choices,
@@ -168,7 +169,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
           ? {}
           : {attributes: true, attributeFilter: ['checked', 'disabled']}),
       });
-      this.#known = new Set();
+      this.#known = [];
       this.#refreshChoices();
     }
 
@@ -225,7 +226,7 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
       return html`<div class="input-group"><slot></slot></div>`;
     }
 
-    /** Called when choices are added to or removed from the group. */
+    /** Called when choices are added to, removed from or moved in the group. */
     protected _onChoicesChanged(): void {}
 
     #adoptName(): void {
@@ -282,16 +283,18 @@ export const ChoiceGroup = <T extends Constructor<LitElement>>(
 
     #refreshChoices(): void {
       const choices = this.choices;
-      const added = choices.filter(
-        (option) => !this.#known.has(option as never)
-      );
-      const removed = this.#known.size + added.length !== choices.length;
+      const known = this.#known;
 
-      if (!added.length && !removed) {
+      if (
+        choices.length === known.length &&
+        choices.every((option, index) => option === known[index])
+      ) {
         return;
       }
 
-      this.#known = new Set(choices as never[]);
+      const knownSet = new Set(known);
+      const added = choices.filter((option) => !knownSet.has(option));
+      this.#known = choices;
 
       for (const option of added) {
         if (this.#named) {

@@ -113,6 +113,31 @@ describe('button-group appearance', () => {
     ]);
   });
 
+  it('rounds the outer corners of the new ends when a radio is moved', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace(
+        '<craft-radio-group',
+        '<craft-radio-group appearance="button-group"'
+      )
+    );
+    const blue = element.querySelectorAll('craft-radio')[2]!;
+
+    element.prepend(blue.parentElement!);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(
+      [...element.querySelectorAll('craft-radio')].map((radio) => [
+        radio.querySelector('input')!.value,
+        radio.hasAttribute('data-button-start'),
+        radio.hasAttribute('data-button-end'),
+      ])
+    ).toEqual([
+      ['blue', true, false],
+      ['red', false, false],
+      ['green', false, true],
+    ]);
+  });
+
   it('stops drawing buttons when turned off', async () => {
     const element = await createFromMarkup(
       SSR_MARKUP.replace(
