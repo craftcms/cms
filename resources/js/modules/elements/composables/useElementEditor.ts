@@ -20,6 +20,7 @@ import {
   nextTick,
   onBeforeUnmount,
   onScopeDispose,
+  readonly,
   ref,
   shallowRef,
   watch,
@@ -31,6 +32,7 @@ import {
   type ScreenPageProps,
 } from '@/common/composables/screen';
 import {useSlideout} from '@/common/slideouts/useSlideout';
+import type {FormSaveOptions} from '@/common/types';
 import type {UiChangeKind, UiPayload, UiValues} from '@/modules/ui/types';
 import type {
   ElementActionBehavior,
@@ -279,6 +281,19 @@ interface Options {
    * nested elements from here, so the nested element fields inside hear it.
    */
   root?: () => HTMLElement | null | undefined;
+  /**
+   * Another editor on the page that should take Cmd/Ctrl+S instead, such as
+   * the other side of the Compare screen's while it's the one being edited:
+   * its `saveForShortcut()`. Every editor's shortcut hears the press, and
+   * the first to get it handles it.
+   */
+  saveShortcutTarget?: () => ((event: KeyboardEvent) => void) | null;
+  /**
+   * Runs before each submission, which goes ahead when it resolves true: so
+   * another editor on the page, which the submission reloads, can save its
+   * own changes first.
+   */
+  beforeSave?: () => Promise<boolean>;
 }
 
 /**
@@ -289,7 +304,13 @@ interface Options {
  * Element-type pages supply only what their save action needs via
  * {@link Options.saveData}; everything else comes from the shared payload.
  */
-export function useElementEditor({saveData, root, transform}: Options = {}) {
+export function useElementEditor({
+  saveData,
+  root,
+  transform,
+  saveShortcutTarget,
+  beforeSave,
+}: Options = {}) {
   // Not `usePage()`: inside a slideout that's the page *behind* the panel, so
   // the editor would read the index's props and find no payload at all. This
   // resolves to the panel's own props there, and to `usePage()` on a full page.
@@ -885,7 +906,7 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     }
   }
 
-  const {save} = useSettingsSave(
+  const {save: submit} = useSettingsSave(
     form,
     () => ({
       url:
@@ -897,23 +918,18 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     }),
     {
       keyboardShortcutEnabled: () =>
-        !props.readOnly && !releaseDraftLocked.value,
-      // Cmd/Ctrl + Shift + S submits the Save menu's shortcut action that
-      // takes Shift, such as “Save and add another”, as clicking it would.
+        Boolean(saveShortcutTarget?.()) || canSaveForShortcut(),
       onSaveShortcut: (event) => {
-        const action = event.shiftKey
-          ? props.editorActions.menu.find(
-              (item) => item.shortcut && item.shift && !item.disabled
-            )
-          : undefined;
+        const target = saveShortcutTarget?.();
 
-        if (action) {
-          submitAction(action);
-        } else if (!event.shiftKey) {
-          save({redirect: false});
+        if (target) {
+          target(event);
+        } else {
+          saveForShortcut(event);
         }
       },
       hasShiftSaveShortcut: () =>
+        Boolean(saveShortcutTarget?.()) ||
         props.editorActions.menu.some(
           (item) => item.shortcut && item.shift && !item.disabled
         ),
@@ -1029,6 +1045,94 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
       },
     }
   );
+
+  let unmounted = false;
+  onBeforeUnmount(() => (unmounted = true));
+
+  /** Whether a save is waiting on `beforeSave`, before it submits. */
+  const savePending = ref(false);
+
+  function save(options?: FormSaveOptions): void {
+    if (!beforeSave) {
+      submit(options);
+
+      return;
+    }
+
+    // One save at a time: another Save while this one waits would submit too.
+    if (savePending.value) {
+      return;
+    }
+
+    // The action owns only the submission it was chosen for, which its caller
+    // stops waiting for on the next tick, well before `beforeSave` settles.
+    const action = pendingAction.value;
+    savePending.value = true;
+
+    void beforeSave()
+      .then((proceed) => {
+        // Nor once the editor is gone, as another submission can take the page
+        // away while this one waits.
+        if (!proceed || unmounted) {
+          return;
+        }
+
+        pendingAction.value = action;
+        submit(options);
+        void nextTick(() => (pendingAction.value = null));
+      })
+      .finally(() => (savePending.value = false));
+  }
+
+  /**
+   * Autosaves the edits still waiting to be, and reports whether every edit is
+   * saved, so another editor on the page can submit, and reload this one,
+   * without losing them.
+   */
+  async function settleChanges(): Promise<boolean> {
+    if (autosave.hasPendingChanges.value) {
+      await autosave.save();
+    }
+
+    // An edit made while that save was in flight is still waiting for its own,
+    // and a submission still in flight would be cancelled by another one.
+    return (
+      !form.processing &&
+      !autosave.hasPendingChanges.value &&
+      !hasUnsavedChanges()
+    );
+  }
+
+  function canSaveForShortcut(): boolean {
+    return (
+      !props.readOnly &&
+      !releaseDraftLocked.value &&
+      !workflowReviewLocked.value
+    );
+  }
+
+  /**
+   * Saves as Cmd/Ctrl+S does, when the element can be saved. Cmd/Ctrl +
+   * Shift + S submits the Save menu's shortcut action that takes Shift, such
+   * as “Save and add another”, as clicking it would.
+   */
+  function saveForShortcut(event: KeyboardEvent): void {
+    if (!canSaveForShortcut()) {
+      return;
+    }
+
+    const action = event.shiftKey
+      ? props.editorActions.menu.find(
+          (item) => item.shortcut && item.shift && !item.disabled
+        )
+      : undefined;
+
+    if (action) {
+      submitAction(action);
+    } else if (!event.shiftKey) {
+      save({redirect: false});
+    }
+  }
 
   function savedDraftId(result: unknown): number | null {
     const response = result as
@@ -1395,6 +1499,9 @@ export function useElementEditor({saveData, root, transform}: Options = {}) {
     renderer,
     nestedOwnerEditor,
     refreshUi,
+    saveForShortcut,
+    settleChanges,
+    savePending: readonly(savePending),
     refreshLayout,
     formValues,
     save,

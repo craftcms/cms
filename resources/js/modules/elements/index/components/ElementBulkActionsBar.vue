@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {computed, shallowRef, useTemplateRef} from 'vue';
   import {t} from '@craftcms/ui';
+  import {compareElements} from '@/routes/craft/cp/elements';
   import {
     elementActionRequest,
     runElementAction,
@@ -43,6 +44,11 @@
       params?: BulkActionParams;
       /** Embedded indexes prepare their owner before executing an action. */
       perform?: PerformBulkAction;
+      /**
+       * The site the index lists elements in, for selected rows that don't
+       * name their own, as only structure view's do.
+       */
+      siteId?: number | null;
     }>(),
     {
       actions: () => [],
@@ -87,12 +93,19 @@
 
   /**
    * Whether an action can be performed on the selection. Actions that can't
-   * are left out: single-element actions with more than one selected, too
-   * many elements for one that can't run from a queue job, or a client-side
-   * action that needs every selected row loaded.
+   * are left out: single-element actions with more than one selected, ones
+   * that take another number of elements, too many elements for one that
+   * can't run from a queue job, or a client-side action that needs every
+   * selected row loaded.
    */
   function availableForSelection(item: BulkActionItem): boolean {
     if (item.bulk === false && selectedCount.value > 1) return false;
+
+    if (
+      item.selectionCount !== undefined &&
+      selectedCount.value !== item.selectionCount
+    )
+      return false;
 
     if (
       item.syncLimit !== undefined &&
@@ -112,6 +125,41 @@
         selectionAllows(item, props.selectedElements)
     )
   );
+
+  const COMPARE_EVENT = 'craft:compare-elements';
+
+  /**
+   * Where Compare goes: the Compare screen with the two selected elements side
+   * by side, in the order they were selected, in the sites the index shows
+   * them in. Closing it comes back here.
+   */
+  const compareUrl = computed(() => {
+    if (props.selectedIds.length !== 2) {
+      return null;
+    }
+
+    const [fromId, toId] = props.selectedIds as [
+      string | number,
+      string | number,
+    ];
+    const siteId = (id: string | number) =>
+      props.selectedElements.find(
+        (element) => String(element.id) === String(id)
+      )?.siteId ??
+      props.siteId ??
+      undefined;
+
+    return compareElements.url(
+      {fromId, toId},
+      {
+        query: {
+          siteId: siteId(toId),
+          fromSiteId: siteId(fromId),
+          returnUrl: window.location.href,
+        },
+      }
+    );
+  });
 
   const setStatusAction = computed<BulkActionItem | undefined>(() =>
     availableActions.value.find((item) => item.key === SET_STATUS_KEY)
@@ -145,6 +193,14 @@
           variant,
           disabled: true,
         };
+      }
+
+      if (
+        item.action.type === 'event' &&
+        item.action.name === COMPARE_EVENT &&
+        compareUrl.value
+      ) {
+        return {type: 'link', label: item.label, href: compareUrl.value};
       }
 
       if (

@@ -243,6 +243,7 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
     Route::get('preview/{id}{slug?}', PreviewElementController::class)->where($idSlugParams);
     Route::get('edit/{id}{slug?}', ElementRedirectController::class)->where($idSlugParams);
     Route::get('compare/{id}', CompareElementsController::class)->whereNumber('id')->name('elements.compare');
+    Route::get('compare/{fromId}/{toId}', CompareElementsController::class)->whereNumber(['fromId', 'toId'])->name('elements.compare-elements');
     Route::get('edit/{uid}', ElementRedirectController::class);
     Route::get('revisions/{id}{slug}', [ElementRevisionsController::class, 'index'])->where($idSlugParams);
     Route::get('entries/{section}/{id}{slug}/revisions', [ElementRevisionsController::class, 'index'])->where($idSlugParams);

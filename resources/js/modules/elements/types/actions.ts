@@ -36,6 +36,8 @@ export interface BulkActionItem {
   queueable?: boolean;
   /** Row capability that every selected element must expose as truthy. */
   selectionAttribute?: keyof ElementCapabilities;
+  /** How many rows must be selected for the action, when it takes an exact number, such as Compare's two. */
+  selectionCount?: number;
   /** The primitive action descriptor. Ignored when `onClick` is set; absent for disabled/placeholder items. */
   action?:
     | {
@@ -70,6 +72,8 @@ export interface ElementCapabilities {
   copyable: boolean;
   duplicatable: boolean;
   deletable: boolean;
+  /** The element can be shown on the Compare screen. */
+  comparable?: boolean;
   /** Asset rows: the file can be renamed or moved. Entry rows: the entry can be moved to another section. */
   movable?: boolean;
   /** Asset rows: the file can be replaced with an upload. */
