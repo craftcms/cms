@@ -145,7 +145,7 @@ export const NativeField = <T extends Constructor<LitElement>>(Base: T) => {
      * from `value` is re-rendered once it's done.
      */
     #onReset = (event: Event): void => {
-      if (event.target !== this._inputNode?.form) {
+      if (event.target !== this._control?.form) {
         return;
       }
 
