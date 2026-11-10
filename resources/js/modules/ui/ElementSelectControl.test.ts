@@ -2092,8 +2092,10 @@ describe('ElementSelectControl', () => {
     });
   });
   describe('destructive actions', () => {
+    // The property, which an item in a closed menu only reflects once it renders.
     function variantOf(menu: Element, label: string): string | undefined {
-      return menuItem(menu, label).getAttribute('variant') ?? undefined;
+      return (menuItem(menu, label) as HTMLElement & {variant?: string})
+        .variant;
     }
 
     it('marks the chip’s Remove as danger', async () => {

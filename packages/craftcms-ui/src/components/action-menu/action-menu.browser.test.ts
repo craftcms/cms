@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import {contrast} from '../../../test/contrast';
 import type CraftButton from '../button/button.js';
@@ -216,6 +216,36 @@ it.each([
     await expect.poll(focusedText).toBe('Two');
   }
 );
+
+it('renders its items when it opens before the browser has been idle', async () => {
+  // Items in a closed menu wait for the browser to be idle before rendering.
+  vi.stubGlobal('requestIdleCallback', () => 0);
+  vi.stubGlobal('cancelIdleCallback', () => {});
+
+  try {
+    const menu = await renderMenu(`
+      <craft-action-menu>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <craft-action-item>Duplicate</craft-action-item>
+          <craft-action-item href="#settings">Settings</craft-action-item>
+        </div>
+      </craft-action-menu>
+    `);
+    const invoker = menu.querySelector<CraftButton>('craft-button')!;
+    await invoker.updateComplete;
+    invoker.focus();
+
+    await userEvent.keyboard('{Enter}');
+
+    await expect.poll(focusedText).toBe('Duplicate');
+    await expect
+      .element(page.getByRole('link', {name: 'Settings'}))
+      .toBeVisible();
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
 
 it('moves focus to the search field when a searchable menu opens', async () => {
   await renderMenu(`

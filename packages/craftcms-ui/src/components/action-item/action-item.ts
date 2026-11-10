@@ -8,6 +8,7 @@ import {LightDomController} from '@src/controllers/LightDomController';
 import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {linkTarget, newTabCue} from '@src/utilities/external-links';
+import {cancelIdle, whenIdle} from '@src/utilities/idle';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 
@@ -203,6 +204,46 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
       control.focus(options);
     } else {
       super.focus(options);
+    }
+  }
+
+  /** Lets a first render that's waiting for its closed menu go ahead. */
+  #releaseFirstRender: (() => void) | null = null;
+
+  /**
+   * Holds the first render of an item in a closed menu until the browser is
+   * idle. A page can carry hundreds of these, and none of them shows until
+   * its menu opens, which renders them at once with {@link renderNow}.
+   */
+  protected override scheduleUpdate(): void | Promise<unknown> {
+    const menu = this.hasUpdated
+      ? null
+      : this.closest<HTMLElement & {open?: boolean}>('craft-action-menu');
+
+    if (!menu || menu.open) {
+      return super.scheduleUpdate();
+    }
+
+    return new Promise<void>((resolve) => {
+      const handle = whenIdle(() => this.#releaseFirstRender?.());
+      this.#releaseFirstRender = () => {
+        this.#releaseFirstRender = null;
+        cancelIdle(handle);
+        resolve();
+      };
+    }).then(() => super.scheduleUpdate());
+  }
+
+  /**
+   * Renders an item whose first render is waiting for its closed menu, so it
+   * has its size and button by the time the menu shows.
+   *
+   * @internal
+   */
+  renderNow(): void {
+    if (this.#releaseFirstRender) {
+      this.#releaseFirstRender();
+      this.performUpdate();
     }
   }
 
