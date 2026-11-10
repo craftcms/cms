@@ -12,7 +12,7 @@ These docs use three terms:
   only need drivers when you write or register one (see [Implementing a custom driver](#implementing-a-custom-driver)).
 
 Where a transformer is expected, a string names a driver, the same way a disk's `'driver' => 's3'` does. `'imgix'` means
-`['driver' => 'imgix']`: the `imgix` driver with no inline settings, so it uses its own config.
+`['driver' => 'imgix']`: the `imgix` driver with no inline settings.
 
 `CraftCms\Cms\Asset\AssetTransformers` handles all three. It registers drivers with `extend()`, resolves a disk's transformer
 with `forDisk()`, and runs transforms with `transform()`.
@@ -28,7 +28,7 @@ stored on it:
     // No key: the `craft` transformer, with its defaults.
     'local' => ['driver' => 'local', 'root' => storage_path('app/public')],
 
-    // Shorthand for ['driver' => 'imgix']: the imgix driver, using its own config.
+    // Shorthand for ['driver' => 'imgix']: the imgix driver, with no inline settings.
     's3' => ['driver' => 's3', /* ... */, 'asset_transformer' => 'imgix'],
 
     // A driver plus inline settings.
@@ -218,7 +218,7 @@ class RemoteImageDriver implements AssetTransformDriver
 
     public function transform(AssetTransformRequest $request): AssetTransformResult
     {
-        // Inline settings from the disk's `asset_transformer` array win over the driver's own config.
+        // Inline settings from the disk's `asset_transformer` array, falling back to an optional shared config.
         $endpoint = $request->transformer->settings['endpoint'] ?? config('services.remote_images.endpoint');
         $sourceUrl = $request->asset->getUrl();
 
@@ -258,10 +258,21 @@ value when a request uses that driver. The driver must validate any undeclared p
 
 ### Driver settings and credentials
 
-A driver reads its credentials and defaults from its own config, such as an `imgix` entry in `config/services.php`. Inline
-settings from a disk's `asset_transformer` array arrive in `$request->transformer->settings`, and should win over the
-driver's own config, the way Laravel's SES and Postmark mail transports merge mailer settings over `services.php`. Validate
-inline settings before using them, since Craft passes them through unchanged.
+A driver is configured with the inline settings from a disk's `asset_transformer` array, including any credentials,
+which arrive in `$request->transformer->settings`:
+
+```php
+'asset_transformer' => [
+    'driver' => 'imgix',
+    'domain' => env('IMGIX_DOMAIN'),
+    'key' => env('IMGIX_KEY'),
+],
+```
+
+A driver can also fall back to a shared config, such as an `imgix` entry in `config/services.php`, so disks that use the
+same account don't repeat its settings. Inline settings should win over it, the way Laravel's SES and Postmark mail
+transports merge mailer settings over `services.php`. Validate inline settings before using them, since Craft passes them
+through unchanged.
 
 Each parameter field must meet both requirements:
 
