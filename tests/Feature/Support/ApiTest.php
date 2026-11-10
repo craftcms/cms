@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
@@ -48,6 +49,36 @@ it('can process response headers', function () {
         expect(File::get("$directory/license.key"))->toBe(chunk_split($key, 50));
     } finally {
         putenv($previousPath === false ? 'CRAFT_LICENSE_KEY_PATH' : "CRAFT_LICENSE_KEY_PATH=$previousPath");
+        File::deleteDirectory($directory);
+    }
+});
+
+it('reports a failed license write when filesystem warnings are suppressed', function () {
+    $directory = storage_path('runtime/license-'.Str::random());
+    $path = "$directory/license.key";
+    $previousPath = getenv('CRAFT_LICENSE_KEY_PATH');
+    $previousErrorReporting = error_reporting();
+    File::ensureDirectoryExists($directory);
+    File::put($path, '');
+    chmod($path, 0444);
+    putenv("CRAFT_LICENSE_KEY_PATH=$path");
+    Exceptions::fake();
+
+    try {
+        error_reporting($previousErrorReporting & ~E_WARNING);
+
+        $this->api->processResponseHeaders([
+            'X-Craft-License' => Str::random(250),
+            'X-Craft-License-Domain' => 'example.com',
+        ]);
+
+        Exceptions::assertReported(ErrorException::class);
+        expect(File::get($path))->toBe('');
+        expect(Cache::get('licensedDomain'))->toBe('example.com');
+    } finally {
+        error_reporting($previousErrorReporting);
+        putenv($previousPath === false ? 'CRAFT_LICENSE_KEY_PATH' : "CRAFT_LICENSE_KEY_PATH=$previousPath");
+        chmod($path, 0644);
         File::deleteDirectory($directory);
     }
 });
