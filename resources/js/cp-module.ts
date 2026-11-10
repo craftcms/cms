@@ -72,6 +72,14 @@ export const ScreenPanel = defineAsyncComponent(
 );
 
 /**
+ * An element's activity timeline, with its comments, for a panel that shows
+ * the activity recorded for an element.
+ */
+export const ActivityTimeline = defineAsyncComponent(
+  () => import('./modules/activity/components/ActivityTimeline.vue')
+);
+
+/**
  * An element's own actions (Delete, Copy URL, …), from its
  * `actionMenuDescriptors()`, with their behaviors dispatched client-side.
  */
