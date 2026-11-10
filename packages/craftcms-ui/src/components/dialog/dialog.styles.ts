@@ -46,8 +46,14 @@ export default css`
     outline: none;
   }
 
+  /*
+    Keeps scroll gestures over a modal's backdrop from reaching the page. It
+    only honours overscroll-behavior once it is a scroll container.
+  */
   dialog::backdrop {
     background-color: rgb(0 0 0 / 0.25);
+    overflow: hidden;
+    overscroll-behavior: contain;
   }
 
   /*
@@ -130,6 +136,7 @@ export default css`
     */
     min-block-size: 0;
     overflow: auto;
+    overscroll-behavior: contain;
     padding: var(--c-spacing-lg);
   }
 
