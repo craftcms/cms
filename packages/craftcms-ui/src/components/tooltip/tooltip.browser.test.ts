@@ -507,3 +507,27 @@ it('hides once the pointer leaves a slot="content" child that replaced the suppl
 
   expect(tooltip.opened).toBe(false);
 });
+
+it('stays open for a keyboard-focused invoker after its content is replaced', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {invoker, elsewhere, tooltip} = await render();
+
+  await userEvent.hover(elsewhere);
+  await userEvent.tab();
+  await after(300);
+  expect(tooltip.opened).toBe(true);
+
+  const replacement = document.createElement('div');
+  replacement.slot = 'content';
+  replacement.textContent = 'New activity';
+  tooltip.querySelector('[slot="content"]')!.replaceWith(replacement);
+  await after(50);
+
+  await userEvent.hover(invoker);
+  await after(50);
+  await userEvent.hover(elsewhere);
+  await after(100);
+
+  expect(document.activeElement).toBe(invoker);
+  expect(tooltip.opened).toBe(true);
+});

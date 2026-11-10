@@ -26,6 +26,27 @@ function isFocusVisible(event: Event): boolean {
   return target instanceof Element && target.matches(':focus-visible');
 }
 
+/** Whether `invoker`, or an element inside it, has keyboard focus now. */
+function hasKeyboardFocus(invoker: HTMLElement): boolean {
+  let active = document.activeElement;
+  while (active?.shadowRoot?.activeElement) {
+    active = active.shadowRoot.activeElement;
+  }
+
+  if (!active?.matches(':focus-visible')) {
+    return false;
+  }
+
+  for (let node: Node | null = active; node;) {
+    if (node === invoker) {
+      return true;
+    }
+    node = node.parentNode ?? (node instanceof ShadowRoot ? node.host : null);
+  }
+
+  return false;
+}
+
 /**
  * Whether the invoker is disabled outright. One kept focusable while disabled
  * (`focusable-when-disabled`) still shows its overlay, which says why.
@@ -58,7 +79,9 @@ export function watchHover({
   delayIn = 0,
   delayOut = 300,
 }: HoverOptions): HoverWatcher {
-  let isFocused = false;
+  // A watcher made for an invoker that already has keyboard focus, as when the
+  // content is replaced, never sees that `focusin`.
+  let isFocused = hasKeyboardFocus(invoker);
   let isHovered = false;
   let delay: ReturnType<typeof setTimeout> | undefined;
 
