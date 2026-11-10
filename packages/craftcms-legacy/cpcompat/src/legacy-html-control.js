@@ -18,12 +18,25 @@ import {
   const elementName = 'craft-legacy-html-control';
   const componentNames = ['craft-legacy:html-field', 'craft-legacy:html'];
 
+  /**
+   * Brings the mounted fragment up to date in place when the new one differs
+   * only in what it would hand its native hosts, rather than remounting it
+   * under the user's focus and keystrokes.
+   *
+   * A native table's values are left out of the comparison: an autosave
+   * response renders the field with the values that save sent, and the live
+   * table already holds those, or newer ones typed since. As with native
+   * fields, a payload's values merge under the client's; reverting them goes
+   * through `value`.
+   */
   function refreshNativeHosts(root, previous, next) {
     if (
       !previous ||
       !next ||
-      previous.headHtml !== next.headHtml ||
-      previous.bodyHtml !== next.bodyHtml
+      withoutLoadedAssets(previous.headHtml) !==
+        withoutLoadedAssets(next.headHtml) ||
+      withoutLoadedAssets(previous.bodyHtml) !==
+        withoutLoadedAssets(next.bodyHtml)
     ) {
       return false;
     }
@@ -33,6 +46,13 @@ import {
     const capture = (html) => {
       const template = document.createElement('template');
       template.innerHTML = html;
+      const tables = [
+        ...template.content.querySelectorAll('craft-table-ui[data-payload]'),
+      ];
+      tables.forEach((table) => {
+        const {values, ...definition} = JSON.parse(table.dataset.payload);
+        table.dataset.payload = JSON.stringify(definition);
+      });
       const hosts = [...template.content.querySelectorAll(selector)];
       const metadata = hosts.map((host) => ({
         path:
@@ -49,17 +69,15 @@ import {
         host.setAttribute('data-native-path', metadata[index].path);
       });
 
-      return {html: template.innerHTML, metadata};
+      return {html: template.innerHTML, metadata, tables};
     };
     const before = capture(previous.html);
     const after = capture(next.html);
-    const hosts = [...root.querySelectorAll(selector)].filter(
-      (host) => host.closest('craft-legacy-html-control') === root
-    );
+    const hosts = ownedHosts(root, selector);
     if (
-      !hosts.length ||
       before.html !== after.html ||
-      hosts.length !== after.metadata.length
+      hosts.length !== after.metadata.length ||
+      ownedHosts(root, 'craft-table-ui').length !== after.tables.length
     ) {
       return false;
     }
@@ -72,6 +90,60 @@ import {
     });
 
     return true;
+  }
+
+  /**
+   * Gives the mounted native tables the values the fragment renders them with
+   * as what the server now holds, so edits a save settled, including ones
+   * typed back to the saved value, stop marking them as edited. Unsaved
+   * edits keep the values the user typed.
+   */
+  function rebaseTables(root, fragment) {
+    if (!fragment?.html?.includes('<craft-table-ui')) {
+      return;
+    }
+
+    const template = document.createElement('template');
+    template.innerHTML = fragment.html;
+    const payloads = [
+      ...template.content.querySelectorAll('craft-table-ui[data-payload]'),
+    ].map((table) => JSON.parse(table.dataset.payload));
+    const tables = ownedHosts(root, 'craft-table-ui');
+
+    if (payloads.length === tables.length) {
+      tables.forEach((table, index) => table.rebase?.(payloads[index]));
+    }
+  }
+
+  function ownedHosts(root, selector) {
+    return [...root.querySelectorAll(selector)].filter(
+      (host) => host.closest('craft-legacy-html-control') === root
+    );
+  }
+
+  /**
+   * Head or body HTML without the asset tags the page already has, which
+   * appending skips anyway. A request that registered an asset before
+   * rendering the field doesn't capture its tag again.
+   */
+  function withoutLoadedAssets(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html ?? '';
+    [...template.content.childNodes].forEach((node) => {
+      const loaded =
+        node instanceof HTMLScriptElement && node.src
+          ? [...document.querySelectorAll('script[src]')].some(
+              (script) => script.src === node.src
+            )
+          : node instanceof HTMLLinkElement && node.href
+            ? [...document.querySelectorAll('link[href]')].some(
+                (link) => link.href === node.href
+              )
+            : false;
+      if (loaded) node.remove();
+    });
+
+    return template.innerHTML.trim();
   }
 
   class LegacyHtmlControl extends HTMLElement {
@@ -102,6 +174,7 @@ import {
         this._control = control;
         applyMode(this, control?.mode);
         this.renderErrors();
+        rebaseTables(this, fragment);
 
         return;
       }
@@ -114,6 +187,7 @@ import {
         this._fragmentKey = fragmentKey;
         applyMode(this, control?.mode);
         this.renderErrors();
+        rebaseTables(this, fragment);
 
         return;
       }
@@ -172,6 +246,9 @@ import {
         });
       }
       restoreFormInputs(this, value, path);
+      // The editor set these values, such as when discarding changes, so the
+      // next keyup mustn't publish them as an edit.
+      this._snapshot = JSON.stringify(serializeFormInputsAsObject(this));
     }
 
     set scope(scope) {
