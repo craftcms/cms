@@ -127,8 +127,6 @@ readonly class CompareElementsController
                 // The sides that badge their changed fields.
                 'badged' => $comparison['badged'],
                 'counterparts' => $comparison['counterparts'],
-                // One element in two sites, whose fields are compared as translations, rather than by their values.
-                'translations' => ! $pair && $from->siteId !== $to->siteId,
                 'rows' => array_map(
                     fn (FieldComparisonRow $row): array => $row->toArray(),
                     $comparison['rows'],

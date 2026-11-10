@@ -2164,11 +2164,9 @@ class Asset extends Element
     }
 
     #[AllowedInSandbox]
-    public function transform(
-        #[\SensitiveParameter] mixed $definition,
-        ?string $transformer = null,
-    ): AssetTransformResult {
-        return app(AssetTransformers::class)->transform($this, $definition, $transformer);
+    public function transform(#[\SensitiveParameter] mixed $definition): AssetTransformResult
+    {
+        return app(AssetTransformers::class)->transform($this, $definition);
     }
 
     protected function _tryTransform(

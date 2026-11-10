@@ -1755,14 +1755,17 @@ abstract class ContentIndexViewModel extends ViewModel
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
         $elementHtml ??= app(ElementHtml::class);
+        $capabilities = [
+            ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            ...$this->extraCapabilities($element),
+        ];
 
         return [
             'label' => $element->getUiLabel(),
             ...$this->elementUrls($element),
-            'capabilities' => [
-                ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
-                ...$this->extraCapabilities($element),
-            ],
+            'capabilities' => $capabilities,
+            // So Compare is only offered for two elements with the same field layout.
+            ...($capabilities['comparable'] ? ['fieldLayoutId' => $element->getFieldLayout()?->id] : []),
             ...$this->extraRowData($element),
         ];
     }

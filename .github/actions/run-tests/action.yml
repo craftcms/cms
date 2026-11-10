@@ -49,9 +49,10 @@ runs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ inputs.php-version }}
-        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, ffi, sodium, sockets
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo, ffi, sodium, sockets, opcache
         tools: composer:v2
-        ini-values: display_errors=On, memory_limit=4G
+        # Coverage drivers override PHP's executor and cannot run with JIT.
+        ini-values: display_errors=On, memory_limit=4G, opcache.enable_cli=1, opcache.memory_consumption=256, opcache.jit=${{ inputs.coverage == 'none' && 'tracing' || 'disable' }}
         coverage: ${{ inputs.coverage }}
         # Pass an empty token so setup-php doesn't write GITHUB_TOKEN into
         # Composer's auth config. Composer 2.9.7's regex rejects the new

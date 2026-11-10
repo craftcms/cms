@@ -70,10 +70,10 @@
 - Added `caches_list`, `caches_clear`, `queue_status`, `queue_run`, `queue_retry_all`, `queue_release_all`, and `asset_indexes_update` MCP tools, which do what the Caches, Queue Manager, and Asset Indexes utilities do, for users with access to those utilities. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added `maintenance_mode_get`, `maintenance_mode_enable`, `maintenance_mode_disable`, and `project_config_rebuild` MCP tools for administrators. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added `preferences_get` and `preferences_update` MCP tools, which read and change the user’s preferred language and formatting locale. ([#20095](https://github.com/craftcms/cms/pull/20095))
-- The MCP server’s `configuration_*` tools can now manage asset transformers and workflows. Managing workflows requires Craft Pro. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- The MCP server’s `configuration_*` tools can now manage workflows, which requires Craft Pro. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added `component_types_list` and `component_types_get` MCP tools, which list the available field types, workflow stage types, asset transform drivers, field layout elements, and condition rules, and describe each one’s settings as JSON Schema, with their labels, instructions, accepted values, and defaults. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - The MCP server now tells clients which features need a higher Craft edition, including more users than the edition allows, so they can explain that a feature such as workflows requires Craft Pro rather than treat it as unknown. ([#20095](https://github.com/craftcms/cms/pull/20095))
-- The MCP server now redacts sensitive values, such as API keys, passwords, and license keys, in field settings, asset transformer settings, and project config. Clients can send a redacted value back to keep the saved value. ([#20095](https://github.com/craftcms/cms/pull/20095))
+- The MCP server now redacts sensitive values, such as API keys, passwords, and license keys, in field settings and project config. Clients can send a redacted value back to keep the saved value. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added the `guidance_get`, `skills_list`, and `skills_get` MCP tools, which return the AI guidance and skills. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Added the `guidance_update`, `skills_create`, `skills_update`, and `skills_delete` MCP tools, which save the AI guidance for the sites the user can edit and manage skills, for users who can use the AI Guidance & Skills utility. ([#20109](https://github.com/craftcms/cms/pull/20109))
 - Added the `guidance_update_personal` MCP tool, which saves the user’s own AI guidance. ([#20109](https://github.com/craftcms/cms/pull/20109))
@@ -219,6 +219,12 @@
 - `CraftCms\Cms\Workflow\Events\WorkflowTransitioning` is now dispatched when saving a draft in review withdraws it, sends it back to an earlier stage, or withdraws a reviewer’s approval. Canceling it causes the save to fail. ([#20242](https://github.com/craftcms/cms/pull/20242))
 
 ### Assets
+- Asset transformers are now chosen per filesystem disk, with an `asset_transformer` key on disks in `config/filesystems.php`, rather than with transformer profiles. The key takes a transform driver name, or an array with a `driver` key and inline settings. Disks without the key use the `craft` transformer, and `scoped` disks without it use the disk they wrap.
+- The `craft` asset transformer’s settings are now `output_disk`, `has_urls`, and `generate_transforms_before_page_load` keys in a disk’s `asset_transformer` array. To store transforms below a path, set `output_disk` to a `scoped` disk. Without `output_disk`, transforms are stored at the root of the volume’s disk rather than below the volume’s subpath.
+- An `asset_transformer` value that names an unregistered driver, or is malformed, now throws an exception when debug mode is enabled. Otherwise it’s logged, and the disk uses the `craft` transformer.
+- Removed Settings → Assets → Asset Transformers, volumes’ “Asset Transformer” setting, the `defaultAssetTransformer` config setting, the `transformer` argument for `asset.transform()`, GraphQL transforms, and the `assets_transform_url` MCP tool, and asset transformers from the MCP server’s `configuration_*` tools and the command palette. Transformer profiles, volumes’ transformer selections, and named image transforms’ custom parameters are removed from project config when updating.
+- Volumes’ “Transform Filesystem” and “Transform Subpath” settings from Craft 5 aren’t carried over, so transforms are stored on the volume’s own disk unless its `asset_transformer` sets `output_disk`. Upgrading clears the transform index, so transforms are generated again as they’re requested.
+- Named image transforms’ custom parameters are now keyed by transform driver name.
 - Text file previews now have “Copy” and “Close” buttons. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Asset previews now have “Download” and “Close” buttons in a footer. Image previews’ focal point toggle is now a “Focal Point” toggle button in the footer, rather than a button laid over the image that only appeared on hover. ([#20229](https://github.com/craftcms/cms/pull/20229))
 - Text files’ previews on asset edit pages now show a close-up of the top of the file, rather than its icon. ([#20094](https://github.com/craftcms/cms/pull/20094))
@@ -270,7 +276,6 @@
 - Added `CraftCms\Cms\Asset\Enums\ImageType`, `CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis::$type`, and the `type` GraphQL field for image analysis. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\Elements\Asset::getImageType()`, `CraftCms\Cms\Element\Queries\AssetQuery::imageType()`, `CraftCms\Cms\Asset\Conditions\ImageTypeConditionRule`, and the `imageType` GraphQL argument for asset queries, which filter images by what kind of image they are. Image types are indexed through the generated `assets.imageType` column. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Added `CraftCms\Cms\Asset\Analysis\ImageAnalysisChanges::get()`, so image analysis tasks that change the same attribute, such as an asset’s analysis, can build on each other’s changes. ([#20103](https://github.com/craftcms/cms/pull/20103))
-- Added `CraftCms\Cms\Asset\AssetTransformDrivers::settings()`. ([#20095](https://github.com/craftcms/cms/pull/20095))
 - Added `CraftCms\Cms\Asset\Elements\Asset::$trashedFileExists` and `getTrashedFilePath()`. ([#20093](https://github.com/craftcms/cms/pull/20093))
 - Added `Craft.openAssetImageEditor()`, which opens the image editor dialog for an asset ID or its editor settings. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Added `CraftCms\Cms\Asset\Data\Volume::$propagationMethod`. ([#20060](https://github.com/craftcms/cms/pull/20060))
@@ -404,6 +409,7 @@
 
 ### Control Panel
 - The control panel now uses the Inter typeface, bundled with Craft, rather than the operating system’s UI font, so it looks the same on every platform. Languages whose scripts Inter doesn’t cover, such as Arabic, Hebrew, Thai, Chinese, Japanese, and Korean, still use the system font for those characters.
+- Control panel text is now drawn with grayscale antialiasing on macOS, figures in tables and times line up in columns, shadows have a cool tint that matches the interface, and keyboard shortcuts share one keycap style. ([#20544](https://github.com/craftcms/cms/pull/20544))
 - Element cards can now be cover cards, where the thumbnail image fills the card, with the header and content laid over it on a blurred bar, backing, or scrim that keeps them legible over any image: white on black, or black on white over light images. Cover cards’ attribute previews are limited to one line. Card view designers have a new “Thumb Style” setting, with “Normal”, “Cover”, and “Auto” options, which defaults to “Auto” for asset volumes. Other element types’ cards can be covered too, when their thumbnail is an asset’s image, such as a user’s photo, or an image from the first of their “Thumb Sources” that has a thumbnail, including fields within Content Blocks and related elements’ own thumbnails. Only images from assets can cover a card. With “Auto”, images smaller than 480×360, narrower than 3:4, wider than 2:1, or possibly transparent keep the normal card. ([#20148](https://github.com/craftcms/cms/pull/20148), [#20152](https://github.com/craftcms/cms/pull/20152), [#20181](https://github.com/craftcms/cms/pull/20181))
 - Element cards whose header has no label, such as asset cards, now show just their checkbox and action button over the card, without a header bar, and cards whose header has nothing in it no longer show one at all. Entry cards keep their header bar, with their entry type’s label and icon. ([#20148](https://github.com/craftcms/cms/pull/20148))
 - The “View Mode” (Matrix, relation, Addresses, and Content Block fields), “Thumb Style”, “Section Type”, and image transforms’ “Mode” settings now show their options as joined, illustrated buttons, with each option’s label inside the button, below its illustration, and the selected option’s illustration drawn in blue. When there isn’t room for them in one row, they wrap as separate buttons. ([#20233](https://github.com/craftcms/cms/pull/20233), [#20285](https://github.com/craftcms/cms/pull/20285))
@@ -645,6 +651,7 @@
 - Improved labeling and keyboard focus management in shared control panel modals. ([#19935](https://github.com/craftcms/cms/pull/19935))
 - Buttons and menu items with keyboard shortcuts now announce them to assistive technology, including the Save menu’s items, inline editing’s and modals’ Save buttons, and comments’ Comment buttons. On a Mac, the ⌥, ⇧, and ⌘ symbols are read as “Option”, “Shift”, and “Command”. ([#20219](https://github.com/craftcms/cms/pull/20219))
 - Disabled menu items can now be reached with the arrow keys and <kbd>Tab</kbd>, and are announced as unavailable, rather than being skipped.
+- Menu buttons without text or a label, such as the arrow half of split Save buttons on plugin screens, are now named “More actions” for screen readers. ([#20576](https://github.com/craftcms/cms/pull/20576))
 - Callouts’ buttons now move below their text when there isn’t room for both side by side, rather than squeezing the text, such as on narrow screens.
 - Opening a slideout no longer focuses its resize handle. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Page and source items in the Customize Sources modal now show a focus ring around the whole row, including their drag handle and action menu. ([#20085](https://github.com/craftcms/cms/pull/20085))
@@ -687,7 +694,17 @@
 - Removed `CraftCms\Cms\Element\ElementHelper::renderElements()`. `CraftCms\Cms\Support\Template::render()` should be used instead.
 
 ### Extensibility
+- Added `CraftCms\Cms\Utility\Utility::contentMaxWidth()`, which utilities can override to cap their page’s content at the control panel’s readable width and center it, as the System Messages and Yii2 Loose Ends utilities now do.
 - Added `CraftCms\Cms\Field\Contracts\FieldInterface::uiErrors()`, which fields that show nested elements’ fields, such as Matrix and Content Block fields, can use to show the nested elements’ validation errors on those fields in the element editor. ([#20522](https://github.com/craftcms/cms/pull/20522))
+- `CraftCms\Cms\Asset\AssetTransformers` now extends `Illuminate\Support\Manager` and registers asset transform drivers itself. Removed `CraftCms\Cms\Asset\AssetTransformDrivers`; its methods are now on `AssetTransformers`.
+- Added `CraftCms\Cms\Asset\AssetTransformers::forDisk()` and `configForDisk()`.
+- `CraftCms\Cms\Asset\Data\AssetTransformer` is now a readonly value object with `driver` and `settings` properties.
+- Removed the `transformer` argument from `CraftCms\Cms\Asset\Elements\Asset::transform()` and `AssetTransformers::transform()`.
+- `AssetTransformers::parameterRules()`, `parameterFields()`, and `validateParameters()` now take a driver name rather than an `AssetTransformer`.
+- Removed `CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition::$name` and `$settingsFields`. The Control Panel labels asset transform drivers by their driver names.
+- Renamed `CraftCms\Cms\Image\Data\ImageTransform::getParametersForTransformer()` to `getParametersForDriver()`.
+- Removed `CraftCms\Cms\Image\Data\ImageTransformIndex::$transformer` and the `imagetransformindex` table’s `transformer` column. Every index row belongs to the `craft` transformer.
+- Removed `CraftCms\Cms\Asset\AssetTransformerRegistry`, `CraftCms\Cms\Asset\Events\AssetTransformerUpdating`, `AssetTransformerDeleting`, `CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException`, `CraftCms\Cms\Config\GeneralConfig::$defaultAssetTransformer`, `CraftCms\Cms\Asset\Data\Volume::$assetTransformer`, `getAssetTransformerHandle()`, and `CraftCms\Cms\ProjectConfig\ProjectConfig::PATH_ASSET_TRANSFORMERS`.
 - Added `CraftCms\Cms\Route\RedirectRule` and `CraftCms\Cms\Route\Events\Redirecting`, which apply and customize `config/redirects.php` rules. ([#20448](https://github.com/craftcms/cms/pull/20448))
 - Added `CraftCms\Cms\Element\Element::query()`. Static calls to element classes that aren’t macros, such as `Entry::section('news')`, now return a new element query, as they do on Eloquent models. ([#20450](https://github.com/craftcms/cms/pull/20450))
 - Added `CraftCms\Cms\Element\Queries\ElementQuery::toBase()`, which returns a base query builder with the query’s params applied. Element queries passed to Laravel query builder methods that take a subquery, such as `whereIn()`, `whereExists()`, `joinSub()`, and `selectSub()`, are now converted with it. ([#20450](https://github.com/craftcms/cms/pull/20450))
@@ -790,6 +807,7 @@
 - Updated Font Awesome to v7. Parts of some icons now extend a little beyond their icon’s box, rather than being clipped. ([#20520](https://github.com/craftcms/cms/pull/20520))
 
 ### Bug Fixes
+- Fixed a bug where count badges in the control panel nav, and unread markers in the notification center, sat a little below the middle of their rows.
 - Fixed a bug where behaviors that plugins attach to `craft\web\twig\variables\CraftVariable`, such as Shopify’s `craft.shopifyProducts()`, weren’t available from the `craft` Twig variable, and couldn’t reach its methods and properties, such as `entries()`, through their owner, with the Yii adapter installed. ([#20537](https://github.com/craftcms/cms/pull/20537))
 - Fixed a bug where Markdown fields’ “Available Volumes”, “Show unpermitted volumes”, “Selectable Assets Condition”, and “Upload Volume” settings had no effect in element editors, so the toolbar never showed the Asset button and pasted or dropped files weren’t uploaded. ([#20521](https://github.com/craftcms/cms/pull/20521))
 - Fixed a bug where relation fields’ “Selectable {type} Condition” settings, Assets fields’ “Restrict assets to a single location”, “Allow subfolders”, and “Show unpermitted volumes” settings, and Entries fields’ “Show unpermitted sections” setting had no effect when selecting elements in element editors, and Assets fields’ selector modals opened on Temporary Uploads rather than the field’s upload location. ([#20521](https://github.com/craftcms/cms/pull/20521))
@@ -1301,6 +1319,9 @@
 - Fixed an error that occurred when a Yii adapter plugin listed tag groups or global sets on a project without tags or global sets. ([#20507](https://github.com/craftcms/cms/pull/20507))
 - Fixed a bug where Money fields’ inputs held their minimum and maximum amounts in the currency’s minor units, such as cents. ([#20449](https://github.com/craftcms/cms/pull/20449))
 - Fixed a bug where `<craft-badge-indicator>` counts sat slightly above center. ([#20501](https://github.com/craftcms/cms/pull/20501))
+- Fixed a bug where Single and nested entries’ Post Date and Expiry Date fields weren’t shown, regardless of their entry type’s “Show the Post Date field” and “Show the Expiry Date field” settings, and Single entries’ expiry dates were cleared when they were saved. ([#17675](https://github.com/craftcms/cms/pull/17675#issuecomment-6762381837))
+- Fixed a bug where saving an element while it was being autosaved could leave the latest changes out of the save, and show older values as unsaved changes after a reload. ([#20575](https://github.com/craftcms/cms/pull/20575))
+- Fixed a bug where tables in Yii adapter plugin fields were rebuilt each time the element was autosaved, which moved focus out of the table and dropped what was typed next, and could leave the field marked as edited after saving. ([#20575](https://github.com/craftcms/cms/pull/20575))
 
 ## 6.0.0-alpha.20 - 2026-10-07
 

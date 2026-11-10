@@ -510,8 +510,12 @@ describe('useElementEditor', () => {
       registerUiComponents(components);
       defineEntryFieldLayoutUiHost(components);
       vi.stubGlobal('Cp', {$components: components});
-      vi.resetModules();
-      await import('../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js');
+      // A fresh copy of the legacy script, registering into these components.
+      // Only that module: resetting them all would hand the lazily loaded
+      // controls a second copy of the renderer they render inside.
+      await import(
+        /* @vite-ignore */ `../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js?flat=${flat}`
+      );
       onTestFinished(() => {
         vi.unstubAllGlobals();
       });
@@ -608,6 +612,7 @@ describe('useElementEditor', () => {
         'craft-legacy-html-control'
       ) as HTMLElement & {ready: Promise<void>};
       await legacy.ready;
+      await vi.dynamicImportSettled();
       await nextTick();
       const host = container!.querySelector('craft-entry-field-layout-ui')!;
       const input = container!.querySelector<HTMLInputElement>(
@@ -2265,6 +2270,50 @@ describe('useElementEditor', () => {
 
     save.restore();
     vi.useRealTimers();
+  });
+
+  it('waits for a draft write already on its way, and applies the draft it creates', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
+    );
+    const response = deferred<{data: Record<string, unknown>}>();
+    let requestSignal: AbortSignal | undefined;
+    postSpy.mockImplementationOnce(
+      (_url: string, _data: unknown, {signal}: {signal: AbortSignal}) => {
+        requestSignal = signal;
+
+        return response.promise;
+      }
+    );
+
+    await typeTitle('First edit');
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    await typeTitle('Second edit');
+
+    const save = interceptSave();
+    onTestFinished(() => save.restore());
+    editor.save();
+
+    expect(save.calls()).toBe(0);
+    expect(requestSignal?.aborted).toBe(false);
+
+    response.resolve({data: {draftId: 7}});
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(save.calls()).toBe(1);
+    expect(save.last().url).toBe('/actions/elements/apply-draft');
+    expect(save.last().data).toMatchObject({draftId: 7, provisional: 1});
+    expect(JSON.stringify(save.last().data)).toContain('Second edit');
+    // The edit made while the draft write was out goes with the submission,
+    // not with a draft write of its own.
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(postSpy).toHaveBeenCalledTimes(1);
   });
 
   /**

@@ -1,7 +1,8 @@
 import {cpComponentRegistry} from '@/bootstrap/components';
-import LegacyElementEditor from './LegacyElementEditor.vue';
 
 cpComponentRegistry.register(
   'craft-legacy:element-editor',
-  LegacyElementEditor
+  // Loads with the first legacy element editor, not with every page cp-compat
+  // is on.
+  () => import('./LegacyElementEditor.vue')
 );

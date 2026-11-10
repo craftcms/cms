@@ -7,60 +7,61 @@ namespace CraftCms\Cms\Asset;
 use Closure;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
+use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
 use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Events\AssetTransformerDeleting;
-use CraftCms\Cms\Asset\Events\AssetTransformerUpdating;
-use CraftCms\Cms\Asset\Exceptions\AssetTransformerNotFoundException;
-use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
+use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Enums\ImageTransformPosition;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Image\ImageTransformHelper;
-use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Nodes\Field;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Manager;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use Override;
 use Stringable;
 use WeakMap;
 
-use function CraftCms\Cms\t;
-
 /**
+ * Registers asset transform drivers, resolves which transformer each disk uses, and runs transforms.
+ *
+ * A disk picks its transformer with an `asset_transformer` key in `config/filesystems.php`: a driver name, or an
+ * array with a `driver` key and inline settings. A disk without the key uses the `craft` driver, and a `scoped` disk
+ * without the key follows the disk it wraps.
+ *
  * @since 6.0.0
  */
 #[Singleton]
-class AssetTransformers
+class AssetTransformers extends Manager
 {
+    private const int MAX_SCOPED_DEPTH = 8;
+
     /** @var array<string, non-empty-list<string|Stringable>> */
     private readonly array $parameterRules;
-
-    /** @var Collection<string, AssetTransformer>|null */
-    private ?Collection $transformers = null;
 
     /** @var WeakMap<AssetTransformDriver, array<string, array<string, mixed>>> */
     private WeakMap $validatedParameters;
 
-    public function __construct(
-        private readonly ProjectConfig $projectConfig,
-        private readonly AssetTransformDrivers $transformDrivers,
-        private readonly AssetTransformerRegistry $registry,
-    ) {
+    /** @var array<string, true> Invalid transformer config warnings already logged by this process. */
+    private array $reportedInvalidConfig = [];
+
+    public function __construct(Container $container)
+    {
+        parent::__construct($container);
+
         $this->validatedParameters = new WeakMap;
 
         $this->parameterRules = [
@@ -76,178 +77,104 @@ class AssetTransformers
         ];
     }
 
-    /** @return Collection<string, AssetTransformer> */
-    public function getAllAssetTransformers(): Collection
+    public function getDefaultDriver(): string
     {
-        return $this->assetTransformers();
+        return 'craft';
     }
 
-    public function getAssetTransformerByHandle(string $handle): ?AssetTransformer
+    /**
+     * @param  string|null  $driver
+     *
+     * @throws AssetTransformDriverNotFoundException
+     */
+    #[Override]
+    public function driver($driver = null): AssetTransformDriver
     {
-        $handle = Env::parse($handle);
+        $name = $driver ?? $this->getDefaultDriver();
 
-        if (! is_string($handle) || $handle === '') {
-            return null;
+        if (! is_string($name) || $name === '') {
+            throw new AssetTransformDriverNotFoundException('The selected asset transform driver is invalid.');
         }
 
-        return $this->getAllAssetTransformers()->firstWhere('handle', $handle);
-    }
-
-    public function getAssetTransformerByUid(string $uid): ?AssetTransformer
-    {
-        return $this->getAllAssetTransformers()->get($uid);
-    }
-
-    public function getDefaultAssetTransformer(): AssetTransformer
-    {
-        return $this->resolve(Cms::config()->defaultAssetTransformer);
-    }
-
-    public function resolve(string $handle): AssetTransformer
-    {
-        $parsedHandle = Env::parse($handle);
-
-        if (! is_string($parsedHandle) || $parsedHandle === '') {
-            throw new AssetTransformerNotFoundException("Asset transformer [{$handle}] is not configured.");
+        // Only exact registered names. Laravel's Manager would otherwise map names like `CRAFT` or `-` onto its
+        // own `create…Driver()` methods.
+        if ($name !== 'craft' && ! isset($this->customCreators[$name])) {
+            throw new AssetTransformDriverNotFoundException("Asset transform driver [{$name}] is not registered.");
         }
 
-        return $this->getAssetTransformerByHandle($parsedHandle)
-            ?? throw new AssetTransformerNotFoundException("Asset transformer [{$parsedHandle}] is not configured.");
+        try {
+            $resolved = parent::driver($name);
+        } catch (InvalidArgumentException $exception) {
+            throw new AssetTransformDriverNotFoundException("Asset transform driver [{$name}] is not registered.", previous: $exception);
+        }
+
+        if (! $resolved instanceof AssetTransformDriver) {
+            throw new AssetTransformDriverNotFoundException("Asset transform driver [{$name}] is invalid.");
+        }
+
+        return $resolved;
     }
 
-    public function saveAssetTransformer(AssetTransformer $transformer, bool $runValidation = true): bool
+    public function has(string $driver): bool
     {
-        $existing = $transformer->uid
-            ? $this->getAssetTransformerByUid($transformer->uid)
-            : null;
+        try {
+            $this->driver($driver);
 
-        $registered = $transformer->uid
-            ? $this->registry->get($transformer->uid)
-            : null;
-
-        if ($registered !== null && [$transformer->name, $transformer->handle, $transformer->driver] !== [$registered->name, $registered->handle, $registered->driver]) {
-            $transformer->errors()->add('handle', t('The name, handle, and driver of a registered asset transformer can’t be changed.'));
-
+            return true;
+        } catch (AssetTransformDriverNotFoundException) {
             return false;
         }
-
-        if ($runValidation) {
-            $this->validateAssetTransformer($transformer);
-        }
-
-        if ($transformer->errors()->isNotEmpty()) {
-            return false;
-        }
-
-        $transformer->uid ??= Str::uuid()->toString();
-        $oldHandle = $existing?->handle;
-        $config = $transformer->getConfig();
-        $config['settings'] = ProjectConfigHelper::packAssociativeArrays($config['settings']);
-
-        $this->projectConfig->set(
-            ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$transformer->uid,
-            $config,
-            "Save the “{$transformer->handle}” asset transformer",
-        );
-
-        if ($oldHandle && $oldHandle !== $transformer->handle) {
-            $this->rewriteHandleReferences($oldHandle, $transformer->handle);
-        }
-
-        $this->reset();
-
-        return true;
     }
 
-    public function deleteAssetTransformer(AssetTransformer $transformer): bool
+    /** @return array<string, AssetTransformDriverDefinition> */
+    public function definitions(): array
     {
-        $deleteDisabledReason = $this->getDeleteDisabledReason($transformer);
+        $definitions = ['craft' => $this->driver('craft')->definition()];
 
-        if ($deleteDisabledReason !== null) {
-            throw new AssetTransformException($deleteDisabledReason);
+        foreach (array_keys($this->customCreators) as $name) {
+            $definitions[$name] = $this->driver($name)->definition();
         }
 
-        $this->projectConfig->remove(
-            ProjectConfig::PATH_ASSET_TRANSFORMERS.'.'.$transformer->uid,
-            "Delete the “{$transformer->handle}” asset transformer",
-        );
-        $this->reset();
-
-        return true;
+        return $definitions;
     }
 
-    public function handleChangedAssetTransformer(ConfigEvent $event): void
+    /**
+     * Returns the transformer for files on a disk.
+     *
+     * Invalid config (a malformed value, or an unregistered driver) throws when debug mode is enabled. Otherwise it’s
+     * logged and the disk uses the `craft` driver.
+     *
+     * @param  string|null  $disk  The disk name, or `null` for files that aren’t on a known disk.
+     *
+     * @throws InvalidAssetTransformException|AssetTransformDriverNotFoundException
+     */
+    public function forDisk(?string $disk): AssetTransformer
     {
-        $uid = $event->tokenMatches[0] ?? null;
+        $config = $disk !== null ? $this->diskTransformerConfig($disk) : null;
 
-        if (! is_string($uid) || ! is_array($event->newValue)) {
-            $this->reset();
-
-            return;
+        if ($config === null) {
+            return new AssetTransformer('craft');
         }
 
-        if ($this->registry->has($uid)) {
-            $this->handleChangedRegisteredTransformer($uid, $event->oldValue, $event->newValue);
-
-            return;
-        }
-
-        $newTransformer = $this->createAssetTransformer($uid, $event->newValue);
-        $oldTransformer = is_array($event->oldValue)
-            ? $this->createAssetTransformer($uid, $event->oldValue)
-            : null;
-
-        if (
-            $oldTransformer !== null
-            && ($oldTransformer->driver !== $newTransformer->driver || $oldTransformer->settings !== $newTransformer->settings)
-        ) {
-            event(new AssetTransformerUpdating($oldTransformer, $newTransformer));
-        }
-
-        $this->reset();
+        return $this->validTransformer($config, "the [{$disk}] disk’s asset_transformer", new AssetTransformer('craft'));
     }
 
-    public function handleDeletedAssetTransformer(ConfigEvent $event): void
+    /**
+     * Returns a disk’s raw `asset_transformer` value, following scoped disks, or `null` if none is set. Unlike
+     * `forDisk()`, this doesn’t validate the value.
+     */
+    public function configForDisk(string $disk): mixed
     {
-        $uid = $event->tokenMatches[0] ?? null;
-
-        if (! is_string($uid) || ! is_array($event->oldValue)) {
-            $this->reset();
-
-            return;
-        }
-
-        if ($this->registry->has($uid)) {
-            $this->handleChangedRegisteredTransformer($uid, $event->oldValue, null);
-
-            return;
-        }
-
-        $transformer = $this->createAssetTransformer($uid, $event->oldValue);
-
-        $deleteDisabledReason = $this->getDeleteDisabledReason($transformer);
-
-        if ($deleteDisabledReason !== null) {
-            throw new AssetTransformException($deleteDisabledReason);
-        }
-
-        event(new AssetTransformerDeleting($transformer));
-        $this->reset();
-    }
-
-    public function handleAssetTransformersRemoved(): void
-    {
-        throw new AssetTransformException('The asset transformers project config section cannot be removed.');
+        return $this->diskTransformerConfig($disk);
     }
 
     public function transform(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
-        ?string $transformer = null,
     ): AssetTransformResult {
-        $request = $this->request($asset, $definition, $transformer);
+        $request = $this->request($asset, $definition, $this->forAsset($asset));
 
-        return $this->transformDrivers->driver($request->transformer->driver)->transform($request);
+        return $this->driver($request->transformer->driver)->transform($request);
     }
 
     public function invalidate(Asset $asset): void
@@ -271,8 +198,8 @@ class AssetTransformers
             }
         }
 
-        foreach ($requestsByDriver as $driverHandle => $requests) {
-            $driver = $this->transformDrivers->driver($driverHandle);
+        foreach ($requestsByDriver as $driverName => $requests) {
+            $driver = $this->driver($driverName);
 
             if ($driver instanceof PreloadsAssetTransforms) {
                 $driver->preloadAssetTransforms($requests);
@@ -281,18 +208,17 @@ class AssetTransformers
     }
 
     /** @return array<string, non-empty-list<string|Stringable>> */
-    public function parameterRules(AssetTransformer $transformer): array
+    public function parameterRules(string $driver): array
     {
         $parameterRules = $this->parameterRules;
-        $driver = $this->transformDrivers->driver($transformer->driver);
-        $driverRules = $driver->definition()->parameterRules;
+        $driverRules = $this->driver($driver)->definition()->parameterRules;
 
-        foreach ($driverRules as $handle => $rules) {
-            if (! is_string($handle) || $handle === '') {
-                throw new InvalidAssetTransformException('Asset transform parameter handles must be non-empty strings.');
+        foreach ($driverRules as $name => $rules) {
+            if (! is_string($name) || $name === '') {
+                throw new InvalidAssetTransformException('Asset transform parameter names must be non-empty strings.');
             }
 
-            $parameterRules[$handle] = $rules;
+            $parameterRules[$name] = $rules;
         }
 
         return $parameterRules;
@@ -305,17 +231,17 @@ class AssetTransformers
     }
 
     /** @return array<string, Field> */
-    public function parameterFields(AssetTransformer $transformer): array
+    public function parameterFields(string $driver): array
     {
-        $definition = $this->transformDrivers->driver($transformer->driver)->definition();
-        $rules = $this->parameterRules($transformer);
+        $definition = $this->driver($driver)->definition();
+        $rules = $this->parameterRules($driver);
 
-        foreach ($definition->parameterFields as $handle => $field) {
+        foreach ($definition->parameterFields as $name => $field) {
             $path = $field->getControl()?->path();
             $path = is_array($path) && count($path) === 1 ? $path[0] : $path;
 
-            if (! is_string($handle) || ! isset($definition->parameterRules[$handle], $rules[$handle]) || $path !== $handle) {
-                throw new InvalidAssetTransformException('Asset transform parameter fields must match a declared parameter handle.');
+            if (! is_string($name) || ! isset($definition->parameterRules[$name], $rules[$name]) || $path !== $name) {
+                throw new InvalidAssetTransformException('Asset transform parameter fields must match a declared parameter name.');
             }
         }
 
@@ -326,9 +252,9 @@ class AssetTransformers
      * @param  array<string, mixed>  $parameters
      * @return array<string, mixed>
      */
-    public function validateParameters(AssetTransformer $transformer, array $parameters): array
+    public function validateParameters(string $driver, array $parameters): array
     {
-        $rules = $this->parameterRules($transformer);
+        $rules = $this->parameterRules($driver);
         $rules = Arr::only($rules, array_keys($parameters));
         $rules = array_map(fn (array $rules): array => ['nullable', ...$rules], $rules);
 
@@ -341,142 +267,91 @@ class AssetTransformers
         return $parameters;
     }
 
-    public function reset(): void
+    protected function createCraftDriver(): AssetTransformDriver
     {
-        $this->transformers = null;
-        $this->validatedParameters = new WeakMap;
-    }
-
-    /** @return Collection<string, AssetTransformer> */
-    private function assetTransformers(): Collection
-    {
-        if ($this->transformers !== null) {
-            return $this->transformers;
-        }
-
-        $configs = $this->projectConfig->get(ProjectConfig::PATH_ASSET_TRANSFORMERS);
-
-        if (! is_array($configs)) {
-            $configs = [];
-        }
-
-        $transformers = collect($configs)
-            ->filter(fn (mixed $config, mixed $uid): bool => is_string($uid) && is_array($config))
-            ->map(fn (array $config, string $uid): AssetTransformer => $this->createAssetTransformer($uid, $config))
-            ->reject(fn (AssetTransformer $transformer): bool => $this->registry->has($transformer->uid))
-            ->union(array_map(
-                fn (AssetTransformer $transformer): AssetTransformer => $this->registeredAssetTransformer(
-                    $transformer->uid,
-                    is_array($configs[$transformer->uid] ?? null) ? $configs[$transformer->uid] : null,
-                ),
-                $this->registry->all(),
-            ));
-
-        return $this->transformers = $transformers;
+        return $this->container->make(CraftAssetTransformDriver::class);
     }
 
     /**
-     * Returns a registered profile with any stored settings overrides applied. Stored identity values are ignored.
+     * Returns a disk’s `asset_transformer` value. A scoped disk without one follows the disk it wraps.
      *
-     * @param  array<string, mixed>|null  $config
+     * Disks are read from the `disks` array rather than with dot notation, so disk names can contain dots.
+     *
+     * @param  string|array<string, mixed>  $disk  A disk name, or a scoped disk’s inline `disk` config.
      */
-    private function registeredAssetTransformer(string $uid, ?array $config): AssetTransformer
+    private function diskTransformerConfig(string|array $disk, int $depth = 0): mixed
     {
-        $transformer = $this->registry->get($uid);
+        $config = is_string($disk) ? ($this->config->get('filesystems.disks')[$disk] ?? null) : $disk;
 
-        if ($config !== null) {
-            $transformer->settings = array_replace(
-                $transformer->settings,
-                $this->createAssetTransformer($uid, $config)->settings,
-            );
-        }
-
-        return $transformer;
-    }
-
-    private function handleChangedRegisteredTransformer(string $uid, mixed $oldConfig, mixed $newConfig): void
-    {
-        $oldTransformer = $this->registeredAssetTransformer($uid, is_array($oldConfig) ? $oldConfig : null);
-        $newTransformer = $this->registeredAssetTransformer($uid, is_array($newConfig) ? $newConfig : null);
-
-        if ($oldTransformer->settings !== $newTransformer->settings) {
-            event(new AssetTransformerUpdating($oldTransformer, $newTransformer));
-        }
-
-        $this->reset();
-    }
-
-    /** @param array<string, mixed> $config */
-    private function createAssetTransformer(string $uid, array $config): AssetTransformer
-    {
-        $settings = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
-
-        return new AssetTransformer([
-            'uid' => $uid,
-            'name' => $config['name'] ?? '',
-            'handle' => $config['handle'] ?? '',
-            'driver' => $config['driver'] ?? '',
-            'settings' => $settings,
-        ]);
-    }
-
-    private function validateAssetTransformer(AssetTransformer $transformer): void
-    {
-        $transformer->validate();
-
-        if ($transformer->driver && ! $this->transformDrivers->has($transformer->driver)) {
-            $transformer->errors()->add('driver', t('The selected asset transform driver is unavailable.'));
-        }
-
-        $duplicate = $this->getAllAssetTransformers()
-            ->first(fn (AssetTransformer $existing): bool => $existing->handle === $transformer->handle && $existing->uid !== $transformer->uid);
-
-        if ($duplicate !== null) {
-            $transformer->errors()->add('handle', t('The asset transformer handle has already been taken.'));
-        }
-    }
-
-    public function getDeleteDisabledReason(AssetTransformer $transformer): ?string
-    {
-        if ($this->registry->has($transformer->uid)) {
-            return t('This asset transformer cannot be deleted because it is registered in code.');
-        }
-
-        $default = Env::parse(Cms::config()->defaultAssetTransformer);
-
-        if ($default === $transformer->handle) {
-            return t('This asset transformer cannot be deleted because it is configured as the default.');
-        }
-
-        $volumes = $this->projectConfig->get(ProjectConfig::PATH_VOLUMES);
-
-        if (! is_array($volumes)) {
+        if (! is_array($config) || $depth > self::MAX_SCOPED_DEPTH) {
             return null;
         }
 
-        foreach ($volumes as $volume) {
-            $reference = is_array($volume) ? ($volume['assetTransformer'] ?? null) : null;
-
-            if (is_string($reference) && Env::parse($reference) === $transformer->handle) {
-                return t('This asset transformer cannot be deleted because it is assigned to a volume.');
-            }
+        if (array_key_exists('asset_transformer', $config)) {
+            return $config['asset_transformer'];
         }
 
-        return null;
+        $wrapped = $config['disk'] ?? null;
+
+        return ($config['driver'] ?? null) === 'scoped' && (is_string($wrapped) || is_array($wrapped))
+            ? $this->diskTransformerConfig($wrapped, $depth + 1)
+            : null;
     }
 
-    private function rewriteHandleReferences(string $oldHandle, string $newHandle): void
+    private function forAsset(Asset $asset): AssetTransformer
     {
-        $volumes = app(Volumes::class);
+        return $this->forDisk($asset->getVolume()->getResolvedFsTarget());
+    }
 
-        foreach ($volumes->getAllVolumes() as $volume) {
-            if ($volume->getAssetTransformerHandle(false) !== $oldHandle) {
-                continue;
+    /**
+     * @param  string  $source  Where the config came from, for error messages.
+     * @param  AssetTransformer  $fallback  Used instead when debug mode is off.
+     *
+     * @throws InvalidAssetTransformException|AssetTransformDriverNotFoundException
+     */
+    private function validTransformer(mixed $config, string $source, AssetTransformer $fallback): AssetTransformer
+    {
+        try {
+            $transformer = $this->transformerFromConfig($config, $source);
+
+            if (! $this->has($transformer->driver)) {
+                throw new AssetTransformDriverNotFoundException("Asset transform driver [{$transformer->driver}], set by {$source}, is not registered.");
             }
 
-            $volume->assetTransformer = $newHandle;
-            $volumes->saveVolume($volume);
+            return $transformer;
+        } catch (InvalidAssetTransformException|AssetTransformDriverNotFoundException $exception) {
+            if (app()->hasDebugModeEnabled()) {
+                throw $exception;
+            }
+
+            $message = "{$exception->getMessage()} Using the [{$fallback->driver}] driver instead.";
+
+            if (! isset($this->reportedInvalidConfig[$message])) {
+                $this->reportedInvalidConfig[$message] = true;
+                Log::warning($message);
+            }
+
+            return $fallback;
         }
+    }
+
+    /** @throws InvalidAssetTransformException */
+    private function transformerFromConfig(mixed $config, string $source): AssetTransformer
+    {
+        if (is_string($config) && $config !== '') {
+            return new AssetTransformer($config);
+        }
+
+        $driver = is_array($config) ? ($config['driver'] ?? null) : null;
+
+        if (! is_string($driver) || $driver === '') {
+            throw new InvalidAssetTransformException("The asset transformer set by {$source} must be a driver name or an array with a [driver] key.");
+        }
+
+        /** @var array<string, mixed> $settings */
+        $settings = Arr::except($config, 'driver');
+
+        return new AssetTransformer($driver, $settings);
     }
 
     /**
@@ -487,12 +362,14 @@ class AssetTransformers
     {
         $requests = [];
         $referenceRequest = null;
+        $transformer = null;
 
         foreach ($definitions as $definition) {
             try {
                 [$size, $unit] = AssetsHelper::parseSrcsetSize($definition);
             } catch (InvalidArgumentException) {
-                $requests[] = $referenceRequest = $this->request($asset, $definition);
+                $transformer ??= $this->forAsset($asset);
+                $requests[] = $referenceRequest = $this->request($asset, $definition, $transformer);
 
                 continue;
             }
@@ -515,11 +392,7 @@ class AssetTransformers
                     : (int) ceil($referenceRequest->parameters['height'] * $size);
             }
 
-            $requests[] = $this->request(
-                $asset,
-                $parameters,
-                transformerHandle: $referenceRequest->transformer->handle,
-            );
+            $requests[] = $this->request($asset, $parameters, $referenceRequest->transformer);
         }
 
         return $requests;
@@ -528,13 +401,8 @@ class AssetTransformers
     private function request(
         Asset $asset,
         #[\SensitiveParameter] mixed $definition,
-        ?string $transformerHandle = null,
+        AssetTransformer $transformer,
     ): AssetTransformRequest {
-        $volumeTransformer = $asset->getVolume()->getAssetTransformerHandle(false);
-        $transformerHandle ??= ($volumeTransformer !== null && $volumeTransformer !== '' ? $volumeTransformer : null)
-        ?? Cms::config()->defaultAssetTransformer;
-        $transformer = $this->resolve($transformerHandle);
-
         try {
             $parameters = $this->normalizeDefinition($definition, $transformer);
         } catch (ImageTransformException|InvalidArgumentException $exception) {
@@ -544,13 +412,13 @@ class AssetTransformers
         ksort($parameters);
 
         if (array_all($parameters, fn (mixed $value): bool => is_scalar($value) || $value === null)) {
-            $driver = $this->transformDrivers->driver($transformer->driver);
+            $driver = $this->driver($transformer->driver);
             $key = serialize($parameters);
             $this->validatedParameters[$driver] ??= [];
             $parameters = $this->validatedParameters[$driver][$key]
-                ??= $this->validateParameters($transformer, $parameters);
+                ??= $this->validateParameters($transformer->driver, $parameters);
         } else {
-            $parameters = $this->validateParameters($transformer, $parameters);
+            $parameters = $this->validateParameters($transformer->driver, $parameters);
         }
 
         return new AssetTransformRequest(
@@ -580,6 +448,6 @@ class AssetTransformers
             throw new InvalidAssetTransformException('A transform definition must be an array, object, or named transform handle.');
         }
 
-        return $transform->getParameters($transformer->uid);
+        return $transform->getParameters($transformer->driver);
     }
 }

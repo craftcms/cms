@@ -44,43 +44,43 @@
 </script>
 
 <template>
-  <div>
-    <WorkflowEditLockCallout
-      :payload="payload"
-      :update-payload="updatePayload"
-      :confirm-editing="confirmEditing"
-      @start-editing="emit('startEditing')"
-    />
-
-    <craft-dialog
-      :label="t('Edit a draft in a scheduled release?')"
-      .open="settleScheduledEdit !== null"
-      @craft-hide="answerScheduledEdit(false)"
+  <!-- No wrapper, and the dialog first, so the callout stays a sibling of the
+    next notice and gets the hairline between same-colored callouts. -->
+  <craft-dialog
+    :label="t('Edit a draft in a scheduled release?')"
+    .open="settleScheduledEdit !== null"
+    @craft-hide="answerScheduledEdit(false)"
+  >
+    <p class="m-0">
+      {{
+        t(
+          'Editing this draft will undo its approval. Unless it’s approved again before “{name}” publishes, the release will fail to publish.',
+          {name: payload.release?.name ?? ''}
+        )
+      }}
+    </p>
+    <craft-button
+      slot="footer"
+      type="button"
+      autofocus
+      @click="answerScheduledEdit(false)"
     >
-      <p class="m-0">
-        {{
-          t(
-            'Editing this draft will undo its approval. Unless it’s approved again before “{name}” publishes, the release will fail to publish.',
-            {name: payload.release?.name ?? ''}
-          )
-        }}
-      </p>
-      <craft-button
-        slot="footer"
-        type="button"
-        autofocus
-        @click="answerScheduledEdit(false)"
-      >
-        {{ t('Cancel') }}
-      </craft-button>
-      <craft-button
-        slot="footer"
-        type="button"
-        variant="primary"
-        @click="answerScheduledEdit(true)"
-      >
-        {{ t('Edit anyway') }}
-      </craft-button>
-    </craft-dialog>
-  </div>
+      {{ t('Cancel') }}
+    </craft-button>
+    <craft-button
+      slot="footer"
+      type="button"
+      variant="primary"
+      @click="answerScheduledEdit(true)"
+    >
+      {{ t('Edit anyway') }}
+    </craft-button>
+  </craft-dialog>
+
+  <WorkflowEditLockCallout
+    :payload="payload"
+    :update-payload="updatePayload"
+    :confirm-editing="confirmEditing"
+    @start-editing="emit('startEditing')"
+  />
 </template>

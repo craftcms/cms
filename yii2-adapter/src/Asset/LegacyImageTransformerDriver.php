@@ -32,7 +32,7 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition($this->transformer);
+        return new AssetTransformDriverDefinition();
     }
 
     public function transform(AssetTransformRequest $request): AssetTransformResult

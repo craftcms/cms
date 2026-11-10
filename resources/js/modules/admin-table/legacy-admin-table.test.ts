@@ -65,6 +65,7 @@ it('renders a static-data table with the current component', async () => {
     deleteAction: 'plugin/sync/delete',
   });
 
+  await vi.dynamicImportSettled();
   expect(mounted).toHaveLength(1);
   expect(mounted[0]!.element).toBe(document.querySelector('#table'));
   expect(mounted[0]!.props.deleteAction).toBe('plugin/sync/delete');
@@ -95,6 +96,7 @@ it('hands unsupported options to the legacy implementation', async () => {
   }
 
   expect(calls).toHaveLength(6);
+  await vi.dynamicImportSettled();
   expect(mounted).toHaveLength(0);
 });
 
@@ -115,6 +117,7 @@ it('wins when the legacy bundle loaded first', async () => {
     tableData: [],
   });
 
+  await vi.dynamicImportSettled();
   expect(mounted).toHaveLength(1);
 });
 
@@ -131,6 +134,7 @@ it('wins when the legacy bundle loads afterwards', async () => {
     tableData: [],
   });
 
+  await vi.dynamicImportSettled();
   expect(mounted).toHaveLength(1);
 
   // …and is still reachable to delegate to.
@@ -172,6 +176,7 @@ it('delegates when the container cannot be found', async () => {
   });
 
   expect(calls).toHaveLength(1);
+  await vi.dynamicImportSettled();
   expect(mounted).toHaveLength(0);
 });
 
@@ -212,6 +217,7 @@ it('renders the Shopify sync utility’s table', async () => {
     padded: true,
   } as any);
 
+  await vi.dynamicImportSettled();
   expect(mounted).toHaveLength(1);
   expect(mounted[0]!.props.columns).toHaveLength(5);
   expect(mounted[0]!.props.deleteAction).toBe('shopify/sync/delete');

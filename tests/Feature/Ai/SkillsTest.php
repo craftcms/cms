@@ -47,7 +47,7 @@ beforeEach(function () {
 function mcpUser(array $permissions): void
 {
     enableMcp();
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = UserModel::factory()->withPermissions(['accessCp', 'useCraftMcp', 'editSite:'.Sites::getPrimarySite()->uid, ...$permissions])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:write'], 'craft-mcp');
@@ -216,7 +216,7 @@ it('lets MCP clients create, edit, and delete skills, refusing a title another s
 
 it('only links MCP clients to edit skills if the user can use the control panel', function () {
     enableMcp();
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = UserModel::factory()->withPermissions(['useCraftMcp', 'accessUtilities', 'utility:ai-guidance'])->create(['admin' => false]);
     Passport::actingAs($user, ['mcp:write'], 'craft-mcp');

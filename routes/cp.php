@@ -42,7 +42,6 @@ use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\QueueController;
 use CraftCms\Cms\Http\Controllers\ReleasesController;
 use CraftCms\Cms\Http\Controllers\Settings\AddressSettingsController;
-use CraftCms\Cms\Http\Controllers\Settings\AssetTransformersController;
 use CraftCms\Cms\Http\Controllers\Settings\CpNavigationController;
 use CraftCms\Cms\Http\Controllers\Settings\EmailSettingsController;
 use CraftCms\Cms\Http\Controllers\Settings\EntryTypesController;
@@ -227,7 +226,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
         Route::post('/', [RemoveController::class, 'index']);
         Route::post(BaseUpdaterController::ACTION_PRECHECK, [RemoveController::class, 'precheck']);
         Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [RemoveController::class, 'recheckComposer']);
-        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [RemoveController::class, 'composerInstall']);
         Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [RemoveController::class, 'composerRemove']);
         Route::post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
     });
@@ -333,8 +331,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             Route::post(ConfigSyncController::ACTION_INSTALL_PLUGIN, [ConfigSyncController::class, 'installPlugin']);
             Route::post(BaseUpdaterController::ACTION_PRECHECK, [ConfigSyncController::class, 'precheck']);
             Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
             Route::allowDuringMaintenance()->post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
         });
 
@@ -573,19 +569,6 @@ Route::middleware(['auth', 'can:accessCp'])->group(function () {
             });
 
             Route::get('{transformHandle}', [ImageTransformsController::class, 'edit'])->name('edit');
-        });
-
-        Route::prefix('settings/assets/transformers')->name('settings.assets.transformers.')->group(function () {
-            Route::get('/', [AssetTransformersController::class, 'index'])->name('index');
-
-            Route::middleware(RequireAdminChanges::class)->group(function () {
-                Route::get('new', [AssetTransformersController::class, 'create'])->name('create');
-                Route::post('/', [AssetTransformersController::class, 'store']);
-                Route::post('ui', [AssetTransformersController::class, 'renderUi']);
-                Route::delete('{handle}', [AssetTransformersController::class, 'destroy'])->name('destroy');
-            });
-
-            Route::get('{handle}', [AssetTransformersController::class, 'edit'])->name('edit');
         });
 
         // Sites

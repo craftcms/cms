@@ -72,6 +72,7 @@ vi.mock('@/bootstrap/element-details-panels', () => ({
 
 let app: ReturnType<typeof createApp>;
 let container: HTMLElement;
+let screenProps: ReturnType<typeof createScreenPropsStore>['props'];
 
 beforeEach(() => {
   state.editor = {
@@ -161,7 +162,10 @@ afterEach(() => {
 
 function mount(
   mode: ScreenMode,
-  {previewedReleaseId}: {previewedReleaseId?: number} = {}
+  {
+    previewedReleaseId,
+    workflowActionsOnly,
+  }: {previewedReleaseId?: number; workflowActionsOnly?: boolean} = {}
 ): void {
   const Root = defineComponent({
     setup: () => {
@@ -173,9 +177,15 @@ function mount(
         provide(SlideoutControllerKey, {} as never);
       }
 
+      // Docked beside a release's preview.
+      if (workflowActionsOnly) {
+        provide(SlideoutControllerKey, {workflowActionsOnly} as never);
+      }
+
       provideLayoutSlotRegistry();
       const screen = createScreenPropsStore();
       provide(ScreenPropsStoreKey, screen);
+      screenProps = screen.props;
 
       return () =>
         h('div', [
@@ -186,7 +196,9 @@ function mount(
               : null
           ),
           h(LayoutSlotOutlet, {name: 'content-notices'}),
-          h(LayoutSlotOutlet, {name: 'content-toolbar-meta'}),
+          h('div', {'data-toolbar-meta': ''}, [
+            h(LayoutSlotOutlet, {name: 'content-toolbar-meta'}),
+          ]),
           h(LayoutSlotOutlet, {name: 'content-toolbar-actions'}),
           h(ElementEditor),
           h(ContentFooter, {
@@ -675,3 +687,30 @@ it.each([
     expect(container.textContent?.includes('Spring launch')).toBe(shown);
   }
 );
+
+it('leaves out an empty footer beside a release’s preview, moving the autosave status up', async () => {
+  state.editor.workflowReviewLocked = computed(() => false);
+  state.editor.autosave.status.value = 'saving';
+
+  mount('slideout', {workflowActionsOnly: true});
+  await nextTick();
+
+  expect(screenProps.hideFooter).toBe(true);
+  expect(container.querySelector('[data-toolbar-meta]')?.textContent).toContain(
+    'Saving…'
+  );
+});
+
+it('keeps the footer beside a release’s preview while a workflow action is available', async () => {
+  state.editor.workflowReviewLocked = computed(() => false);
+  state.editor.props.editorActions.primary = {
+    label: 'Request review',
+    panelId: 'workflow',
+  };
+
+  mount('slideout', {workflowActionsOnly: true});
+  await nextTick();
+
+  expect(screenProps.hideFooter).toBeFalsy();
+  expect(findButton('Request review')).toBeDefined();
+});

@@ -291,7 +291,6 @@ class ScaleSeeder extends Seeder
                 'fsHandle' => 'assets',
                 'hasUrls' => true,
                 'subpath' => "scale-$v",
-                'assetTransformer' => 'craft',
             ]);
             Volumes::saveVolume($volume) || throw new RuntimeException("Couldn't save volume $v.");
         }

@@ -28,7 +28,7 @@ use Laravel\Passport\Passport;
 use Symfony\Component\HttpFoundation\Response;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     openssl_pkey_export($key, $privateKey);
     config()->set('passport.private_key', $privateKey);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
@@ -355,7 +355,7 @@ it('answers CORS preflight requests without authentication or collecting user in
     ])
         ->assertNoContent()
         ->assertHeader('Access-Control-Allow-Origin', 'https://craft.test')
-        ->assertHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id');
+        ->assertHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id, WWW-Authenticate');
 
     expect(explode(', ', $response->headers->get('Access-Control-Allow-Methods')))->toContain('DELETE')
         ->and(explode(', ', $response->headers->get('Access-Control-Allow-Headers')))->toContain('Mcp-Session-Id', 'Mcp-Param-Cursor');

@@ -25,6 +25,7 @@ use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
 use Mcp\Server\RequestContext;
+use stdClass;
 
 /**
  * Lists, reads, and manages elements of every type registered with {@see ElementAdapterRegistry}.
@@ -481,14 +482,14 @@ readonly class Elements
      */
     private function assertValid(array $values, array $schema, string $parameter, string $type): void
     {
-        $errors = $this->schemaValidator->validateAgainstJsonSchema($values, $schema);
+        $errors = $this->schemaValidator->validateAgainstJsonSchema($values ?: new stdClass, $schema);
 
         if ($errors === []) {
             return;
         }
 
         $messages = array_map(
-            static fn (array $error): string => (in_array($error['pointer'], ['', '/'], true) ? '' : "{$error['pointer']}: ").$error['message'],
+            static fn (array $error): string => (in_array($error['pointer'], ['', '/'], true) ? '' : "{$error['pointer']}: ").rtrim($error['message'], '.'),
             array_slice($errors, 0, 3),
         );
 

@@ -18,8 +18,14 @@ import {DetailsScreen} from '@/test/DetailsScreen';
 import ElementDetailsPanels from './ElementDetailsPanels.vue';
 
 vi.mock('@craftcms/ui', () => ({t: (message: string) => message}));
+const activityTimeline = vi.hoisted(() => ({mounts: 0}));
 vi.mock('@/modules/activity/components/ActivityTimeline.vue', () => ({
-  default: {render: () => null},
+  default: {
+    render: () => null,
+    mounted: () => {
+      activityTimeline.mounts++;
+    },
+  },
 }));
 vi.mock('./RevisionsList.vue', () => ({default: {render: () => null}}));
 
@@ -312,6 +318,44 @@ describe('ElementDetailsPanels', () => {
     overlaid.value = true;
     await settle();
     expect(openIndex()).toBe(-1);
+  });
+
+  it('mounts the activity timeline the first time its panel opens, and keeps it', async () => {
+    activityTimeline.mounts = 0;
+    const detailsPanels = ref<{select: (panelId: string) => void} | null>(null);
+
+    container = document.createElement('div');
+    document.body.append(container);
+    app = createApp(
+      defineComponent({
+        setup: () => () =>
+          h(DetailsScreen, () =>
+            h(ElementDetailsPanels, {
+              ref: detailsPanels,
+              payload: {...payload(), activityTimelineUrl: '/activity'},
+              activityTimelineVersion: 0,
+              updatePayload: vi.fn(),
+              submitAction,
+            })
+          ),
+      })
+    );
+    app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
+    app.mount(container);
+    await vi.dynamicImportSettled();
+    await settle();
+    expect(activityTimeline.mounts).toBe(0);
+
+    detailsPanels.value?.select('activity');
+    await vi.dynamicImportSettled();
+    await settle();
+    expect(activityTimeline.mounts).toBe(1);
+
+    detailsPanels.value?.select('info');
+    await settle();
+    detailsPanels.value?.select('activity');
+    await settle();
+    expect(activityTimeline.mounts).toBe(1);
   });
 
   it('allows its host to open a visible panel', async () => {

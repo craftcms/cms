@@ -262,9 +262,9 @@ it.each([['data-color="white"'], ['']])(
 );
 
 it.each([
-  ['dark', 0.15],
-  ['light', 0.1],
-])('gives a card the %s theme’s shadow', async (theme, alpha) => {
+  ['dark', 'rgba(2, 6, 20, 0.15)'],
+  ['light', 'rgba(34, 44, 82, 0.1)'],
+])('gives a card the %s theme’s shadow', async (theme, color) => {
   document.body.innerHTML = `
     <div data-theme="${theme}">
       <craft-card>Body</craft-card>
@@ -276,7 +276,7 @@ it.each([
     card.shadowRoot!.querySelector('.card')!
   ).boxShadow;
 
-  expect(shadow).toContain(`rgba(0, 0, 0, ${alpha})`);
+  expect(shadow).toContain(color);
 });
 
 it('gives a selected uncolored card a dark header in the dark theme', async () => {

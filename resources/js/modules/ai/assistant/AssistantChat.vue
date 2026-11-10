@@ -43,11 +43,8 @@
   import AssistantShownElements, {
     type ShownElement,
   } from './AssistantShownElements.vue';
-  import {
-    AssistantRequestError,
-    assistantConnection,
-    renderMarkdown,
-  } from './assistant';
+  import {AssistantRequestError} from './assistant';
+  import {assistantConnection, renderMarkdown} from './chat';
   import {
     assistantFieldUrl,
     contextRequest,

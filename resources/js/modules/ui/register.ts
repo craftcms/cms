@@ -5,7 +5,6 @@ import CopyAttributeNode from './CopyAttributeNode.vue';
 import CheckboxControl from './CheckboxControl.vue';
 import FieldNode from './FieldNode.vue';
 import ChoiceControl from './ChoiceControl.vue';
-import ConditionBuilderControl from './ConditionBuilderControl.vue';
 import ColorControl from './ColorControl.vue';
 import ColorSelectControl from './ColorSelectControl.vue';
 import ComboboxControl from './ComboboxControl.vue';
@@ -13,23 +12,14 @@ import UiRenderer from './UiRenderer.vue';
 import GroupNode from './GroupNode.vue';
 import ScopeNode from './ScopeNode.vue';
 import LightswitchControl from './LightswitchControl.vue';
-import MarkdownControl from './MarkdownControl.vue';
 import MoneyControl from './MoneyControl.vue';
-import AddressControl from './AddressControl.vue';
 import LinkControl from './LinkControl.vue';
-import TableControl from './TableControl.vue';
-import TableColumnsControl from './TableColumnsControl.vue';
 import TextControl from './TextControl.vue';
 import TextareaControl from './TextareaControl.vue';
 import IconPickerControl from './IconPickerControl.vue';
 import ElementSelectControl from './ElementSelectControl.vue';
-import ElementSitesControl from './ElementSitesControl.vue';
-import GroupedEntryTypeManagerControl from './GroupedEntryTypeManagerControl.vue';
-import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import FieldSelectControl from './FieldSelectControl.vue';
 import EntryTypeSelectControl from './EntryTypeSelectControl.vue';
-import NestedElementBlocksControl from './nested-elements/NestedElementBlocksControl.vue';
-import NestedElementsControl from './nested-elements/NestedElementsControl.vue';
 import ContentBlockControl from './ContentBlockControl.vue';
 import DateTimeControl from './DateTimeControl.vue';
 import MarkdownContentNode from './MarkdownContentNode.vue';
@@ -43,11 +33,33 @@ import SlugControl from './SlugControl.vue';
 import HiddenControl from './HiddenControl.vue';
 import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
-import PermissionTreeControl from './PermissionTreeControl.vue';
 import SeparatorNode from './SeparatorNode.vue';
-import AdminTableNode from './AdminTableNode.vue';
-import UserGroupSelectControl from './UserGroupSelectControl.vue';
 import './content-block-input';
+
+/**
+ * Controls only some screens render — settings, admin tables, nested
+ * elements, Markdown — load on first use rather than with every CP page. The
+ * registry wraps their loaders in async components. Module-level, so
+ * registering twice hands the registry the same loaders.
+ */
+const lazyControls = {
+  ConditionBuilderControl: () => import('./ConditionBuilderControl.vue'),
+  PermissionTreeControl: () => import('./PermissionTreeControl.vue'),
+  UserGroupSelectControl: () => import('./UserGroupSelectControl.vue'),
+  MarkdownControl: () => import('./MarkdownControl.vue'),
+  TableControl: () => import('./TableControl.vue'),
+  AdminTableNode: () => import('./AdminTableNode.vue'),
+  TableColumnsControl: () => import('./TableColumnsControl.vue'),
+  AddressControl: () => import('./AddressControl.vue'),
+  ElementSitesControl: () => import('./ElementSitesControl.vue'),
+  GroupedEntryTypeManagerControl: () =>
+    import('./GroupedEntryTypeManagerControl.vue'),
+  FieldLayoutDesignerControl: () => import('./FieldLayoutDesignerControl.vue'),
+  NestedElementBlocksControl: () =>
+    import('./nested-elements/NestedElementBlocksControl.vue'),
+  NestedElementsControl: () =>
+    import('./nested-elements/NestedElementsControl.vue'),
+};
 
 export function registerUiComponents(
   components: Pick<CpComponentRegistry, 'register'>
@@ -78,7 +90,10 @@ export function registerUiComponents(
   components.register('craft:lightswitch', LightswitchControl);
   components.register('craft:checkbox', CheckboxControl);
   components.register('craft:choice', ChoiceControl);
-  components.register('craft:condition-builder', ConditionBuilderControl);
+  components.register(
+    'craft:condition-builder',
+    lazyControls.ConditionBuilderControl
+  );
   components.register('craft:number', TextControl);
   components.register('craft:range', TextControl);
   components.register('craft:date', TextControl);
@@ -87,31 +102,40 @@ export function registerUiComponents(
   components.register('craft:color', ColorControl);
   components.register('craft:color-select', ColorSelectControl);
   components.register('craft:money', MoneyControl);
-  components.register('craft:permission-tree', PermissionTreeControl);
-  components.register('craft:user-group-select', UserGroupSelectControl);
-  components.register('craft:markdown', MarkdownControl);
-  components.register('craft:table', TableControl);
-  components.register('craft:admin-table', AdminTableNode);
-  components.register('craft:table-columns', TableColumnsControl);
+  components.register(
+    'craft:permission-tree',
+    lazyControls.PermissionTreeControl
+  );
+  components.register(
+    'craft:user-group-select',
+    lazyControls.UserGroupSelectControl
+  );
+  components.register('craft:markdown', lazyControls.MarkdownControl);
+  components.register('craft:table', lazyControls.TableControl);
+  components.register('craft:admin-table', lazyControls.AdminTableNode);
+  components.register('craft:table-columns', lazyControls.TableColumnsControl);
   components.register('craft:link', LinkControl);
-  components.register('craft:address', AddressControl);
+  components.register('craft:address', lazyControls.AddressControl);
   components.register('craft:icon-picker', IconPickerControl);
   components.register('craft:element-select', ElementSelectControl);
-  components.register('craft:element-sites', ElementSitesControl);
+  components.register('craft:element-sites', lazyControls.ElementSitesControl);
   components.register('craft:field-select', FieldSelectControl);
   components.register('craft:entry-type-select', EntryTypeSelectControl);
   components.register(
     'craft:grouped-entry-type-manager',
-    GroupedEntryTypeManagerControl
+    lazyControls.GroupedEntryTypeManagerControl
   );
   components.register(
     'craft:field-layout-designer',
-    FieldLayoutDesignerControl
+    lazyControls.FieldLayoutDesignerControl
   );
   components.register(
     'craft:nested-element-blocks',
-    NestedElementBlocksControl
+    lazyControls.NestedElementBlocksControl
   );
-  components.register('craft:nested-elements', NestedElementsControl);
+  components.register(
+    'craft:nested-elements',
+    lazyControls.NestedElementsControl
+  );
   components.register('craft:content-block', ContentBlockControl);
 }

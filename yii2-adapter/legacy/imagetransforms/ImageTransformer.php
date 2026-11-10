@@ -77,10 +77,21 @@ class ImageTransformer extends Component implements EagerImageTransformerInterfa
 
     /**
      * {@inheritdoc}
+     *
+     * @param array<Asset|array<string, mixed>> $assets Assets, or asset rows with at least `id`, as Craft 5 accepted.
      */
     public function eagerLoadTransforms(array $transforms, array $assets): void
     {
-        $this->transformer()->eagerLoadTransforms($transforms, $assets);
+        $rowIds = array_column(array_filter($assets, fn(mixed $asset): bool => !$asset instanceof Asset), 'id');
+
+        if ($rowIds !== []) {
+            $assets = [
+                ...array_filter($assets, fn(mixed $asset): bool => $asset instanceof Asset),
+                ...Asset::find()->id($rowIds)->site('*')->unique()->status(null)->all(),
+            ];
+        }
+
+        $this->transformer()->eagerLoadTransforms($transforms, array_values($assets));
     }
 
     /**

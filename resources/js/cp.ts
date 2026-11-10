@@ -45,7 +45,6 @@ import './modules/prompt-handler';
 import './modules/link-field';
 import './modules/cp-modal';
 import './modules/grid';
-import './modules/chart';
 import './modules/element-thumb-loader';
 import './modules/asset-mover';
 import './modules/element-selector-modal';
@@ -53,7 +52,6 @@ import './modules/element-select-input';
 import './modules/preview-file-modal';
 import './modules/asset-select-input';
 import './modules/element-deletion-manager';
-import './modules/uploader';
 import {installLegacyAdminTableShim} from './modules/admin-table/legacy-admin-table';
 
 window.Cp = Cp;

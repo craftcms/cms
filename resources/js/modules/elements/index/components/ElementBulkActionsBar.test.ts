@@ -332,3 +332,42 @@ it('links Compare to the two selected elements in the index’s site, when their
   expect(href.searchParams.get('fromSiteId')).toBe('2');
   expect(href.searchParams.get('siteId')).toBe('3');
 });
+
+it.each([
+  ['the same field layout', 1, 1, true],
+  ['different field layouts', 1, 2, false],
+  ['no field layouts', null, null, false],
+  ['rows without field layout data', undefined, undefined, true],
+])(
+  'offers Compare only for two elements with the same field layout: %s',
+  async (_case, fromLayoutId, toLayoutId, listed) => {
+    const container = mount(
+      {
+        key: 'compare',
+        label: 'Compare',
+        selectionAttribute: 'comparable',
+        selectionCount: 2,
+        action: {type: 'event', name: 'craft:compare-elements'},
+      },
+      {},
+      {
+        selectedIds: [11, 12],
+        selectedElements: [
+          {
+            id: 11,
+            capabilities: {comparable: true},
+            fieldLayoutId: fromLayoutId,
+          },
+          {
+            id: 12,
+            capabilities: {comparable: true},
+            fieldLayoutId: toLayoutId,
+          },
+        ],
+      }
+    );
+    await nextTick();
+
+    expect(container.querySelector('craft-action-item') !== null).toBe(listed);
+  }
+);
