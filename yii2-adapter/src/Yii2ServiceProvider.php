@@ -437,7 +437,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $legacyVariable = new LegacyCraftVariable();
 
             foreach ($legacyVariable->getBehaviors() as $behavior) {
-                $this->registerCraftVariableBehavior($behavior);
+                $this->registerCraftVariableBehavior($legacyVariable, $behavior);
             }
 
             foreach (array_keys($legacyVariable->getComponents()) as $name) {
@@ -449,16 +449,18 @@ class Yii2ServiceProvider extends ServiceProvider
     /**
      * Exposes the public properties, methods, and getters of a behavior attached to the legacy `craft` variable,
      * such as `craft.commerce` or `craft.shopifyProducts()`.
+     *
+     * Each name resolves through the legacy variable, so when several behaviors share a name, Yii's
+     * precedence applies: methods over properties, and the first attached behavior wins.
      */
-    private function registerCraftVariableBehavior(Behavior $behavior): void
+    private function registerCraftVariableBehavior(LegacyCraftVariable $legacyVariable, Behavior $behavior): void
     {
         $reflection = new ReflectionObject($behavior);
+        $names = [];
 
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            $name = $property->getName();
-
-            if (!$property->isStatic() && !property_exists(Behavior::class, $name)) {
-                CraftVariable::macro($name, fn() => $behavior->$name);
+            if (!$property->isStatic() && !property_exists(Behavior::class, $property->getName())) {
+                $names[] = $property->getName();
             }
         }
 
@@ -469,14 +471,18 @@ class Yii2ServiceProvider extends ServiceProvider
                 continue;
             }
 
-            CraftVariable::macro($name, fn(mixed ...$args) => $behavior->$name(...$args));
+            $names[] = $name;
 
             if (str_starts_with($name, 'get') && strlen($name) > 3 && $method->getNumberOfRequiredParameters() === 0) {
-                $property = lcfirst(substr($name, 3));
+                $names[] = lcfirst(substr($name, 3));
+            }
+        }
 
-                if (!$behavior->owner->hasMethod($property)) {
-                    CraftVariable::macro($property, fn() => $behavior->$property);
-                }
+        foreach ($names as $name) {
+            if ($legacyVariable->hasMethod($name)) {
+                CraftVariable::macro($name, fn(mixed ...$args) => $legacyVariable->$name(...$args));
+            } else {
+                CraftVariable::macro($name, fn() => $legacyVariable->$name);
             }
         }
     }

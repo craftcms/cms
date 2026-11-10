@@ -22,6 +22,8 @@ afterEach(function() {
         $values['testBehaviorGetter'],
         $values['testBehaviorMethod'],
         $values['testBehaviorRequired'],
+        $values['testBehaviorShared'],
+        $values['getTestBehaviorShared'],
     );
     $macros->setValue(null, $values);
 });
@@ -41,6 +43,8 @@ it('exposes behaviors attached from the legacy init event', function() {
         $event->sender->attachBehavior('test', new class() extends Behavior {
             public string $testBehaviorValue = 'property';
 
+            public string $testBehaviorShared = 'first';
+
             public function testBehaviorQuery(array $criteria = []): string
             {
                 return 'query:' . implode(',', $criteria);
@@ -56,12 +60,17 @@ it('exposes behaviors attached from the legacy init event', function() {
             {
                 return 'getter-query';
             }
+
+            public function getTestBehaviorShared(): string
+            {
+                return 'second';
+            }
         });
     });
 
     expect(app(TemplateManager::class)->renderString(
-        '{{ craft.testBehaviorValue }}|{{ craft.testBehaviorQuery }}|{{ craft.testBehaviorQuery(["a", "b"]) }}|{{ craft.testBehaviorGetter }}',
-    ))->toBe('property|query:|query:a,b|getter');
+        '{{ craft.testBehaviorValue }}|{{ craft.testBehaviorQuery }}|{{ craft.testBehaviorQuery(["a", "b"]) }}|{{ craft.testBehaviorGetter }}|{{ craft.testBehaviorShared }}',
+    ))->toBe('property|query:|query:a,b|getter|first');
 });
 
 it('lets behaviors reach the core craft variable through their owner', function() {
