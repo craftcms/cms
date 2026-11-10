@@ -209,6 +209,8 @@ describe('ElementSelectControl', () => {
         }),
     });
     app.mount(container);
+    // The upload button loads on demand.
+    await vi.dynamicImportSettled();
     await nextTick();
 
     return container;

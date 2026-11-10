@@ -134,6 +134,8 @@ async function mount(): Promise<HTMLElement> {
   registerUiComponents(registry);
   registry.install(app);
   app.mount(host);
+  // The table control renders once its chunk loads.
+  await vi.dynamicImportSettled();
   await nextTick();
 
   for (const element of host.querySelectorAll('*')) {

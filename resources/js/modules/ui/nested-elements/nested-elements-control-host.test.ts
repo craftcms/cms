@@ -58,7 +58,7 @@ afterEach(() => {
   restoreInternals();
 });
 
-function mount({
+async function mount({
   drafts = false,
   mode = 'editable',
   index = false,
@@ -113,6 +113,8 @@ function mount({
       : '') + '<div data-nested-mount></div>';
   form.append(host);
   document.body.append(form);
+  // The host renders the nested elements once their chunk loads.
+  await vi.dynamicImportSettled();
   return {form, host, text, control};
 }
 
@@ -160,7 +162,7 @@ it.each([
 ])(
   'refreshes a $location after deletion without losing unsaved HTML form values',
   async ({insideBlock, legacy, relative}) => {
-    const {form, host, text, control} = mount({insideBlock, relative});
+    const {form, host, text, control} = await mount({insideBlock, relative});
     const namespace = relative
       ? ''
       : insideBlock
@@ -247,7 +249,7 @@ it.each([
 );
 
 it('blocks changes when a draft owner has no element editor', async () => {
-  const {host} = mount({drafts: true});
+  const {host} = await mount({drafts: true});
   await deleteCard(host);
   await vi.waitFor(() =>
     expect(host.querySelector('[role="alert"]')?.textContent).toContain(
@@ -259,7 +261,7 @@ it('blocks changes when a draft owner has no element editor', async () => {
 });
 
 it('prepares the owner draft before changing its nested elements', async () => {
-  const {host, form} = mount({drafts: true});
+  const {host, form} = await mount({drafts: true});
   let finishDraft!: () => void;
   const draftSaved = new Promise<void>((resolve) => {
     finishDraft = resolve;
@@ -295,7 +297,7 @@ it('prepares the owner draft before changing its nested elements', async () => {
 
 it('stops handling nested actions when its surrounding HTML form is removed', async () => {
   vi.useFakeTimers();
-  const {host, form} = mount();
+  const {host, form} = await mount();
   await nextTick();
   const card = host.querySelector<HTMLElement>('[data-nested-id="81"]')!;
   form.remove();
@@ -315,14 +317,14 @@ it('stops handling nested actions when its surrounding HTML form is removed', as
 });
 
 it('renders an editable embedded index in an HTML form without an Inertia page', async () => {
-  const {host} = mount({index: true});
+  const {host} = await mount({index: true});
   await nextTick();
   expect(host.textContent).toContain('Entry 81');
   expect(host.querySelector('table')).not.toBeNull();
 });
 
 it('hides creation controls and blocks mutations for a read-only nested field', async () => {
-  const {host} = mount({mode: 'readOnly'});
+  const {host} = await mount({mode: 'readOnly'});
   await deleteCard(host);
   await nextTick();
   expect(host.textContent).toContain('Entry 81');

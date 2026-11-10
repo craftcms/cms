@@ -510,8 +510,12 @@ describe('useElementEditor', () => {
       registerUiComponents(components);
       defineEntryFieldLayoutUiHost(components);
       vi.stubGlobal('Cp', {$components: components});
-      vi.resetModules();
-      await import('../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js');
+      // A fresh copy of the legacy script, registering into these components.
+      // Only that module: resetting them all would hand the lazily loaded
+      // controls a second copy of the renderer they render inside.
+      await import(
+        /* @vite-ignore */ `../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js?flat=${flat}`
+      );
       onTestFinished(() => {
         vi.unstubAllGlobals();
       });
@@ -608,6 +612,7 @@ describe('useElementEditor', () => {
         'craft-legacy-html-control'
       ) as HTMLElement & {ready: Promise<void>};
       await legacy.ready;
+      await vi.dynamicImportSettled();
       await nextTick();
       const host = container!.querySelector('craft-entry-field-layout-ui')!;
       const input = container!.querySelector<HTMLInputElement>(

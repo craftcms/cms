@@ -1,6 +1,7 @@
 import {ConfigService} from '@craftcms/ui';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
-import {AssistantRequestError, renderMarkdown, streamFetch} from './assistant';
+import {AssistantRequestError} from './assistant';
+import {renderMarkdown, streamFetch} from './chat';
 
 describe('streamFetch', () => {
   beforeEach(() => {
