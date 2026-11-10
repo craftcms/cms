@@ -1,3 +1,5 @@
+import type {ActionItems} from '@/common/types';
+import type {ElementEditPayload} from '@/modules/elements/composables/useElementEditor';
 import {canonical, valueAt} from '@/modules/ui/runtime';
 import type {
   UiNodePayload,
@@ -12,6 +14,20 @@ import {
 } from '@/modules/ui/valueAccess';
 
 export type CompareSide = 'from' | 'to';
+
+/** One side of a comparison, as the server describes it. */
+export interface CompareSidePayload {
+  label: string;
+  /** Whether it's the user's unsaved edits to the current version. */
+  edited: boolean;
+  /** Set when the element is in more than one site the user can edit. */
+  siteName: string | null;
+  versionMenu: ActionItems;
+  siteMenu: ActionItems;
+  ui: UiPayload;
+  /** The edit screen's payload, when this side can be edited. */
+  editor?: (ElementEditPayload & {saveParams: UiValues}) | null;
+}
 
 /** A field on the Compare screen, as each side has it. */
 export interface CompareRow {

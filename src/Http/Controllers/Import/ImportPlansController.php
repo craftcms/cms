@@ -8,6 +8,8 @@ use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
+use CraftCms\Cms\Element\Data\FieldComparisonRow;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
@@ -18,6 +20,7 @@ use CraftCms\Cms\Http\ViewModels\ImportPlanEditViewModel;
 use CraftCms\Cms\Http\ViewModels\ImportPlanStepUiViewModel;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Data\ImportPlanIndexData;
+use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Data\MappingColumnGroup;
 use CraftCms\Cms\Import\Data\MappingValues;
 use CraftCms\Cms\Import\Data\NestedMappingPayload;
@@ -28,9 +31,11 @@ use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
+use CraftCms\Cms\Import\ImportPreviews;
 use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
+use CraftCms\Cms\Support\Json as JsonSupport;
 use CraftCms\Cms\Ui\UiResolver;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -333,6 +338,140 @@ class ImportPlansController
     }
 
     /**
+     * Previews what running a step would do to its first items, for the plan's Preview section.
+     */
+    public function previewStep(ImportPreviews $previews): JsonResponse
+    {
+        $importer = $this->previewImporter();
+
+        if (is_string($importer)) {
+            return $this->asJsonSuccess(null, ['error' => $importer]);
+        }
+
+        try {
+            $preview = $previews->previewStep($importer);
+        } catch (Throwable $e) {
+            return $this->asJsonSuccess(null, ['error' => $this->previewError($e)]);
+        }
+
+        $labels = $importer->getDestinationLabels();
+
+        return $this->asJsonSuccess(null, [
+            'error' => null,
+            'total' => $preview['total'],
+            'matchColumns' => array_map(fn (string $key): array => [
+                'key' => $key,
+                'label' => $labels[$key]['label'] ?? $key,
+            ], $preview['matchKeys']),
+            'items' => array_map(fn (int $index, ItemPreview $item): array => [
+                'index' => $index,
+                'result' => $item->result->value,
+                'title' => $item->element?->getUiLabel(),
+                'match' => array_map(
+                    fn (mixed $value): string => is_scalar($value) ? (string) $value : (string) JsonSupport::encode($value),
+                    Arr::only($item->matchCriteria, $preview['matchKeys']),
+                ),
+                'errors' => $item->errors,
+            ], array_keys($preview['items']), $preview['items']),
+        ]);
+    }
+
+    /**
+     * Shows how running a step would change one of its items' elements, as the Compare screen shows two versions of
+     * one: the element as it is now, or a blank one when the item would create it, beside the element after the import.
+     */
+    public function previewItem(ImportPreviews $previews, FieldChangeComparisons $comparisons): JsonResponse
+    {
+        $index = (int) $this->request->validate(['index' => ['required', 'integer', 'min:0']])['index'];
+        $importer = $this->previewImporter();
+
+        if (is_string($importer)) {
+            return $this->asJsonSuccess(null, ['error' => $importer]);
+        }
+
+        try {
+            $preview = $previews->previewItem($importer, $index);
+        } catch (Throwable $e) {
+            return $this->asJsonSuccess(null, ['error' => $this->previewError($e)]);
+        }
+
+        abort_if($preview === null, 404, 'Import item not found.');
+
+        $payload = [
+            'error' => null,
+            'result' => $preview->result->value,
+            'title' => $preview->element?->getUiLabel(),
+            'errors' => $preview->errors,
+            'comparison' => null,
+        ];
+        $element = $preview->element;
+
+        if ($element === null) {
+            return $this->asJsonSuccess(null, $payload);
+        }
+
+        $existing = $element->id
+            ? $element::find()->id($element->id)->siteId($element->siteId)->drafts(null)->status(null)->one()
+            : null;
+
+        if ($existing !== null && ! $this->request->craftUser()?->can('view', $existing)) {
+            return $this->asJsonSuccess(null, [
+                ...$payload,
+                'error' => t('You don’t have permission to view the element this item matches.'),
+            ]);
+        }
+
+        $blankData = [];
+        $from = $existing ?? $importer->prepareNewRootElementForImport($blankData);
+        // the import makes the changes
+        $comparison = $comparisons->compareElements($from, $element, ['from' => false, 'to' => true]);
+        $side = fn (string $label, mixed $ui): array => [
+            'label' => $label,
+            'edited' => false,
+            'siteName' => null,
+            'versionMenu' => [],
+            'siteMenu' => [],
+            'ui' => $ui,
+        ];
+
+        return $this->asJsonSuccess(null, [
+            ...$payload,
+            'comparison' => [
+                'from' => $side($existing ? t('Current') : t('Blank'), $comparison['from']),
+                'to' => $side(t('After the import'), $comparison['to']),
+                'rows' => array_map(fn (FieldComparisonRow $row): array => $row->toArray(), $comparison['rows']),
+                'badged' => $comparison['badged'],
+                'editUrl' => $existing?->getCpEditUrl(),
+            ],
+        ]);
+    }
+
+    /**
+     * The posted step's importer, when it's one that can be previewed, or else why it can't be.
+     */
+    private function previewImporter(): ElementImporter|string
+    {
+        $importer = $this->mappingImporter();
+
+        if (! $importer instanceof ElementImporter) {
+            return t('Only steps that import elements can be previewed.');
+        }
+
+        if (! $this->hasDestination($importer)) {
+            return t('Choose what this step imports into to preview it.');
+        }
+
+        return BaseImporter::sourceError($importer->source, resolveHost: false) ?? $importer;
+    }
+
+    private function previewError(Throwable $e): string
+    {
+        return $e instanceof ValidationException
+            ? (Arr::first(Arr::flatten($e->errors())) ?? $e->getMessage())
+            : $e->getMessage();
+    }
+
+    /**
      * Returns the response for a step whose data can't be mapped, naming the step attribute
      * the message is about, if it's about one.
      */
@@ -617,7 +756,13 @@ class ImportPlansController
                 callback: function (CpScreenResponse $response) use ($importPlan, $currentUser) {
                     $response
                         ->action('import/save')
-                        ->redirectUrl('import/{handle}');
+                        ->redirectUrl('import')
+                        ->saveShortcutRedirectUrl('import/{handle}')
+                        ->addAltAction(t('Save and continue editing'), [
+                            'redirect' => 'import/{handle}',
+                            'shortcut' => true,
+                            'retainScroll' => true,
+                        ]);
 
                     if (! $importPlan->isEditable()) {
                         return;

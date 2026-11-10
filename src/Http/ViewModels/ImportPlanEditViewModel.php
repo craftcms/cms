@@ -17,6 +17,7 @@ use CraftCms\Cms\Ui\Controls\Textarea;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
+use CraftCms\Cms\Ui\Nodes\Slot;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -58,6 +59,8 @@ class ImportPlanEditViewModel extends ViewModel
                 ->instructions(t('A description of what this import plan is for.')),
             UiField::make(t('Steps'), Table::make('steps'))
                 ->instructions(t('Each step imports one kind of data. Steps run in the order listed here.')),
+            // the page fills this with what running the steps as the form has them would do
+            Slot::make('preview'),
         ]), new UiContext(
             values: [
                 'uid' => $this->importPlan->uid,

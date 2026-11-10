@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
@@ -28,6 +29,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Import\UserImporter;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 
@@ -709,6 +711,19 @@ describe('step pages', function () {
             ));
     });
 
+    it('returns to the plans after saving, with an option to keep editing the plan', function () {
+        $this->get(route('craft.cp.import.edit', ['handle' => 'fixtureImport']))
+            ->assertOk()
+            ->assertInertia(function ($page) {
+                $props = $page->toArray()['props'];
+                $continue = collect($props['formActions'])->firstWhere('label', 'Save and continue editing');
+
+                expect(Crypt::decrypt($props['redirectUrl']))->toBe('import')
+                    ->and(Crypt::decrypt($continue['redirect']))->toBe('import/{handle}')
+                    ->and($props['saveShortcutRedirect'])->toBe('import/{handle}');
+            });
+    });
+
     it('labels a container field’s nested destinations by their whole path, at every depth', function () {
         $labels = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
             'step' => ($this->entryStep)(),
@@ -820,4 +835,54 @@ describe('the step form', function () {
             ->and($labels)->toHaveKey('slug');
     });
 
+});
+
+describe('previewing a step', function () {
+    beforeEach(function () {
+        $this->existing = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->createElement(['title' => 'Old title', 'slug' => 'second-file-entry-slug']);
+
+        // only the second item has a slug to match on
+        $this->previewStep = ($this->entryStep)([
+            'map' => ['title' => 'title', 'slug' => 'slug'],
+            'matchCriteria' => ['slug' => 1],
+        ]);
+    });
+
+    it('says what importing each item would do, without saving anything', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => $this->previewStep,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('error'))->toBeNull()
+            ->and($response->json('total'))->toBe(3)
+            ->and($response->json('matchColumns'))->toBe([['key' => 'slug', 'label' => 'Slug']])
+            ->and($response->json('items.*.result'))->toBe(['new', 'update', 'new'])
+            ->and($response->json('items.1.match'))->toBe(['slug' => 'second-file-entry-slug'])
+            ->and($response->json('items.1.title'))->toBe('second file entry');
+
+        expect(EntryElement::find()->sectionId($this->section->id)->status(null)->count())->toBe(1)
+            ->and(EntryElement::find()->id($this->existing->id)->status(null)->one()->title)->toBe('Old title');
+    });
+
+    it('compares an item’s element as it is with how the import would leave it', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewItem']), [
+            'step' => $this->previewStep,
+            'index' => 1,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('result'))->toBe('update')
+            ->and($response->json('comparison.from.label'))->toBe('Current')
+            ->and($response->json('comparison.badged'))->toBe(['from' => false, 'to' => true]);
+
+        $toTitle = collect($response->json('comparison.to.ui.values'))->flatten()->contains('second file entry');
+        $changedRows = collect($response->json('comparison.rows'))->where('changed', true);
+
+        expect($toTitle)->toBeTrue()
+            ->and($changedRows)->toHaveCount(1);
+    });
 });

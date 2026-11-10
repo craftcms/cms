@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
 use CraftCms\Cms\Import\DataTypes\DataTypes;
+use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Events\ImportDispatched;
 use CraftCms\Cms\Import\Events\ImportDispatching;
 use CraftCms\Cms\Import\Events\ItemImported;
@@ -388,10 +391,62 @@ class Import
      */
     public function importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null): void
     {
+        $data = $this->prepareItem($importer, $data, $matchCriteria, $runId);
+
+        if ($data === null) {
+            return;
+        }
+
+        try {
+            $importedItem = $importer->importItem($data);
+        } catch (Throwable $e) {
+            $importer->discardAfterItemImportedCallbacks();
+
+            throw $e;
+        }
+
+        $importer->runAfterItemImportedCallbacks($importedItem);
+
+        event(new ItemImported($importer, $data, $runId, $importedItem));
+    }
+
+    /**
+     * Returns what importing an item into an element would do, without saving anything. The item goes through
+     * everything `importItem()` puts it through, apart from the save, so the `ItemImporting` event still fires.
+     *
+     * @param  array<string, mixed>  $data  The raw item data.
+     * @param  array<string, mixed>  $matchCriteria  As for `importItem()`.
+     */
+    public function previewItem(ElementImporter $importer, array $data, array $matchCriteria = []): ItemPreview
+    {
+        $data = $this->prepareItem($importer, $data, $matchCriteria, null);
+
+        if ($data === null) {
+            return new ItemPreview(ItemPreviewResult::Skip, null);
+        }
+
+        try {
+            return $importer->previewItem($data);
+        } finally {
+            // they'd save what goes with the element, such as a user's addresses
+            $importer->discardAfterItemImportedCallbacks();
+        }
+    }
+
+    /**
+     * Readies an item for the importer: fires the importing event, applies the map, and resolves the match criteria,
+     * defaults, and clearable items. Returns `null` when an event listener skips the item.
+     *
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $matchCriteria
+     * @return array<string, mixed>|null
+     */
+    private function prepareItem(BaseImporter $importer, array $data, array $matchCriteria, ?string $runId): ?array
+    {
         event($event = new ItemImporting($importer, $data, $runId));
 
         if (! $event->isValid) {
-            return;
+            return null;
         }
 
         $data = $event->data;
@@ -427,17 +482,7 @@ class Import
         $this->applyDefaultValues($data, $importer->defaultValues ?? []);
         $this->applyClearableItems($data, $importer->clearableItems ?? []);
 
-        try {
-            $importedItem = $importer->importItem($data);
-        } catch (Throwable $e) {
-            $importer->discardAfterItemImportedCallbacks();
-
-            throw $e;
-        }
-
-        $importer->runAfterItemImportedCallbacks($importedItem);
-
-        event(new ItemImported($importer, $data, $runId, $importedItem));
+        return $data;
     }
 
     /**
@@ -453,7 +498,7 @@ class Import
         $importerConfigLevelCriteria = [];
         foreach ($criteria as $key => $value) {
             // an empty value would add no condition and match any element, so it's left out like a missing one
-            if ($value !== null && ! is_array($value) && isset($data[$key]) && ! blank($data[$key])) {
+            if ($value !== null && ! is_array($value) && isset($data[$key]) && filled($data[$key])) {
                 $importerConfigLevelCriteria[$key] = $data[$key];
             }
         }
@@ -470,7 +515,7 @@ class Import
                     }
                 }
             );
-            $dataSourcedMatchCriteria = array_filter($dataSourcedMatchCriteria, fn ($value) => ! blank($value));
+            $dataSourcedMatchCriteria = array_filter($dataSourcedMatchCriteria, filled(...));
         }
 
         if (! empty($importerConfigLevelCriteria) || ! empty($dataSourcedMatchCriteria)) {

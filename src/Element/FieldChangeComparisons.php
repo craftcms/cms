@@ -172,9 +172,11 @@ readonly class FieldChangeComparisons
      * whose fields are in the same order: the newer version’s, followed by fields only the older version has. Changed
      * fields are badged on the sides {@see self::badgedSides()} picks, and no field has a status.
      *
+     * @param  array{from: bool, to: bool}|null  $badged  The sides that badge their changed fields, when it's not for the
+     *                                                    versions' kinds to say.
      * @return array{from: UiPayload, to: UiPayload, rows: list<FieldComparisonRow>, badged: array{from: bool, to: bool}}
      */
-    public function compareElements(ElementInterface $from, ElementInterface $to): array
+    public function compareElements(ElementInterface $from, ElementInterface $to, ?array $badged = null): array
     {
         $namespace = 'compare'.Str::random(8);
         $fromPayload = $this->previews->compile($from, $from, "{$namespace}From", ControlMode::ReadOnly);
@@ -217,7 +219,7 @@ readonly class FieldChangeComparisons
 
         $rows = [];
         $paneNodes = ['from' => [], 'to' => []];
-        $badged = $this->badgedSides($from, $to);
+        $badged ??= $this->badgedSides($from, $to);
 
         foreach ($pairs as [$layoutElement, $fromNode, $toNode]) {
             $changed = $this->changed($layoutElement, $fromPayload, $fromNode, $from, $toPayload, $toNode, $to);
@@ -289,6 +291,14 @@ readonly class FieldChangeComparisons
             $root->getIsDraft() => $root->draftName ?: t('Draft'),
             default => t('Current'),
         };
+    }
+
+    /**
+     * Whether values were set on the element since it was loaded, so it's no longer the version it was saved as.
+     */
+    private function hasUnsavedValues(ElementInterface $element): bool
+    {
+        return $element->getDirtyFields() !== [] || $element->getDirtyAttributes() !== [];
     }
 
     private function nodeUid(NodePayload $node): string
@@ -474,7 +484,7 @@ readonly class FieldChangeComparisons
 
         $unchanged = match (true) {
             $fromNode === null || $toNode === null => false,
-            $from->id === $to->id && $from->siteId === $to->siteId => true,
+            $from->id === $to->id && $from->siteId === $to->siteId && ! $this->hasUnsavedValues($from) && ! $this->hasUnsavedValues($to) => true,
             $this->loadsOwnValues($toNode) || $this->loadsOwnValues($fromNode) => $from ? $this->sameNestedElements($layoutElement, $from, $to) : null,
             default => $this->sameValue($fromValue, $toValue),
         };

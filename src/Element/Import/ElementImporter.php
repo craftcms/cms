@@ -15,7 +15,9 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
 use CraftCms\Cms\Field\Lightswitch;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Enums\MatchMode;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
@@ -482,6 +484,89 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public function importItem(array $data): ?ElementInterface
     {
+        $prepared = $this->prepareItem($data);
+
+        if ($prepared === null) {
+            return null;
+        }
+
+        ['element' => $element, 'hasChanges' => $hasChanges, 'createDraft' => $createDraft, 'publishDraft' => $publishDraft] = $prepared;
+
+        if (! $hasChanges) {
+            return $element;
+        }
+
+        $this->useValidationScenario($element, $prepared['staysDraft']);
+
+        $fieldLayout = $element->getFieldLayout();
+        $restoreKeepFlagFields = $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
+
+        try {
+            $saved = $createDraft
+                ? Drafts::saveElementAsDraft($element)
+                : Elements::saveElement($element);
+
+            if (! $saved) {
+                throw new InvalidElementException(
+                    $element,
+                    'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.implode(' ', $element->errors()->all()),
+                );
+            }
+        } finally {
+            foreach ($restoreKeepFlagFields as $field) {
+                $field->setKeepMissingNestedElements(false);
+            }
+        }
+
+        if ($publishDraft) {
+            $element = Drafts::applyDraft($element);
+        }
+
+        return $element;
+    }
+
+    /**
+     * Returns what importing an item would do, without saving anything: the element it would create or update, with
+     * the item's values set on it, and whether that element would pass validation.
+     *
+     * @param  array<string, mixed>  $data  The item, as `Import::importItem()` hands it to `importItem()`.
+     */
+    public function previewItem(array $data): ItemPreview
+    {
+        $prepared = $this->prepareItem($data);
+        $matchCriteria = is_array($data['matchCriteria'] ?? null) ? $data['matchCriteria'] : [];
+
+        if ($prepared === null) {
+            return new ItemPreview(ItemPreviewResult::Skip, null, $matchCriteria);
+        }
+
+        $element = $prepared['element'];
+        $result = match (true) {
+            $prepared['isNew'] => ItemPreviewResult::New,
+            $prepared['hasChanges'] => ItemPreviewResult::Update,
+            default => ItemPreviewResult::Unchanged,
+        };
+
+        if ($result !== ItemPreviewResult::Unchanged) {
+            $this->useValidationScenario($element, $prepared['staysDraft']);
+
+            if (! $element->validate()) {
+                return new ItemPreview(ItemPreviewResult::Problem, $element, $matchCriteria, array_values(array_unique($element->errors()->all())));
+            }
+        }
+
+        return new ItemPreview($result, $element, $matchCriteria);
+    }
+
+    /**
+     * Finds the element an item goes into and sets the item's values on it, or returns `null` when the plan doesn't
+     * create or update the element the item matches.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{element: ElementInterface, isNew: bool, hasChanges: bool, createDraft: bool, publishDraft: bool, staysDraft: bool}|null
+     */
+    private function prepareItem(array $data): ?array
+    {
         // figure out if we're adding or updating
         $element = $this->getRootElement($data);
 
@@ -558,44 +643,24 @@ abstract class ElementImporter extends BaseImporter
             || $this->attributeValuesChanged($element, $oldAttributeValues)
             || $this->fieldValuesChanged($element, $oldFieldValues);
 
-        if (! $hasChanges) {
-            return $element;
-        }
+        return [
+            'element' => $element,
+            'isNew' => $isNew,
+            'hasChanges' => $hasChanges,
+            'createDraft' => $createDraft,
+            'publishDraft' => $publishDraft,
+            // a draft that stays a draft only needs to meet the essentials, like a draft saved from the control panel
+            'staysDraft' => $createDraft || ($element->getIsUnpublishedDraft() && ! $publishDraft),
+        ];
+    }
 
-        // a draft that stays a draft only needs to meet the essentials, like a draft saved from the control panel
-        $staysDraft = $createDraft || ($element->getIsUnpublishedDraft() && ! $publishDraft);
-
+    private function useValidationScenario(ElementInterface $element, bool $staysDraft): void
+    {
         if (! $staysDraft && $element->enabled && $element->getEnabledForSite()) {
             $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         } else {
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         }
-
-        $fieldLayout = $element->getFieldLayout();
-        $restoreKeepFlagFields = $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
-
-        try {
-            $saved = $createDraft
-                ? Drafts::saveElementAsDraft($element)
-                : Elements::saveElement($element);
-
-            if (! $saved) {
-                throw new InvalidElementException(
-                    $element,
-                    'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.implode(' ', $element->errors()->all()),
-                );
-            }
-        } finally {
-            foreach ($restoreKeepFlagFields as $field) {
-                $field->setKeepMissingNestedElements(false);
-            }
-        }
-
-        if ($publishDraft) {
-            $element = Drafts::applyDraft($element);
-        }
-
-        return $element;
     }
 
     /**

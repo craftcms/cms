@@ -504,13 +504,20 @@ class ElementHelper
             ->pluck('uid', 'id')
             ->all();
 
-        return array_map(
-            fn (ElementInterface $element): string => ($element->getIsDerivative()
+        $identities = [];
+        $new = 0;
+
+        foreach ($elements as $key => $element) {
+            $identity = ($element->getIsDerivative()
                 ? $canonicalUids[$element->getCanonicalId()] ?? null
                 : null
-            ) ?? $element->uid ?? (string) $element->id,
-            $elements,
-        );
+            ) ?? $element->uid ?? (string) $element->id;
+
+            // an element that's never been saved, such as one an import is about to create, is keyed as new blocks are
+            $identities[$key] = $identity !== '' ? $identity : 'new'.++$new;
+        }
+
+        return $identities;
     }
 
     /**

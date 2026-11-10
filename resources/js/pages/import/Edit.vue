@@ -7,17 +7,19 @@
    * before that.
    */
   import type {UrlMethodPair} from '@inertiajs/core';
+  import {shallowRef} from 'vue';
   import type {FormAction} from '@/common/types';
   import UiPage from '@/pages/Ui.vue';
   import type {UiPayload, UiValue} from '@/modules/ui/types';
   import type {ImportStep} from '@/modules/import/mapping/types';
   import {cloneSteps} from '@/modules/import/mapping/paths';
   import StepList from '@/modules/import/steps/StepList.vue';
+  import PlanPreview from '@/modules/import/preview/PlanPreview.vue';
 
   type ImporterType =
     CraftCms.Cms.Http.ViewModels.ImportPlanEditViewModel['importerTypes'][number];
 
-  defineProps<{
+  const props = defineProps<{
     ui: UiPayload;
     submit: UrlMethodPair;
     importerTypes: ImporterType[];
@@ -26,8 +28,19 @@
     formActions?: FormAction[];
   }>();
 
-  function asSteps(value: UiValue): ImportStep[] {
+  function asSteps(value: UiValue | undefined): ImportStep[] {
     return Array.isArray(value) ? (value as unknown as ImportStep[]) : [];
+  }
+
+  /** The steps as the form has them, for the preview. Only the list of steps changes them. */
+  const steps = shallowRef(asSteps(props.ui.values.steps));
+
+  function updateSteps(
+    value: ImportStep[],
+    setValue: (value: UiValue, mode: 'discrete') => void
+  ): void {
+    steps.value = cloneSteps(value);
+    setValue(cloneSteps(value) as unknown as UiValue, 'discrete');
   }
 
   /**
@@ -53,9 +66,14 @@
         :step-edit-urls="stepEditUrls"
         :step-summaries="stepSummaries"
         :errors="stepErrors(errors)"
-        @update:model-value="
-          setValue(cloneSteps($event) as unknown as UiValue, 'discrete')
-        "
+        @update:model-value="updateSteps($event, setValue)"
+      />
+    </template>
+    <template #preview>
+      <PlanPreview
+        :steps="steps"
+        :importer-types="importerTypes"
+        :step-summaries="stepSummaries"
       />
     </template>
   </UiPage>

@@ -364,6 +364,8 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('import/step-settings', [ImportPlansController::class, 'stepSettings']);
             Route::post('import/step-mapping', [ImportPlansController::class, 'stepMapping']);
             Route::post('import/nested-mapping-cols', [ImportPlansController::class, 'nestedMappingCols']);
+            Route::post('import/preview-step', [ImportPlansController::class, 'previewStep']);
+            Route::post('import/preview-item', [ImportPlansController::class, 'previewItem']);
         });
         Route::middleware('can:saveImportPlans')->group(function () {
             Route::post('import/save', [ImportPlansController::class, 'store']);

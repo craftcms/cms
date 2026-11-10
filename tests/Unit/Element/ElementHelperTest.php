@@ -149,3 +149,11 @@ test('sets next and previous elements', function () {
         ->and($three->getPrev())->toBe($two)
         ->and($three->getNext())->toBeNull();
 });
+
+test('keys nested elements that were never saved as new blocks', function () {
+    $saved = new TestElementHelperElement;
+    $saved->uid = 'saved-uid';
+
+    expect(ElementHelper::nestedElementIdentities([new TestElementHelperElement, $saved, new TestElementHelperElement]))
+        ->toBe(['new1', 'saved-uid', 'new2']);
+});
