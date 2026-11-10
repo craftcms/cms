@@ -436,37 +436,53 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->afterResolving(CraftVariable::class, function() {
             $legacyVariable = new LegacyCraftVariable();
 
-            foreach (array_keys($legacyVariable->getComponents()) as $name) {
-                CraftVariable::macro($name, fn() => $legacyVariable->get($name));
+            foreach ($legacyVariable->getBehaviors() as $behavior) {
+                $this->registerCraftVariableBehavior($legacyVariable, $behavior);
             }
 
-            foreach ($legacyVariable->getBehaviors() as $behavior) {
-                $this->registerCraftVariableBehavior($behavior);
+            foreach (array_keys($legacyVariable->getComponents()) as $name) {
+                CraftVariable::macro($name, fn() => $legacyVariable->get($name));
             }
         });
     }
 
     /**
-     * Exposes the public properties and methods of a behavior attached to the legacy `craft` variable,
+     * Exposes the public properties, methods, and getters of a behavior attached to the legacy `craft` variable,
      * such as `craft.commerce` or `craft.shopifyProducts()`.
+     *
+     * Each name resolves through the legacy variable, so when several behaviors share a name, Yii's
+     * precedence applies: methods over properties, and the first attached behavior wins.
      */
-    private function registerCraftVariableBehavior(Behavior $behavior): void
+    private function registerCraftVariableBehavior(LegacyCraftVariable $legacyVariable, Behavior $behavior): void
     {
         $reflection = new ReflectionObject($behavior);
+        $names = [];
 
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            $name = $property->getName();
-
-            if (!$property->isStatic() && !property_exists(Behavior::class, $name)) {
-                CraftVariable::macro($name, fn() => $behavior->$name);
+            if (!$property->isStatic() && !property_exists(Behavior::class, $property->getName())) {
+                $names[] = $property->getName();
             }
         }
 
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             $name = $method->getName();
 
-            if (!$method->isStatic() && !method_exists(Behavior::class, $name)) {
-                CraftVariable::macro($name, fn(mixed ...$args) => $behavior->$name(...$args));
+            if ($method->isStatic() || method_exists(Behavior::class, $name)) {
+                continue;
+            }
+
+            $names[] = $name;
+
+            if (str_starts_with($name, 'get') && strlen($name) > 3 && $method->getNumberOfRequiredParameters() === 0) {
+                $names[] = lcfirst(substr($name, 3));
+            }
+        }
+
+        foreach ($names as $name) {
+            if ($legacyVariable->hasMethod($name)) {
+                CraftVariable::macro($name, fn(mixed ...$args) => $legacyVariable->$name(...$args));
+            } else {
+                CraftVariable::macro($name, fn() => $legacyVariable->$name);
             }
         }
     }
