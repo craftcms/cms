@@ -12,8 +12,12 @@ use CraftCms\Cms\Support\Facades\UserPermissions;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ResetPasswordNotification;
+use Illuminate\Auth\Events\OtherDeviceLogout;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Notifications\Channels\MailChannel;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Session;
 use Inertia\Testing\AssertableInertia;
@@ -299,6 +303,22 @@ it('successfully saves password', function () {
     post(action([PasswordController::class, 'store']), [
         'newPassword' => $newPassword,
     ])->assertRedirectBack()->assertSessionHasNoErrors();
+});
+
+it('logs out other devices when saving a password over HTTP', function () {
+    // Other devices are only logged out outside the console
+    (fn () => $this->isRunningInConsole = false)->call(app());
+    $this->withoutMiddleware(PreventRequestForgery::class);
+    Event::fake([OtherDeviceLogout::class]);
+
+    post(action([PasswordController::class, 'store']), [
+        'newPassword' => 'NewValidPassword123!',
+    ])->assertRedirectBack()->assertSessionHasNoErrors();
+
+    Event::assertDispatched(OtherDeviceLogout::class);
+    expect(Hash::check('NewValidPassword123!', UserModel::first()->password))->toBeTrue();
+
+    get(action([PasswordController::class, 'index']))->assertOk();
 });
 
 it('returns failure when save fails', function () {

@@ -80,6 +80,12 @@
   onBeforeUnmount(() => panels?.unregister(props.id));
 
   const section = computed(() => panels?.sections.get(props.id) ?? null);
+  const active = computed(() => panels?.openPanelId.value === props.id);
+
+  defineSlots<{
+    default?(props: {active: boolean}): unknown;
+    'header-actions'?(): unknown;
+  }>();
 </script>
 
 <template>
@@ -90,7 +96,7 @@
         <template #header-actions>
           <slot name="header-actions"></slot>
         </template>
-        <slot></slot>
+        <slot :active="active"></slot>
       </DetailsPanelContent>
     </Teleport>
   </div>

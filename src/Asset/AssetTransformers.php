@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
 use CraftCms\Cms\Image\Enums\ImageTransformInterlace;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
@@ -26,6 +27,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Ui\Nodes\Field;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Manager;
@@ -47,6 +49,9 @@ use WeakMap;
 #[Singleton]
 class AssetTransformers extends Manager
 {
+    /** @internal Hidden context key holding the caller’s immediate generation preference. */
+    public const string IMMEDIATE_TRANSFORMS_CONTEXT = self::class.'.immediateTransforms';
+
     private const int MAX_SCOPED_DEPTH = 8;
 
     /** @var array<string, non-empty-list<string|Stringable>> */
@@ -175,6 +180,30 @@ class AssetTransformers extends Manager
         $request = $this->request($asset, $definition, $this->forAsset($asset));
 
         return $this->driver($request->transformer->driver)->transform($request);
+    }
+
+    /**
+     * Runs a callback in which transforms are requested immediately, so drivers get `true` in
+     * `AssetTransformRequest::$immediately`.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
+     */
+    public function withImmediateTransforms(callable $callback): mixed
+    {
+        return Context::scope($callback, hidden: [self::IMMEDIATE_TRANSFORMS_CONTEXT => true]);
+    }
+
+    /**
+     * Returns whether transforms are currently requested immediately, or `null` if there’s no preference.
+     */
+    public function immediateTransforms(): ?bool
+    {
+        return Context::hasHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT)
+            ? Context::getHidden(self::IMMEDIATE_TRANSFORMS_CONTEXT) === true
+            : null;
     }
 
     public function invalidate(Asset $asset): void
@@ -425,7 +454,27 @@ class AssetTransformers extends Manager
             asset: $asset,
             transformer: $transformer,
             parameters: $parameters,
+            namedTransform: $this->namedTransform($definition),
+            immediately: $this->immediateTransforms(),
         );
+    }
+
+    /**
+     * Returns the named Image Transform a definition uses without overriding any of its parameters.
+     */
+    private function namedTransform(#[\SensitiveParameter] mixed $definition): ?ImageTransform
+    {
+        if (is_array($definition)) {
+            return array_keys($definition) === ['transform'] ? $this->namedTransform($definition['transform']) : null;
+        }
+
+        if (! is_string($definition) && ! $definition instanceof ImageTransform) {
+            return null;
+        }
+
+        $transform = ImageTransformHelper::normalizeTransform($definition);
+
+        return ! empty($transform->handle) ? $transform : null;
     }
 
     /** @return array<string, mixed> */

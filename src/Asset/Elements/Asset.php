@@ -2169,12 +2169,23 @@ class Asset extends Element
         return app(AssetTransformers::class)->transform($this, $definition);
     }
 
+    /**
+     * Transforms the asset for the deprecated transform arguments of its URL, dimension, and image methods.
+     */
+    protected function _runTransform(
+        #[\SensitiveParameter] mixed $definition,
+    ): AssetTransformResult {
+        return $this->transform($definition);
+    }
+
     protected function _tryTransform(
         #[\SensitiveParameter] mixed $definition,
     ): ?AssetTransformResult {
         try {
-            return $this->transform($definition);
-        } catch (AssetTransformException|NotSupportedException|FilesystemException $exception) {
+            return $this->_runTransform($definition);
+        } catch (NotSupportedException) {
+            return null;
+        } catch (AssetTransformException|FilesystemException $exception) {
             report($exception);
 
             return null;
@@ -2241,7 +2252,15 @@ class Asset extends Element
     private function _url(mixed $transform = null): ?string
     {
         if ($transform !== null) {
-            return $this->_tryTransform($transform)?->url;
+            try {
+                return $this->_runTransform($transform)->url;
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own URL, like Craft 5.
+            } catch (AssetTransformException|FilesystemException $exception) {
+                report($exception);
+
+                return null;
+            }
         }
 
         if (! $this->folderId) {
@@ -2432,7 +2451,11 @@ class Asset extends Element
     public function getMimeType(mixed $transform = null): ?string
     {
         if ($transform !== null) {
-            return $this->transform($transform)->mimeType;
+            try {
+                return $this->transform($transform)->mimeType;
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own value.
+            }
         }
 
         return $this->_mimeType ?? File::getMimeTypeByExtension($this->_filename);
@@ -2458,7 +2481,11 @@ class Asset extends Element
     public function getFormat(mixed $transform = null): string
     {
         if ($transform !== null) {
-            return File::getExtensionByMimeType($this->transform($transform)->mimeType);
+            try {
+                return File::getExtensionByMimeType($this->transform($transform)->mimeType);
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own value.
+            }
         }
 
         return $this->getExtension();
@@ -2473,10 +2500,14 @@ class Asset extends Element
     public function getHeight(mixed $transform = null): ?int
     {
         if ($transform !== null) {
-            return $this->transform($transform)->height;
+            try {
+                return $this->transform($transform)->height;
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own value.
+            }
         }
 
-        return $this->_dimensions($transform)[1];
+        return $this->_dimensions()[1];
     }
 
     /**
@@ -2498,10 +2529,14 @@ class Asset extends Element
     public function getWidth(array|string|ImageTransform|null $transform = null): ?int
     {
         if ($transform !== null) {
-            return $this->transform($transform)->width;
+            try {
+                return $this->transform($transform)->width;
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own value.
+            }
         }
 
-        return $this->_dimensions($transform)[0];
+        return $this->_dimensions()[0];
     }
 
     /**

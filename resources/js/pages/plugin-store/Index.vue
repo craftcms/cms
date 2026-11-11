@@ -49,7 +49,7 @@
 
       <section v-for="section in sections" :key="section.id">
         <div class="flex items-baseline justify-between gap-md">
-          <h2 class="m-0 text-lg">{{ section.title }}</h2>
+          <h2 class="cp-h2">{{ section.title }}</h2>
           <CpLink :href="featured({handle: section.slug})">
             {{ t('See all') }}
           </CpLink>
@@ -58,7 +58,7 @@
       </section>
 
       <section v-if="trials.length || trialsFailed">
-        <h2 class="m-0 text-lg">{{ t('Active Trials') }}</h2>
+        <h2 class="cp-h2">{{ t('Active Trials') }}</h2>
         <PluginGrid v-if="trials.length" :plugins="trials" trial />
         <p v-if="trialsFailed">{{ t('Couldn’t load active trials.') }}</p>
       </section>

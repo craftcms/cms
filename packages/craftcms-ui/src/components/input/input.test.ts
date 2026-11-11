@@ -111,20 +111,6 @@ describe('craft-input', () => {
     expect(native(element).hasAttribute('size')).toBe(false);
   });
 
-  /** These are presentation flags the stylesheet keys off, so they reflect. */
-  it('reflects its presentation flags', async () => {
-    const element = await createInput({
-      monospace: '',
-      center: '',
-      small: '',
-    });
-
-    expect(element.monospace).toBe(true);
-    expect(element.center).toBe(true);
-    expect(element.hasAttribute('monospace')).toBe(true);
-    expect(element.hasAttribute('center')).toBe(true);
-  });
-
   it('passes a type through to the native input', async () => {
     const element = await createInput({type: 'email'});
     await element.updateComplete;

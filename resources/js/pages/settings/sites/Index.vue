@@ -93,7 +93,7 @@
   <div class="contents">
     <LayoutSlot name="title">
       <div class="flex gap-md items-center">
-        <h1 class="title text-xl">
+        <h1 class="title cp-h1">
           {{ title }}
         </h1>
 

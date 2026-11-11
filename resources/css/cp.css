@@ -142,6 +142,39 @@ Temporary holding for cp-pane styles until craft-pane is a thing
   overflow: clip;
 }
 
+/* Make any element look like a heading. `.cp-h1` is the page title; every
+   other level sits below it. Layered so utilities on the same element still apply. */
+@layer components {
+  :is(.cp-h1, .cp-h2, .cp-h3, .cp-h4, .cp-h5, .cp-h6) {
+    margin: 0;
+    font-weight: bold;
+  }
+
+  .cp-h1 {
+    font-size: var(--c-text-xl);
+  }
+
+  .cp-h2 {
+    font-size: var(--c-text-lg);
+    line-height: 1.25;
+  }
+
+  .cp-h3 {
+    font-size: var(--c-text-md);
+    line-height: 1.25;
+  }
+
+  .cp-h4 {
+    font-size: var(--c-text-base);
+  }
+
+  /* Stops at `sm`: `xs` is too small to read as a heading. */
+  .cp-h5,
+  .cp-h6 {
+    font-size: var(--c-text-sm);
+  }
+}
+
 .markdown-field > .markdown-field-editor {
   display: block;
   min-height: 0;

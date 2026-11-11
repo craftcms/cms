@@ -251,14 +251,6 @@ describe('busy', () => {
     ).toBe(true);
   });
 
-  it('reflects busy to an attribute for styling', async () => {
-    const modal = await createModal((m) => {
-      m.busy = true;
-    });
-
-    expect(modal.hasAttribute('busy')).toBe(true);
-  });
-
   it('refuses a Cancel click', async () => {
     const modal = await createModal((m) => {
       m.setAttribute('open', '');

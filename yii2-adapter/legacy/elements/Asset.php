@@ -13,14 +13,12 @@ namespace craft\elements;
 
 use Craft;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
-use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use CraftCms\Cms\Image\ImageTransforms;
-use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use Override;
 use Twig\Markup;
@@ -127,16 +125,10 @@ class Asset extends \CraftCms\Cms\Asset\Elements\Asset
     }
 
     #[Override]
-    protected function _tryTransform(
+    protected function _runTransform(
         #[\SensitiveParameter] mixed $definition,
-    ): ?AssetTransformResult {
-        try {
-            return Craft::$app->getImageTransforms()->transformAsset($this, $definition, $this->_immediately);
-        } catch (AssetTransformException|NotSupportedException $exception) {
-            report($exception);
-
-            return null;
-        }
+    ): AssetTransformResult {
+        return Craft::$app->getImageTransforms()->transformAsset($this, $definition, $this->_immediately);
     }
 
     #[Override]

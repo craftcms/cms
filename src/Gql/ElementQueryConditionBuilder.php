@@ -227,7 +227,9 @@ class ElementQueryConditionBuilder extends Component
             return [];
         }
 
-        return [GqlHelper::prepareTransformArguments($arguments)];
+        $transform = GqlHelper::prepareTransformArguments($arguments);
+
+        return empty($transform) ? [] : [$transform];
     }
 
     private function _isInsideAssetQuery(): bool

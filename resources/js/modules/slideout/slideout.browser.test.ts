@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {Slideout} from './slideout';
 
@@ -34,6 +35,17 @@ it('opens around its contents and tears down without jQuery', () => {
   slideout.destroy();
   expect(document.getElementById('my-slideout')).toBeNull();
   expect(Slideout.instances['my-slideout']).toBeUndefined();
+});
+
+it('exposes its container as a jQuery collection when jQuery is loaded', () => {
+  vi.stubGlobal('jQuery', $);
+
+  const slideout = new Slideout('<div class="so-body">Hello</div>');
+
+  expect(slideout.$container.get(0)).toBe(slideout.container);
+  expect(slideout.$container.find('.so-body').text()).toBe('Hello');
+  slideout.close();
+  slideout.destroy();
 });
 
 it('returns focus to the menu that opened it once the menu has closed', async () => {

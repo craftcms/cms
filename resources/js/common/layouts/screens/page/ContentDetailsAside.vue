@@ -74,9 +74,10 @@
      short only once the page's end brings the panel's own bottom into view. */
   .cp-content__details-pane {
     position: sticky;
-    inset-block-start: 0;
+    inset-block-start: var(--cp-visible-viewport-top, 0px);
     height: calc(
-      100dvh - var(--cp-debug-bar-height, 0px) - var(--cp-details-offset, 0px) -
+      var(--cp-visible-viewport-height, 100dvh) -
+        var(--cp-debug-bar-height, 0px) - var(--cp-details-offset, 0px) -
         var(--cp-details-end-gap, 0px)
     );
   }

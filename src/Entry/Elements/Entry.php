@@ -37,7 +37,6 @@ use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
-use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Concerns\LegacyConstants;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
@@ -1971,6 +1970,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
+    protected function initialRevisionCreatorId(): ?int
+    {
+        return $this->getAuthorId();
+    }
+
+    #[Override]
     public function hasRevisions(): bool
     {
         if ($section = $this->getSection()) {
@@ -2680,33 +2685,6 @@ JS;
     #[Override]
     public function beforeSave(bool $isNew): bool
     {
-        if ($this->_shouldSaveRevision()) {
-            // Make sure the entry has at least one revision
-            $hasRevisions = self::find()
-                ->revisionOf($this)
-                ->site('*')
-                ->status(null)
-                ->exists();
-
-            if (! $hasRevisions) {
-                /** @var self|null $current */
-                $current = self::find()
-                    ->id($this->id)
-                    ->site('*')
-                    ->status(null)
-                    ->one();
-
-                // May be null if the entry is currently stored as an unpublished draft
-                if ($current) {
-                    app(Revisions::class)->createRevision(
-                        $current,
-                        $current->getAuthorId(),
-                        sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated, withTimeZone: true)),
-                    );
-                }
-            }
-        }
-
         if ($section = $this->getSection()) {
             // Set the structure ID for Element::attributes() and afterSave()
             if ($section->type === SectionType::Structure) {
@@ -2927,17 +2905,6 @@ JS;
     }
 
     #[Override]
-    public function afterPropagate(bool $isNew): void
-    {
-        parent::afterPropagate($isNew);
-
-        // Save a new revision?
-        if ($this->_shouldSaveRevision()) {
-            app(Revisions::class)->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
-        }
-    }
-
-    #[Override]
     public function beforeDelete(): bool
     {
         if (! parent::beforeDelete()) {
@@ -3036,22 +3003,6 @@ JS;
         }
 
         parent::afterMoveInStructure($structureId);
-    }
-
-    /**
-     * Returns whether the entry should be saving revisions on save.
-     */
-    private function _shouldSaveRevision(): bool
-    {
-        return
-            $this->id &&
-            ! $this->propagating &&
-            ! $this->resaving &&
-            $this->getIsCanonical() &&
-            $this->hasRevisions() &&
-            // Nested entries owned by a draft or revision shouldn't get their own revisions
-            // (see https://github.com/craftcms/cms/issues/20151)
-            ! ElementHelper::isDraftOrRevision($this);
     }
 
     /**

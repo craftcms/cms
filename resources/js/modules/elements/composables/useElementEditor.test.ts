@@ -2272,6 +2272,50 @@ describe('useElementEditor', () => {
     vi.useRealTimers();
   });
 
+  it('waits for a draft write already on its way, and applies the draft it creates', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+
+    const {editor} = mount(
+      payload({canAutosave: true, ui: fieldLayout('Canonical title')})
+    );
+    const response = deferred<{data: Record<string, unknown>}>();
+    let requestSignal: AbortSignal | undefined;
+    postSpy.mockImplementationOnce(
+      (_url: string, _data: unknown, {signal}: {signal: AbortSignal}) => {
+        requestSignal = signal;
+
+        return response.promise;
+      }
+    );
+
+    await typeTitle('First edit');
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(postSpy).toHaveBeenCalledTimes(1);
+    await typeTitle('Second edit');
+
+    const save = interceptSave();
+    onTestFinished(() => save.restore());
+    editor.save();
+
+    expect(save.calls()).toBe(0);
+    expect(requestSignal?.aborted).toBe(false);
+
+    response.resolve({data: {draftId: 7}});
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(save.calls()).toBe(1);
+    expect(save.last().url).toBe('/actions/elements/apply-draft');
+    expect(save.last().data).toMatchObject({draftId: 7, provisional: 1});
+    expect(JSON.stringify(save.last().data)).toContain('Second edit');
+    // The edit made while the draft write was out goes with the submission,
+    // not with a draft write of its own.
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(postSpy).toHaveBeenCalledTimes(1);
+  });
+
   /**
    * Saving before the debounce has run leaves a save armed against the draft
    * the submission is about to consume. It describes values this save is
