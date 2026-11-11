@@ -9,7 +9,7 @@
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/empty/empty';
   import '@craftcms/ui/components/reorder-button/reorder-button';
-  import {computed, ref, shallowRef, useTemplateRef} from 'vue';
+  import {computed, shallowRef, useTemplateRef} from 'vue';
   import {t} from '@craftcms/ui';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {ImportStep} from '@/modules/import/mapping/types';
@@ -25,17 +25,20 @@
     errors?: Record<string, string[]>;
     /** Each saved step's own page, by its uid. */
     stepEditUrls?: Record<string, string>;
-    /** Each step at a glance, by its uid, as the plan was loaded. */
-    stepSummaries?: Record<string, StepSummary>;
   }>();
 
   const steps = defineModel<ImportStep[]>({required: true});
 
-  /** Summaries of the steps added or edited since the plan was loaded, from their slideouts. */
-  const appliedSummaries = ref<Record<string, StepSummary>>({});
+  /**
+   * Each step at a glance, by its uid: as the plan was loaded, then as each slideout
+   * applies it, which is handed back so the page's preview names the steps the same way.
+   */
+  const summaries = defineModel<Record<string, StepSummary>>('stepSummaries', {
+    default: () => ({}),
+  });
 
   function summaryFor(uid: string): StepSummary | null {
-    return appliedSummaries.value[uid] ?? props.stepSummaries?.[uid] ?? null;
+    return summaries.value[uid] ?? null;
   }
 
   const addButton = useTemplateRef<HTMLElement>('addButton');
@@ -194,8 +197,8 @@
         opener: addButton.value,
         apply: (applied, summary) => {
           steps.value = [...steps.value, {...applied, uid: step.uid}];
-          appliedSummaries.value = {
-            ...appliedSummaries.value,
+          summaries.value = {
+            ...summaries.value,
             [step.uid]: summary,
           };
         },
@@ -217,8 +220,8 @@
         opener,
         apply: (applied, summary) => {
           replace(step.uid, applied);
-          appliedSummaries.value = {
-            ...appliedSummaries.value,
+          summaries.value = {
+            ...summaries.value,
             [step.uid]: summary,
           };
         },

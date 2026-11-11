@@ -34,6 +34,8 @@
 
   /** The steps as the form has them, for the preview. Only the list of steps changes them. */
   const steps = shallowRef(asSteps(props.ui.values.steps));
+  /** Each step at a glance, kept up to date by the list as steps are applied, for the preview's tabs too. */
+  const stepSummaries = shallowRef(props.stepSummaries);
 
   function updateSteps(
     value: ImportStep[],
@@ -63,8 +65,8 @@
         :model-value="asSteps(value)"
         :editable="editable"
         :importer-types="importerTypes"
+        v-model:step-summaries="stepSummaries"
         :step-edit-urls="stepEditUrls"
-        :step-summaries="stepSummaries"
         :errors="stepErrors(errors)"
         @update:model-value="updateSteps($event, setValue)"
       />

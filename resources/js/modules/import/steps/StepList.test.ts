@@ -53,6 +53,7 @@ function step(overrides: Partial<ImportStep> = {}): ImportStep {
 let app: ReturnType<typeof createApp> | null;
 let container: HTMLElement;
 let steps: ReturnType<typeof ref<ImportStep[]>>;
+let summaries: ReturnType<typeof ref<Record<string, unknown>>>;
 
 function mount(
   initial: ImportStep[] = [step()],
@@ -63,17 +64,18 @@ function mount(
   } = {}
 ) {
   steps = ref<ImportStep[]>(initial);
+  summaries = ref<Record<string, unknown>>(props.stepSummaries ?? {});
 
   app = createApp({
     components: {StepList},
     template:
-      '<StepList v-model="steps" :editable="editable" :importer-types="importerTypes" :errors="errors" :step-summaries="stepSummaries" />',
+      '<StepList v-model="steps" :editable="editable" :importer-types="importerTypes" :errors="errors" v-model:step-summaries="summaries" />',
     setup: () => ({
       steps,
+      summaries,
       importerTypes,
       editable: props.editable ?? true,
       errors: props.errors ?? {},
-      stepSummaries: props.stepSummaries ?? {},
     }),
   });
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
@@ -216,20 +218,25 @@ it('says what a matching step does with rows that match', () => {
   expect(details(1)).toEqual([]);
 });
 
-it('takes a step’s new summary from its slideout once applied', async () => {
+it('takes a step’s new summary from its slideout once applied, and hands it up for the page’s preview', async () => {
   mount();
 
   rowButtons()[0]!.click();
   await nextTick();
 
-  state.openStepSlideout.mock.calls[0]![0].apply(step({source: 'new.csv'}), {
+  const summary = {
     settings: [{label: 'Site', value: 'Other Site'}],
     destinationLabels: {},
-  });
+  };
+  state.openStepSlideout.mock.calls[0]![0].apply(
+    step({source: 'new.csv'}),
+    summary
+  );
   await nextTick();
 
   expect(identity()[2]).toBe('new.csv');
   expect(details()).toEqual([['Site', 'Other Site']]);
+  expect(summaries.value).toEqual({'step-1': summary});
 });
 
 it('opens a step’s mapping straight from its mapping section', async () => {
