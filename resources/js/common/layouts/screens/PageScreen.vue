@@ -544,8 +544,17 @@
 Shell
  */
   /* The top bar keeps its height and the shell takes at least the rest. Docked,
-     the sidebar's own height does this; floating, nothing else would. */
+     the sidebar's own height does this; floating, nothing else would.
+     `--cp-content-block-start` is the space at the top of each content column,
+     the same for all of them so their header bars stay level: none up to a
+     960px viewport, 16px from 2240px. It's in viewport units so the global
+     sidebar and details rail, outside the content, can line up with them. */
   .page-screen {
+    --cp-content-block-start: clamp(
+      0px,
+      1.25vw - var(--c-spacing-md) * 1.5,
+      var(--c-spacing-lg)
+    );
     display: flex;
     flex-direction: column;
     min-height: calc(100dvh - var(--cp-debug-bar-height, 0px));
@@ -755,18 +764,6 @@ Content: the secondary nav, content, and details panes
     /* The field layout's tabs sit a little further from the first field
        here than in slideouts. See UiNodeList.vue. */
     --cp-content-tabs-gap: calc(var(--c-spacing-lg) + var(--c-spacing-md));
-  }
-
-  /* Space at the top of each column, the same for all of them so their
-     header bars stay level: none up to 640px of content, 16px from 1920px.
-     Resolved against `.cp-content`, which spans the columns, since the
-     details pane can't measure the main column. */
-  .cp-content > :deep(*) {
-    --cp-content-block-start: clamp(
-      0px,
-      1.25cqi - var(--c-spacing-md),
-      var(--c-spacing-lg)
-    );
   }
 
   /* The main column's gutters grow with it: 16px up to 400px, 32px at

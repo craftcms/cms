@@ -377,6 +377,9 @@
   }
 
   .details-panels__rail--detached {
+    padding-block-start: calc(
+      var(--cp-content-block-start) + var(--cp-header-touch-target-offset)
+    );
     border-inline-start: none;
     background-color: transparent;
   }
