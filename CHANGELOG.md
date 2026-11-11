@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a bug where element indexes’ Link columns showed links for disabled and archived elements. ([#20604](https://github.com/craftcms/cms/issues/20604))
+- Fixed a bug where element indexes’ Link columns showed links for disabled, archived, pending, and expired elements. ([#20604](https://github.com/craftcms/cms/issues/20604))
 
 ## 5.12.1 - 2026-11-10
 

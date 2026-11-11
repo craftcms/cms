@@ -65,7 +65,7 @@ class EntryElementTest extends TestCase
      */
     public function testLinkAttributeHtml(bool $expected, array $config): void
     {
-        $entry = new Entry(['uri' => 'foo/bar'] + $config);
+        $entry = new Entry($config + ['uri' => 'foo/bar', 'postDate' => new DateTime('-1 day')]);
         $html = $entry->getAttributeHtml('link');
 
         if ($expected) {
@@ -78,8 +78,9 @@ class EntryElementTest extends TestCase
     public static function linkAttributeHtmlDataProvider(): array
     {
         return [
-            'enabled' => [true, []],
-            'pending' => [true, ['postDate' => new DateTime('+1 day')]],
+            'live' => [true, []],
+            'pending' => [false, ['postDate' => new DateTime('+1 day')]],
+            'expired' => [false, ['expiryDate' => new DateTime('-1 hour')]],
             'disabled' => [false, ['enabled' => false]],
             'disabled for site' => [false, ['enabledForSite' => false]],
             'archived' => [false, ['archived' => true]],
