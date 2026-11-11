@@ -88,4 +88,48 @@ describe('UiLayerManager', () => {
     expect(cb).toHaveBeenCalledOnce();
     expect(ev.preventDefault).toHaveBeenCalled();
   });
+
+  it('skips an Escape that something inside the layer already handled', () => {
+    const cb = vi.fn();
+    mgr.registerShortcut(27, cb);
+    const ev = new KeyboardEvent('keydown', {
+      keyCode: 27,
+      cancelable: true,
+    } as never);
+    ev.preventDefault();
+    mgr.triggerShortcut(ev);
+    expect(cb).not.toHaveBeenCalled();
+  });
+
+  it('still fires other shortcuts whose keydown was already handled', () => {
+    const cb = vi.fn();
+    mgr.registerShortcut({keyCode: 83, ctrl: true}, cb);
+    const ev = new KeyboardEvent('keydown', {
+      keyCode: 83,
+      ctrlKey: true,
+      metaKey: true,
+      cancelable: true,
+    } as never);
+    ev.preventDefault();
+    mgr.triggerShortcut(ev);
+    expect(cb).toHaveBeenCalledOnce();
+  });
+
+  it('still passes Escape down to the layer below when a shortcut bubbles it', () => {
+    const lower = vi.fn();
+    mgr.registerShortcut(27, lower);
+    mgr.addLayer(document.createElement('div'));
+    mgr.registerShortcut(
+      27,
+      (ev: KeyboardEvent & {bubbleShortcut?: () => void}) => {
+        ev.bubbleShortcut?.();
+      }
+    );
+    const ev = new KeyboardEvent('keydown', {
+      keyCode: 27,
+      cancelable: true,
+    } as never);
+    mgr.triggerShortcut(ev);
+    expect(lower).toHaveBeenCalledOnce();
+  });
 });

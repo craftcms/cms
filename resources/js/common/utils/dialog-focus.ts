@@ -5,11 +5,13 @@ import {isMobileBrowser, setFocusWithin} from '@craftcms/garnish';
  *
  * - The heading by default, so screen readers announce what opened before
  *   anything inside it.
- * - The first field you can type in or choose from, when the user hasn't
- *   turned on "Disable autofocus" (`Craft.autofocusPreferred`). Never a link
- *   or button that happens to come first. It's skipped on mobile and tablet
- *   browsers, where focusing a field pops up the on-screen keyboard, the same
- *   as `TextControl`'s own autofocus.
+ * - A field, when the user hasn't turned on "Disable autofocus"
+ *   (`Craft.autofocusPreferred`): the one marked `autofocus`, or else the
+ *   first field you can type in or choose from, if it's in the dialog's first
+ *   field. See {@link autofocusField}. Never a link or button that happens to
+ *   come first. It's skipped on mobile and tablet browsers, where focusing a
+ *   field pops up the on-screen keyboard, the same as `TextControl`'s own
+ *   autofocus.
  *
  * The heading takes focus straight away, and the field a frame later. A
  * screen's fields can still be rendering when it opens, and focus has to
@@ -33,7 +35,7 @@ export function focusDialogStart(
   const preferField = autofocusPreferred() && !isMobileBrowser(true);
 
   if (!heading) {
-    const field = preferField ? firstEditableField(container) : null;
+    const field = preferField ? autofocusField(container) : null;
     if (field) {
       field.focus();
     } else {
@@ -47,7 +49,7 @@ export function focusDialogStart(
   if (preferField) {
     requestAnimationFrame(() => {
       if (document.activeElement === heading) {
-        firstEditableField(container)?.focus();
+        autofocusField(container)?.focus();
       }
     });
   }
@@ -62,13 +64,21 @@ export function focusHeading(heading: HTMLElement): void {
 }
 
 /**
- * The field marked `autofocus`, or else the first field in `root` that you
- * can type in or choose from: a text-like
- * `input`, `select` or `textarea` that's visible, enabled and not read-only.
+ * The field to focus in `root`: a text-like `input`, `select` or `textarea`
+ * that's visible, enabled and not read-only.
+ *
+ * - The one marked `autofocus`, wherever it is: the form chose it.
+ * - Otherwise the first one, but only if it's inside `root`'s first field
+ *   (`craft-field`, or legacy markup's `.field`). A form that opens with
+ *   instructions or a read-only field, such as the authenticator app setup,
+ *   keeps focus on its heading rather than jumping past them to a field
+ *   further down. This is how Craft 5's `Garnish.setFocusWithin()` chose
+ *   (craftcms/cms#15245). Without any field containers, the first one counts.
+ *
  * It looks inside open shadow roots, so it finds the native control within a
  * component that renders its own. Skips anything in `.prevent-autofocus`.
  */
-export function firstEditableField(root: Element): HTMLElement | null {
+export function autofocusField(root: Element): HTMLElement | null {
   const elements = [...composedDescendants(root)];
   const marked = elements.find(
     (el) => el.hasAttribute('autofocus') && isEditableField(el)
@@ -77,12 +87,35 @@ export function firstEditableField(root: Element): HTMLElement | null {
     return marked as HTMLElement;
   }
 
-  for (const el of elements) {
-    if (isEditableField(el)) {
-      return el;
+  const first = elements.find(isEditableField);
+  if (!first) {
+    return null;
+  }
+
+  const firstContainer = elements.find(
+    (el) => el.matches(FIELD_CONTAINER_SELECTOR) && el.checkVisibility()
+  );
+  if (firstContainer && !composedContains(firstContainer, first)) {
+    return null;
+  }
+  return first;
+}
+
+/** A field's outer element: the component, or legacy markup's wrapper. */
+const FIELD_CONTAINER_SELECTOR = 'craft-field, .field';
+
+/** Whether `node` is `ancestor` or inside it, crossing shadow roots. */
+function composedContains(ancestor: Element, node: Node): boolean {
+  for (
+    let current: Node | null = node;
+    current;
+    current = current instanceof ShadowRoot ? current.host : current.parentNode
+  ) {
+    if (current === ancestor) {
+      return true;
     }
   }
-  return null;
+  return false;
 }
 
 const FIELD_SELECTOR = [

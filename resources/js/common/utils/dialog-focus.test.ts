@@ -9,7 +9,13 @@ import {
   vi,
 } from 'vite-plus/test';
 import {computeAccessibleName} from 'dom-accessibility-api';
-import {firstEditableField, focusDialogStart} from './dialog-focus';
+import {autofocusField, focusDialogStart} from './dialog-focus';
+
+const browser = vi.hoisted(() => ({mobile: false}));
+vi.mock('@craftcms/garnish', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@craftcms/garnish')>()),
+  isMobileBrowser: () => browser.mobile,
+}));
 
 /** The focused element's accessible name, as a screen reader would announce it. */
 function focusedName(): string {
@@ -64,6 +70,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  browser.mobile = false;
   document.body.innerHTML = '';
 });
 
@@ -115,6 +122,55 @@ describe('with autofocus preferred', () => {
     expect(focusedName()).toBe('Copy');
   });
 
+  it('focuses the first field, when it is the dialog’s first field', async () => {
+    // As in the address form.
+    const {container, heading} = dialog(`
+      <craft-field label="Label"><input aria-label="Label"></craft-field>
+      <craft-field label="Country"><select aria-label="Country"><option>Canada</option></select></craft-field>`);
+
+    focusDialogStart(container, heading);
+    await nextFrame();
+
+    expect(focusedName()).toBe('Label');
+  });
+
+  it('keeps focus on the heading when the first field to fill in comes later', async () => {
+    // As in the authenticator app setup: instructions and a read-only field
+    // come before the verification code.
+    const {container, heading} = dialog(`
+      <craft-field label="Setup Key"><input aria-label="Setup Key" readonly></craft-field>
+      <p>Enter the code the app gives you.</p>
+      <craft-field label="Verification code"><input aria-label="Verification code"></craft-field>`);
+
+    focusDialogStart(container, heading);
+    await nextFrame();
+
+    expect(document.activeElement).toBe(heading);
+  });
+
+  it('focuses a field marked autofocus wherever it is', async () => {
+    const {container, heading} = dialog(`
+      <div class="field"><input aria-label="Setup Key" readonly></div>
+      <div class="field"><input aria-label="Verification code" autofocus></div>`);
+
+    focusDialogStart(container, heading);
+    await nextFrame();
+
+    expect(focusedName()).toBe('Verification code');
+  });
+
+  it('focuses only the heading on a mobile browser, so no keyboard pops up', async () => {
+    browser.mobile = true;
+    const {container, heading} = dialog(
+      '<craft-field><input aria-label="Name" autofocus></craft-field>'
+    );
+
+    focusDialogStart(container, heading);
+    await nextFrame();
+
+    expect(document.activeElement).toBe(heading);
+  });
+
   it('focuses the first field when there is no heading', () => {
     const {container} = dialog();
 
@@ -143,7 +199,7 @@ it('focuses the first focusable element when there is no heading or field', () =
   expect(focusedName()).toBe('Help');
 });
 
-describe('firstEditableField', () => {
+describe('autofocusField', () => {
   it('skips fields that cannot be filled in', () => {
     document.body.innerHTML = `
       <div>
@@ -157,7 +213,7 @@ describe('firstEditableField', () => {
       </div>`;
 
     expect(
-      firstEditableField(document.body.firstElementChild!)?.getAttribute(
+      autofocusField(document.body.firstElementChild!)?.getAttribute(
         'aria-label'
       )
     ).toBe('Code');
@@ -171,7 +227,7 @@ describe('firstEditableField', () => {
       </div>`;
 
     expect(
-      firstEditableField(document.body.firstElementChild!)?.getAttribute(
+      autofocusField(document.body.firstElementChild!)?.getAttribute(
         'aria-label'
       )
     ).toBe('Country');
@@ -185,7 +241,7 @@ describe('firstEditableField', () => {
     shadow.innerHTML = '<input aria-label="Verification code">';
 
     expect(
-      firstEditableField(document.body.firstElementChild!)?.getAttribute(
+      autofocusField(document.body.firstElementChild!)?.getAttribute(
         'aria-label'
       )
     ).toBe('Verification code');

@@ -165,6 +165,13 @@ export default Base.extend({
 
   triggerShortcut: function (ev, layerIndex) {
     if (typeof layerIndex === 'undefined') {
+      // An Escape that something inside the layer already handled, such as a
+      // menu or tooltip closing on it, triggers no shortcut, so one Escape
+      // press closes one thing. Checked only as the key first arrives: a
+      // shortcut that bubbles has already prevented the default itself.
+      if (ev.keyCode === Garnish.ESC_KEY && ev.isDefaultPrevented()) {
+        return;
+      }
       layerIndex = this.layer;
     }
     const layer = this.layers[layerIndex];
