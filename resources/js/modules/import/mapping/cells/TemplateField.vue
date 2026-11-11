@@ -54,7 +54,7 @@
     class="template-field"
     :label="t('Template for {field}', {field: col.label})"
     label-sr-only
-    :has-errors="errors.length > 0"
+    .hasErrors="errors.length > 0"
     width="full"
     required
   >

@@ -1071,6 +1071,21 @@ it('keeps the panel open and shows the server’s template errors on the column'
   );
 });
 
+it('doesn’t mark a template with no errors as having them', async () => {
+  mount([title], {
+    ...emptyValues(),
+    map: {title: TEMPLATE_RULE},
+    templates: {title: '{name}'},
+  });
+
+  const field = cell('preview').querySelector<
+    HTMLElement & {hasErrors?: boolean}
+  >('craft-field')!;
+
+  expect(field.hasErrors).toBe(false);
+  expect(field.hasAttribute('has-errors')).toBe(false);
+});
+
 it('doesn’t validate a mapping that uses no templates before handing it back', async () => {
   mount([title], {...emptyValues(), map: {title: 'name'}});
 
