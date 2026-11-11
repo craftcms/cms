@@ -256,6 +256,41 @@ it('can save a field', function () {
     expect(FieldModel::count())->toBe(1);
 });
 
+it('rejects a field handle that another field in the same context uses', function () {
+    $this->fields->saveField($existing = $this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Plain Text',
+        'handle' => 'plainText',
+    ]));
+
+    $duplicate = $this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Other Plain Text',
+        'handle' => 'plainText',
+    ]);
+
+    $resaved = $this->fields->createField([
+        'type' => PlainText::class,
+        'id' => $existing->id,
+        'uid' => $existing->uid,
+        'name' => 'Renamed Plain Text',
+        'handle' => 'plainText',
+    ]);
+
+    $otherContext = $this->fields->createField([
+        'type' => PlainText::class,
+        'name' => 'Plain Text',
+        'handle' => 'plainText',
+        'context' => 'matrixBlockType:'.Str::uuid(),
+    ]);
+
+    expect($this->fields->saveField($duplicate))->toBeFalse()
+        ->and($duplicate->errors()->has('handle'))->toBeTrue()
+        ->and($this->fields->saveField($resaved))->toBeTrue()
+        ->and($this->fields->saveField($otherContext))->toBeTrue()
+        ->and(FieldModel::count())->toBe(2);
+});
+
 it('saves a field’s default tip and warning', function () {
     $this->fields->saveField($this->fields->createField([
         'type' => PlainText::class,

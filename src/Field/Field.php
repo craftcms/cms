@@ -487,6 +487,12 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             'handle' => [
                 'required',
                 new HandleRule(self::RESERVED_HANDLES),
+                Rule::when($this->validateHandleUniqueness, [
+                    Rule::unique(Table::FIELDS, 'handle')
+                        ->where('context', $this->context ?? Fields::getFieldContext())
+                        ->ignore($this->id)
+                        ->withoutTrashed('dateDeleted'),
+                ]),
             ],
             'translationMethod' => [
                 'required',
