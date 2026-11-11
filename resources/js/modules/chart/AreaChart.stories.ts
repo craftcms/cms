@@ -77,7 +77,7 @@ const meta = {
           'returns: a date column, then a value column. The value column’s ' +
           'type picks the format (`number`, `currency`, `percent` or `time`), ' +
           'unless `valueFormat` gives a d3-format specifier. It fills its ' +
-          'width and is 12.5rem tall; set `height` on it to change that.\n\n' +
+          'width and is 12.5rem tall; give it a CSS height to change that.\n\n' +
           "Plugins import it from the control panel: `import {AreaChart} from '@craftcms/cp';`",
       },
     },

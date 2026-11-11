@@ -30,7 +30,7 @@ $data = Chart::get(
     options: ['valueLabel' => t('Tickets')],
 );
 
-return inertia('exhibitions/Stats', [
+return inertia('my-plugin/ExhibitionStats', [
     'tickets' => $data,
     'scale' => Chart::getIntervalUnit($startDate, $endDate),
 ]);
@@ -68,8 +68,8 @@ for counts, the locale's currency, a percentage, or `hh:mm:ss` for `time`. Dates
 and numbers follow the user's formatting locale, and the chart flips for
 right-to-left languages.
 
-The chart fills its container's width and is 12.5rem tall. Set `height` on it
-to change that. It redraws as its container resizes.
+The chart fills its container's width and is 12.5rem tall. Give it a CSS
+height, such as `class="h-80"`, to change that. It redraws as its container resizes.
 
 d3 loads with the component, so it costs nothing on pages that don't show a
 chart.

@@ -60,6 +60,7 @@ user, the site, Craft's edition, whether settings can be changed. Each
 property is a ref that follows the page.
 
 ```ts
+import {computed} from 'vue';
 import {useCraftData} from '@craftcms/cp';
 
 const {currentUser, allowAdminChanges} = useCraftData();
@@ -144,7 +145,9 @@ import {broadcast, onBroadcast} from '@craftcms/cp';
 
 broadcast({event: 'my-plugin:exhibit-saved', id: exhibit.id});
 
-const stop = onBroadcast('my-plugin:exhibit-saved', ({id}) => refresh(id));
+const stop = onBroadcast('my-plugin:exhibit-saved', ({id}) =>
+  refresh(Number(id))
+);
 ```
 
 A tab doesn't hear its own messages unless the listener passes

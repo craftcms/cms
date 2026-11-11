@@ -30,17 +30,17 @@ registerElementDetailsPanel({
 });
 ```
 
-| Property                 | Description                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `id`                     | Required. A plugin-scoped identifier. Registering a different panel with the same `id` throws.         |
-| `label`                  | Required. The panel's name in the details column. A getter keeps it translated.                        |
-| `icon`                   | Required. The panel's icon.                                                                            |
-| `component`              | Required. Draws the panel's content.                                                                   |
-| `headerActionsComponent` | Controls drawn at the end of the panel's header. It gets the same props as `component`.                |
-| `order`                  | Where the panel goes among the others. Lower comes first.                                              |
-| `visible`                | Whether the panel shows for an element, from its `ElementEditPayload`. Defaults to always.             |
-| `status`                 | A status shown with the panel's name, as `{label, indicator}`, or `null` for none.                     |
-| `props`                  | The props `component` gets, from an `ElementDetailsPanelContext`. Without it, the component gets none. |
+| Property                 | Description                                                                                                                 |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `id`                     | Required. A plugin-scoped identifier. Registering a different panel with the same `id` throws.                              |
+| `label`                  | Required. The panel's name in the details column. A getter keeps it translated.                                             |
+| `icon`                   | Required. The panel's icon.                                                                                                 |
+| `component`              | Required. Draws the panel's content.                                                                                        |
+| `headerActionsComponent` | Controls drawn at the end of the panel's header. It gets the same props as `component`.                                     |
+| `order`                  | Where the panel goes among the others. Lower comes first.                                                                   |
+| `visible`                | Whether the panel shows for an element, from its `ElementEditPayload`. Defaults to always.                                  |
+| `status`                 | Returns a status to show with the panel's name, from its `ElementEditPayload`, as `{label, indicator}`, or `null` for none. |
+| `props`                  | The props `component` gets, from an `ElementDetailsPanelContext`. Without it, the component gets none.                      |
 
 `ElementDetailsPanelContext` has:
 

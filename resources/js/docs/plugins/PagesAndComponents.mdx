@@ -90,11 +90,11 @@ how those values are previewed:
 ```ts
 import {UiValues} from '@craftcms/cp';
 
-UiValues.registerValueAcceptor(
-  'my-plugin:slug',
-  (control, {value}) =>
-    typeof value === 'string' && value.length <= control.props.maxLength
-);
+UiValues.registerValueAcceptor('my-plugin:slug', (control, {value}) => {
+  const {maxLength} = control.props as {maxLength: number};
+
+  return typeof value === 'string' && value.length <= maxLength;
+});
 ```
 
 **docs/ui.md** covers controls, the `craft:ui-value-change` event and

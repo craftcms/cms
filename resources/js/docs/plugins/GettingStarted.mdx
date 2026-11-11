@@ -32,8 +32,9 @@ class Plugin extends \CraftCms\Cms\Plugin\Plugin
 }
 ```
 
-While Vite's dev server runs, Craft loads your entries from it, through the
-`public/hot` file the Laravel Vite plugin writes.
+Build your bundle with `vite build`, or `vite build --watch` while you work on
+it. Vite's dev server doesn't apply the externals below, so under it your entries
+would get their own Vue and Inertia, and couldn't resolve `@craftcms/cp`.
 
 ## Leaving the shared modules out of your build
 
@@ -96,11 +97,13 @@ registered after that point never runs. Prefer the functions above.
 | `onBooted`  | Once the Inertia app has mounted and the first page is showing.                         |
 
 ```ts
-import {onBooted} from '@craftcms/cp';
-import {router} from '@inertiajs/vue3';
+import {Assistant, onBooted} from '@craftcms/cp';
 
+// Opens the AI assistant when a link asks for it, once the page is showing.
 onBooted(() => {
-  router.on('navigate', (event) => trackPageView(event.detail.page.url));
+  if (new URLSearchParams(window.location.search).has('ask')) {
+    Assistant.open();
+  }
 });
 ```
 

@@ -199,11 +199,11 @@ public function rename(Exhibition $exhibition, Request $request): Response
 
 ```ts
 import {router} from '@inertiajs/vue3';
-import {openUiModal} from '@craftcms/cp';
+import {getCpUrl, openUiModal} from '@craftcms/cp';
 
 void openUiModal({
-  modalUrl: `/admin/exhibitions/${id}/rename-modal`,
-  actionUrl: `/admin/exhibitions/${id}/rename`,
+  modalUrl: getCpUrl(`exhibitions/${id}/rename-modal`),
+  actionUrl: getCpUrl(`exhibitions/${id}/rename`),
   onSubmitted: () => router.reload(),
 });
 ```

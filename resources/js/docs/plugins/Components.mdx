@@ -5,7 +5,8 @@ import {Meta} from '@storybook/addon-docs/blocks';
 # Components
 
 The Vue components Craft's own pages are built from, exported from
-`@craftcms/cp`. Each has a page under **CP** with its props and examples.
+`@craftcms/cp`. Each has a page under **CP** or **Elements** with its props and
+examples.
 
 ```vue
 <script setup lang="ts">
@@ -14,6 +15,14 @@ The Vue components Craft's own pages are built from, exported from
 
   const open = ref(false);
   const section = ref('news');
+  const sections = [
+    {label: 'News', value: 'news'},
+    {label: 'Events', value: 'events'},
+  ];
+
+  function move() {
+    open.value = false;
+  }
 </script>
 
 <template>

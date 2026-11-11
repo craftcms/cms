@@ -363,9 +363,11 @@ the "copied" card, which shows their text by default:
 import {UiValues} from '@craftcms/cp'
 
 // Whether `control` takes this copied value, such as one that fits its max length.
-UiValues.registerValueAcceptor('my-plugin:slug', (control, {value}) =>
-  typeof value === 'string' && value.length <= control.props.maxLength,
-)
+UiValues.registerValueAcceptor('my-plugin:slug', (control, {value}) => {
+  const {maxLength} = control.props as {maxLength: number}
+
+  return typeof value === 'string' && value.length <= maxLength
+})
 
 // A node to show in place of the value's text, or `null` to show the text.
 // It's only for looking at: it can't take focus, and screen readers read the text.
