@@ -11,6 +11,7 @@ use craft\fields\PlainText;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\mcp\ServerFactory;
+use craft\models\Site;
 use craft\test\TestCase;
 use Mcp\Server\Transport\StdioTransport;
 
@@ -121,6 +122,56 @@ class StdioTransportTest extends TestCase
                 ->indexBy('path')
                 ->column()),
         );
+    }
+
+    public function testPrimarySiteChangesFromOtherProcessesAreSeenBetweenMessages(): void
+    {
+        Craft::$app->getUser()->setIdentity(User::find()->admin()->one());
+        $site = new Site([
+            'groupId' => Craft::$app->getSites()->getPrimarySite()->groupId,
+            'name' => 'MCP Second',
+            'handle' => 'mcpSecond',
+            'language' => 'en-US',
+            'hasUrls' => true,
+            'baseUrl' => 'https://second.test/',
+        ]);
+        Craft::$app->getSites()->saveSite($site);
+        Craft::$app->getRoutes()->saveRoute(['mcp-second'], 'second', $site->uid);
+        Craft::$app->getProjectConfig()->flush();
+
+        $input = tmpfile();
+        foreach ([
+            ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+                'protocolVersion' => '2025-06-18',
+                'capabilities' => (object)[],
+                'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+            ]],
+            ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+            ['jsonrpc' => '2.0', 'id' => 'before', 'method' => 'tools/call', 'params' => ['name' => 'configuration_list', 'arguments' => ['type' => 'routes']]],
+            ['jsonrpc' => '2.0', 'id' => 'after', 'method' => 'tools/call', 'params' => ['name' => 'configuration_list', 'arguments' => ['type' => 'routes']]],
+        ] as $message) {
+            fwrite($input, json_encode($message) . "\n");
+        }
+        rewind($input);
+
+        // Make the new site primary the way another process would
+        StdioTestOutput::reset(['before' => function() use ($site): void {
+            $db = Craft::$app->getDb();
+            $db->createCommand()->update(Table::SITES, ['primary' => false])->execute();
+            $db->createCommand()->update(Table::SITES, ['primary' => true], ['id' => $site->id])->execute();
+            $db->createCommand()->update(Table::INFO, ['configVersion' => StringHelper::randomString(12)])->execute();
+        }]);
+        stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
+
+        try {
+            Craft::$app->get('mcp')->getCapabilityContainer()->get(ServerFactory::class)->stdio()->run(new StdioTransport($input, fopen('stdio-test-output://', 'w')));
+        } finally {
+            stream_wrapper_unregister('stdio-test-output');
+        }
+
+        $uris = fn(string $id): array => array_column(StdioTestOutput::$responses[$id]['result']['structuredContent']['items'], 'uri');
+        self::assertNotContains('mcp-second', $uris('before'));
+        self::assertContains('mcp-second', $uris('after'));
     }
 }
 
