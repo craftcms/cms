@@ -345,13 +345,14 @@ it('keeps a black card’s body text readable on a light page, selected or not',
   }
 });
 
-it('pads its body with the container padding, or the same value without it', async () => {
+it('pads its body by its own width', async () => {
   document.body.innerHTML = `
-    <craft-card id="fallback">Body</craft-card>
-    <div style="--cp-container-padding: 40px">
-      <craft-card id="container">Body</craft-card>
-    </div>
-    <div id="spacing" style="padding: var(--c-spacing-lg)"></div>`;
+    <craft-card id="narrow" style="width: 300px">Body</craft-card>
+    <craft-card id="mid" style="width: 602px">Body</craft-card>
+    <craft-card id="wide" style="width: 1000px">Body</craft-card>
+    <div style="--c-card-padding-inline: 40px">
+      <craft-card id="custom" style="width: 1000px">Body</craft-card>
+    </div>`;
   const cards = [...document.querySelectorAll<CraftCard>('craft-card')];
   await Promise.all(cards.map((card) => card.updateComplete));
   const padding = (id: string) =>
@@ -359,11 +360,10 @@ it('pads its body with the container padding, or the same value without it', asy
       document.getElementById(id)!.shadowRoot!.querySelector('.card-body')!
     ).paddingInlineStart;
 
-  expect(padding('fallback')).toBe(
-    getComputedStyle(document.getElementById('spacing')!).paddingInlineStart
-  );
-  expect(padding('fallback')).not.toBe('0px');
-  expect(padding('container')).toBe('40px');
+  expect(padding('narrow')).toBe('16px');
+  expect(padding('mid')).toBe('20px');
+  expect(padding('wide')).toBe('24px');
+  expect(padding('custom')).toBe('40px');
 });
 
 it('gives a header the same height with or without actions', async () => {

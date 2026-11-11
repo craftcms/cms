@@ -189,9 +189,9 @@
 
   /* Docked and expanded, the sidebar gets more room beside the panel as the
      page widens: 3% of it (PageScreen's `cp-frame`), from 8px up to 40px.
-     It widens by what that adds, which goes two thirds to its end padding
-     and one third to its items. `--cp-sidebar-width` stays the base width,
-     since a page's secondary nav and Live Preview size to it too. */
+     Its items widen by what that adds; its padding stays even on both sides.
+     `--cp-sidebar-width` stays the base width, since a page's secondary nav
+     and Live Preview size to it too. */
   .cp-sidebar[data-mode='docked']:not(.cp-sidebar--collapsed) {
     --cp-sidebar-room: clamp(
       var(--c-spacing-md),
@@ -201,14 +201,6 @@
     width: calc(
       var(--cp-sidebar-width) + var(--cp-sidebar-room) - var(--c-spacing-md)
     );
-
-    .cp-sidebar__body,
-    .cp-sidebar__footer {
-      padding-inline-end: calc(
-        var(--c-spacing-md) + (var(--cp-sidebar-room) - var(--c-spacing-md)) *
-          2 / 3
-      );
-    }
   }
 
   .cp-sidebar :deep(craft-nav-item) {
