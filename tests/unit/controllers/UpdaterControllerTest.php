@@ -23,7 +23,7 @@ use craft\test\TestCase;
  */
 class UpdaterControllerTest extends TestCase
 {
-    private ?string $originalRequestMethod;
+    private ?string $originalRequestMethod = null;
     private string|false $originalPath;
     private Composer $originalComposer;
 
