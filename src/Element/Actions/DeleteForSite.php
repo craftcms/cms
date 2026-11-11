@@ -8,7 +8,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
@@ -27,29 +26,6 @@ class DeleteForSite extends ElementAction
      * @var string|null The message that should be shown after the elements get deleted
      */
     public ?string $successMessage = null;
-
-    public function getTriggerHtml(): ?string
-    {
-        // Only enable for deletable elements, per canDelete()
-        HtmlStack::jsWithVars(fn ($type) => <<<JS
-(() => {
-    new Craft.ElementActionTrigger({
-        type: $type,
-        validateSelection: (selectedItems, elementIndex) => {
-            for (let i = 0; i < selectedItems.length; i++) {
-                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable-for-site')) {
-                    return false;
-                }
-            }
-
-            return elementIndex.settings.canDeleteElements(selectedItems);
-        },
-    })
-})();
-JS, [static::class]);
-
-        return null;
-    }
 
     #[\Override]
     public function getTriggerLabel(): string

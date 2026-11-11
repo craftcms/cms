@@ -11,7 +11,6 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Workflows;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -32,21 +31,6 @@ class Delete extends ElementAction implements DeleteActionInterface
 
     public ?string $successMessage = null;
 
-    private readonly string $triggerId;
-
-    public function __construct(object|array $config = [])
-    {
-        parent::__construct($config);
-
-        $this->triggerId = sprintf('action-trigger-%s', mt_rand());
-    }
-
-    #[Override]
-    public function getTriggerId(): string
-    {
-        return $this->triggerId;
-    }
-
     public function canHardDelete(): bool
     {
         return ! $this->withDescendants;
@@ -55,61 +39,6 @@ class Delete extends ElementAction implements DeleteActionInterface
     public function setHardDelete(): void
     {
         $this->hard = true;
-    }
-
-    public function getTriggerHtml(): ?string
-    {
-        // Only enable for deletable elements, per canDelete()
-        HtmlStack::jsWithVars(fn (
-            $triggerId,
-            $elementType,
-            $withDescendants,
-            $hardDelete,
-            $confirmationMessage,
-        ) => <<<JS
-(() => {
-  new Craft.ElementActionTrigger({
-    triggerId: $triggerId,
-    validateSelection: (selectedItems, elementIndex) => {
-      for (let i = 0; i < selectedItems.length; i++) {
-        if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable')) {
-          return false;
-        }
-      }
-
-      return elementIndex.settings.canDeleteElements(selectedItems);
-    },
-    activate: async (selectedItems, elementIndex) => {
-      await elementIndex.onBeforeDeleteElements(selectedItems);
-      elementIndex.setIndexBusy();
-      const elementIds = elementIndex.getSelectedElementIds();
-
-      new Craft.ElementDeletionManager($elementType, elementIds, {
-        siteId: elementIndex.siteId,
-        ownerId: elementIndex.settings.criteria?.ownerId,
-        withDescendants: $withDescendants,
-        hardDelete: $hardDelete,
-        confirmationMessage: $confirmationMessage,
-        onLoadBlockers: () => {
-          elementIndex.setIndexAvailable();
-        },
-        onSuccess: async () => {
-          elementIndex.updateElements(true, true);
-          await elementIndex.onDeleteElements(selectedItems);
-        },
-      })
-    },
-  })
-})();
-JS, [
-            $this->getTriggerId(),
-            $this->elementType,
-            $this->withDescendants,
-            $this->hard,
-            $this->confirmationMessage,
-        ]);
-
-        return null;
     }
 
     #[Override]

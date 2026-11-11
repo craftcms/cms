@@ -11,7 +11,6 @@ use craft\elements\actions\MoveUp;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Cp\Html\ElementIndexHtml;
+use CraftCms\Yii2Adapter\Element\LegacyElementActions;
 
 use function CraftCms\Cms\t;
 
@@ -168,7 +168,7 @@ class NestedElementManagerMixin
                     new MoveDown($owner, $attribute),
                 ] as $action) {
                     HtmlStack::startJsBuffer();
-                    $actionConfig = ElementHelper::actionConfig($action);
+                    $actionConfig = app(LegacyElementActions::class)->actionConfig($action);
                     $actionConfig['bodyHtml'] = HtmlStack::clearJsBuffer();
                     $indexSettings['actions'][] = $actionConfig;
                 }

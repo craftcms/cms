@@ -22,6 +22,25 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 abstract class ElementAction extends \CraftCms\Cms\Element\Actions\ElementAction implements ElementActionInterface
 {
+    /**
+     * Returns the ID the action’s trigger element should have in the legacy element index.
+     *
+     * Override this with something unique if the same action can be listed more than once,
+     * and pass the same value as the `triggerId` setting of `Craft.ElementActionTrigger`.
+     */
+    public function getTriggerId(): string
+    {
+        return sprintf('%s-actiontrigger', static::class);
+    }
+
+    /**
+     * Returns the action’s trigger markup for the legacy element index, or `null` to list it in the actions menu.
+     */
+    public function getTriggerHtml(): ?string
+    {
+        return null;
+    }
+
     public function getRules(): array
     {
         return LegacyYiiRules::mergeAttributeRules(

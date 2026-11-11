@@ -8,7 +8,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Support\Facades\Gate;
 use Throwable;
@@ -37,38 +36,6 @@ class Duplicate extends ElementAction
         return $this->deep
             ? t('Duplicate (with descendants)')
             : t('Duplicate');
-    }
-
-    public function getTriggerHtml(): ?string
-    {
-        // Only enable for duplicatable elements, per canDuplicate()
-        HtmlStack::jsWithVars(fn ($type, $attr) => <<<JS
-(() => {
-  new Craft.ElementActionTrigger({
-    type: $type,
-    validateSelection: (selectedItems, elementIndex) => {
-      for (let i = 0; i < selectedItems.length; i++) {
-        if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), $attr)) {
-          return false;
-        }
-      }
-
-      return elementIndex.settings.canDuplicateElements(selectedItems);
-    },
-    beforeActivate: async (selectedItems, elementIndex) => {
-      await elementIndex.onBeforeDuplicateElements(selectedItems);
-    },
-    afterActivate: async (selectedItems, elementIndex) => {
-      await elementIndex.onDuplicateElements(selectedItems);
-    },
-  })
-})();
-JS, [
-            static::class,
-            $this->asDrafts ? 'data-duplicatable-as-draft' : 'data-duplicatable',
-        ]);
-
-        return null;
     }
 
     /**

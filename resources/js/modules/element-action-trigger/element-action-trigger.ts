@@ -10,8 +10,8 @@ declare const Craft: any;
  * ElementActionTrigger — a port of `Craft.ElementActionTrigger` onto
  * `@craftcms/garnish` `Base`. Wires an element-index action button: it
  * enables/disables based on the current selection and runs the action's
- * `activate` handler. Booted by PHP element actions (e.g. ShowInFolder) and by
- * the (still-legacy) element index, so exposed on `window.Craft`.
+ * `activate` handler. Created by the legacy element index and by plugin
+ * actions' trigger JS, so exposed on `window.Craft`.
  */
 export class ElementActionTrigger extends Base {
   static defaults: any = {

@@ -3,6 +3,8 @@
 /** global: $ */
 /** global: jQuery */
 
+import {createActionTriggers} from './action-triggers';
+
 /**
  * Element index class
  */
@@ -3850,6 +3852,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       await Craft.appendHeadHtml(this.actionsHeadHtml);
       await Craft.appendBodyHtml(this.actionsBodyHtml);
+      createActionTriggers(this.actions);
 
       Craft.initUiElements(this._$triggers);
 
