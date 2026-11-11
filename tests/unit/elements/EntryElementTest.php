@@ -14,6 +14,7 @@ use craft\elements\User;
 use craft\events\DefineUrlEvent;
 use craft\helpers\UrlHelper;
 use craft\test\TestCase;
+use DateTime;
 use UnitTester;
 
 /**
@@ -55,6 +56,34 @@ class EntryElementTest extends TestCase
         }
 
         self::assertSame($expected, $entry->getUrl());
+    }
+
+    /**
+     * Element indexes’ Link column should only link to entries that the site will route to.
+     *
+     * @dataProvider linkAttributeHtmlDataProvider
+     */
+    public function testLinkAttributeHtml(bool $expected, array $config): void
+    {
+        $entry = new Entry(['uri' => 'foo/bar'] + $config);
+        $html = $entry->getAttributeHtml('link');
+
+        if ($expected) {
+            self::assertStringContainsString(UrlHelper::siteUrl('foo/bar', siteId: $entry->siteId), $html);
+        } else {
+            self::assertSame('', $html);
+        }
+    }
+
+    public static function linkAttributeHtmlDataProvider(): array
+    {
+        return [
+            'enabled' => [true, []],
+            'pending' => [true, ['postDate' => new DateTime('+1 day')]],
+            'disabled' => [false, ['enabled' => false]],
+            'disabled for site' => [false, ['enabledForSite' => false]],
+            'archived' => [false, ['archived' => true]],
+        ];
     }
 
     public static function getUrlDataProvider(): array
