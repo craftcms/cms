@@ -985,6 +985,31 @@ it('lets a read-only mapping open a container’s nested mapping to look at, but
   });
 });
 
+it('names each container’s mapping button after its field, so they can be told apart', () => {
+  mount(
+    [
+      {...outerMatrix, label: 'Content'},
+      {
+        ...outerMatrix,
+        label: 'Gallery',
+        prefixedHandle: 'otherMatrix',
+        prefixedHandleAsArray: ['otherMatrix'],
+      },
+    ],
+    {...emptyValues(), map: {outerMatrix: {outerEt: {title: 'name'}}}}
+  );
+
+  expect(
+    [...container.querySelectorAll('tbody craft-button')].map((button) => [
+      button.textContent!.trim(),
+      button.getAttribute('aria-label'),
+    ])
+  ).toEqual([
+    ['Edit mapping', 'Edit mapping for Content'],
+    ['Map field', 'Map field for Gallery'],
+  ]);
+});
+
 /** The source columns whose options say they're the suggested one. */
 function suggestedOptions(): string[] {
   return sourceSelect()

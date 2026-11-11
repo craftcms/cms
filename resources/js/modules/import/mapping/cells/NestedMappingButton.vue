@@ -29,6 +29,17 @@
 
     return context.editable ? t('Edit mapping') : t('View mapping');
   });
+
+  /** The label, naming the field too, so each container's button can be told apart. */
+  const accessibleName = computed(() => {
+    if (!hasNestedMapping.value) {
+      return t('Map field for {field}', {field: col.label});
+    }
+
+    return context.editable
+      ? t('Edit mapping for {type}', {type: col.label})
+      : t('View mapping for {type}', {type: col.label});
+  });
 </script>
 
 <template>
@@ -38,6 +49,7 @@
     :variant="hasNestedMapping ? ButtonVariant.Fill : ButtonVariant.Dashed"
     :icon="hasNestedMapping ? (context.editable ? 'pencil' : 'eye') : 'plus'"
     .disabled="!context.editable && !hasNestedMapping"
+    :aria-label="accessibleName"
     @click="context.openNested(col, button)"
   >
     {{ label }}
