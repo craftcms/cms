@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -62,4 +63,13 @@ it('routes plugin store pages to their screens', function (string $uri, string $
 
 it('doesn’t take unknown plugin tabs', function () {
     get(Cms::config()->cpTrigger.'/plugin-store/seomatic/settings')->assertNotFound();
+});
+
+it('keeps browsing available but disables package changes without Composer', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    get(action([PluginStoreController::class, 'index']))->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('context.allowUpdates', false)
+            ->where('craft.general.allowUpdates', false));
 });

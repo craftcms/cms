@@ -188,7 +188,7 @@ test('data encrypted with the app key can’t reach Composer anonymously', funct
 
 test('data encrypted with the app key reaches Composer for users who can perform updates', function () {
     // Updates from a Craft version that predates updater keys hand the next step data encrypted with the app key
-    $this->mock(Composer::class)
+    $this->partialMock(Composer::class)
         ->shouldReceive('install')->once()->with(['foo/bar' => '1.0.0'], Mockery::any());
 
     $response = postJson(action([UpdaterController::class, 'composerInstall']), [
@@ -215,6 +215,7 @@ test('Composer actions need updates and admin changes to be allowed', function (
 
 test('pending migrations can still be finished anonymously with updates disabled', function () {
     Cms::config()->allowUpdates = false;
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
     auth()->logout();
 
     postJson(action([UpdaterController::class, 'migrate']), [
@@ -222,6 +223,32 @@ test('pending migrations can still be finished anonymously with updates disabled
     ])->assertOk()
         ->assertJsonPath('finished', true);
 });
+
+test('missing Composer stops self-updates before maintenance mode', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    post(action([UpdaterController::class, 'index']), [
+        'install' => ['craft' => '100.0.0'],
+        'packageNames' => ['craft' => 'craftcms/cms'],
+    ])->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('initialState.error', 'Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
+        ->missing('initialState.nextUrl'));
+
+    expect(app()->isDownForMaintenance())->toBeFalse();
+});
+
+test('Composer steps return an actionable state when Composer disappears', function (string $action) {
+    $composer = $this->partialMock(Composer::class);
+    $composer->shouldReceive('getIsAvailable')->andReturnFalse();
+    $composer->shouldNotReceive('install');
+    $composer->shouldNotReceive('uninstall');
+
+    postJson(action([UpdaterController::class, $action]), [
+        'data' => $this->hashedData,
+    ])->assertOk()
+        ->assertJsonPath('error', 'Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
+        ->assertJsonPath('options.0.nextUrl', action([UpdaterController::class, 'recheckComposer']));
+})->with(['composerInstall', 'composerRemove', 'revert']);
 
 test('updater data can’t be replayed to another updater controller', function () {
     $data = post(action([UpdaterController::class, 'index']))->inertiaProps('initialState.data');

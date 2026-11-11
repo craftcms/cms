@@ -109,7 +109,7 @@ readonly class PluginStoreController
             'phpVersion' => PHP::version(),
             'composerPhpVersion' => $composerConfig['config']['platform']['php'] ?? null,
             'yii2AdapterRequired' => isset($composerConfig['require']['craftcms/yii2-adapter']),
-            'allowUpdates' => $generalConfig->allowUpdates && $generalConfig->allowAdminChanges,
+            'allowUpdates' => $generalConfig->allowUpdates && $generalConfig->allowAdminChanges && app(Composer::class)->getIsAvailable(),
             // Ties cart items to this install's license, and checkout hands the cart to Craft Console.
             'cmsLicenseKey' => app(License::class)->key(),
             'craftIdEndpoint' => Api::craftIdEndpoint(),

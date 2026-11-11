@@ -181,6 +181,10 @@ abstract class BaseUpdaterController
 
     public function composerInstall(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState());
+        }
+
         $output = '';
 
         try {
@@ -209,6 +213,10 @@ abstract class BaseUpdaterController
 
     public function composerRemove(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState());
+        }
+
         $packages = [$this->data['packageName']];
         $output = '';
 
@@ -312,6 +320,17 @@ abstract class BaseUpdaterController
      * Returns the return URL that should be passed with a finished state.
      */
     abstract protected function returnUrl(): string;
+
+    /** @return array<string, mixed> */
+    protected function noComposerState(): array
+    {
+        return [
+            'error' => $this->composer->getUnavailableReason(),
+            'options' => [
+                $this->actionOption(t('Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
+            ],
+        ];
+    }
 
     /**
      * Ensures that composer.json can be found.
@@ -465,6 +484,13 @@ abstract class BaseUpdaterController
      */
     protected function actionState(string $nextAction, array $state = []): array
     {
+        if (
+            in_array($nextAction, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE], true) &&
+            ! $this->composer->getIsAvailable()
+        ) {
+            return $this->noComposerState();
+        }
+
         $state['nextAction'] = $nextAction;
 
         $state['status'] ??= $this->actionStatus($nextAction);

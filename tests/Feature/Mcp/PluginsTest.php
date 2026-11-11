@@ -7,6 +7,7 @@ use CraftCms\Cms\Mcp\Capabilities\Plugins;
 use CraftCms\Cms\Plugin\Plugins as PluginService;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Update\Updates;
+use Mcp\Exception\ToolCallException;
 
 use function Pest\Laravel\mock;
 
@@ -15,6 +16,7 @@ beforeEach(function () {
 });
 
 it('manages plugins through MCP', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
     $plugins = app(Plugins::class);
     $listed = $plugins->list();
     $enabled = $plugins->enable('test-plugin')['plugin'];
@@ -44,6 +46,7 @@ it('manages plugins through MCP', function () {
 
 it('adds missing plugin packages through Composer before installation', function () {
     $composer = mock(Composer::class);
+    $composer->shouldReceive('getUnavailableReason')->andReturnNull();
     $composer->shouldReceive('install')
         ->once()
         ->with(['vendor/plugin' => '^2.0']);
@@ -80,4 +83,11 @@ it('adds missing plugin packages through Composer before installation', function
             ],
         ],
     ]);
+});
+
+it('explains why missing plugin packages cannot be installed without Composer', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    expect(fn () => app(Plugins::class)->install('missing-plugin', packageName: 'vendor/plugin', version: '^2.0'))
+        ->toThrow(ToolCallException::class, 'Composer 2.2.0 or later must be installed and available in the PATH environment variable.');
 });

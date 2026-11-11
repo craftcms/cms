@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Update\Data\Update;
 use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Enums\UpdateStatus;
@@ -36,6 +37,22 @@ it('can check for updates without cache', function () {
             'critical' => false,
             'allowUpdates' => true,
         ]);
+});
+
+it('still reports releases but omits update actions without Composer', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    postJson(action([UpdatesController::class, 'cache']), [
+        'includeDetails' => true,
+        'updates' => [
+            'cms' => new Update(packageName: 'craftcms/cms', releases: [new UpdateRelease('100.0.0')])->toArray(),
+            'plugins' => [],
+        ],
+    ])->assertOk()
+        ->assertJsonPath('total', 1)
+        ->assertJsonPath('allowUpdates', false)
+        ->assertJsonPath('updates.cms.latestVersion', '100.0.0')
+        ->assertJsonMissingPath('updates.cms.ctaText');
 });
 
 it('can include details', function () {

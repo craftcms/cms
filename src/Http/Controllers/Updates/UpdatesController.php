@@ -8,6 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
@@ -60,7 +61,8 @@ readonly class UpdatesController
         $allowUpdates = (
             $this->generalConfig->allowUpdates &&
             $this->generalConfig->allowAdminChanges &&
-            currentUser()->can('performUpdates')
+            currentUser()->can('performUpdates') &&
+            app(Composer::class)->getIsAvailable()
         );
 
         $res = [

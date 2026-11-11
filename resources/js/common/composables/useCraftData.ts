@@ -55,6 +55,7 @@ export interface CraftData {
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
   general: {
+    allowUpdates: boolean;
     cpTrigger: string | null;
     actionTrigger: string | null;
     csrfTokenName: string | null;
