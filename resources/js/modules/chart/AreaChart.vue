@@ -1,8 +1,8 @@
 <script setup lang="ts">
-  import {onBeforeUnmount, onMounted, useTemplateRef, watch} from 'vue';
+  import {onBeforeUnmount, onMounted, ref, useTemplateRef, watch} from 'vue';
   import {useResizeObserver} from '@vueuse/core';
   import {isRtl} from '@/common/craft/direction';
-  import {Area, DataTable, chartsUtils} from './chart';
+  import {Area, BaseChart, DataTable, chartsUtils} from './chart';
   import type {ChartData, ChartScale} from './types';
 
   const props = withDefaults(
@@ -20,6 +20,8 @@
 
   const container = useTemplateRef<HTMLElement>('container');
   let chart: Area | undefined;
+  /** The drawn rows, formatted as the chart labels them, for screen readers. */
+  const tableRows = ref<Array<[string, string]>>([]);
 
   function valueFormatter(area: Area): (value: number) => string {
     if (props.valueFormat) {
@@ -55,11 +57,20 @@
       rows: props.data.rows.map((row) => [...row]),
     };
 
-    chart.draw(new DataTable(data), {
+    const dataTable = new DataTable(data);
+    chart.draw(dataTable, {
       orientation: isRtl() ? 'rtl' : 'ltr',
       dataScale: props.scale,
-      ...(props.color ? {colors: [props.color]} : {}),
+      // Settings merge into the last draw's, so an unset color must reset it
+      colors: props.color ? [props.color] : BaseChart.defaults.colors,
     });
+
+    const formatX = chart.getXFormatter();
+    const formatY = chart.getYFormatter();
+    tableRows.value = dataTable.rows.map(([x, y]: [Date, number]) => [
+      formatX(x),
+      formatY(y),
+    ]);
   }
 
   useResizeObserver(container, () => chart?.resize());
@@ -69,7 +80,29 @@
 </script>
 
 <template>
-  <div ref="container" class="area-chart" role="img" :aria-label="label"></div>
+  <div class="area-chart">
+    <div ref="container" class="area-chart-plot" aria-hidden="true"></div>
+    <table class="sr-only">
+      <caption>
+        {{
+          label
+        }}
+      </caption>
+      <thead>
+        <tr>
+          <th v-for="(column, index) in data.columns" :key="index" scope="col">
+            {{ column.label }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="([x, y], index) in tableRows" :key="index">
+          <th scope="row">{{ x }}</th>
+          <td>{{ y }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <style>
@@ -78,6 +111,7 @@
     height: 12.5rem;
   }
 
+  .area-chart-plot,
   .area-chart .cp-chart {
     position: relative;
     height: 100%;

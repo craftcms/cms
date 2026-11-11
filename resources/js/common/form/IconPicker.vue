@@ -24,7 +24,10 @@
     defineProps<{
       label?: string;
       name?: string;
+      /** A validation message, shown below the picker. */
       error?: string;
+      /** Marks the picker invalid without a message, when one is shown elsewhere. */
+      invalid?: boolean;
       freeOnly?: boolean;
       /**
        * The icon sets to offer, in order (`fontawesome` for Font Awesome), or
@@ -167,7 +170,7 @@
     :name="name"
     :aria-labelledby="labelledBy"
     :aria-describedby="describedBy"
-    :invalid="Boolean(error)"
+    :invalid="invalid || Boolean(error)"
     hidden-input
     .value="model"
     .disabled="disabled"

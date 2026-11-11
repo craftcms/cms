@@ -11,7 +11,7 @@ export interface ChipElement {
    * they're called, is an element-type concern the server settles.
    */
   status?: {fill: string; label: string; draft: boolean} | null;
-  thumbHtml?: string;
+  thumbHtml?: string | null;
   /** A Craft color name, such as an entry's type color. */
   color?: string | null;
   /** Where the element is edited, which a `linked` chip's label goes to. */

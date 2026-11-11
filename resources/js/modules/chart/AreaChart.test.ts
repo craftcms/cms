@@ -1,5 +1,5 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
-import {createApp, h, reactive, type App} from 'vue';
+import {createApp, h, nextTick, reactive, type App} from 'vue';
 import AreaChart from './AreaChart.vue';
 import type {ChartData} from './types';
 
@@ -10,6 +10,9 @@ vi.mock('./chart', async () => {
     ...actual,
     Area: class {
       draw = state.draw;
+      getXFormatter = () => (date: Date) =>
+        `${date.getMonth() + 1}/${date.getDate()}`;
+      getYFormatter = () => String;
       resize() {}
       destroy() {}
     },
@@ -46,6 +49,14 @@ it('draws the given data without changing it, and redraws when it changes', asyn
   ]);
   // Parsing must not reach the caller's rows, or the next draw parses dates twice
   expect(props.data.rows).toEqual([['2026-10-01', '3']]);
+  // Screen readers get the drawn values as a table
+  await nextTick();
+  expect(host.querySelector('caption')?.textContent?.trim()).toBe('New users');
+  expect(
+    [...host.querySelectorAll('tbody tr')].map((row) =>
+      [...row.children].map((cell) => cell.textContent?.trim())
+    )
+  ).toEqual([['10/1', '3']]);
 
   props.data = users('5');
   await vi.waitFor(() => expect(state.draw).toHaveBeenCalledTimes(2));

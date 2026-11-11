@@ -39,8 +39,11 @@
     }
   );
 
+  // Cards' and thumbs' keyboard selection relies on the selection's own `readOnly`
   const ownSelection = useSelectable({
     ids: () => props.data.map((element) => element.id),
+    enabled: () => props.selectable,
+    readOnly: () => props.readOnly,
   });
   const activeSelection = computed(() => props.selection ?? ownSelection);
 

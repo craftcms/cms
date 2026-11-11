@@ -73,14 +73,6 @@ function localStore<Id extends SelectableId>(): SelectableStore<Id> {
   };
 }
 
-/**
- * Anchor-based list selection: click, ctrl/cmd-click, and shift-click ranges,
- * for any ordered list of ids.
- *
- * The anchor is the last individually-toggled item; a shift-click applies to the
- * inclusive range between it and the clicked item, and leaves the anchor where it
- * was so the range can be re-dragged from the same origin.
- */
 /** What {@link useSelectable} returns, and what a selectable list accepts. */
 export interface Selectable<Id extends SelectableId = SelectableId> {
   readonly selectedIds: ComputedRef<readonly Id[]>;
@@ -110,6 +102,14 @@ export interface Selectable<Id extends SelectableId = SelectableId> {
   handleClick(id: Id, event: MouseEvent, boundary?: EventTarget | null): void;
 }
 
+/**
+ * Anchor-based list selection: click, ctrl/cmd-click, and shift-click ranges,
+ * for any ordered list of ids.
+ *
+ * The anchor is the last individually-toggled item; a shift-click applies to the
+ * inclusive range between it and the clicked item, and leaves the anchor where it
+ * was so the range can be re-dragged from the same origin.
+ */
 export function useSelectable<Id extends SelectableId = SelectableId>(
   options: SelectableOptions<Id>
 ): Selectable<Id> {

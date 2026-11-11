@@ -130,6 +130,8 @@
 
   const ownSelection = useSelectable({
     ids: () => props.data.map((element) => element.id),
+    enabled: () => props.selectable,
+    readOnly: () => props.readOnly,
   });
   const activeSelection = computed(() => props.selection ?? ownSelection);
 

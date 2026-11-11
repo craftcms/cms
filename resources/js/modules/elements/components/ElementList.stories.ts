@@ -100,6 +100,7 @@ function render(args: NonNullable<Story['args']>) {
 
       function remove(id: number) {
         items.value = items.value.filter((element) => element.id !== id);
+        list.selection.prune(items.value.map((element) => element.id));
       }
 
       return {args, items, list, reorder, remove};
@@ -120,7 +121,7 @@ function render(args: NonNullable<Story['args']>) {
             icon
             @click="remove(element.id)"
           >
-            <craft-icon name="xmark" label="Remove"></craft-icon>
+            <craft-icon name="xmark" :label="'Remove ' + element.label"></craft-icon>
           </craft-button>
         </template>
       </ElementList>

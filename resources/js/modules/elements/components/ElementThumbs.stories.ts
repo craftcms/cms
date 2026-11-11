@@ -65,6 +65,7 @@ function render(args: NonNullable<Story['args']>) {
       const items = ref([...sampleAssets]);
       const selection = useSelectable({
         ids: () => items.value.map((asset) => asset.id),
+        readOnly: () => Boolean(args.readOnly),
       });
       const selectedCount = computed(() => selection.selectedIds.value.length);
 
