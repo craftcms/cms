@@ -75,18 +75,30 @@ export function defaultValueOf(
     : '';
 }
 
-/** A multi-choice default's values, which it's stored as a JSON list of. */
+/**
+ * A multi-choice default's values. It's entered as a JSON list, but a saved one comes
+ * back from the server decoded, which the trees then hold as a numeric-keyed object.
+ */
 export function defaultValuesOf(
   values: MappingValues,
   col: MappingColumn
 ): string[] {
-  try {
-    const parsed: unknown = JSON.parse(defaultValueOf(values, col) || '[]');
+  return defaultListOf(getAt(values.defaultValues, col.prefixedHandleAsArray));
+}
 
-    return Array.isArray(parsed) ? parsed.map(String) : [];
-  } catch {
-    return [];
+/** A multi-choice default's values, from any of the shapes it can be held in. */
+export function defaultListOf(value: unknown): string[] {
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value || '[]');
+    } catch {
+      return [];
+    }
   }
+
+  return value !== null && typeof value === 'object'
+    ? Object.values(value).map(String)
+    : [];
 }
 
 export function setDefaultValue(

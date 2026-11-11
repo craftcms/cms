@@ -3,6 +3,7 @@
  * from the server, so it follows unsaved changes.
  */
 import {t} from '@craftcms/ui';
+import {defaultListOf} from '@/modules/import/mapping/empty-values';
 import {getAt, hasMapping, isChecked} from '@/modules/import/mapping/paths';
 import {TEMPLATE_RULE, type ImportStep} from '@/modules/import/mapping/types';
 
@@ -79,10 +80,16 @@ export function summarizeMapping(
     const key = path.join('.');
     const known = labels[key];
     const defaultValue = getAt(trees.defaultValues, path);
+    // a saved multi-choice default comes back decoded, as a list
+    const defaultList =
+      defaultValue !== null && typeof defaultValue === 'object'
+        ? defaultListOf(defaultValue)
+        : null;
     // an empty default is left out on import, as if there were none
     const hasDefault =
       (typeof defaultValue === 'string' && defaultValue !== '') ||
-      typeof defaultValue === 'number';
+      typeof defaultValue === 'number' ||
+      Boolean(defaultList?.length);
     const criterion = getAt(trees.matchCriteria, path);
     // a container's own criterion is a tree of its nested columns' criteria
     const matchKey = typeof criterion !== 'object' && isChecked(criterion);
@@ -101,7 +108,10 @@ export function summarizeMapping(
           : isChecked(getAt(trees.clearableItems, path))
             ? ('erase' as const)
             : ('skip' as const),
-      defaultValue: hasDefault && !matchKey ? String(defaultValue) : null,
+      defaultValue:
+        hasDefault && !matchKey
+          ? (defaultList?.join(', ') ?? String(defaultValue))
+          : null,
       children: [],
     };
 

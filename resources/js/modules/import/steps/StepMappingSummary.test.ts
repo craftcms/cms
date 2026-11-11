@@ -161,13 +161,21 @@ it('says what happens to each destination when its value is empty', () => {
       title: 'name',
       readingTime: 'time',
       difficulty: 'level',
+      topics: 'tags',
       blocks: {text: {fields: {copy: 'body'}}},
     },
     clearableItems: {readingTime: '1'},
-    defaultValues: {difficulty: 'beginner'},
+    // a saved multi-choice default comes back from the server as a list
+    defaultValues: {difficulty: 'beginner', topics: ['news', 'craft']},
   });
 
-  expect(whenEmpty()).toEqual(['Skip', 'Erase', 'Default · beginner', '—']);
+  expect(whenEmpty()).toEqual([
+    'Skip',
+    'Erase',
+    'Default · beginner',
+    'Default · news, craft',
+    '—',
+  ]);
 });
 
 it('passes the mapping count to its header slot', () => {

@@ -515,6 +515,37 @@ it('enters a multi-choice default as its options, kept as a JSON list', async ()
   ).toContain('Default · News, Craft');
 });
 
+it('shows a saved multi-choice default, which the server sends back as a list', async () => {
+  mount(
+    [
+      col({
+        prefixedHandle: 'tags',
+        defaultValueInput: {
+          type: 'multiselect',
+          options: [
+            {value: 'news', label: 'News'},
+            {value: 'craft', label: 'Craft'},
+          ],
+        },
+      }),
+    ],
+    cloneValues({
+      ...emptyValues(),
+      map: {tags: 'name'},
+      defaultValues: {tags: ['news', 'craft']},
+    } as unknown as MappingValues)
+  );
+
+  expect(
+    cell('whenEmpty').querySelector('.setting-popover__summary')!.textContent
+  ).toContain('Default · News, Craft');
+  expect(
+    cell('whenEmpty').querySelector<HTMLElement & {modelValue?: string[]}>(
+      'craft-checkbox-group'
+    )!.modelValue
+  ).toEqual(['news', 'craft']);
+});
+
 it('sums up a lightswitch default with the field’s own labels', async () => {
   mount(
     [
