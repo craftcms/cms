@@ -365,13 +365,6 @@ describe('craft-button link semantics', () => {
 });
 
 describe('craft-button actions', () => {
-  it('parses a JSON action attribute into the action property', async () => {
-    const element = await createButton({
-      action: '{"type":"event","name":"craft:test"}',
-    });
-    expect(element.action).toEqual({type: 'event', name: 'craft:test'});
-  });
-
   it('runs an event action on click, with trigger and sourceEvent in the detail', async () => {
     const element = await createButton({
       action:

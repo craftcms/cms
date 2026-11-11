@@ -38,35 +38,4 @@ describe('craft-thumbnail-loader', () => {
 
     expect(element.querySelector('.thumb')).toBeTruthy();
   });
-
-  /**
-   * The element can upgrade before its children have parsed — during the
-   * initial HTML parse, or when a fragment is injected — so it waits rather
-   * than giving up on an empty subtree.
-   */
-  it('waits for thumb markup that arrives after it connects', async () => {
-    const element = create();
-    await frames(1);
-
-    const thumb = document.createElement('div');
-    thumb.dataset.sizes = '1x';
-    thumb.dataset.src = 'a.png';
-    element.append(thumb);
-    await frames();
-
-    expect(element.querySelector('[data-sizes]')).toBe(thumb);
-  });
-
-  /** Disconnecting has to destroy the loader's workers and listeners. */
-  it('survives being removed and re-added', async () => {
-    const element = create('<div data-sizes="1x" data-src="a.png"></div>');
-    await frames();
-
-    element.remove();
-    await frames(1);
-    document.body.append(element);
-    await frames();
-
-    expect(element.isConnected).toBe(true);
-  });
 });

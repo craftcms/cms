@@ -9,7 +9,7 @@ The copy button is a `craft-copy-button`; see `craft-copy-button` for its own na
 ### Semantics
 
 - [x] The field is always read-only, and stays read-only if `readOnly` is set to `false` at runtime, so the value is focusable and selectable but not editable. Per WCAG 4.1.2 (Name, Role, Value). Verified by `is always read-only` and `stays read-only even if readOnly is set to false` in `input-copy.test.ts`. The tests check the host; the native input's `readonly` is covered in `input.a11y.md`.
-- [x] The copy button is a direct child in the `suffix` slot, so it's a separate control from the input and isn't part of its accessible name or description. Per WCAG 1.3.1 (Info and Relationships). Verified by `renders a copy button in the suffix slot` and `places the copy button in the suffix slot` in `input-copy.test.ts`.
+- [x] The copy button is a direct child in the `suffix` slot, so it's a separate control from the input and isn't part of its accessible name or description. Per WCAG 1.3.1 (Info and Relationships). Verified by `places the copy button in the suffix slot` in `input-copy.test.ts`.
 - [ ] The copy button's accessible name says what it copies. Per WCAG 2.4.6 (Headings and Labels) and 4.1.2 (Name, Role, Value). Known gap: the field passes only `tooltip-label="Copy"`, so every copy button is named the same and none includes the field's label.
 - [ ] A disabled field disables its copy button. Per WCAG 4.1.2 (Name, Role, Value). Known gap: `disabled` isn't passed to the copy button, so it stays enabled, in the Tab order and able to copy.
 

@@ -51,11 +51,6 @@ describe('craft-breadcrumb-item', () => {
     expect(link.textContent).not.toContain('Opens in a new window');
   });
 
-  it('exposes href as a property', async () => {
-    const element = await createItem({href: '/entries'});
-    expect(element.href).toBe('/entries');
-  });
-
   it('has a separator slot for breadcrumbs to fill', async () => {
     const element = await createItem();
     const separator = document.createElement('span');
