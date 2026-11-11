@@ -2658,6 +2658,8 @@ return [
     'Field mapping' => 'Field mapping',
     'Choose what to import, and from where, to map its fields.' => 'Choose what to import, and from where, to map its fields.',
     'Couldn’t save import step.' => 'Couldn’t save import step.',
+    'Couldn’t save import step' => 'Couldn’t save import step',
+    'Another step: {message}' => 'Another step: {message}',
     'Import step saved.' => 'Import step saved.',
     'Edit step {number} of {name}' => 'Edit step {number} of {name}',
     'Search fields' => 'Search fields',

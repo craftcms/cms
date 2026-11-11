@@ -42,7 +42,21 @@ export interface StepSlideoutContext {
   editUrl?: string | null;
   /** The submit button's label: Apply in a slideout, Save on the step's own page. */
   submitLabel?: string;
+  /**
+   * Hands the step back. On the step's own page this saves its plan, and rejects with a
+   * {@link StepSaveError} when the plan can't be saved, which keeps the form open.
+   */
   apply(step: ImportStep, summary: StepSummary): void | Promise<void>;
+}
+
+/**
+ * A plan that couldn't be saved with the step, with the server's errors by path: the
+ * step's own under `steps.<uid>.`, and any about the plan's other steps or the plan itself.
+ */
+export class StepSaveError extends Error {
+  constructor(readonly errors: Record<string, string | string[]>) {
+    super('The import plan couldn’t be saved with this step.');
+  }
 }
 
 export interface OpenStepSlideoutOptions {

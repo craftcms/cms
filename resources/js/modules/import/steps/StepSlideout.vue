@@ -13,6 +13,8 @@
   import {useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import {useSlideout} from '@/common/slideouts';
@@ -22,6 +24,7 @@
   import {dirtyState} from '@/modules/import/mapping/paths';
   import {
     fetchStepUi,
+    StepSaveError,
     takeStepSlideoutContext,
     validateStep,
     type StepSlideoutContext,
@@ -39,6 +42,8 @@
   const slideout = useSlideout();
   const payload = shallowRef<UiPayload>(context.payload);
   const errors = shallowRef<UiPayload['errors']>([]);
+  /** The errors the step's plan couldn't be saved with, by path, for the screen's summary. */
+  const saveErrors = shallowRef<Record<string, string>>({});
   const renderer = ref<{
     currentValues(): UiPayload['values'];
     setValues(
@@ -296,9 +301,39 @@
     }
   }
 
+  /**
+   * Shows the errors the step's plan couldn't be saved with: the step's own on the form,
+   * and all of them in the screen's summary, the only place one about another step or
+   * the plan itself can go.
+   */
+  async function showSaveErrors(
+    planErrors: Record<string, string | string[]>
+  ): Promise<void> {
+    const prefix = `steps.${step.value.uid}.`;
+    const own: Record<string, string | string[]> = {};
+    const summary: Record<string, string> = {};
+
+    for (const [path, messages] of Object.entries(planErrors)) {
+      const message = [messages].flat()[0] ?? '';
+
+      if (path.startsWith(prefix)) {
+        own[path.slice(prefix.length)] = messages;
+        summary[path.slice(prefix.length)] = message;
+      } else {
+        summary[path] = path.startsWith('steps.')
+          ? t('Another step: {message}', {message})
+          : message;
+      }
+    }
+
+    saveErrors.value = summary;
+    await showErrors(own);
+  }
+
   async function done(): Promise<void> {
     syncFromForm();
     errors.value = [];
+    saveErrors.value = {};
 
     if (context.editable) {
       try {
@@ -315,10 +350,20 @@
       }
     }
 
-    await context.apply(
-      JSON.parse(JSON.stringify(step.value)) as ImportStep,
-      summary.value
-    );
+    try {
+      await context.apply(
+        JSON.parse(JSON.stringify(step.value)) as ImportStep,
+        summary.value
+      );
+    } catch (error) {
+      if (!(error instanceof StepSaveError)) {
+        throw error;
+      }
+
+      await showSaveErrors(error.errors);
+
+      return;
+    }
 
     // Before close(): closing drops the panel from the store, and its handler with it.
     slideout?.saved();
@@ -328,6 +373,13 @@
 
 <template>
   <CpContainer @focusout="onFocusOut" class="py-lg">
+    <LayoutSlot v-if="Object.keys(saveErrors).length" name="error-summary">
+      <ErrorSummary
+        :errors="saveErrors"
+        :title="t('Couldn’t save import step')"
+      />
+    </LayoutSlot>
+
     <craft-field-group>
       <UiRenderer
         ref="renderer"

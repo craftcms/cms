@@ -21,6 +21,7 @@ const state = vi.hoisted(() => ({
   } | null,
   changeMapping: null as ((values: Partial<MappingValues>) => void) | null,
   templateErrors: vi.fn(),
+  saveErrors: null as Record<string, string> | null,
 }));
 
 vi.mock('@/common/composables/useAppLayout', () => ({
@@ -56,10 +57,35 @@ vi.mock('./InlineStepMapping.vue', () => ({
   },
 }));
 
-vi.mock('./step-slideout', () => ({
+vi.mock('./step-slideout', async (importOriginal) => ({
+  StepSaveError: (await importOriginal<typeof import('./step-slideout')>())
+    .StepSaveError,
   takeStepSlideoutContext: () => state.context,
   fetchStepUi: state.fetchStepUi,
   validateStep: state.validateStep,
+}));
+
+// Rendered in place, rather than teleported into a screen shell the test doesn't have.
+vi.mock('@/common/components/LayoutSlot.vue', () => ({
+  default: {
+    setup:
+      (_props: unknown, {slots}: any) =>
+      () =>
+        slots.default?.(),
+  },
+}));
+
+vi.mock('@/common/form/ErrorSummary.vue', () => ({
+  default: {
+    props: ['errors', 'title'],
+    setup(props: any) {
+      return () => {
+        state.saveErrors = props.errors;
+
+        return h('div', {class: 'error-summary'});
+      };
+    },
+  },
 }));
 
 // Stubbed so the test can drive the panel's refresh callback and reported values. It renders
@@ -186,6 +212,7 @@ beforeEach(() => {
   state.refresh = null;
   state.emitChange = null;
   state.errors = null;
+  state.saveErrors = null;
   container = document.createElement('div');
   document.body.append(container);
 });
@@ -468,6 +495,32 @@ it('applies the step and lets the slideout close once it validates', async () =>
       destinationLabels: {title: {label: 'Title', handle: 'title'}},
     }
   );
+});
+
+it('stays open with the reasons its plan couldn’t be saved, its own on the form and the rest in the summary', async () => {
+  const {StepSaveError} = await import('./step-slideout');
+  mount(true);
+  state.validateStep.mockResolvedValue(undefined);
+  state.context.apply.mockRejectedValue(
+    new StepSaveError({
+      'steps.step-1.source': 'The file couldn’t be read.',
+      'steps.step-2.source': 'Source must be provided.',
+      handle: 'Handle has already been taken.',
+    })
+  );
+
+  await state.layout.mock.calls.at(-1)![0].onSave();
+  await nextTick();
+
+  expect(state.errors).toEqual([
+    {path: ['source'], messages: ['The file couldn’t be read.']},
+  ]);
+  expect(state.saveErrors).toEqual({
+    source: 'The file couldn’t be read.',
+    'steps.step-2.source': 'Another step: Source must be provided.',
+    handle: 'Handle has already been taken.',
+  });
+  expect(state.errorHandler).not.toHaveBeenCalled();
 });
 
 it('isn’t dirty when folding the form back in changes nothing', async () => {
