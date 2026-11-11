@@ -233,6 +233,28 @@ it('previews an item without uploading its files, relating an unsaved asset for 
         ->and(Asset::find()->id($existing->id)->one()->getContents())->toBe('original');
 });
 
+it('previews a file once per upload the import would make for it', function (string $conflict, int $uploads) {
+    $path = ($this->sourceFile)('new.txt');
+    File::ensureDirectoryExists("$this->sourceDir/other");
+    file_put_contents($samePath = "$this->sourceDir/other/new.txt", 'hello world');
+    $importer = (clone $this->importer)->fieldSettings(['myAssets' => ['fileConflict' => $conflict]]);
+
+    $preview = $this->import->previewItem($importer, [
+        'title' => 'second entry',
+        'sectionId' => $this->section->handle,
+        'typeId' => $this->entryType->handle,
+        'matchCriteria' => ['title' => 'title'],
+        'myAssets' => [$path, $path, $samePath],
+    ]);
+
+    expect($preview->element->getFieldValue('myAssets')->count())->toBe($uploads);
+})->with([
+    // each upload is a new asset
+    'keeping both' => ['keepBoth', 3],
+    // the first upload's asset is reused for any later file of the same name
+    'using the existing file' => ['useExisting', 1],
+]);
+
 it('creates an asset from a URL', function () {
     Http::fake(['example.com/*' => Http::response('remote contents', 200, ['Content-Type' => 'text/plain'])]);
 

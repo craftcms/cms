@@ -119,6 +119,9 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
      * import would upload is an unsaved asset in its place, and the field validates and compares as it would after the
      * import. A file whose extension isn't allowed is left out, as the import would leave it.
      *
+     * An asset is related once, and so is a file, by its name, unless the import keeps both: the import reuses the
+     * asset a file's first upload made for any later file of the same name, but keeping both uploads each one anew.
+     *
      * @param  list<int|string>  $items
      * @return ElementCollection<int, Asset>
      */
@@ -128,12 +131,26 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
             $items = $this->resolveExistingFiles($field, $items, $rootOwner);
         }
 
-        $items = array_values(array_unique($items));
-        $ids = array_values(array_filter($items, is_int(...)));
+        $ids = array_values(array_unique(array_filter($items, is_int(...))));
         $existing = collect($ids === [] ? [] : Asset::find()->id($ids)->status(null)->site('*')->unique()->all())->keyBy('id');
         $assets = [];
+        $related = [];
 
         foreach ($items as $item) {
+            $key = match (true) {
+                is_int($item) => "id:$item",
+                $conflict === ImportFileConflict::KeepBoth => null,
+                default => 'file:'.AssetsHelper::importFilename($item),
+            };
+
+            if ($key !== null && isset($related[$key])) {
+                continue;
+            }
+
+            if ($key !== null) {
+                $related[$key] = true;
+            }
+
             if (is_int($item)) {
                 // an ID that isn't an asset relates nothing, as it wouldn't on import
                 $asset = $existing->get($item);
