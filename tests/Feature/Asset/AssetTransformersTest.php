@@ -14,14 +14,17 @@ use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransforms;
+use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -138,6 +141,34 @@ it('keeps getUrl transform arguments with a deprecation warning', function () {
         ->and($deprecation?->message)->toBe('Passing transform arguments to `Asset::getUrl()` is deprecated. Use `Asset::transform()->url` instead.');
 });
 
+it('returns the source values for assets the transformer can’t transform', function () {
+    Exceptions::fake();
+    config()->set('filesystems.disks.uploads', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/asset-transformers'),
+        'url' => 'https://example.test/uploads',
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true]);
+    $asset = Asset::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'clip.mp4',
+        'kind' => 'video',
+        'width' => 1920,
+        'height' => 1080,
+    ]);
+    $transform = ['width' => 320, 'format' => 'webp'];
+
+    expect($asset->getUrl($transform))->toBe('https://example.test/uploads/clip.mp4')
+        ->and($asset->getWidth($transform))->toBe(1920)
+        ->and($asset->getHeight($transform))->toBe(1080)
+        ->and($asset->getFormat($transform))->toBe('mp4')
+        ->and($asset->getMimeType($transform))->toBe($asset->getMimeType())
+        ->and(fn () => $asset->transform($transform))->toThrow(NotSupportedException::class);
+
+    Exceptions::assertNothingReported();
+});
+
 it('lets the Craft driver control immediate generation', function () {
     $immediateValues = [];
     $imageTransformer = Mockery::mock(ImageTransformer::class);
@@ -156,22 +187,40 @@ it('lets the Craft driver control immediate generation', function () {
     ]);
     $deferred = new AssetTransformer('craft', ['generate_transforms_before_page_load' => false]);
     $immediate = new AssetTransformer('craft', ['generate_transforms_before_page_load' => true]);
-    $request = fn (AssetTransformer $transformer) => new AssetTransformRequest(
+    $request = fn (AssetTransformer $transformer, ?bool $immediately = null) => new AssetTransformRequest(
         $asset,
         $transformer,
         ['width' => 320],
+        immediately: $immediately,
     );
 
     $driver->transform($request($deferred));
     $driver->transform($request($immediate));
-    Context::scope(
-        fn () => $driver->transform($request($immediate)),
-        hidden: [CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT => false],
-    );
-    $driver->withImmediateTransforms(fn () => $driver->transform($request($deferred)));
+    $driver->transform($request($immediate, false));
+    $driver->transform($request($deferred, true));
     $driver->transform($request($deferred));
 
     expect($immediateValues)->toBe([false, true, false, true, false]);
+});
+
+it('passes immediate generation requests to drivers', function () {
+    $driver = registerDriver('remote');
+    config()->set('filesystems.disks.local.asset_transformer', 'remote');
+    $asset = Asset::factory()->createElement();
+    $immediately = function (callable $transform) use ($driver): ?bool {
+        $transform();
+
+        return $driver->request->immediately;
+    };
+
+    expect($immediately(fn () => $asset->transform(['width' => 320])))->toBeNull()
+        ->and($immediately(fn () => app(AssetTransformers::class)->withImmediateTransforms(
+            fn () => $asset->transform(['width' => 320]),
+        )))->toBeTrue()
+        ->and($immediately(fn () => Context::scope(
+            fn () => $asset->transform(['width' => 320]),
+            hidden: [AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT => false],
+        )))->toBeFalse();
 });
 
 it('uses driver-specific named parameters', function () {

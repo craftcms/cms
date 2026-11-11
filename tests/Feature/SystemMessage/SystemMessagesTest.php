@@ -9,7 +9,6 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
@@ -22,12 +21,7 @@ beforeEach(function () {
     $this->systemMessages = app(SystemMessages::class);
 });
 
-it('enables immediate Craft transforms while rendering system messages', function () {
-    $craftDriver = Mockery::mock(CraftAssetTransformDriver::class);
-    $craftDriver->shouldReceive('withImmediateTransforms')
-        ->once()
-        ->andReturnUsing(fn (callable $callback) => $callback());
-    app()->instance(CraftAssetTransformDriver::class, $craftDriver);
+it('requests immediate transforms while rendering system messages', function () {
     $driver = new SystemMessageAssetTransformDriver;
     app(AssetTransformers::class)->extend('system-message', fn () => $driver);
     config()->set('filesystems.disks.local.asset_transformer', 'system-message');
@@ -42,7 +36,8 @@ it('enables immediate Craft transforms while rendering system messages', functio
     $message = app(RenderSystemMessageAction::class)->handle('asset-transform', ['asset' => $asset]);
 
     expect($message->textBody)->toContain('/system-message/320.webp')
-        ->and($driver->requests)->not()->toBeEmpty();
+        ->and($driver->requests)->not()->toBeEmpty()
+        ->and(array_column($driver->requests, 'immediately'))->each->toBeTrue();
 });
 
 it('resolves registered messages in the site locale', function () {

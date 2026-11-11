@@ -74,7 +74,10 @@ class LegacyAssetTransforms
 
         try {
             $event->url = $event->asset->transform($transform)->url;
-        } catch (AssetTransformException|NotSupportedException|FilesystemException $exception) {
+        } catch (NotSupportedException) {
+            // Let the asset return its own URL.
+            return;
+        } catch (AssetTransformException|FilesystemException $exception) {
             report($exception);
         }
 

@@ -10,7 +10,7 @@
 namespace craft\config;
 
 use craft\services\Config;
-use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
 use DateInterval;
@@ -114,8 +114,8 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     public ?bool $generateTransformsBeforePageLoad = null {
         set {
             $this->whenBooting(fn() => $value === null
-                ? Context::forgetHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT)
-                : Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value));
+                ? Context::forgetHidden(AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT)
+                : Context::addHidden(AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT, $value));
 
             $this->generateTransformsBeforePageLoad = $value;
         }
