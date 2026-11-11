@@ -215,7 +215,6 @@ class AuthServiceProvider extends ServiceProvider
 
     private function registerElementPolicies(): void
     {
-        Gate::policy(Element::class, ElementPolicy::class);
         Gate::policy(Address::class, AddressPolicy::class);
         Gate::policy(Asset::class, AssetPolicy::class);
         Gate::policy(VolumeFolder::class, VolumeFolderPolicy::class);
@@ -224,5 +223,8 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(Structure::class, StructurePolicy::class);
         Gate::policy(Release::class, ReleasePolicy::class);
         Gate::policy(UserElement::class, UserPolicy::class);
+
+        // Laravel uses the first registered parent class's policy for subclasses, so this must come last.
+        Gate::policy(Element::class, ElementPolicy::class);
     }
 }

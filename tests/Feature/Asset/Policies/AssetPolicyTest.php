@@ -58,7 +58,8 @@ beforeEach(function () {
 });
 
 it('is registered with the gate', function () {
-    expect(Gate::getPolicyFor(Asset::class))->toBeInstanceOf(AssetPolicy::class);
+    expect(Gate::getPolicyFor(Asset::class))->toBeInstanceOf(AssetPolicy::class)
+        ->and(Gate::getPolicyFor(createAssetTestAsset($this->volume)))->toBeInstanceOf(AssetPolicy::class);
 });
 
 it('returns false for folder view', function () {
