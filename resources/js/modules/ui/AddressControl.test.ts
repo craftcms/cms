@@ -119,14 +119,18 @@ it('names each field by its visible label', async () => {
   }
 });
 
-it('marks the required fields as required, and only those', async () => {
+it('announces the required fields as required, through their labels', async () => {
   const root = await mountAddress();
 
   for (const name of ['Address Line 1', 'State', 'City']) {
-    expect(controlNamed(root, name).getAttribute('aria-required')).toBe('true');
+    expect(computeAccessibleName(controlNamed(root, name))).toMatch(
+      /Required$/
+    );
   }
   for (const name of ['Address Line 2', 'Zip Code']) {
-    expect(controlNamed(root, name).hasAttribute('aria-required')).toBe(false);
+    expect(computeAccessibleName(controlNamed(root, name))).not.toMatch(
+      /Required/
+    );
   }
 });
 

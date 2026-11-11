@@ -1,3 +1,4 @@
+import {computeAccessibleName} from 'dom-accessibility-api';
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftField from './field.js';
 import './field.js';
@@ -160,57 +161,20 @@ describe('craft-field required indicator', () => {
     ).toBeNull();
   });
 
-  it('marks the slotted control as required', async () => {
-    const element = await createField({label: 'My field', required: ''});
-
-    expect(input(element)!.getAttribute('aria-required')).toBe('true');
-  });
-
-  it('marks the native control inside a nested form control as required', async () => {
+  it('says required once, through the label, and leaves the control unmarked', async () => {
+    // The label's visually hidden "Required" text announces it. A required
+    // state on the control as well would have screen readers say it twice.
     const element = await createField(
       {label: 'My field', required: ''},
       '<craft-input slot="input"></craft-input>'
     );
     const control = element.querySelector('craft-input')!;
     await control.updateComplete;
+    const native = control.querySelector('input')!;
 
-    expect(control.querySelector('input')!.getAttribute('aria-required')).toBe(
-      'true'
-    );
-    expect(control.hasAttribute('aria-required')).toBe(false);
-  });
-
-  it('stops marking the control as required when required is unset', async () => {
-    const element = await createField({label: 'My field', required: ''});
-
-    element.required = false;
-    await element.updateComplete;
-
-    expect(input(element)!.hasAttribute('aria-required')).toBe(false);
-  });
-
-  it('leaves a control’s own aria-required alone', async () => {
-    const element = await createField(
-      {label: 'My field', required: ''},
-      '<input slot="input" type="text" aria-required="true">'
-    );
-
-    element.required = false;
-    await element.updateComplete;
-
-    expect(input(element)!.getAttribute('aria-required')).toBe('true');
-  });
-
-  it('does not mark a group as required', async () => {
-    const element = await createField(
-      {label: 'My group', required: ''},
-      '<div slot="input"><input type="text"></div>'
-    );
-
-    expect(element.hasAttribute('aria-required')).toBe(false);
-    expect(
-      element.querySelector('[slot="input"]')!.hasAttribute('aria-required')
-    ).toBe(false);
+    expect(computeAccessibleName(native)).toMatch(/^My field\s*Required$/);
+    expect(native.hasAttribute('aria-required')).toBe(false);
+    expect(native.hasAttribute('required')).toBe(false);
   });
 
   it('does not render an indicator without a label', async () => {
