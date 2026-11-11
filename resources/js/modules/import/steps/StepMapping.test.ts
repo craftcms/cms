@@ -560,25 +560,36 @@ it('shows a saved multi-choice default, which the server sends back as a list', 
   ).toEqual(['news', 'craft']);
 });
 
-it('sums up a lightswitch default with the field’s own labels', async () => {
-  mount(
-    [
-      col({
-        prefixedHandle: 'featured',
-        defaultValueInput: {
-          type: 'lightswitch',
-          onLabel: 'Yes',
-          offLabel: 'No',
-        },
-      }),
-    ],
-    {...emptyValues(), map: {featured: 'name'}, defaultValues: {featured: '1'}}
-  );
+it.each([
+  ['as it’s entered', '1'],
+  ['as the server sends it back', 1],
+  ['as a plan registered in code sets it', true],
+])(
+  'sums up a lightswitch default with the field’s own labels, %s',
+  async (_, value) => {
+    mount(
+      [
+        col({
+          prefixedHandle: 'featured',
+          defaultValueInput: {
+            type: 'lightswitch',
+            onLabel: 'Yes',
+            offLabel: 'No',
+          },
+        }),
+      ],
+      {
+        ...emptyValues(),
+        map: {featured: 'name'},
+        defaultValues: {featured: value},
+      }
+    );
 
-  expect(
-    cell('whenEmpty').querySelector('.setting-popover__summary')!.textContent
-  ).toContain('Default · Yes');
-});
+    expect(
+      cell('whenEmpty').querySelector('.setting-popover__summary')!.textContent
+    ).toContain('Default · Yes');
+  }
+);
 
 it('previews the first value of the chosen source column', async () => {
   mount([title]);

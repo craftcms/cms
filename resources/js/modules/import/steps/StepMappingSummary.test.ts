@@ -156,24 +156,34 @@ it('badges the destinations rows are matched on as Match Keys, inline in their r
 });
 
 it('says what happens to each destination when its value is empty', () => {
-  mount({
-    map: {
-      title: 'name',
-      readingTime: 'time',
-      difficulty: 'level',
-      topics: 'tags',
-      blocks: {text: {fields: {copy: 'body'}}},
+  mount(
+    {
+      map: {
+        title: 'name',
+        readingTime: 'time',
+        difficulty: 'level',
+        topics: 'tags',
+        featured: 'isFeatured',
+        blocks: {text: {fields: {copy: 'body'}}},
+      },
+      clearableItems: {readingTime: '1'},
+      defaultValues: {
+        difficulty: 'beginner',
+        // a saved multi-choice default comes back from the server as a list
+        topics: ['news', 'craft'],
+        // and a plan registered in code can set a lightswitch's as a boolean
+        featured: false,
+      },
     },
-    clearableItems: {readingTime: '1'},
-    // a saved multi-choice default comes back from the server as a list
-    defaultValues: {difficulty: 'beginner', topics: ['news', 'craft']},
-  });
+    10
+  );
 
   expect(whenEmpty()).toEqual([
     'Skip',
     'Erase',
     'Default · beginner',
     'Default · news, craft',
+    'Default · 0',
     '—',
   ]);
 });

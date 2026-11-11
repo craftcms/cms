@@ -79,7 +79,10 @@ export function summarizeMapping(
   ): SummaryEntry | null {
     const key = path.join('.');
     const known = labels[key];
-    const defaultValue = getAt(trees.defaultValues, path);
+    const rawDefault = getAt(trees.defaultValues, path);
+    // a plan registered in code can set a lightswitch's default as a boolean
+    const defaultValue =
+      typeof rawDefault === 'boolean' ? (rawDefault ? '1' : '0') : rawDefault;
     // a saved multi-choice default comes back decoded, as a list
     const defaultList =
       defaultValue !== null && typeof defaultValue === 'object'

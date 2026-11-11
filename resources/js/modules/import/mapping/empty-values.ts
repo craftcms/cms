@@ -64,11 +64,19 @@ export function setEmptyValueMode(
   }
 }
 
+/**
+ * A default as its input holds it. One the server sends back decoded, or that a plan
+ * registered in code set, can be a number or a boolean, which a lightswitch reads as `1` or `0`.
+ */
 export function defaultValueOf(
   values: MappingValues,
   col: MappingColumn
 ): string {
   const value = getAt(values.defaultValues, col.prefixedHandleAsArray);
+
+  if (typeof value === 'boolean') {
+    return value ? '1' : '0';
+  }
 
   return typeof value === 'string' || typeof value === 'number'
     ? String(value)
