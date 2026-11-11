@@ -8,14 +8,15 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Composer service.
@@ -27,6 +28,67 @@ use yii\base\Exception;
  */
 class Composer extends Component
 {
+    /**
+     * @since 5.13.0
+     */
+    public const MIN_VERSION = '2.2.0';
+
+    private string|false|null $_executable = false;
+
+    /**
+     * Returns whether a supported system Composer executable is available.
+     *
+     * @since 5.13.0
+     */
+    public function getIsAvailable(): bool
+    {
+        return $this->getExecutable() !== null;
+    }
+
+    /**
+     * Returns an explanation if Composer is unavailable.
+     *
+     * @since 5.13.0
+     */
+    public function getUnavailableReason(): ?string
+    {
+        return $this->getIsAvailable() ? null : Craft::t('app', 'Composer {version} or later must be installed and available in the PATH environment variable.', [
+            'version' => self::MIN_VERSION,
+        ]);
+    }
+
+    private function getExecutable(): ?string
+    {
+        if ($this->_executable !== false) {
+            return $this->_executable;
+        }
+
+        $this->_executable = null;
+
+        try {
+            $executable = (new ExecutableFinder())->find('composer');
+            if ($executable === null) {
+                return null;
+            }
+
+            $process = new Process([$executable, '--version', '--no-ansi', '--no-interaction', '--no-plugins', '--no-scripts']);
+            $process->setTimeout(10);
+            $process->run();
+
+            if (
+                $process->isSuccessful() &&
+                preg_match('/^Composer(?: version)? (\d+\.\d+\.\d+(?:[-+][\w.-]+)?)(?=\s|$)/m', $process->getOutput(), $matches) &&
+                version_compare($matches[1], self::MIN_VERSION, '>=')
+            ) {
+                $this->_executable = $executable;
+            }
+        } catch (Throwable) {
+            // Process execution may be disabled or Composer may not be runnable by the PHP user.
+        }
+
+        return $this->_executable;
+    }
+
     /**
      * @var string
      */
@@ -100,6 +162,10 @@ class Composer extends Component
      */
     public function install(?array $requirements, ?callable $callback = null): void
     {
+        if (($reason = $this->getUnavailableReason()) !== null) {
+            throw new InvalidConfigException($reason);
+        }
+
         if ($requirements !== null) {
             $this->backupComposerFiles();
         }
@@ -140,6 +206,10 @@ class Composer extends Component
      */
     public function uninstall(array $packages, ?callable $callback = null): void
     {
+        if (($reason = $this->getUnavailableReason()) !== null) {
+            throw new InvalidConfigException($reason);
+        }
+
         $this->backupComposerFiles();
 
         $packages = array_map('strtolower', $packages);
@@ -171,13 +241,8 @@ class Composer extends Component
      */
     private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
-        // Copy composer.phar into the runtime folder
-        $pharPath = sprintf('%s/composer.phar', Craft::$app->getRuntimePath());
-        copy(Craft::getAlias('@lib/composer.phar'), $pharPath);
-
         $command = array_merge([
-            App::phpExecutable() ?? 'php',
-            $pharPath,
+            $this->getExecutable(),
         ], $command, [
             '--working-dir',
             dirname($jsonPath),
@@ -194,11 +259,7 @@ class Composer extends Component
         ]);
         $process->setTimeout(null);
 
-        try {
-            $process->mustRun($callback);
-        } finally {
-            unlink($pharPath);
-        }
+        $process->mustRun($callback);
 
         // Invalidate opcache
         if (function_exists('opcache_reset')) {

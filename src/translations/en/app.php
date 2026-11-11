@@ -387,6 +387,7 @@ return [
     'Composer was unable to install the updates.' => 'Composer was unable to install the updates.',
     'Composer was unable to remove the plugin.' => 'Composer was unable to remove the plugin.',
     'Composer was unable to revert the updates.' => 'Composer was unable to revert the updates.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Compressed',
     'Condition {num, number}' => 'Condition {num, number}',
     'Configure the category group’s site-specific settings.' => 'Configure the category group’s site-specific settings.',

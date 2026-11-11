@@ -1,2 +1,5 @@
+{% if craft.app.composer.unavailableReason %}
+  <p class="warning">{{ craft.app.composer.unavailableReason }}</p>
+{% endif %}
 <div id="graphic" class="spinner big"></div>
 <div id="status">{{ "Checking for updates…"|t('app') }}</div>
