@@ -69,6 +69,20 @@ vi.mock('@craftcms/ui/components/combobox/combobox', async () => {
   return {default: CraftCombobox};
 });
 
+// The real element binds to its input once it's rendered, which happy-dom can't resolve, and
+// it fails when a search removes its row before then, so a bare element stands in for it.
+vi.mock('@craftcms/ui/components/text-expander/text-expander', async () => {
+  const {LitElement} = await import('lit');
+  class CraftTextExpander extends LitElement {
+    triggers: unknown[] = [];
+  }
+  if (!customElements.get('craft-text-expander')) {
+    customElements.define('craft-text-expander', CraftTextExpander);
+  }
+
+  return {default: CraftTextExpander};
+});
+
 // happy-dom has no `attachInternals()`, which the real element needs for form participation.
 vi.mock('@craftcms/ui/components/button-group/button-group', async () => {
   const {LitElement} = await import('lit');
@@ -1149,6 +1163,35 @@ it('doesn’t mark a template with no errors as having them', async () => {
 
   expect(field.hasErrors).toBe(false);
   expect(field.hasAttribute('has-errors')).toBe(false);
+});
+
+it('clears a search that hides a column with a template error, so the error can be seen and focused', async () => {
+  state.validateStep.mockRejectedValue({
+    response: {
+      data: {
+        errors: {
+          'settings.templates.body': ['The template couldn’t be parsed.'],
+        },
+      },
+    },
+  });
+  mount([title, body], {
+    ...emptyValues(),
+    map: {title: 'name', body: TEMPLATE_RULE},
+    templates: {body: '{{ name'},
+  });
+
+  searchFields('title');
+  await nextTick();
+  expect(rowLabels()).toEqual(['title']);
+
+  expect(await applyAsync()).toBeNull();
+  await nextTick();
+
+  expect(rowLabels()).toEqual(['title', 'body']);
+  expect(
+    (document.activeElement as HTMLElement | null)?.closest('tr')?.textContent
+  ).toContain('The template couldn’t be parsed.');
 });
 
 it('doesn’t validate a mapping that uses no templates before handing it back', async () => {

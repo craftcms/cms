@@ -7,7 +7,7 @@
   import '@craftcms/ui/components/button/button';
   import {t} from '@craftcms/ui';
   import type {Row} from '@tanstack/vue-table';
-  import {h} from 'vue';
+  import {h, watch} from 'vue';
   import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
   import AdminTable from '@/modules/admin-table/components/AdminTable.vue';
   import AdminTableToolbar from '@/modules/admin-table/components/AdminTableToolbar.vue';
@@ -47,6 +47,22 @@
 
   const {search, rows} = useMappingRows(
     () => props.groups ?? [{label: null, cols: props.cols ?? []}]
+  );
+
+  // a template error has to be seen to be fixed, so a search that hides its row is cleared
+  watch(
+    () => context.templateErrors.value,
+    (errors) => {
+      const shown = new Set(
+        rows.value.flatMap((row) =>
+          row.kind === 'column' ? [row.col.prefixedHandleAsArray.join('.')] : []
+        )
+      );
+
+      if (Object.keys(errors).some((key) => !shown.has(key))) {
+        search.value = '';
+      }
+    }
   );
 
   /**
