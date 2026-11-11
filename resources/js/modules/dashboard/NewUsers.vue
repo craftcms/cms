@@ -1,26 +1,20 @@
 <script setup lang="ts">
-  import {nextTick, onBeforeUnmount, onMounted, ref, watch} from 'vue';
-  import {useResizeObserver} from '@vueuse/core';
+  import {onBeforeUnmount, onMounted, ref, shallowRef, watch} from 'vue';
   import {actionClient, t} from '@craftcms/ui';
   import {data as chartData} from '@actions/Dashboard/Widgets/NewUsersController';
-  import {Area, DataTable} from '@/modules/chart/chart';
+  import AreaChart from '@/modules/chart/AreaChart.vue';
+  import type {ChartData, ChartScale} from '@/modules/chart/types';
 
   const props = defineProps<{
     data: {dateRange: string; userGroupId: number | null};
   }>();
 
-  const container = ref<HTMLElement>();
   const error = ref('');
   const loading = ref(true);
-  let chart: Area | undefined;
+  const chart = shallowRef<{data: ChartData; scale: ChartScale}>();
   let request: AbortController | undefined;
 
-  useResizeObserver(container, () => chart?.resize());
-
-  onBeforeUnmount(() => {
-    request?.abort();
-    chart?.destroy();
-  });
+  onBeforeUnmount(() => request?.abort());
 
   /**
    * Fetches the chart's data and draws it. The dashboard reloads its widgets
@@ -50,23 +44,7 @@
       );
 
       error.value = '';
-      loading.value = false;
-      await nextTick();
-      if (current.signal.aborted) return;
-
-      chart ??= new Area(container.value!, {
-        yAxis: {
-          formatter: (chart: any) => (value: number) =>
-            chart.formatLocale.format(
-              Number.isInteger(value) ? ',.0f' : ',.1f'
-            )(value),
-        },
-      });
-      chart.draw(new DataTable(data.dataTable), {
-        orientation: data.orientation,
-        dataScale: data.scale,
-        formats: data.formats,
-      });
+      chart.value = {data: data.dataTable, scale: data.scale};
     } catch {
       if (!current.signal.aborted) error.value = t('A server error occurred.');
     } finally {
@@ -88,12 +66,12 @@
       <craft-spinner v-if="loading" visible role="status">{{
         t('Loading…')
       }}</craft-spinner>
-      <div
-        v-show="!loading && !error"
-        ref="container"
-        class="chart"
-        :aria-label="t('New Users')"
-      ></div>
+      <AreaChart
+        v-if="chart && !loading && !error"
+        :data="chart.data"
+        :scale="chart.scale"
+        :label="t('New Users')"
+      />
     </div>
   </craft-card>
 </template>

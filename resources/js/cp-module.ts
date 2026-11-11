@@ -151,6 +151,20 @@ export const PaginationControls = defineAsyncComponent(
   () => import('./common/components/PaginationControls.vue')
 );
 
+/**
+ * A time-series area chart, drawn from the data `Chart::get()` returns. d3
+ * loads with it.
+ */
+export const AreaChart = defineAsyncComponent(
+  () => import('./modules/chart/AreaChart.vue')
+);
+export type {
+  ChartColumn,
+  ChartColumnType,
+  ChartData,
+  ChartScale,
+} from './modules/chart/types';
+
 export type {ModalProps, ModalWidth} from './common/components/modal';
 export type {HtmlFragment} from './common/types';
 
