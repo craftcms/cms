@@ -296,14 +296,6 @@ readonly class FieldChangeComparisons
         };
     }
 
-    /**
-     * Whether values were set on the element since it was loaded, so it's no longer the version it was saved as.
-     */
-    private function hasUnsavedValues(ElementInterface $element): bool
-    {
-        return $element->getDirtyFields() !== [] || $element->getDirtyAttributes() !== [];
-    }
-
     private function nodeUid(NodePayload $node): string
     {
         return (string) ($node->props['layoutUid'] ?? $node->uid);
@@ -466,7 +458,9 @@ readonly class FieldChangeComparisons
 
     /**
      * Compares a field’s compiled nodes on two elements. The field is unchanged when both have the same value, or when
-     * both are the same element in the same site, and it’s `null` when that can’t be told from their form values.
+     * they’re the same instance, and it’s `null` when that can’t be told from their form values. Two instances of one
+     * element are compared by their values, since one can hold values that were set on it without being saved, and an
+     * element doesn’t track every attribute that’s set on it.
      *
      * @param  array{UiPayload, NodePayload}|null  $fromField
      * @param  array{UiPayload, NodePayload}|null  $toField
@@ -487,7 +481,7 @@ readonly class FieldChangeComparisons
 
         $unchanged = match (true) {
             $fromNode === null || $toNode === null => false,
-            $from->id === $to->id && $from->siteId === $to->siteId && ! $this->hasUnsavedValues($from) && ! $this->hasUnsavedValues($to) => true,
+            $from === $to => true,
             $this->loadsOwnValues($toNode) || $this->loadsOwnValues($fromNode) => $from ? $this->sameNestedElements($layoutElement, $from, $to) : null,
             default => $this->sameValue($fromValue, $toValue),
         };
