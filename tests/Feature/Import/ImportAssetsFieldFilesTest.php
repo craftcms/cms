@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Element\Events\ElementSaving;
@@ -254,6 +256,27 @@ it('previews a file once per upload the import would make for it', function (str
     // the first upload's asset is reused for any later file of the same name
     'using the existing file' => ['useExisting', 1],
 ]);
+
+it('previews a URL with no extension in a field limited to some kinds of file, whose kind the import finds out', function () {
+    $field = Fields::getLayoutById($this->entryType->fieldLayoutId)->getFieldByHandle('myAssets');
+    $field->setSelectionCondition([
+        'class' => AssetCondition::class,
+        'elementType' => Asset::class,
+        'conditionRules' => [['class' => FileTypeConditionRule::class, 'values' => ['text']]],
+    ]);
+
+    $preview = $this->import->previewItem($this->importer, [
+        'title' => 'second entry',
+        'sectionId' => $this->section->handle,
+        'typeId' => $this->entryType->handle,
+        'matchCriteria' => ['title' => 'title'],
+        'myAssets' => ['https://example.com/download?id=1', ($this->sourceFile)('script.php'), ($this->sourceFile)('notes.txt')],
+    ]);
+
+    expect($preview->errors)->toBe([])
+        ->and(array_map(fn (Asset $asset) => $asset->getFilename(), $preview->element->getFieldValue('myAssets')->all()))
+        ->toBe(['download', 'notes.txt']);
+});
 
 it('creates an asset from a URL', function () {
     Http::fake(['example.com/*' => Http::response('remote contents', 200, ['Content-Type' => 'text/plain'])]);

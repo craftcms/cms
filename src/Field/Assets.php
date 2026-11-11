@@ -411,6 +411,11 @@ class Assets extends BaseRelationField
         // Get all the value's assets' filenames
         foreach ($value->all() as $asset) {
             /** @var Asset $asset */
+            // an unsaved asset, such as an import preview's stand-in, whose file has yet to be fetched to find out what it is
+            if ($asset->id === null && pathinfo((string) $asset->getFilename(), PATHINFO_EXTENSION) === '') {
+                continue;
+            }
+
             $filenames[] = $asset->getFilename();
         }
 
