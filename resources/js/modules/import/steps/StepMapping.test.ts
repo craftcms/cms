@@ -180,7 +180,8 @@ const templateTextExpanderTriggers = [
 function mount(
   destinationCols: MappingColumnEntry[],
   values: MappingValues = emptyValues(),
-  suggestedMap: SuggestedMap = {}
+  suggestedMap: SuggestedMap = {},
+  editable = true
 ) {
   state.context = {
     destinationCols,
@@ -195,7 +196,7 @@ function mount(
     templateTextExpanderTriggers,
     values,
     suggestedMap,
-    editable: true,
+    editable,
     step,
     apply: (next: MappingValues) => (applied = next),
   };
@@ -903,6 +904,39 @@ it('opens a container column’s nested mapping against the draft step', () => {
     col: outerMatrix,
     step,
     editable: true,
+  });
+});
+
+it('lets a read-only mapping open a container’s nested mapping to look at, but not one with nothing mapped', () => {
+  mount(
+    [
+      outerMatrix,
+      {
+        ...outerMatrix,
+        prefixedHandle: 'otherMatrix',
+        prefixedHandleAsArray: ['otherMatrix'],
+      },
+    ],
+    {...emptyValues(), map: {outerMatrix: {outerEt: {title: 'name'}}}},
+    {},
+    false
+  );
+
+  const [mapped, unmapped] = [
+    ...container.querySelectorAll<HTMLElement & {disabled?: boolean}>(
+      'tbody craft-button'
+    ),
+  ];
+
+  expect(mapped!.textContent!.trim()).toBe('View mapping');
+  expect(mapped!.disabled).toBe(false);
+  expect(unmapped!.disabled).toBe(true);
+
+  mapped!.dispatchEvent(new Event('click'));
+
+  expect(state.openNested.mock.calls[0]![0]).toMatchObject({
+    col: outerMatrix,
+    editable: false,
   });
 });
 

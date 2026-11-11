@@ -20,6 +20,15 @@
       Object.keys(branch).length > 0
     );
   });
+
+  /** A read-only mapping still opens, so its nested columns can be looked at, but not changed. */
+  const label = computed(() => {
+    if (!hasNestedMapping.value) {
+      return t('Map field');
+    }
+
+    return context.editable ? t('Edit mapping') : t('View mapping');
+  });
 </script>
 
 <template>
@@ -27,10 +36,10 @@
     ref="button"
     type="button"
     :variant="hasNestedMapping ? ButtonVariant.Fill : ButtonVariant.Dashed"
-    :icon="hasNestedMapping ? 'pencil' : 'plus'"
-    .disabled="!context.editable"
+    :icon="hasNestedMapping ? (context.editable ? 'pencil' : 'eye') : 'plus'"
+    .disabled="!context.editable && !hasNestedMapping"
     @click="context.openNested(col, button)"
   >
-    {{ hasNestedMapping ? t('Edit mapping') : t('Map field') }}
+    {{ label }}
   </craft-button>
 </template>
