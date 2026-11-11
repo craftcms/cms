@@ -187,22 +187,6 @@
     width: var(--cp-sidebar-collapsed-width);
   }
 
-  /* Docked and expanded, the sidebar gets more room beside the panel as the
-     page widens: 3% of it (PageScreen's `cp-frame`), from 8px up to 40px.
-     Its items widen by what that adds; its padding stays even on both sides.
-     `--cp-sidebar-width` stays the base width, since a page's secondary nav
-     and Live Preview size to it too. */
-  .cp-sidebar[data-mode='docked']:not(.cp-sidebar--collapsed) {
-    --cp-sidebar-room: clamp(
-      var(--c-spacing-md),
-      3cqi,
-      calc(var(--c-spacing-md) * 5)
-    );
-    width: calc(
-      var(--cp-sidebar-width) + var(--cp-sidebar-room) - var(--c-spacing-md)
-    );
-  }
-
   .cp-sidebar :deep(craft-nav-item) {
     --c-icon-size: calc(12rem / 16);
     --c-nav-item-icon-color: var(--color-slate-700);
@@ -237,16 +221,13 @@
 
   /* Docked and expanded, PageScreen flattens the body below 932px of shell,
      dropping its inset, so the rail moves up by that much. The sidebar sits
-     outside the shell's container, so the same width is written as a width
-     of the page (`cp-frame`) here: 932px plus the expanded sidebar, which is
-     218px plus its room (3% of the page there), so 1186px. Keep it in step. */
-  @media (width >= var(--breakpoint-lg)) {
-    @container cp-frame (width < 1186px) {
-      .cp-sidebar:not(.cp-sidebar--collapsed) .cp-sidebar__body {
-        padding-block-start: calc(
-          var(--c-spacing-md) + 2px + var(--cp-body-border-width)
-        );
-      }
+     outside the shell's container, so the same width is written as a viewport
+     width here: 932px plus the 226px expanded sidebar. Keep it in step. */
+  @media (width >= var(--breakpoint-lg)) and (width < 1158px) {
+    .cp-sidebar:not(.cp-sidebar--collapsed) .cp-sidebar__body {
+      padding-block-start: calc(
+        var(--c-spacing-md) + 2px + var(--cp-body-border-width)
+      );
     }
   }
 

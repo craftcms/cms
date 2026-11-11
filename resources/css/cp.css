@@ -44,12 +44,6 @@ CP Styles
   initial-value: 0px;
 }
 
-@property --cp-sidebar-room {
-  syntax: '<length>';
-  inherits: true;
-  initial-value: 0px;
-}
-
 :root {
   --cp-sidebar-width: calc(226rem / 16);
 

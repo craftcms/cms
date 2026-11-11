@@ -552,8 +552,6 @@ Shell
   }
 
   .cp {
-    /* Sizes the docked sidebar's room (see CpSidebar.vue) to the page. */
-    container: cp-frame / inline-size;
     flex: 1;
     display: grid;
     padding-inline-end: var(--cp-scrollbar-width, 0px);
