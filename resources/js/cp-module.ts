@@ -146,6 +146,12 @@ export const IconPicker = defineAsyncComponent(
   () => import('./common/form/IconPicker.vue')
 );
 
+/** A button that opens a searchable menu of types and emits the one picked. */
+export const TypePicker = defineAsyncComponent(
+  () => import('./common/components/TypePicker.vue')
+);
+export type {TypePickerOption} from './common/components/typePicker';
+
 /** Previous and next page buttons, a page number, and an optional page size. */
 export const PaginationControls = defineAsyncComponent(
   () => import('./common/components/PaginationControls.vue')
