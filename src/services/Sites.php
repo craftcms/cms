@@ -200,6 +200,17 @@ class Sites extends Component
         $this->_loadAllSites();
     }
 
+    /**
+     * Forgets the cached site groups and reloads the sites.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $this->_groups = null;
+        $this->refreshSites();
+    }
+
     // Groups
     // -------------------------------------------------------------------------
 

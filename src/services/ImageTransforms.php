@@ -119,6 +119,16 @@ class ImageTransforms extends Component
     }
 
     /**
+     * Forgets the cached transforms, so they’re loaded again the next time they’re needed.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $this->_transforms = null;
+    }
+
+    /**
      * Returns a memoizable array of all named asset transforms.
      *
      * @return MemoizableArray<ImageTransform>

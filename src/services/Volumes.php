@@ -156,6 +156,16 @@ class Volumes extends Component
     }
 
     /**
+     * Forgets the cached volumes, so they’re loaded again the next time they’re needed.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $this->_volumes = null;
+    }
+
+    /**
      * Returns a memoizable array of all volumes.
      *
      * @return MemoizableArray<Volume>

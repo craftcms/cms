@@ -823,6 +823,19 @@ class Fields extends Component
     }
 
     /**
+     * Forgets the cached fields and field layouts, so they’re loaded again the next time they’re needed.
+     *
+     * Unlike [[refreshFields()]], this doesn’t update the field version.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $this->_fields = null;
+        $this->_layouts = null;
+    }
+
+    /**
      * Refreshes the internal field cache.
      *
      * This should be called whenever a field is updated or deleted directly in
