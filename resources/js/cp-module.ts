@@ -162,6 +162,34 @@ export type {ActionItem, ActionItemLink} from './common/types';
  */
 export {useAppLayout} from './common/composables/useAppLayout';
 
+/**
+ * Where a component is rendering, a page or a slideout, and the props of that
+ * screen. In a slideout, Inertia's `usePage()` still describes the page
+ * behind it.
+ */
+export {
+  useIsSlideout,
+  useScreenContext,
+  useScreenPageProps,
+  type ScreenContext,
+  type ScreenMode,
+  type ScreenPageProp,
+  type ScreenPageProps,
+} from './common/composables/screen';
+
+/** Closing the slideout a plugin page is in, and reporting its saves. */
+export {
+  useSlideoutControl,
+  type SlideoutControl,
+} from './common/slideouts/useSlideout';
+
+/** Opening and closing panels in the screen's details column. */
+export {
+  useDetailsPanels,
+  type DetailsPanelsControl,
+  type PanelFocusTarget,
+} from './common/composables/screenPanels';
+
 export {
   useInertiaReorder,
   type InertiaReorderOptions,
