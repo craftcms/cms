@@ -404,6 +404,31 @@ export type {
 } from './modules/ai/assistant/context';
 
 /**
+ * Writing a plugin's own UI Nodes and Controls: the payloads the server sends
+ * them, the values they hold, and the input names that match the server's
+ * HTML renderer. Register each component with `registerComponent()`.
+ */
+export type {
+  UiChange,
+  UiChangeKind,
+  UiControlPayload,
+  UiNodePayload,
+  UiPayload,
+  UiProperties,
+  UiPropertyValue,
+  UiScalar,
+  UiValue,
+} from './modules/ui/types';
+export {inputName} from './modules/ui/runtime';
+
+/**
+ * Opens a form the server builds as a UI in a modal, and submits it to a
+ * controller action.
+ */
+export {openUiModal, type UiModalOptions} from './modules/ui/open-ui-modal';
+export type {UiFormResponse} from './modules/ui/useUiForm';
+
+/**
  * The Craft UIs mounted in the control panel, and how a plugin's own controls
  * take part in copying and pasting field values.
  */

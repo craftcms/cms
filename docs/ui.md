@@ -302,7 +302,9 @@ registerComponent('my-plugin:slug', SlugControl)
 A Control component rendered by the core `Field` Node receives `control`, `value`, `label`, `editable`, `invalid`,
 `required`, full `values` and `errors`, touched paths, and the containing scope. Emit `update:value` with the canonical
 value and optionally `typing` or `discrete` as the change kind. Only editable Controls may submit a `name` or apply
-browser-required constraints. Use `inputName(control.path)` for the ordinary nested request shape.
+browser-required constraints. Use `inputName(control.path)` for the ordinary nested request shape. Plugins import
+`inputName` and the `UiControlPayload`, `UiNodePayload`, `UiPayload`, `UiValue`, `UiChange` and `UiChangeKind` types
+from `@craftcms/cp`; see **Plugins → UI Controls & Modals** in Storybook.
 
 ## Observing field values in the Control Panel
 
@@ -337,7 +339,8 @@ events; explicit `setValue()` and `setValues()` calls do when an editable value 
 This API applies only to Craft 6 UI-rendered fields. Legacy HTML fields and the Yii2 adapter keep their own JavaScript
 and DOM contracts. `craft:ui-value-change` is an observation API, not a save hook or authorization boundary.
 
-The test plugin contains complete reference implementations:
+The test plugin contains complete reference implementations. Being core test fixtures, its components import from
+core paths; a plugin imports the same names from `@craftcms/cp`:
 
 - `tests/TestClasses/TestPlugin/src/UI/Nodes/Notice.php`
 - `tests/TestClasses/TestPlugin/src/UI/Controls/Slug.php`
