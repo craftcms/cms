@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Enums\ImportFileConflict;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\FieldMappingSetting;
@@ -78,13 +79,8 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
 
         $conflict = ImportFileConflict::tryFrom((string) ($importSettings['fileConflict'] ?? '')) ?? ImportFileConflict::UseExisting;
 
-        // a preview can't upload anything, so it only relates the files that are already there and would be reused
         if ($importer->previewing) {
-            if ($conflict !== ImportFileConflict::KeepBoth && $rootOwner !== null) {
-                $items = $this->resolveExistingFiles($field, $items, $rootOwner);
-            }
-
-            return array_values(array_unique(array_filter($items, is_int(...))));
+            return $this->previewedAssets($field, $items, $conflict, $rootOwner);
         }
 
         // resolve files that are already there up front, so they don’t make the element look changed
@@ -116,6 +112,56 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
                 instructions: t('Incoming files are matched against existing assets by filename, within the folder they’d be uploaded to. Only applies when related assets are matched by ID or file.'),
             ),
         ];
+    }
+
+    /**
+     * Returns the assets a preview relates, in their incoming order. A preview can't upload anything, so each file the
+     * import would upload is an unsaved asset in its place, and the field validates and compares as it would after the
+     * import. A file whose extension isn't allowed is left out, as the import would leave it.
+     *
+     * @param  list<int|string>  $items
+     * @return ElementCollection<int, Asset>
+     */
+    private function previewedAssets(AssetsField $field, array $items, ImportFileConflict $conflict, ?ElementInterface $rootOwner): ElementCollection
+    {
+        if ($conflict !== ImportFileConflict::KeepBoth && $rootOwner !== null) {
+            $items = $this->resolveExistingFiles($field, $items, $rootOwner);
+        }
+
+        $items = array_values(array_unique($items));
+        $ids = array_values(array_filter($items, is_int(...)));
+        $existing = collect($ids === [] ? [] : Asset::find()->id($ids)->status(null)->site('*')->unique()->all())->keyBy('id');
+        $assets = [];
+
+        foreach ($items as $item) {
+            if (is_int($item)) {
+                // an ID that isn't an asset relates nothing, as it wouldn't on import
+                $asset = $existing->get($item);
+
+                if ($asset instanceof Asset) {
+                    $assets[] = $asset;
+                }
+
+                continue;
+            }
+
+            $filename = AssetsHelper::importFilename($item);
+
+            try {
+                // without an extension, the file would have to be fetched to find out what it is
+                if (pathinfo($filename, PATHINFO_EXTENSION) !== '') {
+                    AssetsHelper::ensureImportExtensionAllowed($filename, $field->getAllowedExtensions());
+                }
+            } catch (Throwable) {
+                continue;
+            }
+
+            $asset = new Asset;
+            $asset->setFilename($filename);
+            $assets[] = $asset;
+        }
+
+        return new ElementCollection($assets);
     }
 
     /**

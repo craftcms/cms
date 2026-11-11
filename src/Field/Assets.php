@@ -387,8 +387,8 @@ class Assets extends BaseRelationField
     public function getElementRules(ElementInterface $element): array
     {
         $rules = parent::getElementRules($element);
-        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileType($element, $value, $attribute, $validator);
-        $rules[] = fn ($attribute, ElementQuery $value, Closure $fail, Validator $validator) => $this->validateFileSize($element, $attribute, $validator);
+        $rules[] = fn ($attribute, ElementQueryInterface|ElementCollection $value, Closure $fail, Validator $validator) => $this->validateFileType($element, $value, $attribute, $validator);
+        $rules[] = fn ($attribute, ElementQueryInterface|ElementCollection $value, Closure $fail, Validator $validator) => $this->validateFileSize($element, $attribute, $validator);
 
         return $rules;
     }
@@ -396,9 +396,9 @@ class Assets extends BaseRelationField
     /**
      * Validates the files to make sure they are one of the allowed file kinds.
      *
-     * @param  ElementQuery<Asset>  $value
+     * @param  ElementQueryInterface<Asset>|ElementCollection<int, Asset>  $value
      */
-    public function validateFileType(ElementInterface $element, ElementQuery $value, string $attribute, Validator $validator): void
+    public function validateFileType(ElementInterface $element, ElementQueryInterface|ElementCollection $value, string $attribute, Validator $validator): void
     {
         $allowedExtensions = $this->_getAllowedExtensions();
 

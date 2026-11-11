@@ -207,20 +207,28 @@ it('creates a new asset when an incoming file matches one and that’s what the 
         ->and(Asset::find()->id($existing->id)->one()->getContents())->toBe('original');
 });
 
-it('previews an item without uploading its files, relating only those already there', function () {
+it('previews an item without uploading its files, relating an unsaved asset for each it would upload', function () {
     ($this->importEntry)('first entry', ['myAssets' => [($this->sourceFile)('photo.txt', 'original')]]);
     $existing = ($this->entry)('first entry')->getFieldValue('myAssets')->one();
+    $field = Fields::getLayoutById($this->entryType->fieldLayoutId)->getFieldByHandle('myAssets');
+    $field->allowLimit = true;
+    $field->minRelations = 2;
 
     $preview = $this->import->previewItem($this->importer, [
         'title' => 'second entry',
         'sectionId' => $this->section->handle,
         'typeId' => $this->entryType->handle,
         'matchCriteria' => ['title' => 'title'],
-        'myAssets' => [($this->sourceFile)('photo.txt', 'incoming'), ($this->sourceFile)('new.txt')],
+        'myAssets' => [($this->sourceFile)('photo.txt', 'incoming'), ($this->sourceFile)('new.txt'), ($this->sourceFile)('script.php')],
     ]);
+    $related = $preview->element->getFieldValue('myAssets')->all();
 
     expect($preview->result)->toBe(ItemPreviewResult::New)
-        ->and($preview->element->getFieldValue('myAssets')->ids())->toBe([$existing->id])
+        ->and($preview->errors)->toBe([])
+        ->and(array_map(fn (Asset $asset) => [$asset->id, $asset->getFilename()], $related))->toBe([
+            [$existing->id, 'photo.txt'],
+            [null, 'new.txt'],
+        ])
         ->and(Asset::find()->ids())->toBe([$existing->id])
         ->and(Asset::find()->id($existing->id)->one()->getContents())->toBe('original');
 });
