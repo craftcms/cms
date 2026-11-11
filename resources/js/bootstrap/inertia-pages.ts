@@ -1,4 +1,4 @@
-import type {Component, DefineComponent} from 'vue';
+import type {Component, DefineComponent, FunctionalComponent} from 'vue';
 
 type MaybePromise<T> = T | Promise<T>;
 
@@ -135,10 +135,16 @@ export async function resolveInertiaPage(
   throw new Error(`Page not found: ${name}`);
 }
 
+/** Functional components are left out: the registry would call one as a loader. */
+type PageComponent = Exclude<
+  Component,
+  FunctionalComponent<any, any, any, any>
+>;
+
 /** A page component, or a function that loads one, such as a dynamic `import()`. */
 export type PageRegistration =
-  | Component
-  | (() => MaybePromise<Component | {default: Component}>);
+  | PageComponent
+  | (() => MaybePromise<PageComponent | {default: PageComponent}>);
 
 /**
  * Makes `page` the component the CP renders for the Inertia page `name`, the
