@@ -552,6 +552,8 @@ Shell
   }
 
   .cp {
+    /* Sizes the docked sidebar's room (see CpSidebar.vue) to the page. */
+    container: cp-frame / inline-size;
     flex: 1;
     display: grid;
     padding-inline-end: var(--cp-scrollbar-width, 0px);
@@ -731,6 +733,9 @@ Content: the secondary nav, content, and details panes
 
   .cp-content--sidebar .cp-content__sidebar {
     padding: var(--c-spacing-md);
+    padding-block-start: calc(
+      var(--c-spacing-md) + var(--cp-content-block-start)
+    );
 
     @media (width >= var(--breakpoint-lg)) {
       inline-size: calc(var(--cp-sidebar-width) + 1px);
@@ -746,6 +751,38 @@ Content: the secondary nav, content, and details panes
   .cp-content__main {
     grid-area: main;
     overflow: clip;
+    /* For the gutters below. Its track is a definite `minmax(…, 1fr)`, so
+       containment can't collapse it. */
+    container: cp-content-main / inline-size;
+    /* The field layout's tabs sit a little further from the first field
+       here than in slideouts. See UiNodeList.vue. */
+    --cp-content-tabs-gap: calc(var(--c-spacing-lg) + var(--c-spacing-md));
+  }
+
+  /* Space at the top of each column, the same for all of them so their
+     header bars stay level: none up to 640px of content, 16px from 1920px.
+     Resolved against `.cp-content`, which spans the columns, since the
+     details pane can't measure the main column. */
+  .cp-content > :deep(*) {
+    --cp-content-block-start: clamp(
+      0px,
+      1.25cqi - var(--c-spacing-md),
+      var(--c-spacing-lg)
+    );
+  }
+
+  /* The main column's gutters grow with it: 16px up to 400px, 32px at
+     800px, 48px from 1200px. Resolved on its children, so `cqi` is the
+     column's and not the content view's (a container of its own, and
+     narrower when constrained), and everything in the column inherits the
+     same pixels. */
+  .cp-content__main > :deep(*) {
+    --cp-content-inline-padding: clamp(
+      var(--c-spacing-lg),
+      4cqi,
+      calc(var(--c-spacing-lg) * 3)
+    );
+    --cp-container-padding: var(--cp-content-inline-padding);
   }
 
   .cp-content__details {
@@ -894,6 +931,7 @@ Content view
     /* Lets what's inside (e.g. the element index toolbar) respond to the room
        the content actually has, rather than the viewport. */
     container: cp-content-view / inline-size;
+    padding-block-start: var(--cp-content-block-start);
   }
 
   .cp-content-view--constrained {

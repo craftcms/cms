@@ -28,6 +28,28 @@ CP Styles
 @import './modal.css' layer(cp);
 @import './menu.css' layer(cp);
 
+/* Fluid spacing, written in container query units where the container is
+   known and registered as lengths, so each resolves to pixels there and is
+   inherited as that, rather than re-resolving against whatever container is
+   nearest to each element that reads it. */
+@property --cp-content-inline-padding {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cp-content-block-start {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cp-sidebar-room {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
 :root {
   --cp-sidebar-width: calc(226rem / 16);
 
@@ -47,7 +69,8 @@ CP Styles
     black 4%
   );
 
-  /* Inline padding for the CpContainer element */
+  /* Inline padding for the CpContainer element. The page screen's main
+     column scales it with the column's width; see PageScreen.vue. */
   --cp-container-padding: var(--c-spacing-lg);
   --cp-content-max-width: calc(960rem / 16);
 
