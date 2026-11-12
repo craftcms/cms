@@ -280,7 +280,8 @@ class AssetFieldUploadTest extends TestCase
             // Without a direct upload URL, uploads go through Craft
             DirectUploadTestFs::$available = false;
             $upload = (new AssetUploads())->createUpload($user, 'https://example.test/mcp');
-            self::assertStringStartsWith('https://example.test/mcp?', $upload['upload_url']);
+            // The scheme follows useSslOnTokenizedUrls
+            self::assertSame(['example.test', '/mcp'], [parse_url($upload['upload_url'], PHP_URL_HOST), parse_url($upload['upload_url'], PHP_URL_PATH)]);
             self::assertSame('{}', json_encode($upload['headers']));
         } finally {
             DirectUploadTestFs::$available = true;
