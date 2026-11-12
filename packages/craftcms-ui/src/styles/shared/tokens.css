@@ -64,6 +64,10 @@
      element's, and how strongly an uncolored top-level one shades what's
      under it with the text color. */
   --c-card-header-fill-white: var(--c-surface-page);
+  /* A selected white element's header: a step stronger than its accent body,
+     as the unselected one is than its white body (darker in the light theme,
+     lighter in the dark one). */
+  --c-card-header-fill-white-selected: var(--c-color-accent-fill-normal);
   --c-card-header-shade: 9%;
 
   /* How strongly an asset thumbnail tile shades what's under it with the text

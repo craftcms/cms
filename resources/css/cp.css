@@ -665,6 +665,15 @@ craft-card[data-color='white'] {
   background-color: var(--cp-element-header-fill);
 }
 
+/* Selected, a white card's body takes the accent's quiet fill, and its header
+   a step stronger, so it keeps a visible header as every other selected card
+   does. */
+:is([data-matrix-block], [data-element-id], .element)
+  > craft-card[data-color='white'][active]::part(header) {
+  background-color: var(--c-card-header-fill-white-selected);
+  color: var(--c-color-accent-on-normal);
+}
+
 /* Asset thumbnail tiles are a light shade of whatever they sit on, so they
    read as their own layer rather than a bare border, and take the tint of a
    colored block they're in. */
