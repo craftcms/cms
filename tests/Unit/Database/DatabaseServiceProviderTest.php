@@ -23,3 +23,33 @@ it('uses the write connection for console requests', function () {
 
     expect($db->getReadPdo())->toBe($writePdo);
 });
+
+it('introspects the read connection unless the connection reads from the write connection', function () {
+    $databases = [];
+
+    foreach (['read' => 'replicaColumn', 'write' => 'primaryColumn'] as $type => $column) {
+        $databases[$type] = tempnam(sys_get_temp_dir(), 'craft-schema-');
+        $pdo = new PDO("sqlite:{$databases[$type]}");
+        $pdo->exec("create table schema_test (id integer, $column text)");
+    }
+
+    config()->set('database.connections.split_schema_test', [
+        'driver' => 'sqlite',
+        'read' => ['database' => $databases['read']],
+        'write' => ['database' => $databases['write']],
+    ]);
+
+    try {
+        $connection = DB::connection('split_schema_test');
+
+        expect($connection->getReadSchemaBuilder()->getColumnListing('schema_test'))->toBe(['id', 'replicaColumn']);
+
+        $connection->useWriteConnectionWhenReading();
+
+        expect($connection->getReadSchemaBuilder()->getColumnListing('schema_test'))->toBe(['id', 'primaryColumn']);
+    } finally {
+        DB::purge('split_schema_test');
+        DB::purge('split_schema_test::read');
+        array_map(unlink(...), $databases);
+    }
+});
