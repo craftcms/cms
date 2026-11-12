@@ -1523,8 +1523,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
-            // If this is a revision, there's nothing to check
-            if (this.settings.revisionId) {
+            // If this is a revision or the user can't save the element, there's nothing to check
+            if (this.settings.revisionId || !this.settings.canSave) {
               resolve();
               return;
             }
