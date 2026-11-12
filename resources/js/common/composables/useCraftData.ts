@@ -22,6 +22,8 @@ export interface CpUser {
   aiGuidanceUrl: string | null;
   /** The same utility’s Skills page, if the user can use it. */
   aiSkillsUrl: string | null;
+  /** Whether the user's account has a Permissions screen. */
+  showPermissions: boolean;
   /** Whether the user's account has a Tokens screen. */
   showTokens: boolean;
 }

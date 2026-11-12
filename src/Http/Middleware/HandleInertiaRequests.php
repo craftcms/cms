@@ -242,6 +242,7 @@ class HandleInertiaRequests extends Middleware
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']
                         ?? false),
                     'aiAssistant' => Assistant::isAvailable(),
+                    'showPermissions' => app(EditUserScreens::class)->showPermissionsScreen(),
                     'showTokens' => app(EditUserScreens::class)->showTokensScreen($currentUser),
                     // Where the AI assistant’s guidance and skills are edited, for its chat to link to.
                     'personalGuidanceUrl' => Assistant::isAvailable() ? Url::cpUrl('myaccount/'.EditUserScreens::AI_ASSISTANT) : null,
