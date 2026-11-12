@@ -31,8 +31,8 @@ if [[ ! -f /usr/share/keyrings/debsuryorg-archive-keyring.gpg ]]; then
     curl -fsSL https://packages.sury.org/debsuryorg-archive-keyring.deb -o "$scratch/sury.deb"
     sudo dpkg -i "$scratch/sury.deb"
 fi
+. /etc/os-release
 if [[ ! -f /etc/apt/sources.list.d/php.list ]]; then
-    . /etc/os-release
     echo "deb [signed-by=/usr/share/keyrings/debsuryorg-archive-keyring.gpg] https://packages.sury.org/php/ $VERSION_CODENAME main" |
         sudo tee /etc/apt/sources.list.d/php.list >/dev/null
 fi
@@ -42,16 +42,30 @@ if [[ ! -f /usr/share/keyrings/craft-mysql.asc ]]; then
     curl -fsSL https://repo.mysql.com/RPM-GPG-KEY-mysql-2025 -o "$scratch/mysql.asc"
     sudo install -m 644 "$scratch/mysql.asc" /usr/share/keyrings/craft-mysql.asc
 fi
-if [[ ! -f /etc/apt/sources.list.d/craft-mysql.list ]]; then
-    echo 'deb [signed-by=/usr/share/keyrings/craft-mysql.asc] https://repo.mysql.com/apt/debian/ bookworm mysql-8.4-lts' |
-        sudo tee /etc/apt/sources.list.d/craft-mysql.list >/dev/null
+# Rewritten when it names another release, such as in an orb restored from a
+# Debian 12 snapshot onto Debian 13.
+mysql_source="deb [signed-by=/usr/share/keyrings/craft-mysql.asc] https://repo.mysql.com/apt/debian/ $VERSION_CODENAME mysql-8.4-lts"
+if [[ $(cat /etc/apt/sources.list.d/craft-mysql.list 2>/dev/null || true) != "$mysql_source" ]]; then
+    echo "$mysql_source" | sudo tee /etc/apt/sources.list.d/craft-mysql.list >/dev/null
+    sudo apt-get update -qq
+fi
+
+# Each Debian release ships one PostgreSQL major version (15 on Debian 12, 17 on
+# Debian 13); install whichever the `postgresql` metapackage depends on.
+pg_major() {
+    apt-cache depends postgresql 2>/dev/null | sed -n 's/^ *Depends: postgresql-\([0-9][0-9]*\)$/\1/p' | head -n 1
+}
+pg_major=$(pg_major)
+if [[ -z $pg_major ]]; then
+    sudo apt-get update -qq
+    pg_major=$(pg_major)
 fi
 
 # Backups shell out to the sqlite3 CLI. intl is installed below instead.
 packages=(php8.5-cli php8.5-bcmath php8.5-curl php8.5-gd
     php8.5-mbstring php8.5-mysql php8.5-pgsql php8.5-sqlite3 php8.5-xml
     php8.5-zip php8.5-soap php8.5-imagick libvips42 unzip sqlite3 zstd fonts-noto-core
-    mysql-community-server-core mysql-community-client-core postgresql-15)
+    mysql-community-server-core mysql-community-client-core "postgresql-$pg_major")
 missing=()
 for package in "${packages[@]}"; do
     if [[ $(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true) != 'install ok installed' ]]; then
@@ -99,8 +113,8 @@ if [[ $(php -r 'echo defined("INTL_ICU_VERSION") ? INTL_ICU_VERSION : "";') != "
 fi
 
 # Prevent Debian's unused system cluster from claiming port 5432 after restore.
-if [[ -f /etc/postgresql/15/main/start.conf ]] && ! grep -qx manual /etc/postgresql/15/main/start.conf; then
-    echo manual | sudo tee /etc/postgresql/15/main/start.conf >/dev/null
+if [[ -f /etc/postgresql/$pg_major/main/start.conf ]] && ! grep -qx manual "/etc/postgresql/$pg_major/main/start.conf"; then
+    echo manual | sudo tee "/etc/postgresql/$pg_major/main/start.conf" >/dev/null
 fi
 
 # Initialize private, disposable databases, but leave starting them to Amp's
@@ -109,8 +123,16 @@ mkdir -p .amp/databases
 if [[ ! -d .amp/databases/mysql/mysql ]]; then
     step 'Initialize MySQL' /usr/sbin/mysqld --no-defaults --initialize-insecure --datadir="$PWD/.amp/databases/mysql"
 fi
+# A cluster from another PostgreSQL major version (restored from a Debian 12
+# orb, say) can't be served, so it's set aside rather than deleted.
+if [[ -f .amp/databases/pgsql/PG_VERSION && $(cat .amp/databases/pgsql/PG_VERSION) != "$pg_major" ]]; then
+    old_pg_major=$(cat .amp/databases/pgsql/PG_VERSION)
+    echo "Moving the PostgreSQL $old_pg_major cluster to .amp/databases/pgsql-$old_pg_major"
+    rm -rf ".amp/databases/pgsql-$old_pg_major"
+    mv .amp/databases/pgsql ".amp/databases/pgsql-$old_pg_major"
+fi
 if [[ ! -f .amp/databases/pgsql/PG_VERSION ]]; then
-    step 'Initialize PostgreSQL' /usr/lib/postgresql/15/bin/initdb -D .amp/databases/pgsql --username=root --auth=trust --encoding=UTF8 --locale=C.UTF-8
+    step 'Initialize PostgreSQL' "/usr/lib/postgresql/$pg_major/bin/initdb" -D .amp/databases/pgsql --username=root --auth=trust --encoding=UTF8 --locale=C.UTF-8
 fi
 
 # Install to the standard PATH so later non-interactive shells see the same tools.

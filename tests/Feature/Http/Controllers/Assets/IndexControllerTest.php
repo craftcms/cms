@@ -162,7 +162,7 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
         'width' => 800,
         'height' => 400,
     ]);
-    Cms::config()->defaultAssetTransformer('missing');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'missing');
     $requests = [];
     Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) use (&$requests): void {
         $requests[] = [$event->asset->id, $event->width, $event->height];
@@ -186,7 +186,7 @@ it('preserves thumbnail overrides on asset subclasses', function () {
         'width' => 800,
         'height' => 400,
     ]);
-    Cms::config()->defaultAssetTransformer('missing');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'missing');
     Event::listen(QueryForTableAttributePreparing::class, function (QueryForTableAttributePreparing $event): void {
         if ($event->elementType === AssetElement::class) {
             $event->query->elementType = CustomThumbnailIndexAsset::class;

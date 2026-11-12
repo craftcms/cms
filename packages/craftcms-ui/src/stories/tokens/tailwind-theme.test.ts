@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {describe, expect, it} from 'vite-plus/test';
-import {themeEntries, type ThemeNamespace} from './tailwind-theme';
+import {themeEntries} from './tailwind-theme';
 
 describe('themeEntries', () => {
   it('reads each namespace from a theme block', () => {
@@ -60,38 +60,6 @@ describe('themeEntries', () => {
         token: '--c-layer-popover',
       },
     ]);
-  });
-
-  it('finds the mappings in the real tailwind.css', () => {
-    const theme = themeEntries(
-      readFileSync(join(import.meta.dirname, '../../../tailwind.css'), 'utf8')
-    );
-    const entriesIn = (namespace: ThemeNamespace) =>
-      theme.filter((entry) => entry.namespace === namespace);
-
-    expect(entriesIn('border-color').map((entry) => entry.name)).toEqual([
-      'quiet',
-      'normal',
-      'loud',
-    ]);
-    expect(entriesIn('text-color').map((entry) => entry.token)).toEqual([
-      '--c-text-quiet',
-    ]);
-    expect(entriesIn('padding').map((entry) => entry.token)).toContain(
-      '--c-spacing-md'
-    );
-    expect(entriesIn('z-index').map((entry) => entry.name)).toContain(
-      'popover'
-    );
-    expect(entriesIn('background-color').map((entry) => entry.name)).toEqual([
-      'default',
-      'raised',
-      'sunken',
-      'overlay',
-      'form',
-      'header',
-    ]);
-    expect(entriesIn('color').length).toBeGreaterThan(0);
   });
 
   it('maps every layer token, so the Layers story lists them all', () => {

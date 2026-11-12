@@ -5,14 +5,13 @@
    * `Cp.$elementDetailsPanels`, each added to the screen with `ScreenPanel`.
    */
   import {t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, defineAsyncComponent, reactive, watch} from 'vue';
   import {
     elementDetailsPanelRegistry,
     type ElementDetailsPanelDescriptor,
   } from '@/bootstrap/element-details-panels';
   import ScreenPanel from '@/common/components/ScreenPanel.vue';
   import {useScreenPanels} from '@/common/composables/screenPanels';
-  import ElementActivityTimeline from '@/modules/elements/components/ElementActivityTimeline.vue';
   import ElementActivityTimelineActions from '@/modules/elements/components/ElementActivityTimelineActions.vue';
   import RevisionsList from '@/modules/elements/components/RevisionsList.vue';
   import type {
@@ -32,6 +31,34 @@
   }>();
 
   const screenPanels = useScreenPanels();
+
+  // Its comments bring the Markdown editor, which the editor needn't wait for.
+  const ElementActivityTimeline = defineAsyncComponent(
+    () => import('@/modules/elements/components/ElementActivityTimeline.vue')
+  );
+
+  /**
+   * Craft's panels whose content mounts the first time they open, and stays
+   * mounted after. The timeline only fetches once it's opened anyway, but its
+   * comment box would bring the Markdown editor and uploader onto every
+   * editor. Registered panels always mount, as plugins may rely on that.
+   */
+  const MOUNTED_ONCE_OPENED = new Set(['activity']);
+  const openedPanelIds = reactive(new Set<string>());
+
+  watch(
+    () => screenPanels?.openPanelId.value,
+    (panelId) => {
+      if (panelId) {
+        openedPanelIds.add(panelId);
+      }
+    },
+    {immediate: true}
+  );
+
+  function mountsContent(panelId: string): boolean {
+    return !MOUNTED_ONCE_OPENED.has(panelId) || openedPanelIds.has(panelId);
+  }
 
   const corePanels: ElementDetailsPanelDescriptor[] = [
     {
@@ -131,7 +158,11 @@
     :order="panel.order"
     :status="panel.status?.(payload) ?? null"
   >
-    <component :is="panel.component" v-bind="componentProps(panel)" />
+    <component
+      :is="panel.component"
+      v-if="mountsContent(panel.id)"
+      v-bind="componentProps(panel)"
+    />
     <template v-if="panel.headerActionsComponent" #header-actions>
       <component
         :is="panel.headerActionsComponent"

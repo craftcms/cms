@@ -1049,27 +1049,36 @@ export function useElementEditor({
   let unmounted = false;
   onBeforeUnmount(() => (unmounted = true));
 
-  /** Whether a save is waiting on `beforeSave`, before it submits. */
+  /** Whether a save is waiting on an autosave or `beforeSave`, before it submits. */
   const savePending = ref(false);
 
   function save(options?: FormSaveOptions): void {
-    if (!beforeSave) {
-      submit(options);
-
-      return;
-    }
-
     // One save at a time: another Save while this one waits would submit too.
     if (savePending.value) {
       return;
     }
 
+    // A draft write already sent finishes on the server whether or not it's
+    // aborted, so the submission waits for it: then it applies the draft that
+    // write created, instead of leaving it behind with older values.
+    const autosaving = autosave.settle();
+
+    if (!autosaving && !beforeSave) {
+      submit(options);
+
+      return;
+    }
+
     // The action owns only the submission it was chosen for, which its caller
-    // stops waiting for on the next tick, well before `beforeSave` settles.
+    // stops waiting for on the next tick, well before the wait is over.
     const action = pendingAction.value;
     savePending.value = true;
 
-    void beforeSave()
+    const ready = autosaving
+      ? autosaving.then(() => beforeSave?.() ?? true)
+      : beforeSave!();
+
+    void ready
       .then((proceed) => {
         // Nor once the editor is gone, as another submission can take the page
         // away while this one waits.

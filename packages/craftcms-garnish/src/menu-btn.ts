@@ -36,6 +36,14 @@ const DEFAULTS: MenuBtnSettings = {
   onOptionSelect: noop,
 };
 
+/** `Craft.t('app', message)` when available, else the message unchanged. */
+function craftT(message: string): string {
+  const craft = (
+    globalThis as {Craft?: {t?(category: string, message: string): string}}
+  ).Craft;
+  return craft?.t?.('app', message) ?? message;
+}
+
 /** Registry backing the legacy `$btn.data('menubtn')` double-instantiation guard. */
 const menuBtnRegistry = new WeakMap<Element, MenuBtn>();
 
@@ -141,6 +149,16 @@ export class MenuBtn extends Base<MenuBtnSettings> {
     this.$btn.setAttribute('aria-controls', this.menu.menuId);
     this.$btn.setAttribute('aria-haspopup', 'listbox');
     this.$btn.setAttribute('aria-expanded', 'false');
+
+    // An icon-only button, such as the menu half of a split button, needs a name
+    if (
+      !this.$btn.textContent?.trim() &&
+      !this.$btn.hasAttribute('aria-label') &&
+      !this.$btn.hasAttribute('aria-labelledby') &&
+      !this.$btn.title
+    ) {
+      this.$btn.setAttribute('aria-label', craftT('More actions'));
+    }
 
     // If no label is set on the listbox, set one based on the combobox label
     const comboboxLabel = this.$btn.getAttribute('aria-labelledby');

@@ -57,7 +57,7 @@
                             @disabled($disabled)
                         >
                             <craft-icon name="plus" slot="prefix"></craft-icon>
-                            {{ \CraftCms\Cms\t('New Tab') }}</craft-button>
+                            {{ \CraftCms\Cms\t('New tab') }}</craft-button>
                     @endif
                 </div>
                 <div class="fld-pane fld-pane--sidebar cp-workspace">
@@ -78,7 +78,7 @@
                             @disabled($disabled)
                         >
                             <craft-icon name="plus" slot="prefix"></craft-icon>
-                            {{ \CraftCms\Cms\t('New Tab') }}</craft-button>
+                            {{ \CraftCms\Cms\t('New tab') }}</craft-button>
                     @endif
                 </div>
             </div>

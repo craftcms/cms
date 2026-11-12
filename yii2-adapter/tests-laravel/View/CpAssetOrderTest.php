@@ -202,3 +202,15 @@ it('uses the current scoped HtmlStack after scoped instances are flushed', funct
         ->toContain('window.secondScopedStack = true;')
         ->not->toContain('window.firstScopedStack = true;');
 });
+
+it('writes the window.Craft config for the Craft 5 CP bundle only outside the control panel', function(bool $isCpRequest) {
+    // Control panel documents write the config from their own layout.
+    request()->attributes->set('isCpRequest', $isCpRequest);
+    $view = Craft::$app->getView();
+
+    $view->registerAssetBundle(\craft\web\assets\cp\CpAsset::class);
+
+    $html = $view->placeholderHtml()['headHtml'];
+
+    expect(str_contains($html, 'window.Craft = Object.assign(window.Craft || {}, {"'))->toBe(!$isCpRequest);
+})->with(['front end' => false, 'control panel' => true]);

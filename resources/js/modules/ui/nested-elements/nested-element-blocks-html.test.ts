@@ -43,6 +43,7 @@ vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
 }));
 
 let restoreInternals = () => {};
+let legacyScriptLoads = 0;
 beforeEach(async () => {
   localStorage.clear();
   restoreInternals = stubElementInternals();
@@ -64,8 +65,13 @@ beforeEach(async () => {
   ConfigService.getInstance().initialize({
     actionUrl: 'http://localhost/admin/actions',
   });
-  vi.resetModules();
-  await import('../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js');
+  // A fresh copy of the legacy script for each test, registering into this
+  // test's components. Only that module: resetting them all would hand the
+  // lazily loaded controls a second copy of the renderer they render inside.
+  legacyScriptLoads += 1;
+  await import(
+    /* @vite-ignore */ `../../../../../packages/craftcms-legacy/cpcompat/src/legacy-html-control.js?test=${legacyScriptLoads}`
+  );
 });
 afterEach(() => {
   document.body.replaceChildren();
@@ -255,6 +261,9 @@ async function mount(
   if (captured) {
     await legacy.ready;
   }
+  // The blocks control renders once its chunk loads.
+  await vi.dynamicImportSettled();
+  await nextTick();
   return {
     form,
     host: captured
@@ -518,6 +527,7 @@ it('retains nested HTML block values and names when its enclosing block moves', 
   const sibling = document.createElement('div');
   form.append(sibling);
   sibling.after(field);
+  await vi.dynamicImportSettled();
   await nextTick();
 
   expect((host as EntryFieldLayoutUiHost).payload?.scope).toEqual(scope);
@@ -698,6 +708,7 @@ it.each([false, true])(
       legacy.replaceWith(target);
     }
     await target.ready;
+    await vi.dynamicImportSettled();
     await nextTick();
     expect(serializeFormInputsAsObject(form)).toMatchObject({
       [`${fieldName}[entries][block-b][title]`]: 'Unsaved new block title',

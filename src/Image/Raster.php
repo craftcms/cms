@@ -338,7 +338,9 @@ class Raster extends Image
         try {
             $this->prepareMetadata();
 
-            if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
+            // PNG compression is lossless, so PNGs are always saved with the default quality (compression level).
+            // Searching for a level that matches the original file size can settle on level 0 (uncompressed).
+            if ($autoQuality && in_array($extension, ['jpeg', 'jpg'], true)) {
                 $quality = $this->sourceQuality();
 
                 if ($quality === null) {

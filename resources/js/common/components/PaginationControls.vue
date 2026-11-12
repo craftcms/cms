@@ -22,7 +22,7 @@
       itemLabel?: string;
       /** What several items are called in the count, such as “entries”. */
       itemsLabel?: string;
-      /** The page size menu’s label, such as “Entries per Page”. */
+      /** The page size menu’s label, such as “Entries per page”. */
       pageSizeLabel?: string;
     }>(),
     {
@@ -33,7 +33,7 @@
       controlsOnly: false,
       itemLabel: () => t('item'),
       itemsLabel: () => t('items'),
-      pageSizeLabel: () => t('Items per Page'),
+      pageSizeLabel: () => t('Items per page'),
     }
   );
   const emit = defineEmits<{

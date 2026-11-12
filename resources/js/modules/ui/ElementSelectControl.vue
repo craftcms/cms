@@ -2,7 +2,14 @@
   import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import '@craftcms/ui/components/chip/chip';
   import {actionClient, t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId, watch} from 'vue';
+  import {
+    computed,
+    defineAsyncComponent,
+    reactive,
+    ref,
+    useId,
+    watch,
+  } from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
@@ -10,7 +17,6 @@
   import type {UiChangeKind, UiControlPayload} from './types';
   import {inputName} from './runtime';
   import {useUiPreview} from './uiPreview';
-  import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
   import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
@@ -22,6 +28,12 @@
     ElementPresentation,
     ElementSelectProps,
   } from './element-select/types';
+
+  // Only Assets fields that allow uploads render it, so it brings Uppy with it
+  // on demand.
+  const AssetUploadButton = defineAsyncComponent(
+    () => import('@/pages/assets/AssetUploadButton.vue')
+  );
 
   const props = defineProps<{
     control: UiControlPayload<ElementSelectProps>;

@@ -5,7 +5,6 @@ import {
 import {announce} from '@/common/announcer';
 import {hasAttr} from '@craftcms/garnish';
 import {submitNativeForm} from '@/common/utils/forms';
-import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 import {
   bootFocalPoint,
   destroyFocalPoint,
@@ -295,7 +294,18 @@ export class PreviewFileModal {
         await appendElementHtml(response.data.previewHtml, this.container);
         bootFocalPoint(this.container);
         const text = this.container.querySelector('pre > code')?.textContent;
-        highlightCodeBlocks(this.container);
+        if (
+          this.container.querySelector(
+            'code[data-language], pre > code[class*="language-"]'
+          )
+        ) {
+          // Only text previews have code to highlight, so the highlighter's
+          // languages load with the first one.
+          const {highlightCodeBlocks} =
+            await import('@/common/utils/highlight-code');
+          if (response.data.requestId !== this.requestId) return;
+          highlightCodeBlocks(this.container);
+        }
         this.#addPreviewFooterItems(text);
         this._addBumperButtons();
         this.#focusContent();

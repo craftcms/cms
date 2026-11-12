@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Volumes;
@@ -41,7 +40,6 @@ class VolumeEditViewModel extends ViewModel
         private readonly Volume $volume,
         private readonly Volumes $volumes,
         private readonly UiResolver $uiResolver,
-        private readonly AssetTransformers $assetTransformers,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
@@ -90,12 +88,6 @@ class VolumeEditViewModel extends ViewModel
             )
                 ->instructions(t('Where assets should be stored on the filesystem.'))
                 ->tip(t('Type <kbd>$</kbd> to choose an environment variable.')),
-            Field::make(
-                t('Asset Transformer'),
-                Combobox::make('assetTransformer')
-                    ->options($this->assetTransformerOptions())
-                    ->showAllOnEmpty(),
-            )->instructions(t('Select the asset transformer for this volume. Leave blank to use the global default.')),
         ]);
 
         if (Sites::isMultiSite()) {
@@ -194,7 +186,6 @@ class VolumeEditViewModel extends ViewModel
             'fsHandle' => $this->volume->getFsHandle(false) ?? '',
             'hasUrls' => $this->volume->hasUrls,
             'subpath' => $this->volume->getSubpath(ensureTrailing: false, parse: false),
-            'assetTransformer' => $this->volume->getAssetTransformerHandle(false) ?? '',
             'titleTranslationMethod' => $this->volume->titleTranslationMethod->value,
             'titleTranslationKeyFormat' => $this->volume->titleTranslationKeyFormat ?? '',
             'altTranslationMethod' => $this->volume->altTranslationMethod->value,
@@ -206,22 +197,6 @@ class VolumeEditViewModel extends ViewModel
                 ...($fieldLayout->getConfig() ?? []),
             ],
         ];
-    }
-
-    /** @return list<array{value:string,label:string}> */
-    private function assetTransformerOptions(): array
-    {
-        return $this->assetTransformers
-            ->getAllAssetTransformers()
-            ->map(fn ($transformer): array => [
-                'value' => $transformer->handle,
-                'label' => $transformer->name,
-            ])
-            ->sortBy('label')
-            ->prepend(['value' => '', 'label' => t('Default')])
-            ->concat(SelectOptions::getEnvSuggestions())
-            ->values()
-            ->all();
     }
 
     /**

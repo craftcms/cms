@@ -1,11 +1,27 @@
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {ElementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
 import {t} from '@craftcms/ui';
-import WorkflowDefaultActions from './components/WorkflowDefaultActions.vue';
-import WorkflowDetailsActions from './components/WorkflowDetailsActions.vue';
-import WorkflowDetailsPanel from './components/WorkflowDetailsPanel.vue';
-import WorkflowUserReviewActions from './user-review/WorkflowUserReviewActions.vue';
-import WorkflowUserReviewSummary from './user-review/WorkflowUserReviewSummary.vue';
+import {defineAsyncComponent} from 'vue';
+
+/**
+ * Loaded once a page shows a workflow, so the comment and release pickers they
+ * render stay off every other page. Module-level, so registering twice hands
+ * the registries the same components.
+ */
+const WorkflowDefaultActions = () =>
+  import('./components/WorkflowDefaultActions.vue');
+const WorkflowUserReviewActions = () =>
+  import('./user-review/WorkflowUserReviewActions.vue');
+const WorkflowUserReviewSummary = () =>
+  import('./user-review/WorkflowUserReviewSummary.vue');
+const WorkflowActivityEvent = () =>
+  import('./components/WorkflowActivityTimelineEvent.vue');
+const WorkflowDetailsPanel = defineAsyncComponent(
+  () => import('./components/WorkflowDetailsPanel.vue')
+);
+const WorkflowDetailsActions = defineAsyncComponent(
+  () => import('./components/WorkflowDetailsActions.vue')
+);
 
 export function registerWorkflowComponents(
   components: Pick<CpComponentRegistry, 'register'>,
@@ -20,10 +36,7 @@ export function registerWorkflowComponents(
     'craft:user-review-workflow-stage-summary',
     WorkflowUserReviewSummary
   );
-  components.register(
-    'craft:workflow-activity-event',
-    () => import('./components/WorkflowActivityTimelineEvent.vue')
-  );
+  components.register('craft:workflow-activity-event', WorkflowActivityEvent);
   elementDetailsPanels.register({
     id: 'workflow',
     get label() {

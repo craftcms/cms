@@ -71,7 +71,6 @@ it('manages configuration records using the shared operations', function (string
     'user groups' => ['user-groups', ['name' => 'Editors', 'handle' => 'editors', 'description' => 'Editorial staff'], ['handle' => 'authors', 'description' => null], ['name' => 'Editors']],
     'image transforms' => ['image-transforms', ['name' => 'Thumbnail', 'handle' => 'thumbnail', 'width' => 200, 'height' => 100, 'quality' => 80, 'mode' => 'fit'], ['handle' => 'small', 'width' => null], ['height' => 100, 'quality' => 80, 'mode' => 'fit']],
     'site groups' => ['site-groups', ['name' => 'Archive'], ['name' => 'Legacy'], []],
-    'asset transformers' => ['asset-transformers', ['name' => 'Local', 'handle' => 'local', 'driver' => 'craft'], ['handle' => 'localImages'], ['name' => 'Local', 'driver' => 'craft']],
 ]);
 
 it('refuses updates and deletes based on an outdated revision without changing the record', function (): void {
@@ -138,7 +137,7 @@ it('explains that workflows require Craft Pro', function (): void {
 
     $types = collect(($this->call)('schema')->json('result.structuredContent.types'))->keyBy('type');
 
-    expect($types['asset-transformers']['operations'])->not->toBeEmpty()
+    expect($types)->not->toHaveKey('asset-transformers')
         ->and($types['workflows'])->toBe(['type' => 'workflows', 'operations' => [], 'requiredEdition' => 'Craft Pro']);
 
     ($this->call)('list', ['type' => 'workflows'])
@@ -267,16 +266,6 @@ it('needs the whole CP navigation tree, so nodes left out keep their changes', f
     $removed = ($this->operate)('update', 'cp-navigations', ['identifier' => ['userGroup' => 'default'], 'attributes' => ['tree' => array_slice($tree, 0, -1)]])['item'];
 
     expect(array_column($removed['tree'], 'id'))->not->toContain('custom-docs');
-});
-
-it('refuses asset transformer changes Craft doesn’t allow', function (): void {
-    ($this->call)('create', ['type' => 'asset-transformers', 'attributes' => ['name' => 'Remote', 'handle' => 'remote', 'driver' => 'nope']])
-        ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Unknown asset transform driver [nope]. Available drivers: craft.');
-
-    ($this->call)('delete', ['type' => 'asset-transformers', 'identifier' => ['handle' => 'craft']])
-        ->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'This asset transformer cannot be deleted because it is registered in code.');
 });
 
 it('separates a section lookup handle from its new handle and preserves section settings', function (): void {

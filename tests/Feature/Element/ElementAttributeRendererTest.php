@@ -174,6 +174,29 @@ it('renders direct link helpers', function () {
         ->toContain('href="https://example.test/path/to/page"');
 });
 
+it('only links to entries the site routes to in the link column', function (bool $linked, Closure $modify) {
+    Sites::getPrimarySite()->setBaseUrl('https://localhost/');
+    Entry::factory()->create();
+    $entry = EntryElement::findOne();
+    $entry->uri = 'foo/bar';
+    $modify($entry);
+
+    $html = (string) $entry->getAttributeHtml('link');
+
+    if ($linked) {
+        expect($html)->toContain('href="https://localhost/foo/bar"');
+    } else {
+        expect($html)->toBe('');
+    }
+})->with([
+    'live' => [true, fn (EntryElement $entry) => null],
+    'pending' => [false, fn (EntryElement $entry) => $entry->postDate = now()->addDay()],
+    'expired' => [false, fn (EntryElement $entry) => $entry->expiryDate = now()->subHour()],
+    'disabled' => [false, fn (EntryElement $entry) => $entry->enabled = false],
+    'disabled for the site' => [false, fn (EntryElement $entry) => $entry->setEnabledForSite(false)],
+    'archived' => [false, fn (EntryElement $entry) => $entry->archived = true],
+]);
+
 it('renders the homepage uri as a labelled home icon', function () {
     Sites::getPrimarySite()->setBaseUrl('https://localhost/');
     Entry::factory()->create();

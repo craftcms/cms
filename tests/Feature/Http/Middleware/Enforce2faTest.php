@@ -49,7 +49,10 @@ test('redirects user to 2fa setup when required but not active', function () {
         ->get('/test-2fa')
         ->assertStatus(200)
         ->assertViewIs('_special.setup-2fa')
-        ->assertHeader('Cache-Control', 'must-revalidate, no-cache, no-store, private');
+        ->assertHeader('Cache-Control', 'must-revalidate, no-cache, no-store, private')
+        // A full document outside the Inertia shell, so its layout writes the `window.Craft` config the setup JS reads
+        ->assertSee('window.Craft = {"', false)
+        ->assertSee('"asciiCharMap":', false);
 });
 
 test('allows user through when 2fa is required and active', function () {

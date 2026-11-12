@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Http\Controllers\Settings\ImageTransformsController;
@@ -24,7 +23,6 @@ use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\Enums\ChoicePresentation;
 use CraftCms\Cms\Ui\Enums\ControlMode;
-use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
@@ -47,7 +45,6 @@ class ImageTransformEditViewModel extends ViewModel
         private readonly Images $images,
         private readonly UiResolver $uiResolver,
         private readonly AssetTransformers $assetTransformers,
-        private readonly AssetTransformDrivers $assetTransformDrivers,
         private readonly bool $readOnly = false,
         private readonly ?array $values = null,
     ) {}
@@ -114,22 +111,14 @@ class ImageTransformEditViewModel extends ViewModel
             )->instructions(t('The image format that transformed images should use.')),
         );
 
-        foreach ($this->assetTransformers->getAllAssetTransformers() as $transformer) {
-            if (! $this->assetTransformDrivers->has($transformer->driver)) {
-                $ui->add(Group::make("asset-transformer-{$transformer->uid}", [
-                    Callout::make("asset-transformer-{$transformer->uid}-unavailable", t('This asset transformer’s driver is unavailable.')),
-                ])->label((string) $transformer->name));
-
-                continue;
-            }
-
-            $fields = array_values($this->assetTransformers->parameterFields($transformer));
+        foreach ($this->assetTransformers->definitions() as $driver => $definition) {
+            $fields = array_values($this->assetTransformers->parameterFields($driver));
 
             if ($fields !== []) {
-                $ui->add(Group::make("asset-transformer-{$transformer->uid}", [
-                    Scope::make(['parameters', $transformer->uid], $fields),
+                $ui->add(Group::make("asset-transform-driver-{$driver}", [
+                    Scope::make(['parameters', $driver], $fields),
                 ])
-                    ->label((string) $transformer->name));
+                    ->label($driver));
             }
         }
 

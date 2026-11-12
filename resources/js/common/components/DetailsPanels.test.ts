@@ -203,6 +203,72 @@ it('leaves a panel closed that the person closed', async () => {
   expect(trigger('info').getAttribute('aria-expanded')).toBe('false');
 });
 
+describe('overlaying a page', () => {
+  async function openOverlaid(): Promise<HTMLElement> {
+    const details = await mount('#rail', {overlaid: true});
+    trigger('info').click();
+    await settle();
+    expect(panel('info').hidden).toBe(false);
+
+    return details;
+  }
+
+  function outsideIn(parent: HTMLElement): HTMLButtonElement {
+    const button = document.createElement('button');
+    parent.append(button);
+
+    return button;
+  }
+
+  it('closes on a click elsewhere on the page', async () => {
+    const details = await openOverlaid();
+
+    outsideIn(details).click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(true);
+  });
+
+  it('stays open on a click inside the panel or the rail', async () => {
+    await openOverlaid();
+
+    panel('info').click();
+    document.getElementById('rail')!.click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(false);
+  });
+
+  it('stays open on a click in something opened over the page', async () => {
+    await openOverlaid();
+
+    outsideIn(document.body).click();
+    await settle();
+
+    expect(panel('info').hidden).toBe(false);
+  });
+
+  it('switches panels from the rail', async () => {
+    await openOverlaid();
+
+    trigger('history').click();
+    await settle();
+
+    expect(panel('history').hidden).toBe(false);
+  });
+});
+
+it('stays open on a click elsewhere when there’s room beside the content', async () => {
+  const details = await mount('#rail');
+  const button = document.createElement('button');
+  details.append(button);
+
+  button.click();
+  await settle();
+
+  expect(panel('info').hidden).toBe(false);
+});
+
 it('starts folded to the rail in a slideout', async () => {
   await mount('#rail', {screenMode: 'slideout'});
 

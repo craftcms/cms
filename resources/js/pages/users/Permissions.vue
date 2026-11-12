@@ -84,7 +84,7 @@
       v-if="page.props.can.assignUserGroups"
       class="grid gap-3"
     >
-      <h2 class="text-lg m-0!">{{ t('User Groups') }}</h2>
+      <h2 class="cp-h2 m-0!">{{ t('User Groups') }}</h2>
 
       <UserGroupSelect
         :groups="page.props.groups"
@@ -103,7 +103,7 @@
     />
 
     <craft-field-group v-if="page.props.can.assignUserPermissions">
-      <h2 class="text-lg m-0!">{{ t('Permissions') }}</h2>
+      <h2 class="cp-h2 m-0!">{{ t('Permissions') }}</h2>
 
       <CraftSwitch
         v-if="page.props.showAdminSwitch"

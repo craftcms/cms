@@ -6,8 +6,6 @@ namespace CraftCms\Cms\Cp\CommandPalette;
 
 use CraftCms\Cms\Ai\Models\AgentSkill;
 use CraftCms\Cms\Ai\Skills\AgentSkills;
-use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Cp\Data\NavItem;
@@ -52,7 +50,6 @@ class Pages
     public function __construct(
         private readonly Navigation $navigation,
         private readonly EditUserScreens $editUserScreens,
-        private readonly AssetTransformers $assetTransformers,
         private readonly PageRegistry $registry,
         private readonly Utilities $utilities,
         private readonly AgentSkills $skills,
@@ -255,11 +252,6 @@ class Pages
             if ($transform->handle !== null) {
                 $add("image-transform-$transform->handle", $transform->name, route('craft.cp.settings.assets.transforms.edit', ['transformHandle' => $transform->handle]), t('Image Transform'), 'crop', $transform->handle);
             }
-        }
-
-        foreach ($this->assetTransformers->getAllAssetTransformers() as $transformer) {
-            /** @var AssetTransformer $transformer */
-            $add("asset-transformer-$transformer->handle", $transformer->name, route('craft.cp.settings.assets.transformers.edit', ['handle' => $transformer->handle]), t('Asset Transformer'), 'wand-magic-sparkles', $transformer->handle);
         }
 
         foreach (Fields::getAllFields() as $field) {

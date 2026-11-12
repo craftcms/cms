@@ -84,7 +84,7 @@
       <hr v-if="!schema.isPublic" />
 
       <section class="grid gap-3">
-        <h2 class="text-base">
+        <h2 class="cp-h3">
           {{ t('Choose the available content for querying with this schema:') }}
         </h2>
 

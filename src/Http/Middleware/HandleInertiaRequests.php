@@ -152,7 +152,11 @@ class HandleInertiaRequests extends Middleware
         $isInstalled = Cms::isInstalled();
 
         if (! $isInstalled) {
-            return parent::share($request);
+            return [
+                ...parent::share($request),
+                // The CP boot reads its config from here, as it does once Craft is installed.
+                'craft' => fn () => ['general' => Cp::inertiaConfig()],
+            ];
         }
 
         // The site the CP is working with, not the request's: `getCurrentSite()`

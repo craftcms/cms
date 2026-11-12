@@ -9,6 +9,8 @@ use Craft;
 use CraftCms\Cms\Route\MatchedElement;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use yii\web\HttpException as YiiHttpException;
 
 readonly class HandleYiiSiteRouteFallback
 {
@@ -42,7 +44,11 @@ readonly class HandleYiiSiteRouteFallback
 
     private function run(string $route, array $params): Response
     {
-        Craft::$app->runAction($route, $params);
+        try {
+            Craft::$app->runAction($route, $params);
+        } catch (YiiHttpException $e) {
+            throw new HttpException($e->statusCode, $e->getMessage(), $e, code: $e->getCode());
+        }
 
         return LegacyMiddleware::createResponse();
     }

@@ -68,6 +68,7 @@
         v-if="page.props.canRegisterUsers"
         :href="create().url"
         icon="plus"
+        variant="primary"
         >{{ page.props.newUserLabel }}</CpButtonLink
       >
     </template>
