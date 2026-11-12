@@ -876,7 +876,7 @@ class AppController extends Controller
                 throw new BadRequestHttpException('Missing component ID');
             }
 
-            if (!is_string($componentType) || !is_subclass_of($componentType, Chippable::class)) {
+            if (!is_string($componentType) || !is_subclass_of($componentType, Chippable::class) || !is_callable([$componentType, 'get'])) {
                 throw new BadRequestHttpException('Invalid component type');
             }
 

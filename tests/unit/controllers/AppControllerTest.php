@@ -8,6 +8,7 @@
 namespace crafttests\unit\controllers;
 
 use Craft;
+use craft\base\FieldInterface;
 use craft\controllers\AppController;
 use craft\elements\User;
 use craft\helpers\Session;
@@ -82,10 +83,21 @@ class AppControllerTest extends TestCase
         self::assertStringNotContainsString('<svg', $html);
     }
 
-    public function testRenderComponentsInvalidType(): void
+    /**
+     * @dataProvider renderComponentsInvalidTypeDataProvider
+     */
+    public function testRenderComponentsInvalidType(string $type): void
     {
         $this->expectException(BadRequestHttpException::class);
-        $this->renderComponents(Session::class, 'foo');
+        $this->renderComponents($type, 'foo');
+    }
+
+    public static function renderComponentsInvalidTypeDataProvider(): array
+    {
+        return [
+            'class with a static get() method' => [Session::class],
+            'interface extending Chippable' => [FieldInterface::class],
+        ];
     }
 
     private function renderComponents(string $type, mixed $id, array $overrides = []): array
