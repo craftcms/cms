@@ -614,8 +614,9 @@ craft-field[data-highlighted] {
    appearance color; not badges or other gray UI) take the page's blue-gray,
    the surface behind the header bar and nav, instead of the neutral gray
    palette, with slate borders, text and stronger steps, the blue-gray of the
-   chrome's text and lines, so they read as part of the same family. */
-:is(craft-card, craft-chip)[data-color='gray'] {
+   chrome's text and lines, so they read as part of the same family. Light
+   theme only: in the dark theme gray elements stay as they are. */
+:is(craft-card, craft-chip)[data-color='gray']:not([data-theme='dark'] *) {
   --c-color-fill-quiet: var(--c-surface-page);
   --c-color-border-quiet: var(--c-color-slate-border-quiet);
   --c-color-on-quiet: var(--c-color-slate-on-quiet);
