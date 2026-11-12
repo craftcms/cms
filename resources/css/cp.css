@@ -28,6 +28,22 @@ CP Styles
 @import './modal.css' layer(cp);
 @import './menu.css' layer(cp);
 
+/* Fluid spacing, written in container query units where the container is
+   known and registered as lengths, so each resolves to pixels there and is
+   inherited as that, rather than re-resolving against whatever container is
+   nearest to each element that reads it. */
+@property --cp-content-inline-padding {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cp-content-block-start {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
 :root {
   --cp-sidebar-width: calc(226rem / 16);
 
@@ -38,6 +54,10 @@ CP Styles
   --cp-content-width: calc(1440rem / 16);
   --cp-footer-height: var(--c-size-footer);
   --cp-header-height: calc(42rem / 16);
+  /* Centers a touch target beside a header bar, above its 1px bottom border. */
+  --cp-header-touch-target-offset: calc(
+    (var(--cp-header-height) - 1px - var(--c-size-touch-target)) / 2
+  );
   --cp-sidebar-z-index: var(--c-layer-sidebar);
   --cp-body-inset: var(--c-spacing-md);
   --cp-body-border-width: 1px;
@@ -47,7 +67,8 @@ CP Styles
     black 4%
   );
 
-  /* Inline padding for the CpContainer element */
+  /* Inline padding for the CpContainer element. The page screen's main
+     column scales it with the column's width; see PageScreen.vue. */
   --cp-container-padding: var(--c-spacing-lg);
   --cp-content-max-width: calc(960rem / 16);
 
