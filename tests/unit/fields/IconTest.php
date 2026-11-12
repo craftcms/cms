@@ -34,6 +34,7 @@ class IconTest extends TestCase
             'url' => [null, 'ftp://example.com/icon.svg'],
             'file path' => [null, '/var/www/icon.svg'],
             'alias' => [null, '@webroot/icon.svg'],
+            'relative file path' => [null, 'PRIVATE_ICON'],
             'svg markup' => [null, '<svg xmlns="http://www.w3.org/2000/svg"></svg>'],
         ];
     }
