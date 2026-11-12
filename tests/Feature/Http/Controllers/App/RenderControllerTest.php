@@ -13,6 +13,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
@@ -189,7 +190,7 @@ test('render components returns chip and menu item html for sections', function 
             $html = $response->json('components.'.SectionData::class.'.'.$section->id.'.'.$position);
             $chip = new Crawler($html)->filter('craft-chip');
             expect($chip->attr('data-label'))->toBe($instance['overrides']['name'] ?? $section->name);
-            expect($chip->attr('data-id'))->toBe((string) ($instance['overrides']['id'] ?? $section->id));
+            expect($chip->attr('data-id'))->toBe((string) $section->id);
         }
 
         $menu = $response->json('menuItems.'.SectionData::class.'.'.$section->id);
@@ -203,6 +204,36 @@ test('render components returns chip and menu item html for sections', function 
     'label then unmodified then ID' => [[0, 1, 2]],
     'ID then label then unmodified' => [[2, 0, 1]],
 ]);
+
+test('render components ignores overrides other than the name, handle, and description', function () {
+    $section = Section::factory()->create();
+    $iconPath = dirname(__DIR__, 4).'/_data/assets/files/craft-logo.svg';
+
+    $html = postJson(action([RenderController::class, 'components']), [
+        'components' => [
+            [
+                'type' => SectionData::class,
+                'id' => $section->id,
+                'instances' => [['showThumb' => true, 'overrides' => ['name' => 'Custom label', 'icon' => $iconPath]]],
+            ],
+        ],
+    ])->assertOk()->json('components.'.SectionData::class.'.'.$section->id.'.0');
+
+    expect(new Crawler($html)->filter('craft-chip')->attr('data-label'))->toBe('Custom label')
+        ->and($html)->not->toContain('Symbols');
+});
+
+test('render components rejects types that are not chippable', function () {
+    postJson(action([RenderController::class, 'components']), [
+        'components' => [
+            [
+                'type' => Session::class,
+                'id' => 'foo',
+                'instances' => [[]],
+            ],
+        ],
+    ])->assertBadRequest();
+});
 
 test('render markdown validates required flavor', function () {
     postJson(action([RenderController::class, 'markdown']), [

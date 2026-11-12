@@ -761,6 +761,9 @@
 - Fixed a bug where variables weren’t HTML-escaped in system messages’ HTML bodies, because Twig string and object templates reused whichever escaping they were first compiled with. The default system messages no longer use the `|e` filter, which showed HTML entities in their plain-text bodies. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Fixed a bug where authenticated control panel routes didn’t invalidate sessions with stale password hashes.
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
+- The `app/render-components` action now only accepts chippable component types, and only applies `name`, `handle`, and `description` overrides.
+- Icon fields now only accept icon names as values.
+- `CraftCms\Cms\Support\Html::svg()` no longer accepts stream wrapper URLs, such as `ftp://`, as file paths.
 
 ### Performance
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
