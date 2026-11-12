@@ -109,6 +109,11 @@ class Assets extends Component
     private array $_userTempFolders = [];
 
     /**
+     * @see getTempAssetUploadFs()
+     */
+    private ?FsInterface $_tempAssetUploadFs = null;
+
+    /**
      * Returns a file by its ID.
      *
      * If no site ID is passed, the asset will be returned in the current site if it exists there,
@@ -958,7 +963,9 @@ class Assets extends Component
     {
         $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
         if (!$handle) {
-            return new Temp();
+            // Created via the DI container, so hosts can replace it, such as with shared storage for load-balanced
+            // servers. It's reused so Assets::isTempUploadFs() can recognize it whatever its class.
+            return $this->_tempAssetUploadFs ??= Craft::createObject(Temp::class);
         }
 
         $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);

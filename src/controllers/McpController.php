@@ -13,11 +13,10 @@ use craft\web\Controller;
 use craft\web\View;
 use GuzzleHttp\Psr7\ServerRequest;
 use League\OAuth2\Server\Exception\OAuthServerException;
-use Mcp\Exception\ToolCallException;
 use Mcp\Server;
 use Mcp\Server\Transport\StreamableHttpTransport;
 use yii\filters\RateLimiter;
-use yii\web\BadRequestHttpException;
+use yii\web\HttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -53,8 +52,8 @@ class McpController extends Controller
         }
 
         // The public server and discovery only live on the front end, as with their routes in Settings::requestRoute(),
-        // and not on the control panel’s own host
-        if ($action->id !== 'authenticated' && ($this->request->getIsCpRequest() || $settings->isCpHostRequest())) {
+        // and not on the control panel’s own host. Upload URLs use the authenticated server’s endpoint, wherever it is.
+        if (!in_array($action->id, ['authenticated', 'upload'], true) && ($this->request->getIsCpRequest() || $settings->isCpHostRequest())) {
             throw new NotFoundHttpException();
         }
 
@@ -123,25 +122,29 @@ class McpController extends Controller
     }
 
     /**
-     * Receives a file for an upload URL created by the `assets_upload_url` tool. The single-use token in the URL
-     * authorizes the request.
+     * Receives a file for an upload URL created by the `assets_upload_url` tool. The token in the URL
+     * authorizes the request, and each upload accepts a single file.
      */
     public function actionUpload(string $uploadId): Response
     {
-        $this->requireToken();
-
-        if (!$this->request->getIsPut() && !$this->request->getIsPost()) {
-            throw new MethodNotAllowedHttpException('Send the file as the body of a PUT request.');
-        }
-
-        $stream = fopen('php://input', 'rb');
-
         try {
-            $size = Craft::$app->get('mcp')->getCapabilityContainer()->get(AssetUploads::class)->receiveUpload($uploadId, $stream);
-        } catch (ToolCallException $exception) {
-            throw new BadRequestHttpException($exception->getMessage(), previous: $exception);
-        } finally {
-            fclose($stream);
+            $this->requireToken();
+
+            if (!$this->request->getIsPut() && !$this->request->getIsPost()) {
+                throw new MethodNotAllowedHttpException('Send the file as the body of a PUT request.');
+            }
+
+            $stream = fopen('php://input', 'rb');
+
+            try {
+                $size = Craft::$app->get('mcp')->getCapabilityContainer()->get(AssetUploads::class)->receiveUpload($uploadId, $stream);
+            } finally {
+                fclose($stream);
+            }
+        } catch (HttpException $exception) {
+            // Upload clients such as curl don't ask for JSON, so the error handler would render an HTML page
+            $this->response->setStatusCode($exception->statusCode);
+            return $this->asJson(['error' => $exception->getMessage()]);
         }
 
         return $this->asJson(['upload_id' => $uploadId, 'size' => $size]);

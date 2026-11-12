@@ -6113,7 +6113,12 @@ JS,
 
             case 'link':
                 $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
-                if (ElementHelper::isDraftOrRevision($element)) {
+                if (
+                    ElementHelper::isDraftOrRevision($element) ||
+                    !$element->enabled ||
+                    !$element->getEnabledForSite() ||
+                    $element->archived
+                ) {
                     return '';
                 }
 
