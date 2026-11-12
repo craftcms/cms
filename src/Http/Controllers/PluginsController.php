@@ -180,6 +180,15 @@ readonly class PluginsController
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
+        // Save and continue editing posts no `redirect`. Return to the settings
+        // page, as Craft 5's form did, rather than to the Referer, which browsers
+        // may trim to the site's origin. Legacy forms that post the
+        // `plugins/save-plugin-settings` action from their own pages still go
+        // back to them.
+        $settingsUrl = $request->expectsJson() || $request->isActionRequest()
+            ? null
+            : Url::cpUrl("settings/plugins/{$handle}");
+
         $requestClass = $plugin->getSettingsRequestClass();
         $settings = $request->input('settings', []);
 
@@ -198,7 +207,7 @@ readonly class PluginsController
             throw ValidationException::withMessages($errors);
         }
 
-        return $this->asSuccess(t('Plugin settings saved.'));
+        return $this->asSuccess(t('Plugin settings saved.'), redirect: $this->getPostedRedirectUrl() ?? $settingsUrl);
     }
 
     public function renderSettingsUi(Request $request, string $handle): JsonResponse
