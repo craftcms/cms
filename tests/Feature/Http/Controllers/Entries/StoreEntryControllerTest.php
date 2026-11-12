@@ -131,7 +131,7 @@ it('can update an existing entry', function () {
     $entryModel = EntryModel::factory()->forSection($this->section)->forEntryType($this->entryType)->create();
 
     post(action(StoreEntryController::class), [
-        'entryId' => $entryModel->id,
+        'entryId' => (string) $entryModel->id,
         'title' => 'Updated Title',
     ])->assertRedirect();
 
