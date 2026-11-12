@@ -290,6 +290,16 @@ test('saveSettings persists plugin settings', function (bool $json) {
     expect($settings->bar)->toBe('baz');
 })->with(['JSON' => true, 'form' => false]);
 
+test('saveSettings without a posted redirect returns to the settings page, not the Referer', function () {
+    // Save and continue editing posts no `redirect`, and some browsers send
+    // only the origin as the Referer.
+    $this->withHeader('Referer', url('/'))
+        ->post(action([PluginsController::class, 'saveSettings'], ['test-plugin']), [
+            'settings' => ['foo' => 'bar', 'bar' => 'baz'],
+        ])
+        ->assertRedirect(cp_url('settings/plugins/test-plugin'));
+});
+
 test('saveSettings returns settings model validation errors for JSON requests without saving', function () {
     $url = action([PluginsController::class, 'saveSettings'], ['test-plugin']);
     app(ProjectConfig::class)->set('plugins.test-plugin.settings', ['foo' => 'saved value', 'bar' => 'saved bar']);
