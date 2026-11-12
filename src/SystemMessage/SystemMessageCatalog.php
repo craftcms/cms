@@ -57,7 +57,12 @@ class SystemMessageCatalog
             'forgot_password' => ['link' => t('Password reset link')],
             'test_email' => ['settings' => t('Email settings')],
             default => [],
-        };
+        } + [
+            'user.friendlyName' => t('Recipient name'),
+            'user.name' => t('Recipient full name'),
+            'user.email' => t('Recipient email'),
+            'user.username' => t('Recipient username'),
+        ];
     }
 
     /** @param Closure $resolve A container-invoked factory that returns a system message. */
