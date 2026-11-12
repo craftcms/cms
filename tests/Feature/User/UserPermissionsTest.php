@@ -3,10 +3,12 @@
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Section\Sections;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Data\Permission;
 use CraftCms\Cms\User\Data\PermissionGroup;
@@ -156,6 +158,24 @@ test('getGroupPermissionsByUserId', function () {
     $this->userPermissions->saveGroupPermissions($group->id, ['accessSiteWhenSystemIsOff']);
 
     expect($this->userPermissions->getGroupPermissionsByUserId($user->id))->not()->toBeEmpty();
+});
+
+test('saveGroupPermissions saves the Team group’s config with its permissions', function () {
+    Edition::set(Edition::Team);
+
+    // getTeamGroup() creates the group in the database only
+    $group = UserGroups::getTeamGroup();
+    $path = ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid;
+    expect(app(ProjectConfig::class)->get($path))->toBeNull();
+
+    $this->userPermissions->saveGroupPermissions($group->id, ['viewUsers']);
+
+    expect(app(ProjectConfig::class)->get($path))->toEqual([
+        'description' => null,
+        'handle' => $group->handle,
+        'name' => $group->name,
+        'permissions' => ['viewUsers'],
+    ]);
 });
 
 test('getPermissionsByUserId & doesUserHavePermission', function () {

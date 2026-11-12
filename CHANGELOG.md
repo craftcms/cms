@@ -17,6 +17,8 @@
 - Fixed a bug where validation errors for settings that accept environment variables, such as plugin settings, ignored custom attribute labels and messages. ([#20620](https://github.com/craftcms/cms/pull/20620))
 - Fixed a bug where element indexes’ Link columns showed links for disabled, archived, pending, and expired elements. ([#20604](https://github.com/craftcms/cms/issues/20604))
 - Fixed a bug where uploaded PNGs could be saved uncompressed when GD was used as the image driver, making them many times larger than the originals. ([#20618](https://github.com/craftcms/cms/pull/20618))
+- Fixed a bug where saving the Team user group’s permissions programmatically could save its project config without a name or handle, causing `project-config/apply` to fail. ([#20595](https://github.com/craftcms/cms/issues/20595))
+- MCP upload routes now respond with JSON errors, rather than HTML pages, for clients that don’t ask for JSON, such as curl. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - The `craftCommand()` Twig function is now only available to control panel templates.
 - Fixed a bug where the System Messages utility suggested `user` variables for every message, including plugins’ messages that aren’t sent with a recipient user. ([#20623](https://github.com/craftcms/cms/pull/20623))
 - GraphQL transform arguments now accept `immediately` again, which asks the asset transformer to generate the transform before returning its URL. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))

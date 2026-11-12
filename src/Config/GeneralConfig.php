@@ -2961,6 +2961,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string|null The Laravel filesystem disk that should stage upload sessions.
      *
+     * If this isn’t set, upload sessions are staged on the local `craft-tmp` disk. Sites that run on more than one
+     * server must set it to a disk that every server shares, so each part of an upload can reach any of them.
+     *
      * @group Assets
      */
     public ?string $uploadSessionDisk = null;
@@ -6232,6 +6235,9 @@ class GeneralConfig extends BaseConfig
 
     /**
      * The Laravel filesystem disk that should stage upload sessions.
+     *
+     * If this isn’t set, upload sessions are staged on the local `craft-tmp` disk. Sites that run on more than one
+     * server must set it to a disk that every server shares, so each part of an upload can reach any of them.
      *
      * @group Assets
      */
