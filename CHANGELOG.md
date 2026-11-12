@@ -10,6 +10,8 @@
 - The details pane now has a subtle inset shadow along its leading edge, and Ask AI’s input is transparent, like the Activity panel’s comment box. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ action menus now sit right after their labels and required/translatable indicators, evenly spaced, rather than at the far end of the heading. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Breadcrumb separators are now lighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Pages no longer show breadcrumbs when the only one would be the current page, such as the Dashboard. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Fields’ translation indicators now show their descriptions when pressed, including on touch devices, rather than on hover. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fixed a bug where fields could be saved with the same handle as another field. ([#20600](https://github.com/craftcms/cms/issues/20600), [#20607](https://github.com/craftcms/cms/pull/20607))
 - Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
 - Fixed an infinite recursion that occurred when clearing the current user’s identity from a console request via `craft\console\User::setIdentity()`. ([#20602](https://github.com/craftcms/cms/issues/20602), [#20606](https://github.com/craftcms/cms/pull/20606))
