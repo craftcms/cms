@@ -716,6 +716,15 @@
     background-color: var(--c-color-accent-fill-quiet);
   }
 
+  // A hovered row gets a lighter fill than a selected one, so it's easy to
+  // follow a row across a wide table. Only with a real hover, so a tap on a
+  // touch screen doesn't leave a row highlighted.
+  @media (hover: hover) {
+    :deep(.cp-table-row--clickable:not(.sel):hover > td) {
+      background-color: var(--c-table-row-hover);
+    }
+  }
+
   // Cells carry a bottom border only. The one between two selected rows sits
   // inside the selection, so it takes the accent too; the rest stay as they are.
   :deep(.cp-table-row.sel:has(+ .cp-table-row.sel) > td) {

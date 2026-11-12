@@ -50,6 +50,7 @@
     var(--c-color-neutral-border-quiet) 60%,
     transparent
   );
+  --c-table-row-hover: var(--c-surface-details);
   --c-border-raised: color-mix(
     in srgb,
     var(--color-slate-400),
@@ -403,6 +404,14 @@
   --c-surface-overlay: var(--c-surface-default);
   --c-surface-page: var(--c-surface-sunken);
   --c-surface-details: var(--c-surface-default);
+  /* `--c-surface-details` is the panel's own surface here, so a hovered row
+     steps up half a palette step instead: about the contrast of a nav item's
+     hover against the nav. */
+  --c-table-row-hover: color-mix(
+    in oklab,
+    var(--color-base-100),
+    var(--color-base-50) 50%
+  );
 
   /* Shadows read fainter against dark surfaces. */
   --c-shadow-multiplier: 1.5;
