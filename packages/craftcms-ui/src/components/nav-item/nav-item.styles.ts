@@ -20,6 +20,9 @@ export default css`
        transparent border to keep room for its focus state. */
     --_rail-border: 1px;
     --_rail-size: var(--c-size-touch-target);
+    /* A row with an icon, less its border, so the icon sits where a collapsed
+       row centers it. */
+    --_prefixed-padding-inline: calc(var(--c-spacing-sm) - var(--_rail-border));
 
     border-radius: var(--c-radius-md);
   }
@@ -105,7 +108,7 @@ export default css`
   }
 
   .nav-item--prefixed {
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--_prefixed-padding-inline);
     grid-template-columns: var(--_prefix-size) 1fr auto;
 
     /* Pull the label back across the row's gap, to the tighter prefix gap. */
@@ -245,8 +248,9 @@ export default css`
    */
   :host(:not([group])) .subnav {
     --_subnav-indent: calc(
-      var(--c-spacing-sm) + var(--_prefix-size) + var(--_prefix-gap) -
-        var(--_subnav-rule) - var(--c-spacing-sm) - var(--_padding-inline)
+      var(--_prefixed-padding-inline) + var(--_prefix-size) +
+        var(--_prefix-gap) - var(--_subnav-rule) - var(--c-spacing-sm) -
+        var(--_padding-inline)
     );
     position: relative;
     margin-block-start: var(--c-spacing-sm);
