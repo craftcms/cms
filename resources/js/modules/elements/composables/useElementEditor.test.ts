@@ -229,6 +229,9 @@ describe('useElementEditor', () => {
                   ref: editor.renderer as any,
                   payload: editor.uiPayload.value,
                   errors: editor.errors.value,
+                  refresh: editor.uiPayload.value.refreshable
+                    ? editor.refreshLayout
+                    : undefined,
                   'onUpdate:mutation': editor.onMutation,
                 })
               : null,
@@ -1097,6 +1100,47 @@ describe('useElementEditor', () => {
     await nextTick();
 
     expect(requestSignal?.aborted).toBe(true);
+  });
+
+  it('saves a draft once when the layout refresh for the same edit lands first', async () => {
+    vi.useFakeTimers();
+    onTestFinished(() => {
+      vi.useRealTimers();
+    });
+    const reactiveLayout = (title: string): UiPayload => {
+      const layout = fieldLayout(title);
+      layout.nodes[0]!.control!.reactive = true;
+
+      return {...layout, refreshable: true};
+    };
+    const savedDraft = deferred<{data: Record<string, unknown>}>();
+    postSpy.mockImplementation((url: string) =>
+      url.includes('save-draft')
+        ? savedDraft.promise
+        : Promise.resolve({data: {ui: reactiveLayout('Edited')}})
+    );
+    mount(
+      payload({
+        canAutosave: true,
+        draftId: 7,
+        isProvisionalDraft: true,
+        ui: reactiveLayout('Original'),
+      })
+    );
+
+    await typeTitle('Edited');
+    // Both wait out the same pause in typing; the refresh answers first, and
+    // the renderer re-applies the edit it was asked to render.
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(500);
+    savedDraft.resolve({data: {draftId: 7, ui: reactiveLayout('Edited')}});
+    await vi.advanceTimersByTimeAsync(2000);
+
+    const saves = postSpy.mock.calls.filter(([url]) =>
+      String(url).includes('save-draft')
+    );
+    expect(saves).toHaveLength(1);
+    expect(saves[0]?.[1]).toMatchObject({title: 'Edited'});
   });
 
   it('generates an empty entry slug from its title until the slug is edited', async () => {
