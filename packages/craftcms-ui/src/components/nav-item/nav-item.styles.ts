@@ -193,9 +193,11 @@ export default css`
     --c-color-neutral-on-normal: var(--c-color-accent-on-normal);
   }
 
-  /* Not on the page you're on: its selected fill is the state to show. */
+  /* Not on the page you're on: its selected fill is the state to show. A row
+     with its flyout open looks hovered while the pointer is in the flyout. */
   :host(:not([current]))
-    .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)) {
+    .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)),
+  :host(:not([current])) .nav-item--flyout-open {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
   }
 
@@ -216,7 +218,8 @@ export default css`
 
   /* A selected or hovered row's icon takes the row's own color. */
   :host([active]) .nav-item__prefix,
-  .nav-item:not(.nav-item--static):hover .nav-item__prefix {
+  .nav-item:not(.nav-item--static):hover .nav-item__prefix,
+  .nav-item--flyout-open .nav-item__prefix {
     color: inherit;
   }
 
