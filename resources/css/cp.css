@@ -611,21 +611,19 @@ craft-field[data-highlighted] {
 }
 
 /* Gray elements (element cards, Matrix blocks and element chips with the gray
-   appearance color; not badges or other gray UI) take the page's blue-gray,
-   the surface behind the header bar and nav, instead of the neutral gray
-   palette, with slate borders, text and stronger steps, the blue-gray of the
-   chrome's text and lines, so they read as part of the same family. Light
-   theme only: in the dark theme gray elements stay as they are. */
-:is(craft-card, craft-chip)[data-color='gray']:not([data-theme='dark'] *) {
-  --c-color-fill-quiet: var(--c-surface-page);
-  --c-color-border-quiet: var(--c-color-slate-border-quiet);
-  --c-color-on-quiet: var(--c-color-slate-on-quiet);
-  --c-color-fill-normal: var(--c-color-slate-fill-normal);
-  --c-color-border-normal: var(--c-color-slate-border-normal);
-  --c-color-on-normal: var(--c-color-slate-on-normal);
-  --c-color-fill-loud: var(--c-color-slate-fill-loud);
-  --c-color-border-loud: var(--c-color-slate-border-loud);
-  --c-color-on-loud: var(--c-color-slate-on-loud);
+   appearance color; not badges or other gray UI) take their colors from the
+   --c-element-gray-* tokens: the page's blue-gray with slate lines and text in
+   the light theme, the gray palette in the dark one. */
+:is(craft-card, craft-chip)[data-color='gray'] {
+  --c-color-fill-quiet: var(--c-element-gray-fill-quiet);
+  --c-color-border-quiet: var(--c-element-gray-border-quiet);
+  --c-color-on-quiet: var(--c-element-gray-on-quiet);
+  --c-color-fill-normal: var(--c-element-gray-fill-normal);
+  --c-color-border-normal: var(--c-element-gray-border-normal);
+  --c-color-on-normal: var(--c-element-gray-on-normal);
+  --c-color-fill-loud: var(--c-element-gray-fill-loud);
+  --c-color-border-loud: var(--c-element-gray-border-loud);
+  --c-color-on-loud: var(--c-element-gray-on-loud);
 }
 
 /* Every element card and Matrix block gets a filled header bar, not only
@@ -641,43 +639,43 @@ craft-card[data-color]:not([data-color='white']) {
 }
 
 craft-card[data-color='white'] {
-  --cp-element-header-fill: var(--c-surface-page);
+  --cp-element-header-fill: var(--c-card-header-fill-white);
 }
 
 /* An uncolored card takes the header color of the element it's in. At the top
-   level, it's a shade of whatever is under it: the text color at 9%, which
-   darkens it in the light theme and lightens it in the dark one, by about as
-   much as a colored header stands off the panel. Its body stays transparent. */
+   level, it's a shade of whatever is under it: the text color at
+   --c-card-header-shade, which darkens it in the light theme and lightens it
+   in the dark one, by about as much as a colored header stands off the panel.
+   Its body stays transparent. */
 :is([data-matrix-block], [data-element-id], .element)
   > craft-card:not([data-color]):not([active])::part(header) {
   background-color: var(
     --cp-element-header-fill,
-    color-mix(in srgb, var(--c-text-default) 9%, transparent)
+    color-mix(
+      in srgb,
+      var(--c-text-default) var(--c-card-header-shade),
+      transparent
+    )
   );
 }
 
-/* A white card's header is the page surface, solid, as white is its base. */
+/* A white card's header is solid, as white is its base. */
 :is([data-matrix-block], [data-element-id], .element)
   > craft-card[data-color='white']:not([active])::part(header) {
-  background-color: var(--c-surface-page);
+  background-color: var(--cp-element-header-fill);
 }
 
 /* Asset thumbnail tiles are a light shade of whatever they sit on, so they
    read as their own layer rather than a bare border, and take the tint of a
-   colored block they're in. Over the white panel it's about as light as the
-   details pane's surface. In the dark theme that surface is the panel's own,
-   so they're left unfilled. */
+   colored block they're in. */
 craft-chip[prefix-placement='block-start']:has(craft-thumbnail):not(
   [selected]
 )::part(chip) {
-  background-color: color-mix(in srgb, var(--c-text-default) 3%, transparent);
-}
-
-[data-theme='dark']
-  craft-chip[prefix-placement='block-start']:has(craft-thumbnail):not(
-    [selected]
-  )::part(chip) {
-  background-color: transparent;
+  background-color: color-mix(
+    in srgb,
+    var(--c-text-default) var(--c-thumbnail-tile-shade),
+    transparent
+  );
 }
 
 /* A nested element's "modified" status: a bar down the card's inline-start

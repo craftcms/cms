@@ -60,6 +60,29 @@
   --c-card-border-selected: var(--c-color-neutral-border-loud);
   --c-card-text-selected: var(--c-color-neutral-on-loud);
 
+  /* Element cards' and Matrix blocks' header bars (see cp.css): a white
+     element's, and how strongly an uncolored top-level one shades what's
+     under it with the text color. */
+  --c-card-header-fill-white: var(--c-surface-page);
+  --c-card-header-shade: 9%;
+
+  /* How strongly an asset thumbnail tile shades what's under it with the text
+     color, so it reads as its own layer. About the details pane's lightness
+     over the white panel. */
+  --c-thumbnail-tile-shade: 3%;
+
+  /* Gray elements (cards, Matrix blocks, chips) take the page's blue-gray,
+     with slate lines and text, the chrome's own. */
+  --c-element-gray-fill-quiet: var(--c-surface-page);
+  --c-element-gray-border-quiet: var(--c-color-slate-border-quiet);
+  --c-element-gray-on-quiet: var(--c-color-slate-on-quiet);
+  --c-element-gray-fill-normal: var(--c-color-slate-fill-normal);
+  --c-element-gray-border-normal: var(--c-color-slate-border-normal);
+  --c-element-gray-on-normal: var(--c-color-slate-on-normal);
+  --c-element-gray-fill-loud: var(--c-color-slate-fill-loud);
+  --c-element-gray-border-loud: var(--c-color-slate-border-loud);
+  --c-element-gray-on-loud: var(--c-color-slate-on-loud);
+
   /*
   Needs to remain statically dark between dark and light mode
   but our static values currently stick to a light mode vibe
@@ -413,6 +436,21 @@
   --c-card-fill-selected: var(--color-base-300);
   --c-card-border-selected: var(--color-base-500);
   --c-card-text-selected: var(--c-text-default);
+  /* Lighter than a white element's body, as a colored header is than its
+     own, by about as much (header text at 6.2:1). */
+  --c-card-header-fill-white: var(--color-base-300);
+  /* The details surface is the panel's own here, so tiles stay unfilled. */
+  --c-thumbnail-tile-shade: 0%;
+  /* Gray elements keep the gray palette. */
+  --c-element-gray-fill-quiet: var(--c-color-gray-fill-quiet);
+  --c-element-gray-border-quiet: var(--c-color-gray-border-quiet);
+  --c-element-gray-on-quiet: var(--c-color-gray-on-quiet);
+  --c-element-gray-fill-normal: var(--c-color-gray-fill-normal);
+  --c-element-gray-border-normal: var(--c-color-gray-border-normal);
+  --c-element-gray-on-normal: var(--c-color-gray-on-normal);
+  --c-element-gray-fill-loud: var(--c-color-gray-fill-loud);
+  --c-element-gray-border-loud: var(--c-color-gray-border-loud);
+  --c-element-gray-on-loud: var(--c-color-gray-on-loud);
   --c-color-border-quiet-transparency: 40%;
   /* As light as white surfaces can get with quiet text at 4.5:1 and form
      controls' borders at 3:1 on them. */
