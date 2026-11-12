@@ -69,7 +69,8 @@ function focusHeading(heading: HTMLElement): void {
 
 /**
  * The field to focus in `root`: a text-like `input`, `select` or `textarea`
- * that's visible, enabled and not read-only.
+ * that's visible, enabled (including by any `fieldset` around it) and not
+ * read-only.
  *
  * - The one marked `autofocus`, wherever it is: the form chose it.
  * - Otherwise the first one, but only if it's inside `root`'s first field
@@ -97,7 +98,9 @@ export function autofocusField(root: Element): HTMLElement | null {
   }
 
   const firstContainer = elements.find(
-    (el) => el.matches(FIELD_CONTAINER_SELECTOR) && el.checkVisibility()
+    (el) =>
+      el.matches(FIELD_CONTAINER_SELECTOR) &&
+      el.checkVisibility({visibilityProperty: true})
   );
   if (firstContainer && !composedContains(firstContainer, first)) {
     return null;
@@ -127,10 +130,10 @@ function isEditableField(
     | HTMLTextAreaElement;
 
   return (
-    !field.disabled &&
+    !field.matches(':disabled') &&
     !('readOnly' in field && field.readOnly) &&
     !field.closest('.prevent-autofocus, [inert]') &&
-    field.checkVisibility()
+    field.checkVisibility({visibilityProperty: true})
   );
 }
 

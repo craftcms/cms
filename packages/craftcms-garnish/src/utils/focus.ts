@@ -59,9 +59,14 @@ export function getFocusedElement(): Element | null {
 const focusTrapHandlers = new WeakMap<Element, (ev: KeyboardEvent) => void>();
 
 /**
- * Trap keyboard focus within a container: tabbing past the last focusable
- * element wraps to the first, and Shift-Tab past the first wraps to the last.
+ * Trap keyboard focus within a container: tabbing past the last Tab stop
+ * wraps to the first, and Shift-Tab past the first wraps to the last.
  * Replaces any trap previously installed on the same container.
+ *
+ * The first and last stops are the keyboard-focusable elements, so an element
+ * that's only focused from code, such as a heading with `tabindex="-1"`, isn't
+ * one. Focus on something before the first stop or after the last, such as
+ * that heading or a component that renders its own button, wraps the same way.
  *
  * Pair with {@link releaseFocusWithin} to remove the trap (e.g. when a modal
  * closes).
@@ -76,26 +81,46 @@ export function trapFocusWithin(container: Element): void {
       return;
     }
 
-    const focusable = getFocusableElements(container);
-    if (focusable.length === 0) {
+    const stops = getKeyboardFocusableElements(container);
+    if (stops.length === 0) {
       return;
     }
 
-    const index = focusable.indexOf(ev.target as HTMLElement);
+    const first = stops[0]!;
+    const last = stops[stops.length - 1]!;
+    const target = ev.target as Element;
 
-    if (index === 0 && ev.shiftKey) {
+    if (ev.shiftKey && (target === first || isBefore(target, first))) {
       ev.preventDefault();
       ev.stopPropagation();
-      focusable[focusable.length - 1]!.focus();
-    } else if (index === focusable.length - 1 && !ev.shiftKey) {
+      last.focus();
+    } else if (!ev.shiftKey && (target === last || isAfter(target, last))) {
       ev.preventDefault();
       ev.stopPropagation();
-      focusable[0]!.focus();
+      first.focus();
     }
   };
 
   container.addEventListener('keydown', handler as EventListener);
   focusTrapHandlers.set(container, handler);
+}
+
+/** Whether `node` comes before `other` in the document, and doesn't contain it. */
+function isBefore(node: Node, other: Node): boolean {
+  const position = node.compareDocumentPosition(other);
+  return (
+    (position & Node.DOCUMENT_POSITION_FOLLOWING) !== 0 &&
+    (position & Node.DOCUMENT_POSITION_CONTAINED_BY) === 0
+  );
+}
+
+/** Whether `node` comes after `other` in the document, and isn't inside it. */
+function isAfter(node: Node, other: Node): boolean {
+  const position = node.compareDocumentPosition(other);
+  return (
+    (position & Node.DOCUMENT_POSITION_PRECEDING) !== 0 &&
+    (position & Node.DOCUMENT_POSITION_CONTAINS) === 0
+  );
 }
 
 /**

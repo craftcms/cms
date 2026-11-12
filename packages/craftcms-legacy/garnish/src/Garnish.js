@@ -465,22 +465,38 @@ function initialize() {
     trapFocusWithin: function (container) {
       const $container = $(container);
       this.releaseFocusWithin($container);
+      // The first and last stops are the keyboard-focusable elements, so a
+      // heading focused from code (`tabindex="-1"`) isn't one. Focus before the
+      // first stop or after the last, such as on that heading, wraps too.
       $container.on('keydown.focus-trap', function (ev) {
         if (ev.keyCode === Garnish.TAB_KEY) {
-          const $focusableElements = $container.find(':focusable');
-          const index = $focusableElements.index(ev.target);
+          const $stops = Garnish.getKeyboardFocusableElements($container);
 
           // Exit focus trap if no focusable elements are inside
-          if ($focusableElements.length === 0) return;
+          if ($stops.length === 0) return;
 
-          if (index === 0 && ev.shiftKey) {
+          const first = $stops[0];
+          const last = $stops[$stops.length - 1];
+          const target = ev.target;
+          const position = (other) => target.compareDocumentPosition(other);
+
+          const atOrBeforeFirst =
+            target === first ||
+            (position(first) & Node.DOCUMENT_POSITION_FOLLOWING &&
+              !(position(first) & Node.DOCUMENT_POSITION_CONTAINED_BY));
+          const atOrAfterLast =
+            target === last ||
+            (position(last) & Node.DOCUMENT_POSITION_PRECEDING &&
+              !(position(last) & Node.DOCUMENT_POSITION_CONTAINS));
+
+          if (ev.shiftKey && atOrBeforeFirst) {
             ev.preventDefault();
             ev.stopPropagation();
-            $focusableElements.last().focus();
-          } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
+            last.focus();
+          } else if (!ev.shiftKey && atOrAfterLast) {
             ev.preventDefault();
             ev.stopPropagation();
-            $focusableElements.first().focus();
+            first.focus();
           }
         }
       });

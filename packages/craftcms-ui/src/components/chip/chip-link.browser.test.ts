@@ -160,14 +160,16 @@ it('draws the focus ring around the chip when its link has keyboard focus, where
 
 it('stops drawing the ring once the link loses focus', async () => {
   const {chip, box} = await linkedChip();
+  const resting = getComputedStyle(box).outline;
   document.getElementById('before')!.focus();
   await userEvent.tab();
+  expect(getComputedStyle(box).outline).not.toBe(resting);
 
   await userEvent.tab();
 
   expect(document.activeElement?.id).toBe('suffix');
   expect(chip.hasAttribute('data-link-focus-visible')).toBe(false);
-  expect(getComputedStyle(box).outlineStyle).not.toBe('solid');
+  expect(getComputedStyle(box).outline).toBe(resting);
 });
 
 it('doesn’t draw the link’s ring for a control in another slot', async () => {

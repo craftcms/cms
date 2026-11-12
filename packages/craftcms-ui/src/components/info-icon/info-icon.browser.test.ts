@@ -49,8 +49,15 @@ it('gives the button a target of at least 24×24 CSS px, all of which opens it',
   expect(box.width).toBeGreaterThanOrEqual(24);
   expect(box.height).toBeGreaterThanOrEqual(24);
 
-  await userEvent.click(button, {
-    position: {x: box.width - 2, y: box.height - 2},
-  });
-  await expect.poll(() => tooltip.open).toBe(true);
+  // Playwright measures `position` from inside the border, so these are the
+  // last pixel of the 24px box on the right and at the bottom.
+  for (const position of [
+    {x: button.clientWidth, y: button.clientHeight / 2},
+    {x: button.clientWidth / 2, y: button.clientHeight},
+  ]) {
+    await userEvent.click(button, {position});
+    await expect.poll(() => tooltip.open).toBe(true);
+    await userEvent.keyboard('{Escape}');
+    await expect.poll(() => tooltip.open).toBe(false);
+  }
 });

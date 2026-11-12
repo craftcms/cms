@@ -182,6 +182,7 @@ describe('autofocusField', () => {
         <input aria-label="Disabled" disabled>
         <input aria-label="Setup key" readonly>
         <input aria-label="Hidden" hidden>
+        <input aria-label="Invisible" style="visibility: hidden">
         <input type="checkbox" aria-label="Remember">
         <div class="prevent-autofocus"><input aria-label="Skipped"></div>
         <input aria-label="Code">
@@ -192,6 +193,20 @@ describe('autofocusField', () => {
         'aria-label'
       )
     ).toBe('Code');
+  });
+
+  it('ignores an invisible field container when finding the first field', () => {
+    document.body.innerHTML = `
+      <div>
+        <div class="field" style="visibility: hidden"><input aria-label="Invisible"></div>
+        <craft-field label="Name"><input aria-label="Name"></craft-field>
+      </div>`;
+
+    expect(
+      autofocusField(document.body.firstElementChild!)?.getAttribute(
+        'aria-label'
+      )
+    ).toBe('Name');
   });
 
   it('prefers a field marked autofocus', () => {
