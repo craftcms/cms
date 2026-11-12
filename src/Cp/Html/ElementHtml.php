@@ -489,9 +489,19 @@ readonly class ElementHtml
         }
         unset($item);
 
-        return ActionMenu::make()
+        $items = ActionMenu::make()
             ->menuItems([...$items, ...$this->nestedCardActionItems($element, $config, withActions: true)])
             ->getItems();
+
+        // Item IDs are often generated with `mt_rand()` and have done their job
+        // by now. Left in, they'd make the client recreate every item each
+        // time the same card is sent again, such as after every autosave.
+        foreach ($items as &$item) {
+            unset($item['id']);
+        }
+        unset($item);
+
+        return $items;
     }
 
     /**
