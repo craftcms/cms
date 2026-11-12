@@ -513,13 +513,15 @@
   --color-static-base-950: #161c23;
 }
 
-/* What's in a black card, (filled) chip, or badge is themed dark, so it holds
-   up against the dark fill. (The element itself keeps its own colors.) */
+/* What's in a black card, (filled) chip, badge, or tooltip is themed dark, so
+   it holds up against the dark fill. (The element itself keeps its own
+   colors.) */
 [data-theme='dark'],
 :where(
   craft-card[data-color='black'] > *,
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
-  craft-badge[fill='black'] > *
+  craft-badge[fill='black'] > *,
+  craft-tooltip > [slot='content'] > *
 ) {
   --color-gray-50: #3b4252;
   --color-gray-100: #535a69;

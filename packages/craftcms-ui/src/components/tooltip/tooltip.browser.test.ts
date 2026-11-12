@@ -1,6 +1,9 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
 import type CraftTooltip from './tooltip.js';
+import '../../styles/cp.css';
+import '../shortcut/shortcut.js';
 import './tooltip.js';
+import {contrast} from '../../../test/contrast';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -571,4 +574,24 @@ it('refers its invoker to content replaced while it was out of the document', as
   await after(0);
 
   expect(invoker.getAttribute('aria-describedby')).toBe('replacement');
+});
+
+it('themes what it holds dark, so key caps read against its fill in the light theme', async () => {
+  document.documentElement.dataset.theme = 'light';
+  document.body.innerHTML = `
+    <button id="invoker" type="button">Search</button>
+    <craft-tooltip for="invoker" invoker-relation="label">
+      <div>Search <craft-shortcut>K</craft-shortcut></div>
+    </craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.updateComplete;
+  const shortcut = tooltip.querySelector('craft-shortcut')!;
+  await shortcut.updateComplete;
+
+  const key = getComputedStyle(shortcut.shadowRoot!.querySelector('kbd')!);
+  const fill = getComputedStyle(tooltip.querySelector('[slot="content"]')!);
+
+  expect(
+    contrast(key.color, key.backgroundColor, fill.backgroundColor)
+  ).toBeGreaterThanOrEqual(4.5);
 });
