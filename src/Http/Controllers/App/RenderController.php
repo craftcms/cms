@@ -170,7 +170,7 @@ readonly class RenderController
             $id = $componentInfo['id'];
 
             $component = null;
-            if (is_a($componentType, Chippable::class, true)) {
+            if (is_a($componentType, Chippable::class, true) && is_callable([$componentType, 'get'])) {
                 $component = $componentType::get($id);
             } elseif (is_a($componentType, Volume::class, true)) {
                 $component = $this->volumes->getVolumeById((int) $id);

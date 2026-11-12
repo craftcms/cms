@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Entry\Data\EntryType as EntryTypeData;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Http\Controllers\App\RenderController;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Section\Data\Section as SectionData;
@@ -206,34 +209,37 @@ test('render components returns chip and menu item html for sections', function 
 ]);
 
 test('render components ignores overrides other than the name, handle, and description', function () {
-    $section = Section::factory()->create();
-    $iconPath = dirname(__DIR__, 4).'/_data/assets/files/craft-logo.svg';
+    $entryType = EntryType::factory()->create(['icon' => 'house']);
 
     $html = postJson(action([RenderController::class, 'components']), [
         'components' => [
             [
-                'type' => SectionData::class,
-                'id' => $section->id,
-                'instances' => [['showThumb' => true, 'overrides' => ['name' => 'Custom label', 'icon' => $iconPath]]],
+                'type' => EntryTypeData::class,
+                'id' => $entryType->id,
+                'instances' => [['overrides' => ['name' => 'Custom label', 'icon' => 'ftp://example.com/icon.svg']]],
             ],
         ],
-    ])->assertOk()->json('components.'.SectionData::class.'.'.$section->id.'.0');
+    ])->assertOk()->json('components.'.EntryTypeData::class.'.'.$entryType->id.'.0');
 
-    expect(new Crawler($html)->filter('craft-chip')->attr('data-label'))->toBe('Custom label')
-        ->and($html)->not->toContain('Symbols');
+    $chip = new Crawler($html)->filter('craft-chip');
+    expect($chip->attr('data-label'))->toBe('Custom label')
+        ->and($chip->filter('craft-icon[slot="icon"]')->attr('name'))->toBe('house');
 });
 
-test('render components rejects types that are not chippable', function () {
+test('render components rejects types that are not chippable', function (string $type) {
     postJson(action([RenderController::class, 'components']), [
         'components' => [
             [
-                'type' => Session::class,
+                'type' => $type,
                 'id' => 'foo',
                 'instances' => [[]],
             ],
         ],
     ])->assertBadRequest();
-});
+})->with([
+    'class with a static get() method' => [Session::class],
+    'interface extending Chippable' => [FieldInterface::class],
+]);
 
 test('render markdown validates required flavor', function () {
     postJson(action([RenderController::class, 'markdown']), [
