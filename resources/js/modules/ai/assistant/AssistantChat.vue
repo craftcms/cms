@@ -1278,8 +1278,8 @@
     border: var(--c-form-control-border-width) solid
       var(--c-form-control-border-color);
     border-radius: var(--c-radius-lg);
-    background-color: var(--c-surface-white);
-    box-shadow: var(--c-shadow-md);
+    background-color: var(--c-input-fill, var(--c-form-control-fill));
+    box-shadow: var(--c-input-shadow, 0 0 transparent);
   }
 
   .assistant-chat__card {
