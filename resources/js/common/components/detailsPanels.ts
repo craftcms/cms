@@ -8,6 +8,8 @@ export interface DetailsPanel {
   /** The heading's id, which names the panel and takes focus when it opens. */
   headingId: string;
   icon: string;
+  /** SVG markup shown in place of `icon`, such as a plugin's own icon. */
+  iconSvg?: string;
   /** Show the label's first letter instead of the icon. */
   initialIcon?: boolean;
   order?: number;

@@ -32,9 +32,10 @@ use CraftCms\Cms\Utility\Utilities\AiGuidance;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\View;
+use Illuminate\View\View;
 use Inertia\Inertia;
 use Inertia\Middleware;
 use Inertia\Support\Header;
@@ -50,11 +51,11 @@ use function CraftCms\Cms\currentUserElement;
 class HandleInertiaRequests extends Middleware
 {
     /**
-     * Marks that the `app` view composer has been bound for this request.
+     * Marks a request whose `app` root view should receive the HTML stack.
      *
-     * @see self::handle()
+     * @see self::compose()
      */
-    private const string APP_COMPOSER_BOUND = '_craft_app_view_composer_bound';
+    private const string RENDERS_ROOT_VIEW = '_craft_renders_root_view';
 
     #[Override]
     public function handle(Request $request, Closure $next)
@@ -68,32 +69,11 @@ class HandleInertiaRequests extends Middleware
         }
 
         /**
-         * Bound once per request, not once per run of this middleware.
-         *
-         * `headHtml()` and `bodyHtml()` drain as they render, and a composer
-         * bound twice fires twice against the same stack: the first call takes
-         * the assets, the second finds the stack empty and overwrites them with
-         * empty strings. That's not hypothetical — the Yii2 adapter's legacy
-         * action bridge re-dispatches through the router, so every middleware
-         * here runs a second time, and every bridged screen was shipping a
-         * document with no jQuery, Garnish or `cp.js` at all. Controls that
-         * delegate to legacy JS were inert as a result.
-         *
-         * The flag lives on the request because the bridge's internal request is
-         * a duplicate of this one and inherits its attributes, while a container
-         * binding would persist between requests under a long-lived worker and
-         * disable the composer for good after the first.
+         * The flag lives on the request because the Yii2 adapter's legacy action
+         * bridge re-dispatches a duplicate of this request, which inherits its
+         * attributes.
          */
-        if (! $request->attributes->getBoolean(self::APP_COMPOSER_BOUND)) {
-            $request->attributes->set(self::APP_COMPOSER_BOUND, true);
-
-            View::composer('app', function ($view) use ($htmlStack) {
-                $view->with([
-                    'headHtml' => $htmlStack->headHtml(),
-                    'bodyHtml' => $htmlStack->bodyHtml(),
-                ]);
-            });
-        }
+        $request->attributes->set(self::RENDERS_ROOT_VIEW, true);
 
         $response = parent::handle($request, $next);
 
@@ -116,6 +96,29 @@ class HandleInertiaRequests extends Middleware
         }
 
         return $response;
+    }
+
+    /**
+     * Passes the request's head and body HTML to the `app` root view.
+     *
+     * Registered once at boot by {@see ViewServiceProvider}, rather than per request: a
+     * long-lived worker such as Laravel Octane keeps the view factory between requests, so per-request
+     * composers would pile up, and earlier requests' composers would drain their stale stacks first.
+     * `headHtml()` and `bodyHtml()` drain as they render, so a second composer would also overwrite the
+     * assets with empty strings.
+     */
+    public function compose(View $view): void
+    {
+        if (! request()->attributes->getBoolean(self::RENDERS_ROOT_VIEW)) {
+            return;
+        }
+
+        $htmlStack = app(HtmlStack::class);
+
+        $view->with([
+            'headHtml' => $htmlStack->headHtml(),
+            'bodyHtml' => $htmlStack->bodyHtml(),
+        ]);
     }
 
     /**
@@ -242,6 +245,7 @@ class HandleInertiaRequests extends Middleware
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']
                         ?? false),
                     'aiAssistant' => Assistant::isAvailable(),
+                    'showPermissions' => app(EditUserScreens::class)->showPermissionsScreen(),
                     'showTokens' => app(EditUserScreens::class)->showTokensScreen($currentUser),
                     // Where the AI assistant’s guidance and skills are edited, for its chat to link to.
                     'personalGuidanceUrl' => Assistant::isAvailable() ? Url::cpUrl('myaccount/'.EditUserScreens::AI_ASSISTANT) : null,

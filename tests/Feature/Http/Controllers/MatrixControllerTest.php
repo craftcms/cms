@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
-use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\EntryTypes as EntryTypesService;
 use CraftCms\Cms\Entry\Events\EntryTypesResolving;
@@ -268,7 +267,7 @@ it('returns a failure response when duplicating a matrix entry fails validation'
     $this->fixture = MatrixControllerFixture::refresh($this->fixture);
     $source = MatrixControllerFixture::entries($this->fixture)->sole();
 
-    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends Elements
+    app()->instance(Elements::class, new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends Elements
     {
         public function duplicateElement(
             ElementInterface $element,

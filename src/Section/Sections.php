@@ -56,7 +56,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
 
@@ -220,7 +219,7 @@ class Sections
             ->whereNull('sections.dateDeleted')
             ->orderBy('sections.name');
 
-        if (Schema::hasColumn(Table::SECTIONS, 'minAuthors')) {
+        if (DB::getReadSchemaBuilder()->hasColumn(Table::SECTIONS, 'minAuthors')) {
             $query->addSelect('sections.minAuthors');
         }
 

@@ -195,9 +195,9 @@ export default css`
 
   /* Not on the page you're on: its selected fill is the state to show. A row
      with its flyout open looks hovered while the pointer is in the flyout. */
-  :host(:not([current]))
+  :host(:not([current], [appearance='tabs']))
     .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)),
-  :host(:not([current])) .nav-item--flyout-open {
+  :host(:not([current], [appearance='tabs'])) .nav-item--flyout-open {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
   }
 
@@ -482,5 +482,50 @@ export default css`
     font-size: var(--c-text-xs);
     font-weight: bold;
     line-height: 1;
+  }
+
+  :host([appearance='tabs']),
+  :host([appearance='tabs']) .nav-item {
+    border-radius: 0;
+  }
+
+  /* No gap, so the empty suffix column doesn't carry one and leave the bar
+     below wider than the label it marks. */
+  :host([appearance='tabs']) .nav-item {
+    gap: 0;
+    padding-inline: 0;
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  :host([appearance='tabs'][current]) .nav-item {
+    color: inherit;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  :host([appearance='tabs'][active]:not([current])) .nav-item::before {
+    display: none;
+  }
+
+  :host([appearance='tabs']) .nav-item::after {
+    content: '';
+    position: absolute;
+    inset-block-end: -1px;
+    inset-inline: 0;
+    block-size: calc(2rem / 16);
+    background-color: transparent;
+  }
+
+  :host([appearance='tabs'][current]) .nav-item::after {
+    background-color: var(
+      --c-nav-item-border-active,
+      var(--c-color-accent-fill-loud)
+    );
+  }
+
+  @media (forced-colors: active) {
+    :host([appearance='tabs'][current]) .nav-item::after {
+      background-color: Highlight;
+    }
   }
 `;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {actionClient, getActionUrl, t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
-  import {useForm} from '@inertiajs/vue3';
-  import {computed, provide, shallowRef, toRaw} from 'vue';
+  import {useForm, usePage} from '@inertiajs/vue3';
+  import {computed, provide, shallowRef, toRaw, watch} from 'vue';
   import type {
     ActionItem,
     ActionItemButton,
@@ -62,17 +62,20 @@
   const emit = defineEmits<{
     (event: 'change', change: UiChange, values: UiPayload['values']): void;
   }>();
+  const page = usePage();
+  const shownUi = shownPayload(() => props.ui);
+  const shownSidebarUi = shownPayload(() => props.sidebarUi);
   const inertiaForm = useForm({});
   const {advanceBaseline, errors, onMutation, renderer} = useInertiaUiRenderer(
     inertiaForm,
-    () => props.ui
+    () => shownUi.value
   );
   const {
     advanceBaseline: advanceSidebarBaseline,
     errors: sidebarErrors,
     onMutation: onSidebarMutation,
     renderer: sidebarRenderer,
-  } = useInertiaUiRenderer(inertiaForm, () => props.sidebarUi ?? null);
+  } = useInertiaUiRenderer(inertiaForm, () => shownSidebarUi.value ?? null);
   const elevatedBaseline = shallowRef(structuredClone(currentValues()));
 
   const save = props.submit
@@ -201,7 +204,7 @@
   }
 
   const isBareTable = computed(() => {
-    const [node, ...rest] = props.ui.nodes;
+    const [node, ...rest] = shownUi.value.nodes;
     return (
       rest.length === 0 &&
       node?.component === 'craft:admin-table' &&
@@ -260,11 +263,29 @@
 
   function currentValues(): UiPayload['values'] {
     return {
-      ...toRaw(renderer.value?.currentValues() ?? props.ui.values),
+      ...toRaw(renderer.value?.currentValues() ?? shownUi.value.values),
       ...toRaw(
-        sidebarRenderer.value?.currentValues() ?? props.sidebarUi?.values
+        sidebarRenderer.value?.currentValues() ?? shownSidebarUi.value?.values
       ),
     };
+  }
+
+  /**
+   * The payload to render, which passes over the one a failed save sends
+   * back. That page is built from the stored values, while the form keeps the
+   * submitted ones, which the nodes on screen were refreshed for as they
+   * changed.
+   */
+  function shownPayload<T extends UiPayload | undefined>(source: () => T) {
+    const shown = shallowRef(source());
+
+    watch(source, (payload) => {
+      if (Object.keys(page.props.errors ?? {}).length === 0) {
+        shown.value = payload;
+      }
+    });
+
+    return shown;
   }
 
   function normalize(value: UiValue): string {
@@ -284,7 +305,7 @@
         >
           <UiRenderer
             ref="renderer"
-            :payload="ui"
+            :payload="shownUi"
             :refresh="refreshUrl ? refresh : undefined"
             :errors="errors"
             @update:mutation="onMutation"
@@ -302,11 +323,11 @@
       </template>
     </CpContainer>
     <MetadataDetails :html="metadataHtml">
-      <template v-if="sidebarUi" #default>
+      <template v-if="shownSidebarUi" #default>
         <craft-field-group>
           <UiRenderer
             ref="sidebarRenderer"
-            :payload="sidebarUi"
+            :payload="shownSidebarUi"
             :errors="sidebarErrors"
             @update:mutation="onSidebarMutation"
           />

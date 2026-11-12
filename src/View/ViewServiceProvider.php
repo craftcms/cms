@@ -12,6 +12,7 @@ use CraftCms\Cms\Blade\Directives\PageLifecycleDirective;
 use CraftCms\Cms\Blade\Directives\PaginationDirective;
 use CraftCms\Cms\Blade\Directives\ResourceDirective;
 use CraftCms\Cms\Blade\Directives\ResponseDirective;
+use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\View\Events\ViewAssetsRendering;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -85,6 +86,8 @@ class ViewServiceProvider extends ServiceProvider
                 $view->with($key, $value);
             }
         });
+
+        View::composer('app', HandleInertiaRequests::class);
     }
 
     private function registerTemplateRoots(): void
@@ -93,13 +96,7 @@ class ViewServiceProvider extends ServiceProvider
             /** @var Factory $factory */
             $factory = $this->app->make(ViewFactory::class);
 
-            foreach (TemplateMode::get()->templateRoots() as $namespace => $roots) {
-                $factory->addNamespace($namespace, $roots);
-
-                foreach ($roots as $root) {
-                    $factory->prependLocation($root);
-                }
-            }
+            $this->app->make(TemplateRoots::class)->addToViewFactory($factory, TemplateMode::get());
         });
     }
 

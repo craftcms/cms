@@ -151,6 +151,14 @@
     return value.label ?? '';
   }
 
+  /** Names the row, as its selection checkbox and delete button do. */
+  function rowLabel(row: TableRow): string {
+    return (
+      cellText(row[props.node.props.columns[0]?.key ?? ''] ?? null) ||
+      String(row.id)
+    );
+  }
+
   function rowSearchText(row: TableRow): string {
     const text =
       row._search ??
@@ -416,7 +424,9 @@
             ) {
               actions.push(
                 h(DeleteButton, {
-                  label: row.original._deleteLabel,
+                  label:
+                    row.original._deleteLabel ??
+                    t('Delete {name}', {name: rowLabel(row.original)}),
                   disabled: deletePending.value,
                   disabledReason: row.original._deleteDisabledReason,
                   onClick: () => deleteRow(row.original),
@@ -524,7 +534,7 @@
     const message =
       row._deleteConfirmMessage ??
       props.node.props.deleteConfirmMessage ??
-      t('Are you sure?');
+      t('Are you sure you want to delete “{name}”?', {name: rowLabel(row)});
 
     if (!confirm(message)) {
       return;
@@ -543,7 +553,11 @@
     if (!ids.length || !url || deletePending.value) return;
 
     const message =
-      props.node.props.bulkDeleteConfirmMessage ?? t('Are you sure?');
+      props.node.props.bulkDeleteConfirmMessage ??
+      t(
+        'Are you sure you want to delete {num, number} {num, plural, =1{item} other{items}}?',
+        {num: ids.length}
+      );
 
     if (!confirm(message)) {
       return;
@@ -658,11 +672,7 @@
       :request-state="inertia.requestState.value"
       :page-size="node.props.perPage"
       :page-size-options="node.props.perPageOptions"
-      :get-row-label="
-        (row) =>
-          cellText(row[node.props.columns[0]?.key ?? ''] ?? null) ||
-          String(row.id)
-      "
+      :get-row-label="rowLabel"
       :get-search-text="rowSearchText"
       :get-row-status="(row) => row._status?.value"
       :get-sort-value="sortValue"

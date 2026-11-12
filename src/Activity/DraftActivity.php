@@ -16,8 +16,8 @@ use CraftCms\Cms\Element\Events\ElementPersisted;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
-use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Activities;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Context;
@@ -36,7 +36,7 @@ readonly class DraftActivity
     /** @var WeakMap<ElementInterface, DraftWrite> */
     private WeakMap $writes;
 
-    public function __construct(private Sites $sites)
+    public function __construct()
     {
         $this->writes = new WeakMap;
     }
@@ -122,8 +122,8 @@ readonly class DraftActivity
         }
 
         $activity = $write->isNew
-            ? new DraftCreatedActivityEvent(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId), changes: $changes)
-            : new DraftSaved(subject: $event->element, site: $this->sites->getSiteById($event->element->siteId), changes: $changes);
+            ? new DraftCreatedActivityEvent(subject: $event->element, site: Sites::getSiteById($event->element->siteId), changes: $changes)
+            : new DraftSaved(subject: $event->element, site: Sites::getSiteById($event->element->siteId), changes: $changes);
 
         Activities::record($activity);
     }
@@ -136,7 +136,7 @@ readonly class DraftActivity
 
         Activities::record(new DraftCreatedActivityEvent(
             subject: $event->canonical,
-            site: $this->sites->getSiteById($event->canonical->siteId),
+            site: Sites::getSiteById($event->canonical->siteId),
         ));
     }
 
@@ -147,7 +147,7 @@ readonly class DraftActivity
             return;
         }
 
-        $site = $this->sites->getSiteById($event->canonical->siteId);
+        $site = Sites::getSiteById($event->canonical->siteId);
         $release = Context::getHidden(ReleaseDraftPublished::ContextRelease);
 
         Activities::record($release === null

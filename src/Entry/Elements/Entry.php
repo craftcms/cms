@@ -2154,6 +2154,14 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 } catch (RuntimeException) {
                     return t('Unknown');
                 }
+            case 'link':
+                // Only live entries get routed
+                $entry = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if ($entry->getStatus() !== self::STATUS_LIVE) {
+                    return '';
+                }
+
+                return parent::attributeHtml($attribute);
             default:
                 return parent::attributeHtml($attribute);
         }

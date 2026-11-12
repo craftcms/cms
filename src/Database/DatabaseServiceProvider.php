@@ -68,6 +68,19 @@ class DatabaseServiceProvider extends ServiceProvider
             $this->isSqlite() => 'SQLite',
             default => 'PostgreSQL',
         });
+        /**
+         * Laravel's schema builder always introspects the write connection. Craft checks columns
+         * while serving requests, so this one introspects the read connection when the connection
+         * would read from it, which keeps those checks working when only the read replica is up.
+         */
+        Connection::macro('getReadSchemaBuilder', function (): SchemaBuilder {
+            /** @var Connection $this */
+            if ($this->getReadPdo() === $this->getRawPdo()) {
+                return $this->getSchemaBuilder();
+            }
+
+            return DB::connection($this->getName().'::read')->getSchemaBuilder();
+        });
         Connection::macro('supportsMb4', function () {
             if (Context::hasHidden('craft.supportsMb4')) {
                 return Context::getHidden('craft.supportsMb4');

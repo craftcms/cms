@@ -25,6 +25,7 @@ const state = vi.hoisted<{
     >
   >;
   setValue: ReturnType<typeof vi.fn>;
+  page: {props: {errors?: Record<string, string>}};
   change?: (change: UiChange, values: UiPayload['values']) => void;
   currentValues: UiPayload['values'];
   confirmElevation: ReturnType<typeof vi.fn>;
@@ -34,6 +35,7 @@ const state = vi.hoisted<{
   refresh: undefined,
   submit: vi.fn(),
   setValue: vi.fn(),
+  page: {props: {}},
   change: undefined,
   currentValues: {siteId: 42, name: 'Changed', live: '1'},
   confirmElevation: vi.fn(),
@@ -54,7 +56,7 @@ vi.mock('@craftcms/ui', async (importOriginal) => ({
 }));
 
 vi.mock('@inertiajs/vue3', () => ({
-  usePage: () => ({props: {}}),
+  usePage: () => state.page,
   setLayoutProps: state.layout,
   useForm: () => {
     let transform = (data: UiPayload['values']) => data;
@@ -88,7 +90,7 @@ vi.mock('@/modules/auth/elevated-session', () => ({
 
 vi.mock('@/modules/ui/UiRenderer.vue', () => ({
   default: defineComponent({
-    props: ['refresh'],
+    props: ['payload', 'refresh'],
     emits: ['change', 'update:mutation'],
     setup: (props, {emit, expose, slots}) => {
       state.refresh = props.refresh;
@@ -100,7 +102,12 @@ vi.mock('@/modules/ui/UiRenderer.vue', () => ({
       });
       onMounted(() => emit('update:mutation', {name: 'Changed'}));
 
-      return () => h('div', slots.name?.({value: 'Original'}));
+      return () =>
+        h(
+          'div',
+          {'data-values': JSON.stringify(props.payload.values)},
+          slots.name?.({value: 'Original'})
+        );
     },
   }),
 }));
@@ -123,6 +130,7 @@ beforeEach(() => {
   state.refresh = undefined;
   state.change = undefined;
   state.setValue.mockReset();
+  state.page = {props: {}};
   state.submit.mockClear();
   state.confirmElevation.mockReset();
   state.currentValues = {siteId: 42, name: 'Changed', live: '1'};
@@ -256,6 +264,43 @@ it('refreshes the ui through the configured endpoint', async () => {
     scope: [],
   });
   expect(result).toBe(refreshed);
+});
+
+it('keeps the payloads it shows when a page comes back with validation errors', async () => {
+  const pageProps = reactive({
+    ui: {...payload, values: {name: 'Original', hasUrls: false}},
+    sidebarUi: {...payload, values: {enabled: true}},
+    submit: {method: 'post' as const, url: '/settings/sites'},
+    refreshUrl: '/settings/sites/ui',
+  });
+  app = createApp({render: () => h(UiPage, pageProps)});
+  app.mount(container);
+  await nextTick();
+
+  const shownValues = () =>
+    [...container.querySelectorAll('[data-values]')].map((element) =>
+      JSON.parse(element.getAttribute('data-values')!)
+    );
+
+  state.page.props.errors = {name: 'Name cannot be blank.'};
+  pageProps.ui = {...payload, values: {name: 'Stored', hasUrls: false}};
+  pageProps.sidebarUi = {...payload, values: {enabled: false}};
+  await nextTick();
+
+  expect(shownValues()).toEqual([
+    {name: 'Original', hasUrls: false},
+    {enabled: true},
+  ]);
+
+  state.page.props.errors = {};
+  pageProps.ui = {...payload, values: {name: 'Saved', hasUrls: true}};
+  pageProps.sidebarUi = {...payload, values: {enabled: false}};
+  await nextTick();
+
+  expect(shownValues()).toEqual([
+    {name: 'Saved', hasUrls: true},
+    {enabled: false},
+  ]);
 });
 
 it('forwards control changes and external value updates', async () => {

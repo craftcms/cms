@@ -325,6 +325,11 @@
               }}</span>
               <span class="sr-only">{{ panel.label }}</span>
             </template>
+            <craft-icon
+              v-else-if="panel.iconSvg"
+              :label="panel.label"
+              v-html="panel.iconSvg"
+            />
             <craft-icon v-else :name="panel.icon" :label="panel.label" />
           </button>
         </craft-disclosure>
@@ -397,6 +402,10 @@
     color: var(--cp-chrome-icon-color);
     font-size: var(--c-text-base);
     cursor: pointer;
+  }
+
+  .details-panels__trigger :deep(craft-icon > svg) {
+    fill: currentColor;
   }
 
   .details-panels__trigger:not([aria-expanded='true']) {
