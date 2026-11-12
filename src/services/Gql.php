@@ -71,6 +71,7 @@ use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -1643,6 +1644,12 @@ class Gql extends Component
                 $groupIds = array_map(fn(UserGroup $group) => $group->id, $schema->user->getGroups());
                 sort($groupIds);
                 $cacheKey .= '::' . implode(',', $groupIds);
+            }
+
+            // Provisional drafts are swapped in for this user, so their results can't be shared with anyone else
+            $provisionalDraftUser = ElementHelper::getProvisionalDraftUser();
+            if ($provisionalDraftUser) {
+                $cacheKey .= "::provisional:$provisionalDraftUser->id";
             }
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
