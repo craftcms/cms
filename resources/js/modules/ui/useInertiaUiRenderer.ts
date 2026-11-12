@@ -72,21 +72,29 @@ export function useInertiaUiRenderer<
     })
   );
 
+  /** The mutation last applied to the form, serialized. */
+  let appliedMutation = '{}';
+
   /**
    * Applies the renderer's mutation to the Inertia form, and reports whether it
-   * carried anything.
+   * carried a change.
    *
    * The mutation *is* the difference against the values the server sent, so an
    * empty one means the screen matches the server — a control announcing itself
-   * as it's populated, say, rather than an edit. Callers that act on changes
-   * (autosave) read that from here rather than deciding for themselves, and
-   * `form.isDirty` says the same thing a tick later for callers that can wait.
+   * as it's populated, say, rather than an edit. One identical to the last is
+   * no edit either: a layout refresh re-emits the unsaved values it was asked
+   * to render. Callers that act on changes (autosave) read that from here
+   * rather than deciding for themselves, and `form.isDirty` says the same thing
+   * a tick later for callers that can wait.
    */
   function onMutation(mutation: UiPayload['values']): boolean {
+    const serialized = JSON.stringify(mutation);
+    const repeated = serialized === appliedMutation;
+    appliedMutation = serialized;
     replaceMutation(mutation);
     values.value = renderer.value?.currentValues() ?? values.value;
 
-    return Object.keys(mutation).length > 0;
+    return !repeated && Object.keys(mutation).length > 0;
   }
 
   function replaceMutation(mutation: UiPayload['values']): void {
@@ -153,6 +161,7 @@ export function useInertiaUiRenderer<
     // The renderer's reset emits an empty mutation of its own, but the bridge
     // has to hold up on its own when nothing is mounted to emit one.
     replaceMutation({});
+    appliedMutation = '{}';
     values.value = clone(toValue(payload)?.values ?? {});
     form.defaults();
   }
