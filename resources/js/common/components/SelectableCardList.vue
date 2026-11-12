@@ -262,7 +262,7 @@
             <slot name="label" :id="id" :index="index" />
           </div>
 
-          <div class="flex gap-1 items-center" data-card-actions>
+          <div class="flex items-center" data-card-actions>
             <slot name="actions" :id="id" :index="index" />
             <span
               v-if="sortable"
