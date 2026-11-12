@@ -423,7 +423,7 @@ it('marks the selected card with a thicker border and a bold label', async () =>
 });
 
 it('draws the selected illustration in blue, following the selection and the theme', async () => {
-  const BLUE_500 = 'rgb(62, 117, 242)';
+  const BLUE_500 = 'rgb(60, 117, 241)';
   const SLATE_500 = 'rgb(114, 125, 139)';
   const SLATE_500_DARK = 'rgb(144, 155, 169)';
   const {radios, inputs} = await renderCards('40rem');
