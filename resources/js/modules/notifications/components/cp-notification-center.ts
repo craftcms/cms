@@ -12,6 +12,7 @@ import '@craftcms/ui/components/badge-indicator/badge-indicator';
 import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/popover/popover';
+import '@craftcms/ui/components/tooltip/tooltip';
 import './cp-notification-list';
 
 type NotificationData = CraftCms.Cms.Cp.Data.NotificationData;
@@ -124,12 +125,12 @@ class CpNotificationCenter extends LitElement {
       <craft-popover placement="bottom-end" .distance=${8}>
         <craft-button
           slot="invoker"
+          id="notification-trigger"
           class="notification-trigger"
           type="button"
           size="small"
           variant="plain"
           icon
-          aria-label=${this.#triggerLabel}
         >
           <span slot="prefix">
             <craft-icon
@@ -169,6 +170,10 @@ class CpNotificationCenter extends LitElement {
           ></cp-notification-list>
         </div>
       </craft-popover>
+      <!-- Labels the icon-only button, as the Search button's tooltip does. -->
+      <craft-tooltip for="notification-trigger" invoker-relation="label">
+        ${this.#triggerLabel}
+      </craft-tooltip>
     `;
   }
 }
