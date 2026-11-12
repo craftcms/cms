@@ -68,6 +68,12 @@ class CpNotificationCenter extends LitElement {
     }
   `;
 
+  /**
+   * Passed to the trigger button's `flush`, so its icon can line up with an
+   * edge rather than its padding: `inline-end`, for one.
+   */
+  @property({reflect: true}) flush?: string;
+
   /** The page's notifications, which replace the shared ones. */
   @property({type: Array, attribute: false})
   set notifications(value: NotificationData[]) {
@@ -128,6 +134,7 @@ class CpNotificationCenter extends LitElement {
           type="button"
           size="small"
           variant="plain"
+          flush=${this.flush ?? nothing}
           icon
           aria-label=${this.#triggerLabel}
         >

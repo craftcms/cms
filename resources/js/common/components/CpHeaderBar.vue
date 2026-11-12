@@ -38,7 +38,12 @@
       : ['start', 'indicators', 'end', 'breadcrumbs']
   );
 
-  const {toggle: toggleSidebar, toggleButton} = useGlobalSidebar();
+  const {
+    toggle: toggleSidebar,
+    toggleButton,
+    collapsed: sidebarCollapsed,
+    width: sidebarWidth,
+  } = useGlobalSidebar();
 
   // The composable returns focus here when the floating sidebar closes, and it
   // can't reach into a template of its own to find the button.
@@ -81,7 +86,10 @@
 </script>
 
 <template>
-  <header class="cp-header-bar" data-theme="dark">
+  <header
+    class="cp-header-bar"
+    :style="{'--cp-header-sidebar-width': sidebarWidth}"
+  >
     <template v-for="section in sectionOrder" :key="section">
       <div class="cp-header-bar__start" v-if="section === 'start'">
         <craft-button
@@ -126,15 +134,18 @@
       </div>
 
       <div class="cp-header-bar__end" v-else-if="section === 'end'">
-        <div class="flex gap-lg items-center">
+        <div class="cp-header-bar__actions flex gap-lg items-center">
           <div class="flex gap-sm items-center">
             <CommandPaletteTrigger />
             <AssistantToggle v-if="hasAssistant" />
             <cp-notification-center
               :notifications.prop="notifications"
+              :flush="isLarge ? 'inline-end' : undefined"
             ></cp-notification-center>
           </div>
-          <UserMenu />
+          <div class="cp-header-bar__user">
+            <UserMenu />
+          </div>
         </div>
       </div>
 
@@ -143,12 +154,21 @@
         v-else-if="section === 'breadcrumbs'"
       >
         <div class="flex gap-md items-center">
-          <SystemInfo v-if="isLarge" />
+          <SystemInfo
+            v-if="isLarge"
+            class="cp-header-bar__system"
+            :class="{'cp-header-bar__system--collapsed': sidebarCollapsed}"
+          />
           <div
             class="flex flex-nowrap items-center gap-md"
             v-show="crumbs || hasContextMenu"
           >
-            <span class="text-xs text-(--c-text-quiet)" v-if="isLarge">/</span>
+            <span
+              v-if="isLarge && sidebarCollapsed"
+              class="cp-header-bar__separator"
+              aria-hidden="true"
+              >/</span
+            >
             <Breadcrumbs v-if="crumbs" :items="crumbs" />
             <div
               v-show="hasContextMenu"
@@ -167,22 +187,13 @@
 </template>
 
 <style scoped>
-  html:not([data-theme='dark']) .cp-header-bar {
-    --c-surface-sunken: color-mix(
-      in oklab,
-      var(--color-base-50),
-      var(--color-black) 10%
-    );
-  }
-
   .cp-header-bar {
-    --badge-border-color: var(--c-surface-sunken);
-    background-color: var(--c-surface-sunken);
-    padding-block-start: calc(var(--c-spacing-sm) - 1px);
+    --badge-border-color: var(--c-surface-page);
+    padding-block-start: var(--c-spacing-sm);
     padding-block-end: var(--c-spacing-sm);
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
     padding-inline-end: calc(
-      var(--c-spacing-sm) + var(--cp-scrollbar-width, 0px)
+      var(--c-spacing-md) + var(--cp-scrollbar-width, 0px)
     );
     min-height: calc(42rem / 16);
     display: grid;
@@ -193,17 +204,21 @@
       1fr auto auto;
     grid-template-rows: repeat(2, auto);
     align-items: center;
-    border-block-start: 1px solid rgba(0 0 0 / 0.25);
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     position: relative;
     z-index: var(--c-layer-header);
 
+    @media (width < var(--breakpoint-lg)) {
+      /* As much above the menu button as beside it. */
+      padding-block-start: var(--c-spacing-md);
+      border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    }
+
     @media (width >= var(--breakpoint-lg)) {
-      padding-inline: var(--c-spacing-md);
-      padding-inline-end: calc(
-        var(--c-spacing-md) + var(--cp-scrollbar-width, 0px)
-      );
+      /* Takes in the space down to the body panel, so its row sits centered
+         between the panel and the top of the window. */
+      min-height: calc(42rem / 16 + var(--cp-body-inset) - var(--c-spacing-sm));
+      padding-inline-start: var(--c-spacing-md);
+      padding-inline-end: var(--cp-scrollbar-width, 0px);
       gap: calc(var(--spacing) * 3);
       grid-template-areas: 'breadcrumbs indicators end';
       grid-template-rows: auto;
@@ -220,6 +235,20 @@
 
   .cp-header-bar__end {
     grid-area: end;
+  }
+
+  /* As wide as the details rail, so the avatar centers on its tabs and the
+     icons end where the details pane does. */
+  @media (width >= var(--breakpoint-lg)) {
+    .cp-header-bar__actions {
+      gap: 0;
+    }
+
+    .cp-header-bar__user {
+      display: flex;
+      justify-content: center;
+      inline-size: var(--cp-rail-width);
+    }
   }
 
   .cp-header-bar__indicators {
@@ -239,9 +268,34 @@
     margin: calc(var(--c-spacing-sm) * -1);
   }
 
+  /* The logo takes a nav icon's column, centered on it, so it holds still as
+     the sidebar collapses and the name starts where the collapsed content does. */
+  .cp-header-bar__system {
+    flex: none;
+    inline-size: calc(var(--cp-header-sidebar-width) - var(--c-spacing-md) * 2);
+    grid-template-columns: var(--c-size-touch-target) minmax(0, 1fr);
+  }
+
+  .cp-header-bar__system :deep(.system-info__icon) {
+    justify-self: center;
+    inline-size: var(--system-info-icon-size);
+  }
+
+  .cp-header-bar__system--collapsed {
+    inline-size: auto;
+    max-inline-size: calc(var(--cp-sidebar-width) - var(--c-spacing-md) * 2);
+  }
+
+  /* Matches craft-breadcrumb-item's separators. */
+  .cp-header-bar__separator {
+    color: var(--color-slate-300);
+    font-size: var(--c-text-base);
+    font-weight: var(--font-weight-light);
+  }
+
   .cp-header-bar__breadcrumbs
     :deep(craft-breadcrumb-item[aria-current='page']) {
-    --c-chip-text: var(--color-slate-700);
-    color: var(--color-slate-700);
+    --c-chip-text: var(--color-slate-800);
+    color: var(--color-slate-800);
   }
 </style>

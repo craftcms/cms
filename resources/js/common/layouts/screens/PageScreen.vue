@@ -614,7 +614,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     height: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    padding-block: var(--cp-body-inset);
+    padding-block: 0 var(--cp-body-inset);
   }
 
   .cp-body__panel {
@@ -881,8 +881,7 @@ Folds
     /* With the global nav docked, the panel still floats only while there'd be
        room for a details pane beside the content, on every page alike. Below
        that it goes edge to edge as it does below this breakpoint, keeping a
-       dividing line beside the sidebar. CpSidebar mirrors this width to drop
-       the inset from its own top padding. */
+       dividing line beside the sidebar. */
     @container cp-shell (width < 932px) {
       .cp-body {
         --cp-body-inset: 0px;
