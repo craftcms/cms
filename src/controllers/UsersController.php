@@ -1340,7 +1340,7 @@ class UsersController extends Controller
 
         if (
             !$user->getIsCredentialed() &&
-            $currentUser->can('administrateUsers') &&
+            $currentUser->can('moderateUsers') &&
             $this->request->getBodyParam('sendActivationEmail')
         ) {
             try {
