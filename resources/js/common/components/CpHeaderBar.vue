@@ -135,7 +135,7 @@
 
       <div class="cp-header-bar__end" v-else-if="section === 'end'">
         <div class="cp-header-bar__actions flex gap-lg items-center">
-          <div class="flex items-center">
+          <div class="cp-header-bar__icons flex items-center">
             <CommandPaletteTrigger />
             <AssistantToggle v-if="hasAssistant" />
             <cp-notification-center
@@ -297,5 +297,16 @@
     :deep(craft-breadcrumb-item[aria-current='page']) {
     --c-chip-text: var(--color-slate-800);
     color: var(--color-slate-800);
+  }
+
+  /* Plain buttons draw their icons in this, so it recolors them alone. */
+  .cp-header-bar__icons {
+    --c-color-neutral-on-quiet: var(--cp-chrome-icon-color);
+  }
+
+  .cp-header-bar__breadcrumbs
+    :deep(craft-breadcrumb-item > craft-icon[slot='prefix']) {
+    --c-icon-size: var(--cp-chrome-icon-size);
+    color: var(--cp-chrome-icon-color);
   }
 </style>

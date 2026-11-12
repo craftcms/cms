@@ -24,7 +24,7 @@ class CpNotificationCenter extends LitElement {
     }
 
     .notification-trigger {
-      --c-icon-size: 1em;
+      --c-icon-size: var(--cp-chrome-icon-size, 1em);
       position: relative;
     }
 

@@ -189,7 +189,7 @@
 
   .cp-sidebar :deep(craft-nav-item) {
     --c-icon-size: calc(12rem / 16);
-    --c-nav-item-icon-color: var(--color-slate-700);
+    --c-nav-item-icon-color: var(--cp-chrome-icon-color);
   }
 
   .cp-sidebar__header {
