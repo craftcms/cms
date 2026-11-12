@@ -134,7 +134,7 @@
       </div>
 
       <div class="cp-header-bar__end" v-else-if="section === 'end'">
-        <div class="cp-header-bar__actions flex gap-lg items-center">
+        <div class="cp-header-bar__actions flex gap-sm items-center">
           <div class="cp-header-bar__icons flex items-center">
             <CommandPaletteTrigger />
             <AssistantToggle v-if="hasAssistant" />
