@@ -257,7 +257,9 @@ export default class CraftCallout extends Paddable(LitElement, {
           </div>
         </div>
 
-        <div class="callout__action"><slot name="action"></slot></div>
+        ${hasSlotted(this, 'action')
+          ? html`<div class="callout__action"><slot name="action"></slot></div>`
+          : nothing}
       </div>
     `;
   }
