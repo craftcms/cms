@@ -8,7 +8,7 @@ import {
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import '../tooltip/tooltip.js';
+import '../info-icon/info-icon.js';
 import '../button/button.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import {FormControl, type AriaReferenceConfig} from '@src/mixins/FormControl';
@@ -722,25 +722,16 @@ export default class CraftField extends FormControl(LitElement) {
     }
 
     if (this.translatable) {
-      const tooltip = document.createElement('craft-tooltip');
-      tooltip.setAttribute('placement', 'bottom');
-      tooltip.textContent = this.translationDescription;
-      tooltip.setAttribute('data-craft-field-decoration', '');
-
-      const button = document.createElement('craft-button');
-      button.type = 'button';
-      button.slot = 'invoker';
-      button.variant = 'plain';
-      button.size = 'small';
-      button.icon = 'language';
-      button.setAttribute('flush', '');
-      button.className = 't9n-indicator prevent-autofocus';
-      button.setAttribute('aria-label', this.translationDescription);
+      const infoIcon = document.createElement('craft-info-icon');
+      infoIcon.icon = 'language';
+      infoIcon.label = this.translationDescription;
+      infoIcon.textContent = this.translationDescription;
+      infoIcon.className = 't9n-indicator prevent-autofocus';
+      infoIcon.setAttribute('data-craft-field-decoration', '');
       // Keeps the label it sits in from moving focus to the control.
-      button.addEventListener('click', (event) => event.preventDefault());
+      infoIcon.addEventListener('click', (event) => event.preventDefault());
 
-      tooltip.append(button);
-      decorations.append(tooltip);
+      decorations.append(infoIcon);
     }
   }
 }

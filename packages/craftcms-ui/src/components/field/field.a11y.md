@@ -16,7 +16,7 @@ The field supplies the label, instructions, notices, and errors around a slotted
 - [x] `label-sr-only` hides the label visually but keeps it as the control's accessible name. Per WCAG 4.1.2 (Name, Role, Value). Verified by `leaves no space above the input for a visually hidden label` in `field.browser.test.ts` and `visually hides the whole heading when the label is all it has` in `field.test.ts`.
 - [x] `instructions-sr-only` hides the instructions visually but keeps them in the input's accessible description, for a field whose placeholder repeats them, as a placeholder alone isn't reliably announced and disappears once there's text. Per WCAG 1.3.1 (Info and Relationships). Verified by `visually hides the instructions but keeps them in the description` in `field.test.ts`.
 - [ ] Field actions are grouped with `role="group"` and the name "Field actions". Per WCAG 1.3.1 (Info and Relationships). Not yet verified. `groups slotted actions` in `field.test.ts` checks the role but not the name.
-- [ ] The translation indicator sits inside the label node, so its name may be folded into the control's accessible name, and it puts a button inside a `<label>`. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
+- [ ] The translation indicator sits inside the label node, so its name may be folded into the control's accessible name, and it puts a button (in `craft-info-icon`'s shadow root) inside a `<label>`. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
 
 ### Forms and validation
 
@@ -37,9 +37,8 @@ The field supplies the label, instructions, notices, and errors around a slotted
 
 ### Keyboard and focus
 
-- [x] The translation indicator is a button named by `translation-description`. It's reachable with Tab, opens its tooltip on focus, closes it with Escape while keeping focus, and Tab then moves on to the control. Per WCAG 2.1.1 (Keyboard), 2.4.3 (Focus Order), 4.1.2 (Name, Role, Value) and 1.4.13 (Content on Hover or Focus). Verified by `exposes translation help on keyboard focus and dismisses it with Escape` in `field.browser.test.ts`.
-- [x] The translation indicator is at least 24×24 CSS px. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `exposes translation help on keyboard focus and dismisses it with Escape` in `field.browser.test.ts`.
-- [ ] The translation indicator's target doesn't overlap the target of an action beside it. Per WCAG 2.5.8 (Target Size (Minimum)). Known gap: beside a visible label, the heading's items sit 4px apart, so the translation indicator and a flush action button that follows it overlap by about 5px.
+- [x] The translation indicator is a `craft-info-icon` whose button is named by `translation-description`. It's reachable with Tab, opens its tooltip on Enter, closes it with Escape while keeping focus, and Tab then moves on to the control. Per WCAG 2.1.1 (Keyboard), 2.4.3 (Focus Order) and 4.1.2 (Name, Role, Value). Verified by `explains a translatable field in an info icon, opened and closed from the keyboard` in `field.browser.test.ts`.
+- [ ] The translation indicator is at least 24×24 CSS px, or has enough space around it. Per WCAG 2.5.8 (Target Size (Minimum)). Known gap: `craft-info-icon`'s button is only as big as its icon, about 16×13 CSS px, and beside a visible label a flush action button that follows it starts within 12px of its center.
 
 ### Visual
 

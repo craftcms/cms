@@ -215,7 +215,7 @@ export default class CraftFieldGroup extends LitElement {
           > craft-field-group
           craft-field[required]
           > [slot='label']
-          > [data-craft-field-decoration]:not(:has(craft-tooltip)) {
+          > [data-craft-field-decoration]:not(:has(craft-info-icon)) {
           display: contents !important;
         }
 

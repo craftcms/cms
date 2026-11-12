@@ -185,7 +185,13 @@ it.each([
   }
 );
 
-it('exposes translation help on keyboard focus and dismisses it with Escape', async () => {
+function translationButton(field: CraftField): HTMLElement {
+  return field
+    .querySelector('craft-info-icon')!
+    .shadowRoot!.querySelector('craft-button')!;
+}
+
+it('explains a translatable field in an info icon, opened and closed from the keyboard', async () => {
   const field = document.createElement('craft-field');
   field.label = 'Title';
   field.translatable = true;
@@ -194,23 +200,24 @@ it('exposes translation help on keyboard focus and dismisses it with Escape', as
   document.body.append(field);
   await field.updateComplete;
 
-  const tooltip = field.querySelector('craft-tooltip')!;
-  const indicator = tooltip.querySelector('craft-button')!;
+  const infoIcon = field.querySelector('craft-info-icon')!;
+  await infoIcon.updateComplete;
+  const button = translationButton(field);
+  const tooltip = infoIcon.shadowRoot!.querySelector('craft-tooltip')!;
 
-  await expect.element(indicator).toBeVisible();
-  expect(indicator.getBoundingClientRect().width).toBeGreaterThanOrEqual(24);
-  expect(indicator.getBoundingClientRect().height).toBeGreaterThanOrEqual(24);
-  await expect.element(indicator).toHaveAccessibleName('Translated per site.');
+  await expect.element(button).toBeVisible();
+  await expect.element(button).toHaveAccessibleName('Translated per site.');
   await userEvent.tab();
-  expect(document.activeElement).toBe(indicator);
+  expect(infoIcon.shadowRoot!.activeElement).toBe(button);
+  expect(tooltip.open).toBe(false);
+
+  await userEvent.keyboard('{Enter}');
   await expect.poll(() => tooltip.open).toBe(true);
-  await expect
-    .element(tooltip.querySelector<HTMLElement>('[slot="content"]')!)
-    .toHaveTextContent('Translated per site.');
+  expect(infoIcon).toHaveTextContent('Translated per site.');
 
   await userEvent.keyboard('{Escape}');
   await expect.poll(() => tooltip.open).toBe(false);
-  expect(document.activeElement).toBe(indicator);
+  expect(infoIcon.shadowRoot!.activeElement).toBe(button);
 
   await userEvent.tab();
   expect(document.activeElement).toBe(field.querySelector('input'));
@@ -231,14 +238,15 @@ it.each([
     field.innerHTML = control;
     document.body.append(field);
     await field.updateComplete;
-    const indicator = field.querySelector('craft-tooltip craft-button')!;
+    await field.querySelector('craft-info-icon')!.updateComplete;
+    const button = translationButton(field);
 
-    await userEvent.click(indicator);
-    expect(document.activeElement).toBe(indicator);
+    await userEvent.click(button);
+    expect(document.activeElement).toBe(field.querySelector('craft-info-icon'));
 
     await userEvent.keyboard('{Enter}');
     await userEvent.keyboard(' ');
-    expect(document.activeElement).toBe(indicator);
+    expect(document.activeElement).toBe(field.querySelector('craft-info-icon'));
 
     const label = field._labelNode!;
     await userEvent.click(label, {
