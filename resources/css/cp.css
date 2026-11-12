@@ -610,6 +610,75 @@ craft-field[data-highlighted] {
   height: 100%;
 }
 
+/* Gray elements (element cards, Matrix blocks and element chips with the gray
+   appearance color; not badges or other gray UI) take the page's blue-gray,
+   the surface behind the header bar and nav, instead of the neutral gray
+   palette, with slate borders, text and stronger steps, the blue-gray of the
+   chrome's text and lines, so they read as part of the same family. */
+:is(craft-card, craft-chip)[data-color='gray'] {
+  --c-color-fill-quiet: var(--c-surface-page);
+  --c-color-border-quiet: var(--c-color-slate-border-quiet);
+  --c-color-on-quiet: var(--c-color-slate-on-quiet);
+  --c-color-fill-normal: var(--c-color-slate-fill-normal);
+  --c-color-border-normal: var(--c-color-slate-border-normal);
+  --c-color-on-normal: var(--c-color-slate-on-normal);
+  --c-color-fill-loud: var(--c-color-slate-fill-loud);
+  --c-color-border-loud: var(--c-color-slate-border-loud);
+  --c-color-on-loud: var(--c-color-slate-on-loud);
+}
+
+/* Every element card and Matrix block gets a filled header bar, not only
+   colored ones. Core leaves the header of an uncolored card transparent, and a
+   white card's transparent over its white body, so only a border marks where
+   the element starts; the bar anchors each block and shows where it begins.
+
+   Each colored card publishes its header color, which inherits into what's
+   nested in it until another colored card sets its own. An uncolored card
+   doesn't set it, so it passes its container's on too. */
+craft-card[data-color]:not([data-color='white']) {
+  --cp-element-header-fill: var(--c-color-fill-quiet);
+}
+
+craft-card[data-color='white'] {
+  --cp-element-header-fill: var(--c-surface-page);
+}
+
+/* An uncolored card takes the header color of the element it's in. At the top
+   level, it's a shade of whatever is under it: the text color at 9%, which
+   darkens it in the light theme and lightens it in the dark one, by about as
+   much as a colored header stands off the panel. Its body stays transparent. */
+:is([data-matrix-block], [data-element-id], .element)
+  > craft-card:not([data-color]):not([active])::part(header) {
+  background-color: var(
+    --cp-element-header-fill,
+    color-mix(in srgb, var(--c-text-default) 9%, transparent)
+  );
+}
+
+/* A white card's header is the page surface, solid, as white is its base. */
+:is([data-matrix-block], [data-element-id], .element)
+  > craft-card[data-color='white']:not([active])::part(header) {
+  background-color: var(--c-surface-page);
+}
+
+/* Asset thumbnail tiles are a light shade of whatever they sit on, so they
+   read as their own layer rather than a bare border, and take the tint of a
+   colored block they're in. Over the white panel it's about as light as the
+   details pane's surface. In the dark theme that surface is the panel's own,
+   so they're left unfilled. */
+craft-chip[prefix-placement='block-start']:has(craft-thumbnail):not(
+  [selected]
+)::part(chip) {
+  background-color: color-mix(in srgb, var(--c-text-default) 3%, transparent);
+}
+
+[data-theme='dark']
+  craft-chip[prefix-placement='block-start']:has(craft-thumbnail):not(
+    [selected]
+  )::part(chip) {
+  background-color: transparent;
+}
+
 /* A nested element's "modified" status: a bar down the card's inline-start
    edge, as a modified field has. The status badge in the card's header holds
    its sr-only label. The bar is drawn on the card itself, as the header can be
