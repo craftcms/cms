@@ -35,6 +35,9 @@ use function CraftCms\Cms\t;
  */
 readonly class ApiController extends GqlController
 {
+    /** The header that GraphQL tokens can be sent in, alongside a user’s access token in the Authorization header. */
+    private const string GQL_TOKEN_HEADER = 'X-Craft-Gql-Token';
+
     public function __construct(
         private GeneralConfig $generalConfig,
         private Gql $gql,
@@ -208,7 +211,12 @@ readonly class ApiController extends GqlController
         $bearerToken = $request->bearerToken();
 
         if ($bearerToken && substr_count($bearerToken, '.') === 2) {
-            return $this->resolveUserSchema($request);
+            if (! $requestHeaders->has(self::GQL_TOKEN_HEADER)) {
+                return $this->resolveUserSchema($request);
+            }
+
+            // The X-Craft-Gql-Token header’s token determines the schema, so the access token only logs the user in
+            $this->authenticateUser($request);
         }
 
         $token = $this->resolveToken($request, $this->gql);
@@ -239,6 +247,17 @@ readonly class ApiController extends GqlController
      */
     private function resolveUserSchema(Request $request): GqlSchema
     {
+        $user = $this->authenticateUser($request);
+
+        return $this->gql->getSchemaForUser($user->asElement(), $user->tokenCan(Gql::SCOPE_WRITE));
+    }
+
+    /**
+     * Authenticates the request’s Passport access token, and acts as the user it was issued to for the rest of the
+     * request.
+     */
+    private function authenticateUser(Request $request): OAuthUser
+    {
         $user = $request->user(Gql::AUTH_GUARD);
 
         $resource = $this->oauthResources->get('graphql');
@@ -252,11 +271,27 @@ readonly class ApiController extends GqlController
         // Act as the user for the rest of the request, so permission checks and element queries apply to them
         craftAuth()->setUser($user);
 
-        return $this->gql->getSchemaForUser($user->asElement(), $user->tokenCan(Gql::SCOPE_WRITE));
+        return $user;
     }
 
     private function resolveToken(Request $request, Gql $gqlService): ?GqlToken
     {
+        // A GraphQL token in an X-Craft-Gql-Token header takes precedence, so requests can pair it with an access
+        // token in the Authorization header
+        $headerToken = $request->headers->get(self::GQL_TOKEN_HEADER);
+
+        if ($headerToken !== null) {
+            try {
+                $token = $gqlService->getTokenByAccessToken($headerToken);
+            } catch (InvalidArgumentException) {
+                $token = null;
+            }
+
+            abort_unless($token?->getIsValid(), 400, 'Invalid X-Craft-Gql-Token header');
+
+            return $token;
+        }
+
         $bearerToken = $request->bearerToken();
 
         if ($bearerToken) {

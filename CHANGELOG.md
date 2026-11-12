@@ -40,6 +40,9 @@
 - MCP upload routes now respond with JSON errors, rather than HTML pages, for clients that don’t ask for JSON, such as curl. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - The `craftCommand()` Twig function is now only available to control panel templates.
 - Fixed a bug where the System Messages utility suggested `user` variables for every message, including plugins’ messages that aren’t sent with a recipient user. ([#20623](https://github.com/craftcms/cms/pull/20623))
+- Fixed a bug where Preview never loaded in legacy element editors for users who could view the element but not save it. ([#20572](https://github.com/craftcms/cms/issues/20572))
+- GraphQL API requests can now pass a GraphQL token via an `X-Craft-Gql-Token` header. When the `Authorization` header also contains a user’s OAuth access token or personal access token, the GraphQL token determines the schema, and the user is logged in for the request, so queries with `withProvisionalDrafts` swap in their provisional drafts. ([#20587](https://github.com/craftcms/cms/issues/20587))
+- GraphQL result caches now vary by the logged-in user and their permissions, even when the schema comes from a GraphQL token. ([#20587](https://github.com/craftcms/cms/issues/20587))
 - GraphQL transform arguments now accept `immediately` again, which asks the asset transformer to generate the transform before returning its URL. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Asset transform drivers now receive whether the transform should be generated immediately in `$request->immediately`, including legacy image transformers. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - `CraftCms\Cms\Element\Elements::__construct()` no longer has a `$placeholders` argument. ([#20641](https://github.com/craftcms/cms/pull/20641))
