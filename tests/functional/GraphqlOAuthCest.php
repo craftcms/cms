@@ -268,6 +268,15 @@ class GraphqlOAuthCest
         $data = $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken]);
         $I->assertSame('Published', $data['data']['entry']['title']);
 
+        // The same goes for users authenticated by their session
+        $gql->flushCaches();
+        $I->amLoggedInAs($user);
+        $data = $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken]);
+        $I->assertSame('Unsaved changes', $data['data']['entry']['title']);
+        Craft::$app->getUser()->logout();
+        $data = $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken]);
+        $I->assertSame('Published', $data['data']['entry']['title']);
+
         // Without the GraphQL token, the schema is the user's own, which can't query entries
         $data = $this->request($I, $query, ['Authorization' => "Bearer $userToken"]);
         $I->assertNull($data['data']['entry'] ?? null);

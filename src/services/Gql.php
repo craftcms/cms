@@ -1647,7 +1647,7 @@ class Gql extends Component
             }
 
             // Provisional drafts are swapped in for this user, so their results can't be shared with anyone else
-            $provisionalDraftUser = ElementHelper::getProvisionalDraftUser();
+            $provisionalDraftUser = ElementHelper::getProvisionalDraftUser() ?? Craft::$app->getUser()->getIdentity();
             if ($provisionalDraftUser) {
                 $cacheKey .= "::provisional:$provisionalDraftUser->id";
             }
