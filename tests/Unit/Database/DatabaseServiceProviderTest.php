@@ -29,8 +29,7 @@ it('introspects the read connection unless the connection reads from the write c
 
     foreach (['read' => 'replicaColumn', 'write' => 'primaryColumn'] as $type => $column) {
         $databases[$type] = tempnam(sys_get_temp_dir(), 'craft-schema-');
-        $pdo = new PDO("sqlite:{$databases[$type]}");
-        $pdo->exec("create table schema_test (id integer, $column text)");
+        new PDO("sqlite:{$databases[$type]}")->exec("create table schema_test (id integer, $column text)");
     }
 
     config()->set('database.connections.split_schema_test', [
