@@ -103,6 +103,9 @@
           advanceBaseline();
           advanceSidebarBaseline();
         },
+        // The page a failed save sends back is built from the stored values,
+        // not the submitted ones the form still holds.
+        onError: () => renderer.value?.refresh?.(),
         passwordConfirmation: {
           required: () => {
             const elevatedFields = props.elevatedFields;

@@ -170,7 +170,18 @@
 
   watch(
     () => props.payload,
-    (refreshed) => reconcile(refreshed)
+    (refreshed) => {
+      reconcile(refreshed);
+      // The host's payload was rendered from the values it carries, which
+      // aren't necessarily the ones this form holds.
+      refresher.seed(
+        refreshed.scope,
+        valueState.groupCanonical(
+          valueAt(refreshed.values, refreshed.scope),
+          refreshed.scope
+        )
+      );
+    }
   );
 
   watch(
@@ -329,6 +340,21 @@
     resetObservedValues(source.nodes);
     emit('update:payload', payload.value);
     emitMutation();
+  }
+
+  /**
+   * Has the server render a refreshable UI again for the values it holds,
+   * unless that's what it was last rendered from.
+   *
+   * For a host that has handed over a payload built from other values: the
+   * page a failed save sends back is built from what the server has stored,
+   * while the form keeps what the user submitted, so the nodes that depend on
+   * those values no longer match them.
+   */
+  function refresh(): void {
+    if (payload.value.refreshable) {
+      refresher.schedule(payload.value.scope, payload.value.scope, 'discrete');
+    }
   }
 
   function mutation(includeGroups: string[][] = []): UiPayload['values'] {
@@ -532,6 +558,7 @@
     setSubmitting,
     currentValues,
     mutation,
+    refresh,
     resetValues,
     setValue,
     setValues,
