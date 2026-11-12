@@ -1,4 +1,8 @@
 import {isMobileBrowser, setFocusWithin} from '@craftcms/garnish';
+import {
+  composedContains,
+  containsFocus,
+} from '@craftcms/ui/utilities/focus-out';
 
 /**
  * Where focus goes when a dialog or slideout opens.
@@ -56,7 +60,7 @@ export function focusDialogStart(
 }
 
 /** Focuses a heading, which isn't focusable until it's given a `tabindex`. */
-export function focusHeading(heading: HTMLElement): void {
+function focusHeading(heading: HTMLElement): void {
   if (!heading.hasAttribute('tabindex')) {
     heading.tabIndex = -1;
   }
@@ -104,20 +108,6 @@ export function autofocusField(root: Element): HTMLElement | null {
 /** A field's outer element: the component, or legacy markup's wrapper. */
 const FIELD_CONTAINER_SELECTOR = 'craft-field, .field';
 
-/** Whether `node` is `ancestor` or inside it, crossing shadow roots. */
-function composedContains(ancestor: Element, node: Node): boolean {
-  for (
-    let current: Node | null = node;
-    current;
-    current = current instanceof ShadowRoot ? current.host : current.parentNode
-  ) {
-    if (current === ancestor) {
-      return true;
-    }
-  }
-  return false;
-}
-
 const FIELD_SELECTOR = [
   'input:not([type="hidden"], [type="button"], [type="submit"], [type="reset"], [type="image"], [type="checkbox"], [type="radio"], [type="file"], [type="range"], [type="color"])',
   'select',
@@ -155,9 +145,10 @@ function* composedDescendants(root: Element | ShadowRoot): Generator<Element> {
   }
 }
 
+/** Whether focus is on something inside `container`, not on the container itself. */
 function focusIsWithin(container: HTMLElement): boolean {
-  const active = document.activeElement;
-  return Boolean(active && active !== container && container.contains(active));
+  const root = container.getRootNode() as Document | ShadowRoot;
+  return containsFocus(container) && root.activeElement !== container;
 }
 
 function autofocusPreferred(): boolean {

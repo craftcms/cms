@@ -459,11 +459,11 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
    * Overridden by `CpScreenSlideout`, which focuses within its content.
    */
   setFocusWithin(): void {
-    focusDialogStart(this.container!, this.heading());
+    focusDialogStart(this.container!, this.findHeading());
   }
 
   /** The heading that names the slideout: the first `h1` or `h2` in it. */
-  heading(): HTMLElement | null {
+  findHeading(): HTMLElement | null {
     return this.container?.querySelector<HTMLElement>('h1, h2') ?? null;
   }
 
@@ -475,7 +475,7 @@ export class Slideout extends Base<SlideoutSettings> implements StackedPanel {
    * name it themselves.
    */
   labelByHeading(): void {
-    const heading = this.heading();
+    const heading = this.findHeading();
     if (!heading) {
       return;
     }

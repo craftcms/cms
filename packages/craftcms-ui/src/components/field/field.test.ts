@@ -162,8 +162,6 @@ describe('craft-field required indicator', () => {
   });
 
   it('says required once, through the label, and leaves the control unmarked', async () => {
-    // The label's visually hidden "Required" text announces it. A required
-    // state on the control as well would have screen readers say it twice.
     const element = await createField(
       {label: 'My field', required: ''},
       '<craft-input slot="input"></craft-input>'

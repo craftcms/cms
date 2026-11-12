@@ -1,15 +1,7 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {autofocusField, focusDialogStart} from './dialog-focus';
+import {standInCheckVisibility} from '@/test/check-visibility';
 
 const browser = vi.hoisted(() => ({mobile: false}));
 vi.mock('@craftcms/garnish', async (importOriginal) => ({
@@ -48,21 +40,7 @@ function nextFrame(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-// happy-dom doesn't implement `checkVisibility()`. Hidden, or inside
-// something hidden, stands in for not visible.
-const hadCheckVisibility = 'checkVisibility' in HTMLElement.prototype;
-beforeAll(() => {
-  if (!hadCheckVisibility) {
-    HTMLElement.prototype.checkVisibility = function (this: HTMLElement) {
-      return !this.closest('[hidden]');
-    };
-  }
-});
-afterAll(() => {
-  if (!hadCheckVisibility) {
-    delete (HTMLElement.prototype as Partial<HTMLElement>).checkVisibility;
-  }
-});
+standInCheckVisibility();
 
 beforeEach(() => {
   vi.stubGlobal('Craft', {});
@@ -123,7 +101,6 @@ describe('with autofocus preferred', () => {
   });
 
   it('focuses the first field, when it is the dialog’s first field', async () => {
-    // As in the address form.
     const {container, heading} = dialog(`
       <craft-field label="Label"><input aria-label="Label"></craft-field>
       <craft-field label="Country"><select aria-label="Country"><option>Canada</option></select></craft-field>`);
@@ -135,8 +112,6 @@ describe('with autofocus preferred', () => {
   });
 
   it('keeps focus on the heading when the first field to fill in comes later', async () => {
-    // As in the authenticator app setup: instructions and a read-only field
-    // come before the verification code.
     const {container, heading} = dialog(`
       <craft-field label="Setup Key"><input aria-label="Setup Key" readonly></craft-field>
       <p>Enter the code the app gives you.</p>

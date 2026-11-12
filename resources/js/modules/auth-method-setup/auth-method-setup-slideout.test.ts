@@ -1,20 +1,12 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {AuthMethodSetupSlideout} from './auth-method-setup-slideout';
+import {standInCheckVisibility} from '@/test/check-visibility';
+
+standInCheckVisibility();
 
 beforeEach(() => {
   vi.stubGlobal('Craft', {slideoutPosition: 'end'});
-  // happy-dom doesn't implement it. Hidden, or inside something hidden,
-  // stands in for not visible.
-  const proto: object = HTMLElement.prototype;
-  if (!('checkVisibility' in proto)) {
-    Object.defineProperty(proto, 'checkVisibility', {
-      configurable: true,
-      value(this: HTMLElement) {
-        return !this.closest('[hidden]');
-      },
-    });
-  }
 });
 
 afterEach(() => {

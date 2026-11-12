@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {computeAccessibleName} from 'dom-accessibility-api';
 import {Slideout} from './slideout';
+import {standInCheckVisibility} from '@/test/check-visibility';
 
 /** Contents like the authenticator app setup's: a link comes before the field. */
 const setupContents = `
@@ -20,20 +21,11 @@ function focusedName(): string {
 
 let slideout: Slideout | null = null;
 
+standInCheckVisibility();
+
 beforeEach(() => {
   // The CP's config, which every control panel page sets
   vi.stubGlobal('Craft', {slideoutPosition: 'end'});
-  // happy-dom doesn't implement it. Hidden, or inside something hidden,
-  // stands in for not visible.
-  const proto: object = HTMLElement.prototype;
-  if (!('checkVisibility' in proto)) {
-    Object.defineProperty(proto, 'checkVisibility', {
-      configurable: true,
-      value(this: HTMLElement) {
-        return !this.closest('[hidden]');
-      },
-    });
-  }
 });
 
 afterEach(() => {

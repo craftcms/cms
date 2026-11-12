@@ -14,6 +14,7 @@ import type {ScreenPageProps} from '@/common/composables/screen';
 import type {UiPayload} from '@/modules/ui/types';
 import {registerPreview} from '@/modules/elements/live-preview/previews';
 import type {LivePreviewController} from '@/modules/elements/live-preview/useLivePreview';
+import {standInCheckVisibility} from '@/test/check-visibility';
 
 const fetchSlideoutPage = vi.fn();
 
@@ -1021,20 +1022,9 @@ describe('SlideoutPanel', () => {
         : '';
     }
 
-    const hadCheckVisibility = 'checkVisibility' in HTMLElement.prototype;
-    beforeEach(() => {
-      // happy-dom doesn't implement it
-      if (!hadCheckVisibility) {
-        HTMLElement.prototype.checkVisibility = function (this: HTMLElement) {
-          return !this.closest('[hidden]');
-        };
-      }
-    });
+    standInCheckVisibility();
     afterEach(() => {
       vi.unstubAllGlobals();
-      if (!hadCheckVisibility) {
-        delete (HTMLElement.prototype as Partial<HTMLElement>).checkVisibility;
-      }
     });
 
     it('moves focus to its title, with "Disable autofocus" on', async () => {

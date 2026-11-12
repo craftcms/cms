@@ -4,6 +4,7 @@ import {createPopper, type Instance as PopperInstance} from '@popperjs/core';
 import {watchHover, type HoverWatcher} from '../../utilities/overlay-hover.js';
 import {announceOverlayState} from '../../utilities/overlay-events.js';
 import {claimEscape, isEscapeClaimed} from '../../utilities/overlay-escape.js';
+import {containsFocus} from '../../utilities/focus-out.js';
 import {
   hideLayer,
   layerStyles,
@@ -475,7 +476,7 @@ export default class CraftTooltip extends LitElement {
     // than reaching whatever holds the tooltip, such as a slideout that would
     // close on it.
     const node = this.#invoker?.node;
-    if (opening && this.open && node && !holdsFocus(node)) {
+    if (opening && this.open && node && !containsFocus(node)) {
       node.focus({preventScroll: true});
     }
   };
@@ -560,10 +561,4 @@ declare global {
   interface HTMLElementTagNameMap {
     'craft-tooltip': CraftTooltip;
   }
-}
-
-/** Whether `node`, or something inside it, has focus within its own tree. */
-function holdsFocus(node: HTMLElement): boolean {
-  const active = (node.getRootNode() as Document | ShadowRoot).activeElement;
-  return Boolean(active && (active === node || node.contains(active)));
 }

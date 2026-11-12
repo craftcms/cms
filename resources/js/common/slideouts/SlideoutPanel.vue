@@ -85,7 +85,7 @@
    * screen has loaded to supply one.
    */
   const titleId = computed(() => slideoutTitleId(props.instance.containerId));
-  const labelledBy = computed(() =>
+  const ariaLabelledBy = computed(() =>
     props.instance.component ? titleId.value : undefined
   );
 
@@ -306,7 +306,7 @@
       'slideout-panel--in-preview': previewEditor,
     }"
     tabindex="-1"
-    :aria-labelledby="labelledBy"
+    :aria-labelledby="ariaLabelledBy"
     :data-slideout-id="instance.id"
     :data-focus-scope="instance.id"
     :style="panelStyle"

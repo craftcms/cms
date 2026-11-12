@@ -74,10 +74,7 @@ export default css`
     overflow: clip;
   }
 
-  /* The focus ring for a link in the label, drawn around the whole chip. The
-     link's own ring would be clipped by the chip and its body, which clip to
-     keep the label's ellipsis; an element's own outline isn't. The link's
-     own ring is turned off meanwhile, so the two don't overlap. */
+  /* The label clips for its ellipsis, so a label link's ring is drawn on the chip and its own is turned off. */
   :host([data-link-focus-visible]) {
     --c-focus-outline-style: none;
   }

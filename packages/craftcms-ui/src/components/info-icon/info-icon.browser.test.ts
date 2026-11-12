@@ -49,7 +49,6 @@ it('gives the button a target of at least 24×24 CSS px, all of which opens it',
   expect(box.width).toBeGreaterThanOrEqual(24);
   expect(box.height).toBeGreaterThanOrEqual(24);
 
-  // Near the corner, well outside the icon itself.
   await userEvent.click(button, {
     position: {x: box.width - 2, y: box.height - 2},
   });
