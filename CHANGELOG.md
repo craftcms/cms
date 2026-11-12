@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where Yii HTTP exceptions, such as `yii\web\NotFoundHttpException`, thrown by legacy site controller actions resulted in a 500 error rather than their own status code. ([#20614](https://github.com/craftcms/cms/issues/20614), [#20617](https://github.com/craftcms/cms/pull/20617))
 - Fixed a bug where fields could be saved with the same handle as another field. ([#20600](https://github.com/craftcms/cms/issues/20600), [#20607](https://github.com/craftcms/cms/pull/20607))
 - Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
 - Fixed an infinite recursion that occurred when clearing the current user’s identity from a console request via `craft\console\User::setIdentity()`. ([#20602](https://github.com/craftcms/cms/issues/20602), [#20606](https://github.com/craftcms/cms/pull/20606))
