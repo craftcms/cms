@@ -68,11 +68,19 @@ class Elements
     private array $elementTypesById = [];
 
     public function __construct(
-        private readonly ElementPlaceholders $placeholders,
         private readonly ElementTypes $elementTypes,
         private readonly ElementCaches $elementCaches,
         private readonly Releases $releases,
     ) {}
+
+    /**
+     * Placeholder elements are request-scoped, so they're resolved for each call rather than injected into this
+     * singleton, which can outlive a request (such as under Laravel Octane).
+     */
+    private function placeholders(): ElementPlaceholders
+    {
+        return app(ElementPlaceholders::class);
+    }
 
     /**
      * Returns the class of an element with a given ID.
@@ -359,7 +367,7 @@ class Elements
         $siteId ??= Sites::getCurrentSite()->id;
 
         // See if we already have a placeholder for this element URI
-        $placeholder = $this->placeholders->getPlaceholderByUri($uri, $siteId);
+        $placeholder = $this->placeholders()->getPlaceholderByUri($uri, $siteId);
 
         if ($placeholder !== null) {
             return $placeholder;
@@ -928,7 +936,7 @@ class Elements
      */
     public function setPlaceholderElement(ElementInterface $element): void
     {
-        $this->placeholders->setPlaceholderElement($element);
+        $this->placeholders()->setPlaceholderElement($element);
     }
 
     /**
@@ -938,7 +946,7 @@ class Elements
      */
     public function getPlaceholderElements(): array
     {
-        return $this->placeholders->getPlaceholderElements();
+        return $this->placeholders()->getPlaceholderElements();
     }
 
     /**
@@ -952,7 +960,7 @@ class Elements
      */
     public function getPlaceholderElement(int $sourceId, int $siteId): ?ElementInterface
     {
-        return $this->placeholders->getPlaceholderElement($sourceId, $siteId);
+        return $this->placeholders()->getPlaceholderElement($sourceId, $siteId);
     }
 
     /**

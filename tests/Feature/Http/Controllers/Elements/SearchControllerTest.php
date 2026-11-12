@@ -13,7 +13,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementTypes;
-use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -305,7 +304,7 @@ it('passes the reference element context into element conditions', function () {
         }
     };
 
-    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $referenceEntry) extends Elements
+    $elements = new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $referenceEntry) extends Elements
     {
         public ?int $requestedElementId = null;
 
@@ -314,13 +313,12 @@ it('passes the reference element context into element conditions', function () {
         public array $requestedCriteria = [];
 
         public function __construct(
-            ElementPlaceholders $placeholders,
             ElementTypes $elementTypes,
             ElementCaches $elementCaches,
             Releases $releases,
             private readonly Entry $referenceEntry,
         ) {
-            parent::__construct($placeholders, $elementTypes, $elementCaches, $releases);
+            parent::__construct($elementTypes, $elementCaches, $releases);
         }
 
         public function getElementById(
