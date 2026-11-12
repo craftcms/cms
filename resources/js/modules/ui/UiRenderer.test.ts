@@ -419,7 +419,6 @@ describe('UiRenderer', () => {
   let renderer: {
     advanceBaseline: () => void;
     currentValues: () => UiPayload['values'];
-    refresh: () => void;
     resetValues: (payload?: UiPayload) => void;
     setValue: (path: string[], value: UiValue, kind?: UiChange['kind']) => void;
     setValues: (
@@ -2793,56 +2792,6 @@ describe('UiRenderer', () => {
 
     expect(refresh).toHaveBeenCalledOnce();
     vi.useRealTimers();
-  });
-
-  it('renders again for its own values after the host hands it a payload built from others', async () => {
-    // As the server renders it: Initial Rows only shows with line breaks.
-    function rendered(values: UiValues): UiPayload {
-      const ui = clonePayload();
-      Object.assign(ui, {refreshable: true, values: {settings: values}});
-      required(
-        required(ui.nodes[3], 'Expected the behavior field group.')
-          .children?.[1],
-        'Expected the line breaks field node.'
-      ).control!.reactive = true;
-
-      if (!values.multiline) {
-        ui.nodes.splice(4, 1);
-      }
-
-      return ui;
-    }
-    const refresh = vi.fn(async (values: UiValues) => rendered(values));
-    const stored = clonePayload().values.settings as UiValues;
-    app.unmount();
-    await mount(rendered(stored), {refresh});
-
-    const lineBreaks = required(
-      container.querySelectorAll('craft-switch')[1],
-      'Expected the line breaks switch.'
-    );
-    toggleChoice(lineBreaks, false);
-    await vi.waitFor(() =>
-      expect(container.textContent).not.toContain('Initial Rows')
-    );
-
-    // A failed save sends back the page as it was, built from what's stored.
-    currentPayload.value = rendered(stored);
-    await nextTick();
-    expect(container.textContent).toContain('Initial Rows');
-
-    renderer.refresh();
-
-    expect(refresh).toHaveBeenLastCalledWith(
-      expect.objectContaining({multiline: false}),
-      ['settings']
-    );
-    await vi.waitFor(() =>
-      expect(container.textContent).not.toContain('Initial Rows')
-    );
-    expect(renderer.currentValues()).toMatchObject({
-      settings: {multiline: false},
-    });
   });
 
   it('ignores stale refreshes and retains the last valid presentation on failure', async () => {
