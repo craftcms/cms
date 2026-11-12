@@ -38,6 +38,7 @@
 - Fixed a bug where global nav icons shifted when the sidebar was expanded or collapsed. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fixed a bug where folder breadcrumbs had extra space after each separator. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fixed a bug where the “Saved” status in element editors’ footers wasn’t vertically centered.
+- Fixed a bug where element editors with relation fields, such as the Author field, kept running code on every animation frame while idle. ([#20650](https://github.com/craftcms/cms/pull/20650))
 - The `craft:mcp:serve` MCP server now picks up project config changes made by other processes since its previous request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - MCP upload routes now respond with JSON errors, rather than HTML pages, for clients that don’t ask for JSON, such as curl. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - The `craftCommand()` Twig function is now only available to control panel templates.
