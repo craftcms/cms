@@ -170,7 +170,18 @@
 
   watch(
     () => props.payload,
-    (refreshed) => reconcile(refreshed)
+    (refreshed) => {
+      reconcile(refreshed);
+      // The host's payload was rendered from the values it carries, which
+      // aren't necessarily the ones this form holds.
+      refresher.seed(
+        refreshed.scope,
+        valueState.groupCanonical(
+          valueAt(refreshed.values, refreshed.scope),
+          refreshed.scope
+        )
+      );
+    }
   );
 
   watch(

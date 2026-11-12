@@ -13,9 +13,14 @@
   import '@craftcms/ui/components/radio-group/radio-group';
   import '@craftcms/ui/components/select/select';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject, nextTick, ref, watch} from 'vue';
+  import {computed, inject, nextTick, ref, useId, watch} from 'vue';
   import type {UiControlPayload, UiValue} from './types';
-  import {FieldLabelSrOnly, inputName} from './runtime';
+  import {
+    FieldLabelSrOnly,
+    inputName,
+    scopedId,
+    UiFieldIdScope,
+  } from './runtime';
 
   type ChoiceValue = boolean | number | string;
   type ChoicePresentation = CraftCms.Cms.Ui.Enums.ChoicePresentation;
@@ -105,6 +110,17 @@
     emitEvent(event, value);
   }
   const fieldLabelSrOnly = inject(FieldLabelSrOnly, undefined);
+  const id = useId();
+  const fieldIdScope = inject(UiFieldIdScope, undefined);
+
+  /**
+   * The name the radios post under. Radios with the same name in a form are
+   * one group, so where a field renders more than once in a form, such as on
+   * each side of the Compare screen, each copy's radios are scoped apart.
+   */
+  const radioName = computed(() =>
+    scopedId(fieldIdScope, inputName(props.control.path))
+  );
 
   /** Whether a button shows only its option's icon, named by the label. */
   function iconOnly(option: ChoiceOption): boolean {
@@ -233,9 +249,7 @@
     savedCustomRadioOption ? inputValue(savedCustomRadioOption.value) : ''
   );
   const customRadioSelected = ref(savedCustomRadioOption !== undefined);
-  const customRadioId = computed(
-    () => `ui-${props.control.path.join('-')}-custom`
-  );
+  const customRadioId = `${id}-custom`;
 
   function onCustomRadioChecked(): void {
     customRadioSelected.value = true;
@@ -322,7 +336,7 @@
   const addOptionButton = ref<HTMLElement | null>(null);
 
   function customOptionId(option: CustomOption): string {
-    return `ui-${props.control.path.join('-')}-custom-${option.key}`;
+    return `${id}-custom-${option.key}`;
   }
 
   /** Emits the checked options followed by the checked custom options' text. */
@@ -418,7 +432,7 @@
   }
 
   function optionId(index: number): string {
-    return `ui-${props.control.path.join('-')}-${index}`;
+    return `${id}-${index}`;
   }
 
   /**
@@ -651,7 +665,9 @@
     :appearance="groupAppearance()"
     :name="
       editable
-        ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
+        ? control.props.multiple
+          ? `${inputName(control.path)}[]`
+          : radioName
         : ''
     "
     :required="editable && required"
@@ -710,7 +726,9 @@
           :type="control.props.multiple ? 'checkbox' : 'radio'"
           :name="
             editable
-              ? `${inputName(control.path)}${control.props.multiple ? '[]' : ''}`
+              ? control.props.multiple
+                ? `${inputName(control.path)}[]`
+                : radioName
               : ''
           "
           :value="inputValue(option.value)"
@@ -819,7 +837,7 @@
           slot="input"
           :id="customRadioId"
           type="radio"
-          :name="editable ? inputName(control.path) : ''"
+          :name="editable ? radioName : ''"
           :value="customRadioText"
           :checked="customRadioSelected"
           :disabled="!editable"

@@ -1260,7 +1260,7 @@ class Users
 
         $cp = (
             Edition::get()->value < Edition::Pro->value ||
-            ($isCpRequest && $user->can('accessCp')) ||
+            (($isCpRequest || app()->runningInConsole()) && $user->can('accessCp')) ||
             (Cms::config()->headlessMode && ! Url::isAbsoluteUrl($fePath))
         );
         $scheme = Url::getSchemeForTokenizedUrl($cp);

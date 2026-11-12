@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Conditions\ElementCondition;
+use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\RadioButtons;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
@@ -16,6 +19,7 @@ use CraftCms\Cms\Support\Facades\Drafts;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User;
 use Pest\Browser\Api\AwaitableWebpage;
 
@@ -43,9 +47,10 @@ beforeEach(function () {
             new CustomField(config: ['fieldUid' => $programme->uid]),
         ]))
         ->create(['name' => 'Exhibition', 'handle' => 'exhibition']);
+    $this->entryType = $type;
     EntryTypes::refreshEntryTypes();
 
-    $section = Section::factory()
+    $section = $this->section = Section::factory()
         ->withEntryTypes($type)
         ->create(['name' => 'Exhibitions', 'handle' => 'exhibitions', 'enableVersioning' => true]);
 
@@ -114,8 +119,8 @@ it('compares a draft with the current entry from the Versions panel', function (
         ->click('role=button[name="Versions"]')
         ->click('role=link[name="Compare changes Extended run"]')
         ->assertSee('Compare “Light and Line”')
-        ->assertValue('role=group[name=/Compared with/] >> role=textbox[name=/^Summary/]', 'Opens in March')
-        ->assertValue('role=group[name=/Showing/] >> role=textbox[name=/^Summary/]', 'Opens in May');
+        ->assertValue('role=group[name=/compared with/i] >> role=textbox[name=/^Summary/]', 'Opens in March')
+        ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in May');
 
     assertNoJavaScriptErrors($page);
 });
@@ -126,13 +131,13 @@ it('copies a field’s value from the older version, and undoes it', function ()
     $page = visitCompare($draft)
         ->click('role=button[name="Copy Summary from Current"]')
         ->assertSee('Field value copied.')
-        ->assertValue('role=group[name=/Showing/] >> role=textbox[name=/^Summary/]', 'Opens in March')
+        ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in March')
         ->assertMissing('role=button[name="Copy Summary from Current"]');
 
     expect(eventually($page, fn () => savedDraft($draft)?->getFieldValue('summary'), 'Opens in March'))->toBe('Opens in March');
 
     $page->click('role=button[name="Undo"]')
-        ->assertValue('role=group[name=/Showing/] >> role=textbox[name=/^Summary/]', 'Opens in May')
+        ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in May')
         ->assertVisible('role=button[name="Copy Summary from Current"]')
         ->assertDontSee('Field value copied.');
 
@@ -144,8 +149,8 @@ it('copies a field’s value from the older version, and undoes it', function ()
 it('offers no copy once a table is edited back to the older version’s value, after its edit autosaved', function () {
     // The user's unsaved edits, compared with the current entry, which they don't differ from yet.
     $draft = Drafts::createDraft($this->entry, auth()->id(), provisional: true);
-    $cell = 'role=group[name=/Showing/] >> role=group[name=/^Programme/] >> role=textbox[name=/Event/]';
-    $copy = 'role=button[name="Copy Programme from Current"]';
+    $cell = 'role=group[name=/showing/i] >> role=group[name=/^Programme/] >> role=textbox[name=/Event/]';
+    $copy = 'role=button[name="Copy Programme from A"]';
 
     $page = visit(route('craft.cp.elements.compare', ['id' => $this->entry->id], false))
         ->assertPresent('main[id]')
@@ -160,6 +165,226 @@ it('offers no copy once a table is edited back to the older version’s value, a
         ->assertValue($cell, 'Opening talk')
         ->assertDontSee('Changed')
         ->assertMissing($copy);
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('copies a field’s value from the newer version into the older one, which is edited too', function () {
+    $draft = compareDraft('Opens in May');
+
+    $page = visitCompare($draft)
+        ->click('role=button[name="Copy Summary from Extended run"]')
+        ->assertSee('Field value copied.')
+        ->assertValue('role=group[name=/compared with/i] >> role=textbox[name=/^Summary/]', 'Opens in May')
+        ->assertMissing('role=button[name="Copy Summary from Extended run"]')
+        ->assertMissing('role=button[name="Copy Summary from Current"]');
+
+    $edits = fn () => EntryElement::find()->provisionalDrafts()->draftOf($this->entry)->status(null)->one()?->getFieldValue('summary');
+
+    expect(eventually($page, $edits, 'Opens in May'))->toBe('Opens in May');
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('compares two entries chosen in their index', function () {
+    $other = Entry::factory()->forSection($this->section)->forEntryType($this->entryType)
+        ->createElement(['title' => 'Shadow and Form']);
+    $other->setFieldValue('summary', 'Opens in June');
+    expect(Elements::saveElement($other))->toBeTrue();
+
+    $page = visitCp('content/entries/exhibitions')
+        ->click('#main >> role=checkbox[name="Select Light and Line"]')
+        ->click('#main >> role=button[name="Actions"] >> nth=-1')
+        ->assertMissing('role=link[name="Compare"]')
+        ->click('#main >> role=checkbox[name="Select Shadow and Form"]')
+        ->click('#main >> role=button[name="Actions"] >> nth=-1')
+        ->click('role=link[name="Compare"]')
+        ->assertSee('Compare Light and Line with Shadow and Form')
+        ->assertValue('role=group[name=/compared with/i] >> role=textbox[name=/^Summary/]', 'Opens in March')
+        ->assertValue('role=group[name=/showing/i] >> role=textbox[name=/^Summary/]', 'Opens in June')
+        ->assertVisible('role=button[name="Copy Summary from Light and Line"]')
+        ->assertVisible('role=button[name="Copy Summary from Shadow and Form"]');
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('names the sides by their letters when two entries share a title', function () {
+    $other = Entry::factory()->forSection($this->section)->forEntryType($this->entryType)
+        ->createElement(['title' => 'Light and Line']);
+    $other->setFieldValue('summary', 'Opens in June');
+    expect(Elements::saveElement($other))->toBeTrue();
+
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $this->entry->id, 'toId' => $other->id], false))
+        ->assertPresent('main[id]')
+        ->assertPresent('role=heading[name=/^A, compared with: Light and Line/]')
+        ->assertPresent('role=heading[name=/^B, showing: Light and Line/]')
+        ->assertVisible('role=button[name="Copy Summary from A"]')
+        ->assertVisible('role=button[name="Copy Summary from B"]');
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('saves the side a value was copied into with Cmd/Ctrl+S', function () {
+    $other = Entry::factory()->forSection($this->section)->forEntryType($this->entryType)
+        ->createElement(['title' => 'Shadow and Form']);
+    $other->setFieldValue('summary', 'Opens in June');
+    expect(Elements::saveElement($other))->toBeTrue();
+
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $this->entry->id, 'toId' => $other->id], false))
+        ->assertPresent('main[id]')
+        ->click('role=button[name="Copy Summary from Shadow and Form"]')
+        ->assertSee('Field value copied.')
+        ->keys('main[id]', ['Control+s']);
+
+    $saved = fn () => EntryElement::find()->id($this->entry->id)->status(null)->one()?->getFieldValue('summary');
+
+    expect(eventually($page, $saved, 'Opens in June'))->toBe('Opens in June');
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('marks a field a condition shows on the page changed when it differs from the other side’s', function () {
+    $venue = Field::factory()->create(['name' => 'Venue', 'handle' => 'venue', 'type' => PlainText::class]);
+    Fields::refreshFields();
+
+    // Venue shows only on tours.
+    $type = EntryType::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([
+            new EntryTitleField,
+            new CustomField(config: [
+                'fieldUid' => $venue->uid,
+                'elementCondition' => [
+                    'class' => ElementCondition::class,
+                    'elementType' => EntryElement::class,
+                    'conditionRules' => [[
+                        'class' => TitleConditionRule::class,
+                        'uid' => (string) Str::uuid(),
+                        'operator' => '**',
+                        'value' => 'Tour',
+                    ]],
+                ],
+            ]),
+        ]))
+        ->create(['name' => 'Event', 'handle' => 'event']);
+    EntryTypes::refreshEntryTypes();
+    $section = Section::factory()->withEntryTypes($type)->create(['name' => 'Events', 'handle' => 'events']);
+    $entries = array_map(function (array $values) use ($section, $type): EntryElement {
+        $entry = Entry::factory()->forSection($section)->forEntryType($type)->createElement(['title' => $values[0]]);
+        $entry->setFieldValue('venue', $values[1]);
+        expect(Elements::saveElement($entry))->toBeTrue();
+
+        return $entry;
+    }, [['Light and Line', 'Hall A'], ['Tour of Light', 'Hall B']]);
+
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $entries[0]->id, 'toId' => $entries[1]->id], false))
+        ->assertPresent('main[id]')
+        ->assertMissing('role=group[name=/compared with/i] >> role=textbox[name=/^Venue/]')
+        ->append('role=group[name=/compared with/i] >> role=textbox[name=/^Title/] >> visible=true', ' Tour')
+        ->assertVisible('.compare__row--changed >> role=group[name=/compared with/i] >> role=textbox[name=/^Venue/]');
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('doesn’t let one side be edited while the other saves, which would lose the edit', function () {
+    $other = Entry::factory()->forSection($this->section)->forEntryType($this->entryType)
+        ->createElement(['title' => 'Shadow and Form']);
+    expect(Elements::saveElement($other))->toBeTrue();
+
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $this->entry->id, 'toId' => $other->id], false))
+        ->assertPresent('main[id]');
+
+    // Which sides' Summary fields can be edited, as A's Save button is clicked and until the page reloads. B's stays
+    // an input, frozen rather than shown read-only, which would take its value out of the edits waiting to autosave.
+    $editable = $page->script('async () => {
+        const editable = () => [...document.querySelectorAll("input[name=\"fields[summary]\"]")]
+            .map((input) => input.closest("[data-compare-side]").dataset.compareSide + (input.closest("[inert]") ? " frozen" : ""))
+            .sort()
+            .join();
+        const seen = [editable()];
+        [...document.querySelectorAll(".compare-footer__actions craft-button")]
+            .find((button) => button.textContent.trim() === "Save")
+            .click();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        seen.push(editable());
+
+        return seen;
+    }');
+
+    expect($editable)->toBe(['from,to', 'from,to frozen']);
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('keeps each side’s radio buttons to that side', function () {
+    $tone = Field::factory()->create([
+        'name' => 'Tone',
+        'handle' => 'tone',
+        'type' => RadioButtons::class,
+        'settings' => ['options' => [
+            ['label' => 'Calm', 'value' => 'calm', 'default' => false],
+            ['label' => 'Bold', 'value' => 'bold', 'default' => false],
+            ['label' => 'Wry', 'value' => 'wry', 'default' => false],
+        ]],
+    ]);
+    Fields::refreshFields();
+
+    $type = EntryType::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([
+            new EntryTitleField,
+            new CustomField(config: ['fieldUid' => $tone->uid]),
+        ]))
+        ->create(['name' => 'Event', 'handle' => 'event']);
+    EntryTypes::refreshEntryTypes();
+    $section = Section::factory()->withEntryTypes($type)->create(['name' => 'Events', 'handle' => 'events']);
+    $entries = array_map(function (array $values) use ($section, $type): EntryElement {
+        $entry = Entry::factory()->forSection($section)->forEntryType($type)->createElement(['title' => $values[0]]);
+        $entry->setFieldValue('tone', $values[1]);
+        expect(Elements::saveElement($entry))->toBeTrue();
+
+        return $entry;
+    }, [['Light and Line', 'calm'], ['Shadow and Form', 'bold']]);
+
+    $a = 'role=group[name=/compared with/i]';
+    $b = 'role=group[name=/showing/i]';
+
+    // Both sides render the same field in the page's one form, so the radios mustn't share a group, or label targets.
+    $page = visit(route('craft.cp.elements.compare-elements', ['fromId' => $entries[0]->id, 'toId' => $entries[1]->id], false))
+        ->assertPresent('main[id]')
+        ->assertChecked("$a >> role=radio[name=\"Calm\"]")
+        ->assertChecked("$b >> role=radio[name=\"Bold\"]")
+        ->click("$b >> label:text-is(\"Wry\")")
+        ->assertChecked("$b >> role=radio[name=\"Wry\"]")
+        ->assertChecked("$a >> role=radio[name=\"Calm\"]")
+        ->assertNotChecked("$a >> role=radio[name=\"Wry\"]");
+
+    assertNoJavaScriptErrors($page);
+});
+
+it('keeps what keyboard focus moves to clear of the version menus in the stacked layout', function () {
+    $draft = compareDraft('Opens in May');
+
+    // Narrow enough to stack the sides, and short enough that the page scrolls.
+    $page = visitCompare($draft)->resize(600, 420);
+    $summary = 'document.querySelector("[data-compare-side=to] input[name=\"fields[summary]\"]")';
+    $shiftTab = fn () => $page->withKeyDown('Shift', fn ($page) => $page->withKeyDown('Tab', fn () => null));
+
+    // Shift+Tab from B's summary moves focus to the field's actions. With them scrolled just under the stuck version
+    // menus, still within the panel, the browser only scrolls them clear if it knows the menus are there.
+    $page->script("() => $summary.focus()");
+    $shiftTab();
+    $page->script("() => {
+        const panel = document.querySelector('.cp-body__panel');
+        panel.scrollBy(0, document.activeElement.getBoundingClientRect().top - panel.getBoundingClientRect().top - 5);
+        $summary.focus({preventScroll: true});
+    }");
+    $shiftTab();
+
+    $clearance = $page->script('() => Math.round(
+        document.activeElement.getBoundingClientRect().top -
+        document.querySelector(".compare__headers").getBoundingClientRect().bottom
+    )');
+
+    expect($clearance)->toBeGreaterThanOrEqual(0);
 
     assertNoJavaScriptErrors($page);
 });

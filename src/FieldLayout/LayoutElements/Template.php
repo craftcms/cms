@@ -33,7 +33,18 @@ use function CraftCms\Cms\template;
  */
 class Template extends BaseUiElement
 {
-    private static Environment $twig;
+    private static ?Environment $twig = null;
+
+    /**
+     * Forgets the Twig environment, whose extensions hold request-scoped services, so a long-lived worker creates a
+     * new one for each request.
+     *
+     * @internal
+     */
+    public static function forgetTwig(): void
+    {
+        self::$twig = null;
+    }
 
     public string $template = '';
 
@@ -150,12 +161,12 @@ class Template extends BaseUiElement
 
     private static function twig(): Environment
     {
-        if (! isset(self::$twig)) {
-            TemplateMode::with(TemplateMode::Site, function () {
-                self::$twig = Twig::create();
-                self::$twig->addExtension(new CpExtension);
-            });
-        }
+        self::$twig ??= TemplateMode::with(TemplateMode::Site, function (): Environment {
+            $twig = Twig::create();
+            $twig->addExtension(new CpExtension);
+
+            return $twig;
+        });
 
         return self::$twig;
     }

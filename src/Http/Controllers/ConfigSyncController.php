@@ -12,11 +12,9 @@ use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 use Override;
 use RuntimeException;
@@ -60,7 +58,7 @@ class ConfigSyncController extends BaseUpdaterController
     {
         $this->data = $this->initialData();
         $state = $this->realInitialState();
-        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+        $state['data'] = $this->hashedData();
 
         return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),

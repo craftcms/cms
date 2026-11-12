@@ -13,6 +13,7 @@ use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Mcp\CapabilityRegistry;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\StdioTransport;
+use CraftCms\Cms\ProjectConfig\ConfigStorage;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\Support\McpCapabilities\Example;
@@ -24,20 +25,26 @@ use Illuminate\Support\Facades\Notification;
 beforeEach(function (): void {
     Notification::fake();
 
-    $this->serve = function (string $user, array $messages): array {
-        $input = fopen('php://memory', 'r+');
-        fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
-            ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
-                'protocolVersion' => '2025-11-25',
-                'capabilities' => (object) [],
-                'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
-            ]],
-            ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
-            ...$messages,
-        ])));
+    $this->serve = function (string $user, array $messages, bool $modern = false): array {
+        $messages = $modern
+            ? array_map(static fn (array $message): array => array_merge_recursive($message, ['params' => ['_meta' => [
+                'io.modelcontextprotocol/protocolVersion' => '2026-07-28',
+                'io.modelcontextprotocol/clientCapabilities' => (object) [],
+            ]]]), $messages)
+            : [
+                ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+                    'protocolVersion' => '2025-11-25',
+                    'capabilities' => (object) [],
+                    'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+                ]],
+                ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+                ...$messages,
+            ];
+        $input = tmpfile();
+        fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, $messages)));
         rewind($input);
         $outputPath = tempnam(sys_get_temp_dir(), 'mcp-stdio');
-        app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen($outputPath, 'w')));
+        app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen($outputPath, 'w')));
 
         $this->artisan('craft:mcp:serve', ['--user' => $user])->assertSuccessful();
 
@@ -73,7 +80,7 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
         ->and($editorResponses['configuration_list']['error']['message'])->toBe('Tool not found: "configuration_list".');
 });
 
-it('attributes every message’s activity to the named user and the MCP origin', function (): void {
+it('attributes every message’s activity to the named user and the MCP origin', function (bool $modern): void {
     $user = User::query()->firstOrFail();
     $entry = Entry::factory()->createElement(['title' => 'Release notes']);
     $comment = static fn (string $id, string $markdown): array => [
@@ -83,7 +90,7 @@ it('attributes every message’s activity to the named user and the MCP origin',
         'params' => ['name' => 'activity_comments_create', 'arguments' => ['type' => 'entries', 'id' => $entry->id, 'markdown' => $markdown]],
     ];
 
-    $responses = ($this->serve)((string) $user->id, [$comment('first', 'First'), $comment('second', 'Second')]);
+    $responses = ($this->serve)((string) $user->id, [$comment('first', 'First'), $comment('second', 'Second')], $modern);
 
     $events = ActivityEvent::query()->eventTypes(CommentCreated::class)->get();
 
@@ -92,11 +99,11 @@ it('attributes every message’s activity to the named user and the MCP origin',
         ->and($events)->toHaveCount(2)
         ->and($events->pluck('actorId')->unique()->all())->toBe([$user->id])
         ->and($events->pluck('snapshots.origin')->all())->toBe(['MCP', 'MCP']);
-});
+})->with(['handshake era' => false, '2026-07-28 era' => true]);
 
 it('refuses to serve missing or inactive users', function (Closure $user, string $message): void {
     Edition::set(Edition::Pro);
-    app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, fopen('php://memory', 'r'), fopen('php://memory', 'w')));
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport(fopen('php://memory', 'r'), fopen('php://memory', 'w')));
 
     $this->artisan('craft:mcp:serve', ['--user' => $user()])
         ->expectsOutputToContain($message)
@@ -108,7 +115,7 @@ it('refuses to serve missing or inactive users', function (Closure $user, string
 ]);
 
 it('saves project config changes before responding, rather than when the server stops', function (): void {
-    $input = fopen('php://memory', 'r+');
+    $input = tmpfile();
     fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
         ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25',
@@ -122,18 +129,24 @@ it('saves project config changes before responding, rather than when the server 
     StdioTestOutput::$saved = [];
     stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
     $this->beforeApplicationDestroyed(fn () => stream_wrapper_unregister('stdio-test-output'));
-    app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen('stdio-test-output://', 'w')));
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen('stdio-test-output://', 'w')));
 
     $this->artisan('craft:mcp:serve', ['--user' => User::query()->where('admin', true)->firstOrFail()->username])->assertSuccessful();
 
     expect(StdioTestOutput::$saved['create'])->toBeTrue();
 });
 
-/** Records, as each response is written, whether the Archive site group has been saved yet. */
+/** Records each response, and whether the Archive site group had been saved when it was written. */
 class StdioTestOutput
 {
     /** @var array<string, bool> */
     public static array $saved = [];
+
+    /** @var array<string, array<string, mixed>> */
+    public static array $responses = [];
+
+    /** Called with each response's ID, once it has been written. */
+    public static ?Closure $onResponse = null;
 
     /** @var resource|null */
     public $context;
@@ -152,14 +165,21 @@ class StdioTestOutput
         while (($end = strpos($this->buffer, PHP_EOL)) !== false) {
             $line = substr($this->buffer, 0, $end);
             $this->buffer = substr($this->buffer, $end + strlen(PHP_EOL));
-            self::$saved[Json::decode($line)['id'] ?? ''] = DB::table('projectconfig')->where('path', 'like', 'siteGroups.%.name')->where('value', Json::encode('Archive'))->exists();
+            $response = Json::decode($line);
+            $id = $response['id'] ?? '';
+            self::$responses[$id] = $response;
+            self::$saved[$id] = DB::table('projectconfig')->where('path', 'like', 'siteGroups.%.name')->where('value', Json::encode('Archive'))->exists();
+
+            if (self::$onResponse !== null) {
+                (self::$onResponse)($id);
+            }
         }
 
         return strlen($data);
     }
 }
 
-it('sees sections added since an earlier message read element sources', function (): void {
+it('sees sections added since an earlier message read element sources', function (bool $modern): void {
     EntryElement::sources(ElementSources::CONTEXT_MODAL);
     $section = Section::factory()->create();
 
@@ -173,8 +193,42 @@ it('sees sections added since an earlier message read element sources', function
             'handle' => 'related',
             'settings' => ['sources' => ["section:$section->uid"]],
         ]]],
-    ]]);
+    ]], $modern);
 
     expect($responses['create']['result']['isError'])->toBeFalse()
         ->and($responses['create']['result']['structuredContent']['item']['settings']['sources'])->toBe(["section:$section->uid"]);
+})->with(['handshake era' => false, '2026-07-28 era' => true]);
+
+it('sees project config changes made by other processes since an earlier message', function (): void {
+    $get = static fn (string $id): array => ['jsonrpc' => '2.0', 'id' => $id, 'method' => 'tools/call', 'params' => ['name' => 'project_config_get', 'arguments' => ['path' => 'system.name']]];
+    $input = tmpfile();
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
+        ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => (object) [],
+            'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+        ]],
+        ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+        $get('before'),
+        $get('after'),
+    ])));
+    rewind($input);
+    StdioTestOutput::$responses = [];
+    StdioTestOutput::$onResponse = static function (string $id): void {
+        if ($id === 'before') {
+            DB::table('projectconfig')->where('path', 'system.name')->update(['value' => Json::encode('Renamed elsewhere')]);
+            app(ConfigStorage::class)->invalidate();
+        }
+    };
+    stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
+    $this->beforeApplicationDestroyed(function (): void {
+        StdioTestOutput::$onResponse = null;
+        stream_wrapper_unregister('stdio-test-output');
+    });
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen('stdio-test-output://', 'w')));
+
+    $this->artisan('craft:mcp:serve', ['--user' => User::query()->where('admin', true)->firstOrFail()->username])->assertSuccessful();
+
+    expect(StdioTestOutput::$responses['before']['result']['structuredContent']['value'])->not->toBe('Renamed elsewhere')
+        ->and(StdioTestOutput::$responses['after']['result']['structuredContent']['value'])->toBe('Renamed elsewhere');
 });

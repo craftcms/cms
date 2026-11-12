@@ -5,10 +5,17 @@
    * so a reply on its way carries on as the user moves between pages.
    */
   import {t} from '@craftcms/ui';
-  import {computed, nextTick, useTemplateRef, watch} from 'vue';
+  import {
+    computed,
+    defineAsyncComponent,
+    nextTick,
+    shallowRef,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import ScreenPanel from '@/common/components/ScreenPanel.vue';
   import {screenPanels} from '@/common/composables/screenPanels';
-  import AssistantChat from './AssistantChat.vue';
+  import type AssistantChatComponent from './AssistantChat.vue';
   import AssistantConversationMenu from './AssistantConversationMenu.vue';
   import AssistantHistory from './AssistantHistory.vue';
   import {
@@ -19,9 +26,47 @@
   } from './assistant';
   import {useCrafty} from './crafty';
 
+  // The chat brings the AI client and the Markdown renderer, so it loads the
+  // first time the panel opens rather than with every page that lists it.
+  const AssistantChat = defineAsyncComponent(
+    () => import('./AssistantChat.vue')
+  );
+
   const panel = useAssistantPanel();
   const threadId = useAssistantThread();
-  const chat = useTemplateRef<InstanceType<typeof AssistantChat>>('chat');
+  const chat =
+    useTemplateRef<InstanceType<typeof AssistantChatComponent>>('chat');
+
+  /**
+   * Whether the panel has been open on this screen. The chat stays mounted
+   * from then on, so a reply on its way carries on while it's folded.
+   */
+  const started = shallowRef(false);
+  watch(
+    panel.isOpen,
+    (isOpen) => {
+      started.value ||= isOpen;
+    },
+    {immediate: true}
+  );
+
+  // Opening the panel before the chat had loaded left focus on its heading,
+  // so the message box takes it once it's there.
+  watch(chat, async (component) => {
+    const headingId = screenPanels.panels.value.find(
+      ({id}) => id === ASSISTANT_PANEL_ID
+    )?.headingId;
+
+    if (!component || !headingId) {
+      return;
+    }
+
+    await nextTick();
+
+    if (document.activeElement?.id === headingId) {
+      component.focus();
+    }
+  });
   const history =
     useTemplateRef<InstanceType<typeof AssistantHistory>>('history');
 
@@ -131,6 +176,7 @@
     :initial-focus="() => chat?.focusTarget()"
   >
     <AssistantChat
+      v-if="started"
       ref="chat"
       :key="threadId"
       :thread-id="threadId"
@@ -138,12 +184,14 @@
     />
     <template #header-actions>
       <AssistantHistory
+        v-if="started"
         ref="history"
         :thread-id="threadId"
         @select="switchTo"
         @new="newChat"
       />
       <AssistantConversationMenu
+        v-if="started"
         :thread-id="threadId"
         :title="history?.title ?? ''"
         :stored="!!history?.stored"

@@ -95,6 +95,7 @@ readonly class UtilitiesController
             'contentHtml' => $content->html,
             'toolbarHtml' => $toolbar->html,
             'footerHtml' => $footer->html,
+            'contentMaxWidth' => $class::contentMaxWidth(),
             // Picked up by `AppLayout`'s `useAppendHtml()`, which appends and
             // executes these against the document on mount and on subsequent
             // Inertia visits.

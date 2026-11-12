@@ -14,7 +14,7 @@ use CraftCms\Cms\User\Models\User;
 use Laravel\Passport\Passport;
 
 it('manages fields through MCP while preserving omitted attributes and merging settings', function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $call = fn (string $operation, array $arguments) => McpRequest::send($this, 'tools/call', [
@@ -67,7 +67,7 @@ it('manages fields through MCP while preserving omitted attributes and merging s
 });
 
 it('redacts only sensitive settings in MCP responses', function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     app(ProjectConfig::class)->set('plugins.mcpTest.settings', ['apiKey' => 'sk_live_123', 'region' => 'us-east-1']);
@@ -96,7 +96,7 @@ it('redacts only sensitive settings in MCP responses', function (): void {
 });
 
 it('accepts the settings it returned for a Matrix field when updating it through MCP', function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $entryType = EntryType::factory()->create();

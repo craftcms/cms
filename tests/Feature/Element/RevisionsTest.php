@@ -6,11 +6,14 @@ use CraftCms\Cms\Element\Events\ElementRevertingToRevision;
 use CraftCms\Cms\Element\Events\RevertedToRevision;
 use CraftCms\Cms\Element\Events\RevisionCreated;
 use CraftCms\Cms\Element\Events\RevisionCreating;
+use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Tests\TestClasses\Element\TestRevisionableElement;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
@@ -81,4 +84,25 @@ it('can revert an element to a revision', function () {
 
     Event::assertDispatchedOnce(ElementRevertingToRevision::class);
     Event::assertDispatchedOnce(RevertedToRevision::class);
+});
+
+it('saves revisions for any element type that has revisions', function () {
+    Date::setTestNow('2026-10-01 12:00:00');
+    $model = ElementModel::factory()->title('Original title')->create(['type' => TestRevisionableElement::class]);
+    $element = TestRevisionableElement::find()->id($model->id)->one();
+
+    Date::setTestNow('2026-10-01 13:00:00');
+    $element->title = 'Updated title';
+    expect(Elements::saveElement($element))->toBeTrue();
+
+    $revisions = TestRevisionableElement::find()
+        ->revisionOf($element)
+        ->status(null)
+        ->orderBy('num')
+        ->all();
+
+    expect($revisions)->toHaveCount(2)
+        ->and($revisions[0]->title)->toBe('Original title')
+        ->and($revisions[0]->revisionNotes)->toStartWith('Revision from ')
+        ->and($revisions[1]->title)->toBe('Updated title');
 });

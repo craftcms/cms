@@ -287,6 +287,7 @@ it('gives the model a tool’s structured content, or describes the content it c
 ]);
 
 it('searches craftcms.com’s docs without asking for approval, offering its tools from the cache on later turns', function () {
+    cache()->forget('craftcms-mcp-tools');
     Http::fake(['craftcms.com/mcp' => static function (HttpRequest $request) {
         $message = $request->data();
 
@@ -318,6 +319,7 @@ it('searches craftcms.com’s docs without asking for approval, offering its too
 });
 
 it('goes without craftcms.com’s tools while craftcms.com can’t be reached', function () {
+    cache()->forget('craftcms-mcp-tools');
     Http::fake(['craftcms.com/mcp' => Http::failedConnection()]);
 
     expect(array_filter(array_keys(offeredTools()), static fn (string $name): bool => str_starts_with($name, 'craftcms_')))->toBe([]);

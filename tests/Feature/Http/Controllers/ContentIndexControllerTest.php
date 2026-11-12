@@ -74,6 +74,20 @@ it('includes table-row capabilities for page bulk actions', function () {
         );
 });
 
+it('includes the field layout IDs of table rows that can be compared', function () {
+    $fixture = EntryModel::factory()
+        ->withField('compareText', PlainText::class)
+        ->createElementWithFields();
+    $entry = $fixture->element;
+
+    get(route('craft.cp.content.index', ['page' => 'entries', 'viewMode' => 'table']))->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('data.0.id', $entry->id)
+            ->where('data.0.capabilities.comparable', true)
+            ->where('data.0.fieldLayoutId', $entry->getFieldLayout()->id)
+        );
+});
+
 it('renders page inline inputs only for explicitly editable table rows the user can save', function () {
     $fixture = EntryModel::factory()
         ->withField('inlineText', PlainText::class, value: 'Before save')

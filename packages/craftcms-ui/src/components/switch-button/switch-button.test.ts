@@ -59,9 +59,10 @@ describe('craft-switch-button', () => {
   });
 
   it('reflects indeterminate so the stylesheet can center the thumb', async () => {
-    const element = await createSwitchButton({indeterminate: ''});
+    const element = await createSwitchButton();
+    element.indeterminate = true;
+    await element.updateComplete;
 
-    expect(element.indeterminate).toBe(true);
     expect(element.hasAttribute('indeterminate')).toBe(true);
   });
 });

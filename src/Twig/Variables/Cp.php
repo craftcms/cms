@@ -354,6 +354,16 @@ class Cp extends Component
     }
 
     /**
+     * The control panel's JavaScript config, which `_layouts/base` writes into its document as `window.Craft`.
+     *
+     * @return array<string, mixed>
+     */
+    public function config(): array
+    {
+        return \CraftCms\Cms\Cp\Cp::config()->all();
+    }
+
+    /**
      * The layout `_layouts/cp` should extend for this render.
      *
      * `_layouts/basecp.twig` — the document — unless the response layer has
@@ -365,6 +375,20 @@ class Cp extends Component
     public function screenShell(): string
     {
         return app(LegacyScreenFragments::class)->layout();
+    }
+
+    /**
+     * Whether this render is handing its fragments to the Inertia shell rather
+     * than building a document of its own.
+     *
+     * What the shell draws for itself, the screen leaves out — its save
+     * controls above all, which the shell renders in the content footer.
+     *
+     * @see LegacyScreenFragments
+     */
+    public function collectsScreenFragments(): bool
+    {
+        return app(LegacyScreenFragments::class)->enabled();
     }
 
     /**

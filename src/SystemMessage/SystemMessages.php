@@ -91,18 +91,15 @@ class SystemMessages
      * Returns the Twig variables a message can use, as name => label pairs.
      *
      * The message's own `variables` (whatever its mailer passes) come first,
-     * followed by the ones every message gets: the recipient, the sender, and
-     * the system and site names.
+     * followed by the ones every message gets: the sender, and the system and
+     * site names. Messages rendered with a recipient `user` list its
+     * `user.*` properties among their own variables.
      *
      * @return array<string, string>
      */
     public function getTemplateVariables(SystemMessage $message): array
     {
         return ($message->variables ?? []) + [
-            'user.friendlyName' => t('Recipient name'),
-            'user.name' => t('Recipient full name'),
-            'user.email' => t('Recipient email'),
-            'user.username' => t('Recipient username'),
             'fromName' => t('Sender name'),
             'fromEmail' => t('Sender email'),
             'systemName' => t('System name'),

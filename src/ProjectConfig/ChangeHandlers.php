@@ -18,6 +18,8 @@ class ChangeHandlers
     /** @var list<array{event: string, pattern: string, depth: int, handler: callable, data: mixed}> */
     private array $handlers = [];
 
+    private bool $sorted = true;
+
     /** @var list<array{event: ConfigEvent, handler: callable}> */
     private array $deferred = [];
 
@@ -33,13 +35,18 @@ class ChangeHandlers
             'data' => $data,
         ];
 
-        // Make sure the event handlers are sorted from least-to-most specific.
-        usort($this->handlers, fn (array $a, array $b): int => $a['depth'] <=> $b['depth']);
+        $this->sorted = false;
     }
 
     /** @param Closure(string, ConfigEvent): void $parentEvent */
     public function dispatch(ConfigEvent $event, Closure $parentEvent): void
     {
+        if (! $this->sorted) {
+            // Make sure the event handlers are sorted from least-to-most specific.
+            usort($this->handlers, fn (array $a, array $b): int => $a['depth'] <=> $b['depth']);
+            $this->sorted = true;
+        }
+
         foreach ($this->handlers as $registration) {
             if (! $event instanceof $registration['event']) {
                 continue;

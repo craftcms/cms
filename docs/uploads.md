@@ -17,7 +17,7 @@ return GeneralConfig::create()
 
 - `maxUploadFileSize` limits the complete file, independently of PHP’s per-request limit.
 - `tempAssetUploadDisk` selects the Laravel disk used for temporary Assets and user photos.
-- `uploadSessionDisk` selects the Laravel disk where upload sessions stage incoming bytes. Laravel S3 disks receive bytes directly from the browser; other disks receive chunks through PHP.
+- `uploadSessionDisk` selects the Laravel disk where upload sessions stage incoming bytes. Laravel S3 disks receive bytes directly from the browser; other disks receive chunks through PHP. It defaults to the local `craft-tmp` disk, so sites that run on more than one server must set it to a disk that every server shares.
 - `uploadChunkSize` defaults to 8 MiB for PHP uploads, capped by `post_max_size`. Lower it if your proxy or web server has a smaller request limit. S3 uses Uppy’s default part sizes: at least 5 MiB, increasing as needed to stay within 10,000 parts.
 - `uploader` optionally selects a registered transport driver. By default, Craft chooses S3 multipart for Laravel S3 disks and tus for other disks.
 - `uploadSessionDuration` defaults to 24 hours of inactivity. Craft garbage collection removes expired uploads.
@@ -189,7 +189,7 @@ Custom uploaders implement the same contract; no protocol-specific interfaces or
 
 Uploaders are cached by name. Keep upload-specific state on the session and resolve its disk through `Filesystems::disk($session->disk)`. Keep provider credentials on the server.
 
-Craft handles session ownership and expiry; Uppy handles transfer retries and progress. The built-in tus endpoint supports HEAD, PATCH, termination, and expiration. Craft creates sessions through its JSON endpoints, so the tus creation extension is not exposed. The selected handler authorizes the destination and processes the completed file. The control panel exposes its native picker through `Craft.Uploaders.Uploader`. Core modules import `Uploader` from `resources/js/modules/uploader/uploader.ts`. Its constructor receives an `HTMLElement` and plain `UploaderSettings`; file inputs, drop zones, and paste zones accept native elements or arrays of elements. Completion and progress use the `on` callbacks.
+Craft handles session ownership and expiry; Uppy handles transfer retries and progress. The built-in tus endpoint supports HEAD, PATCH, termination, and expiration. Craft creates sessions through its JSON endpoints, so the tus creation extension is not exposed. The selected handler authorizes the destination and processes the completed file. Plugins import the control panel's native picker as `Uploader` from `@craftcms/cp`, and the Yii2 adapter also exposes it to legacy scripts as `Craft.Uploaders.Uploader`. Core modules import `Uploader` from `resources/js/modules/uploader/uploader.ts`. Its constructor receives an `HTMLElement` and plain `UploaderSettings`; file inputs, drop zones, and paste zones accept native elements or arrays of elements. Completion and progress use the `on` callbacks.
 
 Legacy uploader subclasses, filesystem-specific picker overrides, and jQuery upload events are no longer supported. Integrations customize file transfers through the backend uploader contract and `Uploads.registerTransport()`.
 

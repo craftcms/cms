@@ -68,7 +68,7 @@ it('notes control panel endpoints, endpoints both servers share, and missing OAu
     actingAs(User::find()->one());
 
     if ($keys) {
-        $key = openssl_pkey_new(['private_key_bits' => 2048]);
+        $key = passportKey();
         openssl_pkey_export($key, $privateKey);
         config()->set('passport.private_key', $privateKey);
         config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
@@ -91,7 +91,7 @@ it('notes control panel endpoints, endpoints both servers share, and missing OAu
 ]);
 
 it('sends requests to a shared endpoint by whether they carry a bearer token', function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     openssl_pkey_export($key, $privateKey);
     config()->set('passport.private_key', $privateKey);
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
@@ -259,7 +259,7 @@ it('discovers plugin capabilities in settings and requires approval before servi
 
 it('applies Craft permissions to plugin capabilities on the authenticated server', function (): void {
     app(CapabilityRegistry::class)->register(Example::class);
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = UserModel::query()->firstOrFail();
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');

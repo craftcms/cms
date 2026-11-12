@@ -43,10 +43,14 @@ test('index is forbidden when edition is not above team', function () {
     Edition::set(Edition::Solo);
 
     get(cp_url('myaccount/permissions'))->assertForbidden();
+    get(cp_url('myaccount/preferences'))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.showPermissions', false));
 
     Edition::set(Edition::Pro);
 
-    get(cp_url('myaccount/permissions'))->assertOk();
+    get(cp_url('myaccount/permissions'))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.currentUser.showPermissions', true));
 });
 
 it('can store permissions and groups', function () {

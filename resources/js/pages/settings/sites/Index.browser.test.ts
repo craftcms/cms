@@ -101,7 +101,7 @@ function mount(readOnly = false) {
     perPageOptions: [50, 100, 250],
     moveToPageUrl: null,
     emptyMessage: 'No sites exist yet.',
-    createLabel: 'New Site',
+    createLabel: 'New site',
     createUrl: readOnly ? null : '/admin/settings/sites/new?groupId=7',
     createMenuItems: null,
     createActionInPageHeader: true,
@@ -221,10 +221,10 @@ it('retains group rename and creation dialogs while hiding mutations in read-onl
   await page.getByRole('button', {name: 'Site group actions'}).click();
   await page
     .elementLocator(menu)
-    .getByText('Rename Group', {exact: true})
+    .getByText('Rename group', {exact: true})
     .click();
   await expect
-    .element(page.getByRole('dialog', {name: 'Rename Group'}))
+    .element(page.getByRole('dialog', {name: 'Rename group'}))
     .toBeVisible();
   await expect
     .element(page.getByRole('textbox', {name: 'Group Name'}))

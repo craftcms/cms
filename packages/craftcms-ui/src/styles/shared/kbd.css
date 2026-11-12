@@ -1,0 +1,19 @@
+kbd {
+  display: inline-block;
+  box-sizing: border-box;
+  min-inline-size: 1.75em;
+  padding-block: 0;
+  padding-inline: 0.4em;
+  font-family: var(--c-font-body);
+  font-size: 0.85em;
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  color: inherit;
+  background-color: var(--c-color-neutral-fill-quiet);
+  border: 1px solid var(--c-color-neutral-border-quiet);
+  border-block-end-width: 2px;
+  border-radius: var(--c-radius-sm);
+  box-shadow: var(--c-shortcut-shadow, var(--c-shadow-2xs));
+}

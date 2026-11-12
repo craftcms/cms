@@ -700,7 +700,7 @@ it('centers a truncated label on its capitals without clipping its descenders', 
     .shadowRoot!.querySelector('.cp-chip')!
     .getBoundingClientRect();
   const context = document.createElement('canvas').getContext('2d')!;
-  context.font = style.font;
+  context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
   const capHeight = context.measureText('H').actualBoundingBoxAscent;
   const range = document.createRange();
   range.selectNodeContents(document.getElementById('text')!);

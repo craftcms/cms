@@ -338,6 +338,21 @@ export default css`
     line-height: 1;
   }
 
+  /* An xsmall button's own icon is half its height rather than 0.8em, so it
+     sits a whole number of pixels inside the borders (3px in a 16px button).
+     0.8em would put it a fraction of a pixel in, which 1x screens round off
+     center. Keyed on the content rather than \`[icon]\`, which isn't there
+     when \`icon\` is set as a property. */
+  :host([size~='xsmall']) .button-content--icon-only craft-icon {
+    --c-icon-size: calc(var(--_height) / 2);
+  }
+
+  /* The icon is 1.25em wide and 1em tall (see craft-icon). */
+  :host([size~='xsmall'][icon]:empty) {
+    --_flush-inline: calc(var(--_height) * 3 / 16);
+    --_flush-block: calc(var(--_height) / 4);
+  }
+
   /*
   Variants (appearance × palette)
    */
@@ -356,7 +371,10 @@ export default css`
 
   :host([variant~='primary']:hover),
   :host([variant~='danger']:hover),
-  :host([variant~='solid']:hover) {
+  :host([variant~='solid']:hover),
+  :host([variant~='primary'][slot='invoker'][aria-expanded='true']),
+  :host([variant~='danger'][slot='invoker'][aria-expanded='true']),
+  :host([variant~='solid'][slot='invoker'][aria-expanded='true']) {
     background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 5)
@@ -387,7 +405,8 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([variant~='fill']:hover) {
+  :host([variant~='fill']:hover),
+  :host([variant~='fill'][slot='invoker'][aria-expanded='true']) {
     background-color: hsl(
       from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 5)
@@ -415,7 +434,16 @@ export default css`
   :host([variant~='outline']:not(:disabled):not(.loading):hover),
   :host([variant~='dashed']:not(:disabled):not(.loading):hover),
   :host([variant~='danger-plain']:not(:disabled):not(.loading):hover),
-  :host([variant~='plain']:not(:disabled):not(.loading):hover) {
+  :host([variant~='plain']:not(:disabled):not(.loading):hover),
+  /* A menu or popover's button keeps its hover state while it's open. */
+  :host(
+    :is(
+        [variant~='outline'],
+        [variant~='dashed'],
+        [variant~='danger-plain'],
+        [variant~='plain']
+      )[slot='invoker'][aria-expanded='true']
+  ) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
@@ -526,7 +554,8 @@ export default css`
   }
 
   :host([variant~='plain'][inherit]:not(:disabled):not(.loading):active),
-  :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)) {
+  :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)),
+  :host([variant~='plain'][inherit][slot='invoker'][aria-expanded='true']) {
     color: inherit;
   }
 

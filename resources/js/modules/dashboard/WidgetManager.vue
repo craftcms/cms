@@ -46,7 +46,7 @@
       role="region"
       aria-labelledby="widget-settings-heading"
     >
-      <h2 id="widget-settings-heading" class="text-sm mb-md">
+      <h2 id="widget-settings-heading" class="cp-h4 mb-md">
         {{ t('Widget Settings') }}
       </h2>
       <craft-empty

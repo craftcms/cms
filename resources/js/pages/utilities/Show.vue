@@ -14,10 +14,16 @@
     contentHtml?: string;
     toolbarHtml?: string;
     footerHtml?: string;
+    contentMaxWidth?: boolean | string;
     viewData?: unknown;
   }>();
 
-  useAppLayout(() => ({title: props.title}));
+  // Only set when the utility opts in, so a utility's own component can still
+  // constrain the content through `useAppLayout()`.
+  useAppLayout(() => ({
+    title: props.title,
+    ...(props.contentMaxWidth ? {contentMaxWidth: props.contentMaxWidth} : {}),
+  }));
 
   const content = useTemplateRef<HTMLElement>('content');
   const footer = useTemplateRef<HTMLElement>('footer');

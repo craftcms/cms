@@ -1,5 +1,5 @@
-import {Uploader} from '@/modules/uploader/uploader';
-import {UploadError} from '@/upload-client';
+import type {Uploader} from '@/modules/uploader/uploader';
+import {UploadError} from '@/upload-request';
 import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {BaseElementSelectInput} from '@/modules/element-select-input/base-element-select-input';
 import {IntervalManager} from '@/modules/interval-manager/interval-manager';
@@ -29,6 +29,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
   progressBar: CraftProgressBar | null = null;
   #progressAnnouncer: IntervalManager | null = null;
   #progressShade: HTMLElement | null = null;
+  #destroyed = false;
 
   constructor(
     settings?: ConstructorParameters<typeof BaseElementSelectInput>[0]
@@ -63,6 +64,7 @@ export class AssetSelectInput extends BaseElementSelectInput {
   }
 
   override destroy(): void {
+    this.#destroyed = true;
     this.#progressAnnouncer?.stop();
     this.#progressAnnouncer = null;
     this.uploader?.destroy();
@@ -187,8 +189,6 @@ export class AssetSelectInput extends BaseElementSelectInput {
       options.allowedKinds = [this.settings.criteria.kind].flat();
     }
 
-    this.uploader = new Uploader(this.container, options);
-
     const params: Record<string, unknown> = {fieldId: this.settings.fieldId};
     if (this.settings.sourceElementId) {
       params.elementId = this.settings.sourceElementId;
@@ -196,7 +196,17 @@ export class AssetSelectInput extends BaseElementSelectInput {
     if (this.settings.criteria.siteId) {
       params.siteId = this.settings.criteria.siteId;
     }
-    this.uploader.setParams(params);
+
+    // Uppy loads with the first Assets field that can upload, rather than with
+    // every control panel page.
+    void import('@/modules/uploader/uploader').then(({Uploader}) => {
+      if (this.#destroyed) {
+        return;
+      }
+
+      this.uploader = new Uploader(this.container, options);
+      this.uploader.setParams(params);
+    });
   }
 
   override enableAddElementsBtn(): void {

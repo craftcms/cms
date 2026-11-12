@@ -47,7 +47,54 @@ export const DeleteButton = defineAsyncComponent(
   () => import('./modules/admin-table/components/DeleteButton.vue')
 );
 
+/**
+ * Renders a server-built `HtmlFragment` (HTML plus its head and body assets),
+ * so a plugin's page can host HTML from template hooks or other server code.
+ */
+export const HtmlFragmentRenderer = defineAsyncComponent(
+  () => import('./common/components/HtmlFragmentRenderer.vue')
+);
+
+/**
+ * A screen's details column: an Info panel showing its default slot (sidebar
+ * content) above the server's metadata HTML.
+ */
+export const MetadataDetails = defineAsyncComponent(
+  () => import('./common/components/MetadataDetails.vue')
+);
+
+/**
+ * Adds a panel to the screen's details column while it's mounted: a rail icon
+ * and the panel it opens, with the default slot as the panel's content.
+ */
+export const ScreenPanel = defineAsyncComponent(
+  () => import('./common/components/ScreenPanel.vue')
+);
+
+/**
+ * An element's activity timeline, with its comments, for a panel that shows
+ * the activity recorded for an element.
+ */
+export const ActivityTimeline = defineAsyncComponent(
+  () => import('./modules/activity/components/ActivityTimeline.vue')
+);
+
+/**
+ * An element's own actions (Delete, Copy URL, …), from its
+ * `actionMenuDescriptors()`, with their behaviors dispatched client-side.
+ */
+export const ElementActionMenu = defineAsyncComponent(
+  () => import('./modules/elements/components/ElementActionMenu.vue')
+);
+
 export type {ActionItem, ActionItemLink} from './common/types';
+
+export {openUiModal, type UiModalOptions} from './modules/ui/open-ui-modal';
+
+export {
+  useInertiaUiRenderer,
+  type UiRendererInstance,
+} from './modules/ui/useInertiaUiRenderer';
 
 /**
  * Lets a plugin's page configure the control panel shell around it — its

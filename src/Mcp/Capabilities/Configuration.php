@@ -243,7 +243,7 @@ readonly class Configuration
         $errors = $this->validator->validateAgainstJsonSchema($values, $this->schemas->for($type, $operation));
 
         if ($errors !== []) {
-            $messages = array_map(static fn (array $error): string => "{$error['pointer']}: {$error['message']}", array_slice($errors, 0, 3));
+            $messages = array_map(static fn (array $error): string => "{$error['pointer']}: ".rtrim($error['message'], '.'), array_slice($errors, 0, 3));
 
             throw new ToolCallException("Invalid {$type->value} {$operation->value} input: ".implode('; ', $messages).'. Call configuration_schema for accepted values.');
         }

@@ -131,6 +131,17 @@ test('getPasswordResetUrl', function () {
     expect($this->users->getPasswordResetUrl($user))->toBeUrl();
 });
 
+test('getPasswordResetUrl links console requests to the control panel for users with control panel access', function () {
+    Edition::set(Edition::Pro);
+    $setPasswordPath = Cms::config()->getSetPasswordPath();
+
+    expect($this->users->getPasswordResetUrl(UserModel::factory()->createElement()))
+        ->toContain("/$setPasswordPath?code=")
+        ->not->toContain('/admin/')
+        ->and($this->users->getPasswordResetUrl(UserModel::factory()->admin()->createElement()))
+        ->toContain('/admin/set-password?code=');
+});
+
 test('removeCredentials', function () {
     $userElement = UserModel::factory()->createElement();
 

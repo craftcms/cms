@@ -7,7 +7,6 @@ use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Queue\JobProgress;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Sleep;
 
 beforeEach(function () {
     $this->progressService = app(JobProgress::class);
@@ -31,8 +30,7 @@ it('resaves elements when executed', function () {
         ->pluck('dateUpdated', 'id')
         ->toArray();
 
-    // Wait a second to ensure timestamp difference
-    Sleep::sleep(1);
+    $this->travel(1)->seconds();
 
     $job = new ResaveElements(
         elementType: EntryElement::class,
@@ -58,7 +56,7 @@ it('respects criteria when resaving', function () {
     $entries = EntryElement::find()->collect();
     $firstEntry = $entries->first();
 
-    Sleep::sleep(1);
+    $this->travel(1)->seconds();
 
     $job = new ResaveElements(
         elementType: EntryElement::class,

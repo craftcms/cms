@@ -92,7 +92,7 @@ it('reads custom fields on demand and expands only one level of nested content',
         ->and($detail)->not->toHaveKey('blocks')
         ->and($elements->get('entries', id: $entry->id, fields: [])['element'])->not->toHaveKeys(['teaser', 'blocks']);
 
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $selected = McpRequest::send($this, 'tools/call', [
@@ -258,7 +258,7 @@ it('accepts Matrix entries only in the format the field schema describes', funct
 
     expect(fn () => $elements->validate('entries', id: $created['id'], fields: [
         'contentBlocks' => ['entries' => [['body' => ['richText' => '<p>Example body</p>']]], 'sortOrder' => ['new:1']],
-    ]))->toThrow(ToolCallException::class, 'Invalid fields: /contentBlocks/entries/0: Additional object properties are not allowed: ["body"]');
+    ]))->toThrow(ToolCallException::class, 'Invalid fields: /contentBlocks/entries/0: Object contains unexpected additional properties: `body`');
 });
 
 it('accepts times of day for Time fields in Matrix entries', function (): void {

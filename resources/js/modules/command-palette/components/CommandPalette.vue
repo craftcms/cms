@@ -780,7 +780,6 @@
     :dismissible="!busy"
     :restore-focus="restoreFocus"
     :instant="openedWithShortcut"
-    style="--c-modal-border-width: 0px"
     @close="onModalClose"
     @opened="onOpened"
     @closed="onClosed"
@@ -948,7 +947,6 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    border: 1px var(--c-modal-border-style) var(--c-modal-border-color);
     border-radius: var(--c-modal-radius);
     inline-size: min(42rem, calc(100vw - (var(--c-spacing-lg) * 2)));
     max-block-size: min(36rem, calc(100vh - (var(--c-spacing-lg) * 2)));

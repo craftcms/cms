@@ -9,6 +9,7 @@
   import {type CraftData} from '@/common/composables/useCraftData';
   import {usePage} from '@inertiajs/vue3';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import {usePageClickOutside} from '@/common/composables/usePageClickOutside';
 
   const isLarge = cpBreakpoints.greaterOrEqual('lg');
 
@@ -32,7 +33,21 @@
     }
   );
 
-  const {toggle: toggleSidebar, icon} = useGlobalSidebar();
+  const {
+    toggle: toggleSidebar,
+    close: closeSidebar,
+    icon,
+    toggleButton,
+  } = useGlobalSidebar();
+
+  // Floating, it closes on a click elsewhere on the page. The header's toggle
+  // counts as inside, so it doesn't close the sidebar only to reopen it.
+  const nav = useTemplateRef<HTMLElement>('nav');
+  usePageClickOutside(
+    () => [nav.value, toggleButton.value],
+    () => sidebar.mode === 'floating' && sidebar.visibility === 'visible',
+    closeSidebar
+  );
 
   const collapseItem = useTemplateRef<HTMLElement>('collapseItem');
 
@@ -73,6 +88,7 @@
 
 <template>
   <nav
+    ref="nav"
     class="cp-sidebar"
     :data-visibility="sidebar.visibility"
     :data-mode="sidebar.mode"
@@ -134,7 +150,7 @@
   }
 
   .cp-sidebar[data-mode='docked'] {
-    --badge-border-color: var(--c-surface-sunken);
+    --badge-border-color: var(--c-surface-page);
     height: calc(
       100dvh - var(--cp-top-bar-visible-height, 0px) - var(
           --cp-debug-bar-height,
@@ -173,7 +189,7 @@
 
   .cp-sidebar :deep(craft-nav-item) {
     --c-icon-size: calc(12rem / 16);
-    --c-nav-item-icon-color: var(--color-slate-700);
+    --c-nav-item-icon-color: var(--cp-chrome-icon-color);
   }
 
   .cp-sidebar__header {
@@ -185,11 +201,11 @@
 
   .cp-sidebar__body {
     padding-block: var(--c-spacing-md);
-    /* Level with the details tab rail, which starts below the body's inset
-       and border. */
+    /* Centers the first item on the content's header bar, which starts below
+       the body's border and the content's top space. */
     padding-block-start: calc(
-      var(--c-spacing-md) + 2px + var(--cp-body-inset) +
-        var(--cp-body-border-width)
+      var(--cp-body-border-width) + var(--cp-content-block-start) +
+        var(--cp-header-touch-target-offset)
     );
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
@@ -200,18 +216,6 @@
   @media (width < var(--breakpoint-lg)) {
     .cp-sidebar__body {
       padding-block-start: calc(var(--c-spacing-md) + 2px);
-    }
-  }
-
-  /* Docked and expanded, PageScreen flattens the body below 932px of shell,
-     dropping its inset, so the rail moves up by that much. The sidebar sits
-     outside the shell's container, so the same width is written as a viewport
-     width here: 932px plus the 226px expanded sidebar. Keep it in step. */
-  @media (width >= var(--breakpoint-lg)) and (width < 1158px) {
-    .cp-sidebar:not(.cp-sidebar--collapsed) .cp-sidebar__body {
-      padding-block-start: calc(
-        var(--c-spacing-md) + 2px + var(--cp-body-border-width)
-      );
     }
   }
 

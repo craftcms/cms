@@ -19,7 +19,10 @@
     :class="`width-${node.props.width}`"
     :data-ui-node="node.uid"
   >
-    <component :is="`h${node.props.level ?? 2}`" class="my-0">
+    <component
+      :is="`h${node.props.level ?? 2}`"
+      :class="`cp-h${node.props.level ?? 2}`"
+    >
       {{ node.props.content }}
     </component>
     <p v-if="node.props.description" class="my-0 text-sm">

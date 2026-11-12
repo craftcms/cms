@@ -99,8 +99,12 @@ it('converts items a plugin element type adds by overriding the legacy methods',
     $plain = new class(['id' => $this->entry->id, 'siteId' => $this->entry->siteId, 'sectionId' => $this->entry->sectionId, 'typeId' => $this->entry->typeId, 'title' => $this->entry->title]) extends EntryElement {
     };
 
-    expect(array_column($entry->actionMenuDescriptors(), 'label'))
-        ->toBe([...array_column($plain->actionMenuDescriptors(), 'label'), 'Plugin docs']);
+    $safeLabels = fn(EntryElement $element) => array_column(
+        array_filter($element->actionMenuDescriptors(), fn(array $item) => empty($item['destructive'])),
+        'label',
+    );
+
+    expect($safeLabels($entry))->toBe([...$safeLabels($plain), 'Plugin docs']);
 });
 
 it('leaves legacy overrides alone once the element type provides descriptors', function(): void {

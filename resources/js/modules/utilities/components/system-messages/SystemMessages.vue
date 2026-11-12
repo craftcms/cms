@@ -3,7 +3,6 @@
   import {ref} from 'vue';
   import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
   import type {ScreenPageProps} from '@/common/composables/screen';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import {openSlideoutWith} from '@/common/slideouts';
   import type {BaseOption} from '@/common/types';
   import type {SystemMessageData} from '@/modules/utilities/types/utilities';
@@ -14,8 +13,6 @@
     locales: Array<BaseOption>;
     primaryLanguage: string;
   }>();
-
-  useAppLayout({contentMaxWidth: true});
 
   /**
    * Utility content is server-rendered HTML compiled by DynamicHtmlRenderer, so
@@ -69,7 +66,7 @@
 <template>
   <div id="messages" class="grid gap-6">
     <section v-for="message in localMessages" :key="message.key">
-      <h2 class="text-lg mb-2">{{ message.heading }}</h2>
+      <h2 class="cp-h2 mb-2">{{ message.heading }}</h2>
       <craft-card>
         <span slot="label" class="font-medium">{{ message.subject }}</span>
 

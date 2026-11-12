@@ -130,7 +130,10 @@ it('serializes standard selection capabilities for page bulk actions', function 
 
     expect($items['copy']['selectionAttribute'])->toBe('copyable')
         ->and($items[Duplicate::class]['selectionAttribute'])->toBe('duplicatable')
-        ->and($items[Delete::class]['selectionAttribute'])->toBe('deletable');
+        ->and($items[Delete::class]['selectionAttribute'])->toBe('deletable')
+        ->and($items['compare']['selectionAttribute'])->toBe('comparable')
+        ->and($items['compare']['selectionCount'])->toBe(2)
+        ->and($items['compare']['action'])->toBe(['type' => 'event', 'name' => 'craft:compare-elements']);
 });
 
 it('serializes registered download actions for native form submission', function () {
@@ -163,6 +166,20 @@ it('serializes registered download actions for native form submission', function
         ->and($download['action']['method'])->toBe('POST')
         ->and($download['action']['url'])->toContain('element-indexes/perform-action')
         ->and($download['action']['body']['elementAction'])->toBe($downloadAction::class);
+});
+
+it('puts compare after the duplicate actions an element type defines by key', function () {
+    $elementType = new class extends Entry
+    {
+        protected static function defineActions(string $source): array
+        {
+            return ['status' => SetStatus::class, 'duplicate' => Duplicate::class, 'delete' => Delete::class];
+        }
+    };
+
+    $ids = array_map(fn ($action) => $action instanceof ClientAction ? $action->key : $action, array_values($elementType::actions('*')));
+
+    expect($ids)->toBe(['view', 'edit', SetStatus::class, Duplicate::class, 'compare', Delete::class]);
 });
 
 it('puts restore first for trashed queries', function () {

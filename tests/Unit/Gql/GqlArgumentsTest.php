@@ -83,7 +83,7 @@ it('derives transform argument types from the operation catalogue', function () 
     expect($arguments['fill']['type'])->toBeInstanceOf(StringType::class)
         ->and($arguments['height']['type'])->toBeInstanceOf(IntType::class)
         ->and($arguments['upscale']['type'])->toBeInstanceOf(BooleanType::class)
-        ->and($arguments)->not()->toHaveKey('immediately');
+        ->and($arguments['immediately']['type'])->toBeInstanceOf(BooleanType::class);
 });
 
 it('adds the query params of an element type that its arguments class names, unless GraphQL excludes them', function () {

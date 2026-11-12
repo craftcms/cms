@@ -67,10 +67,14 @@ export default class CraftBreadcrumbItem extends LitElement {
         margin-inline-start: var(--c-spacing-sm);
       }
 
+      /* With the crumb's gap, its margin puts as much space before it as the
+         list's gap puts after it (see craft-breadcrumbs), centering it. */
       slot[name='separator']::slotted(*) {
-        color: var(--c-text-quiet);
+        color: var(--color-slate-300);
+        font-size: var(--c-text-base);
+        font-weight: var(--font-weight-light);
         margin-block: 0;
-        margin-inline: var(--c-spacing-sm);
+        margin-inline: var(--c-spacing-sm) 0;
       }
     `,
   ];

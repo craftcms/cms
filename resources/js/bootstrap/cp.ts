@@ -1,4 +1,5 @@
 import {createInertiaApp, router, usePage} from '@inertiajs/vue3';
+import type {Page} from '@inertiajs/core';
 import {handleControlPanelLinks} from '@/common/inertia-links';
 import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
 import type {DefineComponent} from 'vue';
@@ -161,7 +162,10 @@ const Cp = {
     setTranslations(this.initialConfig.translations ?? {});
   },
 
-  async start() {
+  /**
+   * @param page The initial page, when the root view has already parsed it. Inertia reads it from the DOM otherwise.
+   */
+  async start(page?: Page) {
     this.init();
 
     http.defaults.headers['X-Requested-With'] = 'XMLHttpRequest';
@@ -178,6 +182,7 @@ const Cp = {
     relayPageBroadcasts();
 
     await createInertiaApp({
+      page,
       resolve: async (name) => {
         const page = await resolveInertiaPage(name);
 

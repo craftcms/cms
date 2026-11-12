@@ -156,7 +156,7 @@
     >
       <div v-if="settings" class="settings-face">
         <craft-card data-color="gray">
-          <h2 slot="label" class="text-sm">
+          <h2 slot="label" class="cp-h4">
             {{ t('{type} Settings', {type: widget.name}) }}
           </h2>
           <craft-button

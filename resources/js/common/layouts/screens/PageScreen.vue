@@ -12,13 +12,15 @@
    * The document scrolls, not the main column, so `CpSidebar` is a sticky,
    * viewport-tall flex child of `.cp__main`.
    */
-  import {computed, defineAsyncComponent, provide, useTemplateRef} from 'vue';
-  import {Head, usePage} from '@inertiajs/vue3';
   import {
-    useElementBounding,
-    useElementSize,
-    useWindowSize,
-  } from '@vueuse/core';
+    computed,
+    defineAsyncComponent,
+    provide,
+    useTemplateRef,
+    watch,
+  } from 'vue';
+  import {Head, usePage} from '@inertiajs/vue3';
+  import {useElementBounding, useElementSize} from '@vueuse/core';
   import {useVisibleHeight} from '@/common/composables/useVisibleHeight';
   import {useDebugBarHeight} from '@/common/composables/useDebugBarHeight';
   import {useDetailsOverlay} from '@/common/composables/useDetailsOverlay';
@@ -41,6 +43,7 @@
   } from '@/common/composables/screen';
   import {
     withNavCrumbMenus,
+    withoutLoneCurrentCrumb,
     withSubnavCrumbs,
   } from '@/common/composables/subnavCrumbs';
   import useCraftData from '@/common/composables/useCraftData';
@@ -146,8 +149,10 @@
     // editor's lists just the sites that element propagates to, which is the
     // better answer there.
     const ownsSiteCrumb = merged.some((crumb) => crumb.id === 'site-crumb');
-    const trail =
-      siteCrumb.value && !ownsSiteCrumb ? [siteCrumb.value, ...merged] : merged;
+    const trail = withoutLoneCurrentCrumb(
+      siteCrumb.value && !ownsSiteCrumb ? [siteCrumb.value, ...merged] : merged,
+      page.url
+    );
 
     return trail.length > 0 ? trail : null;
   });
@@ -209,21 +214,30 @@
   // whose height follows from this.
   const detailsAside =
     useTemplateRef<InstanceType<typeof ContentDetailsAside>>('detailsAside');
-  const {top: detailsColumnTop, bottom: detailsColumnBottom} =
-    useElementBounding(() => detailsAside.value?.$el);
-  const {height: windowHeight} = useWindowSize();
+  const {
+    top: detailsColumnTop,
+    bottom: detailsColumnBottom,
+    update: updateDetailsBounds,
+  } = useElementBounding(() => detailsAside.value?.$el);
   // What's on screen of the viewport, which an on-screen keyboard shrinks, so
-  // a panel's dialog fits above it rather than running underneath.
+  // the pane stays above it rather than running underneath.
   const visibleViewport = useVisibleViewport();
+  watch([visibleViewport.top, visibleViewport.height], () =>
+    updateDetailsBounds()
+  );
 
   const pageScreenStyle = computed(() => ({
     '--cp-top-bar-visible-height': `${topBarVisibleHeight.value}px`,
     '--cp-visible-viewport-top': `${visibleViewport.top.value}px`,
     '--cp-visible-viewport-height': `${visibleViewport.height.value}px`,
-    '--cp-details-offset': `${Math.max(0, detailsColumnTop.value)}px`,
+    '--cp-details-offset': `${Math.max(
+      0,
+      detailsColumnTop.value - visibleViewport.top.value
+    )}px`,
     '--cp-details-end-gap': `${Math.max(
       0,
-      windowHeight.value -
+      visibleViewport.top.value +
+        visibleViewport.height.value -
         (debugBarHeight.value ?? 0) -
         detailsColumnBottom.value
     )}px`,
@@ -240,15 +254,6 @@
     contentLayoutWidth
   );
   provide(ScreenDetailsOverlayKey, detailsOverlaid);
-  // A panel overlaying the page opens in a dialog, and the page behind it is
-  // dimmed rather than covered by the dialog's backdrop: with the keyboard
-  // open, iOS shows the page past the backdrop's reach.
-  const detailsDimmed = computed(
-    () =>
-      regions.hasPanels() &&
-      detailsOverlaid.value &&
-      screenPanels.openPanelId.value !== null
-  );
   // The details rail renders beside the panel.
   provide(ScreenDetailsRailKey, '#cp-details-rail');
 
@@ -289,11 +294,7 @@
     :additional-skip-links="additionalSkipLinks"
   />
   <div
-    :class="{
-      'page-screen': true,
-      'page-screen--fill-viewport': fillViewport,
-      'page-screen--details-dimmed': detailsDimmed,
-    }"
+    :class="{'page-screen': true, 'page-screen--fill-viewport': fillViewport}"
     :style="pageScreenStyle"
   >
     <CpTopBar
@@ -424,7 +425,7 @@
                               >
                                 <template #title>
                                   <slot name="title">
-                                    <h1 class="text-xl">{{ pageTitle }}</h1>
+                                    <h1 class="cp-h1">{{ pageTitle }}</h1>
                                   </slot>
                                 </template>
                                 <template #actions>
@@ -546,8 +547,17 @@
 Shell
  */
   /* The top bar keeps its height and the shell takes at least the rest. Docked,
-     the sidebar's own height does this; floating, nothing else would. */
+     the sidebar's own height does this; floating, nothing else would.
+     `--cp-content-block-start` is the space at the top of each content column,
+     the same for all of them so their header bars stay level: none up to a
+     960px viewport, 16px from 2240px. It's in viewport units so the global
+     sidebar and details rail, outside the content, can line up with them. */
   .page-screen {
+    --cp-content-block-start: clamp(
+      0px,
+      1.25vw - var(--c-spacing-md) * 1.5,
+      var(--c-spacing-lg)
+    );
     display: flex;
     flex-direction: column;
     min-height: calc(100dvh - var(--cp-debug-bar-height, 0px));
@@ -559,7 +569,7 @@ Shell
     padding-inline-end: var(--cp-scrollbar-width, 0px);
     /* The floating sidebar's row stays empty, so the main row takes the room. */
     grid-template-rows: auto 1fr;
-    background-color: var(--c-surface-sunken);
+    background-color: var(--c-surface-page);
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-rows: none;
@@ -607,7 +617,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     height: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    padding-block: var(--cp-body-inset);
+    padding-block: 0 var(--cp-body-inset);
   }
 
   .cp-body__panel {
@@ -709,6 +719,7 @@ Content: the secondary nav, content, and details panes
     --resize-handle-display: none;
 
     .cp-content__details {
+      --cp-details-edge-shadow: none;
       border-inline-start: none;
       box-shadow: none;
     }
@@ -733,6 +744,9 @@ Content: the secondary nav, content, and details panes
 
   .cp-content--sidebar .cp-content__sidebar {
     padding: var(--c-spacing-md);
+    padding-block-start: calc(
+      var(--c-spacing-md) + var(--cp-content-block-start)
+    );
 
     @media (width >= var(--breakpoint-lg)) {
       inline-size: calc(var(--cp-sidebar-width) + 1px);
@@ -748,13 +762,45 @@ Content: the secondary nav, content, and details panes
   .cp-content__main {
     grid-area: main;
     overflow: clip;
+    /* For the gutters below. Its track is a definite `minmax(…, 1fr)`, so
+       containment can't collapse it. */
+    container: cp-content-main / inline-size;
+    /* The field layout's tabs sit a little further from the first field
+       here than in slideouts. See UiNodeList.vue. */
+    --cp-content-tabs-gap: calc(var(--c-spacing-lg) + var(--c-spacing-md));
+  }
+
+  /* The main column's gutters grow with it: 16px up to 400px, 32px at
+     800px, 48px from 1200px. Resolved on its children, so `cqi` is the
+     column's and not the content view's (a container of its own, and
+     narrower when constrained), and everything in the column inherits the
+     same pixels. */
+  .cp-content__main > :deep(*) {
+    --cp-content-inline-padding: clamp(
+      var(--c-spacing-lg),
+      4cqi,
+      calc(var(--c-spacing-lg) * 3)
+    );
+    --cp-container-padding: var(--cp-content-inline-padding);
   }
 
   .cp-content__details {
     grid-area: details;
     z-index: var(--c-layer-sticky);
     border-inline-start: 1px solid var(--c-color-border-quiet);
-    background-color: var(--c-surface-default);
+    --cp-details-bg: var(--c-surface-details);
+    --_details-inset-shadow: rgb(
+      var(--c-shadow-tint) / calc(0.08 * var(--c-shadow-multiplier))
+    );
+    /* Drawn by the pane inside (see ContentDetailsAside), above the composers
+       whose opaque fades would otherwise cover it. */
+    --cp-details-edge-shadow: inset 6px 0 6px -6px var(--_details-inset-shadow);
+    background-color: var(--cp-details-bg);
+
+    &:dir(rtl) {
+      --cp-details-edge-shadow: inset -6px 0 6px -6px
+        var(--_details-inset-shadow);
+    }
     /* A dragged width outlives the layout it was dragged in, so cap it here. */
     max-inline-size: var(--cp-content-details-max, 90cqi);
     /* Contained in both axes, so the row sets its height rather than the pane:
@@ -764,12 +810,6 @@ Content: the secondary nav, content, and details panes
     /* No width of its own while it has a column: stretching to the track is what
        lets the track's range shrink it, and it survives the containment above. */
     justify-self: stretch;
-  }
-
-  /* Behind a panel's dialog, matching the shade other dialogs put behind
-     them, a quarter black. */
-  .page-screen--details-dimmed {
-    filter: brightness(0.75);
   }
 
   .cp-content__footer {
@@ -835,6 +875,7 @@ Folds
     .cp-content--details > .cp-content__details {
       inline-size: var(--cp-content-details-width);
       justify-self: end;
+      --cp-details-edge-shadow: none;
       box-shadow: var(--c-shadow-md);
     }
   }
@@ -843,8 +884,7 @@ Folds
     /* With the global nav docked, the panel still floats only while there'd be
        room for a details pane beside the content, on every page alike. Below
        that it goes edge to edge as it does below this breakpoint, keeping a
-       dividing line beside the sidebar. CpSidebar mirrors this width to drop
-       the inset from its own top padding. */
+       dividing line beside the sidebar. */
     @container cp-shell (width < 932px) {
       .cp-body {
         --cp-body-inset: 0px;
@@ -879,6 +919,7 @@ Folds
       .cp-content--sidebar.cp-content--details > .cp-content__details {
         inline-size: var(--cp-content-details-width);
         justify-self: end;
+        --cp-details-edge-shadow: none;
         box-shadow: var(--c-shadow-md);
       }
     }
@@ -902,6 +943,7 @@ Content view
     /* Lets what's inside (e.g. the element index toolbar) respond to the room
        the content actually has, rather than the viewport. */
     container: cp-content-view / inline-size;
+    padding-block-start: var(--cp-content-block-start);
   }
 
   .cp-content-view--constrained {

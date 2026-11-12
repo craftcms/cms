@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Cms;
@@ -77,17 +75,11 @@ function validTransformData(array $overrides = []): array
     ], $overrides);
 }
 
-function registerControllerAssetTransformer(string $driver = 'custom'): AssetTransformer
+function registerControllerAssetTransformDriver(string $driver = 'custom'): string
 {
-    app(AssetTransformDrivers::class)->extend($driver, fn () => new ControllerAssetTransformDriver);
-    $transformer = new AssetTransformer([
-        'name' => 'Custom',
-        'handle' => $driver,
-        'driver' => $driver,
-    ]);
-    app(AssetTransformers::class)->saveAssetTransformer($transformer);
+    app(AssetTransformers::class)->extend($driver, fn () => new ControllerAssetTransformDriver);
 
-    return $transformer;
+    return $driver;
 }
 
 it('requires authentication', function () {
@@ -202,14 +194,14 @@ it('renders a functional create form', function () {
                 ->contains(['mode'])));
 });
 
-it('renders declared parameters under their asset transformer UUID', function () {
-    $transformer = registerControllerAssetTransformer();
+it('renders declared parameters under their driver name', function () {
+    $transformer = registerControllerAssetTransformDriver();
 
     get(action([ImageTransformsController::class, 'create']))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes', fn ($nodes): bool => collect(flattenUiNodes(collect($nodes)->all()))
                 ->pluck('control.path')
-                ->contains(['parameters', $transformer->uid, 'blur'])));
+                ->contains(['parameters', $transformer, 'blur'])));
 });
 
 it('renders edit for an existing transform', function () {
@@ -331,10 +323,10 @@ it('updates an existing transform', function () {
         ->and($updated->height)->toBe(120);
 });
 
-it('saves custom parameters under the asset transformer UUID', function () {
-    $transformer = registerControllerAssetTransformer();
+it('saves custom parameters under the driver name', function () {
+    $transformer = registerControllerAssetTransformDriver();
     $payload = validTransformData([
-        'parameters' => [$transformer->uid => [
+        'parameters' => [$transformer => [
             'blur' => '5',
             'quality' => 'high',
         ]],
@@ -346,11 +338,11 @@ it('saves custom parameters under the asset transformer UUID', function () {
     $transform = app(ImageTransforms::class)->getTransformByHandle($payload['handle']);
 
     expect($transform->getCustomParameters())->toBe([
-        $transformer->uid => [
+        $transformer => [
             'blur' => '5',
             'quality' => 'high',
         ],
-    ])->and($transform->getParameters($transformer->uid)['quality'])->toBe('high');
+    ])->and($transform->getParameters($transformer)['quality'])->toBe('high');
 });
 
 it('deletes a transform', function () {
@@ -372,7 +364,6 @@ class ControllerAssetTransformDriver implements AssetTransformDriver
     public function definition(): AssetTransformDriverDefinition
     {
         return new AssetTransformDriverDefinition(
-            'Custom',
             parameterRules: [
                 'blur' => ['integer', 'min:1'],
                 'quality' => [Rule::in([...range(1, 100), 'high', 'medium-high', 'medium-low', 'low'])],

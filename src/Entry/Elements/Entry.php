@@ -37,7 +37,6 @@ use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\EntryQuery;
-use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Concerns\LegacyConstants;
 use CraftCms\Cms\Entry\Conditions\EntryCondition;
@@ -1971,6 +1970,12 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
     }
 
     #[Override]
+    protected function initialRevisionCreatorId(): ?int
+    {
+        return $this->getAuthorId();
+    }
+
+    #[Override]
     public function hasRevisions(): bool
     {
         if ($section = $this->getSection()) {
@@ -2149,6 +2154,14 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 } catch (RuntimeException) {
                     return t('Unknown');
                 }
+            case 'link':
+                // Only live entries get routed
+                $entry = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if ($entry->getStatus() !== self::STATUS_LIVE) {
+                    return '';
+                }
+
+                return parent::attributeHtml($attribute);
             default:
                 return parent::attributeHtml($attribute);
         }
@@ -2303,40 +2316,40 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                                 : ControlMode::Editable),
                     );
             }
+        }
 
-            if ($this->getType()->showPostDateField) {
-                $nodes[] = Field::make(t('Post Date'))
-                    ->icon('calendar')
-                    ->control(
-                        DateTime::make('postDate')
-                            ->showTime()
-                            ->fullWidth()
-                            // Stored times aren't constrained to a picker step, and
-                            // the screen submits natively — a coarser increment
-                            // would make any off-step value fail validation and
-                            // silently block saving.
-                            ->minuteIncrement(1)
-                            ->value(self::dateTimeControlValue($this->postDate))
-                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                    );
-            }
+        if ($this->getType()->showPostDateField) {
+            $nodes[] = Field::make(t('Post Date'))
+                ->icon('calendar')
+                ->control(
+                    DateTime::make('postDate')
+                        ->showTime()
+                        ->fullWidth()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
+                        ->value(self::dateTimeControlValue($this->postDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
+        }
 
-            if ($this->getType()->showExpiryDateField) {
-                $nodes[] = Field::make(t('Expiry Date'))
-                    ->icon('calendar-xmark')
-                    ->control(
-                        DateTime::make('expiryDate')
-                            ->showTime()
-                            ->fullWidth()
-                            // Stored times aren't constrained to a picker step, and
-                            // the screen submits natively — a coarser increment
-                            // would make any off-step value fail validation and
-                            // silently block saving.
-                            ->minuteIncrement(1)
-                            ->value(self::dateTimeControlValue($this->expiryDate))
-                            ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
-                    );
-            }
+        if ($this->getType()->showExpiryDateField) {
+            $nodes[] = Field::make(t('Expiry Date'))
+                ->icon('calendar-xmark')
+                ->control(
+                    DateTime::make('expiryDate')
+                        ->showTime()
+                        ->fullWidth()
+                        // Stored times aren't constrained to a picker step, and
+                        // the screen submits natively — a coarser increment
+                        // would make any off-step value fail validation and
+                        // silently block saving.
+                        ->minuteIncrement(1)
+                        ->value(self::dateTimeControlValue($this->expiryDate))
+                        ->mode($static ? ControlMode::Disabled : ControlMode::Editable),
+                );
         }
 
         return $nodes;
@@ -2495,39 +2508,39 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                     ]);
                 })();
             }
+        }
 
-            DeltaRegistry::withActive(true, function () {
-                DeltaRegistry::registerName('postDate');
-                DeltaRegistry::registerName('expiryDate');
-            });
+        DeltaRegistry::withActive(true, function () {
+            DeltaRegistry::registerName('postDate');
+            DeltaRegistry::registerName('expiryDate');
+        });
 
-            // Post Date
-            if ($this->getType()->showPostDateField) {
-                $fields['postDate'] = FormFields::dateTimeFieldHtml([
-                    'status' => $this->getAttributeStatus('postDate'),
-                    'label' => t('Post Date'),
-                    'id' => 'postDate',
-                    'name' => 'postDate',
-                    'value' => $this->postDate,
-                    'width' => 'full',
-                    'errors' => $this->errors()->get('postDate'),
-                    'disabled' => $static,
-                ]);
-            }
+        // Post Date
+        if ($this->getType()->showPostDateField) {
+            $fields['postDate'] = FormFields::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('postDate'),
+                'label' => t('Post Date'),
+                'id' => 'postDate',
+                'name' => 'postDate',
+                'value' => $this->postDate,
+                'width' => 'full',
+                'errors' => $this->errors()->get('postDate'),
+                'disabled' => $static,
+            ]);
+        }
 
-            // Expiry Date
-            if ($this->getType()->showExpiryDateField) {
-                $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
-                    'status' => $this->getAttributeStatus('expiryDate'),
-                    'label' => t('Expiry Date'),
-                    'id' => 'expiryDate',
-                    'name' => 'expiryDate',
-                    'value' => $this->expiryDate,
-                    'width' => 'full',
-                    'errors' => $this->errors()->get('expiryDate'),
-                    'disabled' => $static,
-                ]);
-            }
+        // Expiry Date
+        if ($this->getType()->showExpiryDateField) {
+            $fields['expiryDate'] = FormFields::dateTimeFieldHtml([
+                'status' => $this->getAttributeStatus('expiryDate'),
+                'label' => t('Expiry Date'),
+                'id' => 'expiryDate',
+                'name' => 'expiryDate',
+                'value' => $this->expiryDate,
+                'width' => 'full',
+                'errors' => $this->errors()->get('expiryDate'),
+                'disabled' => $static,
+            ]);
         }
 
         $fields[] = parent::metaFieldsHtml($static);
@@ -2680,33 +2693,6 @@ JS;
     #[Override]
     public function beforeSave(bool $isNew): bool
     {
-        if ($this->_shouldSaveRevision()) {
-            // Make sure the entry has at least one revision
-            $hasRevisions = self::find()
-                ->revisionOf($this)
-                ->site('*')
-                ->status(null)
-                ->exists();
-
-            if (! $hasRevisions) {
-                /** @var self|null $current */
-                $current = self::find()
-                    ->id($this->id)
-                    ->site('*')
-                    ->status(null)
-                    ->one();
-
-                // May be null if the entry is currently stored as an unpublished draft
-                if ($current) {
-                    app(Revisions::class)->createRevision(
-                        $current,
-                        $current->getAuthorId(),
-                        sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated, withTimeZone: true)),
-                    );
-                }
-            }
-        }
-
         if ($section = $this->getSection()) {
             // Set the structure ID for Element::attributes() and afterSave()
             if ($section->type === SectionType::Structure) {
@@ -2735,7 +2721,6 @@ JS;
             // Section type-specific stuff
             if ($section->type === SectionType::Single) {
                 $this->setAuthorId(null);
-                $this->expiryDate = null;
             }
         }
 
@@ -2928,17 +2913,6 @@ JS;
     }
 
     #[Override]
-    public function afterPropagate(bool $isNew): void
-    {
-        parent::afterPropagate($isNew);
-
-        // Save a new revision?
-        if ($this->_shouldSaveRevision()) {
-            app(Revisions::class)->createRevision($this, $this->revisionCreatorId, $this->revisionNotes);
-        }
-    }
-
-    #[Override]
     public function beforeDelete(): bool
     {
         if (! parent::beforeDelete()) {
@@ -3037,22 +3011,6 @@ JS;
         }
 
         parent::afterMoveInStructure($structureId);
-    }
-
-    /**
-     * Returns whether the entry should be saving revisions on save.
-     */
-    private function _shouldSaveRevision(): bool
-    {
-        return
-            $this->id &&
-            ! $this->propagating &&
-            ! $this->resaving &&
-            $this->getIsCanonical() &&
-            $this->hasRevisions() &&
-            // Nested entries owned by a draft or revision shouldn't get their own revisions
-            // (see https://github.com/craftcms/cms/issues/20151)
-            ! ElementHelper::isDraftOrRevision($this);
     }
 
     /**

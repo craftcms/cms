@@ -19,7 +19,7 @@ it('renders the configured heading level and defaults to level two', function ()
 
     expect($payload->nodes[0]->props['level'])->toBe(3)
         ->and($crawler->filter('[data-ui-node="custom"] h3')->text())->toBe('Custom')
-        ->and($crawler->filter('[data-ui-node="custom"] h3.my-0'))->toHaveCount(1)
+        ->and($crawler->filter('[data-ui-node="custom"] h3.cp-h3'))->toHaveCount(1)
         ->and($crawler->filter('[data-ui-node="custom"] p')->text())->toBe('Supporting copy.')
         ->and($crawler->filter('[data-ui-node="custom"] p.my-0'))->toHaveCount(1)
         ->and($crawler->filter('[data-ui-node="custom"].gap-1'))->toHaveCount(1)

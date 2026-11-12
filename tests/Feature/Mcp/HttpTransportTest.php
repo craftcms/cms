@@ -17,7 +17,7 @@ use Laravel\Passport\Passport;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
 
     $this->mcpCachePath = sys_get_temp_dir().'/craft-mcp-'.bin2hex(random_bytes(8));

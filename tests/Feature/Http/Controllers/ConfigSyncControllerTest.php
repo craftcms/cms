@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -37,9 +38,16 @@ dataset('routes', [
     'installPlugin',
     'precheck',
     'recheckComposer',
-    'composerInstall',
-    'composerRemove',
     'finish',
+]);
+
+test('project config syncs never run Composer', function (string $action) {
+    postJson(cp_url("config-sync/$action"), [
+        'data' => $this->hashedData,
+    ])->assertNotFound();
+})->with([
+    BaseUpdaterController::ACTION_COMPOSER_INSTALL,
+    BaseUpdaterController::ACTION_COMPOSER_REMOVE,
 ]);
 
 it('uses normal CP routes', function (string $action) {

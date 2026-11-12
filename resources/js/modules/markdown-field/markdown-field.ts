@@ -341,7 +341,7 @@ class MarkdownField extends LitElement {
   private statsFormatter: NonNullable<Options['statsFormatter']> = (stats) => {
     return `
       <div class="overtype-stat">
-        <span>${stats.chars} ${t('chars')}, ${stats.words} ${t('words')}, ${stats.lines} ${t('lines')}</span>
+        <span>${t('{num, number} {num, plural, =1{char} other{chars}}', {num: stats.chars})}, ${t('{num, number} {num, plural, =1{word} other{words}}', {num: stats.words})}, ${t('{num, number} {num, plural, =1{line} other{lines}}', {num: stats.lines})}</span>
       </div>
       <div class="overtype-stat">${t('Line')} ${stats.line}, ${t('Col')} ${stats.column}</div>
     `;

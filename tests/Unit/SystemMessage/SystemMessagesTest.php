@@ -81,7 +81,7 @@ it('lists a message\'s own template variables before the common ones', function 
         'orderNumber' => 'Order number',
         'siteName' => 'Store name',
     ])
-        ->and($variables)->toHaveKeys(['user.friendlyName', 'systemName']);
+        ->and($variables)->toHaveKeys(['fromName', 'systemName']);
 });
 
 function systemMessage(string $key, string $heading = 'Heading'): SystemMessage

@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
+use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
 use CraftCms\Cms\Support\CmsAssets;
@@ -47,6 +48,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Octane\Events\RequestReceived;
+use Laravel\Octane\Events\TaskReceived;
+use Laravel\Octane\Events\TickReceived;
 use Override;
 use ReflectionClass;
 use RuntimeException;
@@ -97,6 +101,12 @@ class AppServiceProvider extends ServiceProvider
 
             return Url::cpUrl(CpAuthPath::Login->value);
         });
+
+        // After every provider has booted, so it runs after Octane's own listeners give services the new sandbox.
+        $this->app->booted(fn () => Event::listen(
+            [RequestReceived::class, TaskReceived::class, TickReceived::class],
+            PrepareCraftForNextOperation::class,
+        ));
 
         Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
             setlocale(

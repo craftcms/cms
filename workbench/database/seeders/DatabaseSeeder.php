@@ -168,7 +168,6 @@ class DatabaseSeeder extends Seeder
                     'fsHandle' => 'assets',
                     'hasUrls' => true,
                     'subpath' => $handle,
-                    'assetTransformer' => 'craft',
                 ]);
 
                 if (! Volumes::saveVolume($volume)) {
@@ -363,6 +362,8 @@ MARKDOWN,
         $user = User::query()->firstOrFail();
         $editor = UserFactory::new()->admin()->createElement([
             'fullName' => 'Ada Lovelace',
+            'firstName' => 'Ada',
+            'lastName' => 'Lovelace',
             'username' => 'ada',
             'email' => 'ada@example.com',
         ]);

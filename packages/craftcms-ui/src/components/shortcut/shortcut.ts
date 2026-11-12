@@ -1,6 +1,7 @@
-import {css, html, LitElement} from 'lit';
+import {css, html, LitElement, unsafeCSS} from 'lit';
 import {property} from 'lit/decorators.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles';
+import kbdStyles from '@src/styles/shared/kbd.css?inline';
 
 /** A modifier key, as shown and as named for assistive technology. */
 interface ModifierKey {
@@ -16,11 +17,12 @@ interface ModifierKey {
  *
  * @slot - Non-modifier key
  *
- * @cssproperty [--c-shortcut-shadow=var(--c-shadow-sm)] - The keycaps' shadow.
+ * @cssproperty [--c-shortcut-shadow=var(--c-shadow-2xs)] - The keycaps' shadow.
  */
 export default class CraftShortcut extends LitElement {
   static override styles = [
     visuallyHiddenStyles,
+    unsafeCSS(kbdStyles),
     css`
       :host {
         display: inline-flex;
@@ -29,17 +31,6 @@ export default class CraftShortcut extends LitElement {
       .shortcut {
         display: inline-flex;
         gap: 0.25em;
-        font-size: 0.9em;
-      }
-
-      .shortcut__key {
-        padding-block: 0;
-        padding-inline: var(--c-spacing-sm);
-        font: inherit;
-        background-color: var(--c-color-neutral-fill-quiet);
-        border: 1px solid var(--c-color-neutral-border-quiet);
-        border-radius: var(--c-radius-sm);
-        box-shadow: var(--c-shortcut-shadow, var(--c-shadow-sm));
       }
     `,
   ];

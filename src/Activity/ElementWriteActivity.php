@@ -10,8 +10,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementPersisted;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Activities;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Container\Attributes\Singleton;
 use WeakMap;
 
@@ -32,9 +32,8 @@ readonly class ElementWriteActivity
     /** @var WeakMap<ElementInterface, Asset> */
     private WeakMap $originalAssets;
 
-    public function __construct(
-        private Sites $sites,
-    ) {
+    public function __construct()
+    {
         $this->writes = new WeakMap;
         $this->originalEntries = new WeakMap;
         $this->originalAssets = new WeakMap;
@@ -129,7 +128,7 @@ readonly class ElementWriteActivity
     {
         Activities::record(new ElementSiteAdded(
             subject: $element,
-            site: $this->sites->getSiteById($element->siteId),
+            site: Sites::getSiteById($element->siteId),
         ));
     }
 

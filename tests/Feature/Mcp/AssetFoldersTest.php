@@ -50,7 +50,7 @@ it('lists root folders for a null parentId', function () {
     $otherRoot = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'parentId' => null, 'path' => '']);
     $subfolder = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'parentId' => $otherRoot->id, 'name' => 'Sub', 'path' => 'Sub/']);
 
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:read'], 'craft-mcp');
     $ids = fn (array $criteria): array => array_column(McpRequest::send($this, 'tools/call', [

@@ -38,7 +38,6 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use Illuminate\Foundation\Vite;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
@@ -60,8 +59,7 @@ readonly class Cp
      *
      * This is the single source of truth for the data exposed to both the
      * Inertia CP (`window.Cp` / the shared `craft.general` prop) and the legacy
-     * `window.Craft` object built by
-     * {@see CpAsset}.
+     * `window.Craft` object.
      *
      * The bulk of the data is request/auth-dependent (see {@see self::craftData()}).
      * The keys merged below are always present so the Inertia side never loses

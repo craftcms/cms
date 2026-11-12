@@ -41,13 +41,15 @@ class Transform extends Directive
     /** @param array<string, mixed> $arguments */
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
-        if (empty($arguments)) {
+        $transform = Gql::prepareTransformArguments($arguments);
+
+        if (empty($transform)) {
             return $value;
         }
 
-        $transform = Gql::prepareTransformArguments($arguments);
+        $immediately = ($arguments['immediately'] ?? false) === true;
         $context = app(AssetTransformContext::class);
-        $withTransform = fn (Asset $asset) => $context->set(clone $asset, $transform);
+        $withTransform = fn (Asset $asset) => $context->set(clone $asset, $transform, $immediately);
 
         if ($value instanceof Asset) {
             return $withTransform($value);
@@ -66,7 +68,7 @@ class Transform extends Directive
         }
 
         return Gql::isAssetTransformField($resolveInfo->fieldName)
-            ? Gql::resolveAssetTransform($source, $transform, $resolveInfo->fieldName)
+            ? Gql::resolveAssetTransform($source, $transform, $resolveInfo->fieldName, $immediately)
             : $value;
     }
 }

@@ -84,6 +84,85 @@ it.each(['actionButton', 'actionMenu', 'contextMenu', 'all'])(
   }
 );
 
+it.each([
+  {
+    kind: 'a full-page form',
+    fullPageForm: true,
+    slot: 'primary-action',
+    other: 'content-actions',
+  },
+  {
+    kind: 'a screen with no form',
+    fullPageForm: false,
+    slot: 'content-actions',
+    other: 'primary-action',
+  },
+])(
+  'puts $kind\u2019s action button in $slot',
+  async ({fullPageForm, slot, other}) => {
+    host = document.createElement('div');
+    document.body.append(host);
+    app = createApp({
+      setup() {
+        provideLayoutSlotRegistry();
+
+        return () =>
+          h('div', [
+            h(LayoutSlotOutlet, {name: 'content-actions'}),
+            h(LayoutSlotOutlet, {name: 'primary-action'}, () =>
+              h('span', 'Save')
+            ),
+            h(Screen, {
+              fullPageForm,
+              actionButton: '<input type="button" value="Save & Continue">',
+            }),
+          ]);
+      },
+    });
+    app.provide(ScreenPropsStoreKey, createScreenPropsStore());
+    app.provide(ScreenContentReadyKey, () => {});
+    app.mount(host);
+
+    const region = (name: string) =>
+      host.querySelector(`[data-layout-slot="${name}"]`);
+
+    await vi.waitFor(() => {
+      expect(region(slot)?.querySelector('input')?.value).toBe(
+        'Save & Continue'
+      );
+    });
+
+    expect(region(other)?.querySelector('input')).toBeFalsy();
+  }
+);
+
+it('leaves the shell\u2019s own save button alone when a form brings none', async () => {
+  host = document.createElement('div');
+  document.body.append(host);
+  app = createApp({
+    setup() {
+      provideLayoutSlotRegistry();
+
+      return () =>
+        h('div', [
+          h(LayoutSlotOutlet, {name: 'primary-action'}, () =>
+            h('span', 'Save')
+          ),
+          h(Screen, {fullPageForm: true, content: '<p>Fields</p>'}),
+        ]);
+    },
+  });
+  app.provide(ScreenPropsStoreKey, createScreenPropsStore());
+  app.provide(ScreenContentReadyKey, () => {});
+  app.mount(host);
+
+  await vi.waitFor(() => {
+    expect(host.textContent).toContain('Fields');
+  });
+
+  expect(host.textContent).toContain('Save');
+});
+
 it('switches legacy tab panes without jQuery', async () => {
   expect((window as any).jQuery).toBeUndefined();
 

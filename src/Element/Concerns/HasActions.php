@@ -64,6 +64,16 @@ trait HasActions
             ]))));
         }
 
+        // Add Compare, after the Duplicate actions?
+        if (! $hasClientAction('compare')) {
+            $isDuplicate = fn ($action) => $action === Duplicate::class
+                || $action instanceof Duplicate
+                || (is_array($action) && ($action['type'] ?? null) === Duplicate::class);
+            // By position, not key: element types can key their actions.
+            $lastDuplicate = $actions->values()->filter($isDuplicate)->keys()->last();
+            $actions->splice($lastDuplicate === null ? 0 : $lastDuplicate + 1, 0, [ClientAction::compare()]);
+        }
+
         // Prepend Set Status?
         if (static::includeSetStatusAction() && ! $hasActionType(SetStatus::class)) {
             $actions->prepend(SetStatus::class);

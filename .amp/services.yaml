@@ -31,7 +31,7 @@ services:
   pgsql:
     port: 5432
     command: >-
-      exec /usr/lib/postgresql/15/bin/postgres
+      exec /usr/lib/postgresql/"$(cat .amp/databases/pgsql/PG_VERSION)"/bin/postgres
       -D "$PWD/.amp/databases/pgsql"
       -k "$PWD/.amp/databases"
       -h 127.0.0.1 -p "$PORT"

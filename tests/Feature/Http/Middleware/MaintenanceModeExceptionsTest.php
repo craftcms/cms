@@ -247,6 +247,11 @@ test('updater index remains reachable during maintenance mode', function () {
 });
 
 test('a failed backup can reach its emitted revert action during maintenance', function () {
+    $data = post(action([UpdaterController::class, 'index']), [
+        'install' => ['craft' => '100.0.0'],
+        'packageNames' => ['craft' => 'craftcms/cms'],
+    ])->inertiaProps('initialState.data');
+
     $this->mock(Updates::class)
         ->shouldReceive('isCraftSchemaVersionCompatible')->andReturnTrue()->byDefault()
         ->shouldReceive('isCraftUpdatePending')->andReturnTrue()->byDefault()
@@ -257,12 +262,6 @@ test('a failed backup can reach its emitted revert action during maintenance', f
 
     $this->mock(Composer::class)
         ->shouldReceive('install')->andReturnNull();
-
-    $data = Crypt::encrypt(Json::encode([
-        'install' => ['craft' => '6.0.0'],
-        'current' => ['craftcms/cms' => '5.0.0'],
-        'reverted' => false,
-    ]));
 
     $backup = postJson(action([UpdaterController::class, 'backup']), compact('data'))
         ->assertOk()

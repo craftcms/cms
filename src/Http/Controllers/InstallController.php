@@ -58,6 +58,17 @@ readonly class InstallController
             abort(503, 'Debug mode must be enabled to install Craft.');
         }
 
+        // Don’t mistake a database that can’t be reached for one that Craft isn’t installed in
+        try {
+            DB::connection()->getPdo();
+        } catch (SQLiteDatabaseDoesNotExistException) {
+            // The database hasn’t been created yet
+        } catch (PDOException) {
+            if (DB::getConfig('database')) {
+                abort(503, 'Craft can’t connect to the database.');
+            }
+        }
+
         // Return a 404 if Craft is already installed
         if (Cms::isInstalled()) {
             abort(404, 'Craft is already installed');
@@ -181,8 +192,15 @@ readonly class InstallController
         $path = app()->environmentFilePath();
 
         // Should we set the new DB config values?
+        $dbData = null;
         if ($request->has('db.driver')) {
-            $data = $this->validateDbData($request->input('db'));
+            if (! $this->canControlDbConfig()) {
+                return new JsonResponse([
+                    'message' => 'The database connection settings can’t be changed.',
+                ], 400);
+            }
+
+            $data = $dbData = $this->validateDbData($request->input('db'));
 
             if ($data['driver'] === 'sqlite') {
                 try {
@@ -194,10 +212,7 @@ readonly class InstallController
                 }
             }
 
-            // Set and save the new DB config values
-            $this->writeDbEnv($data, $path);
-
-            // Update the db component based on new values
+            // Update the db component based on the new values, but don’t save them until Craft is installed with them
             Config::set('database.default', $data['driver']);
             Config::set("database.connections.{$data['driver']}", array_merge(
                 Config::get("database.connections.{$data['driver']}") ?? [],
@@ -263,6 +278,11 @@ readonly class InstallController
             $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
+        // Now save the new DB config values
+        if ($dbData !== null) {
+            $this->writeDbEnv($dbData, $path);
+        }
+
         $redirect = Cms::config()->postCpLoginRedirect;
 
         return new JsonResponse(['redirect' => Url::cpUrl($redirect)]);
@@ -275,8 +295,9 @@ readonly class InstallController
             return false;
         }
 
-        // If the .env file doesn't exist, we definitely can't do anything about it
-        if (! file_exists(app()->environmentFilePath())) {
+        // If the .env file doesn't exist or isn't writable, we definitely can't do anything about it
+        $path = app()->environmentFilePath();
+        if (! file_exists($path) || ! is_writable($path)) {
             return false;
         }
 
