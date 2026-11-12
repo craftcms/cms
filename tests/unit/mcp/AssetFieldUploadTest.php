@@ -3,6 +3,9 @@
 namespace crafttests\unit\mcp;
 
 use Craft;
+use craft\base\DirectUploadFsInterface;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\conditions\assets\FilenameConditionRule;
@@ -18,6 +21,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
+use DateTimeInterface;
 use Mcp\Exception\ToolCallException;
 use Mcp\Server\Transport\StdioTransport;
 use yii\web\ConflictHttpException;
@@ -227,6 +231,66 @@ class AssetFieldUploadTest extends TestCase
         }
     }
 
+    public function testUploadUrlsSendFilesDirectlyToFilesystemsThatAcceptThem(): void
+    {
+        // Storage such as S3 can accept files directly, avoiding request size limits on serverless hosts
+        $general = Craft::$app->getConfig()->getGeneral();
+        $maxUploadFileSize = $general->maxUploadFileSize;
+        $sharedPath = sys_get_temp_dir() . '/craft-mcp-direct-upload-test';
+        $fs = new DirectUploadTestFs(['name' => 'MCP Direct Upload Test', 'handle' => 'mcpDirectUploadTest', 'path' => $sharedPath]);
+        self::assertTrue(Craft::$app->getFs()->saveFilesystem($fs));
+        $general->tempAssetUploadFs = 'mcpDirectUploadTest';
+        $general->maxUploadFileSize = 100;
+        $user = Craft::$app->getUser()->getIdentity();
+        $tokens = (new Query())->from(Table::TOKENS)->count();
+
+        try {
+            $upload = (new AssetUploads())->createUpload($user, 'https://example.test/mcp');
+            $path = "mcp-uploads/{$upload['upload_id']}";
+            self::assertSame("https://storage.example/$path", $upload['upload_url']);
+            self::assertSame('{"x-amz-meta-visibility":"private"}', json_encode($upload['headers']));
+            // Craft's own upload URL can't receive the file
+            self::assertSame($tokens, (new Query())->from(Table::TOKENS)->count());
+
+            $claim = fn() => (new AssetUploads())->consumeFile(['upload_id' => $upload['upload_id']], 'uploaded.png', static fn(string $path): string => file_get_contents($path));
+
+            foreach ([
+                'Nothing has been uploaded yet' => null,
+                // Direct uploads can't enforce a size limit, so claims do. The URL can be used again for a smaller file.
+                'The file exceeds the maximum upload size.' => str_repeat('a', 101),
+            ] as $message => $contents) {
+                if ($contents !== null) {
+                    // As the storage would, once the client sends the file to the URL
+                    FileHelper::writeToFile("$sharedPath/$path", $contents);
+                }
+
+                try {
+                    $claim();
+                    self::fail("Claims must fail with: $message");
+                } catch (ToolCallException $exception) {
+                    self::assertStringContainsString($message, $exception->getMessage());
+                }
+            }
+
+            self::assertFileDoesNotExist("$sharedPath/$path", 'Oversized files must be deleted.');
+            copy($this->file, "$sharedPath/$path");
+            self::assertSame(file_get_contents($this->file), $claim());
+            self::assertSame([], FileHelper::findFiles("$sharedPath/mcp-uploads"), 'Claimed uploads must be deleted.');
+
+            // Without a direct upload URL, uploads go through Craft
+            DirectUploadTestFs::$available = false;
+            $upload = (new AssetUploads())->createUpload($user, 'https://example.test/mcp');
+            self::assertStringStartsWith('https://example.test/mcp?', $upload['upload_url']);
+            self::assertSame('{}', json_encode($upload['headers']));
+        } finally {
+            DirectUploadTestFs::$available = true;
+            $general->tempAssetUploadFs = null;
+            $general->maxUploadFileSize = $maxUploadFileSize;
+            Craft::$app->getFs()->removeFilesystem($fs);
+            FileHelper::removeDirectory($sharedPath);
+        }
+    }
+
     /** @dataProvider restrictedPaths */
     public function testRejectsPathsWhereVolumesCannotLive(string $path): void
     {
@@ -287,5 +351,18 @@ class AssetFieldUploadTest extends TestCase
         }
 
         self::fail("$name returned no response.");
+    }
+}
+
+/** A filesystem whose storage accepts files sent directly to it. */
+class DirectUploadTestFs extends Local implements DirectUploadFsInterface
+{
+    public static bool $available = true;
+
+    public function getDirectUploadUrl(string $path, DateTimeInterface $expiresAt): ?array
+    {
+        return self::$available
+            ? ['url' => "https://storage.example/$path", 'method' => 'PUT', 'headers' => ['x-amz-meta-visibility' => 'private']]
+            : null;
     }
 }

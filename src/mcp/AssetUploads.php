@@ -6,6 +6,7 @@ namespace craft\mcp;
 
 use Closure;
 use Craft;
+use craft\base\DirectUploadFsInterface;
 use craft\base\FsInterface;
 use craft\elements\User;
 use craft\helpers\ConfigHelper;
@@ -108,9 +109,9 @@ class AssetUploads
      *
      * The upload’s record and file live in the temporary asset upload filesystem, and its token in the database, so
      * the request reserving the upload, the PUT request, and the request claiming the upload can each be handled by
-     * a different server.
+     * a different server. If that filesystem accepts direct uploads, the URL sends the file straight to it instead.
      *
-     * @return array{upload_id: string, upload_url: string, method: string, expires_at: string, max_size: int}
+     * @return array{upload_id: string, upload_url: string, method: string, headers: object, expires_at: string, max_size: int}
      */
     public function createUpload(User $user, string $baseUrl): array
     {
@@ -131,23 +132,37 @@ class AssetUploads
 
         $id = StringHelper::UUID();
         $expiresAt = DateTimeHelper::currentUTCDateTime()->add(new DateInterval(self::UploadTtl));
-        // The record enforces the expiry and single use, so the token outlives them, and late or repeated requests
-        // still reach the upload action and get a JSON error rather than Craft’s invalid token error page.
-        $tokenExpiresAt = DateTimeHelper::currentUTCDateTime()->modify(sprintf('+%d seconds', self::StaleUploadAge));
-        $token = Craft::$app->getTokens()->createToken(['mcp/upload', ['uploadId' => $id]], null, $tokenExpiresAt);
+        $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
+        $record = ['userId' => $user->id, 'expiresAt' => $expiresAt->getTimestamp()];
 
-        if ($token === false) {
-            throw new ToolCallException('Could not create an upload URL.');
+        // Storage that accepts uploads directly avoids request size limits, such as on serverless hosts. Since no
+        // token is created for these uploads, Craft’s own upload URL can’t receive them.
+        $upload = $fs instanceof DirectUploadFsInterface ? $fs->getDirectUploadUrl($this->uploadPath($id), $expiresAt) : null;
+
+        if ($upload !== null) {
+            $record['direct'] = true;
+        } else {
+            // The record enforces the expiry and single use, so the token outlives them, and late or repeated requests
+            // still reach the upload action and get a JSON error rather than Craft’s invalid token error page.
+            $tokenExpiresAt = DateTimeHelper::currentUTCDateTime()->modify(sprintf('+%d seconds', self::StaleUploadAge));
+            $token = Craft::$app->getTokens()->createToken(['mcp/upload', ['uploadId' => $id]], null, $tokenExpiresAt);
+
+            if ($token === false) {
+                throw new ToolCallException('Could not create an upload URL.');
+            }
+
+            $upload = ['url' => UrlHelper::urlWithToken($baseUrl, $token), 'method' => 'PUT', 'headers' => []];
         }
 
-        $fs = Craft::$app->getAssets()->getTempAssetUploadFs();
-        $fs->write($this->uploadPath($id) . '.json', Json::encode(['userId' => $user->id, 'expiresAt' => $expiresAt->getTimestamp()]));
+        $fs->write($this->uploadPath($id) . '.json', Json::encode($record));
         $this->deleteStaleUploads($fs);
 
         return [
             'upload_id' => $id,
-            'upload_url' => UrlHelper::urlWithToken($baseUrl, $token),
-            'method' => 'PUT',
+            'upload_url' => $upload['url'],
+            'method' => $upload['method'],
+            // An object, so it's `{}` in JSON when empty
+            'headers' => (object)$upload['headers'],
             'expires_at' => DateTimeHelper::toIso8601($expiresAt),
             'max_size' => ConfigHelper::sizeInBytes(Craft::$app->getConfig()->getGeneral()->maxUploadFileSize),
         ];
@@ -405,8 +420,17 @@ class AssetUploads
                 throw new ToolCallException('Upload not found. Request a new upload URL with assets_upload_url.');
             }
 
-            if (!isset($record['size'])) {
-                throw new ToolCallException('Nothing has been uploaded yet. Send the file to upload_url with a PUT request first.');
+            $direct = !empty($record['direct']);
+
+            if (!($direct ? $fs->fileExists($this->uploadPath($id)) : isset($record['size']))) {
+                throw new ToolCallException('Nothing has been uploaded yet. Send the file to upload_url, using its method and headers, first.');
+            }
+
+            // Direct upload URLs don't enforce a size limit, so check the size before copying the file. The URL still
+            // works until it expires, so the client can send a smaller file.
+            if ($direct && $fs->getFileSize($this->uploadPath($id)) > $maxSize) {
+                $fs->deleteFile($this->uploadPath($id));
+                throw new ToolCallException('The file exceeds the maximum upload size.');
             }
 
             // Each upload can only be used once
@@ -432,10 +456,10 @@ class AssetUploads
     }
 
     /**
-     * Returns an upload’s record: the ID of the user who reserved it, when its upload URL expires, and once a file
-     * has been uploaded, its size.
+     * Returns an upload’s record: the ID of the user who reserved it, when its upload URL expires, whether the URL
+     * sends the file directly to the filesystem, and once a file has been sent to Craft’s own upload URL, its size.
      *
-     * @return array{userId: int, expiresAt: int, size?: int}|null
+     * @return array{userId: int, expiresAt: int, direct?: bool, size?: int}|null
      */
     private function uploadRecord(string $id): ?array
     {
