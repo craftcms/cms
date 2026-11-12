@@ -10,6 +10,7 @@ use craft\elements\User;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Assets as AssetsField;
 use craft\fields\PlainText;
+use craft\fs\Local;
 use craft\helpers\FileHelper;
 use craft\mcp\AssetUploads;
 use craft\mcp\ServerFactory;
@@ -19,6 +20,7 @@ use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use Mcp\Exception\ToolCallException;
 use Mcp\Server\Transport\StdioTransport;
+use yii\web\ConflictHttpException;
 
 /** Exercises MCP asset uploads: local paths, upload URLs, and field uploads through the stdio MCP server. */
 class AssetFieldUploadTest extends TestCase
@@ -174,6 +176,55 @@ class AssetFieldUploadTest extends TestCase
 
         $contents = $uploads->consumeFile(['upload_id' => $upload['upload_id']], 'uploaded.png', static fn(string $path): string => file_get_contents($path));
         self::assertSame(file_get_contents($this->file), $contents);
+    }
+
+    public function testUploadUrlsWorkAcrossServers(): void
+    {
+        // Load-balanced servers share temporary uploads through tempAssetUploadFs, but each has its own runtime
+        // directory, and the requests reserving, sending, and claiming an upload may each reach a different one
+        $general = Craft::$app->getConfig()->getGeneral();
+        $runtimePath = Craft::$app->getRuntimePath();
+        $sharedPath = sys_get_temp_dir() . '/craft-mcp-upload-test-shared';
+        $fs = new Local(['name' => 'MCP Upload Test', 'handle' => 'mcpUploadTest', 'path' => $sharedPath]);
+        self::assertTrue(Craft::$app->getFs()->saveFilesystem($fs));
+        $general->tempAssetUploadFs = 'mcpUploadTest';
+
+        try {
+            // Reserving an upload deletes those left unclaimed for a day
+            FileHelper::writeToFile("$sharedPath/mcp-uploads/stale", 'stale');
+            touch("$sharedPath/mcp-uploads/stale", time() - 86401);
+
+            Craft::$app->setRuntimePath("$runtimePath/mcp-server-a");
+            $upload = (new AssetUploads())->createUpload(Craft::$app->getUser()->getIdentity(), 'https://example.test/mcp');
+            self::assertFileDoesNotExist("$sharedPath/mcp-uploads/stale");
+
+            Craft::$app->setRuntimePath("$runtimePath/mcp-server-b");
+            $stream = fopen($this->file, 'rb');
+            self::assertSame(filesize($this->file), (new AssetUploads())->receiveUpload($upload['upload_id'], $stream));
+            fclose($stream);
+
+            Craft::$app->setRuntimePath("$runtimePath/mcp-server-c");
+            $stream = fopen($this->file, 'rb');
+            try {
+                (new AssetUploads())->receiveUpload($upload['upload_id'], $stream);
+                self::fail('Each upload URL must only accept one file.');
+            } catch (ConflictHttpException) {
+            } finally {
+                fclose($stream);
+            }
+
+            $contents = (new AssetUploads())->consumeFile(['upload_id' => $upload['upload_id']], 'uploaded.png', static fn(string $path): string => file_get_contents($path));
+            self::assertSame(file_get_contents($this->file), $contents);
+            self::assertSame([], FileHelper::findFiles("$sharedPath/mcp-uploads"), 'Claimed uploads must be deleted.');
+        } finally {
+            Craft::$app->setRuntimePath($runtimePath);
+            $general->tempAssetUploadFs = null;
+            Craft::$app->getFs()->removeFilesystem($fs);
+            FileHelper::removeDirectory($sharedPath);
+            foreach (['a', 'b', 'c'] as $server) {
+                FileHelper::removeDirectory("$runtimePath/mcp-server-$server");
+            }
+        }
     }
 
     /** @dataProvider restrictedPaths */
