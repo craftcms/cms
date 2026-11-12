@@ -299,3 +299,11 @@
     </component>
   </component>
 </template>
+
+<style scoped>
+  /* Over a cover image the buttons have a backing of their own, so they need
+     room between them that plain ones don't. */
+  craft-card[cover-src] [data-card-actions] {
+    gap: var(--c-spacing-sm);
+  }
+</style>
