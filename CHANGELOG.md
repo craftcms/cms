@@ -12,6 +12,7 @@
 - Added `CraftCms\Cms\Asset\Data\AssetTransformRequest::$immediately` and `$namedTransform`. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Added `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()`, `immediateTransforms()`, and `IMMEDIATE_TRANSFORMS_CONTEXT`, which apply to every asset transform driver. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Deprecated `CraftCms\Cms\Image\CraftAssetTransformDriver::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT`. `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT` should be used instead. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
+- The main content’s side padding now grows with its width, from 16px up to 48px, and the content, the details pane, and secondary navigation get matching space at their tops as the page widens, keeping their headers level. Cards’ body padding grows with the card’s own width, from 16px up to 24px, the field layout’s tabs have a larger gap below them, and structure indexes’ toggles and drag handles keep their place beside the content. ([#20599](https://github.com/craftcms/cms/pull/20599))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
