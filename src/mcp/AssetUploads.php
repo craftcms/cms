@@ -470,7 +470,12 @@ class AssetUploads
         $cutoff = time() - self::StaleUploadAge;
 
         foreach ($fs->getFileList(self::UploadDir, false) as $listing) {
-            if (!$listing->getIsDir() && $listing->getDateModified() < $cutoff) {
+            if ($listing->getIsDir()) {
+                continue;
+            }
+
+            // Some filesystems omit modification dates from listings, and null would compare as older than any cutoff
+            if (($listing->getDateModified() ?? $fs->getDateModified($listing->getUri())) < $cutoff) {
                 $fs->deleteFile($listing->getUri());
             }
         }
