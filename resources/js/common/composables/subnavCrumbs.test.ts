@@ -2,6 +2,7 @@ import {describe, expect, it} from 'vite-plus/test';
 import {
   subnavCrumbs,
   withNavCrumbMenus,
+  withoutLoneCurrentCrumb,
   withSubnavCrumbs,
 } from './subnavCrumbs';
 
@@ -416,5 +417,47 @@ describe('withNavCrumbMenus', () => {
       expect(commerce!.items).toHaveLength(4);
       expect(inventory!.items).toBeUndefined();
     });
+  });
+});
+
+describe('withoutLoneCurrentCrumb', () => {
+  it('drops a lone crumb for the page you’re on', () => {
+    expect(
+      withoutLoneCurrentCrumb(
+        [{label: 'Dashboard', href: '/admin/dashboard'}],
+        '/admin/dashboard?site=default'
+      )
+    ).toEqual([]);
+    expect(
+      withoutLoneCurrentCrumb([{label: 'Dashboard'}], '/admin/dashboard')
+    ).toEqual([]);
+  });
+
+  it('keeps a lone crumb that goes somewhere, switches, or is markup', () => {
+    const cases: Array<BreadcrumbItem> = [
+      {label: 'Settings', href: '/admin/settings'},
+      {
+        label: 'Dashboard',
+        items: [{label: 'Entries'}],
+      } as BreadcrumbItem,
+      {html: '<craft-chip>Jo</craft-chip>'} as BreadcrumbItem,
+    ];
+
+    for (const crumb of cases) {
+      expect(withoutLoneCurrentCrumb([crumb], '/admin/dashboard')).toEqual([
+        crumb,
+      ]);
+    }
+  });
+
+  it('keeps a trail of more than one', () => {
+    const crumbs = [
+      {label: 'Settings', href: '/admin/settings'},
+      {label: 'General'},
+    ];
+
+    expect(withoutLoneCurrentCrumb(crumbs, '/admin/settings/general')).toEqual(
+      crumbs
+    );
   });
 });
