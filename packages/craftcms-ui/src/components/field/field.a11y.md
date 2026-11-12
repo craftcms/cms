@@ -39,6 +39,7 @@ The field supplies the label, instructions, notices, and errors around a slotted
 
 - [x] The translation indicator is a button named by `translation-description`. It's reachable with Tab, opens its tooltip on focus, closes it with Escape while keeping focus, and Tab then moves on to the control. Per WCAG 2.1.1 (Keyboard), 2.4.3 (Focus Order), 4.1.2 (Name, Role, Value) and 1.4.13 (Content on Hover or Focus). Verified by `exposes translation help on keyboard focus and dismisses it with Escape` in `field.browser.test.ts`.
 - [x] The translation indicator is at least 24×24 CSS px. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `exposes translation help on keyboard focus and dismisses it with Escape` in `field.browser.test.ts`.
+- [ ] The translation indicator's target doesn't overlap the target of an action beside it. Per WCAG 2.5.8 (Target Size (Minimum)). Known gap: beside a visible label, the heading's items sit 4px apart, so the translation indicator and a flush action button that follows it overlap by about 5px.
 
 ### Visual
 
@@ -48,7 +49,7 @@ The field supplies the label, instructions, notices, and errors around a slotted
 
 ### Reflow and zoom
 
-- [ ] At a 320px viewport and at 200% zoom, the heading wraps and the control shrinks to fit, with nothing clipped or overlapping. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Not yet verified. The actions group is absolutely positioned at the end of the heading, so a long label may run under it.
+- [ ] At a 320px viewport and at 200% zoom, the heading wraps and the control shrinks to fit, with nothing clipped or overlapping. Per WCAG 1.4.10 (Reflow) and 1.4.4 (Resize Text). Not yet verified. With the label visually hidden, the actions group is absolutely positioned at the end of the heading, so other heading content may run under it.
 
 ## Depends on usage
 

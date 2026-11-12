@@ -391,19 +391,34 @@ describe('craft-field label extras', () => {
 });
 
 describe('craft-field actions', () => {
-  it('renders a flex-grow spacer before slotted actions', async () => {
+  it('renders slotted actions right after a visible label, with no spacer', async () => {
     const element = await createField(
       {label: 'My field'},
       '<input slot="input" type="text"><button slot="actions">Hide</button>'
     );
 
     const heading = element.shadowRoot!.querySelector('.form-field__label')!;
-    const spacer = heading.querySelector('.flex-grow');
-    const slot = heading.querySelector('slot[name="actions"]');
-    expect(spacer).not.toBeNull();
-    expect(slot).not.toBeNull();
+    const label = heading.querySelector('slot[name="label"]')!;
+    const actions = heading.querySelector('slot[name="actions"]')!;
     expect(
-      spacer!.compareDocumentPosition(slot!) & Node.DOCUMENT_POSITION_FOLLOWING
+      label.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(heading.querySelector('.flex-grow')).toBeNull();
+  });
+
+  it('renders slotted actions at the end, after a spacer, when the label is visually hidden', async () => {
+    const element = await createField(
+      {label: 'My field', 'label-sr-only': ''},
+      '<input slot="input" type="text"><button slot="actions">Hide</button>'
+    );
+
+    const heading = element.shadowRoot!.querySelector('.form-field__label')!;
+    const spacer = heading.querySelector('.flex-grow');
+    const actions = heading.querySelector('slot[name="actions"]')!;
+    expect(spacer).not.toBeNull();
+    expect(
+      spacer!.compareDocumentPosition(actions) &
+        Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
   });
 
@@ -419,7 +434,7 @@ describe('craft-field actions', () => {
     expect(group.querySelector('slot[name="actions"]')).not.toBeNull();
   });
 
-  it('renders actions after label extras', async () => {
+  it('renders actions before label extras beside a visible label', async () => {
     const element = await createField(
       {label: 'My field'},
       '<input slot="input" type="text"><code slot="label-extra">handle</code><button slot="actions">Hide</button>'
@@ -430,7 +445,7 @@ describe('craft-field actions', () => {
     const actions = heading.querySelector('slot[name="actions"]')!;
     expect(
       labelExtra.compareDocumentPosition(actions) &
-        Node.DOCUMENT_POSITION_FOLLOWING
+        Node.DOCUMENT_POSITION_PRECEDING
     ).toBeTruthy();
   });
 

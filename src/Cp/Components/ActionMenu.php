@@ -68,6 +68,8 @@ class ActionMenu extends ViewComponent
 
     protected bool $disabled = false;
 
+    protected bool|string $flush = false;
+
     protected bool $searchable = false;
 
     protected ?string $for = null;
@@ -145,6 +147,17 @@ class ActionMenu extends ViewComponent
     public function disabled(bool $disabled = true): static
     {
         $this->disabled = $disabled;
+
+        return $this;
+    }
+
+    /**
+     * Pulls the default invoker's padding back from its edges, so its icon
+     * lines up with neighboring content. See `craft-button`'s `flush`.
+     */
+    public function flush(bool|string $flush = true): static
+    {
+        $this->flush = $flush;
 
         return $this;
     }
@@ -236,6 +249,7 @@ class ActionMenu extends ViewComponent
             'variant' => 'plain',
             'inherit' => true,
             'size' => 'small',
+            'flush' => $this->flush ?: null,
             // Bare `icon` attribute triggers the icon-only button styling
             // (the icon itself is slotted content, not the `icon` prop — it
             // needs its own `aria-label`-free presentation since the button

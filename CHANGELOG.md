@@ -8,6 +8,7 @@
 - Icons in the global sidebar, global header, breadcrumbs, details rail, and content tabs are now the same size and color, and rows of icon buttons in the global header and on element cards are tighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Global nav items now stay highlighted while their flyout menus are open, and menu buttons stay highlighted while their menus are open. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - The details pane now has a subtle inset shadow along its leading edge, and Ask AI’s input is transparent, like the Activity panel’s comment box. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Fields’ action menus now sit right after their labels and required/translatable indicators, evenly spaced, rather than at the far end of the heading. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Breadcrumb separators are now lighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fixed a bug where fields could be saved with the same handle as another field. ([#20600](https://github.com/craftcms/cms/issues/20600), [#20607](https://github.com/craftcms/cms/pull/20607))
 - Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
