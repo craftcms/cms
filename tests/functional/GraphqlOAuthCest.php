@@ -273,7 +273,6 @@ class GraphqlOAuthCest
         $I->amLoggedInAs($user);
         $data = $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken]);
         $I->assertSame('Unsaved changes', $data['data']['entry']['title']);
-        Craft::$app->getUser()->logout();
         $data = $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken]);
         $I->assertSame('Published', $data['data']['entry']['title']);
 
@@ -322,8 +321,6 @@ class GraphqlOAuthCest
 
     private function request(FunctionalTester $I, string $query, array $headers, int $status = 200): array
     {
-        // Each request starts without a provisional draft user, as it would in its own PHP process
-        ElementHelper::setProvisionalDraftUser(null);
         $I->deleteHeader('Authorization');
         $I->deleteHeader('X-Craft-Gql-Token');
         foreach ($headers as $name => $value) {
@@ -331,6 +328,10 @@ class GraphqlOAuthCest
         }
         $I->amOnPage('/actions/graphql/api?' . http_build_query(['query' => $query]));
         $I->seeResponseCodeIs($status);
+
+        // The application persists between requests here, so forget the request's user, as a new PHP process would
+        ElementHelper::setProvisionalDraftUser(null);
+        Craft::$app->getUser()->setIdentity(null);
 
         return Json::decode($I->grabPageSource()) ?? [];
     }

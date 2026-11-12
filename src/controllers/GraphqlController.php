@@ -14,7 +14,6 @@ use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\ElementHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -277,12 +276,8 @@ class GraphqlController extends Controller
                 return $this->_oauthSchema($gqlService);
             }
 
-            // The X-Craft-Gql-Token header’s token determines the schema, so the access token only determines whose
-            // provisional drafts get swapped in, unless a preview token already did
-            $user = $this->_oauthUser();
-            if (!ElementHelper::getProvisionalDraftUser()) {
-                ElementHelper::setProvisionalDraftUser($user);
-            }
+            // The X-Craft-Gql-Token header’s token determines the schema, so the access token only logs the user in
+            $this->_oauthLogin();
         }
 
         $token = $this->_token($gqlService);
@@ -318,32 +313,27 @@ class GraphqlController extends Controller
      */
     private function _oauthSchema(GqlService $gqlService): GqlSchema
     {
-        $session = Craft::$app->getUser();
-        $session->enableSession = false;
-        $session->enableAutoLogin = false;
-        $session->setIdentity(null);
-
-        $user = $this->_oauthUser($scopes);
-
-        // Set the user as the identity for the request, so permission checks and element queries apply to them
-        $session->setIdentity($user);
-
+        $user = $this->_oauthLogin($scopes);
         return $gqlService->getSchemaForUser($user, in_array(GqlService::SCOPE_WRITE, $scopes, true));
     }
 
     /**
-     * Returns the user the request’s OAuth access token was issued for.
+     * Authenticates the request’s OAuth access token, and logs its user in for the request.
      *
      * @param array|null $scopes The GraphQL scopes the token grants
      * @return User
      * @throws UnauthorizedHttpException
      */
-    private function _oauthUser(?array &$scopes = null): User
+    private function _oauthLogin(?array &$scopes = null): User
     {
         $oauth = Craft::$app->getOAuth();
+        $session = Craft::$app->getUser();
+        $session->enableSession = false;
+        $session->enableAutoLogin = false;
+        $session->setIdentity(null);
 
         try {
-            return $oauth->authenticate(ServerRequest::fromGlobals(), 'graphql', scopes: $scopes);
+            $user = $oauth->authenticate(ServerRequest::fromGlobals(), 'graphql', scopes: $scopes);
         } catch (OAuthServerException $e) {
             $this->response->getHeaders()->set('WWW-Authenticate', sprintf(
                 'Bearer error="invalid_token", resource_metadata="%s"',
@@ -351,6 +341,11 @@ class GraphqlController extends Controller
             ));
             throw new UnauthorizedHttpException($e->getMessage(), previous: $e);
         }
+
+        // Log the user in for the request, so element queries and services act as them
+        $session->setIdentity($user);
+
+        return $user;
     }
 
     private function _token(GqlService $gqlService): ?GqlToken
