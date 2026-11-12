@@ -743,11 +743,18 @@ class Plugins
             return false;
         }
 
-        // Update the plugin’s settings in the project config
-        $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData());
-        app(ProjectConfig::class)->set(
-            path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
-            value: $pluginSettings,
+        // Update the plugin’s settings in the project config, keeping the stored values of
+        // settings that are overridden by config/craft/<handle>.php
+        $projectConfig = app(ProjectConfig::class);
+        $path = ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings';
+        $overrides = Config::get("craft.$plugin->handle", []);
+
+        $projectConfig->set(
+            path: $path,
+            value: [
+                ...array_diff_key(ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData()), $overrides),
+                ...array_intersect_key($projectConfig->get($path) ?? [], $overrides),
+            ],
             message: "Change settings for plugin “{$plugin->handle}”",
         );
 
