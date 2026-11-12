@@ -51,6 +51,11 @@ type FormControlTarget = HTMLElement & {
  * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
  *   field settings menus), rendered as a group right after a visible label,
  *   or at the end of the heading when the label is visually hidden.
+ *
+ * @cssproperty --c-field-indicator-inset - How far the changed/outdated
+ *   indicator sits before the field's leading edge. Set it to the padding of
+ *   whatever holds the field, so the indicator runs along that edge. Defaults
+ *   to `--c-spacing-lg`.
  */
 export default class CraftField extends FormControl(LitElement) {
   static override styles = [visuallyHiddenStyles, baseFieldStyles, styles];

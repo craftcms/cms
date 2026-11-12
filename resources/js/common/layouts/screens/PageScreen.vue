@@ -782,6 +782,7 @@ Content: the secondary nav, content, and details panes
       calc(var(--c-spacing-lg) * 3)
     );
     --cp-container-padding: var(--cp-content-inline-padding);
+    --c-field-indicator-inset: var(--cp-content-inline-padding);
   }
 
   .cp-content__details {
