@@ -116,12 +116,26 @@
     border-radius: 0;
     white-space: normal;
   }
-  /* At rest, tiles match the other widgets' bodies (a gray card's fill). */
-  .support-tile:not(:hover, :active) {
-    background-color: color-mix(
-      var(--c-color-gray-fill-quiet),
-      transparent 70%
-    );
+  /* At rest, tiles match the other widgets (see Dashboard.vue), and darken
+     from there, as nav items do. */
+  .support-tile {
+    background-color: var(--c-surface-details);
+
+    &:hover {
+      background-color: color-mix(
+        in srgb,
+        var(--c-surface-details),
+        currentColor 5%
+      );
+    }
+
+    &:active {
+      background-color: color-mix(
+        in srgb,
+        var(--c-surface-details),
+        currentColor 10%
+      );
+    }
   }
   .support-tile:first-child {
     border-start-start-radius: var(--c-card-radius, var(--c-radius-md));
