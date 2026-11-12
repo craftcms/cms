@@ -7,8 +7,9 @@
 - Fixed a bug where saving the Team user group’s permissions programmatically could save its project config without a name or handle, causing `project-config/apply` to fail. ([#20595](https://github.com/craftcms/cms/issues/20595))
 - Fixed a bug where files sent to `assets_upload_url` MCP upload URLs couldn’t be used by `assets_create` or `assets_replace` on load-balanced sites, when requests reached different servers. Uploads are now stored in the temporary asset upload filesystem (`tempAssetUploadFs`). ([#20578](https://github.com/craftcms/cms/pull/20578))
 - MCP upload URLs now respond with JSON errors, rather than HTML pages, when an upload is expired, already used, or too large. ([#20578](https://github.com/craftcms/cms/pull/20578))
-- MCP upload URLs from `assets_upload_url` now send files directly to the temporary asset upload filesystem’s storage when it supports that, avoiding request size limits, such as on Craft Cloud. Its response now includes `headers`, which clients must send with the file.
-- Added `craft\base\DirectUploadFsInterface`, which filesystems can implement to accept files sent directly to their storage.
+- Fixed a bug where the default temporary asset upload filesystem couldn’t be replaced via `craft\fs\Temp`’s dependency injection container definition, such as with shared storage for load-balanced servers.
+- Fixed a bug where Preview never loaded for users who could view an entry but not save it. ([#20572](https://github.com/craftcms/cms/issues/20572))
+- Fixed a bug where the “Save and send activation email” button on users’ Permissions screens didn’t send activation emails for users without the “Administrate users” permission. ([#20566](https://github.com/craftcms/cms/issues/20566))
 
 ## 5.12.1 - 2026-11-10
 

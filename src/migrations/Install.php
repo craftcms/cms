@@ -74,7 +74,7 @@ class Install extends Migration
     public function safeUp(): bool
     {
         if (!$this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error\n\nRun `composer install` or remove your `config/project/` folder and try again.";
+            $message = "Project config validation failed: $error\n\nRun `" . App::composerCommand('install') . "` or remove your `config/project/` folder and try again.";
             echo "\n$message\n\nAborting install.\n\n";
             throw new OperationAbortedException($message);
         }

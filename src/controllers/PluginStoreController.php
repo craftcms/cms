@@ -71,6 +71,7 @@ class PluginStoreController extends Controller
             'craftIdAccessToken' => $this->getCraftIdAccessToken(),
             'phpVersion' => App::phpVersion(),
             'composerPhpVersion' => Craft::$app->getComposer()->getConfig()['config']['platform']['php'] ?? null,
+            'isDdev' => App::isDdev(),
         ];
 
         $view->registerJsWithVars(

@@ -15,7 +15,7 @@ use DateTimeInterface;
  * as with presigned URLs, so files don’t pass through Craft’s web requests.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.12.2
+ * @since 5.13.0
  */
 interface DirectUploadFsInterface
 {
