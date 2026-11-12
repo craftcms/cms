@@ -225,7 +225,7 @@ readonly class Cms
         }
 
         try {
-            DB::connection()->getPdo();
+            DB::connection()->getReadPdo();
         } catch (PDOException|SQLiteDatabaseDoesNotExistException $e) {
             if (! app()->runningInConsole()) {
                 Log::error('There was a problem connecting to the database: '.$e->getMessage(), [__METHOD__]);

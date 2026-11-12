@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Database;
 
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\File;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Database\Connection;
@@ -125,7 +126,8 @@ class ConnectionConfig
 
         return implode('', [
             $connection->getDriverName(),
-            ':host='.$connection->getConfig('host'),
+            // Read/write connections can list several hosts; Laravel connects to one of them
+            ':host='.Arr::first(Arr::wrap($connection->getConfig('host'))),
             ';port='.$connection->getConfig('port'),
             ';dbname='.$connection->getConfig('database'),
             ';user='.$connection->getConfig('username'),

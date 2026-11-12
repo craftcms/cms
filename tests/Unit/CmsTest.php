@@ -307,6 +307,16 @@ it('returns false when the database connection fails during installed checks', f
         ->and(Context::getHidden('craft.isInstalled'))->toBeFalse();
 });
 
+it('returns true when only the read connection is reachable', function () {
+    createInfoRow();
+    $db = DB::connection();
+    $db->setReadPdo($db->getPdo());
+    $db->setPdo(fn () => throw new PDOException('connection failed'));
+    $db->useWriteConnectionWhenReading(false);
+
+    expect(Cms::isInstalled())->toBeTrue();
+});
+
 it('logs and returns false when fetching the info row fails', function () {
     createInfoTable();
     Log::shouldReceive('error')->once();
