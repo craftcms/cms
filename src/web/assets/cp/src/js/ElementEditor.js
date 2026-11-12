@@ -1529,36 +1529,6 @@ Craft.ElementEditor = Garnish.Base.extend(
               return;
             }
 
-            // If we're already saving a draft, try again later
-            if (this.savingDraft) {
-              this.saveDraftCallbacks.push(async () => {
-                try {
-                  await this.checkForm(force, saveDraft);
-                } catch (e) {
-                  reject(e);
-                  return;
-                }
-                resolve();
-              });
-            }
-
-            // If we haven't had a chance to fetch the initial data yet, try again in a bit
-            if (
-              typeof this.$container.data('initialSerializedValue') ===
-              'undefined'
-            ) {
-              setTimeout(async () => {
-                try {
-                  await this.checkForm(force, saveDraft);
-                } catch (e) {
-                  reject(e);
-                  return;
-                }
-                resolve();
-              }, 500);
-              return;
-            }
-
             // Has anything changed?
             const data = this.serializeForm(true);
             if (
