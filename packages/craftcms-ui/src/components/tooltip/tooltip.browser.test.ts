@@ -30,19 +30,54 @@ async function render(): Promise<{
 
 const after = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-it('hides once the pointer leaves an invoker it was clicked on', async () => {
+it('hides when its invoker is pressed, until the pointer leaves and comes back', async () => {
   const {userEvent} = await import('vite-plus/test/browser');
   const {invoker, elsewhere, tooltip} = await render();
+
+  await userEvent.hover(invoker);
+  await after(300);
+
+  expect(tooltip.open).toBe(true);
 
   await userEvent.click(invoker);
   await after(300);
 
-  expect(tooltip.open).toBe(true);
+  expect(tooltip.open).toBe(false);
 
   await userEvent.hover(elsewhere);
   await after(100);
 
   expect(document.activeElement).toBe(invoker);
+  expect(tooltip.open).toBe(false);
+
+  await userEvent.hover(invoker);
+  await after(300);
+
+  expect(tooltip.open).toBe(true);
+});
+
+it('stays hidden when its invoker is tapped', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {invoker, elsewhere, tooltip} = await render();
+  // Keeps the real mouse off the invoker, which would show the tooltip itself.
+  await userEvent.hover(elsewhere);
+
+  // A tap sends touch pointer events, then emulated mouse events.
+  for (const type of ['pointerover', 'pointerenter', 'pointerdown']) {
+    invoker.dispatchEvent(
+      new PointerEvent(type, {
+        pointerType: 'touch',
+        bubbles: type !== 'pointerenter',
+      })
+    );
+  }
+  for (const type of ['mouseover', 'mouseenter', 'mousedown', 'click']) {
+    invoker.dispatchEvent(
+      new MouseEvent(type, {bubbles: type !== 'mouseenter'})
+    );
+  }
+  await after(300);
+
   expect(tooltip.open).toBe(false);
 });
 
