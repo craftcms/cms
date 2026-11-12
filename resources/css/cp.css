@@ -612,8 +612,8 @@ craft-field[data-highlighted] {
 
 /* Gray elements (element cards, Matrix blocks and element chips with the gray
    appearance color; not badges or other gray UI) take their colors from the
-   --c-element-gray-* tokens: the page's blue-gray with slate lines and text in
-   the light theme, the gray palette in the dark one. */
+   --c-element-gray-* tokens: slate, the chrome's own neutral, in the light
+   theme, the gray palette in the dark one. */
 :is(craft-card, craft-chip)[data-color='gray'] {
   --c-color-fill-quiet: var(--c-element-gray-fill-quiet);
   --c-color-border-quiet: var(--c-element-gray-border-quiet);

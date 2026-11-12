@@ -71,9 +71,9 @@
      over the white panel. */
   --c-thumbnail-tile-shade: 3%;
 
-  /* Gray elements (cards, Matrix blocks, chips) take the page's blue-gray,
-     with slate lines and text, the chrome's own. */
-  --c-element-gray-fill-quiet: var(--c-surface-page);
+  /* Gray elements (cards, Matrix blocks, chips) take slate, the chrome's own
+     neutral: as light as the gray palette, but blue-gray. */
+  --c-element-gray-fill-quiet: var(--c-color-slate-fill-quiet);
   --c-element-gray-border-quiet: var(--c-color-slate-border-quiet);
   --c-element-gray-on-quiet: var(--c-color-slate-on-quiet);
   --c-element-gray-fill-normal: var(--c-color-slate-fill-normal);
