@@ -716,6 +716,7 @@ Content: the secondary nav, content, and details panes
     --resize-handle-display: none;
 
     .cp-content__details {
+      --cp-details-edge-shadow: none;
       border-inline-start: none;
       box-shadow: none;
     }
@@ -785,7 +786,18 @@ Content: the secondary nav, content, and details panes
     z-index: var(--c-layer-sticky);
     border-inline-start: 1px solid var(--c-color-border-quiet);
     --cp-details-bg: var(--c-surface-details);
+    --_details-inset-shadow: rgb(
+      var(--c-shadow-tint) / calc(0.08 * var(--c-shadow-multiplier))
+    );
+    /* Drawn by the pane inside (see ContentDetailsAside), above the composers
+       whose opaque fades would otherwise cover it. */
+    --cp-details-edge-shadow: inset 6px 0 6px -6px var(--_details-inset-shadow);
     background-color: var(--cp-details-bg);
+
+    &:dir(rtl) {
+      --cp-details-edge-shadow: inset -6px 0 6px -6px
+        var(--_details-inset-shadow);
+    }
     /* A dragged width outlives the layout it was dragged in, so cap it here. */
     max-inline-size: var(--cp-content-details-max, 90cqi);
     /* Contained in both axes, so the row sets its height rather than the pane:
@@ -860,6 +872,7 @@ Folds
     .cp-content--details > .cp-content__details {
       inline-size: var(--cp-content-details-width);
       justify-self: end;
+      --cp-details-edge-shadow: none;
       box-shadow: var(--c-shadow-md);
     }
   }
@@ -904,6 +917,7 @@ Folds
       .cp-content--sidebar.cp-content--details > .cp-content__details {
         inline-size: var(--cp-content-details-width);
         justify-self: end;
+        --cp-details-edge-shadow: none;
         box-shadow: var(--c-shadow-md);
       }
     }
