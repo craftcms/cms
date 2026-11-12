@@ -2453,6 +2453,13 @@ JS, [
                 } catch (InvalidConfigException) {
                     return Craft::t('app', 'Unknown');
                 }
+            case 'link':
+                // Only live entries get routed (see route())
+                $entry = $this->isProvisionalDraft ? $this->getCanonical() : $this;
+                if ($entry->getStatus() !== self::STATUS_LIVE) {
+                    return '';
+                }
+                return parent::attributeHtml($attribute);
             default:
                 return parent::attributeHtml($attribute);
         }
