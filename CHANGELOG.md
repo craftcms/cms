@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixed a bug where element indexes’ Link columns showed links for disabled, archived, pending, and expired elements. ([#20604](https://github.com/craftcms/cms/issues/20604))
+- Fixed a bug where uploaded PNGs could be saved uncompressed when GD was used as the image driver, making them many times larger than the originals.
 - Fixed a bug where files sent to `assets_upload_url` MCP upload URLs couldn’t be used by `assets_create` or `assets_replace` on load-balanced sites, when requests reached different servers. Uploads are now stored in the temporary asset upload filesystem (`tempAssetUploadFs`).
 - MCP upload URLs now respond with JSON errors, rather than HTML pages, when an upload is expired, already used, or too large.
 
@@ -17,10 +19,10 @@
 - MCP tools now return users’ addresses when `addresses` is included in `fields`.
 - The `asset_folders_list` MCP tool now accepts `null` for `criteria.parentId`, which lists volumes’ root folders.
 - The **My Account** → **Tokens** screen is now only shown to admins until OAuth signing keys are set up, and explains how to set them up. Token creation requests now return a 400 error rather than a server error until then. ([#20357](https://github.com/craftcms/cms/issues/20357))
-- The web-based installer is now only available when Dev Mode is enabled. Otherwise, Craft must be installed with the `install` CLI command.
-- The web-based installer’s actions are no longer available once Craft is installed, even when Dev Mode is enabled.
-- The web-based installer now responds with a 503 error when Craft can’t connect to the configured database, rather than offering to change the database connection settings.
-- The web-based installer now only saves database connection settings to the `.env` file once Craft has been installed with them, and no longer accepts them if the `.env` file isn’t writable.
+- The web-based installer is now only available when Dev Mode is enabled. Otherwise, Craft must be installed with the `install` CLI command. (GHSA-pcf5-h66c-9wxw)
+- The web-based installer’s actions are no longer available once Craft is installed, even when Dev Mode is enabled. (GHSA-pcf5-h66c-9wxw)
+- The web-based installer now responds with a 503 error when Craft can’t connect to the configured database, rather than offering to change the database connection settings. (GHSA-pcf5-h66c-9wxw)
+- The web-based installer now only saves database connection settings to the `.env` file once Craft has been installed with them, and no longer accepts them if the `.env` file isn’t writable. (GHSA-pcf5-h66c-9wxw)
 - Added `craft\config\McpConfig::filters()`. ([#20558](https://github.com/craftcms/cms/pull/20558))
 - Added `craft\base\McpOutputFieldInterface`, which fields can implement to control how their values are returned by MCP tools.
 - Added `craft\mcp\McpOutputContext`.
