@@ -22,6 +22,8 @@
     id: string;
     label: string;
     icon: string;
+    /** See {@link DetailsPanel.iconSvg}. */
+    iconSvg?: string;
     /** Show the label's first letter instead of the icon. */
     initialIcon?: boolean;
     /** Where the panel goes in the rail. Lower comes first. */
@@ -52,6 +54,7 @@
     label: props.label,
     headingId,
     icon: props.icon,
+    iconSvg: props.iconSvg,
     initialIcon: props.initialIcon,
     order: props.order,
     statusData: props.status ?? null,
