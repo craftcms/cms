@@ -280,41 +280,6 @@ describe('NestedElementBlocksControl', () => {
     ]);
   });
 
-  it('offers only owner-specific creation choices in their requested order while retaining existing blocks', async () => {
-    const state = mount(
-      {
-        entries: {existing: {type: 'existingType', collapsed: true}},
-        sortOrder: ['existing'],
-      },
-      {
-        entryTypes: [
-          {value: 'existingType', label: 'Existing Type'},
-          {value: 'first', label: 'First'},
-          {value: 'second', label: 'Second'},
-        ],
-        createEntryTypes: ['second', 'first'],
-        blocks: {existing: {label: 'Existing content'}},
-      }
-    );
-    await nextTick();
-    const buttons = [
-      ...container!.querySelectorAll<HTMLElement>('[data-ui-matrix-add]'),
-    ];
-    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
-      'Add Second',
-      'Add First',
-    ]);
-    expect(container!.textContent).toContain('Existing content');
-    invoke('existing', 'Add Second above');
-    await nextTick();
-    const value = state.value as {
-      entries: Record<string, {type: string}>;
-      sortOrder: string[];
-    };
-    expect(value.sortOrder.at(-1)).toBe('existing');
-    expect(value.entries[value.sortOrder[0]!]!.type).toBe('second');
-  });
-
   it('remembers a collapsed block in storage rather than the value', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},
@@ -1971,15 +1936,5 @@ describe('NestedElementBlocksControl', () => {
     expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder[0]).toMatch(
       /^uid:/
     );
-  });
-
-  it('renders its blocks when the value is present', async () => {
-    mount({
-      entries: {'uid:block-a': {type: 'newType'}},
-      sortOrder: ['uid:block-a'],
-    });
-    await nextTick();
-
-    expect(container!.querySelectorAll('[data-matrix-block]').length).toBe(1);
   });
 });

@@ -110,12 +110,11 @@ const rule = (theme: CoverTheme) =>
  *   selected card without a color. Defaults to the neutral loud text color.
  * @cssproperty --c-card-padding-inline - Inline (horizontal) padding of the
  *   header, body, and footer. Defaults to `--c-spacing-md` for the
- *   header/footer and `--cp-container-padding` for the body, or
- *   `--c-spacing-lg` where that isn't defined.
+ *   header/footer, and for the body 16px, growing to 24px as the card widens
+ *   from 400px to 800px.
  * @cssproperty --c-card-padding-block - Block (vertical) padding of the header,
- *   body, and footer. Defaults to `--c-spacing-sm` for the header/footer and
- *   `--cp-container-padding` for the body, or `--c-spacing-lg` where that
- *   isn't defined.
+ *   body, and footer. Defaults to `--c-spacing-sm` for the
+ *   header/footer, and the same as the inline padding for the body.
  *
  * @property padding - Spacing for every padded region, from the shared spacing
  *   scale. Supplied by the `Paddable` mixin, the same as `craft-pane` and

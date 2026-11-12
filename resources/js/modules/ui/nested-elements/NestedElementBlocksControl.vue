@@ -536,11 +536,17 @@
 </template>
 
 <style scoped>
+  /* Pulls the tabs up over the card body's top padding, which this mirrors
+     (`cqi` is the card's here). */
   .matrix-block-fields--tabbed {
     margin-block-start: calc(
       var(
           --c-card-padding-block,
-          var(--cp-container-padding, var(--c-spacing-lg))
+          clamp(
+            var(--c-spacing-lg),
+            2cqi + var(--c-spacing-md),
+            calc(var(--c-spacing) * 6)
+          )
         ) *
         -1
     );

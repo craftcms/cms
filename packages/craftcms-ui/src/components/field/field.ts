@@ -8,7 +8,7 @@ import {
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import '../tooltip/tooltip.js';
+import '../info-icon/info-icon.js';
 import '../button/button.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
 import {FormControl, type AriaReferenceConfig} from '@src/mixins/FormControl';
@@ -49,7 +49,8 @@ type FormControlTarget = HTMLElement & {
  * @slot label-extra - Extra heading content, rendered after a flex-grow spacer.
  *   @deprecated Use `actions` instead.
  * @slot actions - Field-level actions (hide-label toggles, copy-value buttons,
- *   field settings menus), rendered as a group at the end of the heading.
+ *   field settings menus), rendered as a group right after a visible label,
+ *   or at the end of the heading when the label is visually hidden.
  */
 export default class CraftField extends FormControl(LitElement) {
   static override styles = [visuallyHiddenStyles, baseFieldStyles, styles];
@@ -362,6 +363,9 @@ export default class CraftField extends FormControl(LitElement) {
    * and actions, mirroring `.field > .heading` in the Blade wrapper. Skipped
    * entirely when there's nothing to put in it.
    *
+   * Beside a visible label, the actions follow it and its indicators, so a
+   * field's menu sits with the name it acts on. Otherwise they go at the end.
+   *
    * With `label-sr-only`, the label stays available to screen readers but is
    * visually hidden, along with the read-only badge that belongs to it. When
    * they're all the heading has, the whole heading is hidden rather than just
@@ -383,6 +387,25 @@ export default class CraftField extends FormControl(LitElement) {
     if (!hasLabel && !hasOtherContent && !this.readOnly) {
       return html``;
     }
+
+    const actionsBesideLabel = hasActions && hasLabel && !this.labelSrOnly;
+    const actions = hasActions
+      ? html`
+          <div
+            class=${classMap({
+              'field-actions': true,
+              'field-actions--beside-label': actionsBesideLabel,
+              'field-actions--after-text':
+                actionsBesideLabel && !this.__hasLabelDecorations,
+            })}
+            part="actions"
+            role="group"
+            aria-label=${t('Field actions')}
+          >
+            <slot name="actions"></slot>
+          </div>
+        `
+      : html`<slot name="actions"></slot>`;
 
     let label: TemplateResult | typeof nothing = nothing;
     if (hasLabel) {
@@ -413,22 +436,12 @@ export default class CraftField extends FormControl(LitElement) {
             >`
           : nothing}
         <slot name="label-badge"></slot>
-        ${hasLabelExtra || hasActions
+        ${actionsBesideLabel ? actions : nothing}
+        ${hasLabelExtra || (hasActions && !actionsBesideLabel)
           ? html`<div class="flex-grow"></div>`
           : nothing}
         <slot name="label-extra"></slot>
-        ${hasActions
-          ? html`
-              <div
-                class="field-actions"
-                part="actions"
-                role="group"
-                aria-label=${t('Field actions')}
-              >
-                <slot name="actions"></slot>
-              </div>
-            `
-          : html`<slot name="actions"></slot>`}
+        ${actionsBesideLabel ? nothing : actions}
         <slot name="heading-suffix"></slot>
       </div>
     `;
@@ -656,6 +669,11 @@ export default class CraftField extends FormControl(LitElement) {
    * the light DOM (like the server-rendered markup), so they pick up the CP's
    * global `.visually-hidden`, `.required` and `.t9n-indicator` styles.
    */
+  /** Whether the label gets a required indicator or translation icon. */
+  private get __hasLabelDecorations(): boolean {
+    return Boolean(this.label) && (this.required || this.translatable);
+  }
+
   private __syncLabelDecorations(): void {
     const labelNode = this._labelNode;
     if (!labelNode) {
@@ -668,9 +686,21 @@ export default class CraftField extends FormControl(LitElement) {
       el.remove();
     }
 
-    if (!this.label) {
+    if (!this.label || !this.__hasLabelDecorations) {
       return;
     }
+
+    // One flex item, so only the gap after the label's text widens to make
+    // up for the space beside each icon's glyph.
+    const decorations = document.createElement('span');
+    decorations.setAttribute('data-craft-field-decoration', '');
+    Object.assign(decorations.style, {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 'var(--_heading-gap)',
+      marginInlineStart: 'var(--_label-text-bearing)',
+    });
+    labelNode.append(decorations);
 
     if (this.required) {
       const srLabel = document.createElement('craft-visually-hidden');
@@ -688,28 +718,20 @@ export default class CraftField extends FormControl(LitElement) {
       indicator.setAttribute('data-color', 'danger');
       indicator.setAttribute('aria-hidden', 'true');
 
-      labelNode.append(srLabel, indicator);
+      decorations.append(srLabel, indicator);
     }
 
     if (this.translatable) {
-      const tooltip = document.createElement('craft-tooltip');
-      tooltip.setAttribute('placement', 'bottom');
-      tooltip.textContent = this.translationDescription;
-      tooltip.setAttribute('data-craft-field-decoration', '');
-
-      const button = document.createElement('craft-button');
-      button.type = 'button';
-      button.slot = 'invoker';
-      button.variant = 'plain';
-      button.size = 'small';
-      button.icon = 'language';
-      button.className = 't9n-indicator prevent-autofocus';
-      button.setAttribute('aria-label', this.translationDescription);
+      const infoIcon = document.createElement('craft-info-icon');
+      infoIcon.icon = 'language';
+      infoIcon.label = this.translationDescription;
+      infoIcon.textContent = this.translationDescription;
+      infoIcon.className = 't9n-indicator prevent-autofocus';
+      infoIcon.setAttribute('data-craft-field-decoration', '');
       // Keeps the label it sits in from moving focus to the control.
-      button.addEventListener('click', (event) => event.preventDefault());
+      infoIcon.addEventListener('click', (event) => event.preventDefault());
 
-      tooltip.append(button);
-      labelNode.append(tooltip);
+      decorations.append(infoIcon);
     }
   }
 }

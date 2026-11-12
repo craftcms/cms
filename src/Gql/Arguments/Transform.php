@@ -36,6 +36,11 @@ class Transform extends Arguments
                 'type' => Type::string(),
                 'description' => 'The handle of the named transform to use.',
             ],
+            'immediately' => [
+                'name' => 'immediately',
+                'type' => Type::boolean(),
+                'description' => 'Whether to generate the transform before returning its URL, rather than when the URL is first requested. Asset transformers that generate transforms on request, such as `craft`, honor it; `craft` otherwise follows the disk’s `generate_transforms_before_page_load` setting.',
+            ],
         ];
 
         foreach (app(AssetTransformers::class)->coreParameterRules() as $handle => $rules) {

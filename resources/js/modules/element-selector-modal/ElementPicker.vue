@@ -216,13 +216,6 @@
     overflow: hidden;
   }
 
-  // Even on both sides of each separator, matching the header's breadcrumbs:
-  // the crumb's own gap already sits before it, so the end margin makes up for
-  // it.
-  .folder-breadcrumbs :deep(craft-breadcrumb-item > [slot='separator']) {
-    margin-inline: var(--c-spacing-sm) var(--c-spacing-md);
-  }
-
   // A folder listing has no columns besides the folder's own, so it takes the
   // width the title column would otherwise leave to the checkbox column.
   .modal-element-index--folders :deep(.cp-table-cell--title) {

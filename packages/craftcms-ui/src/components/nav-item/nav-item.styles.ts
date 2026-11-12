@@ -20,6 +20,9 @@ export default css`
        transparent border to keep room for its focus state. */
     --_rail-border: 1px;
     --_rail-size: var(--c-size-touch-target);
+    /* A row with an icon, less its border, so the icon sits where a collapsed
+       row centers it. */
+    --_prefixed-padding-inline: calc(var(--c-spacing-sm) - var(--_rail-border));
 
     border-radius: var(--c-radius-md);
   }
@@ -105,7 +108,7 @@ export default css`
   }
 
   .nav-item--prefixed {
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--_prefixed-padding-inline);
     grid-template-columns: var(--_prefix-size) 1fr auto;
 
     /* Pull the label back across the row's gap, to the tighter prefix gap. */
@@ -190,9 +193,11 @@ export default css`
     --c-color-neutral-on-normal: var(--c-color-accent-on-normal);
   }
 
-  /* Not on the page you're on: its selected fill is the state to show. */
-  :host(:not([current]))
-    .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)) {
+  /* Not on the page you're on: its selected fill is the state to show. A row
+     with its flyout open looks hovered while the pointer is in the flyout. */
+  :host(:not([current], [appearance='tabs']))
+    .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)),
+  :host(:not([current], [appearance='tabs'])) .nav-item--flyout-open {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
   }
 
@@ -213,7 +218,8 @@ export default css`
 
   /* A selected or hovered row's icon takes the row's own color. */
   :host([active]) .nav-item__prefix,
-  .nav-item:not(.nav-item--static):hover .nav-item__prefix {
+  .nav-item:not(.nav-item--static):hover .nav-item__prefix,
+  .nav-item--flyout-open .nav-item__prefix {
     color: inherit;
   }
 
@@ -245,8 +251,9 @@ export default css`
    */
   :host(:not([group])) .subnav {
     --_subnav-indent: calc(
-      var(--c-spacing-sm) + var(--_prefix-size) + var(--_prefix-gap) -
-        var(--_subnav-rule) - var(--c-spacing-sm) - var(--_padding-inline)
+      var(--_prefixed-padding-inline) + var(--_prefix-size) +
+        var(--_prefix-gap) - var(--_subnav-rule) - var(--c-spacing-sm) -
+        var(--_padding-inline)
     );
     position: relative;
     margin-block-start: var(--c-spacing-sm);
@@ -475,5 +482,50 @@ export default css`
     font-size: var(--c-text-xs);
     font-weight: bold;
     line-height: 1;
+  }
+
+  :host([appearance='tabs']),
+  :host([appearance='tabs']) .nav-item {
+    border-radius: 0;
+  }
+
+  /* No gap, so the empty suffix column doesn't carry one and leave the bar
+     below wider than the label it marks. */
+  :host([appearance='tabs']) .nav-item {
+    gap: 0;
+    padding-inline: 0;
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  :host([appearance='tabs'][current]) .nav-item {
+    color: inherit;
+    font-weight: var(--font-weight-semibold);
+  }
+
+  :host([appearance='tabs'][active]:not([current])) .nav-item::before {
+    display: none;
+  }
+
+  :host([appearance='tabs']) .nav-item::after {
+    content: '';
+    position: absolute;
+    inset-block-end: -1px;
+    inset-inline: 0;
+    block-size: calc(2rem / 16);
+    background-color: transparent;
+  }
+
+  :host([appearance='tabs'][current]) .nav-item::after {
+    background-color: var(
+      --c-nav-item-border-active,
+      var(--c-color-accent-fill-loud)
+    );
+  }
+
+  @media (forced-colors: active) {
+    :host([appearance='tabs'][current]) .nav-item::after {
+      background-color: Highlight;
+    }
   }
 `;

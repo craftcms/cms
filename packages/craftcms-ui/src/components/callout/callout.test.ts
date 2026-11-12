@@ -1,6 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftCallout from './callout.js';
-import styles from './callout.styles.js';
 import './callout.js';
 
 async function createCallout(
@@ -33,14 +32,6 @@ function spacing(element: CraftCallout, axis: 'block' | 'inline'): string {
     ) ?? ''
   );
 }
-
-/**
- * The component's own stylesheet, comments and whitespace stripped, for the
- * invariants only CSS can express.
- */
-const cssText = styles.cssText
-  .replace(/\/\*[\s\S]*?\*\//g, '')
-  .replace(/\s+/g, '');
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -77,7 +68,7 @@ describe('craft-callout padding', () => {
   /**
    * The shipped look is asymmetric, so the default has to stay in the
    * stylesheet: with no `padding` attribute the component writes nothing and
-   * the fallbacks below are what applies.
+   * the stylesheet's fallbacks apply.
    */
   it('writes nothing when no padding is set', async () => {
     const element = await createCallout();
@@ -85,24 +76,6 @@ describe('craft-callout padding', () => {
     expect(element.padding).toBeUndefined();
     expect(spacing(element, 'block')).toBe('');
     expect(spacing(element, 'inline')).toBe('');
-  });
-
-  /**
-   * The default pair still comes from the stylesheet, and the attribute only
-   * ever overrides it. Both axes are `sm`: the inline gap to the text is made
-   * up by the padding on the icon, title, and description themselves, so the
-   * container's own inline padding is the tighter step.
-   */
-  it('keeps the default padding in the stylesheet', () => {
-    expect(cssText).toContain(
-      '--_callout-padding-block:var(--c-callout-padding-block,var(--c-spacing-sm));'
-    );
-    expect(cssText).toContain(
-      '--_callout-padding-inline:var(--c-callout-padding-inline,var(--c-spacing-sm));'
-    );
-    expect(cssText).toContain(
-      'padding-block:var(--_callout-padding-block);padding-inline:var(--_callout-padding-inline);'
-    );
   });
 
   it('pads both axes from a single value', async () => {

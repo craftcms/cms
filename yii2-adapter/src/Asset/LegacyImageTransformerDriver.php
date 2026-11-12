@@ -26,7 +26,6 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
 {
     public function __construct(
         private readonly string $transformer,
-        private readonly bool $immediately = false,
     ) {
     }
 
@@ -52,7 +51,7 @@ class LegacyImageTransformerDriver implements AssetTransformDriver, PreloadsAsse
 
         $url = Craft::$app->getImageTransforms()
             ->getImageTransformer($this->transformer)
-            ->getTransformUrl($asset, $transform, $this->immediately);
+            ->getTransformUrl($asset, $transform, $request->immediately ?? false);
         $url = Html::encodeSpaces($url);
 
         event(new AfterGenerateTransform($asset, $transform, $url));

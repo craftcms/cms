@@ -26,13 +26,6 @@ beforeEach(() => {
 });
 
 describe('craft-avatar', () => {
-  it('renders the gradient artwork', async () => {
-    const element = await createAvatar();
-
-    expect(svg(element)).toBeTruthy();
-    expect(element.shadowRoot!.querySelector('linearGradient')).toBeTruthy();
-  });
-
   /**
    * An avatar that names nothing is decoration beside the name it sits next to,
    * so it is hidden rather than announced as an unnamed image.

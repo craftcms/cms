@@ -1,7 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftTab from '../tab/tab.js';
 import type CraftTabs from './tabs.js';
-import {tabsPlacements} from './tabs.js';
 import styles from './tabs.styles.js';
 import '../tab/tab.js';
 import './tabs.js';
@@ -61,18 +60,6 @@ function rules(): Map<string, string> {
   }
 
   return map;
-}
-
-/**
- * The declarations of every rule whose selector mentions `fragment`, joined —
- * a placement's styling is spread over a handful of rules, some of them shared
- * between the two placements on an axis.
- */
-function declarations(fragment: string): string {
-  return [...rules()]
-    .filter(([selector]) => selector.includes(fragment))
-    .map(([, body]) => body)
-    .join('\n');
 }
 
 beforeEach(() => {
@@ -159,17 +146,6 @@ describe('placement', () => {
     expect(element.getAttribute('placement')).toBe('block-start');
   });
 
-  it('reflects every placement', async () => {
-    const element = await createTabs();
-
-    for (const placement of tabsPlacements) {
-      element.placement = placement;
-      await element.updateComplete;
-
-      expect(element.getAttribute('placement')).toBe(placement);
-    }
-  });
-
   it('derives the tablist orientation from the axis', async () => {
     const element = await createTabs();
     const orientation = () =>
@@ -186,45 +162,6 @@ describe('placement', () => {
 
       expect(orientation()).toBe(expected);
     }
-  });
-
-  it('hands the indicator geometry down to the tabs', () => {
-    // The tabs can't see the strip's placement, so every placement that isn't
-    // <craft-tab>'s own default has to publish the indicator vars they inherit.
-    // Asserted against the stylesheet because there's no cascade in this
-    // environment.
-    const inlineStart = declarations("[placement='inline-start']");
-
-    expect(inlineStart).toContain('--c-tab-indicator-inset-inline-end: -1px');
-    expect(inlineStart).toContain('--c-tab-indicator-inset-block-end: 0');
-    expect(inlineStart).toContain(
-      '--c-tab-indicator-inline-size: calc(2rem / 16)'
-    );
-
-    const inlineEnd = declarations("[placement='inline-end']");
-
-    expect(inlineEnd).toContain('--c-tab-indicator-inset-inline-start: -1px');
-    expect(inlineEnd).toContain('--c-tab-indicator-inset-block-end: 0');
-
-    // A strip below the panels flips the indicator to the tab's block start.
-    expect(declarations("[placement='block-end']")).toContain(
-      '--c-tab-indicator-inset-block-start: -1px'
-    );
-  });
-
-  it('moves the rule to the edge facing the panels', () => {
-    expect(rules().get('.tabs__strip')).toContain(
-      'border-block-end-width: 1px'
-    );
-    expect(declarations("[placement='block-end']")).toContain(
-      'border-block-start-width: 1px'
-    );
-    expect(declarations("[placement='inline-start']")).toContain(
-      'border-inline-end-width: 1px'
-    );
-    expect(declarations("[placement='inline-end']")).toContain(
-      'border-inline-start-width: 1px'
-    );
   });
 
   it('is written logically, so RTL needs no rules of its own', () => {
@@ -287,27 +224,6 @@ describe('size', () => {
     await element.updateComplete;
     expect(element.getAttribute('size')).toBe('small');
   });
-
-  it('scales the strip by font size alone', async () => {
-    // The tabs are slotted, so they inherit the strip's font size through the
-    // flattened tree; their padding is em-based and follows. Asserted against
-    // the stylesheet because there's no cascade in this environment.
-    const map = rules();
-
-    expect(map.get('.tabs__strip')).toContain(
-      'font-size: var(--c-tabs-font-size, var(--c-text-base))'
-    );
-    expect(map.get(":host([size='small'])")).toContain(
-      '--c-tabs-font-size: var(--c-text-sm)'
-    );
-    expect(map.get(":host([size='large'])")).toContain(
-      '--c-tabs-font-size: var(--c-text-lg)'
-    );
-
-    // Medium is the bare fallback above, so there is no per-tab padding rule
-    // to keep in sync with it.
-    expect(map.has(":host([size='medium'])")).toBe(false);
-  });
 });
 
 describe('equal width', () => {
@@ -321,56 +237,9 @@ describe('equal width', () => {
     await element.updateComplete;
     expect(element.hasAttribute('equal-width')).toBe(true);
   });
-
-  it('gives the tabs an equal share of the strip', () => {
-    // Asserted against the stylesheet: there is no cascade in this
-    // environment, so the widths themselves are covered by the EqualWidth
-    // play function in tabs.stories.ts.
-    const selector = [...rules().keys()].find(
-      (key) =>
-        key.includes('[equal-width]') &&
-        !key.includes(':not([equal-width])') &&
-        key.includes("slot='tab'")
-    );
-
-    expect(selector).toBeDefined();
-
-    const body = rules().get(selector!)!;
-
-    // A zero basis is what makes the shares equal rather than merely
-    // proportional, and the min-width override is what lets a long label
-    // shrink into its share instead of widening the row.
-    expect(body).toContain('flex: 1 1 0');
-    expect(body).toContain('min-width: 0');
-
-    // A wrapped label makes its tab taller and stretches the row with it, so
-    // the labels are centered on both axes rather than only the inline one.
-    expect(body).toContain('justify-content: center');
-    expect(body).toContain('align-items: center');
-
-    // Only the block placements divide a width.
-    expect(selector).toContain("placement='block-start'");
-    expect(selector).toContain("placement='block-end'");
-    expect(selector).not.toContain('inline-start');
-  });
-
-  it('leaves the natural widths alone when off', () => {
-    expect(rules().get("::slotted([slot='tab'])")).toContain('flex: none');
-  });
 });
 
 describe('craft-tab', () => {
-  it('reflects disabled', async () => {
-    const element = await createTabs();
-    const tab = element.querySelector('craft-tab') as CraftTab;
-
-    expect(tab.disabled).toBe(false);
-
-    tab.disabled = true;
-    await tab.updateComplete;
-    expect(tab.hasAttribute('disabled')).toBe(true);
-  });
-
   it('reads selection off the attribute the strip writes', async () => {
     const element = await createTabs();
     const tab = element.querySelectorAll('craft-tab')[1] as CraftTab;

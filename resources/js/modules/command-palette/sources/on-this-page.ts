@@ -12,6 +12,8 @@ interface Target {
   hint?: string | null;
   description: string;
   icon: string;
+  /** SVG markup shown in place of `icon`. */
+  iconSvg?: string | null;
   /** A palette color for the icon, such as a nested entry's type's. */
   iconColor?: string | null;
   element: HTMLElement;
@@ -237,6 +239,7 @@ function landmarks(): Target[] {
         label,
         description: t('Sidebar panel'),
         icon: icon?.name ?? 'sidebar-flip',
+        iconSvg: icon?.querySelector(':scope > svg')?.outerHTML ?? null,
         element: trigger,
         activate: openPanel,
       });
@@ -550,6 +553,7 @@ export const onThisPageProvider: CommandPaletteProvider = {
           hint,
           description,
           icon,
+          iconSvg,
           iconColor,
           element,
           activate,
@@ -561,6 +565,7 @@ export const onThisPageProvider: CommandPaletteProvider = {
           hint,
           description,
           icon,
+          iconSvg,
           iconColor,
           ...(href
             ? {href}

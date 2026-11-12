@@ -165,7 +165,10 @@ class Yii2ServiceProvider extends ServiceProvider
                     $event->asset,
                     $event->transform,
                 )->url;
-            } catch (AssetTransformException|NotSupportedException $exception) {
+            } catch (NotSupportedException) {
+                // Let the asset return its own URL.
+                return;
+            } catch (AssetTransformException $exception) {
                 report($exception);
             }
 

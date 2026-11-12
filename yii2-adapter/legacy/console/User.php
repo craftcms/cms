@@ -60,7 +60,8 @@ class User extends Component
      * A console process has no session to log in to, so this makes the user
      * the Craft guard's current user without logging them in, the way Craft 5
      * only set the console identity: no `Login` event, and no login recorded
-     * against the user.
+     * against the user. Clearing it likewise forgets the guard's user without
+     * logging them out, so no `Logout` event fires.
      *
      * @param UserElement|null $identity The identity object. If null, it
      * means the current user will be a guest without any associated identity.
@@ -68,7 +69,8 @@ class User extends Component
     public function setIdentity(?UserElement $identity = null): void
     {
         if ($identity === null) {
-            craftAuth()->logout();
+            // Logging out would fire `Logout`, whose adapter listener comes back here.
+            craftAuth()->forgetUser();
 
             return;
         }

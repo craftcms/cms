@@ -75,6 +75,11 @@ function isDisabled(invoker: HTMLElement): boolean {
  *
  * Only keyboard focus holds the overlay open. Clicking the invoker focuses it
  * too, and that shouldn't keep it showing once the pointer has left.
+ *
+ * Pressing the invoker hides the overlay until the pointer leaves, so it
+ * doesn't sit over whatever the press opened. Touch is ignored: a tap is the
+ * only hover a touch screen has, and nothing would hide the overlay again
+ * until the next tap somewhere else.
  */
 export function watchHover({
   invoker,
@@ -88,18 +93,39 @@ export function watchHover({
   // content is replaced, never sees that `focusin`.
   let isFocused = hasKeyboardFocus(invoker);
   let isHovered = false;
+  let isPressed = false;
   let delay: ReturnType<typeof setTimeout> | undefined;
 
   const update = (event: Event) => {
     const {type} = event;
 
+    if ((event as Partial<PointerEvent>).pointerType === 'touch') {
+      return;
+    }
+
     clearTimeout(delay);
+
+    if (type === 'pointerdown') {
+      isPressed = true;
+      isHovered = false;
+      hide();
+      return;
+    }
+
+    if (type === 'pointerleave' && event.currentTarget === invoker) {
+      isPressed = false;
+    }
+
+    if (isPressed) {
+      return;
+    }
+
     isFocused =
       type === 'focusout'
         ? false
         : isFocused || (type === 'focusin' && isFocusVisible(event));
     isHovered =
-      type === 'mouseleave' ? false : isHovered || type === 'mouseenter';
+      type === 'pointerleave' ? false : isHovered || type === 'pointerenter';
 
     if ((isFocused || isHovered) && !isDisabled(invoker)) {
       delay = setTimeout(show, delayIn);
@@ -108,8 +134,14 @@ export function watchHover({
     }
   };
 
-  const contentTypes = ['mouseenter', 'mouseleave'];
-  const invokerTypes = ['mouseenter', 'mouseleave', 'focusin', 'focusout'];
+  const contentTypes = ['pointerenter', 'pointerleave'];
+  const invokerTypes = [
+    'pointerenter',
+    'pointerleave',
+    'pointerdown',
+    'focusin',
+    'focusout',
+  ];
 
   for (const type of contentTypes) {
     content.addEventListener(type, update);

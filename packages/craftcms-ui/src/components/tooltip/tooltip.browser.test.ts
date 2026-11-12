@@ -1,6 +1,9 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
 import type CraftTooltip from './tooltip.js';
+import '../../styles/cp.css';
+import '../shortcut/shortcut.js';
 import './tooltip.js';
+import {contrast} from '../../../test/contrast';
 
 beforeEach(() => {
   document.body.innerHTML = '';
@@ -27,19 +30,54 @@ async function render(): Promise<{
 
 const after = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-it('hides once the pointer leaves an invoker it was clicked on', async () => {
+it('hides when its invoker is pressed, until the pointer leaves and comes back', async () => {
   const {userEvent} = await import('vite-plus/test/browser');
   const {invoker, elsewhere, tooltip} = await render();
+
+  await userEvent.hover(invoker);
+  await after(300);
+
+  expect(tooltip.open).toBe(true);
 
   await userEvent.click(invoker);
   await after(300);
 
-  expect(tooltip.open).toBe(true);
+  expect(tooltip.open).toBe(false);
 
   await userEvent.hover(elsewhere);
   await after(100);
 
   expect(document.activeElement).toBe(invoker);
+  expect(tooltip.open).toBe(false);
+
+  await userEvent.hover(invoker);
+  await after(300);
+
+  expect(tooltip.open).toBe(true);
+});
+
+it('stays hidden when its invoker is tapped', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  const {invoker, elsewhere, tooltip} = await render();
+  // Keeps the real mouse off the invoker, which would show the tooltip itself.
+  await userEvent.hover(elsewhere);
+
+  // A tap sends touch pointer events, then emulated mouse events.
+  for (const type of ['pointerover', 'pointerenter', 'pointerdown']) {
+    invoker.dispatchEvent(
+      new PointerEvent(type, {
+        pointerType: 'touch',
+        bubbles: type !== 'pointerenter',
+      })
+    );
+  }
+  for (const type of ['mouseover', 'mouseenter', 'mousedown', 'click']) {
+    invoker.dispatchEvent(
+      new MouseEvent(type, {bubbles: type !== 'mouseenter'})
+    );
+  }
+  await after(300);
+
   expect(tooltip.open).toBe(false);
 });
 
@@ -57,6 +95,28 @@ it('stays open while the invoker has keyboard focus', async () => {
   await after(100);
 
   expect(tooltip.open).toBe(true);
+});
+
+it('shows for a keyboard-focused slotted invoker and hides on Escape, keeping focus there', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `
+    <craft-tooltip>
+      <button slot="invoker" type="button">Translate</button>
+      Translated per site.
+    </craft-tooltip>
+    <p style="margin-top: 200px">Elsewhere</p>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  const invoker = document.querySelector('button')!;
+  await tooltip.updateComplete;
+
+  await userEvent.hover(document.querySelector('p')!);
+  await userEvent.tab();
+  expect(document.activeElement).toBe(invoker);
+  await expect.poll(() => tooltip.open).toBe(true);
+
+  await userEvent.keyboard('{Escape}');
+  await expect.poll(() => tooltip.open).toBe(false);
+  expect(document.activeElement).toBe(invoker);
 });
 
 it('wraps long content at a readable width', async () => {
@@ -571,4 +631,24 @@ it('refers its invoker to content replaced while it was out of the document', as
   await after(0);
 
   expect(invoker.getAttribute('aria-describedby')).toBe('replacement');
+});
+
+it('themes what it holds dark, so key caps read against its fill in the light theme', async () => {
+  document.documentElement.dataset.theme = 'light';
+  document.body.innerHTML = `
+    <button id="invoker" type="button">Search</button>
+    <craft-tooltip for="invoker" invoker-relation="label">
+      <div>Search <craft-shortcut>K</craft-shortcut></div>
+    </craft-tooltip>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  await tooltip.updateComplete;
+  const shortcut = tooltip.querySelector('craft-shortcut')!;
+  await shortcut.updateComplete;
+
+  const key = getComputedStyle(shortcut.shadowRoot!.querySelector('kbd')!);
+  const fill = getComputedStyle(tooltip.querySelector('[slot="content"]')!);
+
+  expect(
+    contrast(key.color, key.backgroundColor, fill.backgroundColor)
+  ).toBeGreaterThanOrEqual(4.5);
 });

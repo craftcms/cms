@@ -67,6 +67,7 @@ class ActionMenu implements Node
             ->items($node->props['items'])
             ->icon((string) $node->props['icon'])
             ->label($node->props['label'])
+            ->flush()
             ->attributes(['data-ui-node' => $node->uid])
             ->toHtml();
     }

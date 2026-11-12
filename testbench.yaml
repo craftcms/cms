@@ -7,6 +7,7 @@ providers:
   - CraftCms\DependencyAwareCache\CacheServiceProvider
   - CraftCms\Cms\Providers\CraftServiceProvider
   - Laravel\Wayfinder\WayfinderServiceProvider
+  - Laravel\Octane\OctaneServiceProvider
   - Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerServiceProvider
   - Workbench\App\Providers\TypeScriptTransformerServiceProvider
 
