@@ -280,6 +280,13 @@ class GraphqlOAuthCest
         $data = $this->request($I, $query, ['Authorization' => "Bearer $userToken"]);
         $I->assertNull($data['data']['entry'] ?? null);
 
+        // Results that depend on the user's permissions change with them
+        $headers = ['X-Craft-Gql-Token' => $gqlToken->accessToken, 'Authorization' => "Bearer $userToken"];
+        $editableQuery = '{ entries(editable: true) { title } }';
+        $I->assertSame([], $this->request($I, $editableQuery, $headers)['data']['entries']);
+        Craft::$app->getUserPermissions()->saveUserPermissions($user->id, ["viewEntries:$section->uid", "viewPeerEntries:$section->uid"]);
+        $I->assertSame([['title' => 'Published']], $this->request($I, $editableQuery, $headers)['data']['entries']);
+
         $this->request($I, $query, ['X-Craft-Gql-Token' => 'nope', 'Authorization' => "Bearer $userToken"], 400);
         $this->request($I, $query, ['X-Craft-Gql-Token' => $gqlToken->accessToken, 'Authorization' => 'Bearer aaa.bbb.ccc'], 401);
     }
