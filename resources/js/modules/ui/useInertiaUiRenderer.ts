@@ -8,8 +8,6 @@ import {cloneRaw} from './renderer/uiTree';
 export interface UiRendererInstance {
   advanceBaseline(): void;
   rebase?(values: UiPayload['values']): void;
-  /** Renders a refreshable UI again for the values it holds. */
-  refresh?(): void;
   setSubmitting?(submitting: boolean): void;
   currentValues(): UiPayload['values'];
   mutation(includeGroups?: string[][]): UiPayload['values'];
