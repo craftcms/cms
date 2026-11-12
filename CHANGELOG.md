@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Editable tables with a heading column now name each row’s inputs and Reorder and Delete buttons for screen readers after the row’s heading, such as “Opening Time, Wednesday”, rather than its row number. ([#20631](https://github.com/craftcms/cms/pull/20631))
+- Admin tables’ delete buttons are now named after their row for screen readers, such as “Delete Posts”, rather than “Delete item”, and deletion confirmations now name the row or count the selected rows, rather than asking “Are you sure?”. ([#20633](https://github.com/craftcms/cms/pull/20633))
 - Fixed missing tab styling, duplicate Save controls, and inconsistent table styling on legacy plugin control panel screens. ([#20591](https://github.com/craftcms/cms/pull/20591))
 - Fixed a bug where saving a plugin’s settings stored values from its `config/craft/<handle>.php` file in the project config, replacing the values previously saved from the control panel. ([#20624](https://github.com/craftcms/cms/pull/20624))
 - Fixed a bug where Yii HTTP exceptions, such as `yii\web\NotFoundHttpException`, thrown by legacy site controller actions resulted in a 500 error rather than their own status code. ([#20614](https://github.com/craftcms/cms/issues/20614), [#20617](https://github.com/craftcms/cms/pull/20617))
