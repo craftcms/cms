@@ -25,6 +25,8 @@ const state = vi.hoisted<{
     >
   >;
   setValue: ReturnType<typeof vi.fn>;
+  rerender: ReturnType<typeof vi.fn>;
+  saveErrors?: Record<string, string>;
   change?: (change: UiChange, values: UiPayload['values']) => void;
   currentValues: UiPayload['values'];
   confirmElevation: ReturnType<typeof vi.fn>;
@@ -34,6 +36,8 @@ const state = vi.hoisted<{
   refresh: undefined,
   submit: vi.fn(),
   setValue: vi.fn(),
+  rerender: vi.fn(),
+  saveErrors: undefined,
   change: undefined,
   currentValues: {siteId: 42, name: 'Changed', live: '1'},
   confirmElevation: vi.fn(),
@@ -70,9 +74,20 @@ vi.mock('@inertiajs/vue3', () => ({
         return ui;
       }),
       submit: vi.fn(
-        (action: FormSubmitAction, options: {onSuccess?: () => void}) => {
+        (
+          action: FormSubmitAction,
+          options: {
+            onSuccess?: () => void;
+            onError?: (errors: Record<string, string>) => void;
+          }
+        ) => {
           state.submit(action, transform(ui.data()));
-          options.onSuccess?.();
+
+          if (state.saveErrors) {
+            options.onError?.(state.saveErrors);
+          } else {
+            options.onSuccess?.();
+          }
         }
       ),
     };
@@ -96,6 +111,7 @@ vi.mock('@/modules/ui/UiRenderer.vue', () => ({
       expose({
         advanceBaseline: vi.fn(),
         currentValues: () => structuredClone(state.currentValues),
+        refresh: state.rerender,
         setValue: state.setValue,
       });
       onMounted(() => emit('update:mutation', {name: 'Changed'}));
@@ -123,6 +139,8 @@ beforeEach(() => {
   state.refresh = undefined;
   state.change = undefined;
   state.setValue.mockReset();
+  state.rerender.mockReset();
+  state.saveErrors = undefined;
   state.submit.mockClear();
   state.confirmElevation.mockReset();
   state.currentValues = {siteId: 42, name: 'Changed', live: '1'};
@@ -256,6 +274,27 @@ it('refreshes the ui through the configured endpoint', async () => {
     scope: [],
   });
   expect(result).toBe(refreshed);
+});
+
+it('renders the ui again for the submitted values after a failed save', async () => {
+  app = createApp(UiPage, {
+    ui: payload,
+    submit: {method: 'post', url: '/settings/sites'},
+    refreshUrl: '/settings/sites/ui',
+  });
+  app.mount(container);
+  await nextTick();
+
+  const layoutCall = state.layout.mock.calls[0];
+  if (!layoutCall) throw new Error('Expected the layout registration.');
+  layoutCall[0].onSave({redirect: false});
+
+  expect(state.rerender).not.toHaveBeenCalled();
+
+  state.saveErrors = {name: 'Name cannot be blank.'};
+  layoutCall[0].onSave({redirect: false});
+
+  expect(state.rerender).toHaveBeenCalledOnce();
 });
 
 it('forwards control changes and external value updates', async () => {
