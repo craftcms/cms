@@ -97,6 +97,28 @@ it('stays open while the invoker has keyboard focus', async () => {
   expect(tooltip.open).toBe(true);
 });
 
+it('shows for a keyboard-focused slotted invoker and hides on Escape, keeping focus there', async () => {
+  const {userEvent} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `
+    <craft-tooltip>
+      <button slot="invoker" type="button">Translate</button>
+      Translated per site.
+    </craft-tooltip>
+    <p style="margin-top: 200px">Elsewhere</p>`;
+  const tooltip = document.querySelector('craft-tooltip')!;
+  const invoker = document.querySelector('button')!;
+  await tooltip.updateComplete;
+
+  await userEvent.hover(document.querySelector('p')!);
+  await userEvent.tab();
+  expect(document.activeElement).toBe(invoker);
+  await expect.poll(() => tooltip.open).toBe(true);
+
+  await userEvent.keyboard('{Escape}');
+  await expect.poll(() => tooltip.open).toBe(false);
+  expect(document.activeElement).toBe(invoker);
+});
+
 it('wraps long content at a readable width', async () => {
   document.body.innerHTML = `
     <button id="invoker" type="button">Info</button>
