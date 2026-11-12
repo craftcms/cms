@@ -642,24 +642,17 @@ craft-card[data-color='white'] {
   --cp-element-header-fill: var(--c-card-header-fill-white);
 }
 
-/* An uncolored card takes the header color of the element it's in. At the top
-   level, it's a shade of whatever is under it: the text color at
-   --c-card-header-shade, which darkens it in the light theme and lightens it
-   in the dark one, by about as much as a colored header stands off the panel.
-   Its body stays transparent. */
+/* An uncolored card takes the header color of the element it's in, and at
+   the top level --c-card-header-fill-neutral. Its body stays transparent. */
 :is([data-matrix-block], [data-element-id], .element)
   > craft-card:not([data-color]):not([active])::part(header) {
   background-color: var(
     --cp-element-header-fill,
-    color-mix(
-      in srgb,
-      var(--c-text-default) var(--c-card-header-shade),
-      transparent
-    )
+    var(--c-card-header-fill-neutral)
   );
 }
 
-/* A white card's header is solid, as white is its base. */
+/* A white card's header is --c-card-header-fill-white. */
 :is([data-matrix-block], [data-element-id], .element)
   > craft-card[data-color='white']:not([active])::part(header) {
   background-color: var(--cp-element-header-fill);

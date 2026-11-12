@@ -60,15 +60,20 @@
   --c-card-border-selected: var(--c-color-neutral-border-loud);
   --c-card-text-selected: var(--c-color-neutral-on-loud);
 
-  /* Element cards' and Matrix blocks' header bars (see cp.css): a white
-     element's, and how strongly an uncolored top-level one shades what's
-     under it with the text color. */
-  --c-card-header-fill-white: var(--c-surface-page);
+  /* Element cards' and Matrix blocks' header bars (see cp.css), for an
+     uncolored element at the top level and a white one: slate's quiet fill,
+     part transparent, so it stands off the element's body by about as much as
+     a gray element's header does off its own. */
+  --c-card-header-fill-neutral: color-mix(
+    in srgb,
+    var(--c-color-slate-fill-quiet) 70%,
+    transparent
+  );
+  --c-card-header-fill-white: var(--c-card-header-fill-neutral);
   /* A selected white element's header: a step stronger than its accent body,
      as the unselected one is than its white body (darker in the light theme,
      lighter in the dark one). */
   --c-card-header-fill-white-selected: var(--c-color-accent-fill-normal);
-  --c-card-header-shade: 9%;
 
   /* How strongly an asset thumbnail tile shades what's under it with the text
      color, so it reads as its own layer. About the details pane's lightness
@@ -440,9 +445,19 @@
   --c-card-fill-selected: var(--color-base-300);
   --c-card-border-selected: var(--color-base-500);
   --c-card-text-selected: var(--c-text-default);
-  /* Lighter than a white element's body, as a colored header is than its
-     own, by about as much (header text at 6.2:1). */
-  --c-card-header-fill-white: var(--color-base-300);
+  /* Lighter than the element's body, as a colored header is than its own. A
+     white body is about as light as slate's quiet fill here, so a white
+     element's header takes the normal step. */
+  --c-card-header-fill-neutral: color-mix(
+    in srgb,
+    var(--c-color-slate-fill-quiet) 75%,
+    transparent
+  );
+  --c-card-header-fill-white: color-mix(
+    in srgb,
+    var(--c-color-slate-fill-normal) 60%,
+    transparent
+  );
   /* The details surface is the panel's own here, so tiles stay unfilled. */
   --c-thumbnail-tile-shade: 0%;
   /* Gray elements keep the gray palette. */
