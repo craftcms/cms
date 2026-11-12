@@ -127,26 +127,21 @@ class RouteServiceProvider extends ServiceProvider
             $this->bootRequestForgeryExceptions();
         }
 
-        $this->app->booted(function () use ($routes, $router): void {
+        $this->app->booted(function (): void {
             // Project routes are registered at runtime so cached routes cannot retain stale project config.
             if (! Cms::isInstalled() || $this->app->runningConsoleCommand('route:cache')) {
                 return;
             }
 
-            $routes->getProjectConfigRoutes()->each(
-                fn (Route $route) => $router
-                    ->view($route->getUri(), $route->template)
-                    ->middleware(['craft', 'craft.web'])
-                    ->withLazySession(),
-            );
+            $this->app->make(ProjectConfigRoutes::class)->register();
         });
 
-        Event::listen(SiteDeleted::class, function (SiteDeleted $event) use ($routes): void {
+        Event::listen(SiteDeleted::class, function (SiteDeleted $event): void {
             if (ProjectConfig::isApplyingExternalChanges()) {
                 return;
             }
 
-            $routes->handleDeletedSite($event);
+            $this->app->make(Routes::class)->handleDeletedSite($event);
         });
 
         RateLimiter::for('password-reset', function ($request) {

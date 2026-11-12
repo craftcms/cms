@@ -15,7 +15,6 @@ use CraftCms\Cms\Element\Elements as ElementsService;
 use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
-use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -384,7 +383,7 @@ describe('store', function () {
             ]);
         $entry->errors()->add('title', 'Title is invalid.');
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -423,7 +422,7 @@ describe('store', function () {
                 'slug' => 'canonical-title',
             ]);
 
-        app()->instance(ElementsService::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        app()->instance(ElementsService::class, new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public function saveElement(
                 ElementInterface $element,
@@ -462,7 +461,7 @@ describe('store', function () {
             ]);
         actingAs(UserModel::findOrFail(auth()->id()));
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        $elements = new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public ?bool $capturedCrossSiteValidate = null;
 
@@ -720,7 +719,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        $elements = new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 
@@ -772,7 +771,7 @@ describe('storeForDerivative', function () {
             ->where('id', $fixture['draftBlock']->id)
             ->update(['primaryOwnerId' => $fixture['owner']->id]);
 
-        $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
+        $elements = new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class)) extends ElementsService
         {
             public int $saveCalls = 0;
 

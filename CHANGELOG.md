@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Craft now supports Laravel Octane, on Swoole and RoadRunner. Requests served by the same worker no longer share state such as live preview drafts, control panel assets, translated element type names, view namespaces, or routes from the project config, and project config changes made by other workers or commands are picked up by the next request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Editable tables with a heading column now name each row’s inputs and Reorder and Delete buttons for screen readers after the row’s heading, such as “Opening Time, Wednesday”, rather than its row number. ([#20631](https://github.com/craftcms/cms/pull/20631))
 - Admin tables’ delete buttons are now named after their row for screen readers, such as “Delete Posts”, rather than “Delete item”, and deletion confirmations now name the row or count the selected rows, rather than asking “Are you sure?”. ([#20633](https://github.com/craftcms/cms/pull/20633))
 - Fixed a bug where the user menu showed a “Permissions” item on Craft Solo, which led to a 403 error. ([#20621](https://github.com/craftcms/cms/issues/20621), [#20635](https://github.com/craftcms/cms/pull/20635))
@@ -23,11 +24,13 @@
 - Fixed a bug where element indexes’ Link columns showed links for disabled, archived, pending, and expired elements. ([#20604](https://github.com/craftcms/cms/issues/20604))
 - Fixed a bug where uploaded PNGs could be saved uncompressed when GD was used as the image driver, making them many times larger than the originals. ([#20618](https://github.com/craftcms/cms/pull/20618))
 - Fixed a bug where saving the Team user group’s permissions programmatically could save its project config without a name or handle, causing `project-config/apply` to fail. ([#20595](https://github.com/craftcms/cms/issues/20595))
+- The `craft:mcp:serve` MCP server now picks up project config changes made by other processes since its previous request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - MCP upload routes now respond with JSON errors, rather than HTML pages, for clients that don’t ask for JSON, such as curl. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - The `craftCommand()` Twig function is now only available to control panel templates.
 - Fixed a bug where the System Messages utility suggested `user` variables for every message, including plugins’ messages that aren’t sent with a recipient user. ([#20623](https://github.com/craftcms/cms/pull/20623))
 - GraphQL transform arguments now accept `immediately` again, which asks the asset transformer to generate the transform before returning its URL. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Asset transform drivers now receive whether the transform should be generated immediately in `$request->immediately`, including legacy image transformers. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
+- `CraftCms\Cms\Element\Elements::__construct()` no longer has a `$placeholders` argument. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Added `CraftCms\Cms\Asset\Data\AssetTransformRequest::$immediately` and `$namedTransform`. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Added `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()`, `immediateTransforms()`, and `IMMEDIATE_TRANSFORMS_CONTEXT`, which apply to every asset transform driver. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Element details panels registered with `Cp.$elementDetailsPanels.register()` can now pass `iconSvg`, to show their own SVG icon in place of a named one. ([#20615](https://github.com/craftcms/cms/pull/20615))
