@@ -566,7 +566,7 @@ Shell
     padding-inline-end: var(--cp-scrollbar-width, 0px);
     /* The floating sidebar's row stays empty, so the main row takes the room. */
     grid-template-rows: auto 1fr;
-    background-color: var(--c-surface-sunken);
+    background-color: var(--c-surface-page);
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-rows: none;
@@ -784,7 +784,8 @@ Content: the secondary nav, content, and details panes
     grid-area: details;
     z-index: var(--c-layer-sticky);
     border-inline-start: 1px solid var(--c-color-border-quiet);
-    background-color: var(--c-surface-default);
+    --cp-details-bg: var(--c-surface-details);
+    background-color: var(--cp-details-bg);
     /* A dragged width outlives the layout it was dragged in, so cap it here. */
     max-inline-size: var(--cp-content-details-max, 90cqi);
     /* Contained in both axes, so the row sets its height rather than the pane:

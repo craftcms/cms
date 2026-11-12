@@ -38,6 +38,12 @@
   --c-surface-sunken: var(--color-base-100);
   --c-surface-form: var(--color-base-100);
   --c-surface-overlay: var(--color-base-50);
+  --c-surface-page: var(--color-base-200);
+  --c-surface-details: color-mix(
+    in oklab,
+    var(--color-base-100),
+    var(--color-base-50) 40%
+  );
   --c-surface-shade: rgba(0 0 0 / 25%);
   --c-table-border-color: color-mix(
     var(--c-color-neutral-border-quiet) 60%,
@@ -393,6 +399,8 @@
     var(--color-black) 25%
   );
   --c-surface-overlay: var(--c-surface-default);
+  --c-surface-page: var(--c-surface-sunken);
+  --c-surface-details: var(--c-surface-default);
 
   /* Shadows read fainter against dark surfaces. */
   --c-shadow-multiplier: 1.5;
