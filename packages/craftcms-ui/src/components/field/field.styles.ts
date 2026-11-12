@@ -63,10 +63,12 @@ export default css`
 
   /* Heading row (the CP's .field > .heading) */
   .form-field__label {
+    --_heading-gap: var(--c-spacing);
+    --_label-text-bearing: calc(var(--c-spacing) * 0.375);
     position: relative;
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: var(--_heading-gap);
     align-items: center;
     font-size: var(--c-field-label-font-size, inherit);
     font-weight: var(--c-field-label-font-weight, bold);
@@ -89,10 +91,18 @@ export default css`
     inset-inline-end: 0;
   }
 
+  .field-actions--beside-label {
+    position: static;
+  }
+
+  .field-actions--after-text {
+    margin-inline-start: var(--_label-text-bearing);
+  }
+
   ::slotted([slot='label']) {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--c-spacing-xs);
+    gap: var(--_heading-gap);
     align-items: center;
     line-height: var(--c-field-label-line-height, inherit);
   }

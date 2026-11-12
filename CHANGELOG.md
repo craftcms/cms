@@ -5,6 +5,16 @@
 - Craft now supports Laravel Octane, on Swoole and RoadRunner. Requests served by the same worker no longer share state such as live preview drafts, control panel assets, translated element type names, view namespaces, or routes from the project config, and project config changes made by other workers or commands are picked up by the next request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Editable tables with a heading column now name each row’s inputs and Reorder and Delete buttons for screen readers after the row’s heading, such as “Opening Time, Wednesday”, rather than its row number. ([#20631](https://github.com/craftcms/cms/pull/20631))
 - Admin tables’ delete buttons are now named after their row for screen readers, such as “Delete Posts”, rather than “Delete item”, and deletion confirmations now name the row or count the selected rows, rather than asking “Are you sure?”. ([#20633](https://github.com/craftcms/cms/pull/20633))
+- The control panel’s grays and accent blue now match Craft 5’s, and the page background, the details pane, and dashboard widgets each have their own surface. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- The global header now blends into the page and lines up with the global sidebar and details rail. Long system names are truncated, and the system name stays visible when the sidebar is collapsed. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- The main content’s side padding now grows with its width, from 16px up to 48px, and the content, the details pane, and secondary navigation get matching space at their tops as the page widens, keeping their headers level. Cards’ body padding grows with the card’s own width, from 16px up to 24px, the field layout’s tabs have a larger gap below them, and structure indexes’ toggles and drag handles keep their place beside the content. ([#20599](https://github.com/craftcms/cms/pull/20599))
+- Icons in the global sidebar, global header, breadcrumbs, details rail, and content tabs are now the same size and color, and rows of icon buttons in the global header and on element cards are tighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Global nav items now stay highlighted while their flyout menus are open, and menu buttons stay highlighted while their menus are open. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- The details pane now has a subtle inset shadow along its leading edge, and Ask AI’s input is transparent, like the Activity panel’s comment box. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Fields’ action menus now sit right after their labels and required/translatable indicators, evenly spaced, rather than at the far end of the heading. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Breadcrumb separators are now lighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Pages no longer show breadcrumbs when the only one would be the current page, such as the Dashboard. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Fields’ translation indicators now show their descriptions when pressed, including on touch devices, rather than on hover. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fixed a bug where the user menu showed a “Permissions” item on Craft Solo, which led to a 403 error. ([#20621](https://github.com/craftcms/cms/issues/20621), [#20635](https://github.com/craftcms/cms/pull/20635))
 - Fixed a bug where control panel forms could show the wrong fields after a failed save, such as the Base URL field on a new site whose “This site has its own base URL” setting was turned off. ([#20632](https://github.com/craftcms/cms/pull/20632), [#20636](https://github.com/craftcms/cms/pull/20636))
 - Fixed missing tab styling, duplicate Save controls, and inconsistent table styling on legacy plugin control panel screens. ([#20591](https://github.com/craftcms/cms/pull/20591))
@@ -24,6 +34,8 @@
 - Fixed a bug where element indexes’ Link columns showed links for disabled, archived, pending, and expired elements. ([#20604](https://github.com/craftcms/cms/issues/20604))
 - Fixed a bug where uploaded PNGs could be saved uncompressed when GD was used as the image driver, making them many times larger than the originals. ([#20618](https://github.com/craftcms/cms/pull/20618))
 - Fixed a bug where saving the Team user group’s permissions programmatically could save its project config without a name or handle, causing `project-config/apply` to fail. ([#20595](https://github.com/craftcms/cms/issues/20595))
+- Fixed a bug where global nav icons shifted when the sidebar was expanded or collapsed. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Fixed a bug where folder breadcrumbs had extra space after each separator. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - The `craft:mcp:serve` MCP server now picks up project config changes made by other processes since its previous request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - MCP upload routes now respond with JSON errors, rather than HTML pages, for clients that don’t ask for JSON, such as curl. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - The `craftCommand()` Twig function is now only available to control panel templates.
@@ -35,7 +47,6 @@
 - Added `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()`, `immediateTransforms()`, and `IMMEDIATE_TRANSFORMS_CONTEXT`, which apply to every asset transform driver. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Element details panels registered with `Cp.$elementDetailsPanels.register()` can now pass `iconSvg`, to show their own SVG icon in place of a named one. ([#20615](https://github.com/craftcms/cms/pull/20615))
 - Deprecated `CraftCms\Cms\Image\CraftAssetTransformDriver::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT`. `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT` should be used instead. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
-- The main content’s side padding now grows with its width, from 16px up to 48px, and the content, the details pane, and secondary navigation get matching space at their tops as the page widens, keeping their headers level. Cards’ body padding grows with the card’s own width, from 16px up to 24px, the field layout’s tabs have a larger gap below them, and structure indexes’ toggles and drag handles keep their place beside the content. ([#20599](https://github.com/craftcms/cms/pull/20599))
 
 ## 6.0.0-beta.1 - 2026-11-10
 

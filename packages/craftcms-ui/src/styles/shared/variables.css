@@ -140,7 +140,8 @@
 :where(
   craft-card[data-color='black'] > *,
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
-  craft-badge[fill='black'] > *
+  craft-badge[fill='black'] > *,
+  craft-tooltip > [slot='content'] > *
 ) {
   --c-color-fill-quiet: var(--c-color-neutral-fill-quiet);
   --c-color-fill-normal: var(--c-color-neutral-fill-normal);

@@ -1,6 +1,7 @@
 html,
-body {
-  background-color: var(--c-surface-sunken);
+body,
+:root[data-theme] {
+  background-color: var(--c-surface-page);
 }
 
 body {

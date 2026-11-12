@@ -390,7 +390,7 @@
   }
 
   .details-panels__trigger {
-    --c-icon-size: 1em;
+    --c-icon-size: var(--cp-chrome-icon-size);
     display: grid;
     inline-size: var(--c-size-touch-target);
     aspect-ratio: 1;
@@ -399,7 +399,7 @@
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     background-color: transparent;
-    color: var(--color-slate-700);
+    color: var(--cp-chrome-icon-color);
     font-size: var(--c-text-base);
     cursor: pointer;
   }

@@ -518,6 +518,7 @@ export default class CraftNavItem extends LitElement {
           'nav-item': true,
           'nav-item--icon': true,
           'nav-item--static': this.isStatic(useFlyout),
+          'nav-item--flyout-open': useFlyout && this.flyoutOpen,
         })}"
         id="${this.itemId}"
         type="${this.buttonType(useFlyout)}"
@@ -752,6 +753,7 @@ export default class CraftNavItem extends LitElement {
           'nav-item--prefixed': hasPrefix,
           'nav-item--flush': this.flush,
           'nav-item--static': this.isStatic(useFlyout),
+          'nav-item--flyout-open': useFlyout && this.flyoutOpen,
         })}"
         id="${this.itemId}"
       >

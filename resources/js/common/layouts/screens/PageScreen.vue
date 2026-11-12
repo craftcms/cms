@@ -43,6 +43,7 @@
   } from '@/common/composables/screen';
   import {
     withNavCrumbMenus,
+    withoutLoneCurrentCrumb,
     withSubnavCrumbs,
   } from '@/common/composables/subnavCrumbs';
   import useCraftData from '@/common/composables/useCraftData';
@@ -148,8 +149,10 @@
     // editor's lists just the sites that element propagates to, which is the
     // better answer there.
     const ownsSiteCrumb = merged.some((crumb) => crumb.id === 'site-crumb');
-    const trail =
-      siteCrumb.value && !ownsSiteCrumb ? [siteCrumb.value, ...merged] : merged;
+    const trail = withoutLoneCurrentCrumb(
+      siteCrumb.value && !ownsSiteCrumb ? [siteCrumb.value, ...merged] : merged,
+      page.url
+    );
 
     return trail.length > 0 ? trail : null;
   });
@@ -566,7 +569,7 @@ Shell
     padding-inline-end: var(--cp-scrollbar-width, 0px);
     /* The floating sidebar's row stays empty, so the main row takes the room. */
     grid-template-rows: auto 1fr;
-    background-color: var(--c-surface-sunken);
+    background-color: var(--c-surface-page);
 
     @media (width >= var(--breakpoint-lg)) {
       grid-template-rows: none;
@@ -614,7 +617,7 @@ Body: the inset panel holding `page-main`, and the details rail beside it
     height: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    padding-block: var(--cp-body-inset);
+    padding-block: 0 var(--cp-body-inset);
   }
 
   .cp-body__panel {
@@ -716,6 +719,7 @@ Content: the secondary nav, content, and details panes
     --resize-handle-display: none;
 
     .cp-content__details {
+      --cp-details-edge-shadow: none;
       border-inline-start: none;
       box-shadow: none;
     }
@@ -784,7 +788,19 @@ Content: the secondary nav, content, and details panes
     grid-area: details;
     z-index: var(--c-layer-sticky);
     border-inline-start: 1px solid var(--c-color-border-quiet);
-    background-color: var(--c-surface-default);
+    --cp-details-bg: var(--c-surface-details);
+    --_details-inset-shadow: rgb(
+      var(--c-shadow-tint) / calc(0.08 * var(--c-shadow-multiplier))
+    );
+    /* Drawn by the pane inside (see ContentDetailsAside), above the composers
+       whose opaque fades would otherwise cover it. */
+    --cp-details-edge-shadow: inset 6px 0 6px -6px var(--_details-inset-shadow);
+    background-color: var(--cp-details-bg);
+
+    &:dir(rtl) {
+      --cp-details-edge-shadow: inset -6px 0 6px -6px
+        var(--_details-inset-shadow);
+    }
     /* A dragged width outlives the layout it was dragged in, so cap it here. */
     max-inline-size: var(--cp-content-details-max, 90cqi);
     /* Contained in both axes, so the row sets its height rather than the pane:
@@ -859,6 +875,7 @@ Folds
     .cp-content--details > .cp-content__details {
       inline-size: var(--cp-content-details-width);
       justify-self: end;
+      --cp-details-edge-shadow: none;
       box-shadow: var(--c-shadow-md);
     }
   }
@@ -867,8 +884,7 @@ Folds
     /* With the global nav docked, the panel still floats only while there'd be
        room for a details pane beside the content, on every page alike. Below
        that it goes edge to edge as it does below this breakpoint, keeping a
-       dividing line beside the sidebar. CpSidebar mirrors this width to drop
-       the inset from its own top padding. */
+       dividing line beside the sidebar. */
     @container cp-shell (width < 932px) {
       .cp-body {
         --cp-body-inset: 0px;
@@ -903,6 +919,7 @@ Folds
       .cp-content--sidebar.cp-content--details > .cp-content__details {
         inline-size: var(--cp-content-details-width);
         justify-self: end;
+        --cp-details-edge-shadow: none;
         box-shadow: var(--c-shadow-md);
       }
     }
