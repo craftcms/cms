@@ -307,11 +307,11 @@ readonly class Assets
     }
 
     /**
-     * @return array{upload_id: string, upload_url: string, method: string, expires_at: string, max_size: int}
+     * @return array{upload_id: string, upload_url: string, method: string, headers: object, expires_at: string, max_size: int}
      */
     #[McpTool(
         name: 'assets_upload_url',
-        description: 'Gets a single-use URL for uploading a local or large file. Send the raw file bytes as the body of a PUT request to upload_url before expires_at (for example, curl -T ./photo.jpg "<upload_url>"), then pass {"upload_id": "...", "file_name": "photo.jpg"} as the file for assets_create or assets_replace. The file name is required, since it can’t be derived from the upload. Requires permission to save assets in at least one volume.',
+        description: 'Gets a URL for uploading a local or large file, which can be used once. Send the raw file bytes as the request body to upload_url before expires_at, using method and every header in headers (for example, curl -T ./photo.jpg -H "<name>: <value>" "<upload_url>" for a PUT), then pass {"upload_id": "...", "file_name": "photo.jpg"} as the file for assets_create or assets_replace. The file name is required, since it can’t be derived from the upload. Requires permission to save assets in at least one volume.',
     )]
     public function uploadUrl(): array
     {
