@@ -43,8 +43,6 @@
   padding-block: var(--c-spacing-lg);
 }
 
-/* Beside the preview, the settings scroll rather than stretching the
-   designer taller than the preview needs. */
 @container cvd (width > 37.5rem) {
   .cvd-library {
     /* Its fields all span the full width, so it doesn't need the field
@@ -52,12 +50,6 @@
        setting its width. */
     container-type: normal;
     grid-template-columns: auto;
-    max-block-size: calc(500rem / 16);
-    overflow-y: auto;
-    /* Reaches across the gap to the preview's hairline, so it scrolls right
-       up to it, with its content kept where it was. */
-    margin-inline-end: calc(-1 * var(--cp-container-padding));
-    padding-inline-end: var(--cp-container-padding);
   }
 }
 

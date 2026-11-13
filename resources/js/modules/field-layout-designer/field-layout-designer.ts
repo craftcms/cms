@@ -12,6 +12,7 @@ import {Tab} from './tab';
 import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';
 import {
+  cvdData,
   fldElementData,
   fldTabData,
   htmlToElement,
@@ -37,6 +38,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     customizableTabs: true,
     customizableUi: true,
     withCardViewDesigner: false,
+    cardViewDesignerOutlet: null,
     alwaysShowThumbAlignmentBtns: false,
     readOnly: false,
   };
@@ -95,6 +97,14 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     this._config = JSON.parse(this.$configInput.value);
     if (!this._config!.tabs) {
       this._config!.tabs = [];
+    }
+
+    // Found now, while it's still beside the designer, as it can move out
+    // before the designer finishes initializing (see `cardViewDesignerOutlet`).
+    if (this.settings!.withCardViewDesigner) {
+      this.$cvd = this.$container
+        .closest('.fld-cvd')
+        ?.querySelector('.card-view-designer');
     }
 
     this.$innerContainer = this.$container.querySelector(
@@ -255,10 +265,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     });
 
     // initiate Card Attributes Designer
-    if (this.settings!.withCardViewDesigner) {
-      this.$cvd = this.$container
-        .closest('.fld-cvd')
-        ?.querySelector('.card-view-designer');
+    if (this.$cvd) {
       this.initCvd();
     }
 
@@ -359,10 +366,17 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   initCvd(): void {
     this.cvd = new CardViewDesigner(this, this.$cvd);
 
-    // Add skip link
+    // Found from the designer's root too, as the card view designer can move
+    // out of it (see `cardViewDesignerOutlet`).
+    const root = this.$container.closest('.fld-cvd');
+    if (root) {
+      cvdData.set(root, this.cvd);
+    }
+
+    // Add skip link, unless the card view designer moves to a tab of its own
     const skipLinkAnchor = this.cvd.$container.id;
 
-    if (skipLinkAnchor) {
+    if (skipLinkAnchor && !this.settings!.cardViewDesignerOutlet) {
       const $skipLink = document.createElement('a');
       $skipLink.className = 'skip-link';
       $skipLink.textContent = t('Skip to card view designer');

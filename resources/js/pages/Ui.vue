@@ -301,7 +301,7 @@
       <template #[contentSlot]>
         <component
           :is="isBareTable ? 'div' : 'craft-field-group'"
-          :class="isBareTable ? undefined : 'py-lg'"
+          :class="isBareTable ? undefined : 'ui-page__fields py-lg'"
         >
           <UiRenderer
             ref="renderer"
@@ -349,3 +349,10 @@
     </MetadataDetails>
   </component>
 </template>
+
+<style scoped>
+  /* The tab strip spaces itself from the panels, so the group's gap would double it. */
+  .ui-page__fields > :deep(.ui-node-list__tabs) {
+    margin-block-end: calc(-1 * var(--gap, calc(var(--c-spacing) * 6)));
+  }
+</style>

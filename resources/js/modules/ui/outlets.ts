@@ -14,20 +14,20 @@ const pendingOutlets = reactive(new Map<string, number>());
 
 /** Registers the outlets within `root`, returning a function that releases them. */
 export function registerOutlets(root: HTMLElement): () => void {
-  const registered = [
+  const releases = [
     ...root.querySelectorAll<HTMLElement>('[data-ui-outlet]'),
-  ].map((element) => {
-    const name = element.dataset.uiOutlet!;
-    outlets.set(name, element);
+  ].map((element) => registerOutlet(element.dataset.uiOutlet!, element));
 
-    return [name, element] as const;
-  });
+  return () => releases.forEach((release) => release());
+}
+
+/** Registers `element` as the named outlet, returning a function that releases it. */
+export function registerOutlet(name: string, element: HTMLElement): () => void {
+  outlets.set(name, element);
 
   return () => {
-    for (const [name, element] of registered) {
-      if (outlets.get(name) === element) {
-        outlets.delete(name);
-      }
+    if (outlets.get(name) === element) {
+      outlets.delete(name);
     }
   };
 }

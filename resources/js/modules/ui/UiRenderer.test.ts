@@ -1873,6 +1873,79 @@ describe('UiRenderer', () => {
     outlet.remove();
   });
 
+  const resolvedCardError = {
+    path: ['layout'],
+    messages: ['Invalid card attribute.'],
+    source: ['layout', 'cardView', '0'],
+  };
+  const savedCardError = {
+    path: ['layout', 'cardView', '0'],
+    messages: ['Invalid card attribute.'],
+  };
+
+  it.each([
+    {withOutlet: true, error: resolvedCardError, flagged: ['Appearance']},
+    {withOutlet: true, error: savedCardError, flagged: ['Appearance']},
+    {withOutlet: false, error: resolvedCardError, flagged: ['Content']},
+  ])(
+    'flags the tab of the outlet a control shows an error in (outlet: $withOutlet, path: $error.path)',
+    async ({withOutlet, error, flagged}) => {
+      app.unmount();
+      await mount({
+        scope: [],
+        refreshable: false,
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+            component: 'craft:tab',
+            props: {label: 'Content'},
+            uid: 'content',
+            children: [
+              {
+                type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+                component: 'craft:field',
+                props: {label: 'Layout'},
+                control: {
+                  type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+                  component: 'craft:text',
+                  props: {errorOutlets: {cards: ['cardView']}},
+                  path: ['layout'],
+                  mode: 'editable',
+                  deltaGroup: ['layout'],
+                },
+              },
+            ],
+          },
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+            component: 'craft:tab',
+            props: {label: 'Appearance'},
+            uid: 'appearance',
+            children: withOutlet
+              ? [
+                  {
+                    type: 'CraftCms\\Cms\\Ui\\Nodes\\Outlet',
+                    component: 'craft:outlet',
+                    props: {name: 'cards'},
+                    uid: 'cards',
+                  },
+                ]
+              : [],
+          },
+        ],
+        values: {layout: ''},
+        errors: [error],
+        globalErrors: [],
+      });
+
+      expect(
+        [...container.querySelectorAll('craft-tab')]
+          .filter((tab) => tab.querySelector('craft-icon[slot="suffix"]'))
+          .map((tab) => tab.textContent?.trim())
+      ).toEqual(flagged);
+    }
+  );
+
   it('renders FieldLayout tabs and semantic content', async () => {
     vi.stubGlobal('requestIdleCallback', vi.fn());
     app.unmount();
