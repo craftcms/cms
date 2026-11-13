@@ -293,6 +293,7 @@
           v-if="tab.props.icon"
           :name="tab.props.icon"
           slot="prefix"
+          class="ui-node-list__tab-icon"
         ></craft-icon>
         {{ tab.props.label }}
         <craft-icon
@@ -367,6 +368,11 @@
     margin-inline-start: auto;
   }
 
+  .ui-node-list__tabs {
+    /* A page's main column sets this (see PageScreen.vue). */
+    --c-tabs-gap: var(--cp-content-tabs-gap, var(--c-spacing-lg));
+  }
+
   .ui-node-list__tabs::part(strip) {
     box-sizing: border-box;
     block-size: var(--cp-header-height);
@@ -380,5 +386,15 @@
   .ui-node-list__tabs craft-tab {
     align-items: center;
     padding-block: 0;
+  }
+
+  /* A step back from the label, but the selected tab's icon keeps its color. */
+  .ui-node-list__tab-icon {
+    --c-icon-size: var(--cp-chrome-icon-size);
+    color: var(--color-slate-700);
+  }
+
+  craft-tab[selected] .ui-node-list__tab-icon {
+    color: inherit;
   }
 </style>

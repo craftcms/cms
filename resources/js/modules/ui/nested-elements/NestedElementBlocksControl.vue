@@ -416,7 +416,7 @@
         single-column
         tag="div"
         item-tag="div"
-        list-class="grid gap-md"
+        list-class="grid"
         :item-attrs="blockAttrs"
         :card-attrs="blockCardAttrs"
         @reorder="move"
@@ -506,7 +506,11 @@
           </div>
         </template>
       </SelectableCardList>
-      <div v-if="canAdd" class="mt-md">
+      <div
+        v-if="canAdd"
+        class="mt-md"
+        :class="{'matrix-add--after-blocks': value.sortOrder.length}"
+      >
         <NestedElementsCreateButton
           :choices="createChoices"
           :label="control.props.addLabel"
@@ -536,11 +540,33 @@
 </template>
 
 <style scoped>
+  /* Between `md` and `lg`: block header bars make `md` look tighter than it
+     is. The add buttons get the same space under the last block. */
+  [data-matrix-blocks] {
+    gap: calc(var(--c-spacing) * 3);
+  }
+
+  .matrix-add--after-blocks {
+    margin-block-start: calc(var(--c-spacing) * 3);
+  }
+
+  /* Room under the last field, which otherwise sits tight against the
+     card's bottom edge. */
+  [data-matrix-block-fields] {
+    padding-block-end: var(--c-spacing-md);
+  }
+
+  /* Pulls the tabs up over the card body's top padding, which this mirrors
+     (`cqi` is the card's here). */
   .matrix-block-fields--tabbed {
     margin-block-start: calc(
       var(
           --c-card-padding-block,
-          var(--cp-container-padding, var(--c-spacing-lg))
+          clamp(
+            var(--c-spacing-lg),
+            2cqi + var(--c-spacing-md),
+            calc(var(--c-spacing) * 6)
+          )
         ) *
         -1
     );

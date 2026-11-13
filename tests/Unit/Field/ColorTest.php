@@ -148,7 +148,7 @@ it('normalizes translucent palette colors', function () {
 });
 
 it('accepts palettes converted from presets', function () {
-    $field = new Color(['name' => 'Color', 'handle' => 'color', 'presets' => ['#ff0000', '#00ff00'], 'defaultColor' => '#00ff00']);
+    $field = new Color(['validateHandleUniqueness' => false, 'name' => 'Color', 'handle' => 'color', 'presets' => ['#ff0000', '#00ff00'], 'defaultColor' => '#00ff00']);
 
     expect($field->validate())->toBeTrue()
         ->and($field->palette)->toBe([

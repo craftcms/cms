@@ -207,8 +207,22 @@ export default class CraftFieldGroup extends LitElement {
           > craft-field-group
           craft-field[required]
           > [slot='label']
-          > craft-icon[name='asterisk'][data-craft-field-decoration] {
+          craft-icon[name='asterisk'][data-craft-field-decoration] {
           display: none;
+        }
+
+        craft-field[fieldset][required]
+          > craft-field-group
+          craft-field[required]
+          > [slot='label']
+          > [data-craft-field-decoration]:not(:has(craft-info-icon)) {
+          display: contents !important;
+        }
+
+        craft-field[fieldset][required]
+          > craft-field-group
+          craft-field[required]:not([translatable])::part(actions) {
+          margin-inline-start: var(--_label-text-bearing);
         }
 
         @container (min-width: 30rem) {

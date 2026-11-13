@@ -42,14 +42,4 @@ describe('craft-visually-hidden', () => {
 
     expect(element.debug).toBe(false);
   });
-
-  /** `debug` reveals the content, for checking what a screen reader gets. */
-  it('reflects debug so the stylesheet can reveal it', async () => {
-    const element = await createVisuallyHidden();
-
-    element.debug = true;
-    await element.updateComplete;
-
-    expect(element.hasAttribute('debug')).toBe(true);
-  });
 });

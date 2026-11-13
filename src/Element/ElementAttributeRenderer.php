@@ -274,7 +274,12 @@ readonly class ElementAttributeRenderer
     {
         $sourceElement = $this->getSourceElement($element);
 
-        if (ElementHelper::isDraftOrRevision($sourceElement)) {
+        if (
+            ElementHelper::isDraftOrRevision($sourceElement) ||
+            ! $sourceElement->enabled ||
+            ! $sourceElement->getEnabledForSite() ||
+            $sourceElement->archived
+        ) {
             return '';
         }
 

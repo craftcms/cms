@@ -16,6 +16,8 @@ const surfaces = [
   {name: '--c-surface-sunken', var: 'var(--c-surface-sunken)'},
   {name: '--c-surface-overlay', var: 'var(--c-surface-overlay)'},
   {name: '--c-surface-form', var: 'var(--c-surface-form)'},
+  {name: '--c-surface-page', var: 'var(--c-surface-page)'},
+  {name: '--c-surface-details', var: 'var(--c-surface-details)'},
 ];
 
 export const Surfaces: Story = {

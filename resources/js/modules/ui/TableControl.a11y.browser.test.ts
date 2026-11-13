@@ -126,10 +126,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function mount(): Promise<HTMLElement> {
+async function mount(source: UiPayload = payload): Promise<HTMLElement> {
   host = document.createElement('div');
   document.body.append(host);
-  app = createApp({render: () => h(UiRenderer, {payload})});
+  app = createApp({render: () => h(UiRenderer, {payload: source})});
   const registry = createCpComponentRegistry();
   registerUiComponents(registry);
   registry.install(app);
@@ -172,6 +172,84 @@ it('names each cell after its column header and row', async () => {
       .elements();
 
     expect.soft(matches, `${role} "${name}"`).toHaveLength(count);
+  }
+});
+
+it('names each row after its heading column value when it has one', async () => {
+  const openingTime = (scope: string[]): UiNodePayload[] => [
+    {
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: 'Opening Time', labelSrOnly: true},
+      control: {
+        type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+        component: 'craft:text',
+        props: {},
+        path: [...scope, 'open'],
+        mode: 'editable',
+        deltaGroup: ['hours'],
+      },
+    },
+  ];
+
+  await mount({
+    scope: [],
+    refreshable: false,
+    globalErrors: [],
+    errors: [],
+    values: {
+      hours: {
+        wed: {day: 'Wednesday', open: '09:00'},
+        thu: {day: '  ', open: '10:00'},
+      },
+    },
+    nodes: [
+      {
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+        component: 'craft:field',
+        props: {},
+        control: {
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Table',
+          component: 'craft:table',
+          nestsUis: true,
+          path: ['hours'],
+          deltaGroup: ['hours'],
+          mode: 'editable',
+          props: {
+            columns: {
+              day: {heading: 'Day', type: 'heading'},
+              open: {heading: 'Opening Time', type: 'singleline'},
+            },
+            keyed: true,
+            allowReorder: true,
+            allowDelete: true,
+            rowTemplate: {
+              scope: [],
+              refreshable: false,
+              nodes: openingTime([]),
+            },
+          },
+          uis: ['wed', 'thu'].map((key) => ({
+            scope: ['hours', key],
+            refreshable: false,
+            nodes: openingTime(['hours', key]),
+          })),
+        },
+      },
+    ],
+  });
+
+  for (const [role, name] of [
+    ['textbox', 'Opening Time, Wednesday'],
+    ['textbox', 'Opening Time, row 2'],
+    ['button', 'Reorder Wednesday'],
+    ['button', 'Reorder row 2'],
+    ['button', 'Delete Wednesday'],
+    ['button', 'Delete row 2'],
+  ] as const) {
+    expect
+      .soft(page.getByRole(role, {name, exact: true}).elements(), name)
+      .toHaveLength(1);
   }
 });
 

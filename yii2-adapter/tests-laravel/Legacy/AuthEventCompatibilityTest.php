@@ -73,9 +73,10 @@ it('switches identity through the Craft guard', function() {
     $this->legacyUser->switchIdentity(null);
 });
 
-it('clears the console identity through the Craft guard', function() {
+it('clears the console identity on the Craft guard without logging out', function() {
     $guard = Mockery::mock(StatefulGuard::class);
-    $guard->shouldReceive('logout')->once();
+    $guard->shouldReceive('forgetUser')->once();
+    $guard->shouldNotReceive('logout');
     Auth::shouldReceive('guard')->once()->with('craft')->andReturn($guard);
 
     new ConsoleUser()->setIdentity();

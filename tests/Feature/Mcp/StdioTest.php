@@ -10,9 +10,11 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Field\Entries as EntriesField;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Mcp\CapabilityRegistry;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\StdioTransport;
+use CraftCms\Cms\ProjectConfig\ConfigStorage;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Tests\Support\McpCapabilities\Example;
@@ -135,11 +137,17 @@ it('saves project config changes before responding, rather than when the server 
     expect(StdioTestOutput::$saved['create'])->toBeTrue();
 });
 
-/** Records, as each response is written, whether the Archive site group has been saved yet. */
+/** Records each response, and whether the Archive site group had been saved when it was written. */
 class StdioTestOutput
 {
     /** @var array<string, bool> */
     public static array $saved = [];
+
+    /** @var array<string, array<string, mixed>> */
+    public static array $responses = [];
+
+    /** Called with each response's ID, once it has been written. */
+    public static ?Closure $onResponse = null;
 
     /** @var resource|null */
     public $context;
@@ -158,7 +166,14 @@ class StdioTestOutput
         while (($end = strpos($this->buffer, PHP_EOL)) !== false) {
             $line = substr($this->buffer, 0, $end);
             $this->buffer = substr($this->buffer, $end + strlen(PHP_EOL));
-            self::$saved[Json::decode($line)['id'] ?? ''] = DB::table('projectconfig')->where('path', 'like', 'siteGroups.%.name')->where('value', Json::encode('Archive'))->exists();
+            $response = Json::decode($line);
+            $id = $response['id'] ?? '';
+            self::$responses[$id] = $response;
+            self::$saved[$id] = DB::table('projectconfig')->where('path', 'like', 'siteGroups.%.name')->where('value', Json::encode('Archive'))->exists();
+
+            if (self::$onResponse !== null) {
+                (self::$onResponse)($id);
+            }
         }
 
         return strlen($data);
@@ -184,3 +199,82 @@ it('sees sections added since an earlier message read element sources', function
     expect($responses['create']['result']['isError'])->toBeFalse()
         ->and($responses['create']['result']['structuredContent']['item']['settings']['sources'])->toBe(["section:$section->uid"]);
 })->with(['handshake era' => false, '2026-07-28 era' => true]);
+
+it('sees project config changes made by other processes since an earlier message', function (): void {
+    $get = static fn (string $id): array => ['jsonrpc' => '2.0', 'id' => $id, 'method' => 'tools/call', 'params' => ['name' => 'project_config_get', 'arguments' => ['path' => 'system.name']]];
+    $input = tmpfile();
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
+        ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => (object) [],
+            'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+        ]],
+        ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+        $get('before'),
+        $get('after'),
+    ])));
+    rewind($input);
+    StdioTestOutput::$responses = [];
+    StdioTestOutput::$onResponse = static function (string $id): void {
+        if ($id === 'before') {
+            DB::table('projectconfig')->where('path', 'system.name')->update(['value' => Json::encode('Renamed elsewhere')]);
+            app(ConfigStorage::class)->invalidate();
+        }
+    };
+    stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
+    $this->beforeApplicationDestroyed(function (): void {
+        StdioTestOutput::$onResponse = null;
+        stream_wrapper_unregister('stdio-test-output');
+    });
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen('stdio-test-output://', 'w')));
+
+    $this->artisan('craft:mcp:serve', ['--user' => User::query()->where('admin', true)->firstOrFail()->username])->assertSuccessful();
+
+    expect(StdioTestOutput::$responses['before']['result']['structuredContent']['value'])->not->toBe('Renamed elsewhere')
+        ->and(StdioTestOutput::$responses['after']['result']['structuredContent']['value'])->toBe('Renamed elsewhere');
+});
+
+it('sees records changed by other processes since an earlier message, and keeps those changes when saving', function (): void {
+    $call = static fn (string $id, string $tool, array $arguments): array => ['jsonrpc' => '2.0', 'id' => $id, 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]];
+    $field = ['type' => 'fields', 'identifier' => ['handle' => 'tagline']];
+    $input = tmpfile();
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
+        ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => (object) [],
+            'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+        ]],
+        ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+        $call('create', 'configuration_create', ['type' => 'fields', 'attributes' => ['type' => PlainText::class, 'name' => 'Tagline', 'handle' => 'tagline']]),
+        $call('before', 'configuration_get', $field),
+        $call('after', 'configuration_get', $field),
+        $call('update', 'configuration_update', [...$field, 'attributes' => ['name' => 'Tagline 2']]),
+    ])));
+    rewind($input);
+    StdioTestOutput::$responses = [];
+    // Change the field the way another process, such as `craft project-config:set`, would.
+    StdioTestOutput::$onResponse = static function (string $id): void {
+        if ($id === 'before') {
+            $uid = StdioTestOutput::$responses['create']['result']['structuredContent']['item']['uid'];
+            DB::table('projectconfig')->where('path', "fields.$uid.instructions")->update(['value' => Json::encode('Changed elsewhere')]);
+            DB::table('fields')->where('uid', $uid)->update(['instructions' => 'Changed elsewhere']);
+            app(ConfigStorage::class)->invalidate();
+        }
+    };
+    stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
+    $this->beforeApplicationDestroyed(function (): void {
+        StdioTestOutput::$onResponse = null;
+        stream_wrapper_unregister('stdio-test-output');
+    });
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen('stdio-test-output://', 'w')));
+
+    $this->artisan('craft:mcp:serve', ['--user' => User::query()->where('admin', true)->firstOrFail()->username])->assertSuccessful();
+
+    $uid = StdioTestOutput::$responses['create']['result']['structuredContent']['item']['uid'];
+
+    expect(StdioTestOutput::$responses['after']['result']['structuredContent']['item']['instructions'])->toBe('Changed elsewhere')
+        ->and(StdioTestOutput::$responses['update'])->not->toHaveKey('error')
+        ->and(StdioTestOutput::$responses['update']['result']['isError'])->toBeFalse()
+        ->and(DB::table('projectconfig')->whereIn('path', ["fields.$uid.name", "fields.$uid.instructions"])->pluck('value', 'path')->map(fn (string $value): mixed => Json::decode($value))->all())
+        ->toEqual(["fields.$uid.name" => 'Tagline 2', "fields.$uid.instructions" => 'Changed elsewhere']);
+});

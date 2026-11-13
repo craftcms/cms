@@ -16,7 +16,7 @@
 
 <template>
   <div
-    class="py-1 px-(--cp-container-padding) border-b border-b-quiet flex justify-between items-center gap-4 min-h-(--cp-header-height)"
+    class="details-panel-content__header px-(--cp-container-padding) border-b border-b-quiet flex justify-between items-center gap-4"
   >
     <div class="flex items-center gap-1 shrink-0">
       <h3 :id="panel.headingId" class="text-md/4" tabindex="-1">
@@ -57,3 +57,15 @@
     <slot></slot>
   </div>
 </template>
+
+<style scoped>
+  /* Level with the page's content toolbar, which sits below the content's
+     top space (`--cp-content-block-start`, from PageScreen.vue). */
+  .details-panel-content__header {
+    padding-block: var(--c-spacing-sm);
+    padding-block-start: calc(
+      var(--c-spacing-sm) + var(--cp-content-block-start)
+    );
+    min-height: calc(var(--cp-header-height) + var(--cp-content-block-start));
+  }
+</style>

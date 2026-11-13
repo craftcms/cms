@@ -28,6 +28,22 @@ CP Styles
 @import './modal.css' layer(cp);
 @import './menu.css' layer(cp);
 
+/* Fluid spacing, written in container query units where the container is
+   known and registered as lengths, so each resolves to pixels there and is
+   inherited as that, rather than re-resolving against whatever container is
+   nearest to each element that reads it. */
+@property --cp-content-inline-padding {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --cp-content-block-start {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
 :root {
   --cp-sidebar-width: calc(226rem / 16);
 
@@ -35,9 +51,16 @@ CP Styles
      padding. Shared so every rail in the CP is the same width. */
   --cp-rail-width: calc(var(--c-size-touch-target) + var(--c-spacing-md) * 2);
   --cp-sidebar-collapsed-width: var(--cp-rail-width);
+  /* The icons around the content: global nav, header bar and details rail. */
+  --cp-chrome-icon-size: var(--c-size-icon-sm);
+  --cp-chrome-icon-color: var(--color-slate-700);
   --cp-content-width: calc(1440rem / 16);
   --cp-footer-height: var(--c-size-footer);
   --cp-header-height: calc(42rem / 16);
+  /* Centers a touch target beside a header bar, above its 1px bottom border. */
+  --cp-header-touch-target-offset: calc(
+    (var(--cp-header-height) - 1px - var(--c-size-touch-target)) / 2
+  );
   --cp-sidebar-z-index: var(--c-layer-sidebar);
   --cp-body-inset: var(--c-spacing-md);
   --cp-body-border-width: 1px;
@@ -47,7 +70,8 @@ CP Styles
     black 4%
   );
 
-  /* Inline padding for the CpContainer element */
+  /* Inline padding for the CpContainer element. The page screen's main
+     column scales it with the column's width; see PageScreen.vue. */
   --cp-container-padding: var(--c-spacing-lg);
   --cp-content-max-width: calc(960rem / 16);
 
@@ -584,6 +608,87 @@ craft-field[data-highlighted] {
 .card-thumb > .thumb svg {
   width: 100%;
   height: 100%;
+}
+
+/* Gray elements (element cards, Matrix blocks and element chips with the gray
+   appearance color; not badges or other gray UI) take their colors from the
+   --c-element-gray-* tokens: slate, the chrome's own neutral, in the light
+   theme, the gray palette in the dark one. */
+:is(craft-card, craft-chip)[data-color='gray'] {
+  --c-color-fill-quiet: var(--c-element-gray-fill-quiet);
+  --c-color-border-quiet: var(--c-element-gray-border-quiet);
+  --c-color-on-quiet: var(--c-element-gray-on-quiet);
+  --c-color-fill-normal: var(--c-element-gray-fill-normal);
+  --c-color-border-normal: var(--c-element-gray-border-normal);
+  --c-color-on-normal: var(--c-element-gray-on-normal);
+  --c-color-fill-loud: var(--c-element-gray-fill-loud);
+  --c-color-border-loud: var(--c-element-gray-border-loud);
+  --c-color-on-loud: var(--c-element-gray-on-loud);
+}
+
+/* Every element card and Matrix block gets a filled header bar, not only
+   colored ones. Core leaves the header of an uncolored card transparent, and a
+   white card's transparent over its white body, so only a border marks where
+   the element starts; the bar anchors each block and shows where it begins.
+
+   Each colored card publishes its header color, which inherits into what's
+   nested in it until another colored card sets its own. An uncolored card
+   doesn't set it, so it passes its container's on too. */
+craft-card[data-color]:not([data-color='white']) {
+  --cp-element-header-fill: var(--c-color-fill-quiet);
+}
+
+craft-card[data-color='white'] {
+  --cp-element-header-fill: var(--c-card-header-fill-white);
+}
+
+/* Cover cards are left alone while their image is shown, as they back their
+   header for the text they've chosen for the image. */
+
+/* An uncolored card takes the header color of the element it's in, and at
+   the top level --c-card-header-fill-neutral. Its body stays transparent. */
+:is([data-matrix-block], [data-element-id], .element)
+  > craft-card:not([data-color]):not([active]):not(
+    :has(> [data-cover])
+  )::part(header) {
+  background-color: var(
+    --cp-element-header-fill,
+    var(--c-card-header-fill-neutral)
+  );
+}
+
+/* A white card's header is --c-card-header-fill-white. */
+:is([data-matrix-block], [data-element-id], .element)
+  > craft-card[data-color='white']:not([active]):not(
+    :has(> [data-cover])
+  )::part(header) {
+  background-color: var(--cp-element-header-fill);
+}
+
+/* Selected, a white card's body takes the accent's quiet fill, and its header
+   a step stronger, so it keeps a visible header as every other selected card
+   does. */
+:is([data-matrix-block], [data-element-id], .element)
+  > craft-card[data-color='white'][active]:not(
+    :has(> [data-cover])
+  )::part(header) {
+  background-color: var(--c-card-header-fill-white-selected);
+  color: var(--c-color-accent-on-normal);
+}
+
+/* Asset thumbnail tiles are a light shade of whatever they sit on, so they
+   read as their own layer rather than a bare border, and take the tint of a
+   colored block they're in. Black tiles keep their dark backing, which
+   their light text needs. */
+craft-chip[prefix-placement='block-start']:has(craft-thumbnail):not(
+  [selected],
+  [data-color='black']
+)::part(chip) {
+  background-color: color-mix(
+    in srgb,
+    var(--c-text-default) var(--c-thumbnail-tile-shade),
+    transparent
+  );
 }
 
 /* A nested element's "modified" status: a bar down the card's inline-start

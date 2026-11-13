@@ -51,7 +51,11 @@
     <craft-field-group
       v-else-if="!deferred"
       separated
-      style="--c-field-group-separator-spacing: var(--cp-container-padding)"
+      style="
+        --c-field-group-separator-spacing: calc(
+          var(--cp-container-padding) / 2
+        );
+      "
     >
       <UiNodeList
         :nodes="node.children ?? []"

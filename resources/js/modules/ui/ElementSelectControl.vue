@@ -22,6 +22,7 @@
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
+  import {elementFocusTarget} from './element-select/elementFocusTarget';
   import {useElementPresentations} from '@/modules/elements/element-presentations';
   import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
   import type {
@@ -386,6 +387,8 @@
             limit.value -
               (replacing === null ? ids.value.length : ids.value.length - 1)
           );
+    /** The element chosen last, which takes focus once the field is full. */
+    let chosenLast: number | undefined;
 
     const modal = await createElementSelectorModal(
       props.control.props.elementType,
@@ -405,7 +408,11 @@
         disabledElementIds: ids.value.filter((id) => id !== replacing),
         modalTitle: props.control.props.selectionLabel,
         selectBtnLabel: props.control.props.selectionLabel,
-        triggerElement: () => addButton.value,
+        triggerElement: () =>
+          addButton.value ??
+          (chosenLast === undefined
+            ? null
+            : elementFocusTarget(dropZone.value, chosenLast)),
         onSelect: (elements) => {
           const chosen = remember(
             elements as unknown as Array<Record<string, unknown>>
@@ -424,14 +431,14 @@
               ? []
               : ids.value;
 
-          void relate(
-            withinLimit(
-              replacing === null
-                ? [...current, ...chosen]
-                : current.flatMap((id) => (id === replacing ? chosen : [id]))
-            ),
-            presentation(chosen[0]!).siteId
+          const next = withinLimit(
+            replacing === null
+              ? [...current, ...chosen]
+              : current.flatMap((id) => (id === replacing ? chosen : [id]))
           );
+          chosenLast = next.filter((id) => chosen.includes(id)).pop();
+
+          void relate(next, presentation(chosen[0]!).siteId);
         },
       }
     );

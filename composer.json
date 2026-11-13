@@ -88,6 +88,7 @@
     "intervention/image-driver-vips": "^4.1",
     "larastan/larastan": "^3.13",
     "laravel/boost": "^2.10.3",
+    "laravel/octane": "^2.24",
     "laravel/pao": "^1.0",
     "laravel/pint": "^1.22",
     "laravel/socialite": "^5.23",

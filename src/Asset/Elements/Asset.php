@@ -195,8 +195,6 @@ class Asset extends Element
     /** How many times the color grid is scaled up for {@see getPlaceholderDataUrl()}. */
     private const int PLACEHOLDER_SCALE = 3;
 
-    private static string $_displayName;
-
     /**
      * @var bool Whether this asset represents a folder.
      *
@@ -468,9 +466,7 @@ class Asset extends Element
     #[Override]
     public static function displayName(): string
     {
-        return self::$_displayName ??= self::isFolderIndex()
-            ? t('Folder')
-            : t('Asset');
+        return self::isFolderIndex() ? t('Folder') : t('Asset');
     }
 
     #[Override]

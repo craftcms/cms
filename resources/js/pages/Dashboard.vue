@@ -119,4 +119,11 @@
   .item {
     margin-block-end: 14px;
   }
+
+  /* Widgets take the details pane's surface, the page's other secondary
+     surface. */
+  .dashboard-grid :deep(craft-card[data-color='gray']::part(base)),
+  .dashboard-grid :deep(craft-card[data-color='gray']::part(header)) {
+    background-color: var(--c-surface-details);
+  }
 </style>

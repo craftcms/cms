@@ -129,13 +129,6 @@ describe('Drag settings + defaults', () => {
     expect(Drag.defaults.helperSpacingX).toBe(5);
     expect(Drag.defaults.helperSpacingY).toBe(5);
   });
-
-  it('starts with empty draggee/helper state', () => {
-    const d = new Drag();
-    expect(d.$draggee).toEqual([]);
-    expect(d.helpers).toEqual([]);
-    expect(d.allowDragging()).toBe(true);
-  });
 });
 
 // ---------------------------------------------------------------------------

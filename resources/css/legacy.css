@@ -405,13 +405,12 @@ Legacy compat styles
     text-align: start;
   }
 
-  table.data {
-    width: 100%;
-  }
-
   /* Tables — any legacy `table.data`.
      Ported from the legacy stylesheet onto current tokens, because the vars it
-     used (`--gray-050`, `--light-text-color`, `--padding`) aren't loaded here. */
+     used (`--gray-050`, `--light-text-color`, `--padding`) aren't loaded here,
+     and lined up with `.cp-table` so a bridged screen's table reads like the
+     rest of the CP: text against the start edge, cells flush against each
+     other, a header on the table's own surface, and a rule under each row. */
 
   /* The legacy rule also carried negative margins to bleed the table out of a
      pane's padding. There's no such pane in this shell — `CpContainer` owns the
@@ -420,39 +419,66 @@ Legacy compat styles
     overflow-x: auto;
   }
 
+  table.data {
+    width: 100%;
+    text-align: start;
+    /* The default 2px spacing shows the page between the cells, which reads as
+       a grid of boxes rather than rows. */
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
   table.data td,
   table.data th {
     box-sizing: border-box;
+    /* `th` would otherwise centre, which is the one thing the port dropped from
+       the legacy sheet's own `thead th` rule. */
+    text-align: start;
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-md);
     position: relative;
   }
 
-  table.data th {
-    font-weight: 700;
+  /* A rule under every row but the table's last. */
+  table.data :is(thead, tbody, tfoot):not(:last-child) tr > :is(th, td),
+  table.data
+    :is(thead, tbody, tfoot):last-child
+    tr:not(:last-child)
+    > :is(th, td) {
+    border-block-end: 1px solid var(--c-table-border-color);
   }
 
   table.data thead td,
   table.data thead th {
-    background-color: var(--c-color-neutral-fill-quiet);
+    /* The extra pixel is the row's own rule, so the header matches the height
+       `.cp-table` gives its own. */
+    height: calc(var(--c-size-header) + 1px);
+    background-color: var(--c-surface-default);
     cursor: default;
-    padding-block: var(--c-spacing-sm);
+    font-weight: 700;
     vertical-align: middle;
     white-space: nowrap;
     width: auto;
   }
 
-  table.data thead:first-child tr:first-child th:first-child {
-    border-start-start-radius: var(--c-radius-sm);
-  }
-
-  table.data thead:first-child tr:first-child th:last-child {
-    border-start-end-radius: var(--c-radius-sm);
-  }
-
   table.data tbody td,
   table.data tbody th {
+    /* A floor, not a cap: a row with more in it still grows. */
+    height: var(--c-size-control-md);
     max-width: 33vw;
-    padding-block: var(--c-spacing-sm);
+  }
+
+  /* A step below the column headers' weight, as in `.cp-table`. */
+  table.data tbody th {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  /* Shrink-to-content columns — action buttons, checkboxes. Legacy markup marks
+     them up this way and the port never carried the rule across. */
+  table.data th.thin,
+  table.data td.thin {
+    width: 0.01%;
+    white-space: nowrap;
   }
 
   table.data tbody tr:not(.disabled):hover td,
@@ -465,15 +491,6 @@ Legacy compat styles
   table.data tbody tr:not(.disabled):focus {
     position: relative;
     z-index: 1;
-  }
-
-  /* Transparent on purpose, as in the legacy sheet: it reserves the row's
-     border box so selecting a row can colour it without shifting the layout. */
-  table.data thead + tbody tr td,
-  table.data thead + tbody tr th,
-  table.data tr + tr td,
-  table.data tr + tr th {
-    border-block-start: 1px solid transparent;
   }
 
   /* Narrow viewports: legacy JS adds `.collapsed`, and each cell's `data-title`

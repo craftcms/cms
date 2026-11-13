@@ -41,6 +41,16 @@ class Template
     /** @var array<string, mixed> */
     protected static array $_fallbacks = [];
 
+    /**
+     * Forgets the preloaded fallback variables, such as singles, so a long-lived worker doesn't keep them between requests.
+     *
+     * @internal
+     */
+    public static function forgetFallbacks(): void
+    {
+        self::$_fallbacks = [];
+    }
+
     /** @param array<string, mixed> $context */
     public static function resolveVariable(string $name, array $context, bool $strict, int $lineno = -1, ?Source $source = null): mixed
     {

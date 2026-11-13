@@ -1423,39 +1423,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       return this.queue?.push(
         () =>
           new Promise((resolve, reject) => {
-            // If this is a revision, there's nothing to check
-            if (this.settings.revisionId) {
+            // If this is a revision or the user can't save the element, there's nothing to check
+            if (this.settings.revisionId || !this.settings.canSave) {
               resolve();
-              return;
-            }
-
-            // If we're already saving a draft, try again later
-            if (this.savingDraft) {
-              this.saveDraftCallbacks.push(async () => {
-                try {
-                  await this.checkForm(force, saveDraft);
-                } catch (e) {
-                  reject(e);
-                  return;
-                }
-                resolve();
-              });
-            }
-
-            // If we haven't had a chance to fetch the initial data yet, try again in a bit
-            if (
-              typeof this.$container.data('initialSerializedValue') ===
-              'undefined'
-            ) {
-              setTimeout(async () => {
-                try {
-                  await this.checkForm(force, saveDraft);
-                } catch (e) {
-                  reject(e);
-                  return;
-                }
-                resolve();
-              }, 500);
               return;
             }
 

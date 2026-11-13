@@ -88,6 +88,10 @@ export abstract class CopiedNotification extends Notification {
     observer.observe(content);
     this.on('close', () => observer.disconnect());
 
+    // Lays the card out around the value. A `:has()` rule for this would make
+    // Chrome restyle the whole page each time any element is added anywhere.
+    this.element?.classList.add('copied-notification--value');
+
     return container;
   }
 }
