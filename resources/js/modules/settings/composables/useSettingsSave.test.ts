@@ -85,6 +85,7 @@ beforeEach(() => {
   slideout = {
     instance: {containerId: 'slideout-1'},
     close: vi.fn(),
+    reload: vi.fn(async () => {}),
     // Nobody listening, so the panel falls back to reloading the page behind.
     saved: vi.fn((_result?: SlideoutSaveResult) => false),
   };
@@ -120,6 +121,7 @@ describe('save shortcut with an open editor', () => {
     slideout = {
       instance: {containerId: 'child'},
       close: vi.fn(),
+      reload: vi.fn(async () => {}),
       saved: vi.fn(() => true),
     };
     childScope.run(() => useTestSettingsSave(childForm));
@@ -192,6 +194,7 @@ describe('useSettingsSave in a slideout', () => {
     slideout = {
       instance: {containerId: 'slideout-1'},
       close,
+      reload: vi.fn(async () => {}),
       saved: vi.fn(() => false),
     };
     const form = makeForm();
@@ -209,6 +212,7 @@ describe('useSettingsSave in a slideout', () => {
     slideout = {
       instance: {containerId: 'slideout-1'},
       close,
+      reload: vi.fn(async () => {}),
       saved: vi.fn(() => false),
     };
     const {save} = run(() => useTestSettingsSave(makeForm()));
@@ -220,13 +224,56 @@ describe('useSettingsSave in a slideout', () => {
   });
 
   /**
+   * As after an Inertia visit, the screen gets the saved props while the form
+   * is still processing, so `onSuccess` can take them as what was saved.
+   */
+  it.each([
+    {redirect: false, reloads: true},
+    {redirect: true, reloads: false},
+  ])(
+    'reloads a panel the save keeps open before onSuccess (%o)',
+    async ({redirect, reloads}) => {
+      const form = makeForm();
+      const events: string[] = [];
+      slideout = {
+        instance: {containerId: 'slideout-1'},
+        close: vi.fn(() => events.push('close')),
+        reload: vi.fn(async (options) => {
+          events.push(`reload ${JSON.stringify(options)} ${form.processing}`);
+        }),
+        saved: vi.fn(() => true),
+      };
+      const {save} = run(() =>
+        useTestSettingsSave(form, {
+          reloadKeptOpen: () => true,
+          onSuccess: () => events.push(`success ${form.processing}`),
+        })
+      );
+
+      save({redirect});
+      await vi.waitFor(() => expect(form.processing).toBe(false));
+
+      expect(events).toEqual(
+        reloads
+          ? ['reload {"preserveState":true} true', 'success true']
+          : ['success true', 'close']
+      );
+    }
+  );
+
+  /**
    * An opener that registered `onSaved` refreshes itself, and knows better than
    * the panel does what needs refreshing — so the blanket reload is skipped.
    */
   it('leaves refreshing to the opener when it handles the save', async () => {
     const saved = vi.fn((_result?: SlideoutSaveResult) => true);
     const close = vi.fn();
-    slideout = {instance: {containerId: 'slideout-1'}, close, saved};
+    slideout = {
+      instance: {containerId: 'slideout-1'},
+      close,
+      reload: vi.fn(async () => {}),
+      saved,
+    };
 
     const {save} = run(() => useTestSettingsSave(makeForm()));
 

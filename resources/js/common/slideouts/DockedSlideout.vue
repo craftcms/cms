@@ -45,7 +45,7 @@
 
   provideSlideoutScreen(() => instance, {
     close: () => emit('close'),
-    reload: () => loadInto(instance),
+    reload: (options) => loadInto(instance, options),
     saved: (result = {}) => {
       emit('saved', result);
 

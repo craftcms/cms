@@ -976,6 +976,10 @@ export function useElementEditor({
       // Saved into the owner's draft, the nested draft this panel was editing
       // is gone, so there's nothing left to keep editing.
       forceClose: () => nestedOwnerId.value !== null,
+      // Applying a provisional draft deletes it, and replaces the nested
+      // elements created in it with new ones, so the panel is still showing
+      // the draft, with blocks that no longer exist.
+      reloadKeptOpen: () => draftIsProvisional.value,
       onError: (data) => {
         pendingRelease.value = null;
 

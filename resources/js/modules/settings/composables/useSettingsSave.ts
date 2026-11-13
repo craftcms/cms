@@ -6,7 +6,11 @@ import type {FormSaveOptions} from '@/common/types';
 import {elevatedSessionManager} from '@/modules/auth/elevated-session';
 import {useSlideout} from '@/common/slideouts/useSlideout';
 import {firstMessages} from '@/common/slideouts/errors';
-import type {SlideoutInstance, SlideoutSaveResult} from '@/common/slideouts';
+import type {
+  SlideoutInstance,
+  SlideoutReloadOptions,
+  SlideoutSaveResult,
+} from '@/common/slideouts';
 import {topStackedPanel} from '@/common/slideouts/panel-stack';
 import {showMessagesFromResponse} from '@/modules/messages';
 import {useShortcut} from '@/common/shortcuts';
@@ -44,6 +48,13 @@ export interface UseSettingsSaveOptions<T extends object> {
    * to stay open — when what was being edited no longer exists as it was.
    */
   forceClose?: () => boolean;
+  /**
+   * Whether a successful slideout save that keeps the panel open reloads it,
+   * as a page reloads after its save, when the save changed what the panel
+   * shows. The screen stays mounted, and the new props land before
+   * {@link onSuccess}, while the form is still processing.
+   */
+  reloadKeptOpen?: () => boolean;
   passwordConfirmation?: PasswordConfirmationOptions<T>;
   /**
    * Sugar over {@link passwordConfirmation}: require an elevated session when the
@@ -58,6 +69,7 @@ export interface UseSettingsSaveOptions<T extends object> {
 interface SettingsSaveSlideout {
   instance: Pick<SlideoutInstance, 'containerId'>;
   close(options?: {force?: boolean}): void;
+  reload(options?: SlideoutReloadOptions): Promise<void>;
   saved(result?: SlideoutSaveResult): boolean;
 }
 
@@ -193,9 +205,20 @@ export function useSettingsSave<T extends object>(
           },
         });
 
-        form.processing = false;
         showMessagesFromResponse(response.data);
+
+        const closing = !keepOpen || options.forceClose?.();
+
+        // The save itself went through; a panel the reload fails for just
+        // keeps showing what it did.
+        if (!closing && options.reloadKeptOpen?.()) {
+          await slideout!.reload({preserveState: true}).catch(() => undefined);
+        }
+
+        // As with an Inertia visit, the form is still processing while
+        // `onSuccess` runs, so it can tell the save's own props apart.
         options.onSuccess?.(response.data);
+        form.processing = false;
 
         // An opener that registered `onSaved` refreshes itself, and knows
         // better than we do what actually needs refreshing. Before the close:
@@ -205,7 +228,7 @@ export function useSettingsSave<T extends object>(
         // Continue-editing submissions keep the panel open. `force` because
         // the form can still read dirty right after a save; Inertia clears it when its
         // defaults are updated, which the page behind does on reload.
-        if (!keepOpen || options.forceClose?.()) {
+        if (closing) {
           slideout!.close({force: true});
         }
 
