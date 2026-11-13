@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Δεν ήταν δυνατή η αποθήκευση τόμου.',
     'Couldn’t save widget.' => 'Δεν ήταν δυνατή η αποθήκευση γραφικού στοιχείου.',
     'Couldn’t save {type}.' => 'Δεν ήταν δυνατή η αποθήκευση {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Δεν ήταν δυνατή η αποστολή email ενεργοποίησης: {error}',
     'Couldn’t suspend all users.' => 'Δεν ήταν δυνατή η αναστολή όλων των χρηστών.',
     'Couldn’t suspend user.' => 'Δεν ήταν δυνατή η αναστολή του χρήστη.',
