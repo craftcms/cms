@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace craft\base;
 
+use CraftCms\Cms\Shared\Enums\Color;
+
 use function CraftCms\Cms\craftAsset;
 
 /**
@@ -24,6 +26,11 @@ trait WidgetTrait
      * @var int|null The user’s chosen colspan for the widget
      */
     public ?int $colspan = null;
+
+    /**
+     * @var string|null The widget’s color: a {@see Color} value, or `null` for none
+     */
+    public ?string $color = Color::Gray->value;
 
     private string $widgetBodyHtml = '';
 

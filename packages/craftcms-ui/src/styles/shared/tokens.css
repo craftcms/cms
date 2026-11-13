@@ -425,6 +425,8 @@
   --c-callout-fill-mute: 30%;
   /* Like other hairlines here, so the no-color swatch keeps an edge. */
   --c-select-color-swatch-edge: var(--c-color-neutral-border-quiet);
+  /* Black checkers barely darken a dark fill, so the no-color swatch's lighten it. */
+  --c-select-color-swatch-checker: rgb(255 255 255 / 15%);
   /* Color swatches get a faint ring only here, to stand off the dark surface. */
   --c-select-color-swatch-ring: rgb(0 0 0 / 15%);
   --c-surface-default: color-mix(

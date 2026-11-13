@@ -43,6 +43,9 @@
 - Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
 - The “View Mode” (Matrix, relation, Addresses, and Content Block fields), “Thumb Style”, “Section Type”, and image transforms’ “Mode” settings now show their options as joined, illustrated buttons, with each option’s label inside the button, below its illustration, and the selected option’s illustration drawn in blue. When there isn’t room for them in one row, they wrap as separate buttons. ([#20233](https://github.com/craftcms/cms/pull/20233), [#20285](https://github.com/craftcms/cms/pull/20285))
 - Dashboard widgets, such as Recent Entries and My Drafts, now update when elements are saved, in the same browser tab or another one. ([#20485](https://github.com/craftcms/cms/pull/20485))
+- Dashboard widgets can now be given a color, like entry types, from the dashboard’s Widget Settings menu. Widgets are gray unless given another color, now drawn like gray cards elsewhere in the control panel, with a filled header bar, and “No color” draws a widget with no fill of its own, like an uncolored element card.
+- Dashboard widget titles now line up with the widgets’ content.
+- Fixed a bug where Dashboard widgets spanning multiple columns ended a few pixels before the right edge of the last column they spanned.
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
 
 ### Workflows
@@ -424,6 +427,7 @@
 - Field layout elements that implement Craft 5’s `inputHtml()` or `formHtml()` rather than `uiControl()` or `uiNode()` are still shown in element edit screens when the Yii adapter is installed. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Added `CraftCms\Cms\Cp\FormFields::fieldSelectHtml()`.
 - Added the `actions` slot to `<craft-field>`.
+- Added the `swatch-only` property to `<craft-select-color>`, which shows the selected color’s swatch alone, on a field drawn like a plain button.
 - Added the `<craft-checkbox-select>` web component, which replaces checkbox selects and sortable checkbox selects. It has an “All” option, independent `sortable` and `presentation="add-menu"` options, and an `options` property along with `addOption()`, `updateOption()`, and `removeOption()` methods for changing its options at runtime. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `presentation` option to the `forms.checkboxSelect` and `forms.checkboxSelectField` macros and `Craft.ui.createCheckboxSelect()`. Set it to `checkboxes` to make a sortable checkbox select list every option rather than an “Add item” menu. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - While a checkbox select's “All” option is checked, its other options are now left checked but unnamed, rather than disabled. ([#20036](https://github.com/craftcms/cms/pull/20036))
@@ -643,6 +647,8 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Added `CraftCms\Cms\Component\Exceptions\UnknownPropertyException`, replacing `yii\base\UnknownPropertyException`.
 
 #### Dashboard & Widgets
+
+- Added `CraftCms\Cms\Dashboard\Contracts\WidgetInterface::$color`, `CraftCms\Cms\Dashboard\Dashboard::changeWidgetColor()`, and the `dashboard/change-widget-color` action.
 
 ##### Controllers
 - Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:

@@ -32,6 +32,12 @@ For an arbitrary color, use [Input Color](?path=/docs/form-controls-text-control
 
 An optional "transparent" entry sits alongside the colors, for a value meaning _no colour_ rather than a color that happens to be pale.
 
+## Swatch Only
+
+With `swatch-only`, the field shows the selected color's swatch alone, drawn like a plain button, for a row of compact controls. The options still show each color's name.
+
+<Canvas of={SelectColorStories.SwatchOnly} />
+
 ## Events
 
 Picking a color is a commit, so the control emits `input` and `change` together:
@@ -73,6 +79,8 @@ The color field takes its name and description from one of these:
 - **A table column heading.** In a table cell, point `labelled-by` at the heading, and `described-by` at anything that describes the color field.
 
 Without one of these, the color field has no name.
+
+With `swatch-only`, the field shows no text, so use it where what it colors is clear from its surroundings, such as a row for the item it colors, and name it after that item: "Color Recent Entries".
 
 Color names are not meanings, though. If a color carries significance in your interface — red for a problem, green for a healthy state — say so in the label or help text, because "Red" alone does not tell a person what choosing red will do.
 
