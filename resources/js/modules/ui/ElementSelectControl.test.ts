@@ -732,6 +732,55 @@ describe('ElementSelectControl', () => {
       expect(container.textContent).toContain('Jane Doe');
     });
 
+    it('makes a result available once its relation is removed, without searching again', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {
+              id: 5,
+              title: 'Some entry',
+              label: 'Some entry',
+              html: 'Some entry',
+              exclude: true,
+            },
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({search}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await vi.dynamicImportSettled();
+      await nextTick();
+      const input = await type(container, 'Some');
+      const option = () =>
+        container!.querySelector('[role="listbox"] craft-option')!;
+      expect(option().getAttribute('aria-disabled')).toBe('true');
+
+      value.value = [];
+      await nextTick();
+      expect(option().getAttribute('aria-disabled')).toBe('false');
+
+      press(input, 'ArrowDown');
+      await nextTick();
+      press(input, 'Enter');
+
+      expect(value.value).toEqual([5]);
+      expect(stub.post).toHaveBeenCalledOnce();
+    });
+
     it('replaces the related branch when the field allows only one', async () => {
       stub.post.mockImplementation(async (action: string, body) =>
         action.includes('structured-elements')

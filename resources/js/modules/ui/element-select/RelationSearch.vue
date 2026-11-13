@@ -54,7 +54,6 @@
     /** What the chip shows, which users and other untitled elements have too. */
     label: string;
     html: string;
-    exclude: boolean;
   };
 
   type Row = {
@@ -107,7 +106,9 @@
   );
 
   function available(row: Row | undefined): boolean {
-    return !!row && !row.result?.exclude;
+    // From the current exclusions rather than the search's, so removing a
+    // relation makes its result available without searching again.
+    return !!row && !(row.result && props.excludeIds.includes(row.result.id));
   }
 
   /** The available option `step` along from the active one, wrapping. */
