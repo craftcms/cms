@@ -18,6 +18,7 @@
 - Breadcrumb separators are now lighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Pages no longer show breadcrumbs when the only one would be the current page, such as the Dashboard. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ translation indicators now show their descriptions when pressed, including on touch devices, rather than on hover. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Updated the workflow stage type picker to show each type’s icon when available. ([#20660](https://github.com/craftcms/cms/pull/20660))
 - Fixed a bug where focus was lost after choosing elements in a relation field’s selector modal, or canceling it. Focus now returns to the field’s add button, or to the chosen element when the field is full. ([#20653](https://github.com/craftcms/cms/pull/20653))
 - Fixed a bug where typing in fields, especially Markdown fields, lagged on entries with many fields. ([#20637](https://github.com/craftcms/cms/issues/20637))
 - Fixed a bug where the user menu showed a “Permissions” item on Craft Solo, which led to a 403 error. ([#20621](https://github.com/craftcms/cms/issues/20621), [#20635](https://github.com/craftcms/cms/pull/20635))
