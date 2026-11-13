@@ -566,7 +566,10 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   }
 
   getLastActionBtn(): HTMLElement | null {
-    const buttons = this.container.querySelectorAll<HTMLElement>('.action-btn');
+    // A chip's `craft-action-menu` invoker, or an old disclosure menu trigger
+    const buttons = this.container.querySelectorAll<HTMLElement>(
+      'craft-action-menu > [slot="invoker"], .action-btn'
+    );
     return buttons[buttons.length - 1] ?? null;
   }
 

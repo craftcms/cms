@@ -54,10 +54,20 @@ it('reads its chips and hides Add once the limit is reached', () => {
 });
 
 it('gives a full field’s modal its container to return to', () => {
-  // Its chips' action menus have no `.action-btn` to fall back on
-  const input = boot({limit: 2});
+  // Without action menus, its chips have nothing to take focus
+  const input = boot({limit: 2, showActionMenu: false});
 
   expect(input.getModalSettings().triggerElement()).toBe(container());
+});
+
+it("moves focus to the last chip's action menu once the field is full", () => {
+  const input = boot({limit: 2});
+  const invoker = input
+    .getElementById(2)!
+    .querySelector('craft-action-menu > [slot="invoker"]');
+
+  expect(invoker).not.toBeNull();
+  expect(input.getNextLogicalFocusElement()).toBe(invoker);
 });
 
 it('removes a chip from the value and frees its slot', async () => {
