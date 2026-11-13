@@ -283,9 +283,40 @@
 
   /* Matches craft-breadcrumb-item's separators. */
   .cp-header-bar__separator {
-    color: var(--color-slate-300);
-    font-size: var(--c-text-base);
-    font-weight: var(--font-weight-light);
+    --_chevron-stroke: 1px;
+    --_chevron-angle: 30deg;
+    --_chevron-reach: calc(12rem / 16 * tan(var(--_chevron-angle)));
+    --_chevron-arm: calc(12rem / 16 / cos(var(--_chevron-angle)));
+    position: relative;
+    display: inline-block;
+    flex: none;
+    inline-size: calc(var(--_chevron-reach) + var(--_chevron-stroke));
+    block-size: calc(24rem / 16);
+    color: var(--c-color-neutral-border-quiet);
+    font-size: 0;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      inset-inline-start: calc(var(--_chevron-reach) / 2);
+      block-size: var(--_chevron-arm);
+      border-inline-start: var(--_chevron-stroke) solid currentColor;
+    }
+
+    &::before {
+      inset-block-start: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+      rotate: calc(var(--_chevron-angle) * -1);
+    }
+
+    &::after {
+      inset-block-end: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+      rotate: var(--_chevron-angle);
+    }
+
+    &:dir(rtl) {
+      scale: -1 1;
+    }
   }
 
   .cp-header-bar__breadcrumbs
