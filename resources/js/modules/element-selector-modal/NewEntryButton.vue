@@ -9,6 +9,7 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import {openSlideout} from '@/common/slideouts';
+  import {showError} from '@/modules/messages/messages';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
   import CreateEntryController from '@actions/Entries/CreateEntryController';
   import {
@@ -54,6 +55,8 @@
    * The modal closes first: it's a top-layer dialog, which a slideout can't
    * open over. Choosing then goes to the opener's `onSelect` directly, as
    * submitting the modal would have, so a relation field relates the entry.
+   * It's chosen once: later saves from the same slideout, such as "Save and
+   * continue editing", would relate it again.
    */
   async function create({section, entryType}: CreatableType): Promise<void> {
     const {controller, siteId} = props;
@@ -72,11 +75,22 @@
         {siteId, section: section.handle, type: entryType.handle}
       );
       entry = data.entry;
+    } catch (error) {
+      const response = (error as {response?: {data?: {message?: string}}})
+        .response;
+      showError(
+        response?.data?.message ??
+          t('Couldn’t create {type}.', {type: t('entry')})
+      );
+
+      return;
     } finally {
       controller.setBusy(false);
     }
 
     controller.close();
+
+    let chosen = false;
 
     void openSlideout(
       EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
@@ -94,9 +108,11 @@
       {
         opener,
         onSaved: ({draft, data}) => {
-          if (draft) {
+          if (draft || chosen) {
             return;
           }
+
+          chosen = true;
 
           const saved = (data?.element ?? {}) as {title?: string | null};
           const info: ElementInfo = {
@@ -137,8 +153,11 @@
   </craft-button>
 
   <!-- Several: the button opens a menu of them. -->
+  <!-- Keyed on the label, which names the section: ActionMenu renders its
+       invoker once. -->
   <ActionMenu
     v-else-if="creatableTypes.length > 1"
+    :key="label"
     :actions="actions"
     :label="t('New entry, choose an entry type')"
   >

@@ -76,7 +76,10 @@ vi.mock('@/common/components/ActionMenu.vue', async () => {
 const creation = vi.hoisted(() => ({
   post: vi.fn(),
   openSlideout: vi.fn(),
+  showError: vi.fn(),
 }));
+
+vi.mock('@/modules/messages/messages', () => ({showError: creation.showError}));
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
@@ -508,6 +511,7 @@ describe('the new entry button', () => {
   beforeEach(() => {
     creation.post.mockReset();
     creation.openSlideout.mockReset();
+    creation.showError.mockReset();
     window.Craft = {
       publishableSections: [
         {
@@ -571,6 +575,37 @@ describe('the new entry button', () => {
       [expect.objectContaining({id: 21, siteId: 2, label: 'Jane Austen'})],
       {}
     );
+
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    expect(onSelect).toHaveBeenCalledTimes(1);
+
+    unmount();
+  });
+
+  it('keeps the selector open and reports the error when creating fails', async () => {
+    const instance = controller();
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    creation.post.mockRejectedValue({
+      response: {data: {message: 'Couldn’t create entry.'}},
+    });
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    await vi.waitFor(() =>
+      expect(creation.showError).toHaveBeenCalledWith('Couldn’t create entry.')
+    );
+
+    expect(instance.state.open).toBe(true);
+    expect(instance.state.busy).toBe(false);
+    expect(creation.openSlideout).not.toHaveBeenCalled();
 
     unmount();
   });

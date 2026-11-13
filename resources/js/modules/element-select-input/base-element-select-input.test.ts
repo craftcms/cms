@@ -86,7 +86,7 @@ it('adds the modal selection as chips posted with the field', async () => {
   expect(postedIds()).toEqual(['1', '2', '3']);
 });
 
-it('swaps the chip staged for replacement with the selection', async () => {
+function bootWithModal(): BaseElementSelectInput {
   vi.spyOn(actionClient, 'post').mockResolvedValue({
     data: {
       elements: {
@@ -105,10 +105,28 @@ it('swaps the chip staged for replacement with the selection', async () => {
     setDisabledElementIds: vi.fn(),
   });
 
+  return input;
+}
+
+it('swaps the chip staged for replacement with a selection made after the modal closed', async () => {
+  const input = bootWithModal();
+
   input.showReplaceModal(input.getElementById(1)!);
+  input.onModalHide();
   await input.onModalSelect([{id: 5, siteId: 1}]);
 
   expect(input.getSelectedElementIds()).toEqual([2, 5]);
+});
+
+it('adds rather than replaces once a replacement is abandoned', async () => {
+  const input = bootWithModal();
+
+  input.showReplaceModal(input.getElementById(1)!);
+  input.onModalHide();
+  (addButton() as HTMLElement).click();
+  await input.onModalSelect([{id: 5, siteId: 1}]);
+
+  expect(input.getSelectedElementIds()).toEqual([1, 2, 5]);
 });
 
 it('moves a chip when its reorder button asks to', () => {

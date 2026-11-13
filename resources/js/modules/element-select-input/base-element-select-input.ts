@@ -255,11 +255,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     if (this.addElementBtn) {
       // `<craft-button>` fires click for Enter and Space too
-      this.addListener(
-        this.addElementBtn,
-        'click',
-        () => void this.showModal()
-      );
+      this.addListener(this.addElementBtn, 'click', () => {
+        // Adding, not replacing a chip whose Replace was abandoned.
+        this.replacing = null;
+        void this.showModal();
+      });
     }
 
     if (this.elementSelect) {
@@ -1264,7 +1264,8 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       this.modal.destroy();
       this.modal = null;
     }
-    this.replacing = null;
+    // `replacing` outlives the modal: its New entry button closes it before the
+    // new entry is saved, and the selection that follows still replaces.
   }
 
   async selectElements(elements: SelectedElement[]): Promise<void> {

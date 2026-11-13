@@ -284,10 +284,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     if (this.$addElementBtn.length) {
       // activate is a jQuery synthetic event — must use jQuery .on(), not addListener.
-      $(this.$addElementBtn).on(
-        'activate.elementSelectInput',
-        () => void this.showModal()
-      );
+      $(this.$addElementBtn).on('activate.elementSelectInput', () => {
+        // Adding, not replacing a chip whose Replace was abandoned.
+        this._$replaceElement = null;
+        void this.showModal();
+      });
     }
 
     requestAnimationFrame(() => {
@@ -1282,7 +1283,9 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       this.modal.destroy();
       this.modal = null;
     }
-    this._$replaceElement = null;
+    // `_$replaceElement` outlives the modal: its New entry button closes it
+    // before the new entry is saved, and the selection that follows still
+    // replaces.
   }
 
   async selectElements(elements: any[]): Promise<void> {
