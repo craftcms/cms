@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => '无法保存存储卷。',
     'Couldn’t save widget.' => '无法保存小部件。',
     'Couldn’t save {type}.' => '无法保存{type}。',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => '无法发送激活电子邮件：{error}',
     'Couldn’t suspend all users.' => '无法暂停所有用户。',
     'Couldn’t suspend user.' => '无法暂挂用户。',
