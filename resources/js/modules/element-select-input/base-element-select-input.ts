@@ -255,11 +255,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     if (this.addElementBtn) {
       // `<craft-button>` fires click for Enter and Space too
-      this.addListener(
-        this.addElementBtn,
-        'click',
-        () => void this.showModal()
-      );
+      this.addListener(this.addElementBtn, 'click', () => {
+        // Adding, not replacing a chip whose Replace was abandoned.
+        this.replacing = null;
+        void this.showModal();
+      });
     }
 
     if (this.elementSelect) {
@@ -553,6 +553,10 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       return this.addElementBtn;
     }
 
+    return this.#focusableContainer();
+  }
+
+  #focusableContainer(): HTMLElement {
     this.container.setAttribute('tabindex', '-1');
     return this.container;
   }
@@ -1139,7 +1143,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         onSelect: this.onModalSelect.bind(this),
         // Called whenever the modal closes: Cancel, Escape or a selection
         onClose: this.onModalHide.bind(this),
-        triggerElement: () => this.getNextLogicalFocusElement(),
+        // A full field's chips may have no `.action-btn` to return to; the
+        // container keeps a connected target, so a slideout opened from the
+        // modal nests in the field's panel.
+        triggerElement: () =>
+          this.getNextLogicalFocusElement() ?? this.#focusableContainer(),
         modalTitle: t('Choose'),
       },
       this.settings.modalSettings
@@ -1267,7 +1275,8 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       this.modal.destroy();
       this.modal = null;
     }
-    this.replacing = null;
+    // `replacing` outlives the modal: its New entry button closes it before the
+    // new entry is saved, and the selection that follows still replaces.
   }
 
   async selectElements(elements: SelectedElement[]): Promise<void> {
@@ -1641,6 +1650,9 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     if (option.classList.contains('disabled')) {
       return;
     }
+
+    // Search results add, even after an abandoned Replace.
+    this.replacing = null;
 
     let id: number | null = option.dataset.id
       ? Number(option.dataset.id)

@@ -53,6 +53,13 @@ it('reads its chips and hides Add once the limit is reached', () => {
   expect(addButton().classList.contains('hidden')).toBe(true);
 });
 
+it('gives a full field’s modal its container to return to', () => {
+  // Without action menus, its chips have nothing to take focus
+  const input = boot({limit: 2, showActionMenu: false});
+
+  expect(input.getModalSettings().triggerElement()).toBe(container());
+});
+
 it("moves focus to the last chip's action menu once the field is full", () => {
   const input = boot({limit: 2});
   const invoker = input
@@ -96,7 +103,7 @@ it('adds the modal selection as chips posted with the field', async () => {
   expect(postedIds()).toEqual(['1', '2', '3']);
 });
 
-it('swaps the chip staged for replacement with the selection', async () => {
+function bootWithModal(): BaseElementSelectInput {
   vi.spyOn(actionClient, 'post').mockResolvedValue({
     data: {
       elements: {
@@ -115,10 +122,40 @@ it('swaps the chip staged for replacement with the selection', async () => {
     setDisabledElementIds: vi.fn(),
   });
 
+  return input;
+}
+
+it('swaps the chip staged for replacement with a selection made after the modal closed', async () => {
+  const input = bootWithModal();
+
   input.showReplaceModal(input.getElementById(1)!);
+  input.onModalHide();
   await input.onModalSelect([{id: 5, siteId: 1}]);
 
   expect(input.getSelectedElementIds()).toEqual([2, 5]);
+});
+
+it('adds rather than replaces once a replacement is abandoned', async () => {
+  const input = bootWithModal();
+
+  input.showReplaceModal(input.getElementById(1)!);
+  input.onModalHide();
+  (addButton() as HTMLElement).click();
+  await input.onModalSelect([{id: 5, siteId: 1}]);
+
+  expect(input.getSelectedElementIds()).toEqual([1, 2, 5]);
+});
+
+it('adds a search result even after a replacement is abandoned', async () => {
+  const input = bootWithModal();
+  const option = document.createElement('div');
+  option.dataset.id = '5';
+
+  input.showReplaceModal(input.getElementById(1)!);
+  input.onModalHide();
+  await input.selectSearchResult(option);
+
+  expect(input.getSelectedElementIds()).toEqual([1, 2, 5]);
 });
 
 it('moves a chip when its reorder button asks to', () => {

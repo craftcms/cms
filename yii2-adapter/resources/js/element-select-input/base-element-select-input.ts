@@ -284,10 +284,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
 
     if (this.$addElementBtn.length) {
       // activate is a jQuery synthetic event — must use jQuery .on(), not addListener.
-      $(this.$addElementBtn).on(
-        'activate.elementSelectInput',
-        () => void this.showModal()
-      );
+      $(this.$addElementBtn).on('activate.elementSelectInput', () => {
+        // Adding, not replacing a chip whose Replace was abandoned.
+        this._$replaceElement = null;
+        void this.showModal();
+      });
     }
 
     requestAnimationFrame(() => {
@@ -1143,7 +1144,15 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         // Was `onHide`; the controller calls this one whenever it closes,
         // whether that came from Cancel, Escape or a completed selection.
         onClose: this.onModalHide.bind(this),
-        triggerElement: () => this.getNextLogicalFocusElement(),
+        // A full field's chips may have no `.action-btn` to return to; the
+        // container keeps a connected target, so a slideout opened from the
+        // modal nests in the field's panel.
+        triggerElement: () => {
+          const $target = this.getNextLogicalFocusElement();
+          return $target?.length
+            ? $target
+            : this.$container.attr('tabindex', '-1');
+        },
         modalTitle: t('Choose'),
       },
       this.settings.modalSettings
@@ -1285,7 +1294,9 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       this.modal.destroy();
       this.modal = null;
     }
-    this._$replaceElement = null;
+    // `_$replaceElement` outlives the modal: its New entry button closes it
+    // before the new entry is saved, and the selection that follows still
+    // replaces.
   }
 
   async selectElements(elements: any[]): Promise<void> {
@@ -1746,6 +1757,9 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
     if ($option.hasClass('disabled')) {
       return;
     }
+
+    // Search results add, even after an abandoned Replace.
+    this._$replaceElement = null;
 
     let id = $option.data('id');
 

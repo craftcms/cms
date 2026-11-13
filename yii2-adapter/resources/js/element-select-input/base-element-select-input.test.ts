@@ -98,6 +98,20 @@ it('stages the element the modal should replace', () => {
   expect(showModal).toHaveBeenCalledOnce();
 });
 
+it('gives a full field’s modal its container to return to', () => {
+  const {input} = chipActionInput();
+  // Its chips' action menus have no `.action-btn` to fall back on
+  const $container = jquery(
+    '<div><div class="chip"><div class="chip-actions"></div></div></div>'
+  );
+  input.$container = $container;
+  input.settings.criteria = {};
+  input.canAddMoreElements = () => false;
+  input.getDisabledElementIds = () => [];
+
+  expect(input.getModalSettings().triggerElement()).toBe($container);
+});
+
 it('removes the whole selection when the chip is part of it', () => {
   const $chip = {chip: true};
   const $selection = {selection: true};
