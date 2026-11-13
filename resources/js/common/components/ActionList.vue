@@ -63,6 +63,9 @@
     attrs: Record<string, unknown>;
   }
 
+  /** How long a nav item's page, fetched while it's pointed at, is kept. */
+  const NAV_PREFETCH_CACHE_FOR = '5s';
+
   const {
     actions = [],
     as = 'craft-button',
@@ -415,6 +418,14 @@
       as: 'craft-nav-item',
       '.external': external,
       inertia: !external,
+      // Pointing at a nav item says where you're going well before the click,
+      // so the page is fetched then, and is usually there by the time you
+      // click. A click quicker than the hover delay still fetches on press, as
+      // other links do. Kept only briefly: long enough to cover the wait for
+      // the click, not so long that the page could be out of date when it's
+      // shown.
+      prefetch: ['hover', 'click'],
+      cacheFor: NAV_PREFETCH_CACHE_FOR,
     };
   }
 
