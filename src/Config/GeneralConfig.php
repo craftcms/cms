@@ -749,8 +749,8 @@ class GeneralConfig extends BaseConfig
      *
      * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. Use the
      * [`light-dark()`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark) CSS function or
-     * `currentColor` within the SVG, as you would for `cpIconPath`. Sign-in screens follow the operating
-     * system’s theme for logged-out users, and the user’s selected theme otherwise.
+     * `currentColor` within the SVG, as you would for `cpIconPath`. Once nobody is logged in, sign-in screens
+     * show the theme the last user to sign in on the browser had selected.
      *
      * ::: code
      * ```php Static Config

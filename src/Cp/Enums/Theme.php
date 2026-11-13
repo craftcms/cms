@@ -23,12 +23,20 @@ enum Theme: string
     public const string COOKIE = 'CraftTheme';
 
     /**
+     * The cookie the control panel keeps set to the signed-in user's theme
+     * preference, so pages shown once nobody is logged in, such as the login
+     * page, can keep showing the theme the last user chose.
+     */
+    public const string PREFERENCE_COOKIE = 'CraftThemePreference';
+
+    /**
      * The theme to show: the one the user has chosen, or `System` if they
-     * haven't chosen one or aren't logged in, such as on the login page.
+     * haven't chosen one. Without a user, such as on the login page, it's the
+     * one the last user to sign in on this browser had chosen.
      */
     public static function forUser(?User $user): self
     {
-        $theme = $user?->getPreference('theme');
+        $theme = $user ? $user->getPreference('theme') : request()->cookie(self::PREFERENCE_COOKIE);
 
         return is_string($theme) ? self::tryFrom($theme) ?? self::System : self::System;
     }

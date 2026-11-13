@@ -25,3 +25,23 @@ it('resolves the theme the control panel is showing', function (?string $prefere
     'system, reported light' => ['system', 'light', Theme::Light],
     'system, not reported yet' => [null, null, Theme::Light],
 ]);
+
+it('gives logged-out pages the last signed-in user’s preference', function (?string $cookie, Theme $expected) {
+    if ($cookie !== null) {
+        request()->cookies->set(Theme::PREFERENCE_COOKIE, $cookie);
+    }
+
+    expect(Theme::forUser(null))->toBe($expected);
+})->with([
+    'dark' => ['dark', Theme::Dark],
+    'light' => ['light', Theme::Light],
+    'system' => ['system', Theme::System],
+    'invalid' => ['blue', Theme::System],
+    'not set' => [null, Theme::System],
+]);
+
+it('ignores the last signed-in user’s preference when a user is logged in', function () {
+    request()->cookies->set(Theme::PREFERENCE_COOKIE, 'dark');
+
+    expect(Theme::forUser(User::findOne()))->toBe(Theme::System);
+});

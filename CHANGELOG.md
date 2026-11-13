@@ -19,6 +19,7 @@
 - Pages no longer show breadcrumbs when the only one would be the current page, such as the Dashboard. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ translation indicators now show their descriptions when pressed, including on touch devices, rather than on hover. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Updated the workflow stage type picker to show each type’s icon when available. ([#20660](https://github.com/craftcms/cms/pull/20660))
+- Pages shown to logged-out users, such as the login page, now use the “Theme” preference of the last user who signed in on the browser, rather than always following the system’s light or dark setting.
 - Added the `cpIconPath` and `cpLogoPath` config settings, which set the control panel’s icon and the login page’s logo from files on the server. SVG files are rendered inline, so they can adapt to the selected light or dark theme, such as with the `light-dark()` CSS function. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Deprecated the `cpIconUrl` and `cpLogoUrl` config settings. `cpIconPath` and `cpLogoPath` should be used instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Fixed a bug where focus was lost after choosing elements in a relation field’s selector modal, or canceling it. Focus now returns to the field’s add button, or to the chosen element when the field is full. ([#20653](https://github.com/craftcms/cms/pull/20653))
