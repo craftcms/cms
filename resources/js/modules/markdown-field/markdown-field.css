@@ -150,11 +150,38 @@ craft-markdown-field:defined .overtype-wrapper {
   background: var(--markdown-field-bg) !important;
 }
 
-/* OverType floors the editor at 60px; `rows` sets the minimum instead. */
-craft-markdown-field:defined
-  .overtype-container.overtype-auto-resize
-  .overtype-wrapper {
+/*
+ * Grows with its text without measuring it. OverType lays its textarea over a
+ * preview that renders each line as a line of its own, so the two are stacked
+ * in one grid cell and the taller sets the height: the preview's text, or the
+ * textarea's `rows`, which sets the minimum in place of OverType's 60px floor.
+ */
+craft-markdown-field:defined .overtype-container {
+  height: auto !important;
+}
+
+craft-markdown-field:defined .overtype-wrapper {
+  display: grid !important;
+  flex: 0 0 auto !important;
+  height: auto !important;
   min-height: 0 !important;
+}
+
+craft-markdown-field:defined
+  .overtype-wrapper
+  > :is(.overtype-input, .overtype-preview) {
+  grid-area: 1 / 1 !important;
+  position: relative !important;
+  height: auto !important;
+  max-height: var(--markdown-field-max-height, none) !important;
+  /* Their text is the same height; only a cap leaves either any to scroll. */
+  overflow-y: hidden !important;
+}
+
+craft-markdown-field[capped]:defined
+  .overtype-wrapper
+  > :is(.overtype-input, .overtype-preview) {
+  overflow-y: auto !important;
 }
 
 craft-markdown-field:defined .markdown-field-footer-controls {
