@@ -214,9 +214,9 @@
     }
 
     @media (width >= var(--breakpoint-lg)) {
-      /* Takes in the space down to the body panel, so its row sits centered
-         between the panel and the top of the window. */
-      min-height: calc(42rem / 16 + var(--cp-body-inset) - var(--c-spacing-sm));
+      /* As tall as the collapsed sidebar and the details rail are wide, so the
+         system icon sits in the corner square they make. */
+      min-height: var(--cp-rail-width);
       padding-inline-start: var(--c-spacing-md);
       padding-inline-end: var(--cp-scrollbar-width, 0px);
       gap: calc(var(--spacing) * 3);
@@ -268,17 +268,12 @@
     margin: calc(var(--c-spacing-sm) * -1);
   }
 
-  /* The logo takes a nav icon's column, centered on it, so it holds still as
-     the sidebar collapses and the name starts where the collapsed content does. */
+  /* The logo is a collapsed nav item's size and sits in its column, so it holds
+     still as the sidebar collapses and the name starts where the collapsed
+     content does. */
   .cp-header-bar__system {
     flex: none;
     inline-size: calc(var(--cp-header-sidebar-width) - var(--c-spacing-md) * 2);
-    grid-template-columns: var(--c-size-touch-target) minmax(0, 1fr);
-  }
-
-  .cp-header-bar__system :deep(.system-info__icon) {
-    justify-self: center;
-    inline-size: var(--system-info-icon-size);
   }
 
   .cp-header-bar__system--collapsed {
@@ -288,9 +283,40 @@
 
   /* Matches craft-breadcrumb-item's separators. */
   .cp-header-bar__separator {
-    color: var(--color-slate-300);
-    font-size: var(--c-text-base);
-    font-weight: var(--font-weight-light);
+    --_chevron-stroke: 1px;
+    --_chevron-angle: 30deg;
+    --_chevron-reach: calc(12rem / 16 * tan(var(--_chevron-angle)));
+    --_chevron-arm: calc(12rem / 16 / cos(var(--_chevron-angle)));
+    position: relative;
+    display: inline-block;
+    flex: none;
+    inline-size: calc(var(--_chevron-reach) + var(--_chevron-stroke));
+    block-size: calc(24rem / 16);
+    color: var(--c-color-neutral-border-quiet);
+    font-size: 0;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      inset-inline-start: calc(var(--_chevron-reach) / 2);
+      block-size: var(--_chevron-arm);
+      border-inline-start: var(--_chevron-stroke) solid currentColor;
+    }
+
+    &::before {
+      inset-block-start: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+      rotate: calc(var(--_chevron-angle) * -1);
+    }
+
+    &::after {
+      inset-block-end: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+      rotate: var(--_chevron-angle);
+    }
+
+    &:dir(rtl) {
+      scale: -1 1;
+    }
   }
 
   /* Every crumb but the current one, back to full strength on hover. */

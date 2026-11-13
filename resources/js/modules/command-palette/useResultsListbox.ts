@@ -1,15 +1,14 @@
 import {computed, nextTick, type InputHTMLAttributes, type Ref} from 'vue';
-import type {ResultRow} from './types';
 
 /**
- * What a palette search's input shares with its results, after the APG's
- * list autocomplete combobox: the input points to the listbox, says whether
- * it has options, and which one is active. Focus stays in the input, and the
- * options are only ever active, never focused.
+ * What a search input shares with its results, after the APG's list
+ * autocomplete combobox: the input points to the listbox, says whether it has
+ * options, and which one is active. Focus stays in the input, and the options
+ * are only ever active, never focused.
  */
-export function useResultsListbox(
+export function useResultsListbox<Row extends {optionId: string}>(
   id: string,
-  rows: Ref<ResultRow[]>,
+  rows: Ref<Row[]>,
   selectedIndex: Ref<number>
 ) {
   const listboxId = `${id}-listbox`;

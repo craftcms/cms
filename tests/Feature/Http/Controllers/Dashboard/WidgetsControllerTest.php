@@ -34,6 +34,7 @@ it('requires authentication', function (string $action) {
     'store',
     'update',
     'updateColspan',
+    'updateColor',
     'reorder',
     'delete',
 ]);
@@ -138,6 +139,72 @@ it('can update the colspan of a widget', function () {
     expect(WidgetModel::first()->colspan)->toBe(2);
 });
 
+it('makes new widgets gray', function () {
+    postJson(action([WidgetsController::class, 'store']), ['type' => Updates::class])
+        ->assertOk()
+        ->assertJsonPath('info.color', 'gray');
+
+    expect(WidgetModel::first()->color)->toBe('gray');
+});
+
+it('can change and clear the color of a widget', function () {
+    $dashboard = app(Dashboard::class);
+    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+
+    postJson(action([WidgetsController::class, 'updateColor']), [
+        'id' => $widget->id,
+        'color' => 'teal',
+    ])->assertOk();
+
+    expect(WidgetModel::first()->color)->toBe('teal');
+
+    postJson(action([WidgetsController::class, 'updateColor']), [
+        'id' => $widget->id,
+        'color' => null,
+    ])->assertOk();
+
+    expect(WidgetModel::first()->color)->toBeNull()
+        ->and($dashboard->getWidgetById($widget->id)->color)->toBeNull();
+});
+
+it('only accepts palette colors for a widget', function (array $payload) {
+    $dashboard = app(Dashboard::class);
+    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
+
+    postJson(action([WidgetsController::class, 'updateColor']), ['id' => $widget->id, ...$payload])
+        ->assertJsonValidationErrorFor('color');
+
+    expect(WidgetModel::first()->color)->toBe('gray');
+})->with([
+    'unknown color' => [['color' => 'chartreuse']],
+    'hex color' => [['color' => '#ff0000']],
+    'missing color' => [[]],
+]);
+
+it('keeps a widget’s color when its settings are saved', function () {
+    $dashboard = app(Dashboard::class);
+    $dashboard->saveWidget($widget = $dashboard->createWidget([
+        'type' => Feed::class,
+        'color' => 'violet',
+        'settings' => ['title' => 'Craft News', 'url' => 'https://craftcms.com/news.rss'],
+    ]));
+
+    postJson(action([WidgetsController::class, 'update']), [
+        'widgetId' => $widget->id,
+        'settings' => ['title' => 'Craft News', 'limit' => 10, 'url' => 'https://craftcms.com/feed.rss'],
+    ])->assertOk()->assertJsonPath('info.color', 'violet');
+
+    expect(WidgetModel::query()->findOrFail($widget->id)->color)->toBe('violet');
+});
+
+it('restores a deleted widget’s color, including none', function (?string $color) {
+    postJson(action([WidgetsController::class, 'store']), ['type' => Updates::class, 'color' => $color])
+        ->assertOk()
+        ->assertJsonPath('info.color', $color);
+
+    expect(WidgetModel::first()->color)->toBe($color);
+})->with(['amber', null]);
+
 it('colspan must be between 1 and 4', function () {
     $dashboard = app(Dashboard::class);
     $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
@@ -209,11 +276,11 @@ it('rejects changes to another user’s widget', function (string $operation) {
 
     postJson(action([WidgetsController::class, $operation]), [
         'id' => $widget->id, 'widgetId' => $widget->id,
-        'settings' => [], 'colspan' => 2, 'ids' => json_encode([$widget->id]),
+        'settings' => [], 'colspan' => 2, 'color' => 'red', 'ids' => json_encode([$widget->id]),
     ])->assertUnprocessable();
 
     expect(WidgetModel::query()->findOrFail($widget->id)->getAttributes())->toBe($before);
-})->with(['update', 'delete', 'updateColspan', 'reorder']);
+})->with(['update', 'delete', 'updateColspan', 'updateColor', 'reorder']);
 
 it('rejects adding another instance of a singleton widget', function () {
     UserModel::query()->whereKey(Auth::id())->update(['hasDashboard' => true]);

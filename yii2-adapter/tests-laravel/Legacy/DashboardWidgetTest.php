@@ -18,6 +18,7 @@ it('renders HTML plugin widgets and their registered assets', function(string $t
     $data = $renderer->render($widget);
 
     expect($data->component)->toBe('craft:html-widget')
+        ->and($data->color?->value)->toBe('gray')
         ->and($data->fragment->html)->toBe('<p>Plugin body</p>')
         ->and($data->fragment->bodyHtml)->toContain('window.widgetLoaded = true;');
 })->with([DashboardBaseHtmlWidget::class, DashboardPluginFeed::class]);

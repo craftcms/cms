@@ -4,6 +4,9 @@
   import {actionClient, t} from '@craftcms/ui';
   import {data as chartData} from '@actions/Dashboard/Widgets/NewUsersController';
   import {Area, DataTable} from '@/modules/chart/chart';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   const props = defineProps<{
     data: {dateRange: string; userGroupId: number | null};
@@ -79,7 +82,7 @@
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body">
       <craft-callout v-if="error" variant="danger" role="alert">{{

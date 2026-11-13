@@ -6,11 +6,9 @@ export default css`
     --_padding-inline: var(--c-spacing-md);
     /* The icon column of a row with a prefix. */
     --_prefix-size: calc(24rem / 16);
-    /* Enough to center the icon column in a touch target, border included. */
+    /* Enough to center the icon column in a row, border included. */
     --_padding-block: calc(
-      (var(--c-size-touch-target) - var(--_prefix-size) - var(--_rail-border) *
-          2) /
-        2
+      (var(--_rail-size) - var(--_prefix-size) - var(--_rail-border) * 2) / 2
     );
     /* The space between the icon column and the label (tighter than the row's gap). */
     --_prefix-gap: var(--c-spacing-sm);
@@ -19,10 +17,12 @@ export default css`
     /* The square a collapsed row occupies, border included. The row draws a
        transparent border to keep room for its focus state. */
     --_rail-border: 1px;
-    --_rail-size: var(--c-size-touch-target);
+    --_rail-size: var(--c-nav-item-size, var(--c-size-touch-target));
     /* A row with an icon, less its border, so the icon sits where a collapsed
        row centers it. */
-    --_prefixed-padding-inline: calc(var(--c-spacing-sm) - var(--_rail-border));
+    --_prefixed-padding-inline: calc(
+      (var(--_rail-size) - var(--_prefix-size)) / 2 - var(--_rail-border)
+    );
 
     border-radius: var(--c-radius-md);
   }
@@ -40,9 +40,9 @@ export default css`
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     position: relative;
-    /* A full touch target whether or not there's an icon to fill one. */
+    /* A full row whether or not there's an icon to fill one. */
     box-sizing: border-box;
-    min-block-size: var(--c-size-touch-target);
+    min-block-size: var(--_rail-size);
 
     /*
      * Expanded, the focusable element is the label inside the row, so the ring

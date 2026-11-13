@@ -2,6 +2,7 @@ import {afterEach, expect, it} from 'vite-plus/test';
 import '../../styles/cp.css';
 import './select-color.js';
 import type CraftSelectColor from './select-color.js';
+import {contrast} from '../../../test/contrast';
 
 afterEach(() => {
   document.body.innerHTML = '';
@@ -222,3 +223,112 @@ it('fills hex colors’ swatches, checkers a transparent one, and selects a hex 
   );
   expect(select.value).toBe('#2563eb');
 });
+
+it('shows only the selected color’s swatch with swatch-only, naming the color as the field’s value', async () => {
+  const {page, cdp} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `<craft-select-color label="Color" swatch-only small value="red"></craft-select-color>`;
+  const select =
+    document.querySelector<CraftSelectColor>('craft-select-color')!;
+  await select.updateComplete;
+  const field = page.getByRole('combobox', {name: /^Color/});
+  const invoker = field.element() as HTMLElement;
+  const swatch = invoker.querySelector<HTMLElement>('.select-color__swatch')!;
+  const name = invoker.querySelector<HTMLElement>('.sr-only')!;
+  const box = invoker.getBoundingClientRect();
+
+  await expect.element(field).toHaveAccessibleName('Color');
+  expect(name.textContent).toBe('Red');
+  expect(name.getBoundingClientRect().width).toBeLessThanOrEqual(1);
+  expect(swatch.getAttribute('aria-hidden')).toBe('true');
+  expect(swatch.getBoundingClientRect().width).toBeGreaterThan(1);
+  expect(invoker.shadowRoot!.querySelector('craft-icon')).toBeNull();
+  expect(box.width).toBe(box.height);
+  expect(box.height).toBeGreaterThanOrEqual(24);
+  expect(getComputedStyle(invoker).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle(invoker).borderColor).toBe('rgba(0, 0, 0, 0)');
+  expect(getComputedStyle(invoker).boxShadow).toBe('none');
+
+  const {frameTree} = (await cdp().send('Page.getFrameTree')) as {
+    frameTree: {childFrames?: {frame: {id: string}}[]};
+  };
+  const values: unknown[] = [];
+  for (const {frame} of frameTree.childFrames ?? []) {
+    const {nodes} = (await cdp().send('Accessibility.getFullAXTree', {
+      frameId: frame.id,
+    })) as {nodes: {role?: {value: string}; value?: {value: unknown}}[]};
+    values.push(
+      ...nodes
+        .filter((node) => node.role?.value === 'combobox')
+        .map((node) => node.value?.value)
+    );
+  }
+  expect(values).toEqual(['Red']);
+});
+
+it('keeps the swatch’s color in forced colors mode with swatch-only, edged in the text color', async () => {
+  const {page, cdp} = await import('vite-plus/test/browser');
+  document.body.innerHTML = `<craft-select-color label="Color" swatch-only value="red"></craft-select-color>`;
+  const select =
+    document.querySelector<CraftSelectColor>('craft-select-color')!;
+  await select.updateComplete;
+  const swatch = () =>
+    page
+      .getByRole('combobox', {name: /^Color/})
+      .element()
+      .querySelector('.select-color__swatch')!;
+  const fill = getComputedStyle(swatch()).backgroundColor;
+
+  try {
+    await cdp().send('Emulation.setEmulatedMedia', {
+      features: [{name: 'forced-colors', value: 'active'}],
+    });
+    expect(matchMedia('(forced-colors: active)').matches).toBe(true);
+    expect(getComputedStyle(swatch()).backgroundColor).toBe(fill);
+    const probe = document.createElement('span');
+    probe.style.color = 'CanvasText';
+    document.body.append(probe);
+    expect(swatchEdge(swatch())).toBe(getComputedStyle(probe).color);
+  } finally {
+    await cdp().send('Emulation.setEmulatedMedia', {features: []});
+  }
+});
+
+function swatchEdge(swatch: Element): string {
+  return getComputedStyle(swatch).boxShadow.match(
+    /(rgba?\([^)]*\)) 0px 0px 0px 1px inset/
+  )![1]!;
+}
+
+it.each(['light', 'dark'])(
+  'edges the swatch with swatch-only so it stands out from a tinted surface in the %s theme',
+  async (theme) => {
+    document.body.innerHTML = `<div data-theme="${theme}" style="background:var(--c-surface-default)"><div style="padding:1rem;background:var(--c-color-neutral-fill-quiet)">${[
+      '__blank__',
+      'gray',
+      'teal',
+    ]
+      .map(
+        (color) =>
+          `<craft-select-color label="${color}" swatch-only allow-transparent value="${color}"></craft-select-color>`
+      )
+      .join('')}</div></div>`;
+    const surface = document.querySelector<HTMLElement>('[data-theme] > div')!;
+    const behind = getComputedStyle(surface.parentElement!).backgroundColor;
+    const fill = getComputedStyle(surface).backgroundColor;
+
+    for (const color of ['__blank__', 'gray', 'teal']) {
+      const select = document.querySelector<CraftSelectColor>(
+        `craft-select-color[value="${color}"]`
+      )!;
+      await select.updateComplete;
+      const swatch = select.querySelector(
+        'craft-select-invoker .select-color__swatch'
+      )!;
+
+      expect(
+        contrast(swatchEdge(swatch), fill, behind),
+        color
+      ).toBeGreaterThanOrEqual(3);
+    }
+  }
+);

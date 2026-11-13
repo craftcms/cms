@@ -28,7 +28,7 @@ export function focusStaysWithin(
 }
 
 /** The node `node` renders inside: its slot, its parent, or its shadow host. */
-function composedParent(node: Node): Node | null {
+export function composedParent(node: Node): Node | null {
   const slot = 'assignedSlot' in node ? (node as Element).assignedSlot : null;
   if (slot) {
     return slot;
