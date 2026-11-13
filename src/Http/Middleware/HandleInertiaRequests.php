@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -179,10 +178,6 @@ class HandleInertiaRequests extends Middleware
             $currentUser = currentUserElement();
         }
 
-        $systemIcon = ($generalConfig->cpIconUrl && Edition::isAtLeast(Edition::Pro))
-            ? Html::img(Aliases::get($generalConfig->cpIconUrl))->render()
-            : Icons::svg('c-outline');
-
         return [
             ...parent::share($request),
             // Always included, so a partial reload can't consume the flashed
@@ -221,7 +216,9 @@ class HandleInertiaRequests extends Middleware
                 'general' => Cp::inertiaConfig(),
                 'system' => [
                     'name' => Cms::systemName(),
-                    'icon' => $systemIcon,
+                    'icon' => (Edition::isAtLeast(Edition::Pro) ? Cp::iconHtml() : null) ?? Icons::svg('c-outline'),
+                    // Only the login and other auth pages show it, so it's sent once rather than with every visit.
+                    'logo' => Inertia::once(Cp::logoHtml(...)),
                 ],
                 'app' => [
                     'version' => Cms::VERSION,

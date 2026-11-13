@@ -35,7 +35,10 @@ export interface CraftData {
   csrfTokenName: string | null;
   system: {
     name: string;
+    /** The control panel icon's decorative HTML: an inline SVG or an `<img>`. */
     icon: string | null;
+    /** The sign-in screens' logo's decorative HTML: an inline SVG or an `<img>`. */
+    logo: string | null;
   };
   app: {
     version: string;
@@ -60,7 +63,6 @@ export interface CraftData {
     cpTrigger: string | null;
     actionTrigger: string | null;
     csrfTokenName: string | null;
-    cpLogoUrl: string | null;
     useEmailAsUsername: boolean;
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use Closure;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -28,6 +29,7 @@ use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -42,6 +44,7 @@ use Illuminate\Foundation\Vite;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use stdClass;
 
@@ -104,7 +107,6 @@ readonly class Cp
 
             return [
                 ...self::craftData(),
-                'cpLogoUrl' => $generalConfig->cpLogoUrl,
                 'cpTrigger' => $generalConfig->cpTrigger,
                 'baseCpUrl' => Url::cpUrl(),
                 'defaultCpLocale' => $generalConfig->defaultCpLocale,
@@ -224,6 +226,53 @@ readonly class Cp
             'height' => $height,
             'aspectRatio' => "$width / $height",
         ];
+    }
+
+    /**
+     * The control panel icon from the `cpIconPath` setting, or the deprecated `cpIconUrl` setting, as decorative HTML.
+     *
+     * @see self::brandImageHtml()
+     */
+    public static function iconHtml(): ?string
+    {
+        $generalConfig = Cms::config();
+
+        return self::brandImageHtml($generalConfig->cpIconPath, $generalConfig->cpIconUrl);
+    }
+
+    /**
+     * The login page logo from the `cpLogoPath` setting, or the deprecated `cpLogoUrl` setting, as decorative HTML.
+     *
+     * @see self::brandImageHtml()
+     */
+    public static function logoHtml(): ?string
+    {
+        $generalConfig = Cms::config();
+
+        return self::brandImageHtml($generalConfig->cpLogoPath, $generalConfig->cpLogoUrl);
+    }
+
+    /**
+     * An SVG file is inlined, so its styles can follow the control panel's theme, such as with `light-dark()`. Other
+     * images are embedded as data URLs, since the file may not be publicly accessible.
+     *
+     * The markup has no text alternative, so it should sit beside the system name.
+     */
+    private static function brandImageHtml(?string $path, ?string $url): ?string
+    {
+        if ($path) {
+            $file = Aliases::get($path);
+
+            if (is_file($file)) {
+                return File::isSvg($file)
+                    ? Html::svg($file, namespace: true)
+                    : Html::img(Html::dataUrlFromString(file_get_contents($file), File::getMimeType($file)), '')->render();
+            }
+
+            Log::warning("Invalid control panel image path: $path");
+        }
+
+        return $url ? Html::img(Aliases::get($url), '')->render() : null;
     }
 
     public static function publicAssetUrl(string $path): string
