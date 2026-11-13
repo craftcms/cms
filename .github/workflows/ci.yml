@@ -22,7 +22,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: bcmath,curl,dom,imagick,intl,mbstring,pdo_mysql,zip
+          extensions: bcmath,curl,dom,fileinfo,gd,imagick,intl,mbstring,pdo_mysql,sodium,zip
           coverage: none
           tools: composer:v2
       - uses: shogo82148/actions-setup-mysql@00c22a3f5d8beda901ed37debc6ea0f120642ebd # v1
