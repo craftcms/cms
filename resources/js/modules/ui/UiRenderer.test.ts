@@ -3194,10 +3194,10 @@ describe('UiRenderer', () => {
         ] as UiPayload['nodes'],
       };
     };
-    let mutation: UiPayload['values'] = {};
+    const mutations: UiPayload['values'][] = [];
     app.unmount();
     await mount(tabbed(['draft-a'], false), {
-      onMutation: (value) => (mutation = value),
+      onMutation: (value) => mutations.push(value),
     });
 
     renderer.setSubmitting(true);
@@ -3207,6 +3207,7 @@ describe('UiRenderer', () => {
     renderer.setSubmitting(false);
     await nextTick();
 
+    mutations.length = 0;
     currentPayload.value = tabbed(['saved-a'], false);
     await nextTick();
     await nextTick();
@@ -3220,7 +3221,11 @@ describe('UiRenderer', () => {
           .entries as UiValues
       )
     ).toEqual(['saved-a']);
-    expect(mutation).toEqual({});
+    // Not even for a moment, as any change would arm autosave.
+    expect(mutations.length).toBeGreaterThan(0);
+    expect(mutations.every((value) => Object.keys(value).length === 0)).toBe(
+      true
+    );
   });
 
   it('renders an updated control definition without changing the host’s payload', async () => {

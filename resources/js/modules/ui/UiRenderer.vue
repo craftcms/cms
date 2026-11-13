@@ -189,26 +189,7 @@
         };
       }
 
-      const filled = deferredSettlement
-        ? filledTabs(payload.value.nodes, refreshed.nodes)
-        : [];
-
       reconcile(refreshed);
-
-      if (deferredSettlement && filled.length) {
-        valueState.settle(
-          {...refreshed, nodes: filled},
-          deferredSettlement.submitted,
-          deferredSettlement.held,
-          true
-        );
-        resetObservedValues(payload.value.nodes);
-        emitMutation();
-
-        if (!payload.value.nodes.some((node) => node.props.deferred)) {
-          deferredSettlement = undefined;
-        }
-      }
 
       // The host's payload was rendered from the values it carries, which
       // aren't necessarily the ones this form holds.
@@ -318,14 +299,32 @@
     renderError.value = undefined;
     const restoreFocus = captureControlFocus();
 
-    valueState.adoptDeferred(
-      filledTabs(payload.value.nodes, refreshed.nodes),
-      refreshed.values
-    );
+    const filled = filledTabs(payload.value.nodes, refreshed.nodes);
+    valueState.adoptDeferred(filled, refreshed.values);
     valueState.adopt(refreshed);
+
+    // Settled before the mutation below, which would otherwise report the
+    // replaced identities in the tabs' fields as an edit, and autosave them.
+    if (deferredSettlement && filled.length) {
+      valueState.settle(
+        {...refreshed, nodes: filled},
+        deferredSettlement.submitted,
+        deferredSettlement.held,
+        true
+      );
+    }
+
     payload.value = pathsMatch(scope, payload.value.scope)
       ? refreshed
       : withNestedUi(payload.value, scope, refreshed);
+
+    if (
+      deferredSettlement &&
+      !payload.value.nodes.some((node) => node.props.deferred)
+    ) {
+      deferredSettlement = undefined;
+    }
+
     emit('update:payload', payload.value);
     emitMutation();
     resetObservedValues(payload.value.nodes);
