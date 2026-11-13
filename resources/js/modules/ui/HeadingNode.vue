@@ -18,6 +18,7 @@
     class="grid gap-1"
     :class="`width-${node.props.width}`"
     :data-ui-node="node.uid"
+    data-heading-node
   >
     <component
       :is="`h${node.props.level ?? 2}`"
@@ -30,3 +31,12 @@
     </p>
   </div>
 </template>
+
+<style scoped>
+  /* More space above a heading than below it, so it groups with the fields
+     it introduces. Grid items' margins don't collapse, so this adds to the
+     field group's row gap. */
+  craft-field-group > [data-heading-node]:not(:first-child) {
+    margin-block-start: calc(var(--gap, calc(var(--c-spacing) * 6)) / 2);
+  }
+</style>
