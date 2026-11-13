@@ -495,6 +495,107 @@ describe('ElementSelectControl', () => {
     expect(updates).toEqual([[5, 9]]);
   });
 
+  describe('search', () => {
+    const search = {criteria: {sectionId: 3}, siteId: 2};
+    const selectionCondition = {class: 'EntryCondition'};
+
+    async function type(root: HTMLElement, query: string) {
+      const input = root.querySelector<HTMLInputElement>('[role="combobox"]')!;
+
+      input.focus();
+      vi.useFakeTimers();
+      input.value = query;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      vi.advanceTimersByTime(300);
+      vi.useRealTimers();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await nextTick();
+
+      return input;
+    }
+
+    function press(input: HTMLInputElement, key: string): void {
+      input.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles: true}));
+    }
+
+    it('relates the first result that isn’t already related', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 5, title: 'Some entry', html: 'Some entry', exclude: true},
+            {
+              id: 9,
+              title: 'Another entry',
+              html: 'Another entry',
+              exclude: false,
+            },
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const root = await mount({props: {search, selectionCondition}});
+
+      const input = await type(root, 'entry');
+
+      expect(stub.post.mock.calls[0]![0]).toContain('element-search/search');
+      expect(stub.post.mock.calls[0]![1]).toMatchObject({
+        search: 'entry',
+        siteId: 2,
+        criteria: {sectionId: 3},
+        condition: selectionCondition,
+        excludeIds: [5],
+      });
+      expect(input.getAttribute('aria-expanded')).toBe('true');
+
+      press(input, 'Enter');
+
+      expect(updates).toEqual([[5, 9]]);
+    });
+
+    it('creates an entry from the query, and relates it once it’s saved', async () => {
+      stub.post.mockImplementation(async (action: string) =>
+        action.includes('entries/create')
+          ? ({data: {entry: {id: 31, draftId: 7, title: 'Fresh'}}} as never)
+          : ({data: {elements: [], exactMatch: false}} as never)
+      );
+      const root = await mount({props: {search, createSection: 'posts'}});
+
+      const input = await type(root, 'Fresh');
+      expect(
+        root.querySelector('[role="listbox"] craft-option')?.textContent
+      ).toMatch(/^\s*Create .+: Fresh$/);
+
+      press(input, 'Enter');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(stub.post.mock.calls[1]![1]).toEqual({
+        siteId: 2,
+        section: 'posts',
+        title: 'Fresh',
+      });
+      const [href, options] = stub.openSlideout.mock.calls[0] as unknown as [
+        string,
+        {onSaved: (result: object) => void},
+      ];
+      expect(href).toContain('draftId=7');
+
+      options.onSaved({draft: true});
+      expect(updates).toEqual([]);
+
+      options.onSaved({draft: false, data: {element: {title: 'Fresh'}}});
+      expect(updates).toEqual([[5, 31]]);
+    });
+
+    it('offers no entry to create without a section to create it in', async () => {
+      const root = await mount({props: {search}});
+
+      await type(root, 'Fresh');
+
+      expect(root.querySelector('[role="listbox"] craft-option')).toBeNull();
+    });
+  });
+
   it('keeps the newest refetch of a saved element when answers arrive out of order', async () => {
     const answers: Array<(label: string) => void> = [];
     const root = await mount();

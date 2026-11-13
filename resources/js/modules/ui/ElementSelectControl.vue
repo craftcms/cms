@@ -5,6 +5,7 @@
   import {
     computed,
     defineAsyncComponent,
+    nextTick,
     reactive,
     ref,
     useId,
@@ -20,6 +21,7 @@
   import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
+  import RelationSearch from './element-select/RelationSearch.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
   import {useElementPresentations} from '@/modules/elements/element-presentations';
@@ -440,6 +442,53 @@
     await modal.show();
   }
 
+  // ───────────────────────────── search ─────────────────────────────
+
+  const search = ref<InstanceType<typeof RelationSearch> | null>(null);
+
+  /**
+   * The field, if it shows a search input. Previews show in modals, which the
+   * slideout a new entry opens in can't open over, so they don't create any.
+   */
+  const searchField = computed(() => {
+    const field = props.control.props;
+
+    return field.search
+      ? {
+          ...field,
+          search: field.search,
+          createSection: previewing ? null : field.createSection,
+        }
+      : null;
+  });
+
+  /**
+   * Relates an element the search input found or created. Focus stays in the
+   * search input, unless the field is now full and it's gone, in which case it
+   * moves to the element, as it does for a pasted one.
+   */
+  async function relateFound(element: ElementPresentation): Promise<void> {
+    if (ids.value.includes(element.id)) {
+      return;
+    }
+
+    presentations.set(element.id, element);
+    void relate(withinLimit([...ids.value, element.id]), element.siteId);
+    await nextTick();
+
+    if (search.value?.isConnected()) {
+      search.value.focus();
+
+      return;
+    }
+
+    dropZone.value
+      ?.querySelector<HTMLElement>(
+        `.elements-stage [data-id="${element.id}"] :is(craft-checkbox, craft-button, button, a[href], [tabindex="0"]), .elements-stage [data-id="${element.id}"][tabindex="0"]`
+      )
+      ?.focus();
+  }
+
   // ───────────────────────────── pasting ─────────────────────────────
 
   const pasteable = usePasteableElements({
@@ -697,6 +746,14 @@
         >
           {{ control.props.selectionLabel }}
         </craft-button>
+
+        <RelationSearch
+          v-if="searchField"
+          ref="search"
+          :field="searchField"
+          :exclude-ids="ids"
+          @select="relateFound"
+        />
 
         <AssetUploadButton
           v-if="control.props.canUpload !== undefined"

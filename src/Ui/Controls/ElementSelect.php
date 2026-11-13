@@ -70,6 +70,9 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
     /** @var array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null */
     private ?array $referenceElement = null;
 
+    /** @var array{criteria: array<string, mixed>, siteId: int|null}|null */
+    private ?array $search = null;
+
     /**
      * The view modes a relation field can be set to, mirroring
      * {@see BaseRelationField::supportedViewModes()}. The
@@ -277,6 +280,19 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
         return $this;
     }
 
+    /**
+     * Shows a search input that relates the elements matching `$criteria` it finds, in the site `$siteId`. `null`
+     * criteria hide it.
+     *
+     * @param  array<string, mixed>|null  $criteria
+     */
+    public function search(?array $criteria, ?int $siteId = null): static
+    {
+        $this->search = $criteria === null ? null : ['criteria' => $criteria, 'siteId' => $siteId];
+
+        return $this;
+    }
+
     public function viewMode(string $viewMode): static
     {
         if (! in_array($viewMode, self::viewModes(), true)) {
@@ -380,6 +396,7 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             'branchLimit' => $this->branchLimit,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
             ...($this->referenceElement !== null ? ['referenceElement' => $this->referenceElement] : []),
+            ...($this->search !== null ? ['search' => $this->search] : []),
         ];
     }
 

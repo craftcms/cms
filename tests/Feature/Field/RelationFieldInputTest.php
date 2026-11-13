@@ -7,11 +7,17 @@ use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
+use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Assets;
+use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Users;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
@@ -153,3 +159,31 @@ it('opens an Assets field control’s selector in its upload folder', function (
     expect($settings['modalSettings']['defaultSource'])->toBe("volume:$volume->uid")
         ->and(Arr::last($settings['modalSettings']['defaultSourcePath'])['folderId'])->toBe($uploads->id);
 });
+
+it('searches an Entries field’s one section, and creates entries in it unless its condition asks for more than viewable ones', function (bool $viewable, bool $canCreate) {
+    $section = Section::factory()->create();
+    Sections::refreshSections();
+    $entry = EntryModel::factory()->createElement();
+    $field = new Entries([
+        'handle' => 'related',
+        'sources' => ["section:$section->uid"],
+        'selectionCondition' => [
+            'class' => EntryCondition::class,
+            'elementType' => Entry::class,
+            'conditionRules' => [['class' => ViewableConditionRule::class, 'value' => $viewable]],
+        ],
+    ]);
+
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([UiField::make('Related', $field->uiControl(new FieldContext('related', element: $entry)))]),
+        new UiContext(namespace: 'fields'),
+    );
+    $props = $payload->nodes[0]->control->props;
+
+    expect($props['search']['criteria'])->toMatchArray(['sectionId' => $section->id])
+        ->and($props['search']['siteId'])->toBe($entry->siteId)
+        ->and($props['createSection'])->toBe($canCreate ? $section->handle : null);
+})->with([
+    'viewable' => [true, true],
+    'not viewable' => [false, false],
+]);
