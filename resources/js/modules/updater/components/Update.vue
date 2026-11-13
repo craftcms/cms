@@ -168,12 +168,12 @@
 
     <!-- Abandoned Notice -->
     <blockquote v-if="abandoned" class="note">
-      <p>{{ statusText }}</p>
+      <p v-html="statusText"></p>
     </blockquote>
 
     <!-- Ineligible Notice (expired license, PHP issues, etc.) -->
     <blockquote v-else-if="status !== 'eligible'" class="note ineligible">
-      <p>{{ statusText }}</p>
+      <p v-html="statusText"></p>
     </blockquote>
 
     <!-- Releases -->

@@ -9,6 +9,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
@@ -106,16 +107,16 @@ readonly class UpdatesController
             $phpConstraintError = PHP::checkConstraint($update->phpConstraint, true)
         ) {
             $arr['status'] = 'phpIssue';
-            $arr['statusText'] = $phpConstraintError;
+            $arr['statusText'] = HtmlSanitizers::sanitize($phpConstraintError);
             $arr['ctaUrl'] = false;
 
             return $arr;
         }
 
         if ($update->status === UpdateStatus::EXPIRED) {
-            $arr['statusText'] = t('<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
-                'name' => $name,
-            ]);
+            $arr['statusText'] = HtmlSanitizers::sanitize(t('<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
+                'name' => Html::encode($name),
+            ]));
 
             $arr['ctaText'] = t('Renew for {price}', [
                 'price' => I18N::getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
@@ -145,18 +146,20 @@ readonly class UpdatesController
                 }
                 $arr['statusText'] .= ' '.
                     t('The developer recommends using <a href="{url}">{name}</a> instead.', [
-                        'url' => $replacementUrl,
-                        'name' => $update->replacementName,
+                        'url' => Html::encode($replacementUrl ?? ''),
+                        'name' => Html::encode($update->replacementName),
                     ]);
             }
+
+            $arr['statusText'] = HtmlSanitizers::sanitize($arr['statusText']);
 
             return $arr;
         }
 
         if ($update->status === UpdateStatus::BREAKPOINT) {
-            $arr['statusText'] = t('<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                'update' => $name.' '.($update->latest()->version ?? ''),
-            ]);
+            $arr['statusText'] = HtmlSanitizers::sanitize(t('<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
+                'update' => Html::encode($name.' '.($update->latest()->version ?? '')),
+            ]));
         }
 
         return $arr;

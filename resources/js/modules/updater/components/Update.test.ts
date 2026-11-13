@@ -7,6 +7,28 @@ let container: HTMLElement;
 
 const renewalUrl = 'https://console.craftcms.com/licenses/renew';
 
+it.each([
+  {status: 'expired', abandoned: false},
+  {status: 'eligible', abandoned: true},
+])('renders formatted update notices: $status, $abandoned', async (props) => {
+  container = document.createElement('div');
+  document.body.append(container);
+  app = createApp(Update, {
+    ...props,
+    statusText:
+      '<strong>License notice</strong> <a href="https://craftcms.com">Learn more</a>',
+  });
+  app.mount(container);
+  await nextTick();
+
+  const notice = container.querySelector('blockquote');
+  expect(notice?.querySelector('strong')?.textContent).toBe('License notice');
+  expect(notice?.querySelector('a')?.getAttribute('href')).toBe(
+    'https://craftcms.com'
+  );
+  expect(notice?.textContent).toBe('License notice Learn more');
+});
+
 afterEach(() => {
   app?.unmount();
   container?.remove();
