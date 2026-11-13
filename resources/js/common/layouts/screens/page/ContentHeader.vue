@@ -31,7 +31,7 @@
         </LayoutSlotOutlet>
 
         <!-- Kept at the end even when it wraps below the title. -->
-        <div class="flex gap-md items-center ms-auto">
+        <div class="content-header__actions flex gap-md items-center ms-auto">
           <LayoutSlotOutlet name="content-actions">
             <slot name="actions"></slot>
           </LayoutSlotOutlet>
@@ -40,3 +40,12 @@
     </CpContainer>
   </div>
 </template>
+
+<style scoped>
+  /* Gone while there's nothing in it, so the row doesn't leave a gap for it. */
+  .content-header__actions:not(
+    :has(> :not([data-layout-slot]), > [data-layout-slot][style*='contents'])
+  ) {
+    display: none;
+  }
+</style>
