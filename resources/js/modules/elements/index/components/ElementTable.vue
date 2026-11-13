@@ -360,7 +360,9 @@
   }
 
   :deep(.cp-table-row) {
-    --_structure-indent: calc(44px * (var(--structure-level, 1) - 1));
+    --_structure-indent: calc(
+      var(--structure-indent-step, 44px) * (var(--structure-level, 1) - 1)
+    );
   }
 
   // Holds the toggle's footprint whether or not this row has one: the table
