@@ -14,6 +14,7 @@ import {
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import {activateOption, stepOption, Typeahead} from '@src/utilities/listbox';
 import {claimEscape} from '@src/utilities/overlay-escape';
+import {claimOutsidePress} from '@src/utilities/overlay-outside-press';
 import {layerStyles} from '@src/utilities/overlay-layer';
 import {Dropdown} from '@src/utilities/overlay-dropdown';
 import {uniqueId} from '@src/utilities/unique-id';
@@ -476,6 +477,7 @@ export default class CraftSelectRich extends FormAssociated(
 
   #onDocumentPointerDown = (event: PointerEvent): void => {
     if (!event.composedPath().includes(this)) {
+      claimOutsidePress(event, this);
       this.open = false;
     }
   };
