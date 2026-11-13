@@ -294,7 +294,7 @@ export default css`
   .flyout {
     display: grid;
     gap: var(--c-spacing-xs);
-    padding: var(--c-spacing-sm);
+    padding: var(--c-spacing-md);
   }
 
   /* Quieter than the label it trails, and sized to the toggle chevron it
