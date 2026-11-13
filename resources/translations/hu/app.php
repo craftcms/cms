@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'A kötetet nem sikerült menteni.',
     'Couldn’t save widget.' => 'Nem lehetett a minialkalmazást elmenteni.',
     'Couldn’t save {type}.' => '{type} mentése sikertelen volt.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Nem sikerült elküldeni az aktiváló e-mailt: {error}',
     'Couldn’t suspend all users.' => 'Nem sikerült felfüggeszteni az összes felhasználót.',
     'Couldn’t suspend user.' => 'A felhasználó felfüggesztése nem sikerült.',
