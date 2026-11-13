@@ -146,6 +146,17 @@
   .support-tiles[data-color] .support-tile {
     color: var(--_tile-text);
   }
+  .support-tiles[data-color='black'] {
+    --_tile-fill: var(--c-color-fill-quiet);
+    --_tile-border: color-mix(
+      in srgb,
+      var(--c-color-black-on-quiet),
+      transparent 80%
+    );
+  }
+  .support-tiles[data-color='black'] .support-tile-description {
+    color: var(--_tile-text);
+  }
   .support-tile {
     background-color: var(--_tile-fill);
 
