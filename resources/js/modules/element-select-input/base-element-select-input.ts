@@ -553,6 +553,10 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       return this.addElementBtn;
     }
 
+    return this.#focusableContainer();
+  }
+
+  #focusableContainer(): HTMLElement {
     this.container.setAttribute('tabindex', '-1');
     return this.container;
   }
@@ -1136,7 +1140,11 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         onSelect: this.onModalSelect.bind(this),
         // Called whenever the modal closes: Cancel, Escape or a selection
         onClose: this.onModalHide.bind(this),
-        triggerElement: () => this.getNextLogicalFocusElement(),
+        // A full field's chips may have no `.action-btn` to return to; the
+        // container keeps a connected target, so a slideout opened from the
+        // modal nests in the field's panel.
+        triggerElement: () =>
+          this.getNextLogicalFocusElement() ?? this.#focusableContainer(),
         modalTitle: t('Choose'),
       },
       this.settings.modalSettings

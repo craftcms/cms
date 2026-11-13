@@ -1141,7 +1141,15 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
         // Was `onHide`; the controller calls this one whenever it closes,
         // whether that came from Cancel, Escape or a completed selection.
         onClose: this.onModalHide.bind(this),
-        triggerElement: () => this.getNextLogicalFocusElement(),
+        // A full field's chips may have no `.action-btn` to return to; the
+        // container keeps a connected target, so a slideout opened from the
+        // modal nests in the field's panel.
+        triggerElement: () => {
+          const $target = this.getNextLogicalFocusElement();
+          return $target?.length
+            ? $target
+            : this.$container.attr('tabindex', '-1');
+        },
         modalTitle: t('Choose'),
       },
       this.settings.modalSettings

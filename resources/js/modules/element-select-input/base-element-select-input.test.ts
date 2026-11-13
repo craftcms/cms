@@ -53,6 +53,13 @@ it('reads its chips and hides Add once the limit is reached', () => {
   expect(addButton().classList.contains('hidden')).toBe(true);
 });
 
+it('gives a full field’s modal its container to return to', () => {
+  // Its chips' action menus have no `.action-btn` to fall back on
+  const input = boot({limit: 2});
+
+  expect(input.getModalSettings().triggerElement()).toBe(container());
+});
+
 it('removes a chip from the value and frees its slot', async () => {
   const input = boot({limit: 2});
   const change = vi.fn();

@@ -65,7 +65,7 @@
 
     controller.setBusy(true);
 
-    let entry: {id: number; draftId: number; title: string | null};
+    let entry: {id: number; draftId: number};
 
     try {
       const {data} = await actionClient.post(
@@ -108,8 +108,14 @@
       {
         opener,
         onSaved: ({draft, data}) => {
+          // "Save as a new entry" saves a different entry than the draft.
           const saved = data?.element as
-            | {title?: string | null; dateDeleted?: unknown}
+            | {
+                id?: number;
+                siteId?: number;
+                title?: string | null;
+                dateDeleted?: unknown;
+              }
             | undefined;
 
           // Deleting the draft from the panel's action menu reports a save too,
@@ -120,10 +126,11 @@
 
           chosen = true;
 
+          const id = saved.id ?? entry.id;
           const info: ElementInfo = {
-            id: entry.id,
-            siteId,
-            label: saved.title || entry.title || String(entry.id),
+            id,
+            siteId: saved.siteId ?? siteId,
+            label: saved.title || String(id),
             status: null,
             url: null,
             hasThumb: false,

@@ -95,10 +95,15 @@
   /**
    * Entries can be created from their selector, as Craft 5's `EntryIndex`
    * offered — in the sections the index shows that the user can publish in.
+   * Not with a selection condition: the modal closes while the entry is
+   * edited, so nothing could check the saved entry against the condition
+   * before choosing it.
    */
-  const selectsEntries = computed(
+  const createsEntries = computed(
     () =>
-      props.controller.elementType === 'CraftCms\\Cms\\Entry\\Elements\\Entry'
+      props.controller.elementType ===
+        'CraftCms\\Cms\\Entry\\Elements\\Entry' &&
+      !props.controller.options.condition
   );
 
   const uploadTarget = computed(() => {
@@ -171,7 +176,7 @@
       />
     </div>
 
-    <div v-if="selectsEntries" slot="secondary-actions">
+    <div v-if="createsEntries" slot="secondary-actions">
       <NewEntryButton
         :controller="controller"
         :sources="sources"

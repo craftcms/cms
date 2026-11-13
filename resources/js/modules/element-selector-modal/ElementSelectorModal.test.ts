@@ -572,14 +572,33 @@ describe('the new entry button', () => {
     options.onSaved({data: {element: {id: 21, dateDeleted: '2026-11-13'}}});
     expect(onSelect).not.toHaveBeenCalled();
 
-    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    // "Save as a new entry" saves another entry than the draft
+    options.onSaved({data: {element: {id: 34, title: 'Jane Austen'}}});
     expect(onSelect).toHaveBeenCalledWith(
-      [expect.objectContaining({id: 21, siteId: 2, label: 'Jane Austen'})],
+      [expect.objectContaining({id: 34, siteId: 2, label: 'Jane Austen'})],
       {}
     );
 
-    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    options.onSaved({data: {element: {id: 34, title: 'Jane Austen'}}});
     expect(onSelect).toHaveBeenCalledTimes(1);
+
+    unmount();
+  });
+
+  it('stays away when the field has a selection condition', async () => {
+    const instance = controller({condition: {class: 'EntryCondition'}});
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    expect(
+      host.querySelector('[slot="secondary-actions"] craft-button')
+    ).toBeNull();
 
     unmount();
   });
