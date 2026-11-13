@@ -28,7 +28,7 @@
   const addStageActions = computed<ActionItems>(() =>
     props.stageTypes.map((stageType) => ({
       label: stageType.label,
-      icon: 'plus',
+      icon: stageType.icon ?? 'plus',
       onClick: () => addStage(stageType.type),
     }))
   );
