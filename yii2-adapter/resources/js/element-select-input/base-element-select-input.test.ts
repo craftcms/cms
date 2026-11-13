@@ -166,6 +166,26 @@ it("moves elements from their reorder buttons' menus", () => {
   );
 });
 
+it("moves focus to the last chip's action menu once the field is full", () => {
+  class UninitializedElementSelectInput extends BaseElementSelectInput {}
+
+  const input = new UninitializedElementSelectInput();
+  const chip = (id: number) =>
+    `<li><div class="element chip" data-id="${id}"><div slot="suffix"><craft-action-menu><craft-button slot="invoker"></craft-button><div slot="content"></div></craft-action-menu></div></div></li>`;
+  const container = document.createElement('div');
+  container.innerHTML = `<ul class="elements">${chip(1)}${chip(2)}</ul>`;
+  input.$container = jquery(container);
+  input.$elements = input.$container.find('.element');
+  input.settings = {allowAdd: true, limit: 2} as BaseElementSelectInputSettings;
+
+  const $focusTarget = input.getNextLogicalFocusElement();
+
+  expect($focusTarget.length).toBe(1);
+  expect($focusTarget[0]).toBe(
+    container.querySelector('[data-id="2"] [slot="invoker"]')
+  );
+});
+
 /**
  * An instance with just enough stubbed to observe the order of
  * `onModalSelect()`'s side effects — the real method wants jQuery, garnish and

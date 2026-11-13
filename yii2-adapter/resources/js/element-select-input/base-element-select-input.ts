@@ -569,7 +569,10 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
   }
 
   getLastActionBtn(): any {
-    return this.$container.find('.action-btn').last();
+    // A chip's `craft-action-menu` invoker, or an old disclosure menu trigger
+    return this.$container
+      .find('craft-action-menu > [slot="invoker"], .action-btn')
+      .last();
   }
 
   focusLastActionBtn(): void {

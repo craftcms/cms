@@ -53,6 +53,16 @@ it('reads its chips and hides Add once the limit is reached', () => {
   expect(addButton().classList.contains('hidden')).toBe(true);
 });
 
+it("moves focus to the last chip's action menu once the field is full", () => {
+  const input = boot({limit: 2});
+  const invoker = input
+    .getElementById(2)!
+    .querySelector('craft-action-menu > [slot="invoker"]');
+
+  expect(invoker).not.toBeNull();
+  expect(input.getNextLogicalFocusElement()).toBe(invoker);
+});
+
 it('removes a chip from the value and frees its slot', async () => {
   const input = boot({limit: 2});
   const change = vi.fn();
