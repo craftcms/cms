@@ -15,6 +15,7 @@
 - Breadcrumb separators are now lighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Pages no longer show breadcrumbs when the only one would be the current page, such as the Dashboard. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ translation indicators now show their descriptions when pressed, including on touch devices, rather than on hover. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- Fixed a bug where focus was lost after choosing elements in a relation field’s selector modal, or canceling it. Focus now returns to the field’s add button, or to the chosen element when the field is full. ([#20653](https://github.com/craftcms/cms/pull/20653))
 - Fixed a bug where the user menu showed a “Permissions” item on Craft Solo, which led to a 403 error. ([#20621](https://github.com/craftcms/cms/issues/20621), [#20635](https://github.com/craftcms/cms/pull/20635))
 - Fixed a bug where control panel forms could show the wrong fields after a failed save, such as the Base URL field on a new site whose “This site has its own base URL” setting was turned off. ([#20632](https://github.com/craftcms/cms/pull/20632), [#20636](https://github.com/craftcms/cms/pull/20636))
 - Fixed a bug where each autosave of a provisional draft saved it twice and rebuilt every action menu item on the page, which blocked the entry editor for over a second on long entries. ([#20639](https://github.com/craftcms/cms/issues/20639), [#20649](https://github.com/craftcms/cms/pull/20649))
