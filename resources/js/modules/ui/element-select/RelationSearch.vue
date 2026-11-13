@@ -34,7 +34,10 @@
     field: ElementSelectProps & {
       search: NonNullable<ElementSelectProps['search']>;
     };
-    /** Already related, so they're offered only as unavailable. */
+    /**
+     * Already related, so they're listed as unavailable, as Craft 5's menu
+     * listed them: dimmed, skipped by the arrow keys, and not chosen.
+     */
     excludeIds: number[];
   }>();
 
@@ -95,8 +98,31 @@
       : []),
   ]);
 
-  const {listboxId, selectedRow, comboboxAttributes, indexAfter} =
-    useResultsListbox(id, rows, selectedIndex);
+  const {listboxId, selectedRow, comboboxAttributes} = useResultsListbox(
+    id,
+    rows,
+    selectedIndex
+  );
+
+  function available(row: Row | undefined): boolean {
+    return !!row && !row.result?.exclude;
+  }
+
+  /** The available option `step` along from the active one, wrapping. */
+  function availableAfter(step: 1 | -1): number | null {
+    const count = rows.value.length;
+
+    for (let offset = 1; offset <= count; offset++) {
+      const index =
+        (selectedIndex.value + step * offset + count * count) % count;
+
+      if (available(rows.value[index])) {
+        return index;
+      }
+    }
+
+    return null;
+  }
 
   const open = computed(
     () => focused.value && !!term.value && rows.value.length > 0
@@ -200,17 +226,15 @@
     }
 
     searching.value = false;
-
-    // The first one that can be chosen is active, as Craft 5's menu had it.
-    const firstAvailable = rows.value.findIndex((row) => !row.result?.exclude);
-    selectedIndex.value = Math.max(firstAvailable, 0);
+    // The first available one is active, or none is.
+    selectedIndex.value = rows.value.findIndex(available);
   }
 
   function onKeydown(event: KeyboardEvent): void {
     switch (event.key) {
       case 'ArrowDown':
       case 'ArrowUp': {
-        const index = indexAfter(event.key === 'ArrowDown' ? 1 : -1);
+        const index = availableAfter(event.key === 'ArrowDown' ? 1 : -1);
 
         if (index === null || !open.value) {
           return;
@@ -237,7 +261,7 @@
   }
 
   async function choose(row: Row): Promise<void> {
-    if (row.result?.exclude) {
+    if (!available(row)) {
       return;
     }
 
@@ -367,9 +391,9 @@
           :id="row.optionId"
           :key="row.optionId"
           .active="index === selectedIndex"
-          .disabled="row.result?.exclude ?? false"
           @click="choose(row)"
-          @pointermove="selectedIndex = index"
+          .disabled="!available(row)"
+          @pointermove="available(row) && (selectedIndex = index)"
         >
           <span v-if="row.result" v-html="row.result.html"></span>
           <span v-else class="relation-search__create">
@@ -412,6 +436,11 @@
     border-radius: var(--c-radius-md);
     background-color: var(--c-surface-overlay);
     box-shadow: var(--c-shadow-sm);
+  }
+
+  .relation-search__listbox craft-option[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .relation-search__create {

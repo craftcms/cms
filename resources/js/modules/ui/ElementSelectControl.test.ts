@@ -519,7 +519,7 @@ describe('ElementSelectControl', () => {
       input.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles: true}));
     }
 
-    it('relates the first result that isn’t already related', async () => {
+    it('lists already related elements as unavailable, skipping them to relate another', async () => {
       stub.post.mockResolvedValue({
         data: {
           elements: [
@@ -546,11 +546,57 @@ describe('ElementSelectControl', () => {
         condition: selectionCondition,
         excludeIds: [5],
       });
-      expect(input.getAttribute('aria-expanded')).toBe('true');
+      const options = [
+        ...root.querySelectorAll('[role="listbox"] craft-option'),
+      ];
+      expect(
+        options.map((option) => [
+          option.textContent?.trim(),
+          option.getAttribute('aria-disabled'),
+        ])
+      ).toEqual([
+        ['Some entry', 'true'],
+        ['Another entry', 'false'],
+      ]);
+      expect(input.getAttribute('aria-activedescendant')).toBe(options[1]!.id);
+
+      press(input, 'ArrowDown');
+      await nextTick();
+      expect(input.getAttribute('aria-activedescendant')).toBe(options[1]!.id);
+
+      (options[0] as HTMLElement).click();
+      expect(updates).toEqual([]);
 
       press(input, 'Enter');
 
       expect(updates).toEqual([[5, 9]]);
+    });
+
+    it('offers no entry to create when an already related one matches exactly', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 5, title: 'Some entry', html: 'Some entry', exclude: true},
+          ],
+          exactMatch: true,
+        },
+      } as never);
+      const root = await mount({props: {search, createSection: 'posts'}});
+
+      const input = await type(root, 'Some entry');
+
+      expect(
+        [...root.querySelectorAll('[role="listbox"] craft-option')].map(
+          (option) => option.textContent?.trim()
+        )
+      ).toEqual(['Some entry']);
+      expect(input.hasAttribute('aria-activedescendant')).toBe(false);
+
+      press(input, 'Enter');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(updates).toEqual([]);
+      expect(stub.post).toHaveBeenCalledOnce();
     });
 
     it('creates an entry from the query, and relates it once it’s saved', async () => {
