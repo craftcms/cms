@@ -6,8 +6,9 @@ namespace CraftCms\Cms\Support;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\Path;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Support\Facades\Cache;
 use RuntimeException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\ExecutableFinder;
@@ -22,7 +23,7 @@ use function Illuminate\Filesystem\join_paths;
  *
  * @since 6.0.0
  */
-#[Singleton]
+#[Scoped]
 class Composer
 {
     public const string MIN_VERSION = '2.2.0';
@@ -36,6 +37,21 @@ class Composer
         /** @var int The maximum number of composer.json and composer.lock backups to store in storage/composer-backups/ */
         public int $maxBackups = 50,
     ) {}
+
+    /**
+     * Returns a short-lived display capability. Package operations must use getIsAvailable() instead.
+     */
+    public function getIsAvailableForUi(): bool
+    {
+        $key = self::class.':availability:'.hash('sha256', implode('|', [
+            self::MIN_VERSION,
+            gethostname() ?: '',
+            PHP_BINARY,
+            getenv('PATH') ?: '',
+        ]));
+
+        return Cache::remember($key, 60, fn (): bool => $this->getIsAvailable());
+    }
 
     public function getIsAvailable(): bool
     {

@@ -130,7 +130,8 @@ test('index requires the Yii2 adapter alongside plugins that need it', function 
     'not required' => [[], [], ['craftcms/test-plugin' => '^1.0.0']],
 ]);
 
-test('craftInstall', function () {
+test('craftInstall preserves cleanup options when Composer is unavailable', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
     $plugins = $this->partialMock(Plugins::class);
     $plugins->shouldReceive('installPlugin')->once()->with('test-plugin', 'standard')
         ->andThrow(new RuntimeException('Installation failed.'));

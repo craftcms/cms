@@ -62,7 +62,7 @@ readonly class UpdatesController
             $this->generalConfig->allowUpdates &&
             $this->generalConfig->allowAdminChanges &&
             currentUser()->can('performUpdates') &&
-            app(Composer::class)->getIsAvailable()
+            app(Composer::class)->getIsAvailableForUi()
         );
 
         $res = [

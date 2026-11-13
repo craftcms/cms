@@ -182,7 +182,7 @@ abstract class BaseUpdaterController
     public function composerInstall(): Response
     {
         if (! $this->composer->getIsAvailable()) {
-            return $this->send($this->noComposerState());
+            return $this->send($this->noComposerState(self::ACTION_COMPOSER_INSTALL));
         }
 
         $output = '';
@@ -214,7 +214,7 @@ abstract class BaseUpdaterController
     public function composerRemove(): Response
     {
         if (! $this->composer->getIsAvailable()) {
-            return $this->send($this->noComposerState());
+            return $this->send($this->noComposerState(self::ACTION_COMPOSER_REMOVE));
         }
 
         $packages = [$this->data['packageName']];
@@ -278,6 +278,13 @@ abstract class BaseUpdaterController
     {
         $state = $this->initialState($force);
 
+        if (
+            in_array($state['nextAction'] ?? null, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE], true) &&
+            ! $this->composer->getIsAvailable()
+        ) {
+            return $this->noComposerState();
+        }
+
         // If there's nothing to do here, then no precheck is needed
         if (! isset($state['nextAction'])) {
             return $state;
@@ -322,12 +329,12 @@ abstract class BaseUpdaterController
     abstract protected function returnUrl(): string;
 
     /** @return array<string, mixed> */
-    protected function noComposerState(): array
+    protected function noComposerState(string $retryAction = self::ACTION_RECHECK_COMPOSER): array
     {
         return [
             'error' => $this->composer->getUnavailableReason(),
             'options' => [
-                $this->actionOption(t('Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
+                $this->actionOption(t('Try again'), $retryAction, ['submit' => true]),
             ],
         ];
     }
@@ -484,13 +491,6 @@ abstract class BaseUpdaterController
      */
     protected function actionState(string $nextAction, array $state = []): array
     {
-        if (
-            in_array($nextAction, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE], true) &&
-            ! $this->composer->getIsAvailable()
-        ) {
-            return $this->noComposerState();
-        }
-
         $state['nextAction'] = $nextAction;
 
         $state['status'] ??= $this->actionStatus($nextAction);

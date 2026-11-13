@@ -247,8 +247,34 @@ test('Composer steps return an actionable state when Composer disappears', funct
         'data' => $this->hashedData,
     ])->assertOk()
         ->assertJsonPath('error', 'Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
-        ->assertJsonPath('options.0.nextUrl', action([UpdaterController::class, 'recheckComposer']));
+        ->assertJsonPath('options.0.nextUrl', action([UpdaterController::class, $action]));
 })->with(['composerInstall', 'composerRemove', 'revert']);
+
+test('retrying a rollback restores previous versions without restarting the update', function () {
+    $available = false;
+    $composer = $this->partialMock(Composer::class);
+    $composer->shouldReceive('getIsAvailable')->andReturnUsing(function () use (&$available): bool {
+        return $available;
+    });
+    $composer->shouldReceive('install')->once()->with(['craftcms/cms' => '6.0.0'], Mockery::type('callable'));
+    $data = Crypt::encrypt(Json::encode([
+        'install' => ['craft' => '100.0.0'],
+        'requirements' => ['craftcms/cms' => '100.0.0'],
+        'current' => ['craftcms/cms' => '6.0.0'],
+        'reverted' => false,
+    ]));
+    app()->maintenanceMode()->activate([]);
+
+    $retry = postJson(action([UpdaterController::class, 'revert']), compact('data'))
+        ->assertOk()->json();
+
+    $available = true;
+
+    postJson($retry['options'][0]['nextUrl'], ['data' => $retry['data']])
+        ->assertOk()
+        ->assertJsonPath('nextUrl', action([UpdaterController::class, 'finish']))
+        ->assertJsonPath('status', 'The update was reverted successfully.');
+});
 
 test('updater data can’t be replayed to another updater controller', function () {
     $data = post(action([UpdaterController::class, 'index']))->inertiaProps('initialState.data');

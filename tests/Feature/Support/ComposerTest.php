@@ -145,6 +145,24 @@ describe('system Composer', function () {
             ->and(new Composer()->getIsAvailable())->toBeFalse();
     });
 
+    it('caches UI availability across request scopes for 60 seconds without caching operational checks', function (bool $available) {
+        File::put($this->directory.'/version', $available ? 'Composer version 2.2.0' : 'Composer version 1.10.27');
+        app()->forgetInstance(Composer::class);
+
+        expect(app(Composer::class)->getIsAvailableForUi())->toBe($available);
+        File::put($this->directory.'/version', $available ? 'Composer version 1.10.27' : 'Composer version 2.2.0');
+        app()->forgetScopedInstances();
+
+        expect(app(Composer::class)->getIsAvailableForUi())->toBe($available)
+            ->and(File::get($this->directory.'/probes'))->toBe('probe\n')
+            ->and(app(Composer::class)->getIsAvailable())->toBe(! $available);
+
+        $this->travel(61)->seconds();
+        app()->forgetScopedInstances();
+
+        expect(app(Composer::class)->getIsAvailableForUi())->toBe(! $available);
+    })->with([true, false]);
+
     it('leaves project files untouched when Composer is unavailable', function (string $operation) {
         File::delete($this->directory.'/composer');
         $jsonPath = $this->directory.'/composer.json';

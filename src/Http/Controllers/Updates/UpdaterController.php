@@ -132,7 +132,7 @@ class UpdaterController extends BaseUpdaterController
     public function revert(): Response
     {
         if (! $this->composer->getIsAvailable()) {
-            return $this->send($this->noComposerState());
+            return $this->send($this->noComposerState(self::ACTION_REVERT));
         }
 
         $output = '';

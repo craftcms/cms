@@ -364,7 +364,7 @@ readonly class Cp
 
         $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
-            'allowUpdates' => $generalConfig->allowUpdates && app(Composer::class)->getIsAvailable(),
+            'allowUpdates' => $generalConfig->allowUpdates && $currentUser->can('performUpdates') && app(Composer::class)->getIsAvailableForUi(),
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             // Always on; the legacy editor still reads `Craft.autosaveDrafts`.
             'autosaveDrafts' => true,
