@@ -418,6 +418,7 @@ describe('UiRenderer', () => {
   let currentPayload: Ref<UiPayload>;
   let renderer: {
     advanceBaseline: () => void;
+    setSubmitting: (submitting: boolean) => void;
     currentValues: () => UiPayload['values'];
     resetValues: (payload?: UiPayload) => void;
     setValue: (path: string[], value: UiValue, kind?: UiChange['kind']) => void;
@@ -3030,6 +3031,58 @@ describe('UiRenderer', () => {
         .closest('[data-ui-touched]')
         ?.getAttribute('data-ui-touched')
     ).not.toBe('true');
+  });
+
+  /**
+   * What a save wrote can differ from what was sent, as when applying a draft
+   * replaces the nested entries created in it, and the payload its response
+   * renders is the record of it. Edits made while it was out are still unsaved.
+   */
+  it('takes the values a successful submission’s response rendered', async () => {
+    let mutation: UiPayload['values'] = {};
+    app.unmount();
+    await mount(clonePayload(), {
+      onMutation: (value) => (mutation = value),
+    });
+
+    const placeholder = () =>
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[placeholder]"]'
+      )!;
+    placeholder().value = 'Sent';
+    placeholder().dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    renderer.setSubmitting(true);
+    const mode = container.querySelector<HTMLSelectElement>(
+      'select[name="settings[uiMode]"]'
+    )!;
+    mode.value = 'normal';
+    mode.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    const response = clonePayload();
+    Object.assign(response.values.settings as UiValues, {
+      placeholder: 'Saved',
+    });
+    currentPayload.value = response;
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    expect(placeholder().value).toBe('Saved');
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {placeholder: 'Saved', uiMode: 'normal'},
+    });
+    expect(mutation).toHaveProperty('settings.uiMode', 'normal');
+
+    // What the server saved is the baseline now.
+    mode.value = 'enlarged';
+    mode.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation).toEqual({});
   });
 
   it('renders an updated control definition without changing the host’s payload', async () => {

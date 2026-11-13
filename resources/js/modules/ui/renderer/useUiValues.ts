@@ -126,6 +126,48 @@ export function useUiValues(initial: UiPayload) {
     );
   }
 
+  /**
+   * Takes in a successful submission's response, the payload the server
+   * rendered from what it saved. `submitted` is what the submission sent, and
+   * `held` what the form held when the response arrived.
+   *
+   * What the server saved can differ from what was sent: applying a draft
+   * replaces the nested entries created in it, say. So values left as they
+   * were sent take the server's, rather than going on referring to elements
+   * that are gone, and edits made while the submission was out stay unsaved.
+   */
+  function settle(saved: UiPayload, submitted: UiValues, held: UiValues): void {
+    const savedBaseline = cloneRaw(submitted);
+
+    visitControls(saved.nodes, (control) => {
+      const group = control.deltaGroup;
+      const savedValue = valueAt(saved.values, group);
+
+      // A group at the root is the whole form, which no one control speaks for.
+      if (
+        control.mode !== 'editable' ||
+        !group.length ||
+        savedValue === undefined
+      ) {
+        return;
+      }
+
+      setPathValue(savedBaseline, group, cloneRaw(savedValue));
+
+      const sent = groupCanonical(valueAt(submitted, group), group);
+
+      if (
+        groupCanonical(valueAt(held, group), group) === sent &&
+        groupCanonical(valueAt(values, group), group) !==
+          groupCanonical(savedValue, group)
+      ) {
+        write(group, cloneRaw(savedValue));
+      }
+    });
+
+    rebase(savedBaseline);
+  }
+
   function snapshot(): UiValues;
   function snapshot(scope: string[]): UiValue;
   function snapshot(scope?: string[]): UiValue {
@@ -297,6 +339,7 @@ export function useUiValues(initial: UiPayload) {
     adoptDeferred,
     reset,
     rebase,
+    settle,
     snapshot,
     mutation,
     currentValues,

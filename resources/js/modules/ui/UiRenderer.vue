@@ -104,6 +104,12 @@
   const nativeSubmitting = ref(false);
   const submitting = ref(false);
   let submittedValues: UiValues | undefined;
+  /**
+   * The payload that arrived while a submission was out, with the values the
+   * form held just before it did. That's the submission's response, so once it
+   * succeeds the values it rendered are the ones saved.
+   */
+  let submissionResponse: {payload: UiPayload; held: UiValues} | undefined;
 
   const valueState = useUiValues(props.payload);
   const {values, touchedPaths} = valueState;
@@ -171,6 +177,13 @@
   watch(
     () => props.payload,
     (refreshed) => {
+      if (submitting.value) {
+        submissionResponse = {
+          payload: refreshed,
+          held: valueState.snapshot(),
+        };
+      }
+
       reconcile(refreshed);
       // The host's payload was rendered from the values it carries, which
       // aren't necessarily the ones this form holds.
@@ -334,6 +347,7 @@
     nativeSubmitting.value = false;
     submitting.value = false;
     submittedValues = undefined;
+    submissionResponse = undefined;
     errorState.restore();
     valueState.reset(source);
     payload.value = source;
@@ -359,8 +373,21 @@
   }
 
   function advanceBaseline(): void {
-    valueState.rebase(submittedValues ?? valueState.snapshot());
+    const submitted = submittedValues ?? valueState.snapshot();
+
+    if (submissionResponse) {
+      valueState.settle(
+        submissionResponse.payload,
+        submitted,
+        submissionResponse.held
+      );
+      resetObservedValues(payload.value.nodes);
+    } else {
+      valueState.rebase(submitted);
+    }
+
     submittedValues = undefined;
+    submissionResponse = undefined;
     emitMutation();
   }
 
@@ -513,6 +540,7 @@
 
   function setSubmitting(value: boolean): void {
     if (value && !submitting.value) submittedValues = valueState.snapshot();
+    if (!value) submissionResponse = undefined;
     submitting.value = value;
   }
 
