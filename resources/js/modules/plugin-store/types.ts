@@ -12,6 +12,7 @@ export interface PluginStoreContext {
   /** Whether composer.json already requires `craftcms/yii2-adapter`, so installs leave its constraint alone. */
   yii2AdapterRequired: boolean;
   allowUpdates: boolean;
+  allowPurchases: boolean;
   cmsLicenseKey: string | null;
   craftIdEndpoint: string;
   /** How the `craft` executable is run in this environment, such as `php craft` or `ddev craft`. */

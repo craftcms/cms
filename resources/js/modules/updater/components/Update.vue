@@ -29,19 +29,23 @@
       altCtaText?: string;
       altCtaUrl?: string;
       allowUpdates?: boolean;
+      allowPurchases?: boolean;
     }>(),
     {
       releases: () => [],
       status: 'eligible',
       abandoned: false,
       allowUpdates: true,
+      allowPurchases: false,
     }
   );
 
   // Computed: should we show the update button?
   const showUpdateCta = computed(() => {
     return (
-      props.allowUpdates && props.latestVersion && props.ctaUrl !== undefined
+      (props.ctaUrl ? props.allowPurchases : props.allowUpdates) &&
+      props.latestVersion &&
+      props.ctaUrl !== undefined
     );
   });
 

@@ -58,17 +58,18 @@ readonly class UpdatesController
 
     private function updatesResponse(UpdatesData $updates, bool $includeDetails): JsonResponse
     {
-        $allowUpdates = (
+        $allowPurchases = (
             $this->generalConfig->allowUpdates &&
             $this->generalConfig->allowAdminChanges &&
-            currentUser()->can('performUpdates') &&
-            app(Composer::class)->getIsAvailableForUi()
+            currentUser()->can('performUpdates')
         );
+        $allowUpdates = $allowPurchases && app(Composer::class)->getIsAvailableForUi();
 
         $res = [
             'total' => $updates->getTotal(),
             'critical' => $updates->hasCritical(),
             'allowUpdates' => $allowUpdates,
+            'allowPurchases' => $allowPurchases,
         ];
 
         if ($includeDetails) {

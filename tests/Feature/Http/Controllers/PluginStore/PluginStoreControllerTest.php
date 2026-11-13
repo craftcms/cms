@@ -71,5 +71,6 @@ it('keeps browsing available but disables package changes without Composer', fun
     get(action([PluginStoreController::class, 'index']))->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('context.allowUpdates', false)
+            ->where('context.allowPurchases', true)
             ->where('craft.general.allowUpdates', false));
 });

@@ -51,6 +51,7 @@ it('still reports releases but omits update actions without Composer', function 
     ])->assertOk()
         ->assertJsonPath('total', 1)
         ->assertJsonPath('allowUpdates', false)
+        ->assertJsonPath('allowPurchases', true)
         ->assertJsonPath('updates.cms.latestVersion', '100.0.0')
         ->assertJsonMissingPath('updates.cms.ctaText');
 });
