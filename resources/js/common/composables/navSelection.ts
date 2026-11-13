@@ -1,3 +1,5 @@
+import {toRaw} from 'vue';
+
 type NavNode = CraftCms.Cms.Cp.Data.ActionItem & {
   /**
    * The page sits beneath this item, which has a subnav that doesn't cover it —
@@ -19,17 +21,37 @@ type NavNode = CraftCms.Cms.Cp.Data.ActionItem & {
  * claims its ancestors, even when a shorter match is in an earlier group.
  */
 
-/** Compares pathnames, so a relative href and an absolute one still match. */
-function pathOf(href: string | null): string {
-  if (!href) {
-    return '';
+/**
+ * Parsed hrefs. Every navigation matches the page against each item in the
+ * tree, several times over, so parsing an item's href once rather than every
+ * time saves most of that work. Page URLs pass through too, so it's cleared
+ * before it can grow without bound.
+ */
+const parsedHrefs = new Map<string, URL | null>();
+
+function parse(href: string): URL | null {
+  let parsed = parsedHrefs.get(href);
+
+  if (parsed === undefined) {
+    if (parsedHrefs.size >= 1000) {
+      parsedHrefs.clear();
+    }
+
+    try {
+      parsed = new URL(href, window.location.origin);
+    } catch {
+      parsed = null;
+    }
+
+    parsedHrefs.set(href, parsed);
   }
 
-  try {
-    return new URL(href, window.location.origin).pathname.replace(/\/+$/, '');
-  } catch {
-    return '';
-  }
+  return parsed;
+}
+
+/** Compares pathnames, so a relative href and an absolute one still match. */
+function pathOf(href: string | null): string {
+  return (href && parse(href)?.pathname.replace(/\/+$/, '')) || '';
 }
 
 function matches(path: string, itemPath: string): boolean {
@@ -38,12 +60,9 @@ function matches(path: string, itemPath: string): boolean {
   );
 }
 
+/** Read-only: the parsed URL is shared through {@link parsedHrefs}. */
 function queryOf(href: string | null): URLSearchParams {
-  try {
-    return new URL(href ?? '', window.location.origin).searchParams;
-  } catch {
-    return new URLSearchParams();
-  }
+  return parse(href ?? '')?.searchParams ?? new URLSearchParams();
 }
 
 /**
@@ -108,9 +127,12 @@ function selectWithin(
  * previous page's trail behind on the next one.
  */
 export function withNavSelection(
-  items: Array<NavNode>,
+  navItems: Array<NavNode>,
   url: string
 ): Array<NavNode> {
+  // Walked unwrapped: through Vue's proxies, copying each item reads every
+  // one of its properties through a trap, which is most of what this costs.
+  const items = toRaw(navItems);
   const pagePath = pathOf(url);
 
   // Your own account sits under Users, which is where the nav points. It's
