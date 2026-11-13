@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\File;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -27,6 +28,7 @@ it('inlines an SVG path in place of the URL, keeping its styles matched to its e
     $style = $svg->filter('style')->text();
 
     expect($html)->not->toContain('<?xml')
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key'))->not->toContain('cpIconUrl')
         ->and($svg->filter('img'))->toHaveCount(0)
         ->and($style)->toContain(sprintf('#%s .%s', $group->attr('id'), $group->filter('rect')->attr('class')))
         ->and($style)->toContain('light-dark(#000, #fff)');
@@ -42,9 +44,10 @@ it('embeds a raster path as a data URL', function () {
         ->and($img->attr('alt'))->toBe('');
 });
 
-it('falls back to the URL when the path is not a file', function () {
+it('falls back to the deprecated URL when the path is not a file', function () {
     Cms::config()->cpLogoPath = "$this->dir/missing.svg";
     Cms::config()->cpLogoUrl = 'https://example.test/logo.svg';
 
-    expect(new Crawler(Cp::logoHtml())->filter('img')->attr('src'))->toBe('https://example.test/logo.svg');
+    expect(new Crawler(Cp::logoHtml())->filter('img')->attr('src'))->toBe('https://example.test/logo.svg')
+        ->and(collect(Deprecator::getRequestLogs())->pluck('key'))->toContain('cpLogoUrl');
 });

@@ -61,10 +61,6 @@
     white-space: nowrap;
   }
 
-  :deep(svg) {
-    fill: currentColor;
-  }
-
   :deep(:is(svg, img)) {
     max-width: 100%;
     height: auto;

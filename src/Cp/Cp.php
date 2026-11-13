@@ -23,6 +23,7 @@ use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Images;
@@ -237,7 +238,7 @@ readonly class Cp
     {
         $generalConfig = Cms::config();
 
-        return self::brandImageHtml($generalConfig->cpIconPath, $generalConfig->cpIconUrl);
+        return self::brandImageHtml($generalConfig->cpIconPath, $generalConfig->cpIconUrl, 'cpIcon');
     }
 
     /**
@@ -249,7 +250,7 @@ readonly class Cp
     {
         $generalConfig = Cms::config();
 
-        return self::brandImageHtml($generalConfig->cpLogoPath, $generalConfig->cpLogoUrl);
+        return self::brandImageHtml($generalConfig->cpLogoPath, $generalConfig->cpLogoUrl, 'cpLogo');
     }
 
     /**
@@ -257,8 +258,10 @@ readonly class Cp
      * images are embedded as data URLs, since the file may not be publicly accessible.
      *
      * The markup has no text alternative, so it should sit beside the system name.
+     *
+     * @param  string  $setting  The settings' shared prefix, such as `cpIcon` for `cpIconPath` and `cpIconUrl`
      */
-    private static function brandImageHtml(?string $path, ?string $url): ?string
+    private static function brandImageHtml(?string $path, ?string $url, string $setting): ?string
     {
         if ($path) {
             $file = Aliases::get($path);
@@ -272,7 +275,13 @@ readonly class Cp
             Log::warning("Invalid control panel image path: $path");
         }
 
-        return $url ? Html::img(Aliases::get($url), '')->render() : null;
+        if (! $url) {
+            return null;
+        }
+
+        Deprecator::log("{$setting}Url", "The `{$setting}Url` config setting has been deprecated. `{$setting}Path` should be used instead.");
+
+        return Html::img(Aliases::get($url), '')->render();
     }
 
     public static function publicAssetUrl(string $path): string
