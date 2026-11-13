@@ -46,6 +46,8 @@ function isHex(color: string): boolean {
  *   theme lightens it.
  * @cssproperty [--c-select-color-swatch-ring=transparent] - Ring around every
  *   swatch. The dark theme sets a faint one.
+ * @cssproperty [--c-select-color-swatch-checker=rgb(0 0 0 / 15%)] - Checkers
+ *   of the no-color swatch. The dark theme lightens them.
  */
 export default class CraftSelectColor extends CraftSelectRich {
   static override styles = [...CraftSelectRich.styles, styles];
@@ -139,12 +141,15 @@ export default class CraftSelectColor extends CraftSelectRich {
       'border-radius:var(--c-radius-full);' +
       `box-shadow:${shadows.join(', ')};`;
 
+    // Translucent checkers tint whatever's behind them, so they stand out
+    // from any fill, including the neutral one.
+    const checker = 'var(--c-select-color-swatch-checker, rgb(0 0 0 / 15%))';
     const transparent =
       'background:' +
-      'linear-gradient(45deg, var(--c-color-neutral-fill-quiet) 25%, transparent 25%),' +
-      'linear-gradient(-45deg, var(--c-color-neutral-fill-quiet) 25%, transparent 25%),' +
-      'linear-gradient(45deg, transparent 75%, var(--c-color-neutral-fill-quiet) 75%),' +
-      'linear-gradient(-45deg, transparent 75%, var(--c-color-neutral-fill-quiet) 75%);' +
+      `linear-gradient(45deg, ${checker} 25%, transparent 25%),` +
+      `linear-gradient(-45deg, ${checker} 25%, transparent 25%),` +
+      `linear-gradient(45deg, transparent 75%, ${checker} 75%),` +
+      `linear-gradient(-45deg, transparent 75%, ${checker} 75%);` +
       'background-position:0 0, 0 0.25rem, 0.25rem -0.25rem, -0.25rem 0;' +
       'background-size:0.5rem 0.5rem;';
 
