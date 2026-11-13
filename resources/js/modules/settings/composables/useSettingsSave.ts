@@ -52,9 +52,10 @@ export interface UseSettingsSaveOptions<T extends object> {
    * Whether a successful slideout save that keeps the panel open reloads it,
    * as a page reloads after its save, when the save changed what the panel
    * shows. The screen stays mounted, and the new props land before
-   * {@link onSuccess}, while the form is still processing.
+   * {@link onSuccess}, while the form is still processing. Receives the
+   * response data, so it can point the panel at what the save wrote first.
    */
-  reloadKeptOpen?: () => boolean;
+  reloadKeptOpen?: (data?: any) => boolean;
   passwordConfirmation?: PasswordConfirmationOptions<T>;
   /**
    * Sugar over {@link passwordConfirmation}: require an elevated session when the
@@ -211,7 +212,7 @@ export function useSettingsSave<T extends object>(
 
         let reloadFailed = false;
 
-        if (!closing && options.reloadKeptOpen?.()) {
+        if (!closing && options.reloadKeptOpen?.(response.data)) {
           await slideout!
             .reload({preserveState: true})
             .catch(() => (reloadFailed = true));

@@ -984,7 +984,15 @@ export function useElementEditor({
       // Applying a provisional draft deletes it, and replaces the nested
       // elements created in it with new ones, so the panel is still showing
       // the draft, with blocks that no longer exist.
-      reloadKeptOpen: () => draftIsProvisional.value,
+      reloadKeptOpen: (data) => {
+        if (!draftIsProvisional.value) {
+          return false;
+        }
+
+        showSavedElement(data);
+
+        return true;
+      },
       onError: (data) => {
         pendingRelease.value = null;
 
@@ -1150,6 +1158,27 @@ export function useElementEditor({
     } else if (!event.shiftKey) {
       save({redirect: false});
     }
+  }
+
+  /**
+   * Points the panel at the element a save applied its draft to. The draft
+   * it was opened for, if it named one, no longer exists, and the canonical
+   * element is all a panel opened for just the draft has to go on.
+   */
+  function showSavedElement(result: unknown): void {
+    const id = Number(
+      (result as {element?: {id?: unknown}} | undefined)?.element?.id
+    );
+
+    if (!slideout?.instance.href || !Number.isInteger(id) || id <= 0) {
+      return;
+    }
+
+    const url = new URL(slideout.instance.href, window.location.href);
+    url.searchParams.delete('draftId');
+    url.searchParams.delete('provisional');
+    url.searchParams.set('elementId', String(id));
+    slideout.instance.href = url.href;
   }
 
   function savedDraftId(result: unknown): number | null {

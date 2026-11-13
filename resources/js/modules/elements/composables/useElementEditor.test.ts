@@ -3039,6 +3039,37 @@ describe('useElementEditor', () => {
       root.remove();
     });
 
+    /**
+     * Applying the provisional draft deletes it, so a panel opened for just
+     * the draft would reload a draft that no longer exists.
+     */
+    it('reloads a kept-open panel as the element its draft was applied to', async () => {
+      const request = stubSaveRequest(() =>
+        Promise.resolve({data: {element: {id: 12}}})
+      );
+      const slideout = handledSlideout();
+      const instance = Object.assign(slideout.instance, {
+        href: 'https://example.test/actions/elements/edit?elementType=Entry&draftId=7&provisional=1&siteId=2',
+      });
+      const {editor} = mount(
+        payload({draftId: 7, isProvisionalDraft: true}),
+        slideout
+      );
+
+      editor.save({redirect: false});
+
+      await vi.waitFor(() => expect(slideout.reload).toHaveBeenCalled());
+      expect(request.mock.calls[0]![0]).toMatchObject({
+        url: '/actions/elements/apply-draft',
+      });
+      expect(slideout.reload).toHaveBeenCalledWith({preserveState: true});
+      expect(Object.fromEntries(new URL(instance.href).searchParams)).toEqual({
+        elementType: 'Entry',
+        siteId: '2',
+        elementId: '12',
+      });
+    });
+
     it('refreshes previews after a finished save', async () => {
       stubSaveRequest(() =>
         Promise.resolve({
