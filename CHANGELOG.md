@@ -21,6 +21,7 @@
 - Updated the workflow stage type picker to show each type’s icon when available. ([#20660](https://github.com/craftcms/cms/pull/20660))
 - Fixed a bug where focus was lost after choosing elements in a relation field’s selector modal, or canceling it. Focus now returns to the field’s add button, or to the chosen element when the field is full. ([#20653](https://github.com/craftcms/cms/pull/20653))
 - Fixed a bug where typing in fields, especially Markdown fields, lagged on entries with many fields. ([#20637](https://github.com/craftcms/cms/issues/20637))
+- Fixed a bug where element chips in the Compare screen’s heading overflowed it on narrow screens, pushing the close button onto its own line. ([#20668](https://github.com/craftcms/cms/pull/20668))
 - Fixed a bug where the user menu showed a “Permissions” item on Craft Solo, which led to a 403 error. ([#20621](https://github.com/craftcms/cms/issues/20621), [#20635](https://github.com/craftcms/cms/pull/20635))
 - Fixed a bug where control panel forms could show the wrong fields after a failed save, such as the Base URL field on a new site whose “This site has its own base URL” setting was turned off. ([#20632](https://github.com/craftcms/cms/pull/20632), [#20636](https://github.com/craftcms/cms/pull/20636))
 - Fixed a bug where each autosave of a provisional draft saved it twice and rebuilt every action menu item on the page, which blocked the entry editor for over a second on long entries. ([#20639](https://github.com/craftcms/cms/issues/20639), [#20649](https://github.com/craftcms/cms/pull/20649))
