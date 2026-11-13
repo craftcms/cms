@@ -627,6 +627,11 @@ describe('ElementSelectControl', () => {
       expect(href).toContain('draftId=7');
 
       options.onSaved({draft: true});
+      // Deleting it from the slideout, through the deletion manager or its action.
+      options.onSaved({});
+      options.onSaved({
+        data: {element: {title: 'Fresh', dateDeleted: '2026-11-13'}},
+      });
       expect(updates).toEqual([]);
 
       options.onSaved({draft: false, data: {element: {title: 'Fresh'}}});

@@ -334,11 +334,15 @@
       {
         opener: input.value,
         onSaved: ({draft, data: saved}) => {
-          if (draft) {
+          const element = saved?.element as
+            | {title?: string | null; dateDeleted?: string | null}
+            | undefined;
+
+          // Only a finished save sends the entry back. Deleting it from the
+          // slideout reports a save without one, or with it deleted.
+          if (draft || !element || element.dateDeleted) {
             return;
           }
-
-          const element = (saved?.element ?? {}) as {title?: string | null};
 
           emit('select', {
             id: entry.id,
