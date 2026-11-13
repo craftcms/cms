@@ -568,6 +568,8 @@ describe('the new entry button', () => {
     expect(new URL(url, 'https://x').searchParams.get('draftId')).toBe('5');
 
     options.onSaved({draft: true});
+    options.onSaved({});
+    options.onSaved({data: {element: {id: 21, dateDeleted: '2026-11-13'}}});
     expect(onSelect).not.toHaveBeenCalled();
 
     options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});

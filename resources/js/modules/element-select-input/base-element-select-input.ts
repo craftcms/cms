@@ -1640,6 +1640,9 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       return;
     }
 
+    // Search results add, even after an abandoned Replace.
+    this.replacing = null;
+
     let id: number | null = option.dataset.id
       ? Number(option.dataset.id)
       : null;

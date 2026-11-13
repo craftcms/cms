@@ -108,13 +108,18 @@
       {
         opener,
         onSaved: ({draft, data}) => {
-          if (draft || chosen) {
+          const saved = data?.element as
+            | {title?: string | null; dateDeleted?: unknown}
+            | undefined;
+
+          // Deleting the draft from the panel's action menu reports a save too,
+          // without the element or with it deleted.
+          if (draft || chosen || !saved || saved.dateDeleted) {
             return;
           }
 
           chosen = true;
 
-          const saved = (data?.element ?? {}) as {title?: string | null};
           const info: ElementInfo = {
             id: entry.id,
             siteId,

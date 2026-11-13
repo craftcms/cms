@@ -129,6 +129,18 @@ it('adds rather than replaces once a replacement is abandoned', async () => {
   expect(input.getSelectedElementIds()).toEqual([1, 2, 5]);
 });
 
+it('adds a search result even after a replacement is abandoned', async () => {
+  const input = bootWithModal();
+  const option = document.createElement('div');
+  option.dataset.id = '5';
+
+  input.showReplaceModal(input.getElementById(1)!);
+  input.onModalHide();
+  await input.selectSearchResult(option);
+
+  expect(input.getSelectedElementIds()).toEqual([1, 2, 5]);
+});
+
 it('moves a chip when its reorder button asks to', () => {
   const input = boot();
   const button = input

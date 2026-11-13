@@ -1747,6 +1747,9 @@ export class BaseElementSelectInput extends Base<BaseElementSelectInputSettings>
       return;
     }
 
+    // Search results add, even after an abandoned Replace.
+    this._$replaceElement = null;
+
     let id = $option.data('id');
 
     if (!id && this.canCreateElements()) {

@@ -6,6 +6,7 @@ import {
   type ElementSelectorOptions,
 } from '@craftcms/ui';
 import type {App} from 'vue';
+import {resolveElement} from '@/common/utils/dom';
 
 /**
  * Settings the presentation layer consumes, which the core neither needs nor
@@ -55,10 +56,18 @@ function splitSettings(settings: ElementSelectorModalSettings) {
   return {core: core as Partial<ElementSelectorOptions>, presentation};
 }
 
+/**
+ * The trigger as an element. The Yii2 adapter's inputs hand over a jQuery
+ * collection, which the slideout store can't look up a panel from.
+ */
 function resolveFocusTarget(
   target: ElementSelectorModalPresentationOptions['triggerElement']
 ): HTMLElement | null {
-  return (typeof target === 'function' ? target() : target) ?? null;
+  return resolveElement(
+    (typeof target === 'function' ? target() : target) as Parameters<
+      typeof resolveElement
+    >[0]
+  );
 }
 
 /**

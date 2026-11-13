@@ -405,7 +405,9 @@
         disabledElementIds: ids.value.filter((id) => id !== replacing),
         modalTitle: props.control.props.selectionLabel,
         selectBtnLabel: props.control.props.selectionLabel,
-        triggerElement: () => addButton.value,
+        // A full field has no Add button. The field itself still says which
+        // panel it's in, so a slideout opened from the modal nests there.
+        triggerElement: () => addButton.value ?? dropZone.value,
         onSelect: (elements) => {
           const chosen = remember(
             elements as unknown as Array<Record<string, unknown>>
