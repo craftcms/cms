@@ -359,8 +359,14 @@ export default css`
           calc(100% - var(--c-spacing-xl)) 100%;
       }
 
+      /* The same revealed thumb as .cp-inner-scroller's. */
       .flyout:is(:hover, :focus-within) {
-        scrollbar-color: var(--c-color-neutral-border-normal) transparent;
+        scrollbar-color: color-mix(
+            in oklab,
+            var(--color-slate-600),
+            var(--color-blue-500) 20%
+          )
+          transparent;
       }
     }
   }

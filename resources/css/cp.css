@@ -195,8 +195,15 @@ body {
         calc(100% - var(--c-spacing-xl)) 100%;
     }
 
+    /* Revealed, the thumb is a slightly bluer slate: slate-600 with a fifth
+       of blue-500, both redefined for the dark theme. */
     .cp-inner-scroller:is(:hover, :focus-within) {
-      scrollbar-color: var(--c-color-neutral-border-normal) transparent;
+      scrollbar-color: color-mix(
+          in oklab,
+          var(--color-slate-600),
+          var(--color-blue-500) 20%
+        )
+        transparent;
     }
   }
 }
