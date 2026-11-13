@@ -1114,7 +1114,7 @@ class Html
             '/(<style\b[^>]*>)(.*?)(<\/style>)/is',
             function (array $match) use ($namespace, $withClasses, $ids) {
                 $html = preg_replace_callback(
-                    "/(?<![\w'\"])#([\w\-]+)(?=[\s,{.:\[>+~])/",
+                    "/(?<![\w'\"])#([^\s'\",{}.:\[\]>+~#();]+)(?=[\s,{.:\[>+~)])/",
                     function (array $match) use ($namespace, $ids): string {
                         if (isset($ids[$match[1]])) {
                             return '#'.$namespace.'-'.$match[1];
@@ -1123,7 +1123,7 @@ class Html
                         return $match[0];
                     }, $match[2]);
                 if ($withClasses) {
-                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $html);
+                    $html = preg_replace("/(?<![\\d'\"])\\.(-?[a-zA-Z_][\\w\\-]*)(?=[\\s,{.:\\[>+~])/", ".$namespace-$1", $html);
                 }
 
                 return $match[1].$html.$match[3];
