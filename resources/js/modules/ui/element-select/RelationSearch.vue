@@ -234,6 +234,11 @@
   }
 
   function onKeydown(event: KeyboardEvent): void {
+    // An IME needs these keys to pick its conversion candidates.
+    if (event.isComposing) {
+      return;
+    }
+
     switch (event.key) {
       case 'ArrowDown':
       case 'ArrowUp': {
@@ -253,10 +258,6 @@
         break;
       }
       case 'Enter':
-        if (event.isComposing) {
-          return;
-        }
-
         // Return never submits the form around the field, as in Craft 5.
         event.preventDefault();
 

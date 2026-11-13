@@ -696,6 +696,33 @@ describe('ElementSelectControl', () => {
       expect(enter.defaultPrevented).toBe(true);
     });
 
+    it('leaves the arrow keys to an IME while it’s composing', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 8, title: 'One', label: 'One', html: 'One', exclude: false},
+            {id: 9, title: 'Two', label: 'Two', html: 'Two', exclude: false},
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const root = await mount({props: {search}});
+      const input = await type(root, 'o');
+      const active = input.getAttribute('aria-activedescendant');
+      const arrow = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        isComposing: true,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      input.dispatchEvent(arrow);
+      await nextTick();
+
+      expect(arrow.defaultPrevented).toBe(false);
+      expect(input.getAttribute('aria-activedescendant')).toBe(active);
+    });
+
     it('relates an untitled result, such as a user, by its label', async () => {
       stub.post.mockResolvedValue({
         data: {
