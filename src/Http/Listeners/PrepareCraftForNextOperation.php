@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Listeners;
 
+use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\NestedElementManager;
+use CraftCms\Cms\Entry\EntryTypes;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\FieldLayout\LayoutElements\Template as TemplateLayoutElement;
+use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Mcp\StdioEventDispatcher;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\ProjectConfigRoutes;
+use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Support\Template;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
@@ -56,8 +61,13 @@ class PrepareCraftForNextOperation
         Template::forgetFallbacks();
         TemplateLayoutElement::forgetTwig();
 
-        // Another process may have changed the project config since this one loaded it.
+        // Another process may have changed the project config, and the records built from it, since this one loaded them.
         $app->make(ProjectConfig::class)->reset();
+        $app->make(Fields::class)->refreshFields();
+        $app->make(EntryTypes::class)->refreshEntryTypes();
+        $app->make(Volumes::class)->reset();
+        $app->make(SiteGroups::class)->refreshGroups();
+        $app->make(ImageTransforms::class)->reset();
         Cms::setDefaultTimezone();
         $app->make(ProjectConfigRoutes::class)->refresh();
     }
