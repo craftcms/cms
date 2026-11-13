@@ -47,9 +47,12 @@ CP Styles
 :root {
   --cp-sidebar-width: calc(226rem / 16);
 
-  /* What a collapsed navigation folds down to: one touch target plus its
+  /* The square each item in a rail fills: global nav items, the system icon,
+     and details tabs. */
+  --cp-rail-item-size: calc(30rem / 16);
+  /* What a collapsed navigation folds down to: one rail item plus its
      padding. Shared so every rail in the CP is the same width. */
-  --cp-rail-width: calc(var(--c-size-touch-target) + var(--c-spacing-md) * 2);
+  --cp-rail-width: calc(var(--cp-rail-item-size) + var(--c-spacing-md) * 2);
   --cp-sidebar-collapsed-width: var(--cp-rail-width);
   /* The icons around the content: global nav, header bar and details rail. */
   --cp-chrome-icon-size: var(--c-size-icon-sm);
@@ -57,9 +60,9 @@ CP Styles
   --cp-content-width: calc(1440rem / 16);
   --cp-footer-height: var(--c-size-footer);
   --cp-header-height: calc(42rem / 16);
-  /* Centers a touch target beside a header bar, above its 1px bottom border. */
+  /* Centers a rail item beside a header bar, above its 1px bottom border. */
   --cp-header-touch-target-offset: calc(
-    (var(--cp-header-height) - 1px - var(--c-size-touch-target)) / 2
+    (var(--cp-header-height) - 1px - var(--cp-rail-item-size)) / 2
   );
   --cp-sidebar-z-index: var(--c-layer-sidebar);
   --cp-body-inset: var(--c-spacing-md);

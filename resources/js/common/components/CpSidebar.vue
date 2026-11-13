@@ -188,6 +188,7 @@
   }
 
   .cp-sidebar :deep(craft-nav-item) {
+    --c-nav-item-size: var(--cp-rail-item-size);
     --c-icon-size: calc(12rem / 16);
     --c-nav-item-icon-color: var(--cp-chrome-icon-color);
   }
@@ -195,8 +196,7 @@
   .cp-sidebar__header {
     display: flex;
     justify-content: space-between;
-    padding-block: calc(var(--c-spacing-md) - var(--c-spacing-sm) / 2);
-    padding-inline: var(--c-spacing-md);
+    padding: var(--c-spacing-md);
     flex: 0 0 auto;
   }
 

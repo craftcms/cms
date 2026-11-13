@@ -214,9 +214,9 @@
     }
 
     @media (width >= var(--breakpoint-lg)) {
-      /* Takes in the space down to the body panel, so its row sits centered
-         between the panel and the top of the window. */
-      min-height: calc(42rem / 16 + var(--cp-body-inset) - var(--c-spacing-sm));
+      /* As tall as the collapsed sidebar and the details rail are wide, so the
+         system icon sits in the corner square they make. */
+      min-height: var(--cp-rail-width);
       padding-inline-start: var(--c-spacing-md);
       padding-inline-end: var(--cp-scrollbar-width, 0px);
       gap: calc(var(--spacing) * 3);
@@ -263,12 +263,9 @@
     --c-link-decoration-hover: underline;
     grid-area: breadcrumbs;
     overflow: auto;
-    /* Room inside the scroll area for focus rings, which it would clip,
-       including the system icon's, which overhangs the row. */
-    padding-block: calc(var(--c-spacing-sm) * 1.5);
-    padding-inline: var(--c-spacing-sm);
-    margin-block: calc(var(--c-spacing-sm) * -1.5);
-    margin-inline: calc(var(--c-spacing-sm) * -1);
+    /* Room inside the scroll area for focus rings, which it would clip. */
+    padding: var(--c-spacing-sm);
+    margin: calc(var(--c-spacing-sm) * -1);
   }
 
   /* The logo is a collapsed nav item's size and sits in its column, so it holds
@@ -277,8 +274,6 @@
   .cp-header-bar__system {
     flex: none;
     inline-size: calc(var(--cp-header-sidebar-width) - var(--c-spacing-md) * 2);
-    /* Overhangs the row instead of making it taller than the crumbs. */
-    margin-block: calc(var(--c-spacing-sm) / -2);
   }
 
   .cp-header-bar__system--collapsed {
