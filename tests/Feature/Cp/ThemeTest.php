@@ -5,6 +5,8 @@ declare(strict_types=1);
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 
 it('resolves the theme the control panel is showing', function (?string $preference, ?string $cookie, Theme $expected) {
     $user = User::findOne();
@@ -44,4 +46,21 @@ it('ignores the last signed-in user’s preference when a user is logged in', fu
     request()->cookies->set(Theme::PREFERENCE_COOKIE, 'dark');
 
     expect(Theme::forUser(User::findOne()))->toBe(Theme::System);
+});
+
+it('remembers the user’s preference when they sign in and out', function () {
+    $user = User::findOne();
+    app(Users::class)->saveUserPreferences($user, ['theme' => 'dark']);
+
+    Auth::login($user);
+
+    expect(Cookie::queued(Theme::PREFERENCE_COOKIE)?->getValue())->toBe('dark');
+
+    app(Users::class)->saveUserPreferences($user, ['theme' => 'light']);
+    Cookie::flushQueuedCookies();
+    Auth::logout();
+
+    expect(Cookie::queued(Theme::PREFERENCE_COOKIE))
+        ->getValue()->toBe('light')
+        ->isHttpOnly()->toBeFalse();
 });

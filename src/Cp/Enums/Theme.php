@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\Enums;
 
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Cookie;
 
 /**
  * Control panel color themes a user can choose in their preferences. `System`
@@ -39,6 +40,16 @@ enum Theme: string
         $theme = $user ? $user->getPreference('theme') : request()->cookie(self::PREFERENCE_COOKIE);
 
         return is_string($theme) ? self::tryFrom($theme) ?? self::System : self::System;
+    }
+
+    /**
+     * Remembers the user's preference in {@see self::PREFERENCE_COOKIE} for the
+     * pages shown once they sign out. The control panel's JavaScript keeps it up
+     * to date as the preference changes, so it isn't HTTP-only.
+     */
+    public static function rememberPreference(User $user): void
+    {
+        Cookie::queue(Cookie::make(self::PREFERENCE_COOKIE, self::forUser($user)->value, 525600, httpOnly: false, sameSite: 'lax'));
     }
 
     /**
