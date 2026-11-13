@@ -195,7 +195,8 @@
   .cp-sidebar__header {
     display: flex;
     justify-content: space-between;
-    padding: var(--c-spacing-md);
+    padding-block: calc(var(--c-spacing-md) - var(--c-spacing-sm) / 2);
+    padding-inline: var(--c-spacing-md);
     flex: 0 0 auto;
   }
 

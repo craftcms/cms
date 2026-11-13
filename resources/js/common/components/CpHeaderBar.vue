@@ -263,22 +263,22 @@
     --c-link-decoration-hover: underline;
     grid-area: breadcrumbs;
     overflow: auto;
-    /* Room inside the scroll area for focus rings, which it would clip. */
-    padding: var(--c-spacing-sm);
-    margin: calc(var(--c-spacing-sm) * -1);
+    /* Room inside the scroll area for focus rings, which it would clip,
+       including the system icon's, which overhangs the row. */
+    padding-block: calc(var(--c-spacing-sm) * 1.5);
+    padding-inline: var(--c-spacing-sm);
+    margin-block: calc(var(--c-spacing-sm) * -1.5);
+    margin-inline: calc(var(--c-spacing-sm) * -1);
   }
 
-  /* The logo takes a nav icon's column, centered on it, so it holds still as
-     the sidebar collapses and the name starts where the collapsed content does. */
+  /* The logo is a collapsed nav item's size and sits in its column, so it holds
+     still as the sidebar collapses and the name starts where the collapsed
+     content does. */
   .cp-header-bar__system {
     flex: none;
     inline-size: calc(var(--cp-header-sidebar-width) - var(--c-spacing-md) * 2);
-    grid-template-columns: var(--c-size-touch-target) minmax(0, 1fr);
-  }
-
-  .cp-header-bar__system :deep(.system-info__icon) {
-    justify-self: center;
-    inline-size: var(--system-info-icon-size);
+    /* Overhangs the row instead of making it taller than the crumbs. */
+    margin-block: calc(var(--c-spacing-sm) / -2);
   }
 
   .cp-header-bar__system--collapsed {
