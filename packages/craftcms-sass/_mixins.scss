@@ -230,14 +230,19 @@ $menuBorderRadius: $mediumBorderRadius;
   }
 
   // Stroked icons, such as Lucide’s, which declare a stroke on the <svg>.
-  // Keep their fills and stroke widths, recolor their strokes, and set
-  // `color` for any `currentColor` fills.
+  // Keep their fills and stroke widths, and set `color` for any
+  // `currentColor` fills.
   :is(#{$shapes}):where(#{$stroked-svg} *) {
     color: $color;
+  }
 
-    &:where(:not([stroke='none'])) {
-      stroke: $color;
-    }
+  // Recolor strokes on groups and shapes that declare one, and on shapes that
+  // inherit the <svg>’s, so `stroke="none"` on a group still applies within it.
+  :is(g, #{$shapes}):where(#{$stroked-svg} *):where(
+      [stroke]:not([stroke='none']),
+      :not([stroke], [stroke='none'] *)
+    ) {
+    stroke: $color;
   }
 }
 
