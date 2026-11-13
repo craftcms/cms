@@ -29,6 +29,8 @@ class StdioEventDispatcher implements EventDispatcherInterface
     public function dispatch(object $event): object
     {
         if ($event instanceof RequestEvent) {
+            // User permissions aren’t all stored in the project config, so they can change without a new config version
+            Craft::$app->getUserPermissions()->reset();
             $this->reloadChangedProjectConfig();
         } elseif ($event instanceof ResponseEvent || $event instanceof ErrorEvent) {
             Craft::$app->getProjectConfig()->flush();
