@@ -40,7 +40,10 @@ export function isFocusable(el: Element | null | undefined): el is HTMLElement {
 }
 
 /** `closest()` that carries on past shadow roots to their hosts. */
-function closestComposed(el: Element, selector: string): HTMLElement | null {
+export function closestComposed(
+  el: Element,
+  selector: string
+): HTMLElement | null {
   let node: Element | null = el;
 
   while (node) {

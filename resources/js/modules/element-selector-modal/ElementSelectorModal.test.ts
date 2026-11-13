@@ -133,13 +133,17 @@ function controller(options = {}) {
   });
 }
 
-async function mountModal(instance: ElementSelectorController) {
+async function mountModal(
+  instance: ElementSelectorController,
+  returnFocus?: () => HTMLElement | null
+) {
   const {default: ElementSelectorModal} =
     await import('./ElementSelectorModal.vue');
 
   const app = createApp(
     defineComponent({
-      setup: () => () => h(ElementSelectorModal, {controller: instance}),
+      setup: () => () =>
+        h(ElementSelectorModal, {controller: instance, returnFocus}),
     })
   );
   app.config.compilerOptions.isCustomElement = (tag: string) =>
@@ -599,6 +603,36 @@ describe('the new entry button', () => {
     expect(
       host.querySelector('[slot="secondary-actions"] craft-button')
     ).toBeNull();
+
+    unmount();
+  });
+
+  it('returns focus to what the field offers once the slideout closes', async () => {
+    const addButton = document.createElement('button');
+    let focusTarget = addButton;
+    const instance = controller();
+    const {host, unmount} = await mountModal(instance, () => focusTarget);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    creation.post.mockResolvedValue({data: {entry: {id: 21, draftId: 5}}});
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+
+    const [, options] = creation.openSlideout.mock.calls[0]!;
+    expect(options.opener).toBe(addButton);
+
+    // Relating the entry filled the field, taking its Add button away
+    const chip = document.createElement('button');
+    focusTarget = chip;
+    expect(options.returnFocus()).toBe(chip);
 
     unmount();
   });

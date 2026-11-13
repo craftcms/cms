@@ -482,6 +482,18 @@ describe('ElementSelectControl', () => {
     expect(settings.multiSelect).toBe(false);
   });
 
+  it('gives a full field’s Replace a chip to return focus to', async () => {
+    const root = await mount({props: {limit: 2}, value: [5, 6]});
+    menuItem(menus(root)[0], 'Replace').click();
+    await flushSelector();
+
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    // The drop zone can't take focus, so a slideout opened from the modal
+    // would have nothing to return focus to once it closed.
+    const target: HTMLElement = settings.triggerElement();
+    expect(target.closest('[data-id]')?.getAttribute('data-id')).toBe('5');
+  });
+
   it('appends what the selector returns', async () => {
     await mount({value: [5]});
     const button = container!.querySelector('[data-element-select-add]')!;

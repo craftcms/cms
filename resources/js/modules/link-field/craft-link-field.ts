@@ -282,15 +282,19 @@ class CraftLinkField extends LitElement {
     delete config.limit;
     delete config.single;
 
-    await this.dispatchElementSelectStartEvent(
-      event.currentTarget instanceof HTMLElement ? event.currentTarget : null
-    );
+    const chooseButton =
+      event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+
+    await this.dispatchElementSelectStartEvent(chooseButton);
 
     const modal = await createElementSelectorModal(type.elementType, {
       ...config,
       hideOnSelect: true,
       modalTitle: t('Choose {type}', {type: type.label}),
       multiSelect: false,
+      // Where a slideout opened from the selector, such as a new entry's,
+      // nests and returns focus to
+      triggerElement: () => chooseButton,
       onSelect: (elements: ElementInfo[]) => {
         const [element] = elements;
 

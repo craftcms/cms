@@ -1,5 +1,6 @@
 import {markRaw, reactive, shallowReadonly} from 'vue';
 import {
+  closestComposed,
   focusReturnFor,
   isFocusable,
   type FocusReturnResolver,
@@ -199,11 +200,14 @@ export function openSlideoutWith(
   return panel;
 }
 
-/** The panel an element lives in, or `null` if it's on the base page. */
+/**
+ * The panel an element lives in, or `null` if it's on the base page. Looks past
+ * shadow roots, as an opener can be a control inside a web component.
+ */
 function originPanel(opener: HTMLElement | null): string | null {
   return (
-    opener?.closest<HTMLElement>('[data-slideout-id]')?.dataset.slideoutId ??
-    null
+    (opener && closestComposed(opener, '[data-slideout-id]'))?.dataset
+      .slideoutId ?? null
   );
 }
 

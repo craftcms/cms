@@ -2,10 +2,22 @@ import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/input/input';
 import '@craftcms/ui/components/select/select';
 import '@craftcms/ui/components/switch/switch';
-import {afterEach, beforeEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
 import './craft-link-field';
 import type {LinkChangeDetail, LinkTypeConfig} from './craft-link-field';
+
+const selector = vi.hoisted(() => ({
+  createElementSelectorModal: vi.fn(async () => ({
+    on: () => {},
+    destroy: () => {},
+  })),
+}));
+
+vi.mock(
+  '@/modules/element-selector-modal/create-element-selector-modal',
+  () => selector
+);
 
 /**
  * The link type and its destination render as one grouped input, like a
@@ -77,6 +89,32 @@ async function chooseType(id: string): Promise<void> {
   await page.getByRole('combobox', {name: 'Link Type'}).selectOptions(id);
   await linkField.updateComplete;
 }
+
+it('places slideouts opened from its element selector in its own panel', async () => {
+  linkField.types = [
+    types[0]!,
+    {
+      id: 'entry',
+      label: 'Entry',
+      kind: 'element',
+      elementType: 'Entry',
+      refHandle: 'entry',
+    },
+  ];
+  await linkField.updateComplete;
+  await chooseType('entry');
+  const choose = page
+    .getByRole('group', {name: 'Entry'})
+    .getByRole('button', {name: 'Choose'});
+  await choose.click();
+  await expect
+    .poll(() => selector.createElementSelectorModal.mock.calls.length)
+    .toBe(1);
+
+  const [, settings] = selector.createElementSelectorModal.mock
+    .calls[0] as unknown as [string, {triggerElement: () => HTMLElement}];
+  expect(settings.triggerElement()).toBe(choose.element());
+});
 
 describe('live', () => {
   let changes: LinkChangeDetail[];

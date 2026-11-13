@@ -61,7 +61,8 @@
   async function create({section, entryType}: CreatableType): Promise<void> {
     const {controller, siteId} = props;
     const onSelect = controller.options.onSelect;
-    const opener = props.opener?.() ?? null;
+    const resolveOpener = props.opener;
+    const opener = resolveOpener?.() ?? null;
 
     controller.setBusy(true);
 
@@ -107,6 +108,9 @@
       ),
       {
         opener,
+        // Asked again once the panel closes: choosing the entry can fill the
+        // field, taking away the Add button that was the opener.
+        returnFocus: () => resolveOpener?.() ?? null,
         onSaved: ({draft, data}) => {
           // "Save as a new entry" saves a different entry than the draft.
           const saved = data?.element as

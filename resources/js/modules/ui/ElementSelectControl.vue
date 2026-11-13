@@ -409,14 +409,20 @@
         modalTitle: props.control.props.selectionLabel,
         selectBtnLabel: props.control.props.selectionLabel,
         // A full field has no Add button: the element chosen last takes focus,
-        // or else the field itself, which still says which panel it's in, so a
-        // slideout opened from the modal nests there.
-        triggerElement: () =>
-          addButton.value ??
-          (chosenLast === undefined
-            ? null
-            : elementFocusTarget(dropZone.value, chosenLast)) ??
-          dropZone.value,
+        // else the one being replaced, else the last one. The field itself is
+        // the last resort, as it still says which panel a slideout opened from
+        // the modal nests in.
+        triggerElement: () => {
+          const focusId = chosenLast ?? replacing ?? ids.value.at(-1);
+
+          return (
+            addButton.value ??
+            (focusId === undefined
+              ? null
+              : elementFocusTarget(dropZone.value, focusId)) ??
+            dropZone.value
+          );
+        },
         onSelect: (elements) => {
           const chosen = remember(
             elements as unknown as Array<Record<string, unknown>>
