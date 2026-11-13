@@ -88,6 +88,16 @@ class HttpTransportTest extends TestCase
         self::assertSame(['craft_context_get'], array_column(json_decode((string)$response->getBody(), true)['result']['tools'], 'name'));
     }
 
+    public function testOnlyTrustedOriginsAreAccepted(): void
+    {
+        $siteOrigin = rtrim(Craft::$app->getSites()->getPrimarySite()->getBaseUrl(), '/');
+        $response = $this->exchange('public', $this->initialize('2025-11-25'), ['Origin' => $siteOrigin]);
+        self::assertSame(200, $response->getStatusCode(), (string)$response->getBody());
+
+        $response = $this->exchange('public', $this->initialize('2025-11-25'), ['Origin' => 'https://evil.example']);
+        self::assertSame(403, $response->getStatusCode());
+    }
+
     public function testAdminSessionsCannotCrossEndpointUserOrScopeBoundaries(): void
     {
         $user = User::find()->admin()->one();

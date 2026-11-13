@@ -465,7 +465,8 @@ readonly class Elements
      */
     private function assertValid(array $values, array $schema, string $parameter, string $type): void
     {
-        $errors = $this->schemaValidator->validateAgainstJsonSchema($values, $schema);
+        // An empty array would be validated as a list, not an object
+        $errors = $this->schemaValidator->validateAgainstJsonSchema($values ?: (object) [], $schema);
 
         if ($errors === []) {
             return;

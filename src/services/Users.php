@@ -1699,12 +1699,13 @@ class Users extends Component
             'id' => $user->uid,
         ];
 
-        $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
+        $request = Craft::$app->getRequest();
+        $isCpRequest = $request->getIsCpRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         $cp = (
             Craft::$app->edition->value < CmsEdition::Pro->value ||
-            ($isCpRequest && $user->can('accessCp')) ||
+            (($isCpRequest || $request->getIsConsoleRequest()) && $user->can('accessCp')) ||
             ($generalConfig->headlessMode && !UrlHelper::isAbsoluteUrl($fePath))
         );
         $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
@@ -1724,7 +1725,6 @@ class Users extends Component
         }
 
         if (UrlHelper::isRootRelativeUrl($url)) {
-            $request = Craft::$app->getRequest();
             if (!$request->getIsConsoleRequest()) {
                 $url = rtrim($request->getHostInfo() . $request->getBaseUrl(), '/') . $url;
             }

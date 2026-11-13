@@ -42,6 +42,11 @@ class ElementsCapabilityTest extends TestCase
         self::assertSame('foo', $this->call('elements_list', ['type' => 'entries', 'criteria' => $criteria, 'fields' => null])['elements'][0]['plainTextField'] ?? null);
     }
 
+    public function testListAcceptsOmittedCriteria(): void
+    {
+        self::assertNotEmpty($this->call('elements_list', ['type' => 'entries'])['elements']);
+    }
+
     private function call(string $tool, array $arguments): array
     {
         Craft::$app->get('mcp')->tokenScopes = [Mcp::SCOPE_READ];

@@ -9,34 +9,43 @@ namespace crafttests\unit\controllers;
 
 use Craft;
 use craft\controllers\BaseUpdaterController;
+use craft\controllers\ConfigSyncController;
+use craft\controllers\pluginstore\RemoveController;
 use craft\controllers\UpdaterController;
 use craft\elements\User;
 use craft\helpers\Json;
 use craft\services\Composer;
 use craft\test\TestCase;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
 
 /**
- * Tests updater behavior when system Composer is unavailable.
+ * Tests signed updater data and recovery when system Composer is unavailable.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.13.0
+ * @since 5.12.1
  */
 class UpdaterControllerTest extends TestCase
 {
     private ?string $originalRequestMethod = null;
+    private bool $originalAllowUpdates;
+    private bool $originalAllowAdminChanges;
     private string|false $originalPath;
     private Composer $originalComposer;
 
     public function testMissingComposerDoesNotStartUpdate(): void
     {
-        Craft::$app->getUser()->setIdentity(new User(['id' => 1, 'admin' => true]));
-        $this->prepareRequest([
+        $this->disableComposer();
+        $this->loginAdmin();
+        $this->prepareRequest(null);
+        Craft::$app->getRequest()->setBodyParams([
             'install' => ['craft' => '^5.13.0'],
             'packageNames' => ['craft' => 'craftcms/cms'],
         ]);
 
         try {
-            $this->controller()->runAction('index');
+            $this->controller(UpdaterController::class, 'updater')->runAction('index');
             self::assertFalse(Craft::$app->getIsInMaintenanceMode());
             $js = implode("\n", array_merge(...array_values(Craft::$app->getView()->js)));
             self::assertSame(1, preg_match('/\.setState\((.+)\);/', $js, $matches));
@@ -52,9 +61,10 @@ class UpdaterControllerTest extends TestCase
     /** @dataProvider missingComposerActionDataProvider */
     public function testMissingComposerActionsReturnExplanation(string $actionId): void
     {
+        $this->disableComposer();
+        $this->loginAdmin();
         // Deliberately no package data. The unavailable response must precede any attempted changes.
-        $this->prepareRequest(['data' => Craft::$app->getSecurity()->hashData(Json::encode([]))]);
-        $response = $this->controller()->runAction($actionId);
+        $response = $this->runUpdaterAction($actionId, Craft::$app->getSecurity()->hashData(Json::encode([])));
 
         self::assertStringContainsString('Composer 2.2.0 or later', $response->data['error']);
         self::assertArrayNotHasKey('nextAction', $response->data);
@@ -70,32 +80,205 @@ class UpdaterControllerTest extends TestCase
         ];
     }
 
-    public function testMigrationPrecheckRemainsAvailableWithoutComposer(): void
+    /**
+     * Data signed with the global security key, as the `|hash` filter does, is only trusted for Composer
+     * actions when the user can perform updates. Other steps stay anonymous so self-updates can finish.
+     *
+     * @dataProvider globalKeyDataProvider
+     */
+    public function testGlobalKeyData(string $actionId, bool $admin, bool $expectAllowed): void
     {
+        if ($admin) {
+            $this->loginAdmin();
+        }
+
+        $data = Craft::$app->getSecurity()->hashData(Json::encode(['requirements' => ['foo/bar' => '1.0.0']]));
+
+        if (!$expectAllowed) {
+            $this->expectException(ForbiddenHttpException::class);
+        }
+
+        self::assertTrue($this->beforeAction(UpdaterController::class, 'updater', $actionId, $data));
+    }
+
+    public static function globalKeyDataProvider(): array
+    {
+        return [
+            'composer-install, guest' => [BaseUpdaterController::ACTION_COMPOSER_INSTALL, false, false],
+            'revert, guest' => [UpdaterController::ACTION_REVERT, false, false],
+            'composer-install, admin' => [BaseUpdaterController::ACTION_COMPOSER_INSTALL, true, true],
+            'revert, admin' => [UpdaterController::ACTION_REVERT, true, true],
+            'server-check, guest' => [UpdaterController::ACTION_SERVER_CHECK, false, true],
+            'migrate, guest' => [UpdaterController::ACTION_MIGRATE, false, true],
+            'finish, guest' => [BaseUpdaterController::ACTION_FINISH, false, true],
+        ];
+    }
+
+    /**
+     * @dataProvider updatesDisabledDataProvider
+     */
+    public function testUpdatesDisabled(string $actionId, bool $allowUpdates, bool $allowAdminChanges): void
+    {
+        $this->loginAdmin();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig->allowUpdates = $allowUpdates;
+        $generalConfig->allowAdminChanges = $allowAdminChanges;
+
+        $data = Craft::$app->getSecurity()->hashData(Json::encode([]));
+
+        $this->expectException(ForbiddenHttpException::class);
+        $this->expectExceptionMessage('Updates are disabled.');
+        $this->beforeAction(UpdaterController::class, 'updater', $actionId, $data);
+    }
+
+    public static function updatesDisabledDataProvider(): array
+    {
+        return [
+            'composer-install, allowUpdates off' => [BaseUpdaterController::ACTION_COMPOSER_INSTALL, false, true],
+            'composer-install, allowAdminChanges off' => [BaseUpdaterController::ACTION_COMPOSER_INSTALL, true, false],
+            'composer-remove, allowUpdates off' => [BaseUpdaterController::ACTION_COMPOSER_REMOVE, false, true],
+            'composer-remove, allowAdminChanges off' => [BaseUpdaterController::ACTION_COMPOSER_REMOVE, true, false],
+            'revert, allowUpdates off' => [UpdaterController::ACTION_REVERT, false, true],
+            'revert, allowAdminChanges off' => [UpdaterController::ACTION_REVERT, true, false],
+        ];
+    }
+
+    public function testUpdatesDisabledStillFinishesUp(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->allowUpdates = false;
+        $data = Craft::$app->getSecurity()->hashData(Json::encode([]));
+
+        self::assertTrue($this->beforeAction(UpdaterController::class, 'updater', UpdaterController::ACTION_MIGRATE, $data));
+    }
+
+    public function testUpdaterDataRoundTrips(): void
+    {
+        $data = $this->indexData();
+
+        self::assertTrue($this->beforeAction(UpdaterController::class, 'updater', BaseUpdaterController::ACTION_FINISH, $data));
+    }
+
+    public function testUpdaterDataCantBeReplayedToAnotherController(): void
+    {
+        $this->loginAdmin();
+        $data = $this->indexData();
+
+        $this->expectException(BadRequestHttpException::class);
+        $this->beforeAction(RemoveController::class, 'pluginstore/remove', BaseUpdaterController::ACTION_FINISH, $data);
+    }
+
+    /**
+     * Composer actions that a controller's own flow never uses must not run, even for data signed with the global key.
+     * Project config syncs don't check `allowAdminChanges` or `allowUpdates`, and plugin removals don't check `allowUpdates`.
+     *
+     * @dataProvider unusedComposerActionDataProvider
+     */
+    public function testUnusedComposerActionsAreNotFound(string $class, string $controllerId, string $actionId): void
+    {
+        $this->loginAdmin();
+        $data = Craft::$app->getSecurity()->hashData(Json::encode([
+            'requirements' => ['foo/bar' => '1.0.0'],
+            'packageName' => 'foo/bar',
+        ]));
+
+        $this->expectException(NotFoundHttpException::class);
+        $this->beforeAction($class, $controllerId, $actionId, $data);
+    }
+
+    public static function unusedComposerActionDataProvider(): array
+    {
+        return [
+            'config-sync/composer-install' => [ConfigSyncController::class, 'config-sync', BaseUpdaterController::ACTION_COMPOSER_INSTALL],
+            'config-sync/composer-remove' => [ConfigSyncController::class, 'config-sync', BaseUpdaterController::ACTION_COMPOSER_REMOVE],
+            'pluginstore/remove/composer-install' => [RemoveController::class, 'pluginstore/remove', BaseUpdaterController::ACTION_COMPOSER_INSTALL],
+        ];
+    }
+
+    public function testUnsignedDataIsRejected(): void
+    {
+        $this->expectException(BadRequestHttpException::class);
+        $this->beforeAction(UpdaterController::class, 'updater', BaseUpdaterController::ACTION_FINISH, Json::encode([]));
+    }
+
+    public function testPrecheckWithoutPendingUpdate(): void
+    {
+        // updater/index hands out this data anonymously when there's nothing to update
+        $data = $this->indexData();
+
+        $this->expectException(BadRequestHttpException::class);
+        $this->expectExceptionMessage('Request contained invalid updater data.');
+        $this->runUpdaterAction(BaseUpdaterController::ACTION_PRECHECK, $data);
+    }
+
+    public function testPrecheckWithPendingUpdate(): void
+    {
+        $this->disableComposer();
         $data = Craft::$app->getSecurity()->hashData(Json::encode([
             'migrate' => ['craft'],
             'postPrecheckState' => ['nextAction' => UpdaterController::ACTION_BACKUP],
         ]));
-        $this->prepareRequest(['data' => $data]);
 
-        $response = $this->controller()->runAction(BaseUpdaterController::ACTION_PRECHECK);
+        $response = $this->runUpdaterAction(BaseUpdaterController::ACTION_PRECHECK, $data);
 
         self::assertSame(UpdaterController::ACTION_BACKUP, $response->data['nextAction']);
+        // Responses to globally signed data stay globally signed, so a pre-patch version can take the next step
+        self::assertNotFalse(Craft::$app->getSecurity()->validateData($response->data['data']));
     }
 
-    private function controller(): UpdaterController
+    private function beforeAction(string $class, string $controllerId, string $actionId, string $data): bool
     {
-        $controller = new UpdaterController('updater', Craft::$app);
+        $this->prepareRequest($data);
+        $controller = $this->controller($class, $controllerId);
+        return $controller->beforeAction($controller->createAction($actionId));
+    }
+
+    private function runUpdaterAction(string $actionId, string $data): mixed
+    {
+        $this->prepareRequest($data);
+        return $this->controller(UpdaterController::class, 'updater')->runAction($actionId);
+    }
+
+    /**
+     * Returns the updater data that updater/index embeds in the page.
+     */
+    private function indexData(): string
+    {
+        $this->prepareRequest(null);
+        $this->controller(UpdaterController::class, 'updater')->runAction('index');
+        $js = implode("\n", array_merge(...array_values(Craft::$app->getView()->js)));
+
+        self::assertSame(1, preg_match('/"data":("(?:[^"\\\\]|\\\\.)*")/', $js, $match), 'updater/index didn’t include updater data.');
+        return Json::decode($match[1]);
+    }
+
+    private function controller(string $class, string $id): BaseUpdaterController
+    {
+        /** @var BaseUpdaterController $controller */
+        $controller = new $class($id, Craft::$app);
         $controller->enableCsrfValidation = false;
         return $controller;
     }
 
-    private function prepareRequest(array $bodyParams): void
+    private function prepareRequest(?string $data): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $request = Craft::$app->getRequest();
         $request->setIsCpRequest(true);
-        $request->setBodyParams($bodyParams);
+        $request->setBodyParams($data !== null ? ['data' => $data] : []);
+    }
+
+    private function loginAdmin(): void
+    {
+        Craft::$app->getUser()->setIdentity(new User([
+            'id' => 1,
+            'admin' => true,
+        ]));
+    }
+
+    private function disableComposer(): void
+    {
+        putenv('PATH=' . sys_get_temp_dir() . '/craft-no-composer-' . uniqid());
+        Craft::$app->set('composer', new Composer());
     }
 
     protected function _before(): void
@@ -104,8 +287,9 @@ class UpdaterControllerTest extends TestCase
         $this->originalPath = getenv('PATH');
         $this->originalComposer = Craft::$app->getComposer();
         $this->originalRequestMethod = $_SERVER['REQUEST_METHOD'] ?? null;
-        putenv('PATH=' . sys_get_temp_dir() . '/craft-no-composer-' . uniqid());
-        Craft::$app->set('composer', new Composer());
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $this->originalAllowUpdates = $generalConfig->allowUpdates;
+        $this->originalAllowAdminChanges = $generalConfig->allowAdminChanges;
     }
 
     protected function _after(): void
@@ -116,6 +300,9 @@ class UpdaterControllerTest extends TestCase
         $request = Craft::$app->getRequest();
         $request->setIsCpRequest(null);
         $request->setBodyParams([]);
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig->allowUpdates = $this->originalAllowUpdates;
+        $generalConfig->allowAdminChanges = $this->originalAllowAdminChanges;
 
         if ($this->originalRequestMethod === null) {
             unset($_SERVER['REQUEST_METHOD']);

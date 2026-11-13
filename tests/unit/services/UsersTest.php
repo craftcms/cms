@@ -505,6 +505,21 @@ class UsersTest extends TestCase
         );
     }
 
+    public function testConsolePasswordResetUrlForCpUser(): void
+    {
+        $this->tester->mockCraftMethods('request', [
+            'getIsConsoleRequest' => true,
+            'getIsCpRequest' => false,
+        ]);
+
+        // Users without control panel access get the front-end path
+        self::assertStringContainsString('/setpassword?code=', $this->users->getPasswordResetUrl($this->activeUser));
+
+        // Users with control panel access get the control panel path
+        $this->activeUser->admin = true;
+        self::assertStringContainsString('/adminustriggerus/set-password?code=', $this->users->getPasswordResetUrl($this->activeUser));
+    }
+
 
     /**
      * @param string $desiredKey
