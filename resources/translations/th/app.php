@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'ไม่สามารถบันทึกไดรฟ์ข้อมูลได้',
     'Couldn’t save widget.' => 'ไม่สามารถบันทึกวิดเจ็ตได้',
     'Couldn’t save {type}.' => 'ไม่สามารถบันทึก {type} ได้',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'ไม่สามารถส่งอีเมลเปิดใช้งานได้: {error}',
     'Couldn’t suspend all users.' => 'ไม่สามารถระงับผู้ใช้ทั้งหมดได้',
     'Couldn’t suspend user.' => 'ไม่สามารถระงับผู้ใช้ได้',
