@@ -242,8 +242,15 @@ class UserPermissions extends Component
 
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-        $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
-        Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
+        $groupPath = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid;
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        // The Team group can exist in the database before it's in the project config
+        if ($projectConfig->get("$groupPath.name") === null) {
+            Craft::$app->getUserGroups()->saveGroup($group, false);
+        }
+
+        $projectConfig->set("$groupPath.permissions", $permissions, "Update permissions for user group “{$group->handle}”");
 
         // Fire an 'afterSaveGroupPermissions' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS)) {
