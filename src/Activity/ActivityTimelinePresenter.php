@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity;
 
+use CraftCms\Cms\Activity\Contracts\ActivityOperationTypeInterface;
 use CraftCms\Cms\Activity\Data\ActivityActor;
 use CraftCms\Cms\Activity\EventTypes\CommentCreated;
 use CraftCms\Cms\Activity\EventTypes\CommentDeleted;
@@ -148,6 +149,7 @@ class ActivityTimelinePresenter
                 'name' => $root->snapshots['site']['name'] ?? null,
             ],
             'origin' => ($isComment ? $root : $event)->snapshots['origin'] ?? null,
+            'operation' => $this->operation($root, $viewer),
             'component' => $event->eventType::component(),
             'props' => $event->eventType::props($event),
             'icon' => $this->activities->icon($event),
@@ -194,6 +196,27 @@ class ActivityTimelinePresenter
                 'canEdit' => $canEdit,
                 'canDelete' => ! $deleted && ($root->actorId === $viewer->id || $viewer->admin),
             ] : null,
+        ];
+    }
+
+    /**
+     * @return array{label: string, url: string|null}|null
+     */
+    private function operation(ActivityEvent $event, User $viewer): ?array
+    {
+        $snapshot = $event->snapshots['operation'] ?? null;
+
+        if ($event->operationId === null || $snapshot === null) {
+            return null;
+        }
+
+        $type = $snapshot['type'];
+
+        return [
+            'label' => (string) $snapshot['label'],
+            'url' => is_string($type) && is_a($type, ActivityOperationTypeInterface::class, true)
+                ? $type::url($event->operationId, $snapshot, $viewer)
+                : null,
         ];
     }
 }

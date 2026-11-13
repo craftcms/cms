@@ -28,6 +28,7 @@ use InvalidArgumentException;
  * @property string|null $subjectId
  * @property int|null $siteId
  * @property int|null $rootEventId
+ * @property string|null $operationId
  * @property array{snapshots: array<string, array<string, int|string>>, changes: list<array<string, mixed>>, data: array<string, mixed>} $payload
  * @property array<string, array<string, int|string>> $snapshots
  * @property list<ActivityChange> $changes
@@ -145,6 +146,16 @@ class ActivityEvent extends BaseModel
     protected function rootEvent(Builder $query, self|int $rootEvent): Builder
     {
         return $query->where('rootEventId', $rootEvent instanceof self ? $rootEvent->id : $rootEvent);
+    }
+
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    #[Scope]
+    protected function operation(Builder $query, string $operationId): Builder
+    {
+        return $query->where('operationId', $operationId);
     }
 
     /**
