@@ -154,6 +154,7 @@ describe('system Composer', function () {
         app()->forgetScopedInstances();
 
         expect(app(Composer::class)->getIsAvailableForUi())->toBe($available)
+            ->and(app(Composer::class)->getUnavailableReason(forUi: true) === null)->toBe($available)
             ->and(File::get($this->directory.'/probes'))->toBe('probe\n')
             ->and(app(Composer::class)->getIsAvailable())->toBe(! $available);
 

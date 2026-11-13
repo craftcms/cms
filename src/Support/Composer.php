@@ -79,9 +79,11 @@ class Composer
         }
     }
 
-    public function getUnavailableReason(): ?string
+    public function getUnavailableReason(bool $forUi = false): ?string
     {
-        return $this->getIsAvailable() ? null : t('Composer {version} or later must be installed and available in the PATH environment variable.', [
+        $available = $forUi ? $this->getIsAvailableForUi() : $this->getIsAvailable();
+
+        return $available ? null : t('Composer {version} or later must be installed and available in the PATH environment variable.', [
             'version' => self::MIN_VERSION,
         ]);
     }
