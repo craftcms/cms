@@ -8,8 +8,8 @@
 // Options, all optional, and changed later with __shot.set({...}):
 //   theme      'light' or 'dark'. Held against the person's own preference,
 //              which the control panel reapplies on Inertia visits.
-//   inset      true to set the whole page in 24px from the window's edges,
-//              out of reach of the extension's border.
+//   inset      true to set the whole page in EDGE (96px) from the window's
+//              edges, out of reach of the extension's glow.
 //   feature    A selector for the feature to isolate; everything else is
 //              hidden, over `bg`.
 //   bg         The color behind an isolated feature: '#000', '#fff', or a
@@ -38,21 +38,25 @@
   let realTitle =
     document.title === TARGET ? window.__shot?.realTitle() : document.title;
 
+  // How far in from the window's edges the extension's glow stays out of a
+  // capture. It pulses out to about 60px, with a faint tail to about 87px.
+  const EDGE = 96;
+
   // Everything that sizes itself from the window moves in with #app: the
   // sidebar and the details pane through the variable the control panel
   // subtracts from 100dvh, and what lives outside #app explicitly.
   const INSET = `
-    #app { position: fixed !important; inset: 24px !important; overflow: hidden !important; transform: translateZ(0); }
-    .page-screen { --cp-debug-bar-height: 48px !important; }
-    .cp-content__details-pane { --cp-debug-bar-height: 24px !important; }
+    #app { position: fixed !important; inset: ${EDGE}px !important; overflow: hidden !important; transform: translateZ(0); }
+    .page-screen { --cp-debug-bar-height: ${EDGE * 2}px !important; }
+    .cp-content__details-pane { --cp-debug-bar-height: ${EDGE}px !important; }
     .cp-sidebar__footer { --cp-debug-bar-height: 0px !important; }
-    #messages { --cp-messages-inset: calc(var(--c-spacing-md) + 24px); }
-    @media (width < calc(600rem / 16)) { #messages { --cp-messages-inset: calc(16rem / 16 + 24px); } }
-    .live-preview { inset: 24px !important; width: auto !important; height: auto !important; overflow: hidden !important; transform: translateZ(0); }
+    #messages { --cp-messages-inset: calc(var(--c-spacing-md) + ${EDGE}px); }
+    @media (width < calc(600rem / 16)) { #messages { --cp-messages-inset: calc(16rem / 16 + ${EDGE}px); } }
+    .live-preview { inset: ${EDGE}px !important; width: auto !important; height: auto !important; overflow: hidden !important; transform: translateZ(0); }
     body:has(> .live-preview:not([style*="display: none"])) > #app { visibility: hidden !important; }
     :is(craft-dialog, craft-element-selector-modal)[fullscreen] {
-      --c-dialog-inline-size: calc(100vw - 48px); --c-dialog-min-inline-size: calc(100vw - 48px); --c-dialog-max-inline-size: calc(100vw - 48px);
-      --c-dialog-block-size: calc(100dvh - 48px); --c-dialog-min-block-size: calc(100dvh - 48px); --c-dialog-max-block-size: calc(100dvh - 48px);
+      --c-dialog-inline-size: calc(100vw - ${EDGE * 2}px); --c-dialog-min-inline-size: calc(100vw - ${EDGE * 2}px); --c-dialog-max-inline-size: calc(100vw - ${EDGE * 2}px);
+      --c-dialog-block-size: calc(100dvh - ${EDGE * 2}px); --c-dialog-min-block-size: calc(100dvh - ${EDGE * 2}px); --c-dialog-max-block-size: calc(100dvh - ${EDGE * 2}px);
     }
   `;
 
