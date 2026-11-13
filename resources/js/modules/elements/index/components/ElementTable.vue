@@ -344,6 +344,10 @@
     white-space: normal;
   }
 
+  :deep(.cp-table-cell .inline-chips) {
+    flex-wrap: nowrap;
+  }
+
   :deep(.cp-table-cell) {
     width: min-content;
   }
