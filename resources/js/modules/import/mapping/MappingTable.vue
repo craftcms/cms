@@ -102,7 +102,7 @@
         },
         cell: ({row}) =>
           row.original.kind === 'heading'
-            ? h('strong', row.original.label)
+            ? h('span', row.original.label)
             : h(DestinationCell, {col: row.original.col}),
       }),
       columnHelper.display({
@@ -247,6 +247,11 @@
   .mapping-table :deep(.mapping-table__heading-row > *) {
     height: auto;
     vertical-align: middle;
-    background-color: var(--c-color-neutral-fill-quiet);
+    /* as a plan's steps on the import plans index */
+    background-color: color-mix(
+      in srgb,
+      var(--c-surface-sunken) 50%,
+      var(--c-surface-default)
+    );
   }
 </style>

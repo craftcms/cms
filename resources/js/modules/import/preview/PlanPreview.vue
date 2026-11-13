@@ -308,7 +308,7 @@
           meta: {columnClass: 'plan-preview__match-col'},
           cell: ({row}) =>
             row.original.match[column.key]
-              ? h('code', {class: 'text-sm'}, row.original.match[column.key])
+              ? h('code', row.original.match[column.key])
               : null,
         })
       ),

@@ -14,6 +14,7 @@
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import {uuid} from '@/common/craft/strings';
   import type {ImportStep} from '@/modules/import/mapping/types';
+  import type {StepRunState} from '@/modules/import/run/run-state';
   import {openStepMapping} from './step-mapping';
   import {openStepSlideout, type StepSummary} from './step-slideout';
   import StepCard from './StepCard.vue';
@@ -26,6 +27,8 @@
     errors?: Record<string, string[]>;
     /** Each saved step's own page, by its uid. */
     stepEditUrls?: Record<string, string>;
+    /** Where each step of the plan's latest run has got, by its uid. */
+    runSteps?: Record<string, StepRunState>;
   }>();
 
   const steps = defineModel<ImportStep[]>({required: true});
@@ -289,6 +292,7 @@
       :invalid="Boolean(errorsByStep[step.uid])"
       :opening="openingFor(step.uid)"
       :over="getDropState(step.uid).type === 'is-over'"
+      :run="runSteps?.[step.uid] ?? null"
       @edit="edit(step, $event)"
       @edit-mapping="editMapping(step, $event)"
       @toggle-enabled="toggleEnabled(step)"

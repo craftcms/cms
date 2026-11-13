@@ -13,6 +13,7 @@ import {
   validateStep as validateStepAction,
 } from '@actions/Import/ImportPlansController';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
+import type {ActionItems} from '@/common/types';
 import {
   createContextRegistry,
   openContextSlideout,
@@ -42,11 +43,19 @@ export interface StepSlideoutContext {
   editUrl?: string | null;
   /** The submit button's label: Apply in a slideout, Save on the step's own page. */
   submitLabel?: string;
+  /** Offers Save and continue editing beside the submit button, as the step's own page does. */
+  canContinueEditing?: boolean;
+  /** More items for the submit button's menu, after the built-in ones. */
+  formActions?: ActionItems;
   /**
    * Hands the step back. On the step's own page this saves its plan, and rejects with a
    * {@link StepSaveError} when the plan can't be saved, which keeps the form open.
    */
-  apply(step: ImportStep, summary: StepSummary): void | Promise<void>;
+  apply(
+    step: ImportStep,
+    summary: StepSummary,
+    options?: {continueEditing: boolean}
+  ): void | Promise<void>;
 }
 
 /**

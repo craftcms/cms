@@ -493,7 +493,22 @@ it('applies the step and lets the slideout close once it validates', async () =>
     {
       settings: [],
       destinationLabels: {title: {label: 'Title', handle: 'title'}},
-    }
+    },
+    {continueEditing: false}
+  );
+});
+
+it('asks to continue editing when saved with Save and continue editing', async () => {
+  mount(true);
+  state.validateStep.mockResolvedValue(undefined);
+
+  // the shell's Save and continue editing saves without redirecting
+  await state.layout.mock.calls.at(-1)![0].onSave({redirect: false});
+
+  expect(state.context.apply).toHaveBeenCalledWith(
+    expect.anything(),
+    expect.anything(),
+    {continueEditing: true}
   );
 });
 
@@ -568,6 +583,7 @@ it('applies the mapping as it’s edited in place, with the form’s settings', 
         map: {title: 'name'},
       }),
     }),
+    expect.anything(),
     expect.anything()
   );
 });

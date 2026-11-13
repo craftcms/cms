@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Carbon\CarbonImmutable;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportChunkFinished;
 use CraftCms\Cms\Import\Events\ImportChunkStarted;
@@ -247,6 +249,27 @@ it('flags the run and the step as having failures when an item in an import job 
         ->and(Cache::has(FinishImport::stepHasFailuresCacheKey('run-id', 'step-1')))->toBeTrue()
         ->and(Cache::has(FinishImport::stepHasFailuresCacheKey('run-id', 'step-2')))->toBeFalse();
     Event::assertDispatched(fn (ImportChunkFinished $event) => $event->hasFailures);
+});
+
+it('records each validation error of an item that couldn’t be saved in the run state', function () {
+    Event::fake([ImportChunkFinished::class]);
+    Event::listen(ItemImporting::class, function () {
+        $entry = new Entry(['id' => 317]);
+        $entry->errors()->add('title', 'Title cannot be blank.');
+
+        throw new InvalidElementException($entry, 'Unable to save element being imported.');
+    });
+
+    $import = app(Import::class);
+    $import->dispatchImport($this->importPlan);
+    ($this->runJob)();
+
+    expect($import->runState($this->importPlan)['steps']['step-1']['errors'][0])->toBe([
+        'item' => 1,
+        'message' => 'Unable to save element being imported.',
+        'elementId' => 317,
+        'problems' => [['path' => [], 'message' => 'Title cannot be blank.']],
+    ]);
 });
 
 it('skips the first chunk of a step whose source is invalid', function () {

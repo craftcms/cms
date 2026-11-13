@@ -23,6 +23,7 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
@@ -33,8 +34,12 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
+use function Pest\Laravel\deleteJson;
+use function Pest\Laravel\get;
+use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
 beforeEach(function () {
@@ -513,6 +518,41 @@ it('lists a registered import plan alongside the saved ones, keyed by its regist
         ->and($imports->getImportPlanByHandle('registeredImport')?->isEditable())->toBeFalse();
 });
 
+it('saves an import plan and starts it running, then goes back to the plan to watch', function () {
+    Bus::fake();
+
+    ($this->saveImportPlan)([($this->entryStep)()], ['run' => true])
+        ->assertOk()
+        ->assertJsonPath('message', 'Import plan saved and started.')
+        ->assertJsonPath('redirect', route('craft.cp.import.edit', ['handle' => 'fixtureImport']));
+
+    Bus::assertDispatchedTimes(ImportPipeline::class, 1);
+});
+
+it('saves an import plan that is already running without starting it again', function () {
+    Bus::fake();
+    ($this->createImportPlan)('Fixture Import', 'fixtureImport');
+    $saved = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
+
+    ($this->saveImportPlan)([($this->entryStep)()], ['uid' => $saved->uid, 'name' => 'Renamed', 'run' => true])
+        ->assertOk()
+        ->assertJsonPath('message', 'Import plan saved. It’s already running, so it wasn’t started again.');
+
+    expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport')->name)->toBe('Renamed');
+    Bus::assertDispatchedTimes(ImportPipeline::class, 1);
+});
+
+it('won’t save and run an import plan for someone who can’t run them', function () {
+    Bus::fake();
+    actingAs(UserModel::factory()->withPermissions(['accessCp', 'viewImportPlans', 'saveImportPlans'])->createElement());
+
+    ($this->saveImportPlan)([($this->entryStep)()], ['run' => true])->assertForbidden();
+
+    expect(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->toBeNull();
+    Bus::assertNotDispatched(ImportPipeline::class);
+});
+
 it('refuses to run an import plan that is already running', function () {
     Bus::fake();
     ($this->createImportPlan)('Fixture Import', 'fixtureImport');
@@ -522,6 +562,124 @@ it('refuses to run an import plan that is already running', function () {
         ->assertJsonPath('message', 'This import plan is already running.');
 
     Bus::assertDispatchedTimes(ImportPipeline::class, 1);
+});
+
+it('lists which import plans are running', function () {
+    Bus::fake();
+    ($this->createImportPlan)('Running Import', 'runningImport');
+    ($this->createImportPlan)('Idle Import', 'idleImport');
+
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'runningImport'])->assertOk();
+
+    get(action([ImportPlansController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('editableImportPlans.0.handle', 'runningImport')
+            ->where('editableImportPlans.0.running', true)
+            // nothing to show until the queue picks it up
+            ->where('editableImportPlans.0.progress', null)
+            ->where('editableImportPlans.0.run.status', 'pending')
+            ->where('editableImportPlans.1.handle', 'idleImport')
+            ->where('editableImportPlans.1.running', false)
+            ->where('editableImportPlans.1.progress', null));
+});
+
+it('lists how many fields each step maps, and what it does with rows it matches', function () {
+    $mapping = ['title' => 'title', 'slug' => '', 'plainText' => ['nested' => '']];
+    $matching = ($this->entryStep)(['map' => $mapping, 'matchCriteria' => ['title' => '1'], 'matchMode' => 'updateOnly']);
+    $notMatching = ($this->entryStep)(['map' => $mapping]);
+    expect(app(ImportPlans::class)->saveImportPlan(
+        new ImportPlanData(['editable' => true])->name('Fixture Import')->handle('fixtureImport')->steps([$matching, $notMatching]),
+    ))->toBeTrue();
+
+    get(action([ImportPlansController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('editableImportPlans.0.steps.0.mappedFields', 1)
+            ->where('editableImportPlans.0.steps.0.matchMode', 'updateOnly')
+            ->where('editableImportPlans.0.steps.1.matchMode', null));
+});
+
+it('lists how far a running import plan has got across its enabled steps', function () {
+    Bus::fake();
+    $steps = [($this->entryStep)(), ($this->entryStep)(overrides: ['enabled' => false]), ($this->entryStep)()];
+    expect(app(ImportPlans::class)->saveImportPlan(
+        new ImportPlanData(['editable' => true])->name('Fixture Import')->handle('fixtureImport')->steps($steps),
+    ))->toBeTrue();
+
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
+
+    // the first of its two enabled steps finished, and halfway through the second
+    $plan = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
+    ImportFacade::recordStepFinished($plan, $steps[0]['uid'], false);
+    ImportFacade::recordRunProgress($plan, $steps[2]['uid'], 5, 10);
+
+    get(action([ImportPlansController::class, 'index']))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('editableImportPlans.0.progress', 75));
+});
+
+it('reports a finished run, and each of its steps, as completed', function () {
+    $step = ($this->entryStep)(['map' => ['title' => 'title']]);
+    expect(app(ImportPlans::class)->saveImportPlan(
+        new ImportPlanData(['editable' => true])->name('Fixture Import')->handle('fixtureImport')->steps([$step]),
+    ))->toBeTrue();
+
+    // the tests' queue runs the whole import within the request
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
+
+    getJson(action([ImportPlansController::class, 'runState'], ['handle' => 'fixtureImport']))
+        ->assertJsonPath('runState.status', 'completed')
+        ->assertJsonPath('runState.progress', 100)
+        ->assertJsonPath("runState.steps.{$step['uid']}", ['status' => 'completed', 'progress' => 100, 'errors' => [], 'errorCount' => 0]);
+});
+
+it('reports where each step of an import plan’s latest run got to, and how the run ended', function () {
+    Bus::fake();
+    $steps = [($this->entryStep)(), ($this->entryStep)(), ($this->entryStep)(overrides: ['enabled' => false])];
+    expect(app(ImportPlans::class)->saveImportPlan(
+        new ImportPlanData(['editable' => true])->name('Fixture Import')->handle('fixtureImport')->steps($steps),
+    ))->toBeTrue();
+    $plan = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
+    $runState = fn () => getJson(action([ImportPlansController::class, 'runState'], ['handle' => 'fixtureImport']))->assertOk();
+
+    postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
+
+    $runState()->assertExactJson(['runState' => [
+        'status' => 'pending',
+        'progress' => 0,
+        'steps' => [
+            $steps[0]['uid'] => ['status' => 'pending', 'progress' => 0, 'errors' => [], 'errorCount' => 0],
+            $steps[1]['uid'] => ['status' => 'pending', 'progress' => 0, 'errors' => [], 'errorCount' => 0],
+        ],
+    ]]);
+
+    ImportFacade::recordStepStarted($plan, $steps[0]['uid']);
+
+    $runState()
+        ->assertJsonPath('runState.status', 'running')
+        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.status", 'running');
+
+    ImportFacade::recordItemFailed($plan, $steps[0]['uid'], 4, 'Title cannot be blank.', 12, [['path' => [], 'message' => 'Title cannot be blank.']]);
+    ImportFacade::recordStepFinished($plan, $steps[0]['uid'], true);
+    ImportFacade::recordRunProgress($plan, $steps[1]['uid'], 3, 10);
+
+    $runState()
+        ->assertJsonPath('runState.progress', 65)
+        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.status", 'failed')
+        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.errors", [[
+            'item' => 4,
+            'message' => 'Title cannot be blank.',
+            'elementId' => 12,
+            'problems' => [['path' => [], 'message' => 'Title cannot be blank.']],
+        ]])
+        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.errorCount", 1)
+        ->assertJsonPath("runState.steps.{$steps[1]['uid']}.status", 'running')
+        ->assertJsonPath("runState.steps.{$steps[1]['uid']}.progress", 30);
+
+    // let go of without finishing, as when its jobs are canceled
+    ImportFacade::unlock($plan);
+
+    $runState()
+        ->assertJsonPath('runState.status', 'failed')
+        ->assertJsonPath("runState.steps.{$steps[1]['uid']}.status", 'failed');
 });
 
 it('saves the order the editable import plans are put in', function () {
@@ -569,6 +727,38 @@ it('saves a duplicated import plan like any other new one, with fresh step uids'
             array_map(fn ($step) => $step->uid, $event->importPlan->steps),
             array_map(fn ($step) => $step->uid, $original->steps),
         ) === []);
+});
+
+it('duplicates and deletes several import plans at once', function () {
+    ($this->createImportPlan)('Alpha', 'alpha');
+    ($this->createImportPlan)('Bravo', 'bravo');
+    $plans = app(ImportPlans::class);
+    $uids = [$plans->getImportPlanByHandle('alpha')->uid, $plans->getImportPlanByHandle('bravo')->uid];
+
+    postJson(action([ImportPlansController::class, 'duplicate']), ['uids' => $uids])
+        ->assertOk()
+        ->assertJsonPath('message', '2 import plans duplicated.');
+
+    expect($plans->getEditableImportPlans()->pluck('handle')->values()->all())
+        ->toBe(['alpha', 'bravo', 'alpha2', 'bravo2']);
+
+    deleteJson(action([ImportPlansController::class, 'destroy']), ['uids' => $uids])
+        ->assertOk()
+        ->assertJsonPath('message', '2 import plans deleted.');
+
+    expect($plans->getEditableImportPlans()->pluck('handle')->values()->all())
+        ->toBe(['alpha2', 'bravo2']);
+});
+
+it('deletes none of several import plans when one of them can’t be deleted', function () {
+    ($this->createImportPlan)('Alpha', 'alpha');
+    $plans = app(ImportPlans::class);
+
+    deleteJson(action([ImportPlansController::class, 'destroy']), [
+        'uids' => [$plans->getImportPlanByHandle('alpha')->uid, Str::uuid()->toString()],
+    ])->assertNotFound();
+
+    expect($plans->getImportPlanByHandle('alpha'))->not->toBeNull();
 });
 
 it('rejects reordering an import plan that doesn’t exist', function () {
@@ -743,9 +933,9 @@ describe('step pages', function () {
             ->assertInertia(fn ($page) => $page
                 ->where("stepSummaries.$uid.destinationLabels.title", ['label' => 'Title', 'handle' => 'title', 'icon' => 'i-cursor'])
                 ->where("stepSummaries.$uid.settings", [
-                    ['label' => 'Site', 'value' => Sites::getPrimarySite()->name],
-                    ['label' => 'Section', 'value' => $this->section->name],
-                    ['label' => 'Entry Type', 'value' => $this->entryType->name],
+                    ['key' => 'site', 'label' => 'Site', 'value' => Sites::getPrimarySite()->name],
+                    ['key' => 'section', 'label' => 'Section', 'value' => $this->section->name],
+                    ['key' => 'entryType', 'label' => 'Entry Type', 'value' => $this->entryType->name],
                 ]));
     });
 
@@ -776,14 +966,51 @@ describe('step pages', function () {
             ->and(($this->plan)()->steps)->toHaveCount(1);
     });
 
-    it('lands back on the step it saved', function () {
+    it('returns a saved step by its plan and uid', function () {
+        $step = ($this->plan)()->serializeSteps()[0];
+
+        $this->getJson(action([ImportPlansController::class, 'showStep'], ['planUid' => ($this->plan)()->uid, 'uid' => $step['uid']]))
+            ->assertOk()
+            ->assertJsonPath('step', $step);
+    });
+
+    it('can’t return a step its plan doesn’t have', function () {
+        $this->getJson(action([ImportPlansController::class, 'showStep'], ['planUid' => ($this->plan)()->uid, 'uid' => Str::uuid()->toString()]))
+            ->assertNotFound();
+    });
+
+    it('deletes a step from its plan and goes back to the plan', function () {
+        $added = ($this->entryStep)();
+        ($this->saveStep)($added)->assertOk();
+        $deleted = ($this->plan)()->steps[0]->uid;
+
+        $this->post(action([ImportPlansController::class, 'destroyStep']), [
+            'planUid' => ($this->plan)()->uid,
+            'uid' => $deleted,
+        ])->assertRedirect(route('craft.cp.import.edit', ['handle' => 'fixtureImport']));
+
+        expect(array_map(fn ($step) => $step->uid, ($this->plan)()->steps))->toBe([$added['uid']]);
+
+        $this->postJson(action([ImportPlansController::class, 'destroyStep']), [
+            'planUid' => ($this->plan)()->uid,
+            'uid' => $deleted,
+        ])->assertNotFound();
+    });
+
+    it('goes back to the plan once the step is saved, or stays on the step to continue editing it', function (bool $continueEditing, string $route) {
         $step = ($this->entryStep)();
 
         $this->post(action([ImportPlansController::class, 'storeStep']), [
             'planUid' => ($this->plan)()->uid,
             'step' => $step,
-        ])->assertRedirect(route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $step['uid']]));
-    });
+            'continueEditing' => $continueEditing,
+        ])->assertRedirect($route === 'step'
+            ? route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $step['uid']])
+            : route('craft.cp.import.edit', ['handle' => 'fixtureImport']));
+    })->with([
+        'save' => [false, 'plan'],
+        'save and continue editing' => [true, 'step'],
+    ]);
 });
 
 /**

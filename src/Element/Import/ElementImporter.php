@@ -672,10 +672,29 @@ abstract class ElementImporter extends BaseImporter
      */
     public static function describeErrors(ElementInterface $element): array
     {
-        return array_values(array_unique(array_map(
+        return array_map(
             fn (array $error): string => ($error['path'] === [] ? '' : implode(' › ', $error['path']).': ').$error['message'],
-            self::collectErrors($element),
-        )));
+            self::listErrors($element),
+        );
+    }
+
+    /**
+     * Returns an element's validation errors, each with where it is as labels, e.g. `['Content', 'Step group 3']`.
+     *
+     * @return list<array{path: list<string>, message: string}>
+     */
+    public static function listErrors(ElementInterface $element): array
+    {
+        $errors = [];
+
+        foreach (self::collectErrors($element) as $error) {
+            $errors[implode(' › ', $error['path']).'|'.$error['message']] ??= [
+                'path' => $error['path'],
+                'message' => $error['message'],
+            ];
+        }
+
+        return array_values($errors);
     }
 
     /**

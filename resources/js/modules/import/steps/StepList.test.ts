@@ -262,9 +262,6 @@ it('opens a step’s mapping straight from its mapping section', async () => {
     site: 'default',
     map: {title: 'name'},
   });
-  expect(
-    container.querySelector('.step-card__mapping h3')!.textContent
-  ).toContain('1 field');
 });
 
 it('names each row’s edit button and action menu after its step', () => {

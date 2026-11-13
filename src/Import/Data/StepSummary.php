@@ -22,7 +22,7 @@ use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 readonly class StepSummary implements JsonSerializable
 {
     /**
-     * @param  list<array{label: string, value: string}>  $settings
+     * @param  list<array{key: string, label: string, value: string}>  $settings
      * @param  array<string, array{label: string, handle: string, icon: string|null}>  $destinationLabels  Keyed by each column's top-level key in the step's map, and by its handle.
      */
     public function __construct(
@@ -50,7 +50,7 @@ readonly class StepSummary implements JsonSerializable
      * Each shown setting with a value, as its field's label and the value's label, read from
      * the importer type's own settings form.
      *
-     * @return list<array{label: string, value: string}>
+     * @return list<array{key: string, label: string, value: string}>
      */
     private static function settings(BaseImporter $importer): array
     {
@@ -68,7 +68,7 @@ readonly class StepSummary implements JsonSerializable
     /**
      * @param  list<NodePayload>  $nodes
      * @param  array<array-key, mixed>  $values
-     * @return list<array{label: string, value: string}>
+     * @return list<array{key: string, label: string, value: string}>
      */
     private static function nodeSettings(array $nodes, array $values): array
     {
@@ -83,7 +83,11 @@ readonly class StepSummary implements JsonSerializable
                 $value = self::valueLabel(data_get($values, $node->control->path), $node->control->props['options'] ?? null);
 
                 if ($value !== null) {
-                    $settings[] = ['label' => (string) $node->props['label'], 'value' => $value];
+                    $settings[] = [
+                        'key' => implode('.', $node->control->path),
+                        'label' => (string) $node->props['label'],
+                        'value' => $value,
+                    ];
                 }
             }
 

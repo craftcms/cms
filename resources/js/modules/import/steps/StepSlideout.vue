@@ -66,8 +66,11 @@
     submitButtonLabel: context.submitLabel ?? t('Apply'),
     editUrl: context.editUrl ?? null,
     form,
-    defaultFormActions: [],
-    onSave: done,
+    defaultFormActions: context.canContinueEditing
+      ? ['saveAndContinueEditing']
+      : [],
+    formActions: context.formActions,
+    onSave: (options) => done({continueEditing: options?.redirect === false}),
   }));
 
   /**
@@ -330,7 +333,9 @@
     await showErrors(own);
   }
 
-  async function done(): Promise<void> {
+  async function done(
+    options: {continueEditing: boolean} = {continueEditing: false}
+  ): Promise<void> {
     syncFromForm();
     errors.value = [];
     saveErrors.value = {};
@@ -353,7 +358,8 @@
     try {
       await context.apply(
         JSON.parse(JSON.stringify(step.value)) as ImportStep,
-        summary.value
+        summary.value,
+        options
       );
     } catch (error) {
       if (!(error instanceof StepSaveError)) {

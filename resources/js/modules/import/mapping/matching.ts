@@ -6,6 +6,17 @@ import type {MappingColumn, MappingValues} from './types';
 
 export const DEFAULT_MATCH_MODE = 'createAndUpdate';
 
+/** Each mode, as a step's summary names it. */
+export function matchModeLabel(mode: string): string | null {
+  const labels: Record<string, string> = {
+    createOnly: t('Create new only'),
+    createAndUpdate: t('Create and update'),
+    updateOnly: t('Update existing only'),
+  };
+
+  return labels[mode] ?? null;
+}
+
 export function matchModes(): Array<{
   value: string;
   label: string;

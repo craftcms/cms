@@ -125,6 +125,7 @@
   }
 
   .step-mapping-summary__scroll {
+    margin-block-start: var(--c-spacing-sm);
     overflow-x: auto;
   }
 

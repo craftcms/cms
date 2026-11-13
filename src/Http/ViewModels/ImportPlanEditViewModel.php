@@ -36,7 +36,26 @@ class ImportPlanEditViewModel extends ViewModel
         private readonly Import $importService,
         private readonly UiResolver $uiResolver,
         private readonly bool $canSave = true,
+        private readonly bool $canRun = false,
+        /** @var array<string, mixed>|null */
+        private readonly ?array $deleteAction = null,
     ) {}
+
+    /**
+     * The request that deletes the plan, once it's confirmed, or null when it can't be deleted.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function deleteAction(): ?array
+    {
+        return $this->deleteAction;
+    }
+
+    /** Whether the plan can be saved and run in one go. */
+    public function canRun(): bool
+    {
+        return $this->canSave && $this->canRun;
+    }
 
     public function ui(): UiPayload
     {
@@ -84,6 +103,16 @@ class ImportPlanEditViewModel extends ViewModel
             'label' => $type::displayName(),
             'value' => $type,
         ], $this->importService->getAllImporterTypes());
+    }
+
+    /**
+     * Where the plan's latest run has got, overall and step by step; the page follows it from here.
+     *
+     * @return array{status: string, progress: int, steps: array<string, array{status: string, progress: int}>}|null
+     */
+    public function runState(): ?array
+    {
+        return $this->importPlan->uid ? $this->importService->runState($this->importPlan) : null;
     }
 
     /**

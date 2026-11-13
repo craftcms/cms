@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Jobs;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Exceptions\InvalidElementException;
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportChunkFinished;
 use CraftCms\Cms\Import\Events\ImportChunkStarted;
@@ -97,6 +99,11 @@ class Import extends Job
         }
 
         $stepLabel = ImportFacade::stepLabel($this->importPlan, $step);
+
+        // before the source is read, which can take a while, so the run no longer shows as waiting for the queue
+        if ($this->start === 0) {
+            ImportFacade::recordStepStarted($this->importPlan, $this->stepUid);
+        }
 
         try {
             // the file is only checked by the first chunk; later chunks read the items it stored on the import disk
@@ -200,9 +207,18 @@ class Import extends Job
                 Cache::put(FinishImport::hasFailuresCacheKey($this->runId), true, now()->addDay());
                 Cache::put(FinishImport::stepHasFailuresCacheKey($this->runId, $this->stepUid), true, now()->addDay());
                 $chunkHasFailures = true;
+                ImportFacade::recordItemFailed(
+                    $this->importPlan,
+                    $this->stepUid,
+                    $this->start + $processedCount,
+                    $e->getMessage(),
+                    $e instanceof InvalidElementException ? $e->element->id : null,
+                    $e instanceof InvalidElementException ? ElementImporter::listErrors($e->element) : [],
+                );
             }
 
             $itemNumber = $this->start + $processedCount;
+            ImportFacade::recordRunProgress($this->importPlan, $this->stepUid, $itemNumber, $totalCount);
             $this->setProgress(
                 (int) (($itemNumber / $totalCount) * 100),
                 I18N::prep('{step, number} of {total, number}', ['step' => $itemNumber, 'total' => $totalCount]),

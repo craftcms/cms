@@ -82,6 +82,8 @@ class ImportPipeline extends Job
                     $itemsFailed = (bool) Cache::pull(FinishImport::stepHasFailuresCacheKey($runId, $stepUid));
                     $step = collect($importPlan->steps ?? [])->firstWhere('uid', $stepUid);
 
+                    app(ImportService::class)->recordStepFinished($importPlan, $stepUid, $batch->hasFailures() || $itemsFailed);
+
                     if ($step !== null) {
                         event(new ImportStepFinished($importPlan, $step, $runId, $batch->hasFailures() || $itemsFailed));
                     }

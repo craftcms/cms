@@ -46,6 +46,8 @@ class FinishImport extends Job
 
         $hasFailures = (bool) Cache::pull(self::hasFailuresCacheKey($this->runId));
 
+        // before the lock goes, so the run is never seen unlocked and unfinished
+        app(Import::class)->recordRunFinished($this->importPlan, $hasFailures);
         Import::releaseRunLock($this->importPlan, $this->runId);
 
         event(new ImportFinished($this->importPlan, $this->importPlan->steps ?? [], $this->runId, $hasFailures));
