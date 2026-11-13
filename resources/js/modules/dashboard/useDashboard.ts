@@ -347,13 +347,19 @@ export function useDashboard(props: {
 
     busy.value = true;
 
+    // Shown while it saves, so a failed save changes the color back,
+    // and with it the color select, which keeps whatever was picked.
+    const show = (value: CraftCms.Cms.Shared.Enums.Color | null) => {
+      widgets.value = widgets.value.map((current) =>
+        current.id === widget.id ? {...current, color: value} : current
+      );
+    };
+    show(color);
+
     try {
       await actionClient.post(updateColor.url(), {id: widget.id, color});
-
-      widgets.value = widgets.value.map((current) =>
-        current.id === widget.id ? {...current, color} : current
-      );
     } catch {
+      show(widget.color);
       messages.error(t('Couldn’t save widget.'));
     } finally {
       busy.value = false;
