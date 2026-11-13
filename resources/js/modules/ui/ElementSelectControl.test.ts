@@ -495,6 +495,45 @@ describe('ElementSelectControl', () => {
     expect(updates).toEqual([[5, 9]]);
   });
 
+  it.each([
+    {limit: null, focused: 'the add button'},
+    {limit: 2, focused: 'the chosen element'},
+  ])(
+    'returns focus to $focused after choosing with a limit of $limit',
+    async ({limit}) => {
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({limit}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await nextTick();
+
+      addButton(container)!.click();
+      await flushSelector();
+      const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+      settings.onSelect([{id: 9, label: 'Another entry', siteId: 1}]);
+      await nextTick();
+
+      const target: HTMLElement = settings.triggerElement();
+      if (limit === null) {
+        expect(target).toBe(addButton(container));
+      } else {
+        expect(addButton(container)).toBeNull();
+        expect(target.closest('[data-id]')?.getAttribute('data-id')).toBe('9');
+      }
+    }
+  );
+
   it('keeps the newest refetch of a saved element when answers arrive out of order', async () => {
     const answers: Array<(label: string) => void> = [];
     const root = await mount();
