@@ -1123,7 +1123,7 @@ class Html
                         return $match[0];
                     }, $match[2]);
                 if ($withClasses) {
-                    $html = preg_replace("/(?<![\\d'\"])\\.(-?[a-zA-Z_][\\w\\-]*)(?=[\\s,{.:\\[>+~])/", ".$namespace-$1", $html);
+                    $html = preg_replace("/(?<!['\"])\\.((?:--|-?[a-zA-Z_])[\\w\\-]*)(?=[\\s,{.:\\[>+~])/", ".$namespace-$1", $html);
                 }
 
                 return $match[1].$html.$match[3];
