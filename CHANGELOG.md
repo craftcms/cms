@@ -59,7 +59,7 @@
 - Added `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()`, `immediateTransforms()`, and `IMMEDIATE_TRANSFORMS_CONTEXT`, which apply to every asset transform driver. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Element details panels registered with `Cp.$elementDetailsPanels.register()` can now pass `iconSvg`, to show their own SVG icon in place of a named one. ([#20615](https://github.com/craftcms/cms/pull/20615))
 - Deprecated `CraftCms\Cms\Image\CraftAssetTransformDriver::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT`. `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT` should be used instead. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
-- Fixed a bug where element selector modals showed structure elements at the same level as their parents in the “Display in a structured table” view mode.
+- Fixed a bug where element selector modals showed structure elements at the same level as their parents in the “Display in a structured table” view mode. ([#20664](https://github.com/craftcms/cms/pull/20664))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
