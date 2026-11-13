@@ -144,7 +144,7 @@
       : t('Compare {element}', markers);
 
     return message.replace(
-      /(?:(\S+)\s+)?(\w+)/g,
+      /(?:([^\s\uE000]+)\s+)?(\w+)/g,
       (_match, word: string | undefined, key: string) =>
         word
           ? `<span class="compare__pair">${word} ${chips[key]}</span>`
