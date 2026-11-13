@@ -642,10 +642,15 @@ craft-card[data-color='white'] {
   --cp-element-header-fill: var(--c-card-header-fill-white);
 }
 
+/* Cover cards are left alone while their image is shown, as they back their
+   header for the text they've chosen for the image. */
+
 /* An uncolored card takes the header color of the element it's in, and at
    the top level --c-card-header-fill-neutral. Its body stays transparent. */
 :is([data-matrix-block], [data-element-id], .element)
-  > craft-card:not([data-color]):not([active])::part(header) {
+  > craft-card:not([data-color]):not([active]):not(
+    :has(> [data-cover])
+  )::part(header) {
   background-color: var(
     --cp-element-header-fill,
     var(--c-card-header-fill-neutral)
@@ -654,7 +659,9 @@ craft-card[data-color='white'] {
 
 /* A white card's header is --c-card-header-fill-white. */
 :is([data-matrix-block], [data-element-id], .element)
-  > craft-card[data-color='white']:not([active])::part(header) {
+  > craft-card[data-color='white']:not([active]):not(
+    :has(> [data-cover])
+  )::part(header) {
   background-color: var(--cp-element-header-fill);
 }
 
@@ -662,16 +669,20 @@ craft-card[data-color='white'] {
    a step stronger, so it keeps a visible header as every other selected card
    does. */
 :is([data-matrix-block], [data-element-id], .element)
-  > craft-card[data-color='white'][active]::part(header) {
+  > craft-card[data-color='white'][active]:not(
+    :has(> [data-cover])
+  )::part(header) {
   background-color: var(--c-card-header-fill-white-selected);
   color: var(--c-color-accent-on-normal);
 }
 
 /* Asset thumbnail tiles are a light shade of whatever they sit on, so they
    read as their own layer rather than a bare border, and take the tint of a
-   colored block they're in. */
+   colored block they're in. Black tiles keep their dark backing, which
+   their light text needs. */
 craft-chip[prefix-placement='block-start']:has(craft-thumbnail):not(
-  [selected]
+  [selected],
+  [data-color='black']
 )::part(chip) {
   background-color: color-mix(
     in srgb,
