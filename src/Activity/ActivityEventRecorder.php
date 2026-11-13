@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Activity;
 
 use CraftCms\Cms\Activity\Contracts\ActivityEventTypeInterface;
 use CraftCms\Cms\Activity\Data\ActivityActor;
+use CraftCms\Cms\Activity\Data\ActivityOperation;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Auth\Impersonation;
 use Illuminate\Container\Attributes\Scoped;
@@ -21,6 +22,9 @@ use function CraftCms\Cms\t;
 class ActivityEventRecorder
 {
     public const string ContextOrigin = 'craft.activity.origin';
+
+    /** The {@see ActivityOperation} that the events are part of. */
+    public const string ContextOperation = 'craft.activity.operation';
 
     public function __construct(
         private readonly Impersonation $impersonation,
@@ -46,6 +50,12 @@ class ActivityEventRecorder
             $snapshots['origin'] = $origin;
         }
 
+        $operation = Context::getHidden(self::ContextOperation);
+
+        if ($operation instanceof ActivityOperation) {
+            $snapshots['operation'] = $operation->snapshot();
+        }
+
         if ($subject !== null) {
             $snapshots['subject'] = ['label' => $subject->label];
         }
@@ -67,6 +77,7 @@ class ActivityEventRecorder
             'subjectId' => $subject?->id,
             'siteId' => $site?->id,
             'rootEventId' => $rootEventId,
+            'operationId' => $operation instanceof ActivityOperation ? $operation->id : null,
             'payload' => [
                 'snapshots' => $snapshots,
                 'changes' => collect($event->changes())->toArray(),
