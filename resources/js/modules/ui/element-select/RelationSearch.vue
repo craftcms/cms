@@ -51,6 +51,8 @@
   type SearchResult = {
     id: number;
     title: string | null;
+    /** What the chip shows, which users and other untitled elements have too. */
+    label: string;
     html: string;
     exclude: boolean;
   };
@@ -250,14 +252,15 @@
         break;
       }
       case 'Enter':
-        if (event.isComposing || !open.value || !selectedRow.value) {
+        if (event.isComposing) {
           return;
         }
 
+        // Return never submits the form around the field, as in Craft 5.
         event.preventDefault();
 
         // The results are for an earlier query until the search answers.
-        if (!searching.value) {
+        if (open.value && selectedRow.value && !searching.value) {
           void choose(selectedRow.value);
         }
         break;
@@ -275,7 +278,7 @@
       clear();
       emit('select', {
         id: row.result.id,
-        label: row.result.title ?? String(row.result.id),
+        label: row.result.label,
         siteId: props.field.search.siteId,
       });
 

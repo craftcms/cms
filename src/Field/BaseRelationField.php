@@ -1837,7 +1837,8 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     }
 
     /**
-     * Returns the criteria the search input finds elements with: its one source’s, or `null` when it isn’t shown.
+     * Returns the criteria the search input finds elements with: its one source’s, with the field’s selection criteria
+     * over them as the selector modal applies them, or `null` when it isn’t shown.
      *
      * @return array<string, mixed>|null
      */
@@ -1856,7 +1857,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
 
         $source = ElementSources::findSource(static::elementType(), $sourceKey, ElementSources::CONTEXT_FIELD);
 
-        return empty($source['criteria']) ? null : $source['criteria'];
+        return empty($source['criteria']) ? null : [...$source['criteria'], ...$this->getInputSelectionCriteria()];
     }
 
     /**

@@ -217,12 +217,12 @@ it('only offers to create entries in the target site when the user can edit it',
     'not editable' => [false],
 ]);
 
-it('searches an Assets field’s volume and its subfolders', function () {
+it('searches an Assets field’s volume and its subfolders, with the field’s selection criteria', function () {
     $volume = Volume::factory()->create();
     $root = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
     $field = new Assets(['handle' => 'files', 'sources' => ["volume:$volume->uid"]]);
 
     $props = $field->uiControl(new FieldContext('files', element: EntryModel::factory()->createElement()))->props();
 
-    expect($props['search']['criteria'])->toBe(['folderId' => $root->id, 'includeSubfolders' => true]);
+    expect($props['search']['criteria'])->toBe(['folderId' => $root->id, 'uploaderId' => null, 'includeSubfolders' => true]);
 });

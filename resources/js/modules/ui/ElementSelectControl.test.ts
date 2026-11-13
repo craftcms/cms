@@ -677,6 +677,61 @@ describe('ElementSelectControl', () => {
       expect(updates).toEqual([]);
     });
 
+    it('keeps Return from submitting the form when nothing can be chosen', async () => {
+      const root = await mount({props: {search}});
+      const input = await type(root, 'Nothing');
+      const enter = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      });
+
+      input.dispatchEvent(enter);
+
+      expect(enter.defaultPrevented).toBe(true);
+    });
+
+    it('relates an untitled result, such as a user, by its label', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {
+              id: 9,
+              title: null,
+              label: 'Jane Doe',
+              html: 'Jane Doe',
+              exclude: false,
+            },
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({search}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await vi.dynamicImportSettled();
+      await nextTick();
+      const input = await type(container, 'Jane');
+
+      press(input, 'Enter');
+      await nextTick();
+
+      expect(value.value).toEqual([5, 9]);
+      expect(container.textContent).toContain('Jane Doe');
+    });
+
     it('replaces the related branch when the field allows only one', async () => {
       stub.post.mockImplementation(async (action: string, body) =>
         action.includes('structured-elements')
