@@ -73,6 +73,18 @@ vi.mock('@/common/components/ActionMenu.vue', async () => {
   };
 });
 
+const creation = vi.hoisted(() => ({
+  post: vi.fn(),
+  openSlideout: vi.fn(),
+}));
+
+vi.mock('@craftcms/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@craftcms/ui')>()),
+  actionClient: {post: creation.post},
+}));
+
+vi.mock('@/common/slideouts', () => ({openSlideout: creation.openSlideout}));
+
 vi.mock('./ElementPicker.vue', async () => {
   const {defineComponent: define, h: create} = await import('vue');
 
@@ -80,7 +92,13 @@ vi.mock('./ElementPicker.vue', async () => {
     default: define({
       name: 'ElementPickerStub',
       props: ['action', 'initial', 'params', 'disabledElementIds'],
-      emits: ['selection-change', 'choose', 'source-change'],
+      emits: [
+        'selection-change',
+        'choose',
+        'source-change',
+        'sources-change',
+        'site-change',
+      ],
       setup(props, {emit, expose}) {
         stub.lastProps = props as Record<string, any>;
         stub.emit = emit as (event: string, payload?: unknown) => void;
@@ -475,6 +493,85 @@ describe('the upload button', () => {
     upload.emit!('uploaded', {id: 3, label: 'photo.jpg'});
 
     expect(stub.refresh).toHaveBeenCalledWith(3);
+    unmount();
+  });
+});
+
+describe('the new entry button', () => {
+  const source = {
+    type: 'native',
+    key: 'section:abc',
+    label: 'Authors',
+    data: {handle: 'authors'},
+  };
+
+  beforeEach(() => {
+    creation.post.mockReset();
+    creation.openSlideout.mockReset();
+    window.Craft = {
+      publishableSections: [
+        {
+          id: 4,
+          uid: 'abc',
+          handle: 'authors',
+          name: 'Authors',
+          type: 'channel',
+          sites: [2],
+          canSave: true,
+          entryTypesBySite: {
+            2: [{id: 8, handle: 'author', name: 'Author', icon: null}],
+          },
+        },
+      ],
+    };
+  });
+
+  afterEach(() => {
+    delete window.Craft;
+  });
+
+  it('creates an entry in the section on screen and chooses it once it’s saved', async () => {
+    const onSelect = vi.fn();
+    const instance = controller({onSelect});
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    const button = host.querySelector<HTMLElement>(
+      '[slot="secondary-actions"] craft-button'
+    );
+    expect(button?.textContent?.trim()).toBe('New Authors entry');
+
+    creation.post.mockResolvedValue({
+      data: {entry: {id: 21, draftId: 5, title: null}},
+    });
+    button!.click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+
+    expect(creation.post.mock.calls[0]![1]).toEqual({
+      siteId: 2,
+      section: 'authors',
+      type: 'author',
+    });
+    expect(instance.state.open).toBe(false);
+
+    const [url, options] = creation.openSlideout.mock.calls[0]!;
+    expect(new URL(url, 'https://x').searchParams.get('draftId')).toBe('5');
+
+    options.onSaved({draft: true});
+    expect(onSelect).not.toHaveBeenCalled();
+
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    expect(onSelect).toHaveBeenCalledWith(
+      [expect.objectContaining({id: 21, siteId: 2, label: 'Jane Austen'})],
+      {}
+    );
+
     unmount();
   });
 });

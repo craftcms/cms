@@ -103,7 +103,10 @@ export async function createElementSelectorModal(
   host.className = 'element-selector-modal-host';
   document.body.append(host);
 
-  const app: App = createApp(ElementSelectorModal, {controller});
+  const app: App = createApp(ElementSelectorModal, {
+    controller,
+    triggerElement: () => resolveFocusTarget(presentation.triggerElement),
+  });
 
   // The index renders server HTML through `DynamicHtmlRenderer`, which compiles
   // it at runtime — so every component that HTML names has to be registered on

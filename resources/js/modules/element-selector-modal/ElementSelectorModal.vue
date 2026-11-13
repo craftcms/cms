@@ -6,11 +6,16 @@
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
   import ElementPicker from './ElementPicker.vue';
   import ElementPickerPlaceholder from './ElementPickerPlaceholder.vue';
-  import type {SourceItem} from '@/modules/elements/types/sources';
+  import NewEntryButton from './NewEntryButton.vue';
+  import type {Source, SourceItem} from '@/modules/elements/types/sources';
   import type {SelectedElement} from './useModalElementIndex';
   import {useElementSelectorController} from './useElementSelectorController';
 
-  const props = defineProps<{controller: ElementSelectorController}>();
+  const props = defineProps<{
+    controller: ElementSelectorController;
+    /** Where focus goes once the modal closes. */
+    triggerElement?: () => HTMLElement | null;
+  }>();
 
   /** The slice of `AssetSelectorController` this component needs. */
   interface TransformCapable {
@@ -83,6 +88,19 @@
    */
   const source = ref<SourceItem | null>(null);
 
+  /** Every source the index offers, and the site it's showing. */
+  const sources = ref<Source[]>([]);
+  const siteId = ref<number | null>(null);
+
+  /**
+   * Entries can be created from their selector, as Craft 5's `EntryIndex`
+   * offered — in the sections the index shows that the user can publish in.
+   */
+  const selectsEntries = computed(
+    () =>
+      props.controller.elementType === 'CraftCms\\Cms\\Entry\\Elements\\Entry'
+  );
+
   const uploadTarget = computed(() => {
     const data = source.value?.data as
       | Record<string, boolean | number | string>
@@ -125,6 +143,8 @@
       "
       @choose="() => controller.submit()"
       @source-change="(next: SourceItem | null) => (source = next)"
+      @sources-change="(next: Source[]) => (sources = next)"
+      @site-change="(next: number | null) => (siteId = next)"
     />
     <ElementPickerPlaceholder
       v-else
@@ -148,6 +168,16 @@
         :allowed-kinds="uploadKinds"
         :reload-on-complete="false"
         @uploaded="({id}) => index?.refresh(id)"
+      />
+    </div>
+
+    <div v-if="selectsEntries" slot="secondary-actions">
+      <NewEntryButton
+        :controller="controller"
+        :sources="sources"
+        :source="source"
+        :site-id="siteId"
+        :opener="triggerElement"
       />
     </div>
 
