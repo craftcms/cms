@@ -136,9 +136,17 @@ export function useUiValues(initial: UiPayload) {
    * were sent take the server's, rather than going on referring to elements
    * that are gone. Edits made while the submission was out stay unsaved, on
    * the identities that replaced the ones they were made to.
+   *
+   * `later` settles only the groups in `saved`, such as those of tabs the
+   * server sent once the page had loaded, keeping the rest of the baseline.
    */
-  function settle(saved: UiPayload, submitted: UiValues, held: UiValues): void {
-    const savedBaseline = cloneRaw(submitted);
+  function settle(
+    saved: UiPayload,
+    submitted: UiValues,
+    held: UiValues,
+    later = false
+  ): void {
+    const savedBaseline = cloneRaw(later ? baseline : submitted);
     const groups = new Map<string, string[]>();
 
     visitControls(saved.nodes, (control) => {
@@ -176,10 +184,31 @@ export function useUiValues(initial: UiPayload) {
 
       if (renames.size) {
         write(group, renamed(valueAt(values, group), renames));
+        renameTrackedPaths(renames);
       }
     }
 
     rebase(savedBaseline);
+  }
+
+  /** Moves the edits recorded under replaced identities onto their replacements. */
+  function renameTrackedPaths(renames: Map<string, string>): void {
+    const rename = (path: string[]) =>
+      path.map((segment) => renames.get(segment) ?? segment);
+
+    // A copy, as the loop changes the set.
+    for (const key of Array.from(touchedPaths)) {
+      const next = JSON.stringify(rename(JSON.parse(key) as string[]));
+
+      if (next !== key) {
+        touchedPaths.delete(key);
+        touchedPaths.add(next);
+      }
+    }
+
+    changedPaths.value = new Set(
+      [...changedPaths.value].map((path) => rename(path.split('.')).join('.'))
+    );
   }
 
   function snapshot(): UiValues;

@@ -110,6 +110,11 @@
    * succeeds the values it rendered are the ones saved.
    */
   let submissionResponse: {payload: UiPayload; held: UiValues} | undefined;
+  /**
+   * What a successful submission sent and held, kept while its response still
+   * holds tabs back: their fields are settled as they arrive.
+   */
+  let deferredSettlement: {submitted: UiValues; held: UiValues} | undefined;
 
   const valueState = useUiValues(props.payload);
   const {values, touchedPaths} = valueState;
@@ -184,7 +189,27 @@
         };
       }
 
+      const filled = deferredSettlement
+        ? filledTabs(payload.value.nodes, refreshed.nodes)
+        : [];
+
       reconcile(refreshed);
+
+      if (deferredSettlement && filled.length) {
+        valueState.settle(
+          {...refreshed, nodes: filled},
+          deferredSettlement.submitted,
+          deferredSettlement.held,
+          true
+        );
+        resetObservedValues(payload.value.nodes);
+        emitMutation();
+
+        if (!payload.value.nodes.some((node) => node.props.deferred)) {
+          deferredSettlement = undefined;
+        }
+      }
+
       // The host's payload was rendered from the values it carries, which
       // aren't necessarily the ones this form holds.
       refresher.seed(
@@ -348,6 +373,7 @@
     submitting.value = false;
     submittedValues = undefined;
     submissionResponse = undefined;
+    deferredSettlement = undefined;
     errorState.restore();
     valueState.reset(source);
     payload.value = source;
@@ -382,6 +408,10 @@
         submissionResponse.held
       );
       resetObservedValues(payload.value.nodes);
+
+      if (payload.value.nodes.some((node) => node.props.deferred)) {
+        deferredSettlement = {submitted, held: submissionResponse.held};
+      }
     } else {
       valueState.rebase(submitted);
     }
@@ -539,7 +569,10 @@
   }
 
   function setSubmitting(value: boolean): void {
-    if (value && !submitting.value) submittedValues = valueState.snapshot();
+    if (value && !submitting.value) {
+      submittedValues = valueState.snapshot();
+      deferredSettlement = undefined;
+    }
     if (!value) submissionResponse = undefined;
     submitting.value = value;
   }
