@@ -2,9 +2,7 @@
 
 ## Unreleased
 
-- The `app/render-components` action now only accepts chippable component types, and only applies `name`, `handle`, and `description` overrides.
-- Icon fields now only accept icon names as values.
-- `craft\helpers\Html::svg()` no longer accepts stream wrapper URLs, such as `ftp://`, as file paths.
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-53c3-ggrg-m3hg)
 
 ## 5.12.1 - 2026-11-10
 
