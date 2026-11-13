@@ -640,6 +640,72 @@ describe('ElementSelectControl', () => {
 
       expect(root.querySelector('[role="listbox"] craft-option')).toBeNull();
     });
+
+    it('excludes the element being edited from the search and the selector', async () => {
+      const root = await mount({props: {search, disabledElementIds: [77]}});
+
+      await type(root, 'entry');
+      root.querySelector<HTMLElement>('[data-element-select-add]')!.click();
+      await flushSelector();
+
+      expect(stub.post.mock.calls[0]![1]).toMatchObject({excludeIds: [5, 77]});
+      expect(
+        stub.createElementSelectorModal.mock.calls[0]![1].disabledElementIds
+      ).toEqual([5, 77]);
+    });
+
+    it('doesn’t choose an earlier query’s result while the next search is pending', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 9, title: 'Another', html: 'Another', exclude: false},
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const root = await mount({props: {search}});
+      const input = await type(root, 'Another');
+
+      input.value = 'Something else';
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      press(input, 'Enter');
+      (
+        root.querySelector('[role="listbox"] craft-option') as HTMLElement
+      ).click();
+
+      expect(updates).toEqual([]);
+    });
+
+    it('replaces the related branch when the field allows only one', async () => {
+      stub.post.mockImplementation(async (action: string, body) =>
+        action.includes('structured-elements')
+          ? ({
+              data: {
+                elements: (body.elementIds as number[]).map((id) => ({
+                  id,
+                  label: String(id),
+                })),
+              },
+            } as never)
+          : ({
+              data: {
+                elements: [
+                  {id: 9, title: 'Another', html: 'Another', exclude: false},
+                ],
+                exactMatch: false,
+              },
+            } as never)
+      );
+      const root = await mount({
+        props: {search, maintainHierarchy: true, branchLimit: 1},
+      });
+      const input = await type(root, 'Another');
+
+      press(input, 'Enter');
+
+      expect(updates[0]).toEqual([9]);
+    });
   });
 
   it('keeps the newest refetch of a saved element when answers arrive out of order', async () => {

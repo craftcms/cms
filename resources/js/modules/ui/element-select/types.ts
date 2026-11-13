@@ -84,6 +84,11 @@ export type ElementSelectProps = {
    * create entries in, when the user can publish in it.
    */
   createSection?: string | null;
+  /**
+   * Elements that can't be related, such as the one being edited and its
+   * owners when the field doesn't allow self relations.
+   */
+  disabledElementIds?: number[];
   selectionLabel: string;
   limit: number | null;
   single?: boolean;

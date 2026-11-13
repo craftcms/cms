@@ -23,6 +23,7 @@ use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\Ui\Controls\EntrySelect;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
@@ -129,7 +130,7 @@ class Entries extends BaseRelationField
 
         $canCreate = $section !== null
             && Sections::getPublishableSections()->contains('id', $section->id)
-            && array_key_exists($this->targetSiteId($context->element), $section->getSiteSettings());
+            && Sites::getEditableSiteIdsForSection($section)->contains($this->targetSiteId($context->element));
 
         return EntrySelect::make($context->path)->createSection($canCreate ? $section : null);
     }

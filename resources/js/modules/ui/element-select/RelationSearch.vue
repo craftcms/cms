@@ -35,7 +35,7 @@
       search: NonNullable<ElementSelectProps['search']>;
     };
     /**
-     * Already related, so they're listed as unavailable, as Craft 5's menu
+     * Already related or unrelatable, so they're listed as unavailable, as Craft 5's menu
      * listed them: dimmed, skipped by the arrow keys, and not chosen.
      */
     excludeIds: number[];
@@ -255,13 +255,17 @@
         }
 
         event.preventDefault();
-        void choose(selectedRow.value);
+
+        // The results are for an earlier query until the search answers.
+        if (!searching.value) {
+          void choose(selectedRow.value);
+        }
         break;
     }
   }
 
   async function choose(row: Row): Promise<void> {
-    if (!available(row)) {
+    if (searching.value || !available(row)) {
       return;
     }
 

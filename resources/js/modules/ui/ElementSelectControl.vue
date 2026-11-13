@@ -376,6 +376,19 @@
    * reason for being async: a page full of relation fields shouldn't pay for the
    * element index unless someone actually opens one.
    */
+  /** The element being edited and its owners, when the field can't relate them. */
+  const unrelatable = computed(
+    () => props.control.props.disabledElementIds ?? []
+  );
+
+  /**
+   * A branch limit of one means a new choice replaces the old one, as it does
+   * in Craft 5.
+   */
+  const replacesBranch = computed(
+    () => maintainHierarchy.value && props.control.props.branchLimit === 1
+  );
+
   async function openSelector(replacing: number | null = null): Promise<void> {
     const {createElementSelectorModal} =
       await import('@/modules/element-selector-modal/create-element-selector-modal');
@@ -404,7 +417,10 @@
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being
         // replaced, which would otherwise disable the obvious no-op choice.
-        disabledElementIds: ids.value.filter((id) => id !== replacing),
+        disabledElementIds: [
+          ...ids.value.filter((id) => id !== replacing),
+          ...unrelatable.value,
+        ],
         modalTitle: props.control.props.selectionLabel,
         selectBtnLabel: props.control.props.selectionLabel,
         triggerElement: () => addButton.value,
@@ -417,14 +433,8 @@
             return;
           }
 
-          // A branch limit of one means a new choice replaces the old one, as
-          // it does in Craft 5.
           const current =
-            maintainHierarchy.value &&
-            props.control.props.branchLimit === 1 &&
-            replacing === null
-              ? []
-              : ids.value;
+            replacesBranch.value && replacing === null ? [] : ids.value;
 
           void relate(
             withinLimit(
@@ -473,7 +483,10 @@
     }
 
     presentations.set(element.id, element);
-    void relate(withinLimit([...ids.value, element.id]), element.siteId);
+    void relate(
+      withinLimit([...(replacesBranch.value ? [] : ids.value), element.id]),
+      element.siteId
+    );
     await nextTick();
 
     if (search.value?.isConnected()) {
@@ -751,7 +764,7 @@
           v-if="searchField"
           ref="search"
           :field="searchField"
-          :exclude-ids="ids"
+          :exclude-ids="[...ids, ...unrelatable]"
           @select="relateFound"
         />
 

@@ -73,6 +73,9 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
     /** @var array{criteria: array<string, mixed>, siteId: int|null}|null */
     private ?array $search = null;
 
+    /** @var list<int> */
+    private array $disabledElementIds = [];
+
     /**
      * The view modes a relation field can be set to, mirroring
      * {@see BaseRelationField::supportedViewModes()}. The
@@ -293,6 +296,19 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
         return $this;
     }
 
+    /**
+     * Sets the elements that can’t be selected, such as the element being edited when the field doesn’t allow self
+     * relations.
+     *
+     * @param  list<int>  $ids
+     */
+    public function disabledElementIds(array $ids): static
+    {
+        $this->disabledElementIds = $ids;
+
+        return $this;
+    }
+
     public function viewMode(string $viewMode): static
     {
         if (! in_array($viewMode, self::viewModes(), true)) {
@@ -397,6 +413,7 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
             ...($this->referenceElement !== null ? ['referenceElement' => $this->referenceElement] : []),
             ...($this->search !== null ? ['search' => $this->search] : []),
+            ...($this->disabledElementIds !== [] ? ['disabledElementIds' => $this->disabledElementIds] : []),
         ];
     }
 

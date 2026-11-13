@@ -16,8 +16,11 @@ use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Users;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
@@ -25,6 +28,7 @@ use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
@@ -182,8 +186,43 @@ it('searches an Entries field’s one section, and creates entries in it unless 
 
     expect($props['search']['criteria'])->toMatchArray(['sectionId' => $section->id])
         ->and($props['search']['siteId'])->toBe($entry->siteId)
-        ->and($props['createSection'])->toBe($canCreate ? $section->handle : null);
+        ->and($props['createSection'])->toBe($canCreate ? $section->handle : null)
+        ->and($props['disabledElementIds'])->toBe([$entry->id]);
 })->with([
     'viewable' => [true, true],
     'not viewable' => [false, false],
 ]);
+
+it('only offers to create entries in the target site when the user can edit it', function (bool $canEditTargetSite) {
+    $section = Section::factory()->create();
+    $otherSite = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create(['sectionId' => $section->id, 'siteId' => $otherSite->id]);
+    Sections::refreshSections();
+    $entry = EntryModel::factory()->createElement();
+    $editableSite = $canEditTargetSite ? Sites::getSiteById($entry->siteId) : $otherSite;
+    actingAs(UserModel::factory()->withPermissions([
+        'accessCp',
+        "editSite:$editableSite->uid",
+        "viewEntries:$section->uid",
+        "createEntries:$section->uid",
+    ])->createElement(['admin' => false]));
+    $field = new Entries(['handle' => 'related', 'sources' => ["section:$section->uid"]]);
+
+    $props = $field->uiControl(new FieldContext('related', element: $entry))->props();
+
+    expect($props['createSection'])->toBe($canEditTargetSite ? $section->handle : null);
+})->with([
+    'editable' => [true],
+    'not editable' => [false],
+]);
+
+it('searches an Assets field’s volume and its subfolders', function () {
+    $volume = Volume::factory()->create();
+    $root = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
+    $field = new Assets(['handle' => 'files', 'sources' => ["volume:$volume->uid"]]);
+
+    $props = $field->uiControl(new FieldContext('files', element: EntryModel::factory()->createElement()))->props();
+
+    expect($props['search']['criteria'])->toBe(['folderId' => $root->id, 'includeSubfolders' => true]);
+});

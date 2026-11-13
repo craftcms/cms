@@ -289,6 +289,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
             ->maintainHierarchy($this->maintainHierarchy)
             ->branchLimit($this->branchLimit)
             ->search($searchCriteria, $searchCriteria !== null ? $this->targetSiteId($context->element) : null)
+            ->disabledElementIds($this->disabledElementIds($context->element))
             // Which elements can be selected can depend on the field’s settings, such as its selectable element
             // condition, so values are only copied between instances of this field.
             ->valueScope($this->uid ?? static::class)
@@ -1757,26 +1758,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
         $selectionCriteria = $this->getInputSelectionCriteria();
         $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
-        $disabledElementIds = [];
-
-        if (! $this->allowSelfRelations && $element) {
-            if ($element->id) {
-                $disabledElementIds[] = $element->getCanonicalId();
-            }
-            if ($element instanceof NestedElementInterface) {
-                $el = $element;
-                do {
-                    try {
-                        $el = $el->getOwner();
-                        if ($el) {
-                            $disabledElementIds[] = $el->getCanonicalId();
-                        }
-                    } catch (RuntimeException) {
-                        break;
-                    }
-                } while ($el instanceof NestedElementInterface);
-            }
-        }
+        $disabledElementIds = $this->disabledElementIds($element);
 
         $selectionCondition = $this->getSelectionCondition();
         if ($selectionCondition instanceof ElementCondition) {
@@ -1820,6 +1802,38 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
                 'defaultSiteId' => $targetSiteId ?? $element->siteId ?? null,
             ],
         ];
+    }
+
+    /**
+     * Returns the IDs of elements the field can’t relate to `$element`: the element itself and its owners, unless
+     * self relations are allowed.
+     *
+     * @return list<int>
+     */
+    protected function disabledElementIds(?ElementInterface $element): array
+    {
+        $disabledElementIds = [];
+
+        if (! $this->allowSelfRelations && $element) {
+            if ($element->id) {
+                $disabledElementIds[] = $element->getCanonicalId();
+            }
+            if ($element instanceof NestedElementInterface) {
+                $el = $element;
+                do {
+                    try {
+                        $el = $el->getOwner();
+                        if ($el) {
+                            $disabledElementIds[] = $el->getCanonicalId();
+                        }
+                    } catch (RuntimeException) {
+                        break;
+                    }
+                } while ($el instanceof NestedElementInterface);
+            }
+        }
+
+        return $disabledElementIds;
     }
 
     /**
