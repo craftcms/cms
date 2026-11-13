@@ -1,4 +1,9 @@
-import {createInertiaApp, router, usePage} from '@inertiajs/vue3';
+import {
+  createInertiaApp,
+  http as inertiaHttp,
+  router,
+  usePage,
+} from '@inertiajs/vue3';
 import type {Page} from '@inertiajs/core';
 import {handleControlPanelLinks} from '@/common/inertia-links';
 import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
@@ -6,7 +11,11 @@ import type {DefineComponent} from 'vue';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {http} from '@craftcms/ui/utilities/api/http';
 import {setUrlDefaults} from '@/wayfinder';
-import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
+import {
+  inertiaPageRegistry,
+  preloadInertiaPage,
+  resolveInertiaPage,
+} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
 import {registerSlideoutGlobals} from '@/common/slideouts';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
@@ -190,6 +199,14 @@ const Cp = {
     // Before the app mounts, so the first page's messages have somewhere to go.
     setUpInertiaMessages();
     relayPageBroadcasts();
+
+    // A prefetched page's component loads with its response, rather than once
+    // its link is clicked.
+    inertiaHttp.onResponse((response) => {
+      preloadInertiaPage(response);
+
+      return response;
+    });
 
     await createInertiaApp({
       page,

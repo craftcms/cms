@@ -154,3 +154,48 @@ export type PageRegistration =
 export function registerPage(name: string, page: PageRegistration): void {
   inertiaPageRegistry.register(name, page as InertiaPageRegistration);
 }
+
+/**
+ * The component an Inertia response names, read from the start of its body
+ * rather than parsing the whole page, which Inertia does itself next. Inertia
+ * puts `component` first.
+ */
+export function inertiaResponseComponent(body: unknown): string | null {
+  if (typeof body !== 'string') {
+    return null;
+  }
+
+  const match = /^\{"component":("(?:[^"\\]|\\.)*")/.exec(body);
+
+  if (!match) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(match[1]!) as string;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Starts loading the component an Inertia response names, so it's ready by
+ * the time the page is shown. Inertia only loads it once it shows the page,
+ * which for a prefetched one is when its link is clicked; started here, it
+ * loads while the pointer is still on its way there instead.
+ */
+export function preloadInertiaPage(response: {
+  data: unknown;
+  headers: Record<string, string>;
+}): void {
+  if (!('x-inertia' in response.headers)) {
+    return;
+  }
+
+  const component = inertiaResponseComponent(response.data);
+
+  if (component) {
+    // A page that fails to load fails when it's shown, where it's reported.
+    resolveInertiaPage(component).catch(() => {});
+  }
+}
