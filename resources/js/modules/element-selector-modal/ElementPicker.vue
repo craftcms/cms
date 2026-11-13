@@ -218,6 +218,7 @@
     // would on a page; without this, it falls back to its narrowest layout.
     container: cp-content-view / inline-size;
     background: var(--c-surface-overlay);
+    --structure-indent-step: var(--c-size-control-sm);
 
     // Grid items don't shrink below their content by default, so a wide table
     // widens the column and a long one grows the row — pushing the pane out of
