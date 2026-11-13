@@ -220,16 +220,24 @@ $menuBorderRadius: $mediumBorderRadius;
 // Other
 
 @mixin svg-mask($color) {
-  rect,
-  circle,
-  ellipse,
-  line,
-  polyline,
-  polygon,
-  path,
-  text {
+  $shapes: 'rect, circle, ellipse, line, polyline, polygon, path, text';
+  $stroked-svg: "svg[stroke]:not([stroke='none'])";
+
+  // Filled icons, such as Font Awesome’s
+  :is(#{$shapes}):where(:not(#{$stroked-svg} *)) {
     fill: $color;
     stroke-width: 0;
+  }
+
+  // Stroked icons, such as Lucide’s, which declare a stroke on the <svg>.
+  // Keep their fills and stroke widths, recolor their strokes, and set
+  // `color` for any `currentColor` fills.
+  :is(#{$shapes}):where(#{$stroked-svg} *) {
+    color: $color;
+
+    &:where(:not([stroke='none'])) {
+      stroke: $color;
+    }
   }
 }
 

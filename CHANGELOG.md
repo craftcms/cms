@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes in the control panel. ([#20613](https://github.com/craftcms/cms/issues/20613))
 - Fixed an error that could occur when saving an image cropped against the left or top edge in the Image Editor. ([#20601](https://github.com/craftcms/cms/issues/20601))
 - Fixed a bug where element indexes’ Link columns showed links for disabled, archived, pending, and expired elements. ([#20604](https://github.com/craftcms/cms/issues/20604))
 - Fixed a bug where uploaded PNGs could be saved uncompressed when GD was used as the image driver, making them many times larger than the originals.
