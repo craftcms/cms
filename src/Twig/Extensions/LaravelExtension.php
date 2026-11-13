@@ -36,6 +36,7 @@ class LaravelExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('config', config(...)),
             new TwigFunction('csrf_token', fn () => csrf_token(), ['is_safe' => ['html']]),
             new TwigFunction('csrf_field', fn () => csrf_field(), ['is_safe' => ['html']]),
+            new TwigFunction('fonts', [app(Vite::class), 'fonts'], ['is_safe' => ['html']]),
             new TwigFunction('method_field', method_field(...), ['is_safe' => ['html']]),
             new TwigFunction('old', old(...)),
             new TwigFunction('session', session(...)),

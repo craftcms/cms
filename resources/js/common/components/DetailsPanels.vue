@@ -392,7 +392,7 @@
   .details-panels__trigger {
     --c-icon-size: var(--cp-chrome-icon-size);
     display: grid;
-    inline-size: var(--c-size-touch-target);
+    inline-size: var(--cp-rail-item-size);
     aspect-ratio: 1;
     padding: 0;
     place-items: center;

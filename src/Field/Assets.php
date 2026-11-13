@@ -957,12 +957,17 @@ class Assets extends BaseRelationField
             $variables['defaultSourcePath'] = $defaultSourcePath;
         }
 
-        if (isset($variables['searchCriteria'])) {
-            // Include subfolders in the inline search results
-            $variables['searchCriteria']['includeSubfolders'] = true;
-        }
-
         return $variables;
+    }
+
+    /** @return array<string, mixed>|null */
+    #[Override]
+    protected function searchCriteria(?ElementInterface $element): ?array
+    {
+        $criteria = parent::searchCriteria($element);
+
+        // Include subfolders in the inline search results
+        return $criteria === null ? null : [...$criteria, 'includeSubfolders' => true];
     }
 
     /**
