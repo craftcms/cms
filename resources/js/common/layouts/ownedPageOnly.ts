@@ -30,7 +30,7 @@ function onPluginPage(instance: ComponentInternalInstance | null): boolean {
  * Wraps a layout component for plugins, rendering it only on a page the
  * plugin owns. Core imports the component directly and isn't restricted.
  */
-export function ownedPageOnly(name: string, component: Component): Component {
+export function ownedPageOnly(name: string, component: Component) {
   return defineComponent({
     name: `OwnedPageOnly(${name})`,
     inheritAttrs: false,

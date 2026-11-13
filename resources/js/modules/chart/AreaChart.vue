@@ -75,7 +75,10 @@
 
   useResizeObserver(container, () => chart?.resize());
   onMounted(draw);
-  watch(() => [props.data, props.scale, props.valueFormat, props.color], draw);
+  // Deep, so rows pushed or changed in place redraw too
+  watch(() => [props.data, props.scale, props.valueFormat, props.color], draw, {
+    deep: true,
+  });
   onBeforeUnmount(() => chart?.destroy());
 </script>
 

@@ -61,4 +61,9 @@ it('draws the given data without changing it, and redraws when it changes', asyn
   props.data = users('5');
   await vi.waitFor(() => expect(state.draw).toHaveBeenCalledTimes(2));
   expect(state.draw.mock.lastCall![0].rows[0][1]).toBe(5);
+
+  // Rows changed in place redraw too
+  props.data.rows.push(['2026-10-02', '8']);
+  await vi.waitFor(() => expect(state.draw).toHaveBeenCalledTimes(3));
+  expect(state.draw.mock.lastCall![0].rows[1][1]).toBe(8);
 });
