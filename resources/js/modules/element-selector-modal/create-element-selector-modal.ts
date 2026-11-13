@@ -5,6 +5,7 @@ import {
   type ElementSelectorEventMap,
   type ElementSelectorOptions,
 } from '@craftcms/ui';
+import type CraftElementSelectorModal from '@craftcms/ui/components/element-selector-modal/element-selector-modal';
 import type {App} from 'vue';
 import {resolveElement} from '@/common/utils/dom';
 
@@ -112,9 +113,13 @@ export async function createElementSelectorModal(
   host.className = 'element-selector-modal-host';
   document.body.append(host);
 
+  // Focus restoration is the opener's business — the relation field wants focus
+  // to land on whatever replaced the chip it just removed, not on the trigger.
+  // The chrome asks once its dialog has closed: until then the page behind it
+  // is inert and can't take focus.
   const app: App = createApp(ElementSelectorModal, {
     controller,
-    triggerElement: () => resolveFocusTarget(presentation.triggerElement),
+    returnFocus: () => resolveFocusTarget(presentation.triggerElement),
   });
 
   // The index renders server HTML through `DynamicHtmlRenderer`, which compiles
@@ -133,13 +138,9 @@ export async function createElementSelectorModal(
     tag.includes('-');
   app.mount(host);
 
-  // Focus restoration is the opener's business — the relation field wants focus
-  // to land on whatever replaced the chip it just removed, not on the trigger.
-  controller.on('close', () => {
-    const target = resolveFocusTarget(presentation.triggerElement);
-    target?.focus();
-  });
-
+  const chrome = host.querySelector<CraftElementSelectorModal>(
+    'craft-element-selector-modal'
+  );
   let destroyed = false;
 
   const handle: ElementSelectorModalHandle = {
@@ -154,8 +155,13 @@ export async function createElementSelectorModal(
 
       destroyed = true;
       controller.destroy();
-      app.unmount();
-      host.remove();
+      // Openers destroy the modal from its `close` event, before the chrome has
+      // closed its dialog and returned focus; unmounting first would take the
+      // dialog away with focus still in it.
+      void (chrome?.updateComplete ?? Promise.resolve()).then(() => {
+        app.unmount();
+        host.remove();
+      });
     },
     on: (event, listener) => controller.on(event, listener),
     setDisabledElementIds: (ids) => controller.setDisabledElementIds(ids),

@@ -13,8 +13,8 @@
 
   const props = defineProps<{
     controller: ElementSelectorController;
-    /** Where focus goes once the modal closes. */
-    triggerElement?: () => HTMLElement | null;
+    /** What takes focus once the modal has closed. See `CraftDialog.returnFocus`. */
+    returnFocus?: () => HTMLElement | null;
   }>();
 
   /** The slice of `AssetSelectorController` this component needs. */
@@ -129,7 +129,10 @@
 </script>
 
 <template>
-  <craft-element-selector-modal :controller="controller">
+  <craft-element-selector-modal
+    :controller="controller"
+    .returnFocus="returnFocus"
+  >
     <!--
       The index talks to the controller, never to the chrome around it — it emits
       what happened and the controller decides what that means. That is what lets
@@ -182,7 +185,7 @@
         :sources="sources"
         :source="source"
         :site-id="siteId"
-        :opener="triggerElement"
+        :opener="returnFocus"
       />
     </div>
 
