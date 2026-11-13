@@ -54,6 +54,9 @@ CP Styles
   /* The icons around the content: global nav, header bar and details rail. */
   --cp-chrome-icon-size: var(--c-size-icon-sm);
   --cp-chrome-icon-color: var(--color-slate-700);
+  /* The nav's labels and the breadcrumbs: a touch quieter than body text, so
+     the content leads. The current page's row and crumb keep their own. */
+  --cp-chrome-text-color: var(--color-slate-700);
   --cp-content-width: calc(1440rem / 16);
   --cp-footer-height: var(--c-size-footer);
   --cp-header-height: calc(42rem / 16);

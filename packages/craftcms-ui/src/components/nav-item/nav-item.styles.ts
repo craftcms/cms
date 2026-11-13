@@ -34,7 +34,7 @@ export default css`
     grid-template-columns: 1fr auto;
     align-items: center;
     text-decoration: none;
-    color: inherit;
+    color: var(--c-nav-item-color, inherit);
     padding-inline: var(--_padding-inline);
     padding-block: var(--_padding-block);
     border: 1px solid transparent;
@@ -150,6 +150,13 @@ export default css`
     border-radius: 0;
     padding-block: var(--_padding-block) var(--c-spacing-xs);
     min-block-size: 0;
+  }
+
+  /* A hovered row, or one with its flyout open, is back to full strength.
+     Before the selected states, which keep their own color. */
+  .nav-item:not(.nav-item--static):hover,
+  .nav-item--flyout-open {
+    color: inherit;
   }
 
   :host([active]) .nav-item {
