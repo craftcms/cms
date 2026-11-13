@@ -233,7 +233,7 @@ class AppController extends Controller
             Craft::$app->getConfig()->getGeneral()->allowUpdates &&
             Craft::$app->getConfig()->getGeneral()->allowAdminChanges &&
             Craft::$app->getUser()->checkPermission('performUpdates') &&
-            Craft::$app->getComposer()->getIsAvailable()
+            Craft::$app->getComposer()->getIsAvailableForUi()
         );
 
         $res = [

@@ -32,8 +32,8 @@ class AppControllerTest extends TestCase
     {
         $originalComposer = Craft::$app->getComposer();
         $originalUpdates = Craft::$app->getUpdates();
-        $composer = $this->getMockBuilder(Composer::class)->onlyMethods(['getIsAvailable'])->getMock();
-        $composer->method('getIsAvailable')->willReturn($available);
+        $composer = $this->getMockBuilder(Composer::class)->onlyMethods(['getIsAvailableForUi'])->getMock();
+        $composer->method('getIsAvailableForUi')->willReturn($available);
         $updates = $this->getMockBuilder(Updates::class)->onlyMethods(['getUpdates'])->getMock();
         $updates->method('getUpdates')->willReturn(new UpdatesModel([
             'cms' => new Update([

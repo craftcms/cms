@@ -603,7 +603,11 @@ JS;
 
         $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
-            'allowUpdates' => $generalConfig->allowUpdates && Craft::$app->getComposer()->getIsAvailable(),
+            'allowUpdates' => (
+                $generalConfig->allowUpdates &&
+                $userSession->checkPermission('performUpdates') &&
+                Craft::$app->getComposer()->getIsAvailableForUi()
+            ),
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             'apiParams' => Craft::$app->apiParams,
             'appId' => Craft::$app->id,

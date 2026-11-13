@@ -87,6 +87,28 @@ class ComposerTest extends TestCase
         ];
     }
 
+    /** @dataProvider uiAvailabilityDataProvider */
+    public function testUiCacheDoesNotAffectFreshChecks(bool $available): void
+    {
+        $this->writeExecutable('echo ' . var_export($available ? 'Composer version 2.2.0' : 'Not Composer', true) . ';');
+        self::assertSame($available, (new Composer())->getIsAvailableForUi());
+
+        // Simulate Composer breaking or being repaired between requests, without changing PATH.
+        $this->writeExecutable('echo ' . var_export($available ? 'Not Composer' : 'Composer version 2.2.0', true) . ';');
+        $composer = new Composer();
+        self::assertSame($available, $composer->getIsAvailableForUi());
+        self::assertSame($available, $composer->getUnavailableReason(true) === null);
+        self::assertSame(!$available, $composer->getUnavailableReason() === null);
+    }
+
+    public static function uiAvailabilityDataProvider(): array
+    {
+        return [
+            'cached available, now broken' => [true],
+            'cached unavailable, now repaired' => [false],
+        ];
+    }
+
     /** @dataProvider unavailableOperationDataProvider */
     public function testUnavailableOperationsLeaveComposerFilesUnchanged(string $operation, ?array $packages): void
     {

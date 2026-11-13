@@ -21,8 +21,8 @@
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}
-{% elseif craft.app.composer.unavailableReason %}
-    {% set contentNotice = craft.app.composer.unavailableReason %}
+{% elseif craft.app.composer.getUnavailableReason(true) %}
+    {% set contentNotice = craft.app.composer.getUnavailableReason(true) %}
 {% endif %}
 
 {% block content %}
@@ -69,7 +69,7 @@
                 label: 'Remove'|t('app'),
                 action: 'pluginstore/remove',
                 params: {packageName: config.packageName},
-                disabled: not craft.app.composer.isAvailable,
+                disabled: not craft.app.composer.isAvailableForUi,
                 destructive: true,
                 confirm: 'Are you sure you want to remove {plugin}?'|t('app', {
                   plugin: config.name,

@@ -646,6 +646,7 @@ export default Base.extend(
       }
       if (item.disabled) {
         el.classList.add('disabled');
+        el.setAttribute('aria-disabled', 'true');
       }
       if (item.action) {
         el.classList.add('formsubmit');

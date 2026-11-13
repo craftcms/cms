@@ -2,8 +2,8 @@
 
 {% set title = 'Plugin Store'|t('app') %}
 
-{% if craft.app.composer.unavailableReason %}
-    {% set contentNotice = craft.app.composer.unavailableReason %}
+{% if currentUser.can('performUpdates') and craft.app.composer.getUnavailableReason(true) %}
+    {% set contentNotice = craft.app.composer.getUnavailableReason(true) %}
 {% endif %}
 
 {% block actionButton %}

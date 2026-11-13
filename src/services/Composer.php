@@ -46,13 +46,33 @@ class Composer extends Component
     }
 
     /**
-     * Returns an explanation if Composer is unavailable.
+     * Returns Composer availability for display, cached across requests for 60 seconds.
+     * Package changes and explicit retries must use [[getIsAvailable()]] instead.
      *
      * @since 5.13.0
      */
-    public function getUnavailableReason(): ?string
+    public function getIsAvailableForUi(): bool
     {
-        return $this->getIsAvailable() ? null : Craft::t('app', 'Composer {version} or later must be installed and available in the PATH environment variable.', [
+        // Cache an array so an unavailable result isn't mistaken for a cache miss.
+        $result = Craft::$app->getCache()->getOrSet(
+            [__METHOD__, self::MIN_VERSION, PHP_BINARY, getenv('PATH')],
+            fn() => [$this->getIsAvailable()],
+            60,
+        );
+
+        return $result[0];
+    }
+
+    /**
+     * Returns an explanation if Composer is unavailable.
+     *
+     * @param bool $forUi Whether to use the short-lived UI availability cache
+     * @since 5.13.0
+     */
+    public function getUnavailableReason(bool $forUi = false): ?string
+    {
+        $available = $forUi ? $this->getIsAvailableForUi() : $this->getIsAvailable();
+        return $available ? null : Craft::t('app', 'Composer {version} or later must be installed and available in the PATH environment variable.', [
             'version' => self::MIN_VERSION,
         ]);
     }
