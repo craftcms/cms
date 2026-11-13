@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Kan volume niet opslaan.',
     'Couldn’t save widget.' => 'Kon widget niet opslaan.',
     'Couldn’t save {type}.' => 'Kon {type} niet opslaan.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Kon de activerings-e-mail niet verzenden: {error}',
     'Couldn’t suspend all users.' => 'Kon niet alle gebruikers schorsen.',
     'Couldn’t suspend user.' => 'Kon gebruiker niet schorsen.',
