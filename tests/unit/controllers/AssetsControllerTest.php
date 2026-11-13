@@ -69,6 +69,46 @@ class AssetsControllerTest extends TestCase
         self::assertNull(Asset::find()->id($conflictingAsset->id)->one(), 'The conflicting asset was replaced.');
     }
 
+    /**
+     * @see https://github.com/craftcms/cms/issues/20601
+     */
+    public function testSaveImageClampsCropToImageBounds(): void
+    {
+        // 460×460, shown at 100×100 in the editor
+        $asset = Asset::find()->filename('shinybrad.png')->one();
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $request = Craft::$app->getRequest();
+        $request->setBodyParams([
+            'assetId' => $asset->id,
+            'viewportRotation' => 0,
+            'imageRotation' => 0,
+            'replace' => false,
+            // The left half of the image, with the crop box 0.5px past its left edge (2.3px at full size)
+            'cropData' => [
+                'offsetX' => -25.5,
+                'offsetY' => 0,
+                'width' => 50,
+                'height' => 100,
+            ],
+            'imageDimensions' => [
+                'width' => 100,
+                'height' => 100,
+            ],
+        ]);
+        $request->getHeaders()->set('Accept', 'application/json');
+
+        $controller = new AssetsController('assets', Craft::$app);
+        $response = $controller->actionSaveImage();
+
+        self::assertSame(200, $response->getStatusCode(), (string)json_encode($response->data));
+
+        // The crop keeps its right edge (49.5px on screen = 227.7px at full size) and starts at the image's left edge
+        $newAsset = Asset::find()->id($response->data['newAssetId'])->one();
+        self::assertSame(227, $newAsset->width);
+        self::assertSame(460, $newAsset->height);
+    }
+
     protected function _before(): void
     {
         parent::_before();
