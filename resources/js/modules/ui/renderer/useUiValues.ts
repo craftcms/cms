@@ -138,18 +138,20 @@ export function useUiValues(initial: UiPayload) {
    */
   function settle(saved: UiPayload, submitted: UiValues, held: UiValues): void {
     const savedBaseline = cloneRaw(submitted);
+    const groups = new Map<string, string[]>();
 
     visitControls(saved.nodes, (control) => {
-      const group = control.deltaGroup;
+      // A group at the root is the whole form, which no one control speaks for.
+      if (control.mode === 'editable' && control.deltaGroup.length) {
+        groups.set(JSON.stringify(control.deltaGroup), control.deltaGroup);
+      }
+    });
+
+    for (const group of groups.values()) {
       const savedValue = valueAt(saved.values, group);
 
-      // A group at the root is the whole form, which no one control speaks for.
-      if (
-        control.mode !== 'editable' ||
-        !group.length ||
-        savedValue === undefined
-      ) {
-        return;
+      if (savedValue === undefined) {
+        continue;
       }
 
       setPathValue(savedBaseline, group, cloneRaw(savedValue));
@@ -163,7 +165,7 @@ export function useUiValues(initial: UiPayload) {
       ) {
         write(group, cloneRaw(savedValue));
       }
-    });
+    }
 
     rebase(savedBaseline);
   }

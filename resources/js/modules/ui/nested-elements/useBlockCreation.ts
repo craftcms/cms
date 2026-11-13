@@ -191,6 +191,45 @@ export function useBlockCreation(options: BlockCreationOptions) {
     }
   );
 
+  /**
+   * Saving the owner can replace the entries it created in a draft with new
+   * ones, in the same places. Blocks still keyed by the replaced entries, such
+   * as one edited while the save was out, move onto their replacements, in
+   * order, so they keep their fields and the edits made to them.
+   */
+  watch(
+    () => options.control().uis,
+    (serverUis) => {
+      const value = options.value();
+      const stale = value.sortOrder.filter((uid) => !uis.value.has(uid));
+      const listed = new Set(
+        value.sortOrder.map((uid) =>
+          uid.startsWith(NESTED_ELEMENT_UID_PREFIX)
+            ? uid.slice(NESTED_ELEMENT_UID_PREFIX.length)
+            : uid
+        )
+      );
+      const replacements = (serverUis ?? [])
+        .map((ui) => ui.scope.at(-1)!)
+        .filter((uid) => !listed.has(uid));
+
+      if (!stale.length || stale.length !== replacements.length) {
+        return;
+      }
+
+      const next = structuredClone(toRaw(value));
+
+      stale.forEach((uid, index) => {
+        const replacement = replacements[index]!;
+        next.entries[replacement] = next.entries[uid]!;
+        delete next.entries[uid];
+        next.sortOrder[next.sortOrder.indexOf(uid)] = replacement;
+      });
+
+      options.update(next);
+    }
+  );
+
   onMounted(() => {
     void initializeMinimumEntries();
   });
