@@ -79,7 +79,10 @@ const creation = vi.hoisted(() => ({
   showError: vi.fn(),
 }));
 
-vi.mock('@/modules/messages/messages', () => ({showError: creation.showError}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/modules/messages/messages')>()),
+  showError: creation.showError,
+}));
 
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
@@ -135,7 +138,10 @@ function controller(options = {}) {
 
 async function mountModal(
   instance: ElementSelectorController,
-  returnFocus?: () => HTMLElement | null
+  presentation: {
+    returnFocus?: () => HTMLElement | null;
+    onHandoff?: (settled: Promise<void>) => void;
+  } = {}
 ) {
   const {default: ElementSelectorModal} =
     await import('./ElementSelectorModal.vue');
@@ -143,7 +149,7 @@ async function mountModal(
   const app = createApp(
     defineComponent({
       setup: () => () =>
-        h(ElementSelectorModal, {controller: instance, returnFocus}),
+        h(ElementSelectorModal, {controller: instance, ...presentation}),
     })
   );
   app.config.compilerOptions.isCustomElement = (tag: string) =>
@@ -514,7 +520,7 @@ describe('the new entry button', () => {
 
   beforeEach(() => {
     creation.post.mockReset();
-    creation.openSlideout.mockReset();
+    creation.openSlideout.mockReset().mockResolvedValue({id: 'slideout-1'});
     creation.showError.mockReset();
     window.Craft = {
       publishableSections: [
@@ -611,7 +617,9 @@ describe('the new entry button', () => {
     const addButton = document.createElement('button');
     let focusTarget = addButton;
     const instance = controller();
-    const {host, unmount} = await mountModal(instance, () => focusTarget);
+    const {host, unmount} = await mountModal(instance, {
+      returnFocus: () => focusTarget,
+    });
     await instance.open();
     await nextTick();
 
@@ -672,6 +680,48 @@ describe('the new entry button', () => {
     unmount();
   });
 
+  it('tells the opener when it has handed off to the slideout', async () => {
+    const handoffs: Array<Promise<void>> = [];
+    const instance = controller();
+    const {host, unmount} = await mountModal(instance, {
+      onHandoff: (settled) => handoffs.push(settled),
+    });
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    let closedWhenHandedOff: boolean | null = null;
+    instance.on('close', () => {
+      closedWhenHandedOff = handoffs.length === 1;
+    });
+    creation.post.mockResolvedValue({data: {entry: {id: 21, draftId: 5}}});
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+
+    // Told before the modal closes, as that's when openers resume
+    expect(closedWhenHandedOff).toBe(true);
+
+    let settled = false;
+    void handoffs[0]!.then(() => {
+      settled = true;
+    });
+    const [, options] = creation.openSlideout.mock.calls[0]!;
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    await Promise.resolve();
+    expect(settled).toBe(false);
+
+    options.onClosed();
+    await vi.waitFor(() => expect(settled).toBe(true));
+
+    unmount();
+  });
+
   it('keeps the selector open and reports the error when creating fails', async () => {
     const instance = controller();
     const {host, unmount} = await mountModal(instance);
@@ -684,14 +734,20 @@ describe('the new entry button', () => {
     await nextTick();
 
     creation.post.mockRejectedValue({
-      response: {data: {message: 'Couldn’t create entry.'}},
+      response: {data: {message: 'The section is full.'}},
     });
     host
       .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
       .click();
+    // In the modal: the page's messages are behind its dialog, out of reach
     await vi.waitFor(() =>
-      expect(creation.showError).toHaveBeenCalledWith('Couldn’t create entry.')
+      expect(
+        host
+          .querySelector('[slot="secondary-actions"] [role="alert"]')
+          ?.textContent?.trim()
+      ).toBe('The section is full.')
     );
+    expect(creation.showError).not.toHaveBeenCalled();
 
     expect(instance.state.open).toBe(true);
     expect(instance.state.busy).toBe(false);

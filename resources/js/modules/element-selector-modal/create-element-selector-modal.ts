@@ -20,6 +20,13 @@ import {resolveElement} from '@/common/utils/dom';
 export interface ElementSelectorModalPresentationOptions {
   /** Where to put focus when the modal closes. */
   triggerElement?: HTMLElement | (() => HTMLElement | null) | null;
+  /**
+   * Called as the modal closes to hand off to something that can still choose
+   * for it, such as a new entry's slideout, with a promise that settles once
+   * that's done. `onSelect` can be called until then, so an opener that put
+   * itself away for the modal, such as a link popover, should stay that way.
+   */
+  onHandoff?: (settled: Promise<void>) => void;
   /** Legacy Garnish setting, accepted and ignored. */
   closeOtherModals?: boolean;
 }
@@ -41,7 +48,11 @@ export interface ElementSelectorModalHandle {
   setBusy(busy: boolean): void;
 }
 
-const PRESENTATION_KEYS = ['triggerElement', 'closeOtherModals'] as const;
+const PRESENTATION_KEYS = [
+  'triggerElement',
+  'onHandoff',
+  'closeOtherModals',
+] as const;
 
 function splitSettings(settings: ElementSelectorModalSettings) {
   const presentation: ElementSelectorModalPresentationOptions = {};
@@ -120,6 +131,7 @@ export async function createElementSelectorModal(
   const app: App = createApp(ElementSelectorModal, {
     controller,
     returnFocus: () => resolveFocusTarget(presentation.triggerElement),
+    onHandoff: presentation.onHandoff,
   });
 
   // The index renders server HTML through `DynamicHtmlRenderer`, which compiles

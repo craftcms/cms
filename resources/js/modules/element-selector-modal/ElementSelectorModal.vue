@@ -15,6 +15,8 @@
     controller: ElementSelectorController;
     /** What takes focus once the modal has closed. See `CraftDialog.returnFocus`. */
     returnFocus?: () => HTMLElement | null;
+    /** See `ElementSelectorModalPresentationOptions.onHandoff`. */
+    onHandoff?: (settled: Promise<void>) => void;
   }>();
 
   /** The slice of `AssetSelectorController` this component needs. */
@@ -186,6 +188,7 @@
         :source="source"
         :site-id="siteId"
         :opener="returnFocus"
+        :on-handoff="onHandoff"
       />
     </div>
 

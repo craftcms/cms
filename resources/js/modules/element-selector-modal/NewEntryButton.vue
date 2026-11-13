@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed} from 'vue';
+  import {computed, ref, useId} from 'vue';
   import {
     actionClient,
     t,
@@ -9,7 +9,8 @@
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import {openSlideout} from '@/common/slideouts';
-  import {showError} from '@/modules/messages/messages';
+  import InlineFlash from '@/common/components/InlineFlash.vue';
+  import {showError, showMessage} from '@/modules/messages/messages';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
   import CreateEntryController from '@actions/Entries/CreateEntryController';
   import {
@@ -26,7 +27,16 @@
     siteId: number | null;
     /** Where focus goes once the entry's slideout closes. */
     opener?: () => HTMLElement | null;
+    /** See `ElementSelectorModalPresentationOptions.onHandoff`. */
+    onHandoff?: (settled: Promise<void>) => void;
   }>();
+
+  /**
+   * Creation errors are shown here, in the modal: the page's own messages are
+   * behind the modal dialog, where nothing can reach them.
+   */
+  const messageTarget = `new-entry-${useId()}`;
+  const creating = ref(false);
 
   /**
    * Read from `window.Craft` rather than the Inertia page: the modal mounts as
@@ -65,8 +75,10 @@
     const opener = resolveOpener?.() ?? null;
 
     controller.setBusy(true);
+    creating.value = true;
 
-    let entry: {id: number; draftId: number};
+    let entry: {id: number; draftId: number} | null = null;
+    let failure = t('Couldn’t create {type}.', {type: t('entry')});
 
     try {
       const {data} = await actionClient.post(
@@ -79,16 +91,26 @@
     } catch (error) {
       const response = (error as {response?: {data?: {message?: string}}})
         .response;
-      showError(
-        response?.data?.message ??
-          t('Couldn’t create {type}.', {type: t('entry')})
-      );
-
-      return;
+      failure = response?.data?.message ?? failure;
     } finally {
       controller.setBusy(false);
+      creating.value = false;
     }
 
+    // Only once the footer is no longer inert for being busy, so the alert is
+    // announced
+    if (!entry) {
+      showMessage({type: 'error', message: failure, target: messageTarget});
+
+      return;
+    }
+
+    let settle!: () => void;
+    props.onHandoff?.(
+      new Promise<void>((resolve) => {
+        settle = resolve;
+      })
+    );
     controller.close();
 
     let chosen = false;
@@ -107,7 +129,7 @@
       }
     }
 
-    void openSlideout(
+    openSlideout(
       EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
         undefined,
         {
@@ -122,6 +144,7 @@
       ),
       {
         opener,
+        onClosed: () => settle(),
         // Asked again once the panel closes: choosing the entry can fill the
         // field, taking away the Add button that was the opener.
         returnFocus: () => resolveOpener?.() ?? null,
@@ -157,6 +180,14 @@
           void choose(info);
         },
       }
+    ).then(
+      // Not opened, such as when a panel above it wouldn't close
+      (panel) => {
+        if (!panel) {
+          settle();
+        }
+      },
+      () => settle()
     );
   }
 
@@ -197,4 +228,10 @@
       </craft-button>
     </template>
   </ActionMenu>
+
+  <InlineFlash
+    v-if="creatableTypes.length"
+    :target="messageTarget"
+    :busy="creating"
+  />
 </template>
