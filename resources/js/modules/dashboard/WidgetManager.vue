@@ -101,6 +101,7 @@
             widgetName(widget)
           }}</span>
           <craft-select-color
+            class="me-sm"
             .colors="colors"
             swatch-only
             small
