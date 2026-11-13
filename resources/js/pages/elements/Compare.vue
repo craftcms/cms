@@ -122,6 +122,36 @@
     to: false,
   });
 
+  /**
+   * The heading's HTML, when there's a chip to show, with each chip kept on a
+   * line with the word before it ("Compare", "with"), so a line only breaks
+   * between the two pairs. A chip with no word before it in the translation
+   * is left as it is.
+   */
+  const headingHtml = computed<string | null>(() => {
+    if (!props.elementChip) {
+      return null;
+    }
+
+    const chips: Record<string, string> = props.fromElementChip
+      ? {from: props.fromElementChip, to: props.elementChip}
+      : {element: props.elementChip};
+    const markers = Object.fromEntries(
+      Object.keys(chips).map((key) => [key, `${key}`])
+    );
+    const message = props.fromElementChip
+      ? t('Compare {from} with {to}', markers)
+      : t('Compare {element}', markers);
+
+    return message.replace(
+      /(?:([^\s\uE000]+)\s+)?(\w+)/g,
+      (_match, word: string | undefined, key: string) =>
+        word
+          ? `<span class="compare__pair">${word} ${chips[key]}</span>`
+          : chips[key]!
+    );
+  });
+
   /** The layout UIDs of each side's fields with errors. */
   const erroredUids = shallowReactive<Record<CompareSide, string[]>>({
     from: [],
@@ -899,36 +929,28 @@
 <template>
   <div ref="root" class="compare">
     <LayoutSlot name="title">
-      <h1
-        v-if="elementChip && fromElementChip"
-        class="compare__heading text-xl"
-        v-html="
-          t('Compare {from} with {to}', {
-            from: fromElementChip,
-            to: elementChip,
-          })
-        "
-      ></h1>
-      <h1
-        v-else-if="elementChip"
-        class="compare__heading text-xl"
-        v-html="t('Compare {element}', {element: elementChip})"
-      ></h1>
-      <h1 v-else class="cp-h1">{{ title }}</h1>
-    </LayoutSlot>
+      <div class="compare__title">
+        <h1
+          v-if="headingHtml"
+          class="compare__heading text-xl"
+          v-html="headingHtml"
+        ></h1>
+        <h1 v-else class="compare__heading cp-h1">{{ title }}</h1>
 
-    <LayoutSlot v-if="closeUrl" name="content-actions">
-      <CpButtonLink
-        id="compare-close"
-        :href="closeUrl"
-        icon=""
-        size="small"
-        flush="inline-end"
-        :variant="ButtonVariant.Plain"
-      >
-        <craft-icon name="xmark-large" :label="t('Close')"></craft-icon>
-      </CpButtonLink>
-      <craft-tooltip for="compare-close">{{ t('Close') }}</craft-tooltip>
+        <div v-if="closeUrl" class="compare__close text-xl">
+          <CpButtonLink
+            id="compare-close"
+            :href="closeUrl"
+            icon=""
+            size="small"
+            flush="inline-end"
+            :variant="ButtonVariant.Plain"
+          >
+            <craft-icon name="xmark-large" :label="t('Close')"></craft-icon>
+          </CpButtonLink>
+          <craft-tooltip for="compare-close">{{ t('Close') }}</craft-tooltip>
+        </div>
+      </div>
     </LayoutSlot>
 
     <div ref="headers" class="compare__headers">
@@ -1134,15 +1156,7 @@
           :data-compare-side="key"
           :role="side.editor ? 'group' : undefined"
           :aria-labelledby="side.editor ? `compare-${key}-title` : undefined"
-        >
-          <!-- Tells stacked sides' buttons apart. Decorative: the group is
-               named by its side's heading. -->
-          <craft-icon
-            :name="sideIcons[key]"
-            class="compare__side-icon"
-            aria-hidden="true"
-          ></craft-icon>
-        </div>
+        ></div>
       </div>
     </div>
 
@@ -1179,8 +1193,42 @@
 </template>
 
 <style scoped>
+  .compare__title {
+    display: flex;
+    flex: 1 1 0;
+    gap: var(--c-spacing-md);
+    align-items: first baseline;
+    min-width: 0;
+  }
+
+  .compare__heading {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  /* A line of the heading's own type, so the button centers on its first
+     line the way the chips do. */
+  .compare__close {
+    flex: none;
+  }
+
+  .compare__close :deep(craft-button) {
+    font-size: var(--c-text-base);
+    vertical-align: middle;
+  }
+
+  .compare__heading :deep(.compare__pair) {
+    display: inline-flex;
+    column-gap: 0.25em;
+    align-items: center;
+    max-width: 100%;
+  }
+
   .compare__heading :deep(.inline-chips) {
     display: inline-flex;
+    min-width: 0;
+    max-width: 100%;
+    margin-block: 1px;
     vertical-align: middle;
   }
 
@@ -1312,6 +1360,7 @@
 
   .compare__footer-actions-cell--to {
     grid-column: 2;
+    border-inline-start: 1px solid var(--compare-hairline);
   }
 
   .compare__footer-notices-cell,
@@ -1333,12 +1382,6 @@
 
   .compare__footer-actions:not(:has(.compare-footer__actions)) {
     display: none;
-  }
-
-  /* A side without buttons keeps its column, empty. */
-  .compare__footer-actions-cell:not(:has(.compare-footer__actions))
-    > .compare__side-icon {
-    visibility: hidden;
   }
 
   .compare__row + .compare__row {
@@ -1452,24 +1495,6 @@
       display: flex;
       translate: 0 -50%;
     }
-
-    .compare__footer-actions-cell {
-      display: grid;
-      grid-template-columns: var(--compare-side-icon-column) minmax(0, 1fr);
-      align-items: center;
-      column-gap: var(--c-spacing-sm);
-      padding-inline-start: var(--compare-cell-padding-inline);
-      --compare-side-icon-column: calc(var(--c-size-icon-md) * 1.25);
-    }
-
-    .compare__footer-actions-cell > .compare__side-icon {
-      display: inline-flex;
-      font-size: var(--c-size-icon-md);
-    }
-
-    .compare__footer-actions-cell :deep(.compare-footer__actions) {
-      padding-inline-start: 0;
-    }
   }
 
   @container compare (width >= 48rem) {
@@ -1508,8 +1533,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .compare__footer-notices-cell--to,
-    .compare__footer-actions-cell--to {
+    .compare__footer-notices-cell--to {
       grid-column: 2;
       border-inline-start: 1px solid var(--compare-hairline);
     }
