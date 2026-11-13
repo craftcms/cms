@@ -30,6 +30,10 @@ class ImportPlansSeeder extends Seeder
 
     private const string PREVIEW_SOURCE = '@craftcms/workbench/resources/import/guides-preview.json';
 
+    private const string SLOW_SOURCE = '@craftcms/workbench/resources/import/slow-run.json';
+
+    private const string SLOW_ERRORS_SOURCE = '@craftcms/workbench/resources/import/slow-run-errors.json';
+
     /**
      * The guides the preview data matches: the first six as the data has them, the rest with older summaries.
      *
@@ -113,28 +117,49 @@ class ImportPlansSeeder extends Seeder
         $nestedErrors['guideContent']['guideStepGroup']['fields']['guideSteps']['guideStep']['title'] = 'content.steps.heading';
         unset($nestedErrors['guideFaq']['guideFaqItem']['title']);
 
-        $this->plan('Guides: flat fields', 'guidesFlat', 'Maps a guide’s own fields, with its slug made from a template.', $flat, [
+        $this->plan('Guides: flat fields', 'guidesFlat', 'Maps a guide’s own fields, with its slug made from a template.', [$this->step($flat, [
             'matchCriteria' => ['slug' => '1'],
             'matchMode' => 'updateOnly',
-        ]);
-        $this->plan('Guides: one level of nesting', 'guidesOneLevel', 'Adds the Content and FAQ Matrix fields’ blocks.', $oneLevel, [
+        ])]);
+        $this->plan('Guides: one level of nesting', 'guidesOneLevel', 'Adds the Content and FAQ Matrix fields’ blocks.', [$this->step($oneLevel, [
             'matchCriteria' => ['slug' => '1'],
-        ]);
-        $this->plan('Guides: three levels of nesting', 'guidesThreeLevels', 'Adds step groups, their steps, and each step’s tips.', $threeLevels, [
+        ])]);
+        $this->plan('Guides: three levels of nesting', 'guidesThreeLevels', 'Adds step groups, their steps, and each step’s tips.', [$this->step($threeLevels, [
             'matchCriteria' => ['slug' => '1'],
             'clearableItems' => ['guideReadingTime' => '1'],
             'defaultValues' => ['guideDifficulty' => 'beginner'],
-        ]);
-        $this->plan('Guides: nested errors', 'guidesNestedErrors', 'Leaves the steps’ and questions’ titles unmapped, to show where nested entries fail validation.', $nestedErrors, [
+        ])]);
+        $this->plan('Guides: nested errors', 'guidesNestedErrors', 'Leaves the steps’ and questions’ titles unmapped, to show where nested entries fail validation.', [$this->step($nestedErrors, [
             'matchCriteria' => ['slug' => '1'],
-        ]);
+        ])]);
 
         // the data has items that are new, update or match these guides as they are, are skipped (see the workbench's
         // service provider), or fail validation
         $this->seedPreviewGuides();
-        $this->plan('Guides: every preview result', 'guidesPreviewResults', 'Enough guides to page through, with an item for every result a preview can show.', $flat, [
+        $this->plan('Guides: every preview result', 'guidesPreviewResults', 'Enough guides to page through, with an item for every result a preview can show.', [$this->step($flat, [
             'matchCriteria' => ['slug' => '1'],
-        ], self::PREVIEW_SOURCE);
+        ], self::PREVIEW_SOURCE)]);
+
+        // every item takes a moment and is skipped, so a run takes a while without importing anything (see the
+        // workbench's service provider); some of the errors data's items fail
+        $slow = fn (string $source) => $this->step(['title' => 'title', 'guideSummary' => 'summary'], source: $source, batchSize: 10);
+
+        $this->plan('Slow run: one step', 'slowRunOneStep', 'Takes about 10 seconds and imports nothing.', [
+            $slow(self::SLOW_SOURCE),
+        ]);
+        $this->plan('Slow run: three steps', 'slowRunThreeSteps', 'Takes about 30 seconds and imports nothing.', [
+            $slow(self::SLOW_SOURCE),
+            $slow(self::SLOW_SOURCE),
+            $slow(self::SLOW_SOURCE),
+        ]);
+        $this->plan('Slow run with errors: one step', 'slowRunErrorsOneStep', 'Takes about 10 seconds, imports nothing, and four items fail.', [
+            $slow(self::SLOW_ERRORS_SOURCE),
+        ]);
+        $this->plan('Slow run with errors: three steps', 'slowRunErrorsThreeSteps', 'Takes about 30 seconds and imports nothing; four of the second step’s items fail.', [
+            $slow(self::SLOW_SOURCE),
+            $slow(self::SLOW_ERRORS_SOURCE),
+            $slow(self::SLOW_SOURCE),
+        ]);
     }
 
     private function seedPreviewGuides(): void
@@ -173,10 +198,9 @@ class ImportPlansSeeder extends Seeder
     }
 
     /**
-     * @param  array<string, mixed>  $map
-     * @param  array<string, mixed>  $settings
+     * @param  list<array<string, mixed>>  $steps
      */
-    private function plan(string $name, string $handle, string $description, array $map, array $settings = [], string $source = self::SOURCE): void
+    private function plan(string $name, string $handle, string $description, array $steps): void
     {
         $plans = app(ImportPlans::class);
 
@@ -188,25 +212,37 @@ class ImportPlansSeeder extends Seeder
             ->name($name)
             ->handle($handle)
             ->description($description)
-            ->steps([[
-                'uid' => Str::uuid()->toString(),
-                'type' => EntryImporter::class,
-                'source' => $source,
-                'transformer' => null,
-                'batchSize' => null,
-                'enabled' => true,
-                'settings' => [
-                    'site' => Sites::getPrimarySite()->handle,
-                    'section' => 'guides',
-                    'entryType' => 'guide',
-                    'map' => $map,
-                    'templates' => ['slug' => '{title|kebab}'],
-                    ...$settings,
-                ],
-            ]]);
+            ->steps($steps);
 
         if (! $plans->saveImportPlan($plan)) {
             throw new RuntimeException("Failed to create the {$name} import plan: ".Json::encode($plan->errors()->all()));
         }
+    }
+
+    /**
+     * A step importing into the Guides section.
+     *
+     * @param  array<string, mixed>  $map
+     * @param  array<string, mixed>  $settings
+     * @return array<string, mixed>
+     */
+    private function step(array $map, array $settings = [], string $source = self::SOURCE, ?int $batchSize = null): array
+    {
+        return [
+            'uid' => Str::uuid()->toString(),
+            'type' => EntryImporter::class,
+            'source' => $source,
+            'transformer' => null,
+            'batchSize' => $batchSize,
+            'enabled' => true,
+            'settings' => [
+                'site' => Sites::getPrimarySite()->handle,
+                'section' => 'guides',
+                'entryType' => 'guide',
+                'map' => $map,
+                'templates' => ['slug' => '{title|kebab}'],
+                ...$settings,
+            ],
+        ];
     }
 }

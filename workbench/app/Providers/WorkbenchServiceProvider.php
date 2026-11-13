@@ -20,7 +20,9 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Sleep;
 use Laravel\Ai\AiManager;
+use RuntimeException;
 use Workbench\App\Ai\WorkbenchAiProvider;
 use Workbench\App\Ui\UiKitchenSink;
 use Workbench\App\Widgets\HtmlExample;
@@ -70,8 +72,17 @@ class WorkbenchServiceProvider extends ServiceProvider
             app()->useAppPath(package_path('src'));
         });
 
-        // Skips the items the workbench's import data marks, as a plugin can, so a preview can show skipped items.
+        // Acts on what the workbench's import data marks: `skip` skips an item, as a plugin can, so a preview can show
+        // skipped items; `delay` (ms) and `fail` give a run something to show its progress and failures with.
         Event::listen(function (ItemImporting $event): void {
+            if (! $event->importer->previewing) {
+                Sleep::usleep((int) ($event->data['delay'] ?? 0) * 1000);
+
+                if (isset($event->data['fail'])) {
+                    throw new RuntimeException($event->data['fail']);
+                }
+            }
+
             if (($event->data['skip'] ?? false) === true) {
                 $event->isValid = false;
             }
