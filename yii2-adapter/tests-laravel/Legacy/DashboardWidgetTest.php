@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use craft\base\Widget;
 use craft\widgets\Feed;
+use craft\widgets\MissingWidget;
 use CraftCms\Cms\Http\Controllers\Dashboard\InteractsWithWidgets;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 
@@ -18,6 +19,7 @@ it('renders HTML plugin widgets and their registered assets', function(string $t
     $data = $renderer->render($widget);
 
     expect($data->component)->toBe('craft:html-widget')
+        ->and($data->color?->value)->toBe('gray')
         ->and($data->fragment->html)->toBe('<p>Plugin body</p>')
         ->and($data->fragment->bodyHtml)->toContain('window.widgetLoaded = true;');
 })->with([DashboardBaseHtmlWidget::class, DashboardPluginFeed::class]);
@@ -40,7 +42,7 @@ it('keeps unmodified built-in widgets on their core renderer', function() {
 
     expect($widget->component())->toBe('craft:widget-feed')
         ->and($widget->props()['url'])->toBe('https://example.com/feed')
-        ->and(new craft\widgets\MissingWidget()->component())->toBeNull();
+        ->and(new MissingWidget()->component())->toBeNull();
 });
 
 class DashboardBaseHtmlWidget extends Widget
