@@ -136,7 +136,8 @@ class ComposerTest extends TestCase
         ];
     }
 
-    public function testSystemComposerExecutionAndRollback(): void
+    /** @dataProvider executableDataProvider */
+    public function testSystemComposerExecutionAndRollback(string $extension): void
     {
         $this->writeExecutable(<<<'PHP'
 if (in_array('--version', $argv, true)) {
@@ -145,7 +146,7 @@ if (in_array('--version', $argv, true)) {
 }
 echo json_encode(['arguments' => array_slice($argv, 1), 'home' => getenv('COMPOSER_HOME')]);
 exit(is_file(__DIR__ . '/fail') ? 1 : 0);
-PHP);
+PHP, $extension);
         $jsonPath = "$this->directory/composer.json";
         file_put_contents($jsonPath, '{"require":{}}');
         file_put_contents("$this->directory/composer.lock", '{}');
@@ -174,11 +175,18 @@ PHP);
         }
     }
 
-    private function writeExecutable(string $code): void
+    public static function executableDataProvider(): array
+    {
+        return DIRECTORY_SEPARATOR === '\\'
+            ? ['batch' => ['bat'], 'command' => ['cmd']]
+            : ['shell' => ['']];
+    }
+
+    private function writeExecutable(string $code, string $extension = 'bat'): void
     {
         file_put_contents("$this->directory/composer.php", "<?php\n$code\n");
         if (DIRECTORY_SEPARATOR === '\\') {
-            file_put_contents("$this->directory/composer.bat", '@echo off' . "\r\n" . '"' . PHP_BINARY . '" "%~dp0composer.php" %*');
+            file_put_contents("$this->directory/composer.$extension", '@echo off' . "\r\n" . '"' . PHP_BINARY . '" "%~dp0composer.php" %*');
         } else {
             file_put_contents("$this->directory/composer", "#!/bin/sh\nexec " . escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg("$this->directory/composer.php") . ' "$@"');
             chmod("$this->directory/composer", 0755);
