@@ -174,6 +174,15 @@ export default class CraftSelectRich extends FormAssociated(
     return true;
   }
 
+  /**
+   * Whether the field is drawn like a plain button, sized to its selection
+   * rather than the widest option. A subclass whose selection is compact,
+   * such as a swatch, returns true.
+   */
+  protected get _plainInvoker(): boolean {
+    return false;
+  }
+
   get #singleOption(): boolean {
     return this.#options.length === 1;
   }
@@ -342,6 +351,7 @@ export default class CraftSelectRich extends FormAssociated(
 
     invoker.id ||= this._inputId;
     invoker.singleOption = single;
+    invoker.plain = this._plainInvoker;
     invoker.disabled = this.#disabled;
     render(this._selectedTemplate(selected), invoker);
 
@@ -390,6 +400,11 @@ export default class CraftSelectRich extends FormAssociated(
     const invoker = this._control;
 
     if (!layer || !pane || !invoker || this.open) {
+      return;
+    }
+
+    if (this._plainInvoker) {
+      invoker.style.removeProperty('min-width');
       return;
     }
 

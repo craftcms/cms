@@ -101,8 +101,9 @@
             widgetName(widget)
           }}</span>
           <craft-select-color
-            class="widget-color"
             .colors="colors"
+            swatch-only
+            small
             allow-transparent
             :blank-label="t('No color')"
             .value="widget.color ?? NO_COLOR"
@@ -146,12 +147,5 @@
     width: min(26rem, calc(100vw - 2rem));
     max-width: none;
     max-height: min(36rem, calc(100dvh - 8rem));
-  }
-
-  /* Wide enough for the longest color's name beside its swatch, leaving the
-     row's other controls on one line. */
-  .widget-color {
-    flex: none;
-    inline-size: 8.5rem;
   }
 </style>

@@ -425,6 +425,7 @@
 - Field layout elements that implement Craft 5’s `inputHtml()` or `formHtml()` rather than `uiControl()` or `uiNode()` are still shown in element edit screens when the Yii adapter is installed. ([#20508](https://github.com/craftcms/cms/pull/20508))
 - Added `CraftCms\Cms\Cp\FormFields::fieldSelectHtml()`.
 - Added the `actions` slot to `<craft-field>`.
+- Added the `swatch-only` property to `<craft-select-color>`, which shows the selected color’s swatch alone, on a field drawn like a plain button.
 - Added the `<craft-checkbox-select>` web component, which replaces checkbox selects and sortable checkbox selects. It has an “All” option, independent `sortable` and `presentation="add-menu"` options, and an `options` property along with `addOption()`, `updateOption()`, and `removeOption()` methods for changing its options at runtime. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - Added the `presentation` option to the `forms.checkboxSelect` and `forms.checkboxSelectField` macros and `Craft.ui.createCheckboxSelect()`. Set it to `checkboxes` to make a sortable checkbox select list every option rather than an “Add item” menu. ([#20036](https://github.com/craftcms/cms/pull/20036))
 - While a checkbox select's “All” option is checked, its other options are now left checked but unnamed, rather than disabled. ([#20036](https://github.com/craftcms/cms/pull/20036))

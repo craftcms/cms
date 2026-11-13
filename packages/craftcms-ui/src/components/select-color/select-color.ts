@@ -4,6 +4,7 @@ import {colors as paletteColors} from '@src/constants/colors';
 import {t} from '@src/utilities/translate';
 import CraftSelectRich from '../select-rich/select-rich.js';
 import styles from './select-color.styles.js';
+import type CraftOption from '../option/option.js';
 import '../option/option.js';
 
 /**
@@ -71,6 +72,14 @@ export default class CraftSelectColor extends CraftSelectRich {
   allowCustom = false;
 
   /**
+   * Shows the selected color as its swatch alone, on a field drawn like a
+   * plain button. The color's name stays in the field for assistive
+   * technology, and the options keep their names.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'swatch-only'})
+  swatchOnly = false;
+
+  /**
    * Offered colors, in order: palette color names, or hex colors such as
    * `#e5422b`. Defaults to the shared palette.
    */
@@ -98,8 +107,13 @@ export default class CraftSelectColor extends CraftSelectRich {
    * scoped stylesheet) so the rendered node stays self-contained when the
    * rich select copies the selected option's content into its field, where
    * this component's class rules don't apply.
+   *
+   * `edge` replaces the swatch's edge color.
    */
-  protected _swatchTemplate(color: string) {
+  protected _swatchTemplate(
+    color: string,
+    edge: string = this._swatchBorder(color)
+  ) {
     // The "Custom…" option has no color of its own, so it keeps the swatch's
     // space only, lining its name up with the others.
     if (color === '__custom__') {
@@ -117,7 +131,7 @@ export default class CraftSelectColor extends CraftSelectRich {
     const shadows = [
       '0 0 0 1px var(--c-select-color-swatch-ring, transparent)',
       '0 1px 1px rgb(0 0 0 / 20%)',
-      `inset 0 0 0 1px ${this._swatchBorder(color)}`,
+      `inset 0 0 0 1px ${edge}`,
     ];
 
     const base =
@@ -143,7 +157,9 @@ export default class CraftSelectColor extends CraftSelectRich {
 
     const style = isTransparent
       ? base + transparent
-      : base + `background-color:${fill};`;
+      : color === ''
+        ? base
+        : base + `background-color:${fill};`;
 
     return html`<span
       class="select-color__swatch"
@@ -154,11 +170,11 @@ export default class CraftSelectColor extends CraftSelectRich {
 
   /**
    * The border color of a card header in the given color, mirroring the
-   * card's own exceptions for black and white. A hex color or
-   * `transparent`, which has no card, takes the no-color swatch's edge.
+   * card's own exceptions for black and white. A hex color, `transparent` or
+   * no color (`''`), which have no card, take the no-color swatch's edge.
    */
   protected _swatchBorder(color: string): string {
-    if (isHex(color) || color === 'transparent') {
+    if (isHex(color) || color === 'transparent' || color === '') {
       return this._swatchBorder('__blank__');
     }
 
@@ -197,6 +213,35 @@ export default class CraftSelectColor extends CraftSelectRich {
     return false;
   }
 
+  protected override get _plainInvoker(): boolean {
+    return this.swatchOnly;
+  }
+
+  /**
+   * With `swatch-only`, the field shows the selected color's swatch, which
+   * keeps its color in forced colors mode since it's all the field shows, and
+   * names the color in screen-reader-only text. With no color, or "Custom…",
+   * the swatch is an empty ring. Its edge is what shows where the field is,
+   * so it takes a neutral border color that stands out from the tinted
+   * surfaces around it.
+   */
+  protected override _selectedTemplate(
+    option: CraftOption | undefined
+  ): unknown {
+    if (!this.swatchOnly) {
+      return super._selectedTemplate(option);
+    }
+
+    const color = option?.value === '__custom__' ? '' : (option?.value ?? '');
+
+    return html`<span style="display:flex;forced-color-adjust:none;"
+        >${this._swatchTemplate(
+          color,
+          'var(--_swatch-only-edge, var(--c-color-neutral-border-normal))'
+        )}</span
+      ><span class="sr-only">${option?.textContent?.trim() ?? ''}</span>`;
+  }
+
   override connectedCallback() {
     // Rendered first, so the rich select finds them as it connects.
     this.#renderOptions();
@@ -206,12 +251,14 @@ export default class CraftSelectColor extends CraftSelectRich {
   override updated(changed: PropertyValues<this>) {
     super.updated(changed);
 
+    // Rendering the options also redraws the field, which `swatch-only` changes.
     if (
       changed.has('colors') ||
       changed.has('labels') ||
       changed.has('allowTransparent') ||
       changed.has('blankLabel') ||
-      changed.has('allowCustom')
+      changed.has('allowCustom') ||
+      changed.has('swatchOnly')
     ) {
       this.#renderOptions();
     }
