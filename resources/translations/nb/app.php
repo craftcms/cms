@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Kunne ikke lagre volumet.',
     'Couldn’t save widget.' => 'Kunne ikke lagre modul.',
     'Couldn’t save {type}.' => 'Kunne ikke lagre {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Kunne ikke sende aktiverings-e-post: {error}',
     'Couldn’t suspend all users.' => 'Kunne ikke suspendere alle brukere.',
     'Couldn’t suspend user.' => 'Kunne ikke suspendere bruker.',
