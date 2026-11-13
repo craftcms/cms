@@ -49,6 +49,8 @@ it('ignores the last signed-in user’s preference when a user is logged in', fu
 });
 
 it('remembers the user’s preference when they sign in and out', function () {
+    config()->set('session.path', '/app');
+    config()->set('session.domain', '.example.test');
     $user = User::findOne();
     app(Users::class)->saveUserPreferences($user, ['theme' => 'dark']);
 
@@ -62,5 +64,7 @@ it('remembers the user’s preference when they sign in and out', function () {
 
     expect(Cookie::queued(Theme::PREFERENCE_COOKIE))
         ->getValue()->toBe('light')
+        ->getPath()->toBe('/')
+        ->getDomain()->toBeNull()
         ->isHttpOnly()->toBeFalse();
 });

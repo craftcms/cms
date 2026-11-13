@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Cp\Enums;
 
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cookie;
+use Symfony\Component\HttpFoundation\Cookie as SymfonyCookie;
 
 /**
  * Control panel color themes a user can choose in their preferences. `System`
@@ -45,11 +46,23 @@ enum Theme: string
     /**
      * Remembers the user's preference in {@see self::PREFERENCE_COOKIE} for the
      * pages shown once they sign out. The control panel's JavaScript keeps it up
-     * to date as the preference changes, so it isn't HTTP-only.
+     * to date as the preference changes, so it isn't HTTP-only, and it has the
+     * same path and host-only domain as the JavaScript one, rather than the
+     * session's, so the two never coexist.
      */
     public static function rememberPreference(User $user): void
     {
-        Cookie::queue(Cookie::make(self::PREFERENCE_COOKIE, self::forUser($user)->value, 525600, httpOnly: false, sameSite: 'lax'));
+        Cookie::queue(new SymfonyCookie(
+            self::PREFERENCE_COOKIE,
+            self::forUser($user)->value,
+            now()->addYear(),
+            '/',
+            null,
+            request()->isSecure(),
+            false,
+            false,
+            SymfonyCookie::SAMESITE_LAX,
+        ));
     }
 
     /**
