@@ -3,6 +3,7 @@ import {
   closestComposed,
   focusReturnFor,
   isFocusable,
+  menuInvokerOf,
   type FocusReturnResolver,
 } from '@craftcms/ui/utilities/focus-return';
 import {t} from '@craftcms/ui/utilities/translate';
@@ -202,13 +203,26 @@ export function openSlideoutWith(
 
 /**
  * The panel an element lives in, or `null` if it's on the base page. Looks past
- * shadow roots, as an opener can be a control inside a web component.
+ * shadow roots, as an opener can be a control inside a web component, and from
+ * a popover to its invoker, as a popover can be mounted on `<body>`.
  */
 function originPanel(opener: HTMLElement | null): string | null {
-  return (
-    (opener && closestComposed(opener, '[data-slideout-id]'))?.dataset
-      .slideoutId ?? null
-  );
+  const seen = new Set<Element>();
+
+  for (
+    let node: HTMLElement | null = opener;
+    node && !seen.has(node);
+    node = menuInvokerOf(node)
+  ) {
+    seen.add(node);
+    const panel = closestComposed(node, '[data-slideout-id]');
+
+    if (panel) {
+      return panel.dataset.slideoutId ?? null;
+    }
+  }
+
+  return null;
 }
 
 /** Ids of the panels stacked above `panelId`, or all of them for `null`. */

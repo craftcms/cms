@@ -148,6 +148,28 @@ describe('slideout store', () => {
     expect(slideoutPanels().map((p) => p.href)).toEqual(['/a', '/b']);
   });
 
+  it('nests a panel opened from a popover mounted outside the panel it was opened in', async () => {
+    fetchSlideoutPage.mockResolvedValue({
+      component: defineComponent({render: () => h('div')}),
+      props: {},
+      url: '/a',
+    });
+
+    const first = (await openSlideout('/a'))!;
+    // As the Markdown field's link popover is: on <body>, anchored to its
+    // toolbar button in the panel
+    const popover = document.createElement('craft-popover') as HTMLElement & {
+      anchor?: HTMLElement;
+    };
+    popover.anchor = openerInPanel(first.id);
+    const button = document.createElement('button');
+    popover.append(button);
+    document.body.append(popover);
+    await openSlideout('/b', {opener: button});
+
+    expect(slideoutPanels().map((p) => p.href)).toEqual(['/a', '/b']);
+  });
+
   it('replaces the open panel when opened from the base page again', async () => {
     fetchSlideoutPage.mockResolvedValue({
       component: defineComponent({render: () => h('div')}),
