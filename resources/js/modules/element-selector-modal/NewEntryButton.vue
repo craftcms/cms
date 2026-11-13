@@ -1,11 +1,12 @@
 <script setup lang="ts">
-  import {computed, ref, useId} from 'vue';
+  import {computed, ref} from 'vue';
   import {
     actionClient,
     t,
     type ElementInfo,
     type ElementSelectorController,
   } from '@craftcms/ui';
+  import {uniqueId} from '@craftcms/ui/utilities/unique-id';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
   import {openSlideout} from '@/common/slideouts';
@@ -35,7 +36,8 @@
    * Creation errors are shown here, in the modal: the page's own messages are
    * behind the modal dialog, where nothing can reach them.
    */
-  const messageTarget = `new-entry-${useId()}`;
+  // Not `useId()`: each modal is its own Vue app, so those would repeat
+  const messageTarget = uniqueId('new-entry');
   const creating = ref(false);
 
   /**
@@ -105,12 +107,13 @@
       return;
     }
 
+    // Created whether or not there's an `onHandoff`, which an optional call
+    // would skip along with its argument, leaving `settle` unset
     let settle!: () => void;
-    props.onHandoff?.(
-      new Promise<void>((resolve) => {
-        settle = resolve;
-      })
-    );
+    const settled = new Promise<void>((resolve) => {
+      settle = resolve;
+    });
+    props.onHandoff?.(settled);
     controller.close();
 
     let chosen = false;

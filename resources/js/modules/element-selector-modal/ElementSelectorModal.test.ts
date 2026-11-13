@@ -592,6 +592,9 @@ describe('the new entry button', () => {
     options.onSaved({data: {element: {id: 34, title: 'Jane Austen'}}});
     expect(onSelect).toHaveBeenCalledTimes(1);
 
+    // Without an `onHandoff`, as relation fields open it
+    expect(() => options.onClosed()).not.toThrow();
+
     unmount();
   });
 
@@ -720,6 +723,44 @@ describe('the new entry button', () => {
     await vi.waitFor(() => expect(settled).toBe(true));
 
     unmount();
+  });
+
+  it('reports a creation error in its own modal when another has been opened', async () => {
+    // Each modal is its own Vue app, as `createElementSelectorModal` mounts
+    // them, and the one shown last registers its message outlet last
+    async function showModal() {
+      const instance = controller();
+      const modal = await mountModal(instance);
+      await instance.open();
+      await nextTick();
+      stub.emit!('sources-change', [source]);
+      stub.emit!('source-change', source);
+      stub.emit!('site-change', 2);
+      await nextTick();
+
+      return modal;
+    }
+
+    const firstModal = await showModal();
+    const secondModal = await showModal();
+
+    creation.post.mockRejectedValue({
+      response: {data: {message: 'The section is full.'}},
+    });
+    firstModal.host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+
+    await vi.waitFor(() =>
+      expect(
+        firstModal.host
+          .querySelector('[slot="secondary-actions"] [role="alert"]')
+          ?.textContent?.trim()
+      ).toBe('The section is full.')
+    );
+
+    secondModal.unmount();
+    firstModal.unmount();
   });
 
   it('keeps the selector open and reports the error when creating fails', async () => {
