@@ -209,10 +209,12 @@ export function useSettingsSave<T extends object>(
 
         const closing = !keepOpen || options.forceClose?.();
 
-        // The save itself went through; a panel the reload fails for just
-        // keeps showing what it did.
+        let reloadFailed = false;
+
         if (!closing && options.reloadKeptOpen?.()) {
-          await slideout!.reload({preserveState: true}).catch(() => undefined);
+          await slideout!
+            .reload({preserveState: true})
+            .catch(() => (reloadFailed = true));
         }
 
         // As with an Inertia visit, the form is still processing while
@@ -230,6 +232,11 @@ export function useSettingsSave<T extends object>(
         // defaults are updated, which the page behind does on reload.
         if (closing) {
           slideout!.close({force: true});
+        } else if (reloadFailed) {
+          // The save went through, but the screen still shows what it
+          // replaced, and saving it again would go wrong. Load the panel
+          // afresh instead, which shows its error if it fails again.
+          void slideout!.reload();
         }
 
         if (handled) {

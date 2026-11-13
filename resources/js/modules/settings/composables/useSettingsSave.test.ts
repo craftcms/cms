@@ -261,6 +261,31 @@ describe('useSettingsSave in a slideout', () => {
     }
   );
 
+  it('loads a panel afresh when reloading it after the save fails', async () => {
+    const reload = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Offline'))
+      .mockResolvedValue(undefined);
+    slideout = {
+      instance: {containerId: 'slideout-1'},
+      close: vi.fn(),
+      reload,
+      saved: vi.fn(() => true),
+    };
+    const onSuccess = vi.fn();
+    const form = makeForm();
+    const {save} = run(() =>
+      useTestSettingsSave(form, {reloadKeptOpen: () => true, onSuccess})
+    );
+
+    save({redirect: false});
+    await vi.waitFor(() => expect(reload).toHaveBeenCalledTimes(2));
+
+    expect(reload.mock.calls).toEqual([[{preserveState: true}], []]);
+    expect(onSuccess).toHaveBeenCalledOnce();
+    expect(form.processing).toBe(false);
+  });
+
   /**
    * An opener that registered `onSaved` refreshes itself, and knows better than
    * the panel does what needs refreshing — so the blanket reload is skipped.

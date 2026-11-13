@@ -830,8 +830,13 @@ export function useElementEditor({
     }
 
     // A nested scope's payload is only that form; the renderer that asked for
-    // it reconciles it into the layout.
-    if (JSON.stringify(scope) === JSON.stringify(rootScope)) {
+    // it reconciles it into the layout. So does one that lands during a
+    // submission: it was rendered from unsaved values, and the renderers take
+    // a payload arriving then as what the submission saved.
+    if (
+      JSON.stringify(scope) === JSON.stringify(rootScope) &&
+      !form.processing
+    ) {
       applyingSavedPayload = true;
       savedUi.value = response.ui;
       await nextTick();

@@ -1535,6 +1535,25 @@ describe('useElementEditor', () => {
     expect(editor.uiPayload.value?.values).toEqual({title: 'Saved title'});
   });
 
+  it('leaves the layout to the renderer when a refresh lands during a save', async () => {
+    const {editor} = mount(
+      payload({canAutosave: false, ui: fieldLayout('Original title')})
+    );
+    const save = interceptSave();
+    editor.save();
+    postSpy.mockResolvedValue({data: {ui: fieldLayout('Unsaved title')}});
+
+    const refreshed = await editor.refreshLayout({}, []);
+    await nextTick();
+
+    expect(refreshed.values).toEqual({title: 'Unsaved title'});
+    expect(editor.uiPayload.value?.values).toEqual({
+      title: 'Original title',
+    });
+
+    save.restore();
+  });
+
   it('reloads the owner when another tab reorders the same draft, but not an unrelated draft', async () => {
     const slideout = slideoutController();
     mount(payload({draftId: 7}), slideout);
