@@ -13,6 +13,7 @@ import {property} from 'lit/decorators.js';
  *
  * @cssprop [--c-progress-size=18px] - The size of the progress indicator
  * @cssprop [--c-progress-stroke-width=3px] - The width of the progress arc stroke
+ * @cssprop --c-progress-track-color - The color of the background arc, when it should follow a design token rather than `bg-color`
  */
 export default class CraftProgress extends LitElement {
   static override styles = css`
@@ -135,7 +136,10 @@ export default class CraftProgress extends LitElement {
 
   #updateCanvasSize(): void {
     const computedStyle = getComputedStyle(this);
-    const size = parseFloat(computedStyle.getPropertyValue('--_size'));
+    // measured, as a size given with calc() or another variable doesn't parse as a number
+    const size =
+      this.getBoundingClientRect().width ||
+      parseFloat(computedStyle.getPropertyValue('--_size'));
     const strokeWidth = parseFloat(
       computedStyle.getPropertyValue('--_stroke-width')
     );
@@ -220,7 +224,10 @@ export default class CraftProgress extends LitElement {
     }
 
     // Background arc
-    this.#drawArc(ctx, this.bgColor, 1, 0);
+    const trackColor = getComputedStyle(this)
+      .getPropertyValue('--c-progress-track-color')
+      .trim();
+    this.#drawArc(ctx, trackColor || this.bgColor, 1, 0);
 
     // Progress arc
     if (this.#arcEndPos > 0) {
@@ -236,7 +243,11 @@ export default class CraftProgress extends LitElement {
     endPos: number,
     rotationOffset: number
   ): void {
-    ctx.strokeStyle = color;
+    // A canvas doesn't inherit the element's color, so `currentColor` is resolved here.
+    ctx.strokeStyle =
+      color.toLowerCase() === 'currentcolor'
+        ? getComputedStyle(this).color
+        : color;
     ctx.lineWidth = this.#lineWidth;
     ctx.lineCap = 'round';
     ctx.beginPath();
