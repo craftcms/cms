@@ -1873,6 +1873,52 @@ describe('UiRenderer', () => {
     outlet.remove();
   });
 
+  it('keeps each form’s nodes in its own outlets when two share a name', async () => {
+    app.unmount();
+    const formPayload = (uid: string): UiPayload => ({
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Outlet',
+          component: 'craft:outlet',
+          props: {name: 'cards'},
+          uid: `${uid}-outlet`,
+        },
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Group',
+          component: 'craft:group',
+          props: {outlet: 'cards'},
+          uid: `${uid}-group`,
+          children: [],
+        },
+      ],
+      values: {},
+      errors: [],
+      globalErrors: [],
+    });
+    app = createApp({
+      render: () =>
+        ['page', 'slideout'].map((uid) =>
+          h('div', {id: uid}, [h(UiRenderer, {payload: formPayload(uid)})])
+        ),
+    });
+    const components = createCpComponentRegistry();
+    registerUiComponents(components);
+    components.install(app);
+    app.mount(container);
+    await nextTick();
+    await nextTick();
+
+    for (const uid of ['page', 'slideout']) {
+      expect(
+        container.querySelector(
+          `[data-ui-node="${uid}-outlet"] [data-ui-node="${uid}-group"]`
+        )
+      ).not.toBeNull();
+    }
+  });
+
   const resolvedCardError = {
     path: ['layout'],
     messages: ['Invalid card attribute.'],
@@ -1883,9 +1929,15 @@ describe('UiRenderer', () => {
     messages: ['Invalid card attribute.'],
   };
 
+  const savedGeneratedFieldError = {
+    path: ['layout', 'generatedFields', 'uid-1', 'handle'],
+    messages: ['Handle is already in use.'],
+  };
+
   it.each([
     {withOutlet: true, error: resolvedCardError, flagged: ['Appearance']},
     {withOutlet: true, error: savedCardError, flagged: ['Appearance']},
+    {withOutlet: true, error: savedGeneratedFieldError, flagged: ['Content']},
     {withOutlet: false, error: resolvedCardError, flagged: ['Content']},
   ])(
     'flags the tab of the outlet a control shows an error in (outlet: $withOutlet, path: $error.path)',

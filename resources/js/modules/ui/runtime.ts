@@ -363,16 +363,41 @@ function outletName(node: UiNodePayload): string | undefined {
 }
 
 /**
- * Moves the errors a control shows in an outlet onto that outlet, so they flag
- * the outlet's tab rather than the control's. A control names them with an
- * `errorOutlets` prop, mapping each outlet's name to the settings within the
- * control whose errors it shows. An outlet missing from `nodes` leaves its
- * errors with the control.
+ * Places errors for flagging tabs. An error that no control owns exactly,
+ * such as one a save raised within a control, moves onto the nearest control
+ * whose path it's under, as the server places the errors it renders with.
+ *
+ * Errors a control shows in an outlet then move onto that outlet, so they
+ * flag the outlet's tab rather than the control's. A control names them with
+ * an `errorOutlets` prop, mapping each outlet's name to the settings within
+ * the control whose errors it shows. An outlet missing from `nodes` leaves
+ * its errors with the control.
  */
 export function routeErrorsToOutlets(
   nodes: UiNodePayload[],
   errors: UiPayload['errors']
 ): {errors: UiPayload['errors']; outlets: Set<string>} {
+  const controlPaths: string[][] = [];
+  visitControls(nodes, (control) => controlPaths.push(control.path));
+  const owned = errors.map((error) => {
+    if (
+      error.source ||
+      controlPaths.some((path) => pathsMatch(path, error.path))
+    ) {
+      return error;
+    }
+
+    const owner = controlPaths
+      .filter(
+        (path) =>
+          path.length < error.path.length &&
+          pathsMatch(error.path.slice(0, path.length), path)
+      )
+      .sort((a, b) => b.length - a.length)[0];
+
+    return owner ? {...error, path: owner, source: error.path} : error;
+  });
+
   const present = new Set<string>();
   const routes: {path: string[]; outlet: string; keys: string[]}[] = [];
 
@@ -394,9 +419,8 @@ export function routeErrorsToOutlets(
   nodes.forEach(visit);
 
   const outlets = new Set<string>();
-  const remaining = errors.filter((error) => {
+  const remaining = owned.filter((error) => {
     const source = error.source ?? error.path;
-    // Errors from a save keep their full path, without a source.
     const route = routes.find(
       ({path, outlet, keys}) =>
         present.has(outlet) &&

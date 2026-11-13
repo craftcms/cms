@@ -5,7 +5,7 @@
   import {onBeforeUnmount, shallowRef, watch} from 'vue';
   import type {UiControlPayload, UiPayload, UiValue, UiValues} from './types';
   import {inputName} from './runtime';
-  import {expectOutlets, registerOutlets, useOutlet} from './outlets';
+  import {useOutlets} from './outlets';
   import {useServerRenderedControl} from './useServerRenderedControl';
   import ServerRenderedControlFrame from './ServerRenderedControlFrame.vue';
 
@@ -27,9 +27,10 @@
   const emit = defineEmits<{
     (event: 'update:value', value: UiValues, kind: 'discrete'): void;
   }>();
+  const outlets = useOutlets();
   // The card view designer holds the Appearance tab's outlet. Groups bound
   // for it wait for the first render rather than render in place and jump.
-  const releasePendingOutlets = expectOutlets(
+  const releasePendingOutlets = outlets.expect(
     props.control.props.withCardViewDesigner
       ? ['field-layout-designer.appearance']
       : []
@@ -82,7 +83,7 @@
         syncTabErrors(root);
         // The Appearance tab's outlet, for the owner's own display settings.
         releaseOutlets?.();
-        releaseOutlets = registerOutlets(root);
+        releaseOutlets = outlets.registerAll(root);
         releasePendingOutlets();
         // The designer boots as its element connects, so it has already found
         // its card view designer, which can move out now. The one from an
@@ -106,7 +107,7 @@
    * tab, and changes made in it still update the control's value.
    */
   const cardViewDesigner = shallowRef<HTMLElement | null>(null);
-  const cardViewDesignerOutlet = useOutlet(
+  const cardViewDesignerOutlet = outlets.outlet(
     () => props.control.props.cardViewDesignerOutlet
   );
   watch([cardViewDesigner, cardViewDesignerOutlet], ([element, outlet]) => {

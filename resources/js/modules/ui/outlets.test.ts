@@ -1,10 +1,11 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, expect, it} from 'vite-plus/test';
 import GroupNode from './GroupNode.vue';
-import {registerOutlets} from './outlets';
+import {createOutletRegistry, UiOutletsKey} from './outlets';
 import type {UiNodePayload} from './types';
 
 let app: ReturnType<typeof createApp> | undefined;
+const outlets = createOutletRegistry();
 
 afterEach(() => {
   app?.unmount();
@@ -34,6 +35,7 @@ function mountGroup(outlet?: string): HTMLElement {
         refreshable: false,
       }),
   });
+  app.provide(UiOutletsKey, outlets);
   app.mount(container);
 
   return container;
@@ -51,7 +53,7 @@ it('renders a group in its outlet, and in place without one', async () => {
   host.innerHTML =
     '<div data-ui-outlet="field-layout-designer.appearance"></div>';
   document.body.append(host);
-  const release = registerOutlets(host);
+  const release = outlets.registerAll(host);
   await nextTick();
 
   expect(host.querySelector('[data-ui-outlet]')!.contains(group())).toBe(true);
@@ -68,10 +70,11 @@ it('leaves groups without an outlet in place', async () => {
   host.innerHTML =
     '<div data-ui-outlet="field-layout-designer.appearance"></div>';
   document.body.append(host);
-  registerOutlets(host);
+  const release = outlets.registerAll(host);
   await nextTick();
 
   expect(
     container.querySelector('[data-ui-node="display-settings"]')
   ).not.toBeNull();
+  release();
 });
