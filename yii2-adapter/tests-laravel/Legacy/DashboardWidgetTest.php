@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use craft\base\Widget;
 use craft\widgets\Feed;
-use craft\widgets\MissingWidget;
 use CraftCms\Cms\Http\Controllers\Dashboard\InteractsWithWidgets;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 
@@ -42,7 +41,7 @@ it('keeps unmodified built-in widgets on their core renderer', function() {
 
     expect($widget->component())->toBe('craft:widget-feed')
         ->and($widget->props()['url'])->toBe('https://example.com/feed')
-        ->and(new MissingWidget()->component())->toBeNull();
+        ->and(new craft\widgets\MissingWidget()->component())->toBeNull();
 });
 
 class DashboardBaseHtmlWidget extends Widget
