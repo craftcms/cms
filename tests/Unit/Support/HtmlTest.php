@@ -400,6 +400,8 @@ test('NamespaceAttributes', function (string $expected, string $html, string $na
     ['<style>.foo{}</style>', '<style>.foo{}</style>', 'foo', false],
     ['<style>.foo-bar{}</style>', '<style>.bar{}</style>', 'foo', true],
     ['<style>.foo-bar{content: \'.baz\'}</style>', '<style>.bar{content: \'.baz\'}</style>', 'foo', true],
+    ['<div id="foo-bar"></div><style>#foo-bar .foo-baz{}</style>', '<div id="bar"></div><style>#bar .baz{}</style>', 'foo', true],
+    ['<div id="foo-bar"></div><style>#foo-bar{}#foo-bar>.foo-baz:hover{}</style>', '<div id="bar"></div><style>#bar{}#bar>.baz:hover{}</style>', 'foo', true],
     ['<linearGradient id="foo-bar"></linearGradient><path fill="url(#foo-bar)"></path>', '<linearGradient id="bar"></linearGradient><path fill="url(#bar)"></path>', 'foo', false],
     ['<style>.foo-st4{mask:url(#foo-bar);fill-rule:evenodd;fill:url(#foo-bla);}</style><mask id="foo-bar"></mask><linearGradient id="foo-bla"></linearGradient>', '<style>.st4{mask:url(#bar);fill-rule:evenodd;fill:url(#bla);}</style><mask id="bar"></mask><linearGradient id="bla"></linearGradient>', 'foo', true],
     ['<circle id="foo-bar"></circle><use xlink:href="#foo-bar"></use>', '<circle id="bar"></circle><use xlink:href="#bar"></use>', 'foo', false],
