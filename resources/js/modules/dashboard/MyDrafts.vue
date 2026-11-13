@@ -3,13 +3,16 @@
   import {t} from '@craftcms/ui';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import type {DashboardWidget} from './types';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   const props = defineProps<{widget: DashboardWidget}>();
   const drafts = computed(() => props.widget.data?.drafts ?? []);
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body">
       <ul v-if="drafts.length" class="space-y-3" role="list">

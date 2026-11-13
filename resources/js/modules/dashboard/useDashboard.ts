@@ -22,6 +22,7 @@ import {
   deleteMethod,
   reorder as reorderWidgets,
   updateColspan,
+  updateColor,
 } from '@actions/Dashboard/WidgetsController';
 import type {DashboardWidget, WidgetType} from './types';
 import {widgetName} from './widgetName';
@@ -217,6 +218,7 @@ export function useDashboard(props: {
           subtitle: null,
           colspan: 1,
           maxColspan: info.maxColspan ?? 4,
+          color: 'gray',
           settings: {},
           settingsUi: JSON.parse(
             JSON.stringify(info.settingsUi).replaceAll(
@@ -274,6 +276,7 @@ export function useDashboard(props: {
       const {data} = await actionClient.post(store.url(), {
         type: deleted.value.type,
         settings: deleted.value.settings,
+        color: deleted.value.color,
       });
 
       if (data.info) widgets.value = [...widgets.value, data.info];
@@ -335,6 +338,28 @@ export function useDashboard(props: {
     }
   }
 
+  /** Gives a widget a color, or none with `null`. */
+  async function recolor(
+    widget: DashboardWidget,
+    color: CraftCms.Cms.Shared.Enums.Color | null
+  ) {
+    if (busy.value) return;
+
+    busy.value = true;
+
+    try {
+      await actionClient.post(updateColor.url(), {id: widget.id, color});
+
+      widgets.value = widgets.value.map((current) =>
+        current.id === widget.id ? {...current, color} : current
+      );
+    } catch {
+      messages.error(t('Couldn’t save widget.'));
+    } finally {
+      busy.value = false;
+    }
+  }
+
   return {
     widgets,
     savedWidgets,
@@ -351,6 +376,7 @@ export function useDashboard(props: {
     undo,
     reorder,
     resize,
+    recolor,
     refreshGrid,
     settingsToggled,
   };

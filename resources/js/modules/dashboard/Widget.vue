@@ -11,8 +11,13 @@
   import {useResizeObserver} from '@vueuse/core';
   import WidgetSettings from './WidgetSettings.vue';
   import type {DashboardWidget} from './types';
+  import {provideWidgetColor} from './useWidgetColor';
 
   const props = defineProps<{widget: DashboardWidget; ready: boolean}>();
+
+  // The component rendering the widget, and its settings face below, color
+  // their cards with it.
+  provideWidgetColor(() => props.widget.color);
   const emit = defineEmits<{
     saved: [widget: DashboardWidget | false];
     cancel: [];
@@ -155,7 +160,7 @@
       @before-leave="(element) => element.setAttribute('inert', '')"
     >
       <div v-if="settings" class="settings-face">
-        <craft-card data-color="gray">
+        <craft-card :data-color="widget.color ?? undefined">
           <h2 slot="label" class="cp-h4">
             {{ t('{type} Settings', {type: widget.name}) }}
           </h2>

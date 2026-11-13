@@ -57,6 +57,7 @@ function widget(id: number): DashboardWidget {
     type: 'Example',
     colspan: 1,
     maxColspan: 4,
+    color: 'gray',
     title: `Widget ${id}`,
     subtitle: null,
     name: 'Example',

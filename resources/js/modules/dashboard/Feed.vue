@@ -2,6 +2,9 @@
   import {computed, onMounted, onBeforeUnmount, ref} from 'vue';
   import {actionClient, t} from '@craftcms/ui';
   import {cacheData} from '@actions/Dashboard/Widgets/FeedController';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   interface FeedData {
     direction?: string;
@@ -69,7 +72,7 @@
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body">
       <craft-callout v-if="error" variant="danger" role="alert">{{

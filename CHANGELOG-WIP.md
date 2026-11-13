@@ -42,6 +42,9 @@
 - Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
 - The “View Mode” (Matrix, relation, Addresses, and Content Block fields), “Thumb Style”, “Section Type”, and image transforms’ “Mode” settings now show their options as joined, illustrated buttons, with each option’s label inside the button, below its illustration, and the selected option’s illustration drawn in blue. When there isn’t room for them in one row, they wrap as separate buttons. ([#20233](https://github.com/craftcms/cms/pull/20233), [#20285](https://github.com/craftcms/cms/pull/20285))
 - Dashboard widgets, such as Recent Entries and My Drafts, now update when elements are saved, in the same browser tab or another one. ([#20485](https://github.com/craftcms/cms/pull/20485))
+- Dashboard widgets can now be given a color, like entry types, from the dashboard’s Widget Settings menu. Widgets are gray unless given another color, now drawn like gray cards elsewhere in the control panel, with a filled header bar, and “No color” draws a widget with no fill of its own, like an uncolored element card.
+- Dashboard widget titles now line up with the widgets’ content.
+- Fixed a bug where Dashboard widgets spanning multiple columns ended a few pixels before the right edge of the last column they spanned.
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
 
 ### Workflows
@@ -641,6 +644,8 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Added `CraftCms\Cms\Component\Exceptions\UnknownPropertyException`, replacing `yii\base\UnknownPropertyException`.
 
 #### Dashboard & Widgets
+
+- Added `CraftCms\Cms\Dashboard\Contracts\WidgetInterface::$color`, `CraftCms\Cms\Dashboard\Dashboard::changeWidgetColor()`, and the `dashboard/change-widget-color` action.
 
 ##### Controllers
 - Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:
