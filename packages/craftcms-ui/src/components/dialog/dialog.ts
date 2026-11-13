@@ -20,7 +20,7 @@ import type {ResizeGripsSize} from '../resize-grips/resize-grips.js';
 let nextId = 0;
 
 /**
- * How many open dialogs are holding the page's scroll.
+ * How many open non-modal dialogs are holding the page's scroll.
  *
  * Counted rather than toggled, because dialogs stack — a selector modal opened
  * from a slideout — and only the last one to close should hand scrolling back.
@@ -384,16 +384,15 @@ export default class CraftDialog extends LitElement {
       this.nonModal ? dialog.show() : dialog.showModal();
     }
 
-    // `showModal()` contains focus for us; `show()` does not.
+    // `showModal()` contains focus and scroll for us; `show()` does neither.
     if (this.nonModal) {
       this.#releaseFocusTrap?.();
       this.#releaseFocusTrap = trapFocus(this);
-    }
 
-    // Neither `showModal()` nor `show()` stops the page behind from scrolling.
-    if (!this.#holdsScrollLock) {
-      this.#holdsScrollLock = true;
-      lockPageScroll();
+      if (!this.#holdsScrollLock) {
+        this.#holdsScrollLock = true;
+        lockPageScroll();
+      }
     }
   }
 

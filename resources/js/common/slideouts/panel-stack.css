@@ -129,26 +129,33 @@
   overflow: hidden;
 }
 
-.hud .body ::-webkit-scrollbar {
-  appearance: none;
+.hud .body * {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / 50%) var(--color-gray-50);
 }
 
-.hud .body ::-webkit-scrollbar:vertical {
-  width: 11px;
-}
+@supports not (scrollbar-color: auto) {
+  .hud .body ::-webkit-scrollbar {
+    appearance: none;
+  }
 
-.hud .body ::-webkit-scrollbar:horizontal {
-  height: 11px;
-}
+  .hud .body ::-webkit-scrollbar:vertical {
+    width: 11px;
+  }
 
-.hud .body ::-webkit-scrollbar-thumb {
-  border-radius: 8px;
-  border: 2px solid transparent;
-  background-color: rgb(0 0 0 / 50%);
-}
+  .hud .body ::-webkit-scrollbar:horizontal {
+    height: 11px;
+  }
 
-.hud .body ::-webkit-scrollbar-track {
-  background-color: var(--color-gray-50);
+  .hud .body ::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-color: rgb(0 0 0 / 50%);
+  }
+
+  .hud .body ::-webkit-scrollbar-track {
+    background-color: var(--color-gray-50);
+  }
 }
 
 /* A dark ring vanishes against the dark theme's surfaces, so HUDs get a light

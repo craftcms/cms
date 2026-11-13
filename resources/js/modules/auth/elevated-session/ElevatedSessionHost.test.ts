@@ -74,19 +74,15 @@ describe('ElevatedSessionHost', () => {
     container.remove();
   });
 
-  it('renders the dialog surface with its accessible name and description', () => {
+  it('leaves dialog semantics to the modal it renders in', () => {
     const pane = container.querySelector('craft-pane');
     if (!pane) throw new Error('Expected the elevated-session pane.');
 
-    expect(pane).not.toBeNull();
-    expect(pane.getAttribute('role')).toBe('dialog');
-    expect(pane.getAttribute('aria-modal')).toBe('true');
-    expect(pane.getAttribute('aria-labelledby')).toBe('elevated-session-title');
-    expect(pane.getAttribute('aria-describedby')).toBe(
-      'elevated-session-description'
+    expect(pane.hasAttribute('role')).toBe(false);
+    expect(pane.hasAttribute('aria-modal')).toBe(false);
+    expect(pane.querySelector('h1')?.textContent).toContain(
+      'Confirm your identity.'
     );
-    expect(pane.querySelector('#elevated-session-title')).not.toBeNull();
-    expect(pane.querySelector('#elevated-session-description')).not.toBeNull();
   });
 
   it('renders the server-selected identity and confirms login success', () => {
