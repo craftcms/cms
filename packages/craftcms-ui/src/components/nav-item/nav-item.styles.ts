@@ -297,6 +297,74 @@ export default css`
     padding: var(--c-spacing-md);
   }
 
+  /*
+   * A flyout too tall for the viewport scrolls like the CP's other inner
+   * scrollers (.cp-inner-scroller): its scrollbar hidden until you hover or
+   * focus it, its content fading at an edge with more beyond. The list
+   * scrolls rather than the popover's pane, so the fade doesn't take the
+   * pane's border and shadow with it; it's capped at the pane's own cap less
+   * the pane's borders. The fade's lengths are registered in variables.css.
+   */
+  @supports (animation-timeline: scroll()) {
+    @keyframes nav-item-flyout-fade-start {
+      from {
+        --c-scroll-fade-start: 0px;
+      }
+      to {
+        --c-scroll-fade-start: var(--c-spacing-xl);
+      }
+    }
+
+    @keyframes nav-item-flyout-fade-end {
+      from {
+        --c-scroll-fade-end: var(--c-spacing-xl);
+      }
+      to {
+        --c-scroll-fade-end: 0px;
+      }
+    }
+
+    @media (forced-colors: none) and (prefers-contrast: no-preference) {
+      craft-popover::part(popup) {
+        overflow: hidden;
+      }
+
+      .flyout {
+        box-sizing: border-box;
+        max-block-size: calc(
+          var(
+              --popover-max-block-size,
+              var(--_popover-available-block-size, 40vh)
+            ) -
+            2px
+        );
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        scroll-padding-block: var(--c-spacing-xl);
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0,
+          #000 var(--c-scroll-fade-start),
+          #000 calc(100% - var(--c-scroll-fade-end)),
+          transparent 100%
+        );
+        animation-name: nav-item-flyout-fade-start, nav-item-flyout-fade-end;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(self block);
+        animation-range:
+          0 var(--c-spacing-xl),
+          calc(100% - var(--c-spacing-xl)) 100%;
+      }
+
+      .flyout:is(:hover, :focus-within) {
+        scrollbar-color: var(--c-color-neutral-border-normal) transparent;
+      }
+    }
+  }
+
   /* Quieter than the label it trails, and sized to the toggle chevron it
      stands in for. */
   .flyout-indicator {

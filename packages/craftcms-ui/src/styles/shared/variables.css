@@ -154,6 +154,24 @@
   --c-color-on-loud: var(--c-color-neutral-on-loud);
 }
 
+/*
+ * How far an inner scroller's content fades out at its top and bottom edges,
+ * driven by its own scroll position (see .cp-inner-scroller and the nav
+ * item's flyout). Registered so the fade animates rather than jumping; a
+ * scroller with nothing to scroll leaves both at 0.
+ */
+@property --c-scroll-fade-start {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --c-scroll-fade-end {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

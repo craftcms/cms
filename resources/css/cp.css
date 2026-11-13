@@ -146,6 +146,61 @@ body {
   scrollbar-color: var(--c-color-neutral-border-normal) transparent;
 }
 
+/*
+ * The scrollbar stays out of sight until you hover or focus inside the
+ * scroller, and the content fades out at an edge that has more beyond it.
+ * Only the thumb is hidden, so its gutter stays reserved and revealing it
+ * shifts nothing. Keyboard focus is kept clear of the faded bands.
+ *
+ * Without scroll-driven animations there's no fade to show there's more, so
+ * the scrollbar is left as it is. So it is for forced colors and for anyone
+ * who asked for more contrast.
+ */
+@supports (animation-timeline: scroll()) {
+  @keyframes cp-scroll-fade-start {
+    from {
+      --c-scroll-fade-start: 0px;
+    }
+    to {
+      --c-scroll-fade-start: var(--c-spacing-xl);
+    }
+  }
+
+  @keyframes cp-scroll-fade-end {
+    from {
+      --c-scroll-fade-end: var(--c-spacing-xl);
+    }
+    to {
+      --c-scroll-fade-end: 0px;
+    }
+  }
+
+  @media (forced-colors: none) and (prefers-contrast: no-preference) {
+    .cp-inner-scroller {
+      scrollbar-color: transparent transparent;
+      scroll-padding-block: var(--c-spacing-xl);
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--c-scroll-fade-start),
+        #000 calc(100% - var(--c-scroll-fade-end)),
+        transparent 100%
+      );
+      animation-name: cp-scroll-fade-start, cp-scroll-fade-end;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(self block);
+      animation-range:
+        0 var(--c-spacing-xl),
+        calc(100% - var(--c-spacing-xl)) 100%;
+    }
+
+    .cp-inner-scroller:is(:hover, :focus-within) {
+      scrollbar-color: var(--c-color-neutral-border-normal) transparent;
+    }
+  }
+}
+
 /* Held by overlays — modals and slideouts — while any of them is open. The
    legacy stylesheet and panel-stack.css each define this too; repeated here so
    the lock still works on a CP page that loads neither. */
