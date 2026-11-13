@@ -134,7 +134,8 @@ export function useUiValues(initial: UiPayload) {
    * What the server saved can differ from what was sent: applying a draft
    * replaces the nested entries created in it, say. So values left as they
    * were sent take the server's, rather than going on referring to elements
-   * that are gone, and edits made while the submission was out stay unsaved.
+   * that are gone. Edits made while the submission was out stay unsaved, on
+   * the identities that replaced the ones they were made to.
    */
   function settle(saved: UiPayload, submitted: UiValues, held: UiValues): void {
     const savedBaseline = cloneRaw(submitted);
@@ -156,14 +157,25 @@ export function useUiValues(initial: UiPayload) {
 
       setPathValue(savedBaseline, group, cloneRaw(savedValue));
 
-      const sent = groupCanonical(valueAt(submitted, group), group);
+      const sentValue = valueAt(submitted, group);
+      const sent = groupCanonical(sentValue, group);
 
-      if (
-        groupCanonical(valueAt(held, group), group) === sent &&
-        groupCanonical(valueAt(values, group), group) !==
+      if (groupCanonical(valueAt(held, group), group) === sent) {
+        if (
+          groupCanonical(valueAt(values, group), group) !==
           groupCanonical(savedValue, group)
-      ) {
-        write(group, cloneRaw(savedValue));
+        ) {
+          write(group, cloneRaw(savedValue));
+        }
+
+        continue;
+      }
+
+      const renames = new Map<string, string>();
+      collectRenames(sentValue, savedValue, renames);
+
+      if (renames.size) {
+        write(group, renamed(valueAt(values, group), renames));
       }
     }
 
@@ -351,6 +363,90 @@ export function useUiValues(initial: UiPayload) {
     controlAt,
     restructured,
   };
+}
+
+/**
+ * The identities a save replaced, such as nested entries' UIDs, read off lists
+ * of them: the server keeps what was sent in the order it was sent, so an
+ * identity in a list it saved stands for the one sent in its place. Records
+ * are followed under the keys that replaced theirs, so the lists inside the
+ * replaced entries are read too.
+ */
+function collectRenames(
+  sent: UiValue,
+  saved: UiValue,
+  renames: Map<string, string>
+): void {
+  if (Array.isArray(sent) && Array.isArray(saved)) {
+    if (sent.length !== saved.length) {
+      return;
+    }
+
+    sent.forEach((sentItem, index) => {
+      const savedItem = saved[index];
+
+      if (
+        typeof sentItem === 'string' &&
+        typeof savedItem === 'string' &&
+        sentItem !== savedItem &&
+        !saved.includes(sentItem) &&
+        !sent.includes(savedItem)
+      ) {
+        renames.set(sentItem, savedItem);
+      } else {
+        collectRenames(sentItem, savedItem, renames);
+      }
+    });
+
+    return;
+  }
+
+  if (!isRecord(sent) || !isRecord(saved)) {
+    return;
+  }
+
+  // Lists first, as they name the keys of the records beside them.
+  const keys = Object.keys(sent).sort(
+    (a, b) => Number(!Array.isArray(sent[a])) - Number(!Array.isArray(sent[b]))
+  );
+
+  for (const key of keys) {
+    const savedKey = renames.get(key) ?? key;
+
+    if (savedKey in saved) {
+      collectRenames(sent[key], saved[savedKey], renames);
+    }
+  }
+}
+
+/**
+ * A copy of `value` that uses the identities that replaced the ones it has,
+ * as record keys and list items: the places {@link collectRenames} reads them.
+ */
+function renamed(value: UiValue, renames: Map<string, string>): UiValue {
+  if (Array.isArray(value)) {
+    return value.map((item) =>
+      typeof item === 'string'
+        ? (renames.get(item) ?? item)
+        : renamed(item, renames)
+    );
+  }
+
+  if (isRecord(value)) {
+    // The response's own copy of a replacement, which the values took in when
+    // it arrived, gives way to the one the client is holding.
+    const replaced = new Set(
+      Object.keys(value).flatMap((key) => renames.get(key) ?? [])
+    );
+
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([key]) => !replaced.has(key))
+        .map(([key, item]) => [renames.get(key) ?? key, renamed(item, renames)])
+    );
+  }
+
+  return cloneRaw(value);
 }
 
 function mergeMissing(target: UiValues, source: UiValues): void {

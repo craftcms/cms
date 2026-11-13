@@ -3085,6 +3085,116 @@ describe('UiRenderer', () => {
     expect(mutation).toEqual({});
   });
 
+  /**
+   * Applying a draft replaces the nested entries created in it, so the blocks
+   * the save sent come back under new UIDs, in the order they were sent.
+   */
+  it('keeps edits made during a save on the blocks that replaced theirs', async () => {
+    const matrixPayload = (uids: string[], headings: string[]): UiPayload => {
+      const field = (uid: string): UiPayload['nodes'][number] => ({
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Heading', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+          component: 'craft:text',
+          props: {inputType: 'text'},
+          path: ['settings', 'matrix', 'entries', uid, 'heading'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'matrix'],
+          uis: [],
+        } as UiControlPayload,
+      });
+
+      return {
+        ...clonePayload(),
+        refreshable: false,
+        values: {
+          settings: {
+            matrix: {
+              entries: Object.fromEntries(
+                uids.map((uid, index) => [
+                  uid,
+                  {type: 'text', heading: headings[index]!},
+                ])
+              ),
+              sortOrder: uids,
+            },
+          },
+        },
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+            component: 'craft:field',
+            props: {label: 'Content', instructions: null, required: false},
+            control: {
+              type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
+              component: 'craft:nested-element-blocks',
+              props: {
+                entryTypes: [{value: 'text', label: 'Text'}],
+                addLabel: 'Add an entry',
+                minEntries: null,
+                maxEntries: null,
+              },
+              path: ['settings', 'matrix'],
+              mode: 'editable',
+              deltaGroup: ['settings', 'matrix'],
+              uis: uids.map((uid) => ({
+                scope: ['settings', 'matrix', 'entries', uid],
+                refreshable: false,
+                nodes: [field(uid)],
+              })),
+            } as UiControlPayload,
+          },
+        ],
+        errors: [],
+      };
+    };
+    let mutation: UiPayload['values'] = {};
+    app.unmount();
+    await mount(matrixPayload(['draft-a', 'draft-b'], ['A', 'B']), {
+      onMutation: (value) => (mutation = value),
+    });
+
+    renderer.setSubmitting(true);
+    // Moved and edited while the save is out.
+    renderer.setValue(['settings', 'matrix'], {
+      entries: {
+        'draft-a': {type: 'text', heading: 'A, edited'},
+        'draft-b': {type: 'text', heading: 'B'},
+      },
+      sortOrder: ['draft-b', 'draft-a'],
+    });
+    await nextTick();
+
+    currentPayload.value = matrixPayload(['saved-a', 'saved-b'], ['A', 'B']);
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {
+        matrix: {
+          entries: {
+            'saved-a': {heading: 'A, edited'},
+            'saved-b': {heading: 'B'},
+          },
+          sortOrder: ['saved-b', 'saved-a'],
+        },
+      },
+    });
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[matrix][entries][saved-a][heading]"]'
+      )?.value
+    ).toBe('A, edited');
+    expect(mutation).toHaveProperty('settings.matrix.sortOrder', [
+      'saved-b',
+      'saved-a',
+    ]);
+  });
+
   it('renders an updated control definition without changing the host’s payload', async () => {
     const probe = defineComponent({
       props: {

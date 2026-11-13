@@ -247,66 +247,6 @@ describe('NestedElementBlocksControl', () => {
     expect(value.entries[value.sortOrder[0]!]!.type).toBe('second');
   });
 
-  /**
-   * Applying a draft replaces the entries created in it with new ones, so the
-   * field's next payload names blocks the value doesn't, while the value still
-   * holds the replaced ones, along with any edit made while the save was out.
-   */
-  it('moves blocks onto the entries that replaced them, keeping their values', async () => {
-    const ui = (uid: string) => ({
-      scope: ['fields', 'pageBuilder', 'entries', uid],
-      nodes: [],
-      refreshable: false,
-    });
-    const current = shallowRef({
-      ...control(),
-      uis: [ui('kept'), ui('draft-1'), ui('draft-2')],
-    } as UiControlPayload);
-    const state = reactive({
-      value: {
-        entries: {
-          kept: {type: 'newType'},
-          'draft-1': {type: 'newType', fields: {title: 'First'}},
-          'draft-2': {type: 'newType', fields: {title: 'Second, edited'}},
-        },
-        sortOrder: ['kept', 'draft-1', 'draft-2'],
-      } as unknown,
-    });
-    container = document.createElement('div');
-    document.body.append(container);
-    app = createApp({
-      setup: () => () =>
-        h(NestedElementBlocksControl, {
-          control: current.value,
-          value: state.value,
-          values: {},
-          errors: [],
-          touchedPaths: new Set<string>(),
-          editable: true,
-          'onUpdate:value': (next: unknown) => (state.value = next),
-        } as never),
-    });
-    app.mount(container);
-    await nextTick();
-
-    current.value = {
-      ...current.value,
-      uis: [ui('kept'), ui('saved-1'), ui('saved-2')],
-    };
-    await nextTick();
-    await nextTick();
-
-    expect(state.value).toEqual({
-      entries: {
-        kept: {type: 'newType'},
-        'saved-1': {type: 'newType', fields: {title: 'First'}},
-        'saved-2': {type: 'newType', fields: {title: 'Second, edited'}},
-      },
-      sortOrder: ['kept', 'saved-1', 'saved-2'],
-    });
-    expect(container.querySelector('craft-spinner')).toBeNull();
-  });
-
   it('renders empty when it is handed its empty value', async () => {
     // A block minted in the browser is keyed `uid:<uuid>` in the values tree,
     // but the server strips that prefix and scopes the block's nested UI to
