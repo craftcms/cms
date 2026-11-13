@@ -637,6 +637,41 @@ describe('the new entry button', () => {
     unmount();
   });
 
+  it('reports a failed choose and tries again on the next save', async () => {
+    const onSelect = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('render failed'))
+      .mockResolvedValue(undefined);
+    const instance = controller({onSelect});
+    const {host, unmount} = await mountModal(instance);
+    await instance.open();
+    await nextTick();
+
+    stub.emit!('sources-change', [source]);
+    stub.emit!('source-change', source);
+    stub.emit!('site-change', 2);
+    await nextTick();
+
+    creation.post.mockResolvedValue({data: {entry: {id: 21, draftId: 5}}});
+    host
+      .querySelector<HTMLElement>('[slot="secondary-actions"] craft-button')!
+      .click();
+    await vi.waitFor(() => expect(creation.openSlideout).toHaveBeenCalled());
+    const [, options] = creation.openSlideout.mock.calls[0]!;
+
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    await vi.waitFor(() =>
+      expect(creation.showError).toHaveBeenCalledWith(
+        'Couldn’t select “Jane Austen”.'
+      )
+    );
+
+    options.onSaved({data: {element: {id: 21, title: 'Jane Austen'}}});
+    expect(onSelect).toHaveBeenCalledTimes(2);
+
+    unmount();
+  });
+
   it('keeps the selector open and reports the error when creating fails', async () => {
     const instance = controller();
     const {host, unmount} = await mountModal(instance);

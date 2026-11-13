@@ -93,6 +93,20 @@
 
     let chosen = false;
 
+    /**
+     * A field that renders what it relates, such as the jQuery inputs, can
+     * fail to. The entry is saved by then, so a later save from the same
+     * slideout gets to try again.
+     */
+    async function choose(info: ElementInfo): Promise<void> {
+      try {
+        await onSelect?.([info], {});
+      } catch {
+        chosen = false;
+        showError(t('Couldn’t select “{name}”.', {name: info.label}));
+      }
+    }
+
     void openSlideout(
       EditElementController['/{cpTrigger?}/{actionTrigger?}/elements/edit'].url(
         undefined,
@@ -140,7 +154,7 @@
             hasThumb: false,
           };
 
-          void onSelect?.([info], {});
+          void choose(info);
         },
       }
     );
