@@ -63,10 +63,11 @@ const focusTrapHandlers = new WeakMap<Element, (ev: KeyboardEvent) => void>();
  * wraps to the first, and Shift-Tab past the first wraps to the last.
  * Replaces any trap previously installed on the same container.
  *
- * The first and last stops are the keyboard-focusable elements, so an element
- * that's only focused from code, such as a heading with `tabindex="-1"`, isn't
- * one. Focus on something before the first stop or after the last, such as
- * that heading or a component that renders its own button, wraps the same way.
+ * The stops are the keyboard-focusable elements in the order they render,
+ * including the controls a component renders in its open shadow root and the
+ * content it slots in. An element that's only focused from code, such as a
+ * heading with `tabindex="-1"`, isn't one, and focus on something before the
+ * first stop or after the last wraps the same way.
  *
  * Pair with {@link releaseFocusWithin} to remove the trap (e.g. when a modal
  * closes).
@@ -81,23 +82,29 @@ export function trapFocusWithin(container: Element): void {
       return;
     }
 
-    const stops = getKeyboardFocusableElements(container);
-    if (stops.length === 0) {
+    const elements = renderedElements(container);
+    const firstIndex = elements.findIndex((el) => isKeyboardFocusable(el));
+    if (firstIndex === -1) {
       return;
     }
+    let lastIndex = elements.length - 1;
+    while (!isKeyboardFocusable(elements[lastIndex]!)) {
+      lastIndex--;
+    }
 
-    const first = stops[0]!;
-    const last = stops[stops.length - 1]!;
-    const target = ev.target as Element;
+    // The control itself, not the component its event was retargeted to. The
+    // container isn't in the list, so focus parked on it counts as before the
+    // first stop.
+    const targetIndex = elements.indexOf(ev.composedPath()[0] as Element);
 
-    if (ev.shiftKey && (target === first || isBefore(target, first))) {
+    if (ev.shiftKey && targetIndex <= firstIndex) {
       ev.preventDefault();
       ev.stopPropagation();
-      last.focus();
-    } else if (!ev.shiftKey && (target === last || isAfter(target, last))) {
+      (elements[lastIndex] as HTMLElement).focus();
+    } else if (!ev.shiftKey && targetIndex >= lastIndex) {
       ev.preventDefault();
       ev.stopPropagation();
-      first.focus();
+      (elements[firstIndex] as HTMLElement).focus();
     }
   };
 
@@ -105,22 +112,36 @@ export function trapFocusWithin(container: Element): void {
   focusTrapHandlers.set(container, handler);
 }
 
-/** Whether `node` comes before `other` in the document, and doesn't contain it. */
-function isBefore(node: Node, other: Node): boolean {
-  const position = node.compareDocumentPosition(other);
-  return (
-    (position & Node.DOCUMENT_POSITION_FOLLOWING) !== 0 &&
-    (position & Node.DOCUMENT_POSITION_CONTAINED_BY) === 0
-  );
-}
+/**
+ * Every element inside `container` in the order it renders: a component's
+ * open shadow root in place of its children, and each slot's assigned
+ * elements (or its fallback content) where the slot is. A child no slot takes
+ * isn't rendered, so it isn't included.
+ *
+ * Keep in sync with `renderedElements()` and `trapFocusWithin()` in
+ * `packages/craftcms-legacy/garnish/src/Garnish.js`, which can't import this.
+ */
+function renderedElements(container: Element): Element[] {
+  const elements: Element[] = [];
 
-/** Whether `node` comes after `other` in the document, and isn't inside it. */
-function isAfter(node: Node, other: Node): boolean {
-  const position = node.compareDocumentPosition(other);
-  return (
-    (position & Node.DOCUMENT_POSITION_PRECEDING) !== 0 &&
-    (position & Node.DOCUMENT_POSITION_CONTAINS) === 0
-  );
+  const visitChildren = (parent: Element): void => {
+    let children: Iterable<Element> =
+      parent.shadowRoot?.children ?? parent.children;
+    // Assigned text hides the fallback content too, so check nodes, not elements.
+    if (
+      parent instanceof HTMLSlotElement &&
+      parent.assignedNodes({flatten: true}).length
+    ) {
+      children = parent.assignedElements({flatten: true});
+    }
+    for (const child of children) {
+      elements.push(child);
+      visitChildren(child);
+    }
+  };
+
+  visitChildren(container);
+  return elements;
 }
 
 /**

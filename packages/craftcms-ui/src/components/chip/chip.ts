@@ -427,7 +427,9 @@ export default class CraftChip extends LitElement {
    */
   #onFocusIn = (event: FocusEvent): void => {
     const target = event.target as Element;
-    const inLabel = target.closest('craft-chip > *')?.matches(':not([slot])');
+    const inLabel = target
+      .closest('craft-chip > *')
+      ?.matches(':not([slot]), [slot=""]');
     this.toggleAttribute(
       'data-link-focus-visible',
       target !== this &&

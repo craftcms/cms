@@ -121,7 +121,7 @@ it('gives a colored, non-plain chip’s links its text color and an underline un
 });
 
 /** A plain chip with a link in its label, as an element chip is in a breadcrumb. */
-async function linkedChip(): Promise<{
+async function linkedChip(labelAttributes = ''): Promise<{
   chip: HTMLElement;
   link: HTMLAnchorElement;
   box: HTMLElement;
@@ -129,7 +129,7 @@ async function linkedChip(): Promise<{
   document.body.innerHTML = `
     <button type="button" id="before">Before</button>
     <craft-chip appearance="plain">
-      <craft-truncate class="label"><a class="label-link" href="#"><span>admin</span></a></craft-truncate>
+      <craft-truncate class="label" ${labelAttributes}><a class="label-link" href="#"><span>admin</span></a></craft-truncate>
       <button type="button" slot="suffix" id="suffix">More</button>
     </craft-chip>`;
   const chip = document.querySelector<
@@ -156,6 +156,16 @@ it('draws the focus ring around the chip when its link has keyboard focus, where
   expect(parseFloat(getComputedStyle(box).outlineWidth)).toBeGreaterThan(0);
   // The link's own ring is off meanwhile, so there's only one.
   expect(getComputedStyle(link).outlineStyle).toBe('none');
+});
+
+it('draws the ring for a link in a label assigned to the default slot by name', async () => {
+  const {chip, link} = await linkedChip('slot=""');
+  document.getElementById('before')!.focus();
+
+  await userEvent.tab();
+
+  expect(document.activeElement).toBe(link);
+  expect(chip.hasAttribute('data-link-focus-visible')).toBe(true);
 });
 
 it('stops drawing the ring once the link loses focus', async () => {
