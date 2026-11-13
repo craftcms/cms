@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Zväzok sa nepodarilo uložiť.',
     'Couldn’t save widget.' => 'Nemožno uložiť widget.',
     'Couldn’t save {type}.' => 'Nemožno uložiť {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Nepodarilo sa odoslať aktivačný e-mail: {error}',
     'Couldn’t suspend all users.' => 'Nepodarilo sa pozastaviť všetkých používateľov.',
     'Couldn’t suspend user.' => 'Používateľa nemôžete pozastaviť.',
