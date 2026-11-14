@@ -95,6 +95,8 @@ readonly class Table
 
     public const string OAUTH_CLIENTS = 'oauth_clients';
 
+    public const string OAUTH_DEVICE_CODES = 'oauth_device_codes';
+
     public const string OAUTH_REFRESH_TOKENS = 'oauth_refresh_tokens';
 
     public const string PASSWORD_RESET_TOKENS = 'password_reset_tokens';
