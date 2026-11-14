@@ -276,9 +276,12 @@ function handleAccessibleRouting() {
     if (pathname === previousPathname) return;
     previousPathname = pathname;
 
-    const routeFocusAnchor: HTMLElement | null =
-      document.getElementById('route-focus-anchor');
-    routeFocusAnchor?.focus();
+    // A frame later, once the new page has finished rendering: focusing makes
+    // the browser lay the page out, and a layout taken while the page is
+    // still being built is thrown away and done again.
+    requestAnimationFrame(() =>
+      document.getElementById('route-focus-anchor')?.focus()
+    );
 
     if (!props.title) return;
 

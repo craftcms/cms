@@ -60,6 +60,7 @@ it('keeps focus for the first query change and moves it on page navigation', asy
       },
     })
   );
+  vi.advanceTimersToNextFrame();
 
   expect(document.activeElement).toBe(input);
   expect(input.selectionStart).toBe(3);
@@ -70,6 +71,8 @@ it('keeps focus for the first query change and moves it on page navigation', asy
       detail: {page: {url: '/admin/assets', props: {title: 'Assets'}}},
     })
   );
+  // Focus moves once the new page has rendered.
+  vi.advanceTimersToNextFrame();
 
   expect(document.activeElement).toBe(anchor);
   expect(announcement.value).not.toBeNull();
