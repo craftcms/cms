@@ -225,6 +225,17 @@ class Entries extends Component
     }
 
     /**
+     * Forgets the cached sections and entry types, so they’re loaded again the next time they’re needed.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $this->_sections = null;
+        $this->_entryTypes = null;
+    }
+
+    /**
      * Returns a memoizable array of all sections.
      *
      * @return MemoizableArray<Section>
