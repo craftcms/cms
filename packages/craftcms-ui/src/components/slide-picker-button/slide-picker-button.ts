@@ -1,9 +1,10 @@
-import {html, LitElement} from 'lit';
+import {html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {FormAssociated, type FormValue} from '@src/mixins/FormAssociated';
 import {emitChange, emitInput} from '@src/utilities/form-events';
+import type CraftButton from '../button/button.js';
 import type CraftSlidePicker from '../slide-picker/slide-picker.js';
 import styles from './slide-picker-button.styles.js';
 import '../button/button.js';
@@ -101,6 +102,16 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
     emitChange(this);
   };
 
+  override updated(changed: PropertyValues<this>) {
+    super.updated(changed);
+
+    // `_formDisabled` changes while `disabled` is reflected, after `render()`.
+    const invoker = this.renderRoot.querySelector<CraftButton>('craft-button');
+    if (invoker) {
+      invoker.disabled = this.disabled || this._formDisabled;
+    }
+  }
+
   override render() {
     const steps: number[] = [];
     for (let value = this.min; value <= this.max; value += this.step) {
@@ -118,7 +129,6 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
           size="small"
           flush=${ifDefined(this.flush)}
           aria-label=${`${this.buttonLabel || this.label} ${valueText}`}
-          ?disabled=${this.disabled || this._formDisabled}
         >
           <span class="segments" aria-hidden="true">
             ${steps.map(

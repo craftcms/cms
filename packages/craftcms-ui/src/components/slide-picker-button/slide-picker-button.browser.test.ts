@@ -112,7 +112,7 @@ it('keeps the popover’s slider from changing while read-only', async () => {
     .toHaveAttribute('aria-readonly', 'true');
 });
 
-it('disables the button when disabled, or inside a disabled fieldset', async () => {
+it('disables the button when disabled, or inside a disabled fieldset, and enables it again', async () => {
   await render(
     `<fieldset><craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></fieldset><craft-slide-picker-button label="Height" min="25" max="100" step="25" value="50" disabled></craft-slide-picker-button>`
   );
@@ -130,6 +130,19 @@ it('disables the button when disabled, or inside a disabled fieldset', async () 
   await expect
     .element(page.getByRole('button', {name: 'Width 50'}))
     .toBeDisabled();
+
+  const height = document.querySelectorAll<CraftSlidePickerButton>(
+    'craft-slide-picker-button'
+  )[1]!;
+  height.disabled = false;
+  fieldset.disabled = false;
+
+  await expect
+    .element(page.getByRole('button', {name: 'Height 50'}))
+    .toBeEnabled();
+  await expect
+    .element(page.getByRole('button', {name: 'Width 50'}))
+    .toBeEnabled();
 });
 
 it('is at least 24×24 CSS px, and so is each segment in the popover', async () => {

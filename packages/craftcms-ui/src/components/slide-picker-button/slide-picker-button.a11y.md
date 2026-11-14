@@ -14,7 +14,7 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 
 - [x] The button is named by `button-label`, falling back to `label`, followed by the value as `value-unit` or `valueLabel` formats it, so the name starts with the visible label and says the value the segments draw. The segments add nothing to the name. Per WCAG 1.1.1 (Non-text Content), 2.5.3 (Label in Name) and 4.1.2 (Name, Role, Value). Verified by `names the button $name` and `names the button with valueLabel` in `slide-picker-button.browser.test.ts`.
 - [x] The popover's slider is named by the visible `label`, shown below it. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `names the popover’s slider by the label below it` in `slide-picker-button.browser.test.ts`.
-- [x] `disabled`, or a disabled `<fieldset>` around the button, disables the button. Per WCAG 4.1.2 (Name, Role, Value). Verified by `disables the button when disabled, or inside a disabled fieldset` in `slide-picker-button.browser.test.ts`.
+- [x] `disabled`, or a disabled `<fieldset>` around the button, disables the button, and clearing it enables the button again. Per WCAG 4.1.2 (Name, Role, Value). Verified by `disables the button when disabled, or inside a disabled fieldset, and enables it again` in `slide-picker-button.browser.test.ts`.
 - [x] `readonly` still opens the popover, with a read-only slider, so the value can be reached and read. Per WCAG 4.1.2 (Name, Role, Value). Verified by `keeps the popover’s slider from changing while read-only` in `slide-picker-button.browser.test.ts`.
 
 ### Keyboard and focus
