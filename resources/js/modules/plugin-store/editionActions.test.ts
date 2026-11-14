@@ -73,7 +73,7 @@ const context: PluginStoreContext = {
   allowPurchases: true,
   cmsLicenseKey: null,
   craftIdEndpoint: 'https://console.craftcms.com',
-  pluginInstallCommand: 'php craft plugin:install',
+  pluginInstallCommand: 'php artisan craft:plugin:install',
   composerExecutable: 'composer',
 };
 
