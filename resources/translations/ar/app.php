@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'تعذر حفظ وحدة التخزين.',
     'Couldn’t save widget.' => 'تعذر حفظ عنصر الواجهة.',
     'Couldn’t save {type}.' => 'تعذر حفظ {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'تعذَّر إرسال رسالة البريد الإلكتروني للتنشيط: {error}',
     'Couldn’t suspend all users.' => 'تعذر تعليق جميع المستخدمين.',
     'Couldn’t suspend user.' => 'لا يمكن تعليق عضوية المستخدم.',

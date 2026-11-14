@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Ekki tókst að vista safn.',
     'Couldn’t save widget.' => 'Ekki tókst að vista græju.',
     'Couldn’t save {type}.' => 'Ekki tókst að vista {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Gat ekki sent virkjunarpóstinn: {error}',
     'Couldn’t suspend all users.' => 'Ekki tókst að loka öllum notendum.',
     'Couldn’t suspend user.' => 'Ekki tókst að loka notanda.',

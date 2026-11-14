@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Nie można zapisać woluminu.',
     'Couldn’t save widget.' => 'Nie można zapisać widżetu.',
     'Couldn’t save {type}.' => 'Nie można zapisać {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Nie można wysłać aktywacyjnej wiadomości e-mail: {error}',
     'Couldn’t suspend all users.' => 'Nie można zawiesić wszystkich użytkowników.',
     'Couldn’t suspend user.' => 'Nie można zawiesić użytkownika.',

@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'לא ניתן לשמור אמצעי אחסון.',
     'Couldn’t save widget.' => 'לא ניתן לשמור את הווידג\'ט.',
     'Couldn’t save {type}.' => 'לא ניתן לשמור את {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'לא ניתן לשלוח את אימייל ההפעלה: {error}',
     'Couldn’t suspend all users.' => 'לא ניתן להשעות את כל המשתמשים.',
     'Couldn’t suspend user.' => 'לא ניתן להשעות את המשתמש/ת.',

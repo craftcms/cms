@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Svazek nelze uložit.',
     'Couldn’t save widget.' => 'Nepodařilo se uložit widget.',
     'Couldn’t save {type}.' => 'Nepodařilo se uložit {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Nepodařilo se zaslat aktivační email: {error}',
     'Couldn’t suspend all users.' => 'Blokování všech uživatelů se nepodařilo.',
     'Couldn’t suspend user.' => 'Nepodařilo se blokovat uživatele.',

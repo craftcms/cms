@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Birim kaydedilemedi.',
     'Couldn’t save widget.' => 'Bileşen kaydedilemedi.',
     'Couldn’t save {type}.' => '{type} kaydedilemedi.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Etkinleştirme e-postası gönderilemedi: {error}',
     'Couldn’t suspend all users.' => 'Tüm kullanıcılar askıya alınamadı.',
     'Couldn’t suspend user.' => 'Kullanıcı askıya alınamadı.',
