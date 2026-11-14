@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Support\Facades;
 
+use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\FieldHandlers\FieldImportHandlerInterface;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use Illuminate\Support\Facades\Facade;
@@ -25,6 +27,7 @@ use Override;
  * @method static bool isRunning(ImportPlanData $importPlan)
  * @method static void unlock(ImportPlanData $importPlan)
  * @method static void importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null)
+ * @method static ItemPreview previewItem(ElementImporter $importer, array $data, array $matchCriteria = [])
  * @method static string getRawData(string $filePath)
  * @method static array getFormattedData(string $filePath, ?BaseImporter $importer = null)
  * @method static ?array getDataHeadings(string $filePath, ?BaseImporter $importer = null)

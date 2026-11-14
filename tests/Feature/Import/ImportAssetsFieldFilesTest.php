@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Element\Events\ElementSaving;
@@ -12,6 +14,7 @@ use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -204,6 +207,75 @@ it('creates a new asset when an incoming file matches one and that’s what the 
         ->and($related->getFilename())->not->toBe('photo.txt')
         ->and($related->getContents())->toBe('incoming')
         ->and(Asset::find()->id($existing->id)->one()->getContents())->toBe('original');
+});
+
+it('previews an item without uploading its files, relating an unsaved asset for each it would upload', function () {
+    ($this->importEntry)('first entry', ['myAssets' => [($this->sourceFile)('photo.txt', 'original')]]);
+    $existing = ($this->entry)('first entry')->getFieldValue('myAssets')->one();
+    $field = Fields::getLayoutById($this->entryType->fieldLayoutId)->getFieldByHandle('myAssets');
+    $field->allowLimit = true;
+    $field->minRelations = 2;
+
+    $preview = $this->import->previewItem($this->importer, [
+        'title' => 'second entry',
+        'sectionId' => $this->section->handle,
+        'typeId' => $this->entryType->handle,
+        'matchCriteria' => ['title' => 'title'],
+        'myAssets' => [($this->sourceFile)('photo.txt', 'incoming'), ($this->sourceFile)('new.txt'), ($this->sourceFile)('script.php')],
+    ]);
+    $related = $preview->element->getFieldValue('myAssets')->all();
+
+    expect($preview->result)->toBe(ItemPreviewResult::New)
+        ->and($preview->errors)->toBe([])
+        ->and(array_map(fn (Asset $asset) => [$asset->id, $asset->getFilename()], $related))->toBe([
+            [$existing->id, 'photo.txt'],
+            [null, 'new.txt'],
+        ])
+        ->and(Asset::find()->ids())->toBe([$existing->id])
+        ->and(Asset::find()->id($existing->id)->one()->getContents())->toBe('original');
+});
+
+it('previews a file once per upload the import would make for it', function (string $conflict, int $uploads) {
+    $path = ($this->sourceFile)('new.txt');
+    File::ensureDirectoryExists("$this->sourceDir/other");
+    file_put_contents($samePath = "$this->sourceDir/other/new.txt", 'hello world');
+    $importer = (clone $this->importer)->fieldSettings(['myAssets' => ['fileConflict' => $conflict]]);
+
+    $preview = $this->import->previewItem($importer, [
+        'title' => 'second entry',
+        'sectionId' => $this->section->handle,
+        'typeId' => $this->entryType->handle,
+        'matchCriteria' => ['title' => 'title'],
+        'myAssets' => [$path, $path, $samePath],
+    ]);
+
+    expect($preview->element->getFieldValue('myAssets')->count())->toBe($uploads);
+})->with([
+    // each upload is a new asset
+    'keeping both' => ['keepBoth', 3],
+    // the first upload's asset is reused for any later file of the same name
+    'using the existing file' => ['useExisting', 1],
+]);
+
+it('previews a URL with no extension in a field limited to some kinds of file, whose kind the import finds out', function () {
+    $field = Fields::getLayoutById($this->entryType->fieldLayoutId)->getFieldByHandle('myAssets');
+    $field->setSelectionCondition([
+        'class' => AssetCondition::class,
+        'elementType' => Asset::class,
+        'conditionRules' => [['class' => FileTypeConditionRule::class, 'values' => ['text']]],
+    ]);
+
+    $preview = $this->import->previewItem($this->importer, [
+        'title' => 'second entry',
+        'sectionId' => $this->section->handle,
+        'typeId' => $this->entryType->handle,
+        'matchCriteria' => ['title' => 'title'],
+        'myAssets' => ['https://example.com/download?id=1', ($this->sourceFile)('script.php'), ($this->sourceFile)('notes.txt')],
+    ]);
+
+    expect($preview->errors)->toBe([])
+        ->and(array_map(fn (Asset $asset) => $asset->getFilename(), $preview->element->getFieldValue('myAssets')->all()))
+        ->toBe(['download', 'notes.txt']);
 });
 
 it('creates an asset from a URL', function () {

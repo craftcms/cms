@@ -1,5 +1,5 @@
 import {t} from '@craftcms/ui';
-import {h, type VNodeChild} from 'vue';
+import {h, type Component, type VNodeChild} from 'vue';
 import type {InertiaLinkProps} from '@inertiajs/vue3';
 import {
   type AccessorColumnDef,
@@ -10,10 +10,39 @@ import {
   type DisplayColumnDef,
 } from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
-import type {AccessorParam} from '@/common/table/useEditableTable';
+import CheckboxCell from '@/common/table/cells/CheckboxCell.vue';
+import SelectCell from '@/common/table/cells/SelectCell.vue';
+import SelectRichCell from '@/common/table/cells/SelectRichCell.vue';
+import type {SelectCellOption} from '@/common/table/cells/types';
 import CpLink from '@/common/components/CpLink.vue';
 import Date from '@/common/components/Date.vue';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+
+export type AccessorParam<T extends object> = Parameters<
+  ColumnHelper<CraftTableFeatures, T>['accessor']
+>[0];
+
+/**
+ * A column whose cells are form controls. The value is read and written through
+ * callbacks rather than a row property, so it can live anywhere.
+ */
+type ControlColumnDef<T extends object, V> = Omit<
+  DisplayColumnDef<CraftTableFeatures, T>,
+  'id' | 'cell'
+> & {
+  id: string;
+  value: (row: T) => V;
+  /** Names the control for screen readers, since the header can't. */
+  label: (row: T) => string;
+  onChange: (row: T, value: V) => void;
+  disabled?: (row: T) => boolean;
+  /** Leaves the cell empty for rows the control doesn't apply to. */
+  hidden?: (row: T) => boolean;
+};
+
+type SelectColumnDef<T extends object> = ControlColumnDef<T, string> & {
+  options: SelectCellOption[] | ((row: T) => SelectCellOption[]);
+};
 
 type ComponentProperties = Record<
   string,
@@ -71,16 +100,67 @@ export type CraftColumnHelper<T extends object> = ColumnHelper<
     accessor: AccessorParam<T>,
     config?: Partial<DateColumnDef<T>>
   ) => AccessorColumnDef<CraftTableFeatures, T, unknown>;
+  /** A native select: the platform picker, plain text options. */
+  select: (
+    config: SelectColumnDef<T>
+  ) => DisplayColumnDef<CraftTableFeatures, T, unknown>;
+  /** A rich select, whose options can carry a hint beside their label. */
+  selectRich: (
+    config: SelectColumnDef<T>
+  ) => DisplayColumnDef<CraftTableFeatures, T, unknown>;
+  checkbox: (
+    config: ControlColumnDef<T, boolean>
+  ) => DisplayColumnDef<CraftTableFeatures, T, unknown>;
 };
 
 export function createCraftColumnHelper<T extends object>() {
   const baseHelper = createColumnHelper<CraftTableFeatures, T>();
+
+  function selectColumn(component: Component, config: SelectColumnDef<T>) {
+    const {value, label, onChange, disabled, hidden, options, ...rest} = config;
+
+    return baseHelper.display({
+      ...rest,
+      cell: ({row}) =>
+        hidden?.(row.original)
+          ? null
+          : h(component, {
+              value: value(row.original),
+              options:
+                typeof options === 'function' ? options(row.original) : options,
+              label: label(row.original),
+              disabled: disabled?.(row.original) ?? false,
+              onChange: (next: string) => onChange(row.original, next),
+            }),
+    });
+  }
 
   const columnHelper: CraftColumnHelper<T> = {
     accessor: baseHelper.accessor,
     columns: baseHelper.columns,
     display: baseHelper.display,
     group: baseHelper.group,
+
+    select: (config) => selectColumn(SelectCell, config),
+
+    selectRich: (config) => selectColumn(SelectRichCell, config),
+
+    checkbox(config) {
+      const {value, label, onChange, disabled, hidden, ...rest} = config;
+
+      return baseHelper.display({
+        ...rest,
+        cell: ({row}) =>
+          hidden?.(row.original)
+            ? null
+            : h(CheckboxCell, {
+                checked: value(row.original),
+                label: label(row.original),
+                disabled: disabled?.(row.original) ?? false,
+                onChange: (next: boolean) => onChange(row.original, next),
+              }),
+      });
+    },
 
     date(accessor, config = {}) {
       // oxlint-disable-next-line @typescript-eslint/no-unused-vars

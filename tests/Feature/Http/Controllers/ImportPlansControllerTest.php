@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Import\EntryImporter;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
@@ -19,6 +20,7 @@ use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -28,7 +30,9 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Import\UserImporter;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -582,4 +586,372 @@ it('forbids reordering import plans without permission to save them', function (
     postJson(action([ImportPlansController::class, 'reorder']), [
         'uids' => [$uid],
     ])->assertForbidden();
+});
+
+describe('data source suggestions', function () {
+    beforeEach(function () {
+        $this->sourceRoot = sys_get_temp_dir().'/import-sources-'.Str::random(8);
+        mkdir($this->sourceRoot.'/resources/nested', 0777, true);
+        touch($this->sourceRoot.'/resources/posts.json');
+        touch($this->sourceRoot.'/resources/people.csv');
+        touch($this->sourceRoot.'/resources/notes.php');
+        touch($this->sourceRoot.'/resources/.secret.json');
+        touch($this->sourceRoot.'/resources/nested/inner.xml');
+        Aliases::set('@root', $this->sourceRoot);
+
+        $this->suggest = fn (string $query) => $this->getJson(action([ImportPlansController::class, 'sourceSuggestions'], ['query' => $query]))
+            ->assertOk()
+            ->json();
+    });
+
+    afterEach(function () {
+        File::deleteDirectory($this->sourceRoot);
+    });
+
+    it('starts `./` in the project root', function () {
+        touch($this->sourceRoot.'/root.json');
+
+        expect(($this->suggest)('./'))->toBe([
+            ['label' => 'resources/', 'value' => './resources/', 'data' => ['hint' => 'Folder'], 'continues' => true],
+            ['label' => 'root.json', 'value' => './root.json'],
+        ]);
+    });
+
+    it('lists a folder’s subfolders first, leaving out files that can’t be imported', function () {
+        expect(($this->suggest)('./resources/'))->toBe([
+            ['label' => 'nested/', 'value' => './resources/nested/', 'data' => ['hint' => 'Folder'], 'continues' => true],
+            ['label' => 'people.csv', 'value' => './resources/people.csv'],
+            ['label' => 'posts.json', 'value' => './resources/posts.json'],
+        ]);
+    });
+
+    it('narrows the suggestions to what’s been typed of a name', function () {
+        expect(array_column(($this->suggest)('./resources/po'), 'value'))->toBe(['./resources/posts.json']);
+    });
+
+    it('goes on into a folder once its path is typed', function () {
+        expect(array_column(($this->suggest)('./resources/nested/'), 'value'))->toBe(['./resources/nested/inner.xml']);
+    });
+
+    // one request per test: the controller, and the request it holds, outlive a request in tests
+    it('offers aliases after `@`', function () {
+        Aliases::set('@importData', $this->sourceRoot.'/resources');
+
+        expect(($this->suggest)('@importD'))->toBe([
+            ['label' => '@importData', 'value' => '@importData/', 'data' => ['hint' => $this->sourceRoot.'/resources'], 'continues' => true],
+        ]);
+    });
+
+    it('goes on into the folder an alias names', function () {
+        Aliases::set('@importData', $this->sourceRoot.'/resources');
+
+        expect(array_column(($this->suggest)('@importData/ne'), 'value'))->toBe(['@importData/nested/']);
+    });
+
+    it('doesn’t follow a path out of the folder it starts in', function () {
+        expect(($this->suggest)('./resources/../'))->toBe([]);
+    });
+
+    it('doesn’t suggest anything inside a system folder', function () {
+        expect(($this->suggest)('@vendor/'))->toBe([]);
+    });
+
+    it('adds the triggers to the Data Source field', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+            'step' => ($this->entryStep)(),
+        ])->assertOk();
+
+        $source = collect(uiNodes($response->json('ui.nodes')))->first(fn (array $node) => ($node['control']['path'] ?? null) === ['source']);
+
+        expect(array_column($source['control']['props']['textExpanderTriggers'], 'trigger'))->toBe(['./', '@']);
+    });
+});
+
+it('forbids data source suggestions without permission to save import plans', function () {
+    actingAs(UserModel::factory()->withPermissions(['accessCp', 'viewImportPlans'])->createElement());
+
+    $this->getJson(action([ImportPlansController::class, 'sourceSuggestions'], ['query' => './']))->assertForbidden();
+});
+
+describe('step pages', function () {
+    beforeEach(function () {
+        ($this->createImportPlan)('Fixture Import', 'fixtureImport');
+        $this->plan = fn () => app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
+        $this->saveStep = fn (array $step) => $this->postJson(
+            action([ImportPlansController::class, 'storeStep']),
+            ['planUid' => ($this->plan)()->uid, 'step' => $step],
+        );
+    });
+
+    it('renders a step on its own page, with the same form as its slideout', function () {
+        $uid = ($this->plan)()->steps[0]->uid;
+
+        $this->get(route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $uid]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('import/StepEdit')
+                ->where('step.uid', $uid)
+                ->where('planUid', ($this->plan)()->uid)
+                ->has('stepUi.ui.nodes')
+                ->where('stepUi.canMap', true));
+    });
+
+    it('404s for a step the plan doesn’t have', function () {
+        $this->get(route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => Str::uuid()->toString()]))
+            ->assertNotFound();
+    });
+
+    it('links each saved step to its own page from the plan', function () {
+        $uid = ($this->plan)()->steps[0]->uid;
+
+        $this->get(route('craft.cp.import.edit', ['handle' => 'fixtureImport']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where(
+                "stepEditUrls.$uid",
+                route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $uid]),
+            ));
+    });
+
+    it('returns to the plans after saving, with an option to keep editing the plan', function () {
+        $this->get(route('craft.cp.import.edit', ['handle' => 'fixtureImport']))
+            ->assertOk()
+            ->assertInertia(function ($page) {
+                $props = $page->toArray()['props'];
+                $continue = collect($props['formActions'])->firstWhere('label', 'Save and continue editing');
+
+                expect(Crypt::decrypt($props['redirectUrl']))->toBe('import')
+                    ->and(Crypt::decrypt($continue['redirect']))->toBe('import/{handle}')
+                    ->and($props['saveShortcutRedirect'])->toBe('import/{handle}');
+            });
+    });
+
+    it('labels a container field’s nested destinations by their whole path, at every depth', function () {
+        $labels = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+            'step' => ($this->entryStep)(),
+        ])->assertOk()->json('summary.destinationLabels');
+
+        expect($labels['outerMatrix.outerEt.fields.innerMatrix'])->toMatchArray(['label' => 'Outer ET › Inner Matrix', 'handle' => 'innerMatrix'])
+            ->and($labels['outerMatrix.outerEt.fields.innerMatrix.innerEt.fields.innerPlainText'])->toMatchArray(['label' => 'Inner ET › Inner Plain Text', 'handle' => 'innerPlainText'])
+            ->and($labels['outerMatrix.outerEt.title']['label'])->toBe('Outer ET › Title');
+    });
+
+    it('gives the plan each step at a glance, by its uid', function () {
+        $uid = ($this->plan)()->steps[0]->uid;
+
+        $this->get(route('craft.cp.import.edit', ['handle' => 'fixtureImport']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where("stepSummaries.$uid.destinationLabels.title", ['label' => 'Title', 'handle' => 'title', 'icon' => 'i-cursor'])
+                ->where("stepSummaries.$uid.settings", [
+                    ['label' => 'Site', 'value' => Sites::getPrimarySite()->name],
+                    ['label' => 'Section', 'value' => $this->section->name],
+                    ['label' => 'Entry Type', 'value' => $this->entryType->name],
+                ]));
+    });
+
+    it('replaces the step with its uid, leaving the plan’s other steps alone', function () {
+        $existing = ($this->plan)()->serializeSteps()[0];
+
+        ($this->saveStep)([...$existing, 'batchSize' => 7])->assertOk();
+
+        expect(($this->plan)()->steps)->toHaveCount(1)
+            ->and(($this->plan)()->steps[0]->batchSize)->toBe(7);
+    });
+
+    it('adds a step it doesn’t have yet', function () {
+        $uid = Str::uuid()->toString();
+
+        ($this->saveStep)(($this->entryStep)(overrides: ['uid' => $uid]))->assertOk();
+
+        expect(array_map(fn ($step) => $step->uid, ($this->plan)()->steps))->toContain($uid)
+            ->and(($this->plan)()->steps)->toHaveCount(2);
+    });
+
+    it('reports a step’s errors against its uid in the plan', function () {
+        $step = ($this->entryStep)(overrides: ['source' => 'tests/Fixtures/Import/does-not-exist.json']);
+
+        $response = ($this->saveStep)($step)->assertStatus(400);
+
+        expect(array_keys($response->json('errors')))->toContain("steps.{$step['uid']}.source")
+            ->and(($this->plan)()->steps)->toHaveCount(1);
+    });
+
+    it('lands back on the step it saved', function () {
+        $step = ($this->entryStep)();
+
+        $this->post(action([ImportPlansController::class, 'storeStep']), [
+            'planUid' => ($this->plan)()->uid,
+            'step' => $step,
+        ])->assertRedirect(route('craft.cp.import.steps.edit', ['handle' => 'fixtureImport', 'uid' => $step['uid']]));
+    });
+});
+
+/**
+ * Every node in a UI payload's tree, depth first.
+ *
+ * @param  list<array<string, mixed>>  $nodes
+ * @return list<array<string, mixed>>
+ */
+function uiNodes(array $nodes): array
+{
+    $all = [];
+
+    foreach ($nodes as $node) {
+        $all[] = $node;
+        array_push($all, ...uiNodes($node['children'] ?? []));
+    }
+
+    return $all;
+}
+
+describe('the step form', function () {
+    beforeEach(function () {
+        $this->stepUiTopLevel = fn () => $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+            'step' => ($this->entryStep)(),
+        ])->assertOk()->json('ui.nodes');
+        $this->stepUi = fn (array $settings = []) => collect(uiNodes(
+            $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+                'step' => ($this->entryStep)($settings),
+            ])->assertOk()->json('ui.nodes'),
+        ));
+    });
+
+    it('lays the step out on one page, with its mapping before its advanced settings', function () {
+        $nodes = ($this->stepUi)();
+
+        expect($nodes->where('component', 'craft:tab'))->toBeEmpty()
+            ->and(array_column(($this->stepUiTopLevel)(), 'uid'))->toBe(['scope:"settings"', 'mapping', 'import-step-advanced'])
+            ->and($nodes->firstWhere('uid', 'import-step-settings')['props']['flat'])->toBeTrue()
+            ->and($nodes->firstWhere('component', 'craft:slot')['props']['name'])->toBe('mapping');
+    });
+
+    it('reports each destination column’s label, keyed like the map', function () {
+        $labels = $this->postJson(action([ImportPlansController::class, 'stepSettings']), [
+            'step' => ($this->entryStep)(),
+        ])->assertOk()->json('summary.destinationLabels');
+
+        expect($labels['title'])->toBe(['label' => 'Title', 'handle' => 'title', 'icon' => 'i-cursor'])
+            ->and($labels['postDate']['icon'])->toBe('calendar')
+            ->and($labels['enabled']['icon'])->toBe('toggle-on')
+            ->and($labels)->toHaveKey('slug');
+    });
+
+});
+
+describe('previewing a step', function () {
+    beforeEach(function () {
+        $this->existing = EntryModel::factory()
+            ->forSection($this->section)
+            ->forEntryType($this->entryType)
+            ->createElement(['title' => 'Old title', 'slug' => 'second-file-entry-slug']);
+
+        // only the second item has a slug to match on
+        $this->previewStep = ($this->entryStep)([
+            'map' => ['title' => 'title', 'slug' => 'slug'],
+            'matchCriteria' => ['slug' => 1],
+        ]);
+    });
+
+    it('says what importing each item would do, without saving anything', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => $this->previewStep,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('error'))->toBeNull()
+            ->and($response->json('total'))->toBe(3)
+            ->and($response->json('matchColumns'))->toBe([['key' => 'slug', 'label' => 'Slug']])
+            ->and($response->json('items.*.result'))->toBe(['new', 'update', 'new'])
+            ->and($response->json('items.1.match'))->toBe(['slug' => 'second-file-entry-slug'])
+            ->and($response->json('items.1.title'))->toBe('second file entry');
+
+        expect(EntryElement::find()->sectionId($this->section->id)->status(null)->count())->toBe(1)
+            ->and(EntryElement::find()->id($this->existing->id)->status(null)->one()->title)->toBe('Old title');
+    });
+
+    it('previews a page of the items at a time, keeping to the last page', function (int $page) {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => ($this->entryStep)(['map' => ['title' => 'title']], ['source' => 'tests/Fixtures/Import/entries-many.json']),
+            'page' => $page,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('total'))->toBe(23)
+            ->and($response->json('page'))->toBe(2)
+            ->and($response->json('items.*.index'))->toBe([20, 21, 22])
+            ->and($response->json('items.*.title'))->toBe(['Entry 21', 'Entry 22', 'Entry 23']);
+    })->with([2, 9]);
+
+    it('lists the page with an item the preview modal moves to from another page', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => ($this->entryStep)(['map' => ['title' => 'title']], ['source' => 'tests/Fixtures/Import/entries-many.json']),
+            'page' => 0,
+            'previewableIndex' => 15,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('page'))->toBe(1)
+            ->and($response->json('previewable'))->toBe(23)
+            ->and($response->json('previewableBefore'))->toBe(10)
+            ->and($response->json('itemCount'))->toBe(23)
+            ->and($response->json('items.5.index'))->toBe(15);
+    });
+
+    it('counts every item’s result, and pages through those with one of them', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => $this->previewStep,
+            'result' => 'new',
+        ]);
+
+        $response->assertOk();
+        expect($response->json('counts'))->toBe(['new' => 2, 'update' => 1, 'unchanged' => 0, 'skip' => 0, 'problem' => 0])
+            ->and($response->json('items.*.index'))->toBe([0, 2]);
+    });
+
+    it('keeps a step’s results until its plan is saved', function () {
+        $results = fn () => $this->postJson(action([ImportPlansController::class, 'previewStep']), [
+            'step' => $this->previewStep,
+        ])->assertOk()->json('items.*.result');
+
+        expect($results())->toBe(['new', 'update', 'new']);
+
+        Elements::deleteElement($this->existing, hardDelete: true);
+        expect($results())->toBe(['new', 'update', 'new']);
+
+        ($this->saveImportPlan)([$this->previewStep])->assertSuccessful();
+        expect($results())->toBe(['new', 'new', 'new']);
+    });
+
+    it('compares an item’s element as it is with how the import would leave it', function () {
+        $response = $this->postJson(action([ImportPlansController::class, 'previewItem']), [
+            'step' => $this->previewStep,
+            'index' => 1,
+        ]);
+
+        $response->assertOk();
+        expect($response->json('result'))->toBe('update')
+            ->and($response->json('comparison.from.label'))->toBe('Current')
+            ->and($response->json('comparison.badged'))->toBe(['from' => false, 'to' => true]);
+
+        $toTitle = collect($response->json('comparison.to.ui.values'))->flatten()->contains('second file entry');
+        $changedRows = collect($response->json('comparison.rows'))->where('changed', true);
+
+        expect($toTitle)->toBeTrue()
+            ->and($changedRows)->toHaveCount(1);
+    });
+
+    it('shows an item’s errors on the fields they’re about', function () {
+        // the entry type requires a title, which the data doesn't have at that path
+        $response = $this->postJson(action([ImportPlansController::class, 'previewItem']), [
+            'step' => ($this->entryStep)(['map' => ['title' => 'heading', 'slug' => 'slug']]),
+            'index' => 1,
+        ]);
+
+        $response->assertOk();
+        $errors = collect($response->json('comparison.to.ui.errors'));
+
+        expect($response->json('result'))->toBe('problem')
+            ->and($response->json('title'))->toBeNull()
+            ->and($errors->pluck('path')->map(fn (array $path) => end($path))->all())->toBe(['title']);
+    });
 });

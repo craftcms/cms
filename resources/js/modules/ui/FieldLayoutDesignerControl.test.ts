@@ -64,14 +64,13 @@ it('flags the designer tabs that have errors', async () => {
   app.mount(container);
   await flush();
 
-  const icon = (tab: string) =>
-    container.querySelector(
-      `craft-tab[data-fld-tab="${tab}"] > [data-fld-tab-error]`
-    );
+  const flagged = (tab: string) =>
+    container
+      .querySelector(`craft-tab[data-fld-tab="${tab}"]`)
+      ?.hasAttribute('has-errors');
 
-  expect(icon('content')?.getAttribute('name')).toBe('circle-exclamation');
-  expect(icon('content')?.getAttribute('slot')).toBe('suffix');
-  expect(icon('appearance')).toBeNull();
+  expect(flagged('content')).toBe(true);
+  expect(flagged('appearance')).toBe(false);
 
   errors.value = [
     {
@@ -82,8 +81,8 @@ it('flags the designer tabs that have errors', async () => {
   ];
   await flush();
 
-  expect(icon('content')).toBeNull();
-  expect(icon('appearance')).not.toBeNull();
+  expect(flagged('content')).toBe(false);
+  expect(flagged('appearance')).toBe(true);
 
   errors.value = [
     {
@@ -95,8 +94,8 @@ it('flags the designer tabs that have errors', async () => {
   await flush();
 
   // Generated fields are in the Content tab.
-  expect(icon('content')).not.toBeNull();
-  expect(icon('appearance')).toBeNull();
+  expect(flagged('content')).toBe(true);
+  expect(flagged('appearance')).toBe(false);
 });
 
 it('provides the Appearance tab’s outlet while mounted', async () => {

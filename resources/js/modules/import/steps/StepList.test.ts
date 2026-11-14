@@ -1,15 +1,35 @@
-import {createApp, nextTick, reactive, ref} from 'vue';
+import {createApp, h, nextTick, reactive, ref} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {cloneStep, cloneSteps} from '@/modules/import/mapping/paths';
 import type {ImportStep} from '@/modules/import/mapping/types';
+import type {ActionItemButton} from '@/common/types';
 import StepList from './StepList.vue';
 
 const state = vi.hoisted(() => ({
   openStepSlideout: vi.fn(),
+  openStepMapping: vi.fn(),
 }));
 
 vi.mock('./step-slideout', () => ({
   openStepSlideout: state.openStepSlideout,
+}));
+
+vi.mock('./step-mapping', () => ({
+  openStepMapping: state.openStepMapping,
+}));
+
+/** Renders a menu's label and hands its actions to the test through the element. */
+vi.mock('@/common/components/ActionMenu.vue', () => ({
+  default: {
+    props: {label: String, actions: Array},
+    setup(props: {label: string; actions: ActionItemButton[]}) {
+      return () =>
+        h('step-menu', {
+          'aria-label': props.label,
+          '.actions': props.actions,
+        });
+    },
+  },
 }));
 
 const importerTypes = [
@@ -33,19 +53,26 @@ function step(overrides: Partial<ImportStep> = {}): ImportStep {
 let app: ReturnType<typeof createApp> | null;
 let container: HTMLElement;
 let steps: ReturnType<typeof ref<ImportStep[]>>;
+let summaries: ReturnType<typeof ref<Record<string, unknown>>>;
 
 function mount(
   initial: ImportStep[] = [step()],
-  props: {editable?: boolean; errors?: Record<string, string[]>} = {}
+  props: {
+    editable?: boolean;
+    errors?: Record<string, string[]>;
+    stepSummaries?: Record<string, unknown>;
+  } = {}
 ) {
   steps = ref<ImportStep[]>(initial);
+  summaries = ref<Record<string, unknown>>(props.stepSummaries ?? {});
 
   app = createApp({
     components: {StepList},
     template:
-      '<StepList v-model="steps" :editable="editable" :importer-types="importerTypes" :errors="errors" />',
+      '<StepList v-model="steps" :editable="editable" :importer-types="importerTypes" :errors="errors" v-model:step-summaries="summaries" />',
     setup: () => ({
       steps,
+      summaries,
       importerTypes,
       editable: props.editable ?? true,
       errors: props.errors ?? {},
@@ -61,16 +88,25 @@ function rowButtons(index = 0): HTMLElement[] {
   return [...row.querySelectorAll<HTMLElement>('craft-button')];
 }
 
+function rowActions(index = 0): ActionItemButton[] {
+  const row = [...container.querySelectorAll('li')][index]!;
+  const menu = row.querySelector<HTMLElement & {actions: ActionItemButton[]}>(
+    'step-menu'
+  );
+
+  return menu?.actions ?? [];
+}
+
+function action(label: string, index = 0): ActionItemButton {
+  return rowActions(index).find((item) => item.label === label)!;
+}
+
 function addButton(): HTMLElement {
   return [...container.querySelectorAll<HTMLElement>('craft-button')].at(-1)!;
 }
 
 function isLoading(button: HTMLElement): boolean {
   return (button as HTMLElement & {loading: boolean}).loading;
-}
-
-function isDisabled(button: HTMLElement): boolean {
-  return (button as HTMLElement & {disabled: boolean}).disabled;
 }
 
 function deferred<T>() {
@@ -82,6 +118,7 @@ function deferred<T>() {
 
 beforeEach(() => {
   state.openStepSlideout.mockReset();
+  state.openStepMapping.mockReset().mockResolvedValue(true);
   state.openStepSlideout.mockResolvedValue(true);
   vi.stubGlobal('confirm', vi.fn().mockReturnValue(true));
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
@@ -118,45 +155,145 @@ it('opens the slideout for a step read out of its reactive model', async () => {
   expect(state.openStepSlideout.mock.calls[0]![0].step.uid).toBe('step-1');
 });
 
-it('summarizes a step by its importer type and source', () => {
+/** A card's settings rows, as label and value. */
+function details(index = 0): string[][] {
+  const card = [...container.querySelectorAll('li')][index]!;
+
+  return [...card.querySelectorAll('.step-card__settings dt')].map((dt) => [
+    dt.textContent!.trim(),
+    dt.nextElementSibling!.textContent!.trim(),
+  ]);
+}
+
+/** A card's type and source, from its rail. */
+function identity(index = 0): string[] {
+  const card = [...container.querySelectorAll('li')][index]!;
+
+  return [
+    card.querySelector('.step-card__number')!.textContent!.trim(),
+    card
+      .querySelector('[id^="step-label-"]')!
+      .textContent!.replace(/\s+/g, ' ')
+      .trim(),
+    card.querySelector('.step-card__rail code')?.textContent!.trim() ?? '',
+  ];
+}
+
+it('numbers each step and lists its importer type and source', () => {
+  mount([step(), step({uid: 'step-2', source: 'more.csv'})]);
+
+  expect(identity(0)).toEqual(['1', 'Step 1: Entries', 'people.csv']);
+  expect(identity(1)).toEqual(['2', 'Step 2: Entries', 'more.csv']);
+});
+
+it('lists the settings the server summed up for a step', () => {
+  mount([step()], {
+    stepSummaries: {
+      'step-1': {
+        settings: [
+          {label: 'Site', value: 'Craft Test Site'},
+          {label: 'Section', value: 'Guides'},
+        ],
+        destinationLabels: {},
+      },
+    },
+  });
+
+  expect(details()).toEqual([
+    ['Site', 'Craft Test Site'],
+    ['Section', 'Guides'],
+  ]);
+});
+
+it('says what a matching step does with rows that match', () => {
+  mount([
+    step({
+      settings: {matchCriteria: {slug: '1'}, matchMode: 'updateOnly'},
+    }),
+    step({uid: 'step-2', settings: {matchMode: 'updateOnly'}}),
+  ]);
+
+  expect(details(0)).toEqual([['If matched', 'Update existing only']]);
+  // with nothing to match on, every row is new, so there's nothing to say
+  expect(details(1)).toEqual([]);
+});
+
+it('takes a step’s new summary from its slideout once applied, and hands it up for the page’s preview', async () => {
   mount();
 
-  expect(container.querySelector('li')!.textContent).toContain(
-    '1. Entries — people.csv'
+  rowButtons()[0]!.click();
+  await nextTick();
+
+  const summary = {
+    settings: [{label: 'Site', value: 'Other Site'}],
+    destinationLabels: {},
+  };
+  state.openStepSlideout.mock.calls[0]![0].apply(
+    step({source: 'new.csv'}),
+    summary
   );
+  await nextTick();
+
+  expect(identity()[2]).toBe('new.csv');
+  expect(details()).toEqual([['Site', 'Other Site']]);
+  expect(summaries.value).toEqual({'step-1': summary});
 });
 
-it('names each row’s buttons after its step', () => {
+it('opens a step’s mapping straight from its mapping section', async () => {
+  mount([step({settings: {site: 'default'}})]);
+
+  const mappingButton = container.querySelector<HTMLElement>(
+    'li .step-card__mapping craft-button'
+  )!;
+  mappingButton.click();
+  await nextTick();
+
+  expect(state.openStepMapping).toHaveBeenCalledOnce();
+  expect(state.openStepMapping.mock.calls[0]![0]).toMatchObject({
+    step: {uid: 'step-1'},
+    editable: true,
+    opener: mappingButton,
+  });
+
+  state.openStepMapping.mock.calls[0]![0].apply({map: {title: 'name'}});
+  await nextTick();
+
+  expect(steps.value![0]!.settings).toEqual({
+    site: 'default',
+    map: {title: 'name'},
+  });
+  expect(
+    container.querySelector('.step-card__mapping h3')!.textContent
+  ).toContain('1 field');
+});
+
+it('names each row’s edit button and action menu after its step', () => {
   mount([step(), step({uid: 'step-2', source: 'people.csv'})]);
 
-  const [edit, , remove] = rowButtons(1);
+  const row = [...container.querySelectorAll('li')][1]!;
 
-  expect(
-    [edit, remove].map((button) => button!.getAttribute('aria-label'))
-  ).toEqual(['Edit 2. Entries — people.csv', 'Delete 2. Entries — people.csv']);
-});
-
-it('names a row’s toggle button after its label and its step', () => {
-  mount([step(), step({uid: 'step-2'})]);
-
-  const ids = rowButtons(1)[1]!.getAttribute('aria-labelledby')!.split(' ');
-
-  expect(
-    ids.map((id) => document.getElementById(id)!.textContent!.trim())
-  ).toEqual(['Disable step', '2. Entries — people.csv']);
+  expect(rowButtons(1)[0]!.getAttribute('aria-label')).toBe(
+    'Edit 2. Entries — people.csv'
+  );
+  expect(row.querySelector('step-menu')!.getAttribute('aria-label')).toBe(
+    'Actions for 2. Entries — people.csv'
+  );
 });
 
 it('disables a step and enables it again', async () => {
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  action('Disable step').onClick!(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.enabled)).toEqual([false, true]);
-  expect(container.querySelector('li')!.textContent).toContain('(Disabled)');
-  expect(rowButtons(0)[1]!.textContent!.trim()).toBe('Enable step');
+  expect(
+    container
+      .querySelector('li [id^="step-label-"] craft-badge')!
+      .textContent!.trim()
+  ).toBe('Disabled');
 
-  rowButtons(0)[1]!.dispatchEvent(new Event('click'));
+  action('Enable step').onClick!(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.enabled)).toEqual([true, true]);
@@ -165,8 +302,14 @@ it('disables a step and enables it again', async () => {
 it('only lets a step be disabled while another stays enabled', () => {
   mount([step(), step({uid: 'step-2', enabled: false})]);
 
-  expect(isDisabled(rowButtons(0)[1]!)).toBe(true);
-  expect(isDisabled(rowButtons(1)[1]!)).toBe(false);
+  expect(action('Disable step', 0).disabled).toBe(true);
+  expect(action('Enable step', 1).disabled).toBe(false);
+});
+
+it('leaves the action menu off a read-only step', () => {
+  mount([step()], {editable: false});
+
+  expect(container.querySelector('step-menu')).toBeNull();
 });
 
 it('names a read-only row’s button for viewing', () => {
@@ -210,7 +353,7 @@ it('replaces the edited step in place, keeping its uid', async () => {
 it('removes a step once the deletion is confirmed', async () => {
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[2]!.dispatchEvent(new Event('click'));
+  action('Delete step').onClick!(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-2']);
@@ -220,7 +363,7 @@ it('keeps a step the user declines to delete', async () => {
   vi.stubGlobal('confirm', vi.fn().mockReturnValue(false));
   mount([step(), step({uid: 'step-2'})]);
 
-  rowButtons(0)[2]!.dispatchEvent(new Event('click'));
+  action('Delete step').onClick!(new Event('click'));
   await nextTick();
 
   expect(steps.value!.map((s) => s.uid)).toEqual(['step-1', 'step-2']);
@@ -359,4 +502,37 @@ it('ignores other open requests while a slideout is opening', async () => {
   await nextTick();
 
   expect(state.openStepSlideout).toHaveBeenCalledTimes(2);
+});
+
+it('offers a dashed Add mapping button in place of an empty mapping, and Edit once mapped', async () => {
+  mount([step()]);
+
+  const section = () => container.querySelector('.step-card__mapping')!;
+  const buttons = () =>
+    [...section().querySelectorAll<HTMLElement>('craft-button')].map(
+      (button) => [
+        button.textContent!.trim(),
+        (button as HTMLElement & {variant?: string}).variant,
+      ]
+    );
+
+  expect(buttons()).toEqual([['Add mapping', 'dashed']]);
+
+  section().querySelector<HTMLElement>('craft-button')!.click();
+  await nextTick();
+  state.openStepMapping.mock.calls[0]![0].apply({map: {title: 'name'}});
+  await nextTick();
+
+  expect(buttons()[0]).toEqual(['Edit mapping', 'plain']);
+});
+
+it('says nothing is mapped yet, with no button, when the step can’t be edited', () => {
+  mount([step()], {editable: false});
+
+  expect(
+    container.querySelector('.step-card__mapping craft-button')
+  ).toBeNull();
+  expect(container.querySelector('.step-card__mapping')!.textContent).toContain(
+    'Nothing mapped yet.'
+  );
 });

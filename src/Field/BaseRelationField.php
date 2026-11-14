@@ -273,9 +273,10 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
         $sources = $this->allowMultipleSources ? $this->sources : $this->source;
         $sources = $sources === '*' ? null : $sources;
         $sources = is_string($sources) ? [$sources] : $sources;
+        // an unsaved element, such as an import preview's stand-in for a file it would upload, can't be selected by ID
         $value = $context->value === null
             ? []
-            : $this->serializeValue($context->value, $context->element);
+            : array_values(array_filter((array) $this->serializeValue($context->value, $context->element), fn ($id) => $id !== null));
 
         return $this->selectControl($context)
             ->elementType(static::elementType())

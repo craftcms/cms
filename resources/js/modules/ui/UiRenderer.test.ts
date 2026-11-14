@@ -1004,6 +1004,46 @@ describe('UiRenderer', () => {
     expect(labelSrOnly('visible', 'craft-select')).toBe(false);
   });
 
+  it('marks only the tabs holding a field with errors', async () => {
+    const tab = (uid: string, field: string): UiPayload['nodes'][number] => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+      component: 'craft:tab',
+      uid,
+      props: {label: uid},
+      children: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+          component: 'craft:field',
+          props: {label: field},
+          control: {
+            type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+            component: 'craft:text',
+            props: {},
+            path: [field],
+            mode: 'editable',
+            deltaGroup: [field],
+          },
+        },
+      ],
+    });
+    app.unmount();
+    await mount({
+      scope: [],
+      refreshable: false,
+      nodes: [tab('content', 'title'), tab('seo', 'summary')],
+      values: {title: '', summary: ''},
+      errors: [{path: ['title'], messages: ['Title cannot be blank.']}],
+      globalErrors: [],
+    });
+
+    const hasErrors = (label: string) =>
+      [...container.querySelectorAll('craft-tab')]
+        .find((element) => element.textContent?.trim() === label)!
+        .hasAttribute('has-errors');
+    expect(hasErrors('content')).toBe(true);
+    expect(hasErrors('seo')).toBe(false);
+  });
+
   it('renders a field in its outlet, where it still edits the form’s value', async () => {
     const outlet = document.createElement('div');
     document.body.append(outlet);
@@ -1493,6 +1533,81 @@ describe('UiRenderer', () => {
       },
       {mode: 'fit'}
     );
+  });
+
+  it('fills a Slot node from the renderer’s slot of the same name', async () => {
+    const withSlots: UiPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Slot',
+          component: 'craft:slot',
+          uid: 'filled',
+          props: {name: 'filled'},
+        },
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Slot',
+          component: 'craft:slot',
+          uid: 'unfilled',
+          props: {name: 'unfilled'},
+        },
+      ],
+      values: {},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(withSlots, {
+      slots: {filled: () => h('button', {'data-filled': ''}, 'Edit')},
+    });
+
+    expect(
+      container.querySelector('[data-ui-node="filled"] [data-filled]')
+        ?.textContent
+    ).toBe('Edit');
+    expect(container.querySelector('[data-ui-node="unfilled"]')).toBeNull();
+  });
+
+  it('renders a flat Group’s children with no fieldset of its own', async () => {
+    const flat: UiPayload = {
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Group',
+          component: 'craft:group',
+          uid: 'flat',
+          props: {flat: true},
+          children: [
+            {
+              type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+              component: 'craft:field',
+              props: {label: 'Name'},
+              control: {
+                type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+                component: 'craft:text',
+                props: {},
+                path: ['name'],
+                mode: 'editable',
+                deltaGroup: ['name'],
+              },
+            },
+          ],
+        },
+      ],
+      values: {name: 'Ada'},
+      errors: [],
+      globalErrors: [],
+    };
+    app.unmount();
+    await mount(flat);
+
+    const group = container.querySelector('[data-ui-node="flat"]')!;
+
+    expect(group.classList.contains('group-flat')).toBe(true);
+    expect(group.querySelector('craft-field')).not.toBeNull();
+    expect(container.querySelector('fieldset')).toBeNull();
   });
 
   it('accepts override values derived from reactive arrays', async () => {
@@ -2029,7 +2144,9 @@ describe('UiRenderer', () => {
     expect(tab?.nextElementSibling).toBe(seoTab);
     expect(tabButtons[0]?.getAttribute('aria-selected')).toBe('true');
     expect(tabButtons[1]?.getAttribute('aria-selected')).toBe('false');
-    expect(tabButtons[1]?.querySelector('craft-icon')).not.toBeNull();
+    // the tab draws its own error icon
+    expect(tabButtons[1]?.hasAttribute('has-errors')).toBe(true);
+    expect(tabButtons[0]?.hasAttribute('has-errors')).toBe(false);
     // A tab's icon comes before its label; tabs without one get none.
     expect(
       tabButtons[0]

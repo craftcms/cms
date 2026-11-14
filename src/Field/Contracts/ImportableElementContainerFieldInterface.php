@@ -42,6 +42,14 @@ interface ImportableElementContainerFieldInterface extends ElementContainerField
     public function resolveMappingKeys(array $tree): array;
 
     /**
+     * Replaces the handles in this field’s part of a mapping tree with the uids the mapping screen keys them by.
+     *
+     * @param  array<mixed>  $tree
+     * @return array<mixed>
+     */
+    public function uidMappingKeys(array $tree): array;
+
+    /**
      * Validates field's mapping.
      *
      * @param  array<string, mixed>  $params

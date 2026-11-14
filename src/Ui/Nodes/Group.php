@@ -28,6 +28,9 @@ use InvalidArgumentException;
  * - **Section** (default) — a `<fieldset>` with the label as its `<legend>`, or
  *   a `<craft-disclosure>` when {@see self::collapsible()}. For a run of
  *   settings under a heading (“Advanced”, “Field Limit”).
+ * - **Flat** ({@see self::flat()}) — no element of its own, so its children
+ *   join the surrounding grid. For fields that come and go together, such as
+ *   an importer type's own settings, without setting them apart.
  * - **Field** ({@see self::asField()}) — a `<craft-field>` in fieldset mode,
  *   for several inputs that make up *one* logical field (“Asset Location” over
  *   a source select and a subpath input). Presentation settings from
@@ -54,6 +57,8 @@ class Group extends Container
 
     private bool $asField = false;
 
+    private bool $flat = false;
+
     private ?int $width = null;
 
     /** @var list<string>|null */
@@ -67,6 +72,14 @@ class Group extends Container
 
         if ($node->props['asField'] ?? false) {
             return self::fieldHtml($node, $payload, $renderer);
+        }
+
+        if ($node->props['flat'] ?? false) {
+            return Html::tag('div', $renderer->renderNodes($node->children ?? [], $payload), [
+                'class' => 'group-flat',
+                'data-ui-node' => $node->uid,
+                ...self::visibilityAttributes($node->props),
+            ]);
         }
 
         $children = FieldGroup::make()
@@ -89,7 +102,11 @@ class Group extends Container
             ]);
         }
 
-        return Html::tag('fieldset', ($label ? Html::tag('legend', Html::encode($label)) : '').$children->toHtml(), $attributes);
+        $legend = $label ? Html::tag('legend', Html::encode($label), [
+            'class' => ($node->props['labelSrOnly'] ?? false) ? 'sr-only' : null,
+        ]) : '';
+
+        return Html::tag('fieldset', $legend.$children->toHtml(), $attributes);
     }
 
     /** @param list<Node> $children */
@@ -110,6 +127,17 @@ class Group extends Container
     public function expanded(bool $expanded = true): static
     {
         $this->expanded = $expanded;
+
+        return $this;
+    }
+
+    /**
+     * Renders the group's children straight into the surrounding grid — see the
+     * class docblock. Ignored when {@see self::asField()} is set.
+     */
+    public function flat(bool $flat = true): static
+    {
+        $this->flat = $flat;
 
         return $this;
     }
@@ -178,6 +206,7 @@ class Group extends Container
             ...($this->collapsible && ! $this->asField ? ['collapsible' => true] : []),
             ...($this->collapsible && ! $this->asField && $this->expanded ? ['expanded' => true] : []),
             ...($this->asField ? ['asField' => true] : []),
+            ...($this->flat && ! $this->asField ? ['flat' => true] : []),
             ...($this->asField && $this->required ? ['required' => true] : []),
             ...Arr::whereNotNull([
                 'instructions' => $this->instructions,

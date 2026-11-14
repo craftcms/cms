@@ -11,10 +11,16 @@ use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
+use CraftCms\Cms\Field\Lightswitch;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Enums\ItemPreviewResult;
+use CraftCms\Cms\Import\Enums\MatchMode;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Site\Data\Site;
@@ -25,11 +31,14 @@ use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Import;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use InvalidArgumentException;
 use Override;
@@ -79,6 +88,9 @@ abstract class ElementImporter extends BaseImporter
      * e.g. `['myAssets' => ['fileConflict' => 'replace'], 'myMatrix' => ['someEntryType' => ['fields' => ['innerAssets' => [...]]]]]`.
      */
     public protected(set) ?array $fieldSettings = null;
+
+    /** Whether rows create new elements, update the ones they match, or both. */
+    public protected(set) MatchMode $matchMode = MatchMode::CreateAndUpdate;
 
     #[Override]
     public static function getDefaultTransformer(): ?string
@@ -209,10 +221,23 @@ abstract class ElementImporter extends BaseImporter
         return $this;
     }
 
+    /**
+     * Sets whether rows create new elements, update the ones they match, or both, and returns
+     * the current instance.
+     */
+    public function matchMode(MatchMode|string|null $matchMode): self
+    {
+        $this->matchMode = $matchMode instanceof MatchMode
+            ? $matchMode
+            : (MatchMode::tryFrom((string) $matchMode) ?? MatchMode::CreateAndUpdate);
+
+        return $this;
+    }
+
     #[Override]
     protected static function settingNames(): array
     {
-        return [...parent::settingNames(), 'site', 'fieldLayout', 'keepMissingNestedElements', 'fieldSettings'];
+        return [...parent::settingNames(), 'site', 'fieldLayout', 'keepMissingNestedElements', 'fieldSettings', 'matchMode'];
     }
 
     #[Override]
@@ -229,6 +254,7 @@ abstract class ElementImporter extends BaseImporter
             'settings.site' => ['required', new SiteRule],
             'settings.keepMissingNestedElements' => ['nullable', 'array'],
             'settings.fieldSettings' => ['nullable', 'array'],
+            'settings.matchMode' => ['nullable', Rule::enum(MatchMode::class)],
         ]);
     }
 
@@ -248,6 +274,7 @@ abstract class ElementImporter extends BaseImporter
         $data['settings']['fieldLayout'] = $this->fieldLayout;
         $data['settings']['keepMissingNestedElements'] = $this->keepMissingNestedElements;
         $data['settings']['fieldSettings'] = $this->fieldSettings;
+        $data['settings']['matchMode'] = $this->matchMode->value;
 
         return $data;
     }
@@ -327,6 +354,28 @@ abstract class ElementImporter extends BaseImporter
     }
 
     #[Override]
+    public function uidMappingKeys(array $tree): array
+    {
+        $tree = ImportHelper::uidMappingKeys($tree, self::normalizeFieldLayout($this->fieldLayout));
+        $targetClass = static::targetClass();
+
+        if (! is_subclass_of($targetClass, ImportableContainerPropertiesInterface::class)) {
+            return $tree;
+        }
+
+        foreach (ImportHelper::getImportableContainerProperties($this) as $prop) {
+            if (is_array($tree[$prop['name']] ?? null)) {
+                $tree[$prop['name']] = ImportHelper::uidMappingKeys(
+                    $tree[$prop['name']],
+                    $targetClass::getFieldLayoutForProperty($prop['name']),
+                );
+            }
+        }
+
+        return $tree;
+    }
+
+    #[Override]
     public function resolveMappingKeys(array $tree): array
     {
         $tree = ImportHelper::resolveMappingKeys($tree, self::normalizeFieldLayout($this->fieldLayout));
@@ -365,6 +414,9 @@ abstract class ElementImporter extends BaseImporter
             canBeCleared: $prop['canBeCleared'],
             canBeSet: $prop['canBeSet'],
             isProperty: true,
+            // properties declared outside ImportHelper may carry no icon
+            icon: $prop['icon'] ?? null,
+            defaultValueInput: $prop['defaultValueInput'] ?? null,
         ), $props));
 
         if ($this->fieldLayout === null) {
@@ -402,6 +454,7 @@ abstract class ElementImporter extends BaseImporter
                 'canBeCleared' => false,
                 'canBeSet' => true,
                 'isList' => false,
+                'icon' => Lightswitch::icon(),
                 'defaultValue' => false,
                 'trait' => null,
             ];
@@ -432,11 +485,106 @@ abstract class ElementImporter extends BaseImporter
         return $this->withLocalFile(fn (string $filePath) => Import::getDataHeadings($filePath, $this));
     }
 
+    /**
+     * Imports an item into the element it matches or a new one, returning that element, or `null` when the match mode
+     * leaves the item out.
+     *
+     * @param  array<string, mixed>  $data
+     */
     #[Override]
-    public function importItem(array $data): ElementInterface
+    public function importItem(array $data): ?ElementInterface
+    {
+        $prepared = $this->prepareItem($data);
+
+        if ($prepared === null) {
+            return null;
+        }
+
+        ['element' => $element, 'hasChanges' => $hasChanges, 'createDraft' => $createDraft, 'publishDraft' => $publishDraft] = $prepared;
+
+        if (! $hasChanges) {
+            return $element;
+        }
+
+        $this->useValidationScenario($element, $prepared['staysDraft']);
+
+        $fieldLayout = $element->getFieldLayout();
+        $restoreKeepFlagFields = $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
+
+        try {
+            $saved = $createDraft
+                ? Drafts::saveElementAsDraft($element)
+                : Elements::saveElement($element);
+
+            if (! $saved) {
+                throw new InvalidElementException(
+                    $element,
+                    'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.implode(' ', self::describeErrors($element)),
+                );
+            }
+        } finally {
+            foreach ($restoreKeepFlagFields as $field) {
+                $field->setKeepMissingNestedElements(false);
+            }
+        }
+
+        if ($publishDraft) {
+            $element = Drafts::applyDraft($element);
+        }
+
+        return $element;
+    }
+
+    /**
+     * Returns what importing an item would do, without saving anything: the element it would create or update, with
+     * the item's values set on it, and whether that element would pass validation.
+     *
+     * @param  array<string, mixed>  $data  The item, as `Import::importItem()` hands it to `importItem()`.
+     */
+    public function previewItem(array $data): ItemPreview
+    {
+        $prepared = $this->prepareItem($data);
+        $matchCriteria = is_array($data['matchCriteria'] ?? null) ? $data['matchCriteria'] : [];
+
+        if ($prepared === null) {
+            return new ItemPreview(ItemPreviewResult::Skip, null, $matchCriteria);
+        }
+
+        $element = $prepared['element'];
+        $result = match (true) {
+            $prepared['isNew'] => ItemPreviewResult::New,
+            $prepared['hasChanges'] => ItemPreviewResult::Update,
+            default => ItemPreviewResult::Unchanged,
+        };
+
+        if ($result !== ItemPreviewResult::Unchanged) {
+            $this->useValidationScenario($element, $prepared['staysDraft']);
+
+            if (! $element->validate()) {
+                return new ItemPreview(ItemPreviewResult::Problem, $element, $matchCriteria, self::describeErrors($element));
+            }
+        }
+
+        return new ItemPreview($result, $element, $matchCriteria);
+    }
+
+    /**
+     * Finds the element an item goes into and sets the item's values on it, or returns `null` when the plan doesn't
+     * create or update the element the item matches.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{element: ElementInterface, isNew: bool, hasChanges: bool, createDraft: bool, publishDraft: bool, staysDraft: bool}|null
+     */
+    private function prepareItem(array $data): ?array
     {
         // figure out if we're adding or updating
         $element = $this->getRootElement($data);
+
+        // a row the plan doesn't create or update is left out
+        if (! $this->matchMode->imports($element->id !== null)) {
+            return null;
+        }
+
         $element->markAsImporting();
 
         $item = Import::processData($this, $data, $element);
@@ -505,44 +653,143 @@ abstract class ElementImporter extends BaseImporter
             || $this->attributeValuesChanged($element, $oldAttributeValues)
             || $this->fieldValuesChanged($element, $oldFieldValues);
 
-        if (! $hasChanges) {
-            return $element;
+        return [
+            'element' => $element,
+            'isNew' => $isNew,
+            'hasChanges' => $hasChanges,
+            'createDraft' => $createDraft,
+            'publishDraft' => $publishDraft,
+            // a draft that stays a draft only needs to meet the essentials, like a draft saved from the control panel
+            'staysDraft' => $createDraft || ($element->getIsUnpublishedDraft() && ! $publishDraft),
+        ];
+    }
+
+    /**
+     * Returns an element's validation errors, with those of the elements nested in it saying where they are,
+     * e.g. “Content › Step group 3: The title field is required.”
+     *
+     * @return list<string>
+     */
+    public static function describeErrors(ElementInterface $element): array
+    {
+        return array_values(array_unique(array_map(
+            fn (array $error): string => ($error['path'] === [] ? '' : implode(' › ', $error['path']).': ').$error['message'],
+            self::collectErrors($element),
+        )));
+    }
+
+    /**
+     * Returns an element's validation errors by the path of the field they're about, including the fields of elements
+     * nested inline in its fields. Those nested in fields that show them as cards are on the field, saying where they
+     * are in it, e.g. “Step group 3: The title field is required.”
+     *
+     * @return array<string, list<string>>
+     */
+    public static function errorsByField(ElementInterface $element): array
+    {
+        $errors = [];
+
+        foreach (self::collectErrors($element) as $error) {
+            $errors[implode('.', $error['at'])][] = ($error['within'] === [] ? '' : implode(' › ', $error['within']).': ').$error['message'];
         }
 
-        // a draft that stays a draft only needs to meet the essentials, like a draft saved from the control panel
-        $staysDraft = $createDraft || ($element->getIsUnpublishedDraft() && ! $publishDraft);
+        return array_map(fn (array $messages): array => array_values(array_unique($messages)), $errors);
+    }
 
+    /**
+     * Each error, with where it is as labels (`path`), the path of the field in the element's form it's shown on
+     * (`at`), and where it is within that field as labels (`within`).
+     *
+     * @return list<array{path: list<string>, at: list<string>, within: list<string>, message: string}>
+     */
+    private static function collectErrors(ElementInterface $element): array
+    {
+        $errors = $element->errors()->getMessages();
+        $nestedErrors = [];
+
+        foreach (array_keys($errors) as $key) {
+            $handle = Str::before(Str::before($key, '['), '.');
+            $nestedErrors[$handle] ??= self::nestedErrors($element, $handle);
+        }
+
+        $collected = [];
+
+        foreach ($errors as $key => $messages) {
+            // a nested element's errors are copied onto its owner as `fieldHandle[key].attribute`, or summed up under
+            // the field's handle, without saying which element they're from, so they're described from the element instead
+            if (str_contains($key, '[') || ($nestedErrors[$key] ?? []) !== []) {
+                continue;
+            }
+
+            foreach ($messages as $message) {
+                $collected[] = ['path' => [], 'at' => [$key], 'within' => [], 'message' => $message];
+            }
+        }
+
+        return array_merge($collected, ...array_values($nestedErrors));
+    }
+
+    /**
+     * @return list<array{path: list<string>, at: list<string>, within: list<string>, message: string}>
+     */
+    private static function nestedErrors(ElementInterface $element, string $handle): array
+    {
+        $field = $element->getFieldLayout()?->getFieldByHandle($handle);
+
+        if ($field === null) {
+            return [];
+        }
+
+        $value = $element->getFieldValue($handle);
+        $nestedElements = match (true) {
+            $value instanceof ElementQueryInterface => $value->getResultOverride() ?? [],
+            $value instanceof Collection => $value->all(),
+            default => [],
+        };
+        // the identities of the elements the field shows with their own fields, which their fields' paths go through
+        $inline = $field instanceof Matrix ? $field->inlineEntries($element) : null;
+        $collected = [];
+
+        foreach (array_values($nestedElements) as $i => $nested) {
+            if (! $nested instanceof ElementInterface || $nested->errors()->isEmpty()) {
+                continue;
+            }
+
+            $label = $nested->title ?: sprintf('%s %d', $nested instanceof Entry ? $nested->getType()->getUiLabel() : $nested::displayName(), $i + 1);
+            $identity = $inline === null ? false : array_search($nested, $inline, true);
+
+            foreach (self::collectErrors($nested) as $error) {
+                $collected[] = [
+                    'path' => [$field->getUiLabel(), $label, ...$error['path']],
+                    'message' => $error['message'],
+                    ...($identity === false
+                        ? ['at' => [$handle], 'within' => [$label, ...$error['path']]]
+                        : ['at' => [$handle, 'entries', (string) $identity, ...self::formPath($nested, $error['at'])], 'within' => $error['within']]),
+                ];
+            }
+        }
+
+        return $collected;
+    }
+
+    /**
+     * Returns the path of an element's field in its form, which has its custom fields under `fields`.
+     *
+     * @param  list<string>  $path
+     * @return list<string>
+     */
+    private static function formPath(ElementInterface $element, array $path): array
+    {
+        return $element->getFieldLayout()?->getFieldByHandle($path[0]) !== null ? ['fields', ...$path] : $path;
+    }
+
+    private function useValidationScenario(ElementInterface $element, bool $staysDraft): void
+    {
         if (! $staysDraft && $element->enabled && $element->getEnabledForSite()) {
             $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
         } else {
             $element->ruleset->useScenario(ElementRules::SCENARIO_ESSENTIALS);
         }
-
-        $fieldLayout = $element->getFieldLayout();
-        $restoreKeepFlagFields = $this->collectAndEnableKeepFields($fieldLayout, $fieldLayout, null, null, null);
-
-        try {
-            $saved = $createDraft
-                ? Drafts::saveElementAsDraft($element)
-                : Elements::saveElement($element);
-
-            if (! $saved) {
-                throw new InvalidElementException(
-                    $element,
-                    'Unable to save element being imported (elementId: '.($element->id ?? 'new').'): '.implode(' ', $element->errors()->all()),
-                );
-            }
-        } finally {
-            foreach ($restoreKeepFlagFields as $field) {
-                $field->setKeepMissingNestedElements(false);
-            }
-        }
-
-        if ($publishDraft) {
-            $element = Drafts::applyDraft($element);
-        }
-
-        return $element;
     }
 
     /**

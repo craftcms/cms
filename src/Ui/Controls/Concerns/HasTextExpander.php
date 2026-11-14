@@ -14,10 +14,11 @@ use CraftCms\Cms\Ui\ControlPayload;
  *     value: string,
  *     keywords?: list<string>,
  *     data?: mixed,
+ *     continues?: bool,
  * }
  * @phpstan-type TextExpanderTrigger (
- *     array{trigger: string, boundary: 'start'|'whitespace'|'anywhere', label?: string, options: list<TextExpanderOption>, source?: never, limit?: int}
- *     | array{trigger: string, boundary: 'start'|'whitespace'|'anywhere', label?: string, source: string, options?: never, limit?: int}
+ *     array{trigger: string, boundary: 'start'|'whitespace'|'anywhere', label?: string, options: list<TextExpanderOption>, source?: never, limit?: int, pattern?: string}
+ *     | array{trigger: string, boundary: 'start'|'whitespace'|'anywhere', label?: string, source: string, options?: never, limit?: int, pattern?: string}
  * )
  * @phpstan-type TextExpanderTriggers list<TextExpanderTrigger>
  */

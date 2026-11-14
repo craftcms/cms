@@ -9,6 +9,7 @@
   import {t} from '@craftcms/ui';
   import CpContainer from '@/common/components/CpContainer.vue';
   import MappingTable from '@/modules/import/mapping/MappingTable.vue';
+  import MatchingSection from '@/modules/import/mapping/MatchingSection.vue';
   import {useMappingPanel} from '@/modules/import/mapping/useMappingPanel';
   import {takeStepMappingContext} from './step-mapping';
 
@@ -32,17 +33,11 @@
 </script>
 
 <template>
-  <CpContainer>
-    <craft-field-group class="py-4">
-      <p>
-        {{
-          t(
-            'Selections marked “Suggested” were auto-selected as the closest matches from the incoming data. Change them if they’re not right.'
-          )
-        }}
-      </p>
+  <craft-field-group class="py-md">
+    <MappingTable :cols="context.destinationCols" />
 
-      <MappingTable :cols="context.destinationCols" />
-    </craft-field-group>
-  </CpContainer>
+    <CpContainer>
+      <MatchingSection :cols="context.destinationCols" />
+    </CpContainer>
+  </craft-field-group>
 </template>

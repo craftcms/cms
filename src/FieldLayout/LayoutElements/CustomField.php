@@ -24,6 +24,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\DefaultValueInputs;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Fields;
@@ -1067,6 +1068,9 @@ class CustomField extends BaseField implements ImportableFieldLayoutElementInter
             fieldUid: $isContainer ? $field->uid : null,
             importSettings: $this->getImportMappingExtraSettings($field),
             withKeepInputs: $isContainer,
+            defaultValueInput: $isContainer ? null : DefaultValueInputs::forField($field),
+            icon: $field::icon(),
+            required: $this->required,
         );
     }
 

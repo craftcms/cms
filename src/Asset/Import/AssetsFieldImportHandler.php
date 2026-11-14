@@ -11,6 +11,7 @@ use CraftCms\Cms\Asset\Enums\ImportFileConflict;
 use CraftCms\Cms\Asset\Exceptions\AssetException;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\FieldMappingSetting;
@@ -78,6 +79,10 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
 
         $conflict = ImportFileConflict::tryFrom((string) ($importSettings['fileConflict'] ?? '')) ?? ImportFileConflict::UseExisting;
 
+        if ($importer->previewing) {
+            return $this->previewedAssets($field, $items, $conflict, $rootOwner);
+        }
+
         // resolve files that are already there up front, so they don’t make the element look changed
         if ($conflict === ImportFileConflict::UseExisting && $rootOwner?->id) {
             $items = $this->resolveExistingFiles($field, $items, $rootOwner);
@@ -107,6 +112,73 @@ class AssetsFieldImportHandler implements FieldImportHandlerInterface
                 instructions: t('Incoming files are matched against existing assets by filename, within the folder they’d be uploaded to. Only applies when related assets are matched by ID or file.'),
             ),
         ];
+    }
+
+    /**
+     * Returns the assets a preview relates, in their incoming order. A preview can't upload anything, so each file the
+     * import would upload is an unsaved asset in its place, and the field validates and compares as it would after the
+     * import. A file whose extension isn't allowed is left out, as the import would leave it.
+     *
+     * An asset is related once, and so is a file, by its name, unless the import keeps both: the import reuses the
+     * asset a file's first upload made for any later file of the same name, but keeping both uploads each one anew.
+     *
+     * @param  list<int|string>  $items
+     * @return ElementCollection<int, Asset>
+     */
+    private function previewedAssets(AssetsField $field, array $items, ImportFileConflict $conflict, ?ElementInterface $rootOwner): ElementCollection
+    {
+        if ($conflict !== ImportFileConflict::KeepBoth && $rootOwner !== null) {
+            $items = $this->resolveExistingFiles($field, $items, $rootOwner);
+        }
+
+        $ids = array_values(array_unique(array_filter($items, is_int(...))));
+        $existing = collect($ids === [] ? [] : Asset::find()->id($ids)->status(null)->site('*')->unique()->all())->keyBy('id');
+        $assets = [];
+        $related = [];
+
+        foreach ($items as $item) {
+            $key = match (true) {
+                is_int($item) => "id:$item",
+                $conflict === ImportFileConflict::KeepBoth => null,
+                default => 'file:'.AssetsHelper::importFilename($item),
+            };
+
+            if ($key !== null && isset($related[$key])) {
+                continue;
+            }
+
+            if ($key !== null) {
+                $related[$key] = true;
+            }
+
+            if (is_int($item)) {
+                // an ID that isn't an asset relates nothing, as it wouldn't on import
+                $asset = $existing->get($item);
+
+                if ($asset instanceof Asset) {
+                    $assets[] = $asset;
+                }
+
+                continue;
+            }
+
+            $filename = AssetsHelper::importFilename($item);
+
+            try {
+                // without an extension, the file would have to be fetched to find out what it is
+                if (pathinfo($filename, PATHINFO_EXTENSION) !== '') {
+                    AssetsHelper::ensureImportExtensionAllowed($filename, $field->getAllowedExtensions());
+                }
+            } catch (Throwable) {
+                continue;
+            }
+
+            $asset = new Asset;
+            $asset->setFilename($filename);
+            $assets[] = $asset;
+        }
+
+        return new ElementCollection($assets);
     }
 
     /**

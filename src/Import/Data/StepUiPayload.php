@@ -21,6 +21,8 @@ readonly class StepUiPayload implements JsonSerializable
         public UiPayload $ui,
         public bool $canMap,
         public ?string $sourceError,
+        /** The step at a glance, for the plan's list of steps. */
+        public StepSummary $summary = new StepSummary,
     ) {}
 
     /** @return array<string, mixed> */
@@ -30,6 +32,7 @@ readonly class StepUiPayload implements JsonSerializable
             'ui' => $this->ui,
             'canMap' => $this->canMap,
             'sourceError' => $this->sourceError,
+            'summary' => $this->summary,
         ];
     }
 }

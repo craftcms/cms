@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="TData extends Record<string, any>">
-  import type {ColumnDef, Table} from '@tanstack/vue-table';
+  import type {ColumnDef, Row, Table} from '@tanstack/vue-table';
+  import type {HTMLAttributes} from 'vue';
   import type {CraftTableFeatures} from '@/common/table/craftTable';
   import type {BulkAction} from '@/modules/elements/types/actions';
   import AdminTableBulkActionsBar from './AdminTableBulkActionsBar.vue';
@@ -55,6 +56,8 @@
       getSortValue?: AdminTableDataOptions<TData>['getSortValue'];
       canSelectRow?: AdminTableDataOptions<TData>['canSelectRow'];
       getRowLabel?: (row: TData) => string;
+      /** Attributes for each row's `<tr>`, such as a class for rows that need setting apart. */
+      rowAttributes?: (row: Row<CraftTableFeatures, TData>) => HTMLAttributes;
       reorderRows?: (move: AdminTableReorder<TData>) => Promise<void>;
       moveToPage?: (
         id: string | number,
@@ -78,6 +81,8 @@
       context?: string;
       readOnly?: boolean;
       loading?: boolean;
+      /** See `DataTable`'s `placeholderRows`. */
+      placeholderRows?: number;
       interactionsDisabled?: boolean;
       layout?: 'auto' | 'fixed';
       spacing?: TableSpacingValue;
@@ -339,6 +344,7 @@
         :can-reorder-row="canReorderRow"
         :read-only="readOnly"
         :loading="loading"
+        :placeholder-rows="placeholderRows"
         :layout="layout"
         :spacing="spacing"
         :appearance="
@@ -350,6 +356,7 @@
         :empty-row="!showEmptyState"
         :selection="selection"
         :get-row-label="getRowLabel"
+        :row-attributes="rowAttributes"
         :interactions-disabled="interactionsDisabled || loading"
         @reorder="onReorder"
       >

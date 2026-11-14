@@ -111,9 +111,10 @@ it('flags the tab that holds a field with an error', async () => {
   state.errors = {notificationDuration: 'Invalid duration.'};
   const root = await mount();
 
-  expect(
-    tabs(root).map(
-      (tab) => tab.querySelector('craft-icon[slot="suffix"]') !== null
-    )
-  ).toEqual([false, true, false]);
+  // the tab draws its own error icon
+  expect(tabs(root).map((tab) => tab.hasAttribute('has-errors'))).toEqual([
+    false,
+    true,
+    false,
+  ]);
 });

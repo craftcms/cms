@@ -8,6 +8,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
 use CraftCms\Cms\Dashboard\WidgetTypes;
+use CraftCms\Cms\Import\Events\ItemImporting;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Json;
@@ -67,6 +68,13 @@ class WorkbenchServiceProvider extends ServiceProvider
 
             app()->setBasePath(package_path());
             app()->useAppPath(package_path('src'));
+        });
+
+        // Skips the items the workbench's import data marks, as a plugin can, so a preview can show skipped items.
+        Event::listen(function (ItemImporting $event): void {
+            if (($event->data['skip'] ?? false) === true) {
+                $event->isValid = false;
+            }
         });
 
         // A scripted AI provider, so the AI features can be tried without an API key.

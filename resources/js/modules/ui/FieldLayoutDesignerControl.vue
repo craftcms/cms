@@ -115,18 +115,11 @@
         continue;
       }
 
-      const hasErrors = keys.some((key) => errorKeys.includes(key));
-      let icon = tab.querySelector(':scope > [data-fld-tab-error]');
-      if (hasErrors && !icon) {
-        icon = document.createElement('craft-icon');
-        icon.setAttribute('name', 'circle-exclamation');
-        icon.setAttribute('slot', 'suffix');
-        icon.setAttribute('label', t('Errors'));
-        icon.setAttribute('data-fld-tab-error', '');
-        tab.append(icon);
-      } else if (!hasErrors) {
-        icon?.remove();
-      }
+      // the tab shows its own error icon
+      tab.toggleAttribute(
+        'has-errors',
+        keys.some((key) => errorKeys.includes(key))
+      );
     }
   }
 

@@ -6,12 +6,15 @@
    * a copy of the step and hands it back on Apply; the step only reaches the database
    * when the import itself is saved.
    */
+  import '@craftcms/ui/components/field-group/field-group';
   import '@craftcms/ui/components/button/button';
   import '@craftcms/ui/components/spinner/spinner';
   import {computed, onMounted, ref, shallowRef} from 'vue';
   import {useForm} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui';
   import CpContainer from '@/common/components/CpContainer.vue';
+  import LayoutSlot from '@/common/components/LayoutSlot.vue';
+  import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import {useSlideout} from '@/common/slideouts';
@@ -21,20 +24,26 @@
   import {dirtyState} from '@/modules/import/mapping/paths';
   import {
     fetchStepUi,
+    StepSaveError,
     takeStepSlideoutContext,
     validateStep,
+    type StepSlideoutContext,
   } from './step-slideout';
-  import {openStepMapping, StepMappingUnavailableError} from './step-mapping';
+  import InlineStepMapping from './InlineStepMapping.vue';
 
   const props = defineProps<{
-    contextId: string;
+    /** A slideout claims its context by id; a page hands it over directly. */
+    contextId?: string;
+    context?: StepSlideoutContext;
     title: string;
   }>();
 
-  const context = takeStepSlideoutContext(props.contextId);
+  const context = props.context ?? takeStepSlideoutContext(props.contextId!);
   const slideout = useSlideout();
   const payload = shallowRef<UiPayload>(context.payload);
   const errors = shallowRef<UiPayload['errors']>([]);
+  /** The errors the step's plan couldn't be saved with, by path, for the screen's summary. */
+  const saveErrors = shallowRef<Record<string, string>>({});
   const renderer = ref<{
     currentValues(): UiPayload['values'];
     setValues(
@@ -44,9 +53,6 @@
 
   /** The step as it currently stands, including mapping the form doesn't render. */
   const step = ref<ImportStep>(context.step);
-  const mappingButton = ref<HTMLElement | null>(null);
-  const mappingMessage = ref<string | null>(null);
-  const openingMapping = ref(false);
 
   /**
    * Backs the shell's Apply button and gives it an accurate dirty check for the
@@ -57,7 +63,8 @@
 
   useAppLayout(() => ({
     title: props.title,
-    submitButtonLabel: t('Apply'),
+    submitButtonLabel: context.submitLabel ?? t('Apply'),
+    editUrl: context.editUrl ?? null,
     form,
     defaultFormActions: [],
     onSave: done,
@@ -81,22 +88,12 @@
   const canMap = ref(context.canMap);
   /** Why the data source can't be used, as the server last reported it. */
   const sourceError = ref(context.sourceError);
-
-  /**
-   * Why the data source couldn't be read when the mapping was opened. It's only found out by
-   * reading the file, which refreshes don't do, so it stands until the source changes.
-   */
-  const sourceReadError = ref<{source: string | null; message: string} | null>(
-    null
-  );
+  /** The step at a glance, as the server last reported it. */
+  const summary = ref(context.summary);
 
   /** The validation errors, plus the data source's own problem under its field. */
   const formErrors = computed<UiPayload['errors']>(() => {
-    const message =
-      sourceError.value ??
-      (sourceReadError.value?.source === step.value.source
-        ? sourceReadError.value.message
-        : null);
+    const message = sourceError.value;
 
     if (
       !message ||
@@ -110,8 +107,7 @@
 
   /**
    * The importer type the rendered form was built for. The form's own type field changes
-   * first, and the fields that depend on it only arrive with the refresh, so the Mapping
-   * section follows this rather than the step's type to appear alongside them.
+   * first, and the fields that depend on it only arrive with the refresh.
    */
   const formType = ref(context.step.type);
   const loadingType = ref(false);
@@ -124,12 +120,8 @@
    * decides which data type fields it shows.
    */
   let checkedSource = context.step.source;
-  const checkingMap = ref(false);
-  let latestCheck = 0;
   /** Shared by refreshes and source checks, so whichever started last sets `canMap`. */
   let latestCanMap = 0;
-
-  const mappedCount = computed(() => countLeaves(mappingValues().map));
 
   function mappingValues(): MappingValues {
     // PHP sends empty settings as `[]`, whose `map` would be `Array.prototype.map`
@@ -144,26 +136,13 @@
         string,
         unknown
       >,
+      defaultValues: (settings.defaultValues ?? {}) as Record<string, unknown>,
       keepMissingNestedElements: (settings.keepMissingNestedElements ??
         {}) as Record<string, unknown>,
       fieldSettings: (settings.fieldSettings ?? {}) as Record<string, unknown>,
       templates: (settings.templates ?? {}) as Record<string, unknown>,
+      matchMode: (settings.matchMode as string | undefined) ?? null,
     };
-  }
-
-  function countLeaves(tree: unknown): number {
-    if (tree === null || tree === undefined || tree === '') {
-      return 0;
-    }
-
-    if (typeof tree !== 'object') {
-      return 1;
-    }
-
-    return Object.values(tree as Record<string, unknown>).reduce<number>(
-      (total, value) => total + countLeaves(value),
-      0
-    );
   }
 
   /** Folds the form's current values back into the step. */
@@ -192,51 +171,10 @@
     syncFromForm();
   }
 
-  async function editMapping(): Promise<void> {
-    if (openingMapping.value) {
-      return;
-    }
-
-    syncFromForm();
-    mappingMessage.value = null;
-    openingMapping.value = true;
-
-    try {
-      await openStepMapping(
-        {
-          step: step.value,
-          editable: context.editable,
-          opener: mappingButton.value,
-          apply: (applied) => {
-            step.value = {
-              ...step.value,
-              settings: {...step.value.settings, ...applied},
-            };
-            form.state = dirtyState(step.value);
-          },
-        },
-        t('Edit mapping')
-      );
-    } catch (error) {
-      if (
-        error instanceof StepMappingUnavailableError &&
-        error.attribute === 'source'
-      ) {
-        sourceReadError.value = {
-          source: step.value.source,
-          message: error.message,
-        };
-
-        return;
-      }
-
-      mappingMessage.value =
-        error instanceof Error && error.message
-          ? error.message
-          : t('Couldn’t open the mapping.');
-    } finally {
-      openingMapping.value = false;
-    }
+  /** The mapping is edited in place, so each change goes straight into the step. */
+  function onMappingChange(values: MappingValues): void {
+    step.value = {...step.value, settings: {...step.value.settings, ...values}};
+    form.state = dirtyState(step.value);
   }
 
   /** The step as the settings form endpoint expects it, with the mapping trees carried over. */
@@ -249,16 +187,11 @@
 
     const request = ++latestRefresh;
     const canMapRequest = ++latestCanMap;
-    const check = step.value.source !== checkedSource ? ++latestCheck : null;
     const type = step.value.type;
     checkedSource = step.value.source;
 
     if (type !== formType.value) {
       loadingType.value = true;
-    }
-
-    if (check !== null) {
-      checkingMap.value = true;
     }
 
     try {
@@ -269,6 +202,7 @@
       // the form drops a response a newer refresh has overtaken, so this does too
       if (request === latestRefresh) {
         formType.value = type;
+        summary.value = response.summary;
       }
 
       if (canMapRequest === latestCanMap) {
@@ -280,10 +214,6 @@
     } finally {
       if (request === latestRefresh) {
         loadingType.value = false;
-      }
-
-      if (check === latestCheck) {
-        checkingMap.value = false;
       }
     }
   }
@@ -323,8 +253,6 @@
   /** Asks the server whether the step can be mapped, without rebuilding the form. */
   async function checkCanMap(): Promise<void> {
     const request = ++latestCanMap;
-    const check = ++latestCheck;
-    checkingMap.value = true;
 
     try {
       const response = await fetchStepUi(
@@ -337,39 +265,105 @@
       }
     } catch {
       // the last reported `canMap` still stands
-    } finally {
-      if (check === latestCheck) {
-        checkingMap.value = false;
-      }
     }
   }
 
-  function setErrors(next: Record<string, string | string[]>): void {
-    errors.value = Object.entries(next).map(([path, messages]) => ({
+  const mapping = ref<InstanceType<typeof InlineStepMapping> | null>(null);
+
+  /**
+   * Shows the server's errors on the form, and those about the templates, which the form
+   * doesn't render, on their columns in the mapping, focusing the first.
+   */
+  async function showErrors(
+    next: Record<string, string | string[]>
+  ): Promise<void> {
+    const prefix = 'settings.templates.';
+    const formEntries: Array<[string, string[]]> = [];
+    const templateErrors: Record<string, string[]> = {};
+
+    for (const [path, messages] of Object.entries(next)) {
+      const list = Array.isArray(messages) ? messages : [messages];
+
+      if (path.startsWith(prefix)) {
+        templateErrors[path.slice(prefix.length)] = list;
+      } else {
+        formEntries.push([path, list]);
+      }
+    }
+
+    errors.value = formEntries.map(([path, messages]) => ({
       path: path.split('.'),
-      messages: Array.isArray(messages) ? messages : [messages],
+      messages,
     }));
+
+    if (Object.keys(templateErrors).length) {
+      await mapping.value?.showTemplateErrors(templateErrors);
+    }
+  }
+
+  /**
+   * Shows the errors the step's plan couldn't be saved with: the step's own on the form,
+   * and all of them in the screen's summary, the only place one about another step or
+   * the plan itself can go.
+   */
+  async function showSaveErrors(
+    planErrors: Record<string, string | string[]>
+  ): Promise<void> {
+    const prefix = `steps.${step.value.uid}.`;
+    const own: Record<string, string | string[]> = {};
+    const summary: Record<string, string> = {};
+
+    for (const [path, messages] of Object.entries(planErrors)) {
+      const message = [messages].flat()[0] ?? '';
+
+      if (path.startsWith(prefix)) {
+        own[path.slice(prefix.length)] = messages;
+        summary[path.slice(prefix.length)] = message;
+      } else {
+        summary[path] = path.startsWith('steps.')
+          ? t('Another step: {message}', {message})
+          : message;
+      }
+    }
+
+    saveErrors.value = summary;
+    await showErrors(own);
   }
 
   async function done(): Promise<void> {
     syncFromForm();
     errors.value = [];
+    saveErrors.value = {};
 
     if (context.editable) {
       try {
         await validateStep(step.value);
       } catch (error: any) {
-        const responseErrors = error?.response?.data?.errors;
+        const responseErrors: Record<string, string | string[]> | undefined =
+          error?.response?.data?.errors;
 
         if (responseErrors) {
-          setErrors(responseErrors);
+          await showErrors(responseErrors);
         }
 
         return;
       }
     }
 
-    context.apply(JSON.parse(JSON.stringify(step.value)) as ImportStep);
+    try {
+      await context.apply(
+        JSON.parse(JSON.stringify(step.value)) as ImportStep,
+        summary.value
+      );
+    } catch (error) {
+      if (!(error instanceof StepSaveError)) {
+        throw error;
+      }
+
+      await showSaveErrors(error.errors);
+
+      return;
+    }
 
     // Before close(): closing drops the panel from the store, and its handler with it.
     slideout?.saved();
@@ -378,34 +372,36 @@
 </script>
 
 <template>
-  <CpContainer @focusout="onFocusOut">
-    <craft-field-group class="py-4">
+  <CpContainer @focusout="onFocusOut" class="py-lg">
+    <LayoutSlot v-if="Object.keys(saveErrors).length" name="error-summary">
+      <ErrorSummary
+        :errors="saveErrors"
+        :title="t('Couldn’t save import step')"
+      />
+    </LayoutSlot>
+
+    <craft-field-group>
       <UiRenderer
         ref="renderer"
         :payload="payload"
         :errors="formErrors"
         :refresh="payload.refreshable ? refresh : undefined"
         @change="onChange"
-      />
-
-      <craft-spinner v-if="showLoadingType" role="status">
-        {{ t('Loading') }}
-      </craft-spinner>
-
-      <section v-if="formType">
-        <h3 class="pbe-2">{{ t('Mapping') }}</h3>
-
-        <craft-button
-          ref="mappingButton"
-          .disabled="!canMap"
-          .loading="openingMapping || checkingMap"
-          @click="editMapping"
-        >
-          {{ context.editable ? t('Edit mapping') : t('View mapping') }}
-        </craft-button>
-
-        <p v-if="mappingMessage" role="alert">{{ mappingMessage }}</p>
-      </section>
+      >
+        <template #mapping>
+          <InlineStepMapping
+            ref="mapping"
+            :step="step"
+            :editable="context.editable"
+            :can-map="canMap"
+            @change="onMappingChange"
+          />
+        </template>
+      </UiRenderer>
     </craft-field-group>
+
+    <craft-spinner v-if="showLoadingType" role="status">
+      {{ t('Loading') }}
+    </craft-spinner>
   </CpContainer>
 </template>

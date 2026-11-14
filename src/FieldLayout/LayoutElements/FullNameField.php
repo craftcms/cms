@@ -7,12 +7,14 @@ namespace CraftCms\Cms\FieldLayout\LayoutElements;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Import\Data\CompoundMappingColumn;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\DefaultValueInputs;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Ui\Contracts\Node;
@@ -134,6 +136,8 @@ class FullNameField extends TextField implements ImportableFieldLayoutElementInt
                 prefixedHandle: ImportHelper::prefixedHandleForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix),
                 canBeMatchCriteria: $part['canBeMatchCriteria'],
                 canBeCleared: $part['canBeCleared'],
+                defaultValueInput: DefaultValueInputs::text(),
+                icon: PlainText::icon(),
             ), $parts),
         );
     }

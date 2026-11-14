@@ -83,6 +83,11 @@ export default class CraftTooltip extends LionTooltip {
           width: max-content;
           max-inline-size: var(--c-tooltip-max-width, min(45ch, 100vw - 2rem));
           overflow-wrap: break-word;
+          /* wraps even where it's opened from text that doesn't, such as a table heading */
+          white-space: normal;
+          /* lines of even length, centered, so a wrapped tip doesn't leave one word on its own */
+          text-align: center;
+          text-wrap: balance;
         }
       `,
     ];
@@ -206,12 +211,59 @@ export default class CraftTooltip extends LionTooltip {
 
     this.#layeredCtrl = this._overlayCtrl as unknown as EventTarget;
     this.#layeredCtrl.addEventListener('before-show', this.#raise);
+    this.#layeredCtrl.addEventListener('show', this.#fitAfterLayout);
     this.#layeredCtrl.addEventListener('hide', this.#lower);
   }
+
+  /**
+   * Balanced lines are shorter than the box, which keeps the width of the text
+   * before it wrapped, so a wrapped tip is narrowed to its widest line and placed again.
+   */
+  // the content is only laid out once the overlay has shown it
+  #fitAfterLayout = () => requestAnimationFrame(this.#fitToLines);
+
+  #fitToLines = () => {
+    const content = this.#contentWrapper;
+
+    if (!content) {
+      return;
+    }
+
+    content.style.inlineSize = '';
+
+    const rects = renderedNodes(content).flatMap((node) => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+
+      return Array.from(range.getClientRects());
+    });
+
+    if (new Set(rects.map((rect) => Math.round(rect.top))).size < 2) {
+      return;
+    }
+
+    const lines =
+      Math.max(...rects.map((rect) => rect.right)) -
+      Math.min(...rects.map((rect) => rect.left));
+    const style = getComputedStyle(content);
+    const chrome =
+      style.boxSizing === 'border-box'
+        ? parseFloat(style.paddingInlineStart) +
+          parseFloat(style.paddingInlineEnd) +
+          parseFloat(style.borderInlineStartWidth) +
+          parseFloat(style.borderInlineEndWidth)
+        : 0;
+
+    content.style.inlineSize = `${Math.ceil(lines + chrome)}px`;
+    (
+      this._overlayCtrl as unknown as {_popper?: {forceUpdate(): void}}
+    )._popper?.forceUpdate();
+  };
 
   override _teardownOverlayCtrl() {
     this.#lower();
     this.#layeredCtrl?.removeEventListener('before-show', this.#raise);
+    this.#layeredCtrl?.removeEventListener('show', this.#fitAfterLayout);
     this.#layeredCtrl?.removeEventListener('hide', this.#lower);
     this.#layeredCtrl = null;
 
@@ -263,6 +315,15 @@ export default class CraftTooltip extends LionTooltip {
     this.opened = false;
     await this.updateComplete;
   }
+}
+
+/** A node's children as they render, following slots (such as one passing a tip through) to what fills them. */
+function renderedNodes(node: Node): Node[] {
+  return Array.from(node.childNodes).flatMap((child) =>
+    child instanceof HTMLSlotElement
+      ? child.assignedNodes({flatten: true})
+      : [child]
+  );
 }
 
 if (!customElements.get('craft-tooltip')) {

@@ -80,11 +80,13 @@ it('takes prepared tabs, keeping their own panels', function () {
         ->tabs([
             Tab::make()->label('One')->panel('Panel one'),
             Tab::make()->label('Two')->panel('Panel two')->disabled(),
+            Tab::make()->label('Three')->panel('Panel three')->hasErrors(),
         ])
         ->toHtml();
 
     expect($html)->toContain('<craft-tab slot="tab">One</craft-tab>')
         ->and($html)->toContain('<craft-tab slot="tab" disabled>Two</craft-tab>')
+        ->and($html)->toContain('<craft-tab slot="tab" has-errors>Three</craft-tab>')
         ->and($html)->toContain('Panel one')
         ->and($html)->toContain('Panel two');
 });

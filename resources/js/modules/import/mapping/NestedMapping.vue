@@ -36,6 +36,17 @@
 
   const keepPath = computed(() => keepFlagPath(context.col));
 
+  /** Each entry type's columns, named only when there are several. */
+  const tableGroups = computed(() =>
+    context.groups.map((group) => ({
+      label:
+        context.groups.length > 1
+          ? (group.providerName ?? context.fieldName)
+          : null,
+      cols: group.destinationCols,
+    }))
+  );
+
   const keepMissingChecked = computed(() =>
     isChecked(getAt(values.keepMissingNestedElements, keepPath.value))
   );
@@ -50,10 +61,11 @@
 </script>
 
 <template>
-  <CpContainer>
-    <craft-field-group class="py-4">
+  <craft-field-group class="py-md">
+    <MappingTable :groups="tableGroups" />
+
+    <CpContainer v-if="context.col.canKeepMissingNestedElements">
       <craft-checkbox
-        v-if="context.col.canKeepMissingNestedElements"
         :label="
           t('Keep existing nested elements missing from the imported data.')
         "
@@ -61,11 +73,6 @@
         .disabled="!context.editable"
         @model-value-changed="onKeepMissingChanged"
       ></craft-checkbox>
-
-      <section v-for="(group, index) in context.groups" :key="index">
-        <h3>{{ group.providerName ?? context.fieldName }}</h3>
-        <MappingTable :cols="group.destinationCols" />
-      </section>
-    </craft-field-group>
-  </CpContainer>
+    </CpContainer>
+  </craft-field-group>
 </template>

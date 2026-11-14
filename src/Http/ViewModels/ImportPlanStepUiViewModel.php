@@ -8,6 +8,8 @@ use CraftCms\Cms\Element\Import\ElementTransformer;
 use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
+use CraftCms\Cms\Import\Jobs\Import as ImportJob;
+use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Number;
@@ -17,6 +19,7 @@ use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
 use CraftCms\Cms\Ui\Nodes\Scope;
+use CraftCms\Cms\Ui\Nodes\Slot;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -25,8 +28,8 @@ use CraftCms\Cms\Ui\UiResolver;
 use function CraftCms\Cms\t;
 
 /**
- * The UI shown in an import plan step's slideout: the importer type, the data it reads, and
- * whatever settings that importer type asks for.
+ * The UI shown in an import plan step's slideout: the data it reads, what it imports and that
+ * importer type's own settings, a place for its mapping overview, and its advanced settings.
  *
  * @since 6.0.0
  */
@@ -42,7 +45,6 @@ class ImportPlanStepUiViewModel extends ViewModel
 
     public function ui(): UiPayload
     {
-        $hasType = $this->importer !== null;
         $mode = $this->canSave ? ControlMode::Editable : ControlMode::ReadOnly;
         $refreshable = $this->canSave;
 
@@ -54,39 +56,43 @@ class ImportPlanStepUiViewModel extends ViewModel
 
         return $this->uiResolver->resolve(Ui::make([
             HiddenField::make('uid'),
+            UiField::make(t('Data Source'), Text::make('source')
+                ->placeholder('resources/my-data.json')
+                ->textExpanderTriggers($this->canSave ? SourceSuggestions::triggers('import/source-suggestions') : []))
+                ->instructions(t('The aliased or @root-relative path to a file or a URL containing the data you want this step to import.'))
+                ->tip($this->canSave ? t('Type `./` to browse the project folder, or `@` for an alias.') : null)
+                ->required(),
+            // shown with the source, which decides whether they apply
+            ...(empty($dataTypeNodes) ? [] : [
+                Scope::make('settings', $dataTypeNodes, uid: 'import-step-data-type'),
+            ]),
             UiField::make(t('Importer Type'), Choice::make('type')
                 ->options($this->importerTypeOptions())
                 ->placeholder(t('Please select'))
                 ->reactive())
                 ->instructions(t('What this step imports.')),
-            UiField::make(t('Data Source'), Text::make('source')
-                ->placeholder('resources/my-data.json'))
-                ->instructions(t('The aliased or @root-relative path to a file or a URL containing the data you want this step to import.'))
-                ->required()
-                ->visible($hasType),
-            // shown with the source, which decides whether they apply
-            ...(empty($dataTypeNodes) ? [] : [
-                Scope::make('settings', $dataTypeNodes, uid: 'import-step-data-type'),
-            ]),
-            UiField::make(t('Transformer'), Text::make('transformer')
-                ->value($this->importer?->usesDefaultTransformer() ? null : $this->importer?->transformerAsString())
-                ->placeholder(ElementTransformer::class))
-                ->instructions(t('The fully qualified class name of the transformer you’d like to use.'))
-                ->visible($hasType),
-            UiField::make(t('Custom batch size'), Number::make('batchSize'))
-                ->instructions(t('By default, this step will be run in batches containing up to 100 items. You can provide a different size, if you wish. Set to 0 to disable batching.'))
-                ->visible($hasType),
             ...(empty($settingsNodes) ? [] : [
                 Scope::make('settings', [
-                    Group::make('import-step-settings', $settingsNodes)->dependsOn('type'),
+                    Group::make('import-step-settings', $settingsNodes)->flat()->dependsOn('type'),
                 ]),
             ]),
+            // the page rendering the form fills this with the step's mapping overview, which follows the
+            // step's unsaved mapping without a request
+            Slot::make('mapping'),
+            Group::make('import-step-advanced', [
+                UiField::make(t('Transformer'), Text::make('transformer')
+                    ->value($this->importer?->usesDefaultTransformer() ? null : $this->importer?->transformerAsString())
+                    ->placeholder(ElementTransformer::class))
+                    ->instructions(t('The fully qualified class name of the transformer you’d like to use.')),
+                UiField::make(t('Batch size'), Number::make('batchSize'))
+                    ->instructions(t('Set to 0 to disable batching.')),
+            ])->label(t('Advanced'))->collapsible(),
         ]), new UiContext(
             values: [
                 'uid' => $this->importer?->uid,
                 'type' => $this->importer !== null ? $this->importer::class : null,
                 'source' => $this->importer?->source,
-                'batchSize' => $this->batchSize,
+                'batchSize' => $this->batchSize ?? ImportJob::DEFAULT_BATCH_SIZE,
                 'settings' => ['dataTypeSettings' => ['type' => $resolvedDataType]],
             ],
             mode: $mode,

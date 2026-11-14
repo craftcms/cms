@@ -56,6 +56,13 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
           gap: 0 var(--c-spacing-md);
         }
 
+        /* help text lines up under the label rather than the input, as on a checkbox */
+        .choice-field__help-text {
+          padding-inline-start: calc(
+            var(--c-checkbox-size) + var(--c-spacing-md)
+          );
+        }
+
         /* Without a box of its own, an empty icon slot takes up no space. */
         .choice-field__icon {
           display: contents;

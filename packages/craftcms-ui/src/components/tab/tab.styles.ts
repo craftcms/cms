@@ -70,7 +70,8 @@ export default css`
     margin-inline-end: var(--c-spacing-sm);
   }
 
-  ::slotted([slot='suffix']) {
+  ::slotted([slot='suffix']),
+  .tab__error {
     align-self: center;
     margin-inline-start: var(--c-spacing-sm);
   }
@@ -93,6 +94,14 @@ export default css`
     user-select: none;
     pointer-events: none;
     font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
+  }
+
+  :host([has-errors]) {
+    color: var(--c-tab-text-errors, var(--c-color-danger-on-quiet));
+  }
+
+  :host([has-errors][selected])::after {
+    background-color: var(--c-tab-text-errors, var(--c-color-danger-on-quiet));
   }
 
   /*

@@ -43,7 +43,7 @@ class Import extends Job
      */
     public bool $failOnTimeout = true;
 
-    private int $defaultBatchSize = 100;
+    public const int DEFAULT_BATCH_SIZE = 100;
 
     /**
      * Promotes the owning import plan, the step's UID, the import run's ID
@@ -326,6 +326,6 @@ class Import extends Job
      */
     private function getChunkSize(BaseImporter $step): int
     {
-        return $step->batchSize ?? $this->defaultBatchSize;
+        return $step->batchSize ?? self::DEFAULT_BATCH_SIZE;
     }
 }

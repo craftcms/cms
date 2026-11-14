@@ -224,43 +224,45 @@
     </CpButtonLink>
   </LayoutSlot>
 
-  <CpContainer class="@container">
-    <div class="grid gap-6">
-      <craft-pane>
-        <div>
-          <h2>{{ t('Editable Import Plans') }}</h2>
-          <p>
-            {{ t('Those import plans can be edited in the control panel.') }}
-          </p>
-        </div>
+  <div class="grid gap-lg">
+    <CpContainer>
+      <div class="mb-md">
+        <h2>{{ t('Editable Import Plans') }}</h2>
+        <p>
+          {{ t('Those import plans can be edited in the control panel.') }}
+        </p>
+      </div>
 
+      <template #full>
         <AdminTable
           :table="editableTable"
           :reorderable="canSave"
+          appearance="flush"
           @reorder="handleReorder"
         >
           <template #empty-row>
             <craft-empty
+              appearance="fill"
               :label="t('No import plans yet.')"
               icon="light/upload"
             />
           </template>
         </AdminTable>
-      </craft-pane>
+      </template>
+    </CpContainer>
 
-      <craft-pane v-if="nonEditableImportPlans.length">
-        <div>
-          <h2>{{ t('Non-Editable Import Plans') }}</h2>
-          <p>
-            {{
-              t(
-                'Those import plans are registered in code and can’t be edited in the control panel.'
-              )
-            }}
-          </p>
-        </div>
-        <AdminTable :table="nonEditableTable" :reorderable="false"></AdminTable>
-      </craft-pane>
-    </div>
-  </CpContainer>
+    <CpContainer v-if="nonEditableImportPlans.length">
+      <div>
+        <h2>{{ t('Non-Editable Import Plans') }}</h2>
+        <p>
+          {{
+            t(
+              'Those import plans are registered in code and can’t be edited in the control panel.'
+            )
+          }}
+        </p>
+      </div>
+      <AdminTable :table="nonEditableTable" :reorderable="false"></AdminTable>
+    </CpContainer>
+  </div>
 </template>

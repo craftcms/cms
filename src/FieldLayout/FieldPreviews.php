@@ -37,12 +37,13 @@ readonly class FieldPreviews
      * as a preview.
      *
      * @param  string|list<string>  $namespace
+     * @param  array<string, list<string>>  $errors  Validation errors to show on the fields, by path.
      */
-    public function compile(ElementInterface $layoutElement, ElementInterface $element, string|array $namespace, ControlMode $mode = ControlMode::Editable): ?UiPayload
+    public function compile(ElementInterface $layoutElement, ElementInterface $element, string|array $namespace, ControlMode $mode = ControlMode::Editable, array $errors = []): ?UiPayload
     {
         $layout = $layoutElement->getFieldLayout();
 
-        return $layout ? $this->compiler->compile($layout, $element, new UiContext(namespace: $namespace, mode: $mode, preview: true)) : null;
+        return $layout ? $this->compiler->compile($layout, $element, new UiContext(namespace: $namespace, errors: $errors, mode: $mode, preview: true)) : null;
     }
 
     /**

@@ -11,6 +11,7 @@
 
 <style scoped lang="scss">
   .cp-container {
+    container-type: inline-size;
     display: grid;
     grid-template-columns: var(--cp-container-padding) minmax(0, 1fr) var(
         --cp-container-padding

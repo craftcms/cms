@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Import;
 
 use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ImportableContainerPropertiesInterface;
+use CraftCms\Cms\Element\Data\FieldComparisonRow;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\ImportableElementContainerFieldInterface;
@@ -21,11 +24,15 @@ use CraftCms\Cms\Import\Data\MappingColumnGroup;
 use CraftCms\Cms\Import\Data\MappingValues;
 use CraftCms\Cms\Import\Data\NestedMappingPayload;
 use CraftCms\Cms\Import\Data\StepMappingPayload;
+use CraftCms\Cms\Import\Data\StepSummary;
 use CraftCms\Cms\Import\Data\StepUiPayload;
+use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
+use CraftCms\Cms\Import\ImportPreviews;
+use CraftCms\Cms\Import\SourceSuggestions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Ui\UiResolver;
@@ -118,6 +125,71 @@ class ImportPlansController
         return $this->cpScreenResponse(! empty($old) ? new ImportPlanData($old) : $found);
     }
 
+    /** One saved step on a page of its own, which a step's slideout links to. */
+    public function editStep(string $handle, string $uid): InertiaResponse
+    {
+        abort_if(is_null($importPlan = $this->importsService->getImportPlanByHandle($handle)), 404, 'Import plan not found');
+        abort_if(! $importPlan->isEditable(), 400, "This import plan is not editable: $importPlan->handle");
+
+        $steps = $importPlan->serializeSteps() ?? [];
+        $index = collect($steps)->search(fn (array $step) => $step['uid'] === $uid);
+
+        abort_if($index === false, 404, 'Import step not found');
+
+        $step = $steps[$index];
+        $planUrl = route('craft.cp.import.edit', ['handle' => $importPlan->handle]);
+        $importer = ! empty($step['type']) ? ImportPlans::createImporter($step) : null;
+
+        return Inertia::render('import/StepEdit', [
+            'title' => t('Edit step {number} of {name}', ['number' => $index + 1, 'name' => $importPlan->name]),
+            'crumbs' => [
+                new ActionItem()->label(t('Import'))->href(route('craft.cp.import.index')),
+                new ActionItem()->label((string) $importPlan->name)->href($planUrl),
+            ],
+            'planUid' => $importPlan->uid,
+            'step' => $step,
+            'stepUi' => $this->stepUiPayload($importer, $step['batchSize'] ?? null),
+            'editable' => (bool) $this->request->craftUser()?->can('saveImportPlans'),
+            'submit' => ['method' => 'post', 'url' => action([self::class, 'storeStep'])],
+        ]);
+    }
+
+    /** Saves one step into its plan, replacing the step with its uid or adding it as new. */
+    public function storeStep(): Response
+    {
+        $data = $this->request->validate([
+            'planUid' => ['required', 'string', 'max:36'],
+            'step' => ['required', 'array'],
+            'step.uid' => ['required', 'string', 'max:36'],
+        ]);
+
+        abort_if(is_null($importPlan = $this->importsService->getImportPlanByUid($data['planUid'], true)), 400, "Invalid import plan UID: {$data['planUid']}");
+
+        // the validated data keeps only the step keys named in the rules
+        $step = $this->request->input('step');
+        $steps = $importPlan->serializeSteps() ?? [];
+        $index = collect($steps)->search(fn (array $existing) => $existing['uid'] === $step['uid']);
+
+        if ($index === false) {
+            $steps[] = $step;
+        } else {
+            $steps[$index] = $step;
+        }
+
+        $importPlan->steps($steps);
+
+        if (! $this->importsService->saveImportPlan($importPlan)) {
+            return $this->asModelFailure($importPlan, t('Couldn’t save import step.'), 'import');
+        }
+
+        return $this->asModelSuccess(
+            $importPlan,
+            t('Import step saved.'),
+            'import',
+            redirect: route('craft.cp.import.steps.edit', ['handle' => $importPlan->handle, 'uid' => $step['uid']]),
+        );
+    }
+
     public function store(): Response
     {
         $importUid = $this->request->input('uid');
@@ -154,23 +226,32 @@ class ImportPlansController
      */
     public function stepSettings(): JsonResponse
     {
-        $importer = $this->draftImporter(requireType: false);
         $batchSize = $this->request->input('step.batchSize');
+
+        return new JsonResponse($this->stepUiPayload(
+            $this->draftImporter(requireType: false),
+            $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
+        ));
+    }
+
+    private function stepUiPayload(?BaseImporter $importer, ?int $batchSize): StepUiPayload
+    {
         $sourceError = BaseImporter::sourceError($importer?->source, resolveHost: false)
             ?? BaseImporter::dataTypeError($importer?->source, $importer?->dataType);
 
-        return new JsonResponse(new StepUiPayload(
+        return new StepUiPayload(
             ui: new ImportPlanStepUiViewModel(
                 $importer,
                 $this->importService,
                 app(UiResolver::class),
                 (bool) $this->request->craftUser()?->can('saveImportPlans'),
-                $batchSize === null || $batchSize === '' ? null : (int) $batchSize,
+                $batchSize,
             )->ui(),
             canMap: $this->hasDestination($importer) && $sourceError === null,
             // shown under the source field; a step whose source is yet to be entered isn't flagged
             sourceError: ! empty($importer->source) ? $sourceError : null,
-        ));
+            summary: StepSummary::fromImporter($importer),
+        );
     }
 
     /**
@@ -182,6 +263,19 @@ class ImportPlansController
     private function hasDestination(?BaseImporter $importer): bool
     {
         return $importer !== null && (! $importer instanceof ElementImporter || ! empty($importer->fieldLayout));
+    }
+
+    /**
+     * Suggests a step's data source as it's typed, for the Data Source field's text expander.
+     */
+    public function sourceSuggestions(SourceSuggestions $suggestions): JsonResponse
+    {
+        $data = $this->request->validate([
+            'query' => ['required', 'string', 'max:1024'],
+            'limit' => ['nullable', 'integer', 'min:1', 'max:200'],
+        ]);
+
+        return new JsonResponse($suggestions->suggest($data['query'], (int) ($data['limit'] ?? 50)));
     }
 
     /**
@@ -240,6 +334,144 @@ class ImportPlansController
             suggestions: ImportHelper::suggestMapValues($destinationCols, $sourceDataCols, $importer->map, $importer),
             templateTextExpanderTriggers: ImportHelper::templateTextExpanderTriggers($sourceDataCols),
         )->jsonSerialize());
+    }
+
+    /**
+     * Previews what running a step would do to its items, a page of those with a result at a time, for the plan's
+     * Preview section.
+     */
+    public function previewStep(ImportPreviews $previews): JsonResponse
+    {
+        $importer = $this->previewImporter();
+
+        if (is_string($importer)) {
+            return $this->asJsonSuccess(null, ['error' => $importer]);
+        }
+
+        $params = $this->request->validate([
+            'page' => ['nullable', 'integer', 'min:0'],
+            'result' => ['nullable', Rule::enum(ItemPreviewResult::class)],
+            'previewableIndex' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        try {
+            $preview = $previews->previewStep(
+                $importer,
+                (int) ($params['page'] ?? 0),
+                ItemPreviewResult::tryFrom((string) ($params['result'] ?? '')),
+                previewableIndex: isset($params['previewableIndex']) ? (int) $params['previewableIndex'] : null,
+            );
+        } catch (Throwable $e) {
+            return $this->asJsonSuccess(null, ['error' => $this->previewError($e)]);
+        }
+
+        $labels = $importer->getDestinationLabels();
+
+        return $this->asJsonSuccess(null, [
+            'error' => null,
+            'total' => $preview['total'],
+            'itemCount' => $preview['itemCount'],
+            'counts' => $preview['counts'],
+            'page' => $preview['page'],
+            'pageSize' => ImportPreviews::PAGE_SIZE,
+            'previewable' => $preview['previewable'],
+            'previewableBefore' => $preview['previewableBefore'],
+            'matchColumns' => array_map(fn (string $key): array => [
+                'key' => $key,
+                'label' => $labels[$key]['label'] ?? $key,
+            ], $preview['matchKeys']),
+            'items' => $preview['items'],
+        ]);
+    }
+
+    /**
+     * Shows how running a step would change one of its items' elements, as the Compare screen shows two versions of
+     * one: the element as it is now, or a blank one when the item would create it, beside the element after the import.
+     */
+    public function previewItem(ImportPreviews $previews, FieldChangeComparisons $comparisons): JsonResponse
+    {
+        $index = (int) $this->request->validate(['index' => ['required', 'integer', 'min:0']])['index'];
+        $importer = $this->previewImporter();
+
+        if (is_string($importer)) {
+            return $this->asJsonSuccess(null, ['error' => $importer]);
+        }
+
+        try {
+            $preview = $previews->previewItem($importer, $index);
+        } catch (Throwable $e) {
+            return $this->asJsonSuccess(null, ['error' => $this->previewError($e)]);
+        }
+
+        abort_if($preview === null, 404, 'Import item not found.');
+
+        $payload = [
+            'error' => null,
+            'result' => $preview->result->value,
+            'title' => ImportPreviews::itemTitle($preview->element),
+            'errors' => $preview->errors,
+            'comparison' => null,
+        ];
+        $element = $preview->element;
+
+        if ($element === null) {
+            return $this->asJsonSuccess(null, $payload);
+        }
+
+        $existing = $element->id
+            ? $element::find()->id($element->id)->siteId($element->siteId)->drafts(null)->status(null)->one()
+            : null;
+
+        $blankData = [];
+        $from = $existing ?? $importer->prepareNewRootElementForImport($blankData);
+        // the import makes the changes
+        $comparison = $comparisons->compareElements($from, $element, ['from' => false, 'to' => true], [
+            'to' => ElementImporter::errorsByField($element),
+        ]);
+        $side = fn (string $label, mixed $ui): array => [
+            'label' => $label,
+            'edited' => false,
+            'siteName' => null,
+            'versionMenu' => [],
+            'siteMenu' => [],
+            'ui' => $ui,
+        ];
+
+        return $this->asJsonSuccess(null, [
+            ...$payload,
+            'comparison' => [
+                'from' => $side($existing ? t('Current') : t('Blank'), $comparison['from']),
+                'to' => $side(t('After the import'), $comparison['to']),
+                'rows' => array_map(fn (FieldComparisonRow $row): array => $row->toArray(), $comparison['rows']),
+                'badged' => $comparison['badged'],
+                'editUrl' => $existing?->getCpEditUrl(),
+            ],
+        ]);
+    }
+
+    /**
+     * The posted step's importer, when it's one that can be previewed, or else why it can't be.
+     */
+    private function previewImporter(): ElementImporter|string
+    {
+        $importer = $this->mappingImporter();
+
+        if (! $importer instanceof ElementImporter) {
+            return t('Only steps that import elements can be previewed.');
+        }
+
+        if (! $this->hasDestination($importer)) {
+            return t('Choose what this step imports into to preview it.');
+        }
+
+        return BaseImporter::sourceError($importer->source, resolveHost: false) ?? $importer;
+    }
+
+    private function previewError(Throwable $e): string
+    {
+        return $e instanceof ValidationException
+            ? (Arr::first(Arr::flatten($e->errors())) ?? $e->getMessage())
+            : $e->getMessage();
     }
 
     /**
@@ -527,7 +759,13 @@ class ImportPlansController
                 callback: function (CpScreenResponse $response) use ($importPlan, $currentUser) {
                     $response
                         ->action('import/save')
-                        ->redirectUrl('import/{handle}');
+                        ->redirectUrl('import')
+                        ->saveShortcutRedirectUrl('import/{handle}')
+                        ->addAltAction(t('Save and continue editing'), [
+                            'redirect' => 'import/{handle}',
+                            'shortcut' => true,
+                            'retainScroll' => true,
+                        ]);
 
                     if (! $importPlan->isEditable()) {
                         return;

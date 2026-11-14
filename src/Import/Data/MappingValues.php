@@ -20,6 +20,7 @@ readonly class MappingValues implements JsonSerializable
      * @param  array<array-key, mixed>  $map
      * @param  array<array-key, mixed>  $matchCriteria
      * @param  array<array-key, mixed>  $clearableItems
+     * @param  array<array-key, mixed>  $defaultValues
      * @param  array<array-key, mixed>  $keepMissingNestedElements
      * @param  array<array-key, mixed>  $fieldSettings
      * @param  array<array-key, mixed>  $templates
@@ -34,9 +35,13 @@ readonly class MappingValues implements JsonSerializable
         #[LiteralTypeScriptType('Record<string, unknown>')]
         public array $keepMissingNestedElements = [],
         #[LiteralTypeScriptType('Record<string, unknown>')]
+        public array $defaultValues = [],
+        #[LiteralTypeScriptType('Record<string, unknown>')]
         public array $fieldSettings = [],
         #[LiteralTypeScriptType('Record<string, unknown>')]
         public array $templates = [],
+        /** What a step does with rows that match an existing element; null for an importer that doesn't match. */
+        public ?string $matchMode = null,
     ) {}
 
     /**
@@ -44,26 +49,33 @@ readonly class MappingValues implements JsonSerializable
      */
     public static function fromImporter(BaseImporter $importer): self
     {
+        // the mapping screen keys custom fields by uid, so a mapping written with handles shows there too
+        $keys = $importer->uidMappingKeys(...);
+
         return new self(
-            map: $importer->map,
-            matchCriteria: $importer->matchCriteria ?? [],
-            clearableItems: $importer->clearableItems ?? [],
-            keepMissingNestedElements: $importer instanceof ElementImporter ? $importer->keepMissingNestedElements ?? [] : [],
-            fieldSettings: $importer instanceof ElementImporter ? $importer->fieldSettings ?? [] : [],
-            templates: $importer->templates ?? [],
+            map: $keys($importer->map),
+            matchCriteria: $keys($importer->matchCriteria ?? []),
+            clearableItems: $keys($importer->clearableItems ?? []),
+            defaultValues: $keys($importer->defaultValues ?? []),
+            keepMissingNestedElements: $importer instanceof ElementImporter ? $keys($importer->keepMissingNestedElements ?? []) : [],
+            fieldSettings: $importer instanceof ElementImporter ? $keys($importer->fieldSettings ?? []) : [],
+            templates: $keys($importer->templates ?? []),
+            matchMode: $importer instanceof ElementImporter ? $importer->matchMode->value : null,
         );
     }
 
-    /** @return array<string, array<array-key, mixed>> */
+    /** @return array<string, array<array-key, mixed>|string|null> */
     public function jsonSerialize(): array
     {
         return [
             'map' => $this->map,
             'matchCriteria' => $this->matchCriteria,
             'clearableItems' => $this->clearableItems,
+            'defaultValues' => $this->defaultValues,
             'keepMissingNestedElements' => $this->keepMissingNestedElements,
             'fieldSettings' => $this->fieldSettings,
             'templates' => $this->templates,
+            'matchMode' => $this->matchMode,
         ];
     }
 }

@@ -15,6 +15,11 @@ export interface TextExpanderOption<Data = unknown> {
   value: string;
   keywords?: readonly string[];
   data?: Data;
+  /**
+   * Keeps suggesting once this option is inserted, for a value that's only part of
+   * what's being typed, such as a folder in a path.
+   */
+  continues?: boolean;
 }
 
 export type TextExpanderTriggerBoundary = 'start' | 'whitespace' | 'anywhere';
@@ -24,6 +29,11 @@ interface TextExpanderTriggerBase<Data = unknown> {
   boundary: TextExpanderTriggerBoundary;
   label?: string;
   limit?: number;
+  /**
+   * A regular expression the typed query has to match in full, for queries made of
+   * other characters than the default letters, numbers, `_`, `-` and `.`.
+   */
+  pattern?: string;
   renderOption?: (option: Readonly<TextExpanderOption<Data>>) => Node;
 }
 
@@ -590,7 +600,11 @@ export default class CraftTextExpander extends LitElement {
           ? start === 0
           : !before || /\s/u.test(before));
 
-      if (boundaryMatches && queryPattern.test(query)) {
+      const pattern = trigger.pattern
+        ? new RegExp(`^(?:${trigger.pattern})$`, 'u')
+        : queryPattern;
+
+      if (boundaryMatches && pattern.test(query)) {
         result = {character, query, start, end, trigger};
       }
     }
@@ -670,7 +684,12 @@ export default class CraftTextExpander extends LitElement {
       query: match.query,
       option,
     };
-    this.#close();
+    // an option that continues leaves the popup open, to offer what comes after it;
+    // closing it would cancel that once the popover finished hiding
+    if (!option.continues) {
+      this.#close();
+    }
+
     this.dispatchEvent(
       new CustomEvent<TextExpanderSelectDetail>('craft-select', {
         bubbles: true,
@@ -678,6 +697,10 @@ export default class CraftTextExpander extends LitElement {
         detail,
       })
     );
+
+    if (option.continues) {
+      this.#evaluate();
+    }
   }
 
   async #openPopup(

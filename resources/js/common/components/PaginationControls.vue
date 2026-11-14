@@ -24,6 +24,11 @@
       itemsLabel?: string;
       /** The page size menu’s label, such as “Entries per Page”. */
       pageSizeLabel?: string;
+      /** What a page is called beside its number, such as “Item” when each page shows one. */
+      pageLabel?: string;
+      currentPageLabel?: string;
+      previousPageLabel?: string;
+      nextPageLabel?: string;
     }>(),
     {
       paginated: true,
@@ -34,6 +39,10 @@
       itemLabel: () => t('item'),
       itemsLabel: () => t('items'),
       pageSizeLabel: () => t('Items per Page'),
+      pageLabel: () => t('Page'),
+      currentPageLabel: () => t('Current page'),
+      previousPageLabel: () => t('Previous page'),
+      nextPageLabel: () => t('Next page'),
     }
   );
   const emit = defineEmits<{
@@ -130,11 +139,11 @@
         >
           <craft-icon
             name="chevron-left"
-            :label="t('Previous page')"
+            :label="previousPageLabel"
           ></craft-icon>
         </craft-button>
         <div class="flex items-center gap-sm mx-md">
-          {{ t('Page') }}
+          {{ pageLabel }}
           <craft-input
             type="text"
             inputmode="numeric"
@@ -143,7 +152,7 @@
             @change="commitPage"
             @keydown.enter="commitPage"
             maxlength="3"
-            :label="t('Current page')"
+            :label="currentPageLabel"
             label-sr-only
             center
             size="small"
@@ -159,7 +168,7 @@
           :variant="ButtonVariant.Plain"
           icon
         >
-          <craft-icon name="chevron-right" :label="t('Next page')"></craft-icon>
+          <craft-icon name="chevron-right" :label="nextPageLabel"></craft-icon>
         </craft-button>
       </template>
     </div>

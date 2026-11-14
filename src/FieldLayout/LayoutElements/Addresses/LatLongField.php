@@ -8,6 +8,7 @@ use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\FieldLayout\Concerns\ImportableFieldLayoutElement;
 use CraftCms\Cms\FieldLayout\Contracts\ImportableFieldLayoutElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayout;
@@ -202,6 +203,8 @@ class LatLongField extends BaseNativeField implements ImportableFieldLayoutEleme
                 prefixedHandle: ImportHelper::prefixedHandleForMapping($part['attribute'], $ownerField, null, $fieldLayout, $provider, $prefix),
                 canBeMatchCriteria: $part['canBeMatchCriteria'],
                 canBeCleared: $part['canBeCleared'],
+                defaultValueInput: ['type' => 'number'],
+                icon: Number::icon(),
             ), $parts),
         );
     }
