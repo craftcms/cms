@@ -275,6 +275,11 @@ class UpdateController extends Controller
      */
     private function _allowUpdates(): bool
     {
+        if (($reason = Craft::$app->getComposer()->getUnavailableReason()) !== null) {
+            $this->stderr($reason . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return false;
+        }
+
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->allowUpdates && !$this->force) {
             if (!$this->interactive) {

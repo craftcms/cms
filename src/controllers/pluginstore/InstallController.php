@@ -175,6 +175,10 @@ class InstallController extends BaseUpdaterController
      */
     protected function initialState(bool $force = false): array
     {
+        if (($state = $this->composerUnavailableState()) !== null) {
+            return $state;
+        }
+
         // Make sure we can find composer.json
         if (!$this->ensureComposerJson()) {
             return $this->noComposerJsonState();

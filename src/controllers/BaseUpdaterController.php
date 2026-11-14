@@ -200,6 +200,10 @@ abstract class BaseUpdaterController extends Controller
      */
     public function actionComposerInstall(): Response
     {
+        if (($state = $this->composerUnavailableState(self::ACTION_COMPOSER_INSTALL)) !== null) {
+            return $this->send($state);
+        }
+
         // Preload JsonResponseFormatter because the Yii 2.0.44 version requires a newer version of yii\helper\BaseJson
         class_exists(JsonResponseFormatter::class);
         $output = '';
@@ -234,6 +238,10 @@ abstract class BaseUpdaterController extends Controller
      */
     public function actionComposerRemove(): Response
     {
+        if (($state = $this->composerUnavailableState(self::ACTION_COMPOSER_REMOVE)) !== null) {
+            return $this->send($state);
+        }
+
         $packages = [$this->data['packageName']];
         $output = '';
 
@@ -347,6 +355,24 @@ abstract class BaseUpdaterController extends Controller
      * @return string
      */
     abstract protected function returnUrl(): string;
+
+    /**
+     * Returns a retryable state if system Composer is unavailable.
+     */
+    protected function composerUnavailableState(string $retryAction = self::ACTION_RECHECK_COMPOSER): ?array
+    {
+        $error = Craft::$app->getComposer()->getUnavailableReason();
+        if ($error === null) {
+            return null;
+        }
+
+        return [
+            'error' => $error,
+            'options' => [
+                $this->actionOption(Craft::t('app', 'Try again'), $retryAction, ['submit' => true]),
+            ],
+        ];
+    }
 
     /**
      * Ensures that composer.json can be found.
