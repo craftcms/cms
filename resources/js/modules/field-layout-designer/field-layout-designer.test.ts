@@ -42,12 +42,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-it('waits for the field search, not jQuery, before initializing', async () => {
-  vi.useFakeTimers();
-
-  const deferredInit = vi
-    .spyOn(FieldLayoutDesigner.prototype, 'deferredInit')
-    .mockImplementation(() => {});
+function designerFixture(): HTMLDivElement {
   const container = document.createElement('div');
   container.innerHTML = `
     <input data-config-input value='{"tabs":[]}'>
@@ -65,11 +60,11 @@ it('waits for the field search, not jQuery, before initializing', async () => {
     </div>
   `;
 
-  const designer = new FieldLayoutDesigner(container);
-  await vi.advanceTimersByTimeAsync(100);
+  return container;
+}
 
-  expect(deferredInit).not.toHaveBeenCalled();
-
+/** Adds the field search, as `craft-input-search` does when it connects. */
+function addFieldSearch(container: HTMLElement): HTMLInputElement {
   const field = document.createElement('craft-input-search');
   const search = document.createElement('input');
   field.append(search);
@@ -77,8 +72,48 @@ it('waits for the field search, not jQuery, before initializing', async () => {
   if (!library) throw new Error('Expected the field library fixture.');
   library.prepend(field);
 
+  return search;
+}
+
+it('waits for the field search, not jQuery, before initializing', async () => {
+  vi.useFakeTimers();
+
+  const deferredInit = vi
+    .spyOn(FieldLayoutDesigner.prototype, 'deferredInit')
+    .mockImplementation(() => {});
+  const container = designerFixture();
+
+  const designer = new FieldLayoutDesigner(container);
   await vi.advanceTimersByTimeAsync(100);
 
+  expect(deferredInit).not.toHaveBeenCalled();
+
+  const search = addFieldSearch(container);
+
+  await vi.advanceTimersByTimeAsync(100);
+
+  expect(deferredInit).toHaveBeenCalledOnce();
+  expect(designer.$fieldSearch).toBe(search);
+});
+
+// The field search connects right after the designer boots from its host's
+// connected callback. Waiting on a timer for it leaves the tabs' buttons
+// clickable but inert in the meantime.
+it('initializes without a timer once the field search connects', async () => {
+  vi.useFakeTimers();
+
+  const deferredInit = vi
+    .spyOn(FieldLayoutDesigner.prototype, 'deferredInit')
+    .mockImplementation(() => {});
+  const container = designerFixture();
+
+  const designer = new FieldLayoutDesigner(container);
+  const search = addFieldSearch(container);
+  for (let i = 0; i < 10; i++) {
+    await Promise.resolve();
+  }
+
+  expect(vi.getTimerCount()).toBe(0);
   expect(deferredInit).toHaveBeenCalledOnce();
   expect(designer.$fieldSearch).toBe(search);
 });
