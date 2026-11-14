@@ -35,7 +35,7 @@ it('uses DDEV’s wrappers in DDEV projects', function (string $value, ?string $
         ->and($commands->craft('passport:keys'))->toBe("$craft passport:keys")
         ->and($commands->composer('install'))->toBe("$composer install");
 })->with([
-    'true' => ['true', 'ddev', 'ddev craft', 'ddev composer'],
+    'true' => ['true', 'ddev', 'ddev php craft', 'ddev composer'],
     'false' => ['false', null, 'php craft', 'composer'],
 ]);
 
@@ -64,7 +64,7 @@ it('uses Valet’s wrappers for Valet sites isolated to a PHP version', function
 
         // DDEV wins, since a DDEV project could also be linked in Valet
         $_SERVER['IS_DDEV_PROJECT'] = 'true';
-        expect($commandsFor('isolated.test'))->toBe(['ddev craft update all', 'ddev composer install']);
+        expect($commandsFor('isolated.test'))->toBe(['ddev php craft update all', 'ddev composer install']);
     } finally {
         File::deleteDirectory($home);
     }
