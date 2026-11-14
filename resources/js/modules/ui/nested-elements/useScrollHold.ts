@@ -8,7 +8,10 @@ interface FocusAnchor {
   /** Child indexes from the block down to the focused element. */
   path: number[];
   selection: [number, number] | null;
-  /** The tab strips in the block that had moved off their first tab. */
+  /**
+   * The tab strips leading to the focused element that had moved off their
+   * first tab.
+   */
   tabs: Array<{path: number[]; index: number}>;
 }
 
@@ -16,6 +19,8 @@ interface FocusAnchor {
 type TabStrip = HTMLElement & {
   selectedIndex: number;
   updateComplete: Promise<unknown>;
+  tabs: HTMLElement[];
+  panels: HTMLElement[];
 };
 
 /**
@@ -141,12 +146,26 @@ export function useScrollHold(
         (strip) => {
           const stripPath = pathWithin(block, strip);
 
-          return strip.selectedIndex && stripPath
+          return strip.selectedIndex &&
+            stripPath &&
+            selectedPanel(strip)?.contains(active)
             ? [{path: stripPath, index: strip.selectedIndex}]
             : [];
         }
       ),
     };
+  }
+
+  /**
+   * The panel a strip's selected tab shows. Only strips whose panels lead to
+   * the focused element matter: another one may not be rendered yet after the
+   * rebuild, and waiting for it would leave focus nowhere.
+   */
+  function selectedPanel(strip: TabStrip): HTMLElement | null {
+    const index = strip.selectedIndex;
+    const id = strip.tabs[index]?.getAttribute('controls');
+
+    return strip.panels[index] ?? (id ? document.getElementById(id) : null);
   }
 
   /** Child indexes from `root` down to `node`. */
