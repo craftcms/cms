@@ -319,6 +319,18 @@
     }
   }
 
+  /* Every crumb but the current one, back to full strength on hover. */
+  .cp-header-bar__breadcrumbs
+    :deep(craft-breadcrumb-item:not([aria-current='page'])) {
+    --c-text-link: var(--cp-chrome-text-color);
+    color: var(--cp-chrome-text-color);
+
+    &:hover {
+      --c-text-link: var(--c-text-default);
+      color: var(--c-text-default);
+    }
+  }
+
   .cp-header-bar__breadcrumbs
     :deep(craft-breadcrumb-item[aria-current='page']) {
     --c-chip-text: var(--color-slate-800);

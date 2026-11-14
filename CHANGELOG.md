@@ -19,6 +19,10 @@
 - The details pane now has a subtle inset shadow along its leading edge, and Ask AI’s input is transparent, like the Activity panel’s comment box. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ action menus now sit right after their labels and required/translatable indicators, evenly spaced, rather than at the far end of the heading. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Breadcrumb separators are now lighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- The global nav’s labels and every breadcrumb but the current one are now a little lighter, and return to full strength when hovered. ([#20663](https://github.com/craftcms/cms/pull/20663))
+- Popovers, menus, and dropdowns now have the same larger shadow as slideouts and HUDs. ([#20663](https://github.com/craftcms/cms/pull/20663))
+- Global nav flyout menus now have more padding. ([#20663](https://github.com/craftcms/cms/pull/20663))
+- Scrollbars in the global sidebar, the details pane, and global nav flyout menus are now hidden until hovered or focused, and their content fades out at edges with more to scroll to. ([#20663](https://github.com/craftcms/cms/pull/20663))
 - Pages no longer show breadcrumbs when the only one would be the current page, such as the Dashboard. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ translation indicators now show their descriptions when pressed, including on touch devices, rather than on hover. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Updated the workflow stage type picker to show each type’s icon when available. ([#20660](https://github.com/craftcms/cms/pull/20660))
@@ -28,6 +32,7 @@
 - Plugins can now build control panel pages from the same components, composables, and helpers Craft’s own pages use, typed and imported from the `@craftcms/cp` import-map module, including `registerPage()`, `registerComponent()`, `registerElementDetailsPanel()`, `Modal`, `ModalForm`, `Select`, `Combobox`, `IconPicker`, `TypePicker`, `DataTable`, `ElementList`, `ElementChips`, `AreaChart`, `useFetch()`, `useSlideoutControl()`, `useDetailsPanels()`, and `openUiModal()`. A guide to building control panel UI in a plugin is in Storybook, under **Plugins**. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - The control panel’s import map now publishes `@inertiajs/vue3`, so plugin bundles share the control panel’s Inertia instance rather than bundling their own. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Added `CraftCms\Cms\Cp\Html\ElementHtml::presentation()`. ([#20608](https://github.com/craftcms/cms/pull/20608))
+- Added the `--c-nav-item-color` CSS custom property to `craft-nav-item`, which sets its label’s color while it isn’t hovered or current. ([#20663](https://github.com/craftcms/cms/pull/20663))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
 - Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
 - Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes on legacy control panel screens. ([#20613](https://github.com/craftcms/cms/issues/20613))
