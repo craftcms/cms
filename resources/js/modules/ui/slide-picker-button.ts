@@ -30,7 +30,8 @@ export default class CraftSlidePickerButton extends LitElement {
     }
 
     .segment {
-      inline-size: calc(8rem / 16);
+      box-sizing: border-box;
+      inline-size: calc(9rem / 16);
       block-size: 1rem;
       border: 1px solid var(--c-color-neutral-border-quiet);
       border-inline-start-width: 0;
@@ -67,9 +68,26 @@ export default class CraftSlidePickerButton extends LitElement {
       border-inline-end-color: var(--c-color-neutral-border-quiet);
     }
 
+    craft-popover::part(popup) {
+      min-width: 0;
+    }
+
+    .content {
+      display: grid;
+      justify-items: center;
+      gap: var(--c-spacing-xs);
+      inline-size: min-content;
+    }
+
     craft-slide-picker {
       --c-slide-picker-segment-width: calc(40rem / 16);
       --c-slide-picker-segment-height: calc(32rem / 16);
+    }
+
+    .label {
+      font-size: var(--text-sm);
+      text-align: center;
+      overflow-wrap: break-word;
     }
 
     @media (forced-colors: active) {
@@ -118,6 +136,10 @@ export default class CraftSlidePickerButton extends LitElement {
     return unit ? `${value}${separator}${unit}` : `${value}`;
   }
 
+  #onLabelClick = (): void => {
+    this.renderRoot.querySelector('craft-slide-picker')?.focus();
+  };
+
   #onChange = (event: Event): void => {
     event.stopPropagation();
     this.value = (event.target as CraftSlidePicker).value;
@@ -132,7 +154,7 @@ export default class CraftSlidePickerButton extends LitElement {
     const valueText = this.#valueText(this.value);
 
     return html`
-      <craft-popover placement="bottom-end">
+      <craft-popover placement="bottom">
         <craft-button
           id="invoker"
           slot="invoker"
@@ -155,18 +177,22 @@ export default class CraftSlidePickerButton extends LitElement {
             )}
           </span>
         </craft-button>
-        <craft-slide-picker
-          slot="content-body"
-          label=${this.label}
-          value-unit=${this.valueUnit}
-          .valueLabel=${this.valueLabel}
-          .min=${this.min}
-          .max=${this.max}
-          .step=${this.step}
-          .value=${this.value}
-          ?readonly=${this.readonly}
-          @change=${this.#onChange}
-        ></craft-slide-picker>
+        <div class="content" slot="content-body">
+          <craft-slide-picker
+            labelled-by="label"
+            value-unit=${this.valueUnit}
+            .valueLabel=${this.valueLabel}
+            .min=${this.min}
+            .max=${this.max}
+            .step=${this.step}
+            .value=${this.value}
+            ?readonly=${this.readonly}
+            @change=${this.#onChange}
+          ></craft-slide-picker>
+          <span id="label" class="label" @click=${this.#onLabelClick}
+            >${this.label}</span
+          >
+        </div>
       </craft-popover>
       <craft-tooltip for="invoker">${valueText}</craft-tooltip>
     `;
