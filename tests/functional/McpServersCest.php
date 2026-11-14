@@ -236,6 +236,33 @@ class McpServersCest
         }
     }
 
+    public function testControlPanelEndpointsAreOnlyInTheControlPanel(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl];
+        $this->settings(['enabled' => true, 'route' => "/$general->cpTrigger/mcp", 'authorizationRoute' => "/$general->cpTrigger/mcp/auth"]);
+        $I->haveHttpHeader('Authorization', 'Bearer ' . $this->token($this->user([])));
+
+        // Action URLs are site requests, which don't require control panel access
+        $I->sendAjaxPostRequest('/actions/mcp/authenticated');
+        $I->seeResponseCodeIs(404);
+
+        $general->baseCpUrl = 'https://cp.example.com';
+
+        try {
+            // On the site's domain, paths beginning with the trigger are site requests too
+            $I->sendAjaxPostRequest("/$general->cpTrigger/mcp/auth");
+            $I->seeResponseCodeIs(404);
+
+            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
+            $I->haveServerParameter('HTTPS', 'on');
+            $I->sendAjaxPostRequest("/$general->cpTrigger/mcp/auth");
+            $I->seeResponseCodeIs(403);
+        } finally {
+            Craft::configure($general, $original);
+        }
+    }
+
     private function settings(array $config): void
     {
         $mcp = Craft::$app->get('mcp');
