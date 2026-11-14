@@ -184,9 +184,10 @@ class ArrayTwigExtension extends AbstractExtension
      * the same way they would if the template had accessed it directly, e.g. `element.name`. If `$array` is a single
      * non-traversable object, it’s treated as a single element.
      *
+     * Returns `$array`, converted to an array if it was an object, so it can be safely iterated (again).
+     *
      * @param  array<array-key, mixed>  $keys
-     * @return ($array is iterable ? iterable<array-key, mixed> : mixed) `$array`, converted to an array if it was an
-     * object, so it can be safely iterated (again)
+     * @return ($array is iterable ? iterable<array-key, mixed> : mixed)
      *
      * @throws RuntimeError if a key isn’t allowed in a sandboxed environment
      * @throws SecurityError if an element is an object and a key isn’t an allowed property/method in a sandboxed environment
