@@ -76,6 +76,10 @@ function releasePageScroll(): void {
  *
  * @cssproperty --c-dialog-block-size - The surface's height. Defaults to
  *   `auto`, and to `100dvh` under `fullscreen`.
+ * @cssproperty --c-modal-header-height - The header's minimum height, shared
+ *   with modal panes.
+ * @cssproperty --c-modal-footer-height - The footer's minimum height, shared
+ *   with modal panes.
  * @csspart header - The header row.
  * @csspart title - The heading.
  * @csspart close - The header close button.

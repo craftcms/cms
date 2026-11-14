@@ -688,7 +688,7 @@
     display: flex;
     align-items: center;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
     background-color: var(--c-surface-default);
   }
 
