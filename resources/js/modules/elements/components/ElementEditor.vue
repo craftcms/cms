@@ -648,7 +648,7 @@
       :key="button.label"
       type="button"
       :variant="button.variant ?? 'outline'"
-      @click="dispatchBehavior(button.behavior)"
+      @click="dispatchBehavior(button.behavior, false, $event)"
     >
       <craft-icon
         v-if="button.icon"

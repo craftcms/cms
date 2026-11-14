@@ -2056,6 +2056,17 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
             ];
         }
 
+        if (! empty($this->fieldId)) {
+            $items[] = [
+                'label' => t('Field settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'url' => Url::cpUrl("settings/fields/edit/$this->fieldId"),
+                ],
+            ];
+        }
+
         return $items;
     }
 
