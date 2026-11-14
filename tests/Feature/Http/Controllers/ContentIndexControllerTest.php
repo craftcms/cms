@@ -1205,7 +1205,10 @@ it('links only the title chip’s label, not the whole chip', function () {
 it('crumbs the “all entries” source by name on the bare index', function () {
     // The bare index opens on the “all entries” source, which gets a crumb of
     // its own — and, being what the index itself shows, is addressed by the
-    // index's own URL rather than a `?source=*` query.
+    // index's own URL rather than a `?source=*` query. A section gives the
+    // page a second source, so there's a choice to name.
+    Section::factory()->create();
+
     get("/{$this->cpTrigger}/content/entries")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -1215,6 +1218,25 @@ it('crumbs the “all entries” source by name on the bare index', function () 
             ->where('crumbs.1.label', 'All entries')
             ->where('crumbs.1.href', null)
         );
+});
+
+it('leaves out the source crumb on a page with only one source', function () {
+    $section = Section::factory()->create(['name' => 'Team', 'handle' => 'team']);
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.EntryElement::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$section->uid", 'page' => 'Team'],
+    ]);
+    $entry = EntryModel::factory()->forSection($section)->createElement(['title' => 'Maria']);
+
+    // The page crumb already names it: “Team”, not “Team › Team”.
+    get("/{$this->cpTrigger}/content/team/team")
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->count('crumbs', 1)
+            ->where('crumbs.0.label', 'Team')
+        );
+
+    expect(array_map(fn ($crumb) => $crumb['label'], EntryElement::find()->id($entry->id)->one()->getCrumbs()))->toBe(['Team']);
 });
 
 it('adds an unlinked section crumb whose switcher links the section’s own index URL', function () {

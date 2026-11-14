@@ -1371,19 +1371,23 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         ];
 
         $sourceKey = $section->getSourceKey();
+        $sourceExists = ElementSources::sourceExists(Entry::class, $sourceKey);
+        // A page with one source has nothing to choose between, and the page
+        // and the source are the same place, so a crumb for each would repeat.
+        $onlySource = $sourceExists && ElementSources::getSources(Entry::class, page: $page)
+            ->reject(fn (array $source) => $source['type'] === ElementSourcesService::TYPE_HEADING)
+            ->count() === 1;
 
         // A single with a source of its own is named by the entry chip that
         // follows, so it only needs its page, and not even that when it's the
         // page's only source: the page and the single are the same place.
-        if ($section->type === SectionType::Single && $sourceKey !== 'singles' && ElementSources::sourceExists(Entry::class, $sourceKey)) {
-            $pageSources = ElementSources::getSources(Entry::class, page: $page)
-                ->reject(fn (array $source) => $source['type'] === ElementSourcesService::TYPE_HEADING);
-
-            return $pageSources->count() === 1 ? [] : $crumbs;
+        if ($section->type === SectionType::Single && $sourceKey !== 'singles' && $sourceExists) {
+            return $onlySource ? [] : $crumbs;
         }
 
-        // Is the section’s source enabled?
-        if (ElementSources::sourceExists(Entry::class, $sourceKey)) {
+        // Is the section’s source enabled? If it's the page's only source, the
+        // page crumb already names it.
+        if ($sourceExists && ! $onlySource) {
             $sections = Sections::getEditableSections();
 
             // Filter out any sections that aren’t enabled for this site
@@ -1430,7 +1434,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
                 ->label($current['label'])
                 ->href($current['href'])
                 ->items($sectionOptions->count() > 1 ? $sectionOptions->all() : []);
-        } elseif ($section->type !== SectionType::Single) {
+        } elseif (! $sourceExists && $section->type !== SectionType::Single) {
             // Just show its name w/o a link
             $crumbs[] = new ActionItem()->label($section->getUiLabel());
         }

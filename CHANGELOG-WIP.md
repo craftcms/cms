@@ -20,6 +20,7 @@
 - Singles now have an “Include in the Singles source” setting. Singles that aren’t included get an entry source of their own, which can be put on any page or under any heading like a section’s, and opens the single’s entry. New singles aren’t included by default. Existing singles stay in the Singles source.
 - A single’s own entry source, and a page that opens on one, now go straight to the single’s entry rather than an index listing just that entry. Naming the source with `?source=` still shows the index.
 - Pages with only one source now link straight to it from the control panel navigation, rather than opening a subnav with one item.
+- Breadcrumbs no longer name a page’s source after the page itself when it’s the page’s only source, such as “Team › Team”.
 - A single with an entry source of its own now has just its page as a breadcrumb, or none when it’s the page’s only source, rather than a “Singles” crumb.
 - `php craft entrify/global-set` now gives the converted single an entry source of its own, on a “Globals” page.
 - Control panel success, notice, and error messages now stack, newest first, and can be swiped away. Errors and messages with actions stay until dismissed.
