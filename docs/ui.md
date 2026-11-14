@@ -189,7 +189,9 @@ and `prepareEditScreen()` customizations are rendered around the native forms.
 Buttons at the end of the editor's footer, apart from the save controls, come from `additionalButtonDescriptors()`.
 Element types override `defineAdditionalButtonDescriptors()` and plugins listen for `ElementAdditionalButtonDescriptorsResolving`.
 Each item takes the same `behavior` descriptor as an action menu item (`link`, `download`, `slideout`, `formModal`, …)
-plus optional `icon` and `variant`, so it runs without submitting the editor's form. With the Yii
+plus optional `icon` and `variant`, so it runs without submitting the editor's form. An `event` behavior
+(`['type' => 'event', 'name' => 'my-plugin:open', 'detail' => […]]`) dispatches a window event for a plugin's own
+script, as `event` menu actions do (see [Server-driven menu actions](server-driven-menu-actions.md)). With the Yii
 adapter installed, Craft 5 additional buttons HTML (`getAdditionalButtons()`, `EVENT_DEFINE_ADDITIONAL_BUTTONS`,
 and `additionalButtonsHtml()` from `prepareEditScreen()`) renders in the same place:
 
