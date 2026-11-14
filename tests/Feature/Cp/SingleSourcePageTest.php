@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
@@ -18,9 +20,9 @@ beforeEach(function () {
 });
 
 /**
- * The nav item for an entry page, by its label.
+ * The nav item for an entry page, by its label, as the user gets it, or in the base tree.
  */
-function entryPageItem(string $label): ?NavItem
+function entryPageItem(string $label, bool $base = false): ?NavItem
 {
     app()->forgetScopedInstances();
 
@@ -38,7 +40,9 @@ function entryPageItem(string $label): ?NavItem
         return null;
     };
 
-    return $find(app(Navigation::class)->getBaseTree());
+    $navigation = app(Navigation::class);
+
+    return $find($base ? $navigation->getBaseTree() : $navigation->getTree());
 }
 
 function pageSources(array $sources): void
@@ -93,20 +97,40 @@ it('keeps a page’s subnav when it has more than one source', function () {
 
 it('keeps a page’s nav item id when it links to its one source', function () {
     $news = Section::factory()->create(['type' => SectionType::Channel, 'handle' => 'news']);
-    $events = Section::factory()->create(['type' => SectionType::Channel, 'handle' => 'events']);
 
     pageSources([
         ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
         ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$news->uid", 'page' => 'News'],
-        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$events->uid", 'page' => 'News'],
+    ]);
+
+    expect(entryPageItem('News')->id)->toBe(entryPageItem('News', base: true)->id);
+});
+
+it('applies customizations to a page’s one source before linking to it', function () {
+    $news = Section::factory()->create(['type' => SectionType::Channel, 'handle' => 'news']);
+
+    pageSources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$news->uid", 'page' => 'News'],
+    ]);
+    $page = entryPageItem('News', base: true);
+    app(CustomNavigations::class)->saveDefault(['items' => [$page->subnav[0]->id => ['hidden' => true]]]);
+
+    $item = entryPageItem('News');
+
+    expect($item->subnav)->toBeFalse()
+        ->and(parse_url($item->href, PHP_URL_PATH))->toEndWith('/content/news');
+});
+
+it('gives a page that links to its one source the source’s badge count', function () {
+    $news = Section::factory()->create(['type' => SectionType::Channel, 'handle' => 'news']);
+    EntryModel::factory()->forSection($news)->count(3)->create();
+
+    pageSources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$news->uid", 'page' => 'News', 'showBadgeCount' => true],
     ]);
     $id = entryPageItem('News')->id;
 
-    pageSources([
-        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
-        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$news->uid", 'page' => 'News'],
-        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$events->uid", 'page' => 'Events'],
-    ]);
-
-    expect(entryPageItem('News')->id)->toBe($id);
+    expect(app(Navigation::class)->getSourceBadgeCounts())->toHaveKey($id, 3);
 });

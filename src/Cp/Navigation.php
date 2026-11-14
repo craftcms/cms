@@ -120,9 +120,37 @@ readonly class Navigation
      */
     public function getTree(): array
     {
-        $user = currentUser();
+        $collapsed = [];
 
-        return $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user);
+        return $this->customizedTree($collapsed);
+    }
+
+    /**
+     * The nav as the current user has it laid out, with entry pages that are
+     * left with one source linking straight to it.
+     *
+     * Pages are collapsed after the customizations are applied, so the
+     * source's own customizations, such as a new name or a move to another
+     * page, still apply, and a page is only collapsed if it ends up with one
+     * source.
+     *
+     * @param  array<array-key, string>  $collapsed  Set to the collapsed sources' ids, mapped to their pages' ids
+     * @return NavItem[]
+     */
+    private function customizedTree(array &$collapsed): array
+    {
+        $user = currentUser();
+        $tree = $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user);
+
+        if (! $this->listsSources(Entry::class)) {
+            return $tree;
+        }
+
+        $pageIds = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION)
+            ->mapWithKeys(fn (string $page) => [$this->itemId(sprintf('content/%s', ElementSources::pageSlug($page))) => true])
+            ->all();
+
+        return $this->collapseSingleSourcePages($tree, $pageIds, $collapsed);
     }
 
     /**
@@ -191,11 +219,26 @@ readonly class Navigation
     public function getSourceBadgeCounts(): array
     {
         $siteId = $this->navSiteId();
-
-        return array_map(
+        $counts = array_map(
             fn (array $badge): int => $badge['elementType']::sourceBadgeCount($badge['source'], $siteId),
             $this->sourceBadges(),
         );
+
+        if ($counts === []) {
+            return $counts;
+        }
+
+        // A page that links straight to its one source shows that source's count.
+        $collapsed = [];
+        $this->customizedTree($collapsed);
+
+        foreach ($collapsed as $sourceId => $pageId) {
+            if (isset($counts[$sourceId])) {
+                $counts[$pageId] = $counts[$sourceId];
+            }
+        }
+
+        return $counts;
     }
 
     /**
@@ -296,7 +339,7 @@ readonly class Navigation
                 $entryPageSettings = $this->elementSources->getPageSettings(Entry::class);
 
                 $contentItems = $contentItems->merge(
-                    $entryPages->map(fn (string $page) => $this->asLinkIfSingleSource(new NavItem()
+                    $entryPages->map(fn (string $page) => new NavItem()
                         ->when(
                             $page === 'Entries',
                             fn (NavItem $item) => $item->label(t('Entries')),
@@ -308,7 +351,7 @@ readonly class Navigation
                             Entry::class,
                             sprintf('content/%s', ElementSources::pageSlug($page)),
                             $page,
-                        ))))
+                        )))
                 );
             } else {
                 $contentItems->add(new NavItem()
@@ -564,32 +607,57 @@ readonly class Navigation
 
     /**
      * A page with only one source has nothing to choose between, so its item
-     * links straight to that source, with no subnav. A heading over the source
-     * doesn't count as a choice either.
+     * links straight to that source, with no subnav, and takes its badge. A
+     * heading over the source doesn't count as a choice either.
+     *
+     * The page keeps its own id, so the trail and anything else that refers
+     * to it still find it.
+     *
+     * @param  NavItem[]  $items
+     * @param  array<string, bool>  $pageIds  The entry pages' item ids
+     * @param  array<array-key, string>  $collapsed  Collapsed sources' ids, mapped to their pages' ids
+     * @return NavItem[]
      */
-    private function asLinkIfSingleSource(NavItem $item): NavItem
+    private function collapseSingleSourcePages(array $items, array $pageIds, array &$collapsed): array
     {
-        $leaves = [];
-        $collect = function (array $items) use (&$collect, &$leaves): void {
-            foreach ($items as $child) {
-                if ($child->group) {
-                    $collect(is_array($child->subnav) ? $child->subnav : []);
-                } else {
-                    $leaves[] = $child;
-                }
+        foreach ($items as $item) {
+            if (! is_array($item->subnav)) {
+                continue;
             }
-        };
-        $collect(is_array($item->subnav) ? $item->subnav : []);
 
-        if (count($leaves) !== 1) {
-            return $item;
+            if (! isset($pageIds[$item->id])) {
+                $item->subnav = $this->collapseSingleSourcePages($item->subnav, $pageIds, $collapsed);
+
+                continue;
+            }
+
+            $leaves = [];
+            $collect = function (array $children) use (&$collect, &$leaves): void {
+                foreach ($children as $child) {
+                    if ($child->group) {
+                        $collect(is_array($child->subnav) ? $child->subnav : []);
+                    } else {
+                        $leaves[] = $child;
+                    }
+                }
+            };
+            $collect($item->subnav);
+
+            if (count($leaves) !== 1) {
+                continue;
+            }
+
+            $source = $leaves[0];
+            $item->href($source->href)->subnav(false);
+            $item->badgeCount = $source->badgeCount;
+            $item->badgeLabel = $source->badgeLabel;
+
+            if ($source->id !== null && $item->id !== null) {
+                $collapsed[$source->id] = $item->id;
+            }
         }
 
-        // Its id comes from the page's own URL as before, so customized
-        // navigations that refer to it still find it.
-        $item->id ??= $this->itemId($this->idPath((string) $item->href));
-
-        return $item->href($leaves[0]->href)->subnav(false);
+        return $items;
     }
 
     /**
