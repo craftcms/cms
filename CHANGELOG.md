@@ -761,7 +761,7 @@
 - Fixed a bug where variables weren’t HTML-escaped in system messages’ HTML bodies, because Twig string and object templates reused whichever escaping they were first compiled with. The default system messages no longer use the `|e` filter, which showed HTML entities in their plain-text bodies. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Fixed a bug where authenticated control panel routes didn’t invalidate sessions with stale password hashes.
 - Added `craft\helpers\Db::isSafeOrderBy()`. ([#19994](https://github.com/craftcms/cms/pull/19994))
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-53c3-ggrg-m3hg)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
 
 ### Performance
 - Craft can now determine the dimensions of BMP and JPEG XL images on remote volumes without downloading them.
