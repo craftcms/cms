@@ -11,7 +11,10 @@ import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
 import {focusStaysWithin} from '@src/utilities/focus-out.js';
 import {claimEscape, isEscapeClaimed} from '@src/utilities/overlay-escape.js';
-import {isOutsidePressClaimedWithin} from '@src/utilities/overlay-outside-press.js';
+import {
+  claimOutsidePress,
+  isOutsidePressClaimedWithin,
+} from '@src/utilities/overlay-outside-press.js';
 import {announceOverlayState} from '@src/utilities/overlay-events.js';
 import {
   hideLayer,
@@ -560,15 +563,29 @@ export default class CraftPopover extends LitElement {
     this.#pointerUpInside = true;
   };
 
+  /**
+   * Notes the press, and claims it when it starts outside the content and the
+   * invoker, so a popover this one is nested in stays open while this one
+   * closes, as it does for Escape.
+   */
   #onDocumentPointerDown = (event: PointerEvent): void => {
     this.#pressStart = event;
+
+    const path = event.composedPath();
+    const invoker = this.#invoker?.node;
+    if (!path.includes(this) && !(invoker && path.includes(invoker))) {
+      claimOutsidePress(event, this);
+    }
   };
 
   /**
    * Closes on a click that both started and ended outside the content and the
    * invoker, unless an overlay in the content, such as a select's list, closed
-   * on it instead. The document sees the mouseup first, in its capture phase,
+   * on it instead. The document sees the pointerup first, in its capture phase,
    * so the decision waits a task for the inside listeners to report.
+   *
+   * Pointer events rather than mouse events, since a `pointerdown` that's
+   * canceled, as a drag handle's is, suppresses the mouse events after it.
    */
   #onDocumentPointerUp = (): void => {
     const pressClosedInside = this.#pressClosedInside();
@@ -594,13 +611,13 @@ export default class CraftPopover extends LitElement {
   };
 
   #addPointerListeners(node: HTMLElement): void {
-    node.addEventListener('mousedown', this.#onPointerDownInside, true);
-    node.addEventListener('mouseup', this.#onPointerUpInside, true);
+    node.addEventListener('pointerdown', this.#onPointerDownInside, true);
+    node.addEventListener('pointerup', this.#onPointerUpInside, true);
   }
 
   #removePointerListeners(node: HTMLElement): void {
-    node.removeEventListener('mousedown', this.#onPointerDownInside, true);
-    node.removeEventListener('mouseup', this.#onPointerUpInside, true);
+    node.removeEventListener('pointerdown', this.#onPointerDownInside, true);
+    node.removeEventListener('pointerup', this.#onPointerUpInside, true);
   }
 
   /**
@@ -708,7 +725,7 @@ export default class CraftPopover extends LitElement {
       true
     );
     document.documentElement.addEventListener(
-      'mouseup',
+      'pointerup',
       this.#onDocumentPointerUp,
       true
     );
@@ -744,7 +761,7 @@ export default class CraftPopover extends LitElement {
       true
     );
     document.documentElement.removeEventListener(
-      'mouseup',
+      'pointerup',
       this.#onDocumentPointerUp,
       true
     );

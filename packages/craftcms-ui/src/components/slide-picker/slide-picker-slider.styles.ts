@@ -11,8 +11,8 @@ export default css`
   }
 
   .slide-picker {
-    --_segment-height: 1rem;
-    --_segment-width: calc(8rem / 16);
+    --_segment-height: var(--c-slide-picker-segment-height, 1rem);
+    --_segment-width: var(--c-slide-picker-segment-width, calc(8rem / 16));
     --_segment-border: var(--c-color-neutral-border-quiet);
     --_segment-active-border: var(--c-color-neutral-border-loud);
     --_segment-fill: var(

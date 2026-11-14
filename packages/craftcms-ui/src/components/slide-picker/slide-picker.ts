@@ -36,6 +36,10 @@ import styles from './slide-picker.styles.js';
  * @fires change - Emitted when an alteration to the value is committed by the
  * user. Every alteration is a commit here, so it follows each `input`.
  *
+ * @cssproperty --c-slide-picker-segment-width - Width of each segment.
+ * Defaults to `0.5rem`.
+ * @cssproperty --c-slide-picker-segment-height - Height of each segment.
+ * Defaults to `1rem`.
  * @cssproperty --c-slide-picker-segment-fill - Fill of the segments past the
  * value. Defaults to `--c-color-neutral-fill-quiet`.
  * @cssproperty --c-slide-picker-segment-active-fill - Fill of the segments up

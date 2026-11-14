@@ -11,6 +11,7 @@ import type {UiValues} from '@/modules/ui/types';
 import {uuid} from '@/common/craft/strings';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError} from '@/modules/messages/messages';
+import '@craftcms/ui/components/slide-picker-button/slide-picker-button';
 
 /**
  * A single layout element (field or UI element) within a {@link Tab}. Native DOM
@@ -93,14 +94,14 @@ export class Element extends Base {
       hasAttr(this.$container, 'data-has-custom-width');
 
     if (this.hasCustomWidth) {
-      const widthSlider = document.createElement('craft-slide-picker');
+      const widthSlider = document.createElement('craft-slide-picker-button');
       widthSlider.setAttribute('label', t('Width'));
-      widthSlider.setAttribute('label-sr-only', '');
-      widthSlider.setAttribute('value-unit', '%');
+      widthSlider.valueLabel = (num) => t('{num}% width', {num});
       widthSlider.setAttribute('min', '25');
       widthSlider.setAttribute('max', '100');
       widthSlider.setAttribute('step', '25');
       widthSlider.setAttribute('value', `${this.config.width || 100}`);
+      widthSlider.setAttribute('flush', 'inline-end');
 
       if (this.tab.designer.settings!.readOnly) {
         widthSlider.setAttribute('readonly', '');
@@ -225,6 +226,16 @@ export class Element extends Base {
     };
 
     this.$container.appendChild(menu);
+
+    // Pull the actions button's icon up against the width picker, which is
+    // flush on that side too.
+    if (this.hasCustomWidth) {
+      void menu.updateComplete.then(() => {
+        menu
+          .querySelector(':scope > craft-button[slot="invoker"]')
+          ?.setAttribute('flush', 'inline-start');
+      });
+    }
   }
 
   onSelect(): void {

@@ -1,0 +1,42 @@
+import {ArgTypes, Canvas, Meta} from '@storybook/addon-docs/blocks';
+import * as SlidePickerButtonStories from './slide-picker-button.stories';
+
+<Meta of={SlidePickerButtonStories} name="Docs" />
+
+# Slide Picker Button
+
+`<craft-slide-picker-button>` shows a value as a small copy of a [Slide Picker](?path=/docs/form-controls-slide-picker--docs)'s segments, and opens a full-size slide picker in a popover to change it.
+
+<Canvas of={SlidePickerButtonStories.Default} sourceState="shown" />
+
+Use it where a slide picker sits in a dense row, such as a widget's column count or a field layout element's width. A full-size picker's segments are too small to hit there, so the whole button is the target and the segments in the popover are large. Where there's room for a full-size picker, use one: it takes one less step.
+
+<Canvas of={SlidePickerButtonStories.InARow} sourceState="shown" />
+
+<Canvas of={SlidePickerButtonStories.ReadOnly} sourceState="shown" />
+
+## Posting a Value
+
+Give it a `name` and it posts with the form, as a slide picker does: `new FormData(form)` reads it, and `form.reset()` puts back the value it started with. A disabled button posts nothing.
+
+It emits `input` then `change` each time the value is changed in the popover:
+
+```js
+button.addEventListener('change', () => {
+  console.log(button.value);
+});
+```
+
+## Lining Up With Other Buttons
+
+The button is a plain `craft-button` until it's hovered. Set `flush` to pull its segments out to its edge, as `craft-button`'s `flush` does, so they line up with the text or buttons beside it.
+
+## Accessibility
+
+- **Set `label`.** It names the popover's slider, below which it's shown, and the button, followed by the value.
+- **Set `button-label` when several buttons share a `label`**, such as a "Columns" button on every row of a list. Start it with `label` and add the item's name: "Columns News". Keep it in step with the item's name.
+- **Set `value-unit` or `valueLabel`** whenever the number alone doesn't say what it counts. The button's name and tooltip end with the value as they format it.
+
+## Properties
+
+<ArgTypes of={SlidePickerButtonStories} />

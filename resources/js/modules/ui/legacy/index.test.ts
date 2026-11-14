@@ -20,6 +20,7 @@ it('leaves custom element registration to the application entry', () => {
     'craft-input-copy',
     'craft-input-password',
     'craft-slide-picker',
+    'craft-slide-picker-button',
     'craft-switch',
     'craft-textarea',
   ]) {
@@ -129,6 +130,29 @@ describe('createSlidePicker', () => {
     const el = createSlidePicker({min: () => 10, max: () => 90, step: 20});
     expect(el.min).toBe(10);
     expect(el.max).toBe(90);
+  });
+
+  it('builds a button that opens a picker, named by its labels, with button', () => {
+    const el = createSlidePicker({
+      button: true,
+      label: 'Columns',
+      buttonLabel: 'Columns News',
+      labelledBy: 'width-label',
+      min: 1,
+      max: 3,
+      step: 1,
+      value: 2,
+      name: 'colspan',
+      readOnly: true,
+    });
+
+    expect(el.tagName.toLowerCase()).toBe('craft-slide-picker-button');
+    expect(el.label).toBe('Columns');
+    expect(el.buttonLabel).toBe('Columns News');
+    expect(el.hasAttribute('labelled-by')).toBe(false);
+    expect([el.min, el.max, el.step, el.value]).toEqual([1, 3, 1, 2]);
+    expect(el.name).toBe('colspan');
+    expect(el.readonly).toBe(true);
   });
 
   it('references the elements that label and describe it', () => {

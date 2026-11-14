@@ -656,8 +656,11 @@ Craft.ui = {
     }
 
     // The field's label names the picker, so it doesn't get one of its own.
+    // A button can't be named by the field's label, so it keeps `label`.
     return this.createField(
-      this.createSlidePicker($.extend({}, config, {label: null})),
+      this.createSlidePicker(
+        config.button ? config : $.extend({}, config, {label: null})
+      ),
       config
     ).addClass('slidepicker-field');
   },

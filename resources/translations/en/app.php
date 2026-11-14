@@ -3678,6 +3678,7 @@ return [
     '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.' => '{numReferences, plural, =1{Reference} other{References}} queued to be replaced.',
     '{numRelations, plural, =1{Relation} other{Relations}} queued to be replaced.' => '{numRelations, plural, =1{Relation} other{Relations}} queued to be replaced.',
     '{num} percent complete' => '{num} percent complete',
+    '{num}% width' => '{num}% width',
     '{plugin} can’t be installed due to the {setting} config setting.' => '{plugin} can’t be installed due to the {setting} config setting.',
     '{plugin} is disabled by the {setting} config setting.' => '{plugin} is disabled by the {setting} config setting.',
     '{plugin} requires Craft CMS {edition} edition.' => '{plugin} requires Craft CMS {edition} edition.',
