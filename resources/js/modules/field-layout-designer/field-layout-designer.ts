@@ -141,15 +141,23 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       this.$fieldLibrary.setAttribute('tabindex', '-1');
     }
 
-    // The search field's inner input renders once its custom element upgrades.
-    void deferUntil(
-      () => !!this.$fieldLibrary.querySelector('craft-input-search input')
-    ).then(() => {
-      this.$fieldSearch = this.$fieldLibrary.querySelector(
-        'craft-input-search input'
-      );
-      this.deferredInit();
-    });
+    // The search field's inner input renders once its custom element connects,
+    // which usually happens right after this designer is created, since
+    // connected callbacks run parent first. So check again after a microtask
+    // before polling: until deferredInit() runs, the tabs' Add buttons and the
+    // New Tab buttons are on screen but do nothing when clicked.
+    void Promise.resolve()
+      .then(() =>
+        deferUntil(
+          () => !!this.$fieldLibrary.querySelector('craft-input-search input')
+        )
+      )
+      .then(() => {
+        this.$fieldSearch = this.$fieldLibrary.querySelector(
+          'craft-input-search input'
+        );
+        this.deferredInit();
+      });
   }
 
   deferredInit(): void {
