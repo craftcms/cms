@@ -1,5 +1,6 @@
 import type {App} from 'vue';
 import type {UiValues} from './types';
+import type {ModalWidth} from '@/common/components/modal';
 
 export interface UiModalOptions {
   modalUrl: string;
@@ -7,7 +8,7 @@ export interface UiModalOptions {
   params?: UiValues;
   title?: string;
   submitLabel?: string;
-  width?: string;
+  width?: ModalWidth;
   onSubmitted?: (data: Record<string, unknown>) => void;
 }
 

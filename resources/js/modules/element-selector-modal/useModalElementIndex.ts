@@ -115,6 +115,9 @@ export function useModalElementIndex(options: Options) {
         : !row.isFolder && !disabledIds.value.has(Number(row.id)),
     // A move has one destination.
     multiSelect: !selectFolders,
+    structure: true,
+    // Choosing a parent relates only the parent.
+    selectDescendants: false,
   });
   // Brings back the view mode, columns and sort this index last used, which
   // the server can't know when it renders the first payload.

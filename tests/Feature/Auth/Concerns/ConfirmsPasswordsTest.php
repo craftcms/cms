@@ -24,12 +24,11 @@ class TestConfirmsPasswords
 }
 
 beforeEach(function () {
+    Date::setTestNow(now());
     actingAs(User::find()->first());
 });
 
 test('it can mark a password as confirmed', function () {
-    Date::setTestNow(now());
-
     expect(Session::get('auth.password_confirmed_at'))->toBeNull();
     expect(new TestConfirmsPasswords()->isPasswordConfirmed())->toBeFalse();
 
@@ -63,7 +62,6 @@ test('password confirmation uses the same default duration everywhere', function
 });
 
 test('timeout returns seconds until confirmation is required', function () {
-    Date::setTestNow(now());
     $timeout = config('auth.password_timeout');
 
     expect(new TestConfirmsPasswords()->confirmedPasswordTimeout())->toBe(0);

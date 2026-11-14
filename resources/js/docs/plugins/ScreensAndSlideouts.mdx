@@ -1,0 +1,121 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Screens & Slideouts" />
+
+# Screens and slideouts
+
+Every control panel page can also open in a slideout. `openSlideout(url)`, a
+`SlideoutButton`, or an admin table's slideout links load the same Inertia page
+component into a panel over the current page. A plugin page works in both
+without changes, as long as it asks the screen what it needs rather than
+assuming it's the whole page.
+
+## Where am I?
+
+```ts
+import {useIsSlideout} from '@craftcms/cp';
+
+const inSlideout = useIsSlideout();
+```
+
+`useIsSlideout()` is `true` inside a slideout. `useScreenContext().mode` gives
+the same answer as `'page'` or `'slideout'`. Neither changes while a component
+is mounted.
+
+Use it for differences in behavior, such as not offering a link to the page
+the person is already on behind the slideout. The slideout draws the page's
+header and details column itself.
+
+## The screen's props
+
+A page component gets its props directly. A component deeper in the page that
+needs them shouldn't use Inertia's `usePage()`: in a slideout, `usePage()` still
+describes the page behind it. `useScreenPageProps()` gives the props of the
+screen the component is in.
+
+```ts
+import {computed} from 'vue';
+import {useScreenPageProps} from '@craftcms/cp';
+
+const screenProps = useScreenPageProps();
+const exhibitionId = computed(() => screenProps().exhibitionId as number);
+```
+
+It returns a function, so a `computed` that calls it follows the props as
+Inertia reloads them.
+
+## Details panels
+
+A page adds panels to its screen's details column with `craft:screen-panel`
+(**docs/layout-slots.md**). `useDetailsPanels()` opens and closes them, such as
+sending someone to the panel that explains an error:
+
+```vue
+<script setup lang="ts">
+  import {resolveComponent} from 'vue';
+  import {useDetailsPanels} from '@craftcms/cp';
+
+  const ScreenPanel = resolveComponent('craft:screen-panel');
+  const panels = useDetailsPanels();
+
+  function showSyncLog() {
+    panels?.open('sync-log');
+  }
+</script>
+
+<template>
+  <craft-button @click="showSyncLog">View sync log</craft-button>
+
+  <ScreenPanel id="sync-log" label="Sync log" icon="list">
+    <SyncLog />
+  </ScreenPanel>
+</template>
+```
+
+| Member                         | What it does                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `openPanelId`                  | The open panel's id, or `null` while the column is folded. A ref.                                             |
+| `open(id, {withFocus, focus})` | Opens a panel. Focus moves into it unless `withFocus` is `false`. `focus` picks what to focus.                |
+| `close(id, {returnFocus})`     | Folds the column if that panel is open. Focus returns to the panel's trigger unless `returnFocus` is `false`. |
+
+`useDetailsPanels()` returns `null` outside a screen. In a slideout it controls
+the slideout's own column. In the element editor, a panel registered with
+`registerElementDetailsPanel()` can use it to open another panel, or close
+itself.
+
+## Saving in a slideout
+
+`useSettingsSave()` saves without navigating when the form is in a slideout,
+and closes the slideout once the save succeeds. Use it for forms that might be
+opened in one.
+
+A page that saves some other way, or has its own Cancel button, closes the
+slideout with `useSlideoutControl()`. It returns `null` on a full page.
+
+```ts
+import {router} from '@inertiajs/vue3';
+import {useSlideoutControl} from '@craftcms/cp';
+
+const slideout = useSlideoutControl();
+
+async function save() {
+  const result = await saveSyncSettings();
+  if (!slideout) return;
+
+  const handled = slideout.saved({data: result});
+  slideout.close({force: true});
+  if (!handled) {
+    // Nobody opened it with `onSaved`, so refresh the page behind.
+    router.reload();
+  }
+}
+
+function cancel() {
+  slideout?.close();
+}
+```
+
+| Member           | What it does                                                                                                                                    |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `close({force})` | Closes the slideout. It asks first when the form has unsaved changes, unless `force` is `true`.                                                 |
+| `saved({data})`  | Passes the save to the `onSaved` callback given to `openSlideout()`. Call it before `close()`. Returns `false` when the opener didn't give one. |

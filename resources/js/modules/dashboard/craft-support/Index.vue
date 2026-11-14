@@ -4,6 +4,9 @@
   import SupportSearch from './SupportSearch.vue';
   import SupportForm from './SupportForm.vue';
   import type {SupportData} from './types';
+  import {useWidgetColor} from '../useWidgetColor';
+
+  const color = useWidgetColor();
 
   defineProps<{
     id: number;
@@ -40,7 +43,12 @@
 <template>
   <div @keydown.esc.stop="support && !sending ? (support = false) : cancel()">
     <slot name="header" />
-    <div v-show="screen === 'home'" ref="home" class="support-tiles">
+    <div
+      v-show="screen === 'home'"
+      ref="home"
+      class="support-tiles"
+      :data-color="color"
+    >
       <craft-button
         type="button"
         variant="fill"
@@ -72,7 +80,7 @@
         </span>
       </craft-button>
     </div>
-    <craft-card data-color="gray" v-show="screen !== 'home'">
+    <craft-card :data-color="color" v-show="screen !== 'home'">
       <h2 slot="label" class="cp-h4">{{ cardHeading }}</h2>
       <div v-show="screen !== 'home'" class="space-y-4">
         <SupportSearch
@@ -111,30 +119,53 @@
     min-height: 150px;
     padding-block: 24px;
     padding-inline: 16px;
-    border: var(--c-card-border-width, 1px) solid
-      var(--c-color-gray-border-quiet);
+    border: var(--c-card-border-width, 1px) solid var(--_tile-border);
     border-radius: 0;
     white-space: normal;
   }
-  /* At rest, tiles match the other widgets (see Dashboard.vue), and darken
-     from there, as nav items do. */
+  /*
+   * At rest, tiles match the other widgets: a colored card's tinted body,
+   * gray by default, or no fill without a color. They darken from there, as
+   * nav items do. The container's colors are captured in properties of its
+   * own, which the tiles inherit already resolved, since each tile, a
+   * craft-button, sets the color tokens on itself.
+   */
+  .support-tiles {
+    --_tile-fill: transparent;
+    --_tile-border: var(--c-color-gray-border-quiet);
+  }
+  .support-tiles[data-color] {
+    --_tile-fill: color-mix(
+      in srgb,
+      var(--c-color-fill-quiet),
+      transparent 70%
+    );
+    --_tile-border: var(--c-color-border-quiet);
+    --_tile-text: var(--c-color-on-quiet);
+  }
+  .support-tiles[data-color] .support-tile {
+    color: var(--_tile-text);
+  }
+  .support-tiles[data-color='black'] {
+    --_tile-fill: var(--c-color-fill-quiet);
+    --_tile-border: color-mix(
+      in srgb,
+      var(--c-color-black-on-quiet),
+      transparent 80%
+    );
+  }
+  .support-tiles[data-color='black'] .support-tile-description {
+    color: var(--_tile-text);
+  }
   .support-tile {
-    background-color: var(--c-surface-details);
+    background-color: var(--_tile-fill);
 
     &:hover {
-      background-color: color-mix(
-        in srgb,
-        var(--c-surface-details),
-        currentColor 5%
-      );
+      background-color: color-mix(in srgb, var(--_tile-fill), currentColor 5%);
     }
 
     &:active {
-      background-color: color-mix(
-        in srgb,
-        var(--c-surface-details),
-        currentColor 10%
-      );
+      background-color: color-mix(in srgb, var(--_tile-fill), currentColor 10%);
     }
   }
   .support-tile:first-child {

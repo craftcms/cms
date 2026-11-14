@@ -463,3 +463,10 @@ export interface UserGroup {
   uid: string;
   permissions?: Array<string>;
 }
+
+/** Markup the server rendered, with the head and body HTML its assets need. */
+export interface HtmlFragment {
+  readonly html: string;
+  readonly headHtml: string;
+  readonly bodyHtml: string;
+}

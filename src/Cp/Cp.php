@@ -251,6 +251,7 @@ readonly class Cp
     {
         return [
             'vue' => static::vite()->asset('resources/js/vue.ts'),
+            '@inertiajs/vue3' => static::vite()->asset('resources/js/inertia.ts'),
             '@craftcms/cp' => static::vite()->asset('resources/js/cp-module.ts'),
             '@craftcms/garnish' => static::vite()->asset('resources/js/garnish.ts'),
         ];

@@ -197,9 +197,15 @@ export class BaseChart extends Base {
 
     this.setSettings(globalSettings);
 
-    d3.select(window).on('resize', () => {
+    // Namespaced, so each chart keeps its own listener and removes only that
+    d3.select(window).on(`resize.${this._namespace}`, () => {
       this.resize();
     });
+  }
+
+  override destroy(): void {
+    d3.select(window).on(`resize.${this._namespace}`, null);
+    super.destroy();
   }
 
   // Note: unlike garnish `Base.setSettings`, this accumulates via a deep merge —

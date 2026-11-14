@@ -10,12 +10,17 @@ const meta = {
     docs: {
       description: {
         component:
-          'The cards view body of an element index. Each card renders ' +
-          'server-provided HTML (`cardHeaderHtml`, `cardContentHtml`, ' +
-          '`cardFooterHtml`) inside a `craft-card`, while selection state ' +
-          'lives on the shared TanStack table. Keyboard navigation works in ' +
-          'both directions of the grid: Arrows move focus, Space/Enter ' +
-          'toggles, Shift+Arrow extends the selection.',
+          'Draws elements as cards, in a grid or one per row. This is the ' +
+          'cards view of the element index and of relation fields. Each card ' +
+          'renders the HTML the server made for it (`cardHeaderHtml`, ' +
+          '`cardContentHtml`, `cardFooterHtml` and the rest) inside a ' +
+          '`craft-card`.\n\n' +
+          'The cards don’t keep their own selection. Create one with ' +
+          '`useSelectable` and pass it as `selection`. Keyboard navigation ' +
+          'works in both directions of the grid: Arrows move focus, ' +
+          'Space/Enter toggles, Shift+Arrow extends the selection.\n\n' +
+          'Plugins draw cards through `ElementList` with a `cards` or ' +
+          '`cards-grid` view mode.',
       },
     },
   },

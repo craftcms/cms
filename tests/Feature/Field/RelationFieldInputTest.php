@@ -217,12 +217,22 @@ it('only offers to create entries in the target site when the user can edit it',
     'not editable' => [false],
 ]);
 
-it('searches an Assets field’s volume and its subfolders, with the field’s selection criteria', function () {
+it('searches an Assets field’s volume, and its subfolders when the field allows them, with the field’s selection criteria', function (array $config, bool $includeSubfolders) {
     $volume = Volume::factory()->create();
     $root = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
-    $field = new Assets(['handle' => 'files', 'sources' => ["volume:$volume->uid"]]);
+    $field = new Assets([
+        'handle' => 'files',
+        'sources' => ["volume:$volume->uid"],
+        'restrictedLocationSource' => "volume:$volume->uid",
+        ...$config,
+    ]);
 
     $props = $field->uiControl(new FieldContext('files', element: EntryModel::factory()->createElement()))->props();
 
-    expect($props['search']['criteria'])->toBe(['folderId' => $root->id, 'uploaderId' => null, 'includeSubfolders' => true]);
-});
+    expect($props['search']['criteria'])->toMatchArray(['folderId' => $root->id])
+        ->and($props['search']['criteria']['includeSubfolders'] ?? false)->toBe($includeSubfolders);
+})->with([
+    'unrestricted' => [[], true],
+    'restricted with subfolders' => [['restrictLocation' => true, 'allowSubfolders' => true], true],
+    'restricted without subfolders' => [['restrictLocation' => true, 'allowSubfolders' => false], false],
+]);
