@@ -387,6 +387,7 @@ return [
     'Composer was unable to install the updates.' => 'Composer ไม่สามารถติดตั้งอัปเดตได้',
     'Composer was unable to remove the plugin.' => 'Composer ไม่สามารถลบปลั๊กอินได้',
     'Composer was unable to revert the updates.' => 'Composer ไม่สามารถคืนค่าการอัปเดตได้',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'บีบอัด',
     'Condition {num, number}' => 'เงื่อนไข {num, number}',
     'Configure the category group’s site-specific settings.' => 'กำหนดค่าการตั้งค่าเฉพาะเว็บไซต์ของกลุ่มหมวดหมู่',
