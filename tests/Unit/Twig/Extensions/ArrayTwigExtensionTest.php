@@ -5,7 +5,9 @@ declare(strict_types=1);
 use CraftCms\Cms\Twig\Extensions\ArrayTwigExtension;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\PageLifecycle;
+use CraftCms\Cms\View\TemplateManager;
 use Illuminate\Support\Collection;
+use Twig\Error\Error as TwigError;
 use Twig\Error\RuntimeError;
 
 beforeEach(function () {
@@ -93,7 +95,7 @@ describe('ArrayTwigExtension', function () {
 
             $array = ['a' => ['status' => 'live'], 'b' => ['status' => 'draft'], 'c' => ['status' => 'live']];
 
-            expect($extension->whereFilter(false, $array, 'status', 'live'))->toBe([
+            expect($extension->whereFilter($this->env, false, $array, 'status', 'live'))->toBe([
                 'a' => ['status' => 'live'],
                 'c' => ['status' => 'live'],
             ]);
@@ -104,7 +106,7 @@ describe('ArrayTwigExtension', function () {
 
             $array = ['a' => ['status' => 'live'], 'b' => ['status' => 'draft'], 'c' => ['status' => 'live']];
 
-            expect($extension->whereFilter(false, $array, 'status', 'live', keepKeys: false))->toBe([
+            expect($extension->whereFilter($this->env, false, $array, 'status', 'live', keepKeys: false))->toBe([
                 ['status' => 'live'],
                 ['status' => 'live'],
             ]);
@@ -115,8 +117,8 @@ describe('ArrayTwigExtension', function () {
 
             $array = [['n' => 1], ['n' => '1'], ['n' => 2]];
 
-            expect($extension->whereFilter(false, $array, 'n', 1, strict: false, keepKeys: false))->toBe([['n' => 1], ['n' => '1']]);
-            expect($extension->whereFilter(false, $array, 'n', 1, strict: true, keepKeys: false))->toBe([['n' => 1]]);
+            expect($extension->whereFilter($this->env, false, $array, 'n', 1, strict: false, keepKeys: false))->toBe([['n' => 1], ['n' => '1']]);
+            expect($extension->whereFilter($this->env, false, $array, 'n', 1, strict: true, keepKeys: false))->toBe([['n' => 1]]);
         });
 
         it('defaults value to true', function () {
@@ -124,13 +126,13 @@ describe('ArrayTwigExtension', function () {
 
             $array = [['enabled' => true], ['enabled' => false]];
 
-            expect($extension->whereFilter(false, $array, 'enabled', keepKeys: false))->toBe([['enabled' => true]]);
+            expect($extension->whereFilter($this->env, false, $array, 'enabled', keepKeys: false))->toBe([['enabled' => true]]);
         });
 
         it('throws when the key contains a disallowed character while sandboxed', function (string $key) {
             $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
 
-            $extension->whereFilter(true, [], $key);
+            $extension->whereFilter($this->env, true, [], $key);
         })->with([
             'dot' => ['foo.bar'],
             'opening bracket' => ['foo[bar'],
@@ -140,11 +142,63 @@ describe('ArrayTwigExtension', function () {
         it('allows keys with those characters when not sandboxed', function (string $key) {
             $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
 
-            expect($extension->whereFilter(false, [], $key))->toBe([]);
+            expect($extension->whereFilter($this->env, false, [], $key))->toBe([]);
         })->with([
             'dot' => ['foo.bar'],
             'opening bracket' => ['foo[bar'],
             'closing bracket' => ['foo]bar'],
         ]);
+    });
+
+    describe('sandboxed keys', function () {
+        beforeEach(function () {
+            $inner = new stdClass;
+            $inner->secret = 'shh';
+            $outer = new stdClass;
+            $outer->inner = $inner;
+            $this->target = new class
+            {
+                public int $calls = 0;
+
+                public function boom(): bool
+                {
+                    $this->calls++;
+
+                    return true;
+                }
+            };
+            $this->variables = ['outer' => $outer, 'inner' => $inner, 'target' => $this->target];
+        });
+
+        it('rejects keys that access anything the template couldn’t access directly', function (string $template) {
+            try {
+                app(TemplateManager::class)->renderSandboxedString($template, $this->variables);
+            } finally {
+                expect($this->target->calls)->toBe(0);
+            }
+        })->with([
+            'column with a key path' => ["{{ [outer]|column(['inner', 'secret'])|first }}"],
+            'column with an index key path' => ["{{ [outer]|column(v => 1, ['inner', 'secret'])|keys|first }}"],
+            'multisort with a nested key path' => ["{{ [outer, outer]|multisort([['inner.secret', 'asc']])|length }}"],
+            'where with a callable array' => ["{{ ['x']|where([target, 'boom'])|length }}"],
+            'contains with a callable array' => ["{{ ['x']|contains([target, 'boom']) ? 'y' : 'n' }}"],
+            'multisort with a callable array' => ["{{ ['x', 'y']|multisort([target, 'boom'])|length }}"],
+            'where with a disallowed property' => ["{{ [inner]|where('secret', 'shh')|length }}"],
+            'contains with a disallowed property' => ["{{ [inner]|contains('secret', 'shh') ? 'y' : 'n' }}"],
+            'multisort with a disallowed property' => ["{{ [inner, inner]|multisort('secret')|length }}"],
+        ])->throws(TwigError::class);
+
+        it('still allows string keys, integer keys, and arrow functions', function () {
+            $result = app(TemplateManager::class)->renderSandboxedString(implode('|', [
+                "{{ [{a: 'x'}, {a: 'y'}]|column('a')|join(',') }}",
+                "{{ [{a: 2}, {a: 1}]|multisort('a')|column('a')|join(',') }}",
+                "{{ [{a: 1}, {a: 2}]|where('a', 2)|length }}",
+                '{{ [{a: 1}, {a: 2}]|where(i => i.a == 2)|length }}',
+                "{{ [{a: 1}]|contains('a', 1) ? 'y' : 'n' }}",
+                "{{ [[1, 2], [3, 4]]|column(1)|join(',') }}",
+            ]));
+
+            expect($result)->toBe('x,y|1,2|1|1|y|2,4');
+        });
     });
 });
