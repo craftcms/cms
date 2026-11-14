@@ -131,7 +131,7 @@ class UpdateCommand extends Command
         );
 
         if (! $refreshed) {
-            $this->components->warn('Run `'.app(TerminalCommands::class)->craft('update/info').'` to retry the license refresh.');
+            $this->components->warn('Run `'.app(TerminalCommands::class)->craft('update:info').'` to retry the license refresh.');
         }
 
         $this->components->success('Update complete!');
