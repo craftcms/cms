@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import type CraftSlidePicker from '@craftcms/ui/components/slide-picker/slide-picker';
+  import type CraftSlidePickerButton from '@/modules/ui/slide-picker-button';
+  import '@/modules/ui/slide-picker-button';
   import type CraftSelectColor from '@craftcms/ui/components/select-color/select-color';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {DashboardWidget} from './types';
@@ -113,18 +114,27 @@
             label-sr-only
             @change="recolor(widget, $event)"
           ></craft-select-color>
-          <craft-slide-picker
+          <craft-slide-picker-button
             :min="1"
             :max="Math.min(columns, widget.maxColspan)"
             :step="1"
             .value="Math.min(widget.colspan, columns)"
             .disabled="busy"
             :label="`${t('Number of columns')} ${widgetName(widget)}`"
-            label-sr-only
-            @change="
-              emit('resize', widget, ($event.target as CraftSlidePicker).value)
+            .valueLabel="
+              (num: number) =>
+                t('{num, number} {num, plural, =1{column} other{columns}}', {
+                  num,
+                })
             "
-          ></craft-slide-picker>
+            @change="
+              emit(
+                'resize',
+                widget,
+                ($event.target as CraftSlidePickerButton).value
+              )
+            "
+          ></craft-slide-picker-button>
           <craft-button
             :id="`widget-delete-${widget.id}`"
             type="button"

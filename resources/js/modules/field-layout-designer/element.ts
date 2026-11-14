@@ -11,6 +11,7 @@ import type {UiValues} from '@/modules/ui/types';
 import {uuid} from '@/common/craft/strings';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError} from '@/modules/messages/messages';
+import '@/modules/ui/slide-picker-button';
 
 /**
  * A single layout element (field or UI element) within a {@link Tab}. Native DOM
@@ -93,9 +94,8 @@ export class Element extends Base {
       hasAttr(this.$container, 'data-has-custom-width');
 
     if (this.hasCustomWidth) {
-      const widthSlider = document.createElement('craft-slide-picker');
+      const widthSlider = document.createElement('craft-slide-picker-button');
       widthSlider.setAttribute('label', t('Width'));
-      widthSlider.setAttribute('label-sr-only', '');
       widthSlider.setAttribute('value-unit', '%');
       widthSlider.setAttribute('min', '25');
       widthSlider.setAttribute('max', '100');

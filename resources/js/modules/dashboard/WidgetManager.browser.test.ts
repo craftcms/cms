@@ -121,13 +121,15 @@ it('names each widget’s reorder button, column picker and delete button after 
     li.textContent?.includes('Updates')
   )!;
   const reorder = row.querySelector('craft-reorder-button')!;
-  const picker = row.querySelector('craft-slide-picker')!;
+  const picker = row.querySelector('craft-slide-picker-button')!;
   await reorder.updateComplete;
   await picker.updateComplete;
 
   expect(reorder.label).toBe('Reorder Updates');
   await expect
-    .element(page.getByRole('slider', {name: 'Number of columns Updates'}))
+    .element(
+      page.getByRole('button', {name: 'Number of columns Updates 1 column'})
+    )
     .toBeInTheDocument();
   await expect
     .element(page.getByRole('button', {name: 'Delete Updates', exact: true}))
@@ -136,12 +138,12 @@ it('names each widget’s reorder button, column picker and delete button after 
 
 it('resizes a widget to the column count picked from the keyboard', async () => {
   const {resizes} = await mountManager();
-  const picker = [...document.querySelectorAll('li')]
-    .find((li) => li.textContent?.includes('Updates'))!
-    .querySelector('craft-slide-picker')!;
-  await picker.updateComplete;
-
-  picker.focus();
+  await page
+    .getByRole('button', {name: 'Number of columns Updates 1 column'})
+    .click();
+  await page.getByRole('slider', {name: 'Number of columns Updates'}).click({
+    position: {x: 1, y: 1},
+  });
   await userEvent.keyboard('{End}');
 
   expect(resizes).toEqual([[2, 2]]);
