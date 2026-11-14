@@ -73,6 +73,13 @@ export default css`
     font-size: var(--text-sm);
     text-align: center;
     overflow-wrap: break-word;
+    text-box: trim-end cap alphabetic;
+  }
+
+  @supports not (text-box: trim-end cap alphabetic) {
+    .label {
+      margin-block-end: calc((1em - 1lh) / 2);
+    }
   }
 
   @media (forced-colors: active) {
