@@ -728,6 +728,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 ##### Events
 - Added `CraftCms\Cms\Asset\AssetFileKinds`. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Added `CraftCms\Cms\Asset\Events\SetAssetFilename`.
+- Added `CraftCms\Cms\Asset\Events\FolderActionsResolving`, which lets plugins add actions for the folder on screen to the assets index, in a menu beside “Upload files”, and to asset selection modals, beside “Upload files”. ([#20689](https://github.com/craftcms/cms/issues/20689), [#20692](https://github.com/craftcms/cms/pull/20692))
 - Deprecated `craft\events\SetAssetFilenameEvent`. `CraftCms\Cms\Asset\Events\SetAssetFilename` should be used instead.
 - Deprecated `craft\events\RegisterAssetFileKindsEvent`. `CraftCms\Cms\Asset\AssetFileKinds::register()` should be used instead. ([#19270](https://github.com/craftcms/cms/pull/19270))
 - Deprecated `craft\events\ReplaceAssetEvent` in favor of the following new events:
