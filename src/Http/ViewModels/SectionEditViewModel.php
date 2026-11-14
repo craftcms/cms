@@ -116,6 +116,15 @@ class SectionEditViewModel extends ViewModel
                 ->control($this->siteSettingsControl($type)),
         ]);
 
+        if ($type === SectionType::Single) {
+            $ui->add(Group::make('section-single-settings', [
+                Field::make(
+                    t('Include in the Singles source'),
+                    Lightswitch::make('inSinglesSource'),
+                )->instructions(t('Whether this single is listed with the others in the “Singles” entry source, or has a source of its own that opens it directly.')),
+            ])->dependsOn('type'));
+        }
+
         if ($this->isMultiSite() && in_array($type, [SectionType::Channel, SectionType::Structure], true)) {
             $propagation = Field::make(
                 t('Propagation Method'),
@@ -240,6 +249,7 @@ class SectionEditViewModel extends ViewModel
             ),
             'workflowId' => $this->section->workflowId,
             'enableVersioning' => $this->section->enableVersioning,
+            'inSinglesSource' => $this->section->inSinglesSource,
             'minAuthors' => $this->section->minAuthors,
             'maxAuthors' => $this->section->maxAuthors ?? '',
             'maxLevels' => $this->section->maxLevels ?? '',

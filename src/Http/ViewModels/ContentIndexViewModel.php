@@ -602,7 +602,9 @@ abstract class ContentIndexViewModel extends ViewModel
         );
         $current = $choices->first(fn (array $option): bool => $option['selected']);
 
-        if ($current === null) {
+        // A page with one source has nothing to choose between, and the page
+        // crumb already names it, so a crumb for the source would repeat it.
+        if ($current === null || ($this->elementType::multiPageSources() && $choices->count() === 1)) {
             return $crumbs;
         }
 

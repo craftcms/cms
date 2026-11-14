@@ -817,6 +817,7 @@ class Install extends Migration
                 SectionType::Structure->value,
             ])->default(SectionType::Channel->value);
             $table->boolean('enableVersioning')->default(false);
+            $table->boolean('inSinglesSource')->default(true);
             $table->unsignedSmallInteger('minAuthors')->default(1);
             $table->unsignedSmallInteger('maxAuthors')->nullable();
             $table->string('propagationMethod')->default(PropagationMethod::All->value);
