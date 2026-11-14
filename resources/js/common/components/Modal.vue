@@ -256,6 +256,7 @@
   .content > :slotted(form > craft-pane)::part(footer) {
     box-sizing: border-box;
     min-block-size: var(--c-modal-footer-height);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
   }
 
