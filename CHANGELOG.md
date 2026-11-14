@@ -38,6 +38,7 @@
 - Fixed a bug where focus was lost after choosing elements in an element select input that became full, such as one in a plugin’s settings, rather than moving to the last element’s action menu. ([#20659](https://github.com/craftcms/cms/pull/20659))
 - Fixed a bug where typing in fields, especially Markdown fields, lagged on entries with many fields. ([#20637](https://github.com/craftcms/cms/issues/20637))
 - Fixed a bug where element chips in the Compare screen’s heading overflowed it on narrow screens, pushing the close button onto its own line. ([#20668](https://github.com/craftcms/cms/pull/20668))
+- Fixed a bug where open control panel tabs kept running a plugin’s old JavaScript after the plugin was updated, rather than reloading to get the new version. ([#20683](https://github.com/craftcms/cms/issues/20683), [#20687](https://github.com/craftcms/cms/pull/20687))
 - Fixed a bug where truncated element chips, and the Compare screen’s version menus, cut off the beginning of text written in the other direction from the control panel’s language, such as an English title in Arabic, rather than its end. ([#20668](https://github.com/craftcms/cms/pull/20668))
 - Fixed a bug where the New Users dashboard widget’s chart was unstyled. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Fixed a bug where invalid Icon inputs in control panel forms showed an extra “error” message below their actual error. ([#20608](https://github.com/craftcms/cms/pull/20608))
