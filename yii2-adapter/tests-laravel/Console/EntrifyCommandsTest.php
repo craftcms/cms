@@ -239,6 +239,12 @@ it('converts a global set into a single section', function() {
 
     expect(DB::table('globalsets')->where('handle', 'siteContent')->exists())->toBeFalse()
         ->and(app(ProjectConfig::class)->get(LegacyProjectConfig::PATH_GLOBAL_SETS))->toBeEmpty();
+
+    // It gets a source of its own, on a Globals page, as global sets had.
+    $sources = collect(app(ProjectConfig::class)->get(ProjectConfig::PATH_ELEMENT_SOURCES . '.' . Entry::class));
+    expect($section->inSinglesSource)->toBeFalse()
+        ->and($sources->firstWhere('key', "section:$section->uid")['page'] ?? null)->toBe('Globals')
+        ->and($sources->firstWhere('key', '*')['page'] ?? null)->toBe('Entries');
 });
 
 it('fails without converting anything when the section cannot be created', function() {

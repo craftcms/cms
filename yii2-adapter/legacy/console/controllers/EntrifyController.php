@@ -643,11 +643,46 @@ class EntrifyController extends Controller
             ],
         ], $sectionCreated);
 
+        if ($sectionCreated) {
+            $this->_addToGlobalsPage($section);
+            $projectConfigChanged = true;
+        }
+
         if ($projectConfigChanged) {
             $this->_deployTip('global-set', $globalSet->handle);
         }
 
         return ExitCode::OK;
+    }
+
+    /**
+     * Lists a single converted from a global set on a “Globals” entry sources
+     * page, so global sets keep a place of their own in the control panel.
+     *
+     * The single has a source of its own, since new singles aren't included in
+     * the Singles source. Its row goes at the end of the page, after any
+     * global set converted before it. Sources that were never customized are
+     * saved as they're shown first, so the rest of the list stays as it was.
+     */
+    private function _addToGlobalsPage(Section $section): void
+    {
+        $this->do('Adding it to the “Globals” sources page', function() use ($section) {
+            $elementSources = app(ElementSources::class);
+            $key = "section:$section->uid";
+            $sources = $elementSources->getSources(Entry::class, ElementSources::CONTEXT_INDEX, true)
+                // The blank heading before sources that aren't in the saved list
+                // yet is added on every read; it isn't saved.
+                ->reject(fn(array $source) => $source['type'] === ElementSources::TYPE_HEADING && ($source['heading'] ?? '') === '' && !isset($source['key']))
+                ->reject(fn(array $source) => ($source['key'] ?? null) === $key)
+                ->map(fn(array $source) => [...$source, 'page' => $source['page'] ?? 'Entries'])
+                ->values()
+                ->all();
+
+            $elementSources->saveSources(Entry::class, [
+                ...$sources,
+                ['type' => ElementSources::TYPE_NATIVE, 'key' => $key, 'page' => 'Globals'],
+            ]);
+        });
     }
 
     /**

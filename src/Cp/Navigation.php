@@ -296,7 +296,7 @@ readonly class Navigation
                 $entryPageSettings = $this->elementSources->getPageSettings(Entry::class);
 
                 $contentItems = $contentItems->merge(
-                    $entryPages->map(fn (string $page) => new NavItem()
+                    $entryPages->map(fn (string $page) => $this->asLinkIfSingleSource(new NavItem()
                         ->when(
                             $page === 'Entries',
                             fn (NavItem $item) => $item->label(t('Entries')),
@@ -308,8 +308,7 @@ readonly class Navigation
                             Entry::class,
                             sprintf('content/%s', ElementSources::pageSlug($page)),
                             $page,
-                        ))
-                    )
+                        ))))
                 );
             } else {
                 $contentItems->add(new NavItem()
@@ -561,6 +560,36 @@ readonly class Navigation
                     $item->subnav !== [],
             ),
         );
+    }
+
+    /**
+     * A page with only one source has nothing to choose between, so its item
+     * links straight to that source, with no subnav. A heading over the source
+     * doesn't count as a choice either.
+     */
+    private function asLinkIfSingleSource(NavItem $item): NavItem
+    {
+        $leaves = [];
+        $collect = function (array $items) use (&$collect, &$leaves): void {
+            foreach ($items as $child) {
+                if ($child->group) {
+                    $collect(is_array($child->subnav) ? $child->subnav : []);
+                } else {
+                    $leaves[] = $child;
+                }
+            }
+        };
+        $collect(is_array($item->subnav) ? $item->subnav : []);
+
+        if (count($leaves) !== 1) {
+            return $item;
+        }
+
+        // Its id comes from the page's own URL as before, so customized
+        // navigations that refer to it still find it.
+        $item->id ??= $this->itemId($this->idPath((string) $item->href));
+
+        return $item->href($leaves[0]->href)->subnav(false);
     }
 
     /**

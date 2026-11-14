@@ -17,6 +17,12 @@
 - Added flyout menus to the global control panel nav, for accessing sub-pages of non-selected sections. ([#19648](https://github.com/craftcms/cms/pull/19648))
 - Added Settings → System → CP Navigation, where administrators can customize the control panel’s navigation: reorder items and move them between sections, rename them, change their icons, hide them, and add sections and links, such as links straight to a single’s entry, which can be limited to users who match a condition. ([#20247](https://github.com/craftcms/cms/pull/20247))
 - User groups can now have their own control panel navigations, which build on the default navigation and save only what they change, so changes to the default carry through to them. People in more than one group get the first of their groups’ navigations, in the order administrators put them in. (Craft Pro and Enterprise only.) ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Singles now have an “Include in the Singles source” setting. Singles that aren’t included get an entry source of their own, which can be put on any page or under any heading like a section’s, and opens the single’s entry. New singles aren’t included by default. Existing singles stay in the Singles source.
+- A single’s own entry source, and a page that opens on one, now go straight to the single’s entry rather than an index listing just that entry. Naming the source with `?source=` still shows the index.
+- Pages with only one source now link straight to it from the control panel navigation, rather than opening a subnav with one item.
+- Breadcrumbs no longer name a page’s source after the page itself when it’s the page’s only source, such as “Team › Team”.
+- A single with an entry source of its own now has just its page as a breadcrumb, or none when it’s the page’s only source, rather than a “Singles” crumb.
+- `php craft entrify/global-set` now gives the converted single an entry source of its own, on a “Globals” page.
 - Control panel success, notice, and error messages now stack, newest first, and can be swiped away. Errors and messages with actions stay until dismissed.
 - Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`.
 - Double-clicking an admin table row now opens its link's slideout, if it has one.
