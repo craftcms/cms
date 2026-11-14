@@ -1,5 +1,5 @@
 import {t} from '@craftcms/ui';
-import {markdownActions, toolbarButtons, type ToolbarButton} from 'overtype';
+import {toolbarButtons, type ToolbarButton} from 'overtype';
 import {customIcons} from './icons';
 
 type CraftToolbarButton = ToolbarButton & {
@@ -20,12 +20,6 @@ type ToolbarCallbacks = {
 
 type ToolbarAction = NonNullable<ToolbarButton['action']>;
 type ToolbarActiveState = NonNullable<ToolbarButton['isActive']>;
-
-const strikethroughFormat = {
-  prefix: '~~',
-  suffix: '~~',
-  trimFirst: true,
-};
 
 export function toolbarItems(
   options: ToolbarOptions,
@@ -68,19 +62,10 @@ function toolbarButtonGroups(
     [
       customizeToolbarButton(toolbarButtons.bold, t('Bold'), 'bold'),
       customizeToolbarButton(toolbarButtons.italic, t('Italic'), 'italic'),
-      customToolbarButton(
-        'strikethrough',
-        'strikethrough',
+      customizeToolbarButton(
+        toolbarButtons.strikethrough,
         t('Strikethrough'),
-        ({editor}) => {
-          markdownActions.applyCustomFormat(
-            editor.textarea,
-            strikethroughFormat
-          );
-          editor.textarea.dispatchEvent(new Event('input', {bubbles: true}));
-        },
-        undefined,
-        ({editor}) => hasSurroundingMarker(editor.textarea, '~~')
+        'strikethrough'
       ),
       customizeToolbarButton(
         toolbarButtons.code,
@@ -94,9 +79,9 @@ function toolbarButtonGroups(
       customizeToolbarButton(toolbarButtons.h1, t('Heading 1'), 'h1'),
       customizeToolbarButton(toolbarButtons.h2, t('Heading 2'), 'h2'),
       customizeToolbarButton(toolbarButtons.h3, t('Heading 3'), 'h3'),
-      headingButton(4, t('Heading 4')),
-      headingButton(5, t('Heading 5')),
-      headingButton(6, t('Heading 6')),
+      customizeToolbarButton(toolbarButtons.h4, t('Heading 4'), 'h4'),
+      customizeToolbarButton(toolbarButtons.h5, t('Heading 5'), 'h5'),
+      customizeToolbarButton(toolbarButtons.h6, t('Heading 6'), 'h6'),
       customizeToolbarButton(toolbarButtons.quote, t('Quote'), 'quotes-left'),
     ],
     [
@@ -158,26 +143,12 @@ function toolbarButtonGroups(
   ];
 }
 
-function headingButton(level: 4 | 5 | 6, title: string): CraftToolbarButton {
-  return customToolbarButton(
-    `h${level}`,
-    `h${level}`,
-    title,
-    ({editor}) => {
-      markdownActions.insertHeader(editor.textarea, level, true);
-      editor.textarea.dispatchEvent(new Event('input', {bubbles: true}));
-    },
-    undefined,
-    ({editor}) => headingLevel(editor.textarea) === level
-  );
-}
-
 function customizeToolbarButton(
   button: ToolbarButton,
   title: string,
   icon: keyof typeof customIcons,
   optionName = button.name,
-  isActive?: ToolbarActiveState
+  isActive = button.isActive
 ): CraftToolbarButton {
   return {
     ...button,
@@ -204,28 +175,4 @@ function customToolbarButton(
     name,
     title,
   };
-}
-
-function headingLevel(textarea: HTMLTextAreaElement): number {
-  const {selectionStart, value} = textarea;
-  const lineStart =
-    value.lastIndexOf('\n', Math.max(0, selectionStart - 1)) + 1;
-  const nextLineBreak = value.indexOf('\n', selectionStart);
-  const lineEnd = nextLineBreak === -1 ? value.length : nextLineBreak;
-
-  return value.slice(lineStart, lineEnd).match(/^(#{1,6})\s/)?.[1]?.length ?? 0;
-}
-
-function hasSurroundingMarker(
-  textarea: HTMLTextAreaElement,
-  marker: string
-): boolean {
-  const {selectionEnd, selectionStart, value} = textarea;
-  const beforeSelection = value.slice(0, selectionStart);
-  const afterSelection = value.slice(selectionEnd);
-
-  return (
-    (beforeSelection.split(marker).length - 1) % 2 === 1 &&
-    afterSelection.includes(marker)
-  );
 }

@@ -248,18 +248,6 @@ craft-markdown-field[proportional] {
 }
 
 craft-markdown-field:defined
-  .overtype-wrapper
-  .overtype-preview
-  :where(h4, h5, h6) {
-  display: inline !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-size: inherit !important;
-  font-weight: bold !important;
-  line-height: inherit !important;
-}
-
-craft-markdown-field:defined
   .overtype-container[data-mode='preview']
   .overtype-wrapper
   .overtype-preview {

@@ -1932,6 +1932,7 @@ return [
     'UI Node provider [{provider}] is unavailable.' => 'UI Node provider [{provider}] is unavailable.',
     'Format' => 'Format',
     'Formatting Locale' => 'Formatting Locale',
+    'Formatting toolbar' => 'Formatting toolbar',
     'Found errors in other tabs.' => 'Found errors in other tabs.',
     'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.' => 'Found {num, number} {num, plural, =1{error} other{errors}} in this tab.',
     'Found {num, number} {num, plural, =1{error} other{errors}}' => 'Found {num, number} {num, plural, =1{error} other{errors}}',
