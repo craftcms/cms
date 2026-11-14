@@ -174,7 +174,7 @@
 - Menu buttons without text or a label, such as the arrow half of split Save buttons on plugin screens, are now named “More actions” for screen readers. ([#20576](https://github.com/craftcms/cms/pull/20576))
 - Error summaries now receive focus when a form fails validation, and each error links to its field, switching tabs if needed. ([#20044](https://github.com/craftcms/cms/issues/20044))
 - The current user’s own First Name and Last Name fields, and the Full Name, First Name, Last Name, and Organization fields of their own addresses, now have `autocomplete` tokens, so browsers and password managers can fill them in. ([#20407](https://github.com/craftcms/cms/pull/20407))
-- Dashboard widgets’ column counts and field layout elements’ widths are now changed from a larger slider in a popover, opened by a button that shows the current size, so they meet the minimum target size for pointer and touch input.
+- Dashboard widgets’ column counts and field layout elements’ widths are now changed from a larger slider in a popover, opened by a button that shows the current size, so they meet the minimum target size for pointer and touch input. ([#20681](https://github.com/craftcms/cms/pull/20681))
 
 ### Administration
 
