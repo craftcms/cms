@@ -946,23 +946,47 @@ class Fields
     }
 
     /**
-     * @return array<int,FieldLayout[]>
+     * Returns how many saved field layouts include each field, by field ID.
+     *
+     * Reads the layouts’ stored configs rather than building every layout, applying the same filters a built layout’s
+     * custom fields would: the element must be a custom field, from an enabled plugin if any, for a field that exists.
+     *
+     * @return array<int,int>
      */
-    private function allFieldUsages(): array
+    private function fieldUsageCounts(): array
     {
-        $usages = [];
+        $fieldIdsByUid = [];
+        foreach ($this->_fields(false)->raw() as $row) {
+            $fieldIdsByUid[$row->uid] = (int) $row->id;
+        }
 
-        foreach ($this->getAllLayouts() as $layout) {
-            $uniqueFieldIds = [];
-            foreach ($layout->getCustomFields() as $field) {
-                $uniqueFieldIds[$field->id] = true;
+        $isIncluded = [];
+        $counts = [];
+
+        foreach ($this->_layoutConfigs() as $config) {
+            $layoutFieldIds = [];
+
+            foreach ($config['tabs'] ?? [] as $tab) {
+                foreach ($tab['elements'] ?? [] as $element) {
+                    $type = $element['type'] ?? null;
+                    $fieldId = $fieldIdsByUid[$element['fieldUid'] ?? ''] ?? null;
+
+                    if (! is_string($type) || $fieldId === null) {
+                        continue;
+                    }
+
+                    if ($isIncluded[$type] ??= is_a($type, CustomField::class, true) && ComponentHelper::validateComponentClass($type)) {
+                        $layoutFieldIds[$fieldId] = true;
+                    }
+                }
             }
-            foreach (array_keys($uniqueFieldIds) as $fieldId) {
-                $usages[$fieldId][] = $layout;
+
+            foreach (array_keys($layoutFieldIds) as $fieldId) {
+                $counts[$fieldId] = ($counts[$fieldId] ?? 0) + 1;
             }
         }
 
-        return $usages;
+        return $counts;
     }
 
     // Layouts
@@ -1593,7 +1617,7 @@ class Fields
         $result = $paginator->getCollection();
 
         $tableData = [];
-        $usages = $this->allFieldUsages();
+        $usageCounts = $this->fieldUsageCounts();
 
         foreach ($result as $item) {
             $field = $this->createField((array) $item);
@@ -1612,9 +1636,9 @@ class Fields
                     'label' => $field instanceof MissingField ? $field->expectedType : $field::displayName(),
                     'icon' => $field instanceof Iconic ? Icons::resolveIconData($field->getIcon()) : null,
                 ],
-                'usages' => isset($usages[$field->id])
+                'usages' => isset($usageCounts[$field->id])
                     ? t('{count, number} {count, plural, =1{layout} other{layouts}}', [
-                        'count' => count($usages[$field->id]),
+                        'count' => $usageCounts[$field->id],
                     ])
                     : null,
             ];
