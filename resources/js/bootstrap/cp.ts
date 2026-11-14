@@ -25,6 +25,7 @@ import {installClipboard} from '@/modules/elements/clipboard';
 import {installElementInstanceRefresh} from '@/modules/elements/element-instances';
 import {installFieldValueClipboard} from '@/modules/ui/copiedFieldValue';
 import {installAnnouncer} from '@/common/announcer';
+import {installNavigationProgress} from '@/modules/navigation/progress';
 import {observeFieldToggles} from '@/modules/field-toggle/observe';
 import {answerElevatedSessionRequests} from '@/modules/auth/elevated-session';
 import {
@@ -217,6 +218,8 @@ const Cp = {
         return page as DefineComponent;
       },
       layout: defaultPageLayout,
+      // Replaced by installNavigationProgress(), installed below.
+      progress: false,
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
         installCpApp(app);
@@ -227,6 +230,7 @@ const Cp = {
     handleControlPanelLinks();
     observeExternalLinks();
     handleAccessibleRouting();
+    installNavigationProgress();
     registerSlideoutGlobals();
     registerSubmitShortcut();
 
