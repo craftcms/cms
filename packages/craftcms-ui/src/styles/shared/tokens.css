@@ -50,6 +50,12 @@
     var(--c-color-neutral-border-quiet) 60%,
     transparent
   );
+  /* A hovered row takes a fainter tint of a selected row's accent fill. */
+  --c-table-row-hover: color-mix(
+    in oklab,
+    var(--c-color-accent-fill-quiet),
+    transparent 50%
+  );
   --c-border-raised: color-mix(
     in srgb,
     var(--color-slate-400),
@@ -59,6 +65,38 @@
   --c-card-fill-selected: var(--c-color-neutral-fill-loud);
   --c-card-border-selected: var(--c-color-neutral-border-loud);
   --c-card-text-selected: var(--c-color-neutral-on-loud);
+
+  /* Element cards' and Matrix blocks' header bars (see cp.css), for an
+     uncolored element at the top level and a white one: slate's quiet fill,
+     part transparent, so it stands off the element's body by about as much as
+     a gray element's header does off its own. */
+  --c-card-header-fill-neutral: color-mix(
+    in srgb,
+    var(--c-color-slate-fill-quiet) 70%,
+    transparent
+  );
+  --c-card-header-fill-white: var(--c-card-header-fill-neutral);
+  /* A selected white element's header: a step stronger than its accent body,
+     as the unselected one is than its white body (darker in the light theme,
+     lighter in the dark one). */
+  --c-card-header-fill-white-selected: var(--c-color-accent-fill-normal);
+
+  /* How strongly an asset thumbnail tile shades what's under it with the text
+     color, so it reads as its own layer. About the details pane's lightness
+     over the white panel. */
+  --c-thumbnail-tile-shade: 3%;
+
+  /* Gray elements (cards, Matrix blocks, chips) take slate, the chrome's own
+     neutral: as light as the gray palette, but blue-gray. */
+  --c-element-gray-fill-quiet: var(--c-color-slate-fill-quiet);
+  --c-element-gray-border-quiet: var(--c-color-slate-border-quiet);
+  --c-element-gray-on-quiet: var(--c-color-slate-on-quiet);
+  --c-element-gray-fill-normal: var(--c-color-slate-fill-normal);
+  --c-element-gray-border-normal: var(--c-color-slate-border-normal);
+  --c-element-gray-on-normal: var(--c-color-slate-on-normal);
+  --c-element-gray-fill-loud: var(--c-color-slate-fill-loud);
+  --c-element-gray-border-loud: var(--c-color-slate-border-loud);
+  --c-element-gray-on-loud: var(--c-color-slate-on-loud);
 
   /*
   Needs to remain statically dark between dark and light mode
@@ -387,6 +425,8 @@
   --c-callout-fill-mute: 30%;
   /* Like other hairlines here, so the no-color swatch keeps an edge. */
   --c-select-color-swatch-edge: var(--c-color-neutral-border-quiet);
+  /* Black checkers barely darken a dark fill, so the no-color swatch's lighten it. */
+  --c-select-color-swatch-checker: rgb(255 255 255 / 15%);
   /* Color swatches get a faint ring only here, to stand off the dark surface. */
   --c-select-color-swatch-ring: rgb(0 0 0 / 15%);
   --c-surface-default: color-mix(
@@ -403,6 +443,12 @@
   --c-surface-overlay: var(--c-surface-default);
   --c-surface-page: var(--c-surface-sunken);
   --c-surface-details: var(--c-surface-default);
+  /* The dark accent fill is more saturated, so the hover takes less of it. */
+  --c-table-row-hover: color-mix(
+    in oklab,
+    var(--c-color-accent-fill-quiet),
+    transparent 75%
+  );
 
   /* Shadows read fainter against dark surfaces. */
   --c-shadow-multiplier: 1.5;
@@ -413,6 +459,31 @@
   --c-card-fill-selected: var(--color-base-300);
   --c-card-border-selected: var(--color-base-500);
   --c-card-text-selected: var(--c-text-default);
+  /* Lighter than the element's body, as a colored header is than its own. A
+     white body is about as light as slate's quiet fill here, so a white
+     element's header takes the normal step. */
+  --c-card-header-fill-neutral: color-mix(
+    in srgb,
+    var(--c-color-slate-fill-quiet) 75%,
+    transparent
+  );
+  --c-card-header-fill-white: color-mix(
+    in srgb,
+    var(--c-color-slate-fill-normal) 60%,
+    transparent
+  );
+  /* The details surface is the panel's own here, so tiles stay unfilled. */
+  --c-thumbnail-tile-shade: 0%;
+  /* Gray elements keep the gray palette. */
+  --c-element-gray-fill-quiet: var(--c-color-gray-fill-quiet);
+  --c-element-gray-border-quiet: var(--c-color-gray-border-quiet);
+  --c-element-gray-on-quiet: var(--c-color-gray-on-quiet);
+  --c-element-gray-fill-normal: var(--c-color-gray-fill-normal);
+  --c-element-gray-border-normal: var(--c-color-gray-border-normal);
+  --c-element-gray-on-normal: var(--c-color-gray-on-normal);
+  --c-element-gray-fill-loud: var(--c-color-gray-fill-loud);
+  --c-element-gray-border-loud: var(--c-color-gray-border-loud);
+  --c-element-gray-on-loud: var(--c-color-gray-on-loud);
   --c-color-border-quiet-transparency: 40%;
   /* As light as white surfaces can get with quiet text at 4.5:1 and form
      controls' borders at 3:1 on them. */

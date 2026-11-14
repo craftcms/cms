@@ -656,7 +656,9 @@ Content: the secondary nav, content, and details panes
   .cp-content {
     /* Sizes the details pane's `cqi` caps to the panel, not the details rail beside it. */
     container: cp-content / inline-size;
-    height: 100%;
+    /* A floor rather than a height: a definite height makes Chrome lay out the
+       whole page again on each change to the content, such as a keystroke. */
+    min-height: 100%;
     max-width: 100vw;
     display: grid;
     /* Three columns at every width; the nav spans them while it's stacked above
@@ -782,6 +784,7 @@ Content: the secondary nav, content, and details panes
       calc(var(--c-spacing-lg) * 3)
     );
     --cp-container-padding: var(--cp-content-inline-padding);
+    --c-field-indicator-inset: var(--cp-content-inline-padding);
   }
 
   .cp-content__details {

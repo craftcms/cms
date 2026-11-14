@@ -53,6 +53,13 @@ export interface UseDetachedElementIndexOptions<
     columns: ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>,
     context: {elementIndex: ReturnType<typeof useContentIndexData>}
   ) => ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>;
+  /** Whether structure sources show as a collapsible tree. */
+  structure?: boolean;
+  /**
+   * Whether selecting a structure row also selects its descendants. Defaults
+   * to `structure`.
+   */
+  selectDescendants?: boolean;
 }
 
 /** Adds local payloads and request ordering to the shared index. */
@@ -120,6 +127,8 @@ export function useDetachedElementIndex<
     pinnedColumn: options.pinnedColumn,
     data: options.data,
     columns: options.columns,
+    structure: options.structure,
+    selectDescendants: options.selectDescendants,
     refresh: async (refreshOptions) => {
       let applied = false;
       await visitor.visit(visitor.currentQuery(), {

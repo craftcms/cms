@@ -1,9 +1,8 @@
 <script setup lang="ts">
   import {ButtonVariant, t} from '@craftcms/ui';
   import {computed, useTemplateRef} from 'vue';
-  import TypePicker, {
-    type TypePickerOption,
-  } from '@/common/components/TypePicker.vue';
+  import TypePicker from '@/common/components/TypePicker.vue';
+  import type {TypePickerOption} from '@/common/components/typePicker';
   import {formatReleaseDate} from '@/modules/releases/types';
   import type {ReleaseOption} from '@/modules/elements/composables/useElementEditor';
 

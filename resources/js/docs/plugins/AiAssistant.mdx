@@ -1,0 +1,45 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/AI Assistant" />
+
+# The AI assistant
+
+`Assistant` from `@craftcms/cp` adds to what the assistant's chat knows about,
+and opens it.
+
+```ts
+import {Assistant} from '@craftcms/cp';
+
+Assistant.registerContextSource({
+  id: 'commerce:order',
+  label: () => 'Current order',
+  icon: 'cart-shopping',
+  available: () =>
+    currentOrderId() !== null &&
+    Assistant.getContext(`commerce:order:${currentOrderId()}`) === undefined,
+  add: () =>
+    Assistant.addContext({
+      type: 'commerce:order',
+      key: `commerce:order:${currentOrderId()}`,
+      label: `Order #${currentOrderId()}`,
+      icon: 'cart-shopping',
+      data: {orderId: currentOrderId()},
+    }),
+});
+```
+
+| Member                           | What it does                                                                                                          |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `addContext(item)`               | Adds an item to the context, which goes with the user's next messages until they remove it. Returns the item's `ref`. |
+| `getContext(key)`                | The item added with `key`, while it's in the context. Reactive.                                                       |
+| `removeContext(ref)`             | Removes an item.                                                                                                      |
+| `registerContextSource(source)`  | Adds an item to the message box's **Add** menu. See `AssistantContextSource`.                                         |
+| `registerTextExpander(expander)` | Offers suggestions as the user types a trigger character, such as `!`. See `AssistantTextExpander`.                   |
+| `open()`                         | Opens the chat and moves focus to its message box.                                                                    |
+
+An item's `type` names a context type registered on the server, which describes
+the item to the model. Items whose type isn't registered are left out of what
+the model sees.
+
+**docs/ask-ai.md** covers the properties of items, sources and text
+expanders, and the server side, in full.

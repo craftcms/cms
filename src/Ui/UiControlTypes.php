@@ -20,6 +20,7 @@ use CraftCms\Cms\Ui\Controls\Date;
 use CraftCms\Cms\Ui\Controls\DateTime;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\Ui\Controls\ElementSites;
+use CraftCms\Cms\Ui\Controls\EntrySelect;
 use CraftCms\Cms\Ui\Controls\EntryTypeSelect;
 use CraftCms\Cms\Ui\Controls\FieldLayoutDesigner;
 use CraftCms\Cms\Ui\Controls\FieldSelect;
@@ -73,6 +74,7 @@ class UiControlTypes extends TypeRegistry
         DateTime::class,
         ElementSelect::class,
         ElementSites::class,
+        EntrySelect::class,
         EntryTypeSelect::class,
         FieldLayoutDesigner::class,
         FieldSelect::class,

@@ -12,7 +12,7 @@ describe('IconPickerControl', () => {
     container?.remove();
   });
 
-  it('leaves the label to its UI field', async () => {
+  async function mount(invalid: boolean): Promise<HTMLElement> {
     const control: UiControlPayload = {
       type: 'CraftCms\\Cms\\Ui\\Controls\\IconPicker',
       component: 'craft:icon-picker',
@@ -30,14 +30,33 @@ describe('IconPickerControl', () => {
           value: '',
           label: 'Icon',
           editable: true,
-          invalid: false,
+          invalid,
         }),
     });
     app.mount(container);
     await nextTick();
 
+    return container;
+  }
+
+  it('leaves the label to its UI field', async () => {
+    const container = await mount(false);
+
     expect(container.querySelector('craft-input')?.getAttribute('label')).toBe(
       null
     );
+  });
+
+  it('leaves the error message to its UI field', async () => {
+    const container = await mount(true);
+
+    expect(
+      (
+        container.querySelector('craft-input') as HTMLElement & {
+          invalid: boolean;
+        }
+      ).invalid
+    ).toBe(true);
+    expect(container.querySelector('.error-list')).toBeNull();
   });
 });

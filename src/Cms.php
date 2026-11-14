@@ -32,7 +32,7 @@ readonly class Cms
 
     public const string VERSION = '6.0.0-beta.1';
 
-    public const string SCHEMA_VERSION = '6.0.0.36';
+    public const string SCHEMA_VERSION = '6.0.0.38';
 
     public const string MIN_VERSION_REQUIRED = '5.9.0';
 

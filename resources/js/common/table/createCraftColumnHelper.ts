@@ -10,10 +10,14 @@ import {
   type DisplayColumnDef,
 } from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
-import type {AccessorParam} from '@/common/table/useEditableTable';
 import CpLink from '@/common/components/CpLink.vue';
 import Date from '@/common/components/Date.vue';
 import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+
+/** A column's accessor: a key of the row, or a function that reads the value. */
+export type AccessorParam<T extends object> = Parameters<
+  ColumnHelper<CraftTableFeatures, T>['accessor']
+>[0];
 
 type ComponentProperties = Record<
   string,

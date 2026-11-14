@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SiteSwitcher;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueState;
 use CraftCms\Cms\Support\Api;
@@ -134,12 +134,18 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determines the current asset version.
      *
+     * It covers plugins' Vite builds as well as the control panel's, so an open tab reloads to pick up a republished
+     * plugin build rather than keep running the old one.
+     *
      * @see https://inertiajs.com/asset-versioning
      */
     #[Override]
     public function version(Request $request): ?string
     {
-        return Cp::vite()->manifestHash();
+        $version = Cp::vite()->manifestHash();
+        $pluginsHash = app(Plugins::class)->getViteManifestHash();
+
+        return $pluginsHash === null ? $version : md5($version.$pluginsHash);
     }
 
     /**
@@ -179,10 +185,6 @@ class HandleInertiaRequests extends Middleware
             $currentUser = currentUserElement();
         }
 
-        $systemIcon = ($generalConfig->cpIconUrl && Edition::isAtLeast(Edition::Pro))
-            ? Html::img(Aliases::get($generalConfig->cpIconUrl))->render()
-            : Icons::svg('c-outline');
-
         return [
             ...parent::share($request),
             // Always included, so a partial reload can't consume the flashed
@@ -221,7 +223,9 @@ class HandleInertiaRequests extends Middleware
                 'general' => Cp::inertiaConfig(),
                 'system' => [
                     'name' => Cms::systemName(),
-                    'icon' => $systemIcon,
+                    'icon' => (Edition::isAtLeast(Edition::Pro) ? Cp::iconHtml() : null) ?? Icons::svg('c-outline'),
+                    // Only the login and other auth pages show it, so it's sent once rather than with every visit.
+                    'logo' => Inertia::once(Cp::logoHtml(...)),
                 ],
                 'app' => [
                     'version' => Cms::VERSION,

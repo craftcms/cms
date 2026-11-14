@@ -198,7 +198,7 @@ test('create can be loaded', function () {
             ->where('submit.method', 'post')
             ->where('refreshUrl', action([EntryTypesController::class, 'renderUi']))
             ->where('ui.nodes', function ($nodes): bool {
-                $designer = collect($nodes)->first(
+                $designer = collect(flattenUiNodes($nodes->toArray()))->first(
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['fieldLayout'],
                 );
 
@@ -213,8 +213,8 @@ it('offers the palette colors for the entry type color', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes', function ($nodes): bool {
                 // It's in the display settings group, which renders in the
-                // field layout designer's Appearance tab.
-                $group = collect($nodes)->firstWhere('uid', 'display-settings');
+                // card view designer's settings.
+                $group = collect(flattenUiNodes($nodes->toArray()))->firstWhere('uid', 'display-settings');
                 $color = collect($group['children'] ?? [])->first(
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['color'],
                 );

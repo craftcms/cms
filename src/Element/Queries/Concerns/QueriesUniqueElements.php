@@ -75,8 +75,26 @@ trait QueriesUniqueElements
         }
 
         $caseGroup = new CaseGroup($cases, new Value($preferSites->count()));
+        $query = $elementQuery->getQuery();
 
-        $siteRows = $elementQuery->getQuery()
+        if (DB::isPgsql() && ! $query->distinct && empty($query->groups)) {
+            // Pick each element's preferred row with a single DISTINCT ON subquery, rather than a correlated subquery
+            // that PostgreSQL ends up evaluating against all elements_sites rows
+            $preferredSites = $query
+                ->cloneWithout(['orders', 'limit', 'offset'])
+                ->cloneWithoutBindings(['order'])
+                ->distinct('elements.id')
+                ->select('elements_sites.id')
+                ->orderBy('elements.id')
+                ->orderBy($caseGroup)
+                ->orderBy('elements_sites.id');
+
+            $elementQuery->whereIn('elements_sites.id', $preferredSites);
+
+            return;
+        }
+
+        $siteRows = $query
             ->cloneWithout(['orders', 'limit', 'offset'])
             ->cloneWithoutBindings(['order'])
             ->select([

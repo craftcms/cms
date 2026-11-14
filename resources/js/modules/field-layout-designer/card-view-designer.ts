@@ -35,6 +35,12 @@ export class CardViewDesigner extends Base {
    * operating system, say).
    */
   themeObserver = new MutationObserver(() => void this.updatePreview());
+  /**
+   * Watches for the owner's Name, Color, and Icon controls while some are
+   * missing, as a form can render them after the card view designer, such as
+   * in an Appearance tab whose fields render once it's first shown.
+   */
+  appearanceControlObserver: MutationObserver | null = null;
 
   constructor(designer: FieldLayoutDesigner, container: HTMLElement) {
     super();
@@ -107,6 +113,7 @@ export class CardViewDesigner extends Base {
 
     this.listenToCheckboxEvents();
     this.listenToAppearanceControls();
+    this.observeAppearanceControls();
     this.disablePreviewLinks();
     this.syncIconThumbOption();
     this.syncPreviewAppearance();
@@ -177,6 +184,42 @@ export class CardViewDesigner extends Base {
     document.addEventListener('input', this.onAppearanceChange);
   }
 
+  /** The owner's appearance controls that haven't rendered yet. */
+  missingAppearanceControls(): string[] {
+    return (['name', 'color', 'icon'] as const).filter(
+      (key) => !this.appearanceControl(key)
+    );
+  }
+
+  /**
+   * Syncs the icon thumb source and the preview as the owner's appearance
+   * controls render, for owners with an icon, like entry types.
+   */
+  observeAppearanceControls(): void {
+    let missing = this.missingAppearanceControls().length;
+    if (!this.iconThumbOption || missing === 0) {
+      return;
+    }
+
+    this.appearanceControlObserver = new MutationObserver(() => {
+      const nowMissing = this.missingAppearanceControls().length;
+      if (nowMissing < missing) {
+        missing = nowMissing;
+        this.syncIconThumbOption();
+        this.syncPreviewAppearance();
+      }
+      if (nowMissing === 0) {
+        this.appearanceControlObserver?.disconnect();
+        this.appearanceControlObserver = null;
+      }
+    });
+    // The container may not be in the form yet, so watch the whole page.
+    this.appearanceControlObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
   // Typing reaches here from the native input inside the control.
   onAppearanceChange = (ev: Event): void => {
     const target = ev.target;
@@ -201,10 +244,11 @@ export class CardViewDesigner extends Base {
 
   /**
    * Offers the owner's icon as a thumb source only while an icon is selected.
+   * Until the Icon control renders, the thumb sources stay as they were saved.
    */
   syncIconThumbOption(): void {
     const option = this.iconThumbOption;
-    if (!option || !this.$thumbSources) {
+    if (!option || !this.$thumbSources || !this.appearanceControl('icon')) {
       return;
     }
 
@@ -573,6 +617,7 @@ export class CardViewDesigner extends Base {
     this.abortController?.abort();
     this.previewCardObserver.disconnect();
     this.themeObserver.disconnect();
+    this.appearanceControlObserver?.disconnect();
     document.removeEventListener('input', this.onAppearanceChange);
 
     if (this.$container) {

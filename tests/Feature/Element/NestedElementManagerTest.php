@@ -484,6 +484,28 @@ it('passes Matrix content to the native control in HTML forms', function (string
     'index' => Matrix::VIEW_MODE_INDEX,
 ])->with([ControlMode::Editable, ControlMode::ReadOnly]);
 
+it('sends the same card menu each time the card is rendered', function () {
+    $user = UserModel::factory()->createElement();
+    $address = AddressModel::factory()->createElement([
+        'primaryOwnerId' => $user->id,
+    ]);
+
+    DB::table(Table::ELEMENTS_OWNERS)->insert([
+        'elementId' => $address->id,
+        'ownerId' => $user->id,
+        'sortOrder' => 1,
+    ]);
+
+    $menu = fn (): array => $user->getAddressManager()->getCardsData($user, [
+        'sortable' => true,
+        'canPaste' => true,
+        'nestedActionEvents' => true,
+    ])['elements'][0]->actionMenuItems;
+
+    expect($first = $menu())->not->toBeEmpty()
+        ->and($menu())->toBe($first);
+});
+
 it('provides permitted card menu events for the hosting field', function (bool $showInGrid, bool $static, bool $authorized) {
     $user = UserModel::factory()->createElement();
     $address = AddressModel::factory()->createElement([

@@ -56,40 +56,39 @@ When it’s an image asset, and the assistant’s model has vision, the image go
 
 An item has two halves:
 
-- In the browser, the plugin adds the item with `Cp.$assistant.addContext()`, or offers it in the message box’s **Add** menu.
+- In the browser, the plugin adds the item with `Assistant.addContext()` from `@craftcms/cp`, or offers it in the message box’s **Add** menu.
 - On the server, a **context type** with the same handle describes the items to the model, and can give the model tools that work with them.
 
 Items whose type isn’t registered on the server are left out of what the model sees.
 
 ### Adding items in the browser
 
-Add an item from your plugin’s control panel script, once `Cp` is booting:
+Add an item from your plugin’s control panel script, with `Assistant` from `@craftcms/cp`:
 
 ```ts
-window.Cp.booting((cp) => {
-  cp.$assistant.registerContextSource({
-    id: 'commerce:order',
-    label: () => 'Current order',
-    icon: 'cart-shopping',
-    order: 1,
-    // Only while an order page is open, and the order isn’t in the context yet.
-    available: () =>
-      currentOrderId() !== null &&
-      cp.$assistant.getContext(`commerce:order:${currentOrderId()}`) ===
-        undefined,
-    add: () => {
-      const orderId = currentOrderId();
+import {Assistant} from '@craftcms/cp';
 
-      cp.$assistant.addContext({
-        type: 'commerce:order',
-        key: `commerce:order:${orderId}`,
-        label: `Order #${orderId}`,
-        icon: 'cart-shopping',
-        data: {orderId},
-        reference: () => ({orderId}),
-      });
-    },
-  });
+Assistant.registerContextSource({
+  id: 'commerce:order',
+  label: () => 'Current order',
+  icon: 'cart-shopping',
+  order: 1,
+  // Only while an order page is open, and the order isn’t in the context yet.
+  available: () =>
+    currentOrderId() !== null &&
+    Assistant.getContext(`commerce:order:${currentOrderId()}`) === undefined,
+  add: () => {
+    const orderId = currentOrderId();
+
+    Assistant.addContext({
+      type: 'commerce:order',
+      key: `commerce:order:${orderId}`,
+      label: `Order #${orderId}`,
+      icon: 'cart-shopping',
+      data: {orderId},
+      reference: () => ({orderId}),
+    });
+  },
 });
 ```
 
@@ -106,9 +105,9 @@ window.Cp.booting((cp) => {
 | `reference` | What the conversation keeps of the item for later messages. See [Earlier items](#earlier-items). |
 | `meta` | Kept with the item, to read back with `getContext()`. Not sent. |
 
-`addContext()` returns the item’s `ref`, which the server gets with it, and which `Cp.$assistant.removeContext(ref)` takes. `Cp.$assistant.getContext(key)` returns the item added with a key while it’s in the context. It’s reactive, so `available()` can use it to hide a source once its item is in.
+`addContext()` returns the item’s `ref`, which the server gets with it, and which `Assistant.removeContext(ref)` takes. `Assistant.getContext(key)` returns the item added with a key while it’s in the context. It’s reactive, so `available()` can use it to hide a source once its item is in.
 
-`Cp.$assistant.open()` opens the chat and moves focus to its message box, for a button such as “Ask AI about this order”.
+`Assistant.open()` opens the chat and moves focus to its message box, for a button such as “Ask AI about this order”.
 
 ### Context sources
 
@@ -236,27 +235,27 @@ An earlier item may no longer exist, or the user may no longer be able to view i
 The message box offers suggestions as the user types a trigger character, which can add what’s chosen to the context. Craft has two: `@` for elements the user can view, and `{` for the fields of the element being edited.
 
 ```ts
-window.Cp.booting((cp) => {
-  cp.$assistant.registerTextExpander({
-    id: 'commerce:orders',
-    trigger: '!',
-    label: 'Orders',
-    // The URL of your plugin’s action, such as one Wayfinder generates.
-    source: () => OrderSuggestionsController.url(),
-    limit: 10,
-    select: (option) => {
-      const {orderId} = option.data as {orderId: number};
+import {Assistant} from '@craftcms/cp';
 
-      cp.$assistant.addContext({
-        type: 'commerce:order',
-        key: `commerce:order:${orderId}`,
-        label: option.label,
-        icon: 'cart-shopping',
-        data: {orderId},
-        reference: () => ({orderId}),
-      });
-    },
-  });
+Assistant.registerTextExpander({
+  id: 'commerce:orders',
+  trigger: '!',
+  label: 'Orders',
+  // The URL of your plugin’s action, such as one Wayfinder generates.
+  source: () => OrderSuggestionsController.url(),
+  limit: 10,
+  select: (option) => {
+    const {orderId} = option.data as {orderId: number};
+
+    Assistant.addContext({
+      type: 'commerce:order',
+      key: `commerce:order:${orderId}`,
+      label: option.label,
+      icon: 'cart-shopping',
+      data: {orderId},
+      reference: () => ({orderId}),
+    });
+  },
 });
 ```
 

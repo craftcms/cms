@@ -14,6 +14,7 @@
   const props = defineProps<{
     widgets: DashboardWidget[];
     widgetTypes: Record<string, WidgetType>;
+    widgetColors: CraftCms.Cms.Shared.Enums.Color[];
   }>();
 
   useAppLayout({title: t('Dashboard')});
@@ -34,6 +35,7 @@
     undo,
     reorder,
     resize,
+    recolor,
     refreshGrid,
     settingsToggled,
   } = useDashboard(props);
@@ -75,9 +77,11 @@
           :widgets="savedWidgets"
           :columns="columns"
           :busy="busy"
+          :colors="widgetColors"
           @remove="remove"
           @reorder="reorder"
           @resize="resize"
+          @recolor="recolor"
         />
       </div>
     </LayoutSlot>
@@ -120,10 +124,27 @@
     margin-block-end: 14px;
   }
 
-  /* Widgets take the details pane's surface, the page's other secondary
-     surface. */
-  .dashboard-grid :deep(craft-card[data-color='gray']::part(base)),
-  .dashboard-grid :deep(craft-card[data-color='gray']::part(header)) {
-    background-color: var(--c-surface-details);
+  /* A widget with no color has no fill of its own, like an uncolored element
+     card, and, like element cards (see cp.css), it and a white widget still get
+     a filled header bar. */
+  .dashboard-grid
+    :deep(craft-card:not([data-color]):not([active])::part(header)) {
+    background-color: var(--c-card-header-fill-neutral);
+  }
+  .dashboard-grid
+    :deep(craft-card[data-color='white']:not([active])::part(header)) {
+    background-color: var(--c-card-header-fill-white);
+  }
+
+  /* Headers take the body's own inline padding (card.styles.ts's .card-body,
+     16px growing to 24px on wide cards; cqi resolves against the same card),
+     so a widget's title lines up with its content. */
+  .dashboard-grid :deep(craft-card::part(header)) {
+    padding-block: var(--c-spacing-md);
+    padding-inline: clamp(
+      var(--c-spacing-lg),
+      2cqi + var(--c-spacing-md),
+      calc(var(--c-spacing) * 6)
+    );
   }
 </style>
