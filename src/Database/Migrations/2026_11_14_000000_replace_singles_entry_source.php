@@ -21,10 +21,16 @@ use Illuminate\Database\Migrations\Migration;
  * Singles now have entry sources of their own, rather than sharing a `singles`
  * source. This replaces an enabled `singles` source with a custom “Singles”
  * source that lists the same entries the same way, and adds existing singles’
- * own sources disabled, so the sources look the same as before.
+ * own sources disabled, on a “Singles” page before the other pages, so the
+ * sources look the same as before.
  */
 return new class extends Migration
 {
+    /** The page sources were shown on before they had pages. */
+    private const string DEFAULT_PAGE = 'Entries';
+
+    private const string SINGLES_PAGE = 'Singles';
+
     public function up(): void
     {
         $projectConfig = app(ProjectConfig::class);
@@ -43,23 +49,31 @@ return new class extends Migration
         }
 
         $sources = array_values($sources);
+
+        // Sources saved before Craft 5.9 have no pages, and were all shown on
+        // the Entries page. Once one source has a page, those without one aren’t
+        // shown, so they’re given the page they were shown on.
+        if (! isset($sources[0]['page'])) {
+            $sources = array_map(fn (array $source) => [...$source, 'page' => $source['page'] ?? self::DEFAULT_PAGE], $sources);
+        }
+
         $index = array_find_key($sources, fn (array $source) => $this->isSinglesSource($source));
 
         if ($index !== null) {
             $singlesSource = $sources[$index];
             array_splice($sources, $index, 1);
-            $page = $singlesSource['page'] ?? null;
+            $page = $singlesSource['page'] ?? self::DEFAULT_PAGE;
         } else {
             // A Singles source missing from the saved sources was shown at the
             // end of the first page, after a blank heading if there were any.
             $index = count($sources);
-            $page = $sources[0]['page'] ?? null;
+            $page = $sources[0]['page'] ?? self::DEFAULT_PAGE;
 
             if ($singleUids !== []) {
                 $singlesSource = ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles'];
 
                 if (array_any($sources, fn (array $source) => ($source['type'] ?? null) === ElementSources::TYPE_HEADING)) {
-                    $sources[] = $this->withPage(['type' => ElementSources::TYPE_HEADING, 'heading' => ''], $page);
+                    $sources[] = ['type' => ElementSources::TYPE_HEADING, 'heading' => '', 'page' => $page];
                     $index++;
                 }
             }
@@ -73,19 +87,25 @@ return new class extends Migration
             $customKey = $customSource['key'];
         }
 
+        array_splice($sources, $index, 0, $newSources);
+
+        // The singles’ own sources go on a Singles page, before the other pages,
+        // which are ordered by their sources.
         $existingKeys = array_column($sources, 'key');
+        $singleSources = [];
 
         foreach ($singleUids as $uid) {
             if (! in_array("section:$uid", $existingKeys, true)) {
-                $newSources[] = $this->withPage([
+                $singleSources[] = [
                     'type' => ElementSources::TYPE_NATIVE,
                     'key' => "section:$uid",
+                    'page' => self::SINGLES_PAGE,
                     'disabled' => true,
-                ], $page);
+                ];
             }
         }
 
-        array_splice($sources, $index, 0, $newSources);
+        $sources = [...$singleSources, ...$sources];
 
         if ($sources !== $projectConfig->get($path)) {
             $projectConfig->set($path, $sources, 'Replace the Singles entry source');
@@ -164,9 +184,9 @@ return new class extends Migration
      * the custom source that replaced it, in the default navigation and the
      * user groups’ navigations.
      */
-    private function updateNavigations(ProjectConfig $projectConfig, ?string $page, string $customKey): void
+    private function updateNavigations(ProjectConfig $projectConfig, string $page, string $customKey): void
     {
-        $indexUri = sprintf('content/%s', ElementSources::pageSlug($page ?? 'Entries'));
+        $indexUri = sprintf('content/%s', ElementSources::pageSlug($page));
         $oldId = $this->sourceNavItemId($indexUri, 'singles');
         $newId = $this->sourceNavItemId($indexUri, $customKey);
         $paths = [ProjectConfig::PATH_CP_NAV.'.default'];
@@ -271,7 +291,7 @@ return new class extends Migration
      * @param  array<string, mixed>  $singlesSource
      * @return array<string, mixed>
      */
-    private function customSinglesSource(array $singlesSource, ?string $page): array
+    private function customSinglesSource(array $singlesSource, string $page): array
     {
         $condition = Entry::createCondition();
         $condition->addConditionRule($condition->createConditionRule([
@@ -279,7 +299,7 @@ return new class extends Migration
             'values' => [SectionType::Single->value],
         ]));
 
-        return $this->withPage(array_filter([
+        return array_filter([
             'type' => ElementSources::TYPE_CUSTOM,
             'key' => 'custom:'.Str::uuid(),
             'label' => 'Singles',
@@ -289,16 +309,8 @@ return new class extends Migration
             'defaultSort' => $singlesSource['defaultSort'] ?? ['title', 'asc'],
             'defaultViewMode' => $singlesSource['defaultViewMode'] ?? null,
             'showBadgeCount' => $singlesSource['showBadgeCount'] ?? null,
-        ], fn (mixed $value) => $value !== null), $page);
-    }
-
-    /**
-     * @param  array<string, mixed>  $source
-     * @return array<string, mixed>
-     */
-    private function withPage(array $source, ?string $page): array
-    {
-        return $page !== null ? [...$source, 'page' => $page] : $source;
+            'page' => $page,
+        ], fn (mixed $value) => $value !== null);
     }
 
     public function down(): void {}

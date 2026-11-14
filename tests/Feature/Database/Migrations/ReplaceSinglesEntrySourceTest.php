@@ -61,6 +61,21 @@ function runReplaceSinglesEntrySourceMigration(): array
     return app(ProjectConfig::class)->get(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.Entry::class) ?? [];
 }
 
+/**
+ * The singles’ own sources, which the migration puts first, on a Singles page.
+ *
+ * @return list<array<string, mixed>>
+ */
+function singlesPageSources(Section ...$singles): array
+{
+    return array_map(fn (Section $single) => [
+        'type' => ElementSources::TYPE_NATIVE,
+        'key' => "section:$single->uid",
+        'page' => 'Singles',
+        'disabled' => true,
+    ], $singles);
+}
+
 it('replaces an enabled Singles source with a custom one configured the same way', function () {
     saveOldEntrySources([
         ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
@@ -78,9 +93,11 @@ it('replaces an enabled Singles source with a custom one configured the same way
     ]);
 
     $sources = runReplaceSinglesEntrySourceMigration();
-    $custom = $sources[3];
+    $custom = $sources[5];
 
-    expect(array_column($sources, 'key'))->not->toContain('singles')
+    expect(array_slice($sources, 0, 2))->toEqualCanonicalizing(singlesPageSources($this->home, $this->about))
+        ->and(array_column(array_slice($sources, 2), 'key'))->toBe(['*', "section:{$this->news->uid}", $custom['key']])
+        ->and(array_column($sources, 'key'))->not->toContain('singles')
         ->and($custom['type'])->toBe(ElementSources::TYPE_CUSTOM)
         ->and($custom['key'])->toStartWith('custom:')
         ->and($custom['label'])->toBe('Singles')
@@ -90,14 +107,10 @@ it('replaces an enabled Singles source with a custom one configured the same way
         ->and($custom['defaultViewMode'])->toBe('cards')
         ->and($custom['showBadgeCount'])->toBeTrue()
         ->and($custom['condition']['conditionRules']['rules'][0] ?? $custom['condition']['conditionRules'][0])
-        ->toMatchArray(['class' => SectionTypeConditionRule::class, 'values' => [SectionType::Single->value]])
-        ->and(array_slice($sources, 4))->toEqualCanonicalizing([
-            ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:{$this->home->uid}", 'disabled' => true, 'page' => 'Site'],
-            ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:{$this->about->uid}", 'disabled' => true, 'page' => 'Site'],
-        ]);
+        ->toMatchArray(['class' => SectionTypeConditionRule::class, 'values' => [SectionType::Single->value]]);
 });
 
-it('removes a disabled Singles source without replacing it', function () {
+it('removes a disabled Singles source without replacing it, and gives sources saved without pages the Entries page', function () {
     saveOldEntrySources([
         ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
         ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'disabled' => true],
@@ -107,14 +120,13 @@ it('removes a disabled Singles source without replacing it', function () {
     $sources = runReplaceSinglesEntrySourceMigration();
 
     expect(array_column($sources, 'type'))->not->toContain(ElementSources::TYPE_CUSTOM)
-        ->and(array_column($sources, 'key'))->toBe([
-            '*',
-            "section:{$this->about->uid}",
-            "section:{$this->home->uid}",
-            "section:{$this->news->uid}",
+        ->and(array_slice($sources, 0, 2))->toEqualCanonicalizing(singlesPageSources($this->home, $this->about))
+        ->and(array_slice($sources, 2))->toEqual([
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:{$this->news->uid}", 'page' => 'Entries'],
         ])
-        ->and($sources[1]['disabled'])->toBeTrue()
-        ->and($sources[2]['disabled'])->toBeTrue();
+        ->and(app(ElementSources::class)->getSources(Entry::class, page: 'Entries')->pluck('key')->all())
+        ->toBe(['*', "section:{$this->news->uid}"]);
 });
 
 it('saves sources that were never customized, so the custom Singles source is kept', function () {
@@ -125,10 +137,13 @@ it('saves sources that were never customized, so the custom Singles source is ke
     saveOldEntrySources(null);
 
     $sources = runReplaceSinglesEntrySourceMigration();
-    $custom = $sources[1];
+    $custom = $sources[3];
 
-    expect($sources[0])->toEqual(['type' => ElementSources::TYPE_NATIVE, 'key' => '*'])
+    expect(array_slice($sources, 0, 2))->toEqualCanonicalizing(singlesPageSources($this->home, $this->about))
+        ->and($sources[2])->toEqual(['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'])
         ->and($custom['label'])->toBe('Singles')
+        ->and($custom['page'])->toBe('Entries')
+        ->and(array_values(array_unique(array_column($sources, 'page'))))->toBe(['Singles', 'Entries'])
         ->and(array_column($sources, 'key'))->toContain("section:{$this->news->uid}")
         ->and(collect($sources)->firstWhere('heading', 'Channels'))->not->toBeNull()
         ->and(collect($sources)->firstWhere('heading', 'Singles'))->toBeNull()
@@ -149,10 +164,11 @@ it('adds the Singles source that saved sources left out, where it was shown', fu
 
     $sources = runReplaceSinglesEntrySourceMigration();
 
-    expect($sources[3])->toEqual(['type' => ElementSources::TYPE_HEADING, 'heading' => '', 'page' => 'Entries'])
-        ->and($sources[4]['type'])->toBe(ElementSources::TYPE_CUSTOM)
-        ->and($sources[4]['page'])->toBe('Entries')
-        ->and(array_column(array_slice($sources, 5), 'disabled'))->toBe([true, true]);
+    expect(array_slice($sources, 0, 2))->toEqualCanonicalizing(singlesPageSources($this->home, $this->about))
+        ->and($sources[5])->toEqual(['type' => ElementSources::TYPE_HEADING, 'heading' => '', 'page' => 'Entries'])
+        ->and($sources[6]['type'])->toBe(ElementSources::TYPE_CUSTOM)
+        ->and($sources[6]['page'])->toBe('Entries')
+        ->and($sources)->toHaveCount(7);
 });
 
 it('leaves sources alone when there are no singles', function () {
@@ -186,7 +202,7 @@ it('points fields restricted to the Singles source at the custom source', functi
     saveSinglesFieldConfig('link-field', Link::class, ['typeSettings' => ['entry' => ['sources' => ['singles']]]]);
     app(ProjectConfig::class)->muteEvents = true;
 
-    $customKey = runReplaceSinglesEntrySourceMigration()[1]['key'];
+    $customKey = collect(runReplaceSinglesEntrySourceMigration())->firstWhere('type', ElementSources::TYPE_CUSTOM)['key'];
 
     expect(singlesFieldSettings('entries-field')['sources'])->toBe([$customKey, "section:{$this->news->uid}"])
         ->and(singlesFieldSettings('link-field')['typeSettings']['entry']['sources'])->toBe([$customKey]);
@@ -218,7 +234,7 @@ it('moves CP navigation customizations of the Singles item to the custom source'
     app(ProjectConfig::class)->set(ProjectConfig::PATH_CP_NAV.'.default', $nav);
     app(ProjectConfig::class)->set(ProjectConfig::PATH_CP_NAV.'.groups.group-uid.nav', $nav);
 
-    $customKey = runReplaceSinglesEntrySourceMigration()[1]['key'];
+    $customKey = collect(runReplaceSinglesEntrySourceMigration())->firstWhere('type', ElementSources::TYPE_CUSTOM)['key'];
     $newId = 'nav-content-site-content-source-custom_3a'.substr($customKey, strlen('custom:'));
 
     foreach (['default', 'groups.group-uid.nav'] as $path) {
