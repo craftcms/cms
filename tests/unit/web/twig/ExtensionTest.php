@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\web\twig;
 
+use ArrayAccess;
 use ArrayIterator;
 use ArrayObject;
 use Craft;
@@ -963,9 +964,29 @@ class ExtensionTest extends TestCase
         Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
         $obj = new stdClass();
         $obj->secret = 'shh';
+        // ArrayAccess objects that aren’t one of Twig’s array-like classes get the same checks as properties
+        $arrayAccess = new class() implements ArrayAccess {
+            public function offsetExists(mixed $offset): bool
+            {
+                return $offset === 'secret';
+            }
+
+            public function offsetGet(mixed $offset): mixed
+            {
+                return 'shh';
+            }
+
+            public function offsetSet(mixed $offset, mixed $value): void
+            {
+            }
+
+            public function offsetUnset(mixed $offset): void
+            {
+            }
+        };
 
         self::expectException(TwigError::class);
-        $this->view->renderSandboxedString($template, ['obj' => $obj]);
+        $this->view->renderSandboxedString($template, ['obj' => $obj, 'arrayAccess' => $arrayAccess]);
     }
 
     public static function sandboxedArrayFilterKeyDataProvider(): array
@@ -979,6 +1000,7 @@ class ExtensionTest extends TestCase
             'where with a disallowed property' => ["{{ [obj]|where('secret', 'shh')|length }}"],
             'contains with a disallowed property' => ["{{ [obj]|contains('secret', 'shh') }}"],
             'multisort with a disallowed property' => ["{{ [obj]|multisort('secret')|length }}"],
+            'column with a disallowed ArrayAccess offset' => ["{{ [arrayAccess]|column('secret')|first }}"],
         ];
     }
 
@@ -1003,6 +1025,13 @@ class ExtensionTest extends TestCase
             "{{ [{a: 1}, {a: 2}]|where(i => i.a, 2)|length }}",
             "{{ [[1, 2], [3, 4]]|column(1)|join(',') }}",
         ])));
+
+        // Twig allows offset reads on its array-like classes, e.g. `row[0]`
+        self::assertSame('7,8|1|7', $this->view->renderSandboxedString(implode('|', [
+            "{{ rows|column(0)|join(',') }}",
+            '{{ rows|where(0, 8)|length }}',
+            '{{ rows|index(0)|keys|first }}',
+        ]), ['rows' => [new ArrayObject([7]), new ArrayObject([8])]]));
     }
 
     /**

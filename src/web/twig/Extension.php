@@ -582,6 +582,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             foreach ($array as $element) {
                 if (is_object($element)) {
                     foreach ($names as $name) {
+                        // Twig allows offset reads on its own array-like classes without any sandbox checks
+                        if (
+                            in_array($element::class, CoreExtension::ARRAY_LIKE_CLASSES, true) &&
+                            $element->offsetExists($name)
+                        ) {
+                            continue;
+                        }
+
                         $sandbox->checkPropertyAllowed($element, $name);
                     }
                 }
