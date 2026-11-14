@@ -1,7 +1,6 @@
 <script setup lang="ts">
-  import NewEntryButton, {
-    type PublishableSection,
-  } from '@/modules/elements/components/NewEntryButton.vue';
+  import NewEntryButton from '@/modules/elements/components/NewEntryButton.vue';
+  import type {PublishableSection} from '@/modules/elements/composables/useCreatableEntryTypes';
   import ElementIndexPage from '@/modules/elements/index/components/ElementIndexPage.vue';
   import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
   import EntryMoverModal from '@/modules/entry-mover/EntryMoverModal.vue';
@@ -53,7 +52,7 @@
           :sources="indexState.sources"
           :source="indexState.source ?? undefined"
           :publishable-sections="publishableSections"
-          :element-display-name="indexState.elementDisplayName"
+          :element-display-name="indexState.elementLowerDisplayName"
         />
       </template>
     </ElementIndexPage>

@@ -18,7 +18,7 @@ use Illuminate\Support\ServiceProvider;
  */
 class FieldsServiceProvider extends ServiceProvider
 {
-    public function boot(ProjectConfig $projectConfig, CustomFieldIdeHelperGenerator $generator): void
+    public function boot(ProjectConfig $projectConfig): void
     {
         $this->commands([
             DeleteFieldsCommand::class,
@@ -28,12 +28,12 @@ class FieldsServiceProvider extends ServiceProvider
 
         Event::subscribe(FieldReferenceEventSubscriber::class);
 
-        $this->registerIdeHelperListeners($projectConfig, $generator);
+        $this->registerIdeHelperListeners($projectConfig);
     }
 
-    private function registerIdeHelperListeners(ProjectConfig $projectConfig, CustomFieldIdeHelperGenerator $generator): void
+    private function registerIdeHelperListeners(ProjectConfig $projectConfig): void
     {
-        $regenerate = fn () => once(fn () => $generator->generate());
+        $regenerate = fn () => once(fn () => $this->app->make(CustomFieldIdeHelperGenerator::class)->generate());
 
         $paths = [
             ProjectConfig::PATH_ENTRY_TYPES.'.{uid}',

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\View;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Support\Facades\Path;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\View\FileViewFinder;
 
@@ -20,11 +21,16 @@ enum TemplateMode: string
             return $mode;
         }
 
-        $mode = request()->isCpRequest() ? self::Cp : self::Site;
+        $mode = self::forRequest(request());
 
         Context::addHidden(self::class, $mode);
 
         return $mode;
+    }
+
+    public static function forRequest(Request $request): self
+    {
+        return $request->isCpRequest() ? self::Cp : self::Site;
     }
 
     public static function set(self $mode): void

@@ -423,9 +423,9 @@ it('marks the selected card with a thicker border and a bold label', async () =>
 });
 
 it('draws the selected illustration in blue, following the selection and the theme', async () => {
-  const BLUE_500 = 'rgb(62, 116, 242)';
-  const SLATE_500 = 'rgb(111, 124, 148)';
-  const SLATE_500_DARK = 'rgb(143, 155, 175)';
+  const BLUE_500 = 'rgb(60, 117, 241)';
+  const SLATE_500 = 'rgb(114, 125, 139)';
+  const SLATE_500_DARK = 'rgb(144, 155, 169)';
   const {radios, inputs} = await renderCards('40rem');
   const hairline = (radio: CraftRadio) =>
     getComputedStyle(
@@ -613,6 +613,30 @@ it('draws a wrapped button group as separate buttons', async () => {
   expect(parseFloat(getComputedStyle(radios[1]!).borderStartStartRadius)).toBe(
     0
   );
+});
+
+it('keeps a button group joined in a flex row that sizes it to its content', async () => {
+  const {group, radios} = await render('button-group');
+  const row = document.createElement('div');
+  row.style.display = 'flex';
+  group.replaceWith(row);
+  row.append(group);
+  // A fractional row width, which `clientWidth` would round down.
+  for (const radio of radios) {
+    radio.style.inlineSize = '50.1px';
+  }
+
+  let flips = 0;
+  const observer = new MutationObserver(() => flips++);
+  observer.observe(group, {attributeFilter: ['data-wrapped']});
+  for (let frame = 0; frame < 5; frame++) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+  await settle();
+  observer.disconnect();
+
+  expect(group.hasAttribute('data-wrapped')).toBe(false);
+  expect(flips).toBe(0);
 });
 
 it.each(['cards', 'card-group'])(

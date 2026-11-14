@@ -1,4 +1,5 @@
 import {createInertiaApp, router, usePage} from '@inertiajs/vue3';
+import type {Page} from '@inertiajs/core';
 import {handleControlPanelLinks} from '@/common/inertia-links';
 import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
 import type {DefineComponent} from 'vue';
@@ -34,6 +35,7 @@ import {setUpInertiaMessages} from '@/modules/messages/inertia';
 import {trackScrollbarWidth} from '@/common/utils/scrollbarWidth';
 import {registerSubmitShortcut} from '@/common/utils/submitShortcut';
 import {uiValues} from '@/modules/ui/ui-values';
+import {runLifecyclePhase} from './lifecycle';
 
 type TranslationStore = Record<string, Record<string, string>>;
 
@@ -113,10 +115,18 @@ const Cp = {
     return elementDetailsPanelRegistry;
   },
 
+  /**
+   * A callback registered once the app has mounted never runs. `onBooted()`
+   * from `@craftcms/cp` runs late callbacks straight away.
+   */
   booted(callback: (instance: typeof window.Cp) => void) {
     bootedCallbacks.push(callback);
   },
 
+  /**
+   * A callback registered once booting has started never runs. `onBooting()`
+   * from `@craftcms/cp` runs late callbacks straight away.
+   */
   booting(callback: (instance: typeof window.Cp) => void) {
     bootingCallbacks.push(callback);
   },
@@ -161,7 +171,10 @@ const Cp = {
     setTranslations(this.initialConfig.translations ?? {});
   },
 
-  async start() {
+  /**
+   * @param page The initial page, when the root view has already parsed it. Inertia reads it from the DOM otherwise.
+   */
+  async start(page?: Page) {
     this.init();
 
     http.defaults.headers['X-Requested-With'] = 'XMLHttpRequest';
@@ -169,6 +182,7 @@ const Cp = {
 
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];
+    runLifecyclePhase('booting');
 
     // Before the app mounts, so the shell keeps clear of the page scrollbar from the first paint.
     trackScrollbarWidth();
@@ -178,6 +192,7 @@ const Cp = {
     relayPageBroadcasts();
 
     await createInertiaApp({
+      page,
       resolve: async (name) => {
         const page = await resolveInertiaPage(name);
 
@@ -200,6 +215,7 @@ const Cp = {
 
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];
+    runLifecyclePhase('booted');
   },
 };
 

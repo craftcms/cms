@@ -10,7 +10,6 @@ import {
   type AssetController,
   type AssetReferenceElement,
 } from './behaviors/assets';
-import {registerLinkPasteBehavior} from './behaviors/link-paste';
 import {
   createLinkPopoverController,
   type LinkPopoverController,
@@ -53,8 +52,6 @@ class MarkdownField extends LitElement {
   private editor: OverTypeInstance | null = null;
   private linkPopoverController: LinkPopoverController | null = null;
   private previewController: PreviewController | null = null;
-  private resizeObserver: ResizeObserver | null = null;
-  private observedWidth = 0;
   private resolvedInputId: string | null = null;
   private formValue: string | null = null;
   private updateCharCounter: (() => void) | null = null;
@@ -167,7 +164,13 @@ class MarkdownField extends LitElement {
 
   set value(value: string) {
     this.formValue = value;
-    this.editor?.setValue(value);
+
+    // A host bound to the value hands back each edit it's told about; setting
+    // what the editor already holds would only redraw its preview.
+    if (this.editor && this.editor.getValue() !== value) {
+      this.editor.setValue(value);
+    }
+
     this.updateCharCounter?.();
   }
 
@@ -250,39 +253,14 @@ class MarkdownField extends LitElement {
       () => this.linkPopoverController?.destroy(),
       ...(charCounterCleanup ? [charCounterCleanup] : []),
       replaceMarkdownGuideButton(editor),
-      registerLinkPasteBehavior(editor, previewController),
       registerShortcutBehavior(editor, previewController),
+      skipSelectionRedraws(editor),
+      renderInPlace(editor.preview),
+      ...(editor.statsBar ? [renderInPlace(editor.statsBar)] : []),
     ];
 
     this.syncEditorState();
-    this.observeWidth(editor);
-    requestAnimationFrame(() => {
-      if (this.editor === editor) {
-        editor.setValue(editor.getValue());
-      }
-    });
     this.syncInitialFormValue(editor.textarea.name);
-  }
-
-  private observeWidth(editor: OverTypeInstance): void {
-    if (typeof ResizeObserver === 'undefined') {
-      return;
-    }
-
-    this.resizeObserver = new ResizeObserver(([entry]) => {
-      const width = entry?.contentRect.width ?? 0;
-
-      if (width <= 0 || width === this.observedWidth) {
-        return;
-      }
-
-      this.observedWidth = width;
-
-      if (this.editor === editor) {
-        editor.setValue(editor.getValue());
-      }
-    });
-    this.resizeObserver.observe(this);
   }
 
   private releaseInputIdToTextarea(): string {
@@ -306,15 +284,21 @@ class MarkdownField extends LitElement {
     toolbarButtons: Options['toolbarButtons']
   ): Options {
     const options: RenderOptions = {
-      autoResize: true,
+      // Sized by the stylesheet instead: OverType's auto-resize collapses the
+      // editor and measures it on every keystroke, which lays out the whole
+      // page twice per character.
+      autoResize: false,
+      // Follows the control panel's writing direction, as it did before
+      // OverType had its own `dir` option, which defaults to left to right.
+      dir: 'auto',
       fontFamily: 'var(--markdown-field-font-family)',
       // Set on the editor's layers, so `--markdown-field-font-size` on an ancestor can change it.
       fontSize: 'var(--markdown-field-font-size, var(--c-text-base))',
       lineHeight: 'var(--c-leading-normal)',
-      maxHeight: this.maxHeight ? `${this.maxHeight}px` : null,
-      minHeight: undefined,
       padding: 'var(--c-spacing-md) var(--c-input-spacing-inline)',
+      labels: {toolbar: t('Formatting toolbar')},
       placeholder: this.placeholder ?? '',
+      proportional: this.proportional,
       showStats: this.showStats,
       statsFormatter: this.statsFormatter,
       smartLists: true,
@@ -341,7 +325,7 @@ class MarkdownField extends LitElement {
   private statsFormatter: NonNullable<Options['statsFormatter']> = (stats) => {
     return `
       <div class="overtype-stat">
-        <span>${stats.chars} ${t('chars')}, ${stats.words} ${t('words')}, ${stats.lines} ${t('lines')}</span>
+        <span>${t('{num, number} {num, plural, =1{char} other{chars}}', {num: stats.chars})}, ${t('{num, number} {num, plural, =1{word} other{words}}', {num: stats.words})}, ${t('{num, number} {num, plural, =1{line} other{lines}}', {num: stats.lines})}</span>
       </div>
       <div class="overtype-stat">${t('Line')} ${stats.line}, ${t('Col')} ${stats.column}</div>
     `;
@@ -504,7 +488,6 @@ class MarkdownField extends LitElement {
 
   private destroy(): void {
     this.formValue = this.editor?.getValue() ?? this.formValue;
-    this.resizeObserver?.disconnect();
 
     for (const cleanup of this.cleanups) {
       cleanup();
@@ -515,9 +498,7 @@ class MarkdownField extends LitElement {
     this.cleanups = [];
     this.editor = null;
     this.linkPopoverController = null;
-    this.observedWidth = 0;
     this.previewController = null;
-    this.resizeObserver = null;
   }
 
   private syncEditorState(): void {
@@ -565,10 +546,113 @@ class MarkdownField extends LitElement {
   protected override shouldUpdate(): boolean {
     this.toggleAttribute('show-toolbar', this.showToolbar);
     this.toggleAttribute('proportional', this.proportional);
+    this.toggleAttribute('capped', Boolean(this.maxHeight));
+    if (this.maxHeight) {
+      this.style.setProperty(
+        '--markdown-field-max-height',
+        `${this.maxHeight}px`
+      );
+    } else {
+      this.style.removeProperty('--markdown-field-max-height');
+    }
     this.syncEditorState();
 
     return false;
   }
+}
+
+/**
+ * Calls off the preview redraw OverType schedules after every selection
+ * change, including the one each keystroke makes.
+ *
+ * It's there to show the cursor's line as raw Markdown, which only happens
+ * with `showActiveLineRaw`. Without it, the redraw renders the preview that's
+ * already showing and lays the page out again. Registered after OverType's own
+ * listener, so it runs right after that one sets its timer.
+ */
+function skipSelectionRedraws(editor: OverTypeInstance): () => void {
+  const pending = editor as unknown as {_selectionTimeout?: number};
+  const listener = () => {
+    if (
+      document.activeElement === editor.textarea &&
+      !editor.options.showActiveLineRaw
+    ) {
+      clearTimeout(pending._selectionTimeout);
+    }
+  };
+
+  document.addEventListener('selectionchange', listener);
+
+  return () => document.removeEventListener('selectionchange', listener);
+}
+
+/**
+ * Renders HTML written to an element's `innerHTML` into the nodes it already
+ * has, replacing only those that differ, rather than all of them.
+ *
+ * OverType redraws the whole preview and stats bar on every keystroke. Each
+ * new node made the browser check the page's `:has()` rules and restyle much
+ * of it, while a keystroke usually changes just one line's text.
+ */
+function renderInPlace(element: HTMLElement): () => void {
+  const innerHTML = Object.getOwnPropertyDescriptor(
+    Element.prototype,
+    'innerHTML'
+  )!;
+
+  Object.defineProperty(element, 'innerHTML', {
+    configurable: true,
+    get: () => innerHTML.get!.call(element),
+    set: (html: string) => {
+      const template = document.createElement('template');
+      template.innerHTML = html;
+      patchChildren(element, template.content);
+    },
+  });
+
+  return () => {
+    delete (element as {innerHTML?: string}).innerHTML;
+  };
+}
+
+/** Makes `target`'s children match `source`'s, keeping nodes of the same kind. */
+function patchChildren(target: Node, source: Node): void {
+  const current = [...target.childNodes];
+  // Taken first, since nodes that aren't reused move out of `source`.
+  const next = [...source.childNodes];
+
+  next.forEach((node, index) => {
+    const existing = current[index];
+
+    if (!existing) {
+      target.appendChild(node);
+    } else if (
+      existing.nodeType !== node.nodeType ||
+      existing.nodeName !== node.nodeName
+    ) {
+      target.replaceChild(node, existing);
+    } else if (existing instanceof Element) {
+      const element = node as Element;
+
+      for (const name of existing.getAttributeNames()) {
+        if (!element.hasAttribute(name)) {
+          existing.removeAttribute(name);
+        }
+      }
+
+      for (const {name, value} of element.attributes) {
+        if (existing.getAttribute(name) !== value) {
+          existing.setAttribute(name, value);
+        }
+      }
+
+      patchChildren(existing, element);
+    } else if (existing.nodeValue !== node.nodeValue) {
+      existing.nodeValue = node.nodeValue;
+    }
+  });
+
+  current.slice(next.length).forEach((node) => node.remove());
 }
 
 export default MarkdownField;

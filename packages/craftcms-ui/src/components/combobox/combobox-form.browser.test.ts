@@ -127,7 +127,8 @@ it('carries the new value in the form by the time input and change fire', async 
     .click();
   expect(seen.splice(0)).toEqual(['input:2026-04', 'change:2026-04']);
 
-  await userEvent.keyboard('{Control>}a{/Control}x');
+  input.select();
+  await userEvent.keyboard('x');
   expect(seen.splice(0)).toEqual(['input:x']);
 
   control.shadowRoot!.querySelector<HTMLElement>('.clear')!.click();
@@ -174,7 +175,8 @@ it('stays silent when left unedited after its value is set from script', async (
   expect(events).toEqual([]);
 
   await userEvent.click(control.querySelector('input')!);
-  await userEvent.keyboard('{Control>}a{/Control}x');
+  control.querySelector('input')!.select();
+  await userEvent.keyboard('x');
   after.focus();
   expect(events).toEqual(['input', 'change:x']);
 });

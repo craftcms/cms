@@ -61,7 +61,7 @@ describe('Breadcrumbs', () => {
 });
 
 describe('Breadcrumbs switcher', () => {
-  it('invokes the switcher with an xsmall button', async () => {
+  it('invokes the switcher with a small button', async () => {
     const container = mount([
       {
         label: 'All entries',
@@ -73,9 +73,9 @@ describe('Breadcrumbs switcher', () => {
 
     const invoker = container.querySelector('craft-button');
 
-    // Smaller than the crumb text beside it, with its target area floored by
-    // the size rather than the visible box.
-    expect(invoker?.getAttribute('size')).toBe('xsmall');
+    // A real 24×24 box. `xsmall` draws smaller, and its hit area reaches past
+    // the box into the next crumb's link.
+    expect(invoker?.getAttribute('size')).toBe('small');
   });
 });
 

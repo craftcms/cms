@@ -10,7 +10,7 @@
 namespace craft\config;
 
 use craft\services\Config;
-use CraftCms\Cms\Image\CraftAssetTransformDriver;
+use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\DateTimeHelper;
 use DateInterval;
@@ -109,13 +109,13 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * :::
      *
      * @group Image Handling
-     * @deprecated in 6.0.0. Configure immediate generation on the Craft asset transformer instead.
+     * @deprecated in 6.0.0. Set `generate_transforms_before_page_load` in the disk’s `asset_transformer` config instead.
      */
     public ?bool $generateTransformsBeforePageLoad = null {
         set {
             $this->whenBooting(fn() => $value === null
-                ? Context::forgetHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT)
-                : Context::addHidden(CraftAssetTransformDriver::IMMEDIATE_TRANSFORMS_CONTEXT, $value));
+                ? Context::forgetHidden(AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT)
+                : Context::addHidden(AssetTransformers::IMMEDIATE_TRANSFORMS_CONTEXT, $value));
 
             $this->generateTransformsBeforePageLoad = $value;
         }
@@ -912,12 +912,12 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * @group Image Handling
      * @see $generateTransformsBeforePageLoad
      * @since 4.2.0
-     * @deprecated in 6.0.0. Configure immediate generation on the Craft asset transformer instead.
+     * @deprecated in 6.0.0. Set `generate_transforms_before_page_load` in the disk’s `asset_transformer` config instead.
      */
-    #[Deprecated(message: 'in 6.0.0. Configure immediate generation on the Craft asset transformer instead.')]
+    #[Deprecated(message: 'in 6.0.0. Set `generate_transforms_before_page_load` in the disk’s `asset_transformer` config instead.')]
     public function generateTransformsBeforePageLoad(?bool $value = true): self
     {
-        $this->deprecate('generateTransformsBeforePageLoad', 'Configure immediate generation on the Craft asset transformer instead.');
+        $this->deprecate('generateTransformsBeforePageLoad', 'Set `generate_transforms_before_page_load` in the disk’s `asset_transformer` config instead.');
 
         $this->generateTransformsBeforePageLoad = $value;
 

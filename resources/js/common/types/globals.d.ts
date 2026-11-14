@@ -4,7 +4,7 @@ import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {ElementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
 import type {AssistantApi} from '@/bootstrap/assistant';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
-import type {Router} from '@inertiajs/core';
+import type {Page, Router} from '@inertiajs/core';
 import type {HttpResponse} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
 import type {UiValueChangeDetail, uiValues} from '@/modules/ui/ui-values';
@@ -40,7 +40,7 @@ interface IntervalManagerInterface {
 
   stop(): void;
 
-  start(): void;
+  start(page?: Page): void;
 }
 
 type Site = {
@@ -258,7 +258,7 @@ declare global {
   interface Window {
     bootedCallbacks: Array<(craft: CraftStatic) => void>;
     bootingCallbacks: Array<(craft: CraftStatic) => void>;
-    CpConfig: LegacyWidgetSettings;
+    CpPage: Page;
     Cp: CpStatic;
     // Untyped until CraftStatic covers what's still reached through it
     Craft: any;

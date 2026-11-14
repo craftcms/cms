@@ -21,8 +21,6 @@ return new class extends Migration
         $filesystems = is_array($filesystems) ? $filesystems : [];
         $volumes = $projectConfig->get(ProjectConfig::PATH_VOLUMES);
         $volumes = is_array($volumes) ? $volumes : [];
-        $transformers = $projectConfig->get(ProjectConfig::PATH_ASSET_TRANSFORMERS);
-        $transformers = is_array($transformers) ? $transformers : [];
         $configuredDisks = config('filesystems.disks', []);
         $configuredDisks = is_array($configuredDisks) ? $configuredDisks : [];
         $missingDisks = [];
@@ -33,15 +31,6 @@ return new class extends Migration
             }
 
             $this->requireConfiguredDisk($volume['fs'] ?? null, $filesystems, $configuredDisks, $missingDisks);
-        }
-
-        foreach ($transformers as $transformer) {
-            if (! is_array($transformer) || ($transformer['driver'] ?? null) !== 'craft') {
-                continue;
-            }
-
-            $settings = is_array($transformer['settings'] ?? null) ? $transformer['settings'] : [];
-            $this->requireConfiguredDisk($settings['filesystem'] ?? null, $filesystems, $configuredDisks, $missingDisks);
         }
 
         foreach (DB::table(Table::VOLUMES)->pluck('fs') as $reference) {
@@ -94,21 +83,6 @@ return new class extends Migration
             $volumes[$uid] = $volume;
         }
 
-        foreach ($transformers as $uid => $transformer) {
-            if (! is_array($transformer) || ($transformer['driver'] ?? null) !== 'craft') {
-                continue;
-            }
-
-            $settings = is_array($transformer['settings'] ?? null) ? $transformer['settings'] : [];
-            $reference = $settings['filesystem'] ?? null;
-            $diskName = $this->diskName($reference);
-            unset($settings['filesystem']);
-            $settings['disk'] = $diskName === null ? null : $this->diskReference($reference, $diskName);
-            $settings['hasUrls'] = $this->referenceHasUrls($reference, $filesystems, $configuredDisks);
-            $transformer['settings'] = $settings;
-            $transformers[$uid] = $transformer;
-        }
-
         foreach (DB::table(Table::VOLUMES)->select(['id', 'fs'])->get() as $volume) {
             $diskName = $this->diskName($volume->fs);
             if ($diskName === null) {
@@ -128,7 +102,6 @@ return new class extends Migration
 
         try {
             $projectConfig->set(ProjectConfig::PATH_VOLUMES, $volumes, 'Convert volumes to Laravel filesystem disks');
-            $projectConfig->set(ProjectConfig::PATH_ASSET_TRANSFORMERS, $transformers, 'Convert asset transformers to Laravel filesystem disks');
             $projectConfig->remove('fs', 'Remove Craft filesystem definitions');
             $projectConfig->saveModifiedConfigData();
         } finally {

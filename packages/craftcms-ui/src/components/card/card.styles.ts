@@ -98,6 +98,8 @@ export default css`
     box-sizing: border-box;
     height: 100%;
     overflow: clip;
+    /* Sizes the body's padding to the card. */
+    container: card / inline-size;
   }
 
   /* Without a color, a card has no fill of its own: its border and text come
@@ -279,17 +281,18 @@ export default css`
     gap: var(--c-spacing-sm);
   }
 
-  /* The body matches the CP's container padding, and falls back to the same
-     value outside the CP, where nothing defines it. */
+  /* The body's padding grows with the card: 16px up to 400px wide, 24px
+     from 800px. */
   .card-body {
-    --_body-padding-inline: var(
-      --c-card-padding-inline,
-      var(--cp-container-padding, var(--c-spacing-lg))
+    --_body-padding: clamp(
+      var(--c-spacing-lg),
+      2cqi + var(--c-spacing-md),
+      calc(var(--c-spacing) * 6)
     );
-    --_body-padding-block: var(
-      --c-card-padding-block,
-      var(--cp-container-padding, var(--c-spacing-lg))
-    );
+    --_body-padding-inline: var(--c-card-padding-inline, var(--_body-padding));
+    --_body-padding-block: var(--c-card-padding-block, var(--_body-padding));
+    /* Fields in the card mark changes along its edge. */
+    --c-field-indicator-inset: var(--_body-padding-inline);
     gap: var(--c-spacing-md);
     padding-inline: var(--_body-padding-inline);
     padding-block: var(--_body-padding-block);

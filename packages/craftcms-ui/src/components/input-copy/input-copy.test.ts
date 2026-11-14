@@ -25,11 +25,6 @@ beforeEach(() => {
 });
 
 describe('craft-input-copy', () => {
-  it('renders a copy button in the suffix slot', async () => {
-    const element = await createInputCopy();
-    expect(copyButton(element)).not.toBeNull();
-  });
-
   it('places the copy button in the suffix slot', async () => {
     const element = await createInputCopy();
     expect(copyButton(element)?.getAttribute('slot')).toBe('suffix');

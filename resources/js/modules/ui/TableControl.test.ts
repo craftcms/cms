@@ -84,6 +84,8 @@ async function mountTable(
 }
 
 async function settle() {
+  // The lazily registered controls render once their chunks load.
+  await vi.dynamicImportSettled();
   await nextTick();
   for (const element of form.querySelectorAll('*')) {
     if ('updateComplete' in element) await element.updateComplete;

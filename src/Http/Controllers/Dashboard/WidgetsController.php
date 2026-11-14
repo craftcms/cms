@@ -10,6 +10,7 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\Custom;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Dashboard\WidgetTypes;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,6 +36,8 @@ readonly class WidgetsController
         $data = $request->validate([
             'type' => ['required', 'string'],
             'settings' => ['nullable', 'array'],
+            // Restoring a deleted widget passes its color back; a new widget is gray unless given one.
+            'color' => ['sometimes', 'nullable', Rule::enum(Color::class)],
         ]);
 
         $type = (string) $data['type'];
@@ -71,6 +74,10 @@ readonly class WidgetsController
                 'settings' => $settings,
             ]);
 
+        if (array_key_exists('color', $data)) {
+            $widget->color = $data['color'];
+        }
+
         return $this->saveAndReturnWidget($widget);
     }
 
@@ -97,6 +104,7 @@ readonly class WidgetsController
         $widget = $this->dashboard->createWidget([
             'id' => $widget->id,
             'colspan' => $widget->colspan,
+            'color' => $widget->color,
             'type' => $widget::class,
             'settings' => $settings,
         ]);
@@ -143,6 +151,22 @@ readonly class WidgetsController
         ]);
 
         $this->dashboard->changeWidgetColspan($request->input('id'), $request->input('colspan'));
+
+        return new JsonResponse;
+    }
+
+    public function updateColor(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'id' => [
+                'required',
+                'integer',
+                Rule::exists('widgets', 'id')->where('userId', $request->craftUser()?->getCraftUserId()),
+            ],
+            'color' => ['present', 'nullable', Rule::enum(Color::class)],
+        ]);
+
+        $this->dashboard->changeWidgetColor((int) $data['id'], Color::tryFrom((string) $data['color']));
 
         return new JsonResponse;
     }

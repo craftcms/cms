@@ -33,6 +33,7 @@ use CraftCms\Yii2Adapter\Mixins\AssetMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\FieldLayoutMixin;
+use CraftCms\Yii2Adapter\Mixins\ImageTransformIndexMixin;
 use CraftCms\Yii2Adapter\Mixins\NestedElementManagerMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
@@ -85,6 +86,7 @@ readonly class CompatibilityMixins
         Widget::mixin(new ValidateMixin());
         ImageTransform::mixin(new ValidateMixin());
         ImageTransformIndex::mixin(new ValidateMixin());
+        ImageTransformIndex::mixin(new ImageTransformIndexMixin());
 
         app()->booted(function() {
             LegacyBehaviorCompatibility::registerDefinedBehaviorMethodsFromRegisteredEvents();

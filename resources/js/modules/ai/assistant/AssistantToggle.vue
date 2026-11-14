@@ -81,7 +81,7 @@
     :aria-keyshortcuts="shortcut"
     @click="panel.toggle"
   >
-    <craft-icon name="sparkles"></craft-icon>
+    <craft-icon name="sparkles" class="assistant-toggle__icon"></craft-icon>
   </craft-button>
   <!-- Labels the icon-only button, as the Search button's tooltip does. The
     keys are left out of the name; `aria-keyshortcuts` announces them. -->
@@ -92,3 +92,10 @@
     </div>
   </craft-tooltip>
 </template>
+
+<style scoped>
+  /* Matches the other icons around the content (see cp.css). */
+  .assistant-toggle__icon {
+    --c-icon-size: var(--cp-chrome-icon-size, 1em);
+  }
+</style>

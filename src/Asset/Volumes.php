@@ -176,7 +176,6 @@ class Volumes
             $volumeModel->fs = $data['fs'] ?? null;
             $volumeModel->hasUrls = $data['hasUrls'] ?? false;
             $volumeModel->subpath = $data['subpath'] ?? null;
-            $volumeModel->assetTransformer = $data['assetTransformer'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];
             $volumeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? TranslationMethod::Site->value;
             $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;

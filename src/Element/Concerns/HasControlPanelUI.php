@@ -1433,7 +1433,7 @@ JS, [
                     $element = $this->getCanonical(true);
                     $revision = $element->getCurrentRevision();
                 }
-                if (! isset($revision)) {
+                if (! isset($revision) || ($revision->revisionNotes ?? '') === '') {
                     return false;
                 }
 

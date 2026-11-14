@@ -163,7 +163,7 @@ it('updates entry drafts by their element ID without changing the canonical entr
 });
 
 it('requires entry permissions to create and edit drafts', function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $entry = app(ElementCapabilities::class)->create('entries', [
         'sectionId' => $this->section->id,

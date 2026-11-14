@@ -117,6 +117,23 @@ it('supports rule objects', function () {
     expect($validator->passes())->toBeTrue();
 });
 
+it('uses the outer validator’s attribute names and messages', function () {
+    $validator = Validator::make([
+        'toEmail' => 'not-an-email',
+        'fromName' => '',
+    ], [
+        'toEmail' => [new EnvValueRule(['required', 'email'])],
+        'fromName' => [new EnvValueRule(['required'])],
+    ], [
+        'fromName.required' => 'Who is this from?',
+    ], [
+        'toEmail' => 'To Email',
+    ]);
+
+    expect($validator->errors()->first('toEmail'))->toBe('The To Email field must be a valid email address.')
+        ->and($validator->errors()->first('fromName'))->toBe('Who is this from?');
+});
+
 it('formats parsed values in errors according to sensitivity', function (string $value, string $expected, Closure $setup) {
     $setup();
 

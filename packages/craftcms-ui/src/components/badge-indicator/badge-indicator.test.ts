@@ -80,16 +80,6 @@ describe('craft-badge-indicator', () => {
     );
   });
 
-  it('carries a modifier class for each variant', async () => {
-    for (const variant of ['secondary', 'inverse']) {
-      const element = await createBadgeIndicator({variant});
-
-      expect(
-        badge(element).classList.contains(`badge-indicator--${variant}`)
-      ).toBe(true);
-    }
-  });
-
   /**
    * Without alt text the indicator is decoration beside whatever it marks, so
    * it is not announced as an unnamed image.

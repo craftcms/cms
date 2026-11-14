@@ -24,12 +24,6 @@ beforeEach(() => {
 });
 
 describe('craft-status', () => {
-  it('renders a dot', async () => {
-    const element = await createStatus();
-
-    expect(dot(element)).toBeTruthy();
-  });
-
   it('carries a modifier class for each status', async () => {
     for (const status of [
       'live',

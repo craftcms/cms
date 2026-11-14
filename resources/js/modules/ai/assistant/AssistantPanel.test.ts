@@ -19,7 +19,10 @@ vi.mock('@inertiajs/vue3', async () => ({
 const chat = vi.hoisted(() => ({finish: (_first: boolean) => {}}));
 const history = vi.hoisted(() => ({title: 'New chat', refresh: () => {}}));
 
+// The panel loads the chat on demand, and Vue's async loader only unwraps
+// `default` from what it can tell is a module.
 vi.mock('./AssistantChat.vue', () => ({
+  __esModule: true,
   default: defineComponent({
     emits: ['finish'],
     setup: (_, {expose, emit}) => {
@@ -145,6 +148,24 @@ it.each([
   }
 );
 
+it('mounts the chat the first time it opens, and keeps it once folded', async () => {
+  pagePanel.value = true;
+  await mount();
+  await vi.dynamicImportSettled();
+  await settle();
+  expect(document.querySelector('.chat')).toBeNull();
+
+  useAssistantPanel().show();
+  await vi.dynamicImportSettled();
+  await settle();
+  expect(document.querySelector('.chat')).not.toBeNull();
+
+  useAssistantPanel().toggle();
+  await settle();
+  expect(useAssistantPanel().isOpen.value).toBe(false);
+  expect(document.querySelector('.chat')).not.toBeNull();
+});
+
 it('opens a chat left open before the page reloaded, leaving focus where it was', async () => {
   pagePanel.value = true;
   useAssistantPanel().opened.value = true;
@@ -163,6 +184,9 @@ it.each([
   async ({first, refreshes}) => {
     pagePanel.value = true;
     await mount();
+    useAssistantPanel().show();
+    await vi.dynamicImportSettled();
+    await settle();
     vi.useFakeTimers();
     const refresh = vi.fn(() => {
       history.title = refresh.mock.calls.length >= 3 ? 'Generated' : 'Find…';

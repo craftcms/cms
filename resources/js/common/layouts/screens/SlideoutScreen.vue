@@ -38,7 +38,7 @@
     useScreenPageProps,
     useScreenPropsStore,
   } from '@/common/composables/screen';
-  import {useSlideout} from '@/common/slideouts/useSlideout';
+  import {slideoutTitleId, useSlideout} from '@/common/slideouts/useSlideout';
   import type {FormSaveOptions} from '@/common/types';
   import type {ScreenProps, ScreenSlots} from './types';
   import {useScreenRegions} from './useScreenRegions';
@@ -102,6 +102,10 @@
   const chrome = computed(() => pageProps() as ScreenPageProps);
 
   const title = computed(() => props.value.title?.trim() || chrome.value.title);
+  // The panel names its dialog after the title, and focuses it on open.
+  const titleId = computed(() =>
+    slideout ? slideoutTitleId(slideout.instance.containerId) : undefined
+  );
   const editUrl = computed(
     () => props.value.editUrl || chrome.value.screen?.editUrl || null
   );
@@ -228,7 +232,7 @@
               {{ t('Back') }}
             </craft-button>
             <div class="slideout-screen__heading flex gap-md items-center">
-              <h2 class="slideout-screen__title">{{ title }}</h2>
+              <h2 :id="titleId" class="slideout-screen__title">{{ title }}</h2>
               <LayoutSlotOutlet name="content-toolbar-meta">
                 <slot name="content-toolbar-meta"></slot>
               </LayoutSlotOutlet>

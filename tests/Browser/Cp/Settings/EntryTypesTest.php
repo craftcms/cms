@@ -76,6 +76,7 @@ it('builds a field layout with a new tab', function () {
         ->create(['name' => 'Article', 'handle' => 'article']);
 
     $page = visitCp("settings/entry-types/$entryType->id")
+        ->click('#main >> role=tab[name="Content"]')
         ->click('#main .fld-tab >> role=button[name="Add"]')
         ->click('.fld-library .fld-field[data-attribute="body"]')
         ->click('.fld-library .fld-field[data-attribute="summary"]')
@@ -85,7 +86,7 @@ it('builds a field layout with a new tab', function () {
 
     $page->script('window.prompt = () => "Details"');
 
-    $page->click('#main >> role=button[name="New Tab"] >> nth=0')
+    $page->click('#main >> role=button[name="New tab"] >> nth=0')
         ->assertSeeIn('#main .fld-tab >> nth=1', 'Details')
         ->drag('#main .fld-tab .fld-field[data-attribute="summary"]', '#main .fld-tab >> nth=1 >> .fld-tabcontent')
         ->assertPresent('#main .fld-tab >> nth=1 >> .fld-field[data-attribute="summary"]')

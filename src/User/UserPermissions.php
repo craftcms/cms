@@ -285,9 +285,16 @@ class UserPermissions
         sort($permissions);
 
         $group = UserGroups::getGroupById($groupId);
-        $path = ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid.'.permissions';
-        app(ProjectConfig::class)->set(
-            path: $path,
+        $groupPath = ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid;
+        $projectConfig = app(ProjectConfig::class);
+
+        // The Team group can exist in the database before it's in the project config
+        if ($projectConfig->get("$groupPath.name") === null) {
+            UserGroups::saveGroup($group, false);
+        }
+
+        $projectConfig->set(
+            path: "$groupPath.permissions",
             value: $permissions,
             message: "Update permissions for user group “{$group->handle}”",
         );

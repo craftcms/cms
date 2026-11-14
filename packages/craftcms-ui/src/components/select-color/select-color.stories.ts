@@ -30,6 +30,7 @@ const meta = {
       label="${args.label ?? ''}"
       name="${args.name ?? 'color'}"
       ?allow-transparent="${args['allow-transparent']}"
+      ?swatch-only="${args['swatch-only']}"
       .value="${args.value ?? ''}"
     ></craft-select-color>
   `,
@@ -82,4 +83,12 @@ export const AllowTransparent: Story = {
 /** The same option offered but nothing selected yet. */
 export const AllowTransparentEmpty: Story = {
   args: {'allow-transparent': true, value: ''},
+};
+
+/**
+ * `swatch-only` shows the selected color's swatch alone, drawn like a plain
+ * button. The options keep their names.
+ */
+export const SwatchOnly: Story = {
+  args: {'swatch-only': true, value: 'teal'},
 };

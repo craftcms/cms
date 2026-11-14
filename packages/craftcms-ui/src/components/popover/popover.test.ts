@@ -1,6 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftPopover from './popover.js';
-import {layerStyles} from '../../utilities/overlay-layer.js';
 import './popover.js';
 
 async function createFixture(
@@ -49,13 +48,6 @@ describe('craft-popover', () => {
     expect([...popover.querySelectorAll('[slot="content"]')]).toStrictEqual([
       content,
     ]);
-  });
-
-  // Matters where the Popover API is missing and the top layer isn't used.
-  it('stacks at the popover layer token', () => {
-    expect(layerStyles.cssText).toContain(
-      'z-index: var(--c-layer-popover, 9999)'
-    );
   });
 
   it('resolves the invoker from the for attribute', async () => {

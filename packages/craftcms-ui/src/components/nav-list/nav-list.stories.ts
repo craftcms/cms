@@ -59,6 +59,25 @@ type Story = StoryObj<NavListArgs>;
 /** A flat list of items. */
 export const Default: Story = {};
 
+/**
+ * `appearance="tabs"` lays the items out as a horizontal strip ruled off from
+ * the content below it, for a plugin's own pages — the look of a tab row, over
+ * links that still go somewhere. A strip that switches between views of one
+ * page is [Tabs](?path=/docs/components-tabs--docs) instead.
+ */
+export const Tabs: Story = {
+  parameters: {controls: {disable: true}},
+  render() {
+    return html`
+      <craft-nav-list appearance="tabs">
+        <craft-nav-item href="#feeds" active current>Feeds</craft-nav-item>
+        <craft-nav-item href="#logs">Logs</craft-nav-item>
+        <craft-nav-item href="#settings">Settings</craft-nav-item>
+      </craft-nav-list>
+    `;
+  },
+};
+
 /** Nested in a nav item's `subnav` slot for a collapsible hierarchy. */
 export const Nested: Story = {
   parameters: {controls: {disable: true}},

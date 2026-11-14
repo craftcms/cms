@@ -265,22 +265,15 @@ public function summaryProps(WorkflowStageContext $context, CraftUser $viewer): 
 Register those components from the plugin's control panel JavaScript entry point:
 
 ```typescript
+import { registerComponent } from "@craftcms/cp";
 import ExternalApprovalActions from "./ExternalApprovalActions.vue";
 import ExternalApprovalSummary from "./ExternalApprovalSummary.vue";
 
-Cp.booting((cp) => {
-  cp.$components.register(
-    "acme:external-approval-actions",
-    ExternalApprovalActions,
-  );
-  cp.$components.register(
-    "acme:external-approval-summary",
-    ExternalApprovalSummary,
-  );
-});
+registerComponent("acme:external-approval-actions", ExternalApprovalActions);
+registerComponent("acme:external-approval-summary", ExternalApprovalSummary);
 ```
 
-Register the components before the Inertia application mounts. Use a plugin-prefixed component name to avoid collisions. `actionProps()` and `summaryProps()` must return JSON-safe values because they are sent to the control panel.
+Use a plugin-prefixed component name to avoid collisions. `actionProps()` and `summaryProps()` must return JSON-safe values because they are sent to the control panel.
 
 Craft passes the action component its configured action props together with `review`, `elementType`, `elementId`, `draftId`, and `siteId`. After a successful action, emit `reviewUpdated` with the updated workflow review data and editor actions returned by the endpoint. Craft passes a summary component its configured summary props together with the containing `run` and `stage`.
 

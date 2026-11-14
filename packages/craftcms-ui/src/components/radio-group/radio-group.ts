@@ -165,7 +165,12 @@ export default class CraftRadioGroup extends ChoiceGroup(LitElement, {
             : radio.getBoundingClientRect().width),
         -(radios.length - 1)
       );
-      wrapped = this.clientWidth < rowWidth;
+      // Compare fractional widths. `clientWidth` rounds, and in a container
+      // that sizes to its content the group is exactly as wide as its joined
+      // row, so rounding down would wrap it, widen it, and unwrap it again.
+      const probe = this.shadowRoot?.querySelector('.fit-probe');
+      const width = (probe ?? this).getBoundingClientRect().width;
+      wrapped = width + 0.5 < rowWidth;
     }
 
     if (wrapped !== this._wrapped) {

@@ -8,6 +8,9 @@
 namespace craft\web\assets\cp;
 
 use craft\web\AssetBundle;
+use craft\web\View;
+use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 
 /**
@@ -22,5 +25,14 @@ class CpAsset extends AssetBundle
         $registry->register(\CraftCms\Cms\View\LegacyAssets\CpAsset::class);
         $registry->register(\CraftCms\Yii2Adapter\View\LegacyAssets\CraftJsAsset::class);
         $registry->flush();
+
+        // Control panel documents write the config themselves, from their layout.
+        if (!request()->isCpRequest()) {
+            $view->registerJs(
+                sprintf('window.Craft = Object.assign(window.Craft || {}, %s);', Json::encode(Cp::config())),
+                View::POS_HEAD,
+                self::class,
+            );
+        }
     }
 }

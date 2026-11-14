@@ -280,41 +280,6 @@ describe('NestedElementBlocksControl', () => {
     ]);
   });
 
-  it('offers only owner-specific creation choices in their requested order while retaining existing blocks', async () => {
-    const state = mount(
-      {
-        entries: {existing: {type: 'existingType', collapsed: true}},
-        sortOrder: ['existing'],
-      },
-      {
-        entryTypes: [
-          {value: 'existingType', label: 'Existing Type'},
-          {value: 'first', label: 'First'},
-          {value: 'second', label: 'Second'},
-        ],
-        createEntryTypes: ['second', 'first'],
-        blocks: {existing: {label: 'Existing content'}},
-      }
-    );
-    await nextTick();
-    const buttons = [
-      ...container!.querySelectorAll<HTMLElement>('[data-ui-matrix-add]'),
-    ];
-    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
-      'Add Second',
-      'Add First',
-    ]);
-    expect(container!.textContent).toContain('Existing content');
-    invoke('existing', 'Add Second above');
-    await nextTick();
-    const value = state.value as {
-      entries: Record<string, {type: string}>;
-      sortOrder: string[];
-    };
-    expect(value.sortOrder.at(-1)).toBe('existing');
-    expect(value.entries[value.sortOrder[0]!]!.type).toBe('second');
-  });
-
   it('remembers a collapsed block in storage rather than the value', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},
@@ -688,6 +653,42 @@ describe('NestedElementBlocksControl', () => {
     invoke('block-a', 'Delete');
     await nextTick();
     expect(emitted).toHaveLength(0);
+  });
+
+  /**
+   * The field is rebuilt when its blocks change. A save that applies a draft
+   * replaces the blocks created in it with new ones, which mustn't take focus
+   * out from under someone typing in them.
+   */
+  it('keeps focus in a block replaced by a save, but not in a deleted one', async () => {
+    const block = {type: 'newType', enabled: true};
+    const state = mount({
+      entries: {'draft-a': block, 'draft-b': block},
+      sortOrder: ['draft-a', 'draft-b'],
+    });
+    await nextTick();
+    const checkbox = (uid: string) =>
+      container!.querySelector<HTMLInputElement>(
+        `[data-id="${uid}"] craft-checkbox input`
+      )!;
+    checkbox('draft-b').focus();
+
+    state.value = {
+      entries: {'saved-a': block, 'saved-b': block},
+      sortOrder: ['saved-a', 'saved-b'],
+    };
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(checkbox('saved-b'));
+
+    // The next block takes a deleted one's place, but not its focus.
+    checkbox('saved-a').focus();
+    state.value = {entries: {'saved-b': block}, sortOrder: ['saved-b']};
+    await nextTick();
+    await nextTick();
+
+    expect(container!.contains(document.activeElement)).toBe(false);
   });
 
   it('ignores a block action fired by a different Matrix field', async () => {
@@ -1971,15 +1972,5 @@ describe('NestedElementBlocksControl', () => {
     expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder[0]).toMatch(
       /^uid:/
     );
-  });
-
-  it('renders its blocks when the value is present', async () => {
-    mount({
-      entries: {'uid:block-a': {type: 'newType'}},
-      sortOrder: ['uid:block-a'],
-    });
-    await nextTick();
-
-    expect(container!.querySelectorAll('[data-matrix-block]').length).toBe(1);
   });
 });

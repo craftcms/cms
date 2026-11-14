@@ -80,6 +80,12 @@ class UpdateCommand extends Command
             return $this->call(InfoCommand::class);
         }
 
+        if ($reason = $composer->getUnavailableReason()) {
+            $this->error($reason);
+
+            return self::FAILURE;
+        }
+
         if (! $this->confirmToProceed('Updates are disallowed for this environment. Update anyway?')) {
             return self::FAILURE;
         }

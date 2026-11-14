@@ -92,7 +92,7 @@ it('reads custom fields on demand and expands only one level of nested content',
         ->and($detail)->not->toHaveKey('blocks')
         ->and($elements->get('entries', id: $entry->id, fields: [])['element'])->not->toHaveKeys(['teaser', 'blocks']);
 
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $selected = McpRequest::send($this, 'tools/call', [

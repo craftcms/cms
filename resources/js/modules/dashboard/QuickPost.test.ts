@@ -67,6 +67,7 @@ it('opens the created entry in a slideout', async () => {
             subtitle: null,
             colspan: 1,
             maxColspan: 4,
+            color: 'gray',
             settings: {},
             settingsUi: null,
             component: 'craft:widget-quick-post',

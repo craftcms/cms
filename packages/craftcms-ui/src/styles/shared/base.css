@@ -1,6 +1,7 @@
 html,
-body {
-  background-color: var(--c-surface-sunken);
+body,
+:root[data-theme] {
+  background-color: var(--c-surface-page);
 }
 
 body {
@@ -635,6 +636,11 @@ Add `wrap` to a cell to let its text wrap, or `thin` to shrink it to its content
     margin: 0;
     width: 100%;
     height: 100%;
+  }
+
+  /* The rule above overrides the combobox's room for its prefix icon, so restore it */
+  craft-combobox[has-prefix-icon] > input.form-control[data-combobox-textbox] {
+    padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }
 
   textarea {

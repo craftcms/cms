@@ -38,7 +38,7 @@ use Laravel\Passport\Passport;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $this->actor = User::query()->firstOrFail();
     actingAs($this->actor);

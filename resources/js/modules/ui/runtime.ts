@@ -330,21 +330,113 @@ export function pathsMatch(left: string[], right: string[]): boolean {
   );
 }
 
-/** Whether any of a node's controls, including those nested in it, has an error. */
+/**
+ * Whether any of a node's controls, including those nested in it, has an
+ * error, or any of its outlets is among `outlets`, the outlets holding errors
+ * (see {@link routeErrorsToOutlets}).
+ */
 export function nodeHasErrors(
   node: UiNodePayload,
-  errors: UiPayload['errors']
+  errors: UiPayload['errors'],
+  outlets?: Set<string>
 ): boolean {
   const controlPath = node.control?.path;
 
   return Boolean(
     (controlPath &&
       errors.some((error) => pathsMatch(error.path, controlPath))) ||
-    node.children?.some((child) => nodeHasErrors(child, errors)) ||
+    outlets?.has(outletName(node) ?? '') ||
+    node.children?.some((child) => nodeHasErrors(child, errors, outlets)) ||
     node.control?.uis?.some((ui) =>
-      ui.nodes.some((child) => nodeHasErrors(child, errors))
+      ui.nodes.some((child) => nodeHasErrors(child, errors, outlets))
     )
   );
+}
+
+/** The name of an outlet node, or `undefined` for any other node. */
+function outletName(node: UiNodePayload): string | undefined {
+  const name = node.props.name;
+
+  return node.component === 'craft:outlet' && typeof name === 'string'
+    ? name
+    : undefined;
+}
+
+/**
+ * Places errors for flagging tabs. An error that no control owns exactly,
+ * such as one a save raised within a control, moves onto the nearest control
+ * whose path it's under, as the server places the errors it renders with.
+ *
+ * Errors a control shows in an outlet then move onto that outlet, so they
+ * flag the outlet's tab rather than the control's. A control names them with
+ * an `errorOutlets` prop, mapping each outlet's name to the settings within
+ * the control whose errors it shows. An outlet missing from `nodes` leaves
+ * its errors with the control.
+ */
+export function routeErrorsToOutlets(
+  nodes: UiNodePayload[],
+  errors: UiPayload['errors']
+): {errors: UiPayload['errors']; outlets: Set<string>} {
+  const controlPaths: string[][] = [];
+  visitControls(nodes, (control) => controlPaths.push(control.path));
+  const owned = errors.map((error) => {
+    if (
+      error.source ||
+      controlPaths.some((path) => pathsMatch(path, error.path))
+    ) {
+      return error;
+    }
+
+    const owner = controlPaths
+      .filter(
+        (path) =>
+          path.length < error.path.length &&
+          pathsMatch(error.path.slice(0, path.length), path)
+      )
+      .sort((a, b) => b.length - a.length)[0];
+
+    return owner ? {...error, path: owner, source: error.path} : error;
+  });
+
+  const present = new Set<string>();
+  const routes: {path: string[]; outlet: string; keys: string[]}[] = [];
+
+  const visit = (node: UiNodePayload): void => {
+    const name = outletName(node);
+    if (name) {
+      present.add(name);
+    }
+
+    const errorOutlets = node.control?.props.errorOutlets as
+      | Record<string, string[]>
+      | undefined;
+    for (const [outlet, keys] of Object.entries(errorOutlets ?? {})) {
+      routes.push({path: node.control!.path, outlet, keys});
+    }
+
+    node.children?.forEach(visit);
+  };
+  nodes.forEach(visit);
+
+  const outlets = new Set<string>();
+  const remaining = owned.filter((error) => {
+    const source = error.source ?? error.path;
+    const route = routes.find(
+      ({path, outlet, keys}) =>
+        present.has(outlet) &&
+        source.length > path.length &&
+        pathsMatch(source.slice(0, path.length), path) &&
+        keys.includes(source[path.length]!)
+    );
+
+    if (route) {
+      outlets.add(route.outlet);
+    }
+
+    return !route;
+  });
+
+  return {errors: remaining, outlets};
 }
 
 /**

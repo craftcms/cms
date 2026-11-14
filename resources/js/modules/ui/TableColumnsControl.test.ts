@@ -41,6 +41,8 @@ afterEach(() => {
 });
 
 async function settle() {
+  // The lazily registered controls render once their chunks load.
+  await vi.dynamicImportSettled();
   await nextTick();
   for (const element of document.body.querySelectorAll('*')) {
     if ('updateComplete' in element) await element.updateComplete;

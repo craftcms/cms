@@ -64,3 +64,20 @@ it('draws into a plain element, replacing the previous chart on redraw', () => {
   // Settings are deep-merged: an override keeps the other default formats
   expect(chart.settings.formats.percentFormat).toBe(',.2%');
 });
+
+it('stops redrawing on window resize once destroyed, leaving other charts be', () => {
+  const charts = [0, 1].map(() => {
+    const container = document.createElement('div');
+    document.body.append(container);
+    const chart = new Area(container, {orientation: 'ltr'});
+    chart.draw(new DataTable(data()), {orientation: 'ltr'});
+    return chart;
+  });
+  const resizes = charts.map((chart) => vi.spyOn(chart, 'resize'));
+
+  charts[1]!.destroy();
+  window.dispatchEvent(new Event('resize'));
+
+  expect(resizes[0]).toHaveBeenCalledOnce();
+  expect(resizes[1]).not.toHaveBeenCalled();
+});

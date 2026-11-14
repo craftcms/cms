@@ -1,8 +1,7 @@
 <script setup lang="ts">
   import {useTemplateRef} from 'vue';
-  import TypePicker, {
-    type TypePickerOption,
-  } from '@/common/components/TypePicker.vue';
+  import TypePicker from '@/common/components/TypePicker.vue';
+  import type {TypePickerOption} from '@/common/components/typePicker';
   import UiRenderer from './UiRenderer.vue';
   import type {UiChange, UiPayload, UiValues} from './types';
 

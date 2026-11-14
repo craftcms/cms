@@ -194,7 +194,8 @@ readonly class ErrorPages
             return;
         }
 
-        view()->addNamespace(
+        // Replaced rather than added, as the view factory can outlive the binding, such as under Laravel Octane.
+        view()->replaceNamespace(
             'laravel-exceptions-renderer',
             dirname((string) new ReflectionClass(Renderer::class)->getFileName(), 3).'/resources/exceptions/renderer',
         );

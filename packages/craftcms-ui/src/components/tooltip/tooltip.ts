@@ -4,6 +4,7 @@ import {createPopper, type Instance as PopperInstance} from '@popperjs/core';
 import {watchHover, type HoverWatcher} from '../../utilities/overlay-hover.js';
 import {announceOverlayState} from '../../utilities/overlay-events.js';
 import {claimEscape, isEscapeClaimed} from '../../utilities/overlay-escape.js';
+import {containsFocus} from '../../utilities/focus-out.js';
 import {
   hideLayer,
   layerStyles,
@@ -221,6 +222,11 @@ export default class CraftTooltip extends LitElement {
       this.#removeReference(invoker.node, invoker.attribute);
     }
 
+    this.#contentWrapper?.removeEventListener(
+      'keydown',
+      this.#claimEscape,
+      true
+    );
     this.#contentWrapper?.removeEventListener('keyup', this.#onEscape, true);
     this.#contentWrapper = null;
     this.#contentId = uniqueId('tooltip');
@@ -349,6 +355,7 @@ export default class CraftTooltip extends LitElement {
     this.#contentId = wrapper.id;
     wrapper.setAttribute('role', 'tooltip');
     this.#contentWrapper = wrapper;
+    wrapper.addEventListener('keydown', this.#claimEscape, true);
     wrapper.addEventListener('keyup', this.#onEscape, true);
   }
 
@@ -372,6 +379,7 @@ export default class CraftTooltip extends LitElement {
 
     // Captured, so it runs before a popover sharing the invoker closes on the
     // same press.
+    node.addEventListener('keydown', this.#claimEscape, true);
     node.addEventListener('keyup', this.#onEscape, true);
 
     if (this.#triggers.includes('click')) {
@@ -407,6 +415,7 @@ export default class CraftTooltip extends LitElement {
     }
 
     const {node, attribute} = this.#invoker;
+    node.removeEventListener('keydown', this.#claimEscape, true);
     node.removeEventListener('keyup', this.#onEscape, true);
     node.removeEventListener('click', this.#onInvokerClick);
     this.#removeReference(node, attribute);
@@ -459,7 +468,29 @@ export default class CraftTooltip extends LitElement {
   }
 
   #onInvokerClick = (): void => {
-    this.#request(!this.open);
+    const opening = !this.open;
+    this.#request(opening);
+
+    // Safari doesn't focus a button when it's clicked. Focus the invoker, so
+    // the Escape pressed next starts there and the tooltip claims it, rather
+    // than reaching whatever holds the tooltip, such as a slideout that would
+    // close on it.
+    const node = this.#invoker?.node;
+    if (opening && this.open && node && !containsFocus(node)) {
+      node.focus({preventScroll: true});
+    }
+  };
+
+  /**
+   * Claims Escape pressed on the invoker or the content while the tooltip is
+   * open, so whatever holds it (a slideout, a details panel, a popover) leaves
+   * the press alone and only the tooltip closes. Those close on the keydown,
+   * before {@link #onEscape} closes the tooltip on the keyup.
+   */
+  #claimEscape = (event: KeyboardEvent): void => {
+    if (event.key === 'Escape' && this.open) {
+      event.preventDefault();
+    }
   };
 
   /**

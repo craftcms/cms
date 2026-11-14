@@ -13,10 +13,13 @@
   } from '@actions/PluginsController';
   import RemoveController from '@actions/PluginStore/RemoveController';
   import {router} from '@inertiajs/vue3';
+  import useCraftData from '@/common/composables/useCraftData';
 
   const props = defineProps<{
     plugin: PluginInfo;
   }>();
+
+  const {general} = useCraftData();
 
   const actions = computed(() => {
     const items: Array<ActionItem> = [
@@ -64,6 +67,7 @@
         icon: 'minus',
         label: t('Remove'),
         variant: 'danger',
+        disabled: !general.value.allowUpdates,
         action: {
           type: 'event',
           name: 'action:remove-plugin',

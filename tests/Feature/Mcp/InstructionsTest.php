@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Passport\Passport;
 
 it('keeps startup instructions brief and delivers full guidance through the admin info tool only', function (Closure $config): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $siteInstructions = 'Preserve legal notices.'.str_repeat(' Keep required attribution.', 100);
@@ -67,7 +67,7 @@ it('keeps startup instructions brief and delivers full guidance through the admi
 ]);
 
 it('includes registered plugin element references in the admin info guidance', function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 
@@ -86,7 +86,7 @@ it('includes registered plugin element references in the admin info guidance', f
 });
 
 it('tells clients which features need a higher Craft edition', function (Edition $edition, bool $listed): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     Edition::set($edition);
@@ -104,7 +104,7 @@ it('tells clients which features need a higher Craft edition', function (Edition
 ]);
 
 it('adds plugin guidance to the startup instructions, and only points users with control panel access to info_get', function (bool $accessCp): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = User::query()->firstOrFail();
     $user->admin = false;

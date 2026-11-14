@@ -231,7 +231,7 @@
   }
 }
 
-.cp-messages .copied-notification:has(.copied-notification-value) {
+.cp-messages .copied-notification.copied-notification--value {
   .notification-inner {
     display: grid;
     grid-template-columns: calc(20rem / 16) 1fr auto;

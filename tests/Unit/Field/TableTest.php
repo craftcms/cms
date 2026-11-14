@@ -156,6 +156,7 @@ it('describes columns by their cells’ own settings, which pasted rows are chec
 it('round-trips money cells through localized row forms and scalar storage', function (?string $amount, ?string $expected) {
     I18N::withLocale('en-US', 'nl-BE', function () use ($amount, $expected): void {
         $field = new Table([
+            'validateHandleUniqueness' => false,
             'name' => 'Prices',
             'handle' => 'prices',
             'columns' => ['amount' => [
@@ -192,6 +193,7 @@ it('round-trips money cells through localized row forms and scalar storage', fun
 
 it('rejects unavailable currencies in money column settings', function () {
     $field = new Table([
+        'validateHandleUniqueness' => false,
         'name' => 'Prices',
         'handle' => 'prices',
         'columns' => ['amount' => ['heading' => 'Amount', 'handle' => 'price', 'type' => 'money', 'currency' => 'XYZ']],
@@ -203,6 +205,7 @@ it('rejects unavailable currencies in money column settings', function () {
 
 it('names link column settings by their labels in validation errors', function () {
     $field = new Table([
+        'validateHandleUniqueness' => false,
         'name' => 'Resources',
         'handle' => 'resources',
         'columns' => ['col1' => ['heading' => 'Link', 'handle' => 'link', 'type' => 'link', 'types' => []]],
@@ -214,6 +217,7 @@ it('names link column settings by their labels in validation errors', function (
 
 it('keeps column handles scalar while rendering validation errors by cell', function () {
     $field = new Table([
+        'validateHandleUniqueness' => false,
         'name' => 'Details',
         'handle' => 'details',
         'columns' => [
@@ -254,7 +258,7 @@ it('keeps column handles scalar while rendering validation errors by cell', func
     $columns = $field->columns;
     $columns['first']['handle'] = 'firstHandle';
     $columns['third']['handle'] = 'thirdHandle';
-    $field = new Table(['name' => 'Details', 'handle' => 'details', 'columns' => $columns]);
+    $field = new Table(['validateHandleUniqueness' => false, 'name' => 'Details', 'handle' => 'details', 'columns' => $columns]);
 
     expect($field->validate())->toBeTrue();
 
@@ -322,6 +326,7 @@ it('preserves unavailable cell settings and raw content until its provider retur
 it('rejects unregistered cell types submitted as new column settings', function () {
     app(TableCellTypes::class)->remove(ScaledTableCell::class);
     $field = new Table([
+        'validateHandleUniqueness' => false,
         'name' => 'Details',
         'handle' => 'details',
         'columns' => ['col1' => ['heading' => 'Quantity', 'handle' => 'quantity', 'type' => ScaledTableCell::class]],
@@ -333,6 +338,7 @@ it('rejects unregistered cell types submitted as new column settings', function 
 
 it('round-trips link cells through request values, storage, and editor values', function () {
     $field = new Table([
+        'validateHandleUniqueness' => false,
         'handle' => 'links',
         'columns' => ['col1' => [
             'heading' => 'Link', 'handle' => 'link', 'type' => 'link',

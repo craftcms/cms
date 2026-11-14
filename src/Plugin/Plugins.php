@@ -743,11 +743,18 @@ class Plugins
             return false;
         }
 
-        // Update the plugin’s settings in the project config
-        $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData());
-        app(ProjectConfig::class)->set(
-            path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
-            value: $pluginSettings,
+        // Update the plugin’s settings in the project config, keeping the stored values of
+        // settings that are overridden by config/craft/<handle>.php
+        $projectConfig = app(ProjectConfig::class);
+        $path = ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings';
+        $overrides = Config::get("craft.$plugin->handle", []);
+
+        $projectConfig->set(
+            path: $path,
+            value: [
+                ...array_diff_key(ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData()), $overrides),
+                ...array_intersect_key($projectConfig->get($path) ?? [], $overrides),
+            ],
             message: "Change settings for plugin “{$plugin->handle}”",
         );
 
@@ -1327,10 +1334,8 @@ class Plugins
     {
         $html = '';
 
-        foreach ($this->viteConfigs as $vite) {
-            $html .= Cp::viteTags(array_values($vite['input']), (clone app(Vite::class))
-                ->useHotFile($vite['hotFile'])
-                ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/')));
+        foreach ($this->viteConfigs as $config) {
+            $html .= Cp::viteTags(array_values($config['input']), $this->vite($config));
         }
 
         foreach ($this->styles as $styles) {
@@ -1346,6 +1351,28 @@ class Plugins
         }
 
         return $html;
+    }
+
+    /**
+     * Returns a hash of the Vite manifests of the builds {@see getAssetsHtml()} loads, which changes whenever one is
+     * republished.
+     *
+     * Like {@see Vite::manifestHash()}, it leaves out builds served by a running dev server and ones that aren't
+     * published, and returns `null` when that leaves none.
+     */
+    public function getViteManifestHash(): ?string
+    {
+        $hashes = array_filter(array_map(fn (array $config) => $this->vite($config)->manifestHash(), $this->viteConfigs));
+
+        return $hashes === [] ? null : md5(implode(',', $hashes));
+    }
+
+    /** @param array{hotFile: string, buildDirectory: string, input: string[]} $config */
+    private function vite(array $config): Vite
+    {
+        return (clone app(Vite::class))
+            ->useHotFile($config['hotFile'])
+            ->useBuildDirectory(Str::chopEnd($config['buildDirectory'], '/'));
     }
 
     /**

@@ -15,6 +15,7 @@
     defineProps<{
       pluginInfo: Record<string, PluginInfo>;
       readOnly?: boolean;
+      composerUnavailableReason?: string | null;
     }>(),
     {pluginInfo: () => ({}), readOnly: false}
   );
@@ -62,6 +63,9 @@
 
 <template>
   <CpContainer>
+    <craft-callout v-if="composerUnavailableReason" variant="warning">
+      {{ composerUnavailableReason }}
+    </craft-callout>
     <PluginsList :read-only="readOnly" :plugin-info="fullPluginInfo" />
   </CpContainer>
 </template>

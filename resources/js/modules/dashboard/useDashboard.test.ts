@@ -57,6 +57,7 @@ function widget(id: number): DashboardWidget {
     type: 'Example',
     colspan: 1,
     maxColspan: 4,
+    color: 'gray',
     title: `Widget ${id}`,
     subtitle: null,
     name: 'Example',
@@ -145,6 +146,25 @@ it('keeps the saved layout when resizing or reordering fails', async () => {
     [2, 1],
   ]);
   expect(messages.error).toHaveBeenLastCalledWith('Couldn’t reorder widgets.');
+});
+
+it('shows a widget’s new color while it saves, and its saved color again if saving fails', async () => {
+  mount([widget(1)]);
+  let fail!: (error: Error) => void;
+  state.post.mockReturnValue(
+    new Promise((_, reject) => {
+      fail = reject;
+    })
+  );
+
+  const saving = dashboard.recolor(dashboard.widgets.value[0]!, 'red');
+  expect(dashboard.widgets.value[0]!.color).toBe('red');
+
+  fail(new Error('offline'));
+  await saving;
+
+  expect(dashboard.widgets.value[0]!.color).toBe('gray');
+  expect(messages.error).toHaveBeenLastCalledWith('Couldn’t save widget.');
 });
 
 it('announces where a widget moved once the new order is saved', async () => {

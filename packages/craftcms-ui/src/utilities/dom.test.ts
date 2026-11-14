@@ -10,6 +10,7 @@ if (happyDOM?.settings) {
 // Helper to get a fresh module instance (resets cached existingCss/existingJs)
 async function freshImport() {
   vi.resetModules();
+  delete (globalThis as any)[Symbol.for('craft.ownedAssets')];
   return await import('./dom.js');
 }
 
@@ -260,6 +261,25 @@ describe('JS deduplication', () => {
 
     secondDispose();
     expect(script.isConnected).toBe(false);
+  });
+
+  test('shares asset ownership across bundled copies of the module', async () => {
+    const css = '<link rel="stylesheet" href="https://example.com/shared.css">';
+    const dashboard = await freshImport();
+    const dashboardDispose = await dashboard.appendHeadHtml(css);
+
+    // Another bundle's copy of the module, as with the legacy HTML controls.
+    vi.resetModules();
+    const settings = await import('./dom.js');
+    const settingsDispose = await settings.appendHeadHtml(css);
+
+    expect(document.head.querySelectorAll('link').length).toBe(1);
+
+    dashboardDispose();
+    expect(document.head.querySelector('link')).not.toBeNull();
+
+    settingsDispose();
+    expect(document.head.querySelector('link')).toBeNull();
   });
 });
 

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp\CommandPalette;
 
 use CraftCms\Cms\Ai\Skills\AgentSkills;
-use CraftCms\Cms\Asset\AssetTransformers;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Enums\Theme;
@@ -66,7 +64,6 @@ class Actions
         private readonly GeneralConfig $generalConfig,
         private readonly Plugins $plugins,
         private readonly MaintenanceMode $maintenanceMode,
-        private readonly AssetTransformers $assetTransformers,
         private readonly Utilities $utilities,
         private readonly ProjectConfig $projectConfig,
         private readonly ActionRegistry $registry,
@@ -460,7 +457,6 @@ class Actions
                 ['workflow', t('Create workflow'), Edition::isAtLeast(Edition::Pro) ? route('craft.cp.settings.workflows.create') : null],
                 ['volume', t('Create asset volume'), route('craft.cp.settings.assets.volumes.create')],
                 ['image-transform', t('Create image transform'), route('craft.cp.settings.assets.transforms.create')],
-                ['asset-transformer', t('Create asset transformer'), route('craft.cp.settings.assets.transformers.create')],
                 ['field', t('Create field'), route('craft.cp.settings.fields.create')],
             ];
 
@@ -546,11 +542,6 @@ class Actions
             if ($transform->id !== null && $transform->handle !== null) {
                 $add("image-transform-$transform->id", $transform->name, t('Delete the {name} image transform', ['name' => $transform->name]), t('Image Transform'), route('craft.cp.settings.assets.transforms.destroy', ['transformId' => $transform->id]), t('Are you sure you want to delete the “{name}” transform?', ['name' => $transform->name]), [route('craft.cp.settings.assets.transforms.edit', ['transformHandle' => $transform->handle]), route('craft.cp.settings.assets.transforms.index')], $transform->handle);
             }
-        }
-
-        foreach ($this->assetTransformers->getAllAssetTransformers() as $transformer) {
-            /** @var AssetTransformer $transformer */
-            $add("asset-transformer-$transformer->handle", $transformer->name, t('Delete the {name} asset transformer', ['name' => $transformer->name]), t('Asset Transformer'), route('craft.cp.settings.assets.transformers.destroy', ['handle' => $transformer->handle]), t('Are you sure you want to delete the “{name}” Asset Transformer?', ['name' => $transformer->name]), [route('craft.cp.settings.assets.transformers.edit', ['handle' => $transformer->handle]), route('craft.cp.settings.assets.transformers.index')], $transformer->handle);
         }
 
         foreach (Fields::getAllFields() as $field) {
