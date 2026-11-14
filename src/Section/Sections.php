@@ -223,6 +223,10 @@ class Sections
             $query->addSelect('sections.minAuthors');
         }
 
+        if (DB::getReadSchemaBuilder()->hasColumn(Table::SECTIONS, 'inSinglesSource')) {
+            $query->addSelect('sections.inSinglesSource');
+        }
+
         return $query;
     }
 
@@ -625,6 +629,12 @@ class Sections
                 ? null
                 : DB::table(Table::WORKFLOWS)->idByUid($workflowUid);
             $sectionModel->enableVersioning = (bool) $data['enableVersioning'];
+
+            // Singles saved before the setting existed have no value for it,
+            // and stay in the Singles source.
+            if (DB::getSchemaBuilder()->hasColumn(Table::SECTIONS, 'inSinglesSource')) {
+                $sectionModel->inSinglesSource = (bool) ($data['inSinglesSource'] ?? true);
+            }
             $sectionModel->minAuthors = $data['minAuthors'] ?? null;
             $sectionModel->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionModel->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;

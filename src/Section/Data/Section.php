@@ -62,6 +62,15 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
 
     public bool $enableVersioning = true;
 
+    /**
+     * For singles: whether it's listed in the shared “Singles” entry source,
+     * rather than having a source of its own. New singles get their own;
+     * singles saved before this setting existed stay in the Singles source.
+     *
+     * @since 6.0.0
+     */
+    public bool $inSinglesSource = false;
+
     public PropagationMethod $propagationMethod = PropagationMethod::All;
 
     public DefaultPlacement $defaultPlacement = DefaultPlacement::End;
@@ -237,8 +246,21 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
         return sprintf(
             'content/%s/%s',
             $page ? ElementSourcesService::pageSlug($page) : 'entries',
-            $this->type === SectionType::Single ? 'singles' : $this->handle,
+            $this->getSourceKey() === 'singles' ? 'singles' : $this->handle,
         );
+    }
+
+    /**
+     * Returns the key of the entry source that lists the section: the shared
+     * `singles` source for singles included in it, `section:{uid}` otherwise.
+     *
+     * @since 6.0.0
+     */
+    public function getSourceKey(): string
+    {
+        return $this->type === SectionType::Single && $this->inSinglesSource
+            ? 'singles'
+            : "section:$this->uid";
     }
 
     /**
@@ -247,8 +269,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
     public function getPage(): ?string
     {
         if (! isset($this->page)) {
-            $sourceKey = $this->type === SectionType::Single ? 'singles' : "section:$this->uid";
-            $source = ElementSources::findSource(Entry::class, $sourceKey);
+            $source = ElementSources::findSource(Entry::class, $this->getSourceKey());
             $this->page = $source['page'] ?? false;
         }
 
@@ -270,6 +291,7 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
             'entryTypes' => array_map(fn (EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'workflow' => Workflow::find($this->workflowId)?->uid,
             'enableVersioning' => $this->enableVersioning,
+            ...($this->type === SectionType::Single ? ['inSinglesSource' => $this->inSinglesSource] : []),
             'minAuthors' => $this->minAuthors,
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,
