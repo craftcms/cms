@@ -21,6 +21,7 @@
    * renders items a caller places itself — `ActionMenu` uses it for the items
    * inside its own `content` slot.
    */
+  import {config, router} from '@inertiajs/vue3';
   import {computed, type Component} from 'vue';
   import {t} from '@craftcms/ui/utilities/translate';
   import {attrs as serverAttributes} from '@craftcms/ui/utilities/attrs';
@@ -418,14 +419,46 @@
       as: 'craft-nav-item',
       '.external': external,
       inertia: !external,
-      // Pointing at a nav item says where you're going well before the click,
-      // so the page is fetched then, and is usually there by the time you
-      // click. A click quicker than the hover delay still fetches on press, as
-      // other links do. Kept only briefly: long enough to cover the wait for
-      // the click, not so long that the page could be out of date when it's
-      // shown.
-      prefetch: ['hover', 'click'],
+      // Fetched on press, as other links are, and kept only briefly: long
+      // enough to cover the wait for the click, not so long that the page
+      // could be out of date when it's shown.
+      prefetch: 'click',
       cacheFor: NAV_PREFETCH_CACHE_FOR,
+      ...(shared.href && !external ? hoverPrefetchHandlers(shared.href) : {}),
+    };
+  }
+
+  let hoverPrefetch: ReturnType<typeof setTimeout> | undefined;
+
+  /**
+   * Pointing at a nav item says where you're going well before the click, so
+   * the page is fetched then, and is usually there by the time you click.
+   *
+   * Inertia's `Link` can't do this alongside fetching on press: given both
+   * modes, it drops the press, so a click quicker than the hover delay waited
+   * for the click to fetch, then fetched the page a second time once the delay
+   * ran out. This fetches the page the same way `Link` does, so whichever
+   * starts first, the other and the click's visit reuse it.
+   */
+  function hoverPrefetchHandlers(href: string): Record<string, unknown> {
+    const cancel = () => clearTimeout(hoverPrefetch);
+
+    return {
+      onMouseenter: () => {
+        cancel();
+        hoverPrefetch = setTimeout(
+          () =>
+            router.prefetch(
+              href,
+              {method: 'get'},
+              {cacheFor: NAV_PREFETCH_CACHE_FOR}
+            ),
+          config.get('prefetch.hoverDelay')
+        );
+      },
+      onMouseleave: cancel,
+      // The press fetches it now; `Link` keeps `mousedown` to itself.
+      onPointerdown: cancel,
     };
   }
 
