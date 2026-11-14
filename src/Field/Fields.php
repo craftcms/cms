@@ -174,16 +174,12 @@ class Fields
             $fieldUids[$row->uid] = true;
         }
 
-        foreach ($this->_layoutConfigs() as $config) {
-            foreach ($config['tabs'] ?? [] as $tab) {
-                foreach ($tab['elements'] ?? [] as $element) {
-                    if (
-                        isset($element['handle'], $fieldUids[$element['fieldUid'] ?? '']) &&
-                        is_a($element['type'] ?? '', CustomField::class, true)
-                    ) {
-                        $handles[$element['handle']] = true;
-                    }
-                }
+        // The same pass finds the generated field handles, so save them too
+        [$layoutFieldHandles, $this->_allGeneratedFieldHandles] = $this->_layoutHandles();
+
+        foreach ($layoutFieldHandles as [$handle, $fieldUid]) {
+            if (isset($fieldUids[$fieldUid])) {
+                $handles[$handle] = true;
             }
         }
 
@@ -201,17 +197,40 @@ class Fields
             return $this->_allGeneratedFieldHandles;
         }
 
-        $handles = [];
+        return $this->_allGeneratedFieldHandles = $this->_layoutHandles()[1];
+    }
 
-        foreach ($this->_layoutConfigs() as $config) {
+    /**
+     * Reads the layouts’ handles in one pass: the custom field elements’ handle overrides with their field UIDs, which
+     * [[allFieldHandles()]] matches against the fields, and the generated field handles.
+     *
+     * A stored element without a handle override has `"handle":null`, so a layout whose JSON has no `handle` key with
+     * another value has neither, and isn’t decoded.
+     *
+     * @return array{list<array{mixed, mixed}>, array<string, bool>}
+     */
+    private function _layoutHandles(): array
+    {
+        $fieldHandles = [];
+        $generatedHandles = [];
+
+        foreach ($this->_layoutConfigs('/"handle"\s*:(?!\s*null)/') as $config) {
+            foreach ($config['tabs'] ?? [] as $tab) {
+                foreach ($tab['elements'] ?? [] as $element) {
+                    if (isset($element['handle']) && is_a($element['type'] ?? '', CustomField::class, true)) {
+                        $fieldHandles[] = [$element['handle'], $element['fieldUid'] ?? ''];
+                    }
+                }
+            }
+
             foreach ($config['generatedFields'] ?? [] as $generatedField) {
                 if (! empty($generatedField['handle'])) {
-                    $handles[$generatedField['handle']] = true;
+                    $generatedHandles[$generatedField['handle']] = true;
                 }
             }
         }
 
-        return $this->_allGeneratedFieldHandles = $handles;
+        return [$fieldHandles, $generatedHandles];
     }
 
     /**
@@ -1024,12 +1043,17 @@ class Fields
     /**
      * Returns the saved field layouts' configs, without building the layouts.
      *
+     * @param  string|null  $pattern  A regular expression that a config stored as JSON must match to be decoded and returned
      * @return iterable<array<string, mixed>>
      */
-    private function _layoutConfigs(): iterable
+    private function _layoutConfigs(?string $pattern = null): iterable
     {
         foreach ($this->_layouts()->raw() as $row) {
             $config = $row->config ?? null;
+
+            if (is_string($config) && $pattern !== null && ! preg_match($pattern, $config)) {
+                continue;
+            }
 
             yield is_string($config) ? JsonHelper::decode($config) : (array) $config;
         }
