@@ -403,6 +403,7 @@ test('NamespaceAttributes', function (string $expected, string $html, string $na
     ['<div id="foo-bar"></div><style>#foo-bar .foo-baz{}</style>', '<div id="bar"></div><style>#bar .baz{}</style>', 'foo', true],
     ['<div id="foo-bar"></div><style>#foo-bar{}#foo-bar>.foo-baz:hover{}</style>', '<div id="bar"></div><style>#bar{}#bar>.baz:hover{}</style>', 'foo', true],
     ['<div id="foo-café"></div><style>#foo-café{}g:not(#foo-café){}</style>', '<div id="café"></div><style>#café{}g:not(#café){}</style>', 'foo', false],
+    ['<g id="foo-fff" class="foo-a"></g><style>.foo-a{fill:light-dark(#fff,#000);stroke:url(https://cdn.example.com/p.svg#g)} g:not(.foo-a)>#foo-fff{}</style>', '<g id="fff" class="a"></g><style>.a{fill:light-dark(#fff,#000);stroke:url(https://cdn.example.com/p.svg#g)} g:not(.a)>#fff{}</style>', 'foo', true],
     ['<g class="foo-st0 foo-st1 foo---on"></g><style>.foo-st0.foo-st1{}.foo---on{}</style>', '<g class="st0 st1 --on"></g><style>.st0.st1{}.--on{}</style>', 'foo', true],
     ['<style>.foo-a>path{}.foo-b+.foo-c~.foo-d[x]{}path.foo-e.foo-f{fill:rgba(0,0,0,.5);transition:fill .5s, opacity 1.5s}</style>', '<style>.a>path{}.b+.c~.d[x]{}path.e.f{fill:rgba(0,0,0,.5);transition:fill .5s, opacity 1.5s}</style>', 'foo', true],
     ['<linearGradient id="foo-bar"></linearGradient><path fill="url(#foo-bar)"></path>', '<linearGradient id="bar"></linearGradient><path fill="url(#bar)"></path>', 'foo', false],
