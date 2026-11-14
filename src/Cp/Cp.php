@@ -22,6 +22,7 @@ use CraftCms\Cms\Providers\AppServiceProvider;
 use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -422,7 +423,7 @@ readonly class Cp
 
         $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
-            'allowUpdates' => $generalConfig->allowUpdates,
+            'allowUpdates' => $generalConfig->allowUpdates && $currentUser->can('performUpdates') && app(Composer::class)->getIsAvailableForUi(),
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             // Always on; the legacy editor still reads `Craft.autosaveDrafts`.
             'autosaveDrafts' => true,

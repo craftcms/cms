@@ -131,6 +131,10 @@ class UpdaterController extends BaseUpdaterController
 
     public function revert(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState(self::ACTION_REVERT));
+        }
+
         $output = '';
 
         try {
@@ -281,6 +285,10 @@ class UpdaterController extends BaseUpdaterController
                     $this->actionOption(t('Continue'), self::ACTION_FORCE_UPDATE, ['submit' => true]),
                 ],
             ];
+        }
+
+        if (! empty($this->data['install']) && ! $this->composer->getIsAvailable()) {
+            return $this->noComposerState();
         }
 
         // If there's anything to install, make sure we can find composer.json

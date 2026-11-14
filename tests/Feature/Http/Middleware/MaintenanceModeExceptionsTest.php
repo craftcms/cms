@@ -260,7 +260,7 @@ test('a failed backup can reach its emitted revert action during maintenance', f
     $this->mock(Backups::class)
         ->shouldReceive('backup')->andThrow(new RuntimeException('Backup failed'));
 
-    $this->mock(Composer::class)
+    $this->partialMock(Composer::class)
         ->shouldReceive('install')->andReturnNull();
 
     $backup = postJson(action([UpdaterController::class, 'backup']), compact('data'))
