@@ -10,6 +10,18 @@ use Illuminate\Support\Collection;
 use Twig\Error\Error as TwigError;
 use Twig\Error\RuntimeError;
 
+class ArrayTwigExtensionTestStaticTarget
+{
+    public static int $calls = 0;
+
+    public static function boom(): int
+    {
+        self::$calls++;
+
+        return 0;
+    }
+}
+
 beforeEach(function () {
     $this->pageLifecycle = app(PageLifecycle::class);
     $this->env = app(Twig::class)->create();
@@ -167,7 +179,25 @@ describe('ArrayTwigExtension', function () {
                     return true;
                 }
             };
-            $this->variables = ['outer' => $outer, 'inner' => $inner, 'target' => $this->target];
+            // ArrayAccess objects that aren’t one of Twig’s array-like classes get the same checks as properties
+            $arrayAccess = new class implements ArrayAccess
+            {
+                public function offsetExists(mixed $offset): bool
+                {
+                    return $offset === 'secret';
+                }
+
+                public function offsetGet(mixed $offset): mixed
+                {
+                    return 'shh';
+                }
+
+                public function offsetSet(mixed $offset, mixed $value): void {}
+
+                public function offsetUnset(mixed $offset): void {}
+            };
+            $this->variables = ['outer' => $outer, 'inner' => $inner, 'target' => $this->target, 'arrayAccess' => $arrayAccess];
+            ArrayTwigExtensionTestStaticTarget::$calls = 0;
         });
 
         it('rejects keys that access anything the template couldn’t access directly', function (string $template) {
@@ -175,6 +205,7 @@ describe('ArrayTwigExtension', function () {
                 app(TemplateManager::class)->renderSandboxedString($template, $this->variables);
             } finally {
                 expect($this->target->calls)->toBe(0);
+                expect(ArrayTwigExtensionTestStaticTarget::$calls)->toBe(0);
             }
         })->with([
             'column with a key path' => ["{{ [outer]|column(['inner', 'secret'])|first }}"],
@@ -183,9 +214,11 @@ describe('ArrayTwigExtension', function () {
             'where with a callable array' => ["{{ ['x']|where([target, 'boom'])|length }}"],
             'contains with a callable array' => ["{{ ['x']|contains([target, 'boom']) ? 'y' : 'n' }}"],
             'multisort with a callable array' => ["{{ ['x', 'y']|multisort([target, 'boom'])|length }}"],
+            'multisort with a static callable array' => ["{{ ['x', 'y']|multisort(['ArrayTwigExtensionTestStaticTarget', 'boom'])|length }}"],
             'where with a disallowed property' => ["{{ [inner]|where('secret', 'shh')|length }}"],
             'contains with a disallowed property' => ["{{ [inner]|contains('secret', 'shh') ? 'y' : 'n' }}"],
             'multisort with a disallowed property' => ["{{ [inner, inner]|multisort('secret')|length }}"],
+            'column with a disallowed ArrayAccess offset' => ["{{ [arrayAccess]|column('secret')|first }}"],
         ])->throws(TwigError::class);
 
         it('still allows string keys, integer keys, and arrow functions', function () {
@@ -199,6 +232,16 @@ describe('ArrayTwigExtension', function () {
             ]));
 
             expect($result)->toBe('x,y|1,2|1|1|y|2,4');
+        });
+
+        it('still allows offset reads on Twig’s array-like classes', function () {
+            $result = app(TemplateManager::class)->renderSandboxedString(implode('|', [
+                "{{ rows|column(0)|join(',') }}",
+                '{{ rows|where(0, 8)|length }}',
+                "{{ rows|multisort(0)|column(0)|join(',') }}",
+            ]), ['rows' => [new ArrayObject([8]), new ArrayObject([7])]]);
+
+            expect($result)->toBe('8,7|1|7,8');
         });
     });
 });

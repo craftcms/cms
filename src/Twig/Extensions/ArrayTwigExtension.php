@@ -235,6 +235,14 @@ class ArrayTwigExtension extends AbstractExtension
             foreach ($array as $element) {
                 if (is_object($element)) {
                     foreach ($names as $name) {
+                        // Twig allows offset reads on its own array-like classes without any sandbox checks
+                        if (
+                            in_array($element::class, CoreExtension::ARRAY_LIKE_CLASSES, true) &&
+                            $element->offsetExists($name)
+                        ) {
+                            continue;
+                        }
+
                         $sandbox->checkPropertyAllowed($element, $name);
                     }
                 }
@@ -327,6 +335,12 @@ class ArrayTwigExtension extends AbstractExtension
      */
     public function multisortFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
     {
+        // Collection::sortBy() calls callable arrays, such as `['SomeClass', 'someMethod']`, rather than treating them as
+        // a list of keys, so don't let checkKeysInSandbox() validate their items as if they were keys
+        if ($isSandboxed && is_array($key) && is_callable($key)) {
+            throw new RuntimeError('Keys passed to the "multisort" filter must be strings, integers, or arrow functions in sandbox mode.');
+        }
+
         $array = self::checkKeysInSandbox($env, $isSandboxed, $array, is_array($key) ? $key : [$key], 'multisort');
 
         $array = array_merge($array);
