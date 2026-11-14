@@ -63,7 +63,7 @@ class EntryTypes
      *
      * ::: warning
      * Don’t disable this unless you know what you’re doing, as entries won’t reflect entry type changes until
-     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
+     * they’ve been resaved. (You can resave entries manually by running the `resave:entries` console command.)
      * :::
      */
     public bool $autoResaveEntries = true;

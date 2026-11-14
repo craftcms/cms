@@ -18,6 +18,7 @@ use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\TagGroup;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Data\EntryType;
@@ -912,7 +913,7 @@ class EntrifyController extends Controller
 
     private function _deployTip(string $action, string $handle): void
     {
-        $command = "php craft entrify/$action $handle --section={$this->_section->handle}";
+        $command = app(TerminalCommands::class)->craft("entrify:$action $handle --section={$this->_section->handle}");
 
         if (!$this->_forSingle) {
             $command .= " --entry-type={$this->_entryType->handle} --author={$this->_author->username}";
