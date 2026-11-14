@@ -540,24 +540,6 @@ it('sends the editor back to the source it was opened from', function (Closure $
     },
 ]);
 
-it('scopes the Singles source to single sections only', function () {
-    $single = Section::factory()->create(['type' => SectionType::Single]);
-    $channel = Section::factory()->create(['type' => SectionType::Channel]);
-
-    EntryModel::factory()->forSection($single)->create();
-    EntryModel::factory()->forSection($channel)->count(3)->create();
-
-    // The Singles source must not spill the channel's entries into the list.
-    get("/{$this->cpTrigger}/content/entries?".http_build_query([
-        'source' => 'singles',
-        'viewMode' => 'cards',
-    ]))
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('pagination.total', 1)
-        );
-});
-
 it('orders a structure source by its structure rather than a literal column', function () {
     $structure = Structure::factory()->create();
     $section = Section::factory()->create([
@@ -985,7 +967,7 @@ it('falls back from structure view while listing drafts or trashed entries', fun
 it('shows a single that was auto-created on section save', function () {
     // Save a Single section through the service, which auto-creates its lone
     // entry via ensureSingleEntry() — the real path a single goes through.
-    SectionsFacade::saveSection(new SectionData([
+    SectionsFacade::saveSection($section = new SectionData([
         'name' => 'About',
         'handle' => 'about',
         'type' => SectionType::Single,
@@ -998,7 +980,7 @@ it('shows a single that was auto-created on section save', function () {
     ]));
 
     get("/{$this->cpTrigger}/content/entries?".http_build_query([
-        'source' => 'singles',
+        'source' => "section:$section->uid",
         'viewMode' => 'cards',
     ]))
         ->assertOk()
@@ -1085,16 +1067,6 @@ it('selects the source for a section-handle URL', function () {
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('source.key', "section:{$section->uid}")
-        );
-});
-
-it('selects the singles source for the singles handle', function () {
-    Section::factory()->create(['type' => SectionType::Single]);
-
-    get("/{$this->cpTrigger}/content/entries/singles")
-        ->assertOk()
-        ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('source.key', 'singles')
         );
 });
 
@@ -1574,7 +1546,7 @@ it('links a custom source limited to one section by its key, not the section’s
     $condition->addConditionRule($rule);
 
     app(ElementSources::class)->saveSources(EntryElement::class, [
-        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
         [
             'type' => ElementSources::TYPE_CUSTOM,
             'key' => 'custom:settings',
@@ -1585,7 +1557,7 @@ it('links a custom source limited to one section by its key, not the section’s
 
     $expected = Url::cpUrl('content/entries', ['source' => 'custom:settings']);
 
-    get("/{$this->cpTrigger}/content/entries/singles")
+    get("/{$this->cpTrigger}/content/entries")
         ->assertOk()
         ->assertInertia(function (AssertableInertia $page) use ($expected) {
             $props = $page->toArray()['props'];

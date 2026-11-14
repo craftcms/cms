@@ -22,7 +22,6 @@ beforeEach(function () {
         'type' => SectionType::Single,
         'name' => 'Contact details',
         'handle' => 'contactDetails',
-        'inSinglesSource' => false,
     ]);
     $this->entry = EntryModel::factory()->forSection($this->single)->createElement(['title' => 'Northwind']);
 });

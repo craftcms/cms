@@ -52,18 +52,14 @@ class EntryIndexViewModel extends ContentIndexViewModel
     /**
      * Sections have index URLs of their own, which is what the rest of the CP
      * links them by — see {@see Section::getCpIndexUri()}, whose shape this
-     * matches. Singles share one source, and so one `singles` URL.
+     * matches.
      *
      * @param  array<string, mixed>  $source
      */
     #[Override]
     protected function sourceUrl(array $source): ?string
     {
-        $handle = match (true) {
-            $source['key'] === 'singles' => 'singles',
-            str_starts_with((string) $source['key'], 'section:') => $source['data']['handle'] ?? null,
-            default => null,
-        };
+        $handle = str_starts_with((string) $source['key'], 'section:') ? ($source['data']['handle'] ?? null) : null;
 
         // Anything that isn't a section source has no URL of its own, so fall
         // back to the `?source=` query. That includes a custom source limited
@@ -74,19 +70,14 @@ class EntryIndexViewModel extends ContentIndexViewModel
     }
 
     /**
-     * Maps the section-handle route segment (e.g. `content/entries/blog`,
-     * `content/entries/singles`) to its source key (`singles` for Single
-     * sections, `section:{uid}` otherwise).
+     * Maps the section-handle route segment (e.g. `content/entries/blog`) to
+     * its source key (`section:{uid}`).
      */
     #[Override]
     protected function defaultSourceKey(): ?string
     {
         if ($this->sectionHandle === null || $this->sectionHandle === '') {
             return null;
-        }
-
-        if ($this->sectionHandle === 'singles') {
-            return 'singles';
         }
 
         $section = Sections::getSectionByHandle($this->sectionHandle);

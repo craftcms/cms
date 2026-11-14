@@ -40,7 +40,6 @@ class Section extends BaseModel
     protected $casts = [
         'previewTargets' => 'array',
         'enableVersioning' => 'boolean',
-        'inSinglesSource' => 'boolean',
         'maxAuthors' => 'integer',
         'type' => SectionType::class,
         'defaultPlacement' => DefaultPlacement::class,

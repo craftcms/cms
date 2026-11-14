@@ -659,10 +659,9 @@ class EntrifyController extends Controller
      * Lists a single converted from a global set on a “Globals” entry sources
      * page, so global sets keep a place of their own in the control panel.
      *
-     * The single has a source of its own, since new singles aren't included in
-     * the Singles source. Its row goes at the end of the page, after any
-     * global set converted before it. Sources that were never customized are
-     * saved as they're shown first, so the rest of the list stays as it was.
+     * Its row goes at the end of the page, after any global set converted
+     * before it. Sources that were never customized are saved as they're
+     * shown first, so the rest of the list stays as it was.
      */
     private function _addToGlobalsPage(Section $section): void
     {

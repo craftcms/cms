@@ -238,12 +238,10 @@ it('refreshes the fields that depend on the section type', function () {
 
     expect($paths($channel->json('ui.nodes')))
         ->toContain(['propagationMethod'], ['minAuthors'], ['maxAuthors'])
-        ->not->toContain(['maxLevels'], ['defaultPlacement'], ['inSinglesSource'])
+        ->not->toContain(['maxLevels'], ['defaultPlacement'])
         ->and($paths($structure->json('ui.nodes')))
         ->toContain(['propagationMethod'], ['maxLevels'], ['defaultPlacement'], ['minAuthors'], ['maxAuthors'])
-        ->not->toContain(['inSinglesSource'])
         ->and($paths($single->json('ui.nodes')))
-        ->toContain(['inSinglesSource'])
         ->not->toContain(['propagationMethod'], ['maxLevels'], ['defaultPlacement'], ['minAuthors'], ['maxAuthors']);
 });
 

@@ -61,7 +61,7 @@ it('links a page with one source straight to it', function () {
 });
 
 it('links a page with one single to the single’s source', function () {
-    $single = Section::factory()->create(['type' => SectionType::Single, 'handle' => 'contactDetails', 'inSinglesSource' => false]);
+    $single = Section::factory()->create(['type' => SectionType::Single, 'handle' => 'contactDetails']);
 
     pageSources([
         ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],

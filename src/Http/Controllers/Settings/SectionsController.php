@@ -178,7 +178,6 @@ readonly class SectionsController
             $section->workflowId = $request->integer('workflowId') ?: null;
         }
         $section->enableVersioning = $request->boolean('enableVersioning', true);
-        $section->inSinglesSource = $section->type === SectionType::Single && $request->boolean('inSinglesSource');
         $minAuthors = $request->input('minAuthors');
         $maxAuthors = $request->input('maxAuthors');
         $section->minAuthors = is_numeric($minAuthors) ? (int) $minAuthors : 0;
