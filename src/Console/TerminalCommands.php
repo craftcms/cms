@@ -21,7 +21,7 @@ use Illuminate\Http\Request;
  *
  * Otherwise they use `php artisan` and `composer`.
  *
- * Craft commands get their full `craft:` name, such as `php artisan craft:update`, since only the `craft` executable
+ * Craft commands get their full `craft:` name, such as `php artisan craft:update:info`, since only the `craft` executable
  * resolves Craft commands without it.
  *
  * @since 6.0.0
@@ -47,10 +47,11 @@ class TerminalCommands
      * Returns a Craft console command.
      *
      * ```php
-     * $terminalCommands->craft('update all'); // php artisan craft:update all, or ddev artisan craft:update all on DDEV
+     * $terminalCommands->craft('update:info'); // php artisan craft:update:info, or ddev artisan craft:update:info on DDEV
      * ```
      *
-     * @param  string  $command  The command and its arguments, without the `craft:` prefix, such as `update:info`
+     * @param  string  $command  The command and its arguments, without the `craft:` prefix, such as
+     *                           `project-config:apply --force`
      */
     public function craft(string $command): string
     {
