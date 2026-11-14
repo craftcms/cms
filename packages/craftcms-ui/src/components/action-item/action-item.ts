@@ -8,6 +8,7 @@ import {LightDomController} from '@src/controllers/LightDomController';
 import a11yErrorStyles from '@src/styles/a11y-error.styles.js';
 import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
 import {linkTarget, newTabCue} from '@src/utilities/external-links';
+import {cancelIdle, whenIdle} from '@src/utilities/idle';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 
@@ -37,6 +38,32 @@ const INTERACTIVE = [
   'craft-checkbox',
   'craft-switch',
 ].join(', ');
+
+/** Items in closed menus waiting to render, in the order they arrived. */
+const waitingItems = new Set<CraftActionItem>();
+
+/** The idle callback that renders {@link waitingItems}. */
+let renderWaitingHandle: number | undefined;
+
+/**
+ * Renders waiting items until the idle period runs out, then waits for the
+ * next one. Rendering them together, rather than one per idle callback, lets
+ * other idle work that reads styles find them settled.
+ */
+function renderWaitingItems(deadline?: IdleDeadline): void {
+  renderWaitingHandle = undefined;
+
+  for (const item of waitingItems) {
+    item.renderNow();
+    if (deadline && deadline.timeRemaining() <= 0) {
+      break;
+    }
+  }
+
+  if (waitingItems.size) {
+    renderWaitingHandle = whenIdle(renderWaitingItems);
+  }
+}
 
 /**
  * @summary A single entry in a menu, rendered as a button or — when `href` is
@@ -203,6 +230,51 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
       control.focus(options);
     } else {
       super.focus(options);
+    }
+  }
+
+  /** Lets a first render that's waiting for its closed menu go ahead. */
+  #releaseFirstRender: (() => void) | null = null;
+
+  /**
+   * Holds the first render of an item in a closed menu until the browser is
+   * idle. A page can carry hundreds of these, and none of them shows until
+   * its menu opens, which renders them at once with {@link renderNow}.
+   */
+  protected override scheduleUpdate(): void | Promise<unknown> {
+    const menu = this.hasUpdated
+      ? null
+      : this.closest<HTMLElement & {open?: boolean}>('craft-action-menu');
+
+    if (!menu || menu.open) {
+      return super.scheduleUpdate();
+    }
+
+    return new Promise<void>((resolve) => {
+      this.#releaseFirstRender = () => {
+        this.#releaseFirstRender = null;
+        waitingItems.delete(this);
+        if (!waitingItems.size && renderWaitingHandle !== undefined) {
+          cancelIdle(renderWaitingHandle);
+          renderWaitingHandle = undefined;
+        }
+        resolve();
+      };
+      waitingItems.add(this);
+      renderWaitingHandle ??= whenIdle(renderWaitingItems);
+    }).then(() => super.scheduleUpdate());
+  }
+
+  /**
+   * Renders an item whose first render is waiting for its closed menu, so it
+   * has its size and button by the time the menu shows.
+   *
+   * @internal
+   */
+  renderNow(): void {
+    if (this.#releaseFirstRender) {
+      this.#releaseFirstRender();
+      this.performUpdate();
     }
   }
 

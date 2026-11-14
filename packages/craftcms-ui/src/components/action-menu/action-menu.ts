@@ -344,6 +344,13 @@ export default class CraftActionMenu extends CraftPopover {
       return;
     }
 
+    // Before the popover's `updated()` shows and positions the pane.
+    if (changed.has('open') && this.open) {
+      this._getContentNode()
+        ?.querySelectorAll<CraftActionItem>('craft-action-item')
+        .forEach((item) => item.renderNow?.());
+    }
+
     if (this.actions === undefined) {
       // Slot-based mode — tear down anything we previously generated.
       this._removeGeneratedNodes();
