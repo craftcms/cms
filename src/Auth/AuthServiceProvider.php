@@ -60,6 +60,8 @@ class AuthServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        Passport::$deviceCodeGrantEnabled = false;
+
         $config = $this->app->make(Repository::class);
 
         if (! class_exists($config->get('auth.providers.users.model'))) {
