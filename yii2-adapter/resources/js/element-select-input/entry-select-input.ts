@@ -20,7 +20,7 @@ export class EntrySelectInput extends BaseElementSelectInput {
 
   get section(): any {
     if (!this.settings.sectionId) return null;
-    return Craft.publishableSections.find(
+    return Craft.creatableSections.find(
       (s: any) => s.id === this.settings.sectionId
     );
   }

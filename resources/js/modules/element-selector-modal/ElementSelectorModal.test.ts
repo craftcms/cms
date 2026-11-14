@@ -523,7 +523,7 @@ describe('the new entry button', () => {
     creation.openSlideout.mockReset().mockResolvedValue({id: 'slideout-1'});
     creation.showError.mockReset();
     window.Craft = {
-      publishableSections: [
+      creatableSections: [
         {
           id: 4,
           uid: 'abc',

@@ -21,7 +21,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       .toArray()
       .map((source) => $(source).data('handle'))
       .filter((handle) => !!handle);
-    this.publishableSections = Craft.publishableSections.filter((section) =>
+    this.publishableSections = Craft.creatableSections.filter((section) =>
       includedSections.includes(section.handle)
     );
 

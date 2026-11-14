@@ -52,7 +52,7 @@
         <NewEntryButton
           :sources="indexState.sources"
           :source="indexState.source ?? undefined"
-          :publishable-sections="general.publishableSections"
+          :creatable-sections="general.creatableSections"
           :element-display-name="indexState.elementLowerDisplayName"
         />
       </template>

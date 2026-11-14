@@ -2,7 +2,7 @@ import {computed, type Ref} from 'vue';
 import {toRefs} from '@vueuse/core';
 import {usePage} from '@inertiajs/vue3';
 import type {BreadcrumbItem} from '@/common/types';
-import type {PublishableSection} from '@/modules/elements/composables/useCreatableEntryTypes';
+import type {CreatableSection} from '@/modules/elements/composables/useCreatableEntryTypes';
 
 export interface CpUser {
   username: string | null;
@@ -69,7 +69,7 @@ export interface CraftData {
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;
     notifications: CraftCms.Cms.Cp.Data.NotificationData[];
-    publishableSections: PublishableSection[];
+    creatableSections: CreatableSection[];
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
   /**

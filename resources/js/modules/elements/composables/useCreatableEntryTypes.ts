@@ -14,7 +14,7 @@ export type EntryType = {
   icon: {name: string; family?: string} | null;
 };
 
-export type PublishableSection = {
+export type CreatableSection = {
   /** The entry types the user can create in any of the section's sites. */
   entryTypes: Array<EntryType>;
   /** The IDs of the entry types the user can create in each site, keyed by site ID. */
@@ -29,14 +29,14 @@ export type PublishableSection = {
 };
 
 /** One thing a New entry button can create: an entry type, in a section. */
-export type CreatableType = {section: PublishableSection; entryType: EntryType};
+export type CreatableType = {section: CreatableSection; entryType: EntryType};
 
 interface Options {
   /** Every source on the index, to limit creation to the sections it shows. */
   sources: () => Array<Source>;
   /** The source being viewed, which narrows what's on screen further. */
   source: () => SourceItem | null | undefined;
-  publishableSections: () => Array<PublishableSection>;
+  creatableSections: () => Array<CreatableSection>;
   /** The site the index is showing. */
   siteId: () => number | null | undefined;
 }
@@ -71,7 +71,7 @@ export function useCreatableEntryTypes(options: Options): {
     );
 
     return options
-      .publishableSections()
+      .creatableSections()
       .filter(
         (section) =>
           handles.has(section.handle) &&
