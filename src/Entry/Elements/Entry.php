@@ -1372,6 +1372,16 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
 
         $sourceKey = $section->getSourceKey();
 
+        // A single with a source of its own is named by the entry chip that
+        // follows, so it only needs its page, and not even that when it's the
+        // page's only source: the page and the single are the same place.
+        if ($section->type === SectionType::Single && $sourceKey !== 'singles' && ElementSources::sourceExists(Entry::class, $sourceKey)) {
+            $pageSources = ElementSources::getSources(Entry::class, page: $page)
+                ->reject(fn (array $source) => $source['type'] === ElementSourcesService::TYPE_HEADING);
+
+            return $pageSources->count() === 1 ? [] : $crumbs;
+        }
+
         // Is the section’s source enabled?
         if (ElementSources::sourceExists(Entry::class, $sourceKey)) {
             $sections = Sections::getEditableSections();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -103,4 +104,53 @@ it('keeps a single in the Singles source when its config predates the setting', 
     Sections::handleChangedSection(new class(path: ProjectConfig::PATH_SECTIONS.".$single->uid", newValue: $config, tokenMatches: [$single->uid]) extends ConfigEvent {});
 
     expect(Section::find($single->id)->inSinglesSource)->toBeTrue();
+});
+
+describe('crumbs', function () {
+    beforeEach(function () {
+        $this->contact = singleSection('contact', false);
+        $this->entry = EntryModel::factory()->forSection($this->contact)->createElement(['title' => 'Northwind']);
+        $this->news = Section::factory()->create(['type' => SectionType::Channel, 'handle' => 'news']);
+    });
+
+    it('leads with the page when the single shares it', function () {
+        entrySources([
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:{$this->contact->uid}", 'page' => 'Globals'],
+            ['type' => ElementSources::TYPE_HEADING, 'key' => 'heading:more', 'heading' => 'More', 'page' => 'Globals'],
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:{$this->news->uid}", 'page' => 'Globals'],
+        ]);
+
+        $crumbs = Entry::find()->id($this->entry->id)->one()->getCrumbs();
+
+        // Headings aren't crumbs, as for other entries.
+        expect(array_map(fn ($crumb) => $crumb['label'], $crumbs))->toBe(['Globals'])
+            ->and(parse_url($crumbs[0]['href'], PHP_URL_PATH))->toEndWith('/content/globals');
+    });
+
+    it('has none when the single is its page’s only source', function () {
+        entrySources([
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:{$this->contact->uid}", 'page' => 'Contact'],
+        ]);
+
+        expect(Entry::find()->id($this->entry->id)->one()->getCrumbs())->toBe([]);
+    });
+
+    it('keeps core’s crumbs when the single’s source is disabled', function () {
+        entrySources([
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+            ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:{$this->contact->uid}", 'page' => 'Entries', 'disabled' => true],
+        ]);
+
+        expect(array_map(fn ($crumb) => $crumb['label'], Entry::find()->id($this->entry->id)->one()->getCrumbs()))->toBe(['Entries']);
+    });
+
+    it('keeps core’s crumbs for a single in the Singles source', function () {
+        $home = singleSection('home', true);
+        $homeEntry = EntryModel::factory()->forSection($home)->createElement(['title' => 'Home']);
+        entrySources();
+
+        expect(array_map(fn ($crumb) => $crumb['label'], Entry::find()->id($homeEntry->id)->one()->getCrumbs()))->toBe(['Entries', 'Singles']);
+    });
 });

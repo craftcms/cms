@@ -20,6 +20,7 @@
 - Singles now have an “Include in the Singles source” setting. Singles that aren’t included get an entry source of their own, which can be put on any page or under any heading like a section’s, and opens the single’s entry. New singles aren’t included by default. Existing singles stay in the Singles source.
 - A single’s own entry source, and a page that opens on one, now go straight to the single’s entry rather than an index listing just that entry. Naming the source with `?source=` still shows the index.
 - Pages with only one source now link straight to it from the control panel navigation, rather than opening a subnav with one item.
+- A single with an entry source of its own now has just its page as a breadcrumb, or none when it’s the page’s only source, rather than a “Singles” crumb.
 - Control panel success, notice, and error messages now stack, newest first, and can be swiped away. Errors and messages with actions stay until dismissed.
 - Admin table links and create actions can now open in a slideout with a custom width, via the `slideoutWidth` link option and new `slideout` and `slideoutWidth` arguments on `CraftCms\Cms\Ui\Nodes\Table::createAction()`.
 - Double-clicking an admin table row now opens its link's slideout, if it has one.
