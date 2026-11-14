@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Authenticated MCP server endpoints within the control panel are no longer available via site requests, such as action URLs or requests on the site’s domain when the control panel has its own domain.
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-24vg-rp56-rf5c)
 
 ## 5.12.1 - 2026-11-10
 
