@@ -250,6 +250,9 @@ catalogs:
     jquery:
       specifier: ^3.7.1
       version: 3.7.1
+    jquery-ui:
+      specifier: ^1.14.2
+      version: 1.14.2
     lit:
       specifier: ^3.3.2
       version: 3.3.2
@@ -464,6 +467,9 @@ importers:
       jquery:
         specifier: 'catalog:'
         version: 3.7.1
+      jquery-ui:
+        specifier: 'catalog:'
+        version: 1.14.2
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
@@ -635,7 +641,7 @@ importers:
         specifier: 'catalog:'
         version: 3.7.1
       jquery-ui:
-        specifier: ^1.14.2
+        specifier: 'catalog:'
         version: 1.14.2
       jquery.payment:
         specifier: ^3.0.0

@@ -51,6 +51,7 @@ catalog:
   happy-dom: ^20.9.0
   inputmask: ^5.0.10
   jquery: ^3.7.1
+  jquery-ui: ^1.14.2
   lit: ^3.3.2
   playwright: ^1.64.1
   postcss-html: ^2.0.0
