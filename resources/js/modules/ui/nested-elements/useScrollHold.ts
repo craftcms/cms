@@ -8,7 +8,15 @@ interface FocusAnchor {
   /** Child indexes from the block down to the focused element. */
   path: number[];
   selection: [number, number] | null;
+  /** The tab strips in the block that had moved off their first tab. */
+  tabs: Array<{path: number[]; index: number}>;
 }
+
+/** A `craft-tabs` strip, which owns which of its tabs is selected. */
+type TabStrip = HTMLElement & {
+  selectedIndex: number;
+  updateComplete: Promise<unknown>;
+};
 
 /**
  * Holds the page still while the field is rebuilt.
@@ -22,7 +30,8 @@ interface FocusAnchor {
  * block. It goes back to the same place in that block, or, when a save has
  * replaced the blocks with as many new ones, in the block at its position.
  * That can take more than one rebuild: the saved blocks' ui can arrive before
- * the blocks themselves are renamed onto it.
+ * the blocks themselves are renamed onto it. The rebuilt block shows its first
+ * tabs, so the ones it had selected are selected again first.
  */
 export function useScrollHold(
   rebuild: WatchSource<unknown>,
@@ -47,14 +56,17 @@ export function useScrollHold(
     const anchors = scrollAnchors();
     focus = focusAnchor() ?? (focusLost() ? focus : null);
 
-    void nextTick(() => {
+    void nextTick(async () => {
       for (const [node, top] of anchors) {
         if (node.scrollTop !== top) {
           node.scrollTop = top;
         }
       }
 
-      if (focus && restoreFocus(focus)) {
+      const anchor = focus;
+
+      // A later rebuild may have taken over while the tabs were selected.
+      if (anchor && (await restoreFocus(anchor)) && focus === anchor) {
         focus = null;
       }
     });
@@ -107,17 +119,10 @@ export function useScrollHold(
       return null;
     }
 
-    const path: number[] = [];
+    const path = pathWithin(block, active);
 
-    for (let node: Element = active; node !== block;) {
-      const parent: Element | null = node.parentElement;
-
-      if (!parent) {
-        return null;
-      }
-
-      path.unshift([...parent.children].indexOf(node));
-      node = parent;
+    if (!path) {
+      return null;
     }
 
     return {
@@ -132,14 +137,51 @@ export function useScrollHold(
         active.selectionEnd !== null
           ? [active.selectionStart, active.selectionEnd]
           : null,
+      tabs: [...block.querySelectorAll<TabStrip>('craft-tabs')].flatMap(
+        (strip) => {
+          const stripPath = pathWithin(block, strip);
+
+          return strip.selectedIndex && stripPath
+            ? [{path: stripPath, index: strip.selectedIndex}]
+            : [];
+        }
+      ),
     };
+  }
+
+  /** Child indexes from `root` down to `node`. */
+  function pathWithin(root: Element, node: Element): number[] | null {
+    const path: number[] = [];
+
+    for (let current = node; current !== root;) {
+      const parent = current.parentElement;
+
+      if (!parent) {
+        return null;
+      }
+
+      path.unshift([...parent.children].indexOf(current));
+      current = parent;
+    }
+
+    return path;
+  }
+
+  function nodeAt(root: Element, path: number[]): Element | undefined {
+    let node: Element | undefined = root;
+
+    for (const index of path) {
+      node = node?.children[index];
+    }
+
+    return node;
   }
 
   /**
    * Puts focus back, and reports whether there's nothing left to do: it's
    * back, or has gone somewhere else meanwhile.
    */
-  function restoreFocus(anchor: FocusAnchor): boolean {
+  async function restoreFocus(anchor: FocusAnchor): Promise<boolean> {
     if (!focusLost()) {
       return true;
     }
@@ -157,13 +199,36 @@ export function useScrollHold(
       return true;
     }
 
-    let target: Element | undefined = all.find(
-      (block) => block.dataset.id === uid
-    );
+    const block = all.find((block) => block.dataset.id === uid);
 
-    for (const index of anchor.path) {
-      target = target?.children[index];
+    if (!block) {
+      return false;
     }
+
+    // Outer strips first, as selecting a tab renders the strips inside it.
+    for (const tab of anchor.tabs) {
+      const strip = nodeAt(block, tab.path) as TabStrip | undefined;
+
+      if (strip?.localName !== 'craft-tabs') {
+        return false;
+      }
+
+      // Selecting one before its first render wouldn't be announced, and the
+      // fields wouldn't follow.
+      await strip.updateComplete;
+
+      if (strip.selectedIndex !== tab.index) {
+        strip.selectedIndex = tab.index;
+        await strip.updateComplete;
+        await nextTick();
+      }
+    }
+
+    if (!focusLost()) {
+      return true;
+    }
+
+    const target = nodeAt(block, anchor.path);
 
     if (!(target instanceof HTMLElement)) {
       return false;
