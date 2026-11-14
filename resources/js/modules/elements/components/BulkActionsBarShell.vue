@@ -12,11 +12,14 @@
   import Text from '@/common/components/Text.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
 
-  defineProps<{
-    selectedCount: number;
-    /** The "Actions" menu's items; the menu is left out when there are none. */
-    actions: ActionItems;
-  }>();
+  withDefaults(
+    defineProps<{
+      selectedCount: number;
+      /** The "Actions" menu's items; the menu is left out when there are none. */
+      actions?: ActionItems;
+    }>(),
+    {actions: () => []}
+  );
 
   const emit = defineEmits<{
     /** An `http` action item succeeded, so the parent can refresh + clear. */

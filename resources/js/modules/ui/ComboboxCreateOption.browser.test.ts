@@ -106,7 +106,8 @@ it('opens the create screen when its option is selected by keyboard', async () =
 it('doesn’t open the create screen when its label is typed', async () => {
   const {combobox, selection, changes} = await fixture();
   combobox.querySelector('input')!.focus();
-  await userEvent.keyboard('{Control>}a{/Control}');
+  // Ctrl+A doesn't select all on macOS
+  combobox.querySelector('input')!.select();
   await userEvent.keyboard('Create category');
 
   expect(slideout.openSlideout).not.toHaveBeenCalled();

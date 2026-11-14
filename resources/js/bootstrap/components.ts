@@ -1,4 +1,4 @@
-import type {App, Component} from 'vue';
+import type {App, Component, FunctionalComponent} from 'vue';
 import {defineAsyncComponent} from 'vue';
 
 type MaybePromise<T> = T | Promise<T>;
@@ -12,7 +12,13 @@ export type CpComponentLoader = () => MaybePromise<
   Component | CpComponentModule
 >;
 
-export type CpComponentRegistration = Component | CpComponentLoader;
+/**
+ * A component, or a function that loads one. Functional components are left
+ * out: the registry would call one as a loader. A loader can resolve to one.
+ */
+export type CpComponentRegistration =
+  | Exclude<Component, FunctionalComponent<any, any, any, any>>
+  | CpComponentLoader;
 
 export interface CpComponentRegistry {
   register(name: string, componentOrLoader: CpComponentRegistration): void;
@@ -101,3 +107,16 @@ export function createCpComponentRegistry(): CpComponentRegistry {
 }
 
 export const cpComponentRegistry = createCpComponentRegistry();
+
+/**
+ * Makes `component` available to every CP app under `name`, which is how the
+ * server refers to it: a UI node or control's `component`, a dashboard
+ * widget's, or one resolved with `resolveComponent(name)`. Prefix names with
+ * the plugin's handle, such as `my-plugin:notice`.
+ */
+export function registerComponent(
+  name: string,
+  component: CpComponentRegistration
+): void {
+  cpComponentRegistry.register(name, component);
+}

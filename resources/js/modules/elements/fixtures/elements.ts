@@ -219,3 +219,90 @@ export const sampleActions: Array<BulkActionItem> = [
     },
   },
 ];
+
+/**
+ * Element data in the shape `ElementSelect::presentation()` sends: what chips,
+ * thumbnail tiles and element lists draw from.
+ */
+export interface SampleElement {
+  id: number;
+  label: string;
+  siteId: number;
+  status: {fill: string; label: string; draft: boolean} | null;
+  color: string | null;
+  cpEditUrl: string | null;
+  url: string | null;
+  thumbHtml?: string;
+  level?: number | null;
+}
+
+const statusPayloads: Record<string, SampleElement['status']> = {
+  live: {fill: 'teal', label: 'Live', draft: false},
+  pending: {fill: 'sky', label: 'Pending', draft: false},
+  expired: {fill: 'red', label: 'Expired', draft: false},
+  disabled: {fill: 'gray', label: 'Disabled', draft: false},
+};
+
+/** A square placeholder image, standing in for a server-rendered thumbnail. */
+function sampleThumbHtml(hue: number): string {
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 3">' +
+    `<rect width="4" height="3" fill="hsl(${hue} 60% 75%)"/>` +
+    `<circle cx="2.9" cy="0.9" r="0.45" fill="hsl(${hue} 70% 92%)"/>` +
+    `<path d="M0 3 1.4 1.4 2.4 2.3 3 1.8 4 3z" fill="hsl(${hue} 45% 45%)"/>` +
+    '</svg>';
+
+  return `<img src="data:image/svg+xml,${encodeURIComponent(svg)}" alt="" style="width:100%;height:100%;object-fit:cover">`;
+}
+
+/** Entries as chips: a status dot, a section color, and no thumbnails. */
+export const sampleElements: Array<SampleElement> = sampleEntries
+  .slice(0, 6)
+  .map((entry) => ({
+    id: entry.id,
+    label: entry.title,
+    siteId: 1,
+    status: statusPayloads[entry.status] ?? null,
+    color: entry.section === 'Blog' ? 'blue' : 'amber',
+    cpEditUrl: `/admin/content/entries/${entry.id}`,
+    url: `/blog/${entry.id}`,
+  }));
+
+/** Assets as thumbnail tiles: each has a thumbnail and no status. */
+export const sampleAssets: Array<SampleElement> = [
+  'harbor-at-dawn.jpg',
+  'team-offsite.jpg',
+  'product-hero.png',
+  'mountain-trail.jpg',
+  'office-plants.jpg',
+  'launch-banner.png',
+  'night-market.jpg',
+  'studio-portrait.jpg',
+].map((filename, index) => ({
+  id: 100 + index,
+  label: filename,
+  siteId: 1,
+  status: null,
+  color: null,
+  cpEditUrl: `/admin/assets/edit/${100 + index}`,
+  url: null,
+  thumbHtml: sampleThumbHtml(index * 45),
+}));
+
+/** Categories in a structure, with the levels a hierarchical relation field nests by. */
+export const sampleCategories: Array<SampleElement> = [
+  {id: 201, label: 'Products', level: 1},
+  {id: 202, label: 'Hardware', level: 2},
+  {id: 203, label: 'Keyboards', level: 3},
+  {id: 204, label: 'Mice', level: 3},
+  {id: 205, label: 'Software', level: 2},
+  {id: 206, label: 'Services', level: 1},
+  {id: 207, label: 'Consulting', level: 2},
+].map((category) => ({
+  ...category,
+  siteId: 1,
+  status: null,
+  color: null,
+  cpEditUrl: `/admin/categories/${category.id}`,
+  url: null,
+}));
