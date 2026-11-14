@@ -407,8 +407,8 @@ importers:
         specifier: 'catalog:'
         version: 3.3.2
       overtype:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.9.0
+        version: 2.9.0
       punycode:
         specifier: 'catalog:'
         version: 2.3.1
@@ -7444,8 +7444,8 @@ packages:
     resolution: {integrity: sha512-8y/eV9QQZCiyn1SprXSrCmqJN0yNRATe+PO8ztwqrvrbdRLA3eYJF0yaR0YayLWkMbsQSKWS9N2gPcGEc4UsZg==}
     engines: {node: '>=0.10.0'}
 
-  markdown-actions@1.1.2:
-    resolution: {integrity: sha512-U7rmgTvUP3neh3XaVblikslRWWhfpzF2SiI1A6z3az7IpYuAiVvdqtZrFCArV22TSj2Ht+r0ResohlsJ8/ntbw==}
+  markdown-actions@1.3.0:
+    resolution: {integrity: sha512-SiQ+wowIL+FbBGNT4VrLrpnN2EsXKV7fDKMb5ptAahcz0QjlwZdtYUlrzufXCi7URuZRg1ZaIu22VEXRKd+vyQ==}
 
   markdown-it@14.1.0:
     resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
@@ -7923,8 +7923,8 @@ packages:
     resolution: {integrity: sha512-84cglkRILFxdtA8hAvLNdMrtBpPNBTrQ9/ulg0FA7xLMnD6mifv+enAIeRmvtv+WgdCE+LPGOfQmtJRrVaIVhQ==}
     engines: {node: '>=20'}
 
-  overtype@2.4.0:
-    resolution: {integrity: sha512-V5HJcdwyN/Lye1vvU0d47y1VaEqSGsWRdCa3ZCZB/DZHdR840i1z0oBGYAmbLe/I2H2cxLx9Bv3tuVl4dTgUpA==}
+  overtype@2.9.0:
+    resolution: {integrity: sha512-7GazO4BfWe7VsQXvwbKhHezBdQehCAN74mG1it1BxKVeeF6c61kYAFz+w3k8TQOzizjZb0EoXLR2J2lWXKnZfA==}
 
   own-keys@1.0.1:
     resolution: {integrity: sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg==}
@@ -16628,7 +16628,7 @@ snapshots:
 
   map-cache@0.2.2: {}
 
-  markdown-actions@1.1.2: {}
+  markdown-actions@1.3.0: {}
 
   markdown-it@14.1.0:
     dependencies:
@@ -17285,10 +17285,10 @@ snapshots:
       stdin-discarder: 0.3.2
       string-width: 8.2.0
 
-  overtype@2.4.0:
+  overtype@2.9.0:
     dependencies:
       '@floating-ui/dom': 1.7.6
-      markdown-actions: 1.1.2
+      markdown-actions: 1.3.0
 
   own-keys@1.0.1:
     dependencies:
