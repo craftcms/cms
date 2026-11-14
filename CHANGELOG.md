@@ -36,6 +36,7 @@
 - Fixed a bug where fields could be saved with the same handle as another field. ([#20600](https://github.com/craftcms/cms/issues/20600), [#20607](https://github.com/craftcms/cms/pull/20607))
 - Fixed an error that occurred when saving an entry via the `entries/save-entry` action with an `entryId` param submitted as form data. ([#20643](https://github.com/craftcms/cms/pull/20643))
 - Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
+- Fixed an error that occurred when running `php artisan passport:purge`, because the `oauth_device_codes` table was missing. ([#20676](https://github.com/craftcms/cms/pull/20676))
 - Fixed an infinite recursion that occurred when clearing the current user’s identity from a console request via `craft\console\User::setIdentity()`. ([#20602](https://github.com/craftcms/cms/issues/20602), [#20606](https://github.com/craftcms/cms/pull/20606))
 - Fixed a bug where asset indexing included the default asset transformer’s volume directories. ([#20589](https://github.com/craftcms/cms/pull/20589))
 - Fixed a bug where subclasses of core element types, such as the Yii2 adapter’s `craft\elements\Asset`, were authorized by the generic element policy rather than their parent class’s policy, so users could be denied access they had. ([#20603](https://github.com/craftcms/cms/issues/20603), [#20605](https://github.com/craftcms/cms/pull/20605))
