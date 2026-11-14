@@ -101,6 +101,7 @@
 - Fixed a bug where element selector modals showed structure elements at the same level as their parents in the “Display in a structured table” view mode. ([#20664](https://github.com/craftcms/cms/pull/20664))
 - Fixed a bug where validating a model or element again, such as when saving it, could skip attributes that weren’t validated the first time, or check their earlier values. ([#20690](https://github.com/craftcms/cms/issues/20690), [#20693](https://github.com/craftcms/cms/pull/20693))
 - Fixed a bug where cloned models and elements, such as duplicated entries and new revisions, were validated with the original’s values. ([#20691](https://github.com/craftcms/cms/issues/20691), [#20693](https://github.com/craftcms/cms/pull/20693))
+- Fixed an error that could occur when creating a revision of an element whose custom field values didn’t pass validation, such as values saved with validation disabled. ([#20693](https://github.com/craftcms/cms/pull/20693))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
