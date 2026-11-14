@@ -823,6 +823,32 @@ class Fields extends Component
     }
 
     /**
+     * Forgets the cached fields and field layouts, so they’re loaded again the next time they’re needed.
+     *
+     * Unlike [[refreshFields()]], this doesn’t update the field version. Instead, it tells the already-loaded
+     * [[CustomFieldBehavior]] class about any field handles that have been added since.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $this->_fields = null;
+        $this->_layouts = null;
+
+        foreach ($this->getAllFields(false) as $field) {
+            CustomFieldBehavior::$fieldHandles[$field->handle] = true;
+        }
+
+        foreach ($this->getAllLayouts() as $layout) {
+            foreach ($layout->getCustomFieldElements() as $layoutElement) {
+                if (isset($layoutElement->handle)) {
+                    CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
+                }
+            }
+        }
+    }
+
+    /**
      * Refreshes the internal field cache.
      *
      * This should be called whenever a field is updated or deleted directly in

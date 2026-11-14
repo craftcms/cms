@@ -200,6 +200,21 @@ class Sites extends Component
         $this->_loadAllSites();
     }
 
+    /**
+     * Forgets the cached site groups and reloads the sites.
+     *
+     * The current site is reloaded too. If it was the primary site or no longer exists, it becomes the new primary site.
+     *
+     * @internal
+     */
+    public function reset(): void
+    {
+        $currentSiteId = $this->_currentSite?->primary ? null : $this->_currentSite?->id;
+        $this->_groups = null;
+        $this->refreshSites();
+        $this->_currentSite = $currentSiteId ? $this->getSiteById($currentSiteId, true) : null;
+    }
+
     // Groups
     // -------------------------------------------------------------------------
 

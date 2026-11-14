@@ -452,6 +452,21 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Forgets the loaded project config, so it’s loaded again the next time it’s needed.
+     *
+     * Unlike [[reset()]], this doesn’t register the event handlers again. Call it only once changes have been saved.
+     *
+     * @internal
+     */
+    public function forgetLoadedConfig(): void
+    {
+        $this->_internalConfig = null;
+        $this->_externalConfig = null;
+        $this->_currentWorkingConfig = null;
+        $this->_configFileList = [];
+    }
+
+    /**
      * Returns a config item value by its path.
      *
      * ---

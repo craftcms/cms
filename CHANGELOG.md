@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a bug where the stdio MCP server (`mcp/serve`) didn’t see project config changes made by other processes, such as in the control panel or via the CLI, and rejected all project config changes after them until it was restarted. ([#20597](https://github.com/craftcms/cms/pull/20597))
 - Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
 - Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes in the control panel. ([#20613](https://github.com/craftcms/cms/issues/20613))
 - Fixed an error that could occur when saving an image cropped against the left or top edge in the Image Editor. ([#20601](https://github.com/craftcms/cms/issues/20601))
