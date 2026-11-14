@@ -2,6 +2,7 @@ import {defineComponent} from 'vue';
 import {describe, expect, it} from 'vite-plus/test';
 import {
   createInertiaPageRegistry,
+  inertiaResponseComponent,
   resolveCoreInertiaPage,
   resolveInertiaPage,
   type InertiaPageGlob,
@@ -82,5 +83,22 @@ describe('Inertia page registry', () => {
     await expect(
       resolveInertiaPage('test-plugin::Missing', registry)
     ).rejects.toThrow('Page not found: test-plugin::Missing');
+  });
+});
+
+describe('inertiaResponseComponent()', () => {
+  it('reads the component from the start of a response body', () => {
+    expect(
+      inertiaResponseComponent(
+        '{"component":"users\\/Index","props":{"component":"other"}}'
+      )
+    ).toBe('users/Index');
+  });
+
+  it('reads nothing from a body that doesn’t start with it', () => {
+    expect(
+      inertiaResponseComponent('{"props":{},"component":"users\\/Index"}')
+    ).toBeNull();
+    expect(inertiaResponseComponent({component: 'users/Index'})).toBeNull();
   });
 });

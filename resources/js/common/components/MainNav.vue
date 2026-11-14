@@ -10,6 +10,7 @@
   import {usePage} from '@inertiajs/vue3';
   import {useSourceBadges} from '@/common/composables/useSourceBadges';
   import {useNavBadges} from '@/common/composables/useNavBadges';
+  import {usePendingVisitUrl} from '@/common/composables/usePendingVisitUrl';
 
   const page = usePage<{
     queue: {
@@ -23,18 +24,24 @@
   const {nav: sharedNav} = useCraftData();
   const navBadges = useNavBadges();
   const sourceBadges = useSourceBadges();
+  const pendingUrl = usePendingVisitUrl();
 
   // The tree arrives once and then stays put, so neither the trail nor the
   // badge counts are in it — both are decided per page, here.
   // Server shape in, descriptors out: the trail and the badges are decided
   // against the nav's own fields, then the whole tree becomes the same
   // descriptors a menu would draw.
+  // The trail moves to the page being visited as soon as the visit starts, so
+  // the item clicked is selected without waiting for the server.
   const nav = computed(() =>
     navItemActions(
-      withNavBadges(withNavSelection(sharedNav.value, page.url), {
-        ...navBadges.value,
-        ...sourceBadges.value,
-      })
+      withNavBadges(
+        withNavSelection(sharedNav.value, pendingUrl.value ?? page.url),
+        {
+          ...navBadges.value,
+          ...sourceBadges.value,
+        }
+      )
     )
   );
 
