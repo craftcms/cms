@@ -20,7 +20,11 @@ export function isOutsidePressClaimedWithin(
   region: Node
 ): boolean {
   return (claims.get(event) ?? []).some((overlay) => {
-    for (let node: Node | null = overlay; node; node = composedParent(node)) {
+    for (
+      let node: Node | null = composedParent(overlay);
+      node;
+      node = composedParent(node)
+    ) {
       if (node === region) {
         return true;
       }

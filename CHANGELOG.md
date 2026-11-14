@@ -29,6 +29,7 @@
 - The control panel’s import map now publishes `@inertiajs/vue3`, so plugin bundles share the control panel’s Inertia instance rather than bundling their own. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Added `CraftCms\Cms\Cp\Html\ElementHtml::presentation()`. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
+- Fixed a bug where clicking a draggable item, such as a field layout tab, didn’t close open menus and popovers. ([#20681](https://github.com/craftcms/cms/pull/20681))
 - Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
 - Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes on legacy control panel screens. ([#20613](https://github.com/craftcms/cms/issues/20613))
 - Fixed a bug where images cropped against the left or top edge in the Image Editor could be saved with a sliver of padding. ([#20601](https://github.com/craftcms/cms/issues/20601))
