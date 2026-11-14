@@ -148,6 +148,15 @@ describe('SectionTypeConditionRule', function () {
         'in' => ['in', ['single', 'structure']],
         'not in' => ['ni', ['channel']],
     ]);
+
+    it('doesn’t match sectionless entries, which its query leaves out', function () {
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(SectionTypeConditionRule::class);
+        $rule->operator = 'ni';
+        $rule->values = [SectionType::Single->value];
+
+        expect($rule->matchElement(new Entry))->toBeFalse();
+    });
 });
 
 describe('TypeConditionRule', function () {

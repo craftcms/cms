@@ -660,18 +660,20 @@ class EntrifyController extends Controller
      * page, so global sets keep a place of their own in the control panel.
      *
      * Its row goes at the end of the page, after any global set converted
-     * before it. Sources that were never customized are saved as they're
-     * shown first, so the rest of the list stays as it was.
+     * before it. The saved sources are kept as they are, including custom
+     * sources limited to user groups and blank headings. Sources that were
+     * never customized are saved as they're shown first, so the rest of the
+     * list stays as it was.
      */
     private function _addToGlobalsPage(Section $section): void
     {
         $this->do('Adding it to the “Globals” sources page', function() use ($section) {
             $elementSources = app(ElementSources::class);
             $key = "section:$section->uid";
-            $sources = $elementSources->getSources(Entry::class, ElementSources::CONTEXT_INDEX, true)
-                // The blank heading before sources that aren't in the saved list
-                // yet is added on every read; it isn't saved.
-                ->reject(fn(array $source) => $source['type'] === ElementSources::TYPE_HEADING && ($source['heading'] ?? '') === '' && !isset($source['key']))
+            $sources = app(ProjectConfig::class)->get(ProjectConfig::PATH_ELEMENT_SOURCES . '.' . Entry::class)
+                ?: $elementSources->getSources(Entry::class, ElementSources::CONTEXT_SETTINGS, true)->all();
+
+            $sources = collect($sources)
                 ->reject(fn(array $source) => ($source['key'] ?? null) === $key)
                 ->map(fn(array $source) => [...$source, 'page' => $source['page'] ?? 'Entries'])
                 ->values()

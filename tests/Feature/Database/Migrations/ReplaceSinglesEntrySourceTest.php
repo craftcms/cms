@@ -7,7 +7,10 @@ use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Conditions\SectionTypeConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -28,6 +31,24 @@ beforeEach(function () {
 function saveOldEntrySources(?array $sources): void
 {
     app(ProjectConfig::class)->set(ProjectConfig::PATH_ELEMENT_SOURCES.'.'.Entry::class, $sources);
+}
+
+/** @param array<string, mixed> $settings */
+function saveSinglesFieldConfig(string $uid, string $type, array $settings): void
+{
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->muteEvents = true;
+    $projectConfig->set(ProjectConfig::PATH_FIELDS.".$uid", [
+        'type' => $type,
+        'settings' => ProjectConfigHelper::packAssociativeArrays($settings),
+    ]);
+    $projectConfig->muteEvents = false;
+}
+
+/** @return array<string, mixed> */
+function singlesFieldSettings(string $uid): array
+{
+    return ProjectConfigHelper::unpackAssociativeArrays(app(ProjectConfig::class)->get(ProjectConfig::PATH_FIELDS.".$uid.settings"));
 }
 
 /** @return list<array<string, mixed>> */
@@ -154,4 +175,56 @@ it('gives singles created afterward enabled sources', function () {
     expect(app(ElementSources::class)->getSources(Entry::class)->pluck('key')->all())
         ->toContain("section:$contact->uid")
         ->not->toContain("section:{$this->home->uid}");
+});
+
+it('points fields restricted to the Singles source at the custom source', function () {
+    saveOldEntrySources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles'],
+    ]);
+    saveSinglesFieldConfig('entries-field', Entries::class, ['sources' => ['singles', "section:{$this->news->uid}"]]);
+    saveSinglesFieldConfig('link-field', Link::class, ['typeSettings' => ['entry' => ['sources' => ['singles']]]]);
+    app(ProjectConfig::class)->muteEvents = true;
+
+    $customKey = runReplaceSinglesEntrySourceMigration()[1]['key'];
+
+    expect(singlesFieldSettings('entries-field')['sources'])->toBe([$customKey, "section:{$this->news->uid}"])
+        ->and(singlesFieldSettings('link-field')['typeSettings']['entry']['sources'])->toBe([$customKey]);
+});
+
+it('points fields restricted to a disabled Singles source at the singles’ own sources', function () {
+    saveOldEntrySources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'disabled' => true],
+    ]);
+    saveSinglesFieldConfig('entries-field', Entries::class, ['sources' => ['singles']]);
+    app(ProjectConfig::class)->muteEvents = true;
+
+    runReplaceSinglesEntrySourceMigration();
+
+    expect(singlesFieldSettings('entries-field')['sources'])
+        ->toEqualCanonicalizing(["section:{$this->home->uid}", "section:{$this->about->uid}"]);
+});
+
+it('moves CP navigation customizations of the Singles item to the custom source', function () {
+    saveOldEntrySources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Site Content'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'page' => 'Site Content'],
+    ]);
+    $nav = [
+        'order' => ['nav-content-site-content' => ['nav-content-site-content-source-singles', 'nav-content-site-content-source-_2a']],
+        'items' => ['nav-content-site-content-source-singles' => ['label' => 'Pages']],
+    ];
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_CP_NAV.'.default', $nav);
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_CP_NAV.'.groups.group-uid.nav', $nav);
+
+    $customKey = runReplaceSinglesEntrySourceMigration()[1]['key'];
+    $newId = 'nav-content-site-content-source-custom_3a'.substr($customKey, strlen('custom:'));
+
+    foreach (['default', 'groups.group-uid.nav'] as $path) {
+        $updated = app(ProjectConfig::class)->get(ProjectConfig::PATH_CP_NAV.".$path");
+
+        expect($updated['items'])->toBe([$newId => ['label' => 'Pages']])
+            ->and($updated['order']['nav-content-site-content'])->toBe([$newId, 'nav-content-site-content-source-_2a']);
+    }
 });

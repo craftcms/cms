@@ -1337,7 +1337,7 @@ class Entry extends Element implements Colorable, ExpirableElementInterface, Ico
         $sourceExists = ElementSources::sourceExists(Entry::class, $sourceKey);
         // A page with one source has nothing to choose between, and the page
         // and the source are the same place, so a crumb for each would repeat.
-        $onlySource = $sourceExists && ElementSources::getSources(Entry::class, page: $page)
+        $onlySource = $sourceExists && ElementSources::getSources(Entry::class, page: $page, siteId: $this->siteId)
             ->reject(fn (array $source) => $source['type'] === ElementSourcesService::TYPE_HEADING)
             ->count() === 1;
 

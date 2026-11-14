@@ -71,7 +71,14 @@ class SectionTypeConditionRule extends BaseMultiSelectConditionRule implements E
 
     public function matchElement(ElementInterface $element): bool
     {
+        if ($this->getValues() === []) {
+            return true;
+        }
+
         /** @var Entry $element */
-        return $this->matchValue($element->getSection()?->type->value);
+        $section = $element->getSection();
+
+        // The query only lists entries in sections, so sectionless entries, such as nested ones, don't match.
+        return $section !== null && $this->matchValue($section->type->value);
     }
 }

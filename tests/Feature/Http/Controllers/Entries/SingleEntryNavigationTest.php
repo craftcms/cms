@@ -42,6 +42,14 @@ it('opens a single’s entry from its source', function () {
         ->assertRedirect(Entry::find()->id($this->entry->id)->one()->getCpEditUrl());
 });
 
+it('opens a single’s entry from its source when it isn’t live', function () {
+    $single = Section::factory()->create(['type' => SectionType::Single, 'handle' => 'upcoming']);
+    $entry = EntryModel::factory()->forSection($single)->pending()->create();
+
+    get(cp_url('content/entries/upcoming'))
+        ->assertRedirect(Entry::find()->id($entry->id)->status(null)->one()->getCpEditUrl());
+});
+
 it('opens a page on its single when that’s the source it shows', function () {
     singleNavSources([
         ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],

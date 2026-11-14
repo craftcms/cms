@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Cp\SiteSwitcher;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Controllers\Concerns\RedirectsToShownSource;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\ViewModels\EntryIndexViewModel;
 use CraftCms\Cms\Section\Enums\SectionType;
-use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\Sections;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -64,7 +64,12 @@ readonly class ContentIndexController
             return null;
         }
 
-        $url = (Entries::getSingleEntriesByHandle([$section->handle])[$section->handle] ?? null)?->getCpEditUrl();
+        $url = Entry::find()
+            ->sectionId($section->id)
+            ->siteId($viewModel->siteId())
+            ->status(null)
+            ->one()
+            ?->getCpEditUrl();
 
         return $url !== null ? redirect($url) : null;
     }

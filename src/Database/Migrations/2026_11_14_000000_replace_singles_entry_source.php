@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Conditions\SectionTypeConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Field\Markdown;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -61,9 +66,11 @@ return new class extends Migration
         }
 
         $newSources = [];
+        $customKey = null;
 
         if (isset($singlesSource) && empty($singlesSource['disabled']) && $singleUids !== []) {
-            $newSources[] = $this->customSinglesSource($singlesSource, $page);
+            $newSources[] = $customSource = $this->customSinglesSource($singlesSource, $page);
+            $customKey = $customSource['key'];
         }
 
         $existingKeys = array_column($sources, 'key');
@@ -80,12 +87,129 @@ return new class extends Migration
 
         array_splice($sources, $index, 0, $newSources);
 
-        if ($sources === $projectConfig->get($path)) {
-            return;
+        if ($sources !== $projectConfig->get($path)) {
+            $projectConfig->set($path, $sources, 'Replace the Singles entry source');
         }
 
-        $projectConfig->set($path, $sources, 'Replace the Singles entry source');
+        if ($singleUids !== []) {
+            // Fields that could relate entries from the Singles source get the
+            // source that replaced it, or the singles’ own sources if there isn’t one.
+            $this->updateFieldSources($projectConfig, $customKey !== null ? [$customKey] : array_map(fn (string $uid) => "section:$uid", $singleUids));
+        }
+
+        if ($customKey !== null) {
+            $this->updateNavigations($projectConfig, $page, $customKey);
+        }
+
         $projectConfig->saveModifiedConfigData();
+    }
+
+    /**
+     * Replaces `singles` in fields’ entry source settings: Entries fields’
+     * sources, and the entry sources of Link and Markdown fields’ entry links.
+     *
+     * @param  list<string>  $replacements
+     */
+    private function updateFieldSources(ProjectConfig $projectConfig, array $replacements): void
+    {
+        foreach ($projectConfig->get(ProjectConfig::PATH_FIELDS) ?? [] as $uid => $config) {
+            if (! is_array($config['settings'] ?? null)) {
+                continue;
+            }
+
+            $settings = ProjectConfigHelper::unpackAssociativeArrays($config['settings']);
+            $updated = match ($config['type'] ?? null) {
+                Entries::class => $this->replaceInSources($settings, $replacements),
+                Link::class => $this->replaceInSources($settings['typeSettings']['entry'], $replacements),
+                Markdown::class => $this->replaceInSources($settings['linkSettingsTypeSettings']['entry'], $replacements),
+                default => false,
+            };
+
+            if ($updated) {
+                $projectConfig->set(
+                    ProjectConfig::PATH_FIELDS.".$uid.settings",
+                    ProjectConfigHelper::packAssociativeArrays($settings),
+                    'Replace the Singles entry source in field settings',
+                );
+            }
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $settings
+     * @param  list<string>  $replacements
+     */
+    private function replaceInSources(?array &$settings, array $replacements): bool
+    {
+        $updated = false;
+
+        if (is_array($settings['sources'] ?? null) && in_array('singles', $settings['sources'], true)) {
+            $settings['sources'] = array_values(array_unique(array_merge(...array_map(
+                fn (mixed $source) => $source === 'singles' ? $replacements : [$source],
+                $settings['sources'],
+            ))));
+            $updated = true;
+        }
+
+        if (($settings['source'] ?? null) === 'singles') {
+            $settings['source'] = $replacements[0];
+            $updated = true;
+        }
+
+        return $updated;
+    }
+
+    /**
+     * Points CP navigation customizations of the Singles source’s nav item at
+     * the custom source that replaced it, in the default navigation and the
+     * user groups’ navigations.
+     */
+    private function updateNavigations(ProjectConfig $projectConfig, ?string $page, string $customKey): void
+    {
+        $indexUri = sprintf('content/%s', ElementSources::pageSlug($page ?? 'Entries'));
+        $oldId = $this->sourceNavItemId($indexUri, 'singles');
+        $newId = $this->sourceNavItemId($indexUri, $customKey);
+        $paths = [ProjectConfig::PATH_CP_NAV.'.default'];
+
+        foreach (array_keys($projectConfig->get(ProjectConfig::PATH_CP_NAV.'.groups') ?? []) as $groupUid) {
+            $paths[] = ProjectConfig::PATH_CP_NAV.".groups.$groupUid.nav";
+        }
+
+        foreach ($paths as $path) {
+            $nav = $projectConfig->get($path);
+
+            if (! is_array($nav)) {
+                continue;
+            }
+
+            $updated = $nav;
+
+            if (isset($updated['items'][$oldId])) {
+                $updated['items'][$newId] = $updated['items'][$oldId];
+                unset($updated['items'][$oldId]);
+            }
+
+            foreach ($updated['order'] ?? [] as $parentId => $childIds) {
+                if (is_array($childIds)) {
+                    $updated['order'][$parentId] = array_map(fn (mixed $id) => $id === $oldId ? $newId : $id, $childIds);
+                }
+            }
+
+            if ($updated !== $nav) {
+                $projectConfig->set($path, $updated, 'Replace the Singles entry source in the CP navigation');
+            }
+        }
+    }
+
+    /**
+     * A source’s nav item ID, as {@see Navigation} gives it.
+     */
+    private function sourceNavItemId(string $indexUri, string $key): string
+    {
+        $escapedKey = preg_replace_callback('/[^A-Za-z0-9\-]/', fn (array $match) => '_'.bin2hex($match[0]), $key);
+        $href = sprintf('%s/source-%s', $indexUri, $escapedKey);
+
+        return 'nav-'.preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $href)));
     }
 
     /**
