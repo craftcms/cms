@@ -1214,6 +1214,7 @@ return [
     'Check List' => 'Check List',
     'Check again' => 'Check again',
     'Check for {onLabel}.' => 'Check for {onLabel}.',
+    'Check list' => 'Check list',
     'Check your email for instructions to reset your password.' => 'Check your email for instructions to reset your password.',
     'Checkbox Options' => 'Checkbox Options',
     'Checkbox' => 'Checkbox',

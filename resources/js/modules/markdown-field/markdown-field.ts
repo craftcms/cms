@@ -296,6 +296,7 @@ class MarkdownField extends LitElement {
       lineHeight: 'var(--c-leading-normal)',
       padding: 'var(--c-spacing-md) var(--c-input-spacing-inline)',
       placeholder: this.placeholder ?? '',
+      proportional: this.proportional,
       showStats: this.showStats,
       statsFormatter: this.statsFormatter,
       smartLists: true,

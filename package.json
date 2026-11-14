@@ -111,7 +111,7 @@
     "fabric": "^7.4.0",
     "laravel-vite-plugin": "^3.1.0",
     "lit": "catalog:",
-    "overtype": "^2.4.0",
+    "overtype": "^2.8.0",
     "punycode": "catalog:",
     "tailwindcss": "catalog:",
     "vue": "catalog:"

@@ -247,23 +247,6 @@ craft-markdown-field[proportional] {
   --markdown-field-font-family: var(--c-font-body);
 }
 
-/* The text has to stay as wide as the textarea's under it, so bold is drawn
-   with a stroke rather than a wider weight, and italics stay upright. */
-craft-markdown-field[proportional]:defined
-  .overtype-wrapper
-  .overtype-preview
-  :is(strong, h1, h2, h3, h4, h5, h6, .header) {
-  font-weight: normal !important;
-  -webkit-text-stroke: 0.04em currentcolor;
-}
-
-craft-markdown-field[proportional]:defined
-  .overtype-wrapper
-  .overtype-preview
-  em {
-  font-style: normal !important;
-}
-
 craft-markdown-field:defined
   .overtype-wrapper
   .overtype-preview
