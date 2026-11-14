@@ -21,7 +21,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       .toArray()
       .map((source) => $(source).data('handle'))
       .filter((handle) => !!handle);
-    this.publishableSections = Craft.creatableSections.filter((section) =>
+    this.publishableSections = Craft.publishableSections.filter((section) =>
       includedSections.includes(section.handle)
     );
 
@@ -83,13 +83,10 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       );
 
       // Ignore the source's entry type if it isn't available for the section
-      const entryType = selectedSection?.entryTypes.find(
-        (t) => t.handle === entryTypeHandle
-      );
       if (
         entryTypeHandle &&
-        !selectedSection?.entryTypeIdsBySite[this.siteId].includes(
-          entryType?.id
+        !selectedSection?.entryTypesBySite[this.siteId].some(
+          (t) => t.handle === entryTypeHandle
         )
       ) {
         entryTypeHandle = undefined;
