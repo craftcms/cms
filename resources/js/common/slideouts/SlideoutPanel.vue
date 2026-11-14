@@ -58,7 +58,7 @@
   provideSlideoutScreen(() => props.instance, {
     close: (options?: {force?: boolean}) =>
       closeSlideout(props.instance.id, options),
-    reload: () => reloadSlideout(props.instance.id),
+    reload: (options) => reloadSlideout(props.instance.id, options),
     saved: (result) => notifySlideoutSaved(props.instance.id, result),
     get coversPreviewEditor() {
       return previewEditor !== null;
