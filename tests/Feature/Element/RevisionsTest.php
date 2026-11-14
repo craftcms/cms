@@ -10,6 +10,7 @@ use CraftCms\Cms\Element\Models\Element as ElementModel;
 use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Number;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Tests\TestClasses\Element\TestRevisionableElement;
 use CraftCms\Cms\User\Elements\User;
@@ -48,6 +49,19 @@ it('can create a revision', function () {
 
     Event::assertDispatchedOnce(RevisionCreating::class);
     Event::assertDispatchedOnce(RevisionCreated::class);
+});
+
+it('creates a revision of content that doesn’t pass its field rules', function () {
+    $result = Entry::factory()
+        ->withField('amount', Number::class, ['min' => 0])
+        ->createElementWithFields(save: false);
+    $result->element->setFieldValue('amount', -1);
+    Elements::saveElement($result->element, runValidation: false);
+    $element = EntryElement::find()->id($result->element->id)->one();
+
+    $revision = Elements::getElementById($this->revisions->createRevision($element, force: true));
+
+    expect($revision->getFieldValue('amount'))->toEqual(-1);
 });
 
 it('reuses the last revision when the element hasn’t changed since', function () {

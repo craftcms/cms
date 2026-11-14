@@ -40,7 +40,7 @@
     "craftcms/cms-assets": "self.version",
     "craftcms/laravel-aliases": "^2.0",
     "craftcms/laravel-dependency-aware-cache": "^1.2.3",
-    "craftcms/laravel-ruleset-validation": "^1.1",
+    "craftcms/laravel-ruleset-validation": "^1.1.1",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~6.0.0",
     "craftcms/url-validator": "^1.0",
