@@ -216,6 +216,12 @@
 </template>
 
 <style scoped>
+  /* Back to the CP's default, since a modal opened from a page's main column
+     would otherwise inherit that column's wider, fluid gutters. */
+  .cp-modal {
+    --cp-container-padding: var(--c-spacing-lg);
+  }
+
   /* A column flex box so slotted content can grow into a height the floor is
    holding open, instead of sitting at its natural height with a gap below. */
   .content {
