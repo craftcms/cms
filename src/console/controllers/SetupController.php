@@ -603,6 +603,11 @@ EOD;
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        if (($reason = Craft::$app->getComposer()->getUnavailableReason()) !== null) {
+            $this->stderr($reason . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         $moduleInstalled = class_exists('craft\cloud\Module');
         $message = $this->markdownToAnsi(sprintf('%s the `craftcms/cloud` extension …',
             $moduleInstalled ? 'Updating' : 'Installing',

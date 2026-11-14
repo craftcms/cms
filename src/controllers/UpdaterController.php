@@ -132,6 +132,10 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionRevert(): Response
     {
+        if (($state = $this->composerUnavailableState(self::ACTION_REVERT)) !== null) {
+            return $this->send($state);
+        }
+
         $output = '';
 
         try {
@@ -294,8 +298,14 @@ class UpdaterController extends BaseUpdaterController
         }
 
         // If there's anything to install, make sure we can find composer.json
-        if (!empty($this->data['install']) && !$this->ensureComposerJson()) {
-            return $this->noComposerJsonState();
+        if (!empty($this->data['install'])) {
+            if (($state = $this->composerUnavailableState()) !== null) {
+                return $state;
+            }
+
+            if (!$this->ensureComposerJson()) {
+                return $this->noComposerJsonState();
+            }
         }
 
         // Enable maintenance mode

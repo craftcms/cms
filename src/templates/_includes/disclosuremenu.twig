@@ -43,6 +43,9 @@
         disabled: item.disabled ?? false,
       }|filter|keys,
       href: type == 'button' ? null : url(item.url),
+      aria: {
+        disabled: (item.disabled ?? false) ? 'true' : null,
+      },
       data: {
         destructive: item.destructive ?? null,
         action: item.action ?? null,

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 5.x
+      - '5.13'
       - '*-internal'
   pull_request:
 permissions:
@@ -12,6 +13,31 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  composer-windows:
+    name: Composer on Windows
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: bcmath,curl,dom,fileinfo,gd,imagick,intl,mbstring,pdo_mysql,sodium,zip
+          coverage: none
+          tools: composer:v2
+      - uses: shogo82148/actions-setup-mysql@00c22a3f5d8beda901ed37debc6ea0f120642ebd # v1
+        with:
+          mysql-version: '8.0'
+      - name: Prepare database
+        run: |
+          mysql --host=127.0.0.1 --user=root --execute="CREATE DATABASE craft_test"
+          Copy-Item tests/.env.example.mysql tests/.env
+      - name: Install dependencies
+        run: |
+          composer config version 5.x-dev
+          composer install --no-interaction --no-progress
+      - name: Test Composer launchers
+        run: php vendor/bin/codecept run unit services/ComposerTest.php --no-colors
   ci:
     name: ci
     uses: craftcms/.github/.github/workflows/ci.yml@v3

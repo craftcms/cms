@@ -10,6 +10,11 @@ namespace crafttests\unit\controllers;
 use Craft;
 use craft\controllers\AppController;
 use craft\elements\User;
+use craft\models\Update;
+use craft\models\UpdateRelease;
+use craft\models\Updates as UpdatesModel;
+use craft\services\Composer;
+use craft\services\Updates;
 use craft\test\TestCase;
 
 /**
@@ -21,6 +26,46 @@ use craft\test\TestCase;
 class AppControllerTest extends TestCase
 {
     private ?string $originalRequestMethod = null;
+
+    /** @dataProvider composerAvailabilityDataProvider */
+    public function testUpdateInformationRemainsAvailableWithoutComposer(bool $available): void
+    {
+        $originalComposer = Craft::$app->getComposer();
+        $originalUpdates = Craft::$app->getUpdates();
+        $composer = $this->getMockBuilder(Composer::class)->onlyMethods(['getIsAvailableForUi'])->getMock();
+        $composer->method('getIsAvailableForUi')->willReturn($available);
+        $updates = $this->getMockBuilder(Updates::class)->onlyMethods(['getUpdates'])->getMock();
+        $updates->method('getUpdates')->willReturn(new UpdatesModel([
+            'cms' => new Update([
+                'packageName' => 'craftcms/cms',
+                'releases' => [new UpdateRelease(['version' => '5.13.0'])],
+            ]),
+        ]));
+        Craft::$app->set('composer', $composer);
+        Craft::$app->set('updates', $updates);
+        Craft::$app->getUser()->setIdentity(new User(['id' => 1, 'admin' => true]));
+        $request = Craft::$app->getRequest();
+        $originalAccept = $request->getHeaders()->get('Accept');
+        $request->getHeaders()->set('Accept', 'application/json');
+        $request->setBodyParams(['includeDetails' => true]);
+
+        try {
+            $response = (new AppController('app', Craft::$app))->actionCheckForUpdates();
+            self::assertSame($available, $response->data['allowUpdates']);
+            self::assertSame(1, $response->data['total']);
+            self::assertSame('5.13.0', $response->data['updates']['cms']['releases'][0]['version']);
+        } finally {
+            Craft::$app->set('composer', $originalComposer);
+            Craft::$app->set('updates', $originalUpdates);
+            $request->getHeaders()->set('Accept', $originalAccept);
+            $request->setBodyParams([]);
+        }
+    }
+
+    public static function composerAvailabilityDataProvider(): array
+    {
+        return [[true], [false]];
+    }
 
     /**
      * @dataProvider processApiResponseHeadersDataProvider

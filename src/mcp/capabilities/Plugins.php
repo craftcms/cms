@@ -106,6 +106,10 @@ class Plugins
             throw new ToolCallException('Plugin installation through Composer is disabled by allowUpdates.');
         }
 
+        if (($reason = $this->composer->getUnavailableReason()) !== null) {
+            throw new ToolCallException($reason);
+        }
+
         if ($packageName === null || trim($packageName) === '' || $version === null || trim($version) === '') {
             throw new ToolCallException('Provide packageName and version to install a plugin that is not already Composer-installed.');
         }

@@ -208,6 +208,7 @@ import './plugins.scss';
             icon: async () => await Craft.ui.icon('plus'),
             label: Craft.t('app', 'Install'),
             action: 'pluginstore/install',
+            disabled: !Craft.allowUpdates,
             params: {
               packageName: info.packageName,
               handle: handle,
