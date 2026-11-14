@@ -24,10 +24,14 @@ const meta: Meta<CraftSlidePickerButton> = {
 export default meta;
 type Story = StoryObj<CraftSlidePickerButton & typeof args>;
 
+/**
+ * The tooltip and the button's name end with the value as `value-unit` or
+ * `valueLabel` formats it, such as "50% width".
+ */
 export const Default: Story = {
   args: {
     label: 'Width',
-    'value-unit': '%',
+    'value-unit': '% width',
     min: 25,
     max: 100,
     step: 25,
@@ -37,7 +41,7 @@ export const Default: Story = {
 
 /**
  * `button-label` names each button after its item, when several share a
- * `label`.
+ * `label`. `valueLabel` formats the value as "1 column" or "2 columns".
  */
 export const InARow: Story = {
   render: () => html`
@@ -49,7 +53,8 @@ export const InARow: Story = {
             <craft-slide-picker-button
               label="Columns"
               button-label=${`Columns ${name}`}
-              value-unit="columns"
+              .valueLabel=${(value: number) =>
+                `${value} ${value === 1 ? 'column' : 'columns'}`}
               min="1"
               max="3"
               step="1"
@@ -65,7 +70,7 @@ export const InARow: Story = {
 export const ReadOnly: Story = {
   args: {
     label: 'Width',
-    'value-unit': '%',
+    'value-unit': '% width',
     min: 25,
     max: 100,
     step: 25,

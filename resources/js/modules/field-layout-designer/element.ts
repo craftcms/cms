@@ -96,7 +96,7 @@ export class Element extends Base {
     if (this.hasCustomWidth) {
       const widthSlider = document.createElement('craft-slide-picker-button');
       widthSlider.setAttribute('label', t('Width'));
-      widthSlider.setAttribute('value-unit', '%');
+      widthSlider.valueLabel = (num) => t('{num}% width', {num});
       widthSlider.setAttribute('min', '25');
       widthSlider.setAttribute('max', '100');
       widthSlider.setAttribute('step', '25');
