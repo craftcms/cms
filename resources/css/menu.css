@@ -18,7 +18,7 @@ on them, such as tag and element search results. Garnish appends the menu to
   border: 1px solid var(--c-color-neutral-border-quiet);
   border-radius: var(--c-radius-md);
   background-color: var(--c-surface-overlay);
-  box-shadow: var(--c-shadow-sm);
+  box-shadow: var(--c-shadow-overlay);
   color: var(--c-text-default);
   font-size: var(--c-text-sm);
   user-select: none;

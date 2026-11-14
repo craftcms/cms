@@ -57,6 +57,9 @@ CP Styles
   /* The icons around the content: global nav, header bar and details rail. */
   --cp-chrome-icon-size: var(--c-size-icon-sm);
   --cp-chrome-icon-color: var(--color-slate-700);
+  /* The nav's labels and the breadcrumbs: a touch quieter than body text, so
+     the content leads. The current page's row and crumb keep their own. */
+  --cp-chrome-text-color: var(--color-slate-700);
   --cp-content-width: calc(1440rem / 16);
   --cp-footer-height: var(--c-size-footer);
   --cp-header-height: calc(42rem / 16);
@@ -144,6 +147,68 @@ body {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--c-color-neutral-border-normal) transparent;
+}
+
+/*
+ * The scrollbar stays out of sight until you hover or focus inside the
+ * scroller, and the content fades out at an edge that has more beyond it.
+ * Only the thumb is hidden, so its gutter stays reserved and revealing it
+ * shifts nothing. Keyboard focus is kept clear of the faded bands.
+ *
+ * Without scroll-driven animations there's no fade to show there's more, so
+ * the scrollbar is left as it is. So it is for forced colors and for anyone
+ * who asked for more contrast.
+ */
+@supports (animation-timeline: scroll()) {
+  @keyframes cp-scroll-fade-start {
+    from {
+      --c-scroll-fade-start: 0px;
+    }
+    to {
+      --c-scroll-fade-start: var(--c-spacing-xl);
+    }
+  }
+
+  @keyframes cp-scroll-fade-end {
+    from {
+      --c-scroll-fade-end: var(--c-spacing-xl);
+    }
+    to {
+      --c-scroll-fade-end: 0px;
+    }
+  }
+
+  @media (forced-colors: none) and (prefers-contrast: no-preference) {
+    .cp-inner-scroller {
+      scrollbar-color: transparent transparent;
+      scroll-padding-block: var(--c-spacing-xl);
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--c-scroll-fade-start),
+        #000 calc(100% - var(--c-scroll-fade-end)),
+        transparent 100%
+      );
+      animation-name: cp-scroll-fade-start, cp-scroll-fade-end;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(self block);
+      animation-range:
+        0 var(--c-spacing-xl),
+        calc(100% - var(--c-spacing-xl)) 100%;
+    }
+
+    /* Revealed, the thumb is a slightly bluer slate: slate-600 with a fifth
+       of blue-500, both redefined for the dark theme. */
+    .cp-inner-scroller:is(:hover, :focus-within) {
+      scrollbar-color: color-mix(
+          in oklab,
+          var(--color-slate-600),
+          var(--color-blue-500) 20%
+        )
+        transparent;
+    }
+  }
 }
 
 /* Held by overlays — modals and slideouts — while any of them is open. The

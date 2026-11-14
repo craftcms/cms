@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'نتوانست مخزن را ذخیره نماید.',
     'Couldn’t save widget.' => 'نتوانست ویجت را ذخیره نماید.',
     'Couldn’t save {type}.' => 'نتوانست {type} را ذخیره نماید.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'ایمیل فعال‌سازی ارسال نشد: {error}',
     'Couldn’t suspend all users.' => 'نتوانست همه کاربرها را تعلیق نماید.',
     'Couldn’t suspend user.' => 'نتوانست کاربر را تعلیق نماید.',

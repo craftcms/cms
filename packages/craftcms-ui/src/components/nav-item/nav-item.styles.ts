@@ -34,7 +34,7 @@ export default css`
     grid-template-columns: 1fr auto;
     align-items: center;
     text-decoration: none;
-    color: inherit;
+    color: var(--c-nav-item-color, inherit);
     padding-inline: var(--_padding-inline);
     padding-block: var(--_padding-block);
     border: 1px solid transparent;
@@ -150,6 +150,13 @@ export default css`
     border-radius: 0;
     padding-block: var(--_padding-block) var(--c-spacing-xs);
     min-block-size: 0;
+  }
+
+  /* A hovered row, or one with its flyout open, is back to full strength.
+     Before the selected states, which keep their own color. */
+  .nav-item:not(.nav-item--static):hover,
+  .nav-item--flyout-open {
+    color: inherit;
   }
 
   :host([active]) .nav-item {
@@ -287,7 +294,81 @@ export default css`
   .flyout {
     display: grid;
     gap: var(--c-spacing-xs);
-    padding: var(--c-spacing-sm);
+    padding: var(--c-spacing-md);
+  }
+
+  /*
+   * A flyout too tall for the viewport scrolls like the CP's other inner
+   * scrollers (.cp-inner-scroller): its scrollbar hidden until you hover or
+   * focus it, its content fading at an edge with more beyond. The list
+   * scrolls rather than the popover's pane, so the fade doesn't take the
+   * pane's border and shadow with it; it's capped at the pane's own cap less
+   * the pane's borders. The fade's lengths are registered in variables.css.
+   */
+  @supports (animation-timeline: scroll()) {
+    @keyframes nav-item-flyout-fade-start {
+      from {
+        --c-scroll-fade-start: 0px;
+      }
+      to {
+        --c-scroll-fade-start: var(--c-spacing-xl);
+      }
+    }
+
+    @keyframes nav-item-flyout-fade-end {
+      from {
+        --c-scroll-fade-end: var(--c-spacing-xl);
+      }
+      to {
+        --c-scroll-fade-end: 0px;
+      }
+    }
+
+    @media (forced-colors: none) and (prefers-contrast: no-preference) {
+      craft-popover::part(popup) {
+        overflow: hidden;
+      }
+
+      .flyout {
+        box-sizing: border-box;
+        max-block-size: calc(
+          var(
+              --popover-max-block-size,
+              var(--_popover-available-block-size, 40vh)
+            ) -
+            2px
+        );
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: transparent transparent;
+        scroll-padding-block: var(--c-spacing-xl);
+        mask-image: linear-gradient(
+          to bottom,
+          transparent 0,
+          #000 var(--c-scroll-fade-start),
+          #000 calc(100% - var(--c-scroll-fade-end)),
+          transparent 100%
+        );
+        animation-name: nav-item-flyout-fade-start, nav-item-flyout-fade-end;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: scroll(self block);
+        animation-range:
+          0 var(--c-spacing-xl),
+          calc(100% - var(--c-spacing-xl)) 100%;
+      }
+
+      /* The same revealed thumb as .cp-inner-scroller's. */
+      .flyout:is(:hover, :focus-within) {
+        scrollbar-color: color-mix(
+            in oklab,
+            var(--color-slate-600),
+            var(--color-blue-500) 20%
+          )
+          transparent;
+      }
+    }
   }
 
   /* Quieter than the label it trails, and sized to the toggle chevron it

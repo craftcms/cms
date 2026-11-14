@@ -16,6 +16,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SiteSwitcher;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueState;
 use CraftCms\Cms\Support\Api;
@@ -133,12 +134,18 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determines the current asset version.
      *
+     * It covers plugins' Vite builds as well as the control panel's, so an open tab reloads to pick up a republished
+     * plugin build rather than keep running the old one.
+     *
      * @see https://inertiajs.com/asset-versioning
      */
     #[Override]
     public function version(Request $request): ?string
     {
-        return Cp::vite()->manifestHash();
+        $version = Cp::vite()->manifestHash();
+        $pluginsHash = app(Plugins::class)->getViteManifestHash();
+
+        return $pluginsHash === null ? $version : md5($version.$pluginsHash);
     }
 
     /**

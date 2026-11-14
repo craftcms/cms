@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Kan ikke gemme diskenheden.',
     'Couldn’t save widget.' => 'Kunne ikke gemme widget.',
     'Couldn’t save {type}.' => 'Kunne ikke gemme {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Kunne ikke sende aktiverings-e-mailen: {error}',
     'Couldn’t suspend all users.' => 'Kunne ikke suspendere alle brugere.',
     'Couldn’t suspend user.' => 'Kunne ikke suspendere bruger.',

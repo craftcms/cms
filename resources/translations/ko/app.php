@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => '볼륨을 저장할 수 없습니다.',
     'Couldn’t save widget.' => '위젯을 저장할 수 없습니다.',
     'Couldn’t save {type}.' => '{type} 저장을 할 수 없습니다.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => '활성화 이메일을 보낼 수 없습니다: {error}',
     'Couldn’t suspend all users.' => '일부 사용자를 중단시킬 수 없습니다.',
     'Couldn’t suspend user.' => '사용자를 중단시킬 수 없습니다.',

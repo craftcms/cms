@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'ボリュームを保存できませんでした。',
     'Couldn’t save widget.' => 'ウィジェットを保存できませんでした。',
     'Couldn’t save {type}.' => '{type}を保存できませんでした。',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => '有効化URLを送信できませんでした: {error}',
     'Couldn’t suspend all users.' => 'すべてのユーザーを停止できませんでした。',
     'Couldn’t suspend user.' => 'ユーザーを停止できませんでした。',

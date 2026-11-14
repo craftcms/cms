@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Update\Data\Update;
 use CraftCms\Cms\Update\Data\UpdateRelease;
 use CraftCms\Cms\Update\Enums\UpdateStatus;
 use CraftCms\Cms\User\Elements\User;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -36,6 +38,54 @@ it('can check for updates without cache', function () {
             'critical' => false,
             'allowUpdates' => true,
         ]);
+});
+
+it('still reports releases but omits update actions without Composer', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    postJson(action([UpdatesController::class, 'cache']), [
+        'includeDetails' => true,
+        'updates' => [
+            'cms' => new Update(packageName: 'craftcms/cms', releases: [new UpdateRelease('100.0.0')])->toArray(),
+            'plugins' => [],
+        ],
+    ])->assertOk()
+        ->assertJsonPath('total', 1)
+        ->assertJsonPath('allowUpdates', false)
+        ->assertJsonPath('allowPurchases', true)
+        ->assertJsonPath('updates.cms.latestVersion', '100.0.0')
+        ->assertJsonMissingPath('updates.cms.ctaText');
+});
+
+it('sanitizes formatted update notices before returning them', function () {
+    loadTestPlugin();
+
+    $response = postJson(action([UpdatesController::class, 'cache']), [
+        'includeDetails' => true,
+        'updates' => [
+            'cms' => new Update(
+                status: UpdateStatus::EXPIRED,
+                packageName: 'craftcms/cms',
+                renewalPrice: 99,
+                renewalCurrency: 'USD',
+                renewalUrl: 'https://console.craftcms.com/licenses/renew',
+            )->toArray(),
+            'plugins' => [
+                'test-plugin' => new Update(
+                    packageName: 'craftcms/test-plugin',
+                    abandoned: true,
+                    replacementName: 'Replacement<script>alert(1)</script>',
+                    replacementHandle: 'replacement" onclick="alert(1)',
+                )->toArray(),
+            ],
+        ],
+    ])->assertOk();
+
+    expect($response->json('updates.cms.statusText'))->toContain('<strong>Your license has expired!</strong>');
+    $notice = new Crawler($response->json('updates.plugins.0.statusText'));
+    expect($notice->filter('strong')->text())->toBe('This plugin is no longer maintained.')
+        ->and($notice->filter('script, [onclick]')->count())->toBe(0)
+        ->and($notice->filter('a')->text())->toBe('Replacement<script>alert(1)</script>');
 });
 
 it('can include details', function () {

@@ -4,6 +4,7 @@
 
 - Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs, so the field layout and card appearance no longer sit below the general settings. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
 - Added `CraftCms\Cms\Ui\Nodes\Outlet` and `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`. ([#20658](https://github.com/craftcms/cms/pull/20658))
+- Removed the bundled Composer executable. Package installation, updates, and removal now require Composer 2.2.0 or later in the server’s `PATH`, and are disabled when it’s unavailable.
 - Craft now supports Laravel Octane, on Swoole and RoadRunner. Requests served by the same worker no longer share state such as live preview drafts, control panel assets, translated element type names, view namespaces, or routes from the project config, and project config changes made by other workers or commands are picked up by the next request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Editable tables with a heading column now name each row’s inputs and Reorder and Delete buttons for screen readers after the row’s heading, such as “Opening Time, Wednesday”, rather than its row number. ([#20631](https://github.com/craftcms/cms/pull/20631))
 - Admin tables’ delete buttons are now named after their row for screen readers, such as “Delete Posts”, rather than “Delete item”, and deletion confirmations now name the row or count the selected rows, rather than asking “Are you sure?”. ([#20633](https://github.com/craftcms/cms/pull/20633))
@@ -20,6 +21,10 @@
 - The details pane now has a subtle inset shadow along its leading edge, and Ask AI’s input is transparent, like the Activity panel’s comment box. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ action menus now sit right after their labels and required/translatable indicators, evenly spaced, rather than at the far end of the heading. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Breadcrumb separators are now lighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
+- The global nav’s labels and every breadcrumb but the current one are now a little lighter, and return to full strength when hovered. ([#20663](https://github.com/craftcms/cms/pull/20663))
+- Popovers, menus, and dropdowns now have the same larger shadow as slideouts and HUDs. ([#20663](https://github.com/craftcms/cms/pull/20663))
+- Global nav flyout menus now have more padding. ([#20663](https://github.com/craftcms/cms/pull/20663))
+- Scrollbars in the global sidebar, the details pane, and global nav flyout menus are now hidden until hovered or focused, and their content fades out at edges with more to scroll to. ([#20663](https://github.com/craftcms/cms/pull/20663))
 - Pages no longer show breadcrumbs when the only one would be the current page, such as the Dashboard. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ translation indicators now show their descriptions when pressed, including on touch devices, rather than on hover. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Updated the workflow stage type picker to show each type’s icon when available. ([#20660](https://github.com/craftcms/cms/pull/20660))
@@ -29,6 +34,7 @@
 - Plugins can now build control panel pages from the same components, composables, and helpers Craft’s own pages use, typed and imported from the `@craftcms/cp` import-map module, including `registerPage()`, `registerComponent()`, `registerElementDetailsPanel()`, `Modal`, `ModalForm`, `Select`, `Combobox`, `IconPicker`, `TypePicker`, `DataTable`, `ElementList`, `ElementChips`, `AreaChart`, `useFetch()`, `useSlideoutControl()`, `useDetailsPanels()`, and `openUiModal()`. A guide to building control panel UI in a plugin is in Storybook, under **Plugins**. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - The control panel’s import map now publishes `@inertiajs/vue3`, so plugin bundles share the control panel’s Inertia instance rather than bundling their own. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Added `CraftCms\Cms\Cp\Html\ElementHtml::presentation()`. ([#20608](https://github.com/craftcms/cms/pull/20608))
+- Added the `--c-nav-item-color` CSS custom property to `craft-nav-item`, which sets its label’s color while it isn’t hovered or current. ([#20663](https://github.com/craftcms/cms/pull/20663))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
 - Fixed a bug where clicking a draggable item, such as a field layout tab, didn’t close open menus and popovers. ([#20681](https://github.com/craftcms/cms/pull/20681))
 - Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
@@ -41,6 +47,7 @@
 - Fixed a bug where focus was lost after choosing elements in an element select input that became full, such as one in a plugin’s settings, rather than moving to the last element’s action menu. ([#20659](https://github.com/craftcms/cms/pull/20659))
 - Fixed a bug where typing in fields, especially Markdown fields, lagged on entries with many fields. ([#20637](https://github.com/craftcms/cms/issues/20637))
 - Fixed a bug where element chips in the Compare screen’s heading overflowed it on narrow screens, pushing the close button onto its own line. ([#20668](https://github.com/craftcms/cms/pull/20668))
+- Fixed a bug where open control panel tabs kept running a plugin’s old JavaScript after the plugin was updated, rather than reloading to get the new version. ([#20683](https://github.com/craftcms/cms/issues/20683), [#20687](https://github.com/craftcms/cms/pull/20687))
 - Fixed a bug where truncated element chips, and the Compare screen’s version menus, cut off the beginning of text written in the other direction from the control panel’s language, such as an English title in Arabic, rather than its end. ([#20668](https://github.com/craftcms/cms/pull/20668))
 - Fixed a bug where the New Users dashboard widget’s chart was unstyled. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Fixed a bug where invalid Icon inputs in control panel forms showed an extra “error” message below their actual error. ([#20608](https://github.com/craftcms/cms/pull/20608))
@@ -55,6 +62,7 @@
 - Fixed a bug where fields could be saved with the same handle as another field. ([#20600](https://github.com/craftcms/cms/issues/20600), [#20607](https://github.com/craftcms/cms/pull/20607))
 - Fixed an error that occurred when saving an entry via the `entries/save-entry` action with an `entryId` param submitted as form data. ([#20643](https://github.com/craftcms/cms/pull/20643))
 - Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
+- Fixed an error that occurred when running `php artisan passport:purge`, because the `oauth_device_codes` table was missing. ([#20676](https://github.com/craftcms/cms/pull/20676))
 - Fixed an infinite recursion that occurred when clearing the current user’s identity from a console request via `craft\console\User::setIdentity()`. ([#20602](https://github.com/craftcms/cms/issues/20602), [#20606](https://github.com/craftcms/cms/pull/20606))
 - Fixed a bug where asset indexing included the default asset transformer’s volume directories. ([#20589](https://github.com/craftcms/cms/pull/20589))
 - Fixed a bug where subclasses of core element types, such as the Yii2 adapter’s `craft\elements\Asset`, were authorized by the generic element policy rather than their parent class’s policy, so users could be denied access they had. ([#20603](https://github.com/craftcms/cms/issues/20603), [#20605](https://github.com/craftcms/cms/pull/20605))

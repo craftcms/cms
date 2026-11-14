@@ -29,19 +29,23 @@
       altCtaText?: string;
       altCtaUrl?: string;
       allowUpdates?: boolean;
+      allowPurchases?: boolean;
     }>(),
     {
       releases: () => [],
       status: 'eligible',
       abandoned: false,
       allowUpdates: true,
+      allowPurchases: false,
     }
   );
 
   // Computed: should we show the update button?
   const showUpdateCta = computed(() => {
     return (
-      props.allowUpdates && props.latestVersion && props.ctaUrl !== undefined
+      (props.ctaUrl ? props.allowPurchases : props.allowUpdates) &&
+      props.latestVersion &&
+      props.ctaUrl !== undefined
     );
   });
 
@@ -164,12 +168,12 @@
 
     <!-- Abandoned Notice -->
     <blockquote v-if="abandoned" class="note">
-      <p>{{ statusText }}</p>
+      <p v-html="statusText"></p>
     </blockquote>
 
     <!-- Ineligible Notice (expired license, PHP issues, etc.) -->
     <blockquote v-else-if="status !== 'eligible'" class="note ineligible">
-      <p>{{ statusText }}</p>
+      <p v-html="statusText"></p>
     </blockquote>
 
     <!-- Releases -->

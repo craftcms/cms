@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Не удалось сохранить том.',
     'Couldn’t save widget.' => 'Не удалось сохранить виджет.',
     'Couldn’t save {type}.' => 'Ошибка сохранения ({type}).',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Не удалось отправить эл. сообщение для активации: {error}',
     'Couldn’t suspend all users.' => 'Не удалось приостановить действие учетной записи всех пользователей.',
     'Couldn’t suspend user.' => 'Не удалось приостановить деятельность данного пользователя.',

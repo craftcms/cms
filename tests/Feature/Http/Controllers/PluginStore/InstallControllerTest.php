@@ -94,6 +94,20 @@ test('index', function () {
         ->assertSee('data-updater', false);
 });
 
+test('missing Composer prevents the installation workflow from starting', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    $state = postJson(action([InstallController::class, 'index']), [
+        'packageName' => 'craftcms/test-plugin',
+        'handle' => 'test-plugin',
+        'edition' => 'standard',
+        'version' => '1.0.0',
+    ])->assertOk()->viewData('state');
+
+    expect($state['error'])->toBe('Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
+        ->and($state)->not->toHaveKey('nextAction');
+});
+
 test('index requires the Yii2 adapter alongside plugins that need it', function (array $input, array $composerRequire, array $requirements) {
     $composer = $this->partialMock(Composer::class);
     $composer->shouldReceive('getConfig')->andReturn(['require' => $composerRequire]);
@@ -116,7 +130,8 @@ test('index requires the Yii2 adapter alongside plugins that need it', function 
     'not required' => [[], [], ['craftcms/test-plugin' => '^1.0.0']],
 ]);
 
-test('craftInstall', function () {
+test('craftInstall preserves cleanup options when Composer is unavailable', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
     $plugins = $this->partialMock(Plugins::class);
     $plugins->shouldReceive('installPlugin')->once()->with('test-plugin', 'standard')
         ->andThrow(new RuntimeException('Installation failed.'));

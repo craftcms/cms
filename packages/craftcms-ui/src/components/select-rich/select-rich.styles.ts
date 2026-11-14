@@ -28,7 +28,7 @@ export default css`
     border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
     background-color: var(--c-surface-overlay);
-    box-shadow: var(--c-shadow-sm);
+    box-shadow: var(--c-shadow-overlay);
     padding: var(--c-spacing-sm);
     max-height: calc(var(--c-spacing) * 60);
     overflow: auto;

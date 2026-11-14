@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Impossibile salvare il volume.',
     'Couldn’t save widget.' => 'Impossibile salvare il widget.',
     'Couldn’t save {type}.' => 'Impossibile salvare {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Impossibile inviare l\'email di attivazione: {error}',
     'Couldn’t suspend all users.' => 'Impossibile sospendere tutti gli utenti.',
     'Couldn’t suspend user.' => 'Impossibile sospendere l’utente.',

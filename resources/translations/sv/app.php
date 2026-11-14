@@ -1405,6 +1405,7 @@ return [
     'Couldn’t save volume.' => 'Det gick inte att spara volymen.',
     'Couldn’t save widget.' => 'Det gick inte att spara widgeten.',
     'Couldn’t save {type}.' => 'Det gick inte att spara {type}.',
+    'Couldn’t select “{name}”.' => 'Couldn’t select “{name}”.',
     'Couldn’t send the activation email: {error}' => 'Det gick inte att skicka e-postaktiveringen: {error}',
     'Couldn’t suspend all users.' => 'Det gick inte att stänga av alla användare.',
     'Couldn’t suspend user.' => 'Det gick inte att suspendera användaren.',
