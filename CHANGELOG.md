@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) authorization bypass vulnerability. (GHSA-53c3-ggrg-m3hg)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
 
 ## 5.12.1 - 2026-11-10
 
