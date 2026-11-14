@@ -99,6 +99,8 @@
 - Element details panels registered with `Cp.$elementDetailsPanels.register()` can now pass `iconSvg`, to show their own SVG icon in place of a named one. ([#20615](https://github.com/craftcms/cms/pull/20615))
 - Deprecated `CraftCms\Cms\Image\CraftAssetTransformDriver::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT`. `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT` should be used instead. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Fixed a bug where element selector modals showed structure elements at the same level as their parents in the “Display in a structured table” view mode. ([#20664](https://github.com/craftcms/cms/pull/20664))
+- Fixed a bug where validating a model or element again, such as when saving it, could skip attributes that weren’t validated the first time, or check their earlier values. ([#20690](https://github.com/craftcms/cms/issues/20690), [#20693](https://github.com/craftcms/cms/pull/20693))
+- Fixed a bug where cloned models and elements, such as duplicated entries and new revisions, were validated with the original’s values. ([#20691](https://github.com/craftcms/cms/issues/20691), [#20693](https://github.com/craftcms/cms/pull/20693))
 
 ## 6.0.0-beta.1 - 2026-11-10
 

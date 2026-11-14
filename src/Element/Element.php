@@ -294,6 +294,8 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
 
     public function __clone()
     {
+        parent::__clone();
+
         // Mark all fields as dirty
         $this->_allDirty = true;
         $this->_hasNewParent = null;
