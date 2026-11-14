@@ -1,4 +1,5 @@
 import {actionClient, ConfigService} from '@craftcms/ui';
+import {uuid} from '@/common/craft/strings';
 import type {ActionMenuItemButton} from '@craftcms/ui/components/action-menu/action-menu.types';
 import {
   createApp,
@@ -73,7 +74,7 @@ describe('AssistantChat', () => {
     });
     container = document.createElement('div');
     document.body.append(container);
-    app = createApp(AssistantChat, {threadId: crypto.randomUUID()});
+    app = createApp(AssistantChat, {threadId: uuid()});
     app.mount(container);
     await flush();
   });
@@ -128,7 +129,7 @@ describe('AssistantChat', () => {
     for (const resume of resumes) {
       const run = chat.connection.connect([], undefined, undefined, {
         threadId: 'thread-1',
-        runId: crypto.randomUUID(),
+        runId: uuid(),
         ...(resume ? {resume} : {}),
       } as never);
 
@@ -192,7 +193,7 @@ describe('AssistantChat', () => {
     press(await type('Is it shipped?'));
     await flush();
     app.unmount();
-    app = createApp(AssistantChat, {threadId: crypto.randomUUID()});
+    app = createApp(AssistantChat, {threadId: uuid()});
     app.mount(container);
     await flush();
 

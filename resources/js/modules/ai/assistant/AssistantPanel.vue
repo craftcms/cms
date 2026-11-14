@@ -5,6 +5,7 @@
    * so a reply on its way carries on as the user moves between pages.
    */
   import {t} from '@craftcms/ui';
+  import {uuid} from '@/common/craft/strings';
   import {
     computed,
     defineAsyncComponent,
@@ -130,7 +131,7 @@
   });
 
   function newChat(): Promise<void> {
-    return switchTo(crypto.randomUUID());
+    return switchTo(uuid());
   }
 
   /**

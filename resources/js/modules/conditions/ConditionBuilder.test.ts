@@ -1,4 +1,5 @@
 import {createApp, nextTick, type App} from 'vue';
+import {uuid} from '@/common/craft/strings';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
 import {actionClient} from '@craftcms/ui';
 import type CraftActionMenu from '@craftcms/ui/components/action-menu/action-menu';
@@ -11,7 +12,7 @@ import {defineConditionBuilderHost} from './condition-builder-host';
 
 function rule(
   value = 'Alpha',
-  uid: string = crypto.randomUUID(),
+  uid: string = uuid(),
   type = 'Title'
 ): RulePayload {
   const scope = ['_conditionRules', uid];
