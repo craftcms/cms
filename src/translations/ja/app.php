@@ -387,6 +387,7 @@ return [
     'Composer was unable to install the updates.' => 'Composer でアップデートをインストールできませんでした。',
     'Composer was unable to remove the plugin.' => 'Composer でプラグインを削除することができませんでした。',
     'Composer was unable to revert the updates.' => 'Composer でアップデートを元に戻すことができませんでした。',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => '圧縮済み',
     'Condition {num, number}' => '条件 {num, number}',
     'Configure the category group’s site-specific settings.' => 'カテゴリグループのサイト固有の設定を行います。',
