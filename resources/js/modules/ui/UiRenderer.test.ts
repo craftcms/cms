@@ -418,6 +418,7 @@ describe('UiRenderer', () => {
   let currentPayload: Ref<UiPayload>;
   let renderer: {
     advanceBaseline: () => void;
+    setSubmitting: (submitting: boolean) => void;
     currentValues: () => UiPayload['values'];
     resetValues: (payload?: UiPayload) => void;
     setValue: (path: string[], value: UiValue, kind?: UiChange['kind']) => void;
@@ -3157,6 +3158,214 @@ describe('UiRenderer', () => {
     ).not.toBe('true');
   });
 
+  /**
+   * What a save wrote can differ from what was sent, as when applying a draft
+   * replaces the nested entries created in it, and the payload its response
+   * renders is the record of it. Edits made while it was out are still unsaved.
+   */
+  it('takes the values a successful submission’s response rendered', async () => {
+    let mutation: UiPayload['values'] = {};
+    app.unmount();
+    await mount(clonePayload(), {
+      onMutation: (value) => (mutation = value),
+    });
+
+    const placeholder = () =>
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[placeholder]"]'
+      )!;
+    placeholder().value = 'Sent';
+    placeholder().dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    renderer.setSubmitting(true);
+    const mode = container.querySelector<HTMLSelectElement>(
+      'select[name="settings[uiMode]"]'
+    )!;
+    mode.value = 'normal';
+    mode.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    const response = clonePayload();
+    Object.assign(response.values.settings as UiValues, {
+      placeholder: 'Saved',
+    });
+    currentPayload.value = response;
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    expect(placeholder().value).toBe('Saved');
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {placeholder: 'Saved', uiMode: 'normal'},
+    });
+    expect(mutation).toHaveProperty('settings.uiMode', 'normal');
+
+    // What the server saved is the baseline now.
+    mode.value = 'enlarged';
+    mode.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation).toEqual({});
+  });
+
+  /**
+   * Applying a draft replaces the nested entries created in it, so the blocks
+   * the save sent come back under new UIDs, in the order they were sent.
+   */
+  it('keeps edits made during a save on the blocks that replaced theirs', async () => {
+    let mutation: UiPayload['values'] = {};
+    app.unmount();
+    await mount(matrixPayload(['draft-a', 'draft-b'], ['A', 'B']), {
+      onMutation: (value) => (mutation = value),
+    });
+
+    renderer.setSubmitting(true);
+    // Moved and edited while the save is out.
+    renderer.setValue(['settings', 'matrix'], {
+      entries: {
+        'draft-a': {type: 'text', heading: 'A, edited'},
+        'draft-b': {type: 'text', heading: 'B'},
+      },
+      sortOrder: ['draft-b', 'draft-a'],
+    });
+    await nextTick();
+
+    const response = matrixPayload(['saved-a', 'saved-b'], ['A', 'B']);
+    // What the server added to a block saved, which the client never held.
+    Object.assign(
+      (
+        ((response.values.settings as UiValues).matrix as UiValues)
+          .entries as UiValues
+      )['saved-a'] as UiValues,
+      {body: 'Server default'}
+    );
+    currentPayload.value = response;
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {
+        matrix: {
+          entries: {
+            'saved-a': {heading: 'A, edited', body: 'Server default'},
+            'saved-b': {heading: 'B'},
+          },
+          sortOrder: ['saved-b', 'saved-a'],
+        },
+      },
+    });
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[matrix][entries][saved-a][heading]"]'
+      )?.value
+    ).toBe('A, edited');
+    expect(mutation).toHaveProperty('settings.matrix.sortOrder', [
+      'saved-b',
+      'saved-a',
+    ]);
+  });
+
+  it('still marks an edit made in a replaced block during a save as unsaved', async () => {
+    app.unmount();
+    await mount(matrixPayload(['draft-a'], ['A']));
+
+    renderer.setSubmitting(true);
+    renderer.setValue(
+      ['settings', 'matrix', 'entries', 'draft-a', 'heading'],
+      'A, edited'
+    );
+    await nextTick();
+
+    currentPayload.value = matrixPayload(['saved-a'], ['A']);
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    expect(
+      container
+        .querySelector('[name="settings[matrix]"]')
+        ?.closest('craft-field')
+        ?.getAttribute('status')
+    ).toBe('modified');
+  });
+
+  /**
+   * A save's response holds back the tabs that don't show as the page loads,
+   * so a Matrix field on one of them is settled once the tab arrives.
+   */
+  it('settles a deferred tab’s fields once the tab arrives after a save', async () => {
+    const tabbed = (uids: string[], deferred: boolean): UiPayload => {
+      const matrix = matrixPayload(
+        uids,
+        uids.map(() => 'Heading')
+      );
+
+      return {
+        ...matrix,
+        values: deferred ? {} : matrix.values,
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+            component: 'craft:tab',
+            uid: 'first-tab',
+            props: {label: 'First'},
+            children: [],
+          },
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+            component: 'craft:tab',
+            uid: 'matrix-tab',
+            props: deferred
+              ? {label: 'Blocks', deferred: true}
+              : {label: 'Blocks'},
+            children: deferred ? [] : matrix.nodes,
+          },
+        ] as UiPayload['nodes'],
+      };
+    };
+    const mutations: UiPayload['values'][] = [];
+    app.unmount();
+    await mount(tabbed(['draft-a'], false), {
+      onMutation: (value) => mutations.push(value),
+    });
+
+    renderer.setSubmitting(true);
+    currentPayload.value = tabbed(['saved-a'], true);
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    // Another save goes out before the tab arrives, and fails.
+    renderer.setSubmitting(true);
+    renderer.setSubmitting(false);
+
+    mutations.length = 0;
+    currentPayload.value = tabbed(['saved-a'], false);
+    await nextTick();
+    await nextTick();
+
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {matrix: {sortOrder: ['saved-a']}},
+    });
+    expect(
+      Object.keys(
+        ((renderer.currentValues().settings as UiValues).matrix as UiValues)
+          .entries as UiValues
+      )
+    ).toEqual(['saved-a']);
+    // Not even for a moment, as any change would arm autosave.
+    expect(mutations.length).toBeGreaterThan(0);
+    expect(mutations.every((value) => Object.keys(value).length === 0)).toBe(
+      true
+    );
+  });
+
   it('renders an updated control definition without changing the host’s payload', async () => {
     const probe = defineComponent({
       props: {
@@ -5192,6 +5401,72 @@ describe('UiRenderer', () => {
     renderer = rendererRef.value;
   }
 });
+
+/**
+ * A form with one Matrix field showing its blocks, whose UIDs are `uids`, each
+ * with a Heading field.
+ */
+function matrixPayload(uids: string[], headings: string[]): UiPayload {
+  const field = (uid: string): UiPayload['nodes'][number] => ({
+    type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+    component: 'craft:field',
+    props: {label: 'Heading', instructions: null, required: false},
+    control: {
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+      component: 'craft:text',
+      props: {inputType: 'text'},
+      path: ['settings', 'matrix', 'entries', uid, 'heading'],
+      mode: 'editable',
+      deltaGroup: ['settings', 'matrix'],
+      uis: [],
+    } as UiControlPayload,
+  });
+
+  return {
+    ...clonePayload(),
+    refreshable: false,
+    values: {
+      settings: {
+        matrix: {
+          entries: Object.fromEntries(
+            uids.map((uid, index) => [
+              uid,
+              {type: 'text', heading: headings[index]!},
+            ])
+          ),
+          sortOrder: uids,
+        },
+      },
+    },
+    nodes: [
+      {
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Content', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
+          component: 'craft:nested-element-blocks',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+            minEntries: null,
+            maxEntries: null,
+          },
+          path: ['settings', 'matrix'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'matrix'],
+          nestsUis: true,
+          uis: uids.map((uid) => ({
+            scope: ['settings', 'matrix', 'entries', uid],
+            refreshable: false,
+            nodes: [field(uid)],
+          })),
+        } as UiControlPayload,
+      },
+    ],
+    errors: [],
+  };
+}
 
 function choiceFieldsPayload(
   props: Record<string, UiPayload['nodes'][number]['props']> = {}

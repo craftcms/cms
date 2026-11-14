@@ -830,8 +830,13 @@ export function useElementEditor({
     }
 
     // A nested scope's payload is only that form; the renderer that asked for
-    // it reconciles it into the layout.
-    if (JSON.stringify(scope) === JSON.stringify(rootScope)) {
+    // it reconciles it into the layout. So does one that lands during a
+    // submission: it was rendered from unsaved values, and the renderers take
+    // a payload arriving then as what the submission saved.
+    if (
+      JSON.stringify(scope) === JSON.stringify(rootScope) &&
+      !form.processing
+    ) {
       applyingSavedPayload = true;
       savedUi.value = response.ui;
       await nextTick();
@@ -976,6 +981,18 @@ export function useElementEditor({
       // Saved into the owner's draft, the nested draft this panel was editing
       // is gone, so there's nothing left to keep editing.
       forceClose: () => nestedOwnerId.value !== null,
+      // Applying a provisional draft deletes it, and replaces the nested
+      // elements created in it with new ones, so the panel is still showing
+      // the draft, with blocks that no longer exist.
+      reloadKeptOpen: (data) => {
+        if (!draftIsProvisional.value) {
+          return false;
+        }
+
+        showSavedElement(data);
+
+        return true;
+      },
       onError: (data) => {
         pendingRelease.value = null;
 
@@ -1141,6 +1158,55 @@ export function useElementEditor({
     } else if (!event.shiftKey) {
       save({redirect: false});
     }
+  }
+
+  /**
+   * Points the panel at what a save of its provisional draft wrote: the
+   * element the draft was applied to, or the draft it was saved as. The
+   * provisional draft it was opened for, if it named one, is gone, and a
+   * panel opened for just that draft has nothing else to go on.
+   */
+  function showSavedElement(result: unknown): void {
+    const element = (
+      result as
+        | {
+            element?: {
+              id?: unknown;
+              canonicalId?: unknown;
+              draftId?: unknown;
+              isProvisionalDraft?: unknown;
+            };
+          }
+        | undefined
+    )?.element;
+    const positive = (value: unknown) => {
+      const number = Number(value);
+
+      return Number.isInteger(number) && number > 0 ? number : null;
+    };
+    const id = positive(element?.canonicalId) ?? positive(element?.id);
+    const draftId = positive(element?.draftId);
+
+    if (!slideout?.instance.href || id === null) {
+      return;
+    }
+
+    const url = new URL(slideout.instance.href, window.location.href);
+    url.searchParams.delete('draftId');
+    url.searchParams.delete('provisional');
+    url.searchParams.set('elementId', String(id));
+
+    // A panel opened at the element's own edit URL takes the element from
+    // the URL's path, and only a draft from its query.
+    if (draftId !== null) {
+      url.searchParams.set('draftId', String(draftId));
+
+      if (element?.isProvisionalDraft) {
+        url.searchParams.set('provisional', '1');
+      }
+    }
+
+    slideout.instance.href = url.href;
   }
 
   function savedDraftId(result: unknown): number | null {

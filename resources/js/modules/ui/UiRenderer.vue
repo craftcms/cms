@@ -105,6 +105,17 @@
   const nativeSubmitting = ref(false);
   const submitting = ref(false);
   let submittedValues: UiValues | undefined;
+  /**
+   * The payload that arrived while a submission was out, with the values the
+   * form held just before it did. That's the submission's response, so once it
+   * succeeds the values it rendered are the ones saved.
+   */
+  let submissionResponse: {payload: UiPayload; held: UiValues} | undefined;
+  /**
+   * What a successful submission sent and held, kept while its response still
+   * holds tabs back: their fields are settled as they arrive.
+   */
+  let deferredSettlement: {submitted: UiValues; held: UiValues} | undefined;
 
   const valueState = useUiValues(props.payload);
   const {values, touchedPaths} = valueState;
@@ -173,7 +184,15 @@
   watch(
     () => props.payload,
     (refreshed) => {
+      if (submitting.value) {
+        submissionResponse = {
+          payload: refreshed,
+          held: valueState.snapshot(),
+        };
+      }
+
       reconcile(refreshed);
+
       // The host's payload was rendered from the values it carries, which
       // aren't necessarily the ones this form holds.
       refresher.seed(
@@ -282,14 +301,32 @@
     renderError.value = undefined;
     const restoreFocus = captureControlFocus();
 
-    valueState.adoptDeferred(
-      filledTabs(payload.value.nodes, refreshed.nodes),
-      refreshed.values
-    );
+    const filled = filledTabs(payload.value.nodes, refreshed.nodes);
+    valueState.adoptDeferred(filled, refreshed.values);
     valueState.adopt(refreshed);
+
+    // Settled before the mutation below, which would otherwise report the
+    // replaced identities in the tabs' fields as an edit, and autosave them.
+    if (deferredSettlement && filled.length) {
+      valueState.settle(
+        {...refreshed, nodes: filled},
+        deferredSettlement.submitted,
+        deferredSettlement.held,
+        true
+      );
+    }
+
     payload.value = pathsMatch(scope, payload.value.scope)
       ? refreshed
       : withNestedUi(payload.value, scope, refreshed);
+
+    if (
+      deferredSettlement &&
+      !payload.value.nodes.some((node) => node.props.deferred)
+    ) {
+      deferredSettlement = undefined;
+    }
+
     emit('update:payload', payload.value);
     emitMutation();
     resetObservedValues(payload.value.nodes);
@@ -336,6 +373,8 @@
     nativeSubmitting.value = false;
     submitting.value = false;
     submittedValues = undefined;
+    submissionResponse = undefined;
+    deferredSettlement = undefined;
     errorState.restore();
     valueState.reset(source);
     payload.value = source;
@@ -361,8 +400,29 @@
   }
 
   function advanceBaseline(): void {
-    valueState.rebase(submittedValues ?? valueState.snapshot());
+    const submitted = submittedValues ?? valueState.snapshot();
+
+    if (submissionResponse) {
+      valueState.settle(
+        submissionResponse.payload,
+        submitted,
+        submissionResponse.held
+      );
+      resetObservedValues(payload.value.nodes);
+
+      // A successful save takes over from any earlier one still waiting on
+      // its deferred tabs: its response holds back the same tabs, or none.
+      deferredSettlement = payload.value.nodes.some(
+        (node) => node.props.deferred
+      )
+        ? {submitted, held: submissionResponse.held}
+        : undefined;
+    } else {
+      valueState.rebase(submitted);
+    }
+
     submittedValues = undefined;
+    submissionResponse = undefined;
     emitMutation();
   }
 
@@ -514,7 +574,12 @@
   }
 
   function setSubmitting(value: boolean): void {
-    if (value && !submitting.value) submittedValues = valueState.snapshot();
+    // What an earlier save still has to settle stays until a later one
+    // succeeds: this one can fail, or be called off.
+    if (value && !submitting.value) {
+      submittedValues = valueState.snapshot();
+    }
+    if (!value) submissionResponse = undefined;
     submitting.value = value;
   }
 

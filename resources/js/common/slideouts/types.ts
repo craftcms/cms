@@ -30,6 +30,14 @@ export interface SlideoutInstance {
   prepareNestedOwner?: () => Promise<number | undefined>;
 }
 
+export interface SlideoutReloadOptions {
+  /**
+   * Keep the screen mounted, with the state it holds, and only replace its
+   * props. A failed load then rejects, leaving the screen as it was.
+   */
+  preserveState?: boolean;
+}
+
 export interface SlideoutSaveResult {
   /** Whatever the controller returned for the saved record, if anything. */
   data?: ScreenPageProps;
@@ -88,7 +96,12 @@ export interface SlideoutController {
    * `{force: true}` for a close that follows a successful save.
    */
   close(options?: {force?: boolean}): void;
-  reload(): Promise<void>;
+  /**
+   * Fetch the panel's screen again. Pass `{preserveState: true}` to keep the
+   * screen mounted and hand it the new props, as an Inertia visit that
+   * preserves state does, rather than showing a spinner in its place.
+   */
+  reload(options?: SlideoutReloadOptions): Promise<void>;
   /**
    * Report a successful save to whoever opened the panel.
    *

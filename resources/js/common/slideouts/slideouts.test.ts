@@ -55,6 +55,7 @@ const {
   notifySlideoutSaved,
   openSlideout,
   openSlideoutWith,
+  reloadSlideout,
   setSlideoutPageLoader,
   setSlideoutDirtyCheck,
   slideoutPanels,
@@ -1132,6 +1133,60 @@ describe('SlideoutPanel', () => {
     expect(root.querySelector('.slideout-screen')).not.toBeNull();
     expect(root.querySelector('.cp__header')).toBeNull();
     expect(root.querySelector('.page-content')?.textContent).toBe('hello');
+  });
+
+  /**
+   * A save that keeps the panel open reloads it this way while the form is
+   * still submitting, so the screen has to stay mounted, holding what was
+   * typed meanwhile, and show the saved props by the time the reload resolves.
+   */
+  it('reloads in place when asked to preserve state', async () => {
+    let setups = 0;
+    const Page = defineComponent({
+      props: {label: {type: String, default: ''}},
+      setup(props) {
+        setups++;
+        const typed = ref('');
+
+        return () =>
+          h('input', {
+            class: 'page-input',
+            'data-label': props.label,
+            value: typed.value,
+            onInput: (event: Event) =>
+              (typed.value = (event.target as HTMLInputElement).value),
+          });
+      },
+    });
+    const {root, instance} = await mountPanel(Page, {label: 'Before'});
+    const input = () =>
+      required(
+        root.querySelector<HTMLInputElement>('.page-input'),
+        'Expected the page input.'
+      );
+    input().value = 'typed';
+    input().dispatchEvent(new Event('input'));
+
+    fetchSlideoutPage.mockResolvedValue({
+      component: Page,
+      props: {label: 'After'},
+      url: '/screen',
+    });
+    await reloadSlideout(instance.id, {preserveState: true});
+
+    expect(input().dataset.label).toBe('After');
+    expect(input().value).toBe('typed');
+    expect(setups).toBe(1);
+
+    fetchSlideoutPage.mockRejectedValue(new Error('boom'));
+    await expect(
+      reloadSlideout(instance.id, {preserveState: true})
+    ).rejects.toThrow('boom');
+    await nextTick();
+
+    expect(input().dataset.label).toBe('After');
+    expect(input().value).toBe('typed');
+    expect(setups).toBe(1);
   });
 
   it("titles itself from the slideout's own props, not the page behind it", async () => {
