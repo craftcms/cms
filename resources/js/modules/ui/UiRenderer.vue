@@ -38,6 +38,7 @@
     type UiValueSnapshot,
   } from './valueAccess';
   import {UiFieldOutletsKey, type UiFieldOutlets} from './fieldOutlets';
+  import {createOutletRegistry, UiOutletsKey} from './outlets';
   import {captureControlFocus} from './renderer/controlFocus';
   import {
     cloneRaw,
@@ -137,6 +138,7 @@
   );
   const {effectiveErrors} = errorState;
 
+  provide(UiOutletsKey, createOutletRegistry());
   // A form nested in this one places its own fields, if anything does.
   provide(
     UiFieldOutletsKey,

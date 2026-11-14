@@ -9,6 +9,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Ui\ControlPayload;
+use CraftCms\Cms\Ui\Nodes\Outlet;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use InvalidArgumentException;
 
@@ -25,6 +26,8 @@ class FieldLayoutDesigner extends Control
 
     private bool $withCardViewDesigner = false;
 
+    private ?string $cardViewDesignerOutlet = null;
+
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
         return self::designerHtml(
@@ -35,6 +38,7 @@ class FieldLayoutDesigner extends Control
             (bool) $control->props['customizableTabs'],
             (bool) $control->props['withGeneratedFields'],
             (bool) $control->props['withCardViewDesigner'],
+            $control->props['cardViewDesignerOutlet'] ?? null,
         );
     }
 
@@ -47,6 +51,7 @@ class FieldLayoutDesigner extends Control
         bool $customizableTabs,
         bool $withGeneratedFields = false,
         bool $withCardViewDesigner = false,
+        ?string $cardViewDesignerOutlet = null,
     ): string {
         $layout = Fields::createLayout(['type' => $elementType] + $value);
         $namespace = $name === null ? null : self::parentInputName($name);
@@ -58,6 +63,7 @@ class FieldLayoutDesigner extends Control
                     'disabled' => $disabled,
                     'withGeneratedFields' => $withGeneratedFields,
                     'withCardViewDesigner' => $withCardViewDesigner,
+                    'cardViewDesignerOutlet' => $cardViewDesignerOutlet,
                 ])
                 : app(Designer::class)->html($layout, [
                     'customizableTabs' => $customizableTabs,
@@ -100,6 +106,22 @@ class FieldLayoutDesigner extends Control
         return $this;
     }
 
+    /**
+     * Moves the card view designer out of the designer's own Appearance tab
+     * and into the named {@see Outlet}, for forms
+     * that give the field layout and the card appearance tabs of their own.
+     * The designer then shows its Content panel alone.
+     *
+     * Only applies along with {@see self::withCardViewDesigner()}. Server-rendered HTML
+     * shows the card view designer below the Content panel instead.
+     */
+    public function cardViewDesignerOutlet(?string $outlet): static
+    {
+        $this->cardViewDesignerOutlet = $outlet;
+
+        return $this;
+    }
+
     /** @return array<string, mixed> */
     #[\Override]
     public function emptyValue(): mixed
@@ -119,6 +141,14 @@ class FieldLayoutDesigner extends Control
             'customizableTabs' => $this->customizableTabs,
             'withGeneratedFields' => $this->withGeneratedFields,
             'withCardViewDesigner' => $this->withCardViewDesigner,
+            ...($this->withCardViewDesigner && $this->cardViewDesignerOutlet !== null
+                ? [
+                    'cardViewDesignerOutlet' => $this->cardViewDesignerOutlet,
+                    // The settings the card view designer edits, whose errors
+                    // flag the outlet's tab rather than the designer's.
+                    'errorOutlets' => [$this->cardViewDesignerOutlet => ['cardView', 'thumbSources']],
+                ]
+                : []),
         ];
     }
 }

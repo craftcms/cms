@@ -98,6 +98,7 @@ class FieldLayoutDesigner
             'customizableTabs' => $config['customizableTabs'],
             'customizableUi' => $config['customizableUi'],
             'withCardViewDesigner' => $config['withCardViewDesigner'] ?? false,
+            'cardViewDesignerOutlet' => $config['cardViewDesignerOutlet'] ?? null,
             'alwaysShowThumbAlignmentBtns' => $fieldLayout->type::hasThumbs(),
             'readOnly' => $config['disabled'],
         ];
@@ -165,6 +166,7 @@ class FieldLayoutDesigner
         $config += [
             'withGeneratedFields' => false,
             'withCardViewDesigner' => false,
+            'cardViewDesignerOutlet' => null,
             'disabled' => false,
         ];
 
@@ -175,6 +177,7 @@ class FieldLayoutDesigner
             'config' => $config,
             'withGeneratedFields' => $config['withGeneratedFields'],
             'withCardViewDesigner' => $config['withCardViewDesigner'],
+            'cardViewDesignerOutlet' => $config['cardViewDesignerOutlet'],
             'disabled' => $config['disabled'],
         ])->render();
     }

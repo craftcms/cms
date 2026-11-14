@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs, so the field layout and card appearance no longer sit below the general settings. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
+- Added `CraftCms\Cms\Ui\Nodes\Outlet` and `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`. ([#20658](https://github.com/craftcms/cms/pull/20658))
 - Craft now supports Laravel Octane, on Swoole and RoadRunner. Requests served by the same worker no longer share state such as live preview drafts, control panel assets, translated element type names, view namespaces, or routes from the project config, and project config changes made by other workers or commands are picked up by the next request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Editable tables with a heading column now name each row’s inputs and Reorder and Delete buttons for screen readers after the row’s heading, such as “Opening Time, Wednesday”, rather than its row number. ([#20631](https://github.com/craftcms/cms/pull/20631))
 - Admin tables’ delete buttons are now named after their row for screen readers, such as “Delete Posts”, rather than “Delete item”, and deletion confirmations now name the row or count the selected rows, rather than asking “Are you sure?”. ([#20633](https://github.com/craftcms/cms/pull/20633))
@@ -19,6 +21,9 @@
 - Pages no longer show breadcrumbs when the only one would be the current page, such as the Dashboard. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ translation indicators now show their descriptions when pressed, including on touch devices, rather than on hover. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Updated the workflow stage type picker to show each type’s icon when available. ([#20660](https://github.com/craftcms/cms/pull/20660))
+- Pages shown to logged-out users, such as the login page, now use the “Theme” preference of the last user who signed in on the browser, rather than always following the system’s light or dark setting.
+- Added the `cpIconPath` and `cpLogoPath` config settings, which set the control panel’s icon and the login page’s logo from files on the server. SVG files are rendered inline, so they can adapt to the selected light or dark theme, such as with the `light-dark()` CSS function. ([#20647](https://github.com/craftcms/cms/issues/20647))
+- Deprecated the `cpIconUrl` and `cpLogoUrl` config settings. `cpIconPath` and `cpLogoPath` should be used instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Plugins can now build control panel pages from the same components, composables, and helpers Craft’s own pages use, typed and imported from the `@craftcms/cp` import-map module, including `registerPage()`, `registerComponent()`, `registerElementDetailsPanel()`, `Modal`, `ModalForm`, `Select`, `Combobox`, `IconPicker`, `TypePicker`, `DataTable`, `ElementList`, `ElementChips`, `AreaChart`, `useFetch()`, `useSlideoutControl()`, `useDetailsPanels()`, and `openUiModal()`. A guide to building control panel UI in a plugin is in Storybook, under **Plugins**. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - The control panel’s import map now publishes `@inertiajs/vue3`, so plugin bundles share the control panel’s Inertia instance rather than bundling their own. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Added `CraftCms\Cms\Cp\Html\ElementHtml::presentation()`. ([#20608](https://github.com/craftcms/cms/pull/20608))
@@ -37,6 +42,7 @@
 - Fixed a bug where truncated element chips, and the Compare screen’s version menus, cut off the beginning of text written in the other direction from the control panel’s language, such as an English title in Arabic, rather than its end. ([#20668](https://github.com/craftcms/cms/pull/20668))
 - Fixed a bug where the New Users dashboard widget’s chart was unstyled. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Fixed a bug where invalid Icon inputs in control panel forms showed an extra “error” message below their actual error. ([#20608](https://github.com/craftcms/cms/pull/20608))
+- Fixed a bug where card view designers’ settings were capped at 500px tall and scrolled, even when there was room for them. ([#20596](https://github.com/craftcms/cms/issues/20596), [#20658](https://github.com/craftcms/cms/pull/20658))
 - Fixed a bug where the user menu showed a “Permissions” item on Craft Solo, which led to a 403 error. ([#20621](https://github.com/craftcms/cms/issues/20621), [#20635](https://github.com/craftcms/cms/pull/20635))
 - Fixed a bug where control panel forms could show the wrong fields after a failed save, such as the Base URL field on a new site whose “This site has its own base URL” setting was turned off. ([#20632](https://github.com/craftcms/cms/pull/20632), [#20636](https://github.com/craftcms/cms/pull/20636))
 - Fixed a bug where each autosave of a provisional draft saved it twice and rebuilt every action menu item on the page, which blocked the entry editor for over a second on long entries. ([#20639](https://github.com/craftcms/cms/issues/20639), [#20649](https://github.com/craftcms/cms/pull/20649))
@@ -62,6 +68,7 @@
 - Fixed a bug where folder breadcrumbs had extra space after each separator. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fixed a bug where the “Saved” status in element editors’ footers wasn’t vertically centered.
 - Fixed a bug where element editors with relation fields, such as the Author field, kept running code on every animation frame while idle. ([#20650](https://github.com/craftcms/cms/pull/20650))
+- Fixed a bug where ID and class selectors within the `<style>` tags of SVGs output by the `svg()` Twig function didn’t always match their elements.
 - The `craft:mcp:serve` MCP server now picks up project config changes made by other processes since its previous request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - MCP upload routes now respond with JSON errors, rather than HTML pages, for clients that don’t ask for JSON, such as curl. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - The `craftCommand()` Twig function is now only available to control panel templates.
@@ -71,6 +78,8 @@
 - GraphQL result caches now vary by the logged-in user and their permissions, even when the schema comes from a GraphQL token. ([#20587](https://github.com/craftcms/cms/issues/20587))
 - GraphQL transform arguments now accept `immediately` again, which asks the asset transformer to generate the transform before returning its URL. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Asset transform drivers now receive whether the transform should be generated immediately in `$request->immediately`, including legacy image transformers. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
+- Added `CraftCms\Cms\Cp\Cp::iconHtml()` and `logoHtml()`, and `craft.cp.iconHtml()` for control panel templates. ([#20647](https://github.com/craftcms/cms/issues/20647))
+- Removed `cpLogoUrl` from the control panel’s JavaScript config. The `craft.system.logo` page prop holds the login logo’s HTML instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - `CraftCms\Cms\Element\Elements::__construct()` no longer has a `$placeholders` argument. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Added `CraftCms\Cms\Asset\Data\AssetTransformRequest::$immediately` and `$namedTransform`. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Added `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()`, `immediateTransforms()`, and `IMMEDIATE_TRANSFORMS_CONTEXT`, which apply to every asset transform driver. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))

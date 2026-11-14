@@ -12,6 +12,7 @@ import {Tab} from './tab';
 import {CardViewDesigner} from './card-view-designer';
 import {ElementDrag, TabDrag} from './drags';
 import {
+  cvdData,
   fldElementData,
   fldTabData,
   htmlToElement,
@@ -37,6 +38,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     customizableTabs: true,
     customizableUi: true,
     withCardViewDesigner: false,
+    cardViewDesignerOutlet: null,
     alwaysShowThumbAlignmentBtns: false,
     readOnly: false,
   };
@@ -97,6 +99,14 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       this._config!.tabs = [];
     }
 
+    // Found now, while it's still beside the designer, as it can move out
+    // before the designer finishes initializing (see `cardViewDesignerOutlet`).
+    if (this.settings!.withCardViewDesigner) {
+      this.$cvd = this.$container
+        .closest('.fld-cvd')
+        ?.querySelector('.card-view-designer');
+    }
+
     this.$innerContainer = this.$container.querySelector(
       ':scope > .fld-container'
     );
@@ -131,15 +141,23 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
       this.$fieldLibrary.setAttribute('tabindex', '-1');
     }
 
-    // The search field's inner input renders once its custom element upgrades.
-    void deferUntil(
-      () => !!this.$fieldLibrary.querySelector('craft-input-search input')
-    ).then(() => {
-      this.$fieldSearch = this.$fieldLibrary.querySelector(
-        'craft-input-search input'
-      );
-      this.deferredInit();
-    });
+    // The search field's inner input renders once its custom element connects,
+    // which usually happens right after this designer is created, since
+    // connected callbacks run parent first. So check again after a microtask
+    // before polling: until deferredInit() runs, the tabs' Add buttons and the
+    // New Tab buttons are on screen but do nothing when clicked.
+    void Promise.resolve()
+      .then(() =>
+        deferUntil(
+          () => !!this.$fieldLibrary.querySelector('craft-input-search input')
+        )
+      )
+      .then(() => {
+        this.$fieldSearch = this.$fieldLibrary.querySelector(
+          'craft-input-search input'
+        );
+        this.deferredInit();
+      });
   }
 
   deferredInit(): void {
@@ -255,10 +273,7 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
     });
 
     // initiate Card Attributes Designer
-    if (this.settings!.withCardViewDesigner) {
-      this.$cvd = this.$container
-        .closest('.fld-cvd')
-        ?.querySelector('.card-view-designer');
+    if (this.$cvd) {
       this.initCvd();
     }
 
@@ -359,10 +374,17 @@ export class FieldLayoutDesigner extends Base<FieldLayoutDesignerSettings> {
   initCvd(): void {
     this.cvd = new CardViewDesigner(this, this.$cvd);
 
-    // Add skip link
+    // Found from the designer's root too, as the card view designer can move
+    // out of it (see `cardViewDesignerOutlet`).
+    const root = this.$container.closest('.fld-cvd');
+    if (root) {
+      cvdData.set(root, this.cvd);
+    }
+
+    // Add skip link, unless the card view designer moves to a tab of its own
     const skipLinkAnchor = this.cvd.$container.id;
 
-    if (skipLinkAnchor) {
+    if (skipLinkAnchor && !this.settings!.cardViewDesignerOutlet) {
       const $skipLink = document.createElement('a');
       $skipLink.className = 'skip-link';
       $skipLink.textContent = t('Skip to card view designer');

@@ -19,6 +19,7 @@
     fieldId,
     inputId,
     nodeHasErrors,
+    routeErrorsToOutlets,
     scopedId,
     UiFieldIdScope,
     uiTabPanelId,
@@ -209,11 +210,17 @@
     {immediate: true}
   );
 
+  /** The errors each tab is flagged for, with the ones shown in outlets moved there. */
+  const tabErrors = computed(() =>
+    routeErrorsToOutlets(props.nodes, props.errors)
+  );
+
+  function tabHasErrors(tab: UiNodePayload): boolean {
+    return nodeHasErrors(tab, tabErrors.value.errors, tabErrors.value.outlets);
+  }
+
   watch(
-    () =>
-      tabs.value
-        .filter((tab) => nodeHasErrors(tab, props.errors))
-        .map((tab) => tab.uid),
+    () => tabs.value.filter(tabHasErrors).map((tab) => tab.uid),
     (uids) => uids.forEach(renderTab),
     {immediate: true}
   );
@@ -297,7 +304,7 @@
         ></craft-icon>
         {{ tab.props.label }}
         <craft-icon
-          v-if="nodeHasErrors(tab, errors)"
+          v-if="tabHasErrors(tab)"
           name="circle-exclamation"
           :label="t('Errors')"
           slot="suffix"

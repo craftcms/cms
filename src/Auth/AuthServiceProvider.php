@@ -12,6 +12,7 @@ use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
@@ -187,6 +188,8 @@ class AuthServiceProvider extends ServiceProvider
             app(AuthMethods::class)->setRememberedUsername($user);
 
             Session::put(Cms::config()->getPasswordConfirmationKey(), now()->unix());
+
+            Theme::rememberPreference($user);
         });
 
         Event::listen(Failed::class, function (Failed $event) {
@@ -210,6 +213,10 @@ class AuthServiceProvider extends ServiceProvider
 
             app(Impersonation::class)->setImpersonatorId(null);
             Cms::forgetTimezone();
+
+            if ($event->user instanceof CraftUser) {
+                Theme::rememberPreference($event->user->asElement());
+            }
         });
     }
 

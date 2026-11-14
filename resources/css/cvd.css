@@ -16,8 +16,9 @@
   display: grid;
   position: relative;
   /* A hairline along the bottom, under the settings and the preview alike,
-     like the one under the field layout designer's panes. */
-  box-shadow: inset 0 -1px 0 var(--fld-hairline);
+     like the one under the field layout designer's panes (only under the
+     designer's own tabs: see --fld-pane-bottom-hairline). */
+  box-shadow: var(--fld-pane-bottom-hairline);
   /* The library and the preview are as far apart as content is from a
      container's edge. */
   gap: var(--cp-container-padding);
@@ -38,13 +39,12 @@
 .cvd-library {
   --gap: initial;
   align-content: start;
-  /* A grid cell of space below the Content/Appearance tabs (which it sits right
-     under) and above its bottom edge, like the preview's padding. */
-  padding-block: var(--c-spacing-lg);
+  /* Space below the tabs (which it sits right under) and above the hairline
+     dividing it from the preview stacked under it, like the preview's padding
+     (see --fld-pane-padding-block). */
+  padding-block: var(--fld-pane-padding-block) var(--c-spacing-lg);
 }
 
-/* Beside the preview, the settings scroll rather than stretching the
-   designer taller than the preview needs. */
 @container cvd (width > 37.5rem) {
   .cvd-library {
     /* Its fields all span the full width, so it doesn't need the field
@@ -52,12 +52,7 @@
        setting its width. */
     container-type: normal;
     grid-template-columns: auto;
-    max-block-size: calc(500rem / 16);
-    overflow-y: auto;
-    /* Reaches across the gap to the preview's hairline, so it scrolls right
-       up to it, with its content kept where it was. */
-    margin-inline-end: calc(-1 * var(--cp-container-padding));
-    padding-inline-end: var(--cp-container-padding);
+    padding-block: var(--fld-pane-padding-block);
   }
 }
 
@@ -90,12 +85,14 @@
      and the preview pads back in (below), so the chip and card line up with
      the settings and the first column of dots with their outer rings. */
   margin-inline-start: -1px;
+  padding-block: var(--c-spacing-lg) var(--fld-pane-padding-block);
   padding-inline: 0;
 }
 
 @container cvd (width > 37.5rem) {
   .cvd-preview-container.cp-workspace {
     margin-inline-start: 0;
+    padding-block: var(--fld-pane-padding-block);
     padding-inline-start: var(--c-spacing-lg);
     border-block-start: 0;
     border-inline-start: 1px solid var(--fld-hairline);
@@ -103,7 +100,9 @@
 }
 
 /* Bands of the tabs' ring color inside the top and bottom edges, keeping the
-   grid's dots clear of them, as in the field layout designer's panes. Drawn
+   grid's dots clear of them, as in the field layout designer's panes (only
+   under the designer's own tabs, except the one under the hairline dividing it
+   from the settings stacked above it). Drawn
    over the grid (which the container's own shadow would sit under), but under
    the chip and card. */
 .cvd-preview-container::after {
@@ -112,8 +111,8 @@
   inset: 0;
   z-index: -1;
   box-shadow:
-    inset 0 -1px 0 var(--fld-hairline),
-    inset 0 -3px 0 var(--fld-halo),
+    var(--fld-pane-bottom-hairline),
+    var(--fld-pane-bottom-band),
     inset 0 2px 0 var(--fld-halo);
   pointer-events: none;
 }
@@ -122,17 +121,17 @@
 @container cvd (width > 37.5rem) {
   .cvd-preview-container::after {
     box-shadow:
-      inset 0 -1px 0 var(--fld-hairline),
-      inset 0 -3px 0 var(--fld-halo),
-      inset 0 2px 0 var(--fld-halo),
+      var(--fld-pane-bottom-hairline),
+      var(--fld-pane-bottom-band),
+      var(--fld-pane-top-band),
       inset 2px 0 0 var(--fld-halo);
   }
 
   .cvd-preview-container:dir(rtl)::after {
     box-shadow:
-      inset 0 -1px 0 var(--fld-hairline),
-      inset 0 -3px 0 var(--fld-halo),
-      inset 0 2px 0 var(--fld-halo),
+      var(--fld-pane-bottom-hairline),
+      var(--fld-pane-bottom-band),
+      var(--fld-pane-top-band),
       inset -2px 0 0 var(--fld-halo);
   }
 }

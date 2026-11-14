@@ -20,7 +20,7 @@ class CraftVariableMixin
     public function rebrand(): Closure
     {
         return function() {
-            LegacyUsage::record('craft-variable.rebrand', '`craft.rebrand` is used. Set the `cpIconUrl` and `cpLogoUrl` general config settings instead.');
+            LegacyUsage::record('craft-variable.rebrand', '`craft.rebrand` is used. Set the `cpIconPath` and `cpLogoPath` general config settings instead.');
 
             return app()->make(Rebrand::class);
         };
