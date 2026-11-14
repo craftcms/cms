@@ -39,6 +39,7 @@
 - Added `CraftCms\Cms\Cp\Html\ElementHtml::presentation()`. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Added the `--c-nav-item-color` CSS custom property to `craft-nav-item`, which sets its label’s color while it isn’t hovered or current. ([#20663](https://github.com/craftcms/cms/pull/20663))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
+- Fixed a bug where control panel screens, such as section settings, failed to load when the control panel was served over plain HTTP from a hostname other than `localhost`. ([#20680](https://github.com/craftcms/cms/issues/20680), [#20695](https://github.com/craftcms/cms/pull/20695))
 - Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
 - Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes on legacy control panel screens. ([#20613](https://github.com/craftcms/cms/issues/20613))
 - Fixed a bug where images cropped against the left or top edge in the Image Editor could be saved with a sliver of padding. ([#20601](https://github.com/craftcms/cms/issues/20601))
