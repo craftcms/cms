@@ -33,6 +33,7 @@ import SlugControl from './SlugControl.vue';
 import HiddenControl from './HiddenControl.vue';
 import HiddenFieldNode from './HiddenFieldNode.vue';
 import LineBreakNode from './LineBreakNode.vue';
+import OutletNode from './OutletNode.vue';
 import SeparatorNode from './SeparatorNode.vue';
 import './content-block-input';
 
@@ -79,6 +80,7 @@ export function registerUiComponents(
   components.register('craft:callout', CalloutNode);
   components.register('craft:heading', HeadingNode);
   components.register('craft:line-break', LineBreakNode);
+  components.register('craft:outlet', OutletNode);
   components.register('craft:separator', SeparatorNode);
   components.register('craft:handle', HandleControl);
   components.register('craft:slug', SlugControl);

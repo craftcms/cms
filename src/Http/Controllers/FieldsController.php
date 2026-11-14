@@ -309,6 +309,7 @@ class FieldsController
             'customizableTabs' => ['required', 'boolean'],
             'withGeneratedFields' => ['required', 'boolean'],
             'withCardViewDesigner' => ['required', 'boolean'],
+            'cardViewDesignerOutlet' => ['nullable', 'string'],
         ]);
 
         return new JsonResponse([
@@ -320,6 +321,7 @@ class FieldsController
                 $data['customizableTabs'],
                 $data['withGeneratedFields'],
                 $data['withCardViewDesigner'],
+                $data['cardViewDesignerOutlet'] ?? null,
             ),
         ]);
     }

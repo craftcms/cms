@@ -147,7 +147,8 @@
 - Added support for configuring field layout field instruction positions.
 - Field layouts with a card view designer now show it and the content tab designer in “Content” and “Appearance” tabs, with Generated Fields in the Content tab. ([#20001](https://github.com/craftcms/cms/pull/20001)), ([#20003](https://github.com/craftcms/cms/pull/20003))
 - Generated fields and entry title formats now show dates in their site’s locale, the way element cards show them, when their template outputs a date directly, such as `{postDate}` or a Date field’s `{startDate}`. Entry types’ UI label formats now show those dates the same way, in the user’s locale. Filters still get the date, so `{startDate|date('Y')}` works as before. Generated fields are now also rendered in their site’s language, like entry title formats. ([#20467](https://github.com/craftcms/cms/pull/20467), [#20526](https://github.com/craftcms/cms/pull/20526), [#20527](https://github.com/craftcms/cms/pull/20527))
-- Entry types’ Icon and Color settings are now in their field layout designer’s Appearance tab, above Card Attributes. ([#20001](https://github.com/craftcms/cms/pull/20001))
+- Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs, so the field layout and card appearance no longer sit below the general settings. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
+- Entry types’ Icon and Color settings are now in the Appearance tab, above Card Attributes. ([#20001](https://github.com/craftcms/cms/pull/20001), [#20658](https://github.com/craftcms/cms/pull/20658))
 - Card view designers’ previews now reflect the owner’s color, icon, and name, such as an entry type’s, as they’re edited. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Entry type and user group descriptions, fields’ default instructions, tips, and warnings, and field layout elements’ instructions, tips, and warnings now have Markdown inputs. ([#20001](https://github.com/craftcms/cms/pull/20001))
 - Removed the “Show unpermitted entries” setting from Entries, Link, and Markdown fields, in favor of the “Viewable” condition rule in the “Selectable Entries Condition” setting. ([#19611](https://github.com/craftcms/cms/pull/19611), [#19622](https://github.com/craftcms/cms/pull/19622))
@@ -418,6 +419,8 @@
 - Added `CraftCms\Cms\Ui\Controls\Checkbox`.
 - Added `CraftCms\Cms\Ui\Controls\FieldSelect`.
 - Added `CraftCms\Cms\Ui\Controls\ConditionBuilder::fieldLayouts()`.
+- Added `CraftCms\Cms\Ui\Nodes\Outlet`, a place in a form that content rendered elsewhere can move to. ([#20658](https://github.com/craftcms/cms/pull/20658))
+- Added `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`, which moves a field layout designer’s card view designer into an `Outlet`, so a form can show it in a tab of its own. ([#20658](https://github.com/craftcms/cms/pull/20658))
 - Added `CraftCms\Cms\Ui\Controls\Choice::autocomplete()`, which sets a select’s `autocomplete` attribute. ([#20407](https://github.com/craftcms/cms/pull/20407))
 - Added `CraftCms\Cms\Cp\Components\Field::actions()`.
 - Added `CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving`, which is fired when a field layout field has no UI control of its own, so a listener can provide one. ([#20508](https://github.com/craftcms/cms/pull/20508))

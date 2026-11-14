@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs, so the field layout and card appearance no longer sit below the general settings. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
+- Added `CraftCms\Cms\Ui\Nodes\Outlet` and `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`. ([#20658](https://github.com/craftcms/cms/pull/20658))
 - Craft now supports Laravel Octane, on Swoole and RoadRunner. Requests served by the same worker no longer share state such as live preview drafts, control panel assets, translated element type names, view namespaces, or routes from the project config, and project config changes made by other workers or commands are picked up by the next request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Editable tables with a heading column now name each row’s inputs and Reorder and Delete buttons for screen readers after the row’s heading, such as “Opening Time, Wednesday”, rather than its row number. ([#20631](https://github.com/craftcms/cms/pull/20631))
 - Admin tables’ delete buttons are now named after their row for screen readers, such as “Delete Posts”, rather than “Delete item”, and deletion confirmations now name the row or count the selected rows, rather than asking “Are you sure?”. ([#20633](https://github.com/craftcms/cms/pull/20633))
@@ -39,6 +41,7 @@
 - Fixed a bug where truncated element chips, and the Compare screen’s version menus, cut off the beginning of text written in the other direction from the control panel’s language, such as an English title in Arabic, rather than its end. ([#20668](https://github.com/craftcms/cms/pull/20668))
 - Fixed a bug where the New Users dashboard widget’s chart was unstyled. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Fixed a bug where invalid Icon inputs in control panel forms showed an extra “error” message below their actual error. ([#20608](https://github.com/craftcms/cms/pull/20608))
+- Fixed a bug where card view designers’ settings were capped at 500px tall and scrolled, even when there was room for them. ([#20596](https://github.com/craftcms/cms/issues/20596), [#20658](https://github.com/craftcms/cms/pull/20658))
 - Fixed a bug where the user menu showed a “Permissions” item on Craft Solo, which led to a 403 error. ([#20621](https://github.com/craftcms/cms/issues/20621), [#20635](https://github.com/craftcms/cms/pull/20635))
 - Fixed a bug where control panel forms could show the wrong fields after a failed save, such as the Base URL field on a new site whose “This site has its own base URL” setting was turned off. ([#20632](https://github.com/craftcms/cms/pull/20632), [#20636](https://github.com/craftcms/cms/pull/20636))
 - Fixed a bug where each autosave of a provisional draft saved it twice and rebuilt every action menu item on the page, which blocked the entry editor for over a second on long entries. ([#20639](https://github.com/craftcms/cms/issues/20639), [#20649](https://github.com/craftcms/cms/pull/20649))
