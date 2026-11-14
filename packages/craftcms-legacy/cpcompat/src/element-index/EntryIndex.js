@@ -83,10 +83,13 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       );
 
       // Ignore the source's entry type if it isn't available for the section
+      const entryType = selectedSection?.entryTypes.find(
+        (t) => t.handle === entryTypeHandle
+      );
       if (
         entryTypeHandle &&
-        !selectedSection?.entryTypesBySite[this.siteId].some(
-          (t) => t.handle === entryTypeHandle
+        !selectedSection?.entryTypeIdsBySite[this.siteId].includes(
+          entryType?.id
         )
       ) {
         entryTypeHandle = undefined;

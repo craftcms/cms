@@ -532,9 +532,8 @@ describe('the new entry button', () => {
           type: 'channel',
           sites: [2],
           canSave: true,
-          entryTypesBySite: {
-            2: [{id: 8, handle: 'author', name: 'Author', icon: null}],
-          },
+          entryTypes: [{id: 8, handle: 'author', name: 'Author', icon: null}],
+          entryTypeIdsBySite: {2: [8]},
         },
       ],
     };

@@ -43,12 +43,11 @@ it('lists the entry types available in each site, as new entries would get them'
     });
 
     $resource = Json::decode(Json::encode(SectionResource::make(Sections::getSectionById($section->id))));
-    $handles = array_map(fn (array $types) => array_column($types, 'handle'), $resource['entryTypesBySite']);
-
     expect($resource['sites'])->toBe([$primarySite->id, $reviewsOnlySite->id])
-        ->and($handles)->toBe([
-            $primarySite->id => ['article', 'review'],
-            $reviewsOnlySite->id => ['review'],
+        ->and(array_column($resource['entryTypes'], 'handle'))->toBe(['article', 'review'])
+        ->and($resource['entryTypeIdsBySite'])->toBe([
+            $primarySite->id => [$article->id, $review->id],
+            $reviewsOnlySite->id => [$review->id],
         ])
         ->and(array_unique($authorIds, SORT_REGULAR))->toBe([[$user->id]]);
 });

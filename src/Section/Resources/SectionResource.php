@@ -4,32 +4,44 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Section\Resources;
 
+use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\JsonResource;
-use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Entry\Resources\EntryTypeResource;
 use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 use function CraftCms\Cms\currentUser;
 
 /**
+ * A section the current user can create entries in, with the entry types they can create in each of its sites, for
+ * the control panel's New entry buttons.
+ *
  * @mixin Section
  *
  * @since 6.0.0
  */
 class SectionResource extends JsonResource
 {
-    /** @return array<string, array<int, int|array<string, string>>|bool|int|string|null|object|AnonymousResourceCollection> */
+    /** @return array{uid: string, id: int, name: string, handle: string, type: string, sites: int[], entryTypes: list<array{id: int, handle: string, name: string, icon: array<string, string>|null}>, entryTypeIdsBySite: object, canSave: bool|null} */
     #[\Override]
     public function toArray(Request $request): array
     {
         $entryTypesBySite = $this->availableEntryTypesBySite();
-        $requestedSiteId = app(RequestedSite::class)->get()?->id;
+        $entryTypes = [];
+
+        foreach ($entryTypesBySite as $siteEntryTypes) {
+            foreach ($siteEntryTypes as $entryType) {
+                $entryTypes[$entryType->id] ??= [
+                    'id' => $entryType->id,
+                    'handle' => $entryType->handle,
+                    'name' => $entryType->name,
+                    'icon' => $entryType->getIcon() ? Icons::resolveIconData($entryType->getIcon()) : null,
+                ];
+            }
+        }
 
         return [
             'uid' => $this->uid,
@@ -37,17 +49,14 @@ class SectionResource extends JsonResource
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type->value ?? SectionType::Channel->value,
-            'enableVersioning' => $this->enableVersioning,
-            'minAuthors' => $this->minAuthors,
-            'maxAuthors' => $this->maxAuthors,
-            'maxLevels' => $this->maxLevels,
-            'propagationMethod' => $this->propagationMethod->value,
-            'defaultPlacement' => $this->defaultPlacement->value,
-            'previewTargets' => $this->previewTargets ?? [],
             'sites' => array_keys($entryTypesBySite),
-            'entryTypes' => EntryTypeResource::collection($entryTypesBySite[$requestedSiteId] ?? Arr::first($entryTypesBySite) ?? []),
+            // Each entry type once, whichever sites it's available in, rather than once per site
+            'entryTypes' => array_values($entryTypes),
             // An object, so resource filtering doesn't reindex the site IDs
-            'entryTypesBySite' => (object) array_map(fn (array $entryTypes) => EntryTypeResource::collection($entryTypes)->resolve($request), $entryTypesBySite),
+            'entryTypeIdsBySite' => (object) array_map(
+                fn (array $siteEntryTypes) => array_map(fn (EntryType $entryType) => $entryType->id, $siteEntryTypes),
+                $entryTypesBySite,
+            ),
             'canSave' => currentUser()?->can("saveEntries:$this->uid"),
         ];
     }

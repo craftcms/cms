@@ -13,7 +13,8 @@ type EntryType = {
 };
 
 type PublishableSection = {
-  entryTypesBySite: Record<number, Array<EntryType>>;
+  entryTypes: Array<EntryType>;
+  entryTypeIdsBySite: Record<number, Array<number>>;
   handle: string;
   id: number;
   name: string;
@@ -90,7 +91,10 @@ function section(
     type: 'channel',
     sites,
     canSave: true,
-    entryTypesBySite: Object.fromEntries(sites.map((id) => [id, entryTypes])),
+    entryTypes,
+    entryTypeIdsBySite: Object.fromEntries(
+      sites.map((id) => [id, entryTypes.map((type) => type.id)])
+    ),
   };
 }
 
@@ -140,11 +144,12 @@ it('links directly to the entry type when it is the only one on screen', async (
 
 it('only offers the entry types available in the site being viewed', async () => {
   const blog = {
-    ...section('blog', [entryType('article', 1)], [1, 2]),
-    entryTypesBySite: {
-      1: [entryType('article', 1)],
-      2: [entryType('article', 1), entryType('review', 2)],
-    },
+    ...section(
+      'blog',
+      [entryType('article', 1), entryType('review', 2)],
+      [1, 2]
+    ),
+    entryTypeIdsBySite: {1: [1], 2: [1, 2]},
   };
   const container = await mount({
     sources: [sectionSource('blog')],

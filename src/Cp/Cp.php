@@ -143,8 +143,8 @@ readonly class Cp
         return $data + [
             'elementTypeNames' => self::elementTypeNames(...),
             'fieldsWithoutContent' => fn () => app(Fields::class)->getFieldsWithoutContent(false)->pluck('handle')->all(),
-            // Serialized once here, rather than as a resource each time the config is encoded
-            'publishableSections' => fn () => $upToDate ? Json::decode(Json::encode(SectionResource::collection(Sections::getPublishableSections()))) : [],
+            // Resolved once here, rather than as a resource each time the config is encoded
+            'publishableSections' => fn () => $upToDate ? SectionResource::collection(Sections::getPublishableSections())->resolve() : [],
             'sites' => self::sites(...),
         ];
     }
