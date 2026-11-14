@@ -1,4 +1,5 @@
 import {actionClient} from '@craftcms/ui';
+import {uuid} from '@/common/craft/strings';
 import {useEventListener} from '@vueuse/core';
 import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
 import {screenPanels} from '@/common/composables/screenPanels';
@@ -91,7 +92,7 @@ export function useCrafty(open: (threadId: string) => Promise<void>): void {
       stop();
       remember();
 
-      const threadId = crypto.randomUUID();
+      const threadId = uuid();
 
       void actionClient
         .post(AssistantController.start.url(), {threadId})

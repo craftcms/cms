@@ -1,4 +1,5 @@
 import {actionClient, t} from '@craftcms/ui';
+import {uuid} from '@/common/craft/strings';
 import {
   computed,
   inject,
@@ -263,7 +264,7 @@ export function useBlockCreation(options: BlockCreationOptions) {
       await insertBlocks(
         [
           {
-            uid: `${NESTED_ELEMENT_UID_PREFIX}${crypto.randomUUID()}`,
+            uid: `${NESTED_ELEMENT_UID_PREFIX}${uuid()}`,
             type: entryType,
           },
         ],

@@ -1,4 +1,5 @@
 import {isCancel, isHttpError} from '@craftcms/ui';
+import {uuid} from '@/common/craft/strings';
 import {createGlobalState} from '@vueuse/core';
 import {usePage} from '@inertiajs/vue3';
 import {computed} from 'vue';
@@ -55,7 +56,7 @@ export const useAssistantThread = createGlobalState(() => {
   const userId =
     usePage<{craft?: CraftData}>().props.craft?.currentUser?.id ?? 0;
 
-  return useSessionStorage(`aiAssistant.thread.${userId}`, crypto.randomUUID());
+  return useSessionStorage(`aiAssistant.thread.${userId}`, uuid());
 });
 
 /**

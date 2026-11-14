@@ -6,6 +6,7 @@
    * save controls and details column go.
    */
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import {uuid} from '@/common/craft/strings';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {
     computed,
@@ -132,7 +133,7 @@
 
   if (assistantParams) {
     const assistantEditor: AssistantEditor = {
-      id: crypto.randomUUID(),
+      id: uuid(),
       params: () => payload.aiAssistant ?? assistantParams,
       label: () => payload.title,
       scope: () => uiPayload.value?.scope ?? [],
