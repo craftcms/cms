@@ -1161,16 +1161,33 @@ export function useElementEditor({
   }
 
   /**
-   * Points the panel at the element a save applied its draft to. The draft
-   * it was opened for, if it named one, no longer exists, and the canonical
-   * element is all a panel opened for just the draft has to go on.
+   * Points the panel at what a save of its provisional draft wrote: the
+   * element the draft was applied to, or the draft it was saved as. The
+   * provisional draft it was opened for, if it named one, is gone, and a
+   * panel opened for just that draft has nothing else to go on.
    */
   function showSavedElement(result: unknown): void {
-    const id = Number(
-      (result as {element?: {id?: unknown}} | undefined)?.element?.id
-    );
+    const element = (
+      result as
+        | {
+            element?: {
+              id?: unknown;
+              canonicalId?: unknown;
+              draftId?: unknown;
+              isProvisionalDraft?: unknown;
+            };
+          }
+        | undefined
+    )?.element;
+    const positive = (value: unknown) => {
+      const number = Number(value);
 
-    if (!slideout?.instance.href || !Number.isInteger(id) || id <= 0) {
+      return Number.isInteger(number) && number > 0 ? number : null;
+    };
+    const id = positive(element?.canonicalId) ?? positive(element?.id);
+    const draftId = positive(element?.draftId);
+
+    if (!slideout?.instance.href || id === null) {
       return;
     }
 
@@ -1178,6 +1195,17 @@ export function useElementEditor({
     url.searchParams.delete('draftId');
     url.searchParams.delete('provisional');
     url.searchParams.set('elementId', String(id));
+
+    // A panel opened at the element's own edit URL takes the element from
+    // the URL's path, and only a draft from its query.
+    if (draftId !== null) {
+      url.searchParams.set('draftId', String(draftId));
+
+      if (element?.isProvisionalDraft) {
+        url.searchParams.set('provisional', '1');
+      }
+    }
+
     slideout.instance.href = url.href;
   }
 

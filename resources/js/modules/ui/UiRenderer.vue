@@ -408,9 +408,13 @@
       );
       resetObservedValues(payload.value.nodes);
 
-      if (payload.value.nodes.some((node) => node.props.deferred)) {
-        deferredSettlement = {submitted, held: submissionResponse.held};
-      }
+      // A successful save takes over from any earlier one still waiting on
+      // its deferred tabs: its response holds back the same tabs, or none.
+      deferredSettlement = payload.value.nodes.some(
+        (node) => node.props.deferred
+      )
+        ? {submitted, held: submissionResponse.held}
+        : undefined;
     } else {
       valueState.rebase(submitted);
     }
@@ -568,9 +572,10 @@
   }
 
   function setSubmitting(value: boolean): void {
+    // What an earlier save still has to settle stays until a later one
+    // succeeds: this one can fail, or be called off.
     if (value && !submitting.value) {
       submittedValues = valueState.snapshot();
-      deferredSettlement = undefined;
     }
     if (!value) submissionResponse = undefined;
     submitting.value = value;

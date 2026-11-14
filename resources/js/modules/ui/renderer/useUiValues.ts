@@ -462,17 +462,28 @@ function renamed(value: UiValue, renames: Map<string, string>): UiValue {
   }
 
   if (isRecord(value)) {
-    // The response's own copy of a replacement, which the values took in when
-    // it arrived, gives way to the one the client is holding.
     const replaced = new Set(
       Object.keys(value).flatMap((key) => renames.get(key) ?? [])
     );
-
-    return Object.fromEntries(
+    const result: UiValues = Object.fromEntries(
       Object.entries(value)
         .filter(([key]) => !replaced.has(key))
         .map(([key, item]) => [renames.get(key) ?? key, renamed(item, renames)])
     );
+
+    // The response's own copy of a replacement, which the values took in when
+    // it arrived, gives way to the one the client is holding, but fills in
+    // what that lacks, as it would have had their keys matched.
+    for (const key of replaced) {
+      const response = value[key];
+      const held = result[key];
+
+      if (isRecord(held) && isRecord(response)) {
+        mergeMissing(held, response);
+      }
+    }
+
+    return result;
   }
 
   return cloneRaw(value);

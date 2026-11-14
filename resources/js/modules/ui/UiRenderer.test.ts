@@ -3107,7 +3107,16 @@ describe('UiRenderer', () => {
     });
     await nextTick();
 
-    currentPayload.value = matrixPayload(['saved-a', 'saved-b'], ['A', 'B']);
+    const response = matrixPayload(['saved-a', 'saved-b'], ['A', 'B']);
+    // What the server added to a block saved, which the client never held.
+    Object.assign(
+      (
+        ((response.values.settings as UiValues).matrix as UiValues)
+          .entries as UiValues
+      )['saved-a'] as UiValues,
+      {body: 'Server default'}
+    );
+    currentPayload.value = response;
     await nextTick();
     renderer.advanceBaseline();
     renderer.setSubmitting(false);
@@ -3117,7 +3126,7 @@ describe('UiRenderer', () => {
       settings: {
         matrix: {
           entries: {
-            'saved-a': {heading: 'A, edited'},
+            'saved-a': {heading: 'A, edited', body: 'Server default'},
             'saved-b': {heading: 'B'},
           },
           sortOrder: ['saved-b', 'saved-a'],
@@ -3206,6 +3215,10 @@ describe('UiRenderer', () => {
     renderer.advanceBaseline();
     renderer.setSubmitting(false);
     await nextTick();
+
+    // Another save goes out before the tab arrives, and fails.
+    renderer.setSubmitting(true);
+    renderer.setSubmitting(false);
 
     mutations.length = 0;
     currentPayload.value = tabbed(['saved-a'], false);
