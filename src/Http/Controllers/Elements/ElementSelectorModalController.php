@@ -25,6 +25,7 @@ readonly class ElementSelectorModalController
                 }
             }],
             'sources.*' => ['string'],
+            'readOnly' => ['nullable', 'boolean'],
         ]);
 
         $elementType = $request->elementType();
@@ -36,6 +37,7 @@ readonly class ElementSelectorModalController
                 $elementType,
                 $request,
                 restrictToSources: is_array($sources) ? array_values($sources) : null,
+                readOnly: $request->boolean('readOnly'),
             )->toArray(),
         ]);
     }

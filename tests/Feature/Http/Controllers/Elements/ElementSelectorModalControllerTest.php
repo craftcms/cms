@@ -196,6 +196,14 @@ describe('asset folders', function () {
             ->and($thumb['labelLinkAttributes'])->toBe(['data-folder-link' => '']);
     });
 
+    it('keeps folder links in read-only mode', function () {
+        Folders::ensureFolderByFullPathAndVolume('a-subfolder', $this->volume);
+
+        $title = ($this->postAssets)(['readOnly' => true])['data'][0]['title'];
+
+        expect($title)->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/');
+    });
+
     it('lists the requested subfolder, with a trail back to the volume root', function () {
         Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
         $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);
@@ -305,4 +313,57 @@ it('excludes the target IDs supplied by replacement modals', function () {
     ])->assertOk();
 
     expect(array_column($response->json('props.data'), 'id'))->toBe([$replacement->id]);
+});
+
+describe('read-only indexes', function () {
+    it('links table titles to their elements', function () {
+        $titles = collect(($this->postBody)([
+            'elementType' => User::class,
+            'readOnly' => true,
+        ])->json('props.data'))->pluck('title');
+
+        expect($titles)->not->toBeEmpty();
+        $titles->each(fn (string $title) => expect($title)->toContain('CpLink'));
+    });
+
+    it('hands thumbs the url to navigate to', function () {
+        $thumbs = collect(($this->postBody)([
+            'elementType' => User::class,
+            'viewMode' => 'thumbs',
+            'readOnly' => true,
+        ])->json('props.data'));
+
+        expect($thumbs)->not->toBeEmpty();
+        $thumbs->each(fn (array $thumb) => expect($thumb['url'])->not->toBeNull());
+    });
+
+    it('narrows the elements by the requested criteria', function () {
+        $user = UserModel::factory()->createElement();
+
+        $props = ($this->postBody)([
+            'elementType' => User::class,
+            'readOnly' => true,
+            'criteria' => ['id' => $user->id],
+        ])->json('props');
+
+        expect($props['pagination']['total'])->toBe(1);
+    });
+});
+
+describe('read-only card view', function () {
+    beforeEach(function () {
+        $this->cardContent = fn (bool $readOnly) => ($this->postBody)([
+            'elementType' => User::class,
+            'viewMode' => 'cards',
+            'readOnly' => $readOnly,
+        ])->json('props.data.0.cardContentHtml');
+    });
+
+    it('links card titles to their elements', function () {
+        expect(($this->cardContent)(true))->toContain('href="');
+    });
+
+    it('leaves card titles unlinked when selecting', function () {
+        expect(($this->cardContent)(false))->not->toContain('href="');
+    });
 });

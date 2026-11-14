@@ -79,6 +79,12 @@ interface Options {
    */
   selectFolders?: boolean;
   disabledFolderIds?: () => number[];
+  /** Lists elements without selecting them, to embed the index in a screen. */
+  readOnly?: boolean;
+  /** Keeps this index's view mode, columns and sort apart from other indexes of its element type. */
+  storageKey?: string;
+  /** Called when a request for the index fails, instead of the failure going unhandled. */
+  onError?: (cause: unknown) => void;
 }
 
 /** Adds modal fetching and selection rules to the shared detached index. */
@@ -108,11 +114,15 @@ export function useModalElementIndex(options: Options) {
 
       return data.props as ContentIndexData;
     },
+    readOnly: options.readOnly,
+    storageKey: options.storageKey,
+    onError: options.onError,
     enableRowSelection: (row) =>
-      selectFolders
+      !options.readOnly &&
+      (selectFolders
         ? Boolean(row.isFolder) &&
           !disabledFolderIds.value.has(Number(row.folderId))
-        : !row.isFolder && !disabledIds.value.has(Number(row.id)),
+        : !row.isFolder && !disabledIds.value.has(Number(row.id))),
     // A move has one destination.
     multiSelect: !selectFolders,
     structure: true,

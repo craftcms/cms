@@ -40,12 +40,14 @@ class ModalIndexViewModel extends ContentIndexViewModel
     /**
      * @param  class-string<ElementInterface>  $elementType
      * @param  list<string>|null  $restrictToSources  Source keys the opener allows, or null for all of them.
+     * @param  bool  $readOnly  Lists elements without selecting them, linking each to its edit page, to embed the index in a screen.
      */
     public function __construct(
         string $elementType,
         ElementIndexRequest $request,
         private readonly ?array $restrictToSources = null,
         ?string $page = null,
+        private readonly bool $readOnly = false,
     ) {
         parent::__construct($elementType, $request, $page);
     }
@@ -154,7 +156,7 @@ class ModalIndexViewModel extends ContentIndexViewModel
     protected function titleLinkHtml(ElementInterface $element): string
     {
         if (! $element instanceof Asset || ! $element->isFolder) {
-            return $this->chipHtml($element);
+            return $this->readOnly ? parent::titleLinkHtml($element) : $this->chipHtml($element);
         }
 
         $folderUrl = $this->folderUrl($element);
@@ -162,6 +164,12 @@ class ModalIndexViewModel extends ContentIndexViewModel
         return $folderUrl === null
             ? $this->chipHtml($element)
             : $this->labelLinkedChipHtml($element, $folderUrl, attributes: ['data-folder-link' => true]);
+    }
+
+    #[\Override]
+    protected function linksToElements(): bool
+    {
+        return $this->readOnly;
     }
 
     /**
@@ -320,11 +328,17 @@ class ModalIndexViewModel extends ContentIndexViewModel
     {
         $folderUrl = $this->folderLinkUrl($element);
 
-        return $folderUrl === null ? [] : [
-            'hyperlink' => true,
-            'hyperlinkUrl' => $folderUrl,
-            'hyperlinkAttributes' => ['data-folder-link' => true],
-        ];
+        if ($folderUrl !== null) {
+            return [
+                'hyperlink' => true,
+                'hyperlinkUrl' => $folderUrl,
+                'hyperlinkAttributes' => ['data-folder-link' => true],
+            ];
+        }
+
+        $editUrl = $this->readOnly && ! $element->trashed ? $this->editUrl($element) : null;
+
+        return $editUrl === null ? [] : ['hyperlink' => true, 'hyperlinkUrl' => $editUrl];
     }
 
     /**
