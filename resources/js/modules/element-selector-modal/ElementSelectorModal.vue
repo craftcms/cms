@@ -4,6 +4,8 @@
   import '@craftcms/ui/components/element-selector-modal/element-selector-modal';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
+  import FolderActionButtons from '@/modules/assets/FolderActionButtons.vue';
+  import type {ActionItemButton} from '@/common/types';
   import ElementPicker from './ElementPicker.vue';
   import ElementPickerPlaceholder from './ElementPickerPlaceholder.vue';
   import NewEntryButton from './NewEntryButton.vue';
@@ -94,6 +96,9 @@
   const sources = ref<Source[]>([]);
   const siteId = ref<number | null>(null);
 
+  /** The buttons plugins add for the folder on screen. */
+  const folderActions = ref<ActionItemButton[]>([]);
+
   /**
    * Entries can be created from their selector, as Craft 5's `EntryIndex`
    * offered — in the sections the index shows that the user can publish in.
@@ -155,6 +160,9 @@
       @source-change="(next: SourceItem | null) => (source = next)"
       @sources-change="(next: Source[]) => (sources = next)"
       @site-change="(next: number | null) => (siteId = next)"
+      @folder-actions-change="
+        (next: ActionItemButton[]) => (folderActions = next)
+      "
     />
     <ElementPickerPlaceholder
       v-else
@@ -179,6 +187,15 @@
         :reload-on-complete="false"
         @uploaded="({id}) => index?.refresh(id)"
       />
+    </div>
+
+    <!-- What plugins offer for the folder on screen, as on the assets index. -->
+    <div
+      v-if="folderActions.length"
+      slot="secondary-actions"
+      class="flex items-center gap-sm"
+    >
+      <FolderActionButtons :actions="folderActions" />
     </div>
 
     <div v-if="createsEntries" slot="secondary-actions">

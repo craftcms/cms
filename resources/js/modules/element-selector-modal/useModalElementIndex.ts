@@ -7,6 +7,7 @@ import {
 import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
 import {isInteractiveClick} from '@/common/utils/dom';
 import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
+import type {ActionItemButton} from '@/common/types';
 
 type Row = ElementIndexRow;
 
@@ -20,6 +21,7 @@ export interface FolderCrumb {
 /** The extras `ModalIndexViewModel` adds to the shared index payload. */
 type ModalIndexData = ContentIndexData & {
   folderBreadcrumbs?: FolderCrumb[];
+  folderActions?: ActionItemButton[];
   canSearchSubfolders?: boolean;
   includeSubfolders?: boolean;
 };
@@ -128,6 +130,11 @@ export function useModalElementIndex(options: Options) {
   /** The trail from the volume root to the folder on screen, for assets. */
   const folderBreadcrumbs = computed(
     () => (index.payload.value as ModalIndexData).folderBreadcrumbs ?? []
+  );
+
+  /** The buttons plugins add for the folder on screen. */
+  const folderActions = computed(
+    () => (index.payload.value as ModalIndexData).folderActions ?? []
   );
 
   /**
@@ -305,6 +312,7 @@ export function useModalElementIndex(options: Options) {
     includeSubfolders,
     setIncludeSubfolders,
     folderBreadcrumbs,
+    folderActions,
     openFolder,
     itemBehavior,
     selectedElements,
