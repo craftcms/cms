@@ -74,6 +74,16 @@ export default css`
     overflow: clip;
   }
 
+  /* The label clips for its ellipsis, so a label link's ring is drawn on the chip and its own is turned off. */
+  :host([data-link-focus-visible]) {
+    --c-focus-outline-style: none;
+  }
+
+  :host([data-link-focus-visible]) .cp-chip {
+    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
   :host([full-width]) .cp-chip {
     display: flex;
     flex: 1 1 auto;

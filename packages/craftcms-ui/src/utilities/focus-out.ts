@@ -27,6 +27,34 @@ export function focusStaysWithin(
   return false;
 }
 
+/**
+ * Whether `node` is `ancestor` or renders inside it, following the composed
+ * tree: through slots, parents and shadow hosts.
+ */
+export function composedContains(ancestor: Node, node: Node): boolean {
+  for (
+    let current: Node | null = node;
+    current;
+    current = composedParent(current)
+  ) {
+    if (current === ancestor) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Whether `node`, or something inside it, has focus. Reads the active element
+ * of `node`'s own tree, so it works for a node inside a shadow root.
+ */
+export function containsFocus(node: Node): boolean {
+  const root = node.getRootNode() as Document | ShadowRoot;
+  const active = root.activeElement;
+  return Boolean(active && (active === node || node.contains(active)));
+}
+
 /** The node `node` renders inside: its slot, its parent, or its shadow host. */
 export function composedParent(node: Node): Node | null {
   const slot = 'assignedSlot' in node ? (node as Element).assignedSlot : null;

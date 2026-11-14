@@ -73,13 +73,15 @@
       >
         <!-- Its own invoker rather than the default one: a crumb's switcher
           sits beside text, so it's smaller and isn't pulled flush against the
-          label. -->
+          label. `small` rather than `xsmall`: it sits beside the next crumb's
+          link, and `xsmall`'s hit area reaches past its box, into whatever is
+          beside it. `small` is a real 24×24 box. -->
         <template #invoker="{label, attributes}">
           <craft-button
             v-bind="attributes"
             type="button"
             variant="plain"
-            size="xsmall"
+            size="small"
             icon="chevron-down"
             :aria-label="label"
             inherit
@@ -93,10 +95,5 @@
 <style scoped lang="scss">
   craft-breadcrumb-item > .cp-link:hover {
     text-decoration: underline;
-  }
-
-  /* Prevent action menu buttons from looking like they take up extra space */
-  craft-action-menu > craft-button[slot='invoker'] {
-    margin-inline: -3px;
   }
 </style>

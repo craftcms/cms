@@ -209,44 +209,48 @@
       :status="field.status?.[0]"
       :status-label="field.status?.[1]"
     >
-      <div slot="input" :class="field.spinner ? 'flex flex-nowrap' : undefined">
-        <craft-select
-          v-if="field.type === 'select'"
-          :name="editable ? inputName([...control.path, field.name]) : ''"
-          .value="value[field.name] ?? ''"
-          :required="editable && field.required"
-          .disabled="!editable"
-          @input="change(field, $event, 'discrete')"
-        >
-          <select slot="input" :autocomplete="field.autocomplete">
-            <!-- Without it, an empty value shows, and saves, the first option. -->
-            <option value="">{{ field.required ? t('Select…') : '' }}</option>
-            <option
-              v-for="(label, optionValue) in field.options"
-              :key="optionValue"
-              :value="optionValue"
-            >
-              {{ label }}
-            </option>
-          </select>
-        </craft-select>
-        <craft-input
-          v-else
-          :name="editable ? inputName([...control.path, field.name]) : ''"
-          type="text"
-          .value="value[field.name] ?? ''"
-          :autocomplete="field.autocomplete"
-          :required="editable && field.required"
-          :readonly="control.mode === 'readOnly'"
-          .disabled="control.mode === 'disabled'"
-          @input="change(field, $event, 'typing')"
-        />
+      <!-- The control itself goes in the field's input slot, so the field can
+        label it and mark it required. Inside a wrapper, the field would treat
+        the wrapper as a group instead, and the control would go unnamed. -->
+      <craft-select
+        v-if="field.type === 'select'"
+        slot="input"
+        :name="editable ? inputName([...control.path, field.name]) : ''"
+        .value="value[field.name] ?? ''"
+        :required="editable && field.required"
+        .disabled="!editable"
+        @input="change(field, $event, 'discrete')"
+      >
+        <select slot="input" :autocomplete="field.autocomplete">
+          <!-- Without it, an empty value shows, and saves, the first option. -->
+          <option value="">{{ field.required ? t('Select…') : '' }}</option>
+          <option
+            v-for="(label, optionValue) in field.options"
+            :key="optionValue"
+            :value="optionValue"
+          >
+            {{ label }}
+          </option>
+        </select>
         <div
           v-if="field.spinner"
+          slot="after"
           class="spinner"
           :class="{hidden: refreshing !== field.name}"
         />
-      </div>
+      </craft-select>
+      <craft-input
+        v-else
+        slot="input"
+        :name="editable ? inputName([...control.path, field.name]) : ''"
+        type="text"
+        .value="value[field.name] ?? ''"
+        :autocomplete="field.autocomplete"
+        :required="editable && field.required"
+        :readonly="control.mode === 'readOnly'"
+        .disabled="control.mode === 'disabled'"
+        @input="change(field, $event, 'typing')"
+      />
     </craft-field>
   </craft-field-group>
 </template>

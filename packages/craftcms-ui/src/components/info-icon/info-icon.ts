@@ -26,6 +26,11 @@ export default class CraftInfoIcon extends LitElement {
     :host {
       display: inline-flex;
     }
+
+    craft-button {
+      min-inline-size: var(--c-size-touch-target-sm);
+      min-block-size: var(--c-size-touch-target-sm);
+    }
   `;
 
   static #openInstance: CraftInfoIcon | null = null;

@@ -8,6 +8,11 @@
 - [x] The `selectable` checkbox takes its accessible name from `select-label`. Per WCAG 4.1.2 (Name, Role, Value). Verified by `labels the checkbox from select-label` in `chip.test.ts`.
 - [ ] Without `select-label`, the checkbox falls back to the translated name "Select" rather than having no name. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
 
+### Keyboard and focus
+
+- [x] A link in the label shows a focus ring when it has keyboard focus. The chip draws it around itself, since the chip and its label clip anything past the link's edges, and the link's own ring is turned off meanwhile so there's only one. A control in another slot, such as the suffix, keeps its own. Per WCAG 2.4.7 (Focus Visible). Verified by `draws the focus ring around the chip when its link has keyboard focus, where the chip can’t clip it`, `stops drawing the ring once the link loses focus` and `doesn’t draw the link’s ring for a control in another slot` in `chip-link.browser.test.ts`.
+- [ ] That ring reaches 3:1 against what's around the chip, in the light and dark themes and on the dark header. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified by a test. It uses the standard focus color, `--c-color-focus-outline`.
+
 ### Visual
 
 - [x] A plain or outline chip without a color of its own takes the theme’s default text color, so its label keeps its contrast against the transparent chip’s surroundings in dark mode. Per WCAG 1.4.3 (Contrast (Minimum)). Verified by `takes the theme’s text color when it has no fill of its own` in `chip.browser.test.ts`.

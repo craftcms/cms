@@ -65,7 +65,7 @@ export class AuthMethodSetupSlideout extends Slideout {
       name: this.methodName,
     });
     const container = this.container!;
-    for (const body of container.querySelectorAll('.so-body')) {
+    for (const body of container.querySelectorAll('.slideout__body')) {
       body.classList.add('auth-method-setup-success');
       body.innerHTML = `
         <craft-icon name="check"></craft-icon>
@@ -73,6 +73,9 @@ export class AuthMethodSetupSlideout extends Slideout {
       `;
     }
 
+    // The setup screen's heading went with the old body, so the dialog takes
+    // its name from the confirmation instead.
+    this.labelByHeading();
     container
       .querySelector<HTMLElement>('.auth-method-setup-success-message')
       ?.focus();

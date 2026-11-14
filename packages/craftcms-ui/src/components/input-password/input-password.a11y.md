@@ -22,7 +22,7 @@ The subclass adds a reveal button in the `suffix` slot. Its state is carried by 
 ### Keyboard and focus
 
 - [ ] Focus stays on the reveal button after it's pressed, since the same button is kept across rerenders. Per WCAG 2.4.3 (Focus Order). Not yet verified. `keeps the reveal button slotted across rerenders` in `input-password.test.ts` counts the buttons but doesn't check that the node or focus survives.
-- [ ] The reveal button is at least 24×24 CSS px. Per WCAG 2.5.8 (Target Size (Minimum)). Not yet verified. It renders at `size="small"`.
+- [x] The reveal button is at least 24×24 CSS px, and sits inside the field, at either size. Per WCAG 2.5.8 (Target Size (Minimum)). Verified by `gives the reveal button a target of at least 24×24 CSS px at the %s size` and `keeps the reveal button inside the field` in `input-password.browser.test.ts`.
 
 ### Visual
 
