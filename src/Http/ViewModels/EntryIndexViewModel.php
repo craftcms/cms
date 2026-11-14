@@ -8,7 +8,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Url;
 use Override;
@@ -31,12 +30,6 @@ class EntryIndexViewModel extends ContentIndexViewModel
     public function sectionHandle(): string
     {
         return $this->sectionHandle ?? '';
-    }
-
-    /** @return list<array<string, mixed>> */
-    public function publishableSections(): array
-    {
-        return SectionResource::collection(Sections::getPublishableSections())->resolve();
     }
 
     /**
