@@ -189,10 +189,10 @@ it('returns fully normalized source customization data', function () {
         ->and(controlPaths($custom['ui']))->toBe([
             ['sources', 'custom:existing', 'label'],
             ['sources', 'custom:existing', 'condition'],
+            ['sources', 'custom:existing', 'defaultViewMode'],
             ['sources', 'custom:existing', 'defaultSort', 'attr'],
             ['sources', 'custom:existing', 'defaultSort', 'dir'],
             ['sources', 'custom:existing', 'tableAttributes'],
-            ['sources', 'custom:existing', 'defaultViewMode'],
             ['sources', 'custom:existing', 'sites'],
             ['sources', 'custom:existing', 'userGroups'],
         ])

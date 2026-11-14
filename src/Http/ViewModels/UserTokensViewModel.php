@@ -51,7 +51,7 @@ class UserTokensViewModel extends ViewModel
     public function __construct(User $user, PersonalAccessTokens $tokens)
     {
         $this->hasKeys = $tokens->hasKeys();
-        $this->keysCommand = app(TerminalCommands::class)->craft('passport:keys');
+        $this->keysCommand = app(TerminalCommands::class)->artisan('passport:keys');
 
         $this->groups = $tokens->scopeGroupsFor($user)
             ->map(fn (ScopeGroup $group): array => [

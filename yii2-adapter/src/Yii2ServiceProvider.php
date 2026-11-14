@@ -18,6 +18,7 @@ use CraftCms\Cms\Asset\Events\VolumeConfigPreparing;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Condition\Conditions;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
@@ -524,7 +525,7 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             if (!Cms::config()->allowAdminChanges) {
-                throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:migration-table` to migrate the table to the new format.');
+                throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `' . app(TerminalCommands::class)->craft('migrate:migration-table') . '` to migrate the table to the new format.');
             }
 
             Artisan::call('craft:migrate:migration-table', [
@@ -557,7 +558,7 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             if (!Cms::config()->allowAdminChanges) {
-                throw new RuntimeException('The sessions table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:sessions-table` to migrate the table to the new format.');
+                throw new RuntimeException('The sessions table has the wrong schema structure and allowAdminChanges is disabled. Run `' . app(TerminalCommands::class)->craft('migrate:sessions-table') . '` to migrate the table to the new format.');
             }
 
             Artisan::call('craft:migrate:sessions-table', [
