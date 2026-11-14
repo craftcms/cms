@@ -937,13 +937,8 @@
 <style scoped>
   /* Draws the modal's border inside its clipping box, so the search field's focus ring can cover it. */
   .command-palette {
-    /*
-     * The search bar's height: a small control between the modal's padding,
-     * which is what a view's heading bar comes to with its small Back button.
-     */
-    --_bar-block-size: calc(
-      var(--c-size-control-sm) + var(--c-modal-padding) * 2
-    );
+    /* The search bar's height, less its bottom border: a modal header's. */
+    --_bar-block-size: calc(var(--c-modal-header-height) - 1px);
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -1079,10 +1074,13 @@
     flex-wrap: wrap;
     align-items: center;
     gap: var(--c-spacing-lg);
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-header-height);
     margin-inline: calc(var(--c-modal-padding) * -1);
+    margin-block-start: calc(var(--c-modal-padding) * -1);
     margin-block-end: var(--cp-container-padding);
     padding-inline: var(--c-modal-padding);
-    padding-block-end: var(--c-modal-padding);
+    padding-block: var(--c-spacing-sm);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
   }
 

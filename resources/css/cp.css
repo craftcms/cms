@@ -61,11 +61,14 @@ CP Styles
      the content leads. The current page's row and crumb keep their own. */
   --cp-chrome-text-color: var(--color-slate-700);
   --cp-content-width: calc(1440rem / 16);
-  --cp-footer-height: var(--c-size-footer);
-  --cp-header-height: calc(42rem / 16);
+  --cp-header-height: calc(46rem / 16);
+  --cp-footer-height: var(--cp-header-height);
+  /* These include the bar's 1px border; the CP's own heights don't. */
+  --c-modal-header-height: calc(var(--cp-header-height) + 1px);
+  --c-modal-footer-height: calc(var(--cp-footer-height) + 1px);
   /* Centers a rail item beside a header bar, above its 1px bottom border. */
   --cp-header-touch-target-offset: calc(
-    (var(--cp-header-height) - 1px - var(--cp-rail-item-size)) / 2
+    (var(--cp-header-height) - var(--cp-rail-item-size)) / 2
   );
   --cp-sidebar-z-index: var(--c-layer-sidebar);
   --cp-body-inset: var(--c-spacing-md);

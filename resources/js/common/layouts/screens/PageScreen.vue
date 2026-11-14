@@ -407,6 +407,7 @@
                             <slot name="content-toolbar">
                               <ContentToolbar
                                 v-show="hasToolbar()"
+                                class="mb-(--cp-content-block-start)"
                                 :legacy-ids="legacyIds"
                               >
                                 <template #meta>
@@ -548,10 +549,8 @@ Shell
  */
   /* The top bar keeps its height and the shell takes at least the rest. Docked,
      the sidebar's own height does this; floating, nothing else would.
-     `--cp-content-block-start` is the space at the top of each content column,
-     the same for all of them so their header bars stay level: none up to a
-     960px viewport, 16px from 2240px. It's in viewport units so the global
-     sidebar and details rail, outside the content, can line up with them. */
+     `--cp-content-block-start` is the space below the content toolbar: none
+     up to a 960px viewport, 16px from 2240px. */
   .page-screen {
     --cp-content-block-start: clamp(
       0px,
@@ -729,7 +728,11 @@ Content: the secondary nav, content, and details panes
 
   .cp-content__header {
     grid-area: header;
-    padding-block: var(--c-spacing-md);
+    box-sizing: border-box;
+    display: grid;
+    align-content: center;
+    min-block-size: calc(var(--cp-header-height) + 1px);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
     border-block-end: 1px solid var(--c-color-border-quiet);
   }
@@ -746,9 +749,6 @@ Content: the secondary nav, content, and details panes
 
   .cp-content--sidebar .cp-content__sidebar {
     padding: var(--c-spacing-md);
-    padding-block-start: calc(
-      var(--c-spacing-md) + var(--cp-content-block-start)
-    );
 
     @media (width >= var(--breakpoint-lg)) {
       inline-size: calc(var(--cp-sidebar-width) + 1px);
@@ -819,9 +819,9 @@ Content: the secondary nav, content, and details panes
     display: grid;
     align-content: center;
     border-block-start: 1px solid var(--c-color-border-quiet);
-    padding-block: var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
   }
 
   /* Once the global nav stops docking beside it, the panel runs edge to edge.
@@ -946,7 +946,6 @@ Content view
     /* Lets what's inside (e.g. the element index toolbar) respond to the room
        the content actually has, rather than the viewport. */
     container: cp-content-view / inline-size;
-    padding-block-start: var(--cp-content-block-start);
   }
 
   .cp-content-view--constrained {

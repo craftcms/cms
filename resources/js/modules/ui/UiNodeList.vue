@@ -382,7 +382,7 @@
 
   .ui-node-list__tabs::part(strip) {
     box-sizing: border-box;
-    block-size: var(--cp-header-height);
+    block-size: calc(var(--cp-header-height) + 1px);
     align-items: stretch;
   }
 
