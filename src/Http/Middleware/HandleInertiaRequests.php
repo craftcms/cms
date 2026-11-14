@@ -240,7 +240,8 @@ class HandleInertiaRequests extends Middleware
                     'id' => $currentUser->id,
                     'username' => $currentUser->username,
                     'email' => $currentUser->email,
-                    'name' => $currentUser->name,
+                    // Not `->name`, which would load the user's field layout to check that `name` isn't a field
+                    'name' => $currentUser->getName(),
                     'thumbHtml' => $currentUser->getThumbHtml(30),
                     // The colors of the user’s default photo, which their own messages and comments are tinted with.
                     'photoColors' => $currentUser->photoColors(),
