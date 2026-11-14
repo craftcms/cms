@@ -1,6 +1,7 @@
 import {css, html, LitElement} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import type CraftSlidePicker from '@craftcms/ui/components/slide-picker/slide-picker';
 import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/popover/popover';
@@ -122,6 +123,8 @@ export default class CraftSlidePickerButton extends LitElement {
   @property({attribute: 'value-unit'}) valueUnit = '';
   /** Formats the value, for when a number and a unit are not enough. */
   @property({attribute: false}) valueLabel?: (value: number) => string;
+  /** Passed to the button; see `craft-button`'s `flush`. */
+  @property() flush?: string;
   /** Stops the button opening the popover. */
   @property({type: Boolean, reflect: true}) disabled = false;
   /** Opens the popover with a slide picker that can't be changed. */
@@ -161,6 +164,7 @@ export default class CraftSlidePickerButton extends LitElement {
           type="button"
           variant="plain"
           size="small"
+          flush=${ifDefined(this.flush)}
           aria-label=${`${this.buttonLabel || this.label} ${valueText}`}
           ?disabled=${this.disabled}
         >

@@ -101,6 +101,7 @@ export class Element extends Base {
       widthSlider.setAttribute('max', '100');
       widthSlider.setAttribute('step', '25');
       widthSlider.setAttribute('value', `${this.config.width || 100}`);
+      widthSlider.setAttribute('flush', 'inline-end');
 
       if (this.tab.designer.settings!.readOnly) {
         widthSlider.setAttribute('readonly', '');
@@ -225,6 +226,16 @@ export class Element extends Base {
     };
 
     this.$container.appendChild(menu);
+
+    // Pull the actions button's icon up against the width picker, which is
+    // flush on that side too.
+    if (this.hasCustomWidth) {
+      void menu.updateComplete.then(() => {
+        menu
+          .querySelector(':scope > craft-button[slot="invoker"]')
+          ?.setAttribute('flush', 'inline-start');
+      });
+    }
   }
 
   onSelect(): void {

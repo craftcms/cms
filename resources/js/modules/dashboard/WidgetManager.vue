@@ -101,53 +101,57 @@
           <span :id="`widget-label-${widget.id}`" class="flex-1">{{
             widgetName(widget)
           }}</span>
-          <craft-select-color
-            class="me-sm"
-            .colors="colors"
-            swatch-only
-            small
-            allow-transparent
-            :blank-label="t('No color')"
-            .value="widget.color ?? NO_COLOR"
-            .disabled="busy"
-            :label="`${t('Color')} ${widgetName(widget)}`"
-            label-sr-only
-            @change="recolor(widget, $event)"
-          ></craft-select-color>
-          <craft-slide-picker-button
-            :min="1"
-            :max="Math.min(columns, widget.maxColspan)"
-            :step="1"
-            .value="Math.min(widget.colspan, columns)"
-            .disabled="busy"
-            :label="t('Columns')"
-            :button-label="`${t('Columns')} ${widgetName(widget)}`"
-            .valueLabel="
-              (num: number) =>
-                t('{num, number} {num, plural, =1{column} other{columns}}', {
-                  num,
-                })
-            "
-            @change="
-              emit(
-                'resize',
-                widget,
-                ($event.target as CraftSlidePickerButton).value
-              )
-            "
-          ></craft-slide-picker-button>
-          <craft-button
-            :id="`widget-delete-${widget.id}`"
-            type="button"
-            size="small"
-            variant="danger-plain"
-            icon
-            :aria-labelledby="`widget-delete-${widget.id} widget-label-${widget.id}`"
-            .disabled="busy"
-            @click="emit('remove', widget)"
-          >
-            <craft-icon name="trash" :label="t('Delete')"></craft-icon>
-          </craft-button>
+          <div class="flex items-center gap-3">
+            <craft-select-color
+              class="me-[calc((1rem-var(--c-size-control-sm))/2)]"
+              .colors="colors"
+              swatch-only
+              small
+              allow-transparent
+              :blank-label="t('No color')"
+              .value="widget.color ?? NO_COLOR"
+              .disabled="busy"
+              :label="`${t('Color')} ${widgetName(widget)}`"
+              label-sr-only
+              @change="recolor(widget, $event)"
+            ></craft-select-color>
+            <craft-slide-picker-button
+              flush="inline"
+              :min="1"
+              :max="Math.min(columns, widget.maxColspan)"
+              :step="1"
+              .value="Math.min(widget.colspan, columns)"
+              .disabled="busy"
+              :label="t('Columns')"
+              :button-label="`${t('Columns')} ${widgetName(widget)}`"
+              .valueLabel="
+                (num: number) =>
+                  t('{num, number} {num, plural, =1{column} other{columns}}', {
+                    num,
+                  })
+              "
+              @change="
+                emit(
+                  'resize',
+                  widget,
+                  ($event.target as CraftSlidePickerButton).value
+                )
+              "
+            ></craft-slide-picker-button>
+            <craft-button
+              :id="`widget-delete-${widget.id}`"
+              type="button"
+              size="small"
+              variant="danger-plain"
+              flush="inline-start"
+              icon
+              :aria-labelledby="`widget-delete-${widget.id} widget-label-${widget.id}`"
+              .disabled="busy"
+              @click="emit('remove', widget)"
+            >
+              <craft-icon name="trash" :label="t('Delete')"></craft-icon>
+            </craft-button>
+          </div>
         </li>
       </ul>
     </div>
