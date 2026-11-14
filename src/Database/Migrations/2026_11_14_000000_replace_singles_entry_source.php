@@ -31,6 +31,9 @@ return new class extends Migration
 
     private const string SINGLES_PAGE = 'Singles';
 
+    /** The CP nav section Craft lists entry pages in. */
+    private const string CONTENT_SECTION = 'nav-group-content';
+
     public function up(): void
     {
         $projectConfig = app(ProjectConfig::class);
@@ -121,7 +124,70 @@ return new class extends Migration
             $this->updateNavigations($projectConfig, $page, $customKey);
         }
 
+        if ($singleSources !== []) {
+            $this->orderSinglesPage($projectConfig, array_column($sources, 'page'));
+        }
+
         $projectConfig->saveModifiedConfigData();
+    }
+
+    /**
+     * Lists the Singles page before the other entry pages in the default CP
+     * navigation, if it was saved with an order for them. Unlisted items
+     * follow the listed ones, so the Singles page would come after them.
+     *
+     * It goes before the first entry page in the content section’s order, or
+     * in the order of whichever section, or the root, the entry pages were
+     * moved to.
+     *
+     * @param  list<string>  $pages  The pages of the entry sources
+     */
+    private function orderSinglesPage(ProjectConfig $projectConfig, array $pages): void
+    {
+        $path = ProjectConfig::PATH_CP_NAV.'.default';
+        $nav = $projectConfig->get($path);
+
+        if (! is_array($nav) || ! is_array($nav['order'] ?? null)) {
+            return;
+        }
+
+        $singlesId = $this->pageNavItemId(self::SINGLES_PAGE);
+
+        if (array_any($nav['order'], fn (mixed $ids) => is_array($ids) && in_array($singlesId, $ids, true))) {
+            return;
+        }
+
+        $pageIds = array_map(
+            $this->pageNavItemId(...),
+            array_values(array_diff(array_unique($pages), [self::SINGLES_PAGE])),
+        );
+
+        // The content section first, where Craft lists entry pages.
+        $order = $nav['order'];
+        uksort($order, fn (string $a, string $b) => ($b === self::CONTENT_SECTION) <=> ($a === self::CONTENT_SECTION));
+
+        foreach ($order as $parent => $ids) {
+            if (! is_array($ids)) {
+                continue;
+            }
+
+            $index = array_find_key($ids, fn (mixed $id) => in_array($id, $pageIds, true));
+
+            if ($index === null) {
+                continue;
+            }
+
+            array_splice($ids, $index, 0, [$singlesId]);
+            $nav['order'][$parent] = $ids;
+
+            if ($parent !== self::CONTENT_SECTION) {
+                $nav['items'][$singlesId]['parent'] = $parent;
+            }
+
+            $projectConfig->set($path, $nav, 'List the Singles entry page before the other entry pages');
+
+            return;
+        }
     }
 
     /**
@@ -227,8 +293,20 @@ return new class extends Migration
     private function sourceNavItemId(string $indexUri, string $key): string
     {
         $escapedKey = preg_replace_callback('/[^A-Za-z0-9\-]/', fn (array $match) => '_'.bin2hex($match[0]), $key);
-        $href = sprintf('%s/source-%s', $indexUri, $escapedKey);
 
+        return $this->navItemId(sprintf('%s/source-%s', $indexUri, $escapedKey));
+    }
+
+    /**
+     * An entry page’s nav item ID, as {@see Navigation} gives it.
+     */
+    private function pageNavItemId(string $page): string
+    {
+        return $this->navItemId(sprintf('content/%s', ElementSources::pageSlug($page)));
+    }
+
+    private function navItemId(string $href): string
+    {
         return 'nav-'.preg_replace('/[^\w\-_]/', '', Str::ascii(str_replace('/', '-', $href)));
     }
 

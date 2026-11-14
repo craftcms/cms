@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Conditions\SectionTypeConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -243,4 +244,65 @@ it('moves CP navigation customizations of the Singles item to the custom source'
         expect($updated['items'])->toBe([$newId => ['label' => 'Pages']])
             ->and($updated['order']['nav-content-site-content'])->toBe([$newId, 'nav-content-site-content-source-_2a']);
     }
+});
+
+it('lists the Singles page before the other entry pages in a saved default navigation', function () {
+    saveOldEntrySources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:{$this->news->uid}", 'page' => 'News'],
+    ]);
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_CP_NAV.'.default', [
+        'order' => [
+            'root' => ['nav-dashboard', 'nav-group-content'],
+            'nav-group-content' => ['nav-assets', 'nav-content-news', 'nav-content-entries'],
+        ],
+    ]);
+
+    runReplaceSinglesEntrySourceMigration();
+
+    expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_CP_NAV.'.default.order'))->toEqual([
+        'root' => ['nav-dashboard', 'nav-group-content'],
+        'nav-group-content' => ['nav-assets', 'nav-content-singles', 'nav-content-news', 'nav-content-entries'],
+    ]);
+
+    actingAs(User::find()->one());
+    Section::factory()->create(['type' => SectionType::Single, 'handle' => 'contact']);
+    Sections::refreshSections();
+    app()->forgetScopedInstances();
+
+    $content = collect(app(Navigation::class)->getTree())->firstWhere('id', 'nav-group-content');
+
+    expect(array_values(array_filter(array_column($content->subnav, 'id'), fn (string $id) => str_starts_with($id, 'nav-content-'))))
+        ->toBe(['nav-content-singles', 'nav-content-news', 'nav-content-entries']);
+});
+
+it('lists the Singles page with the entry pages where they were moved to', function () {
+    saveOldEntrySources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'page' => 'Entries'],
+    ]);
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_CP_NAV.'.default', [
+        'order' => ['root' => ['nav-dashboard', 'nav-content-entries', 'nav-group-content']],
+        'items' => ['nav-content-entries' => ['parent' => 'root']],
+    ]);
+
+    runReplaceSinglesEntrySourceMigration();
+
+    expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_CP_NAV.'.default'))->toEqual([
+        'order' => ['root' => ['nav-dashboard', 'nav-content-singles', 'nav-content-entries', 'nav-group-content']],
+        'items' => [
+            'nav-content-entries' => ['parent' => 'root'],
+            'nav-content-singles' => ['parent' => 'root'],
+        ],
+    ]);
+});
+
+it('leaves a default navigation without a saved order alone', function () {
+    saveOldEntrySources([['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'page' => 'Entries']]);
+    app(ProjectConfig::class)->set(ProjectConfig::PATH_CP_NAV.'.default', ['items' => ['nav-graphql' => ['hidden' => true]]]);
+
+    runReplaceSinglesEntrySourceMigration();
+
+    expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_CP_NAV.'.default'))->toBe(['items' => ['nav-graphql' => ['hidden' => true]]]);
 });
