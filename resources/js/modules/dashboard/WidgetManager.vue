@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import type CraftSlidePickerButton from '@/modules/ui/slide-picker-button';
-  import '@/modules/ui/slide-picker-button';
+  import type CraftSlidePickerButton from '@craftcms/ui/components/slide-picker-button/slide-picker-button';
+  import '@craftcms/ui/components/slide-picker-button/slide-picker-button';
   import type CraftSelectColor from '@craftcms/ui/components/select-color/select-color';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
   import type {DashboardWidget} from './types';

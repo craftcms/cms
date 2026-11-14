@@ -11,7 +11,7 @@ import type {UiValues} from '@/modules/ui/types';
 import {uuid} from '@/common/craft/strings';
 import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 import {showError} from '@/modules/messages/messages';
-import '@/modules/ui/slide-picker-button';
+import '@craftcms/ui/components/slide-picker-button/slide-picker-button';
 
 /**
  * A single layout element (field or UI element) within a {@link Tab}. Native DOM

@@ -1,4 +1,5 @@
 import type CraftSlidePicker from '@craftcms/ui/components/slide-picker/slide-picker';
+import type CraftSlidePickerButton from '@craftcms/ui/components/slide-picker-button/slide-picker-button';
 
 export interface SlidePickerConfig {
   id?: string;
@@ -9,6 +10,14 @@ export interface SlidePickerConfig {
   step?: number;
   value?: number;
   label?: string;
+  /**
+   * Builds a `<craft-slide-picker-button>` instead: a small button that opens
+   * a full-size picker in a popover, for a picker in a dense row. It's named
+   * by `label`, or by `buttonLabel` when that adds context, and ignores
+   * `labelledBy` and `describedBy`.
+   */
+  button?: boolean;
+  buttonLabel?: string;
   labelledBy?: string;
   describedBy?: string;
   valueLabel?: (value: number) => string;
@@ -19,12 +28,22 @@ export interface SlidePickerConfig {
 }
 
 /**
- * Creates a `<craft-slide-picker>` (segmented slider). `name` is all it takes
- * to post the value; `onChange` fires on the element's `change` event.
+ * Creates a `<craft-slide-picker>` (segmented slider), or with `button`, a
+ * `<craft-slide-picker-button>`. `name` is all it takes to post the value;
+ * `onChange` fires on the element's `change` event.
  */
 export function createSlidePicker(
+  config: SlidePickerConfig & {button: true}
+): CraftSlidePickerButton;
+export function createSlidePicker(
+  config?: SlidePickerConfig & {button?: false}
+): CraftSlidePicker;
+export function createSlidePicker(
+  config?: SlidePickerConfig
+): CraftSlidePicker | CraftSlidePickerButton;
+export function createSlidePicker(
   config: SlidePickerConfig = {}
-): CraftSlidePicker {
+): CraftSlidePicker | CraftSlidePickerButton {
   const min =
     typeof config.min === 'function' ? config.min() : (config.min ?? 0);
   const max =
@@ -33,7 +52,27 @@ export function createSlidePicker(
   const value = typeof config.value === 'number' ? config.value : min;
   const readOnly = !!(config.readOnly || config.disabled || config.static);
 
-  const el = document.createElement('craft-slide-picker');
+  let el: CraftSlidePicker | CraftSlidePickerButton;
+  if (config.button) {
+    const button = document.createElement('craft-slide-picker-button');
+    if (config.buttonLabel) {
+      button.buttonLabel = config.buttonLabel;
+    }
+    button.readonly = readOnly;
+    el = button;
+  } else {
+    const picker = document.createElement('craft-slide-picker');
+    if (config.labelledBy) {
+      picker.setAttribute('labelled-by', config.labelledBy);
+    }
+    if (config.describedBy) {
+      picker.setAttribute('described-by', config.describedBy);
+    }
+    if (readOnly) {
+      picker.readOnly = true;
+    }
+    el = picker;
+  }
   el.min = min;
   el.max = max;
   el.step = step;
@@ -41,16 +80,7 @@ export function createSlidePicker(
   if (config.label) {
     el.label = config.label;
   }
-  if (config.labelledBy) {
-    el.setAttribute('labelled-by', config.labelledBy);
-  }
-  if (config.describedBy) {
-    el.setAttribute('described-by', config.describedBy);
-  }
   el.valueLabel = config.valueLabel || ((v) => `${v}`);
-  if (readOnly) {
-    el.readOnly = true;
-  }
   if (config.disabled) {
     el.disabled = true;
   }

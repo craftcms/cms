@@ -99,6 +99,7 @@ export {default as CraftSelectRich} from './components/select-rich/select-rich.j
 export {default as CraftSelect} from './components/select/select.js';
 export {default as CraftShortcut} from './components/shortcut/shortcut.js';
 export {default as CraftSlidePicker} from './components/slide-picker/slide-picker.js';
+export {default as CraftSlidePickerButton} from './components/slide-picker-button/slide-picker-button.js';
 export {default as CraftSlideRule} from './components/slide-rule/slide-rule.js';
 export {default as CraftSpinner} from './components/spinner/spinner.js';
 export {default as CraftStatus} from './components/status/status.js';

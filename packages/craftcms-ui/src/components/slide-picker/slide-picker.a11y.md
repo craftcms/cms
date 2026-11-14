@@ -7,6 +7,7 @@ Follows the WAI-ARIA APG [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slide
 - A continuous range, or fine adjustment by dragging. Use `craft-slide-rule`.
 - An exact number someone already knows, or a wide range. Use `craft-input` with `type="number"`.
 - Named choices that aren't points on a scale. Use `craft-radio-group` or `craft-select`.
+- A picker in a dense row, where there's no room for segments big enough to hit. Use `craft-slide-picker-button`.
 
 ## Requirements
 

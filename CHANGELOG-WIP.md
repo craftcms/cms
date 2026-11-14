@@ -329,6 +329,7 @@
 - Fixed a bug where a failed project config YAML write left the `config/project/` folder empty. Existing files are now only replaced as new ones are written, and the error now includes its underlying cause. ([#20519](https://github.com/craftcms/cms/issues/20519))
 
 ### Extensibility
+- Added the `craft-slide-picker-button` component, a button that shows a value as a small copy of a slide picker’s segments and opens a full-size `craft-slide-picker` in a popover, for slide pickers in dense rows. `Craft.ui.createSlidePicker()` and `Craft.ui.createSlidePickerField()` build one when passed `button: true`. ([#20681](https://github.com/craftcms/cms/pull/20681))
 
 #### Plugins
 - Added `CraftCms\Cms\Utility\Utility::contentMaxWidth()`, which utilities can override to cap their page’s content at the control panel’s readable width and center it, as the System Messages and Yii2 Loose Ends utilities now do.
