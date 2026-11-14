@@ -120,7 +120,8 @@
             :step="1"
             .value="Math.min(widget.colspan, columns)"
             .disabled="busy"
-            :label="`${t('Number of columns')} ${widgetName(widget)}`"
+            :label="t('Columns')"
+            :button-label="`${t('Columns')} ${widgetName(widget)}`"
             .valueLabel="
               (num: number) =>
                 t('{num, number} {num, plural, =1{column} other{columns}}', {

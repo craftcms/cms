@@ -127,9 +127,7 @@ it('names each widget’s reorder button, column picker and delete button after 
 
   expect(reorder.label).toBe('Reorder Updates');
   await expect
-    .element(
-      page.getByRole('button', {name: 'Number of columns Updates 1 column'})
-    )
+    .element(page.getByRole('button', {name: 'Columns Updates 1 column'}))
     .toBeInTheDocument();
   await expect
     .element(page.getByRole('button', {name: 'Delete Updates', exact: true}))
@@ -138,10 +136,8 @@ it('names each widget’s reorder button, column picker and delete button after 
 
 it('resizes a widget to the column count picked from the keyboard', async () => {
   const {resizes} = await mountManager();
-  await page
-    .getByRole('button', {name: 'Number of columns Updates 1 column'})
-    .click();
-  await page.getByRole('slider', {name: 'Number of columns Updates'}).click({
+  await page.getByRole('button', {name: 'Columns Updates 1 column'}).click();
+  await page.getByRole('slider', {name: 'Columns'}).click({
     position: {x: 1, y: 1},
   });
   await userEvent.keyboard('{End}');

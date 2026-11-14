@@ -85,8 +85,13 @@ export default class CraftSlidePickerButton extends LitElement {
     }
   `;
 
-  /** Names the button and labels the slide picker in the popover. */
+  /** Labels the slide picker in the popover, and names the button by default. */
   @property() label = '';
+  /**
+   * Names the button, when it needs more context than `label`, such as the
+   * name of the item it sizes. Should start with `label`.
+   */
+  @property({attribute: 'button-label'}) buttonLabel = '';
   /** The selected value. */
   @property({type: Number}) value = 0;
   /** Lowest selectable value. */
@@ -134,7 +139,7 @@ export default class CraftSlidePickerButton extends LitElement {
           type="button"
           variant="plain"
           size="small"
-          aria-label=${`${this.label} ${valueText}`}
+          aria-label=${`${this.buttonLabel || this.label} ${valueText}`}
           ?disabled=${this.disabled}
         >
           <span class="segments" aria-hidden="true">
