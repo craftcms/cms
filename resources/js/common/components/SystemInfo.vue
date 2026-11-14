@@ -1,7 +1,6 @@
 <script setup lang="ts">
   import useCraftData from '@/common/composables/useCraftData';
   import {computed} from 'vue';
-  import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
 
   const {iconOnly = false} = defineProps<{iconOnly?: boolean}>();
 
@@ -17,12 +16,12 @@
     :href="site?.url"
     :target="site?.url ? '_blank' : null"
   >
-    <div class="system-info__icon">
-      <DynamicHtmlRenderer
-        v-if="system.icon"
-        :html="system.icon"
-      ></DynamicHtmlRenderer>
-    </div>
+    <!-- Not compiled as a Vue template, which would drop an SVG's <style> -->
+    <div
+      class="system-info__icon"
+      aria-hidden="true"
+      v-html="system.icon"
+    ></div>
     <div class="system-info__name" :class="{'sr-only': iconOnly}">
       {{ system.name }}
     </div>
@@ -62,8 +61,7 @@
     white-space: nowrap;
   }
 
-  :deep(svg) {
-    fill: currentColor;
+  :deep(:is(svg, img)) {
     max-width: 100%;
     height: auto;
   }

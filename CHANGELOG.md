@@ -19,6 +19,9 @@
 - Pages no longer show breadcrumbs when the only one would be the current page, such as the Dashboard. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ translation indicators now show their descriptions when pressed, including on touch devices, rather than on hover. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Updated the workflow stage type picker to show each type’s icon when available. ([#20660](https://github.com/craftcms/cms/pull/20660))
+- Pages shown to logged-out users, such as the login page, now use the “Theme” preference of the last user who signed in on the browser, rather than always following the system’s light or dark setting.
+- Added the `cpIconPath` and `cpLogoPath` config settings, which set the control panel’s icon and the login page’s logo from files on the server. SVG files are rendered inline, so they can adapt to the selected light or dark theme, such as with the `light-dark()` CSS function. ([#20647](https://github.com/craftcms/cms/issues/20647))
+- Deprecated the `cpIconUrl` and `cpLogoUrl` config settings. `cpIconPath` and `cpLogoPath` should be used instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Plugins can now build control panel pages from the same components, composables, and helpers Craft’s own pages use, typed and imported from the `@craftcms/cp` import-map module, including `registerPage()`, `registerComponent()`, `registerElementDetailsPanel()`, `Modal`, `ModalForm`, `Select`, `Combobox`, `IconPicker`, `TypePicker`, `DataTable`, `ElementList`, `ElementChips`, `AreaChart`, `useFetch()`, `useSlideoutControl()`, `useDetailsPanels()`, and `openUiModal()`. A guide to building control panel UI in a plugin is in Storybook, under **Plugins**. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - The control panel’s import map now publishes `@inertiajs/vue3`, so plugin bundles share the control panel’s Inertia instance rather than bundling their own. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Added `CraftCms\Cms\Cp\Html\ElementHtml::presentation()`. ([#20608](https://github.com/craftcms/cms/pull/20608))
@@ -61,6 +64,7 @@
 - Fixed a bug where folder breadcrumbs had extra space after each separator. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fixed a bug where the “Saved” status in element editors’ footers wasn’t vertically centered.
 - Fixed a bug where element editors with relation fields, such as the Author field, kept running code on every animation frame while idle. ([#20650](https://github.com/craftcms/cms/pull/20650))
+- Fixed a bug where ID and class selectors within the `<style>` tags of SVGs output by the `svg()` Twig function didn’t always match their elements.
 - The `craft:mcp:serve` MCP server now picks up project config changes made by other processes since its previous request. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - MCP upload routes now respond with JSON errors, rather than HTML pages, for clients that don’t ask for JSON, such as curl. ([#20578](https://github.com/craftcms/cms/pull/20578))
 - The `craftCommand()` Twig function is now only available to control panel templates.
@@ -70,6 +74,8 @@
 - GraphQL result caches now vary by the logged-in user and their permissions, even when the schema comes from a GraphQL token. ([#20587](https://github.com/craftcms/cms/issues/20587))
 - GraphQL transform arguments now accept `immediately` again, which asks the asset transformer to generate the transform before returning its URL. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Asset transform drivers now receive whether the transform should be generated immediately in `$request->immediately`, including legacy image transformers. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
+- Added `CraftCms\Cms\Cp\Cp::iconHtml()` and `logoHtml()`, and `craft.cp.iconHtml()` for control panel templates. ([#20647](https://github.com/craftcms/cms/issues/20647))
+- Removed `cpLogoUrl` from the control panel’s JavaScript config. The `craft.system.logo` page prop holds the login logo’s HTML instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - `CraftCms\Cms\Element\Elements::__construct()` no longer has a `$placeholders` argument. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Added `CraftCms\Cms\Asset\Data\AssetTransformRequest::$immediately` and `$namedTransform`. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Added `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()`, `immediateTransforms()`, and `IMMEDIATE_TRANSFORMS_CONTEXT`, which apply to every asset transform driver. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))

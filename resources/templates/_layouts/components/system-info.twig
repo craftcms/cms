@@ -5,12 +5,8 @@
     target: siteUrl ? '_blank' : false,
     title: siteUrl ? 'View site'|t('app') : false,
 } %}
-    <div id="site-icon">
-        {% if config('craft.general.cpIconUrl') %}
-            <img src="{{ alias(config('craft.general.cpIconUrl')) }}" alt="">
-        {% else %}
-            {{ iconSvg('c-outline') }}
-        {% endif %}
+    <div id="site-icon" aria-hidden="true">
+        {{ (craft.cp.iconHtml() ?? iconSvg('c-outline'))|raw }}
     </div>
     <div id="system-name">
         <span class="h2">{{ systemName }}</span>
