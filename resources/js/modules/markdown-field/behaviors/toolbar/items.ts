@@ -3,9 +3,7 @@ import {markdownActions, toolbarButtons, type ToolbarButton} from 'overtype';
 import {customIcons} from './icons';
 
 type CraftToolbarButton = ToolbarButton & {
-  actionId?: string;
   optionName?: string;
-  isActive?: ToolbarActiveState;
 };
 
 type ToolbarOptions = {
@@ -21,14 +19,7 @@ type ToolbarCallbacks = {
 };
 
 type ToolbarAction = NonNullable<ToolbarButton['action']>;
-
-// OverType's bundled types don't declare `isActive` on `ToolbarButton`, though
-// its runtime supports it. Define the callback shape ourselves to match the
-// context the runtime passes (`editor` + computed `activeFormats`).
-type ToolbarActiveState = (context: {
-  editor: Parameters<ToolbarAction>[0]['editor'];
-  activeFormats: string[];
-}) => boolean;
+type ToolbarActiveState = NonNullable<ToolbarButton['isActive']>;
 
 const strikethroughFormat = {
   prefix: '~~',
@@ -129,13 +120,16 @@ function toolbarButtonGroups(
       ),
     ],
     [
-      customToolbarButton(
-        'link',
-        'link',
-        t('Link'),
-        ({event}) => callbacks.openLinkPopover(event),
-        'insertLink'
-      ),
+      {
+        ...customToolbarButton(
+          'link',
+          'link',
+          t('Link'),
+          ({event}) => callbacks.openLinkPopover(event),
+          'insertLink'
+        ),
+        shortcut: toolbarButtons.link.shortcut,
+      },
       customToolbarButton(
         'asset',
         'paperclip',
@@ -145,12 +139,15 @@ function toolbarButtonGroups(
       customizeToolbarButton(toolbarButtons.upload, t('Upload File'), 'upload'),
     ],
     [
-      customToolbarButton(
-        'preview',
-        'eye',
-        t('Preview'),
-        callbacks.togglePreview
-      ),
+      {
+        ...customToolbarButton(
+          'preview',
+          'eye',
+          t('Preview'),
+          callbacks.togglePreview
+        ),
+        shortcut: 'Mod+Shift+P',
+      },
       customToolbarButton(
         'guide',
         'circle-question',
