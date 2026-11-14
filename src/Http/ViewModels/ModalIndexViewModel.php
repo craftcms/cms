@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Http\ViewModels;
 
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderActionsResolving;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
@@ -258,6 +259,26 @@ class ModalIndexViewModel extends ContentIndexViewModel
         }
 
         return $crumbs;
+    }
+
+    /**
+     * The buttons plugins add beside “Upload files” for the folder on screen,
+     * as on the assets index. None in the folder picker, which chooses
+     * folders rather than acting on them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function folderActions(): array
+    {
+        $folder = $this->folder() ?? $this->sourceRootFolder();
+
+        if ($folder === null || $this->request->boolean('foldersOnly')) {
+            return [];
+        }
+
+        event($event = new FolderActionsResolving($folder, ElementSources::CONTEXT_MODAL));
+
+        return $event->actions;
     }
 
     /**

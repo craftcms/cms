@@ -8,6 +8,7 @@ use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
+use CraftCms\Cms\Asset\Events\FolderActionsResolving;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
@@ -304,6 +305,24 @@ class AssetIndexViewModel extends ContentIndexViewModel
         }
 
         return $crumbs;
+    }
+
+    /**
+     * The buttons plugins add to the toolbar for the folder on screen.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function folderActions(): array
+    {
+        $folder = $this->subfolder() ?? $this->rootFolder();
+
+        if ($folder === null) {
+            return [];
+        }
+
+        event($event = new FolderActionsResolving($folder, ElementSources::CONTEXT_INDEX));
+
+        return $event->actions;
     }
 
     /**

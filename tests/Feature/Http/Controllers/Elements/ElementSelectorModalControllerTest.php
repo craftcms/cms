@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderActionsResolving;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Element\Conditions\TitleConditionRule;
@@ -18,6 +19,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -210,6 +212,26 @@ describe('asset folders', function () {
                 ['Test volume', Folders::getRootFolderByVolumeId($this->volume->id)->id],
                 ['parent', $parent->id],
             ]);
+    });
+
+    it('lets plugins add buttons for the folder on screen, but not in the folder picker', function () {
+        $parent = Folders::ensureFolderByFullPathAndVolume('parent', $this->volume);
+        $root = Folders::getRootFolderByVolumeId($this->volume->id);
+
+        Event::listen(function (FolderActionsResolving $event) {
+            $event->actions[] = [
+                'label' => "Generate in {$event->folder->id} ({$event->context})",
+                'action' => ['type' => 'event', 'name' => 'my-plugin:generate'],
+            ];
+        });
+
+        expect(($this->postAssets)(['folderId' => $parent->id])['folderActions'])->toBe([[
+            'label' => "Generate in {$parent->id} (modal)",
+            'action' => ['type' => 'event', 'name' => 'my-plugin:generate'],
+        ]])
+            ->and(($this->postAssets)()['folderActions'][0]['label'])->toBe("Generate in {$root->id} (modal)")
+            ->and(($this->postAssets)(['folderId' => $parent->id, 'foldersOnly' => true])['folderActions'])->toBe([])
+            ->and(($this->postBody)()->json('props.folderActions'))->toBe([]);
     });
 
     it('searches subfolders when asked to, as the assets index does', function () {

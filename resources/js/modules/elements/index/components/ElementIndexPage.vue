@@ -21,6 +21,7 @@
   import {router} from '@inertiajs/vue3';
   import type {BulkActionEventDetail} from '@/modules/elements/types/actions';
   import type {ElementIndexModel} from '@/modules/elements/index/types/model';
+  import type {ActionItems} from '@/common/types';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -40,6 +41,8 @@
      * offer it.
      */
     customizableSources?: boolean;
+    /** Items for the menu beside the `primary-action` slot's button. */
+    menuActions?: ActionItems;
   }>();
 
   const page =
@@ -154,9 +157,13 @@
       :enable-adjust-page-size="true"
       :with-bottom-border="false"
       :quick-edit="quickEdit"
+      :menu-actions="menuActions"
     >
       <template #toolbar-actions v-if="$slots['toolbar-actions']">
         <slot name="toolbar-actions" :element-index="elementIndex" />
+      </template>
+      <template #primary-action v-if="$slots['primary-action']">
+        <slot name="primary-action" :element-index="elementIndex" />
       </template>
       <template #search-options v-if="$slots['search-options']">
         <slot name="search-options" />
