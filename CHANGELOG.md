@@ -64,6 +64,7 @@
 - Fixed a bug where plugin stylesheets and scripts that were shared between control panel screens, such as a dashboard widget and the plugin’s settings, could go missing after navigating directly from one to the other. ([#20665](https://github.com/craftcms/cms/issues/20665))
 - Fixed a bug where saving a plugin’s settings stored values from its `config/craft/<handle>.php` file in the project config, replacing the values previously saved from the control panel. ([#20624](https://github.com/craftcms/cms/pull/20624))
 - Fixed a bug where Yii HTTP exceptions, such as `yii\web\NotFoundHttpException`, thrown by legacy site controller actions resulted in a 500 error rather than their own status code. ([#20614](https://github.com/craftcms/cms/issues/20614), [#20617](https://github.com/craftcms/cms/pull/20617))
+- Fixed a bug where `edit/{id}` control panel URLs returned a 500 error, rather than a 404, for elements that don’t have their own edit page, such as addresses and content blocks, and for elements that don’t exist.
 - Fixed a bug where fields could be saved with the same handle as another field. ([#20600](https://github.com/craftcms/cms/issues/20600), [#20607](https://github.com/craftcms/cms/pull/20607))
 - Fixed an error that occurred when saving an entry via the `entries/save-entry` action with an `entryId` param submitted as form data. ([#20643](https://github.com/craftcms/cms/pull/20643))
 - Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
