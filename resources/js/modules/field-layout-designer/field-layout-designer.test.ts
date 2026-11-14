@@ -284,6 +284,54 @@ it('gives the card preview the owner’s name, color, and icon', async () => {
   document.body.innerHTML = '';
 });
 
+it('keeps the icon thumb source until the Icon control renders without an icon', async () => {
+  document.body.innerHTML = '<form><div class="cvd"></div></form>';
+  const iconOption = {label: 'Entry type icon', value: 'entryTypeIcon'};
+  const thumbSources = {
+    options: [iconOption],
+    value: ['entryTypeIcon'],
+    addOption: vi.fn(),
+    removeOption: vi.fn((value: string) => {
+      thumbSources.options = thumbSources.options.filter(
+        (option) => option.value !== value
+      );
+      thumbSources.value = thumbSources.value.filter((v) => v !== value);
+    }),
+  };
+  // SAFETY: This test deliberately creates a CardViewDesigner without running its DOM-heavy constructor.
+  const designer = Object.create(
+    CardViewDesigner.prototype
+  ) as CardViewDesigner;
+  Object.assign(designer, {
+    $container: document.querySelector('.cvd')!,
+    $previewContainer: null,
+    $thumbSources: thumbSources,
+    iconThumbOption: iconOption,
+  });
+  const manageThumbnails = vi.fn();
+  designer.manageThumbnails = manageThumbnails;
+
+  designer.syncIconThumbOption();
+  designer.observeAppearanceControls();
+
+  expect(thumbSources.value).toEqual(['entryTypeIcon']);
+  expect(manageThumbnails).not.toHaveBeenCalled();
+
+  document.querySelector('form')!.insertAdjacentHTML(
+    'beforeend',
+    `<craft-input data-ui-control-path='["name"]'></craft-input>
+      <craft-select-color data-ui-control-path='["color"]'></craft-select-color>
+      <craft-input data-ui-control-path='["icon"]'></craft-input>`
+  );
+  await Promise.resolve();
+
+  expect(thumbSources.value).toEqual([]);
+  expect(manageThumbnails).toHaveBeenCalledOnce();
+  expect(designer.appearanceControlObserver).toBeNull();
+
+  document.body.innerHTML = '';
+});
+
 it('adds no tab when the name prompt is cancelled', () => {
   const designer = Object.create(
     FieldLayoutDesigner.prototype

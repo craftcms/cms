@@ -17,6 +17,7 @@
      * @var array $config
      * @var bool $withGeneratedFields
      * @var bool $withCardViewDesigner
+     * @var string|null $cardViewDesignerOutlet
      * @var bool $disabled
      */
 @endphp
@@ -52,7 +53,16 @@
                 : null;
         @endphp
 
-        @if ($withCardViewDesigner)
+        @if ($withCardViewDesigner && $cardViewDesignerOutlet)
+            {{-- The form gives the content and the card appearance tabs of their
+                 own, and the card view designer moves to its outlet (see
+                 FieldLayoutDesignerControl.vue). --}}
+            <craft-field-group class="fld-content-panel">
+                {!! $designerHtml !!}
+                {!! $generatedFieldsHtml !!}
+            </craft-field-group>
+            {!! $cardDesigner->html($fieldLayout, ['disabled' => $disabled]) !!}
+        @elseif ($withCardViewDesigner)
             @php
                 $errorKeys = $fieldLayout->errors->keys();
                 $hasErrors = fn (array $prefixes) => collect($errorKeys)->contains(

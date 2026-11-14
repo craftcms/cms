@@ -14,14 +14,10 @@ vi.mock('@craftcms/ui', async () => ({
 vi.mock('@actions/Dashboard/Widgets/NewUsersController', () => ({
   data: {url: () => '/new-users/data'},
 }));
-vi.mock('@/modules/chart/chart', () => ({
-  Area: class {
-    draw = state.draw;
-    resize() {}
-    destroy() {}
-  },
-  DataTable: class {
-    constructor(public rows: unknown) {}
+vi.mock('@/modules/chart/AreaChart.vue', () => ({
+  default: (props: {data: unknown}) => {
+    state.draw(props.data);
+    return null;
   },
 }));
 
@@ -36,8 +32,8 @@ afterEach(() => {
 
 it('draws new users again when the dashboard reloads its widgets', async () => {
   state.post
-    .mockResolvedValueOnce({data: {dataTable: 'before'}})
-    .mockResolvedValueOnce({data: {dataTable: 'after'}});
+    .mockResolvedValueOnce({data: {dataTable: 'before', scale: 'day'}})
+    .mockResolvedValueOnce({data: {dataTable: 'after', scale: 'day'}});
   const props = reactive({data: {dateRange: 'd7', userGroupId: null}});
   host = document.createElement('div');
   document.body.append(host);
@@ -49,5 +45,5 @@ it('draws new users again when the dashboard reloads its widgets', async () => {
   props.data = {dateRange: 'd7', userGroupId: null};
 
   await vi.waitFor(() => expect(state.draw).toHaveBeenCalledTimes(2));
-  expect(state.draw.mock.lastCall![0]).toEqual({rows: 'after'});
+  expect(state.draw.mock.lastCall![0]).toBe('after');
 });

@@ -42,8 +42,8 @@ afterEach(() => {
 
 const theme = () => document.documentElement.getAttribute('data-theme');
 
-function run(preference?: string) {
-  page.props = {craft: {theme: preference}};
+function run(preference?: string, currentUser: object | null = null) {
+  page.props = {craft: {theme: preference, currentUser}};
   const scope = effectScope();
   scope.run(() => useTheme());
 
@@ -117,6 +117,26 @@ it('reports the theme it shows to the server', async () => {
   await nextTick();
 
   expect(document.cookie).toContain('CraftTheme=light');
+
+  scope.stop();
+});
+
+it('remembers the signed-in user’s preference for logged-out pages', async () => {
+  document.cookie = 'CraftThemePreference=; max-age=0';
+  const guest = run('dark');
+
+  expect(document.cookie).not.toContain('CraftThemePreference=dark');
+
+  guest.stop();
+  systemIsDark = true;
+  const scope = run('system', {id: 1});
+
+  expect(document.cookie).toContain('CraftThemePreference=system');
+
+  page.props = {craft: {theme: 'light', currentUser: {id: 1}}};
+  await nextTick();
+
+  expect(document.cookie).toContain('CraftThemePreference=light');
 
   scope.stop();
 });

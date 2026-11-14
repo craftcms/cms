@@ -1,8 +1,15 @@
-import {computed, type MaybeRefOrGetter, toValue} from 'vue';
+import {
+  computed,
+  type ComputedRef,
+  type MaybeRefOrGetter,
+  type Ref,
+  toValue,
+} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
 import {isInteractiveClick} from '@/common/utils/dom';
 import {
+  type Selectable,
   type SelectableId,
   useSelectable,
 } from '@/common/composables/useSelectable';
@@ -20,6 +27,35 @@ export interface TableRowSelectionOptions<TData = any> {
   onClear?: () => void;
 }
 
+/** The type of a row's `id`. */
+type RowId<TData> = TData extends {id: infer Id extends SelectableId}
+  ? Id
+  : SelectableId;
+
+/** What {@link useTableRowSelection} returns, and what `DataTable` takes as `selection`. */
+export interface TableRowSelection<TData extends Record<string, any>> {
+  /** The underlying selection, for list bodies that take a `selection` prop. */
+  readonly selection: Selectable<RowId<TData>>;
+  readonly selectedIds: ComputedRef<readonly RowId<TData>[]>;
+  readonly selectedRows: ComputedRef<readonly TData[]>;
+  readonly hasSelection: ComputedRef<boolean>;
+  readonly readOnly: ComputedRef<boolean>;
+  readonly anchorIndex: Ref<number | null>;
+  clearSelection(): void;
+  onToggleAllSelected(checked: boolean): void;
+  selectRow(
+    row: Row<CraftTableFeatures, TData>,
+    state: {checked: boolean; shiftKey?: boolean}
+  ): void;
+  /** Toggles the row a click landed on, unless it was on a control inside it. */
+  selectRowFromEvent(
+    row: Row<CraftTableFeatures, TData> | undefined,
+    event: MouseEvent
+  ): void;
+  toggleRow(row: Row<CraftTableFeatures, TData>): void;
+  extendSelectionTo(row: Row<CraftTableFeatures, TData>): void;
+}
+
 /**
  * Row selection for a TanStack table, in the table's own `Row`-shaped terms.
  *
@@ -32,7 +68,7 @@ export interface TableRowSelectionOptions<TData = any> {
 export function useTableRowSelection<TData extends Record<string, any>>(
   table: MaybeRefOrGetter<Table<CraftTableFeatures, TData>>,
   options: TableRowSelectionOptions<NoInfer<TData>>
-) {
+): TableRowSelection<TData> {
   const readOnly = computed(() => toValue(options.readOnly));
   const selectable = computed(() => toValue(options.selectable));
   const selectedRows = computed<readonly TData[]>(
@@ -50,7 +86,7 @@ export function useTableRowSelection<TData extends Record<string, any>>(
   ): Row<CraftTableFeatures, TData> | undefined =>
     rows().find((row) => row.original.id === id);
 
-  const selection = useSelectable({
+  const selection = useSelectable<RowId<TData>>({
     ids: () => rows().map((row) => row.original.id),
     enabled: selectable,
     readOnly,
@@ -137,7 +173,3 @@ export function useTableRowSelection<TData extends Record<string, any>>(
     extendSelectionTo,
   };
 }
-
-export type TableRowSelection<TData extends Record<string, any>> = ReturnType<
-  typeof useTableRowSelection<TData>
->;

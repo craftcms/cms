@@ -156,6 +156,26 @@ describe('elementChipHtml', function () {
     });
 });
 
+describe('presentation', function () {
+    it('gives list views chip data without card markup', function () {
+        $entry = Entry::factory()->createElement();
+
+        $presentation = $this->elementHtml->presentation($entry);
+
+        expect($presentation)
+            ->toHaveKeys(['id', 'label', 'url', 'cpEditUrl', 'status'])
+            ->and($presentation['id'])->toBe($entry->id)
+            ->and($presentation)->not->toHaveKey('cardHeaderHtml');
+    });
+
+    it('adds card parts for card views', function () {
+        $entry = Entry::factory()->createElement();
+
+        expect($this->elementHtml->presentation($entry, 'cards'))
+            ->toHaveKeys(['id', 'label', 'cardAttributes', 'cardHeaderHtml', 'cardContentHtml']);
+    });
+});
+
 describe('elementCardHtml', function () {
     it('uses fit consistently for inline and separate thumbnails and presence', function (string $supportedMode) {
         $entry = Entry::factory()->withField('thumbnail', ModeThumbnailField::class, value: $supportedMode)

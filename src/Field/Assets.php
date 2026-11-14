@@ -966,8 +966,12 @@ class Assets extends BaseRelationField
     {
         $criteria = parent::searchCriteria($element);
 
-        // Include subfolders in the inline search results
-        return $criteria === null ? null : [...$criteria, 'includeSubfolders' => true];
+        // Include subfolders in the inline search results, if the field allows them
+        if ($criteria === null || ($this->restrictLocation && ! $this->allowSubfolders)) {
+            return $criteria;
+        }
+
+        return [...$criteria, 'includeSubfolders' => true];
     }
 
     /**

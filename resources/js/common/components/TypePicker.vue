@@ -1,14 +1,7 @@
 <script setup lang="ts">
   import {computed, useTemplateRef, watch} from 'vue';
   import type {ActionMenuItem, ButtonVariant} from '@craftcms/ui';
-
-  export type TypePickerOption = {
-    value: string;
-    label: string;
-    hint?: string | null;
-    showHint?: boolean;
-    group?: string | null;
-  };
+  import type {TypePickerOption} from './typePicker';
 
   const props = defineProps<{
     types: TypePickerOption[];

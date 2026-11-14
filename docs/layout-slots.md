@@ -35,7 +35,7 @@ nav, the error summary — is hidden.
 ## Only on your own pages
 
 `craft:layout-slot`, `craft:screen-panel` and `craft:app-layout` only render on a page your plugin
-registered with `Cp.$inertia.register()`. Craft checks the nearest Inertia page above the
+registered with `registerPage()` from `@craftcms/cp`. Craft checks the nearest Inertia page above the
 component, so this includes anything that page renders, but not your components rendered on
 someone else's page: a dashboard widget, a UI node, an element details panel. There, they render nothing and log a warning
 in development builds. This keeps a plugin from replacing the chrome of a page it doesn't own.
@@ -200,7 +200,7 @@ fills the details pane as it always has. Once a panel is added, by the page or t
 content becomes a panel of its own, labelled "Details", and is rendered again there.
 
 To add a panel to the element editor, which isn't your page, register it with
-`Cp.$elementDetailsPanels.register()` instead.
+`registerElementDetailsPanel()` from `@craftcms/cp` instead.
 
 ## Example
 
@@ -211,4 +211,4 @@ Demo" dashboard widget, built with public API only:
   regions, with a few more to toggle, including details panels.
 - `workbench/resources/js/layout-slots-demo/LayoutSlotsDemoWidget.vue` — a widget on the core
   Dashboard whose slot is refused.
-- `workbench/resources/js/layout-slots-demo/register.ts` — registration through `Cp.booting()`.
+- `workbench/resources/js/layout-slots-demo/register.ts` — registration with `registerPage()` and `registerComponent()`.
