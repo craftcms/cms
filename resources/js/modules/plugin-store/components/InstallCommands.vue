@@ -12,7 +12,7 @@
   const page = usePage<{context: PluginStoreContext}>();
 
   const command = computed(() => {
-    const {craftExecutable, composerExecutable, yii2AdapterRequired} =
+    const {pluginInstallCommand, composerExecutable, yii2AdapterRequired} =
       page.props.context;
 
     const adapter =
@@ -20,7 +20,7 @@
         ? ' "craftcms/yii2-adapter:*"'
         : '';
 
-    return `${composerExecutable} require "${plugin.packageName}:^${plugin.version}"${adapter} -w && ${craftExecutable} plugin/install ${plugin.handle}`;
+    return `${composerExecutable} require "${plugin.packageName}:^${plugin.version}"${adapter} -w && ${pluginInstallCommand} ${plugin.handle}`;
   });
 </script>
 
