@@ -44,6 +44,7 @@ use Override;
  * @method static void addStyle(string $handle, string $path)
  * @method static void addScript(string $handle, string $path)
  * @method static string getAssetsHtml()
+ * @method static string|null getViteManifestHash()
  *
  * @see \CraftCms\Cms\Plugin\Plugins
  */
