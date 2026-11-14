@@ -33,6 +33,7 @@ use IteratorAggregate;
 use SimpleXMLElement;
 use stdClass;
 use Traversable;
+use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -949,6 +950,59 @@ class ExtensionTest extends TestCase
             '{{ {x: "y"} has some (v => v is same as("z")) ? "yes" : "no" }}'
         );
         self::assertSame('no', $result);
+    }
+
+    /**
+     * Array filters that read a key from each element must not let sandboxed templates access anything that they
+     * couldn’t access directly, whether via nested key paths or properties the sandbox doesn’t allow.
+     *
+     * @dataProvider sandboxedArrayFilterKeyDataProvider
+     */
+    public function testSandboxedArrayFiltersCheckKeys(string $template): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        $obj = new stdClass();
+        $obj->secret = 'shh';
+
+        self::expectException(TwigError::class);
+        $this->view->renderSandboxedString($template, ['obj' => $obj]);
+    }
+
+    public static function sandboxedArrayFilterKeyDataProvider(): array
+    {
+        return [
+            'index with a key path' => ["{{ [craft]|index(['app', 'config', 'general', 'securityKey'])|keys|first }}"],
+            'index with a group path' => ["{{ [craft]|index(null, [['app', 'config', 'general', 'securityKey']])|keys|first }}"],
+            'column with a key path' => ["{{ [craft]|column(['app', 'config', 'general', 'securityKey'])|first }}"],
+            'multisort with a key path' => ["{{ [craft]|multisort([['app', 'config', 'general', 'securityKey']])|length }}"],
+            'index with a disallowed property' => ["{{ [obj]|index('secret')|keys|first }}"],
+            'where with a disallowed property' => ["{{ [obj]|where('secret', 'shh')|length }}"],
+            'contains with a disallowed property' => ["{{ [obj]|contains('secret', 'shh') }}"],
+            'multisort with a disallowed property' => ["{{ [obj]|multisort('secret')|length }}"],
+        ];
+    }
+
+    /**
+     * Passing a single non-traversable object to an array filter in the sandbox must not enumerate its public
+     * properties, while legitimate array filter usages still work.
+     */
+    public function testSandboxedArrayFiltersWork(): void
+    {
+        Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
+        $obj = new stdClass();
+        $obj->secret = 'shh';
+
+        self::assertSame('ok', $this->view->renderSandboxedString(
+            "{{ obj|column(v => v is same as('shh') ? 'leaked' : 'ok')|join }}",
+            ['obj' => $obj],
+        ));
+
+        self::assertSame('x,y|1,2|1|2,4', $this->view->renderSandboxedString(implode('|', [
+            "{{ [{a: 'x'}, {a: 'y'}]|index('a')|keys|join(',') }}",
+            "{{ [{a: 2}, {a: 1}]|multisort('a')|column('a')|join(',') }}",
+            "{{ [{a: 1}, {a: 2}]|where(i => i.a, 2)|length }}",
+            "{{ [[1, 2], [3, 4]]|column(1)|join(',') }}",
+        ])));
     }
 
     /**

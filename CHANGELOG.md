@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
+
 ## 5.12.1 - 2026-11-10
 
 - Renamed Craft’s MCP tools to use snake_case, such as `elements_list` instead of `elements.list`, since some MCP clients reject or rename tools with dots in their names. Public MCP server approvals are updated automatically. Plugins should name their MCP tools the same way, such as `my_plugin_orders_list`. ([#20351](https://github.com/craftcms/cms/issues/20351))
