@@ -387,6 +387,7 @@ return [
     'Composer was unable to install the updates.' => 'A Composer nem tudta telepíteni a frissítéseket.',
     'Composer was unable to remove the plugin.' => 'A Composer nem tudta eltávolítani a beépülő modult.',
     'Composer was unable to revert the updates.' => 'A Composer nem tudta visszavonni a frissítéseket.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Tömörített',
     'Condition {num, number}' => 'Feltétel {num, number}',
     'Configure the category group’s site-specific settings.' => 'Adja meg a kategóriacsoport webhelyspecifikus beállításait.',
