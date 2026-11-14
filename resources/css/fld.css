@@ -553,7 +553,7 @@ body:not(.dragging) .fld-tab .tab.draggable {
 /* Width pickers leave the segments past the value unfilled. */
 .fld-element craft-slide-picker-button {
   --c-slide-picker-segment-fill: transparent;
-  margin-inline-end: var(--c-spacing-md);
+  margin-inline-end: var(--c-spacing-sm);
 }
 
 /* Settings (gear) action button — shown on tabs and elements */
