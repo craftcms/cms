@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
  *
  * Commands use the local development environment’s wrappers when Craft runs in one:
  *
- * - [DDEV](https://ddev.com): `ddev craft` and `ddev composer`.
+ * - [DDEV](https://ddev.com): `ddev php craft` and `ddev composer`.
  * - [Laravel Valet](https://laravel.com/docs/valet), for sites isolated to a PHP version with `valet isolate`:
  *   `valet php craft` and `valet composer`, which run the site’s PHP version. Other Valet sites use the PHP version
  *   that’s on the `PATH`, so they get the plain commands.
@@ -44,7 +44,7 @@ class TerminalCommands
      * Returns a Craft console command.
      *
      * ```php
-     * $terminalCommands->craft('passport:keys'); // php craft passport:keys, or ddev craft passport:keys on DDEV
+     * $terminalCommands->craft('passport:keys'); // php craft passport:keys, or ddev php craft passport:keys on DDEV
      * ```
      *
      * @param  string  $command  The command and its arguments, without the `craft` executable
@@ -74,7 +74,7 @@ class TerminalCommands
     public function craftExecutable(): string
     {
         return match ($this->environment()) {
-            'ddev' => 'ddev craft',
+            'ddev' => 'ddev php craft',
             'valet' => 'valet php craft',
             default => 'php craft',
         };
