@@ -1,5 +1,6 @@
-import {afterEach, beforeEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {createApp, effectScope, nextTick} from 'vue';
+import {config, router} from '@inertiajs/vue3';
 
 import ActionList from './ActionList.vue';
 import {navItemActions} from '@/common/composables/navActions';
@@ -340,4 +341,46 @@ it('leaves the external-link icon to the nav item', async () => {
 
   expect(link?.external).toBe(true);
   expect(link?.querySelector('craft-icon[slot="suffix"]')).toBeNull();
+});
+
+describe('fetching a page before it is visited', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('fetches a page that is pointed at for longer than the hover delay', async () => {
+    const prefetch = vi.spyOn(router, 'prefetch').mockImplementation(() => {});
+    await mount();
+
+    item('Dashboard')!.dispatchEvent(new MouseEvent('mouseenter'));
+    vi.advanceTimersByTime(config.get('prefetch.hoverDelay'));
+
+    expect(prefetch).toHaveBeenCalledTimes(1);
+    expect(prefetch).toHaveBeenCalledWith(
+      '/admin/dashboard',
+      expect.anything(),
+      expect.anything()
+    );
+  });
+
+  it('fetches on press when the click beats the hover delay, and not again', async () => {
+    const prefetch = vi.spyOn(router, 'prefetch').mockImplementation(() => {});
+    await mount();
+    const dashboard = item('Dashboard')!;
+
+    dashboard.dispatchEvent(new MouseEvent('mouseenter'));
+    dashboard.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+    dashboard.dispatchEvent(
+      new MouseEvent('mousedown', {bubbles: true, button: 0})
+    );
+    expect(prefetch).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(1000);
+    expect(prefetch).toHaveBeenCalledTimes(1);
+  });
 });
