@@ -25,6 +25,14 @@ export function useSlideout(): SlideoutController | null {
   return inject(SlideoutControllerKey, null);
 }
 
+/**
+ * The id of a slideout screen's title. The panel names its dialog after it,
+ * and focuses it on open.
+ */
+export function slideoutTitleId(containerId: string): string {
+  return `${containerId}-title`;
+}
+
 export interface SlideoutControl {
   /**
    * Close the slideout. Prompts when there are unsaved changes; pass

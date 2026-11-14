@@ -59,9 +59,15 @@ export function getFocusedElement(): Element | null {
 const focusTrapHandlers = new WeakMap<Element, (ev: KeyboardEvent) => void>();
 
 /**
- * Trap keyboard focus within a container: tabbing past the last focusable
- * element wraps to the first, and Shift-Tab past the first wraps to the last.
+ * Trap keyboard focus within a container: tabbing past the last Tab stop
+ * wraps to the first, and Shift-Tab past the first wraps to the last.
  * Replaces any trap previously installed on the same container.
+ *
+ * The stops are the keyboard-focusable elements in the order they render,
+ * including the controls a component renders in its open shadow root and the
+ * content it slots in. An element that's only focused from code, such as a
+ * heading with `tabindex="-1"`, isn't one, and focus on something before the
+ * first stop or after the last wraps the same way.
  *
  * Pair with {@link releaseFocusWithin} to remove the trap (e.g. when a modal
  * closes).
@@ -76,26 +82,66 @@ export function trapFocusWithin(container: Element): void {
       return;
     }
 
-    const focusable = getFocusableElements(container);
-    if (focusable.length === 0) {
+    const elements = renderedElements(container);
+    const firstIndex = elements.findIndex((el) => isKeyboardFocusable(el));
+    if (firstIndex === -1) {
       return;
     }
+    let lastIndex = elements.length - 1;
+    while (!isKeyboardFocusable(elements[lastIndex]!)) {
+      lastIndex--;
+    }
 
-    const index = focusable.indexOf(ev.target as HTMLElement);
+    // The control itself, not the component its event was retargeted to. The
+    // container isn't in the list, so focus parked on it counts as before the
+    // first stop.
+    const targetIndex = elements.indexOf(ev.composedPath()[0] as Element);
 
-    if (index === 0 && ev.shiftKey) {
+    if (ev.shiftKey && targetIndex <= firstIndex) {
       ev.preventDefault();
       ev.stopPropagation();
-      focusable[focusable.length - 1]!.focus();
-    } else if (index === focusable.length - 1 && !ev.shiftKey) {
+      (elements[lastIndex] as HTMLElement).focus();
+    } else if (!ev.shiftKey && targetIndex >= lastIndex) {
       ev.preventDefault();
       ev.stopPropagation();
-      focusable[0]!.focus();
+      (elements[firstIndex] as HTMLElement).focus();
     }
   };
 
   container.addEventListener('keydown', handler as EventListener);
   focusTrapHandlers.set(container, handler);
+}
+
+/**
+ * Every element inside `container` in the order it renders: a component's
+ * open shadow root in place of its children, and each slot's assigned
+ * elements (or its fallback content) where the slot is. A child no slot takes
+ * isn't rendered, so it isn't included.
+ *
+ * Keep in sync with `renderedElements()` and `trapFocusWithin()` in
+ * `packages/craftcms-legacy/garnish/src/Garnish.js`, which can't import this.
+ */
+function renderedElements(container: Element): Element[] {
+  const elements: Element[] = [];
+
+  const visitChildren = (parent: Element): void => {
+    let children: Iterable<Element> =
+      parent.shadowRoot?.children ?? parent.children;
+    // Assigned text hides the fallback content too, so check nodes, not elements.
+    if (
+      parent instanceof HTMLSlotElement &&
+      parent.assignedNodes({flatten: true}).length
+    ) {
+      children = parent.assignedElements({flatten: true});
+    }
+    for (const child of children) {
+      elements.push(child);
+      visitChildren(child);
+    }
+  };
+
+  visitChildren(container);
+  return elements;
 }
 
 /**
