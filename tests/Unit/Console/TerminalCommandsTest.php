@@ -22,7 +22,7 @@ afterEach(function () {
 it('uses the plain commands outside of local development environments', function () {
     $commands = app(TerminalCommands::class);
 
-    expect($commands->craft('update:info'))->toBe('php craft update:info')
+    expect($commands->craft('update:info'))->toBe('php artisan craft:update:info')
         ->and($commands->artisan('passport:keys'))->toBe('php artisan passport:keys')
         ->and($commands->composer('install'))->toBe('composer install')
         ->and($commands->environment())->toBeNull();
@@ -38,7 +38,7 @@ it('uses DDEV’s wrappers in DDEV projects', function (string $value, ?string $
         ->and($commands->composer('install'))->toBe($composer);
 })->with([
     'true' => ['true', 'ddev', 'ddev artisan craft:update:info', 'ddev artisan passport:keys', 'ddev composer install'],
-    'false' => ['false', null, 'php craft update:info', 'php artisan passport:keys', 'composer install'],
+    'false' => ['false', null, 'php artisan craft:update:info', 'php artisan passport:keys', 'composer install'],
 ]);
 
 it('uses Valet’s wrappers for Valet sites isolated to a PHP version', function () {
@@ -57,8 +57,8 @@ it('uses Valet’s wrappers for Valet sites isolated to a PHP version', function
     };
 
     try {
-        $isolated = ['valet php craft update all', 'valet php artisan passport:keys', 'valet composer install'];
-        $plain = ['php craft update all', 'php artisan passport:keys', 'composer install'];
+        $isolated = ['valet php artisan craft:update all', 'valet php artisan passport:keys', 'valet composer install'];
+        $plain = ['php artisan craft:update all', 'php artisan passport:keys', 'composer install'];
 
         expect($commandsFor('isolated.test'))->toBe($isolated)
             ->and($commandsFor('www.isolated.test'))->toBe($isolated)

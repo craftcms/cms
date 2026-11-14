@@ -15,7 +15,7 @@ export interface PluginStoreContext {
   allowPurchases: boolean;
   cmsLicenseKey: string | null;
   craftIdEndpoint: string;
-  /** The command that installs a plugin in this environment, without its handle, such as `php craft plugin:install`. */
+  /** The command that installs a plugin in this environment, without its handle, such as `php artisan craft:plugin:install`. */
   pluginInstallCommand: string;
   /** How Composer is run in this environment, such as `composer` or `ddev composer`. */
   composerExecutable: string;
