@@ -387,6 +387,7 @@ return [
     'Composer was unable to install the updates.' => '작성기가 업데이트를 설치하지 못했습니다.',
     'Composer was unable to remove the plugin.' => '작성기가 플러그인을 제거하지 못했습니다.',
     'Composer was unable to revert the updates.' => '작성기가 업데이트를 되돌리지 못했습니다.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => '압축',
     'Condition {num, number}' => '조건 {num, number}',
     'Configure the category group’s site-specific settings.' => '카테고리 그룹의 사이트별 설정을 구성하십시오.',
