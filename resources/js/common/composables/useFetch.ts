@@ -27,7 +27,7 @@ type RequestParams = UiValues | URLSearchParams;
 type RequestData = UiValues | FormData | URLSearchParams | string | Blob | null;
 
 // Options interface
-interface UseFetchOptions<T = UiValue> extends Omit<
+export interface UseFetchOptions<T = UiValue> extends Omit<
   HttpRequestConfig,
   'url' | 'params'
 > {
@@ -44,7 +44,7 @@ interface UseFetchOptions<T = UiValue> extends Omit<
 }
 
 // Return type interface
-interface UseFetchReturn<T> {
+export interface UseFetchReturn<T> {
   data: Ref<T | null>;
   error: Ref<unknown>;
   state: Ref<FetchState>;

@@ -16,6 +16,7 @@ use CraftCms\Cms\Dashboard\Widgets\Feed as FeedWidget;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries as RecentEntriesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\User\Models\User;
 use DateTimeInterface;
 use Exception;
@@ -48,7 +49,7 @@ readonly class Dashboard
      *
      * @template T of WidgetInterface
      *
-     * @param  class-string<T>|array{type: class-string<T>, id?: int, colspan?: int, settings?: array<string, mixed>, dateCreated?: DateTimeInterface, dateUpdated?: DateTimeInterface}  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param  class-string<T>|array{type: class-string<T>, id?: int, colspan?: int, color?: string|null, settings?: array<string, mixed>, dateCreated?: DateTimeInterface, dateUpdated?: DateTimeInterface}  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @return T
      */
     public function createWidget(string|array $config): WidgetInterface
@@ -154,6 +155,7 @@ readonly class Dashboard
             $widgetModel = $this->getUserWidgetModelById($widget->id);
 
             $widgetModel->type = $widget::class;
+            $widgetModel->color = $widget->color;
             $widgetModel->settings = $widget->getSettings();
 
             if ($isNewWidget) {
@@ -264,6 +266,20 @@ readonly class Dashboard
     {
         $this->getUserWidgetModelById($widgetId)->update([
             'colspan' => $colspan,
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Changes the color of a widget.
+     *
+     * @param  Color|null  $color  The widget’s new color, or `null` for none
+     */
+    public function changeWidgetColor(int $widgetId, ?Color $color): bool
+    {
+        $this->getUserWidgetModelById($widgetId)->update([
+            'color' => $color?->value,
         ]);
 
         return true;

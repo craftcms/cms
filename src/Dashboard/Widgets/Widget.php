@@ -12,6 +12,7 @@ use CraftCms\Cms\Component\Exceptions\MissingComponentException;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use Override;
 
@@ -26,6 +27,11 @@ abstract class Widget extends Component implements WidgetInterface
     use SavableComponent;
 
     public ?int $colspan = null;
+
+    /**
+     * The widget’s color: a {@see Color} value, or `null` for none. Widgets are gray unless given another color.
+     */
+    public ?string $color = Color::Gray->value;
 
     abstract public function component(): ?string;
 

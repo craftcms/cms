@@ -482,6 +482,18 @@ describe('ElementSelectControl', () => {
     expect(settings.multiSelect).toBe(false);
   });
 
+  it('gives a full field’s Replace a chip to return focus to', async () => {
+    const root = await mount({props: {limit: 2}, value: [5, 6]});
+    menuItem(menus(root)[0], 'Replace').click();
+    await flushSelector();
+
+    const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+    // The drop zone can't take focus, so a slideout opened from the modal
+    // would have nothing to return focus to once it closed.
+    const target: HTMLElement = settings.triggerElement();
+    expect(target.closest('[data-id]')?.getAttribute('data-id')).toBe('5');
+  });
+
   it('appends what the selector returns', async () => {
     await mount({value: [5]});
     const button = container!.querySelector('[data-element-select-add]')!;
@@ -494,6 +506,394 @@ describe('ElementSelectControl', () => {
 
     expect(updates).toEqual([[5, 9]]);
   });
+
+  describe('search', () => {
+    const search = {criteria: {sectionId: 3}, siteId: 2};
+    const selectionCondition = {class: 'EntryCondition'};
+
+    async function type(root: HTMLElement, query: string) {
+      const input = root.querySelector<HTMLInputElement>('[role="combobox"]')!;
+
+      input.focus();
+      vi.useFakeTimers();
+      input.value = query;
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      vi.advanceTimersByTime(300);
+      vi.useRealTimers();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      await nextTick();
+
+      return input;
+    }
+
+    function press(input: HTMLInputElement, key: string): void {
+      input.dispatchEvent(new KeyboardEvent('keydown', {key, bubbles: true}));
+    }
+
+    it('lists already related elements as unavailable, skipping them to relate another', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 5, title: 'Some entry', html: 'Some entry', exclude: true},
+            {
+              id: 9,
+              title: 'Another entry',
+              html: 'Another entry',
+              exclude: false,
+            },
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const root = await mount({props: {search, selectionCondition}});
+
+      const input = await type(root, 'entry');
+
+      expect(stub.post.mock.calls[0]![0]).toContain('element-search/search');
+      expect(stub.post.mock.calls[0]![1]).toMatchObject({
+        search: 'entry',
+        siteId: 2,
+        criteria: {sectionId: 3},
+        condition: selectionCondition,
+        excludeIds: [5],
+      });
+      const options = [
+        ...root.querySelectorAll('[role="listbox"] craft-option'),
+      ];
+      expect(
+        options.map((option) => [
+          option.textContent?.trim(),
+          option.getAttribute('aria-disabled'),
+        ])
+      ).toEqual([
+        ['Some entry', 'true'],
+        ['Another entry', 'false'],
+      ]);
+      expect(input.getAttribute('aria-activedescendant')).toBe(options[1]!.id);
+
+      press(input, 'ArrowDown');
+      await nextTick();
+      expect(input.getAttribute('aria-activedescendant')).toBe(options[1]!.id);
+
+      (options[0] as HTMLElement).click();
+      expect(updates).toEqual([]);
+
+      press(input, 'Enter');
+
+      expect(updates).toEqual([[5, 9]]);
+    });
+
+    it('offers no entry to create when an already related one matches exactly', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 5, title: 'Some entry', html: 'Some entry', exclude: true},
+          ],
+          exactMatch: true,
+        },
+      } as never);
+      const root = await mount({props: {search, createSection: 'posts'}});
+
+      const input = await type(root, 'Some entry');
+
+      expect(
+        [...root.querySelectorAll('[role="listbox"] craft-option')].map(
+          (option) => option.textContent?.trim()
+        )
+      ).toEqual(['Some entry']);
+      expect(input.hasAttribute('aria-activedescendant')).toBe(false);
+
+      press(input, 'Enter');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(updates).toEqual([]);
+      expect(stub.post).toHaveBeenCalledOnce();
+    });
+
+    it('creates an entry from the query, and relates it once it’s saved', async () => {
+      stub.post.mockImplementation(async (action: string) =>
+        action.includes('entries/create')
+          ? ({data: {entry: {id: 31, draftId: 7, title: 'Fresh'}}} as never)
+          : ({data: {elements: [], exactMatch: false}} as never)
+      );
+      const root = await mount({props: {search, createSection: 'posts'}});
+
+      const input = await type(root, 'Fresh');
+      expect(
+        root.querySelector('[role="listbox"] craft-option')?.textContent
+      ).toMatch(/^\s*Create .+: Fresh$/);
+
+      press(input, 'Enter');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(stub.post.mock.calls[1]![1]).toEqual({
+        siteId: 2,
+        section: 'posts',
+        title: 'Fresh',
+      });
+      const [href, options] = stub.openSlideout.mock.calls[0] as unknown as [
+        string,
+        {onSaved: (result: object) => void},
+      ];
+      expect(href).toContain('draftId=7');
+
+      options.onSaved({draft: true});
+      // Deleting it from the slideout, through the deletion manager or its action.
+      options.onSaved({});
+      options.onSaved({
+        data: {element: {title: 'Fresh', dateDeleted: '2026-11-13'}},
+      });
+      expect(updates).toEqual([]);
+
+      options.onSaved({draft: false, data: {element: {title: 'Fresh'}}});
+      expect(updates).toEqual([[5, 31]]);
+    });
+
+    it('offers no entry to create without a section to create it in', async () => {
+      const root = await mount({props: {search}});
+
+      await type(root, 'Fresh');
+
+      expect(root.querySelector('[role="listbox"] craft-option')).toBeNull();
+    });
+
+    it('excludes the element being edited from the search and the selector', async () => {
+      const root = await mount({props: {search, disabledElementIds: [77]}});
+
+      await type(root, 'entry');
+      root.querySelector<HTMLElement>('[data-element-select-add]')!.click();
+      await flushSelector();
+
+      expect(stub.post.mock.calls[0]![1]).toMatchObject({excludeIds: [5, 77]});
+      expect(
+        stub.createElementSelectorModal.mock.calls[0]![1].disabledElementIds
+      ).toEqual([5, 77]);
+    });
+
+    it('doesn’t choose an earlier query’s result while the next search is pending', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 9, title: 'Another', html: 'Another', exclude: false},
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const root = await mount({props: {search}});
+      const input = await type(root, 'Another');
+
+      input.value = 'Something else';
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+      await nextTick();
+      press(input, 'Enter');
+      (
+        root.querySelector('[role="listbox"] craft-option') as HTMLElement
+      ).click();
+
+      expect(updates).toEqual([]);
+    });
+
+    it('keeps Return from submitting the form when nothing can be chosen', async () => {
+      const root = await mount({props: {search}});
+      const input = await type(root, 'Nothing');
+      const enter = new KeyboardEvent('keydown', {
+        key: 'Enter',
+        bubbles: true,
+        cancelable: true,
+      });
+
+      input.dispatchEvent(enter);
+
+      expect(enter.defaultPrevented).toBe(true);
+    });
+
+    it('leaves the arrow keys to an IME while it’s composing', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {id: 8, title: 'One', label: 'One', html: 'One', exclude: false},
+            {id: 9, title: 'Two', label: 'Two', html: 'Two', exclude: false},
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const root = await mount({props: {search}});
+      const input = await type(root, 'o');
+      const active = input.getAttribute('aria-activedescendant');
+      const arrow = new KeyboardEvent('keydown', {
+        key: 'ArrowDown',
+        isComposing: true,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      input.dispatchEvent(arrow);
+      await nextTick();
+
+      expect(arrow.defaultPrevented).toBe(false);
+      expect(input.getAttribute('aria-activedescendant')).toBe(active);
+    });
+
+    it('relates an untitled result, such as a user, by its label', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {
+              id: 9,
+              title: null,
+              label: 'Jane Doe',
+              html: 'Jane Doe',
+              exclude: false,
+            },
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({search}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await vi.dynamicImportSettled();
+      await nextTick();
+      const input = await type(container, 'Jane');
+
+      press(input, 'Enter');
+      await nextTick();
+
+      expect(value.value).toEqual([5, 9]);
+      expect(container.textContent).toContain('Jane Doe');
+    });
+
+    it('makes a result available once its relation is removed, without searching again', async () => {
+      stub.post.mockResolvedValue({
+        data: {
+          elements: [
+            {
+              id: 5,
+              title: 'Some entry',
+              label: 'Some entry',
+              html: 'Some entry',
+              exclude: true,
+            },
+          ],
+          exactMatch: false,
+        },
+      } as never);
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({search}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await vi.dynamicImportSettled();
+      await nextTick();
+      const input = await type(container, 'Some');
+      const option = () =>
+        container!.querySelector('[role="listbox"] craft-option')!;
+      expect(option().getAttribute('aria-disabled')).toBe('true');
+
+      value.value = [];
+      await nextTick();
+      expect(option().getAttribute('aria-disabled')).toBe('false');
+
+      press(input, 'ArrowDown');
+      await nextTick();
+      press(input, 'Enter');
+
+      expect(value.value).toEqual([5]);
+      expect(stub.post).toHaveBeenCalledOnce();
+    });
+
+    it('replaces the related branch when the field allows only one', async () => {
+      stub.post.mockImplementation(async (action: string, body) =>
+        action.includes('structured-elements')
+          ? ({
+              data: {
+                elements: (body.elementIds as number[]).map((id) => ({
+                  id,
+                  label: String(id),
+                })),
+              },
+            } as never)
+          : ({
+              data: {
+                elements: [
+                  {id: 9, title: 'Another', html: 'Another', exclude: false},
+                ],
+                exactMatch: false,
+              },
+            } as never)
+      );
+      const root = await mount({
+        props: {search, maintainHierarchy: true, branchLimit: 1},
+      });
+      const input = await type(root, 'Another');
+
+      press(input, 'Enter');
+
+      expect(updates[0]).toEqual([9]);
+    });
+  });
+
+  it.each([
+    {limit: null, focused: 'the add button'},
+    {limit: 2, focused: 'the chosen element'},
+  ])(
+    'returns focus to $focused after choosing with a limit of $limit',
+    async ({limit}) => {
+      const value = ref<number[] | number | null>([5]);
+      container = document.createElement('div');
+      document.body.append(container);
+      app = createApp({
+        render: () =>
+          h(ElementSelectControl, {
+            control: control({limit}),
+            value: value.value,
+            editable: true,
+            'onUpdate:value': (next: number[] | number | null) => {
+              value.value = next;
+            },
+          }),
+      });
+      app.mount(container);
+      await nextTick();
+
+      addButton(container)!.click();
+      await flushSelector();
+      const [, settings] = stub.createElementSelectorModal.mock.calls[0]!;
+      settings.onSelect([{id: 9, label: 'Another entry', siteId: 1}]);
+      await nextTick();
+
+      const target: HTMLElement = settings.triggerElement();
+      if (limit === null) {
+        expect(target).toBe(addButton(container));
+      } else {
+        expect(addButton(container)).toBeNull();
+        expect(target.closest('[data-id]')?.getAttribute('data-id')).toBe('9');
+      }
+    }
+  );
 
   it('keeps the newest refetch of a saved element when answers arrive out of order', async () => {
     const answers: Array<(label: string) => void> = [];

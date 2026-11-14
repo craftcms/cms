@@ -14,6 +14,7 @@ import {
 import {emitChange, emitInput} from '@src/utilities/form-events';
 import {activateOption, stepOption, Typeahead} from '@src/utilities/listbox';
 import {claimEscape} from '@src/utilities/overlay-escape';
+import {claimOutsidePress} from '@src/utilities/overlay-outside-press';
 import {layerStyles} from '@src/utilities/overlay-layer';
 import {Dropdown} from '@src/utilities/overlay-dropdown';
 import {uniqueId} from '@src/utilities/unique-id';
@@ -172,6 +173,15 @@ export default class CraftSelectRich extends FormAssociated(
    */
   protected get _selectsFirstOption(): boolean {
     return true;
+  }
+
+  /**
+   * Whether the field is drawn like a plain button, sized to its selection
+   * rather than the widest option. A subclass whose selection is compact,
+   * such as a swatch, returns true.
+   */
+  protected get _plainInvoker(): boolean {
+    return false;
   }
 
   get #singleOption(): boolean {
@@ -342,6 +352,7 @@ export default class CraftSelectRich extends FormAssociated(
 
     invoker.id ||= this._inputId;
     invoker.singleOption = single;
+    invoker.plain = this._plainInvoker;
     invoker.disabled = this.#disabled;
     render(this._selectedTemplate(selected), invoker);
 
@@ -390,6 +401,11 @@ export default class CraftSelectRich extends FormAssociated(
     const invoker = this._control;
 
     if (!layer || !pane || !invoker || this.open) {
+      return;
+    }
+
+    if (this._plainInvoker) {
+      invoker.style.removeProperty('min-width');
       return;
     }
 
@@ -461,6 +477,7 @@ export default class CraftSelectRich extends FormAssociated(
 
   #onDocumentPointerDown = (event: PointerEvent): void => {
     if (!event.composedPath().includes(this)) {
+      claimOutsidePress(event, this);
       this.open = false;
     }
   };

@@ -5,6 +5,7 @@
   import {
     computed,
     defineAsyncComponent,
+    nextTick,
     reactive,
     ref,
     useId,
@@ -20,8 +21,10 @@
   import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
   import SelectionToolbar from './element-select/SelectionToolbar.vue';
+  import RelationSearch from './element-select/RelationSearch.vue';
   import {chipMenu, selectionMenu} from './element-select/chipMenu';
   import {usePasteableElements} from './element-select/usePasteableElements';
+  import {elementFocusTarget} from './element-select/elementFocusTarget';
   import {useElementPresentations} from '@/modules/elements/element-presentations';
   import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
   import type {
@@ -374,6 +377,19 @@
    * reason for being async: a page full of relation fields shouldn't pay for the
    * element index unless someone actually opens one.
    */
+  /** The element being edited and its owners, when the field can't relate them. */
+  const unrelatable = computed(
+    () => props.control.props.disabledElementIds ?? []
+  );
+
+  /**
+   * A branch limit of one means a new choice replaces the old one, as it does
+   * in Craft 5.
+   */
+  const replacesBranch = computed(
+    () => maintainHierarchy.value && props.control.props.branchLimit === 1
+  );
+
   async function openSelector(replacing: number | null = null): Promise<void> {
     const {createElementSelectorModal} =
       await import('@/modules/element-selector-modal/create-element-selector-modal');
@@ -386,6 +402,8 @@
             limit.value -
               (replacing === null ? ids.value.length : ids.value.length - 1)
           );
+    /** The element chosen last, which takes focus once the field is full. */
+    let chosenLast: number | undefined;
 
     const modal = await createElementSelectorModal(
       props.control.props.elementType,
@@ -402,10 +420,27 @@
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being
         // replaced, which would otherwise disable the obvious no-op choice.
-        disabledElementIds: ids.value.filter((id) => id !== replacing),
+        disabledElementIds: [
+          ...ids.value.filter((id) => id !== replacing),
+          ...unrelatable.value,
+        ],
         modalTitle: props.control.props.selectionLabel,
         selectBtnLabel: props.control.props.selectionLabel,
-        triggerElement: () => addButton.value,
+        // A full field has no Add button: the element chosen last takes focus,
+        // else the one being replaced, else the last one. The field itself is
+        // the last resort, as it still says which panel a slideout opened from
+        // the modal nests in.
+        triggerElement: () => {
+          const focusId = chosenLast ?? replacing ?? ids.value.at(-1);
+
+          return (
+            addButton.value ??
+            (focusId === undefined
+              ? null
+              : elementFocusTarget(dropZone.value, focusId)) ??
+            dropZone.value
+          );
+        },
         onSelect: (elements) => {
           const chosen = remember(
             elements as unknown as Array<Record<string, unknown>>
@@ -415,29 +450,69 @@
             return;
           }
 
-          // A branch limit of one means a new choice replaces the old one, as
-          // it does in Craft 5.
           const current =
-            maintainHierarchy.value &&
-            props.control.props.branchLimit === 1 &&
-            replacing === null
-              ? []
-              : ids.value;
+            replacesBranch.value && replacing === null ? [] : ids.value;
 
-          void relate(
-            withinLimit(
-              replacing === null
-                ? [...current, ...chosen]
-                : current.flatMap((id) => (id === replacing ? chosen : [id]))
-            ),
-            presentation(chosen[0]!).siteId
+          const next = withinLimit(
+            replacing === null
+              ? [...current, ...chosen]
+              : current.flatMap((id) => (id === replacing ? chosen : [id]))
           );
+          chosenLast = next.filter((id) => chosen.includes(id)).pop();
+
+          void relate(next, presentation(chosen[0]!).siteId);
         },
       }
     );
 
     modal.on('close', () => modal.destroy());
     await modal.show();
+  }
+
+  // ───────────────────────────── search ─────────────────────────────
+
+  const search = ref<InstanceType<typeof RelationSearch> | null>(null);
+
+  /**
+   * The field, if it shows a search input. Previews show in modals, which the
+   * slideout a new entry opens in can't open over, so they don't create any.
+   */
+  const searchField = computed(() => {
+    const field = props.control.props;
+
+    return field.search
+      ? {
+          ...field,
+          search: field.search,
+          createSection: previewing ? null : field.createSection,
+        }
+      : null;
+  });
+
+  /**
+   * Relates an element the search input found or created. Focus stays in the
+   * search input, unless the field is now full and it's gone, in which case it
+   * moves to the element, as it does for a pasted one.
+   */
+  async function relateFound(element: ElementPresentation): Promise<void> {
+    if (ids.value.includes(element.id)) {
+      return;
+    }
+
+    presentations.set(element.id, element);
+    void relate(
+      withinLimit([...(replacesBranch.value ? [] : ids.value), element.id]),
+      element.siteId
+    );
+    await nextTick();
+
+    if (search.value?.isConnected()) {
+      search.value.focus();
+
+      return;
+    }
+
+    elementFocusTarget(dropZone.value, element.id)?.focus();
   }
 
   // ───────────────────────────── pasting ─────────────────────────────
@@ -697,6 +772,14 @@
         >
           {{ control.props.selectionLabel }}
         </craft-button>
+
+        <RelationSearch
+          v-if="searchField"
+          ref="search"
+          :field="searchField"
+          :exclude-ids="[...ids, ...unrelatable]"
+          @select="relateFound"
+        />
 
         <AssetUploadButton
           v-if="control.props.canUpload !== undefined"

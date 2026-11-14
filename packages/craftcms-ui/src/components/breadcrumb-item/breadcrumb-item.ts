@@ -70,9 +70,47 @@ export default class CraftBreadcrumbItem extends LitElement {
       /* With the crumb's gap, its margin puts as much space before it as the
          list's gap puts after it (see craft-breadcrumbs), centering it. */
       slot[name='separator']::slotted(*) {
-        color: var(--c-text-quiet);
+        color: var(--color-slate-300);
+        font-size: var(--c-text-base);
+        font-weight: var(--font-weight-light);
         margin-block: 0;
         margin-inline: var(--c-spacing-sm) 0;
+      }
+
+      slot[name='separator']::slotted([data-default]) {
+        --_chevron-stroke: 1px;
+        --_chevron-angle: 30deg;
+        --_chevron-reach: calc(12rem / 16 * tan(var(--_chevron-angle)));
+        --_chevron-arm: calc(12rem / 16 / cos(var(--_chevron-angle)));
+        position: relative;
+        display: inline-block;
+        inline-size: calc(var(--_chevron-reach) + var(--_chevron-stroke));
+        block-size: calc(24rem / 16);
+        color: var(--c-color-neutral-border-quiet);
+        font-size: 0;
+      }
+
+      slot[name='separator']::slotted([data-default])::before,
+      slot[name='separator']::slotted([data-default])::after {
+        content: '';
+        position: absolute;
+        inset-inline-start: calc(var(--_chevron-reach) / 2);
+        block-size: var(--_chevron-arm);
+        border-inline-start: var(--_chevron-stroke) solid currentColor;
+      }
+
+      slot[name='separator']::slotted([data-default])::before {
+        inset-block-start: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+        rotate: calc(var(--_chevron-angle) * -1);
+      }
+
+      slot[name='separator']::slotted([data-default])::after {
+        inset-block-end: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+        rotate: var(--_chevron-angle);
+      }
+
+      :host(:dir(rtl)) slot[name='separator']::slotted([data-default]) {
+        scale: -1 1;
       }
     `,
   ];

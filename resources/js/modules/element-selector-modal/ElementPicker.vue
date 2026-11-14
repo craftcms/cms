@@ -4,7 +4,7 @@
   import ElementSources from '@/modules/elements/ElementSources.vue';
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
-  import type {SourceItem} from '@/modules/elements/types/sources';
+  import type {Source, SourceItem} from '@/modules/elements/types/sources';
   import {
     isModifiedClick,
     useModalElementIndex,
@@ -29,6 +29,10 @@
     (event: 'choose', elements: SelectedElement[]): void;
     /** The source being viewed, so the chrome can act on the current folder. */
     (event: 'source-change', source: SourceItem | null): void;
+    /** Every source the index offers, so the chrome knows what it can create in. */
+    (event: 'sources-change', sources: Source[]): void;
+    /** The site being viewed, which is where anything created goes. */
+    (event: 'site-change', siteId: number | null): void;
     /** The trail from the volume root to the folder on screen. */
     (event: 'folder-path-change', path: FolderCrumb[]): void;
   }>();
@@ -82,6 +86,18 @@
   watch(
     () => elementIndex.source,
     (source) => emit('source-change', source ?? null),
+    {immediate: true}
+  );
+
+  watch(
+    () => elementIndex.sources,
+    (sources) => emit('sources-change', sources),
+    {immediate: true}
+  );
+
+  watch(
+    () => elementIndex.siteId,
+    (siteId) => emit('site-change', siteId ?? null),
     {immediate: true}
   );
 
@@ -202,6 +218,7 @@
     // would on a page; without this, it falls back to its narrowest layout.
     container: cp-content-view / inline-size;
     background: var(--c-surface-overlay);
+    --structure-indent-step: var(--c-size-control-sm);
 
     // Grid items don't shrink below their content by default, so a wide table
     // widens the column and a long one grows the row — pushing the pane out of
@@ -214,13 +231,6 @@
     // the pane aren't clipped.
     display: grid;
     overflow: hidden;
-  }
-
-  // Even on both sides of each separator, matching the header's breadcrumbs:
-  // the crumb's own gap already sits before it, so the end margin makes up for
-  // it.
-  .folder-breadcrumbs :deep(craft-breadcrumb-item > [slot='separator']) {
-    margin-inline: var(--c-spacing-sm) var(--c-spacing-md);
   }
 
   // A folder listing has no columns besides the folder's own, so it takes the

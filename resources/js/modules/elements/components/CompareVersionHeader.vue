@@ -267,6 +267,7 @@
   .compare-version-header craft-button::part(label) {
     overflow: hidden;
     text-overflow: ellipsis;
+    unicode-bidi: plaintext;
   }
 
   .compare-version-header__label {
@@ -277,6 +278,7 @@
     font-weight: var(--font-weight-medium);
     text-overflow: ellipsis;
     white-space: nowrap;
+    unicode-bidi: plaintext;
   }
 
   /* The suffix stacks what's in it; the badge goes beside the chevron. */

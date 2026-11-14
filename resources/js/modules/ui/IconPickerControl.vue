@@ -21,7 +21,7 @@
   <IconPicker
     :model-value="value ?? ''"
     :name="editable ? inputName(control.path) : ''"
-    :error="invalid ? 'error' : undefined"
+    :invalid="invalid"
     :free-only="control.props.freeOnly"
     :sets="control.props.sets"
     :disabled="!editable"

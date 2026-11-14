@@ -264,3 +264,24 @@ export function withNavCrumbMenus(
     return level ? {...crumb, items: navItemActions(level)} : crumb;
   });
 }
+
+/**
+ * Drops a trail that's nothing but the page you're on: a lone crumb with no
+ * switcher repeats the page's heading and goes nowhere.
+ *
+ * @param url The page being shown.
+ */
+export function withoutLoneCurrentCrumb(
+  crumbs: Array<BreadcrumbItem>,
+  url: string
+): Array<BreadcrumbItem> {
+  const [only] = crumbs;
+
+  if (crumbs.length !== 1 || !only || only.items?.length || only.html) {
+    return crumbs;
+  }
+
+  const href = only.href ?? only.url ?? null;
+
+  return href === null || samePath(href, url) ? [] : crumbs;
+}

@@ -1,8 +1,10 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import type CraftButton from '../button/button.js';
+import type CraftSelectRich from '../select-rich/select-rich.js';
 import type CraftPopover from './popover.js';
 import '../button/button.js';
+import '../select-rich/select-rich.js';
 import './popover.js';
 
 beforeEach(() => {
@@ -155,6 +157,40 @@ describe('when focus moves', () => {
 
     expect(popover.open).toBe(true);
   });
+});
+
+it('leaves a click outside a select’s open list to close only the list', async () => {
+  document.body.innerHTML = `
+    <main tabindex="-1"><p>Outside</p></main>
+    <craft-popover>
+      <craft-button slot="invoker" type="button">Open</craft-button>
+      <div slot="content">
+        <craft-select-rich label="Status">
+          <craft-option .value="all" selected>All</craft-option>
+          <craft-option .value="live">Live</craft-option>
+        </craft-select-rich>
+      </div>
+    </craft-popover>
+  `;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const select = popover.querySelector<CraftSelectRich>('craft-select-rich')!;
+  await popover.updateComplete;
+  popover.open = true;
+  await popover.updateComplete;
+  page.getByRole('combobox', {name: 'Status'}).element().focus();
+  select.open = true;
+  await select.updateComplete;
+
+  await userEvent.click(page.getByText('Outside'));
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(select.open).toBe(false);
+  expect(popover.open).toBe(true);
+
+  await userEvent.click(page.getByText('Outside'));
+  await new Promise((resolve) => setTimeout(resolve));
+
+  expect(popover.open).toBe(false);
 });
 
 it('returns focus to the invoker, and stays closed, when Enter inside it calls hide()', async () => {

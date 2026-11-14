@@ -24,9 +24,15 @@ export default class CraftSelectInvoker extends LitElement {
   /** Whether the select is disabled. */
   @property({type: Boolean, reflect: true}) disabled = false;
 
+  /**
+   * Draws the field like a plain button: no border or fill until it's
+   * hovered, no chevron, and only as wide as it is tall.
+   */
+  @property({type: Boolean, reflect: true}) plain = false;
+
   override render() {
     return html`<div id="content-wrapper"><slot></slot></div>
-      ${this.singleOption
+      ${this.singleOption || this.plain
         ? ''
         : html`<craft-icon
             class="indicator"

@@ -6,11 +6,9 @@ export default css`
     --_padding-inline: var(--c-spacing-md);
     /* The icon column of a row with a prefix. */
     --_prefix-size: calc(24rem / 16);
-    /* Enough to center the icon column in a touch target, border included. */
+    /* Enough to center the icon column in a row, border included. */
     --_padding-block: calc(
-      (var(--c-size-touch-target) - var(--_prefix-size) - var(--_rail-border) *
-          2) /
-        2
+      (var(--_rail-size) - var(--_prefix-size) - var(--_rail-border) * 2) / 2
     );
     /* The space between the icon column and the label (tighter than the row's gap). */
     --_prefix-gap: var(--c-spacing-sm);
@@ -19,7 +17,12 @@ export default css`
     /* The square a collapsed row occupies, border included. The row draws a
        transparent border to keep room for its focus state. */
     --_rail-border: 1px;
-    --_rail-size: var(--c-size-touch-target);
+    --_rail-size: var(--c-nav-item-size, var(--c-size-touch-target));
+    /* A row with an icon, less its border, so the icon sits where a collapsed
+       row centers it. */
+    --_prefixed-padding-inline: calc(
+      (var(--_rail-size) - var(--_prefix-size)) / 2 - var(--_rail-border)
+    );
 
     border-radius: var(--c-radius-md);
   }
@@ -37,9 +40,9 @@ export default css`
     border: 1px solid transparent;
     border-radius: var(--c-radius-md);
     position: relative;
-    /* A full touch target whether or not there's an icon to fill one. */
+    /* A full row whether or not there's an icon to fill one. */
     box-sizing: border-box;
-    min-block-size: var(--c-size-touch-target);
+    min-block-size: var(--_rail-size);
 
     /*
      * Expanded, the focusable element is the label inside the row, so the ring
@@ -105,7 +108,7 @@ export default css`
   }
 
   .nav-item--prefixed {
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--_prefixed-padding-inline);
     grid-template-columns: var(--_prefix-size) 1fr auto;
 
     /* Pull the label back across the row's gap, to the tighter prefix gap. */
@@ -190,9 +193,11 @@ export default css`
     --c-color-neutral-on-normal: var(--c-color-accent-on-normal);
   }
 
-  /* Not on the page you're on: its selected fill is the state to show. */
+  /* Not on the page you're on: its selected fill is the state to show. A row
+     with its flyout open looks hovered while the pointer is in the flyout. */
   :host(:not([current], [appearance='tabs']))
-    .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)) {
+    .nav-item:not(.nav-item--static):hover:not(:has(craft-button:hover)),
+  :host(:not([current], [appearance='tabs'])) .nav-item--flyout-open {
     background-color: color-mix(in srgb, currentColor, transparent 95%);
   }
 
@@ -213,7 +218,8 @@ export default css`
 
   /* A selected or hovered row's icon takes the row's own color. */
   :host([active]) .nav-item__prefix,
-  .nav-item:not(.nav-item--static):hover .nav-item__prefix {
+  .nav-item:not(.nav-item--static):hover .nav-item__prefix,
+  .nav-item--flyout-open .nav-item__prefix {
     color: inherit;
   }
 
@@ -245,8 +251,9 @@ export default css`
    */
   :host(:not([group])) .subnav {
     --_subnav-indent: calc(
-      var(--c-spacing-sm) + var(--_prefix-size) + var(--_prefix-gap) -
-        var(--_subnav-rule) - var(--c-spacing-sm) - var(--_padding-inline)
+      var(--_prefixed-padding-inline) + var(--_prefix-size) +
+        var(--_prefix-gap) - var(--_subnav-rule) - var(--c-spacing-sm) -
+        var(--_padding-inline)
     );
     position: relative;
     margin-block-start: var(--c-spacing-sm);

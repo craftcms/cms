@@ -1,5 +1,6 @@
-import {computed, type MaybeRefOrGetter, toValue} from 'vue';
+import {computed, type ComputedRef, type MaybeRefOrGetter, toValue} from 'vue';
 import {
+  type Selectable,
   type SelectableId,
   useSelectable,
   type SelectableOptions,
@@ -31,6 +32,21 @@ export interface ElementListOptions<Id extends SelectableId = SelectableId> {
   store?: SelectableOptions<Id>['store'];
 }
 
+/** What {@link useElementList} returns. */
+export interface ElementListState<Id extends SelectableId = SelectableId> {
+  readonly viewMode: ComputedRef<ElementListViewMode>;
+  /** `cards` or `cards-grid`. */
+  readonly isCards: ComputedRef<boolean>;
+  readonly isCardGrid: ComputedRef<boolean>;
+  readonly isThumbs: ComputedRef<boolean>;
+  /** `list` or `list-inline`, which both draw chips. */
+  readonly isList: ComputedRef<boolean>;
+  readonly isInline: ComputedRef<boolean>;
+  readonly selectable: ComputedRef<boolean>;
+  readonly readOnly: ComputedRef<boolean>;
+  readonly selection: Selectable<Id>;
+}
+
 /**
  * Everything a list of elements needs regardless of how it's drawn: the active
  * view mode, the flags that pick a body for it, and a selection.
@@ -41,7 +57,7 @@ export interface ElementListOptions<Id extends SelectableId = SelectableId> {
  */
 export function useElementList<Id extends SelectableId = SelectableId>(
   options: ElementListOptions<Id>
-) {
+): ElementListState<Id> {
   const viewMode = computed(() => toValue(options.viewMode));
   const selectable = computed(() => toValue(options.selectable ?? true));
   const readOnly = computed(() => toValue(options.readOnly ?? false));
@@ -79,8 +95,3 @@ export function useElementList<Id extends SelectableId = SelectableId>(
     selection,
   };
 }
-
-/** The object {@link useElementList} returns. */
-export type ElementList<Id extends SelectableId = SelectableId> = ReturnType<
-  typeof useElementList<Id>
->;

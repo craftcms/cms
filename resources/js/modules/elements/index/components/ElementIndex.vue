@@ -508,7 +508,7 @@
             !isInlineEditing &&
             !pending &&
             !loading &&
-            structure !== undefined &&
+            elementIndex.structure != null &&
             mode === 'structure'
           "
           :is-row-collapsed="structureView.isCollapsed"
