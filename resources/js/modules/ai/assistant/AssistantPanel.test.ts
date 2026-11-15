@@ -216,7 +216,7 @@ it('moves the open chat into the latest editor’s screen, and back once it clos
   expect(chatElement).not.toBeNull();
 
   editorOpen.value = true;
-  const unregister = registerAssistantScreen(() => editorScreen);
+  const unregister = registerAssistantScreen(() => editorScreen, true);
   await settle();
 
   expect(document.querySelector('.editor .chat')).toBe(chatElement);
@@ -300,6 +300,22 @@ it.each([
     expect(useAssistantPanel().isOpen.value).toBe(true);
   }
 );
+
+it('leaves the chat unopened once another panel is chosen while it’s folded for lack of room', async () => {
+  pagePanel.value = true;
+  await mount();
+  useAssistantPanel().show();
+  await settle();
+
+  screenPanels.setOverlaid(true);
+  await settle();
+  expect(useAssistantPanel().opened.value).toBe(true);
+
+  screenPanels.open('info');
+  await settle();
+
+  expect(useAssistantPanel().opened.value).toBe(false);
+});
 
 it('mounts the chat the first time it opens, and keeps it once folded', async () => {
   pagePanel.value = true;

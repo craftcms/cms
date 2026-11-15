@@ -17,6 +17,7 @@
     watch,
   } from 'vue';
   import ScreenPanel from '@/common/components/ScreenPanel.vue';
+  import type {ScreenPanels} from '@/common/composables/screenPanels';
   import type AssistantChatComponent from './AssistantChat.vue';
   import AssistantConversationMenu from './AssistantConversationMenu.vue';
   import AssistantHistory from './AssistantHistory.vue';
@@ -94,33 +95,37 @@
   /** Whether the chat's panel is in the column. */
   const showsPanel = computed(() => panel.opened.value || hasPagePanels.value);
 
+  /** Whether a screen has the chat open, or folded away for lack of room. */
+  function holdsChat(panels: ScreenPanels): boolean {
+    return (
+      panels.openPanelId.value === ASSISTANT_PANEL_ID ||
+      panels.panelClosedByShell.value === ASSISTANT_PANEL_ID
+    );
+  }
+
   // Opening the chat in any way, such as from a slideout's rail, leaves it
   // opened, so it opens again where it goes next. Closing it, or opening
-  // another panel instead, leaves it unopened. Moving to another screen
-  // doesn't change it, and neither does the screen folding its column, as
-  // it does for lack of room.
+  // another panel instead, even while the screen has it folded for lack of
+  // room, leaves it unopened. Moving to another screen doesn't change it,
+  // and neither does a new page's panels arriving.
   watch(
     () =>
       [
         screen.value,
-        screen.value.openPanelId.value,
+        holdsChat(screen.value),
         screen.value.pageGeneration.value,
       ] as const,
     (
-      [current, openPanelId, generation],
-      [previousScreen, previous, previousGeneration]
+      [current, holds, generation],
+      [previousScreen, held, previousGeneration]
     ) => {
       if (current !== previousScreen) {
         return;
       }
 
-      if (openPanelId === ASSISTANT_PANEL_ID) {
+      if (holds) {
         panel.opened.value = true;
-      } else if (
-        previous === ASSISTANT_PANEL_ID &&
-        generation === previousGeneration &&
-        current.panelClosedByShell.value !== ASSISTANT_PANEL_ID
-      ) {
+      } else if (held && generation === previousGeneration) {
         panel.opened.value = false;
       }
     }

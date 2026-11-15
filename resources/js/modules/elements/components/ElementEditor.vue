@@ -388,10 +388,12 @@
   // as a slideout, and in Live Preview's pane while it holds the content.
   const screenPanels = useScreenPanels();
   onBeforeUnmount(
-    registerAssistantScreen(() =>
-      contentInPreview.value
-        ? (livePreviewPane.value?.panels ?? null)
-        : screenPanels
+    registerAssistantScreen(
+      () =>
+        contentInPreview.value
+          ? (livePreviewPane.value?.panels ?? null)
+          : screenPanels,
+      Boolean(assistantParams)
     )
   );
   // The content's height, kept while it's away so the page doesn't collapse
