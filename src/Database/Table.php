@@ -23,6 +23,8 @@ readonly class Table
 
     public const string AGENT_SKILLS = 'agent_skills';
 
+    public const string AGENT_UPLOADS = 'agent_uploads';
+
     public const string ASSETINDEXDATA = 'assetindexdata';
 
     public const string ASSETINDEXINGSESSIONS = 'assetindexingsessions';

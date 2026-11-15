@@ -64,6 +64,17 @@
     openElementRequest,
   } from './element-context';
   import './skill-context';
+  import {
+    finishUploads,
+    forgetUploads,
+    isUploading,
+    loadUploadThumbnails,
+    removeUpload,
+    UPLOAD_CONTEXT_TYPE,
+    uploadFiles,
+    uploadStatus,
+    uploadThumbnail,
+  } from './upload-context';
 
   const props = defineProps<{
     /** The conversation’s id, which the server stores it under. */
@@ -440,6 +451,16 @@
           : t('Couldn’t find the field'),
       running: () => t('Showing a field…'),
     },
+    view_editor_image: {
+      icon: 'eye',
+      done: () => t('Looked at the image'),
+      running: () => t('Looking at the image…'),
+    },
+    view_uploads: {
+      icon: 'eye',
+      done: () => t('Looked at your files'),
+      running: () => t('Looking at your files…'),
+    },
     ask_user: {
       icon: 'message-question',
       done: () => t('Asked a question'),
@@ -734,6 +755,11 @@
       return;
     }
 
+    // Files go with the message once they’re uploaded.
+    if (isUploading()) {
+      await finishUploads();
+    }
+
     if (message === draft.value.trim()) {
       draft.value = '';
       mentions.value = [];
@@ -746,7 +772,87 @@
     status.value = '';
     historyScroll.pin();
     sent.value = context.takeForMessage();
+    forgetUploads();
     await sendMessage(withMessageContext(message, sent.value));
+  }
+
+  /** The thumbnail a message’s chip shows for an item it was sent with, such as an uploaded image. */
+  function messageThumbnail(item: AssistantMessageContext): string | null {
+    return item.type === UPLOAD_CONTEXT_TYPE
+      ? uploadThumbnail(item.data?.assetId)
+      : null;
+  }
+
+  // A conversation shown again gets its uploaded images’ thumbnails from the server.
+  watch(
+    () =>
+      entries.value.some(
+        (entry) =>
+          entry.kind === 'prompt' &&
+          entry.context.some(({type}) => type === UPLOAD_CONTEXT_TYPE)
+      ),
+    (hasUploads) => {
+      if (hasUploads) {
+        void loadUploadThumbnails(props.threadId);
+      }
+    },
+    {immediate: true}
+  );
+
+  /** Removes an item from the context, deleting it if it’s a file the user uploaded. */
+  function removeContextItem(item: AssistantContextItem): void {
+    if (item.type === UPLOAD_CONTEXT_TYPE) {
+      void removeUpload(item.ref);
+    } else {
+      assistantApi.removeContext(item.ref);
+    }
+  }
+
+  /** How many elements files are being dragged over, as entering a child leaves its parent. */
+  const dragDepth = shallowRef(0);
+
+  function hasFiles(event: DragEvent): boolean {
+    return event.dataTransfer?.types.includes('Files') ?? false;
+  }
+
+  function onDragEnter(event: DragEvent): void {
+    if (hasFiles(event)) {
+      event.preventDefault();
+      dragDepth.value++;
+    }
+  }
+
+  function onDragOver(event: DragEvent): void {
+    if (hasFiles(event)) {
+      event.preventDefault();
+      event.dataTransfer!.dropEffect = 'copy';
+    }
+  }
+
+  function onDragLeave(event: DragEvent): void {
+    if (hasFiles(event)) {
+      dragDepth.value = Math.max(0, dragDepth.value - 1);
+    }
+  }
+
+  function onDrop(event: DragEvent): void {
+    if (!hasFiles(event)) {
+      return;
+    }
+
+    event.preventDefault();
+    dragDepth.value = 0;
+    uploadFiles([...(event.dataTransfer?.files ?? [])]);
+  }
+
+  /** Uploads files pasted into the message box, rather than letting it paste their names. */
+  function onPaste(event: ClipboardEvent): void {
+    const files = [...(event.clipboardData?.files ?? [])];
+
+    if (files.length) {
+      event.preventDefault();
+      uploadFiles(files);
+    }
   }
 
   /** The message box’s own control, which gets focus when the chat opens. */
@@ -766,8 +872,15 @@
 </script>
 
 <template>
-  <div class="assistant-chat">
+  <div
+    class="assistant-chat"
+    @dragenter="onDragEnter"
+    @dragover="onDragOver"
+    @dragleave="onDragLeave"
+    @drop="onDrop"
+  >
     <div role="status" class="sr-only">{{ status }}</div>
+    <div role="status" class="sr-only">{{ uploadStatus }}</div>
 
     <div ref="history" class="assistant-chat__history">
       <ol
@@ -790,11 +903,23 @@
               >
                 <li v-for="(item, index) in entry.context" :key="index">
                   <craft-chip
-                    :icon="item.status ? undefined : item.icon"
+                    :icon="
+                      item.status || messageThumbnail(item)
+                        ? undefined
+                        : item.icon
+                    "
                     :show-status="!!item.status || undefined"
+                    :show-thumb="!!messageThumbnail(item) || undefined"
                     size="xsmall"
                     rounded
                   >
+                    <img
+                      v-if="messageThumbnail(item)"
+                      slot="thumbnail"
+                      class="assistant-chat__thumb"
+                      :src="messageThumbnail(item)!"
+                      alt=""
+                    />
                     <AssistantChipStatus
                       v-if="item.status"
                       :status="item.status"
@@ -971,7 +1096,16 @@
         }}</craft-callout>
       </div>
 
-      <div ref="card" class="assistant-chat__card" @click="onCardClick">
+      <div
+        ref="card"
+        class="assistant-chat__card"
+        :class="{'assistant-chat__card--drop': dragDepth > 0}"
+        @click="onCardClick"
+        @paste="onPaste"
+      >
+        <p v-if="dragDepth > 0" class="assistant-chat__drop-hint">
+          {{ t('Drop files to add them to your message') }}
+        </p>
         <AssistantMentionHighlights
           v-if="messageBoxInput && card"
           :target="messageBoxInput"
@@ -986,11 +1120,19 @@
         >
           <li v-for="item in context.items.value" :key="item.ref">
             <craft-chip
-              :icon="item.status() ? undefined : item.icon"
+              :icon="item.status() || item.thumbnail() ? undefined : item.icon"
               :show-status="!!item.status() || undefined"
+              :show-thumb="!!item.thumbnail() || undefined"
               size="xsmall"
               rounded
             >
+              <img
+                v-if="item.thumbnail()"
+                slot="thumbnail"
+                class="assistant-chat__thumb"
+                :src="item.thumbnail()!"
+                alt=""
+              />
               <AssistantChipStatus
                 v-if="item.status()"
                 :status="item.status()!"
@@ -1009,7 +1151,7 @@
                 size="xsmall"
                 variant="plain"
                 flush="inline-start"
-                @click="assistantApi.removeContext(item.ref)"
+                @click="removeContextItem(item)"
               >
                 <craft-icon
                   name="xmark"
@@ -1284,6 +1426,22 @@
     border-radius: var(--c-radius-lg);
     background-color: var(--c-input-fill, var(--c-form-control-fill));
     box-shadow: var(--c-input-shadow, 0 0 transparent);
+  }
+
+  .assistant-chat__thumb {
+    display: block;
+    inline-size: var(--c-thumbnail-size, 1.5em);
+    block-size: var(--c-thumbnail-size, 1.5em);
+    object-fit: cover;
+  }
+
+  .assistant-chat__card--drop {
+    outline: 2px dashed currentColor;
+    outline-offset: -2px;
+  }
+
+  .assistant-chat__drop-hint {
+    margin: 0;
   }
 
   .assistant-chat__card {

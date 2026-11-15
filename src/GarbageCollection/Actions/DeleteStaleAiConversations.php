@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Ai\Assistant\AssistantAgent;
+use CraftCms\Cms\Ai\Assistant\Uploads\AssistantUploads;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
@@ -38,7 +39,13 @@ class DeleteStaleAiConversations extends GarbageCollectionAction
 
                     DB::table(Table::AGENT_CONVERSATION_MESSAGES)->whereIn('conversation_id', $ids)->delete();
                     DB::table(Table::AGENT_CONVERSATIONS)->whereIn('id', $ids)->delete();
+                    app(AssistantUploads::class)->deleteForConversations($ids->all());
                 }),
+        );
+
+        $this->components->task(
+            'deleting files uploaded to AI conversations that were never sent',
+            fn () => app(AssistantUploads::class)->deleteAbandoned(),
         );
     }
 }

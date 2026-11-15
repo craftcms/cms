@@ -13,26 +13,25 @@ use CraftCms\Cms\Ai\Assistant\Crafty;
 use CraftCms\Cms\Ai\Assistant\McpTools;
 use CraftCms\Cms\Ai\Assistant\MessageContext;
 use CraftCms\Cms\Ai\Assistant\Transcript;
+use CraftCms\Cms\Ai\Assistant\Uploads\AssistantUploadHandler;
+use CraftCms\Cms\Ai\Assistant\Uploads\AssistantUploads;
 use CraftCms\Cms\Ai\AssistantContextTypes;
-use CraftCms\Cms\Ai\Enums\Capability;
 use CraftCms\Cms\Ai\Exceptions\AiUnavailableException;
 use CraftCms\Cms\Ai\Jobs\NameConversation;
-use CraftCms\Cms\Ai\ModelImages;
 use CraftCms\Cms\Ai\Models\AgentSkill;
 use CraftCms\Cms\Ai\Skills\AgentSkills;
 use CraftCms\Cms\Ai\Tasks\Assistant;
-use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
+use CraftCms\Cms\Filesystem\Uploads;
+use CraftCms\Cms\Http\Requests\UploadRequest;
 use CraftCms\Cms\Mcp\Elements\ElementAdapterRegistry;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\User\Elements\User;
@@ -47,7 +46,6 @@ use Laravel\Ai\Contracts\ConversationStore;
 use Laravel\Ai\Contracts\VerifiesConversationOwnership;
 use Laravel\Ai\Exceptions\StreamErrorException;
 use Laravel\Ai\Models\Conversation;
-use Laravel\Ai\Models\ConversationMessage;
 use Mcp\Exception\ToolCallException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -72,6 +70,9 @@ readonly class AssistantController
      */
     private const int MENTION_LIMIT = 10;
 
+    /** The size of the thumbnails of uploaded images, in pixels, for chips at twice their size. */
+    private const int UPLOAD_THUMBNAIL_SIZE = 48;
+
     /**
      * The type of the context items for skills the user chose with `/`. Their skills go in the model’s instructions,
      * rather than being described as data, as context types’ items are.
@@ -91,7 +92,6 @@ readonly class AssistantController
         CraftcmsMcpTools $craftcmsTools,
         AssistantContextTypes $contextTypes,
         AgentSkills $skills,
-        ModelImages $modelImages,
     ): Response {
         $request->validate([
             'threadId' => ['required', 'uuid'],
@@ -138,12 +138,6 @@ readonly class AssistantController
 
         $items = [...$context, ...$earlier];
 
-        // The image of the asset open in the editor goes with the first message it’s open for, and stays in the
-        // conversation for later ones.
-        $image = $this->openImage($context, $user);
-        $imageSent = $image !== null && $this->hasImage($threadId, $image);
-        $attachImage = $image !== null && ! $imageSent && $chat->message() !== null;
-
         $agent = new AssistantAgent(
             $tools,
             $craftcmsTools,
@@ -152,11 +146,10 @@ readonly class AssistantController
             $this->site($context, $request->integer('forwardedProps.siteId') ?: null),
             $skills->all(),
             $this->chosenSkills($items, $skills),
-            $imageSent || $attachImage ? $image->title : null,
         );
 
         $response = Ai::task(Assistant::handle())
-            ->stream($agent->continue($threadId, as: $user), $chat, $attachImage ? [$modelImages->forAsset($image)] : [])
+            ->stream($agent->continue($threadId, as: $user), $chat)
             ->catch(fn (Throwable $exception) => $this->logProviderError($threadId, $exception));
 
         if ($firstMessage !== null) {
@@ -308,7 +301,7 @@ readonly class AssistantController
     /**
      * Deletes one of the user’s conversations, with its messages.
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request, AssistantUploads $uploads): JsonResponse
     {
         $request->validate(['threadId' => ['required', 'uuid']]);
 
@@ -319,7 +312,59 @@ readonly class AssistantController
             DB::table(Table::AGENT_CONVERSATIONS)->where('id', $threadId)->delete();
         });
 
+        $uploads->deleteForConversations([$threadId]);
+
         return new JsonResponse(['deleted' => true]);
+    }
+
+    /**
+     * Starts uploading a file to a conversation, which may not be stored yet. The file is transferred and saved as
+     * other uploads are, with {@see AssistantUploadHandler}, which saves it to the user’s temporary uploads folder.
+     */
+    public function upload(UploadRequest $request, Uploads $uploads): JsonResponse
+    {
+        $request->validate(['threadId' => ['required', 'uuid']]);
+        $data = $request->validated();
+
+        $session = $uploads->start(
+            $request,
+            AssistantUploadHandler::class,
+            $data['filename'],
+            (int) $data['size'],
+            ['threadId' => $request->string('threadId')->value()],
+        );
+
+        return new JsonResponse($session->toArray(), 201);
+    }
+
+    /**
+     * Returns thumbnails of the images the user uploaded to a conversation, keyed by their asset IDs, for the chat to
+     * show on their chips.
+     */
+    public function uploadThumbnails(Request $request, AssistantUploads $uploads): JsonResponse
+    {
+        $request->validate(['threadId' => ['required', 'uuid']]);
+
+        $threadId = $this->ownThread($request);
+
+        return new JsonResponse([
+            'thumbnails' => (object) $uploads->thumbnails($threadId, $this->user($request), self::UPLOAD_THUMBNAIL_SIZE),
+        ]);
+    }
+
+    /**
+     * Deletes a file the user uploaded to a conversation but removed before sending it.
+     */
+    public function removeUpload(Request $request, AssistantUploads $uploads): JsonResponse
+    {
+        $request->validate([
+            'threadId' => ['required', 'uuid'],
+            'assetId' => ['required', 'integer'],
+        ]);
+
+        $uploads->remove($request->string('threadId')->value(), $request->integer('assetId'), $this->user($request));
+
+        return new JsonResponse(['removed' => true]);
     }
 
     /**
@@ -431,45 +476,6 @@ readonly class AssistantController
             Conversation::participantType($user),
             Conversation::participantKey($user),
         );
-    }
-
-    /**
-     * Returns the image asset open in the user’s editor, if they can view it, and the assistant’s model can see images.
-     *
-     * @param  array<mixed>  $context
-     */
-    private function openImage(array $context, User $user): ?Asset
-    {
-        $item = array_find($context, static fn (mixed $item): bool => is_array($item)
-            && ($item['type'] ?? null) === ElementContextType::handle()
-            && ($item['open'] ?? false) === true
-            && ($item['elementType'] ?? null) === Asset::class
-            && is_int($item['elementId'] ?? null));
-
-        if ($item === null || ! Ai::supports(Assistant::handle(), Capability::Vision)) {
-            return null;
-        }
-
-        $asset = Asset::find()
-            ->id($item['elementId'])
-            ->siteId(is_int($item['siteId'] ?? null) ? $item['siteId'] : null)
-            ->status(null)
-            ->one();
-
-        return $asset instanceof Asset && $asset->kind === FileKind::Image->value && $user->can('view', $asset) ? $asset : null;
-    }
-
-    /**
-     * Returns whether a message in a conversation was sent with an asset’s image, as its file is now.
-     */
-    private function hasImage(string $conversationId, Asset $asset): bool
-    {
-        // Matched in the database, as the attachments hold the images themselves.
-        return ConversationMessage::query()
-            ->where('conversation_id', $conversationId)
-            ->where('role', 'user')
-            ->where('attachments', 'like', '%"name":'.Json::encode(ModelImages::name($asset)).'%')
-            ->exists();
     }
 
     /**

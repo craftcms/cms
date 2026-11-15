@@ -3760,4 +3760,12 @@ return [
     '“{name}” value copied.' => '“{name}” value copied.',
     'Deprecated' => 'Deprecated',
     '“{{entry}}” is approved' => '“{{entry}}” is approved',
+    'Uploading' => 'Uploading',
+    'Uploaded {name}.' => 'Uploaded {name}.',
+    'Uploading {name}…' => 'Uploading {name}…',
+    'Drop files to add them to your message' => 'Drop files to add them to your message',
+    'Looked at your files' => 'Looked at your files',
+    'Looking at your files…' => 'Looking at your files…',
+    'Looked at the image' => 'Looked at the image',
+    'Looking at the image…' => 'Looking at the image…',
 ];

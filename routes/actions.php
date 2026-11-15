@@ -302,6 +302,9 @@ Route::prefix($routes->cpActionTriggerRoutePrefix())->middleware(['craft.cp'])->
             Route::post('ai/assistant/start', [AssistantController::class, 'start']);
             Route::post('ai/assistant/rename', [AssistantController::class, 'rename']);
             Route::post('ai/assistant/delete', [AssistantController::class, 'destroy']);
+            Route::post('ai/assistant/uploads', [AssistantController::class, 'upload'])->middleware('throttle:60,1');
+            Route::get('ai/assistant/uploads/thumbnails', [AssistantController::class, 'uploadThumbnails']);
+            Route::post('ai/assistant/uploads/remove', [AssistantController::class, 'removeUpload']);
         });
 
         // Element Indexes

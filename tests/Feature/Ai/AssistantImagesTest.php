@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Ai\Assistant\AssistantAgent;
+use CraftCms\Cms\Ai\Assistant\Content\ViewEditorImage;
 use CraftCms\Cms\Ai\CapabilityChecks;
 use CraftCms\Cms\Ai\Data\CapabilityCheck;
 use CraftCms\Cms\Ai\Data\ResolvedProvider;
@@ -14,12 +15,15 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
+use Laravel\Ai\Files\StoredImage;
 use Laravel\Ai\Prompts\AgentPrompt;
+use Laravel\Ai\Tools\Request as ToolRequest;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -87,35 +91,49 @@ function chatWithOpenAsset(Asset $asset, string $threadId, string $message): Tes
     ]);
 }
 
-it('shows a model with vision the image of the asset open in the editor, scaled down, once per conversation', function () {
-    withVision(true);
-    AssistantAgent::fake(['Done.', 'Done again.']);
-    $threadId = (string) Str::uuid();
+/**
+ * Sends a message with an asset open in the editor, and returns the view_editor_image tool the model was offered, if
+ * it was.
+ */
+function viewEditorImageTool(Asset $asset): ?ViewEditorImage
+{
+    AssistantAgent::fake(['Done.']);
+    chatWithOpenAsset($asset, (string) Str::uuid(), 'Write alt text')->assertOk()->streamedContent();
 
-    chatWithOpenAsset($this->asset, $threadId, 'Write alt text')->assertOk()->streamedContent();
-    chatWithOpenAsset($this->asset, $threadId, 'Make it shorter')->assertOk()->streamedContent();
+    $tool = null;
 
-    AssistantAgent::assertPrompted(function (AgentPrompt $prompt): bool {
-        if ($prompt->prompt !== 'Write alt text' || $prompt->attachments->count() !== 1) {
-            return false;
+    AssistantAgent::assertPrompted(function (AgentPrompt $prompt) use (&$tool): bool {
+        foreach ($prompt->agent->tools() as $candidate) {
+            if ($candidate instanceof ViewEditorImage) {
+                $tool = $candidate;
+            }
         }
 
-        $image = $prompt->attachments->first();
-
-        return $image->name() === ModelImages::name($this->asset)
-            && array_slice(getimagesizefromstring($image->content()), 0, 2) === [ModelImages::MAX_SIZE, ModelImages::MAX_SIZE / 2];
+        return $prompt->attachments->isEmpty();
     });
-    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => $prompt->prompt === 'Make it shorter'
-        && $prompt->attachments->isEmpty()
-        && str_contains($prompt->agent->instructions(), "The image of “{$this->asset->title}”"));
+
+    return $tool;
+}
+
+it('shows a model with vision the image of the asset open in the editor when it asks, scaled down and kept by reference', function () {
+    withVision(true);
+    config()->set('filesystems.disks.temp-assets', ['driver' => 'local', 'root' => storage_path('framework/testing/temp-assets')]);
+    Storage::fake('temp-assets');
+    Cms::config()->tempAssetUploadDisk = 'temp-assets';
+
+    $response = viewEditorImageTool($this->asset)->handle(new ToolRequest([]));
+    $image = $response->attachments[0];
+
+    expect($image)->toBeInstanceOf(StoredImage::class)
+        ->and($image->disk)->toBe('temp-assets')
+        ->and($image->name())->toBe('puck.jpg')
+        ->and(array_slice(getimagesizefromstring(Storage::disk('temp-assets')->get($image->path)), 0, 2))->toBe([ModelImages::MAX_SIZE, ModelImages::MAX_SIZE / 2]);
+    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => str_contains($prompt->agent->instructions(), 'call view_editor_image'));
 });
 
-it('doesn’t send images to models without vision', function () {
+it('doesn’t offer images to models without vision', function () {
     withVision(false);
-    AssistantAgent::fake(['Done.']);
 
-    chatWithOpenAsset($this->asset, (string) Str::uuid(), 'Write alt text')->assertOk()->streamedContent();
-
-    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => $prompt->attachments->isEmpty()
-        && ! str_contains($prompt->agent->instructions(), 'The image of'));
+    expect(viewEditorImageTool($this->asset))->toBeNull();
+    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => ! str_contains($prompt->agent->instructions(), 'view_editor_image'));
 });

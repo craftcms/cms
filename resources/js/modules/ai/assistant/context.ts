@@ -64,6 +64,8 @@ export interface AssistantContextItem {
   /** Shown on its chip. */
   label: string;
   icon?: string;
+  /** The URL of a thumbnail its chip shows in place of its icon, if it has one. Reactive. */
+  thumbnail: () => string | null;
   /** What’s sent with each message for the item, read as it’s sent. */
   data: () => Record<string, unknown>;
   /** What the message keeps of the item, for later messages, read as it’s sent. */
@@ -82,6 +84,8 @@ export interface AssistantContextInput {
   key?: string;
   label: string;
   icon?: string;
+  /** The URL of a thumbnail its chip shows in place of its icon, such as a preview of an image, as a value or a reactive function. */
+  thumbnail?: string | (() => string | null);
   /** What the context type gets, as an object, or a function that returns it when a message is sent. */
   data: Record<string, unknown> | (() => Record<string, unknown>);
   /**
@@ -194,6 +198,10 @@ export const useAssistantContext = createGlobalState(() => {
         key,
         label: input.label,
         icon: input.icon,
+        thumbnail:
+          typeof input.thumbnail === 'function'
+            ? input.thumbnail
+            : () => (input.thumbnail as string | undefined) ?? null,
         data: typeof data === 'function' ? data : () => data,
         reference: input.reference ?? (() => ({})),
         status:
