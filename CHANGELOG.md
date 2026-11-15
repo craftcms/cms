@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs, so the field layout and card appearance no longer sit below the general settings. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
+- Ask AI now takes file uploads: drop files on the chat, paste them into its message box, or choose “Upload files” from the “Add context” menu. Uploads are saved as temporary assets, which the assistant can add to Assets fields and other places, and are deleted with the chat unless they’ve been moved or used. The assistant looks at images, PDFs, and text files only when a request needs it. ([#20719](https://github.com/craftcms/cms/pull/20719))
+- Ask AI now looks at the image of an asset open in the editor only when a request needs it, rather than sending it with the chat’s first message. ([#20719](https://github.com/craftcms/cms/pull/20719))
 - Added `CraftCms\Cms\Ui\Nodes\Outlet` and `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`. ([#20658](https://github.com/craftcms/cms/pull/20658))
 - Removed the bundled Composer executable. Package installation, updates, and removal now require Composer 2.2.0 or later in the server’s `PATH`, and are disabled when it’s unavailable.
 - Craft now supports Laravel Octane, on Swoole and RoadRunner. Requests served by the same worker no longer share state such as live preview drafts, control panel assets, translated element type names, view namespaces, or routes from the project config, and project config changes made by other workers or commands are picked up by the next request. ([#20641](https://github.com/craftcms/cms/pull/20641))
