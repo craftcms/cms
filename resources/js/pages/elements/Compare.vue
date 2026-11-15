@@ -1238,7 +1238,10 @@
       --cp-container-padding,
       var(--c-spacing-lg)
     );
-    --compare-cell-padding-block: var(--compare-cell-padding-inline);
+    /* Not the inline padding, which grows with the page's main column (see
+       PageScreen.vue): fields keep the same space between them however wide
+       the page is. */
+    --compare-cell-padding-block: var(--c-spacing-lg);
 
     container: compare / inline-size;
     display: flex;
