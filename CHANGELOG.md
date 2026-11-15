@@ -118,6 +118,7 @@
 - Fixed an error that could occur when creating a revision of an element whose custom field values didn’t pass validation, such as values saved with validation disabled. ([#20693](https://github.com/craftcms/cms/pull/20693))
 - Fixed an error that occurred when rendering an element’s action menu, with the Yii adapter installed, if an `EVENT_DEFINE_ACTION_MENU_ITEMS` handler added an item with an `action` array, such as an `event` action. ([#20688](https://github.com/craftcms/cms/issues/20688), [#20696](https://github.com/craftcms/cms/pull/20696))
 - Fixed a bug where page titles set with `craft\web\View::$title`, such as SEOmatic’s, weren’t output in the `<head>`. ([#20706](https://github.com/craftcms/cms/pull/20706))
+- Fixed a bug where project config handlers for a path weren’t called when a value nested within it was set before the path existed. ([#20714](https://github.com/craftcms/cms/pull/20714))
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
 
 ## 6.0.0-beta.1 - 2026-11-10
