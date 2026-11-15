@@ -1199,6 +1199,9 @@ class ProjectConfig extends Component
                     $newValue = $incomingConfig->get($path);
                     $extraPath = StringHelper::removeLeft($matches['extra'], '.');
                     $newNestedValue = $event->newValue;
+                    if ($newValue === null && $newNestedValue !== null) {
+                        $newValue = [];
+                    }
                     if (is_array($newValue)) {
                         ProjectConfigHelper::traverseDataArray($newValue, $extraPath, $newNestedValue);
                     }
