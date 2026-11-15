@@ -10,7 +10,7 @@
   import {
     useCreatableEntryTypes,
     type CreatableType,
-    type PublishableSection,
+    type CreatableSection,
   } from '@/modules/elements/composables/useCreatableEntryTypes';
   import {usePage} from '@inertiajs/vue3';
 
@@ -19,7 +19,7 @@
     sources: Array<Source>;
     // The source being viewed, which narrows what's on screen further.
     source?: SourceItem;
-    publishableSections: Array<PublishableSection>;
+    creatableSections: Array<CreatableSection>;
     // Singular element display name (e.g. "Entry") used for the button label.
     elementDisplayName: string;
   }>();
@@ -30,7 +30,7 @@
   const {creatableTypes, menuItems: groupedMenuItems} = useCreatableEntryTypes({
     sources: () => props.sources,
     source: () => props.source,
-    publishableSections: () => props.publishableSections,
+    creatableSections: () => props.creatableSections,
     siteId: () => site.value?.id,
   });
 

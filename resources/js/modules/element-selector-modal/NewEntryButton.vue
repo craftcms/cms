@@ -17,7 +17,7 @@
   import {
     useCreatableEntryTypes,
     type CreatableType,
-    type PublishableSection,
+    type CreatableSection,
   } from '@/modules/elements/composables/useCreatableEntryTypes';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
 
@@ -47,8 +47,8 @@
   const {creatableTypes, menuItems} = useCreatableEntryTypes({
     sources: () => props.sources,
     source: () => props.source,
-    publishableSections: () =>
-      (window.Craft?.publishableSections as PublishableSection[]) ?? [],
+    creatableSections: () =>
+      (window.Craft?.creatableSections as CreatableSection[]) ?? [],
     siteId: () => props.siteId,
   });
 

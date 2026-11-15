@@ -40,10 +40,12 @@
 - The control panel’s import map now publishes `@inertiajs/vue3`, so plugin bundles share the control panel’s Inertia instance rather than bundling their own. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Added `CraftCms\Cms\Cp\Html\ElementHtml::presentation()`. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Added the `--c-nav-item-color` CSS custom property to `craft-nav-item`, which sets its label’s color while it isn’t hovered or current. ([#20663](https://github.com/craftcms/cms/pull/20663))
+- Improved the performance of control panel requests, particularly the fields index, the entries index, and field edit screens, and reduced the size of their responses. ([#20704](https://github.com/craftcms/cms/pull/20704))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
 - Fixed a bug where control panel screens, such as section settings, failed to load when the control panel was served over plain HTTP from a hostname other than `localhost`. ([#20680](https://github.com/craftcms/cms/issues/20680), [#20695](https://github.com/craftcms/cms/pull/20695))
 - Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
 - Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes on legacy control panel screens. ([#20613](https://github.com/craftcms/cms/issues/20613))
+- Fixed a bug where “New entry” menus showed section and entry type names untranslated. ([#20704](https://github.com/craftcms/cms/pull/20704))
 - Fixed a bug where images cropped against the left or top edge in the Image Editor could be saved with a sliver of padding. ([#20601](https://github.com/craftcms/cms/issues/20601))
 - Fixed a bug where entry selection modals didn’t have a “New entry” button. The button now opens the new entry in a slideout and relates it once it’s saved. ([#20598](https://github.com/craftcms/cms/issues/20598), [#20652](https://github.com/craftcms/cms/pull/20652))
 - Fixed a bug where relation fields didn’t show a search input when their “Show the search input” setting was enabled. Entries fields limited to one section offer “Create entry: {query}” again, including when their selectable entry condition only requires entries to be viewable. ([#20598](https://github.com/craftcms/cms/issues/20598), [#20654](https://github.com/craftcms/cms/pull/20654))
@@ -99,6 +101,10 @@
 - Asset transform drivers now receive whether the transform should be generated immediately in `$request->immediately`, including legacy image transformers. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Added `CraftCms\Cms\Cp\Cp::iconHtml()` and `logoHtml()`, and `craft.cp.iconHtml()` for control panel templates. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Removed `cpLogoUrl` from the control panel’s JavaScript config. The `craft.system.logo` page prop holds the login logo’s HTML instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
+- `Craft.publishableSections` is now only available when `craftcms/yii2-adapter` is installed. `Craft.creatableSections` should be used instead, whose sections list each entry type once under `entryTypes`, and have `entryTypeIdsBySite` rather than `entryTypesBySite`. ([#20704](https://github.com/craftcms/cms/pull/20704))
+- `CraftCms\Cms\Cp\Events\CpDataResolving` listeners that set `publishableSections` should set `creatableSections` instead. ([#20704](https://github.com/craftcms/cms/pull/20704))
+- `CraftCms\Cms\t()` now only falls back to Laravel’s translator for `group.key` messages, JSON translation keys, and messages with `:placeholder` parameters. ([#20704](https://github.com/craftcms/cms/pull/20704))
+- Removed `CraftCms\Cms\Http\ViewModels\EntryIndexViewModel::publishableSections()`. ([#20704](https://github.com/craftcms/cms/pull/20704))
 - `CraftCms\Cms\Element\Elements::__construct()` no longer has a `$placeholders` argument. ([#20641](https://github.com/craftcms/cms/pull/20641))
 - Added `CraftCms\Cms\Asset\Data\AssetTransformRequest::$immediately` and `$namedTransform`. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Added `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()`, `immediateTransforms()`, and `IMMEDIATE_TRANSFORMS_CONTEXT`, which apply to every asset transform driver. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
@@ -111,6 +117,7 @@
 - Fixed a bug where cloned models and elements, such as duplicated entries and new revisions, were validated with the original’s values. ([#20691](https://github.com/craftcms/cms/issues/20691), [#20693](https://github.com/craftcms/cms/pull/20693))
 - Fixed an error that could occur when creating a revision of an element whose custom field values didn’t pass validation, such as values saved with validation disabled. ([#20693](https://github.com/craftcms/cms/pull/20693))
 - Fixed an error that occurred when rendering an element’s action menu, with the Yii adapter installed, if an `EVENT_DEFINE_ACTION_MENU_ITEMS` handler added an item with an `action` array, such as an `event` action. ([#20688](https://github.com/craftcms/cms/issues/20688), [#20696](https://github.com/craftcms/cms/pull/20696))
+- Fixed a bug where page titles set with `craft\web\View::$title`, such as SEOmatic’s, weren’t output in the `<head>`. ([#20706](https://github.com/craftcms/cms/pull/20706))
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
 
 ## 6.0.0-beta.1 - 2026-11-10
