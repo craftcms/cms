@@ -180,18 +180,21 @@ it('leaves sources alone when there are no singles', function () {
     expect(runReplaceSinglesEntrySourceMigration())->toBe([]);
 });
 
-it('gives singles created afterward enabled sources', function () {
+it('gives sections created afterward enabled sources on the first page shown', function () {
     saveOldEntrySources([['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles']]);
     runReplaceSinglesEntrySourceMigration();
 
     actingAs(User::find()->one());
     $contact = Section::factory()->create(['type' => SectionType::Single, 'handle' => 'contact']);
+    $events = Section::factory()->create(['type' => SectionType::Channel, 'handle' => 'events']);
     Sections::refreshSections();
     app()->forgetScopedInstances();
 
-    expect(app(ElementSources::class)->getSources(Entry::class)->pluck('key')->all())
-        ->toContain("section:$contact->uid")
-        ->not->toContain("section:{$this->home->uid}");
+    $sources = app(ElementSources::class)->getSources(Entry::class)->keyBy('key');
+
+    expect($sources->keys()->all())->not->toContain("section:{$this->home->uid}")
+        ->and($sources["section:$contact->uid"]['page'])->toBe('Entries')
+        ->and($sources["section:$events->uid"]['page'])->toBe('Entries');
 });
 
 it('points fields restricted to the Singles source at the custom source', function () {
@@ -266,9 +269,12 @@ it('lists the Singles page before the other entry pages in a saved default navig
         'nav-group-content' => ['nav-assets', 'nav-content-singles', 'nav-content-news', 'nav-content-entries'],
     ]);
 
+    $path = ProjectConfig::PATH_ELEMENT_SOURCES.'.'.Entry::class;
+    app(ProjectConfig::class)->set($path, array_map(
+        fn (array $source) => ($source['key'] ?? null) === "section:{$this->home->uid}" ? [...$source, 'disabled' => false] : $source,
+        app(ProjectConfig::class)->get($path),
+    ));
     actingAs(User::find()->one());
-    Section::factory()->create(['type' => SectionType::Single, 'handle' => 'contact']);
-    Sections::refreshSections();
     app()->forgetScopedInstances();
 
     $content = collect(app(Navigation::class)->getTree())->firstWhere('id', 'nav-group-content');

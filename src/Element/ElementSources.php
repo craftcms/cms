@@ -225,7 +225,12 @@ class ElementSources
                 ->keyBy('key')
                 ->all();
 
-            $firstPage = $sourceConfigs[0]['page'] ?? null;
+            // Sources that aren't saved yet, such as new sections', go on the
+            // first page with an enabled source, which is the first one shown.
+            $firstPage = Arr::first(
+                $sourceConfigs,
+                fn (array $source) => $source['type'] !== self::TYPE_HEADING && ! ($source['disabled'] ?? false),
+            )['page'] ?? $sourceConfigs[0]['page'] ?? null;
 
             foreach ($sourceConfigs as $source) {
                 if ($source['type'] === self::TYPE_NATIVE) {
