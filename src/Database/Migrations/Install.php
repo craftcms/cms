@@ -213,7 +213,7 @@ class Install extends Migration
             $table->integer('id', true);
             $table->char('conversationId', 36);
             $table->integer('assetId');
-            $table->integer('userId');
+            $table->integer('userId')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
@@ -1296,7 +1296,8 @@ class Install extends Migration
         Schema::table(Table::AGENT_GUIDANCE, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete());
         Schema::table(Table::AGENT_GUIDANCE, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::AGENT_UPLOADS, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
-        Schema::table(Table::AGENT_UPLOADS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        // Kept when the user is deleted, so their uploads are still deleted with their conversations.
+        Schema::table(Table::AGENT_UPLOADS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('createdById')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('scheduledById')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::RELEASE_ITEMS, fn (Blueprint $table) => $table->foreign('releaseId')->references('id')->on(Table::RELEASES)->cascadeOnDelete());

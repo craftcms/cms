@@ -755,18 +755,24 @@
       return;
     }
 
-    // Files go with the message once they’re uploaded. Sending again while it waits does nothing.
-    if (isUploading()) {
-      if (waitingForUploads) {
-        return;
-      }
+    // Sending again while a message waits for its files does nothing.
+    if (waitingForUploads) {
+      return;
+    }
 
+    // Files go with the message once they’re uploaded.
+    if (isUploading()) {
       waitingForUploads = true;
 
       try {
         await finishUploads();
       } finally {
         waitingForUploads = false;
+      }
+
+      // The user switched to another conversation while it waited.
+      if (unmounted) {
+        return;
       }
     }
 
@@ -780,6 +786,13 @@
 
   /** Whether a message is waiting for its files to finish uploading. */
   let waitingForUploads = false;
+
+  /** Whether the chat has been closed or replaced, so a message still waiting for its files isn’t sent. */
+  let unmounted = false;
+
+  onBeforeUnmount(() => {
+    unmounted = true;
+  });
 
   async function submit(message: string): Promise<void> {
     status.value = '';

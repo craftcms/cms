@@ -22,6 +22,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Support\Facades\Assets;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
@@ -273,6 +274,8 @@ it('gives the chat thumbnails of the images uploaded to the user’s own convers
         ->json('thumbnails');
 
     expect(array_keys($thumbnails))->toBe([$image['assetId']]);
+    expect($image['thumbnail'])->toContain('generate-transform')
+        ->and($text['thumbnail'])->toBeNull();
 
     actAsAnotherAssistantUser();
 
@@ -318,6 +321,19 @@ it('deletes a conversation’s uploads with it, keeping those moved into a volum
         ->and(Asset::find()->id($used['assetId'])->status(null)->exists())->toBeTrue()
         ->and(AgentUpload::query()->count())->toBe(0);
     Storage::disk('temp-assets')->assertMissing("ai-assistant/$threadId/copy.png");
+});
+
+it('still deletes a user’s uploads with their conversations once the user is deleted', function () {
+    $threadId = (string) Str::uuid();
+    $upload = uploadToConversation($threadId, 'notes.txt', 'Q3 went well.');
+    AssistantAgent::fake(['Done.']);
+    chatWithUploads($threadId, 'Summarize this', [$upload['assetId']])->assertOk()->streamedContent();
+
+    Elements::deleteElement($this->user, true);
+    app(AssistantUploads::class)->deleteForConversations([$threadId]);
+
+    expect(Asset::find()->id($upload['assetId'])->status(null)->exists())->toBeFalse()
+        ->and(AgentUpload::query()->count())->toBe(0);
 });
 
 it('deletes files uploaded to conversations that were never sent, a day later', function () {

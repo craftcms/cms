@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('id', true);
             $table->char('conversationId', 36);
             $table->integer('assetId');
-            $table->integer('userId');
+            $table->integer('userId')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
             $table->char('uid', 36)->default('0');
@@ -30,7 +30,8 @@ return new class extends Migration
         Schema::createIndex(Table::AGENT_UPLOADS, ['userId']);
 
         Schema::table(Table::AGENT_UPLOADS, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
-        Schema::table(Table::AGENT_UPLOADS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        // Kept when the user is deleted, so their uploads are still deleted with their conversations.
+        Schema::table(Table::AGENT_UPLOADS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->nullOnDelete());
     }
 
     public function down(): void

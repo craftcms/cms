@@ -35,6 +35,9 @@ class AssistantUploads
     /** How long a file can wait to be sent, before it’s deleted with the conversation it was uploaded to never stored. */
     public const int ABANDONED_AFTER_HOURS = 24;
 
+    /** The size of uploaded images’ thumbnails, in pixels, for chips at twice their size. */
+    public const int THUMBNAIL_SIZE = 48;
+
     public function __construct(
         private readonly Elements $elements,
         private readonly Assets $assets,
@@ -87,7 +90,7 @@ class AssistantUploads
      *
      * @return array<int, string>
      */
-    public function thumbnails(string $conversationId, User $user, int $size): array
+    public function thumbnails(string $conversationId, User $user): array
     {
         $assetIds = AgentUpload::query()
             ->where('conversationId', $conversationId)
@@ -102,7 +105,7 @@ class AssistantUploads
         $thumbnails = [];
 
         foreach (Asset::find()->id($assetIds)->kind(FileKind::Image->value)->status(null)->all() as $asset) {
-            $url = $this->assets->getThumbUrl($asset, $size, $size, iconFallback: false);
+            $url = $this->thumbnail($asset);
 
             if ($url !== null) {
                 $thumbnails[$asset->id] = $url;
@@ -110,6 +113,18 @@ class AssistantUploads
         }
 
         return $thumbnails;
+    }
+
+    /**
+     * Returns the thumbnail of an uploaded image, for its chip, or null if it isn’t an image.
+     */
+    public function thumbnail(Asset $asset): ?string
+    {
+        if ($asset->kind !== FileKind::Image->value) {
+            return null;
+        }
+
+        return $this->assets->getThumbUrl($asset, self::THUMBNAIL_SIZE, self::THUMBNAIL_SIZE, iconFallback: false);
     }
 
     /**

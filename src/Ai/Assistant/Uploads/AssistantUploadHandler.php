@@ -70,7 +70,12 @@ readonly class AssistantUploadHandler implements UploadHandler
 
         $this->uploads->record($threadId, $asset, $user);
 
-        return new JsonResponse([...$data, 'contextItem' => self::contextItem($asset)], $response->getStatusCode());
+        return new JsonResponse([
+            ...$data,
+            'contextItem' => self::contextItem($asset),
+            // The chat shows it in place of the browser’s preview of the file, which it can then let go of.
+            'thumbnail' => $this->uploads->thumbnail($asset),
+        ], $response->getStatusCode());
     }
 
     /**

@@ -15,7 +15,7 @@ use CraftCms\Cms\Shared\Concerns\HasUid;
  * @property int $id
  * @property string $conversationId The conversation the file was uploaded to, which may not be stored yet.
  * @property int $assetId
- * @property int $userId
+ * @property int|null $userId The uploader, unless they’ve since been deleted.
  *
  * @internal
  *

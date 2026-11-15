@@ -7,6 +7,7 @@ import {
   isUploading,
   removeUpload,
   uploadFiles,
+  uploadThumbnail,
 } from './upload-context';
 
 const mocks = vi.hoisted(() => {
@@ -121,4 +122,25 @@ it('removes the composer’s uploads when the user switches conversations', asyn
     threadId: 'thread-1',
     assetId: 5,
   });
+});
+
+it('replaces an image’s preview with the server’s thumbnail, letting go of the preview', async () => {
+  const revoke = vi.fn();
+  vi.stubGlobal('URL', {
+    ...URL,
+    createObjectURL: () => 'blob:preview',
+    revokeObjectURL: revoke,
+  });
+  uploadFiles([new File(['png'], 'chart.png', {type: 'image/png'})]);
+  const item = useAssistantContext().items.value[0]!;
+
+  expect(item.thumbnail()).toBe('blob:preview');
+
+  mocks.FakeUpload.instances[0]!.resolve({assetId: 3, thumbnail: '/thumb.png'});
+  await finishUploads();
+  vi.unstubAllGlobals();
+
+  expect(item.thumbnail()).toBe('/thumb.png');
+  expect(uploadThumbnail(3)).toBe('/thumb.png');
+  expect(revoke).toHaveBeenCalledWith('blob:preview');
 });

@@ -70,9 +70,6 @@ readonly class AssistantController
      */
     private const int MENTION_LIMIT = 10;
 
-    /** The size of the thumbnails of uploaded images, in pixels, for chips at twice their size. */
-    private const int UPLOAD_THUMBNAIL_SIZE = 48;
-
     /**
      * The type of the context items for skills the user chose with `/`. Their skills go in the model’s instructions,
      * rather than being described as data, as context types’ items are.
@@ -348,7 +345,7 @@ readonly class AssistantController
         $threadId = $this->ownThread($request);
 
         return new JsonResponse([
-            'thumbnails' => (object) $uploads->thumbnails($threadId, $this->user($request), self::UPLOAD_THUMBNAIL_SIZE),
+            'thumbnails' => (object) $uploads->thumbnails($threadId, $this->user($request)),
         ]);
     }
 

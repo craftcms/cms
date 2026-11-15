@@ -12,6 +12,8 @@ export const UPLOAD_CONTEXT_TYPE = 'craft:upload';
 
 type UploadResult = Omit<CraftCms.Cms.Asset.Data.UploadResult, 'status'> & {
   contextItem?: {icon?: string};
+  /** The URL of the uploaded image’s thumbnail, if it’s an image. */
+  thumbnail?: string | null;
 };
 
 interface AssistantUpload {
@@ -19,7 +21,10 @@ interface AssistantUpload {
   threadId: string;
   /** The uploaded asset’s ID, once it’s saved. */
   assetId: number | null;
-  /** A preview of the file, if it’s an image, from the browser’s copy of it. */
+  /**
+   * A preview of the file, if it’s an image, from the browser’s copy of it,
+   * until the server’s thumbnail replaces it.
+   */
   preview: string | null;
   done: Promise<void>;
 }
@@ -106,7 +111,9 @@ export function uploadFiles(files: readonly File[]): void {
       type: UPLOAD_CONTEXT_TYPE,
       label: file.name,
       icon: file.type.startsWith('image/') ? 'image' : 'file',
-      thumbnail: upload.preview ?? undefined,
+      thumbnail: () =>
+        (upload.assetId ? thumbnails.value.get(upload.assetId) : null) ??
+        upload.preview,
       data: () => (upload.assetId ? {assetId: upload.assetId} : {}),
       reference: () => (upload.assetId ? {assetId: upload.assetId} : {}),
       status: () =>
@@ -125,11 +132,19 @@ export function uploadFiles(files: readonly File[]): void {
         upload.assetId = result.assetId;
         triggerRef(uploads);
 
-        if (upload.preview) {
+        // The server’s thumbnail replaces the preview, so the browser can let go of its copy of the file.
+        const thumbnail = result.thumbnail ?? upload.preview;
+
+        if (thumbnail) {
           thumbnails.value = new Map(thumbnails.value).set(
             result.assetId,
-            upload.preview
+            thumbnail
           );
+        }
+
+        if (result.thumbnail && upload.preview) {
+          URL.revokeObjectURL(upload.preview);
+          upload.preview = null;
         }
         uploadStatus.value = t('Uploaded {name}.', {name: file.name});
       })
