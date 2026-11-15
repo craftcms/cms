@@ -13,7 +13,14 @@ import {
   useTemplateRef,
   type VNode,
 } from 'vue';
-import {afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
+import {
+  afterEach,
+  beforeAll,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vite-plus/test';
 import DetailsPanels from '@/common/components/DetailsPanels.vue';
 import ScreenPanel from '@/common/components/ScreenPanel.vue';
 import ScreenPanelsScope from '@/common/components/ScreenPanelsScope.vue';
@@ -315,6 +322,83 @@ it('leaves the chat unopened once another panel is chosen while it’s folded fo
   await settle();
 
   expect(useAssistantPanel().opened.value).toBe(false);
+});
+
+it('keeps a chat closed in an editor’s screen closed when the page it was folded on widens again', async () => {
+  const editorScreen = createScreenPanels();
+  const editorOpen = ref(false);
+  pagePanel.value = true;
+  await mount(() =>
+    editorOpen.value
+      ? h('div', {class: 'editor'}, [
+          h(DetailsPanels, {registry: editorScreen, idPrefix: 'editor'}),
+          h(ScreenPanelsScope, {panels: editorScreen}, () =>
+            h(ScreenPanel, {id: 'info', label: 'Info', icon: 'info'}, () =>
+              h('p', 'Info')
+            )
+          ),
+        ])
+      : null
+  );
+  useAssistantPanel().show();
+  await settle();
+  screenPanels.setOverlaid(true);
+  await settle();
+
+  editorOpen.value = true;
+  const unregister = registerAssistantScreen(() => editorScreen, true);
+  await settle();
+  expect(editorScreen.openPanelId.value).toBe('ai-assistant');
+  editorScreen.close('ai-assistant');
+  await settle();
+
+  unregister();
+  editorOpen.value = false;
+  await settle();
+  screenPanels.setOverlaid(false);
+  await settle();
+
+  expect(screenPanels.openPanelId.value).not.toBe('ai-assistant');
+});
+
+it('keeps a folded chat mounted while an editor’s screen has no panels yet', async () => {
+  const editorScreen = createScreenPanels();
+  const editorOpen = ref(false);
+  const editorPanels = ref(false);
+  pagePanel.value = true;
+  await mount(() =>
+    editorOpen.value
+      ? h('div', {class: 'editor'}, [
+          h(DetailsPanels, {registry: editorScreen, idPrefix: 'editor'}),
+          editorPanels.value
+            ? h(ScreenPanelsScope, {panels: editorScreen}, () =>
+                h(ScreenPanel, {id: 'info', label: 'Info', icon: 'info'}, () =>
+                  h('p', 'Info')
+                )
+              )
+            : null,
+        ])
+      : null
+  );
+  useAssistantPanel().show();
+  await vi.dynamicImportSettled();
+  await settle();
+  useAssistantPanel().toggle();
+  await settle();
+  const chatElement = document.querySelector('.chat');
+  expect(chatElement).not.toBeNull();
+
+  editorOpen.value = true;
+  onTestFinished(registerAssistantScreen(() => editorScreen, true));
+  await settle();
+  editorPanels.value = true;
+  await settle();
+
+  expect(document.querySelector('.chat')).toBe(chatElement);
+  expect(editorScreen.panels.value.map(({id}) => id)).toEqual([
+    'info',
+    'ai-assistant',
+  ]);
 });
 
 it('mounts the chat the first time it opens, and keeps it once folded', async () => {

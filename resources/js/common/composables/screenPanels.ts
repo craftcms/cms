@@ -194,6 +194,16 @@ export function createScreenPanels(): ScreenPanels {
     },
 
     unregister(panelId) {
+      // A panel that stays from page to page only goes when it leaves the
+      // screen, such as for another one, so the shell doesn't bring it back.
+      // Others come back with the next page's panels.
+      if (
+        registered.get(panelId)?.persistent &&
+        panelClosedByShell.value === panelId
+      ) {
+        panelClosedByShell.value = null;
+      }
+
       registered.delete(panelId);
     },
 

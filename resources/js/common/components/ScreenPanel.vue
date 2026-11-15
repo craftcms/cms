@@ -41,16 +41,19 @@
     /** See {@link DetailsPanel.unlistedInPalette}. */
     unlistedInPalette?: boolean;
     /**
-     * The screen to add it to, rather than the nearest one. The panel moves
-     * when it changes, keeping its content's state.
+     * The screen to add it to, rather than the nearest one, or `null` for
+     * none, which keeps its content mounted but out of every rail. The panel
+     * moves when it changes, keeping its content's state.
      */
     screen?: ScreenPanels | null;
   }>();
 
   const nearest = useScreenPanels();
-  const panels = computed(() => props.screen ?? nearest);
+  const panels = computed(() =>
+    props.screen === undefined ? nearest : props.screen
+  );
 
-  if (import.meta.env.DEV && !panels.value) {
+  if (import.meta.env.DEV && props.screen === undefined && !nearest) {
     console.warn(
       `[ScreenPanel] “${props.id}” isn't inside a screen, so nothing will show it.`
     );

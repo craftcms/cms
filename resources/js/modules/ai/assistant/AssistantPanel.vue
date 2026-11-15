@@ -91,7 +91,9 @@
   // The panel is beside the page's own panels, and in the column while the
   // chat is open. On a page without panels of its own, closing the chat takes
   // it away, rail and all; the header button brings it back with the same
-  // conversation.
+  // conversation. A chat that has started stays mounted out of the column
+  // meanwhile, such as while an editor's screen is still adding its panels,
+  // so its unsent message and a reply on its way are kept.
   /** Whether the chat's panel is in the column. */
   const showsPanel = computed(() => panel.opened.value || hasPagePanels.value);
 
@@ -210,9 +212,9 @@
 <template>
   <!-- Always the last panel, after any a page or plugin adds. -->
   <ScreenPanel
-    v-if="showsPanel"
+    v-if="showsPanel || started"
     :id="ASSISTANT_PANEL_ID"
-    :screen="screen"
+    :screen="showsPanel ? screen : null"
     :label="t('Ask AI')"
     icon="sparkles"
     :order="Infinity"
