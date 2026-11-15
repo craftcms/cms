@@ -2,7 +2,7 @@ import {actionClient} from '@craftcms/ui';
 import {uuid} from '@/common/craft/strings';
 import {useEventListener} from '@vueuse/core';
 import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
-import {screenPanels} from '@/common/composables/screenPanels';
+import {assistantScreenPanels} from './assistant';
 import {assistantEditors} from './context';
 
 const key = ['craft', 'ui', 'cr'].join('.');
@@ -77,7 +77,7 @@ export function useCrafty(open: (threadId: string) => Promise<void>): void {
       if (
         busy ||
         // Not while the details pane is folded away.
-        screenPanels.openPanelId.value === null ||
+        assistantScreenPanels.value.openPanelId.value === null ||
         !(
           input instanceof HTMLInputElement ||
           input instanceof HTMLTextAreaElement

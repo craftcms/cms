@@ -4,12 +4,12 @@
   import {useShortcut} from '@/common/shortcuts';
   import {nextTick, onBeforeUnmount} from 'vue';
   import {registerActions} from '@/modules/command-palette/registry';
-  import {screenPanels} from '@/common/composables/screenPanels';
   import {firstFocusableWithin} from '@/common/utils/dom';
   import {commandShortcut} from '@/common/utils/keyShortcuts';
   import {
     ASSISTANT_PANEL_ID,
     ASSISTANT_TOGGLE_ID,
+    assistantScreenPanels,
     useAssistantPanel,
   } from './assistant';
 
@@ -33,7 +33,7 @@
   /** The panel's message box, while the panel is in the column. */
   function messageBox(): HTMLElement | null {
     return (
-      screenPanels.sections
+      assistantScreenPanels.value.sections
         .get(ASSISTANT_PANEL_ID)
         ?.querySelector<HTMLElement>('.assistant-chat__message-box') ?? null
     );
@@ -53,7 +53,7 @@
         panel.isOpen.value &&
         messageBox()?.contains(document.activeElement)
       ) {
-        screenPanels.close(ASSISTANT_PANEL_ID);
+        assistantScreenPanels.value.close(ASSISTANT_PANEL_ID);
         return;
       }
 

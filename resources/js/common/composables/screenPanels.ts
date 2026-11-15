@@ -34,6 +34,11 @@ export interface ScreenPanels {
   /** The open panel, or `null` when the column is folded to its rail. */
   readonly openPanelId: Readonly<ShallowRef<string | null>>;
   /**
+   * The panel the shell folded the column on for lack of room, which comes
+   * back once there's room again, or `null`.
+   */
+  readonly panelClosedByShell: Readonly<ShallowRef<string | null>>;
+  /**
    * Counts the times a page’s panels have arrived after there were none,
    * which is when a new page’s panels are shown, so the column opens on
    * them as it would on a fresh page.
@@ -114,7 +119,7 @@ export function createScreenPanels(): ScreenPanels {
    */
   let openedOnPurpose = false;
   /** The panel the shell closed for lack of room, to bring back with it. */
-  let panelClosedByShell: string | null = null;
+  const panelClosedByShell = shallowRef<string | null>(null);
 
   const panels = computed(() =>
     [...registered.values()].sort(
@@ -175,6 +180,7 @@ export function createScreenPanels(): ScreenPanels {
   return {
     panels,
     openPanelId: readonly(openPanelId),
+    panelClosedByShell: readonly(panelClosedByShell),
     pageGeneration,
     sections,
 
@@ -219,7 +225,7 @@ export function createScreenPanels(): ScreenPanels {
 
     start(preferred) {
       openedOnPurpose = false;
-      panelClosedByShell = null;
+      panelClosedByShell.value = null;
       openPanelId.value = initialPanelId(preferred);
     },
 
@@ -240,7 +246,7 @@ export function createScreenPanels(): ScreenPanels {
     select(panelId) {
       openPanelId.value = panelId;
       openedOnPurpose = true;
-      panelClosedByShell = null;
+      panelClosedByShell.value = null;
     },
 
     deselect(panelId) {
@@ -249,7 +255,7 @@ export function createScreenPanels(): ScreenPanels {
       }
 
       openPanelId.value = null;
-      panelClosedByShell = null;
+      panelClosedByShell.value = null;
 
       return true;
     },
@@ -257,20 +263,20 @@ export function createScreenPanels(): ScreenPanels {
     setOverlaid(overlaid) {
       if (overlaid) {
         if (openPanelId.value !== null) {
-          panelClosedByShell = openPanelId.value;
+          panelClosedByShell.value = openPanelId.value;
           openPanelId.value = null;
         }
 
         return;
       }
 
-      if (panelClosedByShell !== null && openPanelId.value === null) {
-        openPanelId.value = isVisible(panelClosedByShell)
-          ? panelClosedByShell
+      if (panelClosedByShell.value !== null && openPanelId.value === null) {
+        openPanelId.value = isVisible(panelClosedByShell.value)
+          ? panelClosedByShell.value
           : defaultPanelId();
       }
 
-      panelClosedByShell = null;
+      panelClosedByShell.value = null;
     },
   };
 }

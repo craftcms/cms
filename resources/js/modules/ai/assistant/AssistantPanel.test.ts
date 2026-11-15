@@ -1,12 +1,25 @@
 import {setIconResolver} from '@craftcms/ui/utilities/icons';
 import {nothing} from 'lit';
-import {createApp, defineComponent, h, nextTick, provide, ref} from 'vue';
+import {
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  provide,
+  ref,
+  type VNode,
+} from 'vue';
 import {afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
 import DetailsPanels from '@/common/components/DetailsPanels.vue';
 import ScreenPanel from '@/common/components/ScreenPanel.vue';
-import {ScreenPanelsKey, screenPanels} from '@/common/composables/screenPanels';
+import ScreenPanelsScope from '@/common/components/ScreenPanelsScope.vue';
+import {
+  ScreenPanelsKey,
+  createScreenPanels,
+  screenPanels,
+} from '@/common/composables/screenPanels';
 import AssistantPanel from './AssistantPanel.vue';
-import {useAssistantPanel} from './assistant';
+import {registerAssistantScreen, useAssistantPanel} from './assistant';
 
 vi.mock('@craftcms/ui', async () => ({
   ...(await vi.importActual('@craftcms/ui')),
@@ -66,7 +79,7 @@ function triggers(): string[] {
   );
 }
 
-async function mount(): Promise<void> {
+async function mount(extra: () => VNode | null = () => null): Promise<void> {
   window.Craft = {systemUid: 'assistant-panel-test'} as never;
   const container = document.createElement('div');
   document.body.append(container);
@@ -76,15 +89,20 @@ async function mount(): Promise<void> {
         provide(ScreenPanelsKey, screenPanels);
 
         return () => [
-          screenPanels.panels.value.length
-            ? h(DetailsPanels, {registry: screenPanels})
-            : null,
+          h(
+            'div',
+            {class: 'page'},
+            screenPanels.panels.value.length
+              ? h(DetailsPanels, {registry: screenPanels})
+              : undefined
+          ),
           pagePanel.value
             ? h(ScreenPanel, {id: 'info', label: 'Info', icon: 'info'}, () =>
                 h('p', 'Info')
               )
             : null,
           h(AssistantPanel),
+          extra(),
         ];
       },
     })
@@ -147,6 +165,44 @@ it.each([
     expect(useAssistantPanel().isOpen.value).toBe(false);
   }
 );
+
+it('moves the open chat into the latest editor’s screen, and back once it closes', async () => {
+  const editorScreen = createScreenPanels();
+  const editorOpen = ref(false);
+  pagePanel.value = true;
+  await mount(() =>
+    editorOpen.value
+      ? h('div', {class: 'editor'}, [
+          h(DetailsPanels, {registry: editorScreen, idPrefix: 'editor'}),
+          h(ScreenPanelsScope, {panels: editorScreen}, () =>
+            h(ScreenPanel, {id: 'info', label: 'Info', icon: 'info'}, () =>
+              h('p', 'Info')
+            )
+          ),
+        ])
+      : null
+  );
+  useAssistantPanel().show();
+  await vi.dynamicImportSettled();
+  await settle();
+  const chatElement = document.querySelector('.page .chat');
+  expect(chatElement).not.toBeNull();
+
+  editorOpen.value = true;
+  const unregister = registerAssistantScreen(() => editorScreen);
+  await settle();
+
+  expect(document.querySelector('.editor .chat')).toBe(chatElement);
+  expect(editorScreen.openPanelId.value).toBe('ai-assistant');
+  expect(screenPanels.panels.value.map(({id}) => id)).toEqual(['info']);
+
+  unregister();
+  editorOpen.value = false;
+  await settle();
+
+  expect(document.querySelector('.page .chat')).toBe(chatElement);
+  expect(screenPanels.openPanelId.value).toBe('ai-assistant');
+});
 
 it('mounts the chat the first time it opens, and keeps it once folded', async () => {
   pagePanel.value = true;
