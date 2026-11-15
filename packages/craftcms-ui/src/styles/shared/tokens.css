@@ -10,7 +10,8 @@
   craft-card[data-color='black'] > *,
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
   craft-badge[fill='black'] > *,
-  craft-tooltip > [slot='content'] > *
+  craft-tooltip > [slot='content'] > *,
+  craft-info-icon > *
 ) {
   --c-text-xl: calc(20rem / 16);
   --c-text-lg: calc(18rem / 16);
@@ -414,7 +415,8 @@
   craft-card[data-color='black'] > *,
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
   craft-badge[fill='black'] > *,
-  craft-tooltip > [slot='content'] > *
+  craft-tooltip > [slot='content'] > *,
+  craft-info-icon > *
 ) {
   color-scheme: dark;
   /* Icons in neutral badges stand out from their pale label text. */
@@ -442,7 +444,12 @@
   );
   --c-surface-overlay: var(--c-surface-default);
   --c-surface-page: var(--c-surface-sunken);
-  --c-surface-details: var(--c-surface-default);
+  /* A little darker than the content beside it, as in the light theme. */
+  --c-surface-details: color-mix(
+    in oklab,
+    var(--c-surface-default),
+    var(--c-surface-sunken) 40%
+  );
   /* The dark accent fill is more saturated, so the hover takes less of it. */
   --c-table-row-hover: color-mix(
     in oklab,

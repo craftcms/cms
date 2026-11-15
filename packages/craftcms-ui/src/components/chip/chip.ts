@@ -259,7 +259,10 @@ export default class CraftChip extends LitElement {
    */
   #lightDom = new LightDomController(this, {
     characterData: true,
-    onChange: () => this.#inheritButtons(),
+    onChange: () => {
+      this.#inheritButtons();
+      this.#cropThumbnails();
+    },
   });
 
   /**
@@ -271,6 +274,35 @@ export default class CraftChip extends LitElement {
     for (const button of this.querySelectorAll('craft-button:not([inherit])')) {
       if (button.closest('craft-chip') === this) {
         button.toggleAttribute('inherit', true);
+      }
+    }
+  }
+
+  /**
+   * A rounded chip's thumbnails are cropped to fill their square box, so the
+   * fully rounded corners make a circle whatever the image's proportions. Each
+   * gets its own mode back if the chip stops being rounded. Thumbnails inside
+   * a nested chip are left to that chip.
+   */
+  #cropThumbnails(): void {
+    for (const thumbnail of this.querySelectorAll<HTMLElement & {mode: string}>(
+      'craft-thumbnail'
+    )) {
+      if (
+        thumbnail.closest('craft-chip') !== this ||
+        !thumbnail.closest('[slot="thumbnail"]')
+      ) {
+        continue;
+      }
+
+      if (this.rounded) {
+        if (thumbnail.dataset.chipMode === undefined) {
+          thumbnail.dataset.chipMode = thumbnail.mode;
+          thumbnail.mode = 'crop';
+        }
+      } else if (thumbnail.dataset.chipMode !== undefined) {
+        thumbnail.mode = thumbnail.dataset.chipMode;
+        delete thumbnail.dataset.chipMode;
       }
     }
   }
@@ -463,6 +495,14 @@ export default class CraftChip extends LitElement {
   protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     this.#thumbLoader.load(this);
+  }
+
+  protected override updated(changed: PropertyValues<this>) {
+    super.updated(changed);
+
+    if (changed.has('rounded')) {
+      this.#cropThumbnails();
+    }
   }
 
   override render() {

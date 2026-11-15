@@ -296,15 +296,18 @@ export function useDashboard(props: {
     order.splice(to, 0, order.splice(from, 1)[0]!);
     busy.value = true;
 
+    // Shown in the new order while it saves, as soon as it's dropped, and
+    // back in the old one if saving fails.
+    const previous = widgets.value;
+    widgets.value = [
+      ...order,
+      ...widgets.value.filter((widget) => widget.id < 0),
+    ];
+
     try {
       await actionClient.post(reorderWidgets.url(), {
         ids: JSON.stringify(order.map((widget) => widget.id)),
       });
-
-      widgets.value = [
-        ...order,
-        ...widgets.value.filter((widget) => widget.id < 0),
-      ];
 
       const moved = order[to]!;
       announce(
@@ -314,6 +317,7 @@ export function useDashboard(props: {
         })
       );
     } catch {
+      widgets.value = previous;
       messages.error(t('Couldn’t reorder widgets.'));
     } finally {
       busy.value = false;

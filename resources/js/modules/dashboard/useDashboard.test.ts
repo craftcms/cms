@@ -167,6 +167,25 @@ it('shows a widget’s new color while it saves, and its saved color again if sa
   expect(messages.error).toHaveBeenLastCalledWith('Couldn’t save widget.');
 });
 
+it('shows widgets in their new order while it saves, and the saved order again if saving fails', async () => {
+  mount([widget(1), widget(2), widget(3)]);
+  let fail!: (error: Error) => void;
+  state.post.mockReturnValue(
+    new Promise((_, reject) => {
+      fail = reject;
+    })
+  );
+
+  const saving = dashboard.reorder(2, 0);
+  expect(dashboard.widgets.value.map((item) => item.id)).toEqual([3, 1, 2]);
+
+  fail(new Error('offline'));
+  await saving;
+
+  expect(dashboard.widgets.value.map((item) => item.id)).toEqual([1, 2, 3]);
+  expect(messages.error).toHaveBeenLastCalledWith('Couldn’t reorder widgets.');
+});
+
 it('announces where a widget moved once the new order is saved', async () => {
   mount([widget(1), widget(2), widget(3)]);
   state.post.mockResolvedValue({data: {}});
