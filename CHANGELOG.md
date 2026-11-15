@@ -131,6 +131,7 @@
 - Fixed a bug where page titles set with `craft\web\View::$title`, such as SEOmatic’s, weren’t output in the `<head>`. ([#20706](https://github.com/craftcms/cms/pull/20706))
 - Fixed an error that occurred when validating an element whose Assets field values were eager-loaded, including within nested entries. ([#20707](https://github.com/craftcms/cms/issues/20707), [#20712](https://github.com/craftcms/cms/pull/20712))
 - Fixed a bug where POST requests to legacy controllers with `$enableCsrfValidation` set to `false`, reached through a site URL rule, were rejected with a 419 error. ([#20709](https://github.com/craftcms/cms/issues/20709), [#20715](https://github.com/craftcms/cms/pull/20715))
+- Fixed an error that occurred when calling `column()` on an element query, with the Yii adapter installed. ([#20708](https://github.com/craftcms/cms/issues/20708), [#20716](https://github.com/craftcms/cms/pull/20716))
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
 
 ## 6.0.0-beta.1 - 2026-11-10
