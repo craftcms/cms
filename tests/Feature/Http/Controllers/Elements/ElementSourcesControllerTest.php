@@ -14,6 +14,8 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutRecord;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -844,4 +846,65 @@ it('lists new entry pages beside the pages they were added next to in saved navi
             'nav-content-blog' => ['parent' => 'root'],
         ],
     ]);
+});
+
+it('lists a new entry page in the section its neighbor ends up in', function () {
+    $navigations = app(CustomNavigations::class);
+    $customSource = fn (string $label) => [
+        'label' => $label,
+        'condition' => ['class' => ElementCondition::class, 'elementType' => Entry::class, 'conditionRules' => []],
+    ];
+
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:news', 'page' => 'News', ...$customSource('News')],
+    ]);
+
+    // The default navigation moved News to the root after a group saved an
+    // order listing it in Content.
+    $navigations->saveDefault([
+        'order' => ['root' => ['nav-content-news', 'nav-dashboard']],
+        'items' => ['nav-content-news' => ['parent' => 'root']],
+    ]);
+    $group = UserGroups::getGroupByUid(UserGroup::factory()->create()->uid);
+    $groupNav = ['order' => ['nav-group-content' => ['nav-content-news', 'nav-assets']]];
+    $navigations->saveGroupNavigation($group, $groupNav);
+
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => Entry::class,
+        'sourceOrder' => ['custom:news', 'custom:blog'],
+        'sourcePages' => ['custom:news' => 'News', 'custom:blog' => 'Blog'],
+        'pageSettings' => ['News' => ['label' => 'News'], 'Blog' => ['label' => 'Blog']],
+        'sources' => ['custom:blog' => $customSource('Blog')],
+    ])->assertOk();
+
+    expect($navigations->getDefault())->toEqual([
+        'order' => ['root' => ['nav-content-news', 'nav-content-blog', 'nav-dashboard']],
+        'items' => ['nav-content-news' => ['parent' => 'root'], 'nav-content-blog' => ['parent' => 'root']],
+    ])->and($navigations->getGroupNavigation($group->uid)['nav'])->toEqual($groupNav);
+});
+
+it('leaves a saved navigation alone when a page’s disabled sources are enabled', function () {
+    $single = Section::factory()->create(['type' => SectionType::Single]);
+    $navigations = app(CustomNavigations::class);
+
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$single->uid", 'page' => 'Globals', 'disabled' => true],
+    ]);
+
+    $nav = [
+        'order' => ['nav-group-content' => ['nav-content-entries', 'nav-assets']],
+        'items' => ['nav-content-globals' => ['parent' => 'root']],
+    ];
+    $navigations->saveDefault($nav);
+
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => Entry::class,
+        'sourceOrder' => ['*', "section:$single->uid"],
+        'sourcePages' => ['*' => 'Entries', "section:$single->uid" => 'Globals'],
+        'pageSettings' => ['Entries' => ['label' => 'Entries'], 'Globals' => ['label' => 'Globals']],
+        'sources' => ["section:$single->uid" => ['enabled' => true]],
+    ])->assertOk();
+
+    expect($navigations->getDefault())->toEqual($nav);
 });

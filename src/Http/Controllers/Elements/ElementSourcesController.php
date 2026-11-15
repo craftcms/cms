@@ -219,8 +219,11 @@ readonly class ElementSourcesController
             array_multisort($sourcePageIndexes, SORT_NUMERIC, range(1, count($newSourceConfigs)), SORT_NUMERIC, $newSourceConfigs);
         }
 
+        // Pages whose sources are all disabled count too, so enabling one
+        // doesn't move a page the nav was already customized with.
         $oldEntryPages = $elementType === Entry::class
-            ? $elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION)->values()->all()
+            ? $elementSources->getSources(Entry::class, ElementSources::CONTEXT_NAVIGATION, withDisabled: true)
+                ->pluck('page')->filter()->unique()->values()->all()
             : null;
 
         $elementSources->saveSources($elementType, $newSourceConfigs);

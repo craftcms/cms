@@ -64,7 +64,11 @@ readonly class Navigation
      */
     public function getItems(): array
     {
-        return $this->applySelection($this->applyBadgeCounts($this->getTree()));
+        $collapsed = [];
+        $pageHrefs = [];
+        $tree = $this->customizedTree($collapsed, $pageHrefs);
+
+        return $this->applySelection($this->applyBadgeCounts($tree), $pageHrefs);
     }
 
     /**
@@ -135,9 +139,10 @@ readonly class Navigation
      * source.
      *
      * @param  array<array-key, string>  $collapsed  Set to the collapsed sources' ids, mapped to their pages' ids
+     * @param  array<string, string>  $pageHrefs  Set to the collapsed pages' own URLs, by their ids
      * @return NavItem[]
      */
-    private function customizedTree(array &$collapsed): array
+    private function customizedTree(array &$collapsed, array &$pageHrefs = []): array
     {
         $user = currentUser();
         $tree = $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user);
@@ -150,7 +155,7 @@ readonly class Navigation
             ->mapWithKeys(fn (string $page) => [$this->pageItemId($page) => true])
             ->all();
 
-        return $this->collapseSingleSourcePages($tree, $pageIds, $collapsed);
+        return $this->collapseSingleSourcePages($tree, $pageIds, $collapsed, $pageHrefs);
     }
 
     /**
@@ -227,9 +232,11 @@ readonly class Navigation
                 ];
 
                 foreach ($anchors as [$anchor, $offset]) {
-                    $parent = $this->orderParent($nav['order'], $anchor);
+                    // Only the order of the parent the anchor ends up in, which
+                    // the navigation it's layered over can set.
+                    $parent = $nav['items'][$anchor]['parent'] ?? $baseItems[$anchor]['parent'] ?? 'nav-group-content';
 
-                    if ($parent === null) {
+                    if (! is_array($nav['order'][$parent] ?? null) || ! in_array($anchor, $nav['order'][$parent], true)) {
                         continue;
                     }
 
@@ -738,9 +745,10 @@ readonly class Navigation
      * @param  NavItem[]  $items
      * @param  array<string, bool>  $pageIds  The entry pages' item ids
      * @param  array<array-key, string>  $collapsed  Collapsed sources' ids, mapped to their pages' ids
+     * @param  array<string, string>  $pageHrefs  Collapsed pages' own URLs, by their ids
      * @return NavItem[]
      */
-    private function collapseSingleSourcePages(array $items, array $pageIds, array &$collapsed): array
+    private function collapseSingleSourcePages(array $items, array $pageIds, array &$collapsed, array &$pageHrefs): array
     {
         foreach ($items as $item) {
             if (! is_array($item->subnav)) {
@@ -748,7 +756,7 @@ readonly class Navigation
             }
 
             if (! isset($pageIds[$item->id])) {
-                $item->subnav = $this->collapseSingleSourcePages($item->subnav, $pageIds, $collapsed);
+                $item->subnav = $this->collapseSingleSourcePages($item->subnav, $pageIds, $collapsed, $pageHrefs);
 
                 continue;
             }
@@ -770,6 +778,11 @@ readonly class Navigation
             }
 
             $source = $leaves[0];
+
+            if ($item->id !== null && $item->href !== null) {
+                $pageHrefs[$item->id] = $item->href;
+            }
+
             $item->href($source->href)->subnav(false);
             $item->badgeCount = $source->badgeCount;
             $item->badgeLabel = $source->badgeLabel;
@@ -1117,9 +1130,10 @@ readonly class Navigation
      * Marks the trail to the most specific matching item.
      *
      * @param  NavItem[]  $items
+     * @param  array<string, string>  $pageHrefs  Collapsed pages' own URLs, by their ids, which they match as well as their sources'
      * @return NavItem[]
      */
-    private function applySelection(array $items): array
+    private function applySelection(array $items, array $pageHrefs = []): array
     {
         $path = $this->request->craftPath();
 
@@ -1133,6 +1147,7 @@ readonly class Navigation
         $findBest = function (array $items) use (
             &$findBest,
             $path,
+            $pageHrefs,
             &$best,
             &$bestLength,
             &$bestQuerySize,
@@ -1142,23 +1157,22 @@ readonly class Navigation
                     $findBest($item->subnav);
                 }
 
-                $itemPath = $this->navItemPath((string) $item->href);
-                parse_str(
-                    (string) parse_url((string) $item->href, PHP_URL_QUERY),
-                    $params,
-                );
-                $querySize = count($params);
+                foreach (array_filter([$item->href, $pageHrefs[$item->id] ?? null]) as $href) {
+                    $itemPath = $this->navItemPath($href);
+                    parse_str((string) parse_url($href, PHP_URL_QUERY), $params);
+                    $querySize = count($params);
 
-                if (
-                    $this->pathMatches($path, $itemPath) &&
-                    $this->queryMatches((string) $item->href) &&
-                    ($bestLength < strlen($itemPath) ||
-                        ($bestLength === strlen($itemPath) &&
-                            $querySize > $bestQuerySize))
-                ) {
-                    $best = $item;
-                    $bestLength = strlen($itemPath);
-                    $bestQuerySize = $querySize;
+                    if (
+                        $this->pathMatches($path, $itemPath) &&
+                        $this->queryMatches($href) &&
+                        ($bestLength < strlen($itemPath) ||
+                            ($bestLength === strlen($itemPath) &&
+                                $querySize > $bestQuerySize))
+                    ) {
+                        $best = $item;
+                        $bestLength = strlen($itemPath);
+                        $bestQuerySize = $querySize;
+                    }
                 }
             }
         };

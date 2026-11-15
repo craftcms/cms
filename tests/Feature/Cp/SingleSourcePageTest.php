@@ -12,6 +12,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Http\Request;
 
 use function Pest\Laravel\actingAs;
 
@@ -133,4 +134,24 @@ it('gives a page that links to its one source the source’s badge count', funct
     $id = entryPageItem('News')->id;
 
     expect(app(Navigation::class)->getSourceBadgeCounts())->toHaveKey($id, 3);
+});
+
+it('keeps a page that links to its one source selected on the page’s own URL', function () {
+    $single = Section::factory()->create(['type' => SectionType::Single, 'handle' => 'contactDetails']);
+
+    pageSources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:$single->uid", 'page' => 'Globals'],
+    ]);
+
+    app()->forgetScopedInstances();
+    $items = app()->make(Navigation::class, [
+        'request' => Request::create("/admin/content/globals?source=section:$single->uid"),
+    ])->getItems();
+    $globals = collect($items)
+        ->flatMap(fn (NavItem $item) => $item->group && is_array($item->subnav) ? $item->subnav : [$item])
+        ->first(fn (NavItem $item) => $item->label === 'Globals');
+
+    expect($globals->subnav)->toBeFalse()
+        ->and($globals->selected)->toBeTrue();
 });
