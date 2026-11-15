@@ -1,12 +1,16 @@
 import {setIconResolver} from '@craftcms/ui/utilities/icons';
 import {nothing} from 'lit';
+import {detectPlatform} from '@tanstack/hotkeys';
 import {
   createApp,
   defineComponent,
   h,
   nextTick,
+  onBeforeUnmount,
+  onMounted,
   provide,
   ref,
+  useTemplateRef,
   type VNode,
 } from 'vue';
 import {afterEach, beforeAll, expect, it, vi} from 'vite-plus/test';
@@ -18,7 +22,9 @@ import {
   createScreenPanels,
   screenPanels,
 } from '@/common/composables/screenPanels';
+import {registerShortcut} from '@/common/shortcuts';
 import AssistantPanel from './AssistantPanel.vue';
+import AssistantToggle from './AssistantToggle.vue';
 import {registerAssistantScreen, useAssistantPanel} from './assistant';
 
 vi.mock('@craftcms/ui', async () => ({
@@ -29,7 +35,10 @@ vi.mock('@inertiajs/vue3', async () => ({
   ...(await vi.importActual('@inertiajs/vue3')),
   usePage: () => ({props: {craft: {currentUser: {id: 1}}}}),
 }));
-const chat = vi.hoisted(() => ({finish: (_first: boolean) => {}}));
+const chat = vi.hoisted(() => ({
+  finish: (_first: boolean) => {},
+  italic: () => {},
+}));
 const history = vi.hoisted(() => ({title: 'New chat', refresh: () => {}}));
 
 // The panel loads the chat on demand, and Vue's async loader only unwraps
@@ -39,10 +48,28 @@ vi.mock('./AssistantChat.vue', () => ({
   default: defineComponent({
     emits: ['finish'],
     setup: (_, {expose, emit}) => {
-      expose({focus: () => {}, focusTarget: () => null});
+      const input = useTemplateRef<HTMLTextAreaElement>('input');
+      expose({
+        focus: () => input.value?.focus(),
+        focusTarget: () => input.value,
+      });
       chat.finish = (first) => emit('finish', first);
 
-      return () => h('div', {class: 'chat'});
+      // The message box's Markdown field has an italic command on the same keys.
+      onMounted(() => {
+        const {unregister} = registerShortcut('Mod+I', () => chat.italic(), {
+          target: input.value!,
+          stopPropagation: true,
+        });
+        onBeforeUnmount(unregister);
+      });
+
+      return () =>
+        h('div', {class: 'chat'}, [
+          h('div', {class: 'assistant-chat__message-box'}, [
+            h('textarea', {ref: 'input'}),
+          ]),
+        ]);
     },
   }),
 }));
@@ -203,6 +230,76 @@ it('moves the open chat into the latest editor’s screen, and back once it clos
   expect(document.querySelector('.page .chat')).toBe(chatElement);
   expect(screenPanels.openPanelId.value).toBe('ai-assistant');
 });
+
+function pressModI(): void {
+  document.activeElement?.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: 'i',
+      code: 'KeyI',
+      [detectPlatform() === 'mac' ? 'metaKey' : 'ctrlKey']: true,
+      bubbles: true,
+      cancelable: true,
+    })
+  );
+}
+
+async function focusMessageBoxWithModI(): Promise<HTMLElement> {
+  pagePanel.value = true;
+  await mount(() => h(AssistantToggle));
+  const field = document.createElement('input');
+  document.body.append(field);
+  field.focus();
+
+  pressModI();
+  await vi.dynamicImportSettled();
+  await settle();
+
+  expect(document.activeElement).toBe(
+    document.querySelector('.assistant-chat__message-box textarea')
+  );
+
+  return field;
+}
+
+it('folds the chat with Cmd+I straight after Cmd+I focused its message box, sending focus back', async () => {
+  chat.italic = vi.fn();
+  const field = await focusMessageBoxWithModI();
+
+  pressModI();
+  await settle();
+
+  expect(useAssistantPanel().isOpen.value).toBe(false);
+  expect(document.activeElement).toBe(field);
+  expect(chat.italic).not.toHaveBeenCalled();
+});
+
+it.each([
+  {
+    change: 'typing',
+    act: (input: HTMLTextAreaElement) =>
+      input.dispatchEvent(new Event('input', {bubbles: true})),
+  },
+  {
+    change: 'moving the cursor',
+    act: (input: HTMLTextAreaElement) => {
+      input.value = 'ab';
+      input.setSelectionRange(1, 1);
+    },
+  },
+])(
+  'leaves Cmd+I to the message box’s italic command after $change',
+  async ({act}) => {
+    chat.italic = vi.fn();
+    await focusMessageBoxWithModI();
+
+    act(document.activeElement as HTMLTextAreaElement);
+    pressModI();
+    await settle();
+
+    expect(chat.italic).toHaveBeenCalledTimes(1);
+    expect(useAssistantPanel().isOpen.value).toBe(true);
+  }
+);
 
 it('mounts the chat the first time it opens, and keeps it once folded', async () => {
   pagePanel.value = true;
