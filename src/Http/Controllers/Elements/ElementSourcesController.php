@@ -8,6 +8,7 @@ use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\ElementSourceUi;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -218,6 +219,10 @@ readonly class ElementSourcesController
             array_multisort($sourcePageIndexes, SORT_NUMERIC, range(1, count($newSourceConfigs)), SORT_NUMERIC, $newSourceConfigs);
         }
 
+        $oldEntryPages = $elementType === Entry::class
+            ? $elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION)->values()->all()
+            : null;
+
         $elementSources->saveSources($elementType, $newSourceConfigs);
 
         if ($multiPage) {
@@ -225,6 +230,10 @@ readonly class ElementSourcesController
                 fn (array $settings) => array_filter($settings, fn ($setting) => $setting !== null && $setting !== ''),
                 $pageSettings,
             ));
+        }
+
+        if ($oldEntryPages !== null) {
+            $navigation->placeAddedEntryPages($oldEntryPages);
         }
 
         // Where the index should land next: the source being edited, by the link

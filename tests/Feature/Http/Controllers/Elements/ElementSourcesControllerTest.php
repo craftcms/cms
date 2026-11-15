@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
@@ -15,6 +16,7 @@ use CraftCms\Cms\Http\Controllers\Elements\ElementSourcesController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\User\Elements\User;
@@ -777,4 +779,69 @@ it('stores the count toggle', function () {
     $config = app(ProjectConfig::class)->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class));
 
     expect($config[0]['showBadgeCount'])->toBeTrue();
+});
+
+it('lists new entry pages beside the pages they were added next to in saved navigations', function () {
+    $projectConfig = app(ProjectConfig::class);
+    $navigations = app(CustomNavigations::class);
+    $customSource = fn (string $label) => [
+        'label' => $label,
+        'condition' => [
+            'class' => ElementCondition::class,
+            'elementType' => Entry::class,
+            'conditionRules' => [],
+        ],
+    ];
+
+    $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:news', 'page' => 'News', ...$customSource('News')],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:pages', 'page' => 'Pages', ...$customSource('Pages')],
+    ]);
+
+    $navigations->saveDefault([
+        'order' => ['nav-group-content' => ['nav-content-pages', 'nav-assets', 'nav-content-news']],
+    ]);
+
+    $group = UserGroups::getGroupByUid(UserGroup::factory()->create()->uid);
+    $navigations->saveGroupNavigation($group, [
+        'order' => ['root' => ['nav-content-news', 'nav-dashboard']],
+        'items' => ['nav-content-news' => ['parent' => 'root']],
+    ]);
+
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => Entry::class,
+        'sourceOrder' => ['custom:featured', 'custom:news', 'custom:blog', 'custom:pages'],
+        'sourcePages' => [
+            'custom:featured' => 'Featured',
+            'custom:news' => 'News',
+            'custom:blog' => 'Blog',
+            'custom:pages' => 'Pages',
+        ],
+        'pageSettings' => [
+            'Featured' => ['label' => 'Featured'],
+            'News' => ['label' => 'News'],
+            'Blog' => ['label' => 'Blog'],
+            'Pages' => ['label' => 'Pages'],
+        ],
+        'sources' => [
+            'custom:featured' => $customSource('Featured'),
+            'custom:blog' => $customSource('Blog'),
+        ],
+    ])->assertOk();
+
+    // A new page goes after the page before it, or before the page after it
+    // when there's none before it.
+    expect($navigations->getDefault())->toEqual([
+        'order' => ['nav-group-content' => ['nav-content-pages', 'nav-assets', 'nav-content-featured', 'nav-content-news', 'nav-content-blog']],
+    ]);
+
+    // Where a group lists the pages elsewhere, new pages move there too.
+    expect($navigations->getGroupNavigation($group->uid)['nav'])->toEqual([
+        'order' => ['root' => ['nav-content-featured', 'nav-content-news', 'nav-content-blog', 'nav-dashboard']],
+        'items' => [
+            'nav-content-news' => ['parent' => 'root'],
+            'nav-content-featured' => ['parent' => 'root'],
+            'nav-content-blog' => ['parent' => 'root'],
+        ],
+    ]);
 });

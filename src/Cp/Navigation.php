@@ -147,10 +147,132 @@ readonly class Navigation
         }
 
         $pageIds = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION)
-            ->mapWithKeys(fn (string $page) => [$this->itemId(sprintf('content/%s', ElementSources::pageSlug($page))) => true])
+            ->mapWithKeys(fn (string $page) => [$this->pageItemId($page) => true])
             ->all();
 
         return $this->collapseSingleSourcePages($tree, $pageIds, $collapsed);
+    }
+
+    /**
+     * Lists entry pages the nav didn't have before beside the pages they were
+     * added before or after, in the default and user group navigations that
+     * were saved with an order for those pages. Items an order doesn't list
+     * follow the ones it does, so new pages would otherwise end up after them.
+     *
+     * A new page goes after the closest page before it that a navigation
+     * lists, or else before the closest page after it.
+     *
+     * @param  list<string>  $oldPages  The entry pages the nav had before
+     */
+    public function placeAddedEntryPages(array $oldPages): void
+    {
+        $ids = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION)
+            ->map($this->pageItemId(...))
+            ->values()
+            ->all();
+
+        // Without pages, entries had one page, at `content/entries`.
+        $newIds = array_values(array_diff($ids, array_map($this->pageItemId(...), $oldPages ?: ['Entries'])));
+
+        if ($newIds === []) {
+            return;
+        }
+
+        $default = $this->customNavigations->getDefault();
+        $placed = $this->placeBeside($default, $ids, $newIds, []);
+
+        if ($placed !== $default) {
+            $this->customNavigations->saveDefault($placed);
+        }
+
+        foreach ($this->customNavigations->getGroupNavigations() as $navigation) {
+            $nav = $this->placeBeside($navigation['nav'], $ids, $newIds, $placed['items'] ?? []);
+
+            if ($nav !== $navigation['nav']) {
+                $this->customNavigations->saveGroupNavigation($navigation['userGroup'], $nav);
+            }
+        }
+    }
+
+    /**
+     * Adds items to a customization's order beside their siblings.
+     *
+     * New items are placed until none are left that can be, so one beside
+     * another new item gets placed once that one is.
+     *
+     * @param  array<mixed>  $nav
+     * @param  list<string>  $ids  The sibling items' ids, in order
+     * @param  list<string>  $newIds  The ids of the items to add
+     * @param  array<mixed>  $baseItems  The items of the customization `$nav` is layered over
+     * @return array<mixed>
+     */
+    private function placeBeside(array $nav, array $ids, array $newIds, array $baseItems): array
+    {
+        if (! is_array($nav['order'] ?? null)) {
+            return $nav;
+        }
+
+        do {
+            $placedAny = false;
+
+            foreach ($newIds as $id) {
+                if ($this->orderParent($nav['order'], $id) !== null) {
+                    continue;
+                }
+
+                $index = (int) array_search($id, $ids, true);
+                $anchors = [
+                    ...array_map(fn (string $before) => [$before, 1], array_reverse(array_slice($ids, 0, $index))),
+                    ...array_map(fn (string $after) => [$after, 0], array_slice($ids, $index + 1)),
+                ];
+
+                foreach ($anchors as [$anchor, $offset]) {
+                    $parent = $this->orderParent($nav['order'], $anchor);
+
+                    if ($parent === null) {
+                        continue;
+                    }
+
+                    array_splice($nav['order'][$parent], (int) array_search($anchor, $nav['order'][$parent], true) + $offset, 0, [$id]);
+
+                    if ($parent === ($baseItems[$id]['parent'] ?? 'nav-group-content')) {
+                        unset($nav['items'][$id]['parent']);
+                    } else {
+                        $nav['items'][$id]['parent'] = $parent;
+                    }
+
+                    $nav['items'] = array_filter($nav['items'] ?? []);
+
+                    if ($nav['items'] === []) {
+                        unset($nav['items']);
+                    }
+
+                    $placedAny = true;
+
+                    break;
+                }
+            }
+        } while ($placedAny);
+
+        return $nav;
+    }
+
+    /**
+     * The parent whose order lists an item.
+     *
+     * @param  array<mixed>  $order
+     */
+    private function orderParent(array $order, string $id): ?string
+    {
+        $parent = array_find_key($order, fn (mixed $ids) => is_array($ids) && in_array($id, $ids, true));
+
+        return $parent === null ? null : (string) $parent;
+    }
+
+    /** An entry page's nav item id. */
+    private function pageItemId(string $page): string
+    {
+        return $this->itemId(sprintf('content/%s', ElementSources::pageSlug($page)));
     }
 
     /**
