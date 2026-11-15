@@ -387,6 +387,7 @@ return [
     'Composer was unable to install the updates.' => 'Skladateľovi sa nepodarilo nainštalovať aktualizácie.',
     'Composer was unable to remove the plugin.' => 'Skladateľovi sa nepodarilo odstrániť doplnok.',
     'Composer was unable to revert the updates.' => 'Skladateľovi sa nepodarilo vrátiť späť aktualizácie.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Komprimované',
     'Condition {num, number}' => 'Podmienka {num, number}',
     'Configure the category group’s site-specific settings.' => 'Nakonfigurujte nastavenia skupiny kategórie pre konkrétny web.',

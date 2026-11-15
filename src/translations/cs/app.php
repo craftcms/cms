@@ -387,6 +387,7 @@ return [
     'Composer was unable to install the updates.' => 'Composer nemohl nainstalovat aktualizace.',
     'Composer was unable to remove the plugin.' => 'Composer nemohl odebrat plugin.',
     'Composer was unable to revert the updates.' => 'Composer nemohl vrátit aktualizace zpět.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Komprimováno',
     'Condition {num, number}' => 'Stav {num, number}',
     'Configure the category group’s site-specific settings.' => 'Nakonfigurujte nastavení pro weby v této skupině kategorií.',

@@ -387,6 +387,7 @@ return [
     'Composer was unable to install the updates.' => 'Composer kunne ikke installere opdateringerne.',
     'Composer was unable to remove the plugin.' => 'Composer kunne ikke fjerne pluginnet.',
     'Composer was unable to revert the updates.' => 'Composer kunne ikke afinstallere opdateringerne.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Komprimeret',
     'Condition {num, number}' => 'Betingelse {num, number}',
     'Configure the category group’s site-specific settings.' => 'Konfigurer kategorigruppens site-specifikke indstillinger.',
