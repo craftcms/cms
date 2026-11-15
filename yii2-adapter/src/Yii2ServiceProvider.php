@@ -77,6 +77,7 @@ use CraftCms\Yii2Adapter\Gql\LegacyGqlTypes;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Http\HandleYiiSiteRouteFallback;
+use CraftCms\Yii2Adapter\Http\LegacyAwarePreventRequestForgery;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
 use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
@@ -97,6 +98,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Queue\Events\JobAttempted;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;
@@ -125,6 +127,7 @@ class Yii2ServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(CoreMigrator::class, Migrator::class);
+        $this->app->bind(PreventRequestForgery::class, LegacyAwarePreventRequestForgery::class);
         $this->app
             ->when(Migrator::class)
             ->needs(MigrationRepositoryInterface::class)
