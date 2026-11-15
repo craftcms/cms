@@ -291,6 +291,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 
         $query->where(function (Builder $query) use ($outerQuery, $value, $entryQuery, $peerDraftPermissionPrefix, $peerPermissionPrefix, $permissionPrefix, $user, $sections) {
             $partialAccessSections = [];
+            $fullyAuthorizedSectionIds = [];
 
             foreach ($sections as $section) {
                 if (! $user->can("$permissionPrefix:$section->uid")) {
@@ -344,7 +345,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             }
 
             // They don't have access to anything
-            if (empty($partialAccessSections) && $value) {
+            if (empty($partialAccessSections) && empty($fullyAuthorizedSectionIds) && $value) {
                 $outerQuery->whereRaw('0 = 1');
 
                 return;

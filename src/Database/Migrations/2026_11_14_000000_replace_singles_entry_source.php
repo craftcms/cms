@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Conditions\SectionTypeConditionRule;
+use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Link;
@@ -86,7 +88,7 @@ return new class extends Migration
         $customKey = null;
 
         if (isset($singlesSource) && empty($singlesSource['disabled']) && $singleUids !== []) {
-            $newSources[] = $customSource = $this->customSinglesSource($singlesSource, $page);
+            $newSources[] = $customSource = $this->customSinglesSource($projectConfig, $singlesSource, $page, $singleUids);
             $customKey = $customSource['key'];
         }
 
@@ -366,16 +368,36 @@ return new class extends Migration
     }
 
     /**
+     * The Singles source only listed singles the user could view, and was only
+     * shown to users who could view one, so the custom source lists viewable
+     * singles, for the user groups that can view one, on editions that have
+     * them. Admins see it too.
+     *
      * @param  array<string, mixed>  $singlesSource
+     * @param  list<string>  $singleUids
      * @return array<string, mixed>
      */
-    private function customSinglesSource(array $singlesSource, string $page): array
+    private function customSinglesSource(ProjectConfig $projectConfig, array $singlesSource, string $page, array $singleUids): array
     {
         $condition = Entry::createCondition();
         $condition->addConditionRule($condition->createConditionRule([
             'class' => SectionTypeConditionRule::class,
             'values' => [SectionType::Single->value],
         ]));
+        $condition->addConditionRule($condition->createConditionRule([
+            'class' => ViewableConditionRule::class,
+            'value' => true,
+        ]));
+
+        // Older project configs have permission names in lowercase.
+        $viewPermissions = array_map(fn (string $uid) => Str::lower("viewEntries:$uid"), $singleUids);
+        $userGroups = array_keys(array_filter(
+            $projectConfig->get(ProjectConfig::PATH_USER_GROUPS) ?? [],
+            fn (mixed $group) => is_array($group['permissions'] ?? null) && array_any(
+                $group['permissions'],
+                fn (mixed $permission) => is_string($permission) && in_array(Str::lower($permission), $viewPermissions, true),
+            ),
+        ));
 
         return array_filter([
             'type' => ElementSources::TYPE_CUSTOM,
@@ -387,6 +409,8 @@ return new class extends Migration
             'defaultSort' => $singlesSource['defaultSort'] ?? ['title', 'asc'],
             'defaultViewMode' => $singlesSource['defaultViewMode'] ?? null,
             'showBadgeCount' => $singlesSource['showBadgeCount'] ?? null,
+            // Custom sources can only be limited to user groups on Pro and up.
+            'userGroups' => Edition::isAtLeast(Edition::Pro) ? ($userGroups ?: false) : null,
             'page' => $page,
         ], fn (mixed $value) => $value !== null);
     }

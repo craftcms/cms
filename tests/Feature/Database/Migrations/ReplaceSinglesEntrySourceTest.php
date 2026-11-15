@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Navigation;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Conditions\SectionTypeConditionRule;
+use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
@@ -14,8 +16,13 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
+use CraftCms\Cms\User\Models\UserGroup;
+use CraftCms\Cms\User\UserPermissions;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -78,6 +85,7 @@ function singlesPageSources(Section ...$singles): array
 }
 
 it('replaces an enabled Singles source with a custom one configured the same way', function () {
+    Edition::set(Edition::Pro);
     saveOldEntrySources([
         ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
         ['type' => ElementSources::TYPE_NATIVE, 'key' => "section:{$this->news->uid}", 'page' => 'Entries'],
@@ -107,8 +115,63 @@ it('replaces an enabled Singles source with a custom one configured the same way
         ->and($custom['defaultSort'])->toBe(['dateUpdated', 'desc'])
         ->and($custom['defaultViewMode'])->toBe('cards')
         ->and($custom['showBadgeCount'])->toBeTrue()
-        ->and($custom['condition']['conditionRules']['rules'][0] ?? $custom['condition']['conditionRules'][0])
-        ->toMatchArray(['class' => SectionTypeConditionRule::class, 'values' => [SectionType::Single->value]]);
+        ->and($custom['condition']['conditionRules']['rules'] ?? $custom['condition']['conditionRules'])
+        ->sequence(
+            fn ($rule) => $rule->toMatchArray(['class' => SectionTypeConditionRule::class, 'values' => [SectionType::Single->value]]),
+            fn ($rule) => $rule->toMatchArray(['class' => ViewableConditionRule::class, 'value' => true]),
+        )
+        // No user groups can view a single, so only admins get it.
+        ->and($custom['userGroups'])->toBeFalse();
+});
+
+it('shows the custom Singles source to user groups that can view a single, listing the singles they can view', function () {
+    Edition::set(Edition::Pro);
+    EntryModel::factory()->forSection($this->home)->create();
+    EntryModel::factory()->forSection($this->about)->create();
+
+    $permissions = app(UserPermissions::class);
+    $editors = UserGroup::factory()->create();
+    $writers = UserGroup::factory()->create();
+    $legacy = UserGroup::factory()->create();
+    $permissions->saveGroupPermissions($editors->id, ['accessCp', "viewEntries:{$this->home->uid}"]);
+    $permissions->saveGroupPermissions($writers->id, ['accessCp', "viewEntries:{$this->news->uid}"]);
+    // Older project configs have permission names in lowercase.
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->muteEvents = true;
+    $projectConfig->set(ProjectConfig::PATH_USER_GROUPS.".$legacy->uid.permissions", ['accesscp', "viewentries:{$this->about->uid}"]);
+    $projectConfig->muteEvents = false;
+
+    saveOldEntrySources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'page' => 'Entries'],
+    ]);
+
+    $custom = Arr::first(runReplaceSinglesEntrySourceMigration(), fn (array $source) => $source['type'] === ElementSources::TYPE_CUSTOM);
+
+    expect($custom['userGroups'])->toEqualCanonicalizing([$editors->uid, $legacy->uid]);
+
+    $customSource = function (UserGroup $group) use ($custom): ?array {
+        $user = UserModel::factory()->create();
+        $user->userGroups()->attach($group->id);
+        app()->forgetScopedInstances();
+        app(UserPermissions::class)->reset();
+        actingAs(User::findOne(['id' => $user->id]));
+
+        return app(ElementSources::class)->findSource(Entry::class, $custom['key']);
+    };
+
+    $editorsSource = $customSource($editors);
+    $query = Entry::find();
+    Conditions::createCondition($editorsSource['condition'])->modifyQuery($query);
+
+    expect($query->pluck('sectionId')->all())->toBe([$this->home->id])
+        ->and($customSource($writers))->toBeNull();
+
+    // Custom sources aren't limited to user groups below Pro.
+    Edition::set(Edition::Team);
+    saveOldEntrySources([['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'page' => 'Entries']]);
+    expect(Arr::first(runReplaceSinglesEntrySourceMigration(), fn (array $source) => $source['type'] === ElementSources::TYPE_CUSTOM))
+        ->not->toHaveKey('userGroups');
 });
 
 it('removes a disabled Singles source without replacing it, and gives sources saved without pages the Entries page', function () {
