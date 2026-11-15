@@ -92,3 +92,28 @@ it('keeps rule types with the same label and hint when they belong to different 
 
     expect($ruleTypes)->toHaveCount(2);
 });
+
+it('sorts rule types by group, then label, then hint', function () {
+    $type = fn (?string $group, string $label, ?string $hint = null) => [
+        'class' => TestBuilderConditionRule::class,
+        'ruleGroup' => $group,
+        'ruleLabel' => $label,
+        'ruleHint' => $hint,
+    ];
+
+    $ruleTypes = resolveRuleTypes([
+        $type('Fields', 'Body'),
+        $type('Fields', 'Author', 'b'),
+        $type(null, 'Zone'),
+        $type('Fields', 'Author', 'a'),
+        $type('Attributes', 'Title'),
+    ]);
+
+    expect(array_map(fn (array $type) => [$type['group'], $type['label'], $type['hint']], $ruleTypes))->toBe([
+        [null, 'Zone', null],
+        ['Attributes', 'Title', null],
+        ['Fields', 'Author', 'a'],
+        ['Fields', 'Author', 'b'],
+        ['Fields', 'Body', null],
+    ]);
+});

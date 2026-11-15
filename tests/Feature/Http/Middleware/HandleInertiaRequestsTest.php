@@ -6,7 +6,6 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Events\CpNavItemsResolving;
-use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
@@ -53,25 +52,7 @@ it('shares read-only only with settings screens when admin changes are disabled'
     'entry index' => ['content/entries', false],
 ]);
 
-it('sends the nav tree even when the client already has it', function () {
-    Event::forget(CpNavItemsResolving::class);
-    actingAs(User::find()->one());
-
-    $navKey = 'craft.nav.'.(app(Navigation::class)->navSiteId() ?? 'all');
-    $headers = [
-        'X-Inertia' => 'true',
-        'X-Inertia-Version' => (string) Cp::vite()->manifestHash(),
-        // The client already holds the tree.
-        'X-Inertia-Except-Once-Props' => $navKey,
-    ];
-    $url = action([GeneralSettingsController::class, 'index']);
-
-    $nav = get($url, $headers)->assertOk()->json('props.craft.nav');
-
-    expect($nav)->toBeArray()->not->toBeEmpty();
-});
-
-it('updates dynamic navigation even when the client already has the tree', function (string $customization) {
+it('sends the nav tree only when it differs from the one the client has', function (string $customization) {
     Event::forget(CpNavItemsResolving::class);
     actingAs(User::find()->one());
 
@@ -110,24 +91,32 @@ it('updates dynamic navigation even when the client already has the tree', funct
         'X-Inertia-Version' => (string) Cp::vite()->manifestHash(),
     ];
 
+    // Each visit names the once props the last response returned, as the client does.
+    $visit = function () use ($url, &$headers): mixed {
+        $response = get($url, $headers)->assertOk();
+        $headers['X-Inertia-Except-Once-Props'] = implode(',', array_keys($response->json('onceProps')));
+
+        return $response->json('props.craft.nav');
+    };
     $navLabels = fn (array $items): array => collect($items)
         ->flatMap(fn (array $item): array => $item['group'] ? $item['subnav'] : [$item])
         ->pluck('label')
         ->all();
 
-    $initial = get($url, $headers)->assertOk()->json('props.craft.nav');
+    $initial = $visit();
+    expect($initial)->toBeArray()->not->toBeEmpty();
     expect($navLabels($initial))->not->toContain('Review queue');
 
-    $headers['X-Inertia-Except-Once-Props'] = 'craft.nav.'.(app(Navigation::class)->navSiteId() ?? 'all');
+    expect($visit())->toBeNull();
+
     $plugin->showQueue = true;
-    $added = get($url, $headers)->assertOk()->json('props.craft.nav');
+    $added = $visit();
     expect($added)->toBeArray();
     expect($navLabels($added))->toContain('Review queue');
 
     $plugin->showQueue = false;
-    $removed = get($url, $headers)->assertOk()->json('props.craft.nav');
-    expect($removed)->toBeArray();
-    expect($navLabels($removed))->not->toContain('Review queue');
+    $removed = $visit();
+    expect($removed)->toBe($initial);
 })->with(['listener', 'wildcard listener', 'plugin']);
 
 it('leaves out the stable config the client already has, until it changes', function (Closure $change) {
