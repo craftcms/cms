@@ -37,14 +37,17 @@ export async function resolveFrom(pattern) {
 
 /**
  * What's in a black card, badge, (filled) chip, or tooltip, which is themed dark so it
- * holds up against the dark fill. Zero specificity, so the contents' own colors
+ * holds up against the dark fill. An info icon's children only ever show in its
+ * tooltip, which slots them through its shadow root, out of the tooltip
+ * selector's reach. Zero specificity, so the contents' own colors
  * still win. Matches the copies in tokens.css and variables.css.
  */
 export const BLACK_CONTENTS_SELECTOR = `:where(
   craft-card[data-color='black'] > *,
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
   craft-badge[fill='black'] > *,
-  craft-tooltip > [slot='content'] > *
+  craft-tooltip > [slot='content'] > *,
+  craft-info-icon > *
 )`;
 
 /**

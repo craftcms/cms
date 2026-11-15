@@ -10,7 +10,8 @@
   craft-card[data-color='black'] > *,
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
   craft-badge[fill='black'] > *,
-  craft-tooltip > [slot='content'] > *
+  craft-tooltip > [slot='content'] > *,
+  craft-info-icon > *
 ) {
   --c-text-xl: calc(20rem / 16);
   --c-text-lg: calc(18rem / 16);
@@ -414,7 +415,8 @@
   craft-card[data-color='black'] > *,
   craft-chip[data-color='black']:not([appearance~='plain']) > *,
   craft-badge[fill='black'] > *,
-  craft-tooltip > [slot='content'] > *
+  craft-tooltip > [slot='content'] > *,
+  craft-info-icon > *
 ) {
   color-scheme: dark;
   /* Icons in neutral badges stand out from their pale label text. */
