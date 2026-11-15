@@ -149,7 +149,6 @@
     padding-inline: var(--c-spacing-md);
     border: 1px solid var(--c-color-border-quiet);
     border-radius: var(--c-radius-full);
-    background-color: var(--c-surface-default);
   }
 
   section:first-of-type .activity-timeline__day {
