@@ -8,15 +8,19 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Iconic;
+use CraftCms\Cms\Condition\Enums\GroupOperator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
+use CraftCms\Cms\Entry\Conditions\SectionTypeConditionRule;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Section\Enums\DefaultPlacement;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Validation\SectionRules;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Conditions;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -243,15 +247,47 @@ class Section extends Component implements Chippable, CpEditable, Iconic, String
 
     /**
      * Returns the page name this section belongs to.
+     *
+     * That's its source's page, or, when its source isn't enabled, the page of
+     * the first custom source that lists it by its section or section type,
+     * such as the custom “Singles” source that replaced the shared one.
      */
     public function getPage(): ?string
     {
         if (! isset($this->page)) {
             $source = ElementSources::findSource(Entry::class, "section:$this->uid");
-            $this->page = $source['page'] ?? false;
+            $this->page = $source['page'] ?? $this->customSourcePage() ?? false;
         }
 
         return $this->page ?: null;
+    }
+
+    private function customSourcePage(): ?string
+    {
+        $entry = new Entry(['sectionId' => $this->id]);
+
+        foreach (ElementSources::getSources(Entry::class) as $source) {
+            if ($source['type'] !== ElementSourcesService::TYPE_CUSTOM || ! isset($source['page'], $source['condition'])) {
+                continue;
+            }
+
+            $rules = Conditions::createCondition($source['condition'])->getConditionRules();
+
+            if ($rules->operator !== GroupOperator::And) {
+                continue;
+            }
+
+            $sectionRules = array_filter(
+                $rules->getRules(),
+                fn ($rule) => $rule instanceof SectionConditionRule || $rule instanceof SectionTypeConditionRule,
+            );
+
+            if ($sectionRules !== [] && array_all($sectionRules, fn ($rule) => $rule->matchElement($entry))) {
+                return $source['page'];
+            }
+        }
+
+        return null;
     }
 
     public function getIcon(): string

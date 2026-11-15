@@ -375,3 +375,21 @@ it('leaves a default navigation without a saved order alone', function () {
 
     expect(app(ProjectConfig::class)->get(ProjectConfig::PATH_CP_NAV.'.default'))->toBe(['items' => ['nav-graphql' => ['hidden' => true]]]);
 });
+
+it('keeps singles on the custom Singles source’s page while their own sources are disabled', function () {
+    actingAs(User::find()->one());
+    $entry = EntryModel::factory()->forSection($this->home)->create();
+
+    saveOldEntrySources([
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => 'singles', 'page' => 'Site'],
+    ]);
+    runReplaceSinglesEntrySourceMigration();
+    Sections::refreshSections();
+
+    expect(Sections::getSectionByUid($this->home->uid)->getPage())->toBe('Site')
+        ->and(parse_url(Entry::findOne(['id' => $entry->id])->getCpEditUrl(), PHP_URL_PATH))->toContain("/content/site/home/$entry->id");
+
+    // A channel without an enabled source isn't listed by the Singles source.
+    expect(Sections::getSectionByUid($this->news->uid)->getPage())->not->toBe('Site');
+});
