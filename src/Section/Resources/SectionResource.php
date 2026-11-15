@@ -37,7 +37,7 @@ class SectionResource extends JsonResource
                 $entryTypes[$entryType->id] ??= [
                     'id' => $entryType->id,
                     'handle' => $entryType->handle,
-                    'name' => $entryType->name,
+                    'name' => $entryType->getUiLabel(),
                     'icon' => $entryType->getIcon() ? Icons::resolveIconData($entryType->getIcon()) : null,
                 ];
             }
@@ -46,7 +46,8 @@ class SectionResource extends JsonResource
         return [
             'uid' => $this->uid,
             'id' => $this->id,
-            'name' => $this->name,
+            // Translated, as the sidebar and the rest of the control panel show it
+            'name' => $this->getUiLabel(),
             'handle' => $this->handle,
             'type' => $this->type->value ?? SectionType::Channel->value,
             'sites' => array_keys($entryTypesBySite),
