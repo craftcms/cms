@@ -271,7 +271,10 @@ describe('AssistantChat', () => {
     const items = menu.actions();
     items[0]!.onClick!(new Event('click'));
 
-    expect(items.map((item) => item.label)).toEqual(['Order #1042']);
+    expect(items.map((item) => item.label)).toEqual([
+      'Order #1042',
+      'Upload files',
+    ]);
     expect(add).toHaveBeenCalledOnce();
   });
 

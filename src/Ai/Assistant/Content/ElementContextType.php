@@ -44,7 +44,7 @@ readonly class ElementContextType implements AssistantContextTypeInterface
         $open = array_values(array_filter($contexts, static fn (ElementContext $context): bool => $context->open));
         $tools = $open === [] ? [] : [new ReadEditorElement($this->elementContexts, $open)];
 
-        if ($imageTool = $this->viewEditorImage($request, $open)) {
+        if ($imageTool = $this->viewEditorImage($request, $items, $contexts)) {
             $tools[] = $imageTool;
             $description .= "\n\nTo see the image of the asset open in the editor, call view_editor_image. Look at it rather than asking the user what it shows, but only when their request needs it.";
         }
@@ -69,11 +69,23 @@ readonly class ElementContextType implements AssistantContextTypeInterface
      * Returns the tool that shows the model the image of the asset open in the user’s editor, if it’s an image they can
      * view, and the model can see it.
      *
-     * @param  list<ElementContext>  $open
+     * The asset is found from the open editor’s item rather than its context, as an item the message was sent with for
+     * the same asset takes the context’s place.
+     *
+     * @param  array<mixed>  $items
+     * @param  list<ElementContext>  $contexts
      */
-    private function viewEditorImage(Request $request, array $open): ?ViewEditorImage
+    private function viewEditorImage(Request $request, array $items, array $contexts): ?ViewEditorImage
     {
-        $asset = $open[0]->element ?? null;
+        $item = array_find($items, static fn (mixed $item): bool => is_array($item)
+            && ($item['open'] ?? false) === true
+            && ($item['earlier'] ?? false) !== true);
+        $asset = $item === null ? null : array_find(
+            array_map(static fn (ElementContext $context): mixed => $context->element, $contexts),
+            static fn (mixed $element): bool => $element instanceof Asset
+                && $element->id === ($item['elementId'] ?? null)
+                && (! is_int($item['siteId'] ?? null) || $element->siteId === $item['siteId']),
+        );
         $threadId = $request->input('threadId');
         $user = $request->craftUser()?->asElement();
 

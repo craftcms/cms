@@ -131,6 +131,33 @@ it('shows a model with vision the image of the asset open in the editor when it 
     AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => str_contains($prompt->agent->instructions(), 'call view_editor_image'));
 });
 
+it('offers the image of the asset open in the editor when the message was also sent with the asset', function () {
+    withVision(true);
+    AssistantAgent::fake(['Done.']);
+    $context = [
+        'type' => 'craft:element',
+        'elementType' => Asset::class,
+        'elementId' => $this->asset->id,
+        'siteId' => $this->asset->siteId,
+        'namespace' => [],
+    ];
+
+    postJson(action([AssistantController::class, 'run']), [
+        'threadId' => (string) Str::uuid(),
+        'runId' => (string) Str::uuid(),
+        'messages' => [['id' => (string) Str::uuid(), 'role' => 'user', 'content' => 'Write alt text']],
+        'forwardedProps' => ['context' => [
+            [...$context, 'ref' => 'chip-1'],
+            [...$context, 'ref' => 'editor-1', 'open' => true],
+        ]],
+    ])->assertOk()->streamedContent();
+
+    AssistantAgent::assertPrompted(fn (AgentPrompt $prompt): bool => array_any(
+        [...$prompt->agent->tools()],
+        static fn (mixed $tool): bool => $tool instanceof ViewEditorImage,
+    ));
+});
+
 it('doesn’t offer images to models without vision', function () {
     withVision(false);
 

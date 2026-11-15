@@ -1,5 +1,5 @@
 import {actionClient, t} from '@craftcms/ui';
-import {shallowRef, triggerRef} from 'vue';
+import {shallowRef, triggerRef, watch} from 'vue';
 import AssistantController from '@/actions/CraftCms/Cms/Ai/Http/Controllers/AssistantController';
 import {assistantApi} from '@/bootstrap/assistant';
 import {useMessages} from '@/modules/messages/useMessages';
@@ -81,7 +81,9 @@ const messages = useMessages();
  * so it’s sent with the next message.
  */
 export function uploadFiles(files: readonly File[]): void {
-  const threadId = useAssistantThread().value;
+  const thread = useAssistantThread();
+  const threadId = thread.value;
+  watchThread(thread);
 
   for (const file of namePastedFiles([...files])) {
     const task = new FileUpload<UploadResult>(file, {
@@ -113,8 +115,9 @@ export function uploadFiles(files: readonly File[]): void {
           : null,
     });
 
-    upload.done = task.upload().then(
-      (result) => {
+    upload.done = task
+      .upload()
+      .then((result) => {
         if (!result.assetId) {
           throw new Error(result.message || t('Couldn’t upload file.'));
         }
@@ -129,8 +132,8 @@ export function uploadFiles(files: readonly File[]): void {
           );
         }
         uploadStatus.value = t('Uploaded {name}.', {name: file.name});
-      },
-      (error: unknown) => {
+      })
+      .catch((error: unknown) => {
         forget(ref);
 
         if (task.state !== 'canceled') {
@@ -138,8 +141,7 @@ export function uploadFiles(files: readonly File[]): void {
             error instanceof Error ? error.message : t('Couldn’t upload file.')
           );
         }
-      }
-    );
+      });
 
     uploads.value.set(ref, upload);
     triggerRef(uploads);
@@ -152,9 +154,14 @@ export function isUploading(): boolean {
   return [...uploads.value.values()].some(({assetId}) => !assetId);
 }
 
-/** Waits for the composer’s files to finish uploading, before a message is sent with them. */
+/**
+ * Waits for the composer’s files to finish uploading, before a message is sent
+ * with them, including files added while it waits.
+ */
 export async function finishUploads(): Promise<void> {
-  await Promise.all([...uploads.value.values()].map(({done}) => done));
+  while (isUploading()) {
+    await Promise.all([...uploads.value.values()].map(({done}) => done));
+  }
 }
 
 /** Forgets the composer’s uploads once they’ve been sent with a message. */
@@ -179,9 +186,18 @@ export async function removeUpload(ref: string): Promise<void> {
   }
 
   if (!upload.assetId) {
-    await upload.task.cancel().catch(() => undefined);
+    try {
+      await upload.task.cancel();
 
-    return;
+      return;
+    } catch {
+      // It can’t be canceled once it’s being saved, so it’s deleted once it is.
+      await upload.done;
+    }
+
+    if (!upload.assetId) {
+      return;
+    }
   }
 
   await actionClient
@@ -198,6 +214,27 @@ function forget(ref: string): void {
   if (uploads.value.delete(ref)) {
     triggerRef(uploads);
   }
+}
+
+let watchingThread = false;
+
+/**
+ * Removes the composer’s uploads when the user switches to another
+ * conversation, as they belong to the one they were uploaded to.
+ */
+function watchThread(thread: ReturnType<typeof useAssistantThread>): void {
+  if (watchingThread) {
+    return;
+  }
+
+  watchingThread = true;
+  watch(thread, (threadId) => {
+    for (const [ref, upload] of uploads.value) {
+      if (upload.threadId !== threadId) {
+        void removeUpload(ref);
+      }
+    }
+  });
 }
 
 /** Opens the file picker, and uploads the chosen files. */

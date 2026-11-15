@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\GarbageCollection\Actions;
 
+use CraftCms\Cms\Ai\Assistant\Uploads\AssistantUploadHandler;
 use CraftCms\Cms\Asset\AssetUploads;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
@@ -24,7 +25,7 @@ class RemoveEmptyTempFolders extends GarbageCollectionAction
             'removing empty temp folders',
             function () {
                 $activeUploadFolderIds = UploadSession::query()
-                    ->where('handler', AssetUploads::class)
+                    ->whereIn('handler', [AssetUploads::class, AssistantUploadHandler::class])
                     ->whereNull('result')
                     ->where('expiresAt', '>', Query::prepareDateForDb(now()))
                     ->get(['parameters'])

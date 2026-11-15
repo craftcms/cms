@@ -755,9 +755,19 @@
       return;
     }
 
-    // Files go with the message once they’re uploaded.
+    // Files go with the message once they’re uploaded. Sending again while it waits does nothing.
     if (isUploading()) {
-      await finishUploads();
+      if (waitingForUploads) {
+        return;
+      }
+
+      waitingForUploads = true;
+
+      try {
+        await finishUploads();
+      } finally {
+        waitingForUploads = false;
+      }
     }
 
     if (message === draft.value.trim()) {
@@ -767,6 +777,9 @@
 
     await submit(message);
   }
+
+  /** Whether a message is waiting for its files to finish uploading. */
+  let waitingForUploads = false;
 
   async function submit(message: string): Promise<void> {
     status.value = '';
