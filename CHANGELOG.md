@@ -14,6 +14,7 @@
 - Fixed a bug where the default temporary asset upload filesystem couldn’t be replaced via `craft\fs\Temp`’s dependency injection container definition, such as with shared storage for load-balanced servers.
 - Fixed a bug where Preview never loaded for users who could view an entry but not save it. ([#20572](https://github.com/craftcms/cms/issues/20572))
 - Fixed a bug where the “Save and send activation email” button on users’ Permissions screens didn’t send activation emails for users without the “Administrate users” permission. ([#20566](https://github.com/craftcms/cms/issues/20566))
+- Fixed a bug where project config handlers for a path weren’t called when a value nested within it was set before the path existed. ([#20717](https://github.com/craftcms/cms/pull/20717))
 
 ## 5.12.1 - 2026-11-10
 
