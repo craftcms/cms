@@ -71,6 +71,7 @@
 - Fixed a bug where keys in info icons’ tooltips, such as the “Ask anything” input’s, were hard to read in the light theme.
 - Fixed a bug where rounded element chips, such as those in copy value toasts, didn’t have circular thumbnails for images that aren’t square.
 - Fixed a bug where text expander menus, such as Ask AI’s `@` and `{` menus, opened below the cursor in a cramped space, even when there was much more room above.
+- Fixed a bug where long element chip labels that are links, such as those in Ask AI’s replies, were cut off without an ellipsis.
 - Fixed a bug where the user menu showed a “Permissions” item on Craft Solo, which led to a 403 error. ([#20621](https://github.com/craftcms/cms/issues/20621), [#20635](https://github.com/craftcms/cms/pull/20635))
 - Fixed a bug where control panel forms could show the wrong fields after a failed save, such as the Base URL field on a new site whose “This site has its own base URL” setting was turned off. ([#20632](https://github.com/craftcms/cms/pull/20632), [#20636](https://github.com/craftcms/cms/pull/20636))
 - Fixed a bug where each autosave of a provisional draft saved it twice and rebuilt every action menu item on the page, which blocked the entry editor for over a second on long entries. ([#20639](https://github.com/craftcms/cms/issues/20639), [#20649](https://github.com/craftcms/cms/pull/20649))
