@@ -402,6 +402,7 @@
                               'cp-content-view': true,
                               'cp-content-view--constrained':
                                 contentConstrained,
+                              'cp-content-view--no-toolbar': !hasToolbar(),
                             }"
                           >
                             <slot name="content-toolbar">
@@ -549,8 +550,9 @@ Shell
  */
   /* The top bar keeps its height and the shell takes at least the rest. Docked,
      the sidebar's own height does this; floating, nothing else would.
-     `--cp-content-block-start` is the space below the content toolbar: none
-     up to a 960px viewport, 16px from 2240px. */
+     `--cp-content-block-start` is the space below the content toolbar, or
+     above the content without one, and below the content either way: none up
+     to a 960px viewport, 16px from 2240px. */
   .page-screen {
     --cp-content-block-start: clamp(
       0px,
@@ -946,6 +948,12 @@ Content view
     /* Lets what's inside (e.g. the element index toolbar) respond to the room
        the content actually has, rather than the viewport. */
     container: cp-content-view / inline-size;
+    padding-block-end: var(--cp-content-block-start);
+  }
+
+  /* Without a toolbar to put it below, the top space goes above the content. */
+  .cp-content-view--no-toolbar {
+    padding-block-start: var(--cp-content-block-start);
   }
 
   .cp-content-view--constrained {
