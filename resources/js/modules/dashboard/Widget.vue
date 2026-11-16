@@ -12,12 +12,15 @@
   import WidgetSettings from './WidgetSettings.vue';
   import type {DashboardWidget} from './types';
   import {provideWidgetColor} from './useWidgetColor';
+  import {provideWidgetHeader} from './useWidgetHeader';
 
   const props = defineProps<{widget: DashboardWidget; ready: boolean}>();
 
   // The component rendering the widget, and its settings face below, color
   // their cards with it.
   provideWidgetColor(() => props.widget.color);
+  // …and can add buttons to the header drawn above them, or hide its title.
+  const header = provideWidgetHeader();
   const emit = defineEmits<{
     saved: [widget: DashboardWidget | false];
     cancel: [];
@@ -121,35 +124,55 @@
           @ready="emit('resize')"
         >
           <template #header>
+            <!-- A title row at the top of the card's body, rather than a
+                 header bar: the widget's title, and its settings button
+                 beside the title's first line. -->
             <div
-              v-if="widget.title || widget.subtitle"
-              slot="label"
-              class="widget-heading"
+              v-if="widget.title || widget.subtitle || widget.settingsUi"
+              class="widget-header"
+              :class="{'widget-header--bare': header.titleHiders.value > 0}"
             >
-              <h2
-                v-if="widget.title"
-                :id="`widget-heading-${widget.id}`"
-                class="text-sm"
+              <div
+                v-if="widget.title || widget.subtitle"
+                class="widget-heading"
               >
-                {{ widget.title }}
-              </h2>
-              <h5 v-if="widget.subtitle">{{ widget.subtitle }}</h5>
+                <h2
+                  v-if="widget.title"
+                  :id="`widget-heading-${widget.id}`"
+                  class="widget-title cp-h3"
+                >
+                  {{ widget.title }}
+                </h2>
+                <p v-if="widget.subtitle" class="widget-subtitle">
+                  {{ widget.subtitle }}
+                </p>
+              </div>
+              <div class="widget-header-actions">
+                <!-- Buttons the widget adds (see WidgetHeaderActions.vue). -->
+                <span
+                  :ref="
+                    (element) =>
+                      (header.actionsTarget.value =
+                        (element as HTMLElement | null) ?? null)
+                  "
+                  class="widget-header-added-actions"
+                ></span>
+                <craft-button
+                  v-if="widget.settingsUi"
+                  ref="settingsButton"
+                  class="widget-settings-button"
+                  type="button"
+                  icon="gear"
+                  variant="plain"
+                  flush="inline-end block"
+                  :aria-label="t('Widget settings')"
+                  :aria-describedby="
+                    widget.title ? `widget-heading-${widget.id}` : undefined
+                  "
+                  @click="settings = true"
+                ></craft-button>
+              </div>
             </div>
-            <craft-button
-              v-if="widget.settingsUi"
-              ref="settingsButton"
-              slot="actions"
-              class="widget-settings-button"
-              type="button"
-              icon="gear"
-              variant="plain"
-              flush="inline-end block"
-              :aria-label="t('Widget settings')"
-              :aria-describedby="
-                widget.title ? `widget-heading-${widget.id}` : undefined
-              "
-              @click="settings = true"
-            ></craft-button>
           </template>
         </component>
       </div>
@@ -161,22 +184,25 @@
     >
       <div v-if="settings" class="settings-face">
         <craft-card :data-color="widget.color ?? undefined">
-          <div slot="label" class="widget-heading">
-            <h2 class="text-sm">
-              {{ t('{type} Settings', {type: widget.name}) }}
-            </h2>
+          <!-- The same header band as the widget's front. -->
+          <div class="widget-header">
+            <div class="widget-heading">
+              <h2 class="widget-title cp-h3">
+                {{ t('{type} Settings', {type: widget.name}) }}
+              </h2>
+            </div>
+            <div v-if="widget.settingsUi" class="widget-header-actions">
+              <craft-button
+                type="button"
+                icon="xmark-large"
+                variant="plain"
+                flush="inline-end block"
+                :aria-label="t('Cancel')"
+                .disabled="settingsSending"
+                @click="closeSettings"
+              ></craft-button>
+            </div>
           </div>
-          <craft-button
-            v-if="widget.settingsUi"
-            slot="actions"
-            type="button"
-            icon="xmark-large"
-            variant="plain"
-            flush="inline-end block"
-            :aria-label="t('Cancel')"
-            .disabled="settingsSending"
-            @click="closeSettings"
-          ></craft-button>
           <WidgetSettings
             v-model:sending="settingsSending"
             :widget="widget"
@@ -231,6 +257,89 @@
   craft-card {
     display: block;
     position: relative;
+  }
+
+  /* The title row the widget's component renders at the top of its card's
+     body (see the header slot above). */
+  /* A header band across the top of the card, with a hairline below. It
+     reaches past the card body's padding (see card.styles.ts) to the card's
+     edges, and is a header bar's height, 46px, unless the title wraps. */
+  .widget-header {
+    --_card-padding: clamp(
+      var(--c-spacing-lg),
+      2cqi + var(--c-spacing-md),
+      calc(var(--c-spacing) * 6)
+    );
+    --_line-size: var(--widget-title-line-size, calc(var(--c-text-md) * 1.25));
+    display: flex;
+    align-items: flex-start;
+    gap: var(--c-spacing-md);
+    box-sizing: border-box;
+    min-block-size: calc(46rem / 16 + 1px);
+    margin-block: calc(var(--_card-padding) * -1) var(--_card-padding);
+    margin-inline: calc(var(--_card-padding) * -1);
+    padding-block: calc((46rem / 16 - var(--_line-size)) / 2);
+    padding-inline: var(--_card-padding);
+    border-block-end: 1px solid
+      var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
+  }
+
+  .widget-heading {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .widget-title {
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .widget-subtitle {
+    margin: 0;
+    font-size: var(--c-text-sm);
+    color: var(--c-text-quiet);
+  }
+
+  /* A widget that shows a title of its own (see useWidgetHeader()) keeps
+     this title only for screen readers. Its buttons sit in the card's top
+     corner, inset like the card body's content, with no band. */
+  .widget-header--bare {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: var(--_card-padding);
+    inset-inline-end: var(--_card-padding);
+    min-block-size: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .widget-header--bare > .widget-heading {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .widget-header-added-actions {
+    display: contents;
+  }
+
+  /* As tall as the title's first line, so the button centers on it however
+     many lines the title wraps to. A widget that shows a title of its own
+     can set --widget-title-line-size to that title's line height. */
+  .widget-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    flex: none;
+    block-size: var(--_line-size);
+    margin-inline-start: auto;
   }
 
   /* Widget settings are spaced like other compact forms, not like the

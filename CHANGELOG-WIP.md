@@ -54,6 +54,7 @@
 - Dashboard widgets, such as Recent Entries and My Drafts, now update when elements are saved, in the same browser tab or another one. ([#20485](https://github.com/craftcms/cms/pull/20485))
 - Dashboard widgets can now be given a color, like entry types, from the dashboard’s Widget Settings menu. Widgets are gray unless given another color, now drawn like gray cards elsewhere in the control panel, with a filled header bar, and “No color” draws a widget with no fill of its own, like an uncolored element card.
 - Dashboard widget titles now line up with the widgets’ content.
+- Dashboard widgets’ titles now sit above a hairline at the top of each widget, and widget settings have their Save and Cancel buttons in a footer.
 - Fields in slideouts, the details pane, and dashboard widget settings are now 16px apart, rather than 24px. Fields in the main content pane of full-page forms are still 24px apart.
 - Fixed a bug where Dashboard widgets spanning multiple columns ended a few pixels before the right edge of the last column they spanned.
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
