@@ -75,6 +75,7 @@
 - Fixed a bug where the New Users dashboard widget’s chart was unstyled. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Fixed a bug where invalid Icon inputs in control panel forms showed an extra “error” message below their actual error. ([#20608](https://github.com/craftcms/cms/pull/20608))
 - Fixed a bug where card view designers’ settings were capped at 500px tall and scrolled, even when there was room for them. ([#20596](https://github.com/craftcms/cms/issues/20596), [#20658](https://github.com/craftcms/cms/pull/20658))
+- Fixed a bug where admin tables’ View menus listed the Actions column, which could then be hidden or have other columns moved after it, and didn’t offer “Use defaults” once their columns or sort had changed. ([#20711](https://github.com/craftcms/cms/issues/20711), [#20720](https://github.com/craftcms/cms/pull/20720))
 - Fixed a bug where web components in dragged items’ previews were drawn incorrectly, such as dashboard widgets’ color and size controls in Widget Settings.
 - Fixed a bug where keys in info icons’ tooltips, such as the “Ask anything” input’s, were hard to read in the light theme.
 - Fixed a bug where rounded element chips, such as those in copy value toasts, didn’t have circular thumbnails for images that aren’t square.
