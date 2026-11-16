@@ -32,36 +32,47 @@
 </script>
 
 <template>
-  <div class="type-configurator flex flex-wrap items-start gap-2 min-w-0">
-    <craft-field v-if="typeLabel" :label="typeLabel" fieldset width="auto">
-      <TypePicker
-        slot="input"
-        :types="types"
-        :label="selectedTypeLabel"
-        :disabled="disabled"
-        @select="$emit('select', $event)"
-      />
-    </craft-field>
-    <TypePicker
-      v-else
-      :types="types"
-      :label="selectedTypeLabel"
-      :disabled="disabled"
-      @select="$emit('select', $event)"
-    />
-
+  <div class="type-configurator min-w-0">
     <div
-      v-if="ui"
-      class="type-configurator__fields flex flex-wrap items-start gap-2 min-w-0 flex-1"
+      class="type-configurator__layout gap-1.5"
+      :class="{'type-configurator__layout--actions': $slots.actions}"
     >
-      <UiRenderer
-        ref="uiRenderer"
-        :payload="ui"
-        :errors="errors"
-        :disabled="disabled || uiDisabled"
-        :refresh="refresh"
-        @change="(change, values) => $emit('change', change, values)"
-      />
+      <div class="type-configurator__type">
+        <craft-field v-if="typeLabel" :label="typeLabel" fieldset width="auto">
+          <TypePicker
+            slot="input"
+            :types="types"
+            :label="selectedTypeLabel"
+            :disabled="disabled"
+            @select="$emit('select', $event)"
+          />
+        </craft-field>
+        <TypePicker
+          v-else
+          :types="types"
+          :label="selectedTypeLabel"
+          :disabled="disabled"
+          @select="$emit('select', $event)"
+        />
+      </div>
+
+      <div
+        v-if="ui"
+        class="type-configurator__fields flex flex-wrap items-start gap-1.5 min-w-0"
+      >
+        <UiRenderer
+          ref="uiRenderer"
+          :payload="ui"
+          :errors="errors"
+          :disabled="disabled || uiDisabled"
+          :refresh="refresh"
+          @change="(change, values) => $emit('change', change, values)"
+        />
+      </div>
+
+      <div v-if="$slots.actions" class="type-configurator__actions">
+        <slot name="actions" />
+      </div>
     </div>
   </div>
 </template>
@@ -71,10 +82,34 @@
     container-type: inline-size;
   }
 
+  .type-configurator__layout {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'type fields';
+    align-items: start;
+  }
+
+  .type-configurator__layout--actions {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'type fields actions';
+  }
+
+  .type-configurator__type {
+    grid-area: type;
+  }
+
+  .type-configurator__fields {
+    grid-area: fields;
+  }
+
+  .type-configurator__actions {
+    grid-area: actions;
+  }
+
   .type-configurator__fields :deep(craft-field) {
     margin-block: 0;
     min-inline-size: 0;
-    flex: 1 1 0;
+    flex: 1 1 8rem;
   }
 
   .type-configurator__fields :deep(craft-field:has(craft-select)) {
@@ -82,8 +117,23 @@
   }
 
   @container (width < 22rem) {
-    .type-configurator__fields {
-      flex-basis: 100%;
+    .type-configurator__layout {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: 'type' 'fields';
+    }
+
+    .type-configurator__layout--actions {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: 'type actions' 'fields fields';
+    }
+
+    .type-configurator__fields :deep(craft-field),
+    .type-configurator__fields :deep(craft-field:has(craft-select)) {
+      flex: 1 1 100%;
+    }
+
+    .type-configurator__fields :deep(craft-select) {
+      inline-size: 100%;
     }
   }
 </style>

@@ -85,11 +85,12 @@
         icon="xmark-large"
         variant="danger-plain"
         size="small"
+        flush="inline-end"
         :aria-label="t('Remove group')"
         @click="removeGroup"
       />
 
-      <div class="min-w-0 flex flex-col gap-2">
+      <div class="min-w-0 flex flex-col gap-3">
         <template v-for="(child, index) in group.rules" :key="child.id">
           <ConditionGroup
             v-if="child.kind === 'group'"
