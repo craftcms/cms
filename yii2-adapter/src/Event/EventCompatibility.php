@@ -75,6 +75,7 @@ readonly class EventCompatibility
         Entry::registerEvents();
         new NestedElementManagerEventCompatibility()->boot();
         \craft\elements\User::registerEvents();
+        \craft\elements\db\ElementQuery::registerEvents();
 
         /**
          * FieldLayouts
