@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use CraftCms\Cms\Activity\ActivityEventRecorder;
+use CraftCms\Cms\Activity\EventTypes\ImportPlanRan;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
@@ -23,11 +25,13 @@ use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Jobs\Import as ImportJob;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Import\Transformers\BaseTransformer;
+use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Query;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -291,7 +295,11 @@ class Import
         ], self::RUN_LOCK_TTL);
 
         try {
-            $dispatched = $this->dispatchPipeline($importPlan, $runId, $connection);
+            // queued jobs carry the context with them, so everything the run records is part of it
+            $dispatched = Context::scope(
+                fn (): bool => $this->dispatchPipeline($importPlan, $runId, $connection),
+                hidden: [ActivityEventRecorder::ContextOperation => ImportRunOperation::make($importPlan, $runId)],
+            );
         } catch (Throwable $e) {
             Cache::forget(self::runStateKey($importPlan));
             self::releaseRunLock($importPlan, $runId);
@@ -534,6 +542,11 @@ class Import
         if (! $event->isValid) {
             return false;
         }
+
+        Activities::record(new ImportPlanRan($event->importPlan));
+
+        // whoever started the run, the changes it makes are the import's
+        Context::addHidden(ActivityEventRecorder::ContextOrigin, 'Import');
 
         // batch pruning should be done by scheduling the queue:prune-batches command
         // see https://laravel.com/framework/docs/12.x/queues#pruning-batches

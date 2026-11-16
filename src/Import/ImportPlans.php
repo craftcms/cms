@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import;
 
 use Closure;
+use CraftCms\Cms\Activity\EventTypes\ImportPlanCreated;
+use CraftCms\Cms\Activity\EventTypes\ImportPlanDeleted;
+use CraftCms\Cms\Activity\EventTypes\ImportPlanUpdated;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
 use CraftCms\Cms\Import\Events\ImportPlanSaving;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\Models\ImportPlan as ImportPlanModel;
+use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
@@ -332,6 +336,8 @@ class ImportPlans
         // invalidate caches
         $this->importPlans = null;
 
+        Activities::record($isNewImport ? new ImportPlanCreated($importPlan) : new ImportPlanUpdated($importPlan));
+
         event(new ImportPlanSaved($importPlan, $isNewImport));
 
         return true;
@@ -399,6 +405,8 @@ class ImportPlans
 
         // invalidate caches
         $this->importPlans = null;
+
+        Activities::record(new ImportPlanDeleted($importPlan));
     }
 
     /**
