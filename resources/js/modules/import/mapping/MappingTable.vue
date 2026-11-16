@@ -110,7 +110,7 @@
         header: t('Incoming data'),
         meta: {
           wrap: true,
-          columnClass: 'mapping-table__main',
+          columnClass: 'mapping-table__main mapping-table__incoming',
           cellClass: 'mapping-table__cell--incoming',
         },
         cell: ({row}) =>
@@ -213,6 +213,10 @@
 
   /* enough for a field's name and handle, which a narrow table would otherwise squeeze into a sliver */
   .mapping-table :deep(.mapping-table__destination) {
+    min-inline-size: 14rem;
+  }
+
+  .mapping-table :deep(.mapping-table__incoming) {
     min-inline-size: 14rem;
   }
 

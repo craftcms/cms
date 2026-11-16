@@ -98,6 +98,12 @@ export default css`
     display: flex;
   }
 
+  :host([has-clear-button]:not([multiple])) ::slotted(.form-control) {
+    padding-inline-end: calc(
+      var(--c-input-spacing-inline) * 1.5 + 1em + var(--c-size-control-sm)
+    );
+  }
+
   :host([has-prefix-icon]) ::slotted(.form-control) {
     padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }

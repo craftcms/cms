@@ -212,3 +212,45 @@ it('gives the whole end of the field beside the clear button to the chevron, wit
   expect(box.bottom).toBeGreaterThanOrEqual(field.bottom - 1);
   expect(getComputedStyle(chevron).cursor).toBe('text');
 });
+
+function textEnd(control: CraftCombobox): number {
+  const input = control.querySelector('input')!;
+  const style = getComputedStyle(input);
+
+  return (
+    input.getBoundingClientRect().right -
+    parseFloat(style.paddingInlineEnd) -
+    parseFloat(style.borderInlineEndWidth)
+  );
+}
+
+it('ends the text of a long value before the clear button', async () => {
+  const control = await fixture([
+    {label: 'publishedAtTimestamp', value: 'publishedAtTimestamp'},
+  ]);
+  control.clearable = true;
+  control.style.width = '150px';
+  control.value = 'publishedAtTimestamp';
+  await control.updateComplete;
+  const clear = control.shadowRoot!.querySelector('.clear')!;
+
+  expect(textEnd(control)).toBeLessThanOrEqual(
+    clear.getBoundingClientRect().left
+  );
+});
+
+it('gives the text the clear button’s space while there is no value to clear', async () => {
+  const [clearable, plain] = await Promise.all(
+    [true, false].map(async (isClearable) => {
+      const control = await fixture([{label: 'Anthropic', value: 'anthropic'}]);
+      control.clearable = isClearable;
+      control.style.width = '150px';
+      await control.updateComplete;
+
+      return control;
+    })
+  );
+
+  expect(clearable.shadowRoot!.querySelector('.clear')).toBeNull();
+  expect(textEnd(clearable)).toBeCloseTo(textEnd(plain), 0);
+});
