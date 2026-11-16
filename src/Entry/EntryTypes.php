@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Entry;
 
+use CraftCms\Cms\Activity\OperationTypes\EntryTypeOperation;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Html\PreviewHtml;
@@ -434,10 +435,12 @@ class EntryTypes
                     ->where('entries.deletedWithEntryType', true)
                     ->get();
 
-                $entriesBySection = $entries->groupBy('sectionId');
-                foreach ($entriesBySection as $sectionEntries) {
-                    Elements::restoreElements($sectionEntries->all());
-                }
+                EntryTypeOperation::for($entryTypeModel->id, $entryTypeModel->name)->scope(function () use ($entries): void {
+                    $entriesBySection = $entries->groupBy('sectionId');
+                    foreach ($entriesBySection as $sectionEntries) {
+                        Elements::restoreElements($sectionEntries->all());
+                    }
+                });
             });
         }
 
