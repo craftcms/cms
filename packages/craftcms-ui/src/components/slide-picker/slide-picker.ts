@@ -47,7 +47,7 @@ import styles from './slide-picker.styles.js';
  * `--c-color-neutral-fill-normal`.
  * @cssproperty --c-slide-picker-segment-hover-fill - Fill of the segments up
  * to the hovered one, previewing a value. Defaults to
- * `--c-color-neutral-fill-normal`.
+ * `--c-color-accent-fill-normal`.
  */
 export default class CraftSlidePicker extends FormAssociated(
   FormControl(LitElement)
