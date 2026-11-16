@@ -93,6 +93,7 @@
 - Fixed a bug where Yii HTTP exceptions, such as `yii\web\NotFoundHttpException`, thrown by legacy site controller actions resulted in a 500 error rather than their own status code. ([#20614](https://github.com/craftcms/cms/issues/20614), [#20617](https://github.com/craftcms/cms/pull/20617))
 - Fixed a bug where `edit/{id}` control panel URLs returned a 500 error, rather than a 404, for elements that don’t have their own edit page, such as addresses and content blocks, and for elements that don’t exist. ([#20698](https://github.com/craftcms/cms/pull/20698))
 - Fixed a bug where fields could be saved with the same handle as another field. ([#20600](https://github.com/craftcms/cms/issues/20600), [#20607](https://github.com/craftcms/cms/pull/20607))
+- Fixed an error that occurred when loading relation fields’ settings if a custom element source had a blank label. ([#20723](https://github.com/craftcms/cms/issues/20723), [#20734](https://github.com/craftcms/cms/pull/20734))
 - Fixed an error that occurred when saving an entry via the `entries/save-entry` action with an `entryId` param submitted as form data. ([#20643](https://github.com/craftcms/cms/pull/20643))
 - Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
 - Fixed an error that occurred when running `php artisan passport:purge`, because the `oauth_device_codes` table was missing. ([#20676](https://github.com/craftcms/cms/pull/20676))
