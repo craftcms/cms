@@ -232,4 +232,10 @@
     display: block;
     position: relative;
   }
+
+  /* Widget settings are spaced like other compact forms, not like the
+     full-page forms the dashboard's content pane is otherwise set up for. */
+  .settings-face > craft-card {
+    --c-field-group-gap: initial;
+  }
 </style>

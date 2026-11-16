@@ -37,6 +37,8 @@
      it introduces. Grid items' margins don't collapse, so this adds to the
      field group's row gap. */
   craft-field-group > [data-heading-node]:not(:first-child) {
-    margin-block-start: calc(var(--gap, calc(var(--c-spacing) * 6)) / 2);
+    margin-block-start: calc(
+      var(--gap, var(--c-field-group-gap, var(--c-spacing-lg))) / 2
+    );
   }
 </style>
