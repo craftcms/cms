@@ -292,11 +292,12 @@ it('deletes a file the user removed before sending it', function () {
         ->and(AgentUpload::query()->count())->toBe(0);
 });
 
-it('deletes a conversation’s uploads with it, keeping those moved into a volume or used somewhere', function () {
+it('deletes a conversation’s uploads with it, keeping those moved into a volume, related to something, or used as a user’s photo', function () {
     $threadId = (string) Str::uuid();
     $temporary = uploadToConversation($threadId, 'temporary.txt', 'Temporary.');
     $moved = uploadToConversation($threadId, 'moved.txt', 'Moved.');
     $used = uploadToConversation($threadId, 'used.txt', 'Used.');
+    $photo = uploadToConversation($threadId, 'photo.jpg', jpeg(10, 10));
     AssistantAgent::fake(['Done.']);
     chatWithUploads($threadId, 'Save these', [$temporary['assetId'], $moved['assetId'], $used['assetId']])->assertOk()->streamedContent();
     Storage::disk('temp-assets')->put("ai-assistant/$threadId/copy.png", 'copy');
@@ -313,12 +314,14 @@ it('deletes a conversation’s uploads with it, keeping those moved into a volum
         'dateUpdated' => Query::prepareDateForDb(now()),
         'uid' => (string) Str::uuid(),
     ]);
+    DB::table(Table::USERS)->where('id', $this->user->id)->update(['photoId' => $photo['assetId']]);
 
     postJson(action([AssistantController::class, 'destroy']), ['threadId' => $threadId])->assertOk();
 
     expect(Asset::find()->id($temporary['assetId'])->status(null)->exists())->toBeFalse()
         ->and(Asset::find()->id($moved['assetId'])->status(null)->exists())->toBeTrue()
         ->and(Asset::find()->id($used['assetId'])->status(null)->exists())->toBeTrue()
+        ->and(Asset::find()->id($photo['assetId'])->status(null)->exists())->toBeTrue()
         ->and(AgentUpload::query()->count())->toBe(0);
     Storage::disk('temp-assets')->assertMissing("ai-assistant/$threadId/copy.png");
 });

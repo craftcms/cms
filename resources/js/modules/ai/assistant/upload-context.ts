@@ -151,6 +151,11 @@ export function uploadFiles(files: readonly File[]): void {
       .catch((error: unknown) => {
         forget(ref);
 
+        if (upload.preview) {
+          URL.revokeObjectURL(upload.preview);
+          upload.preview = null;
+        }
+
         if (task.state !== 'canceled') {
           messages.error(
             error instanceof Error ? error.message : t('Couldn’t upload file.')

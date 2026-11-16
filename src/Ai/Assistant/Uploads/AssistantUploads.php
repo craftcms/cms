@@ -216,11 +216,11 @@ class AssistantUploads
 
         $assetIds = array_map(static fn (AgentUpload $upload): int => $upload->assetId, $uploads);
 
-        $used = DB::table(Table::RELATIONS)
-            ->whereIn('targetId', $assetIds)
-            ->distinct()
-            ->pluck('targetId')
-            ->all();
+        // Related to something, or a user’s photo, which a new user’s stays in the temporary folder as.
+        $used = [
+            ...DB::table(Table::RELATIONS)->whereIn('targetId', $assetIds)->distinct()->pluck('targetId')->all(),
+            ...DB::table(Table::USERS)->whereIn('photoId', $assetIds)->pluck('photoId')->all(),
+        ];
 
         $unused = array_values(array_diff($assetIds, $used));
         $assets = $unused === [] ? [] : Asset::find()->id($unused)->status(null)->all();

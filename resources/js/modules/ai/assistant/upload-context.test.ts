@@ -144,3 +144,22 @@ it('replaces an image’s preview with the server’s thumbnail, letting go of t
   expect(uploadThumbnail(3)).toBe('/thumb.png');
   expect(revoke).toHaveBeenCalledWith('blob:preview');
 });
+
+it('lets go of a failed image upload’s preview', async () => {
+  const revoke = vi.fn();
+  vi.stubGlobal('URL', {
+    ...URL,
+    createObjectURL: () => 'blob:preview',
+    revokeObjectURL: revoke,
+  });
+  uploadFiles([new File(['png'], 'huge.png', {type: 'image/png'})]);
+
+  mocks.FakeUpload.instances[0]!.resolve({
+    message: 'The file exceeds the maximum upload size.',
+  });
+  await finishUploads();
+  vi.unstubAllGlobals();
+
+  expect(useAssistantContext().items.value).toEqual([]);
+  expect(revoke).toHaveBeenCalledWith('blob:preview');
+});
