@@ -130,9 +130,9 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
       )
     );
 
-    const cancel = Array.from(host.querySelectorAll('form craft-button')).find(
-      (button) => button.textContent?.trim() === 'Cancel'
-    )!;
+    const cancel = Array.from(
+      host.querySelectorAll('.settings-face craft-button')
+    ).find((button) => button.textContent?.trim() === 'Cancel')!;
     cancel.dispatchEvent(new MouseEvent('click', {bubbles: true}));
 
     await vi.waitFor(() => expect(host.querySelector('form')).toBeNull());
@@ -148,7 +148,7 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
     );
     // Allow the legacy delayed flip to finish before cancelling.
     await new Promise((resolve) => setTimeout(resolve, 150));
-    Array.from(host.querySelectorAll('form craft-button'))
+    Array.from(host.querySelectorAll('.settings-face craft-button'))
       .find((button) => button.textContent?.trim() === 'Cancel')!
       .dispatchEvent(new MouseEvent('click', {bubbles: true}));
     await vi.waitFor(() => expect(host.querySelector('form')).toBeNull());
