@@ -58,17 +58,17 @@ registerComponent('my-plugin:ticket-sales', () => import('./TicketSales.vue'));
 
 ## Building blocks
 
-| Export                | What it's for                                                                                                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useWidgetColor()`    | The widget's color, for its card's `data-color`.                                                                                                                          |
-| `isTintedColor()`     | Whether a color tints the widget. White, gray, slate, and black don't, and leave room for colors of the widget's content, such as an entry type's.                        |
-| `EntryList`           | A list of entries, each with a thumbnail and its title linked to its editor, plus `details` and `aside` slots. Double-clicking a thumbnail opens the entry in a slideout. |
-| `AvatarStack`         | Overlapping avatars, each named in a tooltip, such as an entry's authors.                                                                                                 |
-| `TileContent`         | A centered icon, label, and quieter description, for a status message.                                                                                                    |
-| `WidgetTile`          | A large button with `TileContent`, in a color you give it unless the widget is tinted.                                                                                    |
-| `SparklineStat`       | A figure, such as “264 new members”, with an `AreaChart` sparkline of it below, edge to edge. See [Charts](?path=/docs/plugins-charts--docs) for the chart's data.        |
-| `WidgetHeaderActions` | Renders its buttons in the widget's header, before the settings button.                                                                                                   |
-| `useWidgetHeader()`   | `{titleHidden: true}` hides the widget's title for a widget that shows its own, such as `SparklineStat`'s figure. It stays the widget's heading for screen readers.       |
+| Export                | What it's for                                                                                                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useWidgetColor()`    | The widget's color, for its card's `data-color`.                                                                                                                                        |
+| `isTintedColor()`     | Whether a color tints the widget. White, gray, slate, and black don't, and leave room for colors of the widget's content, such as an entry type's.                                      |
+| `EntryList`           | A list of entries, each with a thumbnail and its title linked to its editor, plus `details` and `aside` slots. Double-clicking a thumbnail opens the entry in a slideout.               |
+| `AvatarStack`         | Overlapping avatars, each named in a tooltip, such as an entry's authors.                                                                                                               |
+| `TileContent`         | A centered icon, label, and quieter description, for a status message.                                                                                                                  |
+| `WidgetTile`          | A large button with `TileContent`, in a color you give it unless the widget is tinted.                                                                                                  |
+| `SparklineStat`       | A figure, such as “264 new members”, with an `AreaChart` sparkline of it below, edge to edge. See [Charts](?path=/docs/plugins-charts--docs) for the chart's data.                      |
+| `WidgetHeaderActions` | Renders its buttons in the widget's header, before the settings button.                                                                                                                 |
+| `useWidgetHeader()`   | `{ownTitle: true}` leaves the widget's title out, for a widget that shows its own, such as `SparklineStat`'s figure. Give that title the `titleId` it returns, as the widget's heading. |
 
 A button in `WidgetHeaderActions` is a plain icon button, named for what it
 does:

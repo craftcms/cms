@@ -16,8 +16,8 @@
 
   const color = useWidgetColor();
 
-  // The total stands in for the widget's title
-  useWidgetHeader({titleHidden: true});
+  // The total is the widget's title
+  const {titleId} = useWidgetHeader({ownTitle: true});
 
   const props = defineProps<{
     data: {
@@ -119,10 +119,7 @@
 </script>
 
 <template>
-  <craft-card
-    :data-color="color"
-    style="--widget-title-line-size: calc(var(--c-text-xl) * 1.2)"
-  >
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body">
       <craft-callout v-if="error" variant="danger" role="alert">{{
@@ -134,6 +131,7 @@
       <SparklineStat
         v-if="chart && !loading && !error"
         :title="totalLabel"
+        :heading-id="titleId"
         :caption="data.dateRangeLabel"
         :data="chart.data"
         :scale="chart.scale"

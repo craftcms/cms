@@ -12,8 +12,13 @@ import {
 export interface WidgetHeaderContext {
   /** Where `WidgetHeaderActions` renders its buttons, once it's mounted. */
   actionsTarget: ShallowRef<HTMLElement | null>;
-  /** How many components are hiding the title (see `useWidgetHeader()`). */
-  titleHiders: ShallowRef<number>;
+  /** How many components show their own title (see `useWidgetHeader()`). */
+  ownTitles: ShallowRef<number>;
+  /**
+   * The ID of the widget's title heading, which its settings button is
+   * described by.
+   */
+  titleId: string;
 }
 
 const widgetHeader: InjectionKey<WidgetHeaderContext> = Symbol(
@@ -24,10 +29,11 @@ const widgetHeader: InjectionKey<WidgetHeaderContext> = Symbol(
  * Provides the header context to the component rendering a widget. Called by
  * the widget's frame, which draws the header.
  */
-export function provideWidgetHeader(): WidgetHeaderContext {
+export function provideWidgetHeader(titleId: string): WidgetHeaderContext {
   const context: WidgetHeaderContext = {
     actionsTarget: shallowRef(null),
-    titleHiders: shallowRef(0),
+    ownTitles: shallowRef(0),
+    titleId,
   };
   provide(widgetHeader, context);
 
@@ -36,13 +42,14 @@ export function provideWidgetHeader(): WidgetHeaderContext {
 
 export interface UseWidgetHeaderOptions {
   /**
-   * Hides the widget's title, for a widget that shows a title of its own,
-   * such as a total. The title stays as the widget's heading for screen
-   * readers, and the header's buttons sit in the card's top corner, with no
-   * header band. Give the card `--widget-title-line-size` to center them on
-   * the widget's own title.
+   * Leaves the widget's title out, for a widget that shows a title of its
+   * own, such as `SparklineStat`'s figure. Give that title the `titleId`
+   * this returns, as the widget's heading. The header's buttons sit in the
+   * card's top corner, with no header band, centered on a title line as tall
+   * as other widgets' titles. Give the card `--widget-title-line-size` for a
+   * title of another size.
    */
-  titleHidden?: boolean | (() => boolean);
+  ownTitle?: boolean | (() => boolean);
 }
 
 /**
@@ -51,25 +58,25 @@ export interface UseWidgetHeaderOptions {
  */
 export function useWidgetHeader(options: UseWidgetHeaderOptions = {}): {
   actionsTarget: ShallowRef<HTMLElement | null>;
+  /** The ID for a title of the widget's own, as its heading. */
+  titleId: string | undefined;
 } {
   const context = inject(widgetHeader, null);
   const actionsTarget = context?.actionsTarget ?? shallowRef(null);
 
-  if (context && options.titleHidden !== undefined) {
-    const hidden = options.titleHidden;
-    let hiding = false;
-    const setHiding = (value: boolean) => {
-      if (value !== hiding) {
-        context.titleHiders.value += value ? 1 : -1;
-        hiding = value;
+  if (context && options.ownTitle !== undefined) {
+    const own = options.ownTitle;
+    let owning = false;
+    const setOwning = (value: boolean) => {
+      if (value !== owning) {
+        context.ownTitles.value += value ? 1 : -1;
+        owning = value;
       }
     };
 
-    watchEffect(() =>
-      setHiding(typeof hidden === 'function' ? hidden() : hidden)
-    );
-    onBeforeUnmount(() => setHiding(false));
+    watchEffect(() => setOwning(typeof own === 'function' ? own() : own));
+    onBeforeUnmount(() => setOwning(false));
   }
 
-  return {actionsTarget};
+  return {actionsTarget, titleId: context?.titleId};
 }

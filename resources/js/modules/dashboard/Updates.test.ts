@@ -38,7 +38,7 @@ function mount(data: {
   // dashboard draws it
   app = createApp({
     setup() {
-      const header = provideWidgetHeader();
+      const header = provideWidgetHeader('widget-heading-1');
       return () =>
         h('div', [
           h('span', {

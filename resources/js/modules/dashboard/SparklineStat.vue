@@ -10,14 +10,15 @@
    * caption such as “Last 30 days”, and an `AreaChart` drawn as a sparkline,
    * edge to edge.
    *
-   * The title is drawn large enough to stand in for the widget's own, which
-   * a widget can hide with `useWidgetHeader({titleHidden: true})`. Give the
-   * widget's card `--widget-title-line-size: calc(var(--c-text-xl) * 1.2)`,
-   * this title's line height, so the header's buttons center on it. The
-   * title stays clear of them.
+   * The title can stand in for the widget's own, styled as other widgets'
+   * titles are: use `useWidgetHeader({ownTitle: true})`, and pass the
+   * `titleId` it returns as `headingId`, which makes the title the widget's
+   * heading. It stays clear of the header's buttons.
    */
   defineProps<{
     title: string;
+    /** Draws the title as the widget's heading, with this ID. */
+    headingId?: string | null;
     caption?: string | null;
     data: ChartData;
     scale?: ChartScale;
@@ -40,13 +41,15 @@
 
 <template>
   <div class="sparkline-stat">
-    <p class="sparkline-stat__figure">
-      <span class="sparkline-stat__title cp-h1">{{ title }}</span
-      ><template v-if="caption"
-        ><span class="sr-only">, </span
-        ><span class="sparkline-stat__caption">{{ caption }}</span></template
+    <div class="sparkline-stat__figure">
+      <component
+        :is="headingId ? 'h2' : 'p'"
+        :id="headingId ?? undefined"
+        class="sparkline-stat__title cp-h3"
+        >{{ title }}</component
       >
-    </p>
+      <p v-if="caption" class="sparkline-stat__caption">{{ caption }}</p>
+    </div>
     <AreaChart
       :data="data"
       :scale="scale"
@@ -71,19 +74,17 @@
   }
 
   .sparkline-stat__figure {
-    display: grid;
-    justify-items: start;
-    margin: 0;
     padding-block-end: calc(var(--c-spacing) * 3);
   }
 
   /* Clear of a header button beside it, such as the settings button. */
   .sparkline-stat__title {
-    line-height: 1.2;
+    margin: 0;
     padding-inline-end: calc(var(--c-size-control-sm) + var(--c-spacing-sm));
   }
 
   .sparkline-stat__caption {
+    margin: 0;
     font-size: var(--c-text-sm);
     line-height: 1.3;
     color: var(--c-text-quiet);

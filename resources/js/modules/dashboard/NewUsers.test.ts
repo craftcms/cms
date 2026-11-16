@@ -1,6 +1,7 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, reactive, type App} from 'vue';
 import NewUsers from './NewUsers.vue';
+import {provideWidgetHeader} from './useWidgetHeader';
 import {provideWidgetColor} from './useWidgetColor';
 
 const table = (...counts: number[]) => ({
@@ -82,12 +83,12 @@ it.each([
 });
 
 it.each([
-  [null, [800, 0, 434], '1,234 new users, Last 7 days'],
-  [null, [1], '1 new user, Last 7 days'],
-  ['members', [800, 0, 434], '1,234 new members, Last 7 days'],
-  ['members', [0, 1], '1 new member, Last 7 days'],
+  [null, [800, 0, 434], '1,234 new users'],
+  [null, [1], '1 new user'],
+  ['members', [800, 0, 434], '1,234 new members'],
+  ['members', [0, 1], '1 new member'],
 ])(
-  'totals the new users in the %s group (%j) across the range, and names the range',
+  'titles itself with the new users in the %s group (%j) across the range',
   async (userGroupName, counts, text) => {
     state.post.mockResolvedValue({
       data: {dataTable: table(...counts), scale: 'day'},
@@ -95,23 +96,28 @@ it.each([
     host = document.createElement('div');
     document.body.append(host);
     app = createApp({
-      setup: () => () =>
-        h(NewUsers, {
-          data: {
-            dateRange: 'd7',
-            userGroupId: userGroupName ? 5 : null,
-            userGroupName,
-            userGroupNameSingular: userGroupName && 'member',
-            dateRangeLabel: 'Last 7 days',
-          },
-        }),
+      setup() {
+        // The widget's header, whose title the total stands in for
+        provideWidgetHeader('widget-heading-5');
+        return () =>
+          h(NewUsers, {
+            data: {
+              dateRange: 'd7',
+              userGroupId: userGroupName ? 5 : null,
+              userGroupName,
+              userGroupNameSingular: userGroupName && 'member',
+              dateRangeLabel: 'Last 7 days',
+            },
+          });
+      },
     });
     app.mount(host);
 
     await vi.waitFor(() =>
-      expect(host.querySelector('.sparkline-stat__figure')?.textContent).toBe(
-        text
-      )
+      expect(host.querySelector('h2#widget-heading-5')?.textContent).toBe(text)
+    );
+    expect(host.querySelector('.sparkline-stat__caption')?.textContent).toBe(
+      'Last 7 days'
     );
   }
 );

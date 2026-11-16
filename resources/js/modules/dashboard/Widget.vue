@@ -20,7 +20,7 @@
   // their cards with it.
   provideWidgetColor(() => props.widget.color);
   // …and can add buttons to the header drawn above them, or hide its title.
-  const header = provideWidgetHeader();
+  const header = provideWidgetHeader(`widget-heading-${props.widget.id}`);
   const emit = defineEmits<{
     saved: [widget: DashboardWidget | false];
     cancel: [];
@@ -130,10 +130,12 @@
             <div
               v-if="widget.title || widget.subtitle || widget.settingsUi"
               class="widget-header"
-              :class="{'widget-header--bare': header.titleHiders.value > 0}"
+              :class="{'widget-header--bare': header.ownTitles.value > 0}"
             >
               <div
-                v-if="widget.title || widget.subtitle"
+                v-if="
+                  (widget.title || widget.subtitle) && !header.ownTitles.value
+                "
                 class="widget-heading"
               >
                 <h2
@@ -300,9 +302,9 @@
     color: var(--c-text-quiet);
   }
 
-  /* A widget that shows a title of its own (see useWidgetHeader()) keeps
-     this title only for screen readers. Its buttons sit in the card's top
-     corner, inset like the card body's content, with no band. */
+  /* A widget that shows a title of its own (see useWidgetHeader()) leaves
+     this one out. Its buttons sit in the card's top corner, inset like the
+     card body's content, with no band. */
   .widget-header--bare {
     position: absolute;
     z-index: 1;
@@ -312,18 +314,6 @@
     margin: 0;
     padding: 0;
     border: 0;
-  }
-
-  .widget-header--bare > .widget-heading {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border-width: 0;
   }
 
   .widget-header-added-actions {
