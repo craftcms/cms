@@ -102,6 +102,34 @@ it('opens with Enter, sets the value from the slider and returns focus on Escape
   expect(button.shadowRoot!.activeElement).toBe(invoker(button));
 });
 
+it('drops the preview when the popover closes under the pointer', async () => {
+  const button = await render(
+    `<craft-slide-picker-button label="Columns" min="1" max="4" step="1" value="1"></craft-slide-picker-button><p>Elsewhere</p>`
+  );
+  const looks = () =>
+    [
+      ...slider(button).shadowRoot!.querySelectorAll('.slide-picker__segment'),
+    ].map((segment) => {
+      const style = getComputedStyle(segment);
+      return `${style.borderTopWidth} ${style.borderTopColor} ${style.backgroundColor}`;
+    });
+  await open(button);
+  const resting = looks();
+
+  await userEvent.hover(
+    slider(button).shadowRoot!.querySelectorAll('.slide-picker__segment')[2]!
+  );
+  slider(button).focus();
+  await userEvent.keyboard('{Escape}');
+  await expect.poll(() => slider(button).checkVisibility()).toBe(false);
+  await userEvent.hover(page.getByText('Elsewhere'));
+  invoker(button).focus();
+  await userEvent.keyboard('{Enter}');
+  await expect.poll(() => slider(button).checkVisibility()).toBe(true);
+
+  expect(looks()).toEqual(resting);
+});
+
 it('keeps the popover’s slider from changing while read-only', async () => {
   const button = await render(
     `<craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50" readonly></craft-slide-picker-button>`

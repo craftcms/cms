@@ -83,37 +83,26 @@ export default css`
     );
   }
 
-  /* While the pointer is over the picker, every segment looks empty except
-     the previewed run, which is outlined 2px thick so it differs from the
+  /* While a value is previewed, every segment looks empty except the
+     previewed run, which is outlined 2px thick so it differs from the
      selected run by shape, not just color. */
-  :host(:not([readonly]):not([disabled]))
-    .slide-picker:has(.slide-picker__segment:hover)
-    .slide-picker__segment {
+  .slide-picker.is-previewing .slide-picker__segment {
     background-color: transparent;
     border-color: var(--_segment-border);
   }
 
-  :host(:not([readonly]):not([disabled]))
-    .slide-picker:has(.slide-picker__segment:hover)
-    .slide-picker__segment::after {
+  .slide-picker.is-previewing .slide-picker__segment::after {
     content: none;
   }
 
-  :host(:not([readonly]):not([disabled]))
-    .slide-picker:has(.slide-picker__segment:hover)
-    .slide-picker__segment:is(:hover, :has(~ .slide-picker__segment:hover)) {
+  .slide-picker.is-previewing .slide-picker__segment.is-previewed {
     background-color: var(--_segment-hover-fill);
     border-color: var(--_segment-preview-border);
     border-block-width: 2px;
     border-inline-end-width: 2px;
   }
 
-  :host(:not([readonly]):not([disabled]))
-    .slide-picker:has(.slide-picker__segment:hover)
-    .slide-picker__segment:first-child:is(
-      :hover,
-      :has(~ .slide-picker__segment:hover)
-    ) {
+  .slide-picker.is-previewing .slide-picker__segment.is-previewed:first-child {
     border-inline-start-width: 2px;
   }
 
@@ -141,16 +130,12 @@ export default css`
       border-color: Highlight;
     }
 
-    :host(:not([readonly]):not([disabled]))
-      .slide-picker:has(.slide-picker__segment:hover)
-      .slide-picker__segment {
+    .slide-picker.is-previewing .slide-picker__segment {
       background: Canvas;
       border-color: ButtonBorder;
     }
 
-    :host(:not([readonly]):not([disabled]))
-      .slide-picker:has(.slide-picker__segment:hover)
-      .slide-picker__segment:is(:hover, :has(~ .slide-picker__segment:hover)) {
+    .slide-picker.is-previewing .slide-picker__segment.is-previewed {
       background: Canvas;
       border-color: Highlight;
     }
