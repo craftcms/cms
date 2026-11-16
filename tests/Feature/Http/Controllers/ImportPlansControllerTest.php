@@ -908,7 +908,7 @@ describe('previewing a step', function () {
             ->and($response->json('items.*.index'))->toBe([0, 2]);
     });
 
-    it('keeps a step’s results until its plan is saved', function () {
+    it('previews a step’s items again once the content changes', function () {
         $results = fn () => $this->postJson(action([ImportPlansController::class, 'previewStep']), [
             'step' => $this->previewStep,
         ])->assertOk()->json('items.*.result');
@@ -916,9 +916,6 @@ describe('previewing a step', function () {
         expect($results())->toBe(['new', 'update', 'new']);
 
         Elements::deleteElement($this->existing, hardDelete: true);
-        expect($results())->toBe(['new', 'update', 'new']);
-
-        ($this->saveImportPlan)([$this->previewStep])->assertSuccessful();
         expect($results())->toBe(['new', 'new', 'new']);
     });
 

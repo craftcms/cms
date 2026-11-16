@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Import;
 
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Data\ItemPreview;
@@ -13,6 +14,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 use function CraftCms\Cms\currentUser;
@@ -60,12 +62,12 @@ readonly class ImportPreviews
      */
     public function previewStep(ElementImporter $step, int $page = 0, ?ItemPreviewResult $result = null, int $pageSize = self::PAGE_SIZE, ?int $previewableIndex = null): array
     {
-        // the content can change in the meantime, so the results are only kept a short while, and for the step and
-        // the version of its local file they're of; and they're each user's own, as they name elements other users may
-        // not be able to see
+        // the results are only kept a short while, and for the step, the version of its local file, and the version of
+        // the content they're of; and they're each user's own, as they name elements other users may not be able to see
         $key = 'import-preview:'.sha1(serialize([
             $step->toArrayData(),
             self::localSourceVersion($step),
+            self::contentVersion(),
             currentUser()?->getAuthIdentifier(),
             Cache::get(self::versionKey($step)),
         ]));
@@ -123,6 +125,29 @@ readonly class ImportPreviews
         }
 
         return filemtime($path).':'.filesize($path);
+    }
+
+    /**
+     * When and how any element was last saved, deleted, or restored, so results are previewed again once the content
+     * changes. Every element counts, as an item's result can depend on elements it relates to, not only on the one
+     * it goes into.
+     *
+     * @return array<string, mixed>
+     */
+    private static function contentVersion(): array
+    {
+        $grammar = DB::getQueryGrammar();
+
+        return (array) DB::table(Table::ELEMENTS)
+            ->selectRaw(sprintf(
+                'COUNT(*) AS %s, MAX(%s) AS %s, MAX(%s) AS %s',
+                $grammar->wrap('count'),
+                $grammar->wrap('dateUpdated'),
+                $grammar->wrap('dateUpdated'),
+                $grammar->wrap('dateDeleted'),
+                $grammar->wrap('dateDeleted'),
+            ))
+            ->first();
     }
 
     /**
