@@ -38,6 +38,7 @@ export default css`
   }
 
   .slide-picker__segment {
+    position: relative;
     inline-size: var(--_segment-width);
     block-size: var(--_segment-height);
 
@@ -64,8 +65,24 @@ export default css`
     border-color: var(--_segment-active-border);
   }
 
+  /* An end border in a lighter color than the top and bottom ones would cut
+     into their corners, so the divider between active segments is drawn over
+     a transparent one, keeping the active color at the top and bottom. */
   .slide-picker__segment.is-active:not(.is-last-active) {
-    border-inline-end-color: var(--_segment-border);
+    border-inline-end-color: transparent;
+  }
+
+  .slide-picker__segment.is-active:not(.is-last-active)::after {
+    content: '';
+    position: absolute;
+    inset-block: -1px;
+    inset-inline-end: -1px;
+    inline-size: 1px;
+    background-image: linear-gradient(
+      var(--_segment-active-border) 1px,
+      var(--_segment-border) 1px calc(100% - 1px),
+      var(--_segment-active-border) calc(100% - 1px)
+    );
   }
 
   :host(:not([readonly]):not([disabled]))

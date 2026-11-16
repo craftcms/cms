@@ -62,10 +62,12 @@ it('draws every segment at one height, with the selected ones filled darker', as
   // The divider between selected segments is as light as unselected
   // segments' borders, not their dark outline.
   const firstStyle = getComputedStyle(segments(picker)[0]!);
-  expect(firstStyle.borderInlineEndColor).not.toBe(firstStyle.borderTopColor);
-  expect(firstStyle.borderInlineEndColor).toBe(
-    getComputedStyle(segments(picker)[2]!).borderTopColor
-  );
+  const divider = getComputedStyle(segments(picker)[0]!, '::after');
+  const unselectedBorder = getComputedStyle(
+    segments(picker)[2]!
+  ).borderTopColor;
+  expect(unselectedBorder).not.toBe(firstStyle.borderTopColor);
+  expect(divider.backgroundImage).toContain(unselectedBorder);
 });
 
 it('leaves a read-only picker’s fills alone while hovered', async () => {

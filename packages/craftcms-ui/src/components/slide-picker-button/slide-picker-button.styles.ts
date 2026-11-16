@@ -15,6 +15,7 @@ export default css`
   }
 
   .segment {
+    position: relative;
     box-sizing: border-box;
     inline-size: calc(9rem / 16);
     block-size: 1rem;
@@ -49,8 +50,23 @@ export default css`
     border-color: var(--c-color-neutral-border-loud);
   }
 
+  /* Divides active segments the way craft-slide-picker-slider does, so the
+     divider doesn't cut into the top and bottom borders' corners. */
   .segment.is-active:not(.is-last-active) {
-    border-inline-end-color: var(--c-color-neutral-border-quiet);
+    border-inline-end-color: transparent;
+  }
+
+  .segment.is-active:not(.is-last-active)::after {
+    content: '';
+    position: absolute;
+    inset-block: -1px;
+    inset-inline-end: -1px;
+    inline-size: 1px;
+    background-image: linear-gradient(
+      var(--c-color-neutral-border-loud) 1px,
+      var(--c-color-neutral-border-quiet) 1px calc(100% - 1px),
+      var(--c-color-neutral-border-loud) calc(100% - 1px)
+    );
   }
 
   craft-popover::part(popup) {
