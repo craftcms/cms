@@ -33,9 +33,12 @@ import '../tooltip/tooltip.js';
  *
  * @cssproperty --c-slide-picker-segment-fill - Fill of the segments past the
  * value, in the button and the popover. Defaults to
- * `--c-color-neutral-fill-quiet`.
+ * `--c-color-neutral-fill-quiet` in the button and `transparent` in the
+ * popover.
  * @cssproperty --c-slide-picker-segment-active-fill - Fill of the segments up
- * to the value, in the button and the popover.
+ * to the value, in the button and the popover. Defaults to a dark neutral in
+ * the button and `--c-color-accent-fill-loud` in the popover. Set it only
+ * with a fill that holds 3:1 against the surface.
  */
 export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
   static override styles = styles;

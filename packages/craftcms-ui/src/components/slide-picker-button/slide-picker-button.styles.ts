@@ -14,12 +14,16 @@ export default css`
     pointer-events: none;
   }
 
+  /* The outline around the whole picker and around its filled run holds
+     3:1, so the picker's size and value show. The lines between segments
+     stay quiet: they're decoration. */
   .segment {
+    --_edge: var(--c-color-neutral-border-normal);
     position: relative;
     box-sizing: border-box;
     inline-size: calc(9rem / 16);
     block-size: 1rem;
-    border: 1px solid var(--c-color-neutral-border-quiet);
+    border: 1px solid var(--_edge);
     border-inline-start-width: 0;
     background-color: var(
       --c-slide-picker-segment-fill,
@@ -39,6 +43,7 @@ export default css`
   }
 
   .segment.is-active {
+    --_edge: var(--c-color-neutral-border-loud);
     background-color: var(
       --c-slide-picker-segment-active-fill,
       color-mix(
@@ -47,25 +52,25 @@ export default css`
         var(--c-color-neutral-fill-normal) 70%
       )
     );
-    border-color: var(--c-color-neutral-border-loud);
   }
 
-  /* Divides active segments the way craft-slide-picker-slider does, so the
-     divider doesn't cut into the top and bottom borders' corners. */
-  .segment.is-active:not(.is-last-active) {
+  /* A quiet end border would cut into the outline's corners, so each line
+     between segments is drawn over a transparent one and stops inside the
+     outline. The filled run's last segment keeps its loud end border. */
+  .segment:not(:last-child, .is-last-active) {
     border-inline-end-color: transparent;
   }
 
-  .segment.is-active:not(.is-last-active)::after {
+  .segment:not(:last-child, .is-last-active)::after {
     content: '';
     position: absolute;
     inset-block: -1px;
     inset-inline-end: -1px;
     inline-size: 1px;
     background-image: linear-gradient(
-      var(--c-color-neutral-border-loud) 1px,
+      var(--_edge) 1px,
       var(--c-color-neutral-border-quiet) 1px calc(100% - 1px),
-      var(--c-color-neutral-border-loud) calc(100% - 1px)
+      var(--_edge) calc(100% - 1px)
     );
   }
 

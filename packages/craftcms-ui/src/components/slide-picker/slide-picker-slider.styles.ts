@@ -10,26 +10,23 @@ export default css`
     outline: none !important;
   }
 
+  /* Every edge and fill that shows the value or the preview holds 3:1
+     against the surface and against its neighbors, in both themes. */
   .slide-picker {
     --_segment-height: var(--c-slide-picker-segment-height, 1rem);
     --_segment-width: var(--c-slide-picker-segment-width, calc(8rem / 16));
-    --_segment-border: var(--c-color-neutral-border-quiet);
-    --_segment-active-border: var(--c-color-neutral-border-loud);
-    --_segment-fill: var(
-      --c-slide-picker-segment-fill,
-      var(--c-color-neutral-fill-quiet)
-    );
+    --_segment-border: var(--c-color-neutral-border-normal);
+    --_segment-active-border: var(--c-color-accent-border-loud);
+    --_segment-divider: var(--c-color-accent-fill-quiet);
+    --_segment-preview-border: var(--c-color-accent-border-loud);
+    --_segment-fill: var(--c-slide-picker-segment-fill, transparent);
     --_segment-active-fill: var(
       --c-slide-picker-segment-active-fill,
-      color-mix(
-        in oklab,
-        var(--c-color-neutral-fill-loud),
-        var(--c-color-neutral-fill-normal) 70%
-      )
+      var(--c-color-accent-fill-loud)
     );
     --_segment-hover-fill: var(
       --c-slide-picker-segment-hover-fill,
-      var(--c-color-neutral-fill-normal)
+      var(--c-color-accent-fill-quiet)
     );
     display: inline-flex;
     align-items: stretch;
@@ -39,6 +36,7 @@ export default css`
 
   .slide-picker__segment {
     position: relative;
+    box-sizing: border-box;
     inline-size: var(--_segment-width);
     block-size: var(--_segment-height);
 
@@ -65,9 +63,9 @@ export default css`
     border-color: var(--_segment-active-border);
   }
 
-  /* An end border in a lighter color than the top and bottom ones would cut
-     into their corners, so the divider between active segments is drawn over
-     a transparent one, keeping the active color at the top and bottom. */
+  /* A light end border would cut into the outline's corners, so the divider
+     between selected segments is drawn over a transparent one and stops
+     inside the outline, keeping the segments countable. */
   .slide-picker__segment.is-active:not(.is-last-active) {
     border-inline-end-color: transparent;
   }
@@ -80,23 +78,47 @@ export default css`
     inline-size: 1px;
     background-image: linear-gradient(
       var(--_segment-active-border) 1px,
-      var(--_segment-border) 1px calc(100% - 1px),
+      var(--_segment-divider) 1px calc(100% - 1px),
       var(--_segment-active-border) calc(100% - 1px)
     );
   }
 
+  /* While the pointer is over the picker, every segment looks empty except
+     the previewed run, which is outlined 2px thick so it differs from the
+     selected run by shape, not just color. */
   :host(:not([readonly]):not([disabled]))
     .slide-picker:has(.slide-picker__segment:hover)
     .slide-picker__segment {
     background-color: transparent;
+    border-color: var(--_segment-border);
+  }
+
+  :host(:not([readonly]):not([disabled]))
+    .slide-picker:has(.slide-picker__segment:hover)
+    .slide-picker__segment::after {
+    content: none;
   }
 
   :host(:not([readonly]):not([disabled]))
     .slide-picker:has(.slide-picker__segment:hover)
     .slide-picker__segment:is(:hover, :has(~ .slide-picker__segment:hover)) {
     background-color: var(--_segment-hover-fill);
+    border-color: var(--_segment-preview-border);
+    border-block-width: 2px;
+    border-inline-end-width: 2px;
   }
 
+  :host(:not([readonly]):not([disabled]))
+    .slide-picker:has(.slide-picker__segment:hover)
+    .slide-picker__segment:first-child:is(
+      :hover,
+      :has(~ .slide-picker__segment:hover)
+    ) {
+    border-inline-start-width: 2px;
+  }
+
+  /* The ring sits off the segment, on the surface: against the selected
+     fill it would all but vanish. */
   :host(:focus-visible) .slide-picker__segment.is-last-active {
     outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
@@ -106,7 +128,6 @@ export default css`
 
   :host([readonly]) .slide-picker__segment {
     cursor: default;
-    opacity: 0.7;
   }
 
   @media (forced-colors: active) {
@@ -117,6 +138,20 @@ export default css`
 
     .slide-picker__segment.is-active {
       background: Highlight;
+      border-color: Highlight;
+    }
+
+    :host(:not([readonly]):not([disabled]))
+      .slide-picker:has(.slide-picker__segment:hover)
+      .slide-picker__segment {
+      background: Canvas;
+      border-color: ButtonBorder;
+    }
+
+    :host(:not([readonly]):not([disabled]))
+      .slide-picker:has(.slide-picker__segment:hover)
+      .slide-picker__segment:is(:hover, :has(~ .slide-picker__segment:hover)) {
+      background: Canvas;
       border-color: Highlight;
     }
   }

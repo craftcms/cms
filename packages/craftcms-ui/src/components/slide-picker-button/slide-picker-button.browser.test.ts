@@ -1,5 +1,6 @@
 import {beforeEach, expect, it} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
+import {contrast} from '../../../test/contrast';
 import type CraftSlidePickerButton from './slide-picker-button.js';
 import './slide-picker-button.js';
 import '../../styles/cp.css';
@@ -144,6 +145,53 @@ it('disables the button when disabled, or inside a disabled fieldset, and enable
     .element(page.getByRole('button', {name: 'Width 50'}))
     .toBeEnabled();
 });
+
+it.each(['light', 'dark'] as const)(
+  'outlines the whole picker, and its filled run, at 3:1 in the %s theme',
+  async (theme) => {
+    const button = await render(
+      `<div class="surface" data-theme="${theme}" style="background-color: var(--c-surface-default); padding: 8px"><craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></div>`
+    );
+    const surface = getComputedStyle(
+      document.querySelector('.surface')!
+    ).backgroundColor;
+    const styles = [...button.shadowRoot!.querySelectorAll('.segment')].map(
+      (segment) => getComputedStyle(segment)
+    );
+    const [first, second, third, last] = styles as [
+      CSSStyleDeclaration,
+      CSSStyleDeclaration,
+      CSSStyleDeclaration,
+      CSSStyleDeclaration,
+    ];
+    // The lines between segments are decoration; the edges around the
+    // picker and around its filled run are what show its size and value.
+    const edges: Record<string, [string, string]> = {
+      'start edge': [first.borderLeftColor, surface],
+      'end edge': [last.borderRightColor, surface],
+      ...Object.fromEntries(
+        styles.flatMap((style, index) => [
+          [`segment ${index + 1} top`, [style.borderTopColor, surface]],
+          [`segment ${index + 1} bottom`, [style.borderBottomColor, surface]],
+        ])
+      ),
+      'filled run end vs empty fill': [
+        second.borderRightColor,
+        third.backgroundColor,
+      ],
+    };
+
+    expect(
+      Object.entries(edges)
+        .map(
+          ([edge, [color, against]]) =>
+            [edge, contrast(color, against, surface)] as const
+        )
+        .filter(([, ratio]) => ratio < 3)
+        .map(([edge, ratio]) => `${edge}: ${ratio.toFixed(2)}`)
+    ).toEqual([]);
+  }
+);
 
 it('is at least 24×24 CSS px, and so is each segment in the popover', async () => {
   const button = await render(

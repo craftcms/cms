@@ -41,13 +41,12 @@ import styles from './slide-picker.styles.js';
  * @cssproperty --c-slide-picker-segment-height - Height of each segment.
  * Defaults to `1rem`.
  * @cssproperty --c-slide-picker-segment-fill - Fill of the segments past the
- * value. Defaults to `--c-color-neutral-fill-quiet`.
+ * value. Defaults to `transparent`.
  * @cssproperty --c-slide-picker-segment-active-fill - Fill of the segments up
- * to the value. Defaults to `--c-color-neutral-fill-loud` mixed 25% toward
- * `--c-color-neutral-fill-normal`.
+ * to the value. Defaults to `--c-color-accent-fill-loud`.
  * @cssproperty --c-slide-picker-segment-hover-fill - Fill of the segments up
  * to the hovered one, previewing a value. Defaults to
- * `--c-color-neutral-fill-normal`.
+ * `--c-color-accent-fill-quiet`.
  */
 export default class CraftSlidePicker extends FormAssociated(
   FormControl(LitElement)
