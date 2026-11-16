@@ -623,12 +623,13 @@
       return t('Denied {tool}', {tool});
     }
 
-    if (part.output !== undefined) {
-      return own ? own.done(part.output) : t('Used {tool}', {tool});
-    }
-
+    // Before the output, as failed calls have their error as their output.
     if (part.state === 'error') {
       return t('Didn’t finish using {tool}', {tool});
+    }
+
+    if (part.output !== undefined) {
+      return own ? own.done(part.output) : t('Used {tool}', {tool});
     }
 
     if (
