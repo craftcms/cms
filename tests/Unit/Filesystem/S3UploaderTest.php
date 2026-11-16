@@ -145,7 +145,7 @@ it('stores processed bytes when sanitization changed the local file', function (
         file_put_contents($path, 'sanitized');
         $this->disk->shouldReceive('writeStream')->once()->withArgs(fn ($destination, $bytes, $options) => $destination === 'assets/image.svg'
             && stream_get_contents($bytes) === 'sanitized'
-            && $options['mimetype'] === 'image/svg+xml')->andReturnTrue();
+            && $options['mimetype'] === 'image/svg+xml')->andReturnUsing(fn ($destination, $bytes) => fclose($bytes));
 
         $file->storeAs($this->disk, 'assets/image.svg', 'image/svg+xml', $path);
         expect($this->commands)->toBe([]);
