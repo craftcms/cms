@@ -70,7 +70,7 @@ it('opens the created entry in a slideout', async () => {
             maxColspan: 4,
             color: 'gray',
             settings: {},
-            settingsUi: null,
+            hasSettings: false,
             component: 'craft:widget-quick-post',
             data: {params},
             fragment: {html: '', headHtml: '', bodyHtml: ''},
@@ -115,7 +115,7 @@ it.each([
               maxColspan: 4,
               color: widgetColor as DashboardWidget['color'],
               settings: {},
-              settingsUi: null,
+              hasSettings: false,
               component: 'craft:widget-quick-post',
               data: {
                 params: {section: 'collection', type: 'work', siteId: 1},

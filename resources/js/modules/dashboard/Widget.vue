@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {
+    computed,
     nextTick,
     onBeforeUnmount,
     onMounted,
@@ -9,8 +10,11 @@
   } from 'vue';
   import {t} from '@craftcms/ui';
   import {useResizeObserver} from '@vueuse/core';
+  import {useMessages} from '@/modules/messages/useMessages';
+  import type {UiPayload} from '@/modules/ui/types';
   import WidgetSettings from './WidgetSettings.vue';
   import type {DashboardWidget} from './types';
+  import {loadSettingsUi} from './settingsUi';
   import {provideWidgetColor} from './useWidgetColor';
   import {provideWidgetHeader} from './useWidgetHeader';
 
@@ -37,15 +41,42 @@
   const settingsSending = shallowRef(false);
   let savedWidget: DashboardWidget | false | undefined;
 
+  const messages = useMessages();
+
+  // A saved widget's settings UI is loaded each time they open, so it
+  // reflects its saved settings. A new widget comes with its own.
+  const loadedSettingsUi = shallowRef<UiPayload | null>(null);
+  const settingsLoading = shallowRef(false);
+  const settingsWidget = computed<DashboardWidget>(() => ({
+    ...props.widget,
+    settingsUi: props.widget.settingsUi ?? loadedSettingsUi.value,
+  }));
+
+  async function openSettings() {
+    if (settingsLoading.value || settings.value) return;
+
+    settingsLoading.value = true;
+
+    try {
+      loadedSettingsUi.value = await loadSettingsUi(
+        {widgetId: props.widget.id},
+        `widget${props.widget.id}-settings`
+      );
+      settings.value = true;
+    } catch {
+      messages.error(t('Couldn’t load widget settings.'));
+    } finally {
+      settingsLoading.value = false;
+    }
+  }
+
   onMounted(() => {
     window.dispatchEvent(
       new CustomEvent('craft:widget-mounted', {
         detail: {
           element: container.value!,
           widget: props.widget,
-          showSettings: () => {
-            settings.value = true;
-          },
+          showSettings: openSettings,
           hideSettings: closeSettings,
         },
       })
@@ -128,7 +159,7 @@
                  header bar: the widget's title, and its settings button
                  beside the title's first line. -->
             <div
-              v-if="widget.title || widget.subtitle || widget.settingsUi"
+              v-if="widget.title || widget.subtitle || widget.hasSettings"
               class="widget-header"
               :class="{'widget-header--bare': header.ownTitles.value > 0}"
             >
@@ -160,7 +191,7 @@
                   class="widget-header-added-actions"
                 ></span>
                 <craft-button
-                  v-if="widget.settingsUi"
+                  v-if="widget.hasSettings"
                   ref="settingsButton"
                   class="widget-settings-button"
                   type="button"
@@ -171,7 +202,8 @@
                   :aria-describedby="
                     widget.title ? `widget-heading-${widget.id}` : undefined
                   "
-                  @click="settings = true"
+                  .loading="settingsLoading"
+                  @click="openSettings"
                 ></craft-button>
               </div>
             </div>
@@ -193,7 +225,7 @@
                 {{ t('{type} Settings', {type: widget.name}) }}
               </h2>
             </div>
-            <div v-if="widget.settingsUi" class="widget-header-actions">
+            <div v-if="settingsWidget.settingsUi" class="widget-header-actions">
               <craft-button
                 type="button"
                 icon="xmark-large"
@@ -207,7 +239,7 @@
           </div>
           <WidgetSettings
             v-model:sending="settingsSending"
-            :widget="widget"
+            :widget="settingsWidget"
             @saved="saved"
             @cancel="closeSettings"
           />

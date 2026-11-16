@@ -1,6 +1,7 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, h, type App} from 'vue';
 import {http} from '@inertiajs/vue3';
+import {actionClient} from '@craftcms/ui';
 import {useDashboard} from '@/modules/dashboard/useDashboard';
 import Widget from '@/modules/dashboard/Widget.vue';
 import HtmlWidget from '@/modules/dashboard/HtmlWidget.vue';
@@ -64,6 +65,19 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
   legacyWindow.Garnish = buildGarnishCompat();
   legacyWindow.jQuery = $;
   await import('../../../packages/craftcms-legacy/dashboard/src/Dashboard.js');
+  // The settings UI the dashboard loads when it opens them.
+  vi.mocked(actionClient.post).mockResolvedValue({
+    data: {
+      ui: {
+        scope: ['settings'],
+        nodes: [],
+        values: {},
+        errors: [],
+        globalErrors: [],
+        refreshable: false,
+      },
+    },
+  } as never);
   const widget: DashboardWidget = {
     id: 1,
     type: 'Example',
@@ -74,14 +88,7 @@ it('lets an HTML plugin open and close its settings through the Yii API after re
     maxColspan: 4,
     color: 'gray',
     settings: {},
-    settingsUi: {
-      scope: ['settings'],
-      nodes: [],
-      values: {},
-      errors: [],
-      globalErrors: [],
-      refreshable: false,
-    },
+    hasSettings: true,
     component: 'craft:html-widget',
     data: null,
     fragment: {

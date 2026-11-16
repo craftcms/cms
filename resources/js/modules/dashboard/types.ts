@@ -1,18 +1,17 @@
 import type {UiPayload, UiValues} from '@/modules/ui/types';
 
-export type WidgetType = Omit<
-  CraftCms.Cms.Dashboard.Data.WidgetTypeData,
-  'settingsUi'
-> & {
-  settingsUi: UiPayload | null;
-};
+export type WidgetType = CraftCms.Cms.Dashboard.Data.WidgetTypeData;
 
 export type DashboardWidget = Omit<
   CraftCms.Cms.Dashboard.Data.WidgetData,
-  'settingsUi' | 'settings'
+  'settings'
 > & {
-  settingsUi: UiPayload | null;
   settings: UiValues;
+  /**
+   * The settings' UI, once it's loaded. The dashboard loads it when the
+   * settings open (see `hasSettings`).
+   */
+  settingsUi?: UiPayload | null;
 };
 
 /** An item in an `EntryList`. */
