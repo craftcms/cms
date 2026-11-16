@@ -130,6 +130,17 @@ export default css`
       border-color: Highlight;
     }
 
+    /* The themes' divider colors would be replaced, leaving a line that's
+       hard to see on Highlight, so it's drawn in system colors. */
+    .slide-picker__segment.is-active:not(.is-last-active)::after {
+      forced-color-adjust: none;
+      background-image: linear-gradient(
+        Highlight 1px,
+        Canvas 1px calc(100% - 1px),
+        Highlight calc(100% - 1px)
+      );
+    }
+
     .slide-picker.is-previewing .slide-picker__segment {
       background: Canvas;
       border-color: ButtonBorder;

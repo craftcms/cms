@@ -307,20 +307,99 @@ it('is one Tab stop, on the slider', async () => {
   await expect.element(page.getByRole('slider')).toHaveFocus();
 });
 
-it('draws one focus ring, around the current segment', async () => {
-  const {userEvent} = await import('vite-plus/test/browser');
+it.each(['light', 'dark'] as const)(
+  'draws one focus ring, around the current segment, at 3:1 in the %s theme',
+  async (theme) => {
+    const {userEvent} = await import('vite-plus/test/browser');
+    const picker = await render('', 50, theme);
+
+    await userEvent.tab();
+
+    const current =
+      slider(picker).shadowRoot!.querySelector('.is-last-active')!;
+    const ring = getComputedStyle(current);
+    expect(getComputedStyle(slider(picker)).outlineStyle).toBe('none');
+    expect(ring.outlineStyle).not.toBe('none');
+    // Against the selected fill the ring would all but vanish, so it sits
+    // off the segment, on the surface around it.
+    expect(parseFloat(ring.outlineOffset)).toBeGreaterThan(0);
+    expect(contrast(ring.outlineColor, surface())).toBeGreaterThanOrEqual(3);
+  }
+);
+
+it('tells selected and empty segments apart, divides selected ones, and shows the focus ring, in forced colors mode', async () => {
+  const {cdp, userEvent} = await import('vite-plus/test/browser');
+  await cdp().send('Emulation.setEmulatedMedia', {
+    features: [{name: 'forced-colors', value: 'active'}],
+  });
   const picker = await render('', 50);
 
   await userEvent.tab();
+  const [selected, , empty] = segments(picker).map((segment) =>
+    getComputedStyle(segment)
+  );
+  const ring = getComputedStyle(segments(picker)[1]!);
+  const probe = document.createElement('span');
+  probe.style.forcedColorAdjust = 'none';
+  document.body.append(probe);
+  const system = (color: string) => {
+    probe.style.color = color;
+    return getComputedStyle(probe).color;
+  };
 
-  const current = slider(picker).shadowRoot!.querySelector('.is-last-active')!;
-  const ring = getComputedStyle(current);
-  expect(getComputedStyle(slider(picker)).outlineStyle).toBe('none');
+  expect(selected!.backgroundColor).toBe(system('Highlight'));
+  expect(empty!.backgroundColor).toBe(system('Canvas'));
+  expect(empty!.borderTopColor).toBe(system('ButtonBorder'));
+  // Between selected segments, a Canvas line that stops inside the
+  // Highlight outline, as the light divider does in the themes.
+  expect(
+    gradientColors(
+      getComputedStyle(segments(picker)[0]!, '::after').backgroundImage
+    )
+  ).toEqual([
+    system('Highlight'),
+    system('Canvas'),
+    system('Canvas'),
+    system('Highlight'),
+  ]);
   expect(ring.outlineStyle).not.toBe('none');
-  // Against the selected fill the ring would all but vanish, so it sits
-  // off the segment, on the surface around it.
-  expect(parseFloat(ring.outlineOffset)).toBeGreaterThan(0);
-  expect(contrast(ring.outlineColor, surface())).toBeGreaterThanOrEqual(3);
+  expect(ring.outlineColor).not.toBe(empty!.backgroundColor);
+});
+
+it('scales its segments with the text size', async () => {
+  const picker = await render('', 50);
+  const before = segments(picker)[0]!.getBoundingClientRect();
+
+  document.documentElement.style.fontSize = '200%';
+  try {
+    const after = segments(picker)[0]!.getBoundingClientRect();
+
+    expect(after.width).toBeCloseTo(before.width * 2, 0);
+    expect(after.height).toBeCloseTo(before.height * 2, 0);
+  } finally {
+    document.documentElement.style.fontSize = '';
+  }
+});
+
+it('fits a 320px-wide viewport without scrolling sideways', async () => {
+  const {page} = await import('vite-plus/test/browser');
+  const [width, height] = [window.innerWidth, window.innerHeight];
+  await import('../../styles/cp.css');
+  document.body.innerHTML = `<craft-slide-picker min="0" max="100" step="10" value="50"></craft-slide-picker>`;
+  const picker =
+    document.querySelector<CraftSlidePicker>('craft-slide-picker')!;
+  await picker.updateComplete;
+  await slider(picker).updateComplete;
+
+  await page.viewport(320, 640);
+  try {
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(320);
+    expect(
+      segments(picker).at(-1)!.getBoundingClientRect().right
+    ).toBeLessThanOrEqual(320);
+  } finally {
+    await page.viewport(width, height);
+  }
 });
 
 it('is named by its label, and focused when the label is clicked', async () => {

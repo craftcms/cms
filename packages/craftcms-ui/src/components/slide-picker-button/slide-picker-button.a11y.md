@@ -20,7 +20,7 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 ### Keyboard and focus
 
 - [x] Enter opens the popover, Tab moves to its slider, a key on the slider commits the value and updates the button's name, and Escape closes the popover with focus back on the button. Per WCAG 2.1.1 (Keyboard) and 2.4.3 (Focus Order). Verified by `opens with Enter, sets the value from the slider and returns focus on Escape` in `slide-picker-button.browser.test.ts`.
-- [ ] A keyboard-focused button shows a ring at 3:1 against the surface in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Not yet verified.
+- [x] A keyboard-focused button shows a ring at 3:1 against the surface in the light and dark themes. Per WCAG 2.4.7 (Focus Visible) and 1.4.11 (Non-text Contrast). Verified by `shows a focus ring at 3:1 on a keyboard-focused button in the %s theme` in `slide-picker-button.browser.test.ts`.
 
 ### Pointer
 
@@ -28,8 +28,8 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 
 ### Visual
 
-- [ ] The button's segments, and the active fill against the inactive fill, reach 3:1 against the surface in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
-- [ ] In forced colors mode, the button's active segments use `Highlight` and inactive ones `Canvas` with a `ButtonBorder` edge. Not yet verified.
+- [x] The outline around the button's segments, and the outline around its filled run, reach 3:1 against the surface and the empty segments in the light and dark themes. The lines between segments are decoration. Per WCAG 1.4.11 (Non-text Contrast). Verified by `outlines the whole picker, and its filled run, at 3:1 in the %s theme` in `slide-picker-button.browser.test.ts`.
+- [x] In forced colors mode, the button's active segments use `Highlight` and inactive ones `Canvas` with a `ButtonBorder` edge, with a `Canvas` line between active segments and a `ButtonBorder` line between inactive ones. Verified by `draws filled segments in Highlight and empty ones in Canvas with a ButtonBorder edge, with lines between them, in forced colors mode` in `slide-picker-button.browser.test.ts`.
 
 ### Reflow and zoom
 

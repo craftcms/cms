@@ -1,5 +1,5 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
-import {page, userEvent} from 'vite-plus/test/browser';
+import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
+import {cdp, page, userEvent} from 'vite-plus/test/browser';
 import {contrast} from '../../../test/contrast';
 import type CraftSlidePickerButton from './slide-picker-button.js';
 import './slide-picker-button.js';
@@ -7,6 +7,10 @@ import '../../styles/cp.css';
 
 beforeEach(() => {
   document.body.innerHTML = '';
+});
+
+afterEach(async () => {
+  await cdp().send('Emulation.setEmulatedMedia', {features: []});
 });
 
 async function render(markup: string): Promise<CraftSlidePickerButton> {
@@ -220,6 +224,68 @@ it.each(['light', 'dark'] as const)(
     ).toEqual([]);
   }
 );
+
+it.each(['light', 'dark'] as const)(
+  'shows a focus ring at 3:1 on a keyboard-focused button in the %s theme',
+  async (theme) => {
+    const button = await render(
+      `<div class="surface" data-theme="${theme}" style="background-color: var(--c-surface-default); padding: 8px"><craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></div>`
+    );
+    const surface = getComputedStyle(
+      document.querySelector('.surface')!
+    ).backgroundColor;
+
+    await userEvent.tab();
+    const ring = getComputedStyle(invoker(button));
+
+    expect(button.shadowRoot!.activeElement).toBe(invoker(button));
+    expect(ring.outlineStyle).not.toBe('none');
+    expect(parseFloat(ring.outlineWidth)).toBeGreaterThanOrEqual(2);
+    expect(contrast(ring.outlineColor, surface)).toBeGreaterThanOrEqual(3);
+    expect(
+      contrast(ring.outlineColor, ring.backgroundColor, surface)
+    ).toBeGreaterThanOrEqual(3);
+  }
+);
+
+it('draws filled segments in Highlight and empty ones in Canvas with a ButtonBorder edge, with lines between them, in forced colors mode', async () => {
+  await cdp().send('Emulation.setEmulatedMedia', {
+    features: [{name: 'forced-colors', value: 'active'}],
+  });
+  const button = await render(
+    `<craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
+  );
+  const segments = [...button.shadowRoot!.querySelectorAll('.segment')];
+  const [filled, , empty] = segments.map((segment) =>
+    getComputedStyle(segment)
+  );
+  const divider = (segment: Element) =>
+    getComputedStyle(segment, '::after').backgroundImage.match(
+      /(?:rgba?|color)\([^)]*\)/g
+    ) ?? [];
+  const probe = document.createElement('span');
+  probe.style.forcedColorAdjust = 'none';
+  document.body.append(probe);
+  const system = (color: string) => {
+    probe.style.color = color;
+    return getComputedStyle(probe).color;
+  };
+
+  expect(filled!.backgroundColor).toBe(system('Highlight'));
+  expect(empty!.backgroundColor).toBe(system('Canvas'));
+  expect(empty!.borderTopColor).toBe(system('ButtonBorder'));
+  // A Canvas line between filled segments, stopping inside their outline,
+  // and a ButtonBorder line between empty ones.
+  expect(divider(segments[0]!)).toEqual([
+    system('Highlight'),
+    system('Canvas'),
+    system('Canvas'),
+    system('Highlight'),
+  ]);
+  expect(new Set(divider(segments[2]!))).toEqual(
+    new Set([system('ButtonBorder')])
+  );
+});
 
 it('is at least 24×24 CSS px, and so is each segment in the popover', async () => {
   const button = await render(

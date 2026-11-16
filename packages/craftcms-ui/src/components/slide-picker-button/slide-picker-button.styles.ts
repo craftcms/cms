@@ -113,5 +113,20 @@ export default css`
       background: Highlight;
       border-color: Highlight;
     }
+
+    /* The themes' divider colors would be replaced, leaving a line that's
+       hard to see on Highlight, so the lines are drawn in system colors. */
+    .segment:not(:last-child, .is-last-active)::after {
+      forced-color-adjust: none;
+      background-image: linear-gradient(ButtonBorder, ButtonBorder);
+    }
+
+    .segment.is-active:not(:last-child, .is-last-active)::after {
+      background-image: linear-gradient(
+        Highlight 1px,
+        Canvas 1px calc(100% - 1px),
+        Highlight calc(100% - 1px)
+      );
+    }
   }
 `;
