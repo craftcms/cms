@@ -85,6 +85,7 @@
 - Fixed a bug where validation errors for settings that accept environment variables, such as plugin settings, ignored custom attribute labels and messages. ([#20620](https://github.com/craftcms/cms/pull/20620))
 - Fixed a bug where element indexes’ Link columns showed links for disabled, archived, pending, and expired elements. ([#20604](https://github.com/craftcms/cms/issues/20604))
 - Fixed a bug where uploaded PNGs could be saved uncompressed when GD was used as the image driver, making them many times larger than the originals. ([#20618](https://github.com/craftcms/cms/pull/20618))
+- Fixed an error that occurred when uploading an image that was cleaned or sanitized, such as an SVG, to a volume whose filesystem closes the file stream after writing it. ([#20710](https://github.com/craftcms/cms/pull/20710))
 - Fixed a bug where saving the Team user group’s permissions programmatically could save its project config without a name or handle, causing `project-config/apply` to fail. ([#20595](https://github.com/craftcms/cms/issues/20595))
 - Fixed a bug where global nav icons shifted when the sidebar was expanded or collapsed. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fixed a bug where folder breadcrumbs had extra space after each separator. ([#20612](https://github.com/craftcms/cms/pull/20612))

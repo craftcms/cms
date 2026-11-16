@@ -129,7 +129,8 @@ class UploadedFile
                 throw new RuntimeException('Unable to store the uploaded file.');
             }
         } finally {
-            if (is_resource($stream)) {
+            // Some adapters close the stream themselves.
+            if (get_resource_type($stream) === 'stream') {
                 fclose($stream);
             }
         }
