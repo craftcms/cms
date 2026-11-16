@@ -27,6 +27,8 @@ use CraftCms\Cms\Import\Data\NestedMappingPayload;
 use CraftCms\Cms\Import\Data\StepMappingPayload;
 use CraftCms\Cms\Import\Data\StepSummary;
 use CraftCms\Cms\Import\Data\StepUiPayload;
+use CraftCms\Cms\Import\Enums\ImportRunStatus;
+use CraftCms\Cms\Import\Enums\ImportRunTrigger;
 use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Import;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -90,6 +92,7 @@ class ImportPlansController
     private function importRow(ImportPlanData $importPlan, bool $editable): ImportPlanIndexData
     {
         $running = $this->importService->isRunning($importPlan);
+        $run = $this->importService->runState($importPlan, withFailures: false);
 
         return new ImportPlanIndexData(
             uid: $importPlan->uid,
@@ -114,8 +117,8 @@ class ImportPlansController
             )),
             editable: $editable,
             running: $running,
-            progress: $running ? $this->importService->runProgress($importPlan) : null,
-            run: $this->importService->runState($importPlan),
+            progress: $running && $run !== null && $run['status'] === ImportRunStatus::Running->value ? $run['progress'] : null,
+            run: $run,
         );
     }
 
@@ -829,7 +832,7 @@ class ImportPlansController
         }
 
         try {
-            $dispatched = $this->importService->dispatchImport($importPlan);
+            $dispatched = $this->importService->dispatchImport($importPlan, trigger: ImportRunTrigger::ControlPanel);
         } catch (Throwable $e) {
             ImportLog::warning("Import failed: {$e->getMessage()}");
 
@@ -853,7 +856,7 @@ class ImportPlansController
         }
 
         try {
-            $dispatched = $this->importService->dispatchImport($importPlan);
+            $dispatched = $this->importService->dispatchImport($importPlan, trigger: ImportRunTrigger::ControlPanel);
         } catch (Throwable $e) {
             ImportLog::warning("Import failed: {$e->getMessage()}");
 

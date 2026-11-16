@@ -18,12 +18,12 @@ use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
 use CraftCms\Cms\Import\Events\ImportPlanSaved;
 use CraftCms\Cms\Import\ImportHelper;
 use CraftCms\Cms\Import\ImportPlans;
+use CraftCms\Cms\Import\ImportRuns;
 use CraftCms\Cms\Import\Jobs\ImportPipeline;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
-use CraftCms\Cms\Support\Facades\Import as ImportFacade;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\SystemMessage\Import\SystemMessageImporter;
@@ -608,15 +608,17 @@ it('lists how far a running import plan has got across its enabled steps', funct
     postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
 
     // the first of its two enabled steps finished, and halfway through the second
-    $plan = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
-    ImportFacade::recordStepFinished($plan, $steps[0]['uid'], false);
-    ImportFacade::recordRunProgress($plan, $steps[2]['uid'], 5, 10);
+    $runId = app(ImportRuns::class)->latest(app(ImportPlans::class)->getImportPlanByHandle('fixtureImport'))->uid;
+    app(ImportRuns::class)->stepFinished($runId, $steps[0]['uid'], false);
+    app(ImportRuns::class)->recordItems($runId, $steps[2]['uid'], 5, 10, ['created' => 5]);
 
     get(action([ImportPlansController::class, 'index']))
-        ->assertInertia(fn (AssertableInertia $page) => $page->where('editableImportPlans.0.progress', 75));
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('editableImportPlans.0.progress', 75)
+            ->missing("editableImportPlans.0.run.steps.{$steps[0]['uid']}.failures"));
 });
 
-it('reports a finished run, and each of its steps, as completed', function () {
+it('reports a finished run, and each of its steps, as successful', function () {
     $step = ($this->entryStep)(['map' => ['title' => 'title']]);
     expect(app(ImportPlans::class)->saveImportPlan(
         new ImportPlanData(['editable' => true])->name('Fixture Import')->handle('fixtureImport')->steps([$step]),
@@ -626,60 +628,46 @@ it('reports a finished run, and each of its steps, as completed', function () {
     postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
 
     getJson(action([ImportPlansController::class, 'runState'], ['handle' => 'fixtureImport']))
-        ->assertJsonPath('runState.status', 'completed')
+        ->assertJsonPath('runState.status', 'successful')
         ->assertJsonPath('runState.progress', 100)
-        ->assertJsonPath("runState.steps.{$step['uid']}", ['status' => 'completed', 'progress' => 100, 'errors' => [], 'errorCount' => 0]);
+        ->assertJsonPath('runState.trigger', 'cp')
+        ->assertJsonPath('runState.user', User::find()->one()->username)
+        ->assertJsonPath("runState.steps.{$step['uid']}.status", 'successful')
+        ->assertJsonPath("runState.steps.{$step['uid']}.counts", ['created' => 3, 'updated' => 0, 'unchanged' => 0, 'skipped' => 0, 'failed' => 0])
+        ->assertJsonPath("runState.steps.{$step['uid']}.failures", []);
 });
 
-it('reports where each step of an import plan’s latest run got to, and how the run ended', function () {
+it('reports where each step of an import plan’s latest run got to', function () {
     Bus::fake();
     $steps = [($this->entryStep)(), ($this->entryStep)(), ($this->entryStep)(overrides: ['enabled' => false])];
     expect(app(ImportPlans::class)->saveImportPlan(
         new ImportPlanData(['editable' => true])->name('Fixture Import')->handle('fixtureImport')->steps($steps),
     ))->toBeTrue();
-    $plan = app(ImportPlans::class)->getImportPlanByHandle('fixtureImport');
     $runState = fn () => getJson(action([ImportPlansController::class, 'runState'], ['handle' => 'fixtureImport']))->assertOk();
 
     postJson(action([ImportPlansController::class, 'run']), ['handle' => 'fixtureImport'])->assertOk();
 
-    $runState()->assertExactJson(['runState' => [
-        'status' => 'pending',
-        'progress' => 0,
-        'steps' => [
-            $steps[0]['uid'] => ['status' => 'pending', 'progress' => 0, 'errors' => [], 'errorCount' => 0],
-            $steps[1]['uid'] => ['status' => 'pending', 'progress' => 0, 'errors' => [], 'errorCount' => 0],
-        ],
-    ]]);
+    $runState()
+        ->assertJsonPath('runState.status', 'pending')
+        ->assertJsonPath('runState.progress', 0)
+        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.status", 'pending')
+        ->assertJsonMissingPath("runState.steps.{$steps[2]['uid']}");
 
-    ImportFacade::recordStepStarted($plan, $steps[0]['uid']);
+    $runId = $runState()->json('runState.id');
+    $failure = ['item' => 4, 'message' => 'Title cannot be blank.', 'elementId' => 12, 'problems' => [['path' => [], 'message' => 'Title cannot be blank.']], 'data' => ['title' => '']];
+    app(ImportRuns::class)->stepStarted($runId, $steps[0]['uid']);
+    app(ImportRuns::class)->recordItems($runId, $steps[0]['uid'], 10, 10, ['created' => 9, 'failed' => 1], [$failure]);
+    app(ImportRuns::class)->stepFinished($runId, $steps[0]['uid'], false);
+    app(ImportRuns::class)->recordItems($runId, $steps[1]['uid'], 3, 10, ['updated' => 3]);
 
     $runState()
         ->assertJsonPath('runState.status', 'running')
-        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.status", 'running');
-
-    ImportFacade::recordItemFailed($plan, $steps[0]['uid'], 4, 'Title cannot be blank.', 12, [['path' => [], 'message' => 'Title cannot be blank.']]);
-    ImportFacade::recordStepFinished($plan, $steps[0]['uid'], true);
-    ImportFacade::recordRunProgress($plan, $steps[1]['uid'], 3, 10);
-
-    $runState()
         ->assertJsonPath('runState.progress', 65)
         ->assertJsonPath("runState.steps.{$steps[0]['uid']}.status", 'failed')
-        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.errors", [[
-            'item' => 4,
-            'message' => 'Title cannot be blank.',
-            'elementId' => 12,
-            'problems' => [['path' => [], 'message' => 'Title cannot be blank.']],
-        ]])
-        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.errorCount", 1)
+        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.failures", [$failure])
+        ->assertJsonPath("runState.steps.{$steps[0]['uid']}.counts.failed", 1)
         ->assertJsonPath("runState.steps.{$steps[1]['uid']}.status", 'running')
         ->assertJsonPath("runState.steps.{$steps[1]['uid']}.progress", 30);
-
-    // let go of without finishing, as when its jobs are canceled
-    ImportFacade::unlock($plan);
-
-    $runState()
-        ->assertJsonPath('runState.status', 'failed')
-        ->assertJsonPath("runState.steps.{$steps[1]['uid']}.status", 'failed');
 });
 
 it('saves the order the editable import plans are put in', function () {

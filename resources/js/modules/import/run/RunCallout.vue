@@ -19,7 +19,7 @@
     switch (run.status) {
       case 'running':
         return 'warning';
-      case 'completed':
+      case 'successful':
         return 'success';
       case 'failed':
         return 'danger';
@@ -38,8 +38,8 @@
           : t('The import is running: {percent, number}% done.', {
               percent: run.progress,
             });
-      case 'completed':
-        return t('The last run completed.');
+      case 'successful':
+        return t('The last run was successful.');
       case 'failed':
         return t('The last run finished with errors.');
     }
@@ -49,7 +49,7 @@
 
   const failedItems = computed(() =>
     Object.values(run.steps).reduce(
-      (count, step) => count + (step.errorCount ?? 0),
+      (count, step) => count + step.counts.failed,
       0
     )
   );

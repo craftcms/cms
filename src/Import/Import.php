@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Import;
 
 use CraftCms\Cms\Activity\ActivityEventRecorder;
 use CraftCms\Cms\Activity\EventTypes\ImportPlanRan;
+use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
@@ -13,7 +15,8 @@ use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Data\SourceColumn;
 use CraftCms\Cms\Import\DataTypes\DataTypeInterface;
 use CraftCms\Cms\Import\DataTypes\DataTypes;
-use CraftCms\Cms\Import\Enums\ImportRunStatus;
+use CraftCms\Cms\Import\Enums\ImportItemOutcome;
+use CraftCms\Cms\Import\Enums\ImportRunTrigger;
 use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Events\ImportDispatched;
 use CraftCms\Cms\Import\Events\ImportDispatching;
@@ -30,6 +33,7 @@ use CraftCms\Cms\Support\Facades\ImportLog;
 use CraftCms\Cms\Support\Query;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\File;
@@ -37,6 +41,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Throwable;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -51,11 +56,6 @@ class Import
     private const int RUN_LOCK_TTL = 86400;
 
     /**
-     * How many of a step's item errors a run keeps, to show where it went wrong.
-     */
-    private const int MAX_RUN_ERRORS = 20;
-
-    /**
      * The number of bytes from the start of a file that data types check its contents against.
      */
     private const int SAMPLE_SIZE = 4096;
@@ -64,6 +64,7 @@ class Import
         private readonly DataTypes $dataTypes,
         private readonly ImporterTypes $importerTypes,
         private readonly FieldImportHandlers $fieldImportHandlers,
+        private readonly ImportRuns $importRuns,
     ) {}
 
     /**
@@ -268,8 +269,9 @@ class Import
      *
      * @param  ImportPlanData  $importPlan  The import plan to dispatch.
      * @param  string|null  $connection  The queue connection to run the import on, e.g. `sync` to run it in the current process.
+     * @param  ImportRunTrigger|null  $trigger  How the run was started, if it was by a person.
      */
-    public function dispatchImport(ImportPlanData $importPlan, ?string $connection = null): bool
+    public function dispatchImport(ImportPlanData $importPlan, ?string $connection = null, ?ImportRunTrigger $trigger = null): bool
     {
         $runId = (string) Str::uuid();
 
@@ -280,19 +282,7 @@ class Import
         }
 
         // before the run is dispatched, as a synchronous queue runs it all within the dispatch
-        // pending until a queue worker picks up its first job
-        Cache::put(self::runStateKey($importPlan), [
-            'status' => ImportRunStatus::Pending->value,
-            'progress' => 0,
-            'steps' => collect($importPlan->enabledSteps())
-                ->mapWithKeys(fn (BaseImporter $step) => [$step->uid => [
-                    'status' => ImportRunStatus::Pending->value,
-                    'progress' => 0,
-                    'errors' => [],
-                    'errorCount' => 0,
-                ]])
-                ->all(),
-        ], self::RUN_LOCK_TTL);
+        $this->importRuns->start($importPlan, $runId, currentUser()?->getAuthIdentifier(), $trigger);
 
         try {
             // queued jobs carry the context with them, so everything the run records is part of it
@@ -301,14 +291,14 @@ class Import
                 hidden: [ActivityEventRecorder::ContextOperation => ImportRunOperation::make($importPlan, $runId)],
             );
         } catch (Throwable $e) {
-            Cache::forget(self::runStateKey($importPlan));
+            $this->importRuns->discard($runId);
             self::releaseRunLock($importPlan, $runId);
 
             throw $e;
         }
 
         if (! $dispatched) {
-            Cache::forget(self::runStateKey($importPlan));
+            $this->importRuns->discard($runId);
             self::releaseRunLock($importPlan, $runId);
         }
 
@@ -344,158 +334,22 @@ class Import
     }
 
     /**
-     * Returns how far the import plan's latest run has got, as a percentage, or `null` if it isn't running.
+     * Returns the import plan's latest run as the control panel shows it, or `null` if it hasn't been run.
      *
-     * @param  ImportPlanData  $importPlan  The import plan to check.
+     * A run that let go of its lock without finishing was canceled or failed outright, so it's shown as failed.
+     *
+     * @param  bool  $withFailures  Whether to include each step run's failures.
+     * @return array<string, mixed>|null
      */
-    public function runProgress(ImportPlanData $importPlan): ?int
+    public function runState(ImportPlanData $importPlan, bool $withFailures = true): ?array
     {
-        $state = $this->runState($importPlan);
+        $run = $this->importRuns->latest($importPlan);
 
-        return $state !== null && $state['status'] === ImportRunStatus::Running->value ? $state['progress'] : null;
-    }
-
-    /**
-     * Returns where the import plan's latest run has got, overall and step by step, for a day after it was started.
-     *
-     * A run that let go of its lock without finishing was canceled or failed outright, so it's reported as failed.
-     *
-     * @param  ImportPlanData  $importPlan  The import plan to check.
-     * @return array{status: string, progress: int, steps: array<string, array{status: string, progress: int, errors: list<array{item: int, message: string, elementId: int|null, problems: list<array{path: list<string>, message: string}>}>, errorCount: int}>}|null
-     */
-    public function runState(ImportPlanData $importPlan): ?array
-    {
-        $state = Cache::get(self::runStateKey($importPlan));
-
-        if (! is_array($state)) {
+        if ($run === null) {
             return null;
         }
 
-        $unfinished = in_array($state['status'], [ImportRunStatus::Pending->value, ImportRunStatus::Running->value], true);
-
-        if ($unfinished && ! $this->isRunning($importPlan)) {
-            $state['status'] = ImportRunStatus::Failed->value;
-
-            foreach ($state['steps'] as $uid => $step) {
-                if ($step['status'] === ImportRunStatus::Running->value) {
-                    $state['steps'][$uid]['status'] = ImportRunStatus::Failed->value;
-                }
-            }
-        }
-
-        return $state;
-    }
-
-    /**
-     * Records that a queue worker has started on a step of the import plan's current run.
-     *
-     * @param  ImportPlanData  $importPlan  The import plan being run.
-     * @param  string  $stepUid  The UID of the step being started.
-     */
-    public function recordStepStarted(ImportPlanData $importPlan, string $stepUid): void
-    {
-        $this->updateRunStep($importPlan, $stepUid, ImportRunStatus::Running, 0);
-    }
-
-    /**
-     * Records how far a step of the import plan's current run has got through its items.
-     *
-     * @param  ImportPlanData  $importPlan  The import plan being run.
-     * @param  string  $stepUid  The UID of the step being run.
-     * @param  int  $done  How many of the step's items have been processed.
-     * @param  int  $total  How many items the step has.
-     */
-    public function recordRunProgress(ImportPlanData $importPlan, string $stepUid, int $done, int $total): void
-    {
-        $progress = $total > 0 ? (int) floor(min(1, $done / $total) * 100) : 100;
-
-        $this->updateRunStep($importPlan, $stepUid, ImportRunStatus::Running, $progress);
-    }
-
-    /**
-     * Records why an item of a step of the import plan's current run couldn't be imported.
-     *
-     * Only the first few are kept, as a step can fail on every one of its items; the rest are counted.
-     *
-     * @param  ImportPlanData  $importPlan  The import plan being run.
-     * @param  string  $stepUid  The UID of the step being run.
-     * @param  int  $item  The item's position in the step's data, from 1.
-     * @param  string  $message  Why it couldn't be imported.
-     * @param  int|null  $elementId  The element it would have saved, if it already existed.
-     * @param  list<array{path: list<string>, message: string}>  $problems  Each validation error that kept it from saving.
-     */
-    public function recordItemFailed(ImportPlanData $importPlan, string $stepUid, int $item, string $message, ?int $elementId = null, array $problems = []): void
-    {
-        $state = Cache::get(self::runStateKey($importPlan));
-
-        if (! is_array($state) || ! isset($state['steps'][$stepUid])) {
-            return;
-        }
-
-        $step = &$state['steps'][$stepUid];
-        $step['errorCount'] = ($step['errorCount'] ?? 0) + 1;
-
-        if (count($step['errors'] ?? []) < self::MAX_RUN_ERRORS) {
-            $step['errors'][] = ['item' => $item, 'message' => $message, 'elementId' => $elementId, 'problems' => $problems];
-        }
-
-        unset($step);
-
-        Cache::put(self::runStateKey($importPlan), $state, self::RUN_LOCK_TTL);
-    }
-
-    /**
-     * Records that a step of the import plan's current run has finished.
-     *
-     * @param  ImportPlanData  $importPlan  The import plan being run.
-     * @param  string  $stepUid  The UID of the step that finished.
-     * @param  bool  $hasFailures  Whether any of its items or jobs failed.
-     */
-    public function recordStepFinished(ImportPlanData $importPlan, string $stepUid, bool $hasFailures): void
-    {
-        $this->updateRunStep($importPlan, $stepUid, $hasFailures ? ImportRunStatus::Failed : ImportRunStatus::Completed, 100);
-    }
-
-    /**
-     * Records that the import plan's current run has finished.
-     *
-     * @param  ImportPlanData  $importPlan  The import plan that was run.
-     * @param  bool  $hasFailures  Whether any of its steps had failures.
-     */
-    public function recordRunFinished(ImportPlanData $importPlan, bool $hasFailures): void
-    {
-        $state = Cache::get(self::runStateKey($importPlan));
-
-        if (! is_array($state)) {
-            return;
-        }
-
-        $state['status'] = ($hasFailures ? ImportRunStatus::Failed : ImportRunStatus::Completed)->value;
-        $state['progress'] = 100;
-
-        Cache::put(self::runStateKey($importPlan), $state, self::RUN_LOCK_TTL);
-    }
-
-    private function updateRunStep(ImportPlanData $importPlan, string $stepUid, ImportRunStatus $status, int $progress): void
-    {
-        $state = Cache::get(self::runStateKey($importPlan));
-
-        if (! is_array($state) || ! isset($state['steps'][$stepUid])) {
-            return;
-        }
-
-        $step = $state['steps'][$stepUid];
-
-        // the same item count again changes nothing, and this runs for every item
-        if ($step['status'] === $status->value && $step['progress'] === $progress && $state['status'] !== ImportRunStatus::Pending->value) {
-            return;
-        }
-
-        $state['status'] = ImportRunStatus::Running->value;
-        $state['steps'][$stepUid] = ['status' => $status->value, 'progress' => $progress] + $step;
-        $state['progress'] = (int) floor(array_sum(array_column($state['steps'], 'progress')) / count($state['steps']));
-
-        Cache::put(self::runStateKey($importPlan), $state, self::RUN_LOCK_TTL);
+        return $this->importRuns->toArray($run, ! $run->status->isFinished() && ! $this->isRunning($importPlan), $withFailures);
     }
 
     /**
@@ -507,11 +361,6 @@ class Import
     public static function releaseRunLock(ImportPlanData $importPlan, string $runId): void
     {
         Cache::restoreLock(self::runLockKey($importPlan), $runId)->release();
-    }
-
-    private static function runStateKey(ImportPlanData $importPlan): string
-    {
-        return 'import-plan:'.($importPlan->uid ?? $importPlan->handle).':run';
     }
 
     /**
@@ -578,19 +427,19 @@ class Import
 
     /**
      * Fires the importing event, applies map remapping, resolves/applies match criteria and clearable items,
-     * then hands the item to the importer and fires the imported event.
+     * then hands the item to the importer and fires the imported event. Returns what happened to the item.
      *
      * @param  BaseImporter  $importer  The importer config to import into.
      * @param  array<string, mixed>  $data  The raw item data being imported.
      * @param  array<string, mixed>  $matchCriteria  any criteria that should be used to match incoming data against existing elements
      * @param  string|null  $runId  The unique ID of the import run this item belongs to, if any.
      */
-    public function importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null): void
+    public function importItem(BaseImporter $importer, array $data, array $matchCriteria = [], ?string $runId = null): ImportItemOutcome
     {
         $data = $this->prepareItem($importer, $data, $matchCriteria, $runId);
 
         if ($data === null) {
-            return;
+            return ImportItemOutcome::Skipped;
         }
 
         try {
@@ -605,12 +454,35 @@ class Import
         if ($importedItem === null && $importer instanceof ElementImporter) {
             $importer->discardAfterItemImportedCallbacks();
 
-            return;
+            return ImportItemOutcome::Skipped;
         }
 
         $importer->runAfterItemImportedCallbacks($importedItem);
 
         event(new ItemImported($importer, $data, $runId, $importedItem));
+
+        return self::itemOutcome($importer, $importedItem);
+    }
+
+    /**
+     * Works out what importing an item did, for importers that don't say.
+     */
+    private static function itemOutcome(BaseImporter $importer, ElementInterface|Model|null $importedItem): ImportItemOutcome
+    {
+        if ($importer instanceof ElementImporter && ($outcome = $importer->lastItemOutcome()) !== null) {
+            return $outcome;
+        }
+
+        return match (true) {
+            $importedItem instanceof Model => match (true) {
+                $importedItem->wasRecentlyCreated => ImportItemOutcome::Created,
+                $importedItem->wasChanged() => ImportItemOutcome::Updated,
+                default => ImportItemOutcome::Unchanged,
+            },
+            $importedItem instanceof Element => $importedItem->firstSave ? ImportItemOutcome::Created : ImportItemOutcome::Updated,
+            $importedItem instanceof ElementInterface => ImportItemOutcome::Updated,
+            default => ImportItemOutcome::Skipped,
+        };
     }
 
     /**

@@ -3,10 +3,18 @@ import {useEventListener} from '@vueuse/core';
 import {onScopeDispose, shallowRef, watch, type ShallowRef} from 'vue';
 import {runState as runStateAction} from '@actions/Import/ImportPlansController';
 
-export type RunStatus = 'pending' | 'running' | 'completed' | 'failed';
+export type RunStatus = 'pending' | 'running' | 'successful' | 'failed';
 
-/** Why an item of a step couldn't be imported. */
-export interface RunItemError {
+/** What happened to an item in a run. */
+export type ItemOutcome =
+  | 'created'
+  | 'updated'
+  | 'unchanged'
+  | 'skipped'
+  | 'failed';
+
+/** The record a run keeps of an item that failed. */
+export interface RunFailure {
   /** The item's position in the step's data, from 1. */
   item: number;
   message: string;
@@ -14,23 +22,38 @@ export interface RunItemError {
   elementId: number | null;
   /** Each validation error that kept it from saving, with where it is as labels. */
   problems: Array<{path: string[]; message: string}>;
+  /** The item as the source had it. */
+  data: unknown;
 }
 
+/** One step's share of a run. */
 export interface StepRunState {
+  label: string;
   status: RunStatus;
   /** How far through its items, from 0 to 100. */
   progress: number;
-  /** Why its first few failed items couldn't be imported. */
-  errors: RunItemError[];
-  /** How many of its items failed, including those past `errors`. */
-  errorCount: number;
+  /** How many items it has, once its source has been read. */
+  total: number | null;
+  source: {name: string | null; size: number | null};
+  /** How many items came to each outcome. */
+  counts: Record<ItemOutcome, number>;
+  /** Its first failed items; the rest are only counted. Left out where only the status is needed. */
+  failures?: RunFailure[];
 }
 
-/** Where an import plan's latest run has got, overall and step by step. */
+/** One execution of a whole import plan, step run by step run. */
 export interface RunState {
+  id: string;
   status: RunStatus;
   /** How far the whole run has got, from 0 to 100. */
   progress: number;
+  /** How it was started, if by a person: from the control panel or the command line. */
+  trigger: 'cp' | 'cli' | null;
+  /** The username of whoever started it. */
+  user: string | null;
+  dateCreated: string;
+  dateStarted: string | null;
+  dateFinished: string | null;
   /** By step uid; only the steps the run includes. */
   steps: Record<string, StepRunState>;
 }

@@ -7,15 +7,15 @@
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
   import Modal from '@/common/components/Modal.vue';
-  import type {RunItemError} from './run-state';
+  import type {RunFailure} from './run-state';
 
-  const {errors, errorCount} = defineProps<{
+  const {failures, failureCount} = defineProps<{
     isActive: boolean;
     /** What the step imports, e.g. “1. Entries — people.csv”. */
     title: string;
-    errors: RunItemError[];
-    /** How many items failed, including those past `errors`. */
-    errorCount: number;
+    failures: RunFailure[];
+    /** How many items failed, including those past `failures`. */
+    failureCount: number;
   }>();
 
   const emit = defineEmits<{
@@ -25,14 +25,14 @@
   const summary = computed(() =>
     t(
       '{count, plural, =1 {# item} other {# items}} couldn’t be imported in the last run.',
-      {count: errorCount}
+      {count: failureCount}
     )
   );
 
   const more = computed(() =>
     t(
       '{count, plural, =1 {# more item} other {# more items}} couldn’t be imported. The import log has them all.',
-      {count: errorCount - errors.length}
+      {count: failureCount - failures.length}
     )
   );
 </script>
@@ -60,18 +60,18 @@
         <p class="m-0">{{ summary }}</p>
 
         <section
-          v-for="error in errors"
-          :key="error.item"
+          v-for="failure in failures"
+          :key="failure.item"
           class="run-errors__item"
         >
           <h3 class="run-errors__heading">
-            {{ t('Item {number, number}', {number: error.item}) }}
-            <span v-if="error.elementId" class="run-errors__element">
-              {{ t('Element {id}', {id: error.elementId}) }}
+            {{ t('Item {number, number}', {number: failure.item}) }}
+            <span v-if="failure.elementId" class="run-errors__element">
+              {{ t('Element {id}', {id: failure.elementId}) }}
             </span>
           </h3>
 
-          <table v-if="error.problems?.length" class="run-errors__problems">
+          <table v-if="failure.problems.length" class="run-errors__problems">
             <thead class="sr-only">
               <tr>
                 <th scope="col">{{ t('Where') }}</th>
@@ -79,7 +79,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(problem, i) in error.problems" :key="i">
+              <tr v-for="(problem, i) in failure.problems" :key="i">
                 <td class="run-errors__path">
                   <template v-if="problem.path.length">{{
                     problem.path.join(' › ')
@@ -90,10 +90,10 @@
               </tr>
             </tbody>
           </table>
-          <p v-else class="m-0">{{ error.message }}</p>
+          <p v-else class="m-0">{{ failure.message }}</p>
         </section>
 
-        <p v-if="errorCount > errors.length" class="m-0 text-quiet">
+        <p v-if="failureCount > failures.length" class="m-0 text-quiet">
           {{ more }}
         </p>
       </div>

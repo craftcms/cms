@@ -16,7 +16,7 @@ const meta = {
   argTypes: {
     status: {
       control: 'inline-radio',
-      options: ['pending', 'running', 'completed', 'failed'],
+      options: ['pending', 'running', 'successful', 'failed'],
     },
     progress: {control: {type: 'range', min: -1, max: 100, step: 1}},
   },
@@ -61,7 +61,7 @@ export const States: Story = {
           </tr>
           <tr>
             <th class="text-start">Completed</th>
-            <td><RunIndicator status="completed" :progress="100" /></td>
+            <td><RunIndicator status="successful" :progress="100" /></td>
           </tr>
           <tr>
             <th class="text-start">Failed</th>

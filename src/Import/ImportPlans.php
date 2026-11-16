@@ -389,7 +389,7 @@ class ImportPlans
     }
 
     /**
-     * Soft-deletes the DB record for an import plan and invalidates the import plans cache.
+     * Soft-deletes the DB record for an import plan, deletes its runs, and invalidates the import plans cache.
      *
      * @param  ImportPlanData  $importPlan  The import plan to delete.
      */
@@ -402,6 +402,7 @@ class ImportPlans
         }
 
         $importRecord->delete();
+        app(ImportRuns::class)->deleteForPlan($importPlan);
 
         // invalidate caches
         $this->importPlans = null;

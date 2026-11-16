@@ -19,6 +19,7 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Import\Data\ItemPreview;
 use CraftCms\Cms\Import\Data\MappingColumn;
+use CraftCms\Cms\Import\Enums\ImportItemOutcome;
 use CraftCms\Cms\Import\Enums\ItemPreviewResult;
 use CraftCms\Cms\Import\Enums\MatchMode;
 use CraftCms\Cms\Import\Importers\BaseImporter;
@@ -91,6 +92,8 @@ abstract class ElementImporter extends BaseImporter
 
     /** Whether rows create new elements, update the ones they match, or both. */
     public protected(set) MatchMode $matchMode = MatchMode::CreateAndUpdate;
+
+    private ?ImportItemOutcome $lastItemOutcome = null;
 
     #[Override]
     public static function getDefaultTransformer(): ?string
@@ -494,6 +497,7 @@ abstract class ElementImporter extends BaseImporter
     #[Override]
     public function importItem(array $data): ?ElementInterface
     {
+        $this->lastItemOutcome = null;
         $prepared = $this->prepareItem($data);
 
         if ($prepared === null) {
@@ -503,6 +507,8 @@ abstract class ElementImporter extends BaseImporter
         ['element' => $element, 'hasChanges' => $hasChanges, 'createDraft' => $createDraft, 'publishDraft' => $publishDraft] = $prepared;
 
         if (! $hasChanges) {
+            $this->lastItemOutcome = ImportItemOutcome::Unchanged;
+
             return $element;
         }
 
@@ -532,7 +538,17 @@ abstract class ElementImporter extends BaseImporter
             $element = Drafts::applyDraft($element);
         }
 
+        $this->lastItemOutcome = $prepared['isNew'] ? ImportItemOutcome::Created : ImportItemOutcome::Updated;
+
         return $element;
+    }
+
+    /**
+     * Returns what the last call to `importItem()` did with its item, if it imported one.
+     */
+    public function lastItemOutcome(): ?ImportItemOutcome
+    {
+        return $this->lastItemOutcome;
     }
 
     /**

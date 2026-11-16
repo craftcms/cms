@@ -8,11 +8,13 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Exceptions\InvalidElementException;
 use CraftCms\Cms\Element\Import\ElementImporter;
 use CraftCms\Cms\Import\Data\ImportPlan as ImportPlanData;
+use CraftCms\Cms\Import\Enums\ImportItemOutcome;
 use CraftCms\Cms\Import\Events\ImportChunkFinished;
 use CraftCms\Cms\Import\Events\ImportChunkStarted;
 use CraftCms\Cms\Import\Events\ImportStepStarted;
 use CraftCms\Cms\Import\Importers\BaseImporter;
 use CraftCms\Cms\Import\ImportHelper;
+use CraftCms\Cms\Import\ImportRuns;
 use CraftCms\Cms\Queue\Job;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Import as ImportFacade;
@@ -21,7 +23,6 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Bus\Batchable;
 use Illuminate\Queue\Middleware\SkipIfBatchCancelled;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Override;
@@ -102,7 +103,7 @@ class Import extends Job
 
         // before the source is read, which can take a while, so the run no longer shows as waiting for the queue
         if ($this->start === 0) {
-            ImportFacade::recordStepStarted($this->importPlan, $this->stepUid);
+            $this->importRuns()->stepStarted($this->runId, $this->stepUid);
         }
 
         try {
@@ -133,8 +134,12 @@ class Import extends Job
         // the source is only parsed by the step's first chunk, which stores the items it leaves for the later chunks
         // on the import disk, so that each of them reads just its own items, even if it runs on a different server
         if ($this->totalCount === null || $chunkingDisabled) {
-            $allData = $this->parseSource($step);
+            [$allData, $sourceSize] = $this->parseSource($step);
             $totalCount = count($allData);
+
+            if ($this->start === 0) {
+                $this->importRuns()->recordSource($this->runId, $this->stepUid, $totalCount, $sourceSize);
+            }
             // discard the part at the start that was already processed
             $data = array_slice($allData, $this->start);
         } else {
@@ -176,6 +181,10 @@ class Import extends Job
 
         $processedCount = 0;
         $chunkHasFailures = false;
+        // what's happened to the items since the run was last told, which it is whenever the step's progress moves on
+        $counts = [];
+        $failures = [];
+        $recordedProgress = null;
         $canceled = false;
         $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit'));
         $startMemory = $memoryLimit !== -1 ? memory_get_usage() : null;
@@ -194,33 +203,43 @@ class Import extends Job
 
             $processedCount++;
 
+            $itemNumber = $this->start + $processedCount;
+
             // import data
             try {
-                ImportFacade::importItem($step, $data[$i], $matchCriteria, $this->runId);
+                $outcome = ImportFacade::importItem($step, $data[$i], $matchCriteria, $this->runId);
             } catch (Throwable $e) {
-                // log, let FinishImport know that this run had failures and proceed further
+                // log, record why it failed and proceed further
                 ImportLog::warning('Couldn’t import a data item because of the following error: '.$e->getMessage(), [
                     'step' => $stepLabel,
                     'data' => $data[$i],
                     // 'exception' => $e,
                 ]);
-                Cache::put(FinishImport::hasFailuresCacheKey($this->runId), true, now()->addDay());
-                Cache::put(FinishImport::stepHasFailuresCacheKey($this->runId, $this->stepUid), true, now()->addDay());
+                $outcome = ImportItemOutcome::Failed;
                 $chunkHasFailures = true;
-                ImportFacade::recordItemFailed(
-                    $this->importPlan,
-                    $this->stepUid,
-                    $this->start + $processedCount,
-                    $e->getMessage(),
-                    $e instanceof InvalidElementException ? $e->element->id : null,
-                    $e instanceof InvalidElementException ? ElementImporter::listErrors($e->element) : [],
-                );
+
+                if (count($failures) < ImportRuns::MAX_FAILURES_PER_STEP) {
+                    $failures[] = [
+                        'item' => $itemNumber,
+                        'message' => $e->getMessage(),
+                        'elementId' => $e instanceof InvalidElementException ? $e->element->id : null,
+                        'problems' => $e instanceof InvalidElementException ? ElementImporter::listErrors($e->element) : [],
+                        'data' => $data[$i],
+                    ];
+                }
             }
 
-            $itemNumber = $this->start + $processedCount;
-            ImportFacade::recordRunProgress($this->importPlan, $this->stepUid, $itemNumber, $totalCount);
+            $counts[$outcome->value] = ($counts[$outcome->value] ?? 0) + 1;
+            $progress = (int) (($itemNumber / $totalCount) * 100);
+
+            if ($progress !== $recordedProgress) {
+                $this->importRuns()->recordItems($this->runId, $this->stepUid, $itemNumber, $totalCount, $counts, $failures);
+                $counts = $failures = [];
+                $recordedProgress = $progress;
+            }
+
             $this->setProgress(
-                (int) (($itemNumber / $totalCount) * 100),
+                $progress,
                 I18N::prep('{step, number} of {total, number}', ['step' => $itemNumber, 'total' => $totalCount]),
             );
 
@@ -228,6 +247,10 @@ class Import extends Job
             if ($this->isNearingLimits($processedCount, $startTime, $startMemory, $memoryLimit)) {
                 break;
             }
+        }
+
+        if ($counts !== []) {
+            $this->importRuns()->recordItems($this->runId, $this->stepUid, $this->start + $processedCount, $totalCount, $counts, $failures);
         }
 
         event(new ImportChunkFinished($this->importPlan, $step, $this->runId, $this->start, $processedCount, $chunkHasFailures));
@@ -256,15 +279,23 @@ class Import extends Job
     }
 
     /**
-     * Reads and formats the step's source, downloading it first if it's remote.
+     * Reads and formats the step's source, downloading it first if it's remote, and returns its items and its size in bytes.
      *
-     * @return array<mixed>
+     * @return array{0: array<mixed>, 1: int|null}
      */
     private function parseSource(BaseImporter $step): array
     {
         // a remote file is downloaded, parsed and deleted in the first chunk
         // (the parsed items are shared with later chunks, so stored on the importDisk)
-        return $step->withLocalFile(fn (string $filePath) => ImportFacade::getFormattedData($filePath, $step));
+        return $step->withLocalFile(fn (string $filePath) => [
+            ImportFacade::getFormattedData($filePath, $step),
+            is_int($size = @filesize($filePath)) ? $size : null,
+        ]);
+    }
+
+    private function importRuns(): ImportRuns
+    {
+        return app(ImportRuns::class);
     }
 
     /**

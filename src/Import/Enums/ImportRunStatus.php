@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Import\Enums;
 
 /**
- * Where an import plan's latest run, or one of its steps, has got to.
+ * Where an import run, or one of its step runs, stands.
  *
  * @since 6.0.0
  */
@@ -16,9 +16,14 @@ enum ImportRunStatus: string
 
     case Running = 'running';
 
-    /** Finished with every item imported. */
-    case Completed = 'completed';
+    /** Finished with no failed items. */
+    case Successful = 'successful';
 
-    /** Finished with errors, or stopped before it finished. */
+    /** Finished with at least one failed item, or didn't finish. */
     case Failed = 'failed';
+
+    public function isFinished(): bool
+    {
+        return $this === self::Successful || $this === self::Failed;
+    }
 }

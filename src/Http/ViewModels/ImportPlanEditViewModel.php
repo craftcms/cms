@@ -108,7 +108,7 @@ class ImportPlanEditViewModel extends ViewModel
     /**
      * Where the plan's latest run has got, overall and step by step; the page follows it from here.
      *
-     * @return array{status: string, progress: int, steps: array<string, array{status: string, progress: int}>}|null
+     * @return array<string, mixed>|null
      */
     public function runState(): ?array
     {

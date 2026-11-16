@@ -13,7 +13,7 @@
   import {hasMapping} from '@/modules/import/mapping/paths';
   import {matchModeLabel} from '@/modules/import/mapping/matching';
   import type {ImportStep} from '@/modules/import/mapping/types';
-  import RunErrorsModal from '@/modules/import/run/RunErrorsModal.vue';
+  import RunFailuresModal from '@/modules/import/run/RunFailuresModal.vue';
   import RunIndicator from '@/modules/import/run/RunIndicator.vue';
   import {stepRunId} from '@/modules/import/run/run-state';
   import type {StepRunState} from '@/modules/import/run/run-state';
@@ -56,7 +56,7 @@
     remove: [];
   }>();
 
-  const showingErrors = shallowRef(false);
+  const showingFailures = shallowRef(false);
 
   const settingsButton = useTemplateRef<HTMLElement>('settingsButton');
   const mappingButton = useTemplateRef<HTMLElement>('mappingButton');
@@ -110,20 +110,20 @@
     switch (run?.status) {
       case 'pending':
         return t('Waiting to run');
-      case 'completed':
-        return t('Completed');
+      case 'successful':
+        return t('Successful');
       case 'failed':
-        return errorSummary.value;
+        return failureSummary.value;
     }
 
     return '';
   });
 
-  const errorSummary = computed(() =>
-    run?.errorCount
+  const failureSummary = computed(() =>
+    run?.counts.failed
       ? t(
           '{count, plural, =1 {# item} other {# items}} couldn’t be imported in the last run.',
-          {count: run.errorCount}
+          {count: run.counts.failed}
         )
       : t('The last run stopped before this step finished.')
   );
@@ -274,24 +274,24 @@
         </template>
         <span v-else class="font-semibold">{{ runLabel }}</span>
         <craft-button
-          v-if="run.errors?.length"
+          v-if="run.failures?.length"
           class="step-card__run-details"
           type="button"
           size="small"
           inherit
           :aria-label="t('Show details of the errors in {type}', {type: name})"
-          @click="showingErrors = true"
+          @click="showingFailures = true"
         >
           {{ t('Show details') }}
         </craft-button>
       </div>
-      <RunErrorsModal
-        v-if="run.errors?.length"
-        :is-active="showingErrors"
+      <RunFailuresModal
+        v-if="run.failures?.length"
+        :is-active="showingFailures"
         :title="name"
-        :errors="run.errors"
-        :error-count="run.errorCount"
-        @close="showingErrors = false"
+        :failures="run.failures"
+        :failure-count="run.counts.failed"
+        @close="showingFailures = false"
       />
     </section>
   </li>
@@ -309,7 +309,7 @@
     background-color: var(--c-color-neutral-fill-quiet);
   }
 
-  .step-card--completed {
+  .step-card--successful {
     padding: var(--_frame);
     background-color: var(--c-color-success-fill-quiet);
     color: var(--c-color-success-on-quiet);

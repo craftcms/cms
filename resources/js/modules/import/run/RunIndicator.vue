@@ -34,8 +34,8 @@
         return progress < 0
           ? t('Running')
           : t('Running: {percent, number}% done', {percent: progress});
-      case 'completed':
-        return t('Completed');
+      case 'successful':
+        return t('Successful');
       case 'failed':
         return t('Finished with errors');
     }
@@ -55,7 +55,7 @@
     switch (status) {
       case 'running':
         return 'warning';
-      case 'completed':
+      case 'successful':
         return 'success';
       case 'failed':
         return 'danger';
