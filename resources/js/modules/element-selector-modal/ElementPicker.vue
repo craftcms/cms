@@ -5,6 +5,7 @@
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
   import type {Source, SourceItem} from '@/modules/elements/types/sources';
+  import type {ActionItemButton} from '@/common/types';
   import {
     isModifiedClick,
     useModalElementIndex,
@@ -35,6 +36,8 @@
     (event: 'site-change', siteId: number | null): void;
     /** The trail from the volume root to the folder on screen. */
     (event: 'folder-path-change', path: FolderCrumb[]): void;
+    /** The buttons plugins add for the folder on screen. */
+    (event: 'folder-actions-change', actions: ActionItemButton[]): void;
   }>();
 
   const index = useModalElementIndex({
@@ -104,6 +107,12 @@
   watch(folderBreadcrumbs, (path) => emit('folder-path-change', path), {
     immediate: true,
   });
+
+  watch(
+    index.folderActions,
+    (actions) => emit('folder-actions-change', actions),
+    {immediate: true}
+  );
 
   // Remembered for the placeholders the next modal draws before its payload.
   watch(

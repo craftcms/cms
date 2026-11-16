@@ -325,10 +325,12 @@
           :columns-toggleable="columnsToggleable"
           :view-column-options="managed.viewColumnOptions.value"
           :view-sort-options="managed.viewSortOptions.value"
+          :view-customized="managed.viewCustomized.value"
           :create-label="createLabel"
           :create-url="createUrl"
           :create-menu-items="createMenuItems"
           @reorder-columns="managed.onColumnsReorder"
+          @use-default-view="managed.resetView"
         />
       </slot>
     </div>
