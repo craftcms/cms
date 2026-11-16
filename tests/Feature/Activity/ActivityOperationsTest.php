@@ -59,6 +59,11 @@ it('only takes operation types that can link to themselves', function () {
 
 class TestBatchOperation implements ActivityOperationTypeInterface
 {
+    public static function label(string $id, array $snapshot): ?string
+    {
+        return null;
+    }
+
     public static function url(string $id, array $snapshot, User $viewer): ?string
     {
         return $viewer->admin ? "/batches/$id" : null;

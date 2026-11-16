@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Activity\Data;
 
+use Closure;
+use CraftCms\Cms\Activity\ActivityEventRecorder;
 use CraftCms\Cms\Activity\Contracts\ActivityOperationTypeInterface;
+use Illuminate\Support\Facades\Context;
 use InvalidArgumentException;
 
 /**
@@ -35,6 +38,19 @@ readonly class ActivityOperation
         if (isset($this->data['type']) || isset($this->data['label'])) {
             throw new InvalidArgumentException('Activity operation data can’t use the “type” or “label” keys.');
         }
+    }
+
+    /**
+     * Runs the callback as part of the operation. Events recorded by queue jobs it dispatches are included.
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public function scope(Closure $callback): mixed
+    {
+        return Context::scope($callback, hidden: [ActivityEventRecorder::ContextOperation => $this]);
     }
 
     /**

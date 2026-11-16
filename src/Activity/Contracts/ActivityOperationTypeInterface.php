@@ -12,6 +12,13 @@ use CraftCms\Cms\User\Elements\User;
 interface ActivityOperationTypeInterface
 {
     /**
+     * Returns the operation’s label in the viewer’s language, or null to use the label it was recorded with.
+     *
+     * @param  array<string, int|string>  $snapshot  What the event kept of the operation.
+     */
+    public static function label(string $id, array $snapshot): ?string;
+
+    /**
      * Returns where the viewer can see the operation, or null if they can’t.
      *
      * @param  array<string, int|string>  $snapshot  What the event kept of the operation.

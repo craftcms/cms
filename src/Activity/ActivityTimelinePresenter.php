@@ -212,11 +212,13 @@ class ActivityTimelinePresenter
 
         $type = $snapshot['type'];
 
+        if (! is_string($type) || ! is_a($type, ActivityOperationTypeInterface::class, true)) {
+            return ['label' => (string) $snapshot['label'], 'url' => null];
+        }
+
         return [
-            'label' => (string) $snapshot['label'],
-            'url' => is_string($type) && is_a($type, ActivityOperationTypeInterface::class, true)
-                ? $type::url($event->operationId, $snapshot, $viewer)
-                : null,
+            'label' => $type::label($event->operationId, $snapshot) ?? (string) $snapshot['label'],
+            'url' => $type::url($event->operationId, $snapshot, $viewer),
         ];
     }
 }

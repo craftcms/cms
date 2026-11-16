@@ -81,3 +81,16 @@ it('names an operation the viewer can’t see without linking it', async () => {
   expect(origin()).toBe('via Import: Guides');
   expect(container.querySelector('.activity-timeline__origin a')).toBeNull();
 });
+
+it('names the operation an event was part of when nothing else caused it', async () => {
+  await mountEvent({
+    operation: {label: 'Launch day', url: '/admin/releases/4'},
+  });
+
+  expect(origin()).toBe('via Launch day');
+  expect(
+    container
+      .querySelector('.activity-timeline__origin a')
+      ?.getAttribute('href')
+  ).toBe('/admin/releases/4');
+});
