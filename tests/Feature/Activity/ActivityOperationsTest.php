@@ -9,6 +9,9 @@ use CraftCms\Cms\Activity\Data\ActivityOperation;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
 use CraftCms\Cms\Activity\EventTypes\ElementUpdated;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
+use CraftCms\Cms\Activity\OperationTypes\ElementActionOperation;
+use CraftCms\Cms\Element\Actions\Delete;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
@@ -51,6 +54,18 @@ it('lets the operation’s type decide whether a viewer gets a link to it', func
 
     expect($operation(true))->toBe(['label' => 'Nightly sync', 'url' => '/batches/batch-1'])
         ->and($operation(false))->toBe(['label' => 'Nightly sync', 'url' => null]);
+});
+
+it('names a bulk action’s operation in the viewer’s language', function () {
+    $event = ElementActionOperation::for(new Delete, Entry::class, 2)->scope(fn () => recordUpdate('first'));
+    app()->setLocale('de');
+
+    $operation = app(ActivityTimelinePresenter::class)
+        ->events(collect([$event]), UserModel::factory()->createElement())
+        ->sole()['operation'];
+
+    expect($event->snapshots['operation']['label'])->toBe('Delete (2 entries)')
+        ->and($operation)->toBe(['label' => 'Löschen (2 Einträge)', 'url' => null]);
 });
 
 it('only takes operation types that can link to themselves', function () {
