@@ -1,21 +1,80 @@
 <script setup lang="ts">
-  import {onBeforeUnmount, onMounted, ref, shallowRef, watch} from 'vue';
+  import {
+    computed,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    shallowRef,
+    watch,
+  } from 'vue';
   import {actionClient, t} from '@craftcms/ui';
   import {data as chartData} from '@actions/Dashboard/Widgets/NewUsersController';
-  import AreaChart from '@/modules/chart/AreaChart.vue';
   import type {ChartData, ChartScale} from '@/modules/chart/types';
+  import SparklineStat from './SparklineStat.vue';
   import {useWidgetColor} from './useWidgetColor';
+  import {useWidgetHeader} from './useWidgetHeader';
 
   const color = useWidgetColor();
 
+  // The total stands in for the widget's title
+  useWidgetHeader({titleHidden: true});
+
   const props = defineProps<{
-    data: {dateRange: string; userGroupId: number | null};
+    data: {
+      dateRange: string;
+      userGroupId: number | null;
+      /** Names the date range, such as “Last 7 days”. */
+      dateRangeLabel?: string | null;
+      /** The user group's name, lowercased, if the widget shows one. */
+      userGroupName?: string | null;
+      /** The user group's name for a single user, such as “member”. */
+      userGroupNameSingular?: string | null;
+    };
   }>();
 
   const error = ref('');
   const loading = ref(true);
   const chart = shallowRef<{data: ChartData; scale: ChartScale}>();
   let request: AbortController | undefined;
+
+  /** The new users across the whole range. */
+  const total = computed(() =>
+    (chart.value?.data.rows ?? []).reduce(
+      (count, row) => count + (Number(row[1]) || 0),
+      0
+    )
+  );
+
+  /**
+   * The user group's name for a count: singular for one, and as it is
+   * otherwise, since group names are usually plural.
+   */
+  function groupName(count: number): string | null | undefined {
+    return count === 1
+      ? (props.data.userGroupNameSingular ?? props.data.userGroupName)
+      : props.data.userGroupName;
+  }
+
+  /** The total as a phrase, such as “264 new members”. */
+  const totalLabel = computed(() =>
+    props.data.userGroupName
+      ? t('{num, number} new {group}', {
+          num: total.value,
+          group: groupName(total.value),
+        })
+      : t('{num, number} new {num, plural, =1{user} other{users}}', {
+          num: total.value,
+        })
+  );
+
+  /** A day's tooltip, such as “11/4 · 5 members”. */
+  function tooltip(date: string, count: number): string {
+    const users = props.data.userGroupName
+      ? t('{num, number} {group}', {num: count, group: groupName(count)})
+      : t('{num, number} {num, plural, =1{user} other{users}}', {num: count});
+
+    return `${date} · ${users}`;
+  }
 
   onBeforeUnmount(() => request?.abort());
 
@@ -60,7 +119,10 @@
 </script>
 
 <template>
-  <craft-card :data-color="color">
+  <craft-card
+    :data-color="color"
+    style="--widget-title-line-size: calc(var(--c-text-xl) * 1.2)"
+  >
     <slot name="header" />
     <div class="body">
       <craft-callout v-if="error" variant="danger" role="alert">{{
@@ -69,11 +131,14 @@
       <craft-spinner v-if="loading" visible role="status">{{
         t('Loading…')
       }}</craft-spinner>
-      <AreaChart
+      <SparklineStat
         v-if="chart && !loading && !error"
+        :title="totalLabel"
+        :caption="data.dateRangeLabel"
         :data="chart.data"
         :scale="chart.scale"
         :label="t('New Users')"
+        :tooltip="tooltip"
       />
     </div>
   </craft-card>
