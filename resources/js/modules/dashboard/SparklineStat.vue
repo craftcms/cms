@@ -90,8 +90,10 @@
     color: var(--c-text-quiet);
   }
 
+  /* As tall as a third of the card's width, so wider widgets get taller
+     charts rather than flatter ones. */
   .sparkline-stat__chart {
-    height: calc(128rem / 16);
+    height: max(calc(128rem / 16), 33cqi);
     margin-inline: calc(var(--_card-padding) * -1);
     margin-block-end: calc(var(--_card-padding) * -1);
   }
