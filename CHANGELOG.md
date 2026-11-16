@@ -153,6 +153,7 @@
 - Fixed an error that occurred when calling `craft\helpers\Markdown::process()` or `processParagraph()` with any flavor other than `original`, with the Yii adapter installed. ([#20726](https://github.com/craftcms/cms/issues/20726), [#20730](https://github.com/craftcms/cms/pull/20730))
 - Fixed a bug where a clone of an entry fetched by a query that returned more than one entry had no authors, so validating it failed when its section required authors. ([#20724](https://github.com/craftcms/cms/issues/20724), [#20732](https://github.com/craftcms/cms/pull/20732))
 - Fixed a bug where a clone of an element fetched by a query that returned more than one element got a new, empty value for its Content Block fields. ([#20732](https://github.com/craftcms/cms/pull/20732))
+- Fixed a bug where element index status menus showed custom statuses defined with a label and color, such as `['label' => 'Archived', 'color' => Color::Red]`, as JSON and without their color.
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
 
 ## 6.0.0-beta.1 - 2026-11-10
