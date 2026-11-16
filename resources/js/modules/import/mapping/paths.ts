@@ -76,8 +76,8 @@ export function hasMapping(value: unknown): boolean {
  * rather than booleans, which is what `validateMap()` and the importer read back.
  *
  * Read off `currentTarget` — the `craft-checkbox` the listener is bound to, which
- * mirrors its slotted input's state. `target` is the host for an event Lion raises
- * itself and the input for one that bubbles up from it, so it can't be relied on.
+ * mirrors its slotted input's state. `target` is the slotted input the event
+ * bubbled up from, not the checkbox.
  */
 export function checkedValue(event: Event): string {
   const checkbox = event.currentTarget as {checked?: boolean} | null;
