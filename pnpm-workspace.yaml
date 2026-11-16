@@ -41,9 +41,9 @@ minimumReleaseAgeExclude:
 catalog:
   '@awesome.me/kit-ddaed3f5c5': ^1.0.110
   '@simplewebauthn/browser': ^13.3.0
-  '@storybook/addon-a11y': ^10.6.0
-  '@storybook/addon-docs': ^10.6.0
-  '@storybook/addon-themes': ^10.6.0
+  '@storybook/addon-a11y': ^10.6.6
+  '@storybook/addon-docs': ^10.6.6
+  '@storybook/addon-themes': ^10.6.6
   '@total-typescript/tsconfig': ^1.0.4
   '@types/node': ^25.6.0
   '@vitest/coverage-v8': 4.1.10
@@ -63,7 +63,7 @@ catalog:
   postcss-scss: ^4.0.9
   punycode: ^2.3.1
   remark-gfm: ^4.0.1
-  storybook: ^10.6.0
+  storybook: ^10.6.6
   stylelint: ^17.9.1
   stylelint-use-logical-spec: ^5.0.1
   tailwindcss: ^4.2.4
