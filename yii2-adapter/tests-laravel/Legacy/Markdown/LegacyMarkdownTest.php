@@ -1,6 +1,7 @@
 <?php
 
 use craft\helpers\Cp;
+use craft\helpers\Markdown as CraftMarkdownHelper;
 use craft\markdown\GithubMarkdown;
 use craft\markdown\Markdown;
 use yii\helpers\Markdown as MarkdownHelper;
@@ -13,6 +14,11 @@ it('renders markdown through the yii helper flavors', function() {
     expect(MarkdownHelper::process('**bold**'))->toBe("<p><strong>bold</strong></p>\n")
         ->and(MarkdownHelper::processParagraph('**bold**', 'gfm'))->toBe('<strong>bold</strong>');
 });
+
+it('renders every flavor through the craft helper', function(string $flavor) {
+    expect(CraftMarkdownHelper::process('**bold**', $flavor))->toBe("<p><strong>bold</strong></p>\n")
+        ->and(CraftMarkdownHelper::processParagraph('**bold**', $flavor))->toBe('<strong>bold</strong>');
+})->with(['original', 'pre-encoded', 'gfm', 'gfm-comment', 'extra']);
 
 it('preserves gfm-comment line break behavior', function() {
     expect(MarkdownHelper::process("line one\nline two", 'gfm-comment'))
