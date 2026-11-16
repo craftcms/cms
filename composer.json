@@ -49,7 +49,7 @@
     "guzzlehttp/guzzle": "^7.2.0",
     "inertiajs/inertia-laravel": "^3.0",
     "intervention/image": "^4.2",
-    "laravel/ai": "^1.2",
+    "laravel/ai": "^1.4",
     "laravel/framework": "^13.38",
     "laravel/passport": "^13.0",
     "laravel/wayfinder": "^0.1.23",

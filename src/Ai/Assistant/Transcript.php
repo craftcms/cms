@@ -73,7 +73,7 @@ class Transcript
      */
     private function output(array $call): mixed
     {
-        return is_string($call['name'] ?? null) && is_string($call['result']) && ! ($call['denied'] ?? false)
+        return is_string($call['name'] ?? null) && is_string($call['result']) && ! ($call['denied'] ?? false) && ! ($call['failed'] ?? false)
             ? ToolDisplays::forDisplay($call['name'], $call['result'])
             : $call['result'];
     }
@@ -100,10 +100,11 @@ class Transcript
                     'id' => (string) $call['id'],
                     'name' => (string) $call['name'],
                     'arguments' => Json::encode((object) ($call['arguments'] ?? [])),
-                    // Calls without a result that aren’t waiting for the user never finished: the turn failed, or the user moved on.
+                    // Calls without a result that aren’t waiting for the user never finished: the turn failed, or the user
+                    // moved on. Failed calls have their error as their result.
                     'state' => match (true) {
                         $isPending => 'approval-requested',
-                        array_key_exists('result', $call) => 'complete',
+                        array_key_exists('result', $call) && ! ($call['failed'] ?? false) => 'complete',
                         default => 'error',
                     },
                     ...array_key_exists('result', $call) ? ['output' => $this->output($call)] : [],
