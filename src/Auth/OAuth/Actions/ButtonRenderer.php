@@ -18,6 +18,7 @@ class ButtonRenderer implements RendersOAuthButton
     {
         return new HtmlString(Html::tag('craft-button', Html::encode($button->label), [
             'href' => $button->url,
+            'variant' => 'outline',
             'class' => 'w-full',
             'data-provider' => $button->provider->handle,
         ]));

@@ -42,7 +42,7 @@
     "d3": "catalog:",
     "inputmask": "catalog:",
     "jquery": "catalog:",
-    "jquery-ui": "^1.14.2",
+    "jquery-ui": "catalog:",
     "jquery.payment": "^3.0.0",
     "picturefill": "^3.0.3",
     "punycode": "catalog:",
@@ -57,6 +57,6 @@
     "yii2-pjax": "~2.0.8"
   },
   "optionalDependencies": {
-    "@awesome.me/kit-ddaed3f5c5": "^1.0.81"
+    "@awesome.me/kit-ddaed3f5c5": "^1.0.110"
   }
 }

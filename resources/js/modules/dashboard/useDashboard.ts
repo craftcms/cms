@@ -1,6 +1,9 @@
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {useMessages} from '@/modules/messages/useMessages';
 import {provideHtmlWidgets} from './htmlWidgets';
+import {onElementChanged} from '@/modules/elements/element-instances';
+import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
+import {tryOnScopeDispose} from '@vueuse/core';
 
 import {
   computed,
@@ -19,6 +22,7 @@ import {
   deleteMethod,
   reorder as reorderWidgets,
   updateColspan,
+  updateColor,
 } from '@actions/Dashboard/WidgetsController';
 import type {DashboardWidget, WidgetType} from './types';
 import {widgetName} from './widgetName';
@@ -93,11 +97,43 @@ export function useDashboard(props: {
     );
   });
 
+  /**
+   * Widgets whose settings are open. Reloaded widgets remount where their
+   * data changed, which would close their settings and lose what's typed, so
+   * while any are open, reloads wait, and a reload that lands is set aside
+   * and made again once they close.
+   */
+  const settingsOpen = new Set<number>();
+  let reloadQueued = false;
+  let reloadAfterSettings = false;
+  /** Once the dashboard is left, a reload would reload the page it went to. */
+  let left = false;
+  tryOnScopeDispose(() => {
+    left = true;
+  });
+
+  function reloadWidgets() {
+    if (!left) router.reload({only: ['widgets']});
+  }
+
   watch(
     () => props.widgets,
     (value) => {
+      if (settingsOpen.size) {
+        reloadAfterSettings = true;
+        return;
+      }
       widgets.value = value;
     }
+  );
+
+  // A focused control in a widget that remounts, such as a Recent Entries
+  // link, keeps focus. HTML widgets add their content later.
+  useFocusThroughRedraw(
+    container,
+    widgets,
+    () => widgets.value.map(({id}) => id).join(),
+    {itemSelector: '.dashboard-widget'}
   );
 
   watch(widgets, async () => {
@@ -121,6 +157,40 @@ export function useDashboard(props: {
   function refreshTypes() {
     router.reload({only: ['widgetTypes']});
   }
+
+  function settingsToggled(id: number, open: boolean) {
+    if (open) {
+      settingsOpen.add(id);
+    } else {
+      settingsOpen.delete(id);
+    }
+
+    if (!settingsOpen.size && reloadAfterSettings) {
+      reloadAfterSettings = false;
+      reloadWidgets();
+    }
+  }
+
+  // Widgets show elements, such as recent entries and drafts, so they're
+  // reloaded when elements are saved, here or in another tab, once for all
+  // the elements saved together.
+  tryOnScopeDispose(
+    onElementChanged(
+      () => {
+        if (settingsOpen.size) {
+          reloadAfterSettings = true;
+          return;
+        }
+        if (reloadQueued) return;
+        reloadQueued = true;
+        queueMicrotask(() => {
+          reloadQueued = false;
+          reloadWidgets();
+        });
+      },
+      {includeSelf: true}
+    )
+  );
 
   function saved(id: number, widget: DashboardWidget | false) {
     widgets.value = widgets.value.flatMap((current) =>
@@ -148,6 +218,7 @@ export function useDashboard(props: {
           subtitle: null,
           colspan: 1,
           maxColspan: info.maxColspan ?? 4,
+          color: 'gray',
           settings: {},
           settingsUi: JSON.parse(
             JSON.stringify(info.settingsUi).replaceAll(
@@ -205,6 +276,7 @@ export function useDashboard(props: {
       const {data} = await actionClient.post(store.url(), {
         type: deleted.value.type,
         settings: deleted.value.settings,
+        color: deleted.value.color,
       });
 
       if (data.info) widgets.value = [...widgets.value, data.info];
@@ -224,15 +296,18 @@ export function useDashboard(props: {
     order.splice(to, 0, order.splice(from, 1)[0]!);
     busy.value = true;
 
+    // Shown in the new order while it saves, as soon as it's dropped, and
+    // back in the old one if saving fails.
+    const previous = widgets.value;
+    widgets.value = [
+      ...order,
+      ...widgets.value.filter((widget) => widget.id < 0),
+    ];
+
     try {
       await actionClient.post(reorderWidgets.url(), {
         ids: JSON.stringify(order.map((widget) => widget.id)),
       });
-
-      widgets.value = [
-        ...order,
-        ...widgets.value.filter((widget) => widget.id < 0),
-      ];
 
       const moved = order[to]!;
       announce(
@@ -242,6 +317,7 @@ export function useDashboard(props: {
         })
       );
     } catch {
+      widgets.value = previous;
       messages.error(t('Couldn’t reorder widgets.'));
     } finally {
       busy.value = false;
@@ -266,6 +342,34 @@ export function useDashboard(props: {
     }
   }
 
+  /** Gives a widget a color, or none with `null`. */
+  async function recolor(
+    widget: DashboardWidget,
+    color: CraftCms.Cms.Shared.Enums.Color | null
+  ) {
+    if (busy.value) return;
+
+    busy.value = true;
+
+    // Shown while it saves, so a failed save changes the color back,
+    // and with it the color select, which keeps whatever was picked.
+    const show = (value: CraftCms.Cms.Shared.Enums.Color | null) => {
+      widgets.value = widgets.value.map((current) =>
+        current.id === widget.id ? {...current, color: value} : current
+      );
+    };
+    show(color);
+
+    try {
+      await actionClient.post(updateColor.url(), {id: widget.id, color});
+    } catch {
+      show(widget.color);
+      messages.error(t('Couldn’t save widget.'));
+    } finally {
+      busy.value = false;
+    }
+  }
+
   return {
     widgets,
     savedWidgets,
@@ -282,6 +386,8 @@ export function useDashboard(props: {
     undo,
     reorder,
     resize,
+    recolor,
     refreshGrid,
+    settingsToggled,
   };
 }

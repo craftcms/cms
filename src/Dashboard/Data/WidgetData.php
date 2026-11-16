@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Data;
 
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Ui\UiPayload;
 use CraftCms\Cms\View\HtmlFragment;
 
@@ -21,6 +22,7 @@ readonly class WidgetData
         public string $type,
         public int $colspan,
         public int $maxColspan,
+        public ?Color $color,
         public ?string $title,
         public ?string $subtitle,
         public string $name,

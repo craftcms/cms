@@ -2,20 +2,6 @@ import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, type VNodeChild} from 'vue';
 import {createCraftColumnHelper} from './createCraftColumnHelper';
 
-// Lion's select-rich can't construct under happy-dom, so a bare element stands in for it.
-vi.mock('@craftcms/ui/components/select-rich/select-rich', async () => {
-  const {LitElement} = await import('lit');
-  class CraftSelectRich extends LitElement {
-    static override styles = [];
-    modelValue: unknown = '';
-  }
-  if (!customElements.get('craft-select-rich')) {
-    customElements.define('craft-select-rich', CraftSelectRich);
-  }
-
-  return {default: CraftSelectRich};
-});
-
 interface Row {
   name: string;
   status: string;
@@ -55,9 +41,7 @@ function labelOf(element: Element): string | null {
 
 function change(element: Element, property: string, value: unknown): void {
   Object.assign(element, {[property]: value});
-  element.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
-  );
+  element.dispatchEvent(new Event('change', {bubbles: true}));
 }
 
 afterEach(() => {
@@ -88,9 +72,9 @@ it.each([
     const select = cell.querySelector(tag)!;
 
     expect(labelOf(select)).toBe('Status of Home');
-    expect((select as unknown as {modelValue: string}).modelValue).toBe('live');
+    expect((select as unknown as {value: string}).value).toBe('live');
 
-    change(select, 'modelValue', 'draft');
+    change(select, 'value', 'draft');
 
     expect(onChange).toHaveBeenCalledWith(row, 'draft');
   }
@@ -114,27 +98,6 @@ it('gives a rich select’s options their hints, which a native select leaves ou
 
   const native = renderCell(columnHelper.select(column), row);
   expect(native.querySelector('option')!.textContent!.trim()).toBe('Live');
-});
-
-it('ignores the value a control announces as it starts up', () => {
-  const onChange = vi.fn();
-  const cell = renderCell(
-    columnHelper.checkbox({
-      id: 'enabled',
-      value: (r) => r.enabled,
-      label: () => 'Enabled',
-      onChange,
-    }),
-    row
-  );
-
-  cell
-    .querySelector('craft-checkbox')!
-    .dispatchEvent(
-      new CustomEvent('model-value-changed', {detail: {initialize: true}})
-    );
-
-  expect(onChange).not.toHaveBeenCalled();
 });
 
 it('reports a checkbox column’s new state, named by its label', () => {

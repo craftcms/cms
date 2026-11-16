@@ -37,9 +37,8 @@ export const baseFormControlStyles = css`
 
 /**
  * Base styles for the `.input-group__input`/`.input-group__container` div
- * that Lion's `FormControlMixin` renders around a slotted form control (see
- * `_inputGroupInputTemplate()` in `@lion/ui`'s `form-core`). Apply this to
- * that wrapper element, not the control itself.
+ * that the `FormControl` mixin renders around a slotted form control. Apply
+ * this to that wrapper element, not the control itself.
  *
  * It only sets layout/sizing concerns the wrapper needs (flex, width,
  * position) — it does not draw a border, radius, or background of its own.
@@ -85,7 +84,7 @@ export const baseComboboxStyles = css`
 `;
 
 export const baseFieldStyles = css`
-  :host([has-feedback-for='error']) {
+  :host([invalid]) {
     color: var(--c-color-danger-on-normal);
 
     ::slotted([slot='input']) {
@@ -100,7 +99,7 @@ export const baseFieldStyles = css`
   }
 
   /* The label and help text only render when there's something to show
-     (see HasLabel and craft-field), so the spacing can be unconditional. */
+     (see FormControl and craft-field), so the spacing can be unconditional. */
   .form-field__label {
     margin-block-end: var(
       --c-field-label-margin-block-end,
@@ -123,7 +122,7 @@ export const baseFieldStyles = css`
     margin-block: var(--c-spacing-xs, 0.3125rem) 0;
   }
 
-  /* Tip/warning notices (see FieldNotices) */
+  /* Tip/warning notices (see FormControl) */
   .field-notice {
     --c-callout-icon-padding-inline: 0;
     --c-callout-text-padding-inline: var(--c-spacing-sm) 0;

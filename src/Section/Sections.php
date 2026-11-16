@@ -57,7 +57,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
 
@@ -79,7 +78,7 @@ class Sections
      *
      * ::: warning
      * Don’t disable this unless you know what you’re doing, as entries won’t reflect section/entry type changes until
-     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
+     * they’ve been resaved. (You can resave entries manually by running the `resave:entries` console command.)
      * :::
      */
     public bool $autoResaveEntries = true;
@@ -221,7 +220,7 @@ class Sections
             ->whereNull('sections.dateDeleted')
             ->orderBy('sections.name');
 
-        if (Schema::hasColumn(Table::SECTIONS, 'minAuthors')) {
+        if (DB::getReadSchemaBuilder()->hasColumn(Table::SECTIONS, 'minAuthors')) {
             $query->addSelect('sections.minAuthors');
         }
 

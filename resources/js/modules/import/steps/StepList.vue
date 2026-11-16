@@ -12,6 +12,7 @@
   import {computed, shallowRef, useTemplateRef} from 'vue';
   import {t} from '@craftcms/ui';
   import {useReorderableItems} from '@/common/composables/useReorderableItems';
+  import {uuid} from '@/common/craft/strings';
   import type {ImportStep} from '@/modules/import/mapping/types';
   import {openStepMapping} from './step-mapping';
   import {openStepSlideout, type StepSummary} from './step-slideout';
@@ -87,7 +88,7 @@
   function newStep(): ImportStep {
     return {
       // a plain UUID: the server caps a step's uid at 36 characters
-      uid: crypto.randomUUID(),
+      uid: uuid(),
       type: null,
       source: null,
       transformer: null,

@@ -112,8 +112,15 @@ readonly class PersonalAccessTokensController
             'tokenId' => ['nullable', 'string'],
         ]);
 
-        $this->tokens->revoke($user->asElement(), $validated['clientId'], $validated['tokenId'] ?? null);
+        $user = $user->asElement();
+        $this->tokens->revoke($user, $validated['clientId'], $validated['tokenId'] ?? null);
 
-        return $this->asSuccess(t('Access revoked.'));
+        // The Tokens screen goes away once there’s nothing left to list or create
+        $screens = app(EditUserScreens::class);
+
+        return $this->asSuccess(
+            t('Access revoked.'),
+            redirect: $screens->showTokensScreen($user) ? null : $screens->url($user, EditUserScreens::PROFILE),
+        );
     }
 }

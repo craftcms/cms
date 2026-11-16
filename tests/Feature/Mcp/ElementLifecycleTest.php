@@ -38,7 +38,7 @@ use Laravel\Passport\Passport;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $this->actor = User::query()->firstOrFail();
     actingAs($this->actor);
@@ -291,7 +291,7 @@ it('rejects attributes outside the update schema before validating an element', 
     ($this->callLifecycle)('elements_validate', ['type' => 'entries',
         'id' => $this->entry['id'], 'attributes' => ['sectionId' => $this->section->id, 'id' => 999999],
     ])->assertOk()->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Invalid attributes for entries: Additional object properties are not allowed: ["sectionId","id"]. Call elements_schema for the accepted attributes.');
+        ->assertJsonPath('result.content.0.text', 'Invalid attributes for entries: Object contains unexpected additional properties: `sectionId`, `id`. Call elements_schema for the accepted attributes.');
 });
 
 it('validates proposed asset attributes without moving files and still requires relocation permissions', function (): void {

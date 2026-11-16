@@ -8,7 +8,6 @@
   import '@craftcms/ui/components/popover/popover';
   import '@craftcms/ui/components/radio/radio';
   import '@craftcms/ui/components/radio-group/radio-group';
-  import {isInitialization} from '@/common/table/cells/types';
 
   export interface SettingOption<T extends string> {
     value: T;
@@ -29,15 +28,7 @@
   const emit = defineEmits<{change: [value: string]}>();
 
   function onChange(event: Event): void {
-    // each radio announces its own change too, before the group has caught up with it
-    if (isInitialization(event) || event.target !== event.currentTarget) {
-      return;
-    }
-
-    emit(
-      'change',
-      String((event.currentTarget as {modelValue?: unknown}).modelValue)
-    );
+    emit('change', String((event.currentTarget as {value?: unknown}).value));
   }
 </script>
 
@@ -57,17 +48,13 @@
     </craft-button>
 
     <div slot="content-body" class="setting-popover__body">
-      <craft-radio-group
-        :label="label"
-        .modelValue="value"
-        @model-value-changed="onChange"
-      >
+      <craft-radio-group :label="label" .value="value" @change="onChange">
         <craft-radio
           v-for="option in options"
           :key="option.value"
           :label="option.label"
           :help-text="option.instructions"
-          .choiceValue="option.value"
+          :value="option.value"
           .checked="option.value === value"
         ></craft-radio>
       </craft-radio-group>

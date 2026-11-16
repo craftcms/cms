@@ -5,7 +5,6 @@ import {
 import {announce} from '@/common/announcer';
 import {hasAttr} from '@craftcms/garnish';
 import {submitNativeForm} from '@/common/utils/forms';
-import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 import {
   bootFocalPoint,
   destroyFocalPoint,
@@ -27,7 +26,7 @@ declare const Craft: any;
 
 /** A `craft-dialog`. */
 interface PreviewDialog extends HTMLElement {
-  opened: boolean;
+  open: boolean;
   noHeader: boolean;
   closeOnOutsideClick: boolean;
   label: string;
@@ -157,7 +156,7 @@ export class PreviewFileModal {
     window.addEventListener('resize', this.#onWindowResize);
 
     document.body.append(this.dialog);
-    this.dialog.opened = true;
+    this.dialog.open = true;
     void this.dialog.updateComplete?.then(() => {
       const footer = this.dialog.shadowRoot?.querySelector('[part="footer"]');
       if (footer && !this.#destroyed) {
@@ -216,7 +215,7 @@ export class PreviewFileModal {
   hide(): void {
     if (!this.visible) return;
     this.visible = false;
-    this.dialog.opened = false;
+    this.dialog.open = false;
   }
 
   /** Closes the preview immediately, without returning focus. */
@@ -295,7 +294,18 @@ export class PreviewFileModal {
         await appendElementHtml(response.data.previewHtml, this.container);
         bootFocalPoint(this.container);
         const text = this.container.querySelector('pre > code')?.textContent;
-        highlightCodeBlocks(this.container);
+        if (
+          this.container.querySelector(
+            'code[data-language], pre > code[class*="language-"]'
+          )
+        ) {
+          // Only text previews have code to highlight, so the highlighter's
+          // languages load with the first one.
+          const {highlightCodeBlocks} =
+            await import('@/common/utils/highlight-code');
+          if (response.data.requestId !== this.requestId) return;
+          highlightCodeBlocks(this.container);
+        }
         this.#addPreviewFooterItems(text);
         this._addBumperButtons();
         this.#focusContent();

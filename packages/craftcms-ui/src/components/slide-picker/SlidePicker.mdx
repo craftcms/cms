@@ -17,7 +17,7 @@ Use it where the range is short and every step is meaningful — a column count,
 
 ## Posting a Value
 
-Give it a `name` and it posts with the form the way a native input does: `new FormData(form)` reads it, and `form.reset()` puts back the value it started with. Set the starting value with `model-value`, or `.modelValue` from script.
+Give it a `name` and it posts with the form the way a native input does: `new FormData(form)` reads it, and `form.reset()` puts back the value it started with. Set the starting value with `value`.
 
 `readonly` and `disabled` differ in what they post: a read-only control still submits its value, a disabled one is left out of submission entirely.
 
@@ -25,7 +25,7 @@ It emits the same events a radio group does. Every step is a commit, so `change`
 
 ```js
 picker.addEventListener('change', () => {
-  console.log(picker.modelValue);
+  console.log(picker.value);
 });
 ```
 

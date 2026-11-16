@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Address\Elements\Address as AddressElement;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Drafts;
@@ -10,6 +11,10 @@ use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Events\ElementActionMenuDescriptorsResolving;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Addresses;
+use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
@@ -147,6 +152,23 @@ it('includes items added by event listeners, filtered for the context', function
 
     expect(descriptorList($element, ElementActionContext::Editor))->toContain('Sync', 'Purge')
         ->and(descriptorList($element, ElementActionContext::Field))->toContain('Sync')->not->toContain('Purge');
+});
+
+it('offers the settings of the field a nested element belongs to', function () {
+    $this->actingAs(User::first());
+    $matrix = Field::factory()->create(['type' => Matrix::class]);
+    $addresses = Field::factory()->create(['type' => Addresses::class]);
+    Fields::refreshFields();
+    $entry = contextualEntry();
+    $entry->fieldId = $matrix->id;
+    $address = new AddressElement(['fieldId' => $addresses->id, 'ownerId' => User::first()->id]);
+
+    $fieldSettings = fn (ElementInterface $element) => collect($element->actionMenuDescriptors())
+        ->firstWhere('label', 'Field settings')['behavior'] ?? null;
+
+    expect($fieldSettings($entry))->toBe(['type' => 'slideout', 'url' => cp_url("settings/fields/edit/$matrix->id")])
+        ->and($fieldSettings($address))->toBe(['type' => 'slideout', 'url' => cp_url("settings/fields/edit/$addresses->id")])
+        ->and($fieldSettings(contextualEntry()))->toBeNull();
 });
 
 it('defaults to the editor context', function () {

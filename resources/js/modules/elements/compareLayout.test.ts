@@ -11,7 +11,7 @@ import {
   tabsWithErrors,
   withServerTabFields,
   withoutCompareAction,
-  withoutCompareActions,
+  readOnlyPane,
   type CompareRow,
 } from './compareLayout';
 
@@ -159,6 +159,35 @@ describe('compareTabs', () => {
     ]);
   });
 
+  it('keeps the sidebar tabs of both versions after the rest', () => {
+    const sidebarTab = (uid: string, label: string, fields: string[]) => {
+      const node = tab(uid, label, fields);
+
+      return {...node, props: {...node.props, sidebar: true}};
+    };
+    const from = form([
+      tab('main', 'Main', ['body']),
+      sidebarTab('links', 'Links', ['url']),
+      tab('extra', 'Extra', ['notes']),
+    ]);
+    const to = form([
+      tab('content', 'Content', ['title']),
+      tab('visit', 'Visit', ['venue']),
+      sidebarTab('seo', 'SEO', ['metaTitle']),
+    ]);
+
+    expect(
+      compareTabs(from, to, [
+        row(null, 'title'),
+        row('body', null),
+        row(null, 'venue'),
+        row('url', null),
+        row('notes', null),
+        row(null, 'metaTitle'),
+      ]).map((compareTab) => compareTab.key)
+    ).toEqual(['main', 'extra', 'content', 'visit', 'links', 'seo']);
+  });
+
   it('keeps fields that aren’t in a tab together, unlabeled', () => {
     const to = form([field('title'), field('summary')]);
 
@@ -271,6 +300,43 @@ describe('liveRows', () => {
     ]);
   });
 
+  it('pairs a newly shown field with the other side’s, under another UID in that side’s layout', () => {
+    expect(
+      liveRows(
+        [changedRow('title', 'title', false), changedRow(null, 'venue', true)],
+        form([tab('content', 'Content', ['title', 'location'])]),
+        'from',
+        {location: 'venue'}
+      )
+    ).toEqual([
+      changedRow('title', 'title', false),
+      changedRow('location', 'venue', null),
+    ]);
+  });
+
+  it('marks a newly paired field changed as its values differ', () => {
+    const differs = (fromUid: string, toUid: string) =>
+      fromUid === 'location' && toUid === 'venue';
+
+    expect(
+      liveRows(
+        [
+          changedRow('title', 'title', false),
+          changedRow(null, 'venue', true),
+          changedRow(null, 'summary', true),
+        ],
+        form([tab('content', 'Content', ['title', 'location', 'summary'])]),
+        'from',
+        {location: 'venue'},
+        differs
+      )
+    ).toEqual([
+      changedRow('title', 'title', false),
+      changedRow('location', 'venue', true),
+      changedRow('summary', 'summary', false),
+    ]);
+  });
+
   it('adds a row for a newly shown field the older version doesn’t have, after the field before it', () => {
     expect(
       liveRows(
@@ -361,16 +427,25 @@ describe('withoutCompareAction', () => {
     ).toEqual([{type: 'group', items: [copy]}]);
   });
 
-  it('drops it from every field of a side’s form, in tabs or not', () => {
-    const ui = withoutCompareActions(
+  it('drops it from every field of a read-only side’s form, in tabs or not, which it badges as the comparison stands', () => {
+    const field = (layoutUid: string, labelBadge: string | null) => {
+      const node = withMenu([compare, copy]);
+
+      return {...node, props: {...node.props, layoutUid, labelBadge}};
+    };
+    const ui = readOnlyPane(
       form([
-        withMenu([compare, copy]),
-        {...tab('visit', 'Visit', []), children: [withMenu([compare, copy])]},
-      ])
+        field('summary', 'Changed'),
+        {...tab('visit', 'Visit', []), children: [field('venue', null)]},
+      ]),
+      {summary: false, venue: true}
     );
+    const venue = ui.nodes[1]!.children![0]!;
 
     expect(menuItems(ui.nodes[0]!)).toEqual([copy]);
-    expect(menuItems(ui.nodes[1]!.children![0]!)).toEqual([copy]);
+    expect(menuItems(venue)).toEqual([copy]);
+    expect(ui.nodes[0]!.props.labelBadge).toBeNull();
+    expect(venue.props.labelBadge).toBe('Changed');
   });
 
   it('drops the action menu when that was all it had, keeping the field’s other actions', () => {

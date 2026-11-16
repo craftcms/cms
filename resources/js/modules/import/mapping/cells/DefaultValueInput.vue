@@ -14,7 +14,6 @@
   import '@craftcms/ui/components/textarea/textarea';
   import {t} from '@craftcms/ui';
   import {computed} from 'vue';
-  import {isInitialization} from '@/common/table/cells/types';
   import {
     defaultValueInputOf,
     defaultValueOf,
@@ -32,14 +31,9 @@
   const values = computed(() => defaultValuesOf(context.values, col));
   const label = t('Default value');
 
-  type ChangeTarget = HTMLElement & {modelValue?: unknown; checked?: boolean};
+  type ChangeTarget = HTMLElement & {value?: unknown; checked?: boolean};
 
   function onChange(event: Event): void {
-    // a checkbox group's checkboxes announce their own changes too
-    if (isInitialization(event) || event.target !== event.currentTarget) {
-      return;
-    }
-
     const target = event.currentTarget as ChangeTarget;
 
     switch (input.value.type) {
@@ -50,16 +44,14 @@
         setDefaultValue(
           context.values,
           col,
-          JSON.stringify(
-            Array.isArray(target.modelValue) ? target.modelValue : []
-          )
+          JSON.stringify(Array.isArray(target.value) ? target.value : [])
         );
         break;
       default:
         setDefaultValue(
           context.values,
           col,
-          target.modelValue == null ? '' : String(target.modelValue)
+          target.value == null ? '' : String(target.value)
         );
     }
   }
@@ -73,15 +65,15 @@
     :off-label="input.offLabel"
     .checked="value === '1'"
     .disabled="!context.editable"
-    @model-value-changed="onChange"
+    @change="onChange"
   ></craft-switch>
 
   <craft-select
     v-else-if="input.type === 'select'"
     :label="label"
-    .modelValue="value"
+    .value="value"
     .disabled="!context.editable"
-    @model-value-changed="onChange"
+    @change="onChange"
   >
     <select slot="input">
       <option value="">{{ t('Choose an option') }}</option>
@@ -97,15 +89,15 @@
 
   <craft-checkbox-group
     v-else-if="input.type === 'multiselect'"
-    .modelValue="values"
+    .value="values"
     .disabled="!context.editable"
-    @model-value-changed="onChange"
+    @change="onChange"
   >
     <span slot="label">{{ label }}</span>
     <craft-checkbox
       v-for="option in input.options ?? []"
       :key="option.value"
-      .choiceValue="option.value"
+      :value="option.value"
       .checked="values.includes(option.value)"
     >
       <span slot="label">{{ option.label }}</span>
@@ -117,9 +109,9 @@
     :label="label"
     :placeholder="input.placeholder"
     :maxlength="input.maxLength"
-    .modelValue="value"
+    .value="value"
     .disabled="!context.editable"
-    @model-value-changed="onChange"
+    @input="onChange"
   ></craft-textarea>
 
   <craft-input-date
@@ -127,9 +119,9 @@
     :label="label"
     :min="input.min"
     :max="input.max"
-    .modelValue="value"
+    .value="value"
     .disabled="!context.editable"
-    @model-value-changed="onChange"
+    @input="onChange"
   ></craft-input-date>
 
   <craft-input-time
@@ -137,17 +129,17 @@
     :label="label"
     :min="input.min"
     :max="input.max"
-    .modelValue="value"
+    .value="value"
     .disabled="!context.editable"
-    @model-value-changed="onChange"
+    @input="onChange"
   ></craft-input-time>
 
   <craft-input-color
     v-else-if="input.type === 'color'"
     :label="label"
-    .modelValue="value"
+    .value="value"
     .disabled="!context.editable"
-    @model-value-changed="onChange"
+    @input="onChange"
   ></craft-input-color>
 
   <craft-input
@@ -159,9 +151,9 @@
     :min="input.min"
     :max="input.max"
     :step="input.step"
-    .modelValue="value"
+    .value="value"
     .disabled="!context.editable"
-    @model-value-changed="onChange"
+    @input="onChange"
   >
     <span v-if="input.prefix" slot="prefix">{{ input.prefix }}</span>
     <span v-if="input.suffix" slot="suffix">{{ input.suffix }}</span>

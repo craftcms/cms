@@ -34,6 +34,11 @@ export interface ScreenPanels {
   /** The open panel, or `null` when the column is folded to its rail. */
   readonly openPanelId: Readonly<ShallowRef<string | null>>;
   /**
+   * The panel the shell folded the column on for lack of room, which comes
+   * back once there's room again, or `null`.
+   */
+  readonly panelClosedByShell: Readonly<ShallowRef<string | null>>;
+  /**
    * Counts the times a page’s panels have arrived after there were none,
    * which is when a new page’s panels are shown, so the column opens on
    * them as it would on a fresh page.
@@ -114,7 +119,7 @@ export function createScreenPanels(): ScreenPanels {
    */
   let openedOnPurpose = false;
   /** The panel the shell closed for lack of room, to bring back with it. */
-  let panelClosedByShell: string | null = null;
+  const panelClosedByShell = shallowRef<string | null>(null);
 
   const panels = computed(() =>
     [...registered.values()].sort(
@@ -175,6 +180,7 @@ export function createScreenPanels(): ScreenPanels {
   return {
     panels,
     openPanelId: readonly(openPanelId),
+    panelClosedByShell: readonly(panelClosedByShell),
     pageGeneration,
     sections,
 
@@ -188,6 +194,22 @@ export function createScreenPanels(): ScreenPanels {
     },
 
     unregister(panelId) {
+      // A panel that stays from page to page only goes when it leaves the
+      // screen, such as for another one, so neither the shell nor the panel
+      // the column would rather open on, such as the URL hash's, brings it
+      // back: the column keeps to the panel it falls back to, as it would
+      // had the person opened this one. Others come back with the next
+      // page's panels.
+      if (registered.get(panelId)?.persistent) {
+        if (panelClosedByShell.value === panelId) {
+          panelClosedByShell.value = null;
+        }
+
+        if (openPanelId.value === panelId) {
+          openedOnPurpose = true;
+        }
+      }
+
       registered.delete(panelId);
     },
 
@@ -219,7 +241,7 @@ export function createScreenPanels(): ScreenPanels {
 
     start(preferred) {
       openedOnPurpose = false;
-      panelClosedByShell = null;
+      panelClosedByShell.value = null;
       openPanelId.value = initialPanelId(preferred);
     },
 
@@ -240,7 +262,7 @@ export function createScreenPanels(): ScreenPanels {
     select(panelId) {
       openPanelId.value = panelId;
       openedOnPurpose = true;
-      panelClosedByShell = null;
+      panelClosedByShell.value = null;
     },
 
     deselect(panelId) {
@@ -249,7 +271,7 @@ export function createScreenPanels(): ScreenPanels {
       }
 
       openPanelId.value = null;
-      panelClosedByShell = null;
+      panelClosedByShell.value = null;
 
       return true;
     },
@@ -257,20 +279,20 @@ export function createScreenPanels(): ScreenPanels {
     setOverlaid(overlaid) {
       if (overlaid) {
         if (openPanelId.value !== null) {
-          panelClosedByShell = openPanelId.value;
+          panelClosedByShell.value = openPanelId.value;
           openPanelId.value = null;
         }
 
         return;
       }
 
-      if (panelClosedByShell !== null && openPanelId.value === null) {
-        openPanelId.value = isVisible(panelClosedByShell)
-          ? panelClosedByShell
+      if (panelClosedByShell.value !== null && openPanelId.value === null) {
+        openPanelId.value = isVisible(panelClosedByShell.value)
+          ? panelClosedByShell.value
           : defaultPanelId();
       }
 
-      panelClosedByShell = null;
+      panelClosedByShell.value = null;
     },
   };
 }
@@ -290,4 +312,35 @@ export const ScreenPanelsKey: InjectionKey<ScreenPanels> =
 
 export function useScreenPanels(): ScreenPanels | null {
   return inject(ScreenPanelsKey, null);
+}
+
+/** What a page, or a panel on it, can do with its screen's details column. */
+export interface DetailsPanelsControl {
+  /** The open panel's id, or `null` when the column is folded to its rail. */
+  readonly openPanelId: Readonly<ShallowRef<string | null>>;
+  /** See {@link ScreenPanels.open}. */
+  open(
+    panelId: string,
+    options?: {withFocus?: boolean; focus?: PanelFocusTarget}
+  ): void;
+  /** See {@link ScreenPanels.close}. */
+  close(panelId: string, options?: {returnFocus?: boolean}): void;
+}
+
+/**
+ * Opens and closes panels in the nearest screen's details column: the page's,
+ * or a slideout's. `null` outside a screen.
+ */
+export function useDetailsPanels(): DetailsPanelsControl | null {
+  const panels = useScreenPanels();
+
+  if (!panels) {
+    return null;
+  }
+
+  return {
+    openPanelId: panels.openPanelId,
+    open: (panelId, options) => panels.open(panelId, options),
+    close: (panelId, options) => panels.close(panelId, options),
+  };
 }

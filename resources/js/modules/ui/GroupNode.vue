@@ -9,7 +9,7 @@
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import UiNodeList from './UiNodeList.vue';
   import {useOptionalUiRenderer} from './renderer/context';
-  import {useOutlet, useOutletPending} from './outlets';
+  import {useOutlets} from './outlets';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
   type GroupNodeProps = {
@@ -71,8 +71,9 @@
     );
   });
   const showLoading = useDelayedLoading(loading);
-  const outlet = useOutlet(() => props.node.props.outlet);
-  const outletPending = useOutletPending(() => props.node.props.outlet);
+  const outlets = useOutlets();
+  const outlet = outlets.outlet(() => props.node.props.outlet);
+  const outletPending = outlets.pending(() => props.node.props.outlet);
   const mounted = useMounted();
   /**
    * Holds back a group bound for an outlet until the outlet is registered, or
@@ -197,7 +198,7 @@
       v-else
       :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
       :label="node.props.collapsible ? node.props.label : undefined"
-      .opened="
+      .open="
         node.props.collapsible ? (node.props.expanded ?? false) : undefined
       "
       :class="{

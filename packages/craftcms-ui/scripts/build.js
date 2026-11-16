@@ -65,7 +65,7 @@ async function generateBundle(config = {}) {
         ...(await resolveFrom('./src/core/**/!(*.(styles|test)).ts')),
       },
       minify: !isDeveloping,
-      external: ['lit', '@lion/ui'],
+      external: ['lit'],
       format: ['esm'],
       sourcemap: true,
       dts: true,
@@ -166,15 +166,10 @@ async function pruneOrphanedChunks() {
 /**
  * Refuse to ship a mixin base type that degraded to `any`.
  *
- * `@lion/ui` declares its overlay and form-core hosts at `@lion/ui/types/*.js`,
- * a subpath its own `exports` map never exposes, so those hosts already resolve
- * to error types here. That much is survivable: `typeof LitElement` stays in
- * the intersection and keeps carrying the DOM prototype chain. What is not
- * survivable is a build that additionally fails to resolve `lit` — typically
- * one racing a `pnpm install`. The emitter then collapses the entire base to
- * `any`, every component extending it stops being an HTMLElement, and the
- * damage surfaces as type errors in consumer code rather than here. Left alone
- * this is emitted silently, with a zero exit code.
+ * A build that fails to resolve `lit`, typically one racing a `pnpm install`,
+ * collapses a mixin's base to `any`: every component extending it stops being
+ * an HTMLElement, and the damage surfaces as type errors in consumer code
+ * rather than here. Left alone this is emitted silently, with a zero exit code.
  */
 async function assertDeclarationsResolved() {
   spinner.start('Verifying declarations');

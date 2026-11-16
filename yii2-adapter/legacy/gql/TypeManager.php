@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace craft\gql;
 
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Gql;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use Deprecated;
 
 /**
@@ -21,7 +21,7 @@ class TypeManager extends \CraftCms\Cms\Gql\TypeManager
     #[Deprecated(message: 'in 4.0.0. Use [[craft\services\Gql::prepareFieldDefinitions()|`\\CraftCms\\Cms\\Support\\Facades\\Gql::prepareFieldDefinitions()`]] instead.')]
     public static function prepareFieldDefinitions(array $fields, string $typeName): array
     {
-        Deprecator::log('TypeManager::prepareFieldDefinitions()', '`TypeManager::prepareFieldDefinitions()` has been deprecated. Use `craft\services\Gql::prepareFieldDefinition()` instead.');
+        LegacyUsage::record('TypeManager::prepareFieldDefinitions()', '`TypeManager::prepareFieldDefinitions()` has been deprecated. Use `craft\services\Gql::prepareFieldDefinition()` instead.');
 
         return Gql::prepareFieldDefinitions($fields, $typeName);
     }
@@ -32,6 +32,6 @@ class TypeManager extends \CraftCms\Cms\Gql\TypeManager
     #[Deprecated(message: 'in 4.0.0. `craft\services\Gql::flushCaches()` should be used instead.')]
     public static function flush(): void
     {
-        Deprecator::log('TypeManager::flush()', '`TypeManager::flush()` has been deprecated and has no effect.');
+        LegacyUsage::record('TypeManager::flush()', '`TypeManager::flush()` has been deprecated and has no effect.');
     }
 }

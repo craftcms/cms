@@ -18,6 +18,7 @@ use CraftCms\Cms\Asset\Events\VolumeConfigPreparing;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformException;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Condition\Conditions;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Cp\Html\MenuHtml;
 use CraftCms\Cms\Cp\Settings;
 use CraftCms\Cms\Database\LaravelMigrations;
@@ -50,6 +51,7 @@ use CraftCms\Yii2Adapter\Asset\LegacyAssetFileKinds;
 use CraftCms\Yii2Adapter\Asset\LegacyAssetTransforms;
 use CraftCms\Yii2Adapter\Config\GeneralConfigCompatibility;
 use CraftCms\Yii2Adapter\Config\MultiEnvironmentConfigCompatibility;
+use CraftCms\Yii2Adapter\Console\AdapterCleanupCommand;
 use CraftCms\Yii2Adapter\Console\AddCategoriesSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddGlobalSetsSupportCommand;
 use CraftCms\Yii2Adapter\Console\AddTagsSupportCommand;
@@ -75,11 +77,14 @@ use CraftCms\Yii2Adapter\Gql\LegacyGqlTypes;
 use CraftCms\Yii2Adapter\HtmlPurifier\LegacyHtmlPurifierConfigRegistrar;
 use CraftCms\Yii2Adapter\Http\CaptureOriginalActionRequestUri;
 use CraftCms\Yii2Adapter\Http\HandleYiiSiteRouteFallback;
+use CraftCms\Yii2Adapter\Http\LegacyAwarePreventRequestForgery;
 use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use CraftCms\Yii2Adapter\Http\NormalizeLegacyPath;
 use CraftCms\Yii2Adapter\Http\PrepareLegacyCraftApp;
 use CraftCms\Yii2Adapter\Http\RegisterLegacyCompatAssets;
 use CraftCms\Yii2Adapter\I18N\I18NCompatibility;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
+use CraftCms\Yii2Adapter\LooseEnds\LooseEndsUtility;
 use CraftCms\Yii2Adapter\Mail\LegacyTransportCompatibility;
 use CraftCms\Yii2Adapter\Mail\TestToEmailAddressCompatibility;
 use CraftCms\Yii2Adapter\Mixins\CraftVariableMixin;
@@ -93,6 +98,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Queue\Events\JobAttempted;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Artisan;
@@ -121,6 +127,7 @@ class Yii2ServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(CoreMigrator::class, Migrator::class);
+        $this->app->bind(PreventRequestForgery::class, LegacyAwarePreventRequestForgery::class);
         $this->app
             ->when(Migrator::class)
             ->needs(MigrationRepositoryInterface::class)
@@ -131,15 +138,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         LegacyGeneralConfig::registerBootingCallback($this->app);
 
-        $appType = $this->app->runningInConsole() ? 'console' : 'web';
-        $generalConfigCompatibility = new GeneralConfigCompatibility();
-        Config::set('craft.general', $generalConfigCompatibility->applyAnchorsConfig(
-            $generalConfigCompatibility->convert(
-                Config::get('craft.general', []),
-                Config::get("craft.general.{$appType}"),
-            ),
-            Config::get('craft.anchors'),
-        ));
+        new GeneralConfigCompatibility()->register($this->app);
 
         $this->registerConstants();
 
@@ -170,7 +169,10 @@ class Yii2ServiceProvider extends ServiceProvider
                     $event->asset,
                     $event->transform,
                 )->url;
-            } catch (AssetTransformException|NotSupportedException $exception) {
+            } catch (NotSupportedException) {
+                // Let the asset return its own URL.
+                return;
+            } catch (AssetTransformException $exception) {
                 report($exception);
             }
 
@@ -181,6 +183,7 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->scoped(SystemMessages::class, LegacySystemMessages::class);
         $this->app->scoped(UserPermissions::class, LegacyUserPermissions::class);
         $this->app->singleton(UtilityTypes::class, LegacyUtilityTypes::class);
+        $this->callAfterResolving(UtilityTypes::class, fn(UtilityTypes $types) => $types->register(LooseEndsUtility::class));
         $this->app->singleton(Conditions::class, LegacyConditions::class);
         $this->callAfterResolving(UiNodeTypes::class, fn(UiNodeTypes $types) => $types->register(LegacyHtmlField::class));
         $this->callAfterResolving(UiControlTypes::class, fn(UiControlTypes $types) => $types->register(LegacyHtmlControl::class));
@@ -376,6 +379,7 @@ class Yii2ServiceProvider extends ServiceProvider
             DropCategoriesSupportCommand::class,
             DropGlobalSetsSupportCommand::class,
             DropTagsSupportCommand::class,
+            AdapterCleanupCommand::class,
             MigrateSessionsTableCommand::class,
             OffCommand::class,
             OnCommand::class,
@@ -407,18 +411,31 @@ class Yii2ServiceProvider extends ServiceProvider
         });
 
         $this->app->terminating(function(): void {
-            $this->triggerAfterRequest();
+            try {
+                $this->triggerAfterRequest();
+            } finally {
+                // After the after-request handlers, which can run compatibility paths too.
+                $this->app->make(LegacyUsage::class)->flush();
+            }
+
             Craft::getLogger()->flush(true);
         });
 
         // A worker runs many jobs, so onAfterRequest() callbacks run after the job that added them, as Laravel's
         // defer() callbacks do. EVENT_AFTER_REQUEST handlers still fire once, as they'd fire again after every job.
+        // Legacy usage is saved after each job too, rather than when the worker exits.
         Event::listen(function(JobAttempted $event): void {
-            if (in_array($event->connectionName, ['sync', 'deferred'], true) || !Craft::$app instanceof YiiApplication) {
+            if (in_array($event->connectionName, ['sync', 'deferred'], true)) {
                 return;
             }
 
-            Craft::$app->runAfterRequestCallbacks();
+            try {
+                if (Craft::$app instanceof YiiApplication) {
+                    Craft::$app->runAfterRequestCallbacks();
+                }
+            } finally {
+                $this->app->make(LegacyUsage::class)->flush();
+            }
         });
 
         if (!$this->app->runningInConsole()) {
@@ -444,37 +461,53 @@ class Yii2ServiceProvider extends ServiceProvider
         $this->app->afterResolving(CraftVariable::class, function() {
             $legacyVariable = new LegacyCraftVariable();
 
-            foreach (array_keys($legacyVariable->getComponents()) as $name) {
-                CraftVariable::macro($name, fn() => $legacyVariable->get($name));
+            foreach ($legacyVariable->getBehaviors() as $behavior) {
+                $this->registerCraftVariableBehavior($legacyVariable, $behavior);
             }
 
-            foreach ($legacyVariable->getBehaviors() as $behavior) {
-                $this->registerCraftVariableBehavior($behavior);
+            foreach (array_keys($legacyVariable->getComponents()) as $name) {
+                CraftVariable::macro($name, fn() => $legacyVariable->get($name));
             }
         });
     }
 
     /**
-     * Exposes the public properties and methods of a behavior attached to the legacy `craft` variable,
+     * Exposes the public properties, methods, and getters of a behavior attached to the legacy `craft` variable,
      * such as `craft.commerce` or `craft.shopifyProducts()`.
+     *
+     * Each name resolves through the legacy variable, so when several behaviors share a name, Yii's
+     * precedence applies: methods over properties, and the first attached behavior wins.
      */
-    private function registerCraftVariableBehavior(Behavior $behavior): void
+    private function registerCraftVariableBehavior(LegacyCraftVariable $legacyVariable, Behavior $behavior): void
     {
         $reflection = new ReflectionObject($behavior);
+        $names = [];
 
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            $name = $property->getName();
-
-            if (!$property->isStatic() && !property_exists(Behavior::class, $name)) {
-                CraftVariable::macro($name, fn() => $behavior->$name);
+            if (!$property->isStatic() && !property_exists(Behavior::class, $property->getName())) {
+                $names[] = $property->getName();
             }
         }
 
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             $name = $method->getName();
 
-            if (!$method->isStatic() && !method_exists(Behavior::class, $name)) {
-                CraftVariable::macro($name, fn(mixed ...$args) => $behavior->$name(...$args));
+            if ($method->isStatic() || method_exists(Behavior::class, $name)) {
+                continue;
+            }
+
+            $names[] = $name;
+
+            if (str_starts_with($name, 'get') && strlen($name) > 3 && $method->getNumberOfRequiredParameters() === 0) {
+                $names[] = lcfirst(substr($name, 3));
+            }
+        }
+
+        foreach ($names as $name) {
+            if ($legacyVariable->hasMethod($name)) {
+                CraftVariable::macro($name, fn(mixed ...$args) => $legacyVariable->$name(...$args));
+            } else {
+                CraftVariable::macro($name, fn() => $legacyVariable->$name);
             }
         }
     }
@@ -495,7 +528,7 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             if (!Cms::config()->allowAdminChanges) {
-                throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:migration-table` to migrate the table to the new format.');
+                throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `' . app(TerminalCommands::class)->craft('migrate:migration-table') . '` to migrate the table to the new format.');
             }
 
             Artisan::call('craft:migrate:migration-table', [
@@ -528,7 +561,7 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             if (!Cms::config()->allowAdminChanges) {
-                throw new RuntimeException('The sessions table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:sessions-table` to migrate the table to the new format.');
+                throw new RuntimeException('The sessions table has the wrong schema structure and allowAdminChanges is disabled. Run `' . app(TerminalCommands::class)->craft('migrate:sessions-table') . '` to migrate the table to the new format.');
             }
 
             Artisan::call('craft:migrate:sessions-table', [

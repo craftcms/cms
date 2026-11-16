@@ -203,3 +203,37 @@ it('keeps separated fields within a group too narrow for its full column gap', a
   const field = fieldGroup.querySelector('div')!;
   expect(field.getBoundingClientRect().width).toBe(300);
 });
+
+it('drops a required sub-field’s asterisk in a required fieldset, leaving no gap for it', async () => {
+  await import('../../styles/cp.css');
+  await import('../field/field.js');
+  document.body.innerHTML = `
+    <craft-field fieldset required label="Field Limit">
+      <craft-field-group slot="input">
+        <craft-field required label="Minimum"><input slot="input"><button slot="actions">A</button></craft-field>
+        <craft-field label="Maximum"><input slot="input"><button slot="actions">A</button></craft-field>
+      </craft-field-group>
+    </craft-field>
+  `;
+  const [outer, required, optional] = [
+    ...document.querySelectorAll('craft-field'),
+  ];
+  for (const field of [outer!, required!, optional!]) {
+    await field.updateComplete;
+  }
+
+  const actionsOffset = (field: Element) => {
+    const label = field.querySelector(':scope > [slot="label"]')!;
+    const range = document.createRange();
+    range.selectNodeContents(label.firstChild!);
+
+    return (
+      field.querySelector('button')!.getBoundingClientRect().left -
+      range.getBoundingClientRect().right
+    );
+  };
+
+  const asterisk = required!.querySelector('craft-icon[name="asterisk"]')!;
+  expect(getComputedStyle(asterisk).display).toBe('none');
+  expect(actionsOffset(required!)).toBeCloseTo(actionsOffset(optional!), 0);
+});

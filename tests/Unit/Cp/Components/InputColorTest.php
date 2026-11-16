@@ -21,7 +21,7 @@ describe('input-color', function () {
             ->and($html)->toContain('value="7ab55c"');
     });
 
-    it('keeps only the Lion control props on the host', function () {
+    it('keeps only the control props on the host', function () {
         $html = InputColor::make()->id('c')->name('c')->toHtml();
 
         // The component owns its type/layout; craft-input-only styling host

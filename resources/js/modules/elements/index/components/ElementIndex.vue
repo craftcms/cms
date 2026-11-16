@@ -508,7 +508,7 @@
             !isInlineEditing &&
             !pending &&
             !loading &&
-            structure !== undefined &&
+            elementIndex.structure != null &&
             mode === 'structure'
           "
           :is-row-collapsed="structureView.isCollapsed"
@@ -594,7 +594,7 @@
         :item-label="elementIndex.elementLowerDisplayName"
         :items-label="elementIndex.elementPluralLowerDisplayName"
         :page-size-label="
-          t('{type} per Page', {type: elementIndex.elementPluralDisplayName})
+          t('{type} per page', {type: elementIndex.elementPluralDisplayName})
         "
         @page-size-change="table.setPageSize"
       />
@@ -688,7 +688,7 @@
     display: flex;
     align-items: center;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
     background-color: var(--c-surface-default);
   }
 

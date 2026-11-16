@@ -17,6 +17,7 @@ use CraftCms\Cms\Ui\Nodes\HiddenField;
 use CraftCms\Cms\Ui\Nodes\LineBreak;
 use CraftCms\Cms\Ui\Nodes\MarkdownContent;
 use CraftCms\Cms\Ui\Nodes\Missing;
+use CraftCms\Cms\Ui\Nodes\Outlet;
 use CraftCms\Cms\Ui\Nodes\Scope;
 use CraftCms\Cms\Ui\Nodes\Separator;
 use CraftCms\Cms\Ui\Nodes\Slot;
@@ -49,6 +50,7 @@ class UiNodeTypes extends TypeRegistry
         LineBreak::class,
         MarkdownContent::class,
         Missing::class,
+        Outlet::class,
         Scope::class,
         Separator::class,
         Slot::class,

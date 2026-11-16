@@ -58,11 +58,109 @@ describe('SSR name adoption', () => {
     expect(element.name).toBe('parent[]');
   });
 
-  it('aggregates SSR checked state into the group modelValue', async () => {
+  it('aggregates SSR checked state into the group value', async () => {
     const element = await createFromMarkup(SSR_MARKUP);
-    await element.registrationComplete;
     await element.updateComplete;
 
-    expect(element.modelValue).toEqual(['image']);
+    expect(element.value).toEqual(['image']);
+  });
+});
+
+describe('semantics', () => {
+  it('is a group named by its label and described by its help text', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace('label="Kinds"', 'label="Kinds" help-text="Pick any."')
+    );
+    const label = element.querySelector<HTMLElement>(
+      ':scope > [slot="label"]'
+    )!;
+    const helpText = element.querySelector<HTMLElement>(
+      ':scope > [slot="help-text"]'
+    )!;
+
+    expect(element.getAttribute('role')).toBe('group');
+    expect(element.getAttribute('aria-labelledby')).toBe(label.id);
+    expect(element.getAttribute('aria-describedby')).toBe(helpText.id);
+    expect(label.hasAttribute('for')).toBe(false);
+  });
+
+  it('disables every checkbox, including ones added later', async () => {
+    const element = await createFromMarkup(SSR_MARKUP);
+    element.disabled = true;
+    await element.updateComplete;
+
+    const added = document.createElement('craft-checkbox');
+    added.value = 'audio';
+    element.append(added);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(
+      [...element.querySelectorAll('input')].map((input) => input.disabled)
+    ).toEqual([true, true, true]);
+  });
+
+  it('leaves options disabled on their own disabled when it is re-enabled', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace('value="image" checked', 'value="image" disabled')
+    );
+    element.disabled = true;
+    await element.updateComplete;
+
+    const addedDisabled = document.createElement('craft-checkbox');
+    addedDisabled.disabled = true;
+    element.append(addedDisabled, document.createElement('craft-checkbox'));
+    await new Promise((resolve) => setTimeout(resolve));
+
+    element.disabled = false;
+    await element.updateComplete;
+
+    expect(
+      [...element.querySelectorAll('input')].map((input) => input.disabled)
+    ).toEqual([true, false, true, false]);
+  });
+});
+
+describe('value', () => {
+  it('checks the options a value names, without firing events', async () => {
+    const element = await createFromMarkup(SSR_MARKUP);
+    const seen: string[] = [];
+    element.addEventListener('change', () => seen.push('change'));
+
+    element.value = ['video'];
+
+    expect(
+      [...element.querySelectorAll('input')].map((input) => input.checked)
+    ).toEqual([false, true]);
+    expect(element.value).toEqual(['video']);
+    expect(seen).toEqual([]);
+  });
+
+  it('has the new value by the time a change reaches it', async () => {
+    const element = await createFromMarkup(SSR_MARKUP);
+    const seen: string[][] = [];
+    element.addEventListener('change', () => seen.push(element.value));
+
+    element.querySelectorAll('input')[1]!.click();
+
+    expect(seen).toEqual([['image', 'video']]);
+  });
+
+  it('keeps a checked, disabled option in the value', async () => {
+    const element = await createFromMarkup(
+      SSR_MARKUP.replace(
+        'value="image" checked',
+        'value="image" checked disabled'
+      )
+    );
+    const seen: string[][] = [];
+    element.addEventListener('change', () => seen.push(element.value));
+
+    element.querySelectorAll('input')[1]!.click();
+    element.value = seen[0]!;
+
+    expect(seen).toEqual([['image', 'video']]);
+    expect(
+      [...element.querySelectorAll('input')].map((input) => input.checked)
+    ).toEqual([true, true]);
   });
 });

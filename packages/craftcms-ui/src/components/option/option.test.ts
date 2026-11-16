@@ -57,23 +57,13 @@ describe('craft-option', () => {
     ).toBe('12 entries');
   });
 
-  it('offers a suffix slot for trailing content', async () => {
-    const element = await createOption();
+  it('carries its value, from the value attribute too', async () => {
+    const element = await createOption({value: 'blog'});
 
-    expect(
-      element.shadowRoot!.querySelector('slot[name="suffix"]')
-    ).toBeTruthy();
-  });
+    expect(element.value).toBe('blog');
 
-  /**
-   * The value is Lion's `choiceValue`, a property rather than an attribute, so
-   * an option can carry a value that is not a string.
-   */
-  it('carries its value as choiceValue', async () => {
-    const element = await createOption();
+    element.value = 'news';
 
-    element.choiceValue = 'blog';
-
-    expect(element.choiceValue).toBe('blog');
+    expect(element.value).toBe('news');
   });
 });

@@ -4,7 +4,7 @@
    * each option can show a hint beside its label, at the cost of the platform picker.
    */
   import '@craftcms/ui/components/select-rich/select-rich';
-  import {isInitialization, type SelectCellOption} from './types';
+  import type {SelectCellOption} from './types';
 
   defineProps<{
     value: string;
@@ -16,11 +16,7 @@
   const emit = defineEmits<{change: [value: string]}>();
 
   function onChange(event: Event): void {
-    if (isInitialization(event)) {
-      return;
-    }
-
-    const value = (event.currentTarget as {modelValue?: unknown}).modelValue;
+    const value = (event.currentTarget as {value?: unknown}).value;
     emit('change', value == null ? '' : String(value));
   }
 </script>
@@ -29,16 +25,16 @@
   <div class="cp-table-control">
     <craft-select-rich
       class="cp-table-control__input"
-      .modelValue="value"
+      .value="value"
       .disabled="disabled"
       :label="label"
       label-sr-only
-      @model-value-changed="onChange"
+      @change="onChange"
     >
       <craft-option
         v-for="option in options"
         :key="option.value"
-        .choiceValue="option.value"
+        :value="option.value"
         .hint="option.hint ?? null"
         .disabled="Boolean(option.disabled)"
       >

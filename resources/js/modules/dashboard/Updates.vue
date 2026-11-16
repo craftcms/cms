@@ -5,6 +5,9 @@
   import {check as checkUpdates} from '@actions/Updates/UpdatesController';
   import {show} from '@actions/Utilities/UtilitiesController';
   import CpLink from '@/common/components/CpLink.vue';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   const props = defineProps<{data: {cached: boolean; total: number}}>();
   const total = ref(props.data.total);
@@ -37,7 +40,7 @@
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body text-center space-y-3" aria-live="polite">
       <craft-callout v-if="error" variant="danger" role="alert">{{

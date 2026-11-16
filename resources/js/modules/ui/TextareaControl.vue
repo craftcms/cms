@@ -4,11 +4,7 @@
   import '@craftcms/ui/components/text-expander/text-expander';
   import {useId} from 'vue';
   import type {UiControlPayload} from './types';
-  import {
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-  } from './runtime';
+  import {inputName} from './runtime';
 
   type TextareaControlProps = {
     rows?: number;
@@ -53,20 +49,21 @@
     textarea.setSelectionRange(caret, caret);
   }
 
-  const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftTextarea)) {
+  function onValueInput(event: Event): void {
+    const textarea = event.currentTarget;
+    if (!(textarea instanceof CraftTextarea)) {
       throw new TypeError('Expected a textarea event target.');
     }
 
-    emit('update:value', String(event.target.modelValue ?? ''), 'typing');
-  });
+    emit('update:value', textarea.value, 'typing');
+  }
 </script>
 
 <template>
   <craft-textarea
     v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
-    .modelValue="String(value ?? '')"
+    .value="String(value ?? '')"
     :rows="control.props.rows ?? 2"
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
@@ -74,8 +71,8 @@
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="control.mode === 'disabled'"
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onModelValueChanged"
+    :invalid="invalid"
+    @input="onValueInput"
   >
     <textarea
       :id="inputId"

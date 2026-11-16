@@ -1,8 +1,8 @@
 # `craft-input` accessibility
 
-The shared text-field requirements for `craft-input` and every control that extends it (`craft-input-color`, `-copy`, `-date`, `-handle`, `-money`, `-password` and `-time`). `craft-textarea` and `craft-input-file` share the `HasLabel` mixin and Lion's form-control wiring without extending `CraftInput`. Inside `craft-field`, the field draws the label, required indicator and instructions; see `field.a11y.md`.
+The shared text-field requirements for `craft-input` and every control that extends it (`craft-input-color`, `-copy`, `-date`, `-handle`, `-money`, `-password` and `-time`). `craft-textarea` shares the `NativeField` wiring without extending `CraftInput`. Inside `craft-field`, the field draws the label, required indicator and instructions; see `field.a11y.md`.
 
-Lion's `FormControlMixin` does the label, help text and feedback wiring. `HasLabel` itself only reflects a `has-label` attribute so the label is spaced from the control when there's one to space, and no gap is left when there isn't.
+The `FormControl` mixin does the label, help text and feedback wiring. It renders the label only when there's one to show, so no gap is left when there isn't.
 
 **Not for:**
 
@@ -25,8 +25,8 @@ Lion's `FormControlMixin` does the label, help text and feedback wiring. `HasLab
 
 - [ ] Help text, from the `help-text` attribute or slot, is referenced by the native input's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions). Not yet verified.
 - [ ] A `Required` validator sets `aria-required="true"` on the native input, and removes it when the validator is removed. Per WCAG 3.3.2 (Labels or Instructions) and 4.1.2 (Name, Role, Value). Not yet verified.
-- [x] While an error is shown, the native input carries `aria-invalid="true"`, and it goes back to `false` once the error clears. An `aria-invalid` set on the host overrides the validation state, and removing it hands control back. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Verified by `synchronizes aria-invalid with the native input` and `preserves validation-managed aria-invalid without an override` in `input.test.ts`.
-- [ ] Validation messages in the `feedback` slot are referenced by the native input's `aria-describedby`. Per WCAG 3.3.1 (Error Identification). Not yet verified.
+- [x] While an error is shown, the native input carries `aria-invalid="true"`, from the host's `invalid` property, and loses it once the error clears. Per WCAG 3.3.1 (Error Identification) and 4.1.2 (Name, Role, Value). Verified by `marks the native input invalid` in `input.test.ts`.
+- [x] Validation messages in the `feedback` slot are referenced by the native input's `aria-describedby`, including ones shown, replaced or removed after it renders. Per WCAG 3.3.1 (Error Identification). Verified by `is described by feedback added, replaced or removed after it renders` in `input.test.ts`.
 - [ ] Validation messages are announced when they appear: the `feedback` slot is `aria-live="polite"` while focus is in the control and `assertive` once it leaves. Per WCAG 4.1.3 (Status Messages). Not yet verified.
 
 ### Keyboard and focus

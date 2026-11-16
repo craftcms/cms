@@ -22,7 +22,7 @@
       itemLabel?: string;
       /** What several items are called in the count, such as “entries”. */
       itemsLabel?: string;
-      /** The page size menu’s label, such as “Entries per Page”. */
+      /** The page size menu’s label, such as “Entries per page”. */
       pageSizeLabel?: string;
       /** What a page is called beside its number, such as “Item” when each page shows one. */
       pageLabel?: string;
@@ -38,7 +38,7 @@
       controlsOnly: false,
       itemLabel: () => t('item'),
       itemsLabel: () => t('items'),
-      pageSizeLabel: () => t('Items per Page'),
+      pageSizeLabel: () => t('Items per page'),
       pageLabel: () => t('Page'),
       currentPageLabel: () => t('Current page'),
       previousPageLabel: () => t('Previous page'),

@@ -24,15 +24,6 @@ test('converts Craft filesystem references and preserves URL semantics', functio
         'manual-public' => ['fs' => 'manual-public'],
         'manual-private' => ['fs' => 'manual-private'],
     ];
-    $transformers = [
-        'craft' => [
-            'driver' => 'craft',
-            'settings' => [
-                'filesystem' => 'legacy-private',
-                'subpath' => 'transforms',
-            ],
-        ],
-    ];
 
     $legacyVolume = Volume::factory()->create(['fs' => 'legacy-public']);
     $manualVolume = Volume::factory()->create(['fs' => 'manual-public']);
@@ -42,8 +33,7 @@ test('converts Craft filesystem references and preserves URL semantics', functio
     $projectConfig->muteEvents = false;
     $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn($filesystems);
     $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn($volumes);
-    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_ASSET_TRANSFORMERS)->once()->andReturn($transformers);
-    $projectConfig->shouldReceive('set')->twice()->andReturnUsing(function (string $path, array $value) use (&$stored): bool {
+    $projectConfig->shouldReceive('set')->once()->andReturnUsing(function (string $path, array $value) use (&$stored): bool {
         $stored[$path] = $value;
 
         return true;
@@ -60,12 +50,6 @@ test('converts Craft filesystem references and preserves URL semantics', functio
             'public' => ['fs' => 'legacy-public', 'hasUrls' => true],
             'manual-public' => ['fs' => 'manual-public', 'hasUrls' => true],
             'manual-private' => ['fs' => 'manual-private', 'hasUrls' => false],
-        ])
-        ->and($stored[ProjectConfig::PATH_ASSET_TRANSFORMERS]['craft']['settings'])
-        ->toBe([
-            'subpath' => 'transforms',
-            'disk' => 'legacy-private',
-            'hasUrls' => false,
         ])
         ->and($legacyVolume->refresh()->fs)->toBe('legacy-public')
         ->and($legacyVolume->hasUrls)->toBeTrue()
@@ -84,7 +68,6 @@ test('fails before mutation when a legacy filesystem has no matching Laravel dis
     $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn([
         'volume' => ['fs' => 'missing-storage'],
     ]);
-    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_ASSET_TRANSFORMERS)->once()->andReturn([]);
     $projectConfig->shouldNotReceive('set');
     $projectConfig->shouldNotReceive('remove');
     $projectConfig->shouldNotReceive('saveModifiedConfigData');
@@ -123,7 +106,6 @@ test('suggests disk config for an adapter-generated Craft 5 filesystem disk', fu
     $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn([
         '0193dc64-5499-4e28-95dd-f8f603154851' => ['fs' => 'siteAssets'],
     ]);
-    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_ASSET_TRANSFORMERS)->once()->andReturn([]);
     $projectConfig->shouldNotReceive('set');
     $projectConfig->shouldNotReceive('remove');
     $projectConfig->shouldNotReceive('saveModifiedConfigData');
@@ -172,7 +154,6 @@ test('suggests an equivalent disk config for a missing Local filesystem', functi
     $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn([
         'volume' => ['fs' => 'missing-local'],
     ]);
-    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_ASSET_TRANSFORMERS)->once()->andReturn([]);
     app()->instance(ProjectConfig::class, $projectConfig);
 
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
@@ -228,7 +209,6 @@ test('suggests equivalent disk configs for plugin filesystems without exposing c
         's3' => ['fs' => 's3Assets'],
         'gcs' => ['fs' => 'gcsAssets'],
     ]);
-    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_ASSET_TRANSFORMERS)->once()->andReturn([]);
     app()->instance(ProjectConfig::class, $projectConfig);
 
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
@@ -287,7 +267,6 @@ test('falls back to a manual TODO for a missing filesystem of an unrecognized ty
     $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn([
         'volume' => ['fs' => 'missing-custom'],
     ]);
-    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_ASSET_TRANSFORMERS)->once()->andReturn([]);
     app()->instance(ProjectConfig::class, $projectConfig);
 
     $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
@@ -295,4 +274,41 @@ test('falls back to a manual TODO for a missing filesystem of an unrecognized ty
     expect(fn () => $migration->up())->toThrow(fn (RuntimeException $exception) => expect($exception->getMessage())
         ->toContain('"Vendor\S3\Fs"')
         ->toContain('create this manually'));
+});
+
+test('doesn’t require a disk or asset_transformer for a Craft 5 volume’s transform filesystem', function () {
+    config()->set('filesystems.disks.volume-source', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/migrations/volume-source'),
+    ]);
+    config()->offsetUnset('filesystems.disks.volume-transforms');
+    Volume::factory()->create(['fs' => 'volume-source']);
+    /** @var ProjectConfig&MockInterface $projectConfig */
+    $projectConfig = Mockery::mock(app(ProjectConfig::class))->makePartial();
+    $projectConfig->muteEvents = false;
+    $projectConfig->shouldReceive('get')->with('fs')->once()->andReturn([
+        'volume-source' => ['settings' => ['hasUrls' => true]],
+        'volume-transforms' => ['settings' => ['hasUrls' => true]],
+    ]);
+    $projectConfig->shouldReceive('get')->with(ProjectConfig::PATH_VOLUMES)->once()->andReturn([
+        'volume' => [
+            'name' => 'Images',
+            'fs' => 'volume-source',
+            'transformFs' => 'volume-transforms',
+            'transformSubpath' => 'transforms',
+        ],
+    ]);
+    $projectConfig->shouldReceive('set')->once()->with(
+        ProjectConfig::PATH_VOLUMES,
+        Mockery::on(fn (array $volumes): bool => $volumes['volume']['fs'] === 'volume-source'
+            && $volumes['volume']['transformFs'] === 'volume-transforms'
+            && $volumes['volume']['transformSubpath'] === 'transforms'),
+        Mockery::type('string'),
+    );
+    $projectConfig->shouldReceive('remove')->once()->with('fs', Mockery::type('string'));
+    $projectConfig->shouldReceive('saveModifiedConfigData')->once();
+    app()->instance(ProjectConfig::class, $projectConfig);
+
+    $migration = require dirname(__DIR__, 4).'/src/Database/Migrations/2026_09_01_000000_remove_craft_filesystems.php';
+    $migration->up();
 });

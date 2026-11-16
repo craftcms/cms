@@ -189,11 +189,10 @@ describe('refreshElementInstances() action menus', () => {
       chipHtml('Old', {id: 8, children: menu('/old-slug')});
     const [closed, opened] = [
       ...document.querySelectorAll('craft-action-menu'),
-    ] as unknown as Array<Element & {open?: () => void; opened?: boolean}>;
-    // An upgraded menu has an `open()` method, whatever its state.
-    closed!.open = () => {};
-    opened!.open = () => {};
-    opened!.opened = true;
+    ] as unknown as Array<Element & {open?: boolean}>;
+    // An upgraded menu has an `open` property, whatever its state.
+    closed!.open = false;
+    opened!.open = true;
     respondWith((id) => chipHtml('New', {id, children: menu('/new-slug')}));
 
     await refreshElementInstances(7);

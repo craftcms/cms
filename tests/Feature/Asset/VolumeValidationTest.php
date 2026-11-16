@@ -152,42 +152,6 @@ it('validates fsHandle for required invalid references and internal disks', func
         ->and($internal->errors()->has('fsHandle'))->toBeTrue();
 });
 
-it('validates asset transformer references while allowing unresolved environment variables', function () {
-    $invalid = new Volume([
-        'assetTransformer' => 'missing-transformer',
-    ]);
-
-    expect($invalid->validate(['assetTransformer']))->toBeFalse()
-        ->and($invalid->errors()->has('assetTransformer'))->toBeTrue();
-
-    $valid = new Volume([
-        'assetTransformer' => 'craft',
-    ]);
-
-    expect($valid->validate(['assetTransformer']))->toBeTrue()
-        ->and($valid->errors()->has('assetTransformer'))->toBeFalse();
-
-    $unresolved = new Volume([
-        'assetTransformer' => '$CRAFT_TEST_ASSET_TRANSFORMER',
-    ]);
-
-    expect($unresolved->validate(['assetTransformer']))->toBeTrue()
-        ->and($unresolved->errors()->has('assetTransformer'))->toBeFalse();
-
-    putenv('CRAFT_TEST_ASSET_TRANSFORMER=missing-transformer');
-
-    try {
-        $resolved = new Volume([
-            'assetTransformer' => '$CRAFT_TEST_ASSET_TRANSFORMER',
-        ]);
-
-        expect($resolved->validate(['assetTransformer']))->toBeFalse()
-            ->and($resolved->errors()->has('assetTransformer'))->toBeTrue();
-    } finally {
-        putenv('CRAFT_TEST_ASSET_TRANSFORMER');
-    }
-});
-
 it('rejects the temp upload filesystem target for fsHandle', function () {
     config()->set('filesystems.disks.temp-reserved', [
         'driver' => 'local',

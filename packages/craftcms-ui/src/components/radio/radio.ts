@@ -1,14 +1,13 @@
-import {LionRadio} from '@lion/ui/radio-group.js';
-import {css, html, type PropertyValues} from 'lit';
-import {SsrChoiceInputMixin} from '@src/mixins/SsrChoiceInputMixin';
+import {css, html, LitElement, type PropertyValues} from 'lit';
+import {ChoiceInput, choiceInputStyles} from '@src/mixins/ChoiceInput';
 
 /**
  * @summary One option within a `craft-radio-group`. A radio outside a group
  * has nothing to be exclusive against, so it is always used in one.
  *
- * Built on Lion's radio, and like `craft-checkbox` it keeps the `checked`,
- * `disabled`, and `name` of a server-rendered input rather than resetting them
- * on upgrade.
+ * Like `craft-checkbox`, the native radio in its light DOM holds the state
+ * and fires the events, and a server-rendered input keeps its `checked`,
+ * `disabled`, `name` and `value`.
  *
  * In a `craft-radio-group` with `appearance="buttons"` or `"button-group"`,
  * it's drawn as a button, with the native input stretched transparently over
@@ -28,8 +27,23 @@ import {SsrChoiceInputMixin} from '@src/mixins/SsrChoiceInputMixin';
  *   label, and drawn large above it on a card.
  *
  * @csspart icon - The wrapper around the icon, which is the box on a card.
+ *
+ * @fires {Event} input - When the user selects it.
+ * @fires {Event} change - When the user selects it.
  */
-export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
+export default class CraftRadio extends ChoiceInput(LitElement) {
+  /** The native radio, unless the markup brings its own. */
+  override get slots() {
+    return {
+      ...super.slots,
+      input: () => {
+        const input = document.createElement('input');
+        input.type = 'radio';
+        return input;
+      },
+    };
+  }
+
   override render() {
     return html`<slot name="input"></slot>
       <div class="choice-field__icon" part="icon">
@@ -40,13 +54,12 @@ export default class CraftRadio extends SsrChoiceInputMixin(LionRadio) {
       </div>
       <small class="choice-field__help-text">
         <slot name="help-text"></slot>
-      </small>
-      ${this._afterTemplate()}`;
+      </small>`;
   }
 
   static override get styles() {
     return [
-      ...super.styles,
+      ...choiceInputStyles,
       css`
         /*
          * Match the checkbox's gaps: space between the input and its label, but

@@ -45,6 +45,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
@@ -489,9 +490,19 @@ readonly class ElementHtml
         }
         unset($item);
 
-        return ActionMenu::make()
+        $items = ActionMenu::make()
             ->menuItems([...$items, ...$this->nestedCardActionItems($element, $config, withActions: true)])
             ->getItems();
+
+        // Item IDs are often generated with `mt_rand()` and have done their job
+        // by now. Left in, they'd make the client recreate every item each
+        // time the same card is sent again, such as after every autosave.
+        foreach ($items as &$item) {
+            unset($item['id']);
+        }
+        unset($item);
+
+        return $items;
     }
 
     /**
@@ -544,6 +555,19 @@ readonly class ElementHtml
             $contentHtml.
             $footerHtml.
             Html::endTag('craft-card');
+    }
+
+    /**
+     * The data the `ElementList` and `ElementChips` components in `@craftcms/cp`
+     * draw an element from. Pass the view mode the list will show, so card
+     * markup is only built for card views.
+     *
+     * @param  'list'|'list-inline'|'thumbs'|'cards'|'cards-grid'  $viewMode
+     * @return array<string, mixed>
+     */
+    public function presentation(ElementInterface $element, string $viewMode = ElementSelect::VIEW_MODE_LIST, ?ChipThumbSize $thumbSize = null): array
+    {
+        return ElementSelect::presentation($element, $viewMode, $thumbSize);
     }
 
     /**
@@ -1246,7 +1270,7 @@ readonly class ElementHtml
         );
     }
 
-    /** @return array{copyable: bool, duplicatable: bool, deletable: bool} */
+    /** @return array{copyable: bool, duplicatable: bool, deletable: bool, comparable: bool} */
     public function elementCapabilities(ElementInterface $element, string $context): array
     {
         $user = currentUser();
@@ -1257,6 +1281,8 @@ readonly class ElementHtml
             'copyable' => $editable && $administrative && Gate::check('copy', $element),
             'duplicatable' => $editable && $administrative && Gate::check('duplicate', $element),
             'deletable' => $editable && $administrative && Gate::check('delete', $element),
+            // The Compare screen shows elements with their own edit pages, so not nested ones, nor unpublished drafts.
+            'comparable' => $editable && $context === 'index' && $element->id !== null && ! $element->getIsUnpublishedDraft(),
         ];
     }
 

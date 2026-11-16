@@ -4,9 +4,10 @@ import {registerShortcut} from '@/common/shortcuts';
 import type {PreviewController} from './preview';
 
 /**
- * The editor's keyboard shortcuts: OverType's own, and Craft's code, quote and
- * preview toggles. They're registered on the textarea, and stop propagation so
- * OverType's document-level handler doesn't run the same action again.
+ * The editor's keyboard shortcuts: OverType's own, and Craft's preview toggle.
+ * They're registered here so the command palette lists them, on the textarea,
+ * and stop propagation so OverType's document-level handler doesn't run the
+ * same action again.
  */
 export function registerShortcutBehavior(
   editor: OverTypeInstance,
@@ -20,9 +21,13 @@ export function registerShortcutBehavior(
     ['Mod+I', action('toggleItalic'), t('Italic')],
     ['Mod+E', action('toggleCode'), t('Code')],
     ['Mod+K', action('insertLink'), t('Insert a link')],
+    ['Mod+Alt+1', action('toggleH1'), t('Heading 1')],
+    ['Mod+Alt+2', action('toggleH2'), t('Heading 2')],
+    ['Mod+Alt+3', action('toggleH3'), t('Heading 3')],
     ['Mod+Shift+.', action('toggleQuote'), t('Quote')],
     ['Mod+Shift+7', action('toggleNumberedList'), t('Numbered list')],
     ['Mod+Shift+8', action('toggleBulletList'), t('Bulleted list')],
+    ['Mod+Shift+9', action('toggleTaskList'), t('Check list')],
     ['Mod+]', () => editor.indentSelection(), t('Indent')],
     ['Mod+[', () => editor.outdentSelection(), t('Outdent')],
     ['Mod+Shift+P', () => void preview.toggle(), t('Show or hide the preview')],

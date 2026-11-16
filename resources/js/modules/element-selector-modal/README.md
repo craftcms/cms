@@ -39,6 +39,7 @@ index reusable and `useModalElementIndex` core-agnostic.
 | `ElementSelectorModal.vue` | The Vue view: renders `<craft-element-selector-modal>` with the index slotted in, plus the asset transform menu. |
 | `useElementSelectorController.ts` | Mirrors the core's `change` event into a `shallowRef`. Deliberately shallow — nothing wraps the controller's frozen snapshots in a reactive proxy, so Vue and the web component read the same object. |
 | `create-element-selector-modal.ts` | The imperative factory. Builds a controller from the registry, mounts the Vue view into a detached host, returns a handle. **Async**, and lazy-imports Vue so a page with a relation field doesn't pay for the index unless a modal opens. |
+| `NewEntryButton.vue` | The entry selector's footer button for creating an entry in a section the index shows. It closes the modal (a slideout can't open over a top-layer dialog), opens the new entry in a slideout, and hands it to the opener's `onSelect` once it's saved. |
 | `ElementPicker.vue` | Source navigation and selection around the shared `elements/index/components/ElementIndex.vue` renderer. |
 | `useModalElementIndex.ts` | Modal fetching and selection rules around `elements/index/composables/useDetachedElementIndex`, which uses the shared index and `createDetachedIndexVisitor`. |
 | `index.ts` | Registers the asset controller, drains legacy registrations, assigns the `Craft.*` shims. |

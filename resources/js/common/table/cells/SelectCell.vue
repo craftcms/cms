@@ -1,7 +1,7 @@
 <script setup lang="ts">
   /** A table cell's native select, labeled for screen readers only. */
   import '@craftcms/ui/components/select/select';
-  import {isInitialization, type SelectCellOption} from './types';
+  import type {SelectCellOption} from './types';
 
   defineProps<{
     value: string;
@@ -13,11 +13,7 @@
   const emit = defineEmits<{change: [value: string]}>();
 
   function onChange(event: Event): void {
-    if (isInitialization(event)) {
-      return;
-    }
-
-    const value = (event.currentTarget as {modelValue?: unknown}).modelValue;
+    const value = (event.currentTarget as {value?: unknown}).value;
     emit('change', value == null ? '' : String(value));
   }
 </script>
@@ -26,11 +22,11 @@
   <div class="cp-table-control">
     <craft-select
       class="cp-table-control__input"
-      .modelValue="value"
+      .value="value"
       .disabled="disabled"
       :label="label"
       label-sr-only
-      @model-value-changed="onChange"
+      @change="onChange"
     >
       <select slot="input">
         <option

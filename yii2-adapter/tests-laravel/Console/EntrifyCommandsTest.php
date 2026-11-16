@@ -12,6 +12,7 @@ use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\TagGroup;
 use craft\services\ProjectConfig as LegacyProjectConfig;
+use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries as EntriesField;
@@ -221,6 +222,19 @@ it('converts a global set into a single section', function() {
     UserPermission::factory()->create(['name' => strtolower("editGlobalSet:{$globalSet->uid}")])
         ->users()->attach($editor->id, ['uid' => (string) Str::uuid()]);
 
+    app(ElementSources::class)->saveSources(Entry::class, [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => '', 'page' => 'Entries'],
+        [
+            'type' => ElementSources::TYPE_CUSTOM,
+            'key' => 'custom:editors',
+            'label' => 'For editors',
+            'condition' => Entry::createCondition()->getConfig(),
+            'userGroups' => ['some-group-uid'],
+            'page' => 'Entries',
+        ],
+    ]);
+
     $exitCode = entrifyController()->runAction('global-set', ['siteContent']);
 
     expect($exitCode)->toBe(0);
@@ -239,6 +253,13 @@ it('converts a global set into a single section', function() {
 
     expect(DB::table('globalsets')->where('handle', 'siteContent')->exists())->toBeFalse()
         ->and(app(ProjectConfig::class)->get(LegacyProjectConfig::PATH_GLOBAL_SETS))->toBeEmpty();
+
+    // It gets a source of its own, on a Globals page, as global sets had.
+    $sources = collect(app(ProjectConfig::class)->get(ProjectConfig::PATH_ELEMENT_SOURCES . '.' . Entry::class));
+    expect($sources->firstWhere('key', "section:$section->uid")['page'] ?? null)->toBe('Globals')
+        ->and($sources->firstWhere('key', '*')['page'] ?? null)->toBe('Entries')
+        ->and($sources->firstWhere('key', 'custom:editors')['userGroups'] ?? null)->toBe(['some-group-uid'])
+        ->and($sources->contains(fn(array $source) => $source['type'] === ElementSources::TYPE_HEADING && $source['heading'] === ''))->toBeTrue();
 });
 
 it('fails without converting anything when the section cannot be created', function() {

@@ -46,7 +46,7 @@ async function mountTopBar(large: boolean, {aiAssistant = false} = {}) {
       craft: {
         csrfTokenValue: 'token',
         csrfTokenName: 'CRAFT_CSRF_TOKEN',
-        system: {name: 'Craft CMS', icon: null},
+        system: {name: 'Craft CMS', icon: null, logo: null},
         app: {
           version: '6.0.0',
           edition: {name: 'Pro', handle: 'pro', value: 2},
@@ -68,7 +68,6 @@ async function mountTopBar(large: boolean, {aiAssistant = false} = {}) {
           cpTrigger: 'admin',
           actionTrigger: 'actions',
           csrfTokenName: 'CRAFT_CSRF_TOKEN',
-          cpLogoUrl: null,
           useEmailAsUsername: false,
           rememberedUserSessionDuration: 0,
           defaultCpLocale: 'en-US',

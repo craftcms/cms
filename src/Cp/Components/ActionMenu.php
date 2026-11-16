@@ -68,6 +68,8 @@ class ActionMenu extends ViewComponent
 
     protected bool $disabled = false;
 
+    protected bool|string $flush = false;
+
     protected bool $searchable = false;
 
     protected ?string $for = null;
@@ -77,8 +79,6 @@ class ActionMenu extends ViewComponent
     protected ?int $distance = null;
 
     protected bool $matchInvokerWidth = false;
-
-    protected bool $withoutArrow = false;
 
     /**
      * The menu items, already in the client item shape.
@@ -151,6 +151,17 @@ class ActionMenu extends ViewComponent
         return $this;
     }
 
+    /**
+     * Pulls the default invoker's padding back from its edges, so its icon
+     * lines up with neighboring content. See `craft-button`'s `flush`.
+     */
+    public function flush(bool|string $flush = true): static
+    {
+        $this->flush = $flush;
+
+        return $this;
+    }
+
     /** Adds a search input that filters the items as the user types. */
     public function searchable(bool $searchable = true): static
     {
@@ -191,14 +202,6 @@ class ActionMenu extends ViewComponent
         return $this;
     }
 
-    /** Accepted for API compatibility; `craft-popover` never renders an arrow. */
-    public function withoutArrow(bool $withoutArrow = true): static
-    {
-        $this->withoutArrow = $withoutArrow;
-
-        return $this;
-    }
-
     protected function hostAttributes(): array
     {
         return [
@@ -214,7 +217,6 @@ class ActionMenu extends ViewComponent
             'placement' => $this->placement,
             'distance' => $this->distance,
             'match-invoker-width' => $this->matchInvokerWidth,
-            'without-arrow' => $this->withoutArrow,
         ];
     }
 
@@ -247,6 +249,7 @@ class ActionMenu extends ViewComponent
             'variant' => 'plain',
             'inherit' => true,
             'size' => 'small',
+            'flush' => $this->flush ?: null,
             // Bare `icon` attribute triggers the icon-only button styling
             // (the icon itself is slotted content, not the `icon` prop — it
             // needs its own `aria-label`-free presentation since the button
@@ -318,7 +321,9 @@ class ActionMenu extends ViewComponent
 
             $clientItems[] = Arr::whereNotNull([
                 'type' => $type,
-                'id' => $item['id'] ?? sprintf('menu-item-%s', mt_rand()),
+                // No random fallback here: the client keys items by what they
+                // say, and the HTML render path mints its own.
+                'id' => $item['id'] ?? null,
                 'label' => isset($item['label']) ? (string) $item['label'] : null,
                 'html' => isset($item['html']) ? (string) $item['html'] : null,
                 'description' => isset($item['description']) ? (string) $item['description'] : null,

@@ -4,7 +4,7 @@
   import {t} from '@craftcms/ui/utilities/translate';
   import {computed, nextTick, useTemplateRef} from 'vue';
   import type {UiControlPayload} from './types';
-  import {ignoreModelValueInitialization, inputName} from './runtime';
+  import {inputName} from './runtime';
 
   type DateTimeValue = {
     date?: string;
@@ -56,12 +56,16 @@
     );
   }
 
-  const update = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftInput)) {
-      throw new TypeError('Expected a date-time input event target.');
+  function update(event: Event): void {
+    const input =
+      event.target instanceof Element
+        ? event.target.closest('[data-date-time-part]')
+        : null;
+
+    if (!(input instanceof CraftInput)) {
+      return;
     }
 
-    const input = event.target;
     const part = input.dataset.dateTimePart;
 
     if (part !== 'date' && part !== 'time' && part !== 'timezone') {
@@ -72,11 +76,11 @@
       'update:value',
       {
         ...props.value,
-        [part]: String(input.modelValue ?? ''),
+        [part]: input.value,
       },
       'discrete'
     );
-  });
+  }
 </script>
 
 <template>
@@ -97,7 +101,7 @@
     .required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="control.mode === 'disabled'"
-    @model-value-changed="update"
+    @input="update"
   >
     <!-- Hidden rather than removed while there's nothing to clear, so it keeps
       its room and the inputs are as wide with a value as without one. -->

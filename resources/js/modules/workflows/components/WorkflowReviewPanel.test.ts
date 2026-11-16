@@ -832,12 +832,12 @@ describe('WorkflowReviewPanel', () => {
       item.textContent?.includes('Automated policy check')
     )!;
 
-    expect(editorial.opened).toBe(false);
+    expect(editorial.open).toBe(false);
     expect(editorial.textContent).toContain('Ada');
     expect(
       editorial.querySelector('.workflow-review-stage__content')?.textContent
     ).toContain('Approved');
-    expect(legal.opened).toBe(true);
+    expect(legal.open).toBe(true);
     expect(legal.textContent).toContain('Grace');
     expect(legal.textContent).toContain('Lin');
     expect(legal.textContent).toContain('0 of 2 approved');

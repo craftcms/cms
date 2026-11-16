@@ -84,6 +84,7 @@ class CountryCodeField extends BaseNativeField implements ImportableFieldLayoutE
 
         return Choice::make($this->attribute())
             ->options($options)
+            ->autocomplete($this->belongsToCurrentUser($context->element) ? 'country' : 'off')
             ->value($context->element->countryCode);
     }
 
@@ -107,7 +108,7 @@ class CountryCodeField extends BaseNativeField implements ImportableFieldLayoutE
                 'name' => 'countryCode',
                 'options' => app(Addresses::class)->getCountryList(app()->getLocale()),
                 'value' => $element->countryCode,
-                'autocomplete' => $element->getBelongsToCurrentUser() ? 'country' : 'off',
+                'autocomplete' => $this->belongsToCurrentUser($element) ? 'country' : 'off',
                 'disabled' => $static,
             ]).
             Html::tag('div', '', [

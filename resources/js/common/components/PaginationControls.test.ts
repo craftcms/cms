@@ -97,12 +97,12 @@ it('names the items with the given labels', async () => {
     total: 150,
     itemLabel: 'entry',
     itemsLabel: 'entries',
-    pageSizeLabel: 'Entries per Page',
+    pageSizeLabel: 'Entries per page',
     enableAdjustPageSize: true,
   });
 
   expect(container.textContent).toContain('1 – 50 of 150 entries');
-  expect(container.textContent).toContain('Entries per Page');
+  expect(container.textContent).toContain('Entries per page');
   expect(container.textContent).not.toContain('items');
 });
 

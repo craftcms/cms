@@ -25,9 +25,9 @@ class AssetTransformContext
     }
 
     /** @param array<string, mixed>|string $definition */
-    public function set(Asset $asset, array|string $definition): Asset
+    public function set(Asset $asset, array|string $definition, bool $immediately = false): Asset
     {
-        $this->transforms[$asset] = new AssetTransformState($definition);
+        $this->transforms[$asset] = new AssetTransformState($definition, $immediately);
 
         return $asset;
     }

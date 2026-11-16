@@ -55,6 +55,7 @@ it('manages entry drafts through MCP', function () {
     $draft = Entry::find()->drafts()->id($created['id'])->status(null)->one();
     $draft->title = 'Draft title';
     expect(app(Elements::class)->saveElement($draft))->toBeTrue();
+    $drafts->update(draftId: $created['draftId'], fields: ['summary' => 'Draft summary']);
 
     $listed = $drafts->list(McpRequest::context('drafts_list'), type: 'entries', id: $entry['id']);
     $applied = $drafts->apply(type: 'entries', uid: $created['uid'])['element'];
@@ -75,6 +76,7 @@ it('manages entry drafts through MCP', function () {
         ->and($applied)->toMatchArray([
             'id' => $entry['id'],
             'title' => 'Draft title',
+            'summary' => 'Draft summary',
         ])
         ->and($deleted)->toBe(['deleted' => true])
         ->and(Entry::find()->drafts()->id([$created['id'], $discardedDraft['id']])->status(null)->exists())->toBeFalse();
@@ -161,7 +163,7 @@ it('updates entry drafts by their element ID without changing the canonical entr
 });
 
 it('requires entry permissions to create and edit drafts', function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $entry = app(ElementCapabilities::class)->create('entries', [
         'sectionId' => $this->section->id,

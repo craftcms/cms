@@ -77,6 +77,7 @@ class SearchController
             $return[] = [
                 'id' => $element->id,
                 'title' => $element->title,
+                'label' => $element->getUiLabel(),
                 'html' => app(ElementHtml::class)->chipHtml($element, [
                     'hyperlink' => false,
                     'appearance' => Appearance::Plain->value,

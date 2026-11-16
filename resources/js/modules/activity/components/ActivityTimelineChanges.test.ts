@@ -24,5 +24,5 @@ it('starts a short change list collapsed', async () => {
   const disclosure = container.querySelector('craft-disclosure')!;
 
   expect(disclosure).not.toBeNull();
-  expect(disclosure.hasAttribute('opened')).toBe(false);
+  expect(disclosure.hasAttribute('open')).toBe(false);
 });

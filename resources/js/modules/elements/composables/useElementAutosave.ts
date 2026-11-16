@@ -327,6 +327,25 @@ export function useElementAutosave<T extends object>(
     httpStatus.value = null;
   }
 
+  /**
+   * Waits for the save already on its way to the server, and calls off the
+   * ones queued behind it, for a submission that carries their values anyway.
+   * Aborting the request wouldn't stop the server, which would still create or
+   * update the draft, after the submission, with the older values. Returns
+   * `null` when no save is on its way.
+   */
+  function settle(): Promise<void> | null {
+    armed = false;
+
+    if (!current) {
+      return null;
+    }
+
+    current.trailing = false;
+
+    return current.done;
+  }
+
   function acknowledgeChanges(): void {
     acknowledgedGeneration.value = changeGeneration.value;
   }
@@ -365,6 +384,7 @@ export function useElementAutosave<T extends object>(
     screen: screenPayload,
     save,
     schedule,
+    settle,
     cancel,
     suspend,
     setDraftId,

@@ -1,6 +1,7 @@
-import {effectScope, nextTick} from 'vue';
+import {createApp, effectScope, h, nextTick, type App} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
+import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
 import {indexData} from '@/modules/elements/index/fixtures/indexData';
 import {useModalElementIndex} from './useModalElementIndex';
 
@@ -9,6 +10,13 @@ const post = vi.hoisted(() => vi.fn());
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
   actionClient: {post},
+}));
+vi.mock('@/modules/elements/index/components/ElementIndexToolbar.vue', () => ({
+  default: {render: () => null},
+}));
+vi.mock('@inertiajs/vue3', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@inertiajs/vue3')>()),
+  usePage: () => ({props: {readOnly: false}}),
 }));
 
 const volume = {type: 'native', key: 'volume:abc', label: 'Uploads'};
@@ -29,14 +37,17 @@ function assetsData(overrides: Partial<ContentIndexData> = {}) {
 
 let scope: ReturnType<typeof effectScope>;
 
-function mountIndex(initial = assetsData()) {
+function mountIndex(
+  initial = assetsData(),
+  params: Record<string, unknown> = {elementType: 'Asset'}
+) {
   scope = effectScope();
 
   return scope.run(() =>
     useModalElementIndex({
       action: 'element-selector-modals/body',
       initial,
-      params: {elementType: 'Asset'},
+      params,
     })
   )!;
 }
@@ -316,6 +327,29 @@ describe('leaving a folder', () => {
     expect(lastQuery()).not.toHaveProperty('folderId');
   });
 
+  // Such as an Assets field's upload location within its volume.
+  it('goes back to the volume’s root from the folder the modal opened in', async () => {
+    // Requested by its path, which the sidebar lists by the source's own key
+    const index = mountIndex(assetsData(), {
+      elementType: 'Asset',
+      source: `volume:xyz/${volume.key}`,
+      folderId: 5,
+    });
+
+    expect(index.activeSourceKey.value).toBe(volume.key);
+
+    // Any request made before leaving it, such as reaching into subfolders
+    index.setIncludeSubfolders(true);
+    expect(lastQuery()).toMatchObject({
+      source: `volume:xyz/${volume.key}`,
+      folderId: 5,
+    });
+
+    index.changeSource(volume.key);
+    expect(lastQuery()).toMatchObject({source: volume.key});
+    expect(lastQuery()).not.toHaveProperty('folderId');
+  });
+
   it('goes back to the volume’s root when its source is chosen again', async () => {
     const index = mountIndex();
     await openPhotos(index);
@@ -426,5 +460,66 @@ describe('searching subfolders', () => {
     index.setIncludeSubfolders(false);
     await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(2));
     expect(lastQuery()).not.toHaveProperty('includeSubfolders');
+  });
+});
+
+describe('structure sources', () => {
+  let app: App | undefined;
+  let host: HTMLElement | undefined;
+
+  afterEach(() => {
+    app?.unmount();
+    host?.remove();
+    localStorage.clear();
+  });
+
+  it('nests children under their parent', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('<svg></svg>'))
+    );
+    const section = {
+      type: 'native',
+      key: 'section:abc',
+      label: 'Pages',
+      structureId: 1,
+    };
+    const initial = indexData(undefined, {
+      source: section,
+      sources: [section],
+      sites: [],
+      actions: [],
+      viewState: {mode: 'structure'},
+      viewModes: [
+        {mode: 'structure', title: 'Structure', icon: 'structure'},
+        {mode: 'table', title: 'Table', icon: 'table'},
+      ],
+      structure: {id: 1, editable: false, maxLevels: null},
+      data: [
+        {id: 1, label: 'About', title: 'About', level: 1, hasDescendants: true},
+        {id: 2, label: 'Team', title: 'Team', level: 2, hasDescendants: false},
+      ],
+    } as Partial<ContentIndexData>);
+    post.mockResolvedValue({data: {props: initial}});
+    host = document.createElement('div');
+    document.body.append(host);
+    app = createApp({
+      setup() {
+        const index = useModalElementIndex({
+          action: 'element-selector-modals/body',
+          initial,
+          params: {elementType: 'Entry'},
+        });
+        return () =>
+          h(ElementIndex, {view: index.view, itemBehavior: index.itemBehavior});
+      },
+    });
+    app.mount(host);
+    await nextTick();
+
+    const rows = host.querySelectorAll<HTMLElement>('tr.cp-table-row');
+    expect(rows[0]!.style.getPropertyValue('--structure-level')).toBe('1');
+    expect(rows[1]!.style.getPropertyValue('--structure-level')).toBe('2');
+    expect(rows[0]!.querySelector('.cp-table-structure-toggle')).not.toBeNull();
   });
 });

@@ -49,7 +49,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -65,7 +64,7 @@ class EntryTypes
      *
      * ::: warning
      * Don’t disable this unless you know what you’re doing, as entries won’t reflect entry type changes until
-     * they’ve been resaved. (You can resave entries manually by running the `resave/entries` console command.)
+     * they’ve been resaved. (You can resave entries manually by running the `resave:entries` console command.)
      * :::
      */
     public bool $autoResaveEntries = true;
@@ -172,7 +171,7 @@ class EntryTypes
         // `craft:up` reads entry types (to diff project config) before running
         // pending migrations, so a DB that hasn't been migrated yet doesn't
         // have these columns.
-        $columns = Schema::getColumnListing(Table::ENTRYTYPES);
+        $columns = DB::getReadSchemaBuilder()->getColumnListing(Table::ENTRYTYPES);
 
         if (in_array('showPostDateField', $columns, true)) {
             $query->addSelect('showPostDateField');

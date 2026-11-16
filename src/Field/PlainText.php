@@ -28,7 +28,6 @@ use Illuminate\Support\Facades\DB;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * PlainText represents a Plain Text field.
@@ -220,25 +219,6 @@ class PlainText extends Field implements InlineEditableFieldInterface, InputSche
         }
 
         return $value !== '' ? $value : null;
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->_inputHtml($value, $element, false);
-    }
-
-    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
-    {
-        return template('_components/fieldtypes/PlainText/input', [
-            'name' => $this->handle,
-            'value' => $value,
-            'field' => $this,
-            'placeholder' => $this->placeholder !== null ? t(Str::unescapeShortcodes($this->placeholder),
-                category: 'site') : null,
-            'orientation' => $this->getOrientation($element),
-            'disabled' => $static,
-        ]);
     }
 
     /** @return list<Closure|string> */

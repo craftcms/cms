@@ -1,6 +1,54 @@
 import {css} from 'lit';
 import {trimmedTextBoxStyles} from '@src/styles/text-box.styles';
 
+/** What every button needs before its variant: box, sizer, hidden, disabled. */
+export const buttonBaseStyles = css`
+  :host {
+    position: relative;
+    display: inline-flex;
+    box-sizing: border-box;
+    vertical-align: middle;
+    line-height: 24px;
+    outline: none;
+    user-select: none;
+  }
+
+  /* A minimum hit area around the button (WCAG 2.5.5). */
+  :host::before {
+    content: '';
+    position: absolute;
+    /* Physical on purpose: paired with the translate below to center it. */
+    /* stylelint-disable liberty/use-logical-spec */
+    top: 50%;
+    left: 50%;
+    /* stylelint-enable liberty/use-logical-spec */
+    transform: translate(-50%, -50%);
+    min-height: 44px;
+    min-width: 44px;
+    width: 100%;
+    height: 100%;
+  }
+
+  :host([hidden]) {
+    display: none;
+  }
+
+  :host([disabled]) {
+    pointer-events: none;
+  }
+
+  /* Its own rule: a browser without :state() drops the whole selector list. */
+  :host(:state(fieldset-disabled)) {
+    pointer-events: none;
+  }
+
+  .button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+`;
+
 export default css`
   :host {
     /* Necessary to use variables here to override the default active style specificity */
@@ -190,6 +238,7 @@ export default css`
   :host([size~='small']) {
     --_padding-inline: var(--c-spacing-sm);
     --_height: var(--c-size-control-sm);
+    --c-icon-size: var(--c-size-icon-xs, calc(10rem / 16));
     min-width: var(--c-size-control-sm);
     font-size: 0.9em;
   }
@@ -277,10 +326,14 @@ export default css`
   Icon
    */
   :host([icon]:empty) {
-    /* A square around a 1em × 0.8em icon (see craft-icon). */
+    /* A square around the icon, which is 1.25 times as wide as it is tall (see craft-icon). */
+    --_icon-size: var(--c-icon-size, var(--c-size-icon-sm, calc(12rem / 16)));
     --_padding-inline: 0px;
-    --_flush-inline: max(0px, calc((var(--_height) - 1em) / 2));
-    --_flush-block: max(0px, calc((var(--_height) - 0.8em) / 2));
+    --_flush-inline: max(
+      0px,
+      calc((var(--_height) - var(--_icon-size) * 1.25) / 2)
+    );
+    --_flush-block: max(0px, calc((var(--_height) - var(--_icon-size)) / 2));
     aspect-ratio: 1;
     padding-block: 0;
     display: inline-flex;
@@ -288,6 +341,21 @@ export default css`
     justify-content: center;
     align-items: center;
     line-height: 1;
+  }
+
+  /* An xsmall button's own icon is half its height rather than an icon size
+     token, so it sits a whole number of pixels inside the borders (3px in a
+     16px button), which 1x screens would otherwise round off center. Keyed on
+     the content rather than \`[icon]\`, which isn't there when \`icon\` is
+     set as a property. */
+  :host([size~='xsmall']) .button-content--icon-only craft-icon {
+    --c-icon-size: calc(var(--_height) / 2);
+  }
+
+  /* The icon is 1.25em wide and 1em tall (see craft-icon). */
+  :host([size~='xsmall'][icon]:empty) {
+    --_flush-inline: calc(var(--_height) * 3 / 16);
+    --_flush-block: calc(var(--_height) / 4);
   }
 
   /*
@@ -308,7 +376,10 @@ export default css`
 
   :host([variant~='primary']:hover),
   :host([variant~='danger']:hover),
-  :host([variant~='solid']:hover) {
+  :host([variant~='solid']:hover),
+  :host([variant~='primary'][slot='invoker'][aria-expanded='true']),
+  :host([variant~='danger'][slot='invoker'][aria-expanded='true']),
+  :host([variant~='solid'][slot='invoker'][aria-expanded='true']) {
     background-color: hsl(
       from var(--c-color-fill-loud, var(--c-color-neutral-fill-loud)) h s
         calc(l - 5)
@@ -339,7 +410,8 @@ export default css`
     color: var(--c-color-on-normal, var(--c-color-neutral-on-normal));
   }
 
-  :host([variant~='fill']:hover) {
+  :host([variant~='fill']:hover),
+  :host([variant~='fill'][slot='invoker'][aria-expanded='true']) {
     background-color: hsl(
       from var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)) h s
         calc(l - 5)
@@ -367,7 +439,16 @@ export default css`
   :host([variant~='outline']:not(:disabled):not(.loading):hover),
   :host([variant~='dashed']:not(:disabled):not(.loading):hover),
   :host([variant~='danger-plain']:not(:disabled):not(.loading):hover),
-  :host([variant~='plain']:not(:disabled):not(.loading):hover) {
+  :host([variant~='plain']:not(:disabled):not(.loading):hover),
+  /* A menu or popover's button keeps its hover state while it's open. */
+  :host(
+    :is(
+        [variant~='outline'],
+        [variant~='dashed'],
+        [variant~='danger-plain'],
+        [variant~='plain']
+      )[slot='invoker'][aria-expanded='true']
+  ) {
     background-color: color-mix(
       in oklab,
       var(--c-color-fill-quiet, var(--c-color-neutral-fill-quiet)),
@@ -443,7 +524,7 @@ export default css`
     text-decoration: underline;
 
     &::before {
-      /* remove the sizer added by lion */
+      /* No minimum-target sizer around a text link. */
       display: none;
     }
 
@@ -478,7 +559,8 @@ export default css`
   }
 
   :host([variant~='plain'][inherit]:not(:disabled):not(.loading):active),
-  :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)) {
+  :host([variant~='plain'][inherit].is-active:not(:disabled):not(.loading)),
+  :host([variant~='plain'][inherit][slot='invoker'][aria-expanded='true']) {
     color: inherit;
   }
 
@@ -537,9 +619,13 @@ export default css`
     border-color: var(--c-color-border-loud);
   }
 
-  /* After the variants, whose colors would otherwise paint over Lion's own
-     disabled rule and leave a disabled button looking enabled. */
+  /* Muted rather than recolored, so each variant keeps its own look. */
   :host([disabled]) {
+    opacity: 0.5;
+    user-select: none;
+  }
+
+  :host(:state(fieldset-disabled)) {
     opacity: 0.5;
     user-select: none;
   }
@@ -587,7 +673,7 @@ export default css`
   :host([href]:not([disabled])) {
     padding-inline: 0;
 
-    /* Lion's minimum-click-target overlay is positioned, so it paints above
+    /* The host's minimum-target sizer is positioned, so it paints above
        the (non-positioned) anchor and swallows every pointer click before it
        can activate the link. Recreate the overlay on the anchor instead, so
        the full target navigates. */
@@ -618,7 +704,7 @@ export default css`
     border-radius: inherit;
     outline: none;
 
-    /* Same minimum click area as Lion's :host::before (WCAG 2.5.5), but as
+    /* Same minimum click area as the host's :host::before (WCAG 2.5.5), but as
        part of the anchor so clicks on it follow the link. */
 
     &::before {
@@ -699,9 +785,9 @@ export default css`
     --_divider-right: var(--c-button-divider-start-color, transparent);
   }
 
-  /* Ellipsis (action menu) icons read small at craft-icon's 0.8em */
+  /* Ellipsis (action menu) icons read small at a small button's icon size */
   craft-icon[name='ellipsis'],
   ::slotted(craft-icon[name='ellipsis']) {
-    --c-icon-size: 1em;
+    --c-icon-size: var(--c-size-icon-sm, calc(12rem / 16));
   }
 `;

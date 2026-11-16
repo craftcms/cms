@@ -17,33 +17,7 @@
   import type {ResizeGripsSize} from '@craftcms/ui';
   import {useResizableBox} from '@/common/composables/useResizableBox';
   import {useAnimatedBoxSize} from '@/common/composables/useAnimatedBoxSize';
-
-  export interface ModalProps {
-    isActive?: boolean;
-    /** Accessible name; ModalForm supplies its visible title. */
-    label?: string;
-    overlay?: boolean;
-    width?: string;
-    height?: string;
-    maxHeight?: string;
-    /** Adds grips along its right and bottom edges, and in their corner, for resizing it. */
-    resizable?: boolean;
-    /**
-     * Whether Escape and a click on the overlay close it. Off for a modal
-     * holding work that closing would throw away — only its own buttons do.
-     */
-    dismissible?: boolean;
-    /**
-     * Whether closing it puts focus back where it was before it opened. Off
-     * when whatever closed it moves focus somewhere on purpose.
-     */
-    restoreFocus?: boolean;
-    /**
-     * Opens without the enter transition, for a modal opened from the
-     * keyboard whose first keystrokes have to reach it. Closing still fades.
-     */
-    instant?: boolean;
-  }
+  import type {ModalProps} from './modal';
 
   const emit = defineEmits<{
     /** Dismissal was asked for — `event` is the Escape press or the dialog's own request. */
@@ -80,7 +54,7 @@
 
     const returnTo = invoker;
     invoker = null;
-    element.opened = false;
+    element.open = false;
     await element.updateComplete.then(() => {
       if (
         props.restoreFocus &&
@@ -213,7 +187,7 @@
       v-if="isActive"
       ref="dialog"
       :label="label"
-      .opened="true"
+      .open="true"
       no-header
       .closeOnOutsideClick="dismissible"
       :class="{'without-overlay': !overlay || isNested}"
@@ -242,6 +216,12 @@
 </template>
 
 <style scoped>
+  /* Back to the CP's default, since a modal opened from a page's main column
+     would otherwise inherit that column's wider, fluid gutters. */
+  .cp-modal {
+    --cp-container-padding: var(--c-spacing-lg);
+  }
+
   /* A column flex box so slotted content can grow into a height the floor is
    holding open, instead of sitting at its natural height with a gap below. */
   .content {
@@ -282,6 +262,7 @@
   .content > :slotted(form > craft-pane)::part(footer) {
     box-sizing: border-box;
     min-block-size: var(--c-modal-footer-height);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
   }
 

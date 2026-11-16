@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Cp;
 
 use Closure;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Auth\Impersonation;
 use CraftCms\Cms\Auth\Passkeys\Passkeys;
@@ -21,13 +22,16 @@ use CraftCms\Cms\Providers\AppServiceProvider;
 use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Images;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -38,11 +42,11 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
-use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use Illuminate\Foundation\Vite;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use stdClass;
 
@@ -60,8 +64,7 @@ readonly class Cp
      *
      * This is the single source of truth for the data exposed to both the
      * Inertia CP (`window.Cp` / the shared `craft.general` prop) and the legacy
-     * `window.Craft` object built by
-     * {@see CpAsset}.
+     * `window.Craft` object.
      *
      * The bulk of the data is request/auth-dependent (see {@see self::craftData()}).
      * The keys merged below are always present so the Inertia side never loses
@@ -106,7 +109,6 @@ readonly class Cp
 
             return [
                 ...self::craftData(),
-                'cpLogoUrl' => $generalConfig->cpLogoUrl,
                 'cpTrigger' => $generalConfig->cpTrigger,
                 'baseCpUrl' => Url::cpUrl(),
                 'defaultCpLocale' => $generalConfig->defaultCpLocale,
@@ -141,8 +143,8 @@ readonly class Cp
         return $data + [
             'elementTypeNames' => self::elementTypeNames(...),
             'fieldsWithoutContent' => fn () => app(Fields::class)->getFieldsWithoutContent(false)->pluck('handle')->all(),
-            // Serialized once here, rather than as a resource each time the config is encoded
-            'publishableSections' => fn () => $upToDate ? Json::decode(Json::encode(SectionResource::collection(Sections::getPublishableSections()))) : [],
+            // Resolved once here, rather than as a resource each time the config is encoded
+            'creatableSections' => fn () => $upToDate ? SectionResource::collection(Sections::getPublishableSections())->resolve() : [],
             'sites' => self::sites(...),
         ];
     }
@@ -228,6 +230,61 @@ readonly class Cp
         ];
     }
 
+    /**
+     * The control panel icon from the `cpIconPath` setting, or the deprecated `cpIconUrl` setting, as decorative HTML.
+     *
+     * @see self::brandImageHtml()
+     */
+    public static function iconHtml(): ?string
+    {
+        $generalConfig = Cms::config();
+
+        return self::brandImageHtml($generalConfig->cpIconPath, $generalConfig->cpIconUrl, 'cpIcon');
+    }
+
+    /**
+     * The login page logo from the `cpLogoPath` setting, or the deprecated `cpLogoUrl` setting, as decorative HTML.
+     *
+     * @see self::brandImageHtml()
+     */
+    public static function logoHtml(): ?string
+    {
+        $generalConfig = Cms::config();
+
+        return self::brandImageHtml($generalConfig->cpLogoPath, $generalConfig->cpLogoUrl, 'cpLogo');
+    }
+
+    /**
+     * An SVG file is inlined, so its styles can follow the control panel's theme, such as with `light-dark()`. Other
+     * images are embedded as data URLs, since the file may not be publicly accessible.
+     *
+     * The markup has no text alternative, so it should sit beside the system name.
+     *
+     * @param  string  $setting  The settings' shared prefix, such as `cpIcon` for `cpIconPath` and `cpIconUrl`
+     */
+    private static function brandImageHtml(?string $path, ?string $url, string $setting): ?string
+    {
+        if ($path) {
+            $file = Aliases::get($path);
+
+            if (is_file($file)) {
+                return File::isSvg($file)
+                    ? Html::svg($file, namespace: true)
+                    : Html::img(Html::dataUrlFromString(file_get_contents($file), File::getMimeType($file)), '')->render();
+            }
+
+            Log::warning("Invalid control panel image path: $path");
+        }
+
+        if (! $url) {
+            return null;
+        }
+
+        Deprecator::log("{$setting}Url", "The `{$setting}Url` config setting has been deprecated. `{$setting}Path` should be used instead.");
+
+        return Html::img(Aliases::get($url), '')->render();
+    }
+
     public static function publicAssetUrl(string $path): string
     {
         $path = ltrim($path, '/');
@@ -253,6 +310,7 @@ readonly class Cp
     {
         return [
             'vue' => static::vite()->asset('resources/js/vue.ts'),
+            '@inertiajs/vue3' => static::vite()->asset('resources/js/inertia.ts'),
             '@craftcms/cp' => static::vite()->asset('resources/js/cp-module.ts'),
             '@craftcms/garnish' => static::vite()->asset('resources/js/garnish.ts'),
         ];
@@ -365,7 +423,7 @@ readonly class Cp
 
         $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
-            'allowUpdates' => $generalConfig->allowUpdates,
+            'allowUpdates' => $generalConfig->allowUpdates && $currentUser->can('performUpdates') && app(Composer::class)->getIsAvailableForUi(),
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
             // Always on; the legacy editor still reads `Craft.autosaveDrafts`.
             'autosaveDrafts' => true,

@@ -73,6 +73,7 @@ export default css`
     --_pane-background: var(--c-pane-background, var(--c-surface-sunken));
     --_pane-border-color: transparent;
     --_pane-shadow: var(--c-shadow-sunken);
+    --c-form-control-border-color: var(--color-slate-500);
   }
 
   /* Variants --------------------------------------------------------------- */

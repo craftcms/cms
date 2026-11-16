@@ -23,6 +23,8 @@
     sublabel?: (item: T) => string | null;
     /** An icon to lead the row with, if any. */
     icon?: (item: T) => string | null;
+    /** A status dot to end the row with, such as a disabled source's. */
+    status?: (item: T) => {status: 'disabled'; label: string} | null;
     /**
      * The row's kind, surfaced as `cs-item--<kind>` alongside `cs-item`. Kept
      * opaque so this list can mark a heading apart without knowing what a
@@ -76,6 +78,7 @@
       label: props.label(item).trim(),
       sublabel: props.sublabel?.(item) ?? null,
       icon: props.icon?.(item) ?? null,
+      status: props.status?.(item) ?? null,
       type: props.itemType?.(item) ?? null,
       actions: props.actions?.(item, index) ?? [],
       moves: props.moves?.(item, index) ?? [],
@@ -232,7 +235,7 @@
         'cs-item--focus-ring': focusRingRowId === row.id,
       }"
     >
-      <span class="cs-item__control">
+      <span class="cs-item__control cs-item__control--handle">
         <craft-reorder-button
           class="cs-item__handle"
           :position="position(row.index)"
@@ -277,6 +280,13 @@
             row.sublabel
           }}</span>
         </span>
+        <craft-status
+          v-if="row.status"
+          slot="suffix"
+          class="cs-item__status"
+          :status="row.status.status"
+          :label="row.status.label"
+        ></craft-status>
       </craft-action-item>
 
       <!-- Every row's button says “Actions”, so it's described by its row. -->
@@ -439,6 +449,26 @@
     flex: none;
     align-items: center;
     height: calc(1lh + 2 * var(--c-spacing-sm) + 2px);
+  }
+
+  // Except the handle's, which stretches to the row so the handle sits in its
+  // middle, beside a label and handle alike.
+  .cs-item__control--handle {
+    align-self: stretch;
+    height: auto;
+  }
+
+  // A block, so it doesn't sit on the text's baseline in the item's suffix,
+  // which is centered on the row. Solid red, through the status component's
+  // own custom properties: the border takes the fill's color, so it has no
+  // outline.
+  .cs-item__status {
+    --c-status-disabled-fill: var(--c-status-expired-fill);
+    --c-status-disabled-border: var(--c-status-expired-fill);
+
+    display: block;
+    // Centers it under the action menu buttons of the rows that have one.
+    margin-inline-end: var(--c-spacing-xs);
   }
 
   .cs-item__text {

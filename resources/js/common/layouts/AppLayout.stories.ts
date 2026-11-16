@@ -258,7 +258,7 @@ export const AllExtensionPointsInContext: Story = {
         </template>
 
         <template #title>
-          <h1 class="text-xl">Summer sale: up to 40% off</h1>
+          <h1 class="cp-h1">Summer sale: up to 40% off</h1>
         </template>
 
         <template #content-toolbar-meta>

@@ -3,7 +3,7 @@ import {createApp, h, nextTick, ref} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import FieldLayoutDesignerControl from './FieldLayoutDesignerControl.vue';
 import GroupNode from './GroupNode.vue';
-import {useOutlet} from './outlets';
+import {createOutletRegistry, UiOutletsKey} from './outlets';
 import type {UiPayload} from './types';
 
 const html = `
@@ -102,7 +102,8 @@ it('provides the Appearance tab’s outlet while mounted', async () => {
   vi.spyOn(actionClient, 'post').mockResolvedValue({data: {html}} as never);
   const container = document.createElement('div');
   document.body.append(container);
-  const outlet = useOutlet(() => 'field-layout-designer.appearance');
+  const outlets = createOutletRegistry();
+  const outlet = outlets.outlet(() => 'field-layout-designer.appearance');
 
   app = createApp({
     render: () =>
@@ -120,6 +121,7 @@ it('provides the Appearance tab’s outlet while mounted', async () => {
         editable: true,
       }),
   });
+  app.provide(UiOutletsKey, outlets);
   app.mount(container);
   await flush();
 

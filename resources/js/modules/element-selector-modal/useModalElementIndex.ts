@@ -90,11 +90,19 @@ export function useModalElementIndex(options: Options) {
     () => new Set(options.disabledFolderIds?.() ?? [])
   );
   const selectFolders = options.selectFolders ?? false;
+  // The folder the modal opened in, such as an Assets field's upload location,
+  // is where it starts rather than where it stays: it seeds the query that
+  // switching sources and opening folders update.
+  const {folderId, ...params} = options.params;
   const index = useDetachedElementIndex({
     initial: options.initial,
+    initialQuery:
+      folderId === undefined || folderId === null
+        ? {}
+        : {folderId: Number(folderId)},
     fetch: async (query) => {
       const {data} = await actionClient.post(options.action, {
-        ...options.params,
+        ...params,
         ...query,
       });
 
@@ -107,6 +115,9 @@ export function useModalElementIndex(options: Options) {
         : !row.isFolder && !disabledIds.value.has(Number(row.id)),
     // A move has one destination.
     multiSelect: !selectFolders,
+    structure: true,
+    // Choosing a parent relates only the parent.
+    selectDescendants: false,
   });
   // Brings back the view mode, columns and sort this index last used, which
   // the server can't know when it renders the first payload.

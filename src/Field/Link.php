@@ -6,8 +6,6 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Component\ComponentHelper;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
@@ -19,14 +17,11 @@ use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
-use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
 use CraftCms\Cms\Field\LinkTypes\Url as UrlType;
 use CraftCms\Cms\Gql\GqlInputSchema;
 use CraftCms\Cms\Gql\Types\Generators\LinkDataType;
 use CraftCms\Cms\Gql\Types\Input\LinkData as LinkDataInput;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
@@ -272,217 +267,6 @@ class Link extends Field implements InlineEditableFieldInterface, InputSchemaFie
     public function useFieldset(): bool
     {
         return true;
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        $linkTypes = $this->getLinkTypes();
-        $valueTypeId = null;
-
-        /** @var LinkData|null $value */
-        if ($value) {
-            $valueTypeId = $value->getType();
-
-            if (! isset($linkTypes[$valueTypeId])) {
-                $type = self::types()[$valueTypeId] ?? null;
-                if ($type) {
-                    $linkTypes[$valueTypeId] = ComponentHelper::createComponent($type, BaseLinkType::class);
-                } else {
-                    $value = null;
-                }
-            }
-        }
-
-        if (! $value) {
-            $valueTypeId = reset($this->types);
-        }
-
-        $id = $this->getInputId();
-
-        HtmlStack::jsWithVars(fn ($id) => <<<JS
-new Craft.LinkField(document.getElementById($id));
-JS, [
-            InputNamespace::namespaceId($id),
-        ]);
-
-        $typeInputName = "$this->handle[type]";
-
-        if (count($linkTypes) === 1) {
-            $innerHtml = Html::hiddenInput($typeInputName, $valueTypeId);
-        } else {
-            $namespacedId = InputNamespace::namespaceId($id);
-            $js = <<<JS
-document.getElementById('$namespacedId-type')?.addEventListener('change', e => {
-  const type = e.target.value;
-  const input = document.getElementById('$namespacedId');
-  input?.setAttribute('type', type);
-  input?.setAttribute('inputmode', type);
-});
-JS;
-            HtmlStack::js($js);
-
-            $innerHtml = FormFields::selectHtml([
-                'id' => "$id-type",
-                'describedBy' => $this->describedBy,
-                'name' => $typeInputName,
-                'options' => array_map(fn (BaseLinkType $linkType) => [
-                    'label' => $linkType::displayName(),
-                    'value' => $linkType::id(),
-                ], $linkTypes),
-                'value' => $valueTypeId,
-                'inputAttributes' => [
-                    'aria' => [
-                        'label' => t('URL Type'),
-                    ],
-                ],
-                'toggle' => true,
-                'targetPrefix' => "$id-",
-            ]);
-        }
-
-        foreach ($linkTypes as $typeId => $linkType) {
-            $containerId = "$id-$typeId";
-            $nsContainerId = InputNamespace::namespaceId($containerId);
-            $selected = $typeId === $valueTypeId;
-            $typeValue = $selected ? $value?->serialize()['value'] : null;
-            $isTextLink = is_subclass_of($linkType, BaseTextLinkType::class);
-            $innerHtml .=
-                Html::beginTag('div', [
-                    'id' => $containerId,
-                    'class' => array_keys(array_filter([
-                        'flex-grow' => true,
-                        'hidden' => ! $selected,
-                        'text-link' => $isTextLink,
-                    ])),
-                    'data' => ['link-type' => $typeId],
-                ]).
-                InputNamespace::namespaceInputs(
-                    fn () => $linkType->inputHtml($this, $typeValue, $nsContainerId),
-                    "$this->handle[$typeId]",
-                ).
-                Html::endTag('div');
-        }
-
-        $pane = $this->showLabelField || ! empty($this->advancedFields);
-        $html =
-            Html::beginTag('div', [
-                'id' => $id,
-                'class' => $pane ? ['pane', 'hairline', 'padding-m'] : null,
-            ]).
-            Html::beginTag('div', [
-                'class' => 'link-input',
-                'data' => ['link-field' => true],
-            ]).
-            Html::tag('div', $innerHtml, [
-                'class' => ['flex', 'flex-nowrap'],
-            ]).
-            Html::endTag('div');
-
-        if ($this->showLabelField) {
-            $html .= FormFields::textFieldHtml([
-                'fieldClass' => 'my-m',
-                'fieldAttributes' => [
-                    'data' => ['label-field' => true],
-                ],
-                'label' => t('Label'),
-                'id' => "$id-label",
-                'name' => "$this->handle[label]",
-                'value' => $value?->getLabel(true),
-                'placeholder' => $value?->getLabel(false),
-            ]);
-        }
-
-        if (! empty($this->advancedFields)) {
-            $html .=
-                Html::button(t('Advanced'), attributes: [
-                    'class' => ['fieldtoggle', 'mb-0'],
-                    'data' => ['target' => "$id-advanced"],
-                ]).
-                Html::beginTag('div', [
-                    'id' => "$id-advanced",
-                    'class' => ['hidden', 'meta', 'pane', 'hairline'],
-                ]);
-
-            foreach ($this->advancedFields as $field) {
-                $html .= match ($field) {
-                    'urlSuffix' => FormFields::textFieldHtml([
-                        'label' => t('URL Suffix'),
-                        'instructions' => t('Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
-                            'ex1' => '`?p1=foo&p2=bar`',
-                            'ex2' => '`#anchor`',
-                        ]),
-                        'id' => "$id-url-suffix",
-                        'name' => "$this->handle[urlSuffix]",
-                        'value' => $value?->urlSuffix,
-                    ]),
-                    'target' => FormFields::lightswitchFieldHtml([
-                        'label' => t('Open in a new tab'),
-                        'id' => "$id-target",
-                        'name' => "$this->handle[target]",
-                        'on' => $value?->target,
-                        'value' => '_blank',
-                    ]),
-                    'title' => FormFields::textFieldHtml([
-                        'label' => t('Title Text'),
-                        'id' => "$id-title",
-                        'name' => "$this->handle[title]",
-                        'value' => $value?->title,
-                    ]),
-                    'class' => FormFields::textFieldHtml([
-                        'class' => 'code',
-                        'label' => t('Class Name'),
-                        'instructions' => t('Separate multiple values with spaces.'),
-                        'id' => "$id-class",
-                        'name' => "$this->handle[class]",
-                        'value' => $value?->class,
-                    ]),
-                    'id' => FormFields::textFieldHtml([
-                        'class' => 'code',
-                        'label' => t('ID'),
-                        'id' => "$id-id",
-                        'name' => "$this->handle[id]",
-                        'value' => $value?->id,
-                    ]),
-                    'rel' => FormFields::textFieldHtml([
-                        'class' => 'code',
-                        'label' => t('Relation ({ex})', ['ex' => '<code>rel</code>']),
-                        'instructions' => t('Separate multiple values with spaces.'),
-                        'id' => "$id-rel",
-                        'name' => "$this->handle[rel]",
-                        'value' => $value?->rel,
-                    ]),
-                    'ariaLabel' => FormFields::textFieldHtml([
-                        'label' => t('ARIA Label'),
-                        'id' => "$id-aria-label",
-                        'name' => "$this->handle[ariaLabel]",
-                        'value' => $value?->ariaLabel,
-                    ]),
-                    'download' => FormFields::lightswitchFieldHtml([
-                        'label' => t('Download'),
-                        'id' => "$id-download",
-                        'name' => "$this->handle[download]",
-                        'on' => $value?->download,
-                        'toggle' => "$id-filename-field",
-                    ]).
-                        FormFields::textFieldHtml([
-                            'fieldClass' => ! $value?->download ? 'hidden' : null,
-                            'fieldAttributes' => [
-                                'data' => ['filename-field' => true],
-                            ],
-                            'label' => t('Filename'),
-                            'id' => "$id-filename",
-                            'name' => "$this->handle[filename]",
-                            'value' => $value?->getFilename(),
-                            'placeholder' => $value?->getFilename(false),
-                        ]),
-                };
-            }
-
-            $html .= Html::endTag('div');
-        }
-
-        return $html.Html::endTag('div');
     }
 
     /** @return list<Closure> */

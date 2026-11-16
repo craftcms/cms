@@ -20,8 +20,12 @@ use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Interfaces\Elements\Entry as EntryInterface;
 use CraftCms\Cms\Gql\Resolvers\Elements\Entry as EntryResolver;
+use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
+use CraftCms\Cms\Ui\Controls\EntrySelect;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
@@ -112,17 +116,54 @@ class Entries extends BaseRelationField
     {
         $variables = parent::inputTemplateVariables($value, $element);
 
-        if (! $this->hasSelectionCondition() && $this->showSearchInput($element)) {
-            /** @var string[] $sources */
-            $sources = $this->getInputSources($element);
-            if (preg_match('/^section:(.+)$/', reset($sources), $matches)) {
-                if ($section = Sections::getSectionByUid($matches[1])) {
-                    $variables['jsSettings']['sectionId'] = $section->id;
-                }
-            }
+        if ($section = $this->searchSection($element)) {
+            $variables['jsSettings']['sectionId'] = $section->id;
         }
 
         return $variables;
+    }
+
+    #[Override]
+    protected function selectControl(FieldContext $context): ElementSelect
+    {
+        $section = $this->searchSection($context->element);
+
+        $canCreate = $section !== null
+            && Sections::getPublishableSections()->contains('id', $section->id)
+            && Sites::getEditableSiteIdsForSection($section)->contains($this->targetSiteId($context->element));
+
+        return EntrySelect::make($context->path)->createSection($canCreate ? $section : null);
+    }
+
+    /**
+     * Returns the section the search input can create entries in: the field’s one source’s, when it’s a section.
+     *
+     * A new entry can’t be relied on to meet a selection condition, so none is offered when the field has one, unless
+     * all it asks is that the entry be viewable, which every Entries field asks by default, and which an entry the
+     * user creates is.
+     */
+    private function searchSection(?ElementInterface $element): ?Section
+    {
+        if (! $this->showSearchInput($element)) {
+            return null;
+        }
+
+        $rules = $this->getSelectionCondition()?->getConditionRules()->getRules() ?? [];
+
+        foreach ($rules as $rule) {
+            if (! $rule instanceof ViewableConditionRule || ! $rule->value) {
+                return null;
+            }
+        }
+
+        /** @var string[] $sources */
+        $sources = $this->getInputSources($element);
+
+        if (! preg_match('/^section:(.+)$/', (string) reset($sources), $matches)) {
+            return null;
+        }
+
+        return Sections::getSectionByUid($matches[1]);
     }
 
     #[Override]

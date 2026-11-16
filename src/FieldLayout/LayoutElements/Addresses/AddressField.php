@@ -82,6 +82,7 @@ class AddressField extends BaseField implements ImportableFieldLayoutElementInte
 
         return AddressControl::make('address')
             ->countryCode($context->element->countryCode)
+            ->belongsToCurrentUser($context->element->getBelongsToCurrentUser())
             ->value($context->element->toArray([
                 'addressLine1',
                 'addressLine2',

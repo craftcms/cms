@@ -45,6 +45,7 @@ vi.mock('@/modules/elements/components/ElementCards.vue', () => ({
 }));
 
 describe('NestedElements', () => {
+  const broadcaster = new EventTarget();
   let root: HTMLElement;
   let app: ReturnType<typeof createApp>;
 
@@ -95,7 +96,7 @@ describe('NestedElements', () => {
         Address: ['Address', 'Addresses', 'address', 'addresses'],
       },
       Preview: {refresh: vi.fn()},
-      broadcaster: new EventTarget(),
+      broadcaster,
     });
     root = document.createElement('div');
     document.body.append(root);
@@ -158,6 +159,50 @@ describe('NestedElements', () => {
       }),
       expect.anything()
     );
+  });
+
+  it('has its owner redraw its cards when one is saved in another tab', async () => {
+    const refresh = vi.fn(async () => {});
+    mount(refresh);
+    await nextTick();
+    const otherTab = (id: number) =>
+      broadcaster.dispatchEvent(
+        new MessageEvent('message', {data: {event: 'saveElement', id}})
+      );
+
+    otherTab(15);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(refresh).not.toHaveBeenCalled();
+
+    otherTab(14);
+    await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
+
+    expect(refresh).toHaveBeenCalledWith({changedElsewhere: true});
+  });
+
+  it('redraws its cards after an operation when one is saved in another tab meanwhile', async () => {
+    window.confirm = vi.fn().mockReturnValue(true);
+    let finishRefresh!: () => void;
+    const refresh = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finishRefresh = resolve;
+        })
+    );
+    mount(refresh);
+    await nextTick();
+
+    action('Delete address')!.click();
+    await vi.waitFor(() => expect(refresh).toHaveBeenCalledOnce());
+    broadcaster.dispatchEvent(
+      new MessageEvent('message', {data: {event: 'saveElement', id: 14}})
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    finishRefresh();
+
+    await vi.waitFor(() => expect(refresh).toHaveBeenCalledTimes(2));
+    expect(refresh).toHaveBeenLastCalledWith({changedElsewhere: true});
   });
 
   it('creates nested elements for a saved owner and edits them in a slideout', async () => {

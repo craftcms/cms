@@ -13,6 +13,7 @@ use CraftCms\Cms\Dashboard\Data\CustomWidgetDefinition;
 use CraftCms\Cms\Dashboard\Data\WidgetTypeData;
 use CraftCms\Cms\Dashboard\Widgets\Custom;
 use CraftCms\Cms\Dashboard\WidgetTypes;
+use CraftCms\Cms\Shared\Enums\Color;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -96,6 +97,8 @@ readonly class DashboardController
             ],
             'widgets' => fn () => $widgets->map(fn (WidgetInterface $widget) => $this->getWidgetData($widget))->filter()->values(),
             'widgetTypes' => $widgetTypeInfo->map(fn (array $info) => new WidgetTypeData(...$info)),
+            // Offered for widgets, as for entry types; the color select's own palette is wider.
+            'widgetColors' => array_column(Color::cases(), 'value'),
         ]);
     }
 

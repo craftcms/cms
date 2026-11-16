@@ -36,7 +36,7 @@
 
   /** `change` only fires once an option is chosen or the field is left, not as it's typed in. */
   function onChange(event: Event): void {
-    const value = (event.currentTarget as {modelValue?: unknown}).modelValue;
+    const value = (event.currentTarget as {value?: unknown}).value;
     emit('change', value == null ? '' : String(value));
   }
 </script>
@@ -45,7 +45,7 @@
   <div class="cp-table-control">
     <craft-combobox
       class="cp-table-control__input"
-      .modelValue="value"
+      .value="value"
       .options="comboboxOptions"
       .disabled="disabled"
       :label="label"

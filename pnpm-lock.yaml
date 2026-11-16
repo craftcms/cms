@@ -205,9 +205,6 @@ settings:
 
 catalogs:
   default:
-    '@lion/ui':
-      specifier: ^0.16.1
-      version: 0.16.1
     '@simplewebauthn/browser':
       specifier: ^13.3.0
       version: 13.3.0
@@ -235,6 +232,9 @@ catalogs:
     d3:
       specifier: ^7.9.0
       version: 7.9.0
+    dom-accessibility-api:
+      specifier: ^0.7.1
+      version: 0.7.1
     dotenv:
       specifier: ^16.6.1
       version: 16.6.1
@@ -250,6 +250,9 @@ catalogs:
     jquery:
       specifier: ^3.7.1
       version: 3.7.1
+    jquery-ui:
+      specifier: ^1.14.2
+      version: 1.14.2
     lit:
       specifier: ^3.3.2
       version: 3.3.2
@@ -349,9 +352,6 @@ importers:
       '@inertiajs/vue3':
         specifier: ^3.0.3
         version: 3.0.3(axios@1.17.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2))(vue@3.5.33(typescript@6.0.3))
-      '@lion/ui':
-        specifier: 'catalog:'
-        version: 0.16.1
       '@simplewebauthn/browser':
         specifier: 'catalog:'
         version: 13.3.0
@@ -407,8 +407,8 @@ importers:
         specifier: 'catalog:'
         version: 3.3.2
       overtype:
-        specifier: ^2.4.0
-        version: 2.4.0
+        specifier: ^2.9.0
+        version: 2.9.0
       punycode:
         specifier: 'catalog:'
         version: 2.3.1
@@ -458,12 +458,18 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^6.0.6
         version: 6.0.6(@voidzero-dev/vite-plus-core@0.2.6(@arethetypeswrong/core@0.18.2)(@types/node@25.6.0)(esbuild@0.28.1)(jiti@2.6.1)(sass@1.94.0)(terser@5.44.1)(typescript@6.0.3)(yaml@2.8.3))(vue@3.5.33(typescript@6.0.3))
+      dom-accessibility-api:
+        specifier: 'catalog:'
+        version: 0.7.1
       esbuild:
         specifier: 'catalog:'
         version: 0.28.1
       jquery:
         specifier: 'catalog:'
         version: 3.7.1
+      jquery-ui:
+        specifier: 'catalog:'
+        version: 1.14.2
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
@@ -508,8 +514,8 @@ importers:
         version: 3.2.7(typescript@6.0.3)
     optionalDependencies:
       '@awesome.me/kit-ddaed3f5c5':
-        specifier: ^1.0.81
-        version: 1.0.81
+        specifier: ^1.0.110
+        version: 1.0.110
 
   packages/craftcms-browserslist-config: {}
 
@@ -635,7 +641,7 @@ importers:
         specifier: 'catalog:'
         version: 3.7.1
       jquery-ui:
-        specifier: ^1.14.2
+        specifier: 'catalog:'
         version: 1.14.2
       jquery.payment:
         specifier: ^3.0.0
@@ -703,8 +709,8 @@ importers:
         version: 4.15.2(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(webpack-cli@5.1.4)(webpack@5.102.1)
     optionalDependencies:
       '@awesome.me/kit-ddaed3f5c5':
-        specifier: ^1.0.81
-        version: 1.0.81
+        specifier: ^1.0.110
+        version: 1.0.110
 
   packages/craftcms-sass: {}
 
@@ -753,12 +759,6 @@ importers:
       '@custom-elements-manifest/analyzer':
         specifier: ^0.11.0
         version: 0.11.0(@emnapi/core@1.11.0)(@emnapi/runtime@1.11.0)
-      '@lion/ui':
-        specifier: 'catalog:'
-        version: 0.16.1
-      '@open-wc/dedupe-mixin':
-        specifier: ^2.0.1
-        version: 2.0.1
       '@shoelace-style/shoelace':
         specifier: ^2.20.1
         version: 2.20.1(@floating-ui/utils@0.2.11)(@types/react@19.2.15)
@@ -808,7 +808,7 @@ importers:
         specifier: ^8.0.1
         version: 8.0.1
       dom-accessibility-api:
-        specifier: ^0.7.1
+        specifier: 'catalog:'
         version: 0.7.1
       element-internals-polyfill:
         specifier: ^3.0.2
@@ -1041,8 +1041,8 @@ packages:
   '@atlaskit/pragmatic-drag-and-drop@1.8.1':
     resolution: {integrity: sha512-uXWNPpL8n4OmTVbduH7nq8pk8htqGo/prR5cYEE8sVCPJGAUMWn6lzvWTfI+4VCeQvHiDRODVz4YzH06OVAxhw==}
 
-  '@awesome.me/kit-ddaed3f5c5@1.0.81':
-    resolution: {integrity: sha512-RERmKSUwLd5dWuJ5Y/tIgw0ycWACYW2BwAEqHGw3mnPBdjdetjF7P5YXVNGrjiH5X/ZerJx/vExYrO8HAPv+kQ==}
+  '@awesome.me/kit-ddaed3f5c5@1.0.110':
+    resolution: {integrity: sha512-3DKvr5AIR/HL8slD5LKtX3yuzAsB7BYHBORK1GBcT4E8t56NmS1S7zVyRjKC0QZYFQMzZ8KHSLj1YdqjVOxNYw==}
     engines: {node: '>=16'}
 
   '@babel/code-frame@7.27.1':
@@ -1677,9 +1677,6 @@ packages:
   '@braidai/lang@1.1.2':
     resolution: {integrity: sha512-qBcknbBufNHlui137Hft8xauQMTZDKdophmLFv05r2eNmdIv/MlPuP4TdUknHG68UdWLgVZwgxVe735HzJNIwA==}
 
-  '@bundled-es-modules/message-format@6.2.4':
-    resolution: {integrity: sha512-NBaIEUCzSjLZjrsmSOh8PJLqQjSpXVuekIOuUT8tt4N/FdtAavWsC1YinIqIrbRnkBqV90OxgKzsxhFCzETQBw==}
-
   '@cacheable/memory@2.0.7':
     resolution: {integrity: sha512-RbxnxAMf89Tp1dLhXMS7ceft/PGsDl1Ip7T20z5nZ+pwIAsQ1p2izPjVG69oCLv/jfQ7HDPHTWK0c9rcAWXN3A==}
 
@@ -2056,8 +2053,8 @@ packages:
   '@formatjs/intl-localematcher@0.8.6':
     resolution: {integrity: sha512-AZRgUxj0q93lyF7Z5lFS85bLINXuBLX4R3tCKicO6fSWo6cvh9GQfoR3B1WlsqQwefZ1QORTivhInx7gM6HUzQ==}
 
-  '@fortawesome/fontawesome-common-types@6.7.2':
-    resolution: {integrity: sha512-Zs+YeHUC5fkt7Mg1l6XTniei3k4bwG/yo3iFUtZWd/pMx9g3fdvkSK9E0FOC+++phXOka78uJcYb8JaFkW52Xg==}
+  '@fortawesome/fontawesome-common-types@7.3.1':
+    resolution: {integrity: sha512-k0C0sdHmZtAo6dRDtd1Z/qcpyHbL0CKsjV8seMY/21xGhY5Wsv0XRmiI/xEEH4y2c9b1+jvgNs/3EqhV27yUEA==}
     engines: {node: '>=6'}
 
   '@github/catalyst@1.7.0':
@@ -2226,9 +2223,6 @@ packages:
   '@lezer/lr@1.4.10':
     resolution: {integrity: sha512-rnCpTIBafOx4mRp43xOxDJbFipJm/c0cia/V5TiGlhmMa+wsSdoGmUN3w5Bqrks/09Q/D4tNAmWaT8p6NRi77A==}
 
-  '@lion/ui@0.16.1':
-    resolution: {integrity: sha512-dv9iZNJo7/Yi6EV/Q0ffbrT4yCV6xX2AWlizSvN4gGiUoAS0qC4I7Q6vdpTmeU/Lj/q5dF075oLjX4GuesMj4g==}
-
   '@lit-labs/ssr-dom-shim@1.4.0':
     resolution: {integrity: sha512-ficsEARKnmmW5njugNYKipTm4SFnbik7CXtoencDZzmzo/dQ+2Q0bgkzJuoJP20Aj0F+izzJjOqsnkd6F/o1bw==}
 
@@ -2286,12 +2280,6 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
-
-  '@open-wc/dedupe-mixin@2.0.1':
-    resolution: {integrity: sha512-+R4VxvceUxHAUJXJQipkkoV9fy10vNo+OnUnGKZnVmcwxMl460KLzytnUM4S35SI073R0yZQp9ra0MbPUwVcEA==}
-
-  '@open-wc/scoped-elements@3.0.6':
-    resolution: {integrity: sha512-w1ayJaUUmBw8tALtqQ6cBueld+op+bufujzbrOdH0uCTXnSQkONYZzOH+9jyQ8auVgKLqcxZ8oU6SzfqQhQkPg==}
 
   '@oxc-parser/binding-android-arm-eabi@0.127.0':
     resolution: {integrity: sha512-0LC7ye4hvqbIKxAzThzvswgHLFu2AURKzYLeSVvLdu2TBOYWQDmHnTqPLeA597BcUCxiLqLsS4CJ5uoI5WYWCQ==}
@@ -3387,7 +3375,7 @@ packages:
         optional: true
 
   '@selectize/selectize@https://codeload.github.com/selectize/selectize.js/tar.gz/e6ca6d3ba8f902c38da157f2caf7962c38e82095':
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/selectize/selectize.js/tar.gz/e6ca6d3ba8f902c38da157f2caf7962c38e82095}
+    resolution: {gitHosted: true, integrity: sha512-3ro98oE9am/yhLHCm+X9Idzi4KKkb+A0gqof1dncwBCmacbDXfpezVSbCtsJPWb5TARwiYNJQadVhA1e4T0yVw==, tarball: https://codeload.github.com/selectize/selectize.js/tar.gz/e6ca6d3ba8f902c38da157f2caf7962c38e82095}
     version: 0.15.2
     peerDependencies:
       jquery: ^1.7.0 || ^2 || ^3
@@ -4772,10 +4760,6 @@ packages:
   available-typed-arrays@1.0.7:
     resolution: {integrity: sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ==}
     engines: {node: '>= 0.4'}
-
-  awesome-phonenumber@6.12.0:
-    resolution: {integrity: sha512-17Ts/ceWeWXzWZqTIRKA48y3+OyxYsAXYzuxYCn4n0+By+W0dcHk3fHszW6lLxAlCZt3VmVKY6n9AxOCU84qNw==}
-    engines: {node: '>=18'}
 
   axe-core@4.11.0:
     resolution: {integrity: sha512-ilYanEU8vxxBexpJd8cWM4ElSQq4QctCLKih0TSfjIfCQTeyH/6zVrmIJfLPrKTKJRbiG+cfnZbQIjAlJmF1jQ==}
@@ -6649,9 +6633,6 @@ packages:
   humanize-duration@3.33.2:
     resolution: {integrity: sha512-K7Ny/ULO1hDm2nnhvAY+SJV1skxFb61fd073SG1IWJl+D44ULrruCuTyjHKjBVVcSuTlnY99DKtgEG39CM5QOQ==}
 
-  ibantools@4.5.1:
-    resolution: {integrity: sha512-DfKQpLlFq9yEUIEnFuCJzss3XavD7iHZTU5PyqXiAJ+rmaMp+NFP3hboumHKuK8nZjuOJg93WemTzcQ5b9jOZA==}
-
   iconv-lite@0.4.24:
     resolution: {integrity: sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==}
     engines: {node: '>=0.10.0'}
@@ -7463,8 +7444,8 @@ packages:
     resolution: {integrity: sha512-8y/eV9QQZCiyn1SprXSrCmqJN0yNRATe+PO8ztwqrvrbdRLA3eYJF0yaR0YayLWkMbsQSKWS9N2gPcGEc4UsZg==}
     engines: {node: '>=0.10.0'}
 
-  markdown-actions@1.1.2:
-    resolution: {integrity: sha512-U7rmgTvUP3neh3XaVblikslRWWhfpzF2SiI1A6z3az7IpYuAiVvdqtZrFCArV22TSj2Ht+r0ResohlsJ8/ntbw==}
+  markdown-actions@1.3.0:
+    resolution: {integrity: sha512-SiQ+wowIL+FbBGNT4VrLrpnN2EsXKV7fDKMb5ptAahcz0QjlwZdtYUlrzufXCi7URuZRg1ZaIu22VEXRKd+vyQ==}
 
   markdown-it@14.1.0:
     resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
@@ -7942,8 +7923,8 @@ packages:
     resolution: {integrity: sha512-84cglkRILFxdtA8hAvLNdMrtBpPNBTrQ9/ulg0FA7xLMnD6mifv+enAIeRmvtv+WgdCE+LPGOfQmtJRrVaIVhQ==}
     engines: {node: '>=20'}
 
-  overtype@2.4.0:
-    resolution: {integrity: sha512-V5HJcdwyN/Lye1vvU0d47y1VaEqSGsWRdCa3ZCZB/DZHdR840i1z0oBGYAmbLe/I2H2cxLx9Bv3tuVl4dTgUpA==}
+  overtype@2.9.0:
+    resolution: {integrity: sha512-7GazO4BfWe7VsQXvwbKhHezBdQehCAN74mG1it1BxKVeeF6c61kYAFz+w3k8TQOzizjZb0EoXLR2J2lWXKnZfA==}
 
   own-keys@1.0.1:
     resolution: {integrity: sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg==}
@@ -9073,9 +9054,6 @@ packages:
 
   simple-get@4.0.1:
     resolution: {integrity: sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA==}
-
-  singleton-manager@1.8.0:
-    resolution: {integrity: sha512-1M3qImeT5j74a/GtRwM8Q+JOMwhiNRE/uJtIu+U6LBgbRvl9reoeFbQ+ZALR0CwCqg2hhwmLAGZ9KuxefuIWlA==}
 
   sirv@3.0.2:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
@@ -10293,9 +10271,9 @@ snapshots:
       bind-event-listener: 3.0.0
       raf-schd: 4.0.3
 
-  '@awesome.me/kit-ddaed3f5c5@1.0.81':
+  '@awesome.me/kit-ddaed3f5c5@1.0.110':
     dependencies:
-      '@fortawesome/fontawesome-common-types': 6.7.2
+      '@fortawesome/fontawesome-common-types': 7.3.1
     optional: true
 
   '@babel/code-frame@7.27.1':
@@ -11127,8 +11105,6 @@ snapshots:
 
   '@braidai/lang@1.1.2': {}
 
-  '@bundled-es-modules/message-format@6.2.4': {}
-
   '@cacheable/memory@2.0.7':
     dependencies:
       '@cacheable/utils': 2.3.3
@@ -11462,7 +11438,7 @@ snapshots:
     dependencies:
       '@formatjs/fast-memoize': 3.1.4
 
-  '@fortawesome/fontawesome-common-types@6.7.2':
+  '@fortawesome/fontawesome-common-types@7.3.1':
     optional: true
 
   '@github/catalyst@1.7.0': {}
@@ -11696,18 +11672,6 @@ snapshots:
     dependencies:
       '@lezer/common': 1.5.2
 
-  '@lion/ui@0.16.1':
-    dependencies:
-      '@bundled-es-modules/message-format': 6.2.4
-      '@open-wc/dedupe-mixin': 2.0.1
-      '@open-wc/scoped-elements': 3.0.6
-      '@popperjs/core': 2.11.8
-      autosize: 6.0.1
-      awesome-phonenumber: 6.12.0
-      ibantools: 4.5.1
-      lit: 3.3.2
-      singleton-manager: 1.8.0
-
   '@lit-labs/ssr-dom-shim@1.4.0': {}
 
   '@lit/react@1.0.8(@types/react@19.2.15)':
@@ -11770,13 +11734,6 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
-
-  '@open-wc/dedupe-mixin@2.0.1': {}
-
-  '@open-wc/scoped-elements@3.0.6':
-    dependencies:
-      '@open-wc/dedupe-mixin': 2.0.1
-      lit: 3.3.2
 
   '@oxc-parser/binding-android-arm-eabi@0.127.0':
     optional: true
@@ -14011,8 +13968,6 @@ snapshots:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  awesome-phonenumber@6.12.0: {}
-
   axe-core@4.11.0: {}
 
   axios@0.15.3(supports-color@10.2.2):
@@ -15937,8 +15892,6 @@ snapshots:
 
   humanize-duration@3.33.2: {}
 
-  ibantools@4.5.1: {}
-
   iconv-lite@0.4.24:
     dependencies:
       safer-buffer: 2.1.2
@@ -16675,7 +16628,7 @@ snapshots:
 
   map-cache@0.2.2: {}
 
-  markdown-actions@1.1.2: {}
+  markdown-actions@1.3.0: {}
 
   markdown-it@14.1.0:
     dependencies:
@@ -17332,10 +17285,10 @@ snapshots:
       stdin-discarder: 0.3.2
       string-width: 8.2.0
 
-  overtype@2.4.0:
+  overtype@2.9.0:
     dependencies:
       '@floating-ui/dom': 1.7.6
-      markdown-actions: 1.1.2
+      markdown-actions: 1.3.0
 
   own-keys@1.0.1:
     dependencies:
@@ -18678,8 +18631,6 @@ snapshots:
       once: 1.4.0
       simple-concat: 1.0.1
     optional: true
-
-  singleton-manager@1.8.0: {}
 
   sirv@3.0.2:
     dependencies:

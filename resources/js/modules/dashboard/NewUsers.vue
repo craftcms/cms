@@ -1,28 +1,32 @@
 <script setup lang="ts">
-  import {nextTick, onBeforeUnmount, onMounted, ref} from 'vue';
-  import {useResizeObserver} from '@vueuse/core';
+  import {onBeforeUnmount, onMounted, ref, shallowRef, watch} from 'vue';
   import {actionClient, t} from '@craftcms/ui';
   import {data as chartData} from '@actions/Dashboard/Widgets/NewUsersController';
-  import {Area, DataTable} from '@/modules/chart/chart';
+  import AreaChart from '@/modules/chart/AreaChart.vue';
+  import type {ChartData, ChartScale} from '@/modules/chart/types';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   const props = defineProps<{
     data: {dateRange: string; userGroupId: number | null};
   }>();
 
-  const container = ref<HTMLElement>();
   const error = ref('');
   const loading = ref(true);
-  let chart: Area | undefined;
-  const abort = new AbortController();
+  const chart = shallowRef<{data: ChartData; scale: ChartScale}>();
+  let request: AbortController | undefined;
 
-  useResizeObserver(container, () => chart?.resize());
+  onBeforeUnmount(() => request?.abort());
 
-  onBeforeUnmount(() => {
-    abort.abort();
-    chart?.destroy();
-  });
-
-  onMounted(async () => {
+  /**
+   * Fetches the chart's data and draws it. The dashboard reloads its widgets
+   * when elements are saved, such as new users, so it's fetched again then,
+   * over the chart already shown.
+   */
+  async function load(): Promise<void> {
+    request?.abort();
+    const current = (request = new AbortController());
     const days: Record<string, [number, number]> = {
       d7: [6, 0],
       d30: [30, 0],
@@ -39,36 +43,24 @@
           startDate: Math.floor(Date.now() / 1000) - start * 86400,
           endDate: Math.floor(Date.now() / 1000) - end * 86400,
         },
-        {signal: abort.signal}
+        {signal: current.signal}
       );
 
-      loading.value = false;
-      await nextTick();
-      if (abort.signal.aborted) return;
-
-      chart = new Area(container.value!, {
-        yAxis: {
-          formatter: (chart: any) => (value: number) =>
-            chart.formatLocale.format(
-              Number.isInteger(value) ? ',.0f' : ',.1f'
-            )(value),
-        },
-      });
-      chart.draw(new DataTable(data.dataTable), {
-        orientation: data.orientation,
-        dataScale: data.scale,
-        formats: data.formats,
-      });
+      error.value = '';
+      chart.value = {data: data.dataTable, scale: data.scale};
     } catch {
-      if (!abort.signal.aborted) error.value = t('A server error occurred.');
+      if (!current.signal.aborted) error.value = t('A server error occurred.');
     } finally {
-      loading.value = false;
+      if (!current.signal.aborted) loading.value = false;
     }
-  });
+  }
+
+  onMounted(load);
+  watch(() => props.data, load);
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body">
       <craft-callout v-if="error" variant="danger" role="alert">{{
@@ -77,12 +69,12 @@
       <craft-spinner v-if="loading" visible role="status">{{
         t('Loading…')
       }}</craft-spinner>
-      <div
-        v-show="!loading && !error"
-        ref="container"
-        class="chart"
-        :aria-label="t('New Users')"
-      ></div>
+      <AreaChart
+        v-if="chart && !loading && !error"
+        :data="chart.data"
+        :scale="chart.scale"
+        :label="t('New Users')"
+      />
     </div>
   </craft-card>
 </template>

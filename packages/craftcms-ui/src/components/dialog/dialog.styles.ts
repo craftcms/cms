@@ -109,6 +109,8 @@ export default css`
     align-items: center;
     justify-content: space-between;
     gap: var(--c-spacing-md);
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-header-height);
     padding: var(--c-spacing-md);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
     position: relative;
@@ -139,7 +141,10 @@ export default css`
     justify-content: flex-end;
     align-items: center;
     gap: var(--c-spacing-sm);
-    padding: var(--c-spacing-md);
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-footer-height);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     box-shadow: var(--c-shadow-sm);
     position: relative;

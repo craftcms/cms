@@ -53,7 +53,7 @@
     fullscreen
     close-on-outside-click
     :label="t('Screenshots')"
-    .opened="openIndex !== null"
+    .open="openIndex !== null"
     @craft-hide="openIndex = null"
     @keydown="onKeydown"
   >

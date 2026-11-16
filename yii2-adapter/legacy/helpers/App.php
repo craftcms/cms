@@ -35,7 +35,6 @@ use CraftCms\Cms\Email\Data\EmailSettings;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -43,6 +42,7 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Cache;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use InvalidArgumentException;
 use yii\base\Event;
 use yii\base\Exception;
@@ -758,14 +758,14 @@ class App
     public static function mailerConfig(?MailSettings $settings = null): array
     {
         if ($settings?->template) {
-            Deprecator::log(
+            LegacyUsage::record(
                 'craft\\models\\MailSettings::$template',
                 '`craft\\models\\MailSettings::$template` is deprecated. Set the template via the email settings in Settings → Email instead.',
             );
         }
 
         if ($settings && !empty($settings->siteOverrides)) {
-            Deprecator::log(
+            LegacyUsage::record(
                 'craft\\models\\MailSettings::$siteOverrides',
                 '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Use the email settings in Settings → Email instead.',
             );

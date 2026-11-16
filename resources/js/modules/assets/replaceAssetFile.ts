@@ -1,5 +1,4 @@
 import {t} from '@craftcms/ui';
-import {Uploader} from '@/modules/uploader/uploader';
 import type {UploaderCallbacks} from '@/modules/uploader/base-uploader';
 import {broadcast} from '@/common/craft/broadcast';
 import {showError, showNotice} from '@/modules/messages/messages';
@@ -50,8 +49,17 @@ export function replaceAssetFile(
       settled: () => input.remove(),
     } satisfies UploaderCallbacks,
   });
-  const uploader = new Uploader(input, uploaderSettings);
-
-  uploader.setParams({assetId});
+  // The file picker opens straight away, while the user's click still counts
+  // as activation; Uppy loads behind it rather than with every page.
   input.click();
+  void import('@/modules/uploader/uploader').then(({Uploader}) => {
+    const uploader = new Uploader(input, uploaderSettings);
+
+    uploader.setParams({assetId});
+
+    // A file picked before the uploader was listening.
+    if (input.files?.length) {
+      input.dispatchEvent(new Event('change'));
+    }
+  });
 }

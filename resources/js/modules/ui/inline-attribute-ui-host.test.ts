@@ -68,8 +68,10 @@ it('waits for posting inputs before capturing the baseline and serializes edits'
 
   const input = host.querySelector('craft-input');
   if (!input) throw new Error('Expected the UI text control.');
-  input.modelValue = 'Edited & value=2';
-  input.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+  input.value = 'Edited & value=2';
+  input
+    .querySelector('input, textarea, select')!
+    .dispatchEvent(new Event('input', {bubbles: true}));
   await nextTick();
   await input.updateComplete;
 

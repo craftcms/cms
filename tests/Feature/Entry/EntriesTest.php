@@ -12,11 +12,13 @@ use CraftCms\Cms\Entry\Events\EntryMovingToSection;
 use CraftCms\Cms\Entry\Models\Entry;
 use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Entry\Policies\EntryPolicy;
+use CraftCms\Cms\Field\Date;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
@@ -274,6 +276,15 @@ it('preserves lazily loaded authors across reads and saves', function (string $g
         ->orderBy('sortOrder')->pluck('authorId')->all())->toBe($expectedIds);
 })->with(['getAuthors', 'getAuthor', 'getAuthorIds', 'getAuthorId']);
 
+it('keeps a single entry’s expiry date when saving it', function () {
+    $section = Section::factory()->create(['type' => SectionType::Single]);
+    $entry = Entry::factory()->forSection($section)->createElement();
+    $entry->expiryDate = new DateTime('2030-01-01 00:00:00');
+
+    expect(Elements::saveElement($entry))->toBeTrue()
+        ->and(EntryElement::find()->id($entry->id)->status(null)->one()->expiryDate?->format('Y-m-d'))->toBe('2030-01-01');
+});
+
 it('does not delete missing author rows when saving an entry’s authors for the first time', function () {
     $entryType = EntryType::factory()->create();
     $section = Section::factory()->withEntryTypes($entryType)->create([
@@ -326,4 +337,33 @@ it('deletes existing author rows when an entry’s authors change', function () 
         ->where('entryId', $entry->id)
         ->pluck('authorId')
         ->all())->toBe([$newAuthor->id]);
+});
+
+it('formats dates that title formats print in the site’s locale', function () {
+    Sites::getPrimarySite()->setLanguage('de');
+    $entry = Entry::factory()
+        ->withField('startDate', Date::class, ['showTime' => true])
+        ->withField('day', Date::class, ['showTime' => false])
+        ->createElementWithFields()->element;
+    $entryType = $entry->getType();
+    $entryType->hasTitleField = false;
+    $entryType->titleFormat = '{startDate} | {day} | {postDate} | {startDate|date("Y")}';
+    $entry->postDate = new DateTime('2026-03-04 05:06:00');
+    $entry->setFieldValue('startDate', new DateTime('2026-10-09 10:00:00'));
+    $entry->setFieldValue('day', new DateTime('2027-02-28'));
+
+    expect(Elements::saveElement($entry))->toBeTrue()
+        ->and($entry->title)->toBe('09.10.2026, 10:00 PDT | 28.02.2027 | 04.03.2026, 05:06 | 2026');
+});
+
+it('formats dates that UI label formats print in the current locale', function () {
+    app()->setLocale('de');
+    $entry = Entry::factory()
+        ->withField('startDate', Date::class, ['showTime' => true])
+        ->createElementWithFields()->element;
+    $entry->getType()->uiLabelFormat = '{startDate} | {postDate} | {startDate|date("Y")}';
+    $entry->postDate = new DateTime('2026-03-04 05:06:00');
+    $entry->setFieldValue('startDate', new DateTime('2026-10-09 10:00:00'));
+
+    expect($entry->getUiLabel())->toBe('09.10.2026, 10:00 PDT | 04.03.2026, 05:06 | 2026');
 });

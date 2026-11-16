@@ -1,4 +1,11 @@
-import {computed, type MaybeRefOrGetter, ref, type Ref, toValue} from 'vue';
+import {
+  computed,
+  type ComputedRef,
+  type MaybeRefOrGetter,
+  ref,
+  type Ref,
+  toValue,
+} from 'vue';
 import {isInteractiveClick} from '@/common/utils/dom';
 
 export type SelectableId = string | number;
@@ -66,6 +73,35 @@ function localStore<Id extends SelectableId>(): SelectableStore<Id> {
   };
 }
 
+/** What {@link useSelectable} returns, and what a selectable list accepts. */
+export interface Selectable<Id extends SelectableId = SelectableId> {
+  readonly selectedIds: ComputedRef<readonly Id[]>;
+  readonly hasSelection: ComputedRef<boolean>;
+  /** Everything selectable is selected: a select-all checkbox's checked state. */
+  readonly allSelected: ComputedRef<boolean>;
+  /** Some but not all: a select-all checkbox's indeterminate state. */
+  readonly someSelected: ComputedRef<boolean>;
+  /** The position of the last individually toggled item, which ranges start from. */
+  readonly anchorIndex: Ref<number | null>;
+  readonly enabled: ComputedRef<boolean>;
+  readonly readOnly: ComputedRef<boolean>;
+  isSelected(id: Id): boolean;
+  /** Whether the item itself can be selected, ignoring `readOnly`. */
+  canSelect(id: Id): boolean;
+  /** The item's position in `ids`, or `-1`. */
+  indexOf(id: Id): number;
+  select(id: Id, selected: boolean): void;
+  toggle(id: Id): void;
+  selectRange(id: Id, selected: boolean): void;
+  extendTo(id: Id): void;
+  setChecked(id: Id, checked: boolean, options?: {shiftKey?: boolean}): void;
+  selectAll(selected: boolean): void;
+  toggleAll(checked: boolean): void;
+  clear(): void;
+  prune(available?: readonly Id[]): void;
+  handleClick(id: Id, event: MouseEvent, boundary?: EventTarget | null): void;
+}
+
 /**
  * Anchor-based list selection: click, ctrl/cmd-click, and shift-click ranges,
  * for any ordered list of ids.
@@ -76,7 +112,7 @@ function localStore<Id extends SelectableId>(): SelectableStore<Id> {
  */
 export function useSelectable<Id extends SelectableId = SelectableId>(
   options: SelectableOptions<Id>
-) {
+): Selectable<Id> {
   const store = options.store ?? localStore<Id>();
   const anchorIndex: Ref<number | null> = ref(null);
 
@@ -169,11 +205,9 @@ export function useSelectable<Id extends SelectableId = SelectableId>(
   /**
    * A checkbox reporting its new state.
    *
-   * Two things make this different from {@link select}. Lion's `craft-checkbox`
-   * re-fires `model-value-changed` on programmatic `.checked` updates too, so a
-   * value that already matches is ignored rather than pointlessly moving the
-   * anchor. And modifier keys never reach that event, so `shiftKey` has to be
-   * captured from the native click and handed in for range selection to work.
+   * Unlike {@link select}, a value that already matches is ignored rather than
+   * moving the anchor. Modifier keys never reach a `change` event, so `shiftKey`
+   * has to be captured from the native click and handed in for ranges to work.
    */
   function setChecked(id: Id, checked: boolean, {shiftKey = false} = {}): void {
     if (!canWrite(id)) return;
@@ -189,8 +223,7 @@ export function useSelectable<Id extends SelectableId = SelectableId>(
 
   /**
    * A select-all checkbox reporting a new state. Like {@link setChecked}, a
-   * value that already matches is ignored, so Lion's programmatic re-fires
-   * don't churn the whole list.
+   * value that already matches is ignored.
    */
   function toggleAll(checked: boolean): void {
     if (!canWrite() || checked === allSelected.value) return;
@@ -284,8 +317,3 @@ export function useSelectable<Id extends SelectableId = SelectableId>(
     handleClick,
   };
 }
-
-/** The object {@link useSelectable} returns — what a selectable list accepts. */
-export type Selectable<Id extends SelectableId = SelectableId> = ReturnType<
-  typeof useSelectable<Id>
->;

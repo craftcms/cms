@@ -11,8 +11,8 @@ import type CraftInputCopy from './input-copy.js';
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `input-copy.ts` surfaces it here without touching this file.
  *
- * The template is written out rather than generated: the value is Lion's
- * `modelValue`, a property rather than an attribute, and the label is a slot.
+ * The template is written out rather than generated: the value is the
+ * `value` property rather than an attribute, and the label is a slot.
  */
 const {args, argTypes} =
   getStorybookHelpers<CraftInputCopy>('craft-input-copy');
@@ -24,7 +24,7 @@ const field = (args: Record<string, unknown>) => html`
   <craft-input-copy
     copy-value="${(args['copy-value'] as string) ?? ''}"
     ?disabled="${args.disabled}"
-    .modelValue="${args.value ?? ''}"
+    .value="${args.value ?? ''}"
   >
     <label slot="label">${args['label-slot']}</label>
     ${args['help-text-slot']

@@ -48,8 +48,9 @@ A ported module is a folder of (usually) five files, plus one or two for its `Cr
 `export default class CraftThing extends ControllerElement<Thing>`. Provide:
 
 - `rootSelector` — a CSS selector for the server-rendered child that signals the
-  markup is parsed (boot retries on `requestAnimationFrame` until it resolves, so
-  it survives both initial HTML parse and AJAX/Inertia-injected fragments).
+  markup is parsed (boot waits for it with a `MutationObserver` until it
+  resolves, so it survives both initial HTML parse and AJAX/Inertia-injected
+  fragments).
 - `create(root)` — parse the element's attributes into the settings object and
   return `new Thing(this, settings)`. Attribute parsing replaces the legacy
   `{% js %}` settings blob.

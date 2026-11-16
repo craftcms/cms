@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Yii2Adapter\Console;
 
 use craft\console\controllers\HelpController;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Application;
 
@@ -84,7 +85,7 @@ readonly class LegacyCommandCompatibility
                     description: $command['description'],
                     hidden: true,
                     legacyOptions: $legacyOptions,
-                    deprecationMessage: "Calling `php craft $nameWithSlash` is deprecated use `php craft $artisanName` instead.",
+                    deprecationMessage: "Calling `craft:$nameWithSlash` is deprecated. Use `" . app(TerminalCommands::class)->craft($artisanName) . "` instead.",
                 ));
             });
         }

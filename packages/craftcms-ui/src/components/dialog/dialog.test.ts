@@ -157,14 +157,14 @@ describe('craft-dialog', () => {
 
   it('renders a close button that closes the dialog', async () => {
     const dialog = await createDialog();
-    dialog.opened = true;
+    dialog.open = true;
     await dialog.updateComplete;
-    expect(dialog.opened).toBe(true);
+    expect(dialog.open).toBe(true);
 
     shadow<HTMLButtonElement>(dialog, '.close')!.click();
     await dialog.updateComplete;
 
-    expect(dialog.opened).toBe(false);
+    expect(dialog.open).toBe(false);
   });
 
   it('names the close button "Close"', async () => {
@@ -176,18 +176,18 @@ describe('craft-dialog', () => {
   it('opens when the open attribute is set before connecting', async () => {
     const dialog = await createDialog((d) => d.setAttribute('open', ''));
 
-    expect(dialog.opened).toBe(true);
+    expect(dialog.open).toBe(true);
     expect(shadow<HTMLDialogElement>(dialog, 'dialog')!.open).toBe(true);
   });
 
   it('reflects the opened state back to the open attribute', async () => {
     const dialog = await createDialog();
 
-    dialog.opened = true;
+    dialog.open = true;
     await dialog.updateComplete;
     expect(dialog.hasAttribute('open')).toBe(true);
 
-    dialog.opened = false;
+    dialog.open = false;
     await dialog.updateComplete;
     expect(dialog.hasAttribute('open')).toBe(false);
   });
@@ -220,13 +220,13 @@ describe('craft-dialog', () => {
       button.textContent = 'Close';
       d.append(button);
     });
-    dialog.opened = true;
+    dialog.open = true;
     await dialog.updateComplete;
 
     dialog.querySelector<HTMLButtonElement>('[data-dialog="close"]')!.click();
     await dialog.updateComplete;
 
-    expect(dialog.opened).toBe(false);
+    expect(dialog.open).toBe(false);
   });
 
   describe('page scroll', () => {
@@ -234,11 +234,11 @@ describe('craft-dialog', () => {
       const dialog = await createDialog();
       expect(document.body.classList.contains('no-scroll')).toBe(false);
 
-      dialog.opened = true;
+      dialog.open = true;
       await dialog.updateComplete;
       expect(document.body.classList.contains('no-scroll')).toBe(true);
 
-      dialog.opened = false;
+      dialog.open = false;
       await dialog.updateComplete;
       expect(document.body.classList.contains('no-scroll')).toBe(false);
     });
@@ -247,23 +247,23 @@ describe('craft-dialog', () => {
       // Dialogs stack — a selector modal opened from a slideout.
       const first = await createDialog();
       const second = await createDialog();
-      first.opened = true;
-      second.opened = true;
+      first.open = true;
+      second.open = true;
       await first.updateComplete;
       await second.updateComplete;
 
-      first.opened = false;
+      first.open = false;
       await first.updateComplete;
       expect(document.body.classList.contains('no-scroll')).toBe(true);
 
-      second.opened = false;
+      second.open = false;
       await second.updateComplete;
       expect(document.body.classList.contains('no-scroll')).toBe(false);
     });
 
     it('releases the lock if it is removed while still open', async () => {
       const dialog = await createDialog();
-      dialog.opened = true;
+      dialog.open = true;
       await dialog.updateComplete;
 
       dialog.remove();
@@ -278,9 +278,9 @@ describe('craft-dialog', () => {
     dialog.addEventListener('craft-show', () => events.push('craft-show'));
     dialog.addEventListener('craft-hide', () => events.push('craft-hide'));
 
-    dialog.opened = true;
+    dialog.open = true;
     await dialog.updateComplete;
-    dialog.opened = false;
+    dialog.open = false;
     await dialog.updateComplete;
 
     expect(events).toEqual(['craft-show', 'craft-hide']);
@@ -306,12 +306,12 @@ describe('craft-dialog', () => {
       events.push('craft-after-hide')
     );
 
-    dialog.opened = true;
+    dialog.open = true;
     await dialog.updateComplete;
     await Promise.resolve();
     expect(events).toEqual(['craft-after-show']);
 
-    dialog.opened = false;
+    dialog.open = false;
     await dialog.updateComplete;
     await Promise.resolve();
     expect(events).toEqual(['craft-after-show', 'craft-after-hide']);
@@ -329,7 +329,7 @@ describe('craft-dialog', () => {
       };
       native.showModal = () => calls.push('showModal');
 
-      dialog.opened = true;
+      dialog.open = true;
       await dialog.updateComplete;
 
       expect(calls).toEqual(['show']);
@@ -339,7 +339,7 @@ describe('craft-dialog', () => {
       const dialog = await createDialog((d) => d.setAttribute('non-modal', ''));
       expect(shadow(dialog, '.backdrop')).toBeNull();
 
-      dialog.opened = true;
+      dialog.open = true;
       await dialog.updateComplete;
 
       expect(shadow(dialog, '.backdrop')).not.toBeNull();
@@ -347,7 +347,7 @@ describe('craft-dialog', () => {
 
     it('closes on Escape, which the platform no longer handles', async () => {
       const dialog = await createDialog((d) => d.setAttribute('non-modal', ''));
-      dialog.opened = true;
+      dialog.open = true;
       await dialog.updateComplete;
 
       dialog.dispatchEvent(
@@ -355,33 +355,33 @@ describe('craft-dialog', () => {
       );
       await dialog.updateComplete;
 
-      expect(dialog.opened).toBe(false);
+      expect(dialog.open).toBe(false);
     });
   });
 
   describe('closeOnOutsideClick', () => {
     it('ignores backdrop clicks by default', async () => {
       const dialog = await createDialog();
-      dialog.opened = true;
+      dialog.open = true;
       await dialog.updateComplete;
 
       shadow<HTMLDialogElement>(dialog, 'dialog')!.click();
       await dialog.updateComplete;
 
-      expect(dialog.opened).toBe(true);
+      expect(dialog.open).toBe(true);
     });
 
     it('closes on a backdrop click when enabled', async () => {
       const dialog = await createDialog((d) =>
         d.setAttribute('close-on-outside-click', '')
       );
-      dialog.opened = true;
+      dialog.open = true;
       await dialog.updateComplete;
 
       shadow<HTMLDialogElement>(dialog, 'dialog')!.click();
       await dialog.updateComplete;
 
-      expect(dialog.opened).toBe(false);
+      expect(dialog.open).toBe(false);
     });
   });
 });
@@ -389,7 +389,7 @@ describe('craft-dialog', () => {
 describe('craft-dialog before-hide', () => {
   it('stays open when a listener cancels the dismissal', async () => {
     const dialog = document.createElement('craft-dialog') as CraftDialog;
-    dialog.opened = true;
+    dialog.open = true;
     document.body.append(dialog);
     await dialog.updateComplete;
 
@@ -400,12 +400,12 @@ describe('craft-dialog before-hide', () => {
     dialog.shadowRoot!.querySelector<HTMLButtonElement>('.close')!.click();
     await dialog.updateComplete;
 
-    expect(dialog.opened).toBe(true);
+    expect(dialog.open).toBe(true);
   });
 
   it('closes when nothing objects', async () => {
     const dialog = document.createElement('craft-dialog') as CraftDialog;
-    dialog.opened = true;
+    dialog.open = true;
     document.body.append(dialog);
     await dialog.updateComplete;
 
@@ -418,12 +418,12 @@ describe('craft-dialog before-hide', () => {
     await dialog.updateComplete;
 
     expect(asked).toBe(true);
-    expect(dialog.opened).toBe(false);
+    expect(dialog.open).toBe(false);
   });
 
   it('does not ask when opened is set to false directly', async () => {
     const dialog = document.createElement('craft-dialog') as CraftDialog;
-    dialog.opened = true;
+    dialog.open = true;
     document.body.append(dialog);
     await dialog.updateComplete;
 
@@ -432,7 +432,7 @@ describe('craft-dialog before-hide', () => {
       asked = true;
     });
 
-    dialog.opened = false;
+    dialog.open = false;
     await dialog.updateComplete;
 
     expect(asked).toBe(false);

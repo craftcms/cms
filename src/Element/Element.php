@@ -304,6 +304,8 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
 
     public function __clone()
     {
+        parent::__clone();
+
         // Mark all fields as dirty
         $this->_allDirty = true;
         $this->_hasNewParent = null;
@@ -708,9 +710,14 @@ abstract class Element extends Component implements AllowableInSandbox, ElementI
         }
     }
 
+    /**
+     * Validates the element’s custom field values.
+     *
+     * Revisions are copies of content that was already saved, so their field values aren’t validated.
+     */
     protected function validateCustomFields(): void
     {
-        if (! Cms::isInstalled() || ! ($fieldLayout = $this->getFieldLayout())) {
+        if (! Cms::isInstalled() || $this->getIsRevision() || ! ($fieldLayout = $this->getFieldLayout())) {
             return;
         }
 

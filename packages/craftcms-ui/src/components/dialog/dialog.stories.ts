@@ -41,7 +41,7 @@ function withOpener(
         const dialog = (
           event.currentTarget as HTMLElement
         ).parentElement!.querySelector('craft-dialog') as CraftDialog;
-        dialog.opened = true;
+        dialog.open = true;
       }}
     >
       Open dialog
@@ -131,7 +131,7 @@ export const NonModal: Story = {
  * big to draw.
  */
 export const Fullscreen: Story = {
-  args: {fullscreen: true, opened: true},
+  args: {fullscreen: true, open: true},
   async play({canvasElement}) {
     const dialog = canvasElement.querySelector('craft-dialog') as CraftDialog;
     await dialog.updateComplete;
@@ -172,7 +172,7 @@ export const ClosesOnOutsideClick: Story = {
  * the boundary.
  */
 export const Themed: Story = {
-  args: {label: 'Dark dialog', opened: true},
+  args: {label: 'Dark dialog', open: true},
   render: (args) =>
     template({...args, 'data-theme': 'dark'}, html`${body}${footerClose}`),
   async play({canvasElement}) {

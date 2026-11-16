@@ -13,7 +13,6 @@ use CraftCms\Cms\Element\ElementTypes;
 use CraftCms\Cms\Element\Events\DefineDeletionBlockers;
 use CraftCms\Cms\Element\Events\ElementDeleting;
 use CraftCms\Cms\Element\Jobs\ReplaceRelations;
-use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\ContentBlock;
@@ -157,16 +156,15 @@ describe('destroy', function () {
             ->all();
 
         app()->bind(ElementsService::class, function () use (&$deletedIds) {
-            return new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $deletedIds) extends ElementsService
+            return new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $deletedIds) extends ElementsService
             {
                 public function __construct(
-                    ElementPlaceholders $placeholders,
                     ElementTypes $elementTypes,
                     ElementCaches $elementCaches,
                     Releases $releases,
                     private array &$deletedIds,
                 ) {
-                    parent::__construct($placeholders, $elementTypes, $elementCaches, $releases);
+                    parent::__construct($elementTypes, $elementCaches, $releases);
                 }
 
                 public function deleteElement(ElementInterface $element, bool $hard = false): bool

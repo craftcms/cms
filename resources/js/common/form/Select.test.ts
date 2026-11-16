@@ -32,12 +32,12 @@ describe('Select', () => {
     await nextTick();
 
     const control = root.querySelector('craft-select') as HTMLElement & {
-      modelValue: string;
+      value: string;
     };
-    control.modelValue = '';
-    control.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    control.value = '';
+    control
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
 
     options.value = [
       {label: 'Title', value: 'title'},
@@ -72,14 +72,14 @@ describe('Select', () => {
     await nextTick();
 
     const control = root.querySelector('craft-select') as HTMLElement & {
-      modelValue: string;
+      value: string;
     };
     const native = root.querySelector('select')!;
     native.value = 'nl';
-    control.modelValue = 'nl';
-    control.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    control.value = 'nl';
+    control
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     await new Promise((resolve) => setTimeout(resolve, 0));
 

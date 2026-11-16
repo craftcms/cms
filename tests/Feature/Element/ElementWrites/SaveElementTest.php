@@ -20,6 +20,7 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Date;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
@@ -498,6 +499,27 @@ it('stores generated field values after save', function () {
 
     expect($this->writes->saveElement($latest, updateSearchIndex: false))->toBeTrue()
         ->and(count(Event::getListeners(ElementLifecyclePropagated::class)))->toBe($listeners + 1);
+});
+
+it('formats dates that generated fields print in the site’s locale', function () {
+    Sites::getPrimarySite()->setLanguage('de');
+    $entry = EntryModel::factory()
+        ->withField('startDate', Date::class, ['showTime' => true])
+        ->withField('day', Date::class, ['showTime' => false])
+        ->withField('endDate', Date::class)
+        ->createElementWithFields()->element;
+    $entry->getFieldLayout()->setGeneratedFields([[
+        'uid' => 'generated',
+        'handle' => 'dates',
+        'template' => '{startDate} | {day} | {postDate} | {startDate|date("Y")} | [{endDate}]',
+    ]]);
+    $entry->postDate = new DateTime('2026-03-04 05:06:00');
+    $entry->setFieldValue('startDate', new DateTime('2026-10-09 10:00:00'));
+    $entry->setFieldValue('day', new DateTime('2027-02-28'));
+
+    expect($this->writes->saveElement($entry, updateSearchIndex: false))->toBeTrue()
+        ->and($entry->getGeneratedFieldValues()['dates'])
+        ->toBe('09.10.2026, 10:00 PDT | 28.02.2027 | 04.03.2026, 05:06 | 2026 | []');
 });
 
 it('completes nested generated values across localized saves, duplicates, and merges', function () {

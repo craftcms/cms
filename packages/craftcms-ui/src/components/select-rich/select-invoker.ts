@@ -1,100 +1,56 @@
-import {LionSelectInvoker} from '@lion/ui/select-rich.js';
-import {html, type PropertyValues} from 'lit';
+import {html, LitElement} from 'lit';
+import {property} from 'lit/decorators.js';
 import styles from './select-invoker.styles.js';
 import '../icon/icon.js';
 
 /**
- * @summary The invoker (trigger button) for {@link CraftSelectRich}. Extends
- * Lion's select invoker to append a `chevron-down` indicator, which is hidden
- * when the select has only a single option (and therefore can't be changed).
+ * @summary The field of a {@link CraftSelectRich}: it shows the selected
+ * option and opens the listbox. The select renders its `_selectedTemplate()`
+ * into it and wires up its semantics. It's in the select's light DOM so it
+ * can point at the options by id, and has a shadow root of its own to lay
+ * out the selection and its chevron, which the select's styles can't reach.
  *
- * The selected option's `badge` content is appended to the value, and stays
- * whole while a long value is cut short.
- *
- * Not globally registered — it is wired in as the `lion-select-invoker` scoped
- * element of `CraftSelectRich` rather than used directly.
+ * @slot - What the select shows for the selected option.
+ * @slot badge - Appended to the value, and stays whole while a long value is
+ * cut short.
  *
  * @since 1.0
  */
-export default class CraftSelectInvoker extends LionSelectInvoker {
-  static override get styles() {
-    return [...super.styles, styles];
-  }
+export default class CraftSelectInvoker extends LitElement {
+  static override styles = styles;
+
+  /** Whether there is only one option, so there is nothing to open. */
+  @property({type: Boolean, attribute: 'single-option', reflect: true})
+  singleOption = false;
+
+  /** Whether the select is disabled. */
+  @property({type: Boolean, reflect: true}) disabled = false;
 
   /**
-   * Copies of the selected option's `badge` content. They're slotted from the
-   * light DOM rather than rendered in the shadow root, so the page's styles —
-   * a badge's colors among them — reach them as they do the option's.
+   * Draws the field like a plain button: no border or fill until it's
+   * hovered, no chevron, and only as wide as it is tall.
    */
-  #badgeNodes: Node[] = [];
+  @property({type: Boolean, reflect: true}) plain = false;
 
-  /** Picks up badge content that changes while its option stays selected. */
-  #selectedObserver = new MutationObserver(() => this.#syncBadge());
-
-  override connectedCallback() {
-    super.connectedCallback();
-    // reconnected after a move, such as a table row reordered, with the same option selected
-    this.#observeSelected();
-  }
-
-  override disconnectedCallback() {
-    super.disconnectedCallback();
-    this.#selectedObserver.disconnect();
-  }
-
-  override updated(changed: PropertyValues) {
-    super.updated(changed);
-
-    if (changed.has('selectedElement')) {
-      this.#observeSelected();
-      this.#syncBadge();
-    }
-  }
-
-  /** Watches the selected option's content, its badge's text included. */
-  #observeSelected(): void {
-    this.#selectedObserver.disconnect();
-
-    if (this.selectedElement) {
-      this.#selectedObserver.observe(this.selectedElement, {
-        childList: true,
-        subtree: true,
-        characterData: true,
-      });
-    }
-  }
-
-  override _contentTemplate() {
-    const value = this.selectedElement?.childNodes.length
-      ? Array.from(this.selectedElement.childNodes)
-          .filter((node) => !isBadge(node))
-          .map((node) => node.cloneNode(true))
-      : super._contentTemplate();
-
-    return html`<span class="value">${value}</span><slot name="badge"></slot>`;
-  }
-
-  override _afterTemplate() {
-    return html`${!this.singleOption
-      ? html`<craft-icon class="indicator" name="chevron-down"></craft-icon>`
-      : ''}`;
-  }
-
-  #syncBadge(): void {
-    for (const node of this.#badgeNodes) {
-      node.parentNode?.removeChild(node);
-    }
-
-    this.#badgeNodes = this.selectedElement
-      ? Array.from(this.selectedElement.childNodes)
-          .filter(isBadge)
-          .map((node) => node.cloneNode(true))
-      : [];
-
-    this.append(...this.#badgeNodes);
+  override render() {
+    return html`<div id="content-wrapper">
+        <span class="value"><slot></slot></span><slot name="badge"></slot>
+      </div>
+      ${this.singleOption || this.plain
+        ? ''
+        : html`<craft-icon
+            class="indicator"
+            name="chevron-down"
+          ></craft-icon>`}`;
   }
 }
 
-function isBadge(node: Node): boolean {
-  return node instanceof Element && node.getAttribute('slot') === 'badge';
+if (!customElements.get('craft-select-invoker')) {
+  customElements.define('craft-select-invoker', CraftSelectInvoker);
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'craft-select-invoker': CraftSelectInvoker;
+  }
 }

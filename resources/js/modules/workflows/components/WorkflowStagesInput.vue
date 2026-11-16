@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
+  import {uuid} from '@/common/craft/strings';
   import {t} from '@craftcms/ui';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
@@ -28,7 +29,7 @@
   const addStageActions = computed<ActionItems>(() =>
     props.stageTypes.map((stageType) => ({
       label: stageType.label,
-      icon: 'plus',
+      icon: stageType.icon ?? 'plus',
       onClick: () => addStage(stageType.type),
     }))
   );
@@ -59,7 +60,7 @@
     emit('update:modelValue', [
       ...props.modelValue,
       {
-        uid: crypto.randomUUID(),
+        uid: uuid(),
         name: '',
         type: stageType.type,
         settings: {...stageType.settings},

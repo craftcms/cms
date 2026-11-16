@@ -72,7 +72,7 @@ it('adopts server-rendered items, posting checked values in display order', asyn
   const element = document.querySelector('craft-checkbox-select')!;
   await settle(element);
 
-  expect(element.modelValue).toEqual(['postDate', 'author']);
+  expect(element.value).toEqual(['postDate', 'author']);
   expect(element.options.map((option) => option.label)).toEqual([
     'Post Date',
     'Title',
@@ -94,7 +94,7 @@ it('posts an empty value while nothing is checked', async () => {
 
 it('changes its options at runtime, keeping what is checked', async () => {
   const {element} = await create({name: 'columns'});
-  element.modelValue = ['author'];
+  element.value = ['author'];
 
   element.options = [
     {value: 'postDate', label: 'Published'},
@@ -116,7 +116,7 @@ it('changes its options at runtime, keeping what is checked', async () => {
     'postDate',
     'slug',
   ]);
-  expect(element.modelValue).toEqual(['postDate', 'slug']);
+  expect(element.value).toEqual(['postDate', 'slug']);
   expect(shadow(element).querySelectorAll('.row').length).toBe(2);
 });
 
@@ -130,7 +130,7 @@ it('picks up items added to its markup directly', async () => {
   await settle(element);
 
   expect(shadow(element).querySelectorAll('.row')).toHaveLength(4);
-  expect(element.modelValue).toEqual(['slug']);
+  expect(element.value).toEqual(['slug']);
 });
 
 it('posts only the “All” value while “All” is checked in single-value mode', async () => {
@@ -146,41 +146,41 @@ it('posts only the “All” value while “All” is checked in single-value mo
   expect(element.options.every((option) => option.checked)).toBe(true);
   expect(posted(form, 'sources')).toEqual(['']);
   expect(posted(form, 'sources[]')).toEqual(['*']);
-  expect(element.modelValue).toEqual(['*']);
+  expect(element.value).toEqual(['*']);
 
   await userEvent.click(input(element, 'author'));
   await settle(element);
 
   expect(all.checked).toBe(false);
   expect(posted(form, 'sources[]')).toEqual(['title', 'postDate']);
-  expect(element.modelValue).toEqual(['title', 'postDate']);
+  expect(element.value).toEqual(['title', 'postDate']);
 });
 
 it('takes the “All” value as its model value before its first render', async () => {
   const element = document.createElement('craft-checkbox-select');
   element.setAttribute('all-label', 'All');
   element.options = options;
-  element.modelValue = ['*'];
+  element.value = ['*'];
   document.body.append(element);
   await settle(element);
 
   expect(element.querySelector<HTMLInputElement>('.all input')!.checked).toBe(
     true
   );
-  expect(element.modelValue).toEqual(['*']);
+  expect(element.value).toEqual(['*']);
 });
 
 it('keeps “All” in single-value mode while its options load, then checks them', async () => {
   const {element} = await create({'all-label': 'All'}, []);
-  element.modelValue = ['*'];
+  element.value = ['*'];
   await settle(element);
 
-  expect(element.modelValue).toEqual(['*']);
+  expect(element.value).toEqual(['*']);
 
   element.options = options;
   await settle(element);
 
-  expect(element.modelValue).toEqual(['*']);
+  expect(element.value).toEqual(['*']);
   expect(element.options.every((option) => option.checked)).toBe(true);
 });
 
@@ -202,13 +202,13 @@ it('checks every option from “All” in each-value mode, posting their values'
   await settle(element);
 
   expect(posted(form, 'caches[]')).toEqual(['title', 'author', 'postDate']);
-  expect(element.modelValue).toEqual(['title', 'author', 'postDate']);
+  expect(element.value).toEqual(['title', 'author', 'postDate']);
   expect(allCheckbox.indeterminate).toBe(false);
 });
 
 it('moves options with their reorder buttons, posting the new order', async () => {
   const {element, form} = await create({name: 'columns', sortable: true});
-  element.modelValue = ['title', 'author'];
+  element.value = ['title', 'author'];
   const onOrder = vi.fn();
   element.addEventListener('craft-order-change', onOrder);
   await settle(element);
@@ -230,6 +230,32 @@ it('moves options with their reorder buttons, posting the new order', async () =
   expect(shadow(element).querySelector('[role="status"]')!.textContent).toBe(
     'Moved Title to position 2'
   );
+});
+
+it('notifies listeners outside the shadow root it is in when an option is moved or removed', async () => {
+  const host = document.createElement('div');
+  document.body.append(host);
+  const element = document.createElement('craft-checkbox-select');
+  element.setAttribute('name', 'columns');
+  element.setAttribute('presentation', 'add-menu');
+  element.toggleAttribute('sortable', true);
+  host.attachShadow({mode: 'open'}).append(element);
+  element.options = options.map((option) => ({...option, checked: true}));
+  await settle(element);
+  const seen: string[] = [];
+  document.body.addEventListener('change', () =>
+    seen.push(element.value.join())
+  );
+
+  shadow(element)
+    .querySelector('craft-reorder-button')!
+    .dispatchEvent(
+      new CustomEvent('craft-reorder', {detail: {direction: 'down'}})
+    );
+  await settle(element);
+  shadow(element).querySelector<HTMLElement>('.remove')!.click();
+
+  expect(seen).toEqual(['author,title,postDate', 'title,postDate']);
 });
 
 it('keeps “All” alongside sortable options', async () => {
@@ -283,7 +309,7 @@ it('lists only checked options in add-menu, offering the rest to add', async () 
     name: 'columns',
     presentation: 'add-menu',
   });
-  element.modelValue = ['author'];
+  element.value = ['author'];
   await settle(element);
 
   expect(shadow(element).querySelectorAll('.row')).toHaveLength(1);
@@ -333,7 +359,7 @@ it('removes an option in add-menu, moving focus to the next one', async () => {
     name: 'columns',
     presentation: 'add-menu',
   });
-  element.modelValue = ['title', 'author'];
+  element.value = ['title', 'author'];
   await settle(element);
 
   const [first] = shadow(element).querySelectorAll<HTMLElement>('.remove');
@@ -352,7 +378,7 @@ it('removes an option in add-menu, moving focus to the next one', async () => {
 
 it('moves focus to the new option once nothing is left to add', async () => {
   const {element} = await create({presentation: 'add-menu'});
-  element.modelValue = ['title', 'author'];
+  element.value = ['title', 'author'];
   await settle(element);
 
   const menu = shadow(element).querySelector('craft-action-menu')!;
@@ -365,7 +391,7 @@ it('moves focus to the new option once nothing is left to add', async () => {
 
 it('keeps the last option added with Enter, with focus on its Remove button', async () => {
   const {element} = await create({presentation: 'add-menu'});
-  element.modelValue = ['title', 'author'];
+  element.value = ['title', 'author'];
   await settle(element);
   const menu = shadow(element).querySelector('craft-action-menu')!;
   menu.querySelector<HTMLElement>('[slot="invoker"]')!.focus();
@@ -386,11 +412,11 @@ it('keeps the last option added with Enter, with focus on its Remove button', as
 
 it('drops the “Add item” menu once everything is checked, and when disabled', async () => {
   const {element} = await create({presentation: 'add-menu'});
-  element.modelValue = ['title', 'author', 'postDate'];
+  element.value = ['title', 'author', 'postDate'];
   await settle(element);
   expect(shadow(element).querySelector('craft-action-menu')).toBeNull();
 
-  element.modelValue = ['title'];
+  element.value = ['title'];
   element.disabled = true;
   await settle(element);
   expect(shadow(element).querySelector('craft-action-menu')).toBeNull();
@@ -407,10 +433,10 @@ it('keeps disabled options checked and in place', async () => {
     {value: 'title', label: 'Title', checked: true, disabled: true},
     ...options.slice(1),
   ]);
-  element.modelValue = ['author', 'postDate'];
+  element.value = ['author', 'postDate'];
   await settle(element);
 
-  expect(element.modelValue).toEqual(['title', 'author', 'postDate']);
+  expect(element.value).toEqual(['title', 'author', 'postDate']);
 
   const rows = shadow(element).querySelectorAll('.row');
   expect(rows[0]!.querySelector('.remove')).toBeNull();
@@ -423,12 +449,12 @@ it('keeps disabled options checked and in place', async () => {
     );
   await settle(element);
 
-  expect(element.modelValue).toEqual(['title', 'author', 'postDate']);
+  expect(element.value).toEqual(['title', 'author', 'postDate']);
 });
 
 it('follows a renamed option in its label and its Remove button', async () => {
   const {element} = await create({presentation: 'add-menu'});
-  element.modelValue = ['postDate'];
+  element.value = ['postDate'];
   await settle(element);
 
   element.updateOption('postDate', {label: 'Published'});
@@ -470,14 +496,13 @@ it('keeps focus on an option’s reorder button after moving it', async () => {
   );
 });
 
-it('fires model-value-changed for its own value, not its checkboxes’', async () => {
+it('has its new value by the time a change reaches it', async () => {
   const {element} = await create();
-  const onValue = vi.fn((event: Event) => event.target);
-  element.addEventListener('model-value-changed', onValue);
+  const seen: string[][] = [];
+  element.addEventListener('change', () => seen.push(element.value));
 
   await userEvent.click(input(element, 'author'));
   await settle(element);
 
-  expect(onValue.mock.results.map((result) => result.value)).toEqual([element]);
-  expect(element.modelValue).toEqual(['author']);
+  expect(seen).toEqual([['author']]);
 });

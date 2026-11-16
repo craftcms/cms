@@ -156,6 +156,11 @@ class Text extends Control implements ReadableValueControl, WritableValueControl
         return $this;
     }
 
+    /**
+     * Sets the input’s `autocomplete` attribute, which is `off` unless set.
+     *
+     * Pass `true` for `on`, or a token such as `name` or `email` when the input collects the current user’s own data.
+     */
     public function autocomplete(bool|string $autocomplete): static
     {
         $this->autocomplete = $autocomplete;

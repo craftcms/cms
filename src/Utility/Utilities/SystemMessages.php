@@ -41,6 +41,12 @@ class SystemMessages extends Utility
     }
 
     #[Override]
+    public static function contentMaxWidth(): bool
+    {
+        return true;
+    }
+
+    #[Override]
     public static function contentHtml(): string
     {
         Edition::require(Edition::Pro);

@@ -13,7 +13,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementTypes;
-use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -170,6 +169,7 @@ it('marks exact matches and sorts excluded results last', function () {
 
     expect(collect($response->json('elements'))->pluck('id')->all())
         ->toBe([$exactIncluded->id, $partialMatch->id, $exactExcluded->id])
+        ->and($response->json('elements.0.label'))->toBe('Alpha')
         ->and($response->json('elements.0.exclude'))->toBeFalse()
         ->and($response->json('elements.1.exclude'))->toBeFalse()
         ->and($response->json('elements.2.exclude'))->toBeTrue()
@@ -305,7 +305,7 @@ it('passes the reference element context into element conditions', function () {
         }
     };
 
-    $elements = new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $referenceEntry) extends Elements
+    $elements = new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $referenceEntry) extends Elements
     {
         public ?int $requestedElementId = null;
 
@@ -314,13 +314,12 @@ it('passes the reference element context into element conditions', function () {
         public array $requestedCriteria = [];
 
         public function __construct(
-            ElementPlaceholders $placeholders,
             ElementTypes $elementTypes,
             ElementCaches $elementCaches,
             Releases $releases,
             private readonly Entry $referenceEntry,
         ) {
-            parent::__construct($placeholders, $elementTypes, $elementCaches, $releases);
+            parent::__construct($elementTypes, $elementCaches, $releases);
         }
 
         public function getElementById(

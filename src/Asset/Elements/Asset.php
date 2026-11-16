@@ -196,8 +196,6 @@ class Asset extends Element
     /** How many times the color grid is scaled up for {@see getPlaceholderDataUrl()}. */
     private const int PLACEHOLDER_SCALE = 3;
 
-    private static string $_displayName;
-
     /**
      * @var bool Whether this asset represents a folder.
      *
@@ -473,9 +471,7 @@ class Asset extends Element
     #[Override]
     public static function displayName(): string
     {
-        return self::$_displayName ??= self::isFolderIndex()
-            ? t('Folder')
-            : t('Asset');
+        return self::isFolderIndex() ? t('Folder') : t('Asset');
     }
 
     #[Override]
@@ -2169,19 +2165,28 @@ class Asset extends Element
     }
 
     #[AllowedInSandbox]
-    public function transform(
+    public function transform(#[\SensitiveParameter] mixed $definition): AssetTransformResult
+    {
+        return app(AssetTransformers::class)->transform($this, $definition);
+    }
+
+    /**
+     * Transforms the asset for the deprecated transform arguments of its URL, dimension, and image methods.
+     */
+    protected function _runTransform(
         #[\SensitiveParameter] mixed $definition,
-        ?string $transformer = null,
     ): AssetTransformResult {
-        return app(AssetTransformers::class)->transform($this, $definition, $transformer);
+        return $this->transform($definition);
     }
 
     protected function _tryTransform(
         #[\SensitiveParameter] mixed $definition,
     ): ?AssetTransformResult {
         try {
-            return $this->transform($definition);
-        } catch (AssetTransformException|NotSupportedException|FilesystemException $exception) {
+            return $this->_runTransform($definition);
+        } catch (NotSupportedException) {
+            return null;
+        } catch (AssetTransformException|FilesystemException $exception) {
             report($exception);
 
             return null;
@@ -2248,7 +2253,15 @@ class Asset extends Element
     private function _url(mixed $transform = null): ?string
     {
         if ($transform !== null) {
-            return $this->_tryTransform($transform)?->url;
+            try {
+                return $this->_runTransform($transform)->url;
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own URL, like Craft 5.
+            } catch (AssetTransformException|FilesystemException $exception) {
+                report($exception);
+
+                return null;
+            }
         }
 
         if (! $this->folderId) {
@@ -2439,7 +2452,11 @@ class Asset extends Element
     public function getMimeType(mixed $transform = null): ?string
     {
         if ($transform !== null) {
-            return $this->transform($transform)->mimeType;
+            try {
+                return $this->transform($transform)->mimeType;
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own value.
+            }
         }
 
         return $this->_mimeType ?? File::getMimeTypeByExtension($this->_filename);
@@ -2465,7 +2482,11 @@ class Asset extends Element
     public function getFormat(mixed $transform = null): string
     {
         if ($transform !== null) {
-            return File::getExtensionByMimeType($this->transform($transform)->mimeType);
+            try {
+                return File::getExtensionByMimeType($this->transform($transform)->mimeType);
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own value.
+            }
         }
 
         return $this->getExtension();
@@ -2480,10 +2501,14 @@ class Asset extends Element
     public function getHeight(mixed $transform = null): ?int
     {
         if ($transform !== null) {
-            return $this->transform($transform)->height;
+            try {
+                return $this->transform($transform)->height;
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own value.
+            }
         }
 
-        return $this->_dimensions($transform)[1];
+        return $this->_dimensions()[1];
     }
 
     /**
@@ -2505,10 +2530,14 @@ class Asset extends Element
     public function getWidth(array|string|ImageTransform|null $transform = null): ?int
     {
         if ($transform !== null) {
-            return $this->transform($transform)->width;
+            try {
+                return $this->transform($transform)->width;
+            } catch (NotSupportedException) {
+                // The transformer can’t transform this file, so return its own value.
+            }
         }
 
-        return $this->_dimensions($transform)[0];
+        return $this->_dimensions()[0];
     }
 
     /**

@@ -11,12 +11,19 @@
   import {useResizeObserver} from '@vueuse/core';
   import WidgetSettings from './WidgetSettings.vue';
   import type {DashboardWidget} from './types';
+  import {provideWidgetColor} from './useWidgetColor';
 
   const props = defineProps<{widget: DashboardWidget; ready: boolean}>();
+
+  // The component rendering the widget, and its settings face below, color
+  // their cards with it.
+  provideWidgetColor(() => props.widget.color);
   const emit = defineEmits<{
     saved: [widget: DashboardWidget | false];
     cancel: [];
     resize: [];
+    /** Its settings opened or closed. A reload waits for them to close. */
+    settings: [open: boolean];
   }>();
 
   const settings = ref(props.widget.id < 0);
@@ -42,7 +49,10 @@
     );
   });
 
+  watch(settings, (open) => emit('settings', open), {immediate: true});
+
   onBeforeUnmount(() => {
+    emit('settings', false);
     window.dispatchEvent(
       new CustomEvent('craft:widget-unmounting', {
         detail: {element: container.value!},
@@ -132,8 +142,8 @@
               class="widget-settings-button"
               type="button"
               icon="gear"
-              size="small"
               variant="plain"
+              flush="inline-end block"
               :aria-label="t('Widget settings')"
               :aria-describedby="
                 widget.title ? `widget-heading-${widget.id}` : undefined
@@ -150,17 +160,19 @@
       @before-leave="(element) => element.setAttribute('inert', '')"
     >
       <div v-if="settings" class="settings-face">
-        <craft-card data-color="gray">
-          <h2 slot="label" class="text-sm">
-            {{ t('{type} Settings', {type: widget.name}) }}
-          </h2>
+        <craft-card :data-color="widget.color ?? undefined">
+          <div slot="label" class="widget-heading">
+            <h2 class="text-sm">
+              {{ t('{type} Settings', {type: widget.name}) }}
+            </h2>
+          </div>
           <craft-button
             v-if="widget.settingsUi"
             slot="actions"
             type="button"
             icon="xmark-large"
-            size="small"
             variant="plain"
+            flush="inline-end block"
             :aria-label="t('Cancel')"
             .disabled="settingsSending"
             @click="closeSettings"

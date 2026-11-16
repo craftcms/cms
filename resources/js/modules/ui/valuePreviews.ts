@@ -9,7 +9,6 @@ import '@craftcms/ui/components/icon/icon';
 import '@craftcms/ui/components/indicator/indicator';
 import {t} from '@craftcms/ui/utilities/translate';
 import {iconSvg} from '@/common/craft/icon-svg';
-import {highlightCodeBlocks} from '@/common/utils/highlight-code';
 import {
   chipRow,
   renderChips,
@@ -236,7 +235,7 @@ const link: UiValuePreview = ({html, text}) => {
  * card's edge.
  */
 function code(language: string, {wrap = false} = {}): UiValuePreview {
-  return ({text}) => {
+  return async ({text}) => {
     if (!text.trim()) {
       return null;
     }
@@ -250,6 +249,8 @@ function code(language: string, {wrap = false} = {}): UiValuePreview {
       .slice(0, CODE_PREVIEW_LINES)
       .join('\n');
     preview.append(element);
+    // The highlighter's languages load with the first code value copied.
+    const {highlightCodeBlocks} = await import('@/common/utils/highlight-code');
     highlightCodeBlocks(preview);
 
     const pane = copiedTextPane(preview);

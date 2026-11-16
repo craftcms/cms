@@ -3,6 +3,9 @@
   import {t} from '@craftcms/ui';
   import CpLink from '@/common/components/CpLink.vue';
   import type {DashboardWidget} from './types';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   const props = defineProps<{widget: DashboardWidget}>();
 
@@ -18,7 +21,7 @@
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body">
       <ul v-if="entries.length" class="space-y-3" role="list">

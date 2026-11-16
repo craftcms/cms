@@ -131,7 +131,8 @@ saved model's payload).
 
 The base slideout stores plain elements: `container`, `outerContainer` and
 `shade` (the shade shared with every other open panel — don't remove it).
-On CP screens the `$`-prefixed members are jQuery collections and are public
+`$container` wraps `container` in jQuery when jQuery is loaded, for legacy code
+that reads it. On CP screens the `$`-prefixed members are jQuery collections and are public
 API — external code reads them directly: `$container`, `$header`, `$toolbar`, `$content`, `$sidebar`, `$footer`,
 `$saveBtn`, etc. The same goes for the jQuery data entries the submit flow
 maintains: `data('initialSerializedValue')`, `data('delta-names')`,

@@ -5,11 +5,3 @@ export interface SelectCellOption {
   hint?: string | null;
   disabled?: boolean;
 }
-
-/**
- * Lion form controls announce their starting value too. Only a change the person
- * made should reach a cell's `change` listeners.
- */
-export function isInitialization(event: Event): boolean {
-  return event instanceof CustomEvent && Boolean(event.detail?.initialize);
-}

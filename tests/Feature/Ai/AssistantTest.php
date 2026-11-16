@@ -220,7 +220,7 @@ it('shows the elements the user can view as chips, which only the chat gets, lea
 
     foreach ([$streamed, $reloaded] as $shown) {
         expect($shown['elements'])->toHaveCount(1)
-            ->and($shown['elements'][0])->toMatchArray(['id' => $entry->id, 'label' => 'Lighthouses', 'cpEditUrl' => $entry->getCpEditUrl()])
+            ->and($shown['elements'][0])->toMatchArray(['elementType' => Entry::class, 'id' => $entry->id, 'label' => 'Lighthouses', 'cpEditUrl' => $entry->getCpEditUrl()])
             ->and($shown['elements'][0]['actions'])->not->toBeEmpty();
     }
 
@@ -257,6 +257,7 @@ it('shows up to three elements as cards and more as a list of chips, unless the 
     $result = Json::decode($tool->forDisplay($tool->handle(new ToolRequest(array_filter(['elements' => $elements, 'view' => $view])))));
 
     expect($result['view'])->toBe($shown)
+        ->and($result['thumbSize'])->toBe($shown === 'cards' ? null : 'sm')
         ->and($result['elements'][0])->toHaveKey($shown === 'cards' ? 'cardHeaderHtml' : 'status')
         ->and($result['elements'][0])->not->toHaveKey($shown === 'cards' ? 'status' : 'cardHeaderHtml');
 })->with([
@@ -286,6 +287,7 @@ it('gives the model a tool’s structured content, or describes the content it c
 ]);
 
 it('searches craftcms.com’s docs without asking for approval, offering its tools from the cache on later turns', function () {
+    cache()->forget('craftcms-mcp-tools');
     Http::fake(['craftcms.com/mcp' => static function (HttpRequest $request) {
         $message = $request->data();
 
@@ -317,6 +319,7 @@ it('searches craftcms.com’s docs without asking for approval, offering its too
 });
 
 it('goes without craftcms.com’s tools while craftcms.com can’t be reached', function () {
+    cache()->forget('craftcms-mcp-tools');
     Http::fake(['craftcms.com/mcp' => Http::failedConnection()]);
 
     expect(array_filter(array_keys(offeredTools()), static fn (string $name): bool => str_starts_with($name, 'craftcms_')))->toBe([]);

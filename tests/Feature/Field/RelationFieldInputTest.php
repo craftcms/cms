@@ -2,11 +2,33 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Conditions\AssetCondition;
+use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
+use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
+use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Assets;
+use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Users;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Ui\Nodes\Field as UiField;
+use CraftCms\Cms\Ui\Ui;
+use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
+use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Symfony\Component\DomCrawler\Crawler;
 
 use function Pest\Laravel\actingAs;
@@ -63,3 +85,154 @@ it('passes the asset upload and folder settings to the asset selector', function
         'indexSettings' => ['showFolders' => false],
     ]);
 });
+
+it('limits an Assets field control to its restricted location and selection settings', function () {
+    $restrictedVolume = Volume::factory()->create();
+    VolumeFolder::factory()->create(['volumeId' => $restrictedVolume->id, 'path' => '']);
+    Volume::factory()->create();
+    $field = new Assets([
+        'handle' => 'files',
+        'restrictLocation' => true,
+        'restrictedLocationSource' => "volume:$restrictedVolume->uid",
+        'allowSubfolders' => false,
+        'selectionCondition' => [
+            'class' => AssetCondition::class,
+            'elementType' => Asset::class,
+            'conditionRules' => [['class' => FileTypeConditionRule::class, 'operator' => 'in', 'values' => ['image']]],
+        ],
+    ]);
+
+    $entry = EntryModel::factory()->createElement();
+
+    $props = $field->uiControl(new FieldContext('files', element: $entry))->props();
+
+    expect($props['sources'])->toBe(["volume:$restrictedVolume->uid"])
+        ->and($props['referenceElement'])->toBe([
+            'referenceElementId' => $entry->id,
+            'referenceElementOwnerId' => null,
+            'referenceElementSiteId' => $entry->siteId,
+        ])
+        ->and($props['criteria'])->toBe(['uploaderId' => null])
+        ->and($props['selectionCondition']['conditionRules']['rules'][0])->toMatchArray([
+            'class' => FileTypeConditionRule::class,
+            'values' => ['image'],
+        ])
+        ->and($props['showFolders'])->toBeFalse();
+
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([UiField::make('Files', $field->uiControl(new FieldContext('files', element: $entry)))]),
+        new UiContext(namespace: 'fields'),
+    );
+    $html = app(UiHtmlRenderer::class)->render($payload);
+    $settings = Json::decode(new Crawler($html)->filter('craft-asset-select-input')->attr('settings'));
+
+    expect($settings['modalSettings']['indexSettings']['showFolders'])->toBeFalse()
+        ->and($settings['referenceElementId'])->toBe($entry->id);
+});
+
+it('opens an Assets field control’s selector in its upload folder', function () {
+    $volume = Volume::factory()->create();
+    $root = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
+    $uploads = VolumeFolder::factory()->create([
+        'volumeId' => $volume->id,
+        'parentId' => $root->id,
+        'name' => 'uploads',
+        'path' => 'uploads/',
+    ]);
+    $field = new Assets([
+        'handle' => 'files',
+        'restrictLocation' => true,
+        'restrictedLocationSource' => "volume:$volume->uid",
+        'allowSubfolders' => true,
+        'restrictedDefaultUploadSubpath' => 'uploads',
+    ]);
+    $context = new FieldContext('files', element: EntryModel::factory()->createElement());
+
+    $props = $field->uiControl($context)->props();
+
+    expect($props['defaultSource'])->toBe("volume:$volume->uid")
+        ->and(array_column($props['defaultSourcePath'], 'folderId'))->toBe([$root->id, $uploads->id]);
+
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([UiField::make('Files', $field->uiControl($context))]),
+        new UiContext(namespace: 'fields'),
+    );
+    $html = app(UiHtmlRenderer::class)->render($payload);
+    $settings = Json::decode(new Crawler($html)->filter('craft-asset-select-input')->attr('settings'));
+
+    expect($settings['modalSettings']['defaultSource'])->toBe("volume:$volume->uid")
+        ->and(Arr::last($settings['modalSettings']['defaultSourcePath'])['folderId'])->toBe($uploads->id);
+});
+
+it('searches an Entries field’s one section, and creates entries in it unless its condition asks for more than viewable ones', function (bool $viewable, bool $canCreate) {
+    $section = Section::factory()->create();
+    Sections::refreshSections();
+    $entry = EntryModel::factory()->createElement();
+    $field = new Entries([
+        'handle' => 'related',
+        'sources' => ["section:$section->uid"],
+        'selectionCondition' => [
+            'class' => EntryCondition::class,
+            'elementType' => Entry::class,
+            'conditionRules' => [['class' => ViewableConditionRule::class, 'value' => $viewable]],
+        ],
+    ]);
+
+    $payload = app(UiResolver::class)->resolve(
+        Ui::make([UiField::make('Related', $field->uiControl(new FieldContext('related', element: $entry)))]),
+        new UiContext(namespace: 'fields'),
+    );
+    $props = $payload->nodes[0]->control->props;
+
+    expect($props['search']['criteria'])->toMatchArray(['sectionId' => $section->id])
+        ->and($props['search']['siteId'])->toBe($entry->siteId)
+        ->and($props['createSection'])->toBe($canCreate ? $section->handle : null)
+        ->and($props['disabledElementIds'])->toBe([$entry->id]);
+})->with([
+    'viewable' => [true, true],
+    'not viewable' => [false, false],
+]);
+
+it('only offers to create entries in the target site when the user can edit it', function (bool $canEditTargetSite) {
+    $section = Section::factory()->create();
+    $otherSite = Site::factory()->create();
+    Sites::refreshSites();
+    SectionSiteSettings::factory()->create(['sectionId' => $section->id, 'siteId' => $otherSite->id]);
+    Sections::refreshSections();
+    $entry = EntryModel::factory()->createElement();
+    $editableSite = $canEditTargetSite ? Sites::getSiteById($entry->siteId) : $otherSite;
+    actingAs(UserModel::factory()->withPermissions([
+        'accessCp',
+        "editSite:$editableSite->uid",
+        "viewEntries:$section->uid",
+        "createEntries:$section->uid",
+    ])->createElement(['admin' => false]));
+    $field = new Entries(['handle' => 'related', 'sources' => ["section:$section->uid"]]);
+
+    $props = $field->uiControl(new FieldContext('related', element: $entry))->props();
+
+    expect($props['createSection'])->toBe($canEditTargetSite ? $section->handle : null);
+})->with([
+    'editable' => [true],
+    'not editable' => [false],
+]);
+
+it('searches an Assets field’s volume, and its subfolders when the field allows them, with the field’s selection criteria', function (array $config, bool $includeSubfolders) {
+    $volume = Volume::factory()->create();
+    $root = VolumeFolder::factory()->create(['volumeId' => $volume->id, 'path' => '']);
+    $field = new Assets([
+        'handle' => 'files',
+        'sources' => ["volume:$volume->uid"],
+        'restrictedLocationSource' => "volume:$volume->uid",
+        ...$config,
+    ]);
+
+    $props = $field->uiControl(new FieldContext('files', element: EntryModel::factory()->createElement()))->props();
+
+    expect($props['search']['criteria'])->toMatchArray(['folderId' => $root->id])
+        ->and($props['search']['criteria']['includeSubfolders'] ?? false)->toBe($includeSubfolders);
+})->with([
+    'unrestricted' => [[], true],
+    'restricted with subfolders' => [['restrictLocation' => true, 'allowSubfolders' => true], true],
+    'restricted without subfolders' => [['restrictLocation' => true, 'allowSubfolders' => false], false],
+]);

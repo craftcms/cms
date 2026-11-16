@@ -9,7 +9,6 @@
   import '@craftcms/ui/components/checkbox/checkbox';
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
-  import {ignoreModelValueInitialization} from '@/modules/ui/runtime';
   import CpContainer from '@/common/components/CpContainer.vue';
   import MappingTable from './MappingTable.vue';
   import {checkedValue, getAt, isChecked, keepFlagPath, setAt} from './paths';
@@ -51,13 +50,13 @@
     isChecked(getAt(values.keepMissingNestedElements, keepPath.value))
   );
 
-  const onKeepMissingChanged = ignoreModelValueInitialization((event) => {
+  function onKeepMissingChanged(event: Event): void {
     setAt(
       values.keepMissingNestedElements,
       keepPath.value,
       checkedValue(event)
     );
-  });
+  }
 </script>
 
 <template>
@@ -71,7 +70,7 @@
         "
         .checked="keepMissingChecked"
         .disabled="!context.editable"
-        @model-value-changed="onKeepMissingChanged"
+        @change="onKeepMissingChanged"
       ></craft-checkbox>
     </CpContainer>
   </craft-field-group>

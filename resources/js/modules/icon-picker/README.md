@@ -32,8 +32,10 @@ icon set handles), `disabled`, `label`, `error`,
 `labelled-by`, `described-by`. The component owns its label (matching the modern
 entry-types page), so field surfaces pass `label`; label-less table cells pass
 `labelled-by`. The component renders its own `craft-input` with `hidden-input` +
-`name`, so the selected value posts with the form. Model changes re-emit as a
-bubbling `change` CustomEvent.
+`name`, so the selected value posts with the form. The bridge passes `value`
+as the initial `modelValue` only, so the component keeps its own model. Each
+pick or removal bubbles out as that input's `input` and `change`, once the
+input has the new value.
 
 ## Wiring & consumers
 

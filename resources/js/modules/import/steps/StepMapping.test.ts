@@ -40,35 +40,6 @@ vi.mock('./step-mapping', () => ({
   takeStepMappingContext: () => state.context,
 }));
 
-// The real elements are Lion's, whose options register before their invokers exist
-// under happy-dom, so bare elements stand in for them.
-vi.mock('@craftcms/ui/components/select-rich/select-rich', async () => {
-  const {LitElement} = await import('lit');
-  class CraftSelectRich extends LitElement {
-    static override styles = [];
-    modelValue: unknown = '';
-  }
-  if (!customElements.get('craft-select-rich')) {
-    customElements.define('craft-select-rich', CraftSelectRich);
-  }
-
-  return {default: CraftSelectRich};
-});
-
-vi.mock('@craftcms/ui/components/combobox/combobox', async () => {
-  const {LitElement} = await import('lit');
-  class CraftCombobox extends LitElement {
-    static override styles = [];
-    modelValue: unknown = '';
-    options: unknown[] = [];
-  }
-  if (!customElements.get('craft-combobox')) {
-    customElements.define('craft-combobox', CraftCombobox);
-  }
-
-  return {default: CraftCombobox};
-});
-
 // The real element binds to its input once it's rendered, which happy-dom can't resolve, and
 // it fails when a search removes its row before then, so a bare element stands in for it.
 vi.mock('@craftcms/ui/components/text-expander/text-expander', async () => {
@@ -92,33 +63,6 @@ vi.mock('@craftcms/ui/components/button-group/button-group', async () => {
   }
 
   return {default: CraftButtonGroup};
-});
-
-// Lion's radio group reads its value from radios that don't register under happy-dom, so a bare
-// element that holds the value stands in for it.
-vi.mock('@craftcms/ui/components/radio-group/radio-group', async () => {
-  const {LitElement} = await import('lit');
-  class CraftRadioGroup extends LitElement {
-    modelValue: unknown = '';
-  }
-  if (!customElements.get('craft-radio-group')) {
-    customElements.define('craft-radio-group', CraftRadioGroup);
-  }
-
-  return {default: CraftRadioGroup};
-});
-
-// The same goes for the checkbox group and its checkboxes.
-vi.mock('@craftcms/ui/components/checkbox-group/checkbox-group', async () => {
-  const {LitElement} = await import('lit');
-  class CraftCheckboxGroup extends LitElement {
-    modelValue: unknown = [];
-  }
-  if (!customElements.get('craft-checkbox-group')) {
-    customElements.define('craft-checkbox-group', CraftCheckboxGroup);
-  }
-
-  return {default: CraftCheckboxGroup};
 });
 
 function col(
@@ -226,21 +170,19 @@ async function applyAsync(): Promise<MappingValues | null> {
   return applied;
 }
 
-function templateInput(): HTMLElement & {modelValue?: string} {
+function templateInput(): HTMLElement & {value?: string} {
   return cell('preview').querySelector(
     'craft-input'
   ) as unknown as HTMLElement & {
-    modelValue?: string;
+    value?: string;
   };
 }
 
 function typeTemplate(value: string): void {
   const host = templateInput();
-  host.modelValue = value;
+  host.value = value;
 
-  host.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
-  );
+  host.dispatchEvent(new Event('input', {bubbles: true}));
 }
 
 function apply(): MappingValues {
@@ -279,21 +221,19 @@ function chooseMode(mode: string): void {
 }
 
 /** The When empty popover's choices, in the row's pill. */
-function emptyValueSelect(): (HTMLElement & {modelValue?: string}) | null {
+function emptyValueSelect(): (HTMLElement & {value?: string}) | null {
   return cell('whenEmpty').querySelector('craft-radio-group');
 }
 
 function chooseEmptyValueMode(mode: string): void {
   const host = emptyValueSelect()!;
-  host.modelValue = mode;
+  host.value = mode;
 
-  host.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
-  );
+  host.dispatchEvent(new Event('change', {bubbles: true}));
 }
 
 type SourceCombobox = HTMLElement & {
-  modelValue?: string;
+  value?: string;
   options: Array<{value: string; data?: {hint?: string} | null}>;
 };
 
@@ -306,7 +246,7 @@ function sourceSelect(): SourceCombobox {
 /** Chooses a source column as a person does, which commits it with `change`. */
 function chooseSource(value: string): void {
   const host = sourceSelect();
-  host.modelValue = value;
+  host.value = value;
 
   host.dispatchEvent(new Event('change', {bubbles: true}));
 }
@@ -381,7 +321,7 @@ it('only lets a mapped row be matched on or given a When empty rule', async () =
   await nextTick();
 
   expect(matchBox()).not.toBeNull();
-  expect(emptyValueSelect()!.modelValue).toBe('skip');
+  expect(emptyValueSelect()!.value).toBe('skip');
 });
 
 it('drops a row’s match criterion and When empty rule when it’s unmapped', async () => {
@@ -470,7 +410,7 @@ it('only offers erasing to a column that can be cleared', async () => {
 
   const options = (group: Element) =>
     [...group.querySelectorAll('craft-radio')].map(
-      (radio) => (radio as HTMLElement & {choiceValue?: string}).choiceValue
+      (radio) => (radio as HTMLElement & {value?: string}).value
     );
   const [titleSelect, bodySelect] = container.querySelectorAll(
     '.mapping-table__cell--whenEmpty craft-radio-group'
@@ -509,7 +449,7 @@ it('enters a multi-choice default as its options, kept as a JSON list', async ()
   await nextTick();
 
   const group = cell('whenEmpty').querySelector<
-    HTMLElement & {modelValue?: string[]}
+    HTMLElement & {value?: string[]}
   >('craft-checkbox-group')!;
   expect(
     [...group.querySelectorAll('craft-checkbox')].map((box) =>
@@ -517,10 +457,8 @@ it('enters a multi-choice default as its options, kept as a JSON list', async ()
     )
   ).toEqual(['News', 'Craft']);
 
-  group.modelValue = ['news', 'craft'];
-  group.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
-  );
+  group.value = ['news', 'craft'];
+  group.dispatchEvent(new Event('change', {bubbles: true}));
   await nextTick();
 
   expect(apply().defaultValues).toEqual({tags: '["news","craft"]'});
@@ -554,9 +492,9 @@ it('shows a saved multi-choice default, which the server sends back as a list', 
     cell('whenEmpty').querySelector('.setting-popover__summary')!.textContent
   ).toContain('Default · News, Craft');
   expect(
-    cell('whenEmpty').querySelector<HTMLElement & {modelValue?: string[]}>(
+    cell('whenEmpty').querySelector<HTMLElement & {value?: string[]}>(
       'craft-checkbox-group'
-    )!.modelValue
+    )!.value
   ).toEqual(['news', 'craft']);
 });
 
@@ -667,13 +605,11 @@ it('sets a default in the When empty popover, with a pill that sums the rule up,
   chooseEmptyValueMode('default');
   await nextTick();
 
-  const input = cell('whenEmpty').querySelector<
-    HTMLElement & {modelValue?: string}
-  >('.setting-popover__body craft-input')!;
-  input.modelValue = 'Untitled';
-  input.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
-  );
+  const input = cell('whenEmpty').querySelector<HTMLElement & {value?: string}>(
+    '.setting-popover__body craft-input'
+  )!;
+  input.value = 'Untitled';
+  input.dispatchEvent(new Event('input', {bubbles: true}));
   await nextTick();
 
   expect(apply().defaultValues).toEqual({title: 'Untitled'});
@@ -695,13 +631,11 @@ function rowLabels(): string[] {
 }
 
 function searchFields(term: string): void {
-  const input = container.querySelector<HTMLElement & {modelValue?: string}>(
+  const input = container.querySelector<HTMLElement & {value?: string}>(
     'craft-input-search'
   )!;
-  input.modelValue = term;
-  input.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
-  );
+  input.value = term;
+  input.dispatchEvent(new Event('input', {bubbles: true}));
 }
 
 it('searches the fields by name or handle', async () => {
@@ -758,9 +692,7 @@ function matchBox(): (HTMLElement & {checked?: boolean}) | null {
 function tickMatch(checked: boolean): void {
   const box = matchBox()!;
   box.checked = checked;
-  box.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
-  );
+  box.dispatchEvent(new Event('change', {bubbles: true}));
 }
 
 it('heads a Match column after Preview, empty until a row is mapped, then ticked to match rows on it', async () => {
@@ -878,16 +810,14 @@ it('offers a mapped column’s import settings and keeps them on their own tree'
   chooseSource('name');
   await nextTick();
 
-  const select = cell('incoming').querySelector<
-    HTMLElement & {modelValue?: string}
-  >('craft-select')!;
+  const select = cell('incoming').querySelector<HTMLElement & {value?: string}>(
+    'craft-select'
+  )!;
 
-  expect(select.modelValue).toBe('useExisting');
+  expect(select.value).toBe('useExisting');
 
-  select.modelValue = 'replace';
-  select.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true, detail: {}})
-  );
+  select.value = 'replace';
+  select.dispatchEvent(new Event('change', {bubbles: true}));
 
   expect(apply().fieldSettings).toEqual({photos: {fileConflict: 'replace'}});
 });
@@ -1031,7 +961,7 @@ function suggestedOptions(): string[] {
 it('marks the suggested source column’s option, and goes on marking it once another is chosen', async () => {
   mount([title], {...emptyValues(), map: {title: 'name'}}, {title: true});
 
-  expect(sourceSelect().modelValue).toBe('name');
+  expect(sourceSelect().value).toBe('name');
   expect(suggestedOptions()).toEqual(['name']);
   // the column's sample stays in the hint after it
   expect(
@@ -1057,7 +987,7 @@ it('keeps a freshly guessed column selected and marked once the select renders',
 
   mount([title], values, suggestedMap);
 
-  expect(sourceSelect().modelValue).toBe('name');
+  expect(sourceSelect().value).toBe('name');
   expect(suggestedOptions()).toEqual(['name']);
   expect(apply().map).toEqual({title: 'name'});
 });

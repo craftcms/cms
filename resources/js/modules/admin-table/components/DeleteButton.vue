@@ -6,7 +6,7 @@
   } from '@inertiajs/core';
   import {router} from '@inertiajs/vue3';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {onMounted, ref, useId, useTemplateRef} from 'vue';
+  import {useId} from 'vue';
 
   defineOptions({inheritAttrs: false});
 
@@ -33,15 +33,6 @@
     {disabled: false, label: t('Delete item'), icon: 'xmark-large'}
   );
   const tooltipId = useId();
-  const button =
-    useTemplateRef<HTMLElementTagNameMap['craft-button']>('button');
-  const buttonReady = ref(false);
-
-  onMounted(async () => {
-    await button.value?.updateComplete;
-    // Lion clears an initial aria-disabled attribute on its first update.
-    buttonReady.value = true;
-  });
 
   function handleClick(): void {
     if (props.disabled || props.disabledReason) {
@@ -69,12 +60,9 @@
 <template>
   <span class="inline-flex" :id="tooltipId">
     <craft-button
-      ref="button"
       type="button"
       @click="handleClick"
-      :aria-disabled="
-        buttonReady && (disabled || disabledReason) ? 'true' : undefined
-      "
+      :aria-disabled="disabled || disabledReason ? 'true' : undefined"
       :aria-description="disabledReason || undefined"
       size="small"
       variant="danger-plain"

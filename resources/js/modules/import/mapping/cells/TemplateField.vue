@@ -9,7 +9,6 @@
   import '@craftcms/ui/components/text-expander/text-expander';
   import {t} from '@craftcms/ui';
   import {computed, useId} from 'vue';
-  import {isInitialization} from '@/common/table/cells/types';
   import {getAt, setAt} from '../paths';
   import {useMappingContext, type MappingColumn} from '../types';
 
@@ -34,11 +33,7 @@
   );
 
   function onChange(event: Event): void {
-    if (isInitialization(event)) {
-      return;
-    }
-
-    const next = (event.currentTarget as {modelValue?: unknown}).modelValue;
+    const next = (event.currentTarget as {value?: unknown}).value;
 
     setAt(
       context.values.templates,
@@ -61,11 +56,11 @@
     <craft-input
       slot="input"
       monospace
-      .modelValue="value"
+      .value="value"
       required
       :disabled="!context.editable"
       :aria-invalid="errors.length ? 'true' : undefined"
-      @model-value-changed="onChange"
+      @input="onChange"
     >
       <input
         :id="inputId"

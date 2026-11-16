@@ -133,21 +133,18 @@
             :label="t('Site')"
             label-sr-only
             .disabled="processing"
-            @model-value-changed="
-              (event: CustomEvent) => {
-                if (event.detail.isTriggeredByUser) {
-                  emit(
-                    'site-change',
-                    (event.target as unknown as {modelValue: string}).modelValue
-                  );
-                }
-              }
+            @change="
+              (event: Event) =>
+                emit(
+                  'site-change',
+                  (event.currentTarget as unknown as {value: string}).value
+                )
             "
           >
             <template #option="{option}">
-              <!-- The menu button shows a copy of this option in its own shadow
-                root, out of reach of utility classes, so the layout is inline
-                and the icon's name is an attribute the copy keeps. -->
+              <!-- The field shows a copy of this option, out of reach of
+                utility classes, so the layout is inline and the icon's name
+                is an attribute the copy keeps. -->
               <span
                 style="
                   display: inline-flex;
@@ -169,13 +166,7 @@
           :label="t('Status')"
           label-sr-only
           .disabled="processing"
-          @model-value-changed="
-            (event: CustomEvent) => {
-              if (event.detail.isTriggeredByUser) {
-                emit('submit');
-              }
-            }
-          "
+          @change="emit('submit')"
         >
           <template #option="{option}">
             <span

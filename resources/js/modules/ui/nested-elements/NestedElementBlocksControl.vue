@@ -123,7 +123,7 @@
    * Rebuilds the field whenever the block list changes.
    *
    * Heavy-handed, and deliberately so: a block can hold a control that
-   * relocates its own light DOM — a Lion overlay behind an action menu, say —
+   * restructures its own light DOM — an action menu, say —
    * and patching the list around one of those throws `insertBefore` on null,
    * which takes the whole ui down. Tearing the field down and building it
    * again is the way past that until those controls can survive a patch.
@@ -138,7 +138,11 @@
       props.editable,
     ])
   );
-  const {setRevealing} = useScrollHold(key, matrixHost);
+  const {setRevealing} = useScrollHold(
+    key,
+    matrixHost,
+    () => props.value.sortOrder
+  );
   const {highlightBlock, isHighlighted} = useBlockHighlight();
 
   const {
@@ -417,7 +421,7 @@
         single-column
         tag="div"
         item-tag="div"
-        list-class="grid gap-md"
+        list-class="grid"
         :item-attrs="blockAttrs"
         :card-attrs="blockCardAttrs"
         @reorder="move"
@@ -508,7 +512,11 @@
           </div>
         </template>
       </SelectableCardList>
-      <div v-if="canAdd" class="mt-md">
+      <div
+        v-if="canAdd"
+        class="mt-md"
+        :class="{'matrix-add--after-blocks': value.sortOrder.length}"
+      >
         <NestedElementsCreateButton
           :choices="createChoices"
           :label="control.props.addLabel"
@@ -547,11 +555,33 @@
     border-color: var(--c-color-danger-border-loud);
   }
 
+  /* Between `md` and `lg`: block header bars make `md` look tighter than it
+     is. The add buttons get the same space under the last block. */
+  [data-matrix-blocks] {
+    gap: calc(var(--c-spacing) * 3);
+  }
+
+  .matrix-add--after-blocks {
+    margin-block-start: calc(var(--c-spacing) * 3);
+  }
+
+  /* Room under the last field, which otherwise sits tight against the
+     card's bottom edge. */
+  [data-matrix-block-fields] {
+    padding-block-end: var(--c-spacing-md);
+  }
+
+  /* Pulls the tabs up over the card body's top padding, which this mirrors
+     (`cqi` is the card's here). */
   .matrix-block-fields--tabbed {
     margin-block-start: calc(
       var(
           --c-card-padding-block,
-          var(--cp-container-padding, var(--c-spacing-lg))
+          clamp(
+            var(--c-spacing-lg),
+            2cqi + var(--c-spacing-md),
+            calc(var(--c-spacing) * 6)
+          )
         ) *
         -1
     );

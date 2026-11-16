@@ -12,6 +12,7 @@ use CraftCms\Cms\Asset\Policies\AssetPolicy;
 use CraftCms\Cms\Asset\Policies\VolumeFolderPolicy;
 use CraftCms\Cms\Auth\PersonalAccessTokens\PersonalAccessTokens;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
@@ -187,6 +188,8 @@ class AuthServiceProvider extends ServiceProvider
             app(AuthMethods::class)->setRememberedUsername($user);
 
             Session::put(Cms::config()->getPasswordConfirmationKey(), now()->unix());
+
+            Theme::rememberPreference($user);
         });
 
         Event::listen(Failed::class, function (Failed $event) {
@@ -210,12 +213,15 @@ class AuthServiceProvider extends ServiceProvider
 
             app(Impersonation::class)->setImpersonatorId(null);
             Cms::forgetTimezone();
+
+            if ($event->user instanceof CraftUser) {
+                Theme::rememberPreference($event->user->asElement());
+            }
         });
     }
 
     private function registerElementPolicies(): void
     {
-        Gate::policy(Element::class, ElementPolicy::class);
         Gate::policy(Address::class, AddressPolicy::class);
         Gate::policy(Asset::class, AssetPolicy::class);
         Gate::policy(VolumeFolder::class, VolumeFolderPolicy::class);
@@ -224,5 +230,8 @@ class AuthServiceProvider extends ServiceProvider
         Gate::policy(Structure::class, StructurePolicy::class);
         Gate::policy(Release::class, ReleasePolicy::class);
         Gate::policy(UserElement::class, UserPolicy::class);
+
+        // Laravel uses the first registered parent class's policy for subclasses, so this must come last.
+        Gate::policy(Element::class, ElementPolicy::class);
     }
 }

@@ -2,7 +2,6 @@
   /** The field type's own per-field choices, such as what to do with a conflicting file. */
   import '@craftcms/ui/components/info-icon/info-icon';
   import '@craftcms/ui/components/select/select';
-  import {isInitialization} from '@/common/table/cells/types';
   import {getAt, setAt} from '../paths';
   import {
     useMappingContext,
@@ -30,11 +29,7 @@
   }
 
   function onChange(setting: FieldMappingSetting, event: Event): void {
-    if (isInitialization(event)) {
-      return;
-    }
-
-    const value = (event.currentTarget as {modelValue?: unknown}).modelValue;
+    const value = (event.currentTarget as {value?: unknown}).value;
 
     setAt(
       context.values.fieldSettings,
@@ -49,9 +44,9 @@
     <craft-select
       v-for="setting in settings"
       :key="setting.name"
-      .modelValue="valueOf(setting)"
+      .value="valueOf(setting)"
       .disabled="!context.editable"
-      @model-value-changed="onChange(setting, $event)"
+      @change="onChange(setting, $event)"
     >
       <!-- A span, not a label: the info icon is a button, which a label would also activate. -->
       <span slot="label">

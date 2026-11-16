@@ -1,8 +1,15 @@
-import {LionSelectRich} from '@lion/ui/select-rich.js';
-import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {beforeEach, describe, expect, it} from 'vite-plus/test';
 
-import './select-rich.js';
-import type CraftSelectRich from './select-rich.js';
+import {html} from 'lit';
+import CraftSelectRich from './select-rich.js';
+import type CraftOption from '../option/option.js';
+
+class TestSelectRich extends CraftSelectRich {
+  protected override _selectedTemplate(option: CraftOption | undefined) {
+    return html`<b>${option?.value ?? 'none'}</b>`;
+  }
+}
+customElements.define('test-select-rich', TestSelectRich);
 
 async function createSelectRich(
   attrs: Record<string, string> = {}
@@ -23,75 +30,106 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-/**
- * Slotted `craft-option`s are not exercised here: registering one runs Lion's
- * listbox wiring, which needs layout happy-dom does not provide and throws
- * before the option lands. The options, the keyboard navigation, and the
- * selection are covered by the Storybook stories, which run in a real browser.
- */
 describe('craft-select-rich', () => {
-  it('upgrades and renders its field chrome', async () => {
-    const element = await createSelectRich();
-
-    expect(element.shadowRoot).toBeTruthy();
-    expect(element.querySelector('label[slot="label"]')).toBeTruthy();
-  });
-
   it('leaves keyboard shortcuts out of type-ahead', async () => {
     const element = await createSelectRich();
-    const typeAhead = vi
-      // @ts-expect-error Lion marks the method protected.
-      .spyOn(LionSelectRich.prototype, '_handleTypeAhead')
-      .mockImplementation(() => {});
+    element.insertAdjacentHTML(
+      'beforeend',
+      '<craft-option value="apple">Apple</craft-option>' +
+        '<craft-option value="strawberry">Strawberry</craft-option>'
+    );
+    await new Promise((resolve) => setTimeout(resolve));
+    const invoker = element.querySelector('craft-select-invoker')!;
+    const press = (init: KeyboardEventInit) =>
+      invoker.dispatchEvent(
+        new KeyboardEvent('keydown', {bubbles: true, ...init})
+      );
 
     // ⌘S while the select has focus must not jump to an "S" option.
-    element._handleTypeAhead(
-      new KeyboardEvent('keydown', {key: 's', metaKey: true}),
-      {
-        setAsChecked: true,
-      }
+    press({key: 's', metaKey: true});
+    press({key: 's', ctrlKey: true});
+    expect(element.value).toBe('apple');
+
+    press({key: 's'});
+    expect(element.value).toBe('strawberry');
+  });
+
+  it('lets a subclass choose what the field shows for the selection', async () => {
+    const element = document.createElement('test-select-rich');
+    element.innerHTML =
+      '<craft-option value="apple">Apple</craft-option>' +
+      '<craft-option value="pear" selected>Pear</craft-option>';
+    document.body.append(element);
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(element.querySelector('craft-select-invoker')?.textContent).toBe(
+      'pear'
     );
-    element._handleTypeAhead(
-      new KeyboardEvent('keydown', {key: 's', ctrlKey: true}),
-      {
-        setAsChecked: true,
-      }
-    );
-    expect(typeAhead).not.toHaveBeenCalled();
-
-    element._handleTypeAhead(new KeyboardEvent('keydown', {key: 's'}), {
-      setAsChecked: true,
-    });
-    expect(typeAhead).toHaveBeenCalledOnce();
-
-    typeAhead.mockRestore();
-  });
-
-  it('takes a name for posting', async () => {
-    const element = await createSelectRich({name: 'fruit'});
-
-    expect(element.name).toBe('fruit');
-  });
-
-  it('reflects small so the stylesheet can act on it', async () => {
-    const element = await createSelectRich({small: ''});
-
-    expect(element.hasAttribute('small')).toBe(true);
-  });
-
-  /**
-   * The component registers its own elements into the shadow root rather than
-   * relying on globally defined tags, which is how a rich option renders.
-   */
-  it('scopes the elements it renders', async () => {
-    const scoped = (
-      CraftSelectRichConstructor as unknown as {
-        scopedElements: Record<string, unknown>;
-      }
-    ).scopedElements;
-
-    expect(Object.keys(scoped).length).toBeGreaterThan(0);
   });
 });
 
-const CraftSelectRichConstructor = customElements.get('craft-select-rich')!;
+describe('craft-select-rich badge', () => {
+  const tick = () => new Promise((resolve) => setTimeout(resolve));
+
+  async function createBadged(): Promise<CraftSelectRich> {
+    const element = await createSelectRich();
+    element.insertAdjacentHTML(
+      'beforeend',
+      '<craft-option value="username">username<span slot="badge" class="badge">Suggested</span></craft-option>' +
+        '<craft-option value="email">email</craft-option>'
+    );
+    await tick();
+    return element;
+  }
+
+  const badges = (element: CraftSelectRich) =>
+    [...element.querySelectorAll('craft-select-invoker > [slot="badge"]')].map(
+      (badge) => badge.textContent
+    );
+
+  it('appends the selected option’s badge to its value', async () => {
+    const element = await createBadged();
+    const invoker = element.querySelector('craft-select-invoker')!;
+    const wrapper = invoker.shadowRoot!.querySelector('#content-wrapper')!;
+
+    expect(wrapper.querySelector('.value + slot[name="badge"]')).toBeTruthy();
+    // slotted from the light DOM, so the page's styles reach it
+    expect(invoker.querySelector(':scope > [slot="badge"].badge')).toBeTruthy();
+    expect(badges(element)).toEqual(['Suggested']);
+  });
+
+  it('replaces the badge as the selection changes, and as the selected option’s changes', async () => {
+    const element = await createBadged();
+
+    element.value = 'email';
+    await tick();
+
+    expect(badges(element)).toEqual([]);
+
+    element
+      .querySelector('craft-option[value="email"]')!
+      .insertAdjacentHTML('beforeend', '<span slot="badge">Suggested</span>');
+    await tick();
+
+    expect(badges(element)).toEqual(['Suggested']);
+  });
+
+  it('follows the selected option’s badge after being moved, and as its text changes', async () => {
+    const element = await createBadged();
+    const option = element.querySelector('craft-option[value="username"]')!;
+    const elsewhere = document.createElement('div');
+    document.body.append(elsewhere);
+
+    // a keyed reorder moves the select with the same option still selected
+    elsewhere.append(element);
+    option.insertAdjacentHTML('beforeend', '<span slot="badge">New</span>');
+    await tick();
+
+    expect(badges(element)).toEqual(['Suggested', 'New']);
+
+    option.querySelector('[slot="badge"]')!.firstChild!.textContent = 'Picked';
+    await tick();
+
+    expect(badges(element)[0]).toBe('Picked');
+  });
+});

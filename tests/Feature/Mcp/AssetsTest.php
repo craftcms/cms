@@ -22,13 +22,17 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Filesystem\Uploads;
+use CraftCms\Cms\Mcp\AssetUploads;
 use CraftCms\Cms\Mcp\Capabilities\Assets;
 use CraftCms\Cms\Mcp\StdioTransport;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\Support\McpRequest;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\UrlValidator\UrlValidator;
+use Illuminate\Contracts\Auth\Factory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
@@ -75,7 +79,7 @@ it('creates an asset from a completed upload session once', function () {
 
     app(Uploads::class)->transfer($request, $upload['id']);
 
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $created = McpRequest::send($this, 'tools/call', [
@@ -91,7 +95,7 @@ it('creates an asset from a completed upload session once', function () {
 });
 
 it('accepts client file references through MCP and stores the downloaded bytes', function (array $reference, ?string $filename): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     Http::fake(['https://files.example.test/*' => Http::response('Downloaded content')]);
@@ -162,7 +166,7 @@ it('sets and clears an image’s focal point through elements_update', function 
         file: ['download_url' => 'https://files.example.test/download', 'file_id' => 'file_image', 'file_name' => 'image.png'],
         volumeId: $this->folder->volumeId,
     )['asset']['id'];
-    config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
+    config()->set('passport.public_key', openssl_pkey_get_details(passportKey())['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
     $update = fn (mixed $focalPoint) => McpRequest::send($this, 'tools/call', [
         'name' => 'elements_update',
@@ -199,7 +203,7 @@ it('sets an asset’s uploader through elements_update', function (bool $peer, b
         volumeId: $this->folder->volumeId,
     )['asset']['id'];
     $other = User::factory()->create();
-    config()->set('passport.public_key', openssl_pkey_get_details(openssl_pkey_new(['private_key_bits' => 2048]))['key']);
+    config()->set('passport.public_key', openssl_pkey_get_details(passportKey())['key']);
     Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
     $update = fn (mixed $uploaderId) => McpRequest::send($this, 'tools/call', [
         'name' => 'elements_update',
@@ -361,8 +365,8 @@ it('creates assets from local project files through the stdio server', function 
     $directory = base_path('mcp-upload-test');
     File::ensureDirectoryExists($directory);
     File::put("$directory/local.txt", 'Local content');
-    $input = fopen('php://memory', 'r+');
-    fwrite($input, implode('', array_map(static fn (array $message): string => json_encode($message).PHP_EOL, [
+    $input = tmpfile();
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
         ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25',
             'capabilities' => (object) [],
@@ -376,7 +380,7 @@ it('creates assets from local project files through the stdio server', function 
     ])));
     rewind($input);
     $outputPath = tempnam(sys_get_temp_dir(), 'mcp-stdio');
-    app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen($outputPath, 'w')));
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen($outputPath, 'w')));
 
     try {
         $this->artisan('craft:mcp:serve', ['--user' => User::query()->firstOrFail()->username])->assertSuccessful();
@@ -385,7 +389,7 @@ it('creates assets from local project files through the stdio server', function 
     }
 
     $response = collect(file($outputPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
-        ->map(static fn (string $line): array => json_decode($line, true))
+        ->map(static fn (string $line): array => Json::decode($line))
         ->firstWhere('id', 'create');
     unlink($outputPath);
     $asset = Asset::findOne($response['result']['structuredContent']['asset']['id'] ?? null);
@@ -393,6 +397,100 @@ it('creates assets from local project files through the stdio server', function 
     expect($response['result']['isError'] ?? null)->toBeFalse()
         ->and($asset->getFilename())->toBe('local.txt')
         ->and(Storage::disk('upload-destination')->get($asset->getPath()))->toBe('Local content');
+});
+
+it('prepares uploads over stdio that clients transfer with the upload’s own credential', function (): void {
+    $serve = function (string $tool, array $arguments): array {
+        $input = tmpfile();
+        fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
+            ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+                'protocolVersion' => '2025-11-25',
+                'capabilities' => (object) [],
+                'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+            ]],
+            ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+            ['jsonrpc' => '2.0', 'id' => 'call', 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]],
+        ])));
+        rewind($input);
+        $outputPath = tempnam(sys_get_temp_dir(), 'mcp-stdio');
+        app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen($outputPath, 'w')));
+        $this->artisan('craft:mcp:serve', ['--user' => User::query()->firstOrFail()->username])->assertSuccessful();
+        $response = collect(file($outputPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
+            ->map(static fn (string $line): array => Json::decode($line))
+            ->firstWhere('id', 'call');
+        unlink($outputPath);
+
+        return $response['result'];
+    };
+
+    $upload = $serve('assets_upload_prepare', ['filename' => 'example.txt', 'size' => 3, 'folderId' => $this->folder->id])['structuredContent']['upload'];
+    app(Factory::class)->forgetGuards();
+    $transfer = fn (?string $token) => $this->call('PATCH', $upload['urls']['transfer'], server: [
+        'CONTENT_TYPE' => 'application/offset+octet-stream',
+        'HTTP_TUS_RESUMABLE' => '1.0.0',
+        'HTTP_UPLOAD_OFFSET' => '0',
+        ...($token === null ? [] : ['HTTP_AUTHORIZATION' => "Bearer $token"]),
+    ], content: 'abc');
+
+    $transfer(null)->assertUnauthorized();
+    $transfer(hash('sha256', 'guess'))->assertUnauthorized();
+    $transfer($upload['authorization']['token'])->assertNoContent()->assertHeader('Upload-Offset', '3');
+
+    $created = $serve('assets_create', ['uploadId' => $upload['id']]);
+    $asset = Asset::findOne($created['structuredContent']['asset']['id'] ?? null);
+
+    expect(parse_url($upload['urls']['transfer'], PHP_URL_PATH))->toBe('/'.Cms::config()->actionTrigger."/mcp/upload-sessions/{$upload['id']}/transfer")
+        ->and($upload['transport']['options']['url'])->toBe($upload['urls']['transfer'])
+        ->and($asset->getFilename())->toBe('example.txt')
+        ->and(Storage::disk('upload-destination')->get($asset->getPath()))->toBe('abc');
+});
+
+it('requires an HTTP site URL to prepare uploads over stdio', function (string $url): void {
+    config()->set('app.url', $url);
+    Context::addHidden(StdioTransport::ContextStdio, true);
+
+    expect(fn () => app(Assets::class)->prepareUpload('example.txt', 3, folderId: $this->folder->id))
+        ->toThrow(ToolCallException::class, 'Set the APP_URL environment variable')
+        ->and(UploadSession::count())->toBe(0);
+})->with(['empty' => '', 'relative' => '/craft', 'no host' => 'https://', 'file' => 'file:///tmp/craft']);
+
+it('rejects stdio upload credentials once their session expires', function (): void {
+    Context::addHidden(StdioTransport::ContextStdio, true);
+    $upload = app(Assets::class)->prepareUpload('example.txt', 3, folderId: $this->folder->id)['upload'];
+    Context::forgetHidden(StdioTransport::ContextStdio);
+    app(Factory::class)->forgetGuards();
+    $this->travel(Cms::config()->uploadSessionDuration + 1)->seconds();
+
+    $this->call('DELETE', $upload['urls']['transfer'], server: [
+        'HTTP_TUS_RESUMABLE' => '1.0.0',
+        'HTTP_AUTHORIZATION' => "Bearer {$upload['authorization']['token']}",
+    ])->assertStatus(410);
+});
+
+it('responds to upload requests with JSON errors when clients accept any content type', function (): void {
+    $patch = fn (string $url, ?string $token, int $offset = 0) => $this->call('PATCH', $url, server: [
+        'CONTENT_TYPE' => 'application/offset+octet-stream',
+        'HTTP_ACCEPT' => '*/*',
+        'HTTP_TUS_RESUMABLE' => '1.0.0',
+        'HTTP_UPLOAD_OFFSET' => (string) $offset,
+        ...($token === null ? [] : ['HTTP_AUTHORIZATION' => "Bearer $token"]),
+    ], content: 'abc');
+
+    Context::addHidden(StdioTransport::ContextStdio, true);
+    $stdio = app(Assets::class)->prepareUpload('example.txt', 3, folderId: $this->folder->id)['upload'];
+    Context::forgetHidden(StdioTransport::ContextStdio);
+    app(Factory::class)->forgetGuards();
+    $unknownId = Str::uuid()->toString();
+    $unknownUrl = str_replace($stdio['id'], $unknownId, $stdio['urls']['transfer']);
+
+    $patch($stdio['urls']['transfer'], 'guess')->assertUnauthorized()->assertJsonStructure(['message']);
+    $patch($unknownUrl, app(AssetUploads::class)->credential($unknownId))->assertNotFound()->assertJsonStructure(['message']);
+    $patch($stdio['urls']['transfer'], $stdio['authorization']['token'], 1)->assertConflict()->assertJsonStructure(['message']);
+
+    $http = app(Assets::class)->prepareUpload('example.txt', 3, folderId: $this->folder->id)['upload'];
+    app(Factory::class)->forgetGuards();
+
+    $patch($http['urls']['transfer'], null)->assertUnauthorized()->assertJsonStructure(['message']);
 });
 
 it('rejects local paths where volumes could not be', function (string $path): void {
@@ -552,7 +650,7 @@ describe('file replacement', function (): void {
     });
 
     it('replaces the stored bytes through MCP while preserving the asset identity, metadata and entry references', function (string $source): void {
-        $key = openssl_pkey_new(['private_key_bits' => 2048]);
+        $key = passportKey();
         config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
         Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
         $originalId = $this->asset->id;

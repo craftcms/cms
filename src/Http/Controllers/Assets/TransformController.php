@@ -9,7 +9,6 @@ use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Auth\Concerns\EnforcesPermissions;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Http\RespondsWithFlash;
-use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\ImageTransformer;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +29,6 @@ readonly class TransformController
     public function __construct(
         private ImageTransformer $imageTransformer,
         private AssetTransformers $assetTransformers,
-        private CraftAssetTransformDriver $craftAssetTransformDriver,
     ) {}
 
     public function generate(Request $request): Response
@@ -89,7 +87,7 @@ readonly class TransformController
         try {
             $url = isset($transformIndexModel)
                 ? $transformer->getTransformUrlForIndex($asset, $transformIndexModel, true)
-                : $this->craftAssetTransformDriver->withImmediateTransforms(
+                : $this->assetTransformers->withImmediateTransforms(
                     fn (): string => $this->assetTransformers->transform($asset, $handle)->url,
                 );
         } catch (Throwable $e) {

@@ -61,7 +61,7 @@ function mount() {
                     'craft-dialog',
                     {
                       label: 'Confirm settings',
-                      '.opened': confirmation.value,
+                      '.open': confirmation.value,
                       'onCraft-hide': () => (confirmation.value = false),
                     },
                     'Confirm these settings.'
