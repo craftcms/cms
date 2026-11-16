@@ -158,7 +158,7 @@ class QuickPost extends Widget
                 Field::make(t('Widget Title'))
                     ->control(Text::make('customTitle')
                         ->value($this->customTitle)
-                        ->placeholder(t('Create a new {section} entry', ['section' => $section->getUiLabel()]))),
+                        ->placeholder(t('New {section} Entry', ['section' => $section->getUiLabel()]))),
             ])->dependsOn('section'),
         );
     }
@@ -175,7 +175,7 @@ class QuickPost extends Widget
             return self::displayName();
         }
 
-        return t('Create a new {section} entry', [
+        return t('New {section} Entry', [
             'section' => t($this->section()?->name, category: 'site'),
         ]);
     }
@@ -185,7 +185,7 @@ class QuickPost extends Widget
         return 'craft:widget-quick-post';
     }
 
-    /** @return array{message?: string, params?: array{siteId: int, section: string, type: string, authorId: mixed}} */
+    /** @return array{message?: string, params?: array{siteId: int, section: string, type: string, authorId: mixed}, entryType?: array{icon: ?string, color: ?string}} */
     public function props(): array
     {
         if (! $section = $this->section()) {
@@ -202,6 +202,11 @@ class QuickPost extends Widget
 
         return [
             'params' => ['siteId' => $siteId, 'section' => $section->handle, 'type' => $entryType->handle, 'authorId' => craftAuth()->id()],
+            // The tile takes its icon and color
+            'entryType' => [
+                'icon' => $entryType->icon,
+                'color' => $entryType->color?->value,
+            ],
         ];
     }
 

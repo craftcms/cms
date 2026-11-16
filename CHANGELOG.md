@@ -58,6 +58,8 @@
 - Double-clicking an entry’s thumbnail in a Recent Entries or My Drafts widget now opens the entry in a slideout.
 - Feed widgets, such as Craft News, now show each item’s summary and image, and show dates as other control panel timestamps do.
 - New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day in the widget’s color.
+- Quick Post widgets now show a large button in their entry type’s icon and color, and are titled “New {Section} Entry” by default.
+- Craft Support widgets’ buttons now show their icons at full strength, with their descriptions in the widget’s color.
 - Added the `cpIconPath` and `cpLogoPath` config settings, which set the control panel’s icon and the login page’s logo from files on the server. SVG files are rendered inline, so they can adapt to the selected light or dark theme, such as with the `light-dark()` CSS function. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Deprecated the `cpIconUrl` and `cpLogoUrl` config settings. `cpIconPath` and `cpLogoPath` should be used instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Plugins can now build control panel pages from the same components, composables, and helpers Craft’s own pages use, typed and imported from the `@craftcms/cp` import-map module, including `registerPage()`, `registerComponent()`, `registerElementDetailsPanel()`, `Modal`, `ModalForm`, `Select`, `Combobox`, `IconPicker`, `TypePicker`, `DataTable`, `ElementList`, `ElementChips`, `AreaChart`, `useFetch()`, `useSlideoutControl()`, `useDetailsPanels()`, and `openUiModal()`. A guide to building control panel UI in a plugin is in Storybook, under **Plugins**. ([#20608](https://github.com/craftcms/cms/pull/20608))

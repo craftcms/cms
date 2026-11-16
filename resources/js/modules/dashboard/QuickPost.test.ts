@@ -4,6 +4,7 @@ import QuickPost from './QuickPost.vue';
 import type {DashboardWidget} from './types';
 import {SlideoutHost, closeAllSlideouts} from '@/common/slideouts';
 import {setSlideoutPageLoader} from '@/common/slideouts/store';
+import {provideWidgetColor} from './useWidgetColor';
 
 const state = vi.hoisted(() => ({
   post: vi.fn(),
@@ -88,3 +89,47 @@ it('opens the created entry in a slideout', async () => {
     )
   );
 });
+
+it.each([
+  ['gray', 'violet'],
+  ['black', 'violet'],
+  [null, 'violet'],
+  ['lime', null],
+])(
+  'draws a %s widget’s tile in the entry type’s color unless the widget is tinted',
+  (widgetColor, tileColor) => {
+    host = document.createElement('div');
+    document.body.append(host);
+    app = createApp({
+      setup() {
+        provideWidgetColor(() => widgetColor);
+        return () =>
+          h(QuickPost, {
+            widget: {
+              id: 1,
+              type: 'QuickPost',
+              name: 'Quick Post',
+              title: 'New Collection Entry',
+              subtitle: null,
+              colspan: 1,
+              maxColspan: 4,
+              color: widgetColor as DashboardWidget['color'],
+              settings: {},
+              settingsUi: null,
+              component: 'craft:widget-quick-post',
+              data: {
+                params: {section: 'collection', type: 'work', siteId: 1},
+                entryType: {icon: 'palette', color: 'violet'},
+              },
+              fragment: {html: '', headHtml: '', bodyHtml: ''},
+            } satisfies DashboardWidget,
+          });
+      },
+    });
+    app.mount(host);
+
+    expect(host.querySelector('.widget-tile')!.getAttribute('data-color')).toBe(
+      tileColor
+    );
+  }
+);

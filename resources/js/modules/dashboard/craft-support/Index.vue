@@ -4,6 +4,7 @@
   import SupportSearch from './SupportSearch.vue';
   import SupportForm from './SupportForm.vue';
   import type {SupportData} from './types';
+  import TileContent from '../TileContent.vue';
   import {useWidgetColor} from '../useWidgetColor';
 
   const color = useWidgetColor();
@@ -56,13 +57,11 @@
         data-screen="help"
         @click="screen = 'help'"
       >
-        <span class="support-tile-content">
-          <craft-icon name="life-ring" class="support-tile-icon"></craft-icon>
-          <span>{{ t('Get help') }}</span>
-          <span class="support-tile-description">{{
-            t('How-to’s and other questions')
-          }}</span>
-        </span>
+        <TileContent
+          icon="life-ring"
+          :label="t('Get help')"
+          :description="t('How-to’s and other questions')"
+        />
       </craft-button>
       <craft-button
         type="button"
@@ -71,13 +70,11 @@
         data-screen="feedback"
         @click="screen = 'feedback'"
       >
-        <span class="support-tile-content">
-          <craft-icon name="bullhorn" class="support-tile-icon"></craft-icon>
-          <span>{{ t('Give feedback') }}</span>
-          <span class="support-tile-description">{{
-            t('Bug reports and feature requests')
-          }}</span>
-        </span>
+        <TileContent
+          icon="bullhorn"
+          :label="t('Give feedback')"
+          :description="t('Bug reports and feature requests')"
+        />
       </craft-button>
     </div>
     <craft-card :data-color="color" v-show="screen !== 'home'">
@@ -154,9 +151,6 @@
       transparent 80%
     );
   }
-  .support-tiles[data-color='black'] .support-tile-description {
-    color: var(--_tile-text);
-  }
   .support-tile {
     background-color: var(--_tile-fill);
 
@@ -182,20 +176,5 @@
   .support-tile:focus-visible {
     position: relative;
     z-index: 1;
-  }
-  .support-tile-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-  .support-tile-icon {
-    font-size: 48px;
-    opacity: 0.3;
-    margin-block-end: 4px;
-  }
-  .support-tile-description {
-    font-size: var(--c-text-sm);
-    color: var(--c-color-neutral-on-quiet);
   }
 </style>

@@ -448,6 +448,7 @@ return [
     'Needs {requirements}' => 'Needs {requirements}',
     'Nested Entry Fields' => 'Nested Entry Fields',
     'New Page' => 'New Page',
+    'New {section} Entry' => 'New {section} Entry',
     'New Users' => 'New Users',
     'New element' => 'New element',
     'New entry' => 'New entry',

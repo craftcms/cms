@@ -61,6 +61,7 @@
 - Double-clicking an entry’s thumbnail in a Recent Entries or My Drafts widget now opens the entry in a slideout.
 - Feed widgets, such as Craft News, now show each item’s summary and image.
 - New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day.
+- Quick Post widgets now show a large button in their entry type’s icon and color, and are titled “New {Section} Entry” by default.
 - Fields in slideouts, the details pane, and dashboard widget settings are now 16px apart, rather than 24px. Fields in the main content pane of full-page forms are still 24px apart.
 - Fixed a bug where Dashboard widgets spanning multiple columns ended a few pixels before the right edge of the last column they spanned.
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
