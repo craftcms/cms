@@ -29,6 +29,18 @@
       Boolean(slots.default)
   );
 
+  // the operation becomes a link, so it's split out of the translated sentence;
+  // events without an origin, such as from a release, show the operation in its place
+  const originParts = computed(() =>
+    (props.event.origin
+      ? t('via {origin}: {operation}', {
+          origin: props.event.origin,
+          operation: '\u0000',
+        })
+      : t('via {origin}', {origin: '\u0000'})
+    ).split('\u0000')
+  );
+
   function sentenceFragment(text: string | null): string {
     return text === null
       ? ''
@@ -45,7 +57,6 @@
         <ActivityTimelineActor
           :actor="event.actor"
           :impersonator="event.impersonator"
-          :origin="event.origin"
         />
 
         <span
@@ -55,6 +66,22 @@
         />
         <span v-else class="activity-timeline__description">
           {{ sentenceFragment(event.description.text) }}
+        </span>
+        <span
+          v-if="event.origin || event.operation"
+          class="activity-timeline__origin"
+        >
+          <template v-if="event.operation">
+            {{ originParts[0]
+            }}<a v-if="event.operation.url" :href="event.operation.url">{{
+              event.operation.label
+            }}</a
+            ><template v-else>{{ event.operation.label }}</template
+            >{{ originParts[1] }}
+          </template>
+          <template v-else>{{
+            t('via {origin}', {origin: event.origin})
+          }}</template>
         </span>
       </div>
 
@@ -92,7 +119,8 @@
     min-width: 0;
   }
 
-  .activity-timeline__description {
+  .activity-timeline__description,
+  .activity-timeline__origin {
     margin-inline-start: 0.25em;
   }
 
