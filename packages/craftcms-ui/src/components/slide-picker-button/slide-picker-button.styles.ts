@@ -1,4 +1,5 @@
 import {css} from 'lit';
+import {segmentDividerStyles} from '../slide-picker/segment-divider.styles.js';
 
 export default css`
   :host {
@@ -14,9 +15,6 @@ export default css`
     pointer-events: none;
   }
 
-  /* The outline around the whole picker and around its filled run holds
-     3:1, so the picker's size and value show. The lines between segments
-     stay quiet: they're decoration. */
   .segment {
     --_edge: var(--c-color-neutral-border-normal);
     position: relative;
@@ -54,24 +52,14 @@ export default css`
     );
   }
 
-  /* A quiet end border would cut into the outline's corners, so each line
-     between segments is drawn over a transparent one and stops inside the
-     outline. The filled run's last segment keeps its loud end border. */
   .segment:not(:last-child, .is-last-active) {
     border-inline-end-color: transparent;
   }
 
   .segment:not(:last-child, .is-last-active)::after {
-    content: '';
-    position: absolute;
-    inset-block: -1px;
-    inset-inline-end: -1px;
-    inline-size: 1px;
-    background-image: linear-gradient(
-      var(--_edge) 1px,
-      var(--c-color-neutral-border-quiet) 1px calc(100% - 1px),
-      var(--_edge) calc(100% - 1px)
-    );
+    --_divider-edge: var(--_edge);
+    --_divider: var(--c-color-neutral-border-quiet);
+    ${segmentDividerStyles}
   }
 
   craft-popover::part(popup) {
@@ -114,19 +102,16 @@ export default css`
       border-color: Highlight;
     }
 
-    /* The themes' divider colors would be replaced, leaving a line that's
-       hard to see on Highlight, so the lines are drawn in system colors. */
+    /* Forced colors would recolor the dividers to vanish on Highlight. */
     .segment:not(:last-child, .is-last-active)::after {
       forced-color-adjust: none;
-      background-image: linear-gradient(ButtonBorder, ButtonBorder);
+      --_divider-edge: ButtonBorder;
+      --_divider: ButtonBorder;
     }
 
     .segment.is-active:not(:last-child, .is-last-active)::after {
-      background-image: linear-gradient(
-        Highlight 1px,
-        Canvas 1px calc(100% - 1px),
-        Highlight calc(100% - 1px)
-      );
+      --_divider-edge: Highlight;
+      --_divider: Canvas;
     }
   }
 `;

@@ -218,8 +218,6 @@ it.each(['light', 'dark'] as const)(
       CSSStyleDeclaration,
       CSSStyleDeclaration,
     ];
-    // The lines between segments are decoration; the edges around the
-    // picker and around its filled run are what show its size and value.
     const edges: Record<string, [string, string]> = {
       'start edge': [first.borderLeftColor, surface],
       'end edge': [last.borderRightColor, surface],
@@ -296,8 +294,6 @@ it('draws filled segments in Highlight and empty ones in Canvas with a ButtonBor
   expect(filled!.backgroundColor).toBe(system('Highlight'));
   expect(empty!.backgroundColor).toBe(system('Canvas'));
   expect(empty!.borderTopColor).toBe(system('ButtonBorder'));
-  // A Canvas line between filled segments, stopping inside their outline,
-  // and a ButtonBorder line between empty ones.
   expect(divider(segments[0]!)).toEqual([
     system('Highlight'),
     system('Canvas'),

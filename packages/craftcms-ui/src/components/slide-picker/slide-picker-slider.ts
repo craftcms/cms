@@ -42,8 +42,8 @@ export default class CraftSlidePickerSlider extends LitElement {
    */
   @state() private preview: number | null = null;
 
-  /** The segment just clicked, which shows as selected until the pointer moves to another. */
-  #clicked: number | null = null;
+  /** The value just clicked, shown as selected rather than previewed until the pointer enters another segment. */
+  #justSelected: number | null = null;
 
   /** Drops the preview when the slider is hidden, as when its popover closes. */
   #resizeObserver = new ResizeObserver(([entry]) => {
@@ -71,22 +71,22 @@ export default class CraftSlidePickerSlider extends LitElement {
 
   #startPreview(event: PointerEvent, value: number) {
     // A tap has no hover, so it would leave a preview behind.
-    if (event.pointerType === 'touch' || value === this.#clicked) {
+    if (event.pointerType === 'touch' || value === this.#justSelected) {
       return;
     }
 
-    this.#clicked = null;
+    this.#justSelected = null;
     this.preview = value;
   }
 
   #endPreview = () => {
-    this.#clicked = null;
+    this.#justSelected = null;
     this.preview = null;
   };
 
   #select(value: number) {
     this.#setValue(value);
-    this.#clicked = value;
+    this.#justSelected = value;
     this.preview = null;
   }
 

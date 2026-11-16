@@ -104,6 +104,14 @@ export default class CraftTooltip extends LitElement {
   /** The invoker the tooltip is bound to, and the reference it added. */
   #invoker: {node: HTMLElement; attribute: string} | null = null;
 
+  /**
+   * Whether this tooltip added its id to the invoker's `aria-labelledby` or
+   * `aria-describedby`, and so must remove it on unbind. An id the invoker
+   * already listed stays where it is, so markup can put it first, and is left
+   * for that markup to remove.
+   */
+  #ownsInvokerReference = false;
+
   #hover: HoverWatcher | null = null;
 
   #popper: PopperInstance | null = null;
@@ -444,12 +452,6 @@ export default class CraftTooltip extends LitElement {
     this.#invoker = null;
   }
 
-  /**
-   * Whether this tooltip added its reference to the invoker. One the invoker
-   * already listed stays where it was, so markup can put it first.
-   */
-  #addedReference = false;
-
   #addReference(node: HTMLElement, attribute: string): void {
     const ids = (node.getAttribute(attribute) ?? '').split(/\s+/);
 
@@ -461,14 +463,14 @@ export default class CraftTooltip extends LitElement {
       attribute,
       [...ids, this.#contentId].filter(Boolean).join(' ')
     );
-    this.#addedReference = true;
+    this.#ownsInvokerReference = true;
   }
 
   #removeReference(node: HTMLElement, attribute: string): void {
-    if (!this.#addedReference) {
+    if (!this.#ownsInvokerReference) {
       return;
     }
-    this.#addedReference = false;
+    this.#ownsInvokerReference = false;
 
     const ids = (node.getAttribute(attribute) ?? '')
       .split(/\s+/)

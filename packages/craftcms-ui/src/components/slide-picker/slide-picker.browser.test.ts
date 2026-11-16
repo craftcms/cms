@@ -132,7 +132,6 @@ it.each(['light', 'dark'] as const)(
         .filter(([, ratio]) => ratio < 3)
         .map(([part, ratio]) => `${part}: ${ratio.toFixed(2)}`)
     ).toEqual([]);
-    // The divider stops inside the outline instead of cutting through it.
     expect([dividerStart, dividerEnd]).toEqual([
       first!.borderTopColor,
       first!.borderTopColor,
@@ -267,7 +266,6 @@ it('shrinks the preview when the pointer moves back', async () => {
   await userEvent.hover(segments(picker)[1]!);
 
   expect(previewed(picker)).toEqual([true, true, false, false]);
-  // Past the pointer, segments look empty, not selected.
   expect(fills(picker).slice(2)).toEqual([
     'rgba(0, 0, 0, 0)',
     'rgba(0, 0, 0, 0)',
@@ -320,8 +318,6 @@ it.each(['light', 'dark'] as const)(
     const ring = getComputedStyle(current);
     expect(getComputedStyle(slider(picker)).outlineStyle).toBe('none');
     expect(ring.outlineStyle).not.toBe('none');
-    // Against the selected fill the ring would all but vanish, so it sits
-    // off the segment, on the surface around it.
     expect(parseFloat(ring.outlineOffset)).toBeGreaterThan(0);
     expect(contrast(ring.outlineColor, surface())).toBeGreaterThanOrEqual(3);
   }
@@ -350,8 +346,6 @@ it('tells selected and empty segments apart, divides selected ones, and shows th
   expect(selected!.backgroundColor).toBe(system('Highlight'));
   expect(empty!.backgroundColor).toBe(system('Canvas'));
   expect(empty!.borderTopColor).toBe(system('ButtonBorder'));
-  // Between selected segments, a Canvas line that stops inside the
-  // Highlight outline, as the light divider does in the themes.
   expect(
     gradientColors(
       getComputedStyle(segments(picker)[0]!, '::after').backgroundImage

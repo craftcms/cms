@@ -79,6 +79,24 @@ describe('craft-tooltip', () => {
     expect(computeAccessibleName(button)).toBe('3 columns Recent Entries');
   });
 
+  it('leaves an id the invoker listed itself when removed', async () => {
+    document.body.innerHTML = `
+      <button id="columns" aria-labelledby="columns-tip columns-context"></button>
+      <span id="columns-context" hidden>Recent Entries</span>
+      <craft-tooltip for="columns" invoker-relation="label">
+        <div slot="content" id="columns-tip">3 columns</div>
+      </craft-tooltip>`;
+    const tooltip = document.querySelector<CraftTooltip>('craft-tooltip')!;
+    await tooltip.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    tooltip.remove();
+
+    expect(
+      document.querySelector('button')!.getAttribute('aria-labelledby')
+    ).toBe('columns-tip columns-context');
+  });
+
   it("keeps the invoker's own description alongside its own", async () => {
     const button = document.createElement('button');
     button.id = 'described';
