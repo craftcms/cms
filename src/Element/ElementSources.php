@@ -607,7 +607,8 @@ class ElementSources
                 'defaultViewMode' => $s['defaultViewMode'] ?? null,
                 ...match ($s['type'] ?? self::TYPE_NATIVE) {
                     self::TYPE_CUSTOM => [
-                        'label' => $s['label'] ?? null,
+                        // Blank labels post as null; store them as '' as Craft 5 did.
+                        'label' => $s['label'] ?? '',
                         'condition' => ($s['condition'] ?? false)
                             ? ($s['condition'] instanceof ConditionInterface ? $s['condition']->getConfig() : $s['condition'])
                             : null,

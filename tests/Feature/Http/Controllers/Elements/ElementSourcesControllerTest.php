@@ -518,6 +518,24 @@ it('preserves blank heading values when storing and returning source settings', 
         ->assertJsonPath('sources.0.heading', '');
 });
 
+it('stores a blank custom source label', function () {
+    postJson(action([ElementSourcesController::class, 'store']), [
+        'elementType' => Entry::class,
+        'sourceOrder' => ['*', 'custom:blank'],
+        'sources' => [
+            'custom:blank' => [
+                'label' => '',
+                'condition' => Entry::createCondition()->getConfig(),
+            ],
+        ],
+    ])->assertOk();
+
+    $config = collect(app(ProjectConfig::class)->get(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class)))
+        ->keyBy('key');
+
+    expect($config['custom:blank']['label'] ?? null)->toBe('');
+});
+
 it('stores single-page source settings without page reordering', function () {
     $projectConfig = app(ProjectConfig::class);
 

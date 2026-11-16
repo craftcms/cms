@@ -1683,7 +1683,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     {
         return Collection::make($this->availableSources())
             ->map(fn ($s) => [
-                'label' => $s['label'],
+                'label' => $s['label'] ?? '',
                 'value' => $s['key'],
                 'data' => [
                     'structure-id' => $s['structureId'] ?? null,
