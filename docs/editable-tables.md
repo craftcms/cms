@@ -40,7 +40,7 @@ stores a row as `['col1' => 'Example', 'col2' => true]`. Its normalized value al
 Renaming a handle does not change the column's storage ID.
 
 The built-in Table field types are `singleline`, `multiline`, `number`, `money`, `checkbox`, `lightswitch`, `color`, `date`,
-`time`, `email`, `url`, `link`, `select`, and `heading`. Heading cells display values from the field's default rows and are omitted from
+`time`, `email`, `url`, `link`, `entries`, `assets`, `users`, `select`, and `heading`. Heading cells display values from the field's default rows and are omitted from
 stored cell data. Dropdowns use the configured default option, or the first option when no default is selected.
 
 ## Rendering and editing
@@ -251,6 +251,13 @@ field then calls its methods for the cell values in that column:
 Link cells implement this interface for element link types such as entries and assets. When a Table value is normalized,
 its link cells share one element loader, so the first linked element a template uses loads the elements of all links
 in that value.
+
+Entries, Assets, and Users cells extend `CraftCms\Cms\Field\TableCells\BaseRelationCell`. They store the related
+elements' IDs, normalize to element queries in the owner element's site, and use the matching relation field type for
+their settings (sources, selectable element condition, min/max relations, and the “Add” button label), editor, and
+GraphQL type. Relations are recorded as field references rather than in the `relations` table. Assets cells relate
+existing assets only, since upload locations belong to fields. To add a relation cell for another element type, extend
+`BaseRelationCell` and return its relation field type from `fieldType()`.
 
 ## Unavailable plugins
 

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Field;
 
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
@@ -27,6 +28,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Number;
 use CraftCms\Cms\Ui\Controls\Table as TableControl;
@@ -56,7 +58,7 @@ use function CraftCms\Cms\t;
  * @phpstan-type TableColumnType string
  * @phpstan-type TableOption array{label: string, value: string, default?: bool}
  * @phpstan-type TableColumn array{heading: string, handle: string, type: TableColumnType, width?: int|string, options?: list<TableOption>, settings?: array<string, mixed>}
- * @phpstan-type TableCellValue bool|float|int|string|DateTimeInterface|ColorData|LinkData|array<string, mixed>|null
+ * @phpstan-type TableCellValue bool|float|int|string|DateTimeInterface|ColorData|LinkData|ElementQueryInterface|array<string, mixed>|null
  * @phpstan-type TableRowData array<string, TableCellValue>
  *
  * @since 6.0.0
@@ -116,7 +118,7 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        $columns = $this->controlColumns($context->element?->getLanguage());
+        $columns = $this->controlColumns($context->element?->getLanguage(), element: $context->element);
         $missing = $this->hasMissingCellTypes();
         $value = $this->controlValues(is_array($context->value) ? $context->value : [], false);
 
@@ -130,7 +132,7 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
             ->includeRowId($this->staticRows)
             ->minRows($this->minRows)
             ->maxRows($this->maxRows)
-            // Static rows are this field's own, and links to elements are limited to the elements its Link
+            // Static rows are this field's own, and links and relations to elements are limited to the elements its
             // columns can select, so its values only fit it.
             ->valueScope($this->staticRows || $this->linksToElements($columns) ? ($this->uid ?? static::class) : null)
             ->value($value);
@@ -141,7 +143,7 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
     /** @param array<string, array<string, mixed>> $columns */
     private function linksToElements(array $columns): bool
     {
-        return array_any($columns, fn (array $column): bool => array_any(
+        return array_any($columns, fn (array $column): bool => $column['control'] instanceof ElementSelect || array_any(
             $column['control']->props()['types'] ?? [],
             fn (mixed $type): bool => ($type['kind'] ?? null) === 'element',
         ));
@@ -172,7 +174,7 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
     }
 
     /** @return array<string, array<string, mixed>> */
-    private function controlColumns(?string $locale = null, bool $editableHeadings = false): array
+    private function controlColumns(?string $locale = null, bool $editableHeadings = false, ?ElementInterface $element = null): array
     {
         $columns = [];
         foreach ($this->columns as $id => $column) {
@@ -180,7 +182,7 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
                 $column['type'] = 'singleline';
             }
             $column['heading'] = t($column['heading'] ?? '', category: 'site', locale: $locale);
-            $column['control'] = $this->cellType($column)->uiControl(new TableCellContext('value', locale: $locale));
+            $column['control'] = $this->cellType($column)->uiControl(new TableCellContext('value', locale: $locale, element: $element));
             $columns[$id] = $column;
         }
 
@@ -663,6 +665,15 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
 
         // Before localizing, which loads the linked elements
         LinkElementLoader::attach($cellValues);
+
+        // Query related elements in the element’s site, as relation fields do
+        if ($element !== null && $element::isLocalized()) {
+            foreach ($cellValues as $cellValue) {
+                if ($cellValue instanceof ElementQueryInterface && $cellValue->siteId === null) {
+                    $cellValue->siteId($element->siteId);
+                }
+            }
+        }
 
         if ($element && $this->isPropagatingAcrossTranslations($element)) {
             foreach ($cells as $colId => $cell) {
