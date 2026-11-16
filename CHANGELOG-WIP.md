@@ -199,6 +199,7 @@
 - Added the “Analyze images” asset action, and an “Analyze images” option to the Asset Indexes utility and `index-assets` commands, which queue images to be analyzed. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Alternative Text fields now have a “Generate alt text” action, which fills in suggested alt text for editors to review before saving. ([#20103](https://github.com/craftcms/cms/pull/20103))
 - Assets can now be filtered by what kind of image they are, as found by the “Classify images” AI task, with the “Image Type” asset condition rule. ([#20103](https://github.com/craftcms/cms/pull/20103))
+- Updated `laravel/ai` to 1.4. When a tool throws an exception, the AI assistant now gets the error as the tool’s result and can continue its reply, instead of the reply failing.
 
 #### MCP
 - Added authenticated and public Model Context Protocol (MCP) servers for inspecting and managing Craft sites, content, assets, users, plugins, and project config. Each can be enabled and given its own endpoint in Settings → MCP, and any active user can use the authenticated server. ([#19846](https://github.com/craftcms/cms/pull/19846))
