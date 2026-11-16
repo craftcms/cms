@@ -40,8 +40,9 @@ export const Default: Story = {
 };
 
 /**
- * `button-label` names each button after its item, when several share a
- * `label`. `valueLabel` formats the value as "1 column" or "2 columns".
+ * `context` adds each button's item to its name, when several share a
+ * `label`: "1 column News". `valueLabel` formats the value as "1 column" or
+ * "2 columns".
  */
 export const InARow: Story = {
   render: () => html`
@@ -52,7 +53,7 @@ export const InARow: Story = {
             <span style="flex: 1;">${name}</span>
             <craft-slide-picker-button
               label="Columns"
-              button-label=${`Columns ${name}`}
+              context=${name}
               .valueLabel=${(value: number) =>
                 `${value} ${value === 1 ? 'column' : 'columns'}`}
               min="1"

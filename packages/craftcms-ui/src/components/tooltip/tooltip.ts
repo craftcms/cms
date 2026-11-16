@@ -96,6 +96,9 @@ export default class CraftTooltip extends LitElement {
 
   #contentWrapper: HTMLElement | null = null;
 
+  /** The wrapper this tooltip made itself, which supplied content replaces. */
+  #generatedWrapper: HTMLElement | null = null;
+
   #contentId = uniqueId('tooltip');
 
   /** The invoker the tooltip is bound to, and the reference it added. */
@@ -206,9 +209,16 @@ export default class CraftTooltip extends LitElement {
    * the invoker to it in place of the old one.
    */
   #onContentSlotChange = (): void => {
-    const content = Array.from(this.children).find(
-      (child) => child instanceof HTMLElement && child.slot === 'content'
+    // A supplied element can arrive after the tooltip wrapped its default
+    // content, as when it connects before its children are parsed, so one
+    // other than its own wrapper takes over.
+    const candidates = Array.from(this.children).filter(
+      (child): child is HTMLElement =>
+        child instanceof HTMLElement && child.slot === 'content'
     );
+    const content =
+      candidates.find((child) => child !== this.#generatedWrapper) ??
+      candidates[0];
 
     // Only a supplied element takes over. Content that was just removed, as
     // when `textContent` is set, is left alone: happy-dom fires `slotchange`
@@ -228,6 +238,15 @@ export default class CraftTooltip extends LitElement {
       true
     );
     this.#contentWrapper?.removeEventListener('keyup', this.#onEscape, true);
+    // An empty wrapper of its own would otherwise be found first.
+    if (
+      this.#generatedWrapper &&
+      this.#generatedWrapper !== content &&
+      !this.#generatedWrapper.textContent?.trim()
+    ) {
+      this.#generatedWrapper.remove();
+      this.#generatedWrapper = null;
+    }
     this.#contentWrapper = null;
     this.#contentId = uniqueId('tooltip');
     this.#ensureContentWrapper();
@@ -319,6 +338,8 @@ export default class CraftTooltip extends LitElement {
 
   #setup(): void {
     this.#isSetUp = true;
+    // Content supplied before the first render fires no `slotchange`.
+    this.#onContentSlotChange();
     this.#bind();
 
     if (this.open) {
@@ -349,6 +370,7 @@ export default class CraftTooltip extends LitElement {
         )
       );
       this.append(wrapper);
+      this.#generatedWrapper = wrapper;
     }
 
     wrapper.id ||= this.#contentId;
@@ -422,18 +444,32 @@ export default class CraftTooltip extends LitElement {
     this.#invoker = null;
   }
 
+  /**
+   * Whether this tooltip added its reference to the invoker. One the invoker
+   * already listed stays where it was, so markup can put it first.
+   */
+  #addedReference = false;
+
   #addReference(node: HTMLElement, attribute: string): void {
     const ids = (node.getAttribute(attribute) ?? '').split(/\s+/);
 
-    if (!ids.includes(this.#contentId)) {
-      node.setAttribute(
-        attribute,
-        [...ids, this.#contentId].filter(Boolean).join(' ')
-      );
+    if (ids.includes(this.#contentId)) {
+      return;
     }
+
+    node.setAttribute(
+      attribute,
+      [...ids, this.#contentId].filter(Boolean).join(' ')
+    );
+    this.#addedReference = true;
   }
 
   #removeReference(node: HTMLElement, attribute: string): void {
+    if (!this.#addedReference) {
+      return;
+    }
+    this.#addedReference = false;
+
     const ids = (node.getAttribute(attribute) ?? '')
       .split(/\s+/)
       .filter((id) => id && id !== this.#contentId);

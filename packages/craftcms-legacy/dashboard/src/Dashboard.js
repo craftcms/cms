@@ -759,9 +759,7 @@ import './dashboard.scss';
       this.colspanPicker.step = 1;
       this.colspanPicker.value = this.getColspan();
       this.colspanPicker.label = Craft.t('app', 'Columns');
-      this.colspanPicker.buttonLabel = `${Craft.t('app', 'Columns')} ${
-        this.title || this.getTypeInfo('name')
-      }`;
+      this.colspanPicker.context = this.title || this.getTypeInfo('name');
       this.colspanPicker.valueLabel = (colspan) => {
         return Craft.t(
           'app',

@@ -136,7 +136,7 @@ describe('createSlidePicker', () => {
     const el = createSlidePicker({
       button: true,
       label: 'Columns',
-      buttonLabel: 'Columns News',
+      context: 'News',
       labelledBy: 'width-label',
       min: 1,
       max: 3,
@@ -148,7 +148,7 @@ describe('createSlidePicker', () => {
 
     expect(el.tagName.toLowerCase()).toBe('craft-slide-picker-button');
     expect(el.label).toBe('Columns');
-    expect(el.buttonLabel).toBe('Columns News');
+    expect(el.context).toBe('News');
     expect(el.hasAttribute('labelled-by')).toBe(false);
     expect([el.min, el.max, el.step, el.value]).toEqual([1, 3, 1, 2]);
     expect(el.name).toBe('colspan');

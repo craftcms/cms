@@ -13,11 +13,12 @@ export interface SlidePickerConfig {
   /**
    * Builds a `<craft-slide-picker-button>` instead: a small button that opens
    * a full-size picker in a popover, for a picker in a dense row. It's named
-   * by `label`, or by `buttonLabel` when that adds context, and ignores
+   * by its value, then by `context` (or `label` without it), and ignores
    * `labelledBy` and `describedBy`.
    */
   button?: boolean;
-  buttonLabel?: string;
+  /** What a `button` controls, such as the item's name. */
+  context?: string;
   labelledBy?: string;
   describedBy?: string;
   valueLabel?: (value: number) => string;
@@ -55,8 +56,8 @@ export function createSlidePicker(
   let el: CraftSlidePicker | CraftSlidePickerButton;
   if (config.button) {
     const button = document.createElement('craft-slide-picker-button');
-    if (config.buttonLabel) {
-      button.buttonLabel = config.buttonLabel;
+    if (config.context) {
+      button.context = config.context;
     }
     button.readonly = readOnly;
     el = button;

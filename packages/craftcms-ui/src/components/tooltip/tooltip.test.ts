@@ -1,3 +1,4 @@
+import {computeAccessibleName} from 'dom-accessibility-api';
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftTooltip from './tooltip.js';
 import './tooltip.js';
@@ -58,6 +59,24 @@ describe('craft-tooltip', () => {
 
     expect(button.getAttribute('aria-labelledby')).toBe(content.id);
     expect(button.hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  it('names the invoker by its content first, then the context the invoker lists after it', async () => {
+    document.body.innerHTML = `
+      <button id="columns" aria-labelledby="columns-tip columns-context"></button>
+      <span id="columns-context" hidden>Recent Entries</span>
+      <craft-tooltip for="columns" invoker-relation="label">
+        <div slot="content" id="columns-tip">3 columns</div>
+      </craft-tooltip>`;
+    const tooltip = document.querySelector<CraftTooltip>('craft-tooltip')!;
+    await tooltip.updateComplete;
+    await new Promise((resolve) => setTimeout(resolve));
+    const button = document.querySelector('button')!;
+
+    expect(button.getAttribute('aria-labelledby')).toBe(
+      'columns-tip columns-context'
+    );
+    expect(computeAccessibleName(button)).toBe('3 columns Recent Entries');
   });
 
   it("keeps the invoker's own description alongside its own", async () => {

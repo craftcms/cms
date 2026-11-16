@@ -22,6 +22,10 @@ import '../tooltip/tooltip.js';
  * fit. The button is the target, so the segments drawn in it can stay small.
  * The popover's slide picker is labeled from below by `label`.
  *
+ * The button shows no text, so its tooltip, the value, is its visible label.
+ * Its name is that value followed by `context`, such as "3 columns Recent
+ * Entries", or by `label` when there's no context.
+ *
  * @attr name - Field name. The button posts its value under it, like any
  * other input.
  * @attr disabled - Stops the button opening the popover, and leaves the value
@@ -43,13 +47,17 @@ import '../tooltip/tooltip.js';
 export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
   static override styles = styles;
 
-  /** Labels the popover's slide picker, and names the button by default. */
+  /**
+   * Labels the popover's slide picker. Follows the value in the button's
+   * name when there's no `context`.
+   */
   @property() label = '';
   /**
-   * Names the button, when it needs more context than `label`, such as the
-   * name of the item it sizes. Start it with `label`.
+   * What the button controls, such as the name of the item it sizes. Follows
+   * the value in the button's name, so several buttons that share a `label`
+   * are told apart: "3 columns Recent Entries".
    */
-  @property({attribute: 'button-label'}) buttonLabel = '';
+  @property() context = '';
   /** The selected value. */
   @property({type: Number}) value = 0;
   /** Lowest selectable value. */
@@ -131,7 +139,7 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
           variant="plain"
           size="small"
           flush=${ifDefined(this.flush)}
-          aria-label=${`${this.buttonLabel || this.label} ${valueText}`}
+          aria-labelledby="value context"
         >
           <span class="segments" aria-hidden="true">
             ${steps.map(
@@ -164,7 +172,10 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
           >
         </div>
       </craft-popover>
-      <craft-tooltip for="invoker">${valueText}</craft-tooltip>
+      <span id="context" hidden>${this.context || this.label}</span>
+      <craft-tooltip for="invoker" invoker-relation="label">
+        <span slot="content" id="value">${valueText}</span>
+      </craft-tooltip>
     `;
   }
 }

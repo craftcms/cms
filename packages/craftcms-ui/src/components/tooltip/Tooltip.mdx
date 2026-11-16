@@ -13,7 +13,22 @@ import * as TooltipStories from './tooltip.stories';
 
 The content carries `role="tooltip"`, and the invoker references it with `aria-describedby`, or `aria-labelledby` when `invoker-relation="label"`. It shows on hover and on keyboard focus, and Escape dismisses it while the invoker has focus.
 
-Because a tooltip describes its invoker by default, the invoker needs an accessible name of its own. An icon-only button still needs an `aria-label`, as `craft-field`'s translation indicator has.
+Decide whether the tooltip names its invoker or describes it:
+
+- **No visible text on the invoker,** only an icon, a swatch or a drawing: the tooltip is its label. Set `invoker-relation="label"` and leave off `aria-label`. When the drawing shows a value, the tooltip shows that value.
+- **Visible text on the invoker:** keep the default. The invoker is already named, so the tooltip must add something its text doesn't say, or it gets read twice.
+
+To add context to a label, such as which row a button belongs to, give the `slot="content"` element an id and list it first in the invoker's `aria-labelledby`, followed by the context's id. The tooltip keeps an id the invoker already lists where it is, so the name reads "3 columns Recent Entries".
+
+```html
+<button id="columns" aria-labelledby="columns-tip columns-context">…</button>
+<span id="columns-context" hidden>Recent Entries</span>
+<craft-tooltip for="columns" invoker-relation="label">
+  <span slot="content" id="columns-tip">3 columns</span>
+</craft-tooltip>
+```
+
+Text the person asks to see, rather than a name or description, belongs in a toggletip: use `craft-info-icon`.
 
 Point `for` at an element that can take keyboard focus, such as a real `button`. Keyboard users never see a tooltip on anything else.
 

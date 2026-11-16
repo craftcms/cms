@@ -39,31 +39,53 @@ async function open(button: CraftSlidePickerButton): Promise<void> {
 
 it.each([
   {
-    attributes: 'label="Width" value-unit="%" value="50"',
-    name: 'Width 50%',
+    attributes:
+      'label="Columns" context="Recent Entries" value-unit="columns" value="3"',
+    name: '3 columns Recent Entries',
   },
   {
-    attributes: 'label="Columns" button-label="Columns News" value="2"',
-    name: 'Columns News 2',
+    attributes: 'label="Width" value-unit="%" value="50"',
+    name: '50% Width',
   },
-])('names the button $name', async ({attributes, name}) => {
-  await render(
-    `<craft-slide-picker-button min="25" max="100" step="25" ${attributes}></craft-slide-picker-button>`
-  );
+])(
+  'names the button by the value its tooltip shows, then what it controls: $name',
+  async ({attributes, name}) => {
+    await render(
+      `<craft-slide-picker-button min="1" max="100" step="1" ${attributes}></craft-slide-picker-button>`
+    );
 
-  await expect.element(page.getByRole('button')).toHaveAccessibleName(name);
-});
+    await expect.element(page.getByRole('button')).toHaveAccessibleName(name);
+  }
+);
 
 it('names the button with valueLabel', async () => {
   const button = await render(
-    `<craft-slide-picker-button label="Columns" min="1" max="3" step="1" value="1"></craft-slide-picker-button>`
+    `<craft-slide-picker-button label="Columns" context="Recent Entries" min="1" max="3" step="1" value="1"></craft-slide-picker-button>`
   );
   button.valueLabel = (value) =>
     `${value} ${value === 1 ? 'column' : 'columns'}`;
 
   await expect
     .element(page.getByRole('button'))
-    .toHaveAccessibleName('Columns 1 column');
+    .toHaveAccessibleName('1 column Recent Entries');
+});
+
+it('shows the start of the button’s name in its tooltip, without also describing the button', async () => {
+  await render(
+    `<craft-slide-picker-button label="Columns" context="Recent Entries" value-unit="columns" min="1" max="4" step="1" value="3"></craft-slide-picker-button>`
+  );
+
+  await userEvent.tab();
+
+  await expect
+    .element(page.getByRole('tooltip'))
+    .toHaveTextContent('3 columns');
+  await expect
+    .element(page.getByRole('button'))
+    .toHaveAccessibleName('3 columns Recent Entries');
+  await expect
+    .element(page.getByRole('button'))
+    .toHaveAccessibleDescription('');
 });
 
 it('names the popover’s slider by the label below it', async () => {
@@ -99,7 +121,7 @@ it('opens with Enter, sets the value from the slider and returns focus on Escape
   expect(events).toEqual(['input 100', 'change 100']);
   await expect
     .element(page.getByRole('button'))
-    .toHaveAccessibleName('Width 100%');
+    .toHaveAccessibleName('100% Width');
 
   await userEvent.keyboard('{Escape}');
   await expect.poll(() => slider(button).checkVisibility()).toBe(false);
@@ -152,16 +174,16 @@ it('disables the button when disabled, or inside a disabled fieldset, and enable
   const fieldset = document.querySelector('fieldset')!;
 
   await expect
-    .element(page.getByRole('button', {name: 'Width 50'}))
+    .element(page.getByRole('button', {name: '50 Width'}))
     .toBeEnabled();
   await expect
-    .element(page.getByRole('button', {name: 'Height 50'}))
+    .element(page.getByRole('button', {name: '50 Height'}))
     .toBeDisabled();
 
   fieldset.disabled = true;
 
   await expect
-    .element(page.getByRole('button', {name: 'Width 50'}))
+    .element(page.getByRole('button', {name: '50 Width'}))
     .toBeDisabled();
 
   const height = document.querySelectorAll<CraftSlidePickerButton>(
@@ -171,10 +193,10 @@ it('disables the button when disabled, or inside a disabled fieldset, and enable
   fieldset.disabled = false;
 
   await expect
-    .element(page.getByRole('button', {name: 'Height 50'}))
+    .element(page.getByRole('button', {name: '50 Height'}))
     .toBeEnabled();
   await expect
-    .element(page.getByRole('button', {name: 'Width 50'}))
+    .element(page.getByRole('button', {name: '50 Width'}))
     .toBeEnabled();
 });
 

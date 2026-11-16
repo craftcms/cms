@@ -16,6 +16,7 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 ### Semantics
 
 - [x] The content carries `role="tooltip"`, and the invoker references it with `aria-describedby` (or `aria-labelledby` when `invoker-relation="label"`). Per WCAG 4.1.2 (Name, Role, Value). Both are added to any references the invoker already has. Verified by `gives its content the tooltip role and points the invoker at it`, `names the invoker instead with invoker-relation="label"` and `keeps the invoker's own description alongside its own` in `tooltip.test.ts`.
+- [x] An invoker that already lists the content's id in `aria-labelledby` or `aria-describedby` keeps it in place, so markup can put the tooltip's text before other ids, and only an id the tooltip added is removed. Per WCAG 2.5.3 (Label in Name). Verified by `names the invoker by its content first, then the context the invoker lists after it` in `tooltip.test.ts`.
 - [x] The wiring follows a `for` change to a new invoker, and is removed from the old one. Per WCAG 4.1.2 (Name, Role, Value). Verified by `moves its wiring and click toggle to the new invoker when for changes` in `tooltip.browser.test.ts`.
 
 ### Keyboard and pointer
@@ -47,4 +48,5 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 
 ## Depends on usage
 
-- 4.1.2 (Name, Role, Value): give the invoker an accessible name of its own, since the tooltip only describes it by default. See [Accessibility](./Tooltip.mdx#accessibility).
+- 4.1.2 (Name, Role, Value): a tooltip describes its invoker by default, so an invoker with visible text needs that text as its name. An invoker with no visible text is named by its tooltip, with `invoker-relation="label"`. See [Accessibility](./Tooltip.mdx#accessibility).
+- 2.5.3 (Label in Name): when a label tooltip needs context, list the tooltip's content first in the invoker's `aria-labelledby`, so the name starts with the text that shows. See [Accessibility](./Tooltip.mdx#accessibility).
