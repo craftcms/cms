@@ -24,6 +24,7 @@
 - The command palette now keeps the result it selects as you type selected while more results come in, rather than switching to results that arrive above it, so <kbd>Return</kbd> opens the result that was showing as selected.
 - The Customize Sources modal now shows a red status indicator beside disabled sources, its drag handles are vertically centered within their sources, and custom sources’ “Default View Mode” setting now comes before “Default Sort”, matching native sources.
 - Element action menus now list “Validate {type}” after “Copy {type}”, rather than first.
+- The “Addresses” settings nav item is now listed under “Content”, after “Assets”, rather than under “System”.
 - Dragging a widget in the dashboard’s Widget Settings now shows a line where it will be dropped and fades the widget being dragged, like other reorderable lists, rather than darkening the widget under the pointer.
 - Reordered dashboard widgets now move as soon as they’re dropped, rather than once their new order is saved, and move back if saving fails.
 - Copy value toasts are more compact, with less space between badges, more space above the value’s preview, and a shorter preview.
