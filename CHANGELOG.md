@@ -60,6 +60,7 @@
 - New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day in the widget’s color.
 - Quick Post widgets now show a large button in their entry type’s icon and color, and are titled “New {Section} Entry” by default.
 - Craft Support widgets’ buttons now show their icons at full strength, with their descriptions in the widget’s color.
+- Updates widgets now show whether updates are available with an icon, say when they last checked, and check again from a button beside their title.
 - Added the `cpIconPath` and `cpLogoPath` config settings, which set the control panel’s icon and the login page’s logo from files on the server. SVG files are rendered inline, so they can adapt to the selected light or dark theme, such as with the `light-dark()` CSS function. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Deprecated the `cpIconUrl` and `cpLogoUrl` config settings. `cpIconPath` and `cpLogoPath` should be used instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Plugins can now build control panel pages from the same components, composables, and helpers Craft’s own pages use, typed and imported from the `@craftcms/cp` import-map module, including `registerPage()`, `registerComponent()`, `registerElementDetailsPanel()`, `Modal`, `ModalForm`, `Select`, `Combobox`, `IconPicker`, `TypePicker`, `DataTable`, `ElementList`, `ElementChips`, `AreaChart`, `useFetch()`, `useSlideoutControl()`, `useDetailsPanels()`, and `openUiModal()`. A guide to building control panel UI in a plugin is in Storybook, under **Plugins**. ([#20608](https://github.com/craftcms/cms/pull/20608))
@@ -72,6 +73,7 @@
 - Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::getCondition()` and `setCondition()`, replacing `$siteId` and `$section`.
 - Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::$customTitle`.
 - Plugins’ dashboard widgets can now be built from the same pieces as Craft’s own, imported from `@craftcms/cp`: `EntryList`, `AvatarStack`, `TileContent`, `WidgetTile`, `SparklineStat`, `WidgetHeaderActions`, `useWidgetHeader()`, `useWidgetColor()`, and `isTintedColor()`. A guide to building dashboard widgets is in Storybook, under **Plugins**.
+- The `updates/check` action’s response now includes `dateFetched`, when the updates were last fetched.
 - Improved the performance of control panel requests, particularly the fields index, the entries index, and field edit screens, and reduced the size of their responses. ([#20704](https://github.com/craftcms/cms/pull/20704))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
 - Fixed a bug where control panel screens, such as section settings, failed to load when the control panel was served over plain HTTP from a hostname other than `localhost`. ([#20680](https://github.com/craftcms/cms/issues/20680), [#20695](https://github.com/craftcms/cms/pull/20695))
