@@ -231,10 +231,34 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
         return $values;
     }
 
+    /**
+     * Relations are stored in the `relations` table rather than as field references.
+     *
+     * @see relationTargetIds()
+     */
     #[Override]
     public function referenceTargetIds(mixed $value): array
     {
-        return $value instanceof ElementQueryInterface ? $this->serializeValue($value) : [];
+        return [];
+    }
+
+    /**
+     * Returns the IDs of the elements a normalized cell value relates to, for the `relations` table.
+     *
+     * @return list<int>
+     */
+    public function relationTargetIds(mixed $value): array
+    {
+        if (! $value instanceof ElementQueryInterface) {
+            return [];
+        }
+
+        // The IDs the value was normalized from, without querying for them, as relation fields do
+        if (is_array($value->id) && array_is_list($value->id) && array_all($value->id, fn (mixed $id): bool => is_int($id))) {
+            return $value->id;
+        }
+
+        return $this->serializeValue($value);
     }
 
     #[Override]

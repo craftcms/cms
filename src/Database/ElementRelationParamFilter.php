@@ -6,8 +6,8 @@ namespace CraftCms\Cms\Database;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -349,8 +349,8 @@ class ElementRelationParamFilter
                     return false;
                 }
 
-                if ($fieldModel instanceof BaseRelationField) {
-                    // We'll deal with normal relation fields all together
+                if ($fieldModel instanceof RelationalFieldInterface) {
+                    // We'll deal with relation fields, and other fields that store relations, all together
                     $relationFieldIds[] = $fieldModel->id;
                 } elseif ($fieldModel instanceof Matrix) {
                     $nestedFieldIds = [];

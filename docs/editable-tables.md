@@ -255,7 +255,9 @@ in that value.
 Entries, Assets, and Users cells extend `CraftCms\Cms\Field\TableCells\BaseRelationCell`. They store the related
 elements' IDs, normalize to element queries in the owner element's site, and use the matching relation field type for
 their settings (sources, selectable element condition, min/max relations, and the “Add” button label), editor, and
-GraphQL type. Relations are recorded as field references rather than in the `relations` table. Assets cells relate
+GraphQL type. Their relations are stored in the `relations` table under the Table field's ID, one row per site and
+related element, so `relatedTo` finds them, including with `field` set to the Table field's handle. Relations aren't
+recorded per column, so `relatedTo` can't be narrowed to one column. Relation cells aren't recorded as field references. Assets cells relate
 existing assets only, since upload locations belong to fields. To add a relation cell for another element type, extend
 `BaseRelationCell` and return its relation field type from `fieldType()`.
 

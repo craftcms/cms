@@ -10,12 +10,14 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
+use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Contracts\TableCellInterface;
 use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Data\LinkElementLoader;
 use CraftCms\Cms\Field\Models\Field as FieldModel;
+use CraftCms\Cms\Field\TableCells\BaseRelationCell;
 use CraftCms\Cms\Field\TableCells\MissingTableCell;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
@@ -63,7 +65,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Table extends Field implements DefaultableFieldInterface, InputSchemaFieldInterface, TracksReferencesFieldInterface
+class Table extends Field implements DefaultableFieldInterface, InputSchemaFieldInterface, RelationalFieldInterface, TracksReferencesFieldInterface
 {
     /** @var array<string, array<string, true>> */
     private array $columnErrors = [];
@@ -819,13 +821,64 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
 
     public function replaceReferences(ElementInterface $element, array $oldTargetIds, int $newTargetId): bool
     {
+        return $this->replaceCellReferences($element, $this->elementAwareCells(), $oldTargetIds, $newTargetId);
+    }
+
+    /**
+     * Relations in relation cells are stored per site, as field references are, so changing the field’s translation
+     * method never leaves them with the wrong site.
+     */
+    public function localizeRelations(): bool
+    {
+        return true;
+    }
+
+    public function forceUpdateRelations(ElementInterface $element): bool
+    {
+        return false;
+    }
+
+    public function getRelationTargetIds(ElementInterface $element): array
+    {
+        $value = $element->getFieldValue($this->handle);
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $targetIds = [];
+        foreach ($this->relationCells() as $colId => $cell) {
+            foreach ($value as $row) {
+                array_push($targetIds, ...$cell->relationTargetIds($row[$colId] ?? null));
+            }
+        }
+
+        return array_values(array_unique($targetIds));
+    }
+
+    /**
+     * Replaces the given elements with a new one in the relation cells, as relation fields’ values are replaced when
+     * elements are merged or deleted.
+     *
+     * @param  int[]  $oldTargetIds
+     */
+    public function replaceRelations(ElementInterface $element, array $oldTargetIds, int $newTargetId): bool
+    {
+        return $this->replaceCellReferences($element, $this->relationCells(), $oldTargetIds, $newTargetId);
+    }
+
+    /**
+     * @param  array<string, ElementAwareTableCellInterface>  $cells
+     * @param  int[]  $oldTargetIds
+     */
+    private function replaceCellReferences(ElementInterface $element, array $cells, array $oldTargetIds, int $newTargetId): bool
+    {
         $value = $element->getFieldValue($this->handle);
         if (! is_array($value)) {
             return false;
         }
 
         $replaced = false;
-        foreach ($this->elementAwareCells() as $colId => $cell) {
+        foreach ($cells as $colId => $cell) {
             $handle = $this->columns[$colId]['handle'] ?? null;
 
             foreach ($value as &$row) {
@@ -848,6 +901,15 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
         }
 
         return $replaced;
+    }
+
+    /** @return array<string, BaseRelationCell> */
+    private function relationCells(): array
+    {
+        return array_filter(
+            array_map($this->cellType(...), $this->columns),
+            fn (TableCellInterface $cell): bool => $cell instanceof BaseRelationCell,
+        );
     }
 
     /** @return array<string, ElementAwareTableCellInterface> */

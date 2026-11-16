@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table as DbTable;
+use CraftCms\Cms\Element\Jobs\ReplaceRelations;
+use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
@@ -109,31 +111,82 @@ it('exposes related entries on entries cell GraphQL types', function () {
         ->and((string) TableRow::prepareRowFieldDefinition($columns, input: true)['entries'])->toBe('[Int]');
 });
 
-it('tracks and replaces relations in table cells', function () {
-    $oldTarget = EntryModel::factory()->createElement();
-    $newTarget = EntryModel::factory()->createElement();
-    $other = EntryModel::factory()->createElement();
-    $result = EntryModel::factory()
+function relationTableSource(array $rows): Entry
+{
+    return EntryModel::factory()
         ->withField('related', Table::class, [
+            'translationMethod' => 'none',
             'columns' => ['col1' => ['heading' => 'Entries', 'handle' => 'entries', 'type' => 'entries']],
-        ], value: [
-            ['col1' => [$oldTarget->id, $other->id]],
-            ['col1' => [$other->id]],
-        ])
-        ->createElementWithFields();
-    $source = $result->element;
-    /** @var Table $field */
-    $field = $source->getFieldLayout()->getFieldByHandle('related');
-    $references = fn () => DB::table(DbTable::FIELDREFERENCES)->where('sourceId', $source->id)->orderBy('targetId')->pluck('targetId')->all();
+        ], value: $rows)
+        ->createElementWithFields()
+        ->element;
+}
 
-    expect($references())->toBe([$oldTarget->id, $other->id])
-        ->and($field->replaceReferences($source, [$newTarget->id], $oldTarget->id))->toBeFalse()
-        ->and($field->replaceReferences($source, [$oldTarget->id], $newTarget->id))->toBeTrue();
+function storedRelations(Entry $source): array
+{
+    return DB::table(DbTable::RELATIONS)
+        ->where('sourceId', $source->id)
+        ->orderBy('targetId')
+        ->get(['sourceSiteId', 'targetId'])
+        ->map(fn (object $row) => [(int) $row->sourceSiteId, (int) $row->targetId])
+        ->all();
+}
 
+it('stores relation cells as the table’s relations, per site, rather than as field references', function () {
+    [$a, $b] = EntryModel::factory(2)->create()->pluck('id')->all();
+    $source = relationTableSource([['col1' => [$b, $a]], ['col1' => [$a]]]);
+
+    expect(storedRelations($source))->toBe([[$source->siteId, $a], [$source->siteId, $b]])
+        ->and(DB::table(DbTable::FIELDREFERENCES)->where('sourceId', $source->id)->count())->toBe(0);
+
+    $source->setFieldValue('related', [['col1' => [$b]]]);
     Elements::saveElement($source);
+
+    expect(storedRelations($source))->toBe([[$source->siteId, $b]]);
+});
+
+it('finds elements related through table cells with relatedTo, scoped to the table field', function () {
+    [$target, $other] = EntryModel::factory(2)->create()->pluck('id')->all();
+    $source = relationTableSource([['col1' => [$target]]]);
+
+    $sources = fn (array $criteria) => Entry::find()->relatedTo($criteria)->ids();
+
+    expect($sources(['targetElement' => $target]))->toBe([$source->id])
+        ->and($sources(['targetElement' => $target, 'field' => 'related']))->toBe([$source->id])
+        ->and($sources(['targetElement' => $other]))->toBe([])
+        ->and(Entry::find()->relatedTo(['sourceElement' => $source->id, 'field' => 'related'])->ids())->toBe([$target]);
+});
+
+it('replaces related elements in table cells when relations are replaced', function () {
+    [$oldTarget, $newTarget, $other] = EntryModel::factory(3)->create()->pluck('id')->all();
+    $source = relationTableSource([['col1' => [$oldTarget, $other]], ['col1' => [$other]]]);
+
+    dispatch_sync(new ReplaceRelations(
+        sourceElementType: Entry::class,
+        targetElementType: Entry::class,
+        sourceIds: [$source->id],
+        oldTargetIds: [$oldTarget],
+        newTargetId: $newTarget,
+    ));
+
     $stored = Entry::find()->id($source->id)->one()->getFieldValue('related');
 
-    expect($stored[0]['entries']->ids())->toBe([$newTarget->id, $other->id])
-        ->and($stored[1]['entries']->ids())->toBe([$other->id])
-        ->and($references())->toBe([$newTarget->id, $other->id]);
+    expect($stored[0]['entries']->ids())->toBe([$newTarget, $other])
+        ->and($stored[1]['entries']->ids())->toBe([$other])
+        ->and(array_column(storedRelations($source), 1))->toBe([$newTarget, $other]);
+});
+
+it('points table cells at the prevailing element when elements are merged', function () {
+    $merged = EntryModel::factory()->createElement();
+    $prevailing = EntryModel::factory()->createElement();
+    $other = EntryModel::factory()->createElement();
+    $source = relationTableSource([['col1' => [$merged->id, $other->id]], ['col1' => [$merged->id, $prevailing->id]]]);
+
+    expect(app(ElementDeletions::class)->mergeElements($merged, $prevailing))->toBeTrue();
+
+    $stored = Entry::find()->id($source->id)->one()->getFieldValue('related');
+
+    expect($stored[0]['entries']->ids())->toBe([$prevailing->id, $other->id])
+        ->and($stored[1]['entries']->ids())->toBe([$prevailing->id])
+        ->and(array_column(storedRelations($source), 1))->toBe([$prevailing->id, $other->id]);
 });
