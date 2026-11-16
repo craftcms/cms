@@ -59,6 +59,7 @@
 - Recent Entries widgets now have a “Widget Title” setting, and show each entry’s thumbnail, when it was created, its section, and its authors’ avatars.
 - My Drafts widgets now show each draft’s thumbnail, section, and draft name, and leave out drafts in sections the user can no longer view.
 - Double-clicking an entry’s thumbnail in a Recent Entries or My Drafts widget now opens the entry in a slideout.
+- Feed widgets, such as Craft News, now show each item’s summary and image.
 - Fields in slideouts, the details pane, and dashboard widget settings are now 16px apart, rather than 24px. Fields in the main content pane of full-page forms are still 24px apart.
 - Fixed a bug where Dashboard widgets spanning multiple columns ended a few pixels before the right edge of the last column they spanned.
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
