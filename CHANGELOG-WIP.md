@@ -667,6 +667,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 #### Dashboard & Widgets
 
 - Added `CraftCms\Cms\Dashboard\Contracts\WidgetInterface::$color`, `CraftCms\Cms\Dashboard\Dashboard::changeWidgetColor()`, and the `dashboard/change-widget-color` action.
+- Added `EntryList`, `AvatarStack`, `TileContent`, `WidgetTile`, `SparklineStat`, `WidgetHeaderActions`, `useWidgetHeader()`, `useWidgetColor()`, and `isTintedColor()` to `@craftcms/cp`, for building plugins’ dashboard widgets from the same pieces as Craft’s own.
 
 ##### Controllers
 - Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:
