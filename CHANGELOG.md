@@ -58,8 +58,8 @@
 - Double-clicking an entry’s thumbnail in a Recent Entries or My Drafts widget now opens the entry in a slideout.
 - Feed widgets, such as Craft News, now show each item’s summary and image, and show dates as other control panel timestamps do.
 - New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day in the widget’s color.
+- Craft Support widgets are now a list of links to the documentation, Knowledge Base, Craft Support, GitHub bug reports and feature requests, Discord, and Craft Partners, plus an “Ask AI” button when the AI assistant is available. Support requests are now sent from craftcms.com/contact, rather than a form in the widget.
 - Quick Post widgets now show a large button in their entry type’s icon and color, and are titled “New {Section} Entry” by default.
-- Craft Support widgets’ buttons now show their icons at full strength, with their descriptions in the widget’s color.
 - Updates widgets now show whether updates are available with an icon, say when they last checked, and check again from a button beside their title.
 - Added the `cpIconPath` and `cpLogoPath` config settings, which set the control panel’s icon and the login page’s logo from files on the server. SVG files are rendered inline, so they can adapt to the selected light or dark theme, such as with the `light-dark()` CSS function. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Deprecated the `cpIconUrl` and `cpLogoUrl` config settings. `cpIconPath` and `cpLogoPath` should be used instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
@@ -73,6 +73,7 @@
 - Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::getCondition()` and `setCondition()`, replacing `$siteId` and `$section`.
 - Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::$customTitle`.
 - Plugins’ dashboard widgets can now be built from the same pieces as Craft’s own, imported from `@craftcms/cp`: `EntryList`, `AvatarStack`, `TileContent`, `WidgetTile`, `SparklineStat`, `WidgetHeaderActions`, `useWidgetHeader()`, `useWidgetColor()`, and `isTintedColor()`. A guide to building dashboard widgets is in Storybook, under **Plugins**.
+- Removed `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController` and the `dashboard/send-support-request` action.
 - The `updates/check` action’s response now includes `dateFetched`, when the updates were last fetched.
 - Improved the performance of control panel requests, particularly the fields index, the entries index, and field edit screens, and reduced the size of their responses. ([#20704](https://github.com/craftcms/cms/pull/20704))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
