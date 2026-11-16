@@ -676,7 +676,14 @@ craft-field[data-highlighted] {
   height: 72px;
 }
 
-.card-thumb > .thumb svg {
+.card-thumb > .thumb:not(.icon-thumb) svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* An entry type's icon standing in for an image fills the box, as an image
+   would, with the icon small within it. */
+.card-thumb > .icon-thumb {
   width: 100%;
   height: 100%;
 }

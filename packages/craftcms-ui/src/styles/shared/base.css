@@ -222,22 +222,32 @@ craft-chip > [slot='thumbnail'] {
   );
 }
 
-craft-chip > [slot='thumbnail'] > .thumb svg {
+craft-chip > [slot='thumbnail'] > .thumb:not(.icon-thumb) svg {
   width: 100%;
   height: 100%;
 }
 
 /*
-  An entry type's icon standing in for an entry's thumbnail is drawn faintly,
-  in the entry type's color if it has one, so it reads as decoration rather
-  than content.
+  An entry type's icon standing in for an entry's thumbnail fills the
+  thumbnail's box with a light fill, and is drawn small and faintly within
+  it, in the entry type's color if it has one, so it reads as decoration
+  rather than content.
 */
 .icon-thumb {
-  opacity: 0.3;
+  display: grid;
+  place-items: center;
+  border-radius: var(--c-radius-sm);
+  background-color: var(--c-color-neutral-fill-quiet);
 }
 
 .icon-thumb[data-color] {
   color: var(--c-color-fill-loud);
+}
+
+.icon-thumb > :is(svg, craft-icon) {
+  width: 55%;
+  height: 55%;
+  opacity: 0.3;
 }
 
 .icon-thumb svg {

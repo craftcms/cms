@@ -34,6 +34,7 @@
 - Icons in the global sidebar, global header, breadcrumbs, details rail, and content tabs are now the same size and color, and rows of icon buttons in the global header and on element cards are tighter. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Icons throughout the control panel are now 12×12px, rather than scaling with the text around them. Icons in small buttons and extra-small breadcrumbs are 10×10px, and dashboard widgets’ settings and close buttons are now larger.
 - Chips’ action buttons, such as element chips’ action menus, now have a little more space between them and the chip’s label.
+- Entry type icons that stand in for entries’ thumbnails, such as in element indexes, chips, and cards, are now drawn small within a light gray box, rather than filling it.
 - Global nav items now stay highlighted while their flyout menus are open, and menu buttons stay highlighted while their menus are open. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - The details pane now has a subtle inset shadow along its leading edge, and Ask AI’s input is transparent, like the Activity panel’s comment box. ([#20612](https://github.com/craftcms/cms/pull/20612))
 - Fields’ action menus now sit right after their labels and required/translatable indicators, evenly spaced, rather than at the far end of the heading. ([#20612](https://github.com/craftcms/cms/pull/20612))
