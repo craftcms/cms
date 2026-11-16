@@ -14,9 +14,58 @@
       /** A d3-format specifier for the values, such as `',.0f'`. */
       valueFormat?: string;
       color?: string;
+      /**
+       * Draws just a thin, smoothly curved line over a faint gradient, edge
+       * to edge, with no axis labels, gridlines, or dots. Values still show
+       * in tooltips, and in the table for screen readers.
+       */
+      sparkline?: boolean;
+      /**
+       * Returns a tooltip's text, given the value's date, formatted as the
+       * chart labels it, and its number. Tooltips show the date and the
+       * formatted value on two lines without it.
+       */
+      tooltip?: (date: string, value: number) => string;
     }>(),
-    {scale: 'day', valueFormat: undefined, color: undefined}
+    {
+      scale: 'day',
+      valueFormat: undefined,
+      color: undefined,
+      sparkline: false,
+      tooltip: undefined,
+    }
   );
+
+  /**
+   * Settings merge into the last draw's, so each shape sets every setting
+   * the other changes.
+   */
+  function shapeSettings(): Record<string, unknown> {
+    return props.sparkline
+      ? {
+          ticks: false,
+          plots: false,
+          lineWidth: 1.5,
+          curve: 'smooth',
+          fill: 'gradient',
+          fadeEdges: 16,
+          // Room for the line at the highest point
+          margin: {top: 4, right: 0, bottom: 0, left: 0},
+          xAxis: {showAxis: false},
+          yAxis: {gridlines: false},
+        }
+      : {
+          ticks: true,
+          plots: true,
+          lineWidth: Area.defaults.lineWidth,
+          curve: Area.defaults.curve,
+          fill: Area.defaults.fill,
+          fadeEdges: Area.defaults.fadeEdges,
+          margin: {...Area.defaults.margin},
+          xAxis: {showAxis: true},
+          yAxis: {gridlines: true},
+        };
+  }
 
   const container = useTemplateRef<HTMLElement>('container');
   let chart: Area | undefined;
@@ -63,6 +112,12 @@
       dataScale: props.scale,
       // Settings merge into the last draw's, so an unset color must reset it
       colors: props.color ? [props.color] : BaseChart.defaults.colors,
+      ...shapeSettings(),
+      // Reset like the colors, since settings merge into the last draw's
+      tipText: props.tooltip
+        ? (date: Date, value: number) =>
+            props.tooltip!(chart!.getXFormatter()(date), value)
+        : null,
     });
 
     const formatX = chart.getXFormatter();
@@ -76,9 +131,18 @@
   useResizeObserver(container, () => chart?.resize());
   onMounted(draw);
   // Deep, so rows pushed or changed in place redraw too
-  watch(() => [props.data, props.scale, props.valueFormat, props.color], draw, {
-    deep: true,
-  });
+  watch(
+    () => [
+      props.data,
+      props.scale,
+      props.valueFormat,
+      props.color,
+      props.sparkline,
+      props.tooltip,
+    ],
+    draw,
+    {deep: true}
+  );
   onBeforeUnmount(() => chart?.destroy());
 </script>
 
@@ -151,14 +215,22 @@
     stroke-width: 0;
   }
 
+  /* Drawn like the control panel's other tooltips (see craft-tooltip). */
   .area-chart .tooltip {
     position: absolute;
     z-index: 1;
-    padding-block: 7px;
-    padding-inline: 10px;
-    border-radius: var(--radius-sm);
-    background: var(--c-surface-overlay);
-    box-shadow: var(--shadow-md);
+    padding-block: calc(4rem / 16);
+    padding-inline: calc(8rem / 16);
+    border: 1px solid var(--c-color-black-border-loud);
+    border-radius: var(--c-radius-sm);
+    background-color: var(--c-color-black-fill-loud);
+    box-shadow: var(--c-shadow-md);
+    color: var(--c-color-black-on-loud);
+    font-family: var(--c-font-body);
+    font-size: var(--c-text-base);
+    font-weight: 400;
+    line-height: 1.3;
+    white-space: nowrap;
     pointer-events: none;
     user-select: none;
   }
