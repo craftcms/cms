@@ -60,7 +60,7 @@
 - My Drafts widgets now show each draft’s thumbnail, section, and draft name, and leave out drafts in sections the user can no longer view.
 - Double-clicking an entry’s thumbnail in a Recent Entries or My Drafts widget now opens the entry in a slideout.
 - Feed widgets, such as Craft News, now show each item’s summary and image.
-- New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day.
+- New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day, which gets taller as the widget gets wider.
 - Craft Support widgets are now a list of links to the documentation, Knowledge Base, Craft Support, GitHub bug reports and feature requests, Discord, and Craft Partners, plus an “Ask AI” button when the AI assistant is available. Support requests are now sent from craftcms.com/contact, rather than a form in the widget.
 - Quick Post widgets now show a large button in their entry type’s icon and color, and are titled “New {Section} Entry” by default.
 - Updates widgets now say when they last checked for updates.
