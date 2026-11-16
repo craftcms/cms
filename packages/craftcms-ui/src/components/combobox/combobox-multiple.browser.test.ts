@@ -335,3 +335,32 @@ it('shows each selected option’s icon or dot on its token, hidden from assisti
   );
   expect(tokens[2]!.querySelector('craft-icon, craft-indicator')).toBeNull();
 });
+
+it('keeps an empty textbox beside the tokens until typed text needs its own line', async () => {
+  const {control, input} = await fixture((c) => {
+    c.value = ['Channel', 'Structure'];
+  });
+  const field = control.shadowRoot!.querySelector<HTMLElement>(
+    '.input-group__input'
+  )!;
+  const textbox =
+    control.shadowRoot!.querySelector<HTMLElement>('.combobox__textbox')!;
+  const tokens = [...control.querySelectorAll('craft-combobox-token')];
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const tokensEnd = tokens.at(-1)!.getBoundingClientRect().right;
+  const fieldEnd = field.getBoundingClientRect().right;
+  control.style.width = `${control.getBoundingClientRect().width - (fieldEnd - tokensEnd) + 5 * rem}px`;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const tokenTop = tokens[0]!.getBoundingClientRect().top;
+  expect(textbox.getBoundingClientRect().top).toBeLessThan(
+    tokenTop + tokens[0]!.getBoundingClientRect().height
+  );
+
+  await type(input, 'a search much longer than the room beside the tokens');
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  expect(textbox.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    tokenTop + tokens[0]!.getBoundingClientRect().height
+  );
+});
