@@ -142,8 +142,8 @@
               class="widget-settings-button"
               type="button"
               icon="gear"
-              size="small"
               variant="plain"
+              flush="inline-end block"
               :aria-label="t('Widget settings')"
               :aria-describedby="
                 widget.title ? `widget-heading-${widget.id}` : undefined
@@ -161,16 +161,18 @@
     >
       <div v-if="settings" class="settings-face">
         <craft-card :data-color="widget.color ?? undefined">
-          <h2 slot="label" class="cp-h4">
-            {{ t('{type} Settings', {type: widget.name}) }}
-          </h2>
+          <div slot="label" class="widget-heading">
+            <h2 class="text-sm">
+              {{ t('{type} Settings', {type: widget.name}) }}
+            </h2>
+          </div>
           <craft-button
             v-if="widget.settingsUi"
             slot="actions"
             type="button"
             icon="xmark-large"
-            size="small"
             variant="plain"
+            flush="inline-end block"
             :aria-label="t('Cancel')"
             .disabled="settingsSending"
             @click="closeSettings"

@@ -100,6 +100,5 @@ export default css`
 
   .indicator {
     flex: 0 0 auto;
-    font-size: 0.8em;
   }
 `;

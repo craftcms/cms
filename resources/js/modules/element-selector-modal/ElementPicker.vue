@@ -192,6 +192,10 @@
 </template>
 
 <style lang="scss" scoped>
+  .folder-breadcrumbs craft-breadcrumbs {
+    --c-icon-size: var(--c-size-icon-xs);
+  }
+
   .modal-element-index {
     display: grid;
     height: 100%;

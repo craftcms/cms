@@ -96,6 +96,10 @@
 </template>
 
 <style scoped lang="scss">
+  craft-breadcrumbs {
+    --c-icon-size: var(--c-size-icon-xs);
+  }
+
   craft-breadcrumb-item > .cp-link:hover {
     text-decoration: underline;
   }

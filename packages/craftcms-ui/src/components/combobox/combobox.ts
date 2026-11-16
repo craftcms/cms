@@ -1180,16 +1180,12 @@ export default class CraftCombobox extends FormAssociated(
                 @mousedown=${(e: Event) => e.preventDefault()}
                 @click=${this.#clear}
               >
-                <craft-icon
-                  name="xmark-large"
-                  style="font-size: 0.8em"
-                ></craft-icon>
+                <craft-icon name="xmark-large"></craft-icon>
               </craft-button>`
             : nothing}
           <craft-icon
             class="indicator"
             name="chevron-down"
-            style="font-size: 0.8em"
             @mousedown=${this.#onIndicatorMousedown}
             @click=${this.#onIndicatorClick}
           ></craft-icon>

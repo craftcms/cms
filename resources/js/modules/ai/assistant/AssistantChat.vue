@@ -1215,10 +1215,6 @@
     color: var(--c-text-quiet);
   }
 
-  .assistant-chat__icon craft-icon {
-    font-size: var(--c-text-base);
-  }
-
   .assistant-chat__reply {
     display: flex;
     flex-direction: column;

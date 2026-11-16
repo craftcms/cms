@@ -374,7 +374,7 @@ export default css`
   /* Quieter than the label it trails, and sized to the toggle chevron it
      stands in for. */
   .flyout-indicator {
-    font-size: calc(10rem / 16);
+    font-size: var(--c-size-icon-sm, calc(12rem / 16));
     color: var(--c-color-neutral-on-quiet, currentcolor);
   }
 
@@ -382,9 +382,9 @@ export default css`
     padding-inline: var(--c-spacing-sm);
   }
 
-  /* Smaller than the row's own icons: it marks the item, it isn't one. */
+  /* The row's icon size, though the toggle is a small button. */
   .subnav-toggle craft-icon {
-    font-size: calc(10rem / 16);
+    font-size: var(--c-size-icon-sm, calc(12rem / 16));
   }
 
   /*
@@ -504,18 +504,17 @@ export default css`
     }
 
     /*
-     * The chevron stands in for the icon in the same square, so it matches its
-     * size. craft-button[icon][size=small] shrinks its contents to 0.8em and
-     * craft-icon shrinks again by the same, which would leave the chevron a
-     * fifth smaller than the icon it replaces — so cancel the button's share
-     * and keep the icon's, which follows --c-icon-size when that's set.
+     * The chevron stands in for the icon in the same square, so it matches the
+     * nav item's icon size, rather than the subnav toggle's smaller chevron or
+     * the small button's smaller icons.
      */
-    craft-button {
-      font-size: 1em;
-    }
+    --_rail-icon-size: var(
+      --c-icon-size,
+      var(--c-size-icon-sm, calc(12rem / 16))
+    );
 
     craft-icon {
-      font-size: var(--c-icon-size, 0.8em);
+      font-size: var(--_rail-icon-size);
     }
   }
 
