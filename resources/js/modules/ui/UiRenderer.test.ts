@@ -2920,6 +2920,46 @@ describe('UiRenderer', () => {
     vi.useRealTimers();
   });
 
+  it('applies an in-flight refresh when its value is reported again before it answers', async () => {
+    let completeRefresh: (payload: UiPayload) => void = () => {};
+    const refresh = vi.fn(
+      () =>
+        new Promise<UiPayload>((resolve) => {
+          completeRefresh = resolve;
+        })
+    );
+    app.unmount();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    required(
+      required(refreshable.nodes[3], 'Expected the behavior field group.')
+        .children?.[0],
+      'Expected the code field node.'
+    ).control!.reactive = true;
+    await mount(refreshable, {refresh});
+
+    const lightswitch = required(
+      container.querySelector('craft-switch'),
+      'Expected the lightswitch control.'
+    );
+    toggleChoice(lightswitch, false);
+    await nextTick();
+    toggleChoice(lightswitch, false);
+    await nextTick();
+
+    const refreshed = clonePayload();
+    required(
+      refreshed.nodes[1],
+      'Expected the placeholder field node.'
+    ).props.label = 'Updated presentation';
+    completeRefresh(refreshed);
+    await Promise.resolve();
+    await nextTick();
+
+    expect(refresh).toHaveBeenCalledOnce();
+    expect(container.textContent).toContain('Updated presentation');
+  });
+
   it('ignores stale refreshes and retains the last valid presentation on failure', async () => {
     vi.useFakeTimers();
     const requests: Array<{
