@@ -20,8 +20,9 @@ import {
 import type {ConnectionAdapter} from '@tanstack/ai-vue';
 import {assistantApi} from '@/bootstrap/assistant';
 import {broadcast} from '@/common/craft/broadcast';
+import {createScreenPanels} from '@/common/composables/screenPanels';
 import {useElementPresentations} from '@/modules/elements/element-presentations';
-import {AssistantRequestError} from './assistant';
+import {AssistantRequestError, registerAssistantScreen} from './assistant';
 import {registerAssistantEditor} from './context';
 import AssistantChat from './AssistantChat.vue';
 
@@ -237,6 +238,31 @@ describe('AssistantChat', () => {
     expect((await requests())[0]!.forwardedProps.context).toEqual([pointer]);
 
     close();
+  });
+
+  it('names no element while an editor it can’t work with is in front of the open one', async () => {
+    onTestFinished(
+      registerAssistantEditor({
+        id: 'page',
+        params: () => ({
+          elementType: ENTRY,
+          elementId: 42,
+          draftId: null,
+          siteId: 1,
+          ownerId: null,
+          fieldId: null,
+          canonicalId: 42,
+        }),
+        label: () => 'Lighthouses',
+        scope: () => ['editor'],
+        values: () => ({}),
+        container: () => null,
+      })
+    );
+    onTestFinished(registerAssistantScreen(() => createScreenPanels(), false));
+    await flush();
+
+    expect((await requests())[0]!.forwardedProps.context).toEqual([]);
   });
 
   it('shows the server’s message when a request fails', async () => {

@@ -53,6 +53,8 @@
     registerAssistantEditor,
     type AssistantEditor,
   } from '@/modules/ai/assistant/context';
+  import {registerAssistantScreen} from '@/modules/ai/assistant/assistant';
+  import {useScreenPanels} from '@/common/composables/screenPanels';
   import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
   import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
   import {getActivePreview} from '@/modules/elements/live-preview/previews';
@@ -380,6 +382,19 @@
     () =>
       Boolean(livePreviewPane.value?.holdsEditor) &&
       Boolean(livePreviewTarget.value)
+  );
+
+  // The AI assistant's panel goes in the screen the editor is shown in, such
+  // as a slideout, and in Live Preview's pane while it holds the content.
+  const screenPanels = useScreenPanels();
+  onBeforeUnmount(
+    registerAssistantScreen(
+      () =>
+        contentInPreview.value
+          ? (livePreviewPane.value?.panels ?? null)
+          : screenPanels,
+      Boolean(assistantParams)
+    )
   );
   // The content's height, kept while it's away so the page doesn't collapse
   // and lose its scroll position. Read before the content moves.
