@@ -390,7 +390,7 @@ export default css`
   /* Suffix */
 
   .cp-chip__suffix {
-    margin-inline-start: calc(var(--c-spacing-xs) - var(--_chip-gap));
+    margin-inline-start: calc(var(--c-spacing) * 1.5 - var(--_chip-gap));
     padding-block: var(--_chip-block-padding);
     display: flex;
     flex-direction: column;
