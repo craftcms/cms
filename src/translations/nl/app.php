@@ -1150,7 +1150,7 @@ return [
     'Never' => 'Nooit',
     'New Issues' => 'Nieuwe problemen',
     'New Password' => 'Nieuw wachtwoord',
-    'New Tab' => 'Nieuw label',
+    'New Tab' => 'Nieuwe tab',
     'New category group' => 'Nieuwe categorie groep',
     'New category in the {group} category group' => 'Nieuwe categorie in de categoriegroep {group}',
     'New category, choose a category group' => 'Nieuwe categorie, kies een categoriegroep',
