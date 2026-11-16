@@ -364,3 +364,31 @@ it('keeps an empty textbox beside the tokens until typed text needs its own line
     tokenTop + tokens[0]!.getBoundingClientRect().height
   );
 });
+
+it('lines its chevron up with a select’s and a single combobox’s', async () => {
+  await import('../select/select.js');
+  document.body.innerHTML = `
+    <div style="width: 20rem">
+      <craft-select><select slot="input"><option>One</option></select></craft-select>
+      <craft-combobox></craft-combobox>
+      <craft-combobox multiple></craft-combobox>
+    </div>`;
+  const hosts = [
+    ...document.querySelectorAll<
+      HTMLElement & {updateComplete: Promise<unknown>}
+    >('craft-select, craft-combobox'),
+  ];
+  await Promise.all(hosts.map((host) => host.updateComplete));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+
+  const [select, single, multiple] = hosts.map((host) => {
+    const indicator = host.shadowRoot!.querySelector('.indicator')!;
+    return Math.round(
+      indicator.getBoundingClientRect().right -
+        parseFloat(getComputedStyle(indicator).paddingInlineEnd)
+    );
+  });
+
+  expect(single).toBe(select);
+  expect(multiple).toBe(select);
+});

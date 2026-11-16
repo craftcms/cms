@@ -61,6 +61,20 @@ export default css`
       var(--c-input-spacing-inline);
   }
 
+  :host([multiple]) .indicator {
+    padding-inline-end: calc(
+      var(--c-input-spacing-inline) - var(--c-spacing-xs) -
+        var(--_input-border-width)
+    );
+  }
+
+  :host([multiple]) .clear {
+    inset-inline-end: calc(
+      var(--c-input-spacing-inline) * 1.5 + 1em - var(--c-spacing-xs) -
+        var(--_input-border-width)
+    );
+  }
+
   :host(:not([disabled], [readonly])) .indicator {
     cursor: text;
   }
