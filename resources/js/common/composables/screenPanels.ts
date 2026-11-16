@@ -195,13 +195,19 @@ export function createScreenPanels(): ScreenPanels {
 
     unregister(panelId) {
       // A panel that stays from page to page only goes when it leaves the
-      // screen, such as for another one, so the shell doesn't bring it back.
-      // Others come back with the next page's panels.
-      if (
-        registered.get(panelId)?.persistent &&
-        panelClosedByShell.value === panelId
-      ) {
-        panelClosedByShell.value = null;
+      // screen, such as for another one, so neither the shell nor the panel
+      // the column would rather open on, such as the URL hash's, brings it
+      // back: the column keeps to the panel it falls back to, as it would
+      // had the person opened this one. Others come back with the next
+      // page's panels.
+      if (registered.get(panelId)?.persistent) {
+        if (panelClosedByShell.value === panelId) {
+          panelClosedByShell.value = null;
+        }
+
+        if (openPanelId.value === panelId) {
+          openedOnPurpose = true;
+        }
       }
 
       registered.delete(panelId);

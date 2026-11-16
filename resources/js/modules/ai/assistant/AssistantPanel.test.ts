@@ -99,6 +99,8 @@ beforeAll(() => setIconResolver(() => nothing));
 
 /** Whether the page has a panel of its own. */
 const pagePanel = ref(false);
+/** Whether the page's column mirrors its open panel in the URL hash. */
+const pageSyncsHash = ref(false);
 let app: ReturnType<typeof createApp> | undefined;
 
 async function settle(): Promise<void> {
@@ -127,7 +129,10 @@ async function mount(extra: () => VNode | null = () => null): Promise<void> {
             'div',
             {class: 'page'},
             screenPanels.panels.value.length
-              ? h(DetailsPanels, {registry: screenPanels})
+              ? h(DetailsPanels, {
+                  registry: screenPanels,
+                  syncLocationHash: pageSyncsHash.value,
+                })
               : undefined
           ),
           pagePanel.value
@@ -153,6 +158,7 @@ afterEach(() => {
   document.body.innerHTML = '';
   useAssistantPanel().opened.value = false;
   pagePanel.value = false;
+  pageSyncsHash.value = false;
   screenPanels.start(null);
 });
 
@@ -359,6 +365,44 @@ it('keeps a chat closed in an editor’s screen closed when the page it was fold
   await settle();
 
   expect(screenPanels.openPanelId.value).not.toBe('ai-assistant');
+});
+
+it('keeps a chat the URL hash opened closed once it’s closed in an editor’s screen', async () => {
+  const editorScreen = createScreenPanels();
+  const editorOpen = ref(false);
+  window.history.replaceState(null, '', '#ai-assistant');
+  onTestFinished(() =>
+    window.history.replaceState(null, '', window.location.pathname)
+  );
+  pagePanel.value = true;
+  pageSyncsHash.value = true;
+  await mount(() =>
+    editorOpen.value
+      ? h('div', {class: 'editor'}, [
+          h(DetailsPanels, {registry: editorScreen, idPrefix: 'editor'}),
+          h(ScreenPanelsScope, {panels: editorScreen}, () =>
+            h(ScreenPanel, {id: 'info', label: 'Info', icon: 'info'}, () =>
+              h('p', 'Info')
+            )
+          ),
+        ])
+      : null
+  );
+  expect(screenPanels.openPanelId.value).toBe('ai-assistant');
+
+  editorOpen.value = true;
+  const unregister = registerAssistantScreen(() => editorScreen, true);
+  await settle();
+  expect(editorScreen.openPanelId.value).toBe('ai-assistant');
+  editorScreen.close('ai-assistant');
+  await settle();
+
+  unregister();
+  editorOpen.value = false;
+  await settle();
+
+  expect(screenPanels.openPanelId.value).toBe('info');
+  expect(useAssistantPanel().isOpen.value).toBe(false);
 });
 
 it('keeps a folded chat mounted while an editor’s screen has no panels yet', async () => {
