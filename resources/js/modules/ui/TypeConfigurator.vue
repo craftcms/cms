@@ -34,7 +34,7 @@
 <template>
   <div class="type-configurator min-w-0">
     <div
-      class="type-configurator__layout gap-1.5"
+      class="type-configurator__layout gap-sm"
       :class="{'type-configurator__layout--actions': $slots.actions}"
     >
       <div class="type-configurator__type">
@@ -58,7 +58,7 @@
 
       <div
         v-if="ui"
-        class="type-configurator__fields flex flex-wrap items-start gap-1.5 min-w-0"
+        class="type-configurator__fields flex flex-wrap items-start gap-sm min-w-0"
       >
         <UiRenderer
           ref="uiRenderer"
