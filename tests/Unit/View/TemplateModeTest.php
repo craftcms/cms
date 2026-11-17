@@ -80,12 +80,14 @@ it('takes the control panel views out of the view finder in site mode', function
     view()->getFinder()->addLocation($hostViews);
     TemplateMode::set(TemplateMode::Site);
 
-    expect(view()->getFinder()->find('app'))->toBe("$hostViews/app.blade.php");
+    $hostApp = realpath("$hostViews/app.blade.php");
+
+    expect(realpath(view()->getFinder()->find('app')))->toBe($hostApp);
 
     $cpApp = TemplateMode::with(TemplateMode::Cp, fn () => view()->getFinder()->find('app'));
 
-    expect($cpApp)->not->toBe("$hostViews/app.blade.php")
-        ->and(view()->getFinder()->find('app'))->toBe("$hostViews/app.blade.php");
+    expect(realpath($cpApp))->not->toBe($hostApp)
+        ->and(realpath(view()->getFinder()->find('app')))->toBe($hostApp);
 });
 
 it('returns correct default template extensions', function () {
