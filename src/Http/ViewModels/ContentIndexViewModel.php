@@ -730,9 +730,10 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
-     * Selectable columns: common attributes plus the source's field columns.
+     * Selectable columns: common attributes plus the source's field columns,
+     * with how each one's values align (numbers align to the end).
      *
-     * @return array<int, array{label: string, value: string}>
+     * @return array<int, array{label: string, value: string, align: 'start'|'end'}>
      */
     public function tableColumns(): array
     {
@@ -1102,6 +1103,7 @@ abstract class ContentIndexViewModel extends ViewModel
                 ->map(fn (array $attribute, string $key): array => [
                     'label' => $attribute['label'],
                     'value' => $key,
+                    'align' => $attribute['align'] ?? 'start',
                 ])
                 ->values()
                 ->all();

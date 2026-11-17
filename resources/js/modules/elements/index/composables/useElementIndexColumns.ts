@@ -9,12 +9,21 @@ import type {SourceItem} from '@/modules/elements/types/sources';
 import type {ElementIndexRow} from '@/modules/elements/index/composables/useContentIndexData';
 
 interface ElementIndexColumnsContext {
-  /** Columns available for the current source: `{label, value}` per column. */
-  tableColumns: Array<{label: string; value: string}>;
+  /**
+   * Columns available for the current source: `{label, value, align}` per
+   * column, where `align` is `end` for quantities.
+   */
+  tableColumns: Array<TableColumn>;
   /** The active source; a custom source may carry its own `tableAttributes`. */
   source?: SourceItem | null;
   /** Element-type default columns, used when the source defines none. */
   defaultTableColumns?: Array<string>;
+}
+
+interface TableColumn {
+  label: string;
+  value: string;
+  align?: 'start' | 'end';
 }
 
 interface PinnedColumn {
@@ -83,11 +92,10 @@ export function useElementIndexColumns(
 
   // The visible columns, in the user's order (`visible` is an ordered array).
   // Keys persisted for since-removed columns are silently skipped.
-  const visibleOrderedColumns = computed<Array<{label: string; value: string}>>(
-    () =>
-      visibleKeys.value
-        .map((key) => columnsByKey.value.get(key))
-        .filter((column) => column !== undefined)
+  const visibleOrderedColumns = computed<Array<TableColumn>>(() =>
+    visibleKeys.value
+      .map((key) => columnsByKey.value.get(key))
+      .filter((column) => column !== undefined)
   );
 
   const columnHelper = createCraftColumnHelper<ElementIndexRow>();
@@ -95,7 +103,10 @@ export function useElementIndexColumns(
   const columns = computed(() => [
     ...(pinned ? [columnHelper.html(pinned.key, {header: pinned.label})] : []),
     ...visibleOrderedColumns.value.map((column) =>
-      columnHelper.html(column.value, {header: column.label})
+      columnHelper.html(column.value, {
+        header: column.label,
+        meta: {align: column.align ?? 'start'},
+      })
     ),
   ]);
 
