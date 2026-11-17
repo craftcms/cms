@@ -178,6 +178,7 @@
 - Fixed a bug where a clone of an element fetched by a query that returned more than one element got a new, empty value for its Content Block fields. ([#20732](https://github.com/craftcms/cms/pull/20732))
 - Fixed a bug where input placeholder text in colored cards, such as colored dashboard widgets’ settings, wasn’t tinted to match the card.
 - Fixed a bug where settings that update as they’re changed, such as dashboard widgets’ settings, sometimes didn’t update after a change.
+- Fixed a bug where screen readers announced the “Confirm your identity” modal as a dialog nested within another dialog. ([#20590](https://github.com/craftcms/cms/pull/20590))
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
 
 ## 6.0.0-beta.1 - 2026-11-10
