@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
@@ -165,3 +166,25 @@ test('relations stored for any of the queried sites match', function (bool $allS
         ->and($query()->relatedTo(['sourceElement' => $owner->id, 'field' => $matrixField->id])->ids())->toBe([$nestedTarget->id])
         ->and($query()->relatedTo(['targetElement' => $nestedTarget->id, 'field' => $matrixField->id])->ids())->toBe([$owner->id]);
 })->with([false, true]);
+
+test('reference-tracking fields match when named, and all fields match with *', function () {
+    actingAs(User::findOne());
+
+    $target = EntryModel::factory()->createElement();
+    $linkSource = EntryModel::factory()
+        ->withField('linkTarget', Link::class, ['types' => ['entry']], value: ['type' => 'entry', 'value' => "{entry:$target->id@$target->siteId:url}"])
+        ->createElementWithFields()
+        ->element;
+    $relationSource = EntryModel::factory()
+        ->withField('entriesField', Entries::class, value: [$target->id])
+        ->createElementWithFields()
+        ->element;
+
+    expect(entryQuery()->relatedTo(['targetElement' => $target, 'field' => 'linkTarget'])->ids())->toBe([$linkSource->id])
+        ->and(entryQuery()->relatedTo(['element' => $target, 'field' => 'linkTarget'])->ids())->toBe([$linkSource->id])
+        ->and(entryQuery()->relatedTo(['sourceElement' => $linkSource, 'field' => 'linkTarget'])->ids())->toBe([$target->id])
+        ->and(entryQuery()->relatedTo(['targetElement' => $target])->ids())->toBe([$relationSource->id])
+        ->and(entryQuery()->relatedTo(['targetElement' => $target, 'field' => '*'])->ids())->toEqualCanonicalizing([$linkSource->id, $relationSource->id])
+        ->and(entryQuery()->relatedTo(['sourceElement' => $linkSource, 'field' => '*'])->ids())->toBe([$target->id])
+        ->and(entryQuery()->notRelatedTo(['targetElement' => $target, 'field' => 'linkTarget'])->ids())->toEqualCanonicalizing([$target->id, $relationSource->id]);
+});

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs, so the field layout and card appearance no longer sit below the general settings. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
+- `relatedTo` and `notRelatedTo` element query params now match elements that reference an element through a Link, Markdown, Table, or other reference-tracking field, when their `field` criteria names the field. `field` can also be set to `*` to match relations and references from any field. ([#20764](https://github.com/craftcms/cms/issues/20764))
 - Added `CraftCms\Cms\Ui\Nodes\Outlet` and `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`. ([#20658](https://github.com/craftcms/cms/pull/20658))
 - Added `CraftCms\Cms\Element\Queries\Events\ElementQueryPreparing` and `ElementQueryPrepared`, which are dispatched each time an element query is prepared to run, before and after its params are applied, so modules can scope every query of an element type, including its counts and pagination. ([#20705](https://github.com/craftcms/cms/issues/20705), [#20722](https://github.com/craftcms/cms/pull/20722))
 - `craft\elements\db\ElementQuery::EVENT_BEFORE_PREPARE` and `EVENT_AFTER_PREPARE` handlers are called again when the Yii adapter is installed. ([#20705](https://github.com/craftcms/cms/issues/20705), [#20722](https://github.com/craftcms/cms/pull/20722))

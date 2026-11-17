@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\TracksReferencesFieldInterface;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -328,9 +329,11 @@ class ElementRelationParamFilter
             return $this->applyNormalized($query, $newRelatedToParam);
         }
         $relationFieldIds = [];
+        $referenceFieldIds = [];
+        $allFields = $relCriteria['field'] === '*';
         $applied = false;
 
-        if ($relCriteria['field']) {
+        if ($relCriteria['field'] && ! $allFields) {
             // Loop through all of the fields in this rel criteria, create the Matrix-specific
             // conditions right away and save the normal field IDs for later
             $fields = $relCriteria['field'];
@@ -352,6 +355,8 @@ class ElementRelationParamFilter
                 if ($fieldModel instanceof BaseRelationField) {
                     // We'll deal with normal relation fields all together
                     $relationFieldIds[] = $fieldModel->id;
+                } elseif ($fieldModel instanceof TracksReferencesFieldInterface) {
+                    $referenceFieldIds[] = $fieldModel->id;
                 } elseif ($fieldModel instanceof Matrix) {
                     $nestedFieldIds = [];
 
@@ -439,8 +444,18 @@ class ElementRelationParamFilter
 
         // If there were no fields, or there are some non-Matrix fields, add the
         // normal relation condition. (Basically, run this code if the rel criteria wasn't exclusively for
-        // Matrix fields.)
-        if (empty($relCriteria['field']) || ! empty($relationFieldIds)) {
+        // Matrix fields.) Field references are only checked for reference-tracking fields, or all fields (`*`).
+        $tables = [];
+
+        if (empty($relCriteria['field']) || $allFields || ! empty($relationFieldIds)) {
+            $tables[] = [Table::RELATIONS, $relationFieldIds];
+        }
+
+        if ($allFields || ! empty($referenceFieldIds)) {
+            $tables[] = [Table::FIELDREFERENCES, $referenceFieldIds];
+        }
+
+        foreach ($tables as [$table, $fieldIds]) {
             if ($dir === self::DIR_FORWARD) {
                 self::$relateSourcesCount++;
                 $relTableAlias = 'sources'.self::$relateSourcesCount;
@@ -453,7 +468,7 @@ class ElementRelationParamFilter
                 $relElementColumn = 'sourceId';
             }
 
-            $subQuery = DB::table(Table::RELATIONS, $relTableAlias)
+            $subQuery = DB::table($table, $relTableAlias)
                 ->select("$relTableAlias.$relElementColumn")
                 ->whereIn("$relTableAlias.$relConditionColumn", $relElementIds);
 
@@ -464,8 +479,8 @@ class ElementRelationParamFilter
                 });
             }
 
-            if (! empty($relationFieldIds)) {
-                $subQuery->whereIn("$relTableAlias.fieldId", $relationFieldIds);
+            if (! empty($fieldIds)) {
+                $subQuery->whereIn("$relTableAlias.fieldId", $fieldIds);
             }
 
             $query->orWhereIn('elements.id', $subQuery);
