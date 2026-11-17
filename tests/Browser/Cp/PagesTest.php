@@ -3,13 +3,22 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\File;
+use Workbench\Database\Seeders\ContentSeeder;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
+    // Each test's database is rolled back but its files aren't, so the volumes get a disk of their own.
+    File::deleteDirectory(public_path('test-assets'));
+    config()->set('filesystems.disks.assets.root', public_path('test-assets'));
+    config()->set('filesystems.disks.assets.url', '/test-assets');
+    $this->seed(ContentSeeder::class);
     actingAs(User::first());
     $this->withoutExceptionHandling();
 });
+
+afterEach(fn () => File::deleteDirectory(public_path('test-assets')));
 
 it('renders control panel pages', function (string $path, string $heading) {
     assertNoAccessibilityIssues(
@@ -18,7 +27,7 @@ it('renders control panel pages', function (string $path, string $heading) {
 })->with([
     'dashboard' => ['dashboard', 'Dashboard'],
     'entries' => ['content/entries', 'All entries'],
-    'assets' => ['assets', 'Temporary Uploads'],
+    'assets' => ['assets', 'Images'],
     'users' => ['users', 'Users'],
     'new user' => ['users/new', 'New user'],
     'my account' => ['myaccount', 'My Account'],
