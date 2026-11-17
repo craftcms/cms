@@ -122,8 +122,8 @@
               :step="1"
               .value="Math.min(widget.colspan, columns)"
               .disabled="busy"
-              :label="t('Columns')"
-              :context="widgetName(widget)"
+              :slider-label="t('Columns')"
+              :item-label="widgetName(widget)"
               .valueLabel="
                 (num: number) =>
                   t('{num, number} {num, plural, =1{column} other{columns}}', {

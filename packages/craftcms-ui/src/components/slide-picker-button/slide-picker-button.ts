@@ -20,11 +20,11 @@ import '../tooltip/tooltip.js';
  * For a slide picker that sits in a dense row, such as a widget's column
  * count or a field layout element's width, where full-size segments don't
  * fit. The button is the target, so the segments drawn in it can stay small.
- * The popover's slide picker is labeled from below by `label`.
  *
  * The button shows no text, so its tooltip, the value, is its visible label.
- * Its name is that value followed by `context`, such as "3 columns Recent
- * Entries", or by `label` when there's no context.
+ * Its name is that value followed by `item-label`, the name of the item it
+ * sizes, such as "3 columns Recent Entries". `slider-label` is shown only in
+ * the popover, below its slide picker, and names that slide picker.
  *
  * @attr name - Field name. The button posts its value under it, like any
  * other input.
@@ -48,16 +48,17 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
   static override styles = styles;
 
   /**
-   * Labels the popover's slide picker. Follows the value in the button's
-   * name when there's no `context`.
+   * The label of the slide picker in the popover, shown below it and naming
+   * it. It isn't shown on the button, whose tooltip shows the value, and it
+   * isn't part of the button's name.
    */
-  @property() label = '';
+  @property({attribute: 'slider-label'}) sliderLabel = '';
   /**
-   * What the button controls, such as the name of the item it sizes. Follows
-   * the value in the button's name, so several buttons that share a `label`
-   * are told apart: "3 columns Recent Entries".
+   * The name of the item the button sizes, such as a widget's title. Follows
+   * the value in the button's name, so the buttons on several items are told
+   * apart: "3 columns Recent Entries". Keep it in step with the item's name.
    */
-  @property() context = '';
+  @property({attribute: 'item-label'}) itemLabel = '';
   /** The selected value. */
   @property({type: Number}) value = 0;
   /** Lowest selectable value. */
@@ -68,7 +69,9 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
   @property({type: Number}) step = 10;
   /**
    * Unit shown and announced after the value, as `craft-slide-picker` takes
-   * it: a word gets a space ("3 columns"), a symbol doesn't ("100%").
+   * it: a word gets a space ("3 columns"), a symbol doesn't ("100%"). The
+   * value starts the button's name, so set this or `valueLabel` whenever the
+   * number alone doesn't say what it counts: "50% width", not "50".
    */
   @property({attribute: 'value-unit'}) valueUnit = '';
   /**
@@ -139,7 +142,7 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
           variant="plain"
           size="small"
           flush=${ifDefined(this.flush)}
-          aria-labelledby="value context"
+          aria-labelledby="value item-label"
         >
           <span class="segments" aria-hidden="true">
             ${steps.map(
@@ -156,7 +159,7 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
         </craft-button>
         <div class="content" slot="content-body">
           <craft-slide-picker
-            labelled-by="label"
+            labelled-by="slider-label"
             value-unit=${this.valueUnit}
             .valueLabel=${this.valueLabel}
             .min=${this.min}
@@ -167,12 +170,12 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
             @input=${this.#onPickerInput}
             @change=${this.#onPickerChange}
           ></craft-slide-picker>
-          <span id="label" class="label" @click=${this.#onLabelClick}
-            >${this.label}</span
+          <span id="slider-label" class="label" @click=${this.#onLabelClick}
+            >${this.sliderLabel}</span
           >
         </div>
       </craft-popover>
-      <span id="context" hidden>${this.context || this.label}</span>
+      <span id="item-label" hidden>${this.itemLabel}</span>
       <craft-tooltip for="invoker" invoker-relation="label">
         <span slot="content" id="value">${valueText}</span>
       </craft-tooltip>

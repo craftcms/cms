@@ -12,15 +12,23 @@ export interface SlidePickerConfig {
   label?: string;
   /**
    * Builds a `<craft-slide-picker-button>` instead: a small button that opens
-   * a full-size picker in a popover, for a picker in a dense row. It's named
-   * by its value, then by `context` (or `label` without it), and ignores
+   * a full-size picker in a popover, for a picker in a dense row. `label` names
+   * the popover's picker. The button is named by its value, as `valueUnit`
+   * or `valueLabel` formats it, then by `itemLabel`, and ignores
    * `labelledBy` and `describedBy`.
    */
   button?: boolean;
-  /** What a `button` controls, such as the item's name. */
-  context?: string;
+  /** The name of the item a `button` sizes, such as a widget's title. */
+  itemLabel?: string;
   labelledBy?: string;
   describedBy?: string;
+  /**
+   * Unit shown and announced after the value: a word gets a space
+   * ("3 columns"), a symbol doesn't ("100%"). Set it, or `valueLabel`,
+   * whenever the number alone doesn't say what it counts.
+   */
+  valueUnit?: string;
+  /** Formats the value instead of `valueUnit`, such as for plurals. */
   valueLabel?: (value: number) => string;
   readOnly?: boolean;
   disabled?: boolean;
@@ -56,8 +64,11 @@ export function createSlidePicker(
   let el: CraftSlidePicker | CraftSlidePickerButton;
   if (config.button) {
     const button = document.createElement('craft-slide-picker-button');
-    if (config.context) {
-      button.context = config.context;
+    if (config.label) {
+      button.sliderLabel = config.label;
+    }
+    if (config.itemLabel) {
+      button.itemLabel = config.itemLabel;
     }
     button.readonly = readOnly;
     el = button;
@@ -72,16 +83,22 @@ export function createSlidePicker(
     if (readOnly) {
       picker.readOnly = true;
     }
+    if (config.label) {
+      picker.label = config.label;
+    }
     el = picker;
   }
   el.min = min;
   el.max = max;
   el.step = step;
   el.value = value || 0;
-  if (config.label) {
-    el.label = config.label;
+  // Left unset without one, as a `valueLabel` would override `valueUnit`.
+  if (config.valueUnit) {
+    el.valueUnit = config.valueUnit;
   }
-  el.valueLabel = config.valueLabel || ((v) => `${v}`);
+  if (config.valueLabel) {
+    el.valueLabel = config.valueLabel;
+  }
   if (config.disabled) {
     el.disabled = true;
   }

@@ -32,6 +32,6 @@ it('names the width button after the field it sizes', () => {
   const button = container.querySelector(
     'craft-slide-picker-button'
   ) as CraftSlidePickerButton;
-  expect(button.context).toBe('Body');
-  expect(button.label).toBe('Width');
+  expect(button.itemLabel).toBe('Body');
+  expect(button.sliderLabel).toBe('Width');
 });

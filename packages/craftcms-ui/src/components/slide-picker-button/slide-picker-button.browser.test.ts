@@ -40,15 +40,15 @@ async function open(button: CraftSlidePickerButton): Promise<void> {
 it.each([
   {
     attributes:
-      'label="Columns" context="Recent Entries" value-unit="columns" value="3"',
+      'slider-label="Columns" item-label="Recent Entries" value-unit="columns" value="3"',
     name: '3 columns Recent Entries',
   },
   {
-    attributes: 'label="Width" value-unit="%" value="50"',
-    name: '50% Width',
+    attributes: 'slider-label="Width" value-unit="% width" value="50"',
+    name: '50% width',
   },
 ])(
-  'names the button by the value its tooltip shows, then what it controls: $name',
+  'names the button by the value its tooltip shows, then the item it sizes: $name',
   async ({attributes, name}) => {
     await render(
       `<craft-slide-picker-button min="1" max="100" step="1" ${attributes}></craft-slide-picker-button>`
@@ -60,7 +60,7 @@ it.each([
 
 it('names the button with valueLabel', async () => {
   const button = await render(
-    `<craft-slide-picker-button label="Columns" context="Recent Entries" min="1" max="3" step="1" value="1"></craft-slide-picker-button>`
+    `<craft-slide-picker-button slider-label="Columns" item-label="Recent Entries" min="1" max="3" step="1" value="1"></craft-slide-picker-button>`
   );
   button.valueLabel = (value) =>
     `${value} ${value === 1 ? 'column' : 'columns'}`;
@@ -72,7 +72,7 @@ it('names the button with valueLabel', async () => {
 
 it('shows the start of the button’s name in its tooltip, without also describing the button', async () => {
   await render(
-    `<craft-slide-picker-button label="Columns" context="Recent Entries" value-unit="columns" min="1" max="4" step="1" value="3"></craft-slide-picker-button>`
+    `<craft-slide-picker-button slider-label="Columns" item-label="Recent Entries" value-unit="columns" min="1" max="4" step="1" value="3"></craft-slide-picker-button>`
   );
 
   await userEvent.tab();
@@ -90,7 +90,7 @@ it('shows the start of the button’s name in its tooltip, without also describi
 
 it('names the popover’s slider by the label below it', async () => {
   const button = await render(
-    `<craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
+    `<craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
   );
   await open(button);
 
@@ -103,7 +103,7 @@ it('names the popover’s slider by the label below it', async () => {
 
 it('opens with Enter, sets the value from the slider and returns focus on Escape', async () => {
   const button = await render(
-    `<craft-slide-picker-button label="Width" value-unit="%" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
+    `<craft-slide-picker-button slider-label="Width" value-unit="%" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
   );
   const events: string[] = [];
   button.addEventListener('input', () => events.push(`input ${button.value}`));
@@ -130,7 +130,7 @@ it('opens with Enter, sets the value from the slider and returns focus on Escape
 
 it('drops the preview when the popover closes under the pointer', async () => {
   const button = await render(
-    `<craft-slide-picker-button label="Columns" min="1" max="4" step="1" value="1"></craft-slide-picker-button><p>Elsewhere</p>`
+    `<craft-slide-picker-button slider-label="Columns" min="1" max="4" step="1" value="1"></craft-slide-picker-button><p>Elsewhere</p>`
   );
   const looks = () =>
     [
@@ -158,7 +158,7 @@ it('drops the preview when the popover closes under the pointer', async () => {
 
 it('keeps the popover’s slider from changing while read-only', async () => {
   const button = await render(
-    `<craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50" readonly></craft-slide-picker-button>`
+    `<craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50" readonly></craft-slide-picker-button>`
   );
   await open(button);
 
@@ -169,7 +169,7 @@ it('keeps the popover’s slider from changing while read-only', async () => {
 
 it('disables the button when disabled, or inside a disabled fieldset, and enables it again', async () => {
   await render(
-    `<fieldset><craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></fieldset><craft-slide-picker-button label="Height" min="25" max="100" step="25" value="50" disabled></craft-slide-picker-button>`
+    `<fieldset><craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></fieldset><craft-slide-picker-button slider-label="Height" min="25" max="100" step="25" value="50" disabled></craft-slide-picker-button>`
   );
   const fieldset = document.querySelector('fieldset')!;
 
@@ -204,7 +204,7 @@ it.each(['light', 'dark'] as const)(
   'outlines the whole picker, and its filled run, at 3:1 in the %s theme',
   async (theme) => {
     const button = await render(
-      `<div class="surface" data-theme="${theme}" style="background-color: var(--c-surface-default); padding: 8px"><craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></div>`
+      `<div class="surface" data-theme="${theme}" style="background-color: var(--c-surface-default); padding: 8px"><craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></div>`
     );
     const surface = getComputedStyle(
       document.querySelector('.surface')!
@@ -249,7 +249,7 @@ it.each(['light', 'dark'] as const)(
   'shows a focus ring at 3:1 on a keyboard-focused button in the %s theme',
   async (theme) => {
     const button = await render(
-      `<div class="surface" data-theme="${theme}" style="background-color: var(--c-surface-default); padding: 8px"><craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></div>`
+      `<div class="surface" data-theme="${theme}" style="background-color: var(--c-surface-default); padding: 8px"><craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></div>`
     );
     const surface = getComputedStyle(
       document.querySelector('.surface')!
@@ -273,7 +273,7 @@ it('draws filled segments in Highlight and empty ones in Canvas with a ButtonBor
     features: [{name: 'forced-colors', value: 'active'}],
   });
   const button = await render(
-    `<craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
+    `<craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
   );
   const segments = [...button.shadowRoot!.querySelectorAll('.segment')];
   const [filled, , empty] = segments.map((segment) =>
@@ -307,7 +307,7 @@ it('draws filled segments in Highlight and empty ones in Canvas with a ButtonBor
 
 it('is at least 24×24 CSS px, and so is each segment in the popover', async () => {
   const button = await render(
-    `<craft-slide-picker-button label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
+    `<craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
   );
   const box = invoker(button).getBoundingClientRect();
   expect(box.width).toBeGreaterThanOrEqual(24);
@@ -327,7 +327,7 @@ it('is at least 24×24 CSS px, and so is each segment in the popover', async () 
 
 it('wraps a long label to the slider’s width', async () => {
   const button = await render(
-    `<craft-slide-picker-button label="Number of columns the widget spans on the dashboard" min="1" max="3" step="1" value="1"></craft-slide-picker-button>`
+    `<craft-slide-picker-button slider-label="Number of columns the widget spans on the dashboard" min="1" max="3" step="1" value="1"></craft-slide-picker-button>`
   );
   await open(button);
 
@@ -342,7 +342,7 @@ it('wraps a long label to the slider’s width', async () => {
 
 it('posts its value under its name, and puts it back on reset', async () => {
   const button = await render(
-    `<form><craft-slide-picker-button name="width" label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></form>`
+    `<form><craft-slide-picker-button name="width" slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></form>`
   );
   const form = document.querySelector('form')!;
   expect(new FormData(form).get('width')).toBe('50');

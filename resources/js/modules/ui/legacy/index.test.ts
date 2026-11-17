@@ -136,7 +136,7 @@ describe('createSlidePicker', () => {
     const el = createSlidePicker({
       button: true,
       label: 'Columns',
-      context: 'News',
+      itemLabel: 'News',
       labelledBy: 'width-label',
       min: 1,
       max: 3,
@@ -147,8 +147,8 @@ describe('createSlidePicker', () => {
     });
 
     expect(el.tagName.toLowerCase()).toBe('craft-slide-picker-button');
-    expect(el.label).toBe('Columns');
-    expect(el.context).toBe('News');
+    expect(el.sliderLabel).toBe('Columns');
+    expect(el.itemLabel).toBe('News');
     expect(el.hasAttribute('labelled-by')).toBe(false);
     expect([el.min, el.max, el.step, el.value]).toEqual([1, 3, 1, 2]);
     expect(el.name).toBe('colspan');
@@ -163,6 +163,23 @@ describe('createSlidePicker', () => {
 
     expect(el.getAttribute('labelled-by')).toBe('width-label');
     expect(el.getAttribute('described-by')).toBe('width-instructions');
+  });
+
+  it.each([{button: true}, {button: false}])(
+    'formats the value with valueUnit, leaving no valueLabel to override it (button: $button)',
+    ({button}) => {
+      const el = createSlidePicker({button, valueUnit: '% width'});
+
+      expect(el.valueUnit).toBe('% width');
+      expect(el.valueLabel).toBeUndefined();
+    }
+  );
+
+  it('formats the value with valueLabel when given one', () => {
+    const columns = (value: number) => `${value} columns`;
+    const el = createSlidePicker({button: true, valueLabel: columns});
+
+    expect(el.valueLabel).toBe(columns);
   });
 });
 

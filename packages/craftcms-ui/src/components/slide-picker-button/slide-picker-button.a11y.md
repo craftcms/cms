@@ -12,9 +12,9 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 
 ### Semantics
 
-- [x] The button is named by its tooltip's text, the value as `value-unit` or `valueLabel` formats it, followed by `context`, or by `label` when there's no context. The tooltip is the button's only visible label, so the name starts with it, and the name says the value the segments draw. The segments add nothing to the name. Per WCAG 1.1.1 (Non-text Content), 2.5.3 (Label in Name) and 4.1.2 (Name, Role, Value). Verified by `names the button by the value its tooltip shows, then what it controls: $name` and `names the button with valueLabel` in `slide-picker-button.browser.test.ts`.
+- [x] The button is named by its tooltip's text, the value as `value-unit` or `valueLabel` formats it, followed by `item-label`. The tooltip is the button's only visible label, so the name starts with it, and the name says the value the segments draw. The segments add nothing to the name. Per WCAG 1.1.1 (Non-text Content), 2.5.3 (Label in Name) and 4.1.2 (Name, Role, Value). Verified by `names the button by the value its tooltip shows, then the item it sizes: $name` and `names the button with valueLabel` in `slide-picker-button.browser.test.ts`.
 - [x] The tooltip names the button and doesn't also describe it, so the value isn't read twice. Per WCAG 4.1.2 (Name, Role, Value). Verified by `shows the start of the button’s name in its tooltip, without also describing the button` in `slide-picker-button.browser.test.ts`.
-- [x] The popover's slider is named by the visible `label`, shown below it. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `names the popover’s slider by the label below it` in `slide-picker-button.browser.test.ts`.
+- [x] The popover's slider is named by the visible `slider-label`, shown below it. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `names the popover’s slider by the label below it` in `slide-picker-button.browser.test.ts`.
 - [x] `disabled`, or a disabled `<fieldset>` around the button, disables the button, and clearing it enables the button again. Per WCAG 4.1.2 (Name, Role, Value). Verified by `disables the button when disabled, or inside a disabled fieldset, and enables it again` in `slide-picker-button.browser.test.ts`.
 - [x] `readonly` still opens the popover, with a read-only slider, so the value can be reached and read. Per WCAG 4.1.2 (Name, Role, Value). Verified by `keeps the popover’s slider from changing while read-only` in `slide-picker-button.browser.test.ts`.
 
@@ -38,5 +38,5 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 
 ## Depends on usage
 
-- 2.4.6 (Headings and Labels): set `context` when several buttons share a `label`. See [Accessibility](./SlidePickerButton.mdx#accessibility).
+- 2.4.6 (Headings and Labels): set `item-label` when there are buttons on several items. See [Accessibility](./SlidePickerButton.mdx#accessibility).
 - 1.3.1 (Info and Relationships): set `value-unit` or `valueLabel` when the number alone doesn't say what it counts. See [Accessibility](./SlidePickerButton.mdx#accessibility).

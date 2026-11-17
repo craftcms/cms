@@ -11,7 +11,9 @@ import * as SlidePickerButtonStories from './slide-picker-button.stories';
 
 It's the preferred way to pick a number from a short scale, because it meets WCAG 2.2 AA's minimum target size (2.5.8 Target Size (Minimum)): the whole button is a 24×24 CSS px target, and the segments in the popover are large. A full-size slide picker's segments are smaller than that at their default size. Use one only where there's room to make every segment at least `1.5rem` wide and tall, where it saves a step. It fits a dense row too, such as a widget's column count or a field layout element's width.
 
-<Canvas of={SlidePickerButtonStories.InARow} sourceState="shown" />
+<Canvas of={SlidePickerButtonStories.ItemLabel} sourceState="shown" />
+
+<Canvas of={SlidePickerButtonStories.ValueLabel} sourceState="shown" />
 
 <Canvas of={SlidePickerButtonStories.ReadOnly} sourceState="shown" />
 
@@ -35,9 +37,9 @@ The button is a plain `craft-button` until it's hovered. Set `flush` to pull its
 
 The button shows no text, so its tooltip is its visible label. The tooltip shows the value, and the button's name starts with it, so voice control users can say what they see.
 
-- **Set `label`.** It names the popover's slider, below which it's shown.
-- **Set `context` to what the button controls**, such as the item's name on every row of a list: the button is named "3 columns News". Keep it in step with the item's name. Without `context`, `label` follows the value instead: "50% Width".
-- **Set `value-unit` or `valueLabel`** whenever the number alone doesn't say what it counts, since the value starts the button's name and is all its tooltip shows: "3 columns", not "3".
+- **Set `slider-label`.** It's shown only in the popover, below the slider, and names that slider. It doesn't change the button or its tooltip, which always show the value.
+- **Set `item-label` to the name of the item the button sizes**, such as the item's name on every row of a list: the button is named "3 columns News". Keep it in step with the item's name.
+- **Set `value-unit` or `valueLabel`** whenever the number alone doesn't say what it counts, since the value starts the button's name and is all its tooltip shows: "50% width", not "50", and "3 columns", not "3".
 
 ## Properties
 

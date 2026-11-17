@@ -656,10 +656,14 @@ Craft.ui = {
     }
 
     // The field's label names the picker, so it doesn't get one of its own.
-    // A button can't be named by the field's label, so it keeps `label`.
+    // A button's internals can't reference the field's label, so the label
+    // labels its popover's slider and follows the value in its name, as its
+    // `itemLabel`: "50% Width". Use a unit that doesn't repeat the label.
     return this.createField(
       this.createSlidePicker(
-        config.button ? config : $.extend({}, config, {label: null})
+        config.button
+          ? $.extend({}, config, {itemLabel: config.label})
+          : $.extend({}, config, {label: null})
       ),
       config
     ).addClass('slidepicker-field');

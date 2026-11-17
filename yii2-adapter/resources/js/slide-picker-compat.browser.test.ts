@@ -106,19 +106,20 @@ it('names the slider after its field label and describes it with the instruction
     .toHaveAccessibleDescription('How many columns the widget spans.');
 });
 
-it('names a button picker in a field after the field’s label', async () => {
+it('names a button picker in a field by its value, then the field’s label', async () => {
   const $field = legacyWindow.Craft.ui.createSlidePickerField({
-    id: 'widget-width',
+    id: 'field-width',
     label: 'Width',
     button: true,
-    min: 1,
-    max: 4,
-    step: 1,
-    value: 2,
+    valueUnit: '%',
+    min: 25,
+    max: 100,
+    step: 25,
+    value: 50,
   });
   $(document.body).append($field);
 
   await expect
     .element(page.getByRole('button'))
-    .toHaveAccessibleName('Width 2');
+    .toHaveAccessibleName('50% Width');
 });
