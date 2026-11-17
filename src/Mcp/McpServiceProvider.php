@@ -55,7 +55,7 @@ class McpServiceProvider extends ServiceProvider
                 ? ['route' => "/{$cpTrigger}/mcp", 'authorizationRoute' => "/{$cpTrigger}/mcp/auth"]
                 : [];
 
-            return new Settings([...$defaults, ...($projectConfig->get('mcp') ?? [])]);
+            return new Settings([...$defaults, ...($projectConfig->get(ProjectConfig::PATH_MCP) ?? [])]);
         });
 
         if ($this->app->bound(AuthorizationViewResponse::class)) {
