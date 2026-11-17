@@ -35,10 +35,14 @@ readonly class Sequence
     {
         $name = Str::emojiToShortcodes($name);
 
-        // The update locks the row until the transaction commits, so concurrent callers get distinct numbers
+        // The update locks the row until the transaction commits, so concurrent callers get distinct numbers.
+        // Only insert when the row is missing: on MySQL, an ignored insert takes a shared lock on the
+        // existing row, and two of those deadlock once both callers try to increment.
         $next = DB::transaction(function () use ($name) {
-            DB::table(Table::SEQUENCES)->insertOrIgnore(['name' => $name, 'next' => 1]);
-            DB::table(Table::SEQUENCES)->where('name', $name)->increment('next');
+            if (! DB::table(Table::SEQUENCES)->where('name', $name)->increment('next')) {
+                DB::table(Table::SEQUENCES)->insertOrIgnore(['name' => $name, 'next' => 1]);
+                DB::table(Table::SEQUENCES)->where('name', $name)->increment('next');
+            }
 
             return self::nextNumber($name);
         });

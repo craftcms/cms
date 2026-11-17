@@ -10,6 +10,7 @@ use CraftCms\Cms\RouteToken\Data\RouteToken;
 use CraftCms\Cms\RouteToken\Model\RouteToken as RouteTokenModel;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,7 +93,12 @@ readonly class PreviewController
                 $existing = RouteTokenModel::where('token', $token)->first();
 
                 if (! $existing) {
-                    return $tokens->createPreviewToken($route, token: $token);
+                    try {
+                        return $tokens->createPreviewToken($route, token: $token);
+                    } catch (UniqueConstraintViolationException) {
+                        // Another request created it after this one's lock expired
+                        $existing = RouteTokenModel::where('token', $token)->firstOrFail();
+                    }
                 }
 
                 abort_unless($existing->route == $route, 400, 'Invalid preview token.');
