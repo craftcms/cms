@@ -123,14 +123,28 @@ it('falls back to offline and catch-all error templates', function () {
     $this->get('/unavailable')->assertServiceUnavailable()->assertSee('offline 503');
 });
 
-it('falls back to control panel error templates on the site', function () {
+it('falls back to the control panel’s error page on the site, without linking to the control panel', function () {
     Route::middleware(['web', 'craft', 'craft.web'])
         ->get('gone', fn () => abort(404, 'Gone fishing'));
 
     $this->get('/gone')
         ->assertNotFound()
         ->assertSee('Page Not Found')
-        ->assertSee('Gone fishing');
+        ->assertSee('Gone fishing')
+        ->assertDontSee(Cms::config()->cpTrigger);
+});
+
+it('hides an unexpected exception’s message on the control panel’s error page', function () {
+    config(['app.debug' => false]);
+
+    Route::middleware(['web', 'craft', 'craft.web'])
+        ->get('throws', fn () => throw new RuntimeException('secret details'));
+
+    $this->get('/throws')
+        ->assertInternalServerError()
+        ->assertSee('Internal Server Error')
+        ->assertSee('An error occurred while processing your request.')
+        ->assertDontSee('secret details');
 });
 
 it('redirects requests that would 404 using redirect rules', function () {

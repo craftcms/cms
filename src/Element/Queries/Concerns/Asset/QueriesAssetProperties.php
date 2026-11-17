@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
@@ -113,19 +114,34 @@ trait QueriesAssetProperties
             return;
         }
 
-        $query->where(function (Builder $query) use ($value) {
-            $query->whereParam('assets.kind', $value);
+        $param = QueryParam::parse($value);
+        $kinds = AssetsHelper::getFileKinds();
 
-            $kinds = AssetsHelper::getFileKinds();
+        // Files with a kind’s extensions count as that kind too, so excluding the kind excludes them as well.
+        if ($param->operator === QueryParam::NOT) {
+            $query->where(function (Builder $query) use ($value, $param, $kinds) {
+                $query->whereParam('assets.kind', $value);
 
-            foreach ((array) $value as $kind) {
-                if (! isset($kinds[$kind])) {
-                    continue;
+                foreach ($param->values as $kind) {
+                    foreach ($kinds[$kind]['extensions'] ?? [] as $extension) {
+                        $query->whereNotLike('assets.filename', "%.$extension");
+                    }
                 }
+            });
 
-                foreach ($kinds[$kind]['extensions'] as $extension) {
-                    $query->orWhereLike('assets.filename', "%.$extension");
-                }
+            return;
+        }
+
+        $query->where(function (Builder $query) use ($param, $kinds) {
+            foreach ($param->values as $kind) {
+                $query->where(function (Builder $query) use ($kind, $kinds) {
+                    // The kind is already parsed, so keep whereParam() from splitting its commas or reading it as an operator.
+                    $query->whereParam('assets.kind', [QueryParam::OR, $kind]);
+
+                    foreach ($kinds[$kind]['extensions'] ?? [] as $extension) {
+                        $query->orWhereLike('assets.filename', "%.$extension");
+                    }
+                }, boolean: $param->operator);
             }
         });
     }

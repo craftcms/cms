@@ -329,4 +329,33 @@ describe('AffiliatedSiteConditionRule', function () {
         expect($resultIds)->toContain($affiliated->id);
         expect($resultIds)->not->toContain($notAffiliated->id);
     });
+
+    it('modifyQuery excludes users affiliated with the selected sites', function () {
+        $otherSite = Site::factory()->create(['handle' => 'extraSite']);
+        Sites::refreshSites();
+        $primarySite = Sites::getPrimarySite();
+
+        $primaryUser = UserModel::factory()->create(['affiliatedSiteId' => $primarySite->id]);
+        $otherUser = UserModel::factory()->create(['affiliatedSiteId' => $otherSite->id]);
+        $unaffiliatedUser = UserModel::factory()->create(['affiliatedSiteId' => null]);
+        $userIds = [$primaryUser->id, $otherUser->id, $unaffiliatedUser->id];
+
+        $condition = new UserCondition(User::class);
+        $rule = $condition->createConditionRule(AffiliatedSiteConditionRule::class);
+        $rule->operator = 'ni';
+        $rule->values = [$primarySite->uid];
+
+        $query = User::find()->id($userIds);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->ids())->toEqualCanonicalizing([$otherUser->id, $unaffiliatedUser->id])
+            ->and($rule->matchElement($unaffiliatedUser->asElement()))->toBeTrue();
+
+        $rule->values = [$primarySite->uid, $otherSite->uid];
+
+        $query = User::find()->id($userIds);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->ids())->toBe([$unaffiliatedUser->id]);
+    });
 });
