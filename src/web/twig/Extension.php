@@ -1690,6 +1690,21 @@ class Extension extends AbstractExtension implements GlobalsInterface
             ? array_map(fn($k) => $this->sandboxKey($env, $isSandboxed, $k, 'multisort'), $key)
             : $this->sandboxKey($env, $isSandboxed, $key, 'multisort');
 
+        if ($isSandboxed) {
+            // array_multisort() casts objects to strings when sorting them as strings
+            $checkToString = function(mixed $k) use ($env): mixed {
+                if (!$k instanceof Closure) {
+                    return $k;
+                }
+                $sandbox = $env->getExtension(SandboxExtension::class);
+                return function(mixed ...$args) use ($k, $sandbox): mixed {
+                    $value = $k(...$args);
+                    return is_object($value) ? $sandbox->ensureToStringAllowed($value) : $value;
+                };
+            };
+            $key = is_array($key) ? array_map($checkToString, $key) : $checkToString($key);
+        }
+
         // Prevent multisort() from modifying the original array
         $array = array_merge($array);
         ArrayHelper::multisort($array, $key, $direction, $sortFlag);

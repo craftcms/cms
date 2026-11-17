@@ -1015,6 +1015,8 @@ class ExtensionTest extends TestCase
             // group used to render property names as object templates in the site template mode’s environment
             'group with a disallowed property in a control panel template' => ["{{ [obj]|group('secret')|keys|first }}", View::TEMPLATE_MODE_CP],
             'group with an arrow function returning an object that can’t be a string' => ["{{ [1]|group(i => stringable)|keys|first }}"],
+            'multisort with a sort key that can’t be a string' => ["{{ [1, 2]|multisort(v => stringable, 4, 2)|length }}"],
+            'multisort with sort keys that can’t be strings' => ["{{ [1, 2]|multisort([v => stringable, v => 1], 4, 2)|length }}"],
             'group with a Twig tag in a control panel template' => ["{{ [{x: 1}]|group('x}{{ craft.app.config.general.securityKey }}{x')|keys|first }}", View::TEMPLATE_MODE_CP],
         ];
     }
