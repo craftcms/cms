@@ -10,8 +10,8 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Update\Maintenance;
 use CraftCms\Cms\Update\Updates;
-use Illuminate\Foundation\MaintenanceModeManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -33,7 +33,7 @@ class MigrateController
      * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      */
-    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates, ProjectConfig $projectConfig, MaintenanceModeManager $maintenance, Backups $backups, Migrator $migrator): Response
+    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates, ProjectConfig $projectConfig, Maintenance $maintenance, Backups $backups, Migrator $migrator): Response
     {
         $handles = $updates->pendingMigrationHandles(true);
         $runMigrations = ! empty($handles);
@@ -52,15 +52,14 @@ class MigrateController
             throw new ServiceUnavailableHttpException('Craft is already being updated.');
         }
 
-        // Enable maintenance mode
-        $maintenance->activate([]);
+        $maintenance->startUpdate();
 
         // Backup the DB?
         if ($generalConfig->getBackupOnUpdate()) {
             try {
                 $backupPath = $backups->backup();
             } catch (Throwable $e) {
-                $maintenance->deactivate();
+                $maintenance->finishUpdate();
                 throw new HttpException(500, 'Error backing up the database.', $e);
             }
         }
@@ -109,12 +108,12 @@ class MigrateController
                 default => ' The database has not been restored.',
             };
 
-            $maintenance->deactivate();
+            $maintenance->finishUpdate();
 
             throw new HttpException(500, $error, $e);
         }
 
-        $maintenance->deactivate();
+        $maintenance->finishUpdate();
 
         return response()->noContent();
     }

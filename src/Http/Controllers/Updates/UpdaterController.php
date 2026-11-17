@@ -15,6 +15,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Update\Maintenance;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Http\Request;
@@ -278,8 +279,7 @@ class UpdaterController extends BaseUpdaterController
             return $this->noComposerJsonState();
         }
 
-        // Enable maintenance mode
-        app()->maintenanceMode()->activate([]);
+        app(Maintenance::class)->startUpdate();
 
         if (! empty($this->data['install'])) {
             $nextAction = self::ACTION_COMPOSER_INSTALL;
@@ -329,8 +329,7 @@ class UpdaterController extends BaseUpdaterController
     #[Override]
     protected function sendFinished(array $state = []): Response
     {
-        // Disable maintenance mode
-        app()->maintenanceMode()->deactivate();
+        app(Maintenance::class)->finishUpdate();
 
         // Composer installs files with their commit's mtime, so compiled views can be newer than their updated sources
         try {
