@@ -1812,8 +1812,7 @@ $('#' + $id).on('activate', () => {
         }
       },
       fileuploadfail: (event, data) => {
-        const file = data.data.getAll('replaceFile');
-        const backupFilename = file[0].name;
+        const backupFilename = data?.data?.getAll('replaceFile')[0]?.name;
 
         const response = event instanceof Event
           ? event.detail

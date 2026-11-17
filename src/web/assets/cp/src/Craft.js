@@ -105,6 +105,7 @@ import './js/TagSelectInput.js';
 import './js/ThumbsElementIndexView.js';
 import './js/Tooltip.js';
 import './js/Uploader.js';
+import './js/UploadSessionUploader.js';
 import './js/UriFormatGenerator.js';
 import './js/UserIndex.js';
 
