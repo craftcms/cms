@@ -364,11 +364,14 @@ class Uploads extends Component
 
             $fs = $this->fs($session['disk']);
             $path = $session['state']['path'];
-            $received = $session['uploader'] === self::UPLOADER_CRAFT
-                ? isset($session['state']['received'])
-                : $fs->fileExists($path);
+            // Craft's transfer URL only marks a file received once it's stored in full
+            $received = $fs->fileExists($path) && (
+                $session['uploader'] !== self::UPLOADER_CRAFT || isset($session['state']['received'])
+            );
 
             if (!$received) {
+                // Let Craft's transfer URL take the file again, if it was lost
+                $this->forgetReceivedFile($id, $session);
                 throw new BadRequestHttpException('Nothing has been uploaded yet.');
             }
 
@@ -378,6 +381,7 @@ class Uploads extends Component
             // until it expires, so the client can send the file again.
             if (($session['size'] !== null && $size !== $session['size']) || $size > $this->maxSize()) {
                 $fs->deleteFile($path);
+                $this->forgetReceivedFile($id, $session);
                 throw new BadRequestHttpException($size > $this->maxSize()
                     ? 'The file exceeds the maximum upload size.'
                     : 'The file isn’t the size the upload was started with.');
@@ -396,6 +400,12 @@ class Uploads extends Component
 
     private function authorize(UploadHandlerInterface $handler, array $params, ?string $filename, ?int $size, ?User $user): array
     {
+        // Guests need an event handler's approval, so don't let them resolve destinations (which can create folders)
+        // when nothing could approve them
+        if (!$user && !$this->hasEventHandlers(self::EVENT_AUTHORIZE_UPLOAD)) {
+            throw new ForbiddenHttpException('You are not allowed to upload this file.');
+        }
+
         $params = $handler->authorize($params, $filename, $size, $user);
 
         $event = new AuthorizeUploadEvent([
@@ -508,6 +518,15 @@ class Uploads extends Component
             }
         } catch (NotFoundHttpException) {
             // The volume is gone, and its files with it
+        }
+    }
+
+    private function forgetReceivedFile(string $id, array $session): void
+    {
+        if (isset($session['state']['received'])) {
+            $state = $session['state'];
+            unset($state['received']);
+            $this->updateSession($id, ['state' => $state]);
         }
     }
 

@@ -16,7 +16,7 @@
 - Assets can now be uploaded straight to filesystems that accept direct uploads, such as Craft Cloud’s, so files don’t pass through Craft’s request handling or its request size limits. Uploads are started with the `uploads/start` action, sent to the returned URL, and completed with `uploads/complete`.
 - The `assets_upload_url` MCP tool now accepts an optional `size` argument, and returns `headers` that must be sent with the upload. Its upload URLs send files straight to the temporary asset upload filesystem when it accepts direct uploads.
 - Asset indexes, Assets fields and the “Replace file” action upload files this way for volumes whose filesystem implements `craft\base\TemporaryUploadUrlInterface`.
-- Guests can upload assets when a `craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD` event handler allows them. Starting a guest upload is rate-limited per the `defaultRateLimit` config setting.
+- Guests can upload assets when a `craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD` event handler allows them. Guests can start 60 uploads per minute per IP address, unless the `defaultRateLimit` config setting is disabled.
 
 ### Development
 

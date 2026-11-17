@@ -138,7 +138,7 @@ class UploadsTest extends TestCase
         }
 
         $asset = Asset::find()->id($result['assetId'])->one();
-        self::assertSame($jpeg, file_get_contents("$this->root/{$asset->getPath()}"), 'The image must be moved into place, not cleaned.');
+        self::assertSame($jpeg, file_get_contents("$this->root/{$asset->getPath()}"), 'The image must not be cleaned.');
         self::assertSame([37, 23], [$asset->width, $asset->height]);
     }
 
@@ -262,6 +262,13 @@ class UploadsTest extends TestCase
         } catch (ForbiddenHttpException) {
         }
 
+        // Guests are denied before their destination is resolved, since resolving it can create folders
+        try {
+            Craft::$app->getUploads()->start(AssetUploadHandler::class, 'notes.txt', 3, ['fieldId' => 0]);
+            self::fail('Guests must not upload by default.');
+        } catch (ForbiddenHttpException) {
+        }
+
         $seen = null;
         Event::on(Uploads::class, Uploads::EVENT_AUTHORIZE_UPLOAD, function(AuthorizeUploadEvent $event) use (&$seen) {
             $seen = $event;
@@ -296,6 +303,19 @@ class UploadsTest extends TestCase
         try {
             Craft::$app->getUploads()->complete($upload['id']);
             self::fail('Uploads must not complete before their file arrives.');
+        } catch (BadRequestHttpException) {
+        }
+
+        self::assertSame(3, Craft::$app->getUploads()->transfer($upload['id'], $this->stream('old')));
+
+        // A file that went missing, such as after a failed save, can be sent again
+        $staged = $this->root . '/' . Uploads::STAGING_FOLDER . "/{$upload['id']}";
+        self::assertFileExists($staged);
+        unlink($staged);
+
+        try {
+            Craft::$app->getUploads()->complete($upload['id']);
+            self::fail('Uploads must not complete without their file.');
         } catch (BadRequestHttpException) {
         }
 

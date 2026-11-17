@@ -462,7 +462,7 @@ class Gc extends Component
     }
 
     /**
-     * Deletes expired and revoked OAuth credentials, and registered clients that can no longer be used.
+     * Deletes expired uploads and their staged files.
      */
     private function _deleteExpiredUploads(): void
     {
@@ -471,6 +471,9 @@ class Gc extends Component
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
+    /**
+     * Deletes expired and revoked OAuth credentials, and registered clients that can no longer be used.
+     */
     private function _deleteStaleOAuthData(): void
     {
         $this->_stdout('    > deleting stale OAuth data ... ');

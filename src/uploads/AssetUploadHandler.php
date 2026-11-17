@@ -17,15 +17,17 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\Assets;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Db;
-use craft\helpers\Image;
+use craft\helpers\FileHelper;
 use craft\i18n\Formatter;
 use craft\models\VolumeFolder;
 use DateTime;
 use Throwable;
+use yii\base\Event;
 use yii\web\BadRequestHttpException;
 use yii\web\ConflictHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
+use yii\web\ServerErrorHttpException;
 
 /**
  * Uploads files to asset folders, or replaces assets’ files.
@@ -38,13 +40,12 @@ use yii\web\NotFoundHttpException;
  * - `assetId`: the asset to replace
  * - `context`: anything the client wants passed to [[\craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD]] handlers
  *
- * Guests can only upload, and only to a folder or an Assets field without an element. Their uploads need an
- * [[\craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD]] handler’s approval, unless they go to the guest’s own temporary
- * upload folder.
+ * Guests can only upload, and only to a folder or an Assets field without an element. Every guest upload needs an
+ * [[\craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD]] handler’s approval.
  *
- * Files are moved into place within their volume’s filesystem, so they aren’t downloaded, unless they’re SVGs, Craft
- * would clean them (see <config5:sanitizeCpImageUploads>), the field has a selection condition, or they replace an
- * asset’s file.
+ * Files are moved into place within their volume’s filesystem, so they aren’t downloaded, unless they’re images
+ * (including SVGs), the field has a selection condition, an [[Asset::EVENT_BEFORE_HANDLE_FILE]] handler is registered,
+ * or they replace an asset’s file. Those are saved from a local copy, the way the `assets/upload` action saves them.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.13.0
@@ -138,7 +139,12 @@ class AssetUploadHandler implements UploadHandlerInterface
             $selectionCondition->referenceElement = $element;
         }
 
-        if ($selectionCondition || $this->needsLocalCopy($upload->filename)) {
+        if (
+            $selectionCondition ||
+            Assets::getFileKindByExtension($upload->filename) === Asset::KIND_IMAGE ||
+            Event::hasHandlers(Asset::class, Asset::EVENT_BEFORE_HANDLE_FILE)
+        ) {
+            // Images are cleaned, and their dimensions and alt text are read, from a local file; handlers expect one too
             return $this->uploadLocally($upload, $folder, $selectionCondition, $params['siteId'] ?? null);
         }
 
@@ -175,6 +181,11 @@ class AssetUploadHandler implements UploadHandlerInterface
 
         $upload->fs->renameFile($upload->path, $path);
 
+        // Some filesystems, such as Local, don’t report failed moves
+        if (!$upload->fs->fileExists($path)) {
+            throw new ServerErrorHttpException('The file could not be moved into its folder.');
+        }
+
         $asset = new Asset();
         $asset->setVolumeId($folder->volumeId);
         $asset->folderId = $folder->id;
@@ -187,24 +198,17 @@ class AssetUploadHandler implements UploadHandlerInterface
         $asset->title = Assets::filename2Title(pathinfo($filename, PATHINFO_FILENAME));
         $this->setSite($asset, $siteId);
 
-        if ($asset->kind === Asset::KIND_IMAGE) {
-            // Read only as much of the file as the dimensions need, rather than downloading it
-            $stream = $upload->fs->getFileStream($path);
-            try {
-                $dimensions = Image::imageSizeByStream($stream);
-                if ($dimensions) {
-                    [$asset->width, $asset->height] = $dimensions;
-                }
-            } catch (Throwable) {
-            } finally {
-                fclose($stream);
-            }
-        }
-
         // The file is already in place, so save the asset the way indexing does
         $asset->setScenario(Asset::SCENARIO_INDEX);
 
-        if (!Craft::$app->getElements()->saveElement($asset)) {
+        try {
+            $saved = Craft::$app->getElements()->saveElement($asset);
+        } catch (Throwable $e) {
+            $upload->fs->deleteFile($path);
+            throw $e;
+        }
+
+        if (!$saved) {
             $upload->fs->deleteFile($path);
             throw new BadRequestHttpException(implode("\n", $asset->getErrorSummary(true)) ?: 'The asset could not be saved.');
         }
@@ -242,6 +246,7 @@ class AssetUploadHandler implements UploadHandlerInterface
         $asset = new Asset();
         $asset->tempFilePath = $tempPath;
         $asset->setFilename($filename);
+        $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false));
         $asset->newFolderId = $folder->id;
         $asset->setVolumeId($folder->volumeId);
         $asset->uploaderId = Craft::$app->getUser()->getId();
@@ -339,25 +344,6 @@ class AssetUploadHandler implements UploadHandlerInterface
         ];
     }
 
-    /**
-     * Whether the file must be saved from a local copy: Craft cleans it, or reads its dimensions from the whole file.
-     */
-    private function needsLocalCopy(string $filename): bool
-    {
-        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-        // SVGs always need a local copy, since their dimensions can only be read from the whole file
-        if ($extension === 'svg') {
-            return true;
-        }
-
-        // Same condition as Asset::afterSave()
-        return Image::canManipulateAsImage($extension) && (
-            !Craft::$app->getRequest()->getIsCpRequest() ||
-            Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
-        );
-    }
-
     private function localCopy(StagedUpload $upload): string
     {
         $tempPath = Assets::tempFilePath(pathinfo($upload->filename, PATHINFO_EXTENSION) ?: 'tmp');
@@ -380,7 +366,7 @@ class AssetUploadHandler implements UploadHandlerInterface
             }
 
             if (isset($params['elementId'])) {
-                $element = Craft::$app->getElements()->getElementById((int)$params['elementId'], null, $params['siteId'] ?? null);
+                $element = Craft::$app->getElements()->getElementById((int)$params['elementId'], null, isset($params['siteId']) ? (int)$params['siteId'] : null);
             }
 
             $folderId = $field->resolveDynamicPathToFolderId($element);
