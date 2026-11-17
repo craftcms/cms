@@ -10,6 +10,7 @@ use CraftCms\Cms\Ui\Nodes\Action;
 use CraftCms\Cms\Ui\Nodes\ActionMenu;
 use CraftCms\Cms\Ui\Nodes\Callout;
 use CraftCms\Cms\Ui\Nodes\CopyAttribute;
+use CraftCms\Cms\Ui\Nodes\ElementIndex;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\Heading;
@@ -41,6 +42,7 @@ class UiNodeTypes extends TypeRegistry
         ActionMenu::class,
         Callout::class,
         CopyAttribute::class,
+        ElementIndex::class,
         Field::class,
         Group::class,
         Heading::class,

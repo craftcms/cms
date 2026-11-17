@@ -106,14 +106,15 @@ it('builds the initial payload without a request or owner', function () {
         ->and($payload['sort'])->toBe([['field' => 'dateCreated', 'direction' => 'desc']]);
 });
 
-it('resolves a Ui control carrying the token and initial payload', function () {
-    $control = EmbeddedElementIndex::make(Entry::class)
+it('resolves a Ui node carrying the token and initial payload', function () {
+    $node = EmbeddedElementIndex::make(Entry::class)
         ->storageKey('test:entries')
-        ->uiControl(['entries']);
+        ->uiNode('entries');
 
-    $props = $control->props();
+    $props = $node->props();
 
-    expect($control->component())->toBe('craft:element-index')
+    expect($node->component())->toBe('craft:element-index')
+        ->and($node->getControl())->toBeNull()
         ->and($props['storageKey'])->toBe('test:entries')
         ->and($props['elementType'])->toBe(Entry::class)
         ->and(EmbeddedElementIndex::fromToken($props['token']))->not->toBeNull()

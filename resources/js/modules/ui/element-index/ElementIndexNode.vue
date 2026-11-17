@@ -6,9 +6,9 @@
   import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
   import type {IndexQueryParams} from '@/modules/elements/index/composables/useElementIndexVisits';
   import type {NestedContentIndexData} from '../nested-elements/nested-elements';
-  import type {UiControlPayload} from '../types';
+  import type {UiNodePayload} from '../types';
 
-  type ElementIndexControlProps = {
+  type ElementIndexNodeProps = {
     token: string;
     elementType: string;
     storageKey?: string | null;
@@ -16,10 +16,10 @@
   };
 
   const props = defineProps<{
-    control: UiControlPayload<ElementIndexControlProps>;
+    node: UiNodePayload<ElementIndexNodeProps>;
   }>();
 
-  const {token, elementType, storageKey, initial} = props.control.props;
+  const {token, elementType, storageKey, initial} = props.node.props;
   const error = shallowRef('');
   const renderedMode = initial.viewState.mode;
   const renderedColumns = initial.defaultTableColumns.filter(

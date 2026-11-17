@@ -6,9 +6,8 @@ namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
-use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
 use CraftCms\Cms\Support\Json;
-use CraftCms\Cms\Ui\Controls\ElementIndex;
+use CraftCms\Cms\Ui\Nodes\ElementIndex;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 
@@ -27,7 +26,7 @@ use function CraftCms\Cms\currentUser;
  *     ->storageKey('orders:completed')
  *     ->defaultTableColumns(['orderStatus', 'dateOrdered']);
  *
- * Field::make('Orders', $index->uiControl(['orders']));
+ * $index->uiNode('orders');
  * ```
  *
  * @since 6.0.0
@@ -177,14 +176,9 @@ class EmbeddedElementIndex
             ->withConfig(is_array($data['config'] ?? null) ? $data['config'] : []);
     }
 
-    /** @param  string|list<string>  $path */
-    public function uiControl(string|array $path): ElementIndex
+    public function uiNode(string $uid): ElementIndex
     {
-        return ElementIndex::make($path)
-            ->token($this->token())
-            ->elementType($this->elementType)
-            ->storageKey($this->config['storageKey'] ?? null)
-            ->initial(EmbeddedIndexViewModel::forDefinition($this)->payload());
+        return ElementIndex::make($uid, $this);
     }
 
     /** @param  array<string, mixed>  $config */
