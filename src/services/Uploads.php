@@ -115,8 +115,8 @@ class Uploads extends Component
         $fs = $this->fs($disk);
 
         $id = StringHelper::UUID();
-        $extension = $filename !== null ? strtolower(pathinfo($filename, PATHINFO_EXTENSION)) : '';
-        $path = self::STAGING_FOLDER . "/$id" . ($extension !== '' ? ".$extension" : '');
+        // Staged files have no extension, so web servers don’t serve them as pages or SVGs before Craft checks them
+        $path = self::STAGING_FOLDER . "/$id";
         $urlExpiresAt = DateTimeHelper::currentUTCDateTime()->modify(sprintf('+%d seconds', self::URL_DURATION));
         $expiresAt = DateTimeHelper::currentUTCDateTime()->modify(sprintf('+%d seconds', self::SESSION_DURATION));
 
@@ -124,6 +124,12 @@ class Uploads extends Component
 
         if ($fs instanceof TemporaryUploadUrlInterface) {
             $mimeType = $filename !== null ? BaseFileHelper::getMimeTypeByExtension($filename) : null;
+
+            // Craft sanitizes SVGs before saving them, so storage must not serve unsanitized ones as images
+            if ($mimeType === 'image/svg+xml') {
+                $mimeType = 'application/octet-stream';
+            }
+
             $upload = $fs->temporaryUploadUrl($path, $urlExpiresAt, array_filter([
                 'ContentType' => $mimeType,
                 'ContentLength' => $size,
@@ -185,7 +191,7 @@ class Uploads extends Component
         $startedAt = time();
         $session = $this->session($id);
 
-        if (!$session || $session['uploader'] !== self::UPLOADER_CRAFT) {
+        if (!$session || $session['uploader'] !== self::UPLOADER_CRAFT || !empty($session['state']['canceled'])) {
             throw new NotFoundHttpException('This upload URL is not valid, or its upload was already used.');
         }
 
@@ -200,7 +206,7 @@ class Uploads extends Component
                 // Read the session again while holding the lock, since other requests may have changed it
                 $session = $this->session($id);
 
-                if (!$session) {
+                if (!$session || !empty($session['state']['canceled'])) {
                     throw new NotFoundHttpException('This upload URL is not valid, or its upload was already used.');
                 }
 
@@ -280,6 +286,9 @@ class Uploads extends Component
     /**
      * Cancels an upload and deletes its file.
      *
+     * The upload is kept until it expires, since direct upload URLs can’t be revoked, so garbage collection deletes
+     * any file sent to its URL afterward.
+     *
      * @param string $id The upload’s ID
      * @param User|null $user The uploader. Defaults to the current user, or a guest.
      */
@@ -291,7 +300,8 @@ class Uploads extends Component
             $session = $this->session($id);
 
             if ($session && hash_equals($session['owner'], $this->owner($user))) {
-                $this->deleteSession($session);
+                $this->deleteStagedFile($session);
+                $this->updateSession($id, ['state' => $session['state'] + ['canceled' => true]]);
             }
         });
     }
@@ -337,7 +347,7 @@ class Uploads extends Component
         return $this->withLock($id, function() use ($id, $user, $callback) {
             $session = $this->session($id);
 
-            if (!$session || !hash_equals($session['owner'], $this->owner($user)) || new DateTime($session['expiresAt'], new \DateTimeZone('UTC')) < new DateTime() || !empty($session['state']['claimed'])) {
+            if (!$session || !hash_equals($session['owner'], $this->owner($user)) || new DateTime($session['expiresAt'], new \DateTimeZone('UTC')) < new DateTime() || !empty($session['state']['claimed']) || !empty($session['state']['canceled'])) {
                 throw new NotFoundHttpException('Upload not found.');
             }
 
@@ -484,6 +494,12 @@ class Uploads extends Component
 
     private function deleteSession(array $session): void
     {
+        $this->deleteStagedFile($session);
+        Db::delete(Table::UPLOADSESSIONS, ['id' => $session['id']]);
+    }
+
+    private function deleteStagedFile(array $session): void
+    {
         try {
             $fs = $this->fs($session['disk']);
 
@@ -493,8 +509,6 @@ class Uploads extends Component
         } catch (NotFoundHttpException) {
             // The volume is gone, and its files with it
         }
-
-        Db::delete(Table::UPLOADSESSIONS, ['id' => $session['id']]);
     }
 
     private function sameParams(array $a, array $b): bool

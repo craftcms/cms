@@ -173,6 +173,50 @@ class UploadsTest extends TestCase
         self::assertStringNotContainsString('<script', $stored);
     }
 
+    public function testSvgsAreStagedAsBinaryDataAndKeepTheirDimensions(): void
+    {
+        // Even when Craft wouldn't sanitize them, SVGs are saved from a local copy, which reads their dimensions
+        Craft::$app->getRequest()->setIsCpRequest(true);
+        Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads = false;
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="30"><rect width="1" height="1"/></svg>';
+
+        try {
+            $upload = $this->start('logo.svg', strlen($svg));
+            $this->send($upload, $svg);
+            $result = Craft::$app->getUploads()->complete($upload['id']);
+        } finally {
+            Craft::$app->getRequest()->setIsCpRequest(null);
+            Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads = true;
+        }
+
+        // Storage must not serve the unsanitized file as an SVG while it's staged
+        [$path, $options] = DirectUploadFs::$calls[0];
+        self::assertSame(Uploads::STAGING_FOLDER . "/{$upload['id']}", $path);
+        self::assertSame('application/octet-stream', $options['ContentType']);
+
+        $asset = Asset::find()->id($result['assetId'])->one();
+        self::assertSame([40, 30], [$asset->width, $asset->height]);
+    }
+
+    public function testCanceledUploadsCollectFilesSentAfterward(): void
+    {
+        $upload = $this->start('notes.txt', 3);
+        Craft::$app->getUploads()->cancel($upload['id']);
+
+        // Direct upload URLs can't be revoked, so a file can still arrive
+        $path = $this->send($upload, 'one');
+
+        try {
+            Craft::$app->getUploads()->complete($upload['id']);
+            self::fail('Canceled uploads must not complete.');
+        } catch (NotFoundHttpException) {
+        }
+
+        Db::update(Table::UPLOADSESSIONS, ['expiresAt' => Db::prepareDateForDb(new DateTime('-1 minute'))], ['id' => $upload['id']]);
+        self::assertSame(1, Craft::$app->getUploads()->deleteExpiredUploads());
+        self::assertFileDoesNotExist($path);
+    }
+
     public function testFilesOfTheWrongSizeAreRejectedAndDeleted(): void
     {
         $upload = $this->start('notes.txt', 3);
