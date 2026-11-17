@@ -82,6 +82,13 @@
 - The `updates/check` action’s response now includes `dateFetched`, when the updates were last fetched.
 - Improved the performance of control panel requests, particularly the fields index, the entries index, and field edit screens, and reduced the size of their responses. ([#20704](https://github.com/craftcms/cms/pull/20704))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
+- Responses that save or refresh the session now have no-cache headers, so shared caches and browsers don’t store them.
+- `{% expires in … %}` and `{% expires on … %}` now set just `Cache-Control: public, max-age=…`, without the `Expires` and `Pragma: cache` headers.
+- `ResponseHeaders::noCache()` no longer overrides cache headers set after it, such as by a later `{% expires %}` tag. Headers queued with `ResponseHeaders` are applied in the order they were set, so the last one wins.
+- Deprecated `{% expires %}` and `@craftExpires` without a duration. `{% do ResponseHeaders.noCache() %}` should be used instead.
+- Added `CraftCms\Cms\Http\ResponseHeaders::cacheControl()`, which sets the response’s cache directives with Symfony’s `Response` method names, such as `{% do ResponseHeaders.cacheControl.setPublic().setSharedMaxAge(86400) %}` in Twig.
+- Added `CraftCms\Cms\Http\Events\LazySessionSaved`, which reports the session keys or CSRF token that caused a session to be saved for a request without one. When debug mode is on, the reason is also sent in an `X-Craft-Session-Saved` header.
+- Removed `CraftCms\Cms\Http\ResponseHeaders::$noCache`, `$duration`, `$replace`, and `$headers`, and the `$replace` argument of `ResponseHeaders::setCache()`.
 - Responses to token and site token requests now have no-cache headers, so shared caches and browsers don’t store them. ([#20751](https://github.com/craftcms/cms/pull/20751))
 - Fixed a bug where error pages were sent with the cache headers and other response headers queued by the template or controller that threw the exception. ([#20751](https://github.com/craftcms/cms/pull/20751))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))

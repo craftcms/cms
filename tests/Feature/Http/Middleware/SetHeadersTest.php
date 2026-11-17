@@ -195,8 +195,41 @@ it('applies request-scoped cache settings', function () {
 
     $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
 
-    expect($response->getMaxAge())->toBe(60)
-        ->and($response->headers->get('Pragma'))->toBe('cache');
+    expect($response->headers->get('Cache-Control'))->toBe('max-age=60, public');
+});
+
+it('applies queued cache settings in order, so the last one wins', function (Closure $queue, string $cacheControl) {
+    $queue($this->responseHeaders);
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->get('Cache-Control'))->toBe($cacheControl);
+})->with([
+    'cache after no-cache' => [function (ResponseHeaderAccumulator $headers) {
+        $headers->noCache();
+        $headers->setCache(60);
+    }, 'max-age=60, public'],
+    'no-cache after cache' => [function (ResponseHeaderAccumulator $headers) {
+        $headers->setCache(60);
+        $headers->noCache();
+    }, 'must-revalidate, no-cache, no-store, private'],
+    'header after cache' => [function (ResponseHeaderAccumulator $headers) {
+        $headers->cacheControl()->setSharedMaxAge(60);
+        $headers->add('Cache-Control', 'private');
+    }, 'private'],
+]);
+
+it('applies queued cache directives', function () {
+    $this->responseHeaders->cacheControl()
+        ->setPublic()
+        ->setMaxAge(0)
+        ->setSharedMaxAge(86400)
+        ->setStaleWhileRevalidate(3600)
+        ->setStaleIfError(600);
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->get('Cache-Control'))->toBe('max-age=0, public, s-maxage=86400, stale-if-error=600, stale-while-revalidate=3600');
 });
 
 it('applies request-scoped no-cache settings', function () {
@@ -217,8 +250,7 @@ it('applies request-scoped headers and cache settings to JSON responses', functi
 
     $response = $this->get('/test-json-response-headers')
         ->assertOk()
-        ->assertHeader('Access-Control-Allow-Origin', '*')
-        ->assertHeader('Pragma', 'cache');
+        ->assertHeader('Access-Control-Allow-Origin', '*');
 
     expect($response->baseResponse->getMaxAge())->toBe(60);
 });

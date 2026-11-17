@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Context;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
+ * Applies the headers queued with {@see ResponseHeaders}, followed by the headers Craft sends for control panel,
+ * action, preview, and site token requests.
+ *
+ * It runs before `StartSession` in the middleware priority list, outside the session middleware, so the no-cache
+ * headers {@see StartLazySession} queues for a saved session are applied after everything the page queued.
+ *
  * @since 6.0.0
  */
 class SetHeaders
@@ -31,26 +37,6 @@ class SetHeaders
         }
 
         $hasPreviewParam = $request->previewParam() !== null;
-
-        if (
-            $request->isCpRequest() ||
-            $request->isActionRequest() ||
-            $hasPreviewParam ||
-            Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true ||
-            $this->responseHeaders->noCache
-        ) {
-            $this->setNoCacheHeaders($response);
-        } elseif ($this->responseHeaders->duration !== null) {
-            if ($this->responseHeaders->duration <= 0) {
-                $this->setNoCacheHeaders($response);
-            } else {
-                $response->headers->set('Pragma', 'cache', $this->responseHeaders->replace);
-                $response
-                    ->setExpires(now()->addSeconds($this->responseHeaders->duration))
-                    ->setPublic()
-                    ->setMaxAge($this->responseHeaders->duration);
-            }
-        }
 
         // Tell bots not to index/follow control panel and tokenized pages
         if (
@@ -75,8 +61,15 @@ class SetHeaders
             $response->headers->set('X-Content-Type-Options', 'nosniff');
         }
 
-        foreach ($this->responseHeaders->headers as $header) {
-            $response->headers->set($header['header'], $header['value'], $header['replace']);
+        $this->responseHeaders->applyTo($response);
+
+        if (
+            $request->isCpRequest() ||
+            $request->isActionRequest() ||
+            $hasPreviewParam ||
+            Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true
+        ) {
+            $this->setNoCacheHeaders($response);
         }
 
         $this->setPoweredByHeader($response);
