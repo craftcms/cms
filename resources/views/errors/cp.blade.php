@@ -14,8 +14,8 @@
             --surface: #fff;
             --border: #e1e5ea;
             --text: #1f2933;
-            --muted: #606d7b;
-            --red: #dc2626;
+            --muted: #56626f;
+            --red: #b91c1c;
             --red-fill: #fef2f2;
             --code-fill: #e7ebf0;
             --link: #2563eb;
