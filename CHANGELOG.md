@@ -256,6 +256,7 @@
 - Fixed an n+1 query bug when working with Content Block fields. ([#20776](https://github.com/craftcms/cms/issues/20776))
 - Fixed a bug where renaming an asset folder didn’t update the paths of subfolders whose paths differed in case from the folder’s, such as subfolders created by an Assets field’s upload location subpath, when the filesystem moved them along with it. ([#20773](https://github.com/craftcms/cms/issues/20773))
 - Fixed a bug where editable table column widths without a unit, such as Table fields’ column widths, weren’t treated as pixels. ([#20781](https://github.com/craftcms/cms/issues/20781), [#20808](https://github.com/craftcms/cms/pull/20808))
+- Fixed a bug where element chips’ labels and status indicators were hard to see in highlighted options, such as in relation fields’ search results. ([#20778](https://github.com/craftcms/cms/issues/20778), [#20807](https://github.com/craftcms/cms/pull/20807))
 
 ## 6.0.0-beta.1 - 2026-11-10
 

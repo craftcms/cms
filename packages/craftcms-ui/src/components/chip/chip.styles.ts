@@ -563,10 +563,16 @@ export default css`
    *
    * The palette is repointed too, for controls that inherit it, like the
    * action menu's button, whose hover tints from --c-color-fill-quiet.
+   *
+   * The fill is a surface of its own, so the default text color and the
+   * status dot's ring are the page's again, rather than ones a surrounding
+   * surface set for itself, such as a highlighted craft-option.
    */
   :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
   :host([data-color='white'][appearance~='outline-fill']:not([selected]))
     .cp-chip {
+    --c-text-default: var(--color-slate-900);
+    --c-indicator-ring: initial;
     --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-white));
     --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
     background-color: var(--c-chip-fill, var(--c-surface-white));
