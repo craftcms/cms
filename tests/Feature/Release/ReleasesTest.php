@@ -23,6 +23,7 @@ use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
+use CraftCms\Cms\Release\Models\Release;
 use CraftCms\Cms\Release\Notifications\ReleaseFailed;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Section\Models\Section;
@@ -422,6 +423,19 @@ it('publishes only due scheduled releases after the scheduling user loses every 
         ->and(EntryElement::find()->id($lateDraft->getCanonicalId())->status(null)->one()->title)->toBe('Late scheduled change')
         ->and(EntryElement::find()->id($futureDraft->getCanonicalId())->status(null)->one()->title)->toBe('Future original')
         ->and(EntryElement::find()->id($unscheduledDraft->getCanonicalId())->status(null)->one()->title)->toBe('Unscheduled original');
+});
+
+it('rejects a status change made from an outdated copy of a release', function () {
+    $release = $this->releases->create('Launch', null, $this->actor);
+    $outdated = Release::query()->findOrFail($release->id);
+
+    $release->transitionTo(ReleaseStatus::Scheduled, ['publishedAt' => now()->addDay()]);
+
+    expect(fn () => $outdated->transitionTo(ReleaseStatus::Publishing))
+        ->toThrow(RuntimeException::class, 'changed concurrently')
+        ->and(fn () => $release->transitionTo(ReleaseStatus::Scheduled))
+        ->toThrow(LogicException::class, 'cannot transition from scheduled to scheduled')
+        ->and($release->refresh()->status)->toBe(ReleaseStatus::Scheduled);
 });
 
 it('requires publication permission to cancel a scheduled release', function () {

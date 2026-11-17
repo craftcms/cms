@@ -1294,6 +1294,7 @@ return [
     'Composer was unable to install the updates.' => 'Composer gat ekki sett upp uppfærslurnar.',
     'Composer was unable to remove the plugin.' => 'Composer gat ekki fjarlægt viðbótina.',
     'Composer was unable to revert the updates.' => 'Composer gat ekki afturkallað uppfærslurnar.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Þjappað',
     'Condition {num, number}' => 'Skilyrði {num, number}',
     'Configure the category group’s site-specific settings.' => 'Stilltu staðbundnar stillingar flokkahópsins.',

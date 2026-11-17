@@ -9,11 +9,15 @@ use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Facades\Twig;
 use CraftCms\Cms\SystemMessage\Actions\RenderSystemMessageAction;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
+use CraftCms\Cms\SystemMessage\SystemMessageRenderContext;
 use CraftCms\Cms\SystemMessage\SystemMessages;
+use CraftCms\Cms\View\TemplateMode;
 
 use function CraftCms\Cms\t;
 
@@ -138,3 +142,16 @@ class SystemMessageAssetTransformDriver implements AssetTransformDriver
         );
     }
 }
+
+it('keeps each template mode’s Twig environment after rendering for another site', function () {
+    $otherSite = Site::factory()->create();
+    Sites::refreshSites();
+    TemplateMode::set(TemplateMode::Cp);
+    $cpTwig = Twig::get(TemplateMode::Cp);
+    $siteTwig = Twig::get(TemplateMode::Site);
+
+    app(SystemMessageRenderContext::class)->run($otherSite->id, 'en-US', fn () => null);
+
+    expect(Twig::get(TemplateMode::Cp))->toBe($cpTwig)
+        ->and(Twig::get(TemplateMode::Site))->toBe($siteTwig);
+});

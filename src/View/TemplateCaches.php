@@ -76,6 +76,27 @@ class TemplateCaches
         }
     }
 
+    /**
+     * Closes a cache frame started with `startTemplateCache()` without storing anything, such as
+     * when the cached block throws. Assets registered inside it are dropped along with its output.
+     */
+    public function abortTemplateCache(bool $global = false): void
+    {
+        if (! $this->isTemplateCachingEnabled($global)) {
+            return;
+        }
+
+        $context = new TemplateCacheContext(
+            cacheKey: '',
+            global: $global,
+            resources: true,
+        );
+
+        foreach ($this->collectors() as $collector) {
+            $collector->end($context);
+        }
+    }
+
     public function endTemplateCache(string $key, bool $global, ?string $duration, mixed $expiration, string $body, bool $withResources = false): void
     {
         if (! $this->isTemplateCachingEnabled($global)) {

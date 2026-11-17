@@ -1294,6 +1294,7 @@ return [
     'Composer was unable to install the updates.' => 'ל-Composer לא הייתה אפשרות להתקין את העדכונים.',
     'Composer was unable to remove the plugin.' => 'למחשב לא הייתה אפשרות להסיר את התוסף.',
     'Composer was unable to revert the updates.' => 'ל-Composer לא הייתה אפשרות לבטל את העדכונים.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'דחוס',
     'Condition {num, number}' => 'תנאי {num, number}',
     'Configure the category group’s site-specific settings.' => 'קבע את התצורה של ההגדרות הספציפיות לאתר של קבוצת קטגוריות.',

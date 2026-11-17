@@ -37,27 +37,24 @@ enum TemplateMode: string
     {
         Context::addHidden(self::class, $mode);
 
-        if ($mode === self::Cp) {
-            /**
-             * Prepend the Craft CMS Control panel views when
-             * we're in CP Template mode. This makes view()
-             * work without a 'craftcms::' prefix.
-             */
-            if (TemplateMode::is(TemplateMode::Cp)) {
-                $templates = dirname(__DIR__, 2).'/resources/templates';
-                $views = dirname(__DIR__, 2).'/resources/views';
+        /**
+         * CP mode puts Craft's control panel views first, so view() finds them without a 'craftcms::' prefix.
+         * Site mode takes them out again, so the host app's views win, such as its own `app` layout.
+         */
+        $cpPaths = [
+            dirname(__DIR__, 2).'/resources/views',
+            dirname(__DIR__, 2).'/resources/templates',
+        ];
 
-                /** @var FileViewFinder $finder */
-                $finder = view()->getFinder();
+        /** @var FileViewFinder $finder */
+        $finder = view()->getFinder();
+        $otherPaths = array_values(array_diff($finder->getPaths(), $cpPaths));
+        $paths = $mode === self::Cp ? [...$cpPaths, ...$otherPaths] : $otherPaths;
 
-                if (! in_array($templates, $finder->getPaths())) {
-                    $finder->prependLocation($templates);
-                }
-
-                if (! in_array($views, $finder->getPaths())) {
-                    $finder->prependLocation($views);
-                }
-            }
+        if ($paths !== $finder->getPaths()) {
+            $finder->setPaths($paths);
+            // Forget views found under the old paths
+            $finder->flush();
         }
     }
 
@@ -66,6 +63,16 @@ enum TemplateMode: string
         return self::get() === $mode;
     }
 
+    /**
+     * Switches to a template mode while the callback runs, then switches back.
+     *
+     * Use `set()` only for a switch that should last for the rest of the request.
+     *
+     * @template TReturn
+     *
+     * @param  callable(): TReturn  $callback
+     * @return TReturn
+     */
     public static function with(self $mode, callable $callback): mixed
     {
         $original = self::get();
