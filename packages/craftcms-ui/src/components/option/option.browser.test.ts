@@ -235,23 +235,41 @@ describe('visual', () => {
               <div>Poster archive</div>
             </craft-chip>
           </craft-option>
+          <craft-option active>
+            <craft-chip data-color="white" appearance="outline-fill">
+              <craft-indicator slot="status" fill="teal"></craft-indicator>
+              <div>Poster archive</div>
+            </craft-chip>
+          </craft-option>
         </div>`;
-      const option = document.querySelector<HTMLElement>('craft-option')!;
-      const indicator = option.querySelector<
-        HTMLElement & {updateComplete: Promise<unknown>}
-      >('craft-indicator')!;
-      await indicator.updateComplete;
       await settle();
-      const fill = getComputedStyle(option).backgroundColor;
-      const dot =
-        indicator.shadowRoot!.querySelector<HTMLElement>('.indicator')!;
+      const [plain, white] = [
+        ...document.querySelectorAll<HTMLElement>('craft-chip'),
+      ].map((chip) => {
+        const dot = chip
+          .querySelector('craft-indicator')!
+          .shadowRoot!.querySelector<HTMLElement>('.indicator')!;
+        return {
+          label: getComputedStyle(chip.querySelector('div')!).color,
+          ring: getComputedStyle(dot).borderTopColor,
+          dot: getComputedStyle(dot).backgroundColor,
+          fill: getComputedStyle(
+            chip.shadowRoot!.querySelector<HTMLElement>('.cp-chip')!
+          ).backgroundColor,
+        };
+      });
+      const highlight = getComputedStyle(
+        document.querySelector('craft-option')!
+      ).backgroundColor;
 
-      expect(
-        contrast(getComputedStyle(option.querySelector('div')!).color, fill)
-      ).toBeGreaterThanOrEqual(4.5);
-      expect(
-        contrast(getComputedStyle(dot).borderTopColor, fill)
-      ).toBeGreaterThanOrEqual(3);
+      // A plain chip sits on the highlight, so it takes its colors.
+      expect(contrast(plain!.label, highlight)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(plain!.ring, highlight)).toBeGreaterThanOrEqual(3);
+
+      // A white chip is its own surface, so it keeps the page's.
+      expect(contrast(white!.label, white!.fill)).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(white!.dot, white!.fill)).toBeGreaterThanOrEqual(3);
+      expect(white!.ring).toBe('rgba(0, 0, 0, 0)');
     }
   );
 

@@ -15,7 +15,7 @@ import {Appearance} from '@src/constants/appearances';
  *
  * @cssproperty --c-indicator-ring - Ring color of a `solid` dot, for a surface
  *   the fill alone doesn't stand out on. Defaults to `transparent`, so no
- *   ring shows. A highlighted `craft-option` sets it to its text color.
+ *   ring shows. A highlighted `craft-option` sets it to its text color, and a white `fill` or `outline-fill` chip resets it.
  *
  * @since 1.0
  */

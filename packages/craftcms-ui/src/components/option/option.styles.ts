@@ -22,12 +22,13 @@ export default css`
     color: var(--c-color-neutral-on-normal);
   }
 
-  /* A chip's label and status dot take the default surface's colors, which
-     nearly match the loud fill, so they're pointed at its text color. */
+  /* The loud fill is a surface of its own, like a colored card: content that
+     takes the default text color, such as a plain chip's label, takes its
+     text color instead, and status dots get a ring in it. */
   :host([active]) {
     background-color: var(--c-color-neutral-fill-loud);
     color: var(--c-color-neutral-on-loud);
-    --c-chip-text: var(--c-color-neutral-on-loud);
+    --c-text-default: var(--c-color-neutral-on-loud);
     --c-indicator-ring: var(--c-color-neutral-on-loud);
   }
 
