@@ -85,6 +85,17 @@ export default css`
     );
   }
 
+  /* While a value is previewed, the current value's outline and the preview
+     both take the accent color. */
+  :host(:not([readonly]):not([disabled]))
+    .slide-picker:has(.slide-picker__segment:hover) {
+    --_segment-active-border: var(--c-color-accent-border-normal);
+    --_segment-hover-fill: var(
+      --c-slide-picker-segment-hover-fill,
+      var(--c-color-accent-fill-normal)
+    );
+  }
+
   :host(:not([readonly]):not([disabled]))
     .slide-picker:has(.slide-picker__segment:hover)
     .slide-picker__segment {
@@ -94,6 +105,7 @@ export default css`
   :host(:not([readonly]):not([disabled]))
     .slide-picker:has(.slide-picker__segment:hover)
     .slide-picker__segment:is(:hover, :has(~ .slide-picker__segment:hover)) {
+    --_segment-border: var(--c-color-accent-border-quiet);
     background-color: var(--_segment-hover-fill);
   }
 
