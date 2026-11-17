@@ -49,7 +49,8 @@ trait NestedElementQueryTrait
     public mixed $ownerId = null;
 
     /**
-     * @var ElementInterface[]|null The owner elements specified by [[owner()]] or [[primaryOwner()]], indexed by their IDs.
+     * @var array<int,array<int,ElementInterface>>|null The owner elements specified by [[owner()]] or [[primaryOwner()]],
+     * indexed by their IDs and site IDs.
      * @used-by owner()
      * @used-by primaryOwner()
      */
@@ -141,7 +142,7 @@ trait NestedElementQueryTrait
     public function primaryOwner(ElementInterface $primaryOwner): static
     {
         $this->primaryOwnerId = [$primaryOwner->id];
-        $this->_owners = [$primaryOwner->id => $primaryOwner];
+        $this->_owners = [$primaryOwner->id => [$primaryOwner->siteId => $primaryOwner]];
         if ($this->elementType::isLocalized()) {
             $this->siteId = $primaryOwner->siteId;
         }
@@ -164,7 +165,7 @@ trait NestedElementQueryTrait
      * @inheritdoc
      *
      * An array of owner elements can be passed as well. Each resulting {element} will have its owner
-     * set to the matching element.
+     * set to the element with the matching ID (and site ID, if the {elements} are localized).
      *
      * @param ElementInterface|ElementInterface[] $owner The owner element(s)
      * @uses $ownerId
@@ -175,7 +176,7 @@ trait NestedElementQueryTrait
         $owners = is_array($owner) ? $owner : [$owner];
         $this->_owners = [];
         foreach ($owners as $o) {
-            $this->_owners[$o->id] = $o;
+            $this->_owners[$o->id][$o->siteId] = $o;
         }
         $this->ownerId = array_keys($this->_owners);
         if ($this->elementType::isLocalized()) {
@@ -366,9 +367,15 @@ trait NestedElementQueryTrait
     public function createElement(array $row): ElementInterface
     {
         if (!empty($this->_owners)) {
-            $owner = count($this->_owners) === 1
-                ? reset($this->_owners)
-                : ($this->_owners[$row['ownerId'] ?? null] ?? null);
+            $firstOwnerSites = reset($this->_owners);
+            if (count($this->_owners) === 1 && count($firstOwnerSites) === 1) {
+                $owner = reset($firstOwnerSites);
+            } else {
+                $ownersBySite = $this->_owners[$row['ownerId'] ?? null] ?? [];
+                $owner = $this->elementType::isLocalized()
+                    ? ($ownersBySite[$row['siteId'] ?? null] ?? null)
+                    : (reset($ownersBySite) ?: null);
+            }
 
             if ($owner) {
                 $row['owner'] = $owner;

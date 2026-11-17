@@ -21,6 +21,7 @@ use craft\models\FieldLayoutTab;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\test\TestCase;
+use crafttests\fixtures\SitesFixture;
 use RuntimeException;
 use yii\base\Event;
 
@@ -35,6 +36,15 @@ class ContentBlockTest extends TestCase
     private ContentBlock $contentBlockField;
     private EntryType $entryType;
     private Section $section;
+
+    public function _fixtures(): array
+    {
+        return [
+            'sites' => [
+                'class' => SitesFixture::class,
+            ],
+        ];
+    }
 
     protected function _before(): void
     {
@@ -65,12 +75,10 @@ class ContentBlockTest extends TestCase
             'type' => Section::TYPE_CHANNEL,
         ]);
         $this->section->setEntryTypes([$this->entryType]);
-        $this->section->setSiteSettings([
-            new Section_SiteSettings([
-                'siteId' => Craft::$app->getSites()->getPrimarySite()->id,
-                'hasUrls' => false,
-            ]),
-        ]);
+        $this->section->setSiteSettings(array_map(fn(int $siteId) => new Section_SiteSettings([
+            'siteId' => $siteId,
+            'hasUrls' => false,
+        ]), [$this->_primarySiteId(), $this->_otherSiteId()]));
         if (!$entriesService->saveSection($this->section)) {
             throw new RuntimeException('Could not save section.');
         }
@@ -94,6 +102,16 @@ class ContentBlockTest extends TestCase
         return $fieldLayout;
     }
 
+    private function _primarySiteId(): int
+    {
+        return (int)Craft::$app->getSites()->getPrimarySite()->id;
+    }
+
+    private function _otherSiteId(): int
+    {
+        return (int)Craft::$app->getSites()->getSiteByHandle('testSite1')->id;
+    }
+
     /**
      * Content blocks that are lazy-loaded for a query result shouldn't query for their owners.
      *
@@ -113,7 +131,7 @@ class ContentBlockTest extends TestCase
             }
         }
 
-        $entries = Entry::find()->sectionId($this->section->id)->orderBy(['elements.id' => SORT_ASC])->all();
+        $entries = Entry::find()->sectionId($this->section->id)->siteId($this->_primarySiteId())->orderBy(['elements.id' => SORT_ASC])->all();
         self::assertCount(3, $entries);
 
         $entryQueries = 0;
@@ -135,5 +153,38 @@ class ContentBlockTest extends TestCase
         }
 
         self::assertSame(0, $entryQueries);
+    }
+
+    /**
+     * Content blocks queried for several localized versions of the same owner get the owner from their own site.
+     */
+    public function testOwnersForMultipleSites(): void
+    {
+        $entry = new Entry([
+            'sectionId' => $this->section->id,
+            'typeId' => $this->entryType->id,
+            'title' => 'Entry',
+        ]);
+        $entry->setFieldValue('testBlock', ['fields' => ['blockText' => 'Text']]);
+        if (!Craft::$app->getElements()->saveElement($entry)) {
+            throw new RuntimeException('Could not save entry: ' . implode(', ', $entry->getFirstErrors()));
+        }
+
+        $owners = [
+            Entry::find()->id($entry->id)->siteId($this->_primarySiteId())->one(),
+            Entry::find()->id($entry->id)->siteId($this->_otherSiteId())->one(),
+        ];
+
+        $contentBlocks = ContentBlockElement::find()
+            ->fieldId($this->contentBlockField->id)
+            ->owner($owners)
+            ->all();
+
+        self::assertCount(2, $contentBlocks);
+        foreach ($contentBlocks as $contentBlock) {
+            $owner = $contentBlock->getOwner();
+            self::assertContains($owner, $owners);
+            self::assertSame($contentBlock->siteId, $owner->siteId);
+        }
     }
 }
