@@ -240,16 +240,15 @@ it('ends the text of a long value before the clear button', async () => {
 });
 
 it('gives the text the clear button’s space while there is no value to clear', async () => {
-  const [clearable, plain] = await Promise.all(
-    [true, false].map(async (isClearable) => {
-      const control = await fixture([{label: 'Anthropic', value: 'anthropic'}]);
-      control.clearable = isClearable;
-      control.style.width = '150px';
-      await control.updateComplete;
+  const clearable = await fixture([{label: 'Anthropic', value: 'anthropic'}]);
+  clearable.clearable = true;
+  clearable.style.width = '150px';
 
-      return control;
-    })
-  );
+  const plain = await fixture([{label: 'Anthropic', value: 'anthropic'}]);
+  plain.clearable = false;
+  plain.style.width = '150px';
+
+  await Promise.all([clearable.updateComplete, plain.updateComplete]);
 
   expect(clearable.shadowRoot!.querySelector('.clear')).toBeNull();
   expect(textEnd(clearable)).toBeCloseTo(textEnd(plain), 0);
