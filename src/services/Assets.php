@@ -304,17 +304,21 @@ class Assets extends Component
         $volume = $folder->getVolume();
 
         $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
-        $descendantFolders = $this->getAllDescendantFolders($folder);
 
-        foreach ($descendantFolders as $descendantFolder) {
-            $descendantFolder->path = preg_replace('#^' . $folder->path . '#', $newFolderPath, $descendantFolder->path);
-            $this->storeFolderRecord($descendantFolder);
-        }
-
-        // Now change the affected folder
         $folder->name = $newName;
         $folder->path = $newFolderPath;
         $this->storeFolderRecord($folder);
+
+        // Rebuild the descendants' paths from their parents, rather than replacing the old path prefix,
+        // so subfolders whose stored path differs in case from the renamed folder's still follow along
+        $parentFolders = [$folder];
+        while ($parentFolder = array_shift($parentFolders)) {
+            foreach ($this->findFolders(['parentId' => $parentFolder->id]) as $childFolder) {
+                $childFolder->path = $parentFolder->path . $childFolder->name . '/';
+                $this->storeFolderRecord($childFolder);
+                $parentFolders[] = $childFolder;
+            }
+        }
 
         return $newName;
     }
@@ -913,6 +917,9 @@ class Assets extends Component
                     $folderModel->name = $part;
                     $folderModel->path = $path;
                     $this->storeFolderRecord($folderModel);
+                } else {
+                    // The lookup may be case-insensitive, so continue from the existing folder's actual path
+                    $path = $folderModel->path;
                 }
 
                 // Ensure a physical folder exists, if needed.
