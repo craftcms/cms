@@ -377,6 +377,11 @@ class ProjectConfig extends Component
     private ?array $_storedIndex = null;
 
     /**
+     * @var array Top-level keys this request loaded from the cache, before anything rebuilt [[$_storedConfig]].
+     */
+    private array $_storedRoots = [];
+
+    /**
      * @var array[] Config change handlers
      * @see registerChangeEventHandler()
      * @see handleChangeEvent()
@@ -469,6 +474,7 @@ class ProjectConfig extends Component
         $this->_internalConfig = null;
         $this->_storedConfig = null;
         $this->_storedIndex = null;
+        $this->_storedRoots = [];
         $this->_externalConfig = null;
         $this->_currentWorkingConfig = null;
         $this->_configFileList = [];
@@ -493,6 +499,7 @@ class ProjectConfig extends Component
         $this->_internalConfig = null;
         $this->_storedConfig = null;
         $this->_storedIndex = null;
+        $this->_storedRoots = [];
         $this->_externalConfig = null;
         $this->_currentWorkingConfig = null;
         $this->_configFileList = [];
@@ -1967,7 +1974,6 @@ class ProjectConfig extends Component
         $loadAll = fn(): array => $this->_loadStoredConfig();
 
         return new class($loadRoot, $loadAll, $this) extends ReadOnlyProjectConfigData {
-            private array $roots = [];
             private bool $loaded = false;
 
             public function __construct(private Closure $loadRoot, private Closure $loadAll, ProjectConfig $projectConfig)
@@ -1983,12 +1989,9 @@ class ProjectConfig extends Component
 
                 $segments = is_string($path) ? ProjectConfigHelper::pathSegments($path) : $path;
                 $root = (string)reset($segments);
+                $roots = [$root => ($this->loadRoot)($root)];
 
-                if (!array_key_exists($root, $this->roots)) {
-                    $this->roots[$root] = ($this->loadRoot)($root);
-                }
-
-                return ProjectConfigHelper::traverseDataArray($this->roots, $segments);
+                return ProjectConfigHelper::traverseDataArray($roots, $segments);
             }
 
             public function export(): array
@@ -1996,7 +1999,6 @@ class ProjectConfig extends Component
                 if (!$this->loaded) {
                     $this->data = ($this->loadAll)();
                     $this->loaded = true;
-                    $this->roots = [];
                 }
 
                 return $this->data;
@@ -2012,16 +2014,26 @@ class ProjectConfig extends Component
      */
     private function _loadStoredRoot(string $root): mixed
     {
+        // Once this request has read the database, every read uses that, so it doesn't mix in older cached keys
         if ($this->_storedConfig !== null) {
             return $this->_storedConfig[$root] ?? null;
         }
 
+        if (array_key_exists($root, $this->_storedRoots)) {
+            return $this->_storedRoots[$root];
+        }
+
+        return $this->_storedRoots[$root] = $this->_readStoredRoot($root);
+    }
+
+    private function _readStoredRoot(string $root): mixed
+    {
         $version = Craft::$app->getInfo()->configVersion;
         $cache = Craft::$app->getCache();
         $this->_storedIndex ??= $cache->get(self::STORED_CACHE_KEY) ?: null;
 
         if (($this->_storedIndex['version'] ?? null) !== $version) {
-            return $this->_rebuildStoredConfig(false)[$root] ?? null;
+            return $this->_rebuildStoredConfig()[$root] ?? null;
         }
 
         if (!in_array($root, $this->_storedIndex['roots'], true)) {
@@ -2035,7 +2047,7 @@ class ProjectConfig extends Component
         $entry = $cache->get($this->_storedRootCacheKey($root));
 
         if (($entry['version'] ?? null) !== $version) {
-            return $this->_rebuildStoredConfig(true)[$root] ?? null;
+            return $this->_rebuildStoredConfig($root)[$root] ?? null;
         }
 
         return $entry['value'];
@@ -2056,7 +2068,7 @@ class ProjectConfig extends Component
         $index = $this->_storedIndex;
 
         if (($index['version'] ?? null) !== $version) {
-            return $this->_rebuildStoredConfig(false);
+            return $this->_rebuildStoredConfig();
         }
 
         $roots = array_values(array_diff($index['roots'], array_keys($index['boot'])));
@@ -2072,7 +2084,7 @@ class ProjectConfig extends Component
             $entry = $entries[$this->_storedRootCacheKey($root)] ?? null;
 
             if (($entry['version'] ?? null) !== $version) {
-                return $this->_rebuildStoredConfig(true);
+                return $this->_rebuildStoredConfig($root);
             }
 
             $data[$root] = $entry['value'];
@@ -2084,9 +2096,9 @@ class ProjectConfig extends Component
     /**
      * Reads the whole config from the database, and writes it to the cache unless another request is already doing so.
      *
-     * @param bool $indexWasCurrent Whether the cached index was current, so only one of the other entries was missing.
+     * @param string|null $missingRoot The top-level key whose entry was missing or stale, if the cached index was current.
      */
-    private function _rebuildStoredConfig(bool $indexWasCurrent): array
+    private function _rebuildStoredConfig(?string $missingRoot = null): array
     {
         // Another request may have changed the config since this one loaded its version, so tag the entries with the
         // stored version. It’s read before the rows: if a change lands in between, the entries get the older version
@@ -2129,7 +2141,11 @@ class ProjectConfig extends Component
         try {
             $cache = Craft::$app->getCache();
 
-            if ($indexWasCurrent || ($cache->get(self::STORED_CACHE_KEY)['version'] ?? null) !== $version) {
+            // Another request may have written the cache while this one read the database
+            $written = ($cache->get(self::STORED_CACHE_KEY)['version'] ?? null) === $version
+                && ($missingRoot === null || ($cache->get($this->_storedRootCacheKey($missingRoot))['version'] ?? null) === $version);
+
+            if (!$written) {
                 $boot = array_intersect_key($data, array_flip(self::BOOT_ROOTS));
                 $entries = [];
 

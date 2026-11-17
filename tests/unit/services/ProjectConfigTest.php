@@ -503,6 +503,62 @@ class ProjectConfigTest extends TestCase
         self::assertFalse(Craft::$app->getCache()->get(ProjectConfig::STORED_CACHE_KEY));
     }
 
+    public function testReadingTheRebuiltConfigAfterAnotherKeyIsEvicted(): void
+    {
+        $this->_useCache(new ArrayCache());
+        $projectConfig = Craft::$app->getProjectConfig();
+        Db::insert(Table::PROJECTCONFIG, ['path' => 'firstRoot.value', 'value' => Json::encode('Before')]);
+        Db::insert(Table::PROJECTCONFIG, ['path' => 'secondRoot.value', 'value' => Json::encode('Second')]);
+        $projectConfig->get('firstRoot.value');
+        $projectConfig->reset();
+        self::assertSame('Before', $projectConfig->get('firstRoot.value'));
+
+        Db::update(Table::PROJECTCONFIG, ['value' => Json::encode('After')], ['path' => 'firstRoot.value']);
+        Craft::$app->getCache()->delete(ProjectConfig::STORED_CACHE_KEY . ':secondRoot');
+
+        self::assertSame('Second', $projectConfig->get('secondRoot.value'));
+        self::assertSame('After', $projectConfig->get('firstRoot.value'));
+        self::assertSame('After', $projectConfig->get()['firstRoot']['value']);
+    }
+
+    public function testSkippingTheCacheWriteWhenAnotherRequestRestoredTheEvictedKey(): void
+    {
+        $cache = $this->_useCache(new class() extends ArrayCache {
+            public int $writes = 0;
+
+            public function multiSet($items, $duration = null, $dependency = null)
+            {
+                $this->writes++;
+                return parent::multiSet($items, $duration, $dependency);
+            }
+        });
+        $projectConfig = Craft::$app->getProjectConfig();
+        Db::insert(Table::PROJECTCONFIG, ['path' => 'laterRoot.value', 'value' => Json::encode('Later')]);
+        $projectConfig->get('laterRoot.value');
+        $projectConfig->reset();
+        $key = ProjectConfig::STORED_CACHE_KEY . ':laterRoot';
+        $entry = $cache->get($key);
+        $cache->delete($key);
+        Craft::$app->set('mutex', new Mutex([
+            'mutex' => new class($cache, $key, $entry) extends NullMutex {
+                public function __construct(private ArrayCache $cache, private string $key, private array $entry)
+                {
+                    parent::__construct();
+                }
+
+                protected function acquireLock($name, $timeout = 0): bool
+                {
+                    $this->cache->set($this->key, $this->entry);
+                    return true;
+                }
+            },
+        ]));
+        $cache->writes = 0;
+
+        self::assertSame('Later', $projectConfig->get('laterRoot.value'));
+        self::assertSame(0, $cache->writes);
+    }
+
     public static function staleCacheProvider(): array
     {
         return [
