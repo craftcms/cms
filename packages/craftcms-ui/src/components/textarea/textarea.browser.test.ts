@@ -1,4 +1,4 @@
-import {beforeAll, beforeEach, expect, it} from 'vite-plus/test';
+import {beforeAll, beforeEach, describe, expect, it} from 'vite-plus/test';
 import {userEvent} from 'vite-plus/test/browser';
 import type CraftTextarea from './textarea.js';
 import './textarea.js';
@@ -12,14 +12,15 @@ beforeEach(() => {
 
 async function render(
   attrs: Record<string, string>,
-  lines = 0
+  lines = 0,
+  container: HTMLElement = document.body
 ): Promise<HTMLTextAreaElement> {
   const element = document.createElement('craft-textarea') as CraftTextarea;
   element.label = 'Notes';
   for (const [name, value] of Object.entries(attrs)) {
     element.setAttribute(name, value);
   }
-  document.body.append(element);
+  container.append(element);
   await element.updateComplete;
 
   if (lines) {
@@ -77,4 +78,37 @@ it('grows as text is typed into it', async () => {
     heightOfRows(textarea, 4),
     0
   );
+});
+
+describe('in an editable table cell', () => {
+  beforeAll(() => import('../../styles/shared/base.css'));
+
+  async function renderInCell(
+    attrs: Record<string, string>,
+    lines: number
+  ): Promise<HTMLTextAreaElement> {
+    document.body.innerHTML =
+      '<table class="cp-table--editable"><tr><td></td></tr></table>';
+
+    return render(attrs, lines, document.querySelector('td')!);
+  }
+
+  it.each([
+    ['is as tall as its rows', 0, 2],
+    ['stops growing at max-rows', 10, 3],
+  ])('%s with the cell’s padding', async (_name, lines, rows) => {
+    const textarea = await renderInCell({rows: '2', 'max-rows': '3'}, lines);
+
+    expect(textarea.getBoundingClientRect().height).toBeCloseTo(
+      heightOfRows(textarea, rows),
+      0
+    );
+  });
+
+  it('scrolls the content that doesn’t fit once it stops growing', async () => {
+    const textarea = await renderInCell({rows: '2', 'max-rows': '3'}, 10);
+
+    expect(textarea.scrollHeight).toBeGreaterThan(textarea.clientHeight);
+    expect(getComputedStyle(textarea).overflowY).toBe('auto');
+  });
 });

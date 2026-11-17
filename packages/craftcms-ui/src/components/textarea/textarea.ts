@@ -26,6 +26,10 @@ const sizesToContent =
  * @slot label - The field's label, as an alternative to the `label` attribute.
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
+ *
+ * @cssproperty [--c-textarea-spacing-block=--c-spacing-md] - Block (vertical)
+ * padding. Change the padding with this rather than on the textarea itself,
+ * so `rows` and `max-rows` still fit whole lines.
  */
 export default class CraftTextarea extends NativeField(LitElement) {
   static override styles = [
