@@ -49,6 +49,8 @@ class UploadsAsset extends AssetBundle
         $defaults = ['url' => UrlHelper::actionUrl('uploads/start')];
 
         if ($request->enableCsrfValidation) {
+            // Forms' own CSRF inputs are used first, since this token is stale on statically cached pages
+            $defaults['csrfTokenName'] = $request->csrfParam;
             $defaults['csrfToken'] = $request->getCsrfToken();
         }
 

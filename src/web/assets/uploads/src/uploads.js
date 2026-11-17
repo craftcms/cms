@@ -9,8 +9,10 @@ window.Craft.Uploads = {FileUpload, UploadError, defaults};
  * IDs, under the file input’s name (such as `fields[photos][]`).
  *
  * The attribute’s value is a JSON object of upload parameters, such as
- * `{"fieldId": 12}` or `{"folderId": 3}`. The form waits for uploads to finish
- * before it submits, and resetting the form discards them.
+ * `{"fieldId": 12}` or `{"folderId": 3}`. Files upload one at a time, and a new
+ * selection replaces the previous one, as it would for a plain file input. The
+ * form waits for uploads to finish before it submits (scripts that call
+ * `form.submit()` skip that wait), and resetting the form discards them.
  *
  * The input dispatches `uploadprogress`, `uploadcomplete` and `uploaderror`
  * events, with details in `event.detail`.
@@ -92,11 +94,9 @@ function uploadInput(input) {
 
   const state = inputState(input);
 
-  if (!input.multiple) {
-    // A new file replaces the previous one, uploaded or not
-    discardUploads(state);
-    hiddenInputs(input).forEach((hidden) => hidden.remove());
-  }
+  // A new selection replaces the previous one, uploaded or not
+  discardUploads(state);
+  hiddenInputs(input).forEach((hidden) => hidden.remove());
 
   const selection = state.selection;
   const isCurrent = () => state.selection === selection;
@@ -109,8 +109,15 @@ function uploadInput(input) {
     console.warn('data-upload-session must be a JSON object.', input);
   }
 
+  // Read the form's own token at upload time, since the page's may be cached
+  const csrfToken =
+    [...(input.form?.elements ?? [])].find(
+      (element) => element.name === defaults.csrfTokenName
+    )?.value || defaults.csrfToken;
+
   // Add the hidden inputs up front, so asset IDs keep the order files were chosen in
-  let last = hiddenInputs(input).at(-1) ?? input;
+  let last = input;
+  let queue = Promise.resolve();
 
   for (const file of files) {
     const hidden = document.createElement('input');
@@ -124,6 +131,7 @@ function uploadInput(input) {
 
     const upload = new FileUpload(file, {
       parameters,
+      csrfToken,
       onProgress: (loaded, total) => {
         if (isCurrent()) {
           dispatch(input, 'uploadprogress', {file, loaded, total});
@@ -132,8 +140,10 @@ function uploadInput(input) {
     });
     state.uploads.add(upload);
 
-    const promise = upload
-      .upload()
+    // One at a time, as in the control panel, so guests stay within the rate limit
+    const run = queue.then(() => upload.upload());
+    queue = run.catch(() => {});
+    const promise = run
       .then(
         (result) => {
           if (isCurrent()) {
@@ -144,6 +154,8 @@ function uploadInput(input) {
         },
         (error) => {
           hidden.remove();
+          // Nothing retries it, so don't leave its file staged until it expires
+          upload.cancel().catch(() => {});
           if (isCurrent()) {
             state.error = error.message;
             dispatch(input, 'uploaderror', {file, error});
