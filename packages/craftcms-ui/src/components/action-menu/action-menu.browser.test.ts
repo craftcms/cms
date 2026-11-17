@@ -274,6 +274,27 @@ describe('before the browser has been idle', () => {
       .element(page.getByRole('button', {name: 'Duplicate'}))
       .toBeVisible();
   });
+
+  it('renders the items in its body and footer when it opens', async () => {
+    await renderMenu(`
+      <craft-action-menu>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content-body">
+          <craft-action-item>In the body</craft-action-item>
+        </div>
+        <craft-action-item slot="content-footer">In the footer</craft-action-item>
+      </craft-action-menu>
+    `);
+
+    await userEvent.click(page.getByRole('button', {name: 'Open'}));
+
+    await expect
+      .element(page.getByRole('button', {name: 'In the body'}))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', {name: 'In the footer'}))
+      .toBeVisible();
+  });
 });
 
 it('renders only the items still in the page, at idle unless they show', async () => {
