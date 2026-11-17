@@ -10,6 +10,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Middleware\SendBroadcasts;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -17,6 +18,7 @@ use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\User\Users;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia;
@@ -50,6 +52,21 @@ it('shares read-only only with settings screens when admin changes are disabled'
 })->with([
     'settings' => ['settings/sections', true],
     'entry index' => ['content/entries', false],
+]);
+
+it('offers an edition upgrade only outside a trial', function (Edition $edition, ?Edition $licensedEdition, bool $canUpgrade) {
+    Edition::set($edition);
+    Cache::put(License::CACHE_KEY_LICENSE_INFO, $licensedEdition ? ['craft' => ['edition' => $licensedEdition->handle()]] : []);
+    actingAs(User::find()->one());
+
+    get(action([DashboardController::class, 'index']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('craft.app.canUpgradeEdition', $canUpgrade));
+})->with([
+    'unlicensed Solo' => [Edition::Solo, null, true],
+    'licensed Solo' => [Edition::Solo, Edition::Solo, true],
+    'Pro' => [Edition::Pro, Edition::Pro, false],
+    'trialing Pro' => [Edition::Pro, Edition::Solo, false],
 ]);
 
 it('sends the nav tree only when it differs from the one the client has', function (string $customization) {

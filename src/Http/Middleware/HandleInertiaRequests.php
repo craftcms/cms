@@ -233,6 +233,8 @@ class HandleInertiaRequests extends Middleware
                 'app' => [
                     'version' => Cms::VERSION,
                     'edition' => Edition::get()->toArray(),
+                    // Not while trialing an edition above the license, as in Craft 5.
+                    'canUpgradeEdition' => Edition::canUpgrade() && in_array(Edition::getLicensed(), [null, Edition::get()], true),
                 ],
                 'site' => $currentSite ? [
                     'id' => $currentSite->id,

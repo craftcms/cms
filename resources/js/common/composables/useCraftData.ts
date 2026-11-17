@@ -48,6 +48,7 @@ export interface CraftData {
       handle: 'solo' | 'team' | 'pro' | 'enterprise';
       value: 0 | 1 | 2 | 3;
     };
+    canUpgradeEdition: boolean;
   };
   site: {
     id: number;

@@ -1,52 +1,61 @@
 <script setup lang="ts">
+  import {t} from '@craftcms/ui';
   import useCraftData from '@/common/composables/useCraftData';
-  import {computed} from 'vue';
+  import CpLink from '@/common/components/CpLink.vue';
+  import {upgradeCraft} from '@actions/PluginStore/PluginStoreController';
 
-  const {app, cpUrl} = useCraftData();
-
-  const fullEditionName = computed(() => {
-    return `${app.value.edition.name} Edition`;
-  });
+  const {app} = useCraftData();
 </script>
 
 <template>
-  <div
-    class="flex flex-col items-center justify-center py-4 px-2 text-quiet gap-1"
-  >
-    <div lang="en" class="flex items-center gap-2">
-      Craft CMS {{ app.version }}
-    </div>
-    <a :href="`${cpUrl}/plugin-store/upgrade-craft`" class="edition-logo">
-      <span aria-hidden="true">{{ app.edition.name }}</span>
-      <span class="sr-only">{{ fullEditionName }}</span>
-    </a>
+  <div class="edition-info">
+    <span class="edition-info__app">
+      <span lang="en" class="edition-info__app">
+        Craft CMS
+        <span class="edition-logo">
+          <span aria-hidden="true">{{ app.edition.name }}</span>
+          <span class="sr-only">{{
+            t('{edition} edition', {edition: app.edition.name})
+          }}</span>
+        </span>
+      </span>
+      {{ app.version }}
+    </span>
+    <CpLink v-if="app.canUpgradeEdition" :href="upgradeCraft().url">
+      {{ t('Upgrade to Craft Pro') }}
+    </CpLink>
   </div>
 </template>
 
 <style scoped lang="css">
+  .edition-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--c-spacing-md);
+    row-gap: var(--c-spacing-xs);
+    font-size: var(--c-text-sm);
+    color: var(--c-text-quiet);
+  }
+
+  .edition-info__app {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--c-spacing) * 1.5);
+  }
+
   .edition-logo {
     user-select: none;
     border: 1px solid currentColor;
     border-radius: 3px;
     display: inline-flex;
     box-sizing: content-box;
-    font-size: 11px;
+    font-size: 10px;
     padding-block: 3px;
-    padding-inline: 3px 1px;
+    padding-inline: 4px 3px;
     line-height: 1;
     font-weight: 600;
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-    text-align: center;
-    text-decoration: none;
-    color: inherit;
-
-    @media (hover: hover) {
-      &:hover {
-        background-color: var(--c-color-accent-fill-loud);
-        color: var(--c-color-accent-on-loud);
-        border-color: var(--c-color-accent-border-loud);
-      }
-    }
   }
 </style>

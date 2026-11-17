@@ -121,8 +121,8 @@
         :mode="sidebar.mode === 'floating' ? 'inline' : 'trail'"
       />
     </div>
-    <div v-if="sidebar.mode === 'docked'" class="cp-sidebar__footer">
-      <craft-nav-list>
+    <div class="cp-sidebar__footer">
+      <craft-nav-list v-if="sidebar.mode === 'docked'">
         <craft-nav-item
           ref="collapseItem"
           :button="true"
@@ -133,6 +133,7 @@
           {{ collapsed ? t('Expand') : t('Collapse') }}
         </craft-nav-item>
       </craft-nav-list>
+      <EditionInfo v-if="!collapsed" class="cp-sidebar__edition-info" />
     </div>
   </nav>
 </template>
@@ -232,6 +233,11 @@
     z-index: 1;
     border-block-start: 1px solid transparent;
     inset-block-end: var(--cp-debug-bar-height, 0px);
+  }
+
+  .cp-sidebar__edition-info {
+    padding-block: var(--c-spacing-md) var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
   }
 
   .cp-sidebar--scrolling .cp-sidebar__footer {
