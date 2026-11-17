@@ -25,6 +25,7 @@ class PaginateNode extends Node
             ->subcompile($this->getNode('infoVariable'))
             ->raw(', ')
             ->subcompile($this->getNode('resultVariable'))
+            /** @see Template::paginateQuery() */
             ->raw(sprintf('] = %s::paginateQuery(', Template::class))
             ->subcompile($this->getNode('query'))
             ->raw(");\n");

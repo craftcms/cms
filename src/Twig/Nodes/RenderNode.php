@@ -27,6 +27,7 @@ class RenderNode extends IncludeNode
     {
         $compiler
             ->addDebugInfo($this)
+            /** @see Template::render() */
             ->write(sprintf('yield (string) %s::render(', Template::class))
             ->subcompile($this->getNode('expr'))
             ->raw(', ');

@@ -56,6 +56,7 @@ class CacheNode extends Node
 
         $compiler
             ->raw(";\n")
+            /** @see TemplateCaches::getTemplateCache() */
             ->write("\$cacheBody_$n = \$cacheService->getTemplateCache(\$cacheKey_$n, $global, true);\n")
             ->outdent()
             ->write("} else {\n")
@@ -67,6 +68,7 @@ class CacheNode extends Node
             ->indent()
             ->write("if (!\$ignoreCache_$n) {\n")
             ->indent()
+            /** @see TemplateCaches::startTemplateCache() */
             ->write("\$cacheService->startTemplateCache(true, $global);\n")
             ->outdent()
             ->write("}\n")
@@ -86,6 +88,7 @@ class CacheNode extends Node
             ->write("}\n")
             ->write("if (!\$ignoreCache_$n) {\n")
             ->indent()
+            /** @see TemplateCaches::abortTemplateCache() */
             ->write("\$cacheService->abortTemplateCache($global);\n")
             ->outdent()
             ->write("}\n")
@@ -95,6 +98,7 @@ class CacheNode extends Node
             ->write("\$cacheBody_$n = ob_get_clean();\n")
             ->write("if (!\$ignoreCache_$n) {\n")
             ->indent()
+            /** @see TemplateCaches::endTemplateCache() */
             ->write("\$cacheService->endTemplateCache(\$cacheKey_$n, $global, ");
 
         $compiler->raw('null, ');

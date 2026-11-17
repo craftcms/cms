@@ -37,6 +37,7 @@ class RequireAdminNode extends Node
             $compiler
                 ->write('if (')
                 ->subcompile($this->getNode('requireAdminChanges'))
+                /** @see Cms::config() */
                 ->raw(' && ! '.Cms::class."::config()->allowAdminChanges) {\n")
                 ->indent()
                 ->write("abort(403, 'Administrative changes are disallowed in this environment.');\n")
@@ -44,6 +45,7 @@ class RequireAdminNode extends Node
                 ->write("}\n");
         } else {
             $compiler
+                /** @see Cms::config() */
                 ->write('if (! '.Cms::class."::config()->allowAdminChanges) {\n")
                 ->indent()
                 ->write("abort(403, 'Administrative changes are disallowed in this environment.');\n")
