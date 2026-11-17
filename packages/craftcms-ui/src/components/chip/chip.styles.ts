@@ -74,6 +74,16 @@ export default css`
     overflow: clip;
   }
 
+  /* The label clips for its ellipsis, so a label link's ring is drawn on the chip and its own is turned off. */
+  :host([data-link-focus-visible]) {
+    --c-focus-outline-style: none;
+  }
+
+  :host([data-link-focus-visible]) .cp-chip {
+    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
   :host([full-width]) .cp-chip {
     display: flex;
     flex: 1 1 auto;
@@ -364,6 +374,15 @@ export default css`
     text-decoration-line: var(--c-link-decoration);
   }
 
+  /* A label in a link or a span is a flex item of the body, which the
+     body's own ellipsis doesn't reach, so it truncates itself. */
+  .cp-chip__body::slotted(a),
+  .cp-chip__body::slotted(span) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .cp-chip__body::slotted(a:hover) {
     text-decoration-line: var(--c-link-decoration-hover);
   }
@@ -371,7 +390,7 @@ export default css`
   /* Suffix */
 
   .cp-chip__suffix {
-    margin-inline-start: calc(var(--c-spacing-xs) - var(--_chip-gap));
+    margin-inline-start: calc(var(--c-spacing) * 1.5 - var(--_chip-gap));
     padding-block: var(--_chip-block-padding);
     display: flex;
     flex-direction: column;

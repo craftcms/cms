@@ -1,3 +1,4 @@
+import {computeAccessibleName} from 'dom-accessibility-api';
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftField from './field.js';
 import './field.js';
@@ -158,6 +159,20 @@ describe('craft-field required indicator', () => {
     expect(
       labelNode(element)!.querySelector('craft-visually-hidden')
     ).toBeNull();
+  });
+
+  it('says required once, through the label, and leaves the control unmarked', async () => {
+    const element = await createField(
+      {label: 'My field', required: ''},
+      '<craft-input slot="input"></craft-input>'
+    );
+    const control = element.querySelector('craft-input')!;
+    await control.updateComplete;
+    const native = control.querySelector('input')!;
+
+    expect(computeAccessibleName(native)).toMatch(/^My field\s*Required$/);
+    expect(native.hasAttribute('aria-required')).toBe(false);
+    expect(native.hasAttribute('required')).toBe(false);
   });
 
   it('does not render an indicator without a label', async () => {

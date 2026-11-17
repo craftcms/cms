@@ -12,7 +12,9 @@ use CraftCms\Cms\Element\Enums\ElementActionContext;
  * @event ElementActionMenuDescriptorsResolving The event that is triggered when defining an element's action menu descriptors.
  *
  * Items name a `behavior` the client dispatches (`link`, `submit`, …) rather than
- * pairing markup with an inline script. Destructive items should set `destructive`,
+ * pairing markup with an inline script. An `event` behavior (`name`, optional `detail`
+ * and `confirm`) dispatches a window event for a plugin's own script to handle, with the
+ * menu item added to its detail as `trigger`. Destructive items should set `destructive`,
  * and are only shown outside the element's own edit screen if they set `showInChips`.
  *
  * {@see HasControlPanelUI::actionMenuDescriptors()}

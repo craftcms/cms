@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Workflow\UserReview;
 
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Number;
@@ -25,7 +26,7 @@ use function CraftCms\Cms\t;
 /**
  * @since 6.0.0
  */
-class UserReviewStage extends WorkflowStage
+class UserReviewStage extends WorkflowStage implements Iconic
 {
     #[\Override]
     protected bool $showDefaultReviewActions = false;
@@ -40,6 +41,11 @@ class UserReviewStage extends WorkflowStage
     public static function displayName(): string
     {
         return t('User Review');
+    }
+
+    public function getIcon(): ?string
+    {
+        return 'user-magnifying-glass';
     }
 
     public function getRules(): array

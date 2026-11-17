@@ -20,7 +20,8 @@ use function CraftCms\Cms\craftAsset;
  * The legacy `Craft` helpers and jQuery plugins (`Craft.js`), which plugins
  * got from `CpAsset` on any page they registered it on, front end included,
  * along with the vendor libraries `CpAsset` used to bring, jQuery and Garnish
- * among them.
+ * among them, and Craft 5's `Craft.publishableSections`, built in the browser
+ * from core's `Craft.creatableSections`.
  *
  * @internal
  */
@@ -38,6 +39,7 @@ class CraftJsAsset implements LegacyAssetInterface
 
     public function register(HtmlStack $htmlStack): void
     {
+        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/publishable-sections.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/craft.js'));
     }
 }

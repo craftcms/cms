@@ -29,6 +29,12 @@ class ComposerInstallCommand extends Command
 
     public function handle(Composer $composer): int
     {
+        if ($reason = $composer->getUnavailableReason()) {
+            $this->error($reason);
+
+            return self::FAILURE;
+        }
+
         $output = '';
 
         try {

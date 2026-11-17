@@ -1,5 +1,11 @@
 import {router} from '@inertiajs/vue3';
-import {actionClient, showCopyTextPrompt, t} from '@craftcms/ui';
+import {
+  actionClient,
+  showCopyTextPrompt,
+  t,
+  type BaseAction,
+} from '@craftcms/ui';
+import {runAction} from '@craftcms/ui/actions.mjs';
 import {computed, type ComputedRef} from 'vue';
 import {openSlideout, type SlideoutController} from '@/common/slideouts';
 import type {ActionItem} from '@/common/types';
@@ -75,6 +81,11 @@ export type ElementActionBehavior =
   | {type: 'download'; actionUrl: string; params?: UiValues}
   | {type: 'replaceFile'; assetId: number}
   | {type: 'editImage'; assetId: number; settings: ImageEditorSettings}
+  /**
+   * Dispatches a window event, as any other `event` action does, for a
+   * plugin's own script to handle.
+   */
+  | Extract<BaseAction, {type: 'event'}>
   /**
    * Fetches a single-use URL and offers it for copying. Always behind an
    * elevated session — these URLs grant access to the account.
@@ -283,6 +294,21 @@ export function createElementActionDispatcher({
             slideout.close({force: true});
           }
         });
+
+        return;
+
+      case 'event':
+        void runAction(behavior, {
+          trigger: trigger ?? undefined,
+          sourceEvent: event,
+        });
+
+        return;
+
+      default:
+        console.warn(
+          `Unknown element action behavior type: ${(behavior as {type: string}).type}`
+        );
     }
   }
 

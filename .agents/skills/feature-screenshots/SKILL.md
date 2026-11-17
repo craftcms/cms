@@ -17,7 +17,7 @@ feature's edges:
   the neighboring UI and text inside that padding.
 
 Both use the same setup and isolation. `scripts/` holds the page helper
-(`shot.js`) and the capture, matte and preview helpers.
+(`shot.js`) and the capture, hover, matte and preview helpers.
 
 ## Setup
 
@@ -32,6 +32,18 @@ captures at the display's pixel density, so Retina shots come out at 2×.
 
    ```js
    (0, eval)(localStorage.__shotCode)
+   ```
+
+   While the Vite dev server runs, load the helper from it instead of pasting
+   it:
+
+   ```js
+   const vite = new URL(document.querySelector('script[src*="/@vite/client"]').src).origin;
+   const {default: code} = await import(
+     `${vite}/.agents/skills/feature-screenshots/scripts/shot.js?raw`
+   );
+   (0, eval)(code);
+   __shot.set({theme: 'light'});
    ```
 
 2. Size the window so its page area is a consistent 16:9, e.g. 1408×792 on a
@@ -132,29 +144,51 @@ page again.
 - For a state that only shows on hover, such as a nav flyout, set the
   component's state instead of hovering, since hovering draws the
   extension's cursor: `navItem.flyoutOpen = true` on a `craft-nav-item`.
+- When the shot needs real `:hover` styles, such as a button's hover fill
+  with its tooltip, move the system pointer with `scripts/hover.sh <x> <y>`,
+  in screen points. The page gets real pointer events, the extension draws
+  no cursor, and `screencapture -x` leaves the system pointer out. The hover
+  holds while JavaScript switches `bg` between the two captures. Afterwards,
+  move the pointer off the region, e.g. `scripts/hover.sh 150 900`.
+- Open popovers and menus from JavaScript, not with the extension's clicks,
+  which leave its cursor behind: click the invoker inside the component's
+  shadow root, e.g. `picker.shadowRoot.querySelector('craft-button').click()`,
+  and close it with `popover.open = false`.
+- To move a popover that sits against the window's edge, translate its
+  popup part: `__shot.set({css: '#id::part(popup) { translate: -300px 160px; }'})`.
+  Popovers nested in it follow, since they position from their invoker's
+  rect.
 - For one-off rules, pass `css`: `__shot.set({css: '…'})`.
 
 ### Keep the extension's overlays out
 
 While the Claude in Chrome extension drives a tab, it draws a glowing border
-around the page's edges and its own cursor where the last click or hover
-was. Neither is in the page's DOM, so CSS can't hide them, and
-`screencapture -x` records both: it only leaves out the system cursor.
+around the page's edges, a “Claude is working here” badge at the top center,
+and its own cursor where the last click or hover was. None of them is in the
+page's DOM, so CSS can't hide them, and `screencapture -x` records all three:
+it only leaves out the system cursor.
+
+The glow is a reddish shadow that pulses. Its visible part reaches about 55
+CSS px in from the page's sides and bottom, and 60px from the top, and a
+faint tail, a level or two off the page's color, reaches 87px. The badge sits
+within the top's glow. A region that takes in any of it gives a tinted
+background, or faint alpha around the edges of a transparent PNG.
 
 - Before every capture, hover somewhere outside the capture region, such as
-  the inset margin's bottom-right corner, unless you're showing a hover
-  state. Clicking or hovering moves the drawn cursor there.
-- Keep the capture region about 24px clear of the window's edges. For a
+  the inset margin's bottom-right corner, including after a click that
+  navigated to the page. Clicking or hovering moves the drawn cursor there.
+  Show hover states with `scripts/hover.sh` instead.
+- Keep the capture region at least 96px clear of the window's edges. For a
   feature that sits against an edge, such as a slideout, a sidebar or the
   header, move it in for the shot and capture it there:
 
   ```js
-  feature.style.translate = '-24px 24px'; // a slideout against the top and right edges
+  feature.style.translate = '-96px 96px'; // a slideout against the top and right edges
   ```
 
-- For a full-page shot, inset the whole page by 24px with
+- For a full-page shot, inset the whole page by 96px with
   `__shot.set({inset: true})`, and capture the inset area: the page origin
-  plus 24, `innerWidth - 48` by `innerHeight - 48`. The page's own fixed
+  plus 96, `innerWidth - 192` by `innerHeight - 192`. The page's own fixed
   elements move in with it, and the helper also fits what sizes itself from
   the window or lives outside `#app`: the sidebar and details pane, toasts,
   Live Preview, and fullscreen dialogs. A component that measures the window
@@ -188,10 +222,16 @@ the difference. Shadows come out as real partial transparency.
 
    Without a crop, the result is trimmed to the visible pixels plus 8px. For a
    set, work out the crop once and pass it to every shot, so they're all the
-   same size.
+   same size. Capture every shot in the set from the same region, and take
+   the crop from the union of the `visible:` bounds `matte.sh` prints for
+   each, plus 8px: a state with an open popover is often larger than the
+   rest.
 
-   `matte.sh` prints the highest alpha on each edge. All four must be 0;
-   anything higher means the region cut something off. Capture a larger one.
+   `matte.sh` prints the highest alpha on each edge. All four must be 0.
+   Anything higher means the region cut something off, or took in the
+   extension's glow, which shows as a similar small value on every edge.
+   Capture a larger region, or move the feature further from the window's
+   edges.
 5. Check it over a bright color, which shows fringing, a clipped shadow, or
    anything left behind the feature:
 
@@ -221,8 +261,8 @@ const frame = document.createElement('iframe');
 frame.id = 'shot-phone';
 frame.src = location.href;
 Object.assign(frame.style, {
-  position: 'fixed', left: '509px', top: '48px', width: '390px',
-  height: '680px', border: '0', zIndex: '2147483647',
+  position: 'fixed', left: '509px', top: '112px', width: '390px',
+  height: '552px', border: '0', zIndex: '2147483647',
   borderRadius: '28px',
   boxShadow: '0 0 0 1px rgba(0,0,0,.12), 0 8px 24px rgba(0,0,0,.18)',
 });
@@ -234,7 +274,9 @@ frame.contentDocument.documentElement.dataset.theme = 'light'; // or 'dark'
 - Isolate it with `#shot-phone` as the feature, and capture it as a
   transparent PNG, so the rounded corners and shadow read as a phone screen.
 - Scroll and query inside it through `frame.contentDocument`.
-- Keep the iframe and its shadow about 24px clear of the window's edges.
+- Keep the iframe and its shadow at least 96px clear of the window's edges.
+  In a 792px-tall page, that leaves room for a 552px-tall phone; for a
+  taller one, make the window taller.
 - Remove it when you're done.
 
 ## Thumbnails

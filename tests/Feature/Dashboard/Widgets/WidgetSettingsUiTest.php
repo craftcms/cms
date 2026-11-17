@@ -32,7 +32,7 @@ it('exposes native widget settings as typed UIs', function () {
         MyDrafts::class => ['limit'],
         NewUsers::class => ['dateRange', 'userGroupId'],
         QuickPost::class => ['section', 'entryType', 'customTitle'],
-        RecentEntries::class => ['section', 'limit'],
+        RecentEntries::class => ['condition', 'limit', 'customTitle'],
     ];
 
     foreach ($uis as $widgetClass => $paths) {

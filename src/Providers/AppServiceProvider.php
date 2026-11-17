@@ -89,8 +89,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // The control panel sets this one from JavaScript, so it can't be encrypted.
-        EncryptCookies::except(Theme::COOKIE);
+        // The control panel sets these from JavaScript, so they can't be encrypted.
+        EncryptCookies::except([Theme::COOKIE, Theme::PREFERENCE_COOKIE]);
 
         AuthenticationException::redirectUsing(function () {
             $loginPath = Cms::config()->getLoginPath();

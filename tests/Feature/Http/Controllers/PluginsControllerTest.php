@@ -7,6 +7,7 @@ use CraftCms\Cms\Component\MissingComponents;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPluginSettingsRequest;
 use CraftCms\Cms\User\Elements\User;
@@ -59,6 +60,23 @@ test('index shows read-only state when allowAdminChanges is false', function () 
             ->where('readOnly', true)
         );
 });
+
+test('explains disabled package actions only when Composer is the restriction', function (bool $available, bool $allowUpdates, bool $allowAdminChanges, ?string $reason) {
+    Cms::config()->allowUpdates = $allowUpdates;
+    Cms::config()->allowAdminChanges = $allowAdminChanges;
+    $composer = $this->partialMock(Composer::class);
+    $composer->shouldReceive('getIsAvailableForUi')->andReturn($available);
+    $composer->shouldNotReceive('getIsAvailable');
+
+    get(action([PluginsController::class, 'index']))->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('composerUnavailableReason', $reason));
+})->with([
+    'missing Composer' => [false, true, true, 'Composer 2.2.0 or later must be installed and available in the PATH environment variable.'],
+    'available Composer' => [true, true, true, null],
+    'updates disabled' => [false, false, true, null],
+    'read only' => [false, true, false, null],
+]);
 
 test('install validates edition', function () {
     postJson(action([PluginsController::class, 'install'], ['test-plugin']), [

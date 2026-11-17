@@ -24,7 +24,7 @@ export default css`
     border: 1px solid var(--c-form-control-border-color);
     border-radius: var(--c-radius-md);
     background-color: var(--c-surface-overlay);
-    box-shadow: var(--c-shadow-sm);
+    box-shadow: var(--c-shadow-overlay);
   }
 
   /* Lion gives the listbox a white background, which the overlay's own surface has to show through. */
@@ -59,6 +59,20 @@ export default css`
     height: auto;
     padding-inline: calc(var(--c-input-spacing-inline) * 0.5)
       var(--c-input-spacing-inline);
+  }
+
+  :host([multiple]) .indicator {
+    padding-inline-end: calc(
+      var(--c-input-spacing-inline) - var(--c-spacing-xs) -
+        var(--_input-border-width)
+    );
+  }
+
+  :host([multiple]) .clear {
+    inset-inline-end: calc(
+      var(--c-input-spacing-inline) * 1.5 + 1em - var(--c-spacing-xs) -
+        var(--_input-border-width)
+    );
   }
 
   :host(:not([disabled], [readonly])) .indicator {
@@ -120,8 +134,27 @@ export default css`
     min-width: 0;
   }
 
+  :host([multiple]) {
+    --_textbox-min-width: 3rem;
+  }
+
+  :host([multiple][clearable]) {
+    --_textbox-min-width: calc(3rem + var(--c-size-control-sm));
+  }
+
   :host([multiple]) .combobox__textbox {
-    min-width: 8rem;
+    min-width: var(--_textbox-min-width);
+  }
+
+  @supports (field-sizing: content) {
+    :host([multiple]) .combobox__textbox {
+      min-width: auto;
+    }
+
+    :host([multiple]) ::slotted(.form-control) {
+      field-sizing: content;
+      min-width: var(--_textbox-min-width);
+    }
   }
 
   :host([multiple]) ::slotted(.form-control) {

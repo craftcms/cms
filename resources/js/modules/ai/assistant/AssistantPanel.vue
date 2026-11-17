@@ -2,9 +2,12 @@
   /**
    * The AI assistant, mounted once in the page shell. While a chat is active,
    * it's a panel of the page's details column that stays from page to page,
-   * so a reply on its way carries on as the user moves between pages.
+   * so a reply on its way carries on as the user moves between pages. While
+   * an element editor is open in a slideout or Live Preview, the panel moves
+   * into that screen's column, and back once it closes.
    */
   import {t} from '@craftcms/ui';
+  import {uuid} from '@/common/craft/strings';
   import {
     computed,
     defineAsyncComponent,
@@ -14,13 +17,14 @@
     watch,
   } from 'vue';
   import ScreenPanel from '@/common/components/ScreenPanel.vue';
-  import {screenPanels} from '@/common/composables/screenPanels';
+  import type {ScreenPanels} from '@/common/composables/screenPanels';
   import type AssistantChatComponent from './AssistantChat.vue';
   import AssistantConversationMenu from './AssistantConversationMenu.vue';
   import AssistantHistory from './AssistantHistory.vue';
   import {
     ASSISTANT_PANEL_ID,
     ASSISTANT_TOGGLE_ID,
+    assistantScreenPanels,
     useAssistantPanel,
     useAssistantThread,
   } from './assistant';
@@ -33,6 +37,11 @@
   );
 
   const panel = useAssistantPanel();
+  /**
+   * The screen the panel is in: the page's, or the latest open element
+   * editor's, such as a slideout's or Live Preview's.
+   */
+  const screen = assistantScreenPanels;
   const threadId = useAssistantThread();
   const chat =
     useTemplateRef<InstanceType<typeof AssistantChatComponent>>('chat');
@@ -53,7 +62,7 @@
   // Opening the panel before the chat had loaded left focus on its heading,
   // so the message box takes it once it's there.
   watch(chat, async (component) => {
-    const headingId = screenPanels.panels.value.find(
+    const headingId = screen.value.panels.value.find(
       ({id}) => id === ASSISTANT_PANEL_ID
     )?.headingId;
 
@@ -74,30 +83,61 @@
   // comes from its first message.
   watch(history, (component) => void component?.refresh());
 
-  /** Whether the page has panels of its own, which the chat's can stay beside. */
+  /** Whether the screen has panels of its own, which the chat's can stay beside. */
   const hasPagePanels = computed(() =>
-    screenPanels.panels.value.some((panel) => !panel.persistent)
+    screen.value.panels.value.some((panel) => !panel.persistent)
   );
 
   // The panel is beside the page's own panels, and in the column while the
   // chat is open. On a page without panels of its own, closing the chat takes
   // it away, rail and all; the header button brings it back with the same
-  // conversation.
+  // conversation. A chat that has started stays mounted out of the column
+  // meanwhile, such as while an editor's screen is still adding its panels,
+  // so its unsent message and a reply on its way are kept.
   /** Whether the chat's panel is in the column. */
   const showsPanel = computed(() => panel.opened.value || hasPagePanels.value);
 
-  // Closing the chat, or opening another panel instead, leaves it unopened.
-  watch(screenPanels.openPanelId, (openPanelId, previous) => {
-    if (previous === ASSISTANT_PANEL_ID && openPanelId !== ASSISTANT_PANEL_ID) {
-      panel.opened.value = false;
+  /** Whether a screen has the chat open, or folded away for lack of room. */
+  function holdsChat(panels: ScreenPanels): boolean {
+    return (
+      panels.openPanelId.value === ASSISTANT_PANEL_ID ||
+      panels.panelClosedByShell.value === ASSISTANT_PANEL_ID
+    );
+  }
+
+  // Opening the chat in any way, such as from a slideout's rail, leaves it
+  // opened, so it opens again where it goes next. Closing it, or opening
+  // another panel instead, even while the screen has it folded for lack of
+  // room, leaves it unopened. Moving to another screen doesn't change it,
+  // and neither does a new page's panels arriving.
+  watch(
+    () =>
+      [
+        screen.value,
+        holdsChat(screen.value),
+        screen.value.pageGeneration.value,
+      ] as const,
+    (
+      [current, holds, generation],
+      [previousScreen, held, previousGeneration]
+    ) => {
+      if (current !== previousScreen) {
+        return;
+      }
+
+      if (holds) {
+        panel.opened.value = true;
+      } else if (held && generation === previousGeneration) {
+        panel.opened.value = false;
+      }
     }
-  });
+  );
 
   // Closing the chat on a page without panels of its own takes its trigger
   // away, so focus that would have gone back to it goes to the header button
-  // instead.
-  watch(showsPanel, async (shows) => {
-    if (shows) {
+  // instead. A screen that closes returns focus itself.
+  watch([showsPanel, screen], async ([shows, current], [, previousScreen]) => {
+    if (shows || current !== previousScreen) {
       return;
     }
 
@@ -108,11 +148,18 @@
     }
   });
 
-  // A chat left open before the page reloaded opens again, leaving focus
-  // where the page puts it.
-  if (panel.opened.value) {
-    screenPanels.open(ASSISTANT_PANEL_ID, {withFocus: false});
-  }
+  // A chat left open opens again where the panel goes: on the page after it
+  // reloads, and in an editor's screen as it opens or closes, leaving focus
+  // where the screen puts it.
+  watch(
+    screen,
+    (current) => {
+      if (panel.opened.value) {
+        current.open(ASSISTANT_PANEL_ID, {withFocus: false});
+      }
+    },
+    {immediate: true}
+  );
 
   /** Switches to a conversation, or a new one, and moves focus to its message box. */
   async function switchTo(id: string): Promise<void> {
@@ -124,13 +171,13 @@
   useCrafty(async (id) => {
     threadId.value = id;
     panel.opened.value = true;
-    screenPanels.open(ASSISTANT_PANEL_ID, {withFocus: false});
+    screen.value.open(ASSISTANT_PANEL_ID, {withFocus: false});
     await nextTick();
     await history.value?.refresh();
   });
 
   function newChat(): Promise<void> {
-    return switchTo(crypto.randomUUID());
+    return switchTo(uuid());
   }
 
   /**
@@ -165,8 +212,9 @@
 <template>
   <!-- Always the last panel, after any a page or plugin adds. -->
   <ScreenPanel
-    v-if="showsPanel"
+    v-if="showsPanel || started"
     :id="ASSISTANT_PANEL_ID"
+    :screen="showsPanel ? screen : null"
     :label="t('Ask AI')"
     icon="sparkles"
     :order="Infinity"

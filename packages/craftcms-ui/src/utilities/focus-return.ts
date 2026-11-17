@@ -40,7 +40,10 @@ export function isFocusable(el: Element | null | undefined): el is HTMLElement {
 }
 
 /** `closest()` that carries on past shadow roots to their hosts. */
-function closestComposed(el: Element, selector: string): HTMLElement | null {
+export function closestComposed(
+  el: Element,
+  selector: string
+): HTMLElement | null {
   let node: Element | null = el;
 
   while (node) {
@@ -107,6 +110,17 @@ function menusContaining(el: Element): HTMLElement[] {
   }
 
   return menus;
+}
+
+/**
+ * The invoker of the nearest menu or popover whose content holds `el`, or
+ * `null` when it isn't in one. A popover can be mounted far from its invoker,
+ * such as on `<body>`, so this is where its content belongs in the page.
+ */
+export function menuInvokerOf(el: Element): HTMLElement | null {
+  const [menu] = menusContaining(el);
+
+  return menu ? invokerOf(menu) : null;
 }
 
 function scopeKeyOf(el: Element): string | null {

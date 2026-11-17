@@ -10,9 +10,8 @@
   import {t} from '@craftcms/ui';
   import {computed, useTemplateRef} from 'vue';
   import ElementCards from '@/modules/elements/components/ElementCards.vue';
-  import ElementChips, {
-    type ChipElement,
-  } from '@/modules/elements/components/ElementChips.vue';
+  import ElementChips from '@/modules/elements/components/ElementChips.vue';
+  import type {ChipElement} from '@/modules/elements/types/element-data';
   import {useSelectable} from '@/common/composables/useSelectable';
   import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
   import ActionMenu from '@/common/components/ActionMenu.vue';

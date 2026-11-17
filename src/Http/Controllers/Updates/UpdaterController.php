@@ -19,7 +19,6 @@ use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Inertia\Inertia;
 use Override;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -73,23 +72,6 @@ class UpdaterController extends BaseUpdaterController
         }
     }
 
-    /**
-     * Renders the Updater page via Inertia.
-     */
-    #[Override]
-    public function index(): Response
-    {
-        $this->data = $this->initialData();
-        $state = $this->realInitialState();
-        $state['data'] = $this->hashedData();
-
-        return Inertia::render('updater/Index', [
-            'title' => $this->pageTitle(),
-            'initialState' => $this->clientState($state),
-            'returnUrl' => Url::cpUrl($this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect()),
-        ])->toResponse($this->request);
-    }
-
     public function forceUpdate(): Response
     {
         return $this->send($this->realInitialState(force: true));
@@ -131,6 +113,10 @@ class UpdaterController extends BaseUpdaterController
 
     public function revert(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState(self::ACTION_REVERT));
+        }
+
         $output = '';
 
         try {
@@ -281,6 +267,10 @@ class UpdaterController extends BaseUpdaterController
                     $this->actionOption(t('Continue'), self::ACTION_FORCE_UPDATE, ['submit' => true]),
                 ],
             ];
+        }
+
+        if (! empty($this->data['install']) && ! $this->composer->getIsAvailable()) {
+            return $this->noComposerState();
         }
 
         // If there's anything to install, make sure we can find composer.json

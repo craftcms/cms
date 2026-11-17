@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Console\Commands\Setup;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Override;
@@ -24,7 +25,7 @@ class SetupCommand extends Command
     protected $signature = 'craft:setup';
 
     #[Override]
-    protected $description = 'Sets up all the things. This is an interactive wrapper for the `setup/db-creds`, and `install` commands, each of which support being run non-interactively.';
+    protected $description = 'Sets up all the things. This is an interactive wrapper for the `setup:db-creds`, and `install` commands, each of which support being run non-interactively.';
 
     public function handle(): int
     {
@@ -45,7 +46,7 @@ class SetupCommand extends Command
         }
 
         if (! confirm('Install Craft now?')) {
-            warning('You can install Craft from a browser once you\'ve set up a web server, or by running this command: <fg=cyan>php craft install</>');
+            warning('You can install Craft from a browser once you\'ve set up a web server, or by running this command: <fg=cyan>'.app(TerminalCommands::class)->craft('install').'</>');
 
             return self::SUCCESS;
         }

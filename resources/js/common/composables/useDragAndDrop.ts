@@ -79,6 +79,53 @@ export interface UseDragAndDropReturn {
 const idleDragState: DragState = {type: 'idle'};
 const idleDropState: DropState = {type: 'idle'};
 
+/**
+ * Clones `element` for a drag preview. `cloneNode()` copies attributes but not
+ * properties, so web components in the clone would lose what was set on them
+ * as properties (a color select's `value`, a slide picker's `min` and `max`)
+ * and render as if new. Their reactive properties are copied across too, while
+ * the clone's tree still matches the original's, before it's connected and
+ * they add children of their own. Internal state is left behind.
+ */
+function cloneForDragPreview(element: HTMLElement): HTMLElement {
+  const preview = element.cloneNode(true);
+  if (!(preview instanceof HTMLElement)) {
+    throw new Error('Expected an HTML drag preview.');
+  }
+
+  const sources = [element, ...element.querySelectorAll('*')];
+  const clones = [preview, ...preview.querySelectorAll('*')];
+
+  sources.forEach((source, index) => {
+    const properties = (
+      source.constructor as {
+        elementProperties?: Map<PropertyKey, {state?: boolean} | undefined>;
+      }
+    ).elementProperties;
+    const clone = clones[index];
+
+    if (!properties || !clone) {
+      return;
+    }
+
+    for (const [name, options] of properties) {
+      if (options?.state) {
+        continue;
+      }
+
+      try {
+        (clone as unknown as Record<PropertyKey, unknown>)[name] = (
+          source as unknown as Record<PropertyKey, unknown>
+        )[name];
+      } catch {
+        // A read-only property; the clone keeps its own.
+      }
+    }
+  });
+
+  return preview;
+}
+
 export function useDragAndDrop(
   options: UseDragAndDropOptions
 ): UseDragAndDropReturn {
@@ -222,6 +269,30 @@ export function useDragAndDrop(
         onGenerateDragPreview({nativeSetDragImage, location}) {
           const rect = element.getBoundingClientRect();
 
+          // The element itself, as it's drawn, held where it was picked up. A
+          // clone would lose its web components' properties and the content
+          // they render for themselves (a color select's swatch, say).
+          if (!(element instanceof HTMLTableRowElement)) {
+            // Its own compositing layer while the browser captures it. Without
+            // one, inside a scrolling container (such as a popover's), Chrome
+            // takes in what's around it and positions it from the container's
+            // top rather than its own.
+            const willChange = element.style.willChange;
+            element.style.willChange = 'transform';
+            nativeSetDragImage?.(
+              element,
+              location.current.input.clientX - rect.left,
+              location.current.input.clientY - rect.top
+            );
+            requestAnimationFrame(() => {
+              element.style.willChange = willChange;
+            });
+
+            return;
+          }
+
+          // A table row is drawn in a table of its own, its cells as wide as
+          // they are in place.
           setCustomNativeDragPreview({
             getOffset: preserveOffsetOnSource({
               element,
@@ -229,30 +300,23 @@ export function useDragAndDrop(
             }),
             render({container}) {
               // Clone the element for the drag preview (must be synchronous)
-              const preview = element.cloneNode(true);
-              if (!(preview instanceof HTMLElement)) {
-                throw new Error('Expected an HTML drag preview.');
-              }
+              const preview = cloneForDragPreview(element);
               preview.style.width = `${rect.width}px`;
               preview.style.height = `${rect.height}px`;
-              if (element instanceof HTMLTableRowElement) {
-                const sourceTable = element.closest('table')!;
-                const table = sourceTable.cloneNode(false) as HTMLTableElement;
-                table.style.width = `${sourceTable.getBoundingClientRect().width}px`;
-                table.style.tableLayout = 'fixed';
+              const sourceTable = element.closest('table')!;
+              const table = sourceTable.cloneNode(false) as HTMLTableElement;
+              table.style.width = `${sourceTable.getBoundingClientRect().width}px`;
+              table.style.tableLayout = 'fixed';
 
-                [...preview.children].forEach((cell, index) => {
-                  const sourceCell = element.cells[index]!;
-                  const previewCell = cell as HTMLElement;
-                  previewCell.style.boxSizing = 'border-box';
-                  previewCell.style.width = `${sourceCell.getBoundingClientRect().width}px`;
-                });
+              [...preview.children].forEach((cell, index) => {
+                const sourceCell = element.cells[index]!;
+                const previewCell = cell as HTMLElement;
+                previewCell.style.boxSizing = 'border-box';
+                previewCell.style.width = `${sourceCell.getBoundingClientRect().width}px`;
+              });
 
-                table.createTBody().appendChild(preview);
-                container.appendChild(table);
-              } else {
-                container.appendChild(preview);
-              }
+              table.createTBody().appendChild(preview);
+              container.appendChild(table);
 
               return () => preview.remove();
             },

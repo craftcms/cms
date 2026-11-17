@@ -152,4 +152,61 @@ describe('craft-tooltip', () => {
     await tooltip.updateComplete;
     expect(tooltip.open).toBe(false);
   });
+
+  describe('Escape', () => {
+    /** Presses Escape on `target`, and reports whether the keydown reached the document already claimed. */
+    function pressEscape(target: Element): boolean {
+      let claimed = false;
+      const listener = (event: KeyboardEvent) => {
+        claimed = event.defaultPrevented;
+      };
+      // Where a slideout's or details panel's Escape handling hears it.
+      document.addEventListener('keydown', listener);
+      const init = {
+        key: 'Escape',
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      };
+      target.dispatchEvent(new KeyboardEvent('keydown', init));
+      target.dispatchEvent(new KeyboardEvent('keyup', init));
+      document.removeEventListener('keydown', listener);
+      return claimed;
+    }
+
+    it('claims the keydown on its invoker while open, so only the tooltip closes', async () => {
+      const {tooltip, button} = await createFixture({trigger: 'click'});
+      button.click();
+      await tooltip.updateComplete;
+
+      expect(pressEscape(button)).toBe(true);
+      await tooltip.updateComplete;
+      expect(tooltip.open).toBe(false);
+    });
+
+    it('focuses its invoker when a click opens it, so Escape still starts there in Safari', async () => {
+      // Like Safari, happy-dom doesn't focus a button that's clicked.
+      const {tooltip, button} = await createFixture({trigger: 'click'});
+      button.click();
+      await tooltip.updateComplete;
+
+      expect(document.activeElement).toBe(button);
+      expect(pressEscape(document.activeElement!)).toBe(true);
+    });
+
+    it('claims the keydown in its content while open', async () => {
+      const {tooltip} = await createFixture();
+      await tooltip.show();
+
+      expect(pressEscape(tooltip.querySelector('[slot="content"]')!)).toBe(
+        true
+      );
+    });
+
+    it('leaves the keydown alone while closed, for whatever holds it', async () => {
+      const {button} = await createFixture({trigger: 'click'});
+
+      expect(pressEscape(button)).toBe(false);
+    });
+  });
 });

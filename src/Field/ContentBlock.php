@@ -561,8 +561,12 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                     ));
                 }
 
-                /** @phpstan-ignore-next-line */
-                return $element->getEagerLoadedElements($handle)?->first() ?? $this->createContentBlockElement($element);
+                // a clone isn't among the queried elements, so the batch load won't have set its content block
+                $eagerLoadedContentBlocks = $element->getEagerLoadedElements($handle);
+                if ($eagerLoadedContentBlocks !== null) {
+                    /** @phpstan-ignore-next-line */
+                    return $eagerLoadedContentBlocks->first() ?? $this->createContentBlockElement($element);
+                }
             }
         }
 

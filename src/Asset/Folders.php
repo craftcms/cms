@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
+use CraftCms\Cms\Activity\OperationTypes\VolumeOperation;
 use CraftCms\Cms\Asset\Data\FolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -327,6 +328,7 @@ class Folders
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
         $allFolderIds = [];
+        $folders = [];
 
         foreach ((array) $folderIds as $folderId) {
             $folder = $this->getFolderById((int) $folderId);
@@ -335,6 +337,7 @@ class Folders
                 continue;
             }
 
+            $folders[] = $folder;
             $allFolderIds[] = $folder->id;
             $descendants = $this->getAllDescendantFolders($folder, withParent: false);
             array_push($allFolderIds, ...array_map(fn (VolumeFolder $folder) => $folder->id, $descendants));
@@ -349,7 +352,7 @@ class Folders
             }
         }
 
-        Asset::find()
+        $deleteAssets = fn () => Asset::find()
             ->folderId($allFolderIds)
             ->site('*')
             ->unique()
@@ -358,6 +361,18 @@ class Folders
                 $asset->keepFileOnDelete = ! $deleteDir;
                 Elements::deleteElement($asset, true);
             });
+
+        // The control panel deletes folders from one volume at a time. Temporary upload folders have no volume.
+        $volumeId = $folders[0]->volumeId ?? null;
+
+        if ($volumeId === null) {
+            $deleteAssets();
+        } else {
+            VolumeOperation::for(
+                $volumeId,
+                implode(', ', array_map(fn (VolumeFolder $folder): string => (string) $folder->name, $folders)),
+            )->scope($deleteAssets);
+        }
 
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
         $this->reset();

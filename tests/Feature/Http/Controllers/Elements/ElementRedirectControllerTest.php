@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\Facades\EntryTypes as EntryTypesFacade;
 use CraftCms\Cms\Support\Facades\Fields as FieldsFacade;
 use CraftCms\Cms\User\Elements\User;
 use Inertia\Testing\AssertableInertia;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 use function CraftCms\Cms\cp_url;
 use function Pest\Laravel\actingAs;
@@ -80,7 +79,14 @@ it('redirects to non-standard control panel edit urls', function () {
         ->assertRedirect($entry->getCpEditUrl());
 });
 
-it('aborts when the element has no control panel edit url', function () {
+it('returns not found when the element does not exist', function (string $path) {
+    get(cp_url($path))->assertNotFound();
+})->with([
+    'id' => 'edit/999999',
+    'uid' => 'edit/00000000-0000-0000-0000-000000000000',
+]);
+
+it('returns not found when the element has no control panel edit url', function () {
     config()->set('filesystems.disks.element-redirect-temp-disk', [
         'driver' => 'local',
         'root' => storage_path('framework/testing/element-redirect-controller/temp-disk'),
@@ -96,10 +102,7 @@ it('aborts when the element has no control panel edit url', function () {
         'uploaderId' => auth()->id(),
     ]);
 
-    $this->withoutExceptionHandling();
-
-    expect(fn () => get(cp_url("edit/$asset->id-test")))
-        ->toThrow(HttpException::class, 'The element doesn’t have an edit page.');
+    get(cp_url("edit/$asset->id-test"))->assertNotFound();
 });
 
 it('renders the entry editor for standard control panel edit urls', function () {

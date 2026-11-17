@@ -6,7 +6,6 @@
   const props = defineProps<{
     actor: ActivityTarget;
     impersonator: ActivityTarget | null;
-    origin?: string | null;
   }>();
 
   const identities = computed(() => [
@@ -33,19 +32,12 @@
         <span v-if="identity.target.deleted">({{ t('deleted') }})</span>
       </span>
     </template>
-    <span v-if="origin" class="activity-timeline__origin">
-      {{ t('Via {origin}', {origin}) }}
-    </span>
   </span>
 </template>
 
 <style scoped>
   .activity-timeline__actor {
     overflow-wrap: anywhere;
-  }
-
-  .activity-timeline__origin {
-    margin-inline-start: 0.25em;
   }
 
   .activity-timeline__as {

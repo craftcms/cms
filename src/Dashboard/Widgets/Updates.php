@@ -53,12 +53,17 @@ class Updates extends Widget
         return currentUser()->can('performUpdates') ? 'craft:widget-updates' : null;
     }
 
-    /** @return array{cached: bool, total: int} */
+    /** @return array{cached: bool, total: int, dateFetched: ?string} */
     public function props(): array
     {
+        $cached = $this->updates->isUpdateInfoCached();
+
         return [
-            'cached' => $this->updates->isUpdateInfoCached(),
+            'cached' => $cached,
             'total' => $this->updates->totalAvailableUpdates(),
+            'dateFetched' => $cached
+                ? ($this->updates->getUpdates()->dateFetched ?? null)?->format(DATE_ATOM)
+                : null,
         ];
     }
 }

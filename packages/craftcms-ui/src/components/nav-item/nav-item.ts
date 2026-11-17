@@ -48,6 +48,10 @@ import {
  * @slot subnav - Nested `craft-nav-item`s, shown beneath the item or in a
  *   flyout beside it.
  *
+ * @cssproperty [--c-nav-item-size=--c-size-touch-target] - The row's height,
+ *   and its width too when it's `icon-only`.
+ * @cssproperty [--c-nav-item-color=inherit] - The label's color while the
+ *   item isn't hovered or `current`, which take the row's own color.
  * @cssproperty [--c-nav-item-icon-color=inherit] - The icon's color while the
  *   item isn't `active` or hovered, which take the row's own color.
  * @cssproperty [--c-nav-item-border-active=--c-color-accent-fill-loud] - Color

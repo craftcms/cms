@@ -27,7 +27,8 @@ use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Nodes\Field;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Nodes\HiddenField;
-use CraftCms\Cms\Ui\Nodes\Separator;
+use CraftCms\Cms\Ui\Nodes\Outlet;
+use CraftCms\Cms\Ui\Nodes\Tab;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiPayload;
@@ -62,8 +63,7 @@ class EntryTypeEditViewModel extends ViewModel
             $handle->source('name');
         }
 
-        $ui = Ui::make([
-            HiddenField::make('entryTypeId'),
+        $settings = Tab::make('settings', t('Settings'), [
             Field::make(t('Name'), Text::make('name')->autofocus())
                 ->instructions(t('What this entry type will be called in the control panel.'))
                 ->required(),
@@ -71,16 +71,6 @@ class EntryTypeEditViewModel extends ViewModel
                 ->instructions(t('How you’ll refer to this entry type in the templates.'))
                 ->required(),
             Field::make(t('Description'), MarkdownControl::make('description')->toolbarButtons(MarkdownField::DEFAULT_TOOLBAR_BUTTONS)->rows(1)),
-            // Shown above the card designer, in the field layout designer’s
-            // Appearance tab, since they appear on cards too.
-            Group::make('display-settings', [
-                Field::make(t('Color'), ColorSelect::make('color')
-                    ->allowTransparent()
-                    ->blankLabel(t('No color'))
-                    // The component's own palette is wider than the Color enum.
-                    ->colors(array_column(Color::cases(), 'value'))),
-                Field::make(t('Icon'), IconPicker::make('icon')->sets('*')),
-            ])->outlet('field-layout-designer.appearance'),
             Field::make(t('UI Label Format'), Text::make('uiLabelFormat')
                 ->monospace()
                 ->textExpanderTriggers($objectTemplateTriggers))
@@ -89,7 +79,7 @@ class EntryTypeEditViewModel extends ViewModel
         ]);
 
         if (Sites::isMultiSite()) {
-            $ui->add(
+            $settings->add(
                 Field::make(
                     t('Title Translation Method'),
                     Choice::make('titleTranslationMethod')->options(TranslationMethod::asOptions())->reactive(),
@@ -97,7 +87,7 @@ class EntryTypeEditViewModel extends ViewModel
             );
 
             if (($values['titleTranslationMethod'] ?? null) === TranslationMethod::Custom->value) {
-                $ui->add(Group::make('entry-type-title-translation-settings', [
+                $settings->add(Group::make('entry-type-title-translation-settings', [
                     Field::make(
                         t('Title Translation Key Format'),
                         Text::make('titleTranslationKeyFormat')
@@ -108,7 +98,7 @@ class EntryTypeEditViewModel extends ViewModel
             }
         }
 
-        $ui->add(
+        $settings->add(
             Field::make(t('Default Title Format'), Text::make('titleFormat')
                 ->monospace()
                 ->textExpanderTriggers($objectTemplateTriggers))
@@ -137,20 +127,40 @@ class EntryTypeEditViewModel extends ViewModel
                 ])->dependsOn('slugTranslationMethod');
             }
 
-            $ui->add(Group::make('entry-type-slug-settings', $slugSettings)
+            $settings->add(Group::make('entry-type-slug-settings', $slugSettings)
                 ->dependsOn('showSlugField'));
         }
 
-        $ui->add(
+        $settings->add(
             Field::make(t('Show the Status field'), Lightswitch::make('showStatusField')),
             Field::make(t('Show the Post Date field'), Lightswitch::make('showPostDateField')),
             Field::make(t('Show the Expiry Date field'), Lightswitch::make('showExpiryDateField')),
-            Separator::make('field-layout-separator'),
-            Field::make(null, FieldLayoutDesigner::make('fieldLayout')
-                ->elementType(Entry::class)
-                ->withGeneratedFields()
-                ->withCardViewDesigner()),
         );
+
+        $ui = Ui::make([
+            HiddenField::make('entryTypeId'),
+            $settings,
+            Tab::make('content', t('Content'), [
+                Field::make(null, FieldLayoutDesigner::make('fieldLayout')
+                    ->elementType(Entry::class)
+                    ->withGeneratedFields()
+                    ->withCardViewDesigner()
+                    ->cardViewDesignerOutlet('entry-type.card-view-designer')),
+            ]),
+            Tab::make('appearance', t('Appearance'), [
+                // Shown beside the card preview, in the card view designer’s
+                // settings, since they appear on cards too.
+                Group::make('display-settings', [
+                    Field::make(t('Color'), ColorSelect::make('color')
+                        ->allowTransparent()
+                        ->blankLabel(t('No color'))
+                        // The component's own palette is wider than the Color enum.
+                        ->colors(array_column(Color::cases(), 'value'))),
+                    Field::make(t('Icon'), IconPicker::make('icon')->sets('*')),
+                ])->outlet('field-layout-designer.appearance'),
+                Outlet::make('card-view-designer', 'entry-type.card-view-designer'),
+            ]),
+        ]);
 
         return app(UiResolver::class)->resolve($ui, new UiContext(
             values: $values,

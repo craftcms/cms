@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Twig\Variables;
 
 use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Cp\Alerts;
+use CraftCms\Cms\Cp\Cp as CpHelper;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Events\FormActionsResolving;
 use CraftCms\Cms\Cp\FormFields;
@@ -58,6 +59,14 @@ class Cp extends Component
     public function getTheme(): string
     {
         return Theme::forUser(currentUserElement())->value;
+    }
+
+    /**
+     * Returns the control panel icon’s HTML, or `null` if neither the `cpIconPath` nor the `cpIconUrl` setting is set.
+     */
+    public function iconHtml(): ?string
+    {
+        return CpHelper::iconHtml();
     }
 
     /**
@@ -360,7 +369,7 @@ class Cp extends Component
      */
     public function config(): array
     {
-        return \CraftCms\Cms\Cp\Cp::config()->all();
+        return CpHelper::config()->all();
     }
 
     /**

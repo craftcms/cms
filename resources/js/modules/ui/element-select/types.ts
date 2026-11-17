@@ -72,6 +72,23 @@ export type ElementSelectProps = {
     referenceElementOwnerId: number | null;
     referenceElementSiteId: number | null;
   };
+  /**
+   * Shows a search input that relates the elements it finds: those matching
+   * the field's one source's criteria, in the field's target site. Absent
+   * when the field's "Show the search input" setting is off, or it can't be
+   * shown.
+   */
+  search?: {criteria: UiProperties; siteId: number | null};
+  /**
+   * `EntrySelect` only: the handle of the section the search input can
+   * create entries in, when the user can publish in it.
+   */
+  createSection?: string | null;
+  /**
+   * Elements that can't be related, such as the one being edited and its
+   * owners when the field doesn't allow self relations.
+   */
+  disabledElementIds?: number[];
   selectionLabel: string;
   limit: number | null;
   single?: boolean;

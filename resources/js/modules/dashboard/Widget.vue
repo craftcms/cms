@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {
+    computed,
     nextTick,
     onBeforeUnmount,
     onMounted,
@@ -9,10 +10,21 @@
   } from 'vue';
   import {t} from '@craftcms/ui';
   import {useResizeObserver} from '@vueuse/core';
+  import {useMessages} from '@/modules/messages/useMessages';
+  import type {UiPayload} from '@/modules/ui/types';
   import WidgetSettings from './WidgetSettings.vue';
   import type {DashboardWidget} from './types';
+  import {loadSettingsUi} from './settingsUi';
+  import {provideWidgetColor} from './useWidgetColor';
+  import {provideWidgetHeader} from './useWidgetHeader';
 
   const props = defineProps<{widget: DashboardWidget; ready: boolean}>();
+
+  // The component rendering the widget, and its settings face below, color
+  // their cards with it.
+  provideWidgetColor(() => props.widget.color);
+  // …and can add buttons to the header drawn above them, or hide its title.
+  const header = provideWidgetHeader(`widget-heading-${props.widget.id}`);
   const emit = defineEmits<{
     saved: [widget: DashboardWidget | false];
     cancel: [];
@@ -20,6 +32,16 @@
     /** Its settings opened or closed. A reload waits for them to close. */
     settings: [open: boolean];
   }>();
+
+  /**
+   * Whether the header leaves out its band: when the widget shows a title of
+   * its own, or has no title or settings button to show in it.
+   */
+  const headerIsBare = computed(
+    () =>
+      header.ownTitles.value > 0 ||
+      !(props.widget.title || props.widget.subtitle || props.widget.hasSettings)
+  );
 
   const settings = ref(props.widget.id < 0);
   const container = ref<HTMLElement>();
@@ -29,22 +51,55 @@
   const settingsSending = shallowRef(false);
   let savedWidget: DashboardWidget | false | undefined;
 
+  const messages = useMessages();
+
+  // A saved widget's settings UI is loaded each time they open, so it
+  // reflects its saved settings. A new widget comes with its own.
+  const loadedSettingsUi = shallowRef<UiPayload | null>(null);
+  const settingsLoading = shallowRef(false);
+  const settingsWidget = computed<DashboardWidget>(() => ({
+    ...props.widget,
+    settingsUi: props.widget.settingsUi ?? loadedSettingsUi.value,
+  }));
+
+  async function openSettings() {
+    if (settingsLoading.value || settings.value) return;
+
+    settingsLoading.value = true;
+
+    try {
+      loadedSettingsUi.value = await loadSettingsUi(
+        {widgetId: props.widget.id},
+        `widget${props.widget.id}-settings`
+      );
+      settings.value = true;
+    } catch {
+      messages.error(t('Couldn’t load widget settings.'));
+    } finally {
+      settingsLoading.value = false;
+    }
+  }
+
   onMounted(() => {
     window.dispatchEvent(
       new CustomEvent('craft:widget-mounted', {
         detail: {
           element: container.value!,
           widget: props.widget,
-          showSettings: () => {
-            settings.value = true;
-          },
+          showSettings: openSettings,
           hideSettings: closeSettings,
         },
       })
     );
   });
 
-  watch(settings, (open) => emit('settings', open), {immediate: true});
+  // Loading settings counts as open, so a reload doesn't remount the widget
+  // and lose them before they show.
+  watch(
+    () => settings.value || settingsLoading.value,
+    (open) => emit('settings', open),
+    {immediate: true}
+  );
 
   onBeforeUnmount(() => {
     emit('settings', false);
@@ -116,35 +171,59 @@
           @ready="emit('resize')"
         >
           <template #header>
+            <!-- A title row at the top of the card's body, rather than a
+                 header bar: the widget's title, and its settings button
+                 beside the title's first line. With neither, it's bare, with
+                 no band, so buttons the widget adds still have somewhere to
+                 go. -->
             <div
-              v-if="widget.title || widget.subtitle"
-              slot="label"
-              class="widget-heading"
+              class="widget-header"
+              :class="{'widget-header--bare': headerIsBare}"
             >
-              <h2
-                v-if="widget.title"
-                :id="`widget-heading-${widget.id}`"
-                class="text-sm"
+              <div
+                v-if="
+                  (widget.title || widget.subtitle) && !header.ownTitles.value
+                "
+                class="widget-heading"
               >
-                {{ widget.title }}
-              </h2>
-              <h5 v-if="widget.subtitle">{{ widget.subtitle }}</h5>
+                <h2
+                  v-if="widget.title"
+                  :id="`widget-heading-${widget.id}`"
+                  class="widget-title cp-h3"
+                >
+                  {{ widget.title }}
+                </h2>
+                <p v-if="widget.subtitle" class="widget-subtitle">
+                  {{ widget.subtitle }}
+                </p>
+              </div>
+              <div class="widget-header-actions">
+                <!-- Buttons the widget adds (see WidgetHeaderActions.vue). -->
+                <span
+                  :ref="
+                    (element) =>
+                      (header.actionsTarget.value =
+                        (element as HTMLElement | null) ?? null)
+                  "
+                  class="widget-header-added-actions"
+                ></span>
+                <craft-button
+                  v-if="widget.hasSettings"
+                  ref="settingsButton"
+                  class="widget-settings-button"
+                  type="button"
+                  icon="gear"
+                  variant="plain"
+                  flush="inline-end block"
+                  :aria-label="t('Widget settings')"
+                  :aria-describedby="
+                    widget.title ? `widget-heading-${widget.id}` : undefined
+                  "
+                  .loading="settingsLoading"
+                  @click="openSettings"
+                ></craft-button>
+              </div>
             </div>
-            <craft-button
-              v-if="widget.settingsUi"
-              ref="settingsButton"
-              slot="actions"
-              class="widget-settings-button"
-              type="button"
-              icon="gear"
-              size="small"
-              variant="plain"
-              :aria-label="t('Widget settings')"
-              :aria-describedby="
-                widget.title ? `widget-heading-${widget.id}` : undefined
-              "
-              @click="settings = true"
-            ></craft-button>
           </template>
         </component>
       </div>
@@ -155,24 +234,29 @@
       @before-leave="(element) => element.setAttribute('inert', '')"
     >
       <div v-if="settings" class="settings-face">
-        <craft-card data-color="gray">
-          <h2 slot="label" class="cp-h4">
-            {{ t('{type} Settings', {type: widget.name}) }}
-          </h2>
-          <craft-button
-            v-if="widget.settingsUi"
-            slot="actions"
-            type="button"
-            icon="xmark-large"
-            size="small"
-            variant="plain"
-            :aria-label="t('Cancel')"
-            .disabled="settingsSending"
-            @click="closeSettings"
-          ></craft-button>
+        <craft-card :data-color="widget.color ?? undefined">
+          <!-- The same header band as the widget's front. -->
+          <div class="widget-header">
+            <div class="widget-heading">
+              <h2 class="widget-title cp-h3">
+                {{ t('{type} Settings', {type: widget.name}) }}
+              </h2>
+            </div>
+            <div v-if="settingsWidget.settingsUi" class="widget-header-actions">
+              <craft-button
+                type="button"
+                icon="xmark-large"
+                variant="plain"
+                flush="inline-end block"
+                :aria-label="t('Cancel')"
+                .disabled="settingsSending"
+                @click="closeSettings"
+              ></craft-button>
+            </div>
+          </div>
           <WidgetSettings
             v-model:sending="settingsSending"
-            :widget="widget"
+            :widget="settingsWidget"
             @saved="saved"
             @cancel="closeSettings"
           />
@@ -224,5 +308,82 @@
   craft-card {
     display: block;
     position: relative;
+  }
+
+  /* The title row the widget's component renders at the top of its card's
+     body (see the header slot above). */
+  /* A header band across the top of the card, with a hairline below. It
+     reaches past the card body's padding (see card.styles.ts) to the card's
+     edges, and is a header bar's height, 46px, unless the title wraps. */
+  .widget-header {
+    --_card-padding: clamp(
+      var(--c-spacing-lg),
+      2cqi + var(--c-spacing-md),
+      calc(var(--c-spacing) * 6)
+    );
+    --_line-size: var(--widget-title-line-size, calc(var(--c-text-md) * 1.25));
+    display: flex;
+    align-items: flex-start;
+    gap: var(--c-spacing-md);
+    box-sizing: border-box;
+    min-block-size: calc(46rem / 16 + 1px);
+    margin-block: calc(var(--_card-padding) * -1) var(--_card-padding);
+    margin-inline: calc(var(--_card-padding) * -1);
+    padding-block: calc((46rem / 16 - var(--_line-size)) / 2);
+    padding-inline: var(--_card-padding);
+    border-block-end: 1px solid
+      var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
+  }
+
+  .widget-heading {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .widget-title {
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .widget-subtitle {
+    margin: 0;
+    font-size: var(--c-text-sm);
+    color: var(--c-text-quiet);
+  }
+
+  /* A widget that shows a title of its own (see useWidgetHeader()) leaves
+     this one out. Its buttons sit in the card's top corner, inset like the
+     card body's content, with no band. */
+  .widget-header--bare {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: var(--_card-padding);
+    inset-inline-end: var(--_card-padding);
+    min-block-size: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .widget-header-added-actions {
+    display: contents;
+  }
+
+  /* As tall as the title's first line, so the button centers on it however
+     many lines the title wraps to. A widget that shows a title of its own
+     can set --widget-title-line-size to that title's line height. */
+  .widget-header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-xs);
+    flex: none;
+    block-size: var(--_line-size);
+    margin-inline-start: auto;
+  }
+
+  /* Widget settings are spaced like other compact forms, not like the
+     full-page forms the dashboard's content pane is otherwise set up for. */
+  .settings-face > craft-card {
+    --c-field-group-gap: initial;
   }
 </style>

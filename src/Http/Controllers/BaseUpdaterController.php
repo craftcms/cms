@@ -12,10 +12,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Update\Data\UpdaterState;
 use CraftCms\Cms\Update\Updates;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\UpdaterAsset;
 use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Contracts\View\View;
 use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +21,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -53,8 +51,6 @@ abstract class BaseUpdaterController
 
     /** @var array<string, mixed> The data associated with the current update */
     protected array $data = [];
-
-    protected bool $usesStepUrls = true;
 
     /**
      * Whether the request’s data was encrypted with the app key rather than the updater key.
@@ -107,20 +103,17 @@ abstract class BaseUpdaterController
         }
     }
 
-    public function index(): Response|View
+    public function index(): Response
     {
-        // Its styles; the updater itself starts from legacy.ts
-        app(InternalAssetRegistry::class)->register(UpdaterAsset::class);
-
         $this->data = $this->initialData();
         $state = $this->realInitialState();
         $state['data'] = $this->hashedData();
 
-        return view('_special/updater', [
+        return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),
-            'actionPrefix' => implode('/', $this->request->actionSegments()),
-            'state' => $state,
-        ]);
+            'initialState' => $this->clientState($state),
+            'returnUrl' => $this->returnUrl(),
+        ])->toResponse($this->request);
     }
 
     public function precheck(): Response
@@ -181,6 +174,10 @@ abstract class BaseUpdaterController
 
     public function composerInstall(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState(self::ACTION_COMPOSER_INSTALL));
+        }
+
         $output = '';
 
         try {
@@ -209,6 +206,10 @@ abstract class BaseUpdaterController
 
     public function composerRemove(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState(self::ACTION_COMPOSER_REMOVE));
+        }
+
         $packages = [$this->data['packageName']];
         $output = '';
 
@@ -270,6 +271,13 @@ abstract class BaseUpdaterController
     {
         $state = $this->initialState($force);
 
+        if (
+            in_array($state['nextAction'] ?? null, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE], true) &&
+            ! $this->composer->getIsAvailable()
+        ) {
+            return $this->noComposerState();
+        }
+
         // If there's nothing to do here, then no precheck is needed
         if (! isset($state['nextAction'])) {
             return $state;
@@ -313,6 +321,17 @@ abstract class BaseUpdaterController
      */
     abstract protected function returnUrl(): string;
 
+    /** @return array<string, mixed> */
+    protected function noComposerState(string $retryAction = self::ACTION_RECHECK_COMPOSER): array
+    {
+        return [
+            'error' => $this->composer->getUnavailableReason(),
+            'options' => [
+                $this->actionOption(t('Try again'), $retryAction, ['submit' => true]),
+            ],
+        ];
+    }
+
     /**
      * Ensures that composer.json can be found.
      *
@@ -354,10 +373,6 @@ abstract class BaseUpdaterController
     {
         // Encode and hash the data
         $state['data'] = $this->hashedData();
-
-        if (! $this->usesStepUrls) {
-            return new JsonResponse($state);
-        }
 
         return new JsonResponse($this->clientState($state)->toArray());
     }

@@ -321,7 +321,9 @@ class ActionMenu extends ViewComponent
 
             $clientItems[] = Arr::whereNotNull([
                 'type' => $type,
-                'id' => $item['id'] ?? sprintf('menu-item-%s', mt_rand()),
+                // No random fallback here: the client keys items by what they
+                // say, and the HTML render path mints its own.
+                'id' => $item['id'] ?? null,
                 'label' => isset($item['label']) ? (string) $item['label'] : null,
                 'html' => isset($item['html']) ? (string) $item['html'] : null,
                 'description' => isset($item['description']) ? (string) $item['description'] : null,

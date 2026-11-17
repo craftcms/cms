@@ -655,6 +655,42 @@ describe('NestedElementBlocksControl', () => {
     expect(emitted).toHaveLength(0);
   });
 
+  /**
+   * The field is rebuilt when its blocks change. A save that applies a draft
+   * replaces the blocks created in it with new ones, which mustn't take focus
+   * out from under someone typing in them.
+   */
+  it('keeps focus in a block replaced by a save, but not in a deleted one', async () => {
+    const block = {type: 'newType', enabled: true};
+    const state = mount({
+      entries: {'draft-a': block, 'draft-b': block},
+      sortOrder: ['draft-a', 'draft-b'],
+    });
+    await nextTick();
+    const checkbox = (uid: string) =>
+      container!.querySelector<HTMLInputElement>(
+        `[data-id="${uid}"] craft-checkbox input`
+      )!;
+    checkbox('draft-b').focus();
+
+    state.value = {
+      entries: {'saved-a': block, 'saved-b': block},
+      sortOrder: ['saved-a', 'saved-b'],
+    };
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(checkbox('saved-b'));
+
+    // The next block takes a deleted one's place, but not its focus.
+    checkbox('saved-a').focus();
+    state.value = {entries: {'saved-b': block}, sortOrder: ['saved-b']};
+    await nextTick();
+    await nextTick();
+
+    expect(container!.contains(document.activeElement)).toBe(false);
+  });
+
   it('ignores a block action fired by a different Matrix field', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},

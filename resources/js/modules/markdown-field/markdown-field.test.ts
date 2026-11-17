@@ -120,19 +120,7 @@ it('evaluates the Asset chooser against the element being edited now', async () 
 });
 
 it('applies properties from the Vue Markdown Control', async () => {
-  const frames: FrameRequestCallback[] = [];
-  let laidOut = false;
-  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
-    frames.push(callback);
-
-    return frames.length;
-  });
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
-  vi.spyOn(
-    HTMLTextAreaElement.prototype,
-    'scrollHeight',
-    'get'
-  ).mockImplementation(() => (laidOut ? 120 : 20));
   const container = document.createElement('div');
   document.body.append(container);
   createApp(MarkdownControl, {
@@ -191,18 +179,6 @@ it('applies properties from the Vue Markdown Control', async () => {
   expect(container.querySelector('craft-option')?.textContent).toContain(
     'Ada Lovelace'
   );
-  expect(
-    container.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
-  ).toBe('20px');
-
-  laidOut = true;
-  while (frames.length) {
-    frames.shift()!(performance.now());
-  }
-
-  expect(
-    container.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
-  ).toBe('120px');
 });
 
 it('keeps a read-only value reachable by keyboard, without letting it change', async () => {
@@ -256,53 +232,4 @@ it('scopes its styling to the element, which every render path has', () => {
   expect(styles).toMatch(
     /craft-markdown-field:defined \.overtype-container \{[^}]*border: var\(--markdown-field-border\)/
   );
-});
-it('resizes after becoming visible', () => {
-  let notifyVisible: (() => void) | undefined;
-  let laidOut = false;
-
-  vi.stubGlobal('requestAnimationFrame', vi.fn());
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
-  vi.stubGlobal(
-    'ResizeObserver',
-    class {
-      constructor(callback: ResizeObserverCallback) {
-        notifyVisible = () => {
-          callback(
-            [
-              {
-                contentRect: {width: 320},
-              } as ResizeObserverEntry,
-            ],
-            this as ResizeObserver
-          );
-        };
-      }
-
-      observe() {}
-
-      unobserve() {}
-
-      disconnect() {}
-    }
-  );
-  vi.spyOn(
-    HTMLTextAreaElement.prototype,
-    'scrollHeight',
-    'get'
-  ).mockImplementation(() => (laidOut ? 120 : 0));
-
-  const markdownField = document.createElement('craft-markdown-field');
-  document.body.append(markdownField);
-
-  expect(
-    markdownField.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
-  ).toBe('0px');
-
-  laidOut = true;
-  notifyVisible?.();
-
-  expect(
-    markdownField.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
-  ).toBe('120px');
 });

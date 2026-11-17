@@ -55,5 +55,5 @@ Follows the WAI-ARIA APG [Button](https://www.w3.org/WAI/ARIA/apg/patterns/butto
 - 4.1.2 (Name, Role, Value): name an icon-only button with `aria-label`, or a `label` on its icon. See [Accessibility](./Button.mdx#accessibility).
 - 1.1.1 (Non-text Content): slot a labeled icon, or add `sr-only` text, when the icon means something the label doesn't. See [Accessibility](./Button.mdx#accessibility).
 - 1.4.1 (Use of Color): say what a `danger` button does in its label, not only with its color. See [Accessibility](./Button.mdx#accessibility).
-- 2.5.8 (Target Size (Minimum)): leave room around `xsmall` buttons, since their hit area spills past the visible box. See [Accessibility](./Button.mdx#accessibility).
+- 2.5.8 (Target Size (Minimum)): use `xsmall` only where nothing else can come within 12px of its center, since its hit area spills past the visible box. Beside another target, use `small` or larger. See [Accessibility](./Button.mdx#accessibility).
 - 4.1.2 (Name, Role, Value): use `href` for anything that goes to a URL, not a click handler. See [Accessibility](./Button.mdx#accessibility).

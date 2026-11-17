@@ -33,7 +33,9 @@ export default css`
   .form-field__status-indicator {
     position: absolute;
     inset-block-start: 0;
-    inset-inline-start: calc(var(--c-spacing-lg) * -1);
+    inset-inline-start: calc(
+      var(--c-field-indicator-inset, var(--c-spacing-lg)) * -1
+    );
     width: 2px;
     height: 100%;
     cursor: help;

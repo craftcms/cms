@@ -9,6 +9,7 @@ namespace craft\queue;
 
 use craft\console\ControllerTrait;
 use craft\helpers\Console;
+use CraftCms\Cms\Console\TerminalCommands;
 use yii\console\ExitCode;
 use yii\db\Exception as YiiDbException;
 
@@ -86,7 +87,7 @@ class Command extends \yii\queue\cli\Command
     public function actionRun(): int
     {
         if ($this->jobId) {
-            $this->stderr('Running a single job with `--job-id` is not supported in Craft 6. Run `php craft queue:work` to process the queue instead.' . PHP_EOL, Console::FG_RED);
+            $this->stderr('Running a single job with `--job-id` is not supported in Craft 6. Run `' . app(TerminalCommands::class)->artisan('queue:work') . '` to process the queue instead.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -136,7 +137,7 @@ class Command extends \yii\queue\cli\Command
      * Example:
      *
      * ```
-     * php craft queue/release all
+     * php artisan craft:queue:release all
      * ```
      *
      * @param string $job The job ID to release. Pass `all` to release all jobs.

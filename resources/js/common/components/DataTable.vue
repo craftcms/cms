@@ -21,7 +21,6 @@
     useTemplateRef,
     watch,
   } from 'vue';
-  import type {NestedReorderDirection} from '@craftcms/ui';
   import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
   import {useReorderableRows} from '@/common/composables/useReorderableRows';
   import {
@@ -454,7 +453,7 @@
           </th>
           <template v-if="!readOnly && reorderable">
             <th class="cell cell--header">
-              <span class="sr-only">Reorder</span>
+              <span class="sr-only">{{ t('Reorder') }}</span>
             </th>
           </template>
           <th
@@ -712,8 +711,19 @@
   // Selected rows take the accent fill a selected chip or thumbnail does, so a
   // selection reads the same whichever view mode you're in. Painted on the
   // cells rather than the row: a `<tr>` background loses to any the cells set.
-  :deep(.cp-table-row.sel > td) {
+  // That includes row headers (`meta.cellTag: 'th'`), which have a background
+  // of their own.
+  :deep(.cp-table-row.sel > :is(td, th)) {
     background-color: var(--c-color-accent-fill-quiet);
+  }
+
+  // A hovered row gets a lighter fill than a selected one, so it's easy to
+  // follow a row across a wide table. Only with a real hover, so a tap on a
+  // touch screen doesn't leave a row highlighted.
+  @media (hover: hover) {
+    :deep(.cp-table-row--clickable:not(.sel):hover > :is(td, th)) {
+      background-color: var(--c-table-row-hover);
+    }
   }
 
   // Cells carry a bottom border only. The one between two selected rows sits

@@ -59,6 +59,24 @@ it('converts legacy event items into action menu descriptors', function(): void 
         ->and(legacyMenuDescriptor($this->entry, 'Purge', ElementActionContext::Field))->toBeNull();
 });
 
+it('converts legacy items with event actions into event behaviors', function(): void {
+    Event::on(LegacyEntry::class, LegacyEntry::EVENT_DEFINE_ACTION_MENU_ITEMS, function(DefineMenuItemsEvent $event) {
+        $event->items[] = [
+            'label' => 'Open my editor',
+            'action' => ['type' => 'event', 'name' => 'my-plugin:open', 'detail' => ['elementId' => 1]],
+        ];
+        $event->items[] = [
+            'label' => 'Preview it',
+            'action' => ['type' => 'event', 'name' => 'craft:element-action', 'detail' => ['behavior' => ['type' => 'previewFile', 'assetId' => 2]]],
+        ];
+    });
+
+    expect(legacyMenuDescriptor($this->entry, 'Open my editor')['behavior'])
+        ->toBe(['type' => 'event', 'name' => 'my-plugin:open', 'detail' => ['elementId' => 1]])
+        ->and(legacyMenuDescriptor($this->entry, 'Preview it')['behavior'])
+        ->toBe(['type' => 'previewFile', 'assetId' => 2]);
+});
+
 it('drops legacy items that rely on JavaScript', function(): void {
     Event::on(LegacyEntry::class, LegacyEntry::EVENT_DEFINE_ACTION_MENU_ITEMS, function(DefineMenuItemsEvent $event) {
         $event->items[] = ['id' => 'my-plugin-action', 'label' => 'Do the thing'];

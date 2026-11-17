@@ -4,7 +4,8 @@
   import ElementSources from '@/modules/elements/ElementSources.vue';
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
-  import type {SourceItem} from '@/modules/elements/types/sources';
+  import type {Source, SourceItem} from '@/modules/elements/types/sources';
+  import type {ActionItemButton} from '@/common/types';
   import {
     isModifiedClick,
     useModalElementIndex,
@@ -22,6 +23,9 @@
     /** Picks folders rather than elements; see `useModalElementIndex`. */
     selectFolders?: boolean;
     disabledFolderIds?: number[];
+    /** Lists elements without selecting them, with no source sidebar. */
+    readOnly?: boolean;
+    storageKey?: string;
   }>();
 
   const emit = defineEmits<{
@@ -29,8 +33,16 @@
     (event: 'choose', elements: SelectedElement[]): void;
     /** The source being viewed, so the chrome can act on the current folder. */
     (event: 'source-change', source: SourceItem | null): void;
+    /** Every source the index offers, so the chrome knows what it can create in. */
+    (event: 'sources-change', sources: Source[]): void;
+    /** The site being viewed, which is where anything created goes. */
+    (event: 'site-change', siteId: number | null): void;
     /** The trail from the volume root to the folder on screen. */
     (event: 'folder-path-change', path: FolderCrumb[]): void;
+    /** A request for the index failed. */
+    (event: 'error', cause: unknown): void;
+    /** The buttons plugins add for the folder on screen. */
+    (event: 'folder-actions-change', actions: ActionItemButton[]): void;
   }>();
 
   const index = useModalElementIndex({
@@ -40,6 +52,9 @@
     disabledElementIds: () => props.disabledElementIds ?? [],
     selectFolders: props.selectFolders,
     disabledFolderIds: () => props.disabledFolderIds ?? [],
+    readOnly: props.readOnly,
+    storageKey: props.storageKey,
+    onError: props.readOnly ? (cause) => emit('error', cause) : undefined,
   });
 
   const {selectedElements, hasSelection, clearSelection, folderBreadcrumbs} =
@@ -85,9 +100,27 @@
     {immediate: true}
   );
 
+  watch(
+    () => elementIndex.sources,
+    (sources) => emit('sources-change', sources),
+    {immediate: true}
+  );
+
+  watch(
+    () => elementIndex.siteId,
+    (siteId) => emit('site-change', siteId ?? null),
+    {immediate: true}
+  );
+
   watch(folderBreadcrumbs, (path) => emit('folder-path-change', path), {
     immediate: true,
   });
+
+  watch(
+    index.folderActions,
+    (actions) => emit('folder-actions-change', actions),
+    {immediate: true}
+  );
 
   // Remembered for the placeholders the next modal draws before its payload.
   watch(
@@ -108,7 +141,9 @@
     refresh: (selectId?: number) => index.refresh({selectId}),
   });
 
-  const showSidebar = computed(() => elementIndex.sources.length > 1);
+  const showSidebar = computed(
+    () => !props.readOnly && elementIndex.sources.length > 1
+  );
 </script>
 
 <template>
@@ -117,6 +152,7 @@
       'modal-element-index': true,
       'modal-element-index--sidebar': showSidebar,
       'modal-element-index--folders': selectFolders,
+      'modal-element-index--embedded': readOnly,
     }"
   >
     <nav
@@ -135,7 +171,9 @@
       <ElementIndex
         :view="index.view"
         :item-behavior="index.itemBehavior"
-        contained
+        :contained="!readOnly"
+        :selectable="!readOnly"
+        :toolbar-as-form="!readOnly"
         :show-sites="!selectFolders"
         @site-change="index.changeSite"
         @dblclick="onDblClick"
@@ -176,9 +214,24 @@
 </template>
 
 <style lang="scss" scoped>
+  .folder-breadcrumbs craft-breadcrumbs {
+    --c-icon-size: var(--c-size-icon-xs);
+  }
+
   .modal-element-index {
     display: grid;
     height: 100%;
+  }
+
+  // Embedded in a screen rather than a modal: the index flows with the page,
+  // and a table wider than the screen scrolls within it.
+  .modal-element-index--embedded {
+    height: auto;
+
+    .modal-element-index__main {
+      overflow-x: auto;
+      background: none;
+    }
   }
 
   .modal-element-index--sidebar {
@@ -202,6 +255,7 @@
     // would on a page; without this, it falls back to its narrowest layout.
     container: cp-content-view / inline-size;
     background: var(--c-surface-overlay);
+    --structure-indent-step: var(--c-size-control-sm);
 
     // Grid items don't shrink below their content by default, so a wide table
     // widens the column and a long one grows the row — pushing the pane out of

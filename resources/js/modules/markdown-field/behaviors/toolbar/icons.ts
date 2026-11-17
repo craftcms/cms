@@ -19,27 +19,23 @@ import strikethroughIcon from '@icons/solid/strikethrough.svg?raw';
 import uploadIcon from '@icons/solid/upload.svg?raw';
 
 export const customIcons = {
-  bold: decorativeIcon(boldIcon),
-  'circle-question': decorativeIcon(circleQuestionIcon),
-  code: decorativeIcon(codeIcon),
-  eye: decorativeIcon(eyeIcon),
-  h1: decorativeIcon(h1Icon),
-  h2: decorativeIcon(h2Icon),
-  h3: decorativeIcon(h3Icon),
-  h4: decorativeIcon(h4Icon),
-  h5: decorativeIcon(h5Icon),
-  h6: decorativeIcon(h6Icon),
-  italic: decorativeIcon(italicIcon),
-  link: decorativeIcon(linkIcon),
-  'list-check': decorativeIcon(listCheckIcon),
-  'list-ol': decorativeIcon(listOlIcon),
-  'list-ul': decorativeIcon(listUlIcon),
-  paperclip: decorativeIcon(paperclipIcon),
-  'quotes-left': decorativeIcon(quoteLeftIcon),
-  strikethrough: decorativeIcon(strikethroughIcon),
-  upload: decorativeIcon(uploadIcon),
+  bold: boldIcon,
+  'circle-question': circleQuestionIcon,
+  code: codeIcon,
+  eye: eyeIcon,
+  h1: h1Icon,
+  h2: h2Icon,
+  h3: h3Icon,
+  h4: h4Icon,
+  h5: h5Icon,
+  h6: h6Icon,
+  italic: italicIcon,
+  link: linkIcon,
+  'list-check': listCheckIcon,
+  'list-ol': listOlIcon,
+  'list-ul': listUlIcon,
+  paperclip: paperclipIcon,
+  'quotes-left': quoteLeftIcon,
+  strikethrough: strikethroughIcon,
+  upload: uploadIcon,
 };
-
-function decorativeIcon(svg: string): string {
-  return svg.replace('<svg ', '<svg aria-hidden="true" focusable="false" ');
-}

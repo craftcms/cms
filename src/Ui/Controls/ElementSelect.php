@@ -70,6 +70,12 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
     /** @var array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null */
     private ?array $referenceElement = null;
 
+    /** @var array{criteria: array<string, mixed>, siteId: int|null}|null */
+    private ?array $search = null;
+
+    /** @var list<int> */
+    private array $disabledElementIds = [];
+
     /**
      * The view modes a relation field can be set to, mirroring
      * {@see BaseRelationField::supportedViewModes()}. The
@@ -88,6 +94,9 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
     private string $viewMode = self::VIEW_MODE_LIST;
 
     private ?ChipThumbSize $thumbSize = null;
+
+    /** @var array{ids: array<int, true>, elements: array<int, ElementInterface>}|null The elements loaded by {@see loadElements()} */
+    private ?array $loadedElements = null;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
@@ -277,6 +286,61 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
         return $this;
     }
 
+    /**
+     * Shows a search input that relates the elements matching `$criteria` it finds, in the site `$siteId`. `null`
+     * criteria hide it.
+     *
+     * @param  array<string, mixed>|null  $criteria
+     */
+    public function search(?array $criteria, ?int $siteId = null): static
+    {
+        $this->search = $criteria === null ? null : ['criteria' => $criteria, 'siteId' => $siteId];
+
+        return $this;
+    }
+
+    /**
+     * Sets the elements that can’t be selected, such as the element being edited when the field doesn’t allow self
+     * relations.
+     *
+     * @param  list<int>  $ids
+     */
+    public function disabledElementIds(array $ids): static
+    {
+        $this->disabledElementIds = $ids;
+
+        return $this;
+    }
+
+    /**
+     * Loads the elements of many values at once, such as a table column’s cells, so copies of the control drawing
+     * those values don’t each query for their own.
+     *
+     * @param  array<mixed>  $values
+     */
+    public function loadElements(array $values): static
+    {
+        if ($this->elementType === null) {
+            throw new InvalidArgumentException('ElementSelect Controls require an element type.');
+        }
+
+        $ids = [];
+        foreach ($values as $value) {
+            foreach (self::ids($value) as $id) {
+                $ids[(int) $id] = true;
+            }
+        }
+
+        $elements = [];
+        foreach (self::elements($this->elementType, array_keys($ids), $this->maintainHierarchy) as $element) {
+            $elements[$element->id] = $element;
+        }
+
+        $this->loadedElements = ['ids' => $ids, 'elements' => $elements];
+
+        return $this;
+    }
+
     public function viewMode(string $viewMode): static
     {
         if (! in_array($viewMode, self::viewModes(), true)) {
@@ -358,7 +422,7 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             throw new InvalidArgumentException('ElementSelect Controls require an element type.');
         }
 
-        $elements = self::elements($this->elementType, $value, $this->maintainHierarchy);
+        $elements = $this->loadedElementsFor($value) ?? self::elements($this->elementType, $value, $this->maintainHierarchy);
         $thumbSize = self::resolveThumbSize($this->viewMode, $this->thumbSize);
 
         return [
@@ -380,6 +444,8 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             'branchLimit' => $this->branchLimit,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
             ...($this->referenceElement !== null ? ['referenceElement' => $this->referenceElement] : []),
+            ...($this->search !== null ? ['search' => $this->search] : []),
+            ...($this->disabledElementIds !== [] ? ['disabledElementIds' => $this->disabledElementIds] : []),
         ];
     }
 
@@ -521,11 +587,8 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
      */
     private static function elements(string $elementType, mixed $value, bool $withStructure = false): array
     {
-        if (is_int($value) || is_string($value) && $value !== '') {
-            $value = [$value];
-        }
-
-        if (! is_array($value) || $value === []) {
+        $value = self::ids($value);
+        if ($value === []) {
             return [];
         }
 
@@ -543,6 +606,41 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             ->id(array_values($value))
             ->fixedOrder()
             ->all();
+    }
+
+    /**
+     * Returns a value’s elements from those loaded by {@see loadElements()}, or `null` if they weren’t loaded.
+     *
+     * @return list<ElementInterface>|null
+     */
+    private function loadedElementsFor(mixed $value): ?array
+    {
+        if ($this->loadedElements === null) {
+            return null;
+        }
+
+        $elements = [];
+        foreach (self::ids($value) as $id) {
+            if (! isset($this->loadedElements['ids'][(int) $id])) {
+                return null;
+            }
+
+            if (isset($this->loadedElements['elements'][(int) $id])) {
+                $elements[] = $this->loadedElements['elements'][(int) $id];
+            }
+        }
+
+        return $elements;
+    }
+
+    /** @return array<int|string> */
+    private static function ids(mixed $value): array
+    {
+        if (is_int($value) || is_string($value) && $value !== '') {
+            return [$value];
+        }
+
+        return is_array($value) ? $value : [];
     }
 
     /** @param class-string<ElementInterface> $elementType */

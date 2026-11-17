@@ -169,6 +169,7 @@ it('marks exact matches and sorts excluded results last', function () {
 
     expect(collect($response->json('elements'))->pluck('id')->all())
         ->toBe([$exactIncluded->id, $partialMatch->id, $exactExcluded->id])
+        ->and($response->json('elements.0.label'))->toBe('Alpha')
         ->and($response->json('elements.0.exclude'))->toBeFalse()
         ->and($response->json('elements.1.exclude'))->toBeFalse()
         ->and($response->json('elements.2.exclude'))->toBeTrue()

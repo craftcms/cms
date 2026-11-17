@@ -259,7 +259,10 @@ export default class CraftChip extends LitElement {
    */
   #lightDom = new LightDomController(this, {
     characterData: true,
-    onChange: () => this.#inheritButtons(),
+    onChange: () => {
+      this.#inheritButtons();
+      this.#cropThumbnails();
+    },
   });
 
   /**
@@ -271,6 +274,35 @@ export default class CraftChip extends LitElement {
     for (const button of this.querySelectorAll('craft-button:not([inherit])')) {
       if (button.closest('craft-chip') === this) {
         button.toggleAttribute('inherit', true);
+      }
+    }
+  }
+
+  /**
+   * A rounded chip's thumbnails are cropped to fill their square box, so the
+   * fully rounded corners make a circle whatever the image's proportions. Each
+   * gets its own mode back if the chip stops being rounded. Thumbnails inside
+   * a nested chip are left to that chip.
+   */
+  #cropThumbnails(): void {
+    for (const thumbnail of this.querySelectorAll<HTMLElement & {mode: string}>(
+      'craft-thumbnail'
+    )) {
+      if (
+        thumbnail.closest('craft-chip') !== this ||
+        !thumbnail.closest('[slot="thumbnail"]')
+      ) {
+        continue;
+      }
+
+      if (this.rounded) {
+        if (thumbnail.dataset.chipMode === undefined) {
+          thumbnail.dataset.chipMode = thumbnail.mode;
+          thumbnail.mode = 'crop';
+        }
+      } else if (thumbnail.dataset.chipMode !== undefined) {
+        thumbnail.mode = thumbnail.dataset.chipMode;
+        delete thumbnail.dataset.chipMode;
       }
     }
   }
@@ -419,8 +451,33 @@ export default class CraftChip extends LitElement {
     </div>`;
   }
 
+  /**
+   * Marks the host `data-link-focus-visible` while a link in the chip's label
+   * has keyboard focus, so the chip draws the focus ring around itself. The
+   * link's own ring falls outside the label, which the chip clips to keep
+   * its ellipsis.
+   */
+  #onFocusIn = (event: FocusEvent): void => {
+    const target = event.target as Element;
+    const inLabel = target
+      .closest('craft-chip > *')
+      ?.matches(':not([slot]), [slot=""]');
+    this.toggleAttribute(
+      'data-link-focus-visible',
+      target !== this &&
+        Boolean(inLabel) &&
+        target.matches('a[href]:focus-visible')
+    );
+  };
+
+  #onFocusOut = (): void => {
+    this.removeAttribute('data-link-focus-visible');
+  };
+
   override connectedCallback() {
     super.connectedCallback();
+    this.addEventListener('focusin', this.#onFocusIn);
+    this.addEventListener('focusout', this.#onFocusOut);
 
     if (this.hasUpdated) {
       this.#thumbLoader = new ThumbnailLoader();
@@ -429,6 +486,8 @@ export default class CraftChip extends LitElement {
   }
 
   override disconnectedCallback() {
+    this.removeEventListener('focusin', this.#onFocusIn);
+    this.removeEventListener('focusout', this.#onFocusOut);
     this.#thumbLoader.destroy();
     super.disconnectedCallback();
   }
@@ -436,6 +495,14 @@ export default class CraftChip extends LitElement {
   protected override firstUpdated(_changedProperties: PropertyValues) {
     super.firstUpdated(_changedProperties);
     this.#thumbLoader.load(this);
+  }
+
+  protected override updated(changed: PropertyValues<this>) {
+    super.updated(changed);
+
+    if (changed.has('rounded')) {
+      this.#cropThumbnails();
+    }
   }
 
   override render() {

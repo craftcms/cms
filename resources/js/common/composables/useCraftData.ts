@@ -2,6 +2,7 @@ import {computed, type Ref} from 'vue';
 import {toRefs} from '@vueuse/core';
 import {usePage} from '@inertiajs/vue3';
 import type {BreadcrumbItem} from '@/common/types';
+import type {CreatableSection} from '@/modules/elements/composables/useCreatableEntryTypes';
 
 export interface CpUser {
   username: string | null;
@@ -35,7 +36,10 @@ export interface CraftData {
   csrfTokenName: string | null;
   system: {
     name: string;
+    /** The control panel icon's decorative HTML: an inline SVG or an `<img>`. */
     icon: string | null;
+    /** The sign-in screens' logo's decorative HTML: an inline SVG or an `<img>`. */
+    logo: string | null;
   };
   app: {
     version: string;
@@ -57,14 +61,15 @@ export interface CraftData {
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
   general: {
+    allowUpdates: boolean;
     cpTrigger: string | null;
     actionTrigger: string | null;
     csrfTokenName: string | null;
-    cpLogoUrl: string | null;
     useEmailAsUsername: boolean;
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;
     notifications: CraftCms.Cms.Cp.Data.NotificationData[];
+    creatableSections: CreatableSection[];
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
   /**

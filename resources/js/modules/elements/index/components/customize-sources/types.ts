@@ -11,6 +11,11 @@ export interface SourceRow {
   type: SourceType;
   /** Tracks the label/heading control so the sidebar updates as you type. */
   label: string;
+  /**
+   * Tracks the Enabled control once it's changed, so the sidebar's status dot
+   * updates as it's toggled. Unset until then.
+   */
+  enabled?: unknown;
   /** Shown under the label — a section's handle, say. */
   handle: string | null;
   page: string;

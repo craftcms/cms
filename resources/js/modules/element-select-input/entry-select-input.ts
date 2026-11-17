@@ -21,7 +21,7 @@ export class EntrySelectInput extends BaseElementSelectInput {
   get section(): any {
     if (!this.settings.sectionId) return null;
     const siteId = this.settings.criteria.siteId;
-    return Craft.publishableSections.find(
+    return Craft.creatableSections.find(
       (s: any) =>
         s.id === this.settings.sectionId &&
         (!siteId || s.sites.includes(siteId))

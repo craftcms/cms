@@ -4,13 +4,22 @@
   import '@craftcms/ui/components/element-selector-modal/element-selector-modal';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
+  import FolderActionButtons from '@/modules/assets/FolderActionButtons.vue';
+  import type {ActionItemButton} from '@/common/types';
   import ElementPicker from './ElementPicker.vue';
   import ElementPickerPlaceholder from './ElementPickerPlaceholder.vue';
-  import type {SourceItem} from '@/modules/elements/types/sources';
+  import NewEntryButton from './NewEntryButton.vue';
+  import type {Source, SourceItem} from '@/modules/elements/types/sources';
   import type {SelectedElement} from './useModalElementIndex';
   import {useElementSelectorController} from './useElementSelectorController';
 
-  const props = defineProps<{controller: ElementSelectorController}>();
+  const props = defineProps<{
+    controller: ElementSelectorController;
+    /** What takes focus once the modal has closed. See `CraftDialog.returnFocus`. */
+    returnFocus?: () => HTMLElement | null;
+    /** See `ElementSelectorModalPresentationOptions.onHandoff`. */
+    onHandoff?: (settled: Promise<void>) => void;
+  }>();
 
   /** The slice of `AssetSelectorController` this component needs. */
   interface TransformCapable {
@@ -83,6 +92,27 @@
    */
   const source = ref<SourceItem | null>(null);
 
+  /** Every source the index offers, and the site it's showing. */
+  const sources = ref<Source[]>([]);
+  const siteId = ref<number | null>(null);
+
+  /** The buttons plugins add for the folder on screen. */
+  const folderActions = ref<ActionItemButton[]>([]);
+
+  /**
+   * Entries can be created from their selector, as Craft 5's `EntryIndex`
+   * offered — in the sections the index shows that the user can publish in.
+   * Not with a selection condition: the modal closes while the entry is
+   * edited, so nothing could check the saved entry against the condition
+   * before choosing it.
+   */
+  const createsEntries = computed(
+    () =>
+      props.controller.elementType ===
+        'CraftCms\\Cms\\Entry\\Elements\\Entry' &&
+      !props.controller.options.condition
+  );
+
   const uploadTarget = computed(() => {
     const data = source.value?.data as
       | Record<string, boolean | number | string>
@@ -106,7 +136,10 @@
 </script>
 
 <template>
-  <craft-element-selector-modal :controller="controller">
+  <craft-element-selector-modal
+    :controller="controller"
+    .returnFocus="returnFocus"
+  >
     <!--
       The index talks to the controller, never to the chrome around it — it emits
       what happened and the controller decides what that means. That is what lets
@@ -125,6 +158,11 @@
       "
       @choose="() => controller.submit()"
       @source-change="(next: SourceItem | null) => (source = next)"
+      @sources-change="(next: Source[]) => (sources = next)"
+      @site-change="(next: number | null) => (siteId = next)"
+      @folder-actions-change="
+        (next: ActionItemButton[]) => (folderActions = next)
+      "
     />
     <ElementPickerPlaceholder
       v-else
@@ -148,6 +186,26 @@
         :allowed-kinds="uploadKinds"
         :reload-on-complete="false"
         @uploaded="({id}) => index?.refresh(id)"
+      />
+    </div>
+
+    <!-- What plugins offer for the folder on screen, as on the assets index. -->
+    <div
+      v-if="folderActions.length"
+      slot="secondary-actions"
+      class="flex items-center gap-sm"
+    >
+      <FolderActionButtons :actions="folderActions" />
+    </div>
+
+    <div v-if="createsEntries" slot="secondary-actions">
+      <NewEntryButton
+        :controller="controller"
+        :sources="sources"
+        :source="source"
+        :site-id="siteId"
+        :opener="returnFocus"
+        :on-handoff="onHandoff"
       />
     </div>
 

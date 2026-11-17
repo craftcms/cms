@@ -1334,10 +1334,8 @@ class Plugins
     {
         $html = '';
 
-        foreach ($this->viteConfigs as $vite) {
-            $html .= Cp::viteTags(array_values($vite['input']), (clone app(Vite::class))
-                ->useHotFile($vite['hotFile'])
-                ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/')));
+        foreach ($this->viteConfigs as $config) {
+            $html .= Cp::viteTags(array_values($config['input']), $this->vite($config));
         }
 
         foreach ($this->styles as $styles) {
@@ -1353,6 +1351,28 @@ class Plugins
         }
 
         return $html;
+    }
+
+    /**
+     * Returns a hash of the Vite manifests of the builds {@see getAssetsHtml()} loads, which changes whenever one is
+     * republished.
+     *
+     * Like {@see Vite::manifestHash()}, it leaves out builds served by a running dev server and ones that aren't
+     * published, and returns `null` when that leaves none.
+     */
+    public function getViteManifestHash(): ?string
+    {
+        $hashes = array_filter(array_map(fn (array $config) => $this->vite($config)->manifestHash(), $this->viteConfigs));
+
+        return $hashes === [] ? null : md5(implode(',', $hashes));
+    }
+
+    /** @param array{hotFile: string, buildDirectory: string, input: string[]} $config */
+    private function vite(array $config): Vite
+    {
+        return (clone app(Vite::class))
+            ->useHotFile($config['hotFile'])
+            ->useBuildDirectory(Str::chopEnd($config['buildDirectory'], '/'));
     }
 
     /**

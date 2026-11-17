@@ -20,6 +20,8 @@ use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Foundation\Bootstrap\BootProviders;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\Request;
+use Illuminate\Queue\Events\JobPopping;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -59,6 +61,15 @@ class ViewServiceProvider extends ServiceProvider
          */
         if ($this->app->runningInConsole()) {
             TemplateMode::set(TemplateMode::Cp);
+
+            /**
+             * The queue worker forgets the scoped Context, and the mode with it, before it pops each job.
+             */
+            Event::listen(JobPopping::class, function (): void {
+                if (! Context::hasHidden(TemplateMode::class)) {
+                    TemplateMode::set(TemplateMode::Cp);
+                }
+            });
         }
 
         $this->registerTemplateRoots();
