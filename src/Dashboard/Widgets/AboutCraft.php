@@ -43,7 +43,7 @@ class AboutCraft extends Widget
         return 'custom-icons/craft-cms';
     }
 
-    public function component(): string
+    public function component(): ?string
     {
         return 'craft:widget-about-craft';
     }
