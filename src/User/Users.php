@@ -72,6 +72,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use Throwable;
 use Tpetry\QueryExpressions\Function\String\Lower;
@@ -665,6 +666,7 @@ class Users
     {
         $userModel = UserModel::findOrFail($user->id);
         $changes = $this->emailVerificationChanges($user);
+        $this->ensureCredentialsAvailable($user, $changes);
         $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
         $this->applyUserChanges($user, $changes);
 
@@ -804,6 +806,31 @@ class Users
     {
         foreach (Arr::except($changes, ['invalidLoginWindowStart']) as $attribute => $value) {
             $user->$attribute = $value;
+        }
+    }
+
+    /**
+     * Throws if another account took the user's new email or username since they requested it.
+     *
+     * @param  array<string, mixed>  $changes
+     *
+     * @throws InvalidElementException
+     */
+    private function ensureCredentialsAvailable(User $user, array $changes): void
+    {
+        $credentials = Arr::only($changes, ['email', 'username']);
+        $rules = [];
+
+        foreach (array_keys($credentials) as $column) {
+            $rules[$column] = [UserRules::unique($column, $user->id)];
+        }
+
+        $validator = Validator::make($credentials, $rules);
+
+        if ($validator->fails()) {
+            $user->errors()->merge($validator->errors());
+
+            throw new InvalidElementException($user);
         }
     }
 
