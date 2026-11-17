@@ -1294,6 +1294,7 @@ return [
     'Composer was unable to install the updates.' => 'Düzenleyici güncellemeleri yükleyemedi.',
     'Composer was unable to remove the plugin.' => 'Düzenleyici, eklentiyi kaldıramadı.',
     'Composer was unable to revert the updates.' => 'Düzenleyici güncellemeleri geri alamadı.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Sıkıştırılmış',
     'Condition {num, number}' => 'Koşul {num, number}',
     'Configure the category group’s site-specific settings.' => 'Kategori grubunun siteye özel ayarlarını yapılandırın.',

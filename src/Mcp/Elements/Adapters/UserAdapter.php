@@ -216,7 +216,7 @@ class UserAdapter extends BaseElementAdapter
             'admin' => $user->admin,
             'active' => $user->active,
             'pending' => $user->pending,
-            'locked' => $user->locked,
+            'locked' => $user->isLocked(),
             'suspended' => $user->suspended,
         ];
     }

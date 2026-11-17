@@ -49,11 +49,11 @@ trait QueriesNestedElements
     public mixed $ownerId = null;
 
     /**
-     * @var ElementInterface|null The owner element specified by [[owner()]].
+     * @var array<int, array<int, ElementInterface>>|null The owner elements specified by [[owner()]], indexed by their IDs and site IDs.
      *
      * @used-by owner()
      */
-    private ?ElementInterface $owner = null;
+    private ?array $owners = null;
 
     /**
      * @var bool|null Whether the owner elements can be drafts.
@@ -363,7 +363,7 @@ trait QueriesNestedElements
     public function ownerId(mixed $value): static
     {
         $this->ownerId = $value;
-        $this->owner = null;
+        $this->owners = null;
 
         return $this;
     }
@@ -386,14 +386,42 @@ trait QueriesNestedElements
      *     ->owner($myEntry)
      *     ->all();
      * ```
+     *
+     * An array of owner elements can be passed as well. Each resulting {element} gets the owner with its owner ID and site ID.
+     *
+     * @param  ElementInterface|list<ElementInterface>  $owner
      */
-    public function owner(ElementInterface $owner): static
+    public function owner(ElementInterface|array $owner): static
     {
-        $this->ownerId = [$owner->id];
-        $this->siteId = $owner->siteId;
-        $this->owner = $owner;
+        $owners = is_array($owner) ? $owner : [$owner];
+        $this->owners = [];
+        foreach ($owners as $element) {
+            $this->owners[$element->id][$element->siteId] = $element;
+        }
+        $this->ownerId = array_keys($this->owners);
+        $siteIds = array_values(array_unique(array_map(fn (ElementInterface $element) => $element->siteId, $owners)));
+        $this->siteId = count($siteIds) === 1 ? $siteIds[0] : $siteIds;
 
         return $this;
+    }
+
+    /** @param array<string, mixed> $row */
+    #[\Override]
+    public function createElement(array $row): ElementInterface
+    {
+        $ownersBySite = $this->owners[$row['ownerId'] ?? null] ?? [];
+        $owner = $ownersBySite[$row['siteId'] ?? null]
+            ?? ($this->elementType::isLocalized() ? null : (Arr::first($ownersBySite)));
+
+        if ($owner) {
+            $row['owner'] = $owner;
+
+            if (isset($row['primaryOwnerId']) && $row['primaryOwnerId'] == $owner->id) {
+                $row['primaryOwner'] = $owner;
+            }
+        }
+
+        return parent::createElement($row);
     }
 
     /**

@@ -113,9 +113,11 @@ class ApplyCommand extends Command
             Event::listen(ItemUpdated::class, $this->onFinishProcessingItem(...));
         }
 
-        $projectConfig->applyExternalChanges();
-
-        $projectConfig->forceUpdate = $forceUpdate;
+        try {
+            $projectConfig->applyExternalChanges();
+        } finally {
+            $projectConfig->forceUpdate = $forceUpdate;
+        }
 
         $this->components->success('Finished applying changes');
 

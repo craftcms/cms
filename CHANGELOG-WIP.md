@@ -51,6 +51,7 @@
 - Icons that Font Awesome 7 renamed, such as `user-large`, `film-simple`, and `grid-horizontal` (now `user`, `film`, and `grip`), no longer show when referenced by their Font Awesome 6 names, including in Icon field values, entry type and option icons, and plugins’ icon names. ([#20520](https://github.com/craftcms/cms/pull/20520))
 - “Pending” statuses are now blue rather than orange, and “Edited” badges and modified-field indicators are now violet rather than blue. ([#20258](https://github.com/craftcms/cms/pull/20258))
 - Link and Email field values in element indexes and cards now stay on one line, cut off with an ellipsis, after a button that shows the full address with options to open or copy it. Hovering over the link shows the same details. ([#20123](https://github.com/craftcms/cms/pull/20123))
+- Element index tables now right-align Number, Money, and Range field columns, and assets’ File Size, Image Width, and Image Height columns, along with their headers, so the digits of their values line up. Number fields with the “None” preview format, which suit years and codes, stay left-aligned. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - The “View Mode” (Matrix, relation, Addresses, and Content Block fields), “Thumb Style”, “Section Type”, and image transforms’ “Mode” settings now show their options as joined, illustrated buttons, with each option’s label inside the button, below its illustration, and the selected option’s illustration drawn in blue. When there isn’t room for them in one row, they wrap as separate buttons. ([#20233](https://github.com/craftcms/cms/pull/20233), [#20285](https://github.com/craftcms/cms/pull/20285))
 - Dashboard widgets, such as Recent Entries and My Drafts, now update when elements are saved, in the same browser tab or another one. ([#20485](https://github.com/craftcms/cms/pull/20485))
 - Dashboard widgets can now be given a color, like entry types, from the dashboard’s Widget Settings menu. Widgets are gray unless given another color, now drawn like gray cards elsewhere in the control panel, with a filled header bar, and “No color” draws a widget with no fill of its own, like an uncolored element card.
@@ -360,6 +361,7 @@
 - Fixed a bug where a failed project config YAML write left the `config/project/` folder empty. Existing files are now only replaced as new ones are written, and the error now includes its underlying cause. ([#20519](https://github.com/craftcms/cms/issues/20519))
 
 ### Extensibility
+- Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 
 #### Plugins
 - Added `CraftCms\Cms\Utility\Utility::contentMaxWidth()`, which utilities can override to cap their page’s content at the control panel’s readable width and center it, as the System Messages and Yii2 Loose Ends utilities now do.
@@ -674,6 +676,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\mutex\Mutex`
 - Deprecated `craft\mutex\MutexTrait`
 - Deprecated `Craft::$app->getMutex()`
+- Added `CraftCms\Cms\Database\Claim`, which lets one worker at a time claim a database row. Another worker can take over a claim once it’s older than the claim’s TTL. ([#20792](https://github.com/craftcms/cms/pull/20792))
 
 #### Components
 - Deprecated `craft\base\ComponentInterface`. `CraftCms\Cms\Component\Contracts\ComponentInterface` should be used instead.
@@ -1453,6 +1456,7 @@ Moved the following controllers:
 - Deprecated `craft\web\View::resolveTemplate()`. `CraftCms\Cms\View\TemplateResolver::resolveTemplate()` should be used instead.
 - Deprecated `craft\web\twig\TemplateLoader`. `CraftCms\Cms\Twig\TemplateLoader` should be used instead.
 - Deprecated `craft\web\twig\TemplateLoaderException`. `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException` should be used instead.
+- Added `CraftCms\Cms\Twig\Twig::with()`, which runs a callback with a Twig environment set for a template mode and restores the previous one afterward. ([#20798](https://github.com/craftcms/cms/pull/20798))
 
 ##### Events
 - Added `CraftCms\Cms\Twig\Events\TwigCreated`, dispatched when a Twig environment is created.
@@ -1505,6 +1509,8 @@ Moved the following controllers:
 - Deprecated `craft\services\UserPermissions`. `CraftCms\Cms\User\UserPermissions` should be used instead.
 - Deprecated `craft\events\DefineEditUserScreensEvent`. `CraftCms\Cms\User\Events\EditUserScreensResolving` should be used instead.
 - Added `CraftCms\Cms\User\UserPermissions::actingAsGroup()`, which runs a callback with the current user’s permissions replaced by a user group’s. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added `CraftCms\Cms\User\Enums\UserAccountTransition`, which lists the ways a user account can change and the `users` columns each one writes. ([#20794](https://github.com/craftcms/cms/pull/20794))
+- Added `CraftCms\Cms\User\Elements\User::isLocked()` and `CraftCms\Cms\User\Validation\UserRules::unique()`. ([#20794](https://github.com/craftcms/cms/pull/20794))
 
 #### View
 - Added `CraftCms\Cms\View\TwigEngine`.
@@ -1578,3 +1584,4 @@ Moved the following controllers:
 - Deprecated `craft\web\View::setIsDeltaRegistrationActive()`. `CraftCms\Cms\View\DeltaRegistry::setActive()` should be used instead.
 - Deprecated `craft\web\View::hook()`. `CraftCms\Cms\View\TemplateHooks::register()` should be used instead.
 - Deprecated `craft\web\View::invokeHook()`. `CraftCms\Cms\View\TemplateHooks::invoke()` should be used instead.
+- Added `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`, which closes a cache started with `startTemplateCache()` without storing it, such as when a `{% cache %}` tag’s body throws. ([#20798](https://github.com/craftcms/cms/pull/20798))

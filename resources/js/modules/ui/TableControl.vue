@@ -61,6 +61,13 @@
   );
   const autopopulation = useAutopopulation();
   const columns = computed(() => Object.entries(props.control.props.columns));
+
+  /** Widths without a unit are pixels, as in Craft 5. */
+  function columnWidth(width: string | number | undefined) {
+    const trimmed = String(width ?? '').trim();
+    return /^\d*\.?\d+$/.test(trimmed) ? `${trimmed}px` : trimmed || undefined;
+  }
+
   const rowIdField = computed(() =>
     typeof props.control.props.includeRowId === 'string'
       ? props.control.props.includeRowId
@@ -547,12 +554,7 @@
               scope="col"
               :hidden="column.type === 'hidden'"
               :class="column.class"
-              :style="{
-                width:
-                  typeof column.width === 'number'
-                    ? `${column.width}%`
-                    : column.width,
-              }"
+              :style="{width: columnWidth(column.width)}"
             >
               <span v-if="column.headingHtml" v-html="column.headingHtml" />
               <template v-else>{{
