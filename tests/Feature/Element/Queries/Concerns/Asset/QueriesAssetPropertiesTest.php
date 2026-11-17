@@ -51,6 +51,12 @@ test('kind', function (mixed $param, int $expectedCount) {
     [['and', 'image'], 2],
 ]);
 
+test('kind keeps escaped commas in a kind', function () {
+    Asset::factory()->create(['kind' => 'drawing,cad', 'filename' => 'file.dwg']);
+
+    expect(assetQuery()->kind('drawing\,cad')->count())->toBe(1);
+});
+
 test('kind matches extensions that several kinds share', function () {
     Asset::factory()->create(['kind' => 'unknown', 'filename' => 'file.ogg']);
     Asset::factory()->create(['kind' => 'audio', 'filename' => 'file.mp3']);

@@ -135,7 +135,8 @@ trait QueriesAssetProperties
         $query->where(function (Builder $query) use ($param, $kinds) {
             foreach ($param->values as $kind) {
                 $query->where(function (Builder $query) use ($kind, $kinds) {
-                    $query->whereParam('assets.kind', $kind);
+                    // The kind is already parsed, so keep whereParam() from splitting its commas or reading it as an operator.
+                    $query->whereParam('assets.kind', [QueryParam::OR, $kind]);
 
                     foreach ($kinds[$kind]['extensions'] ?? [] as $extension) {
                         $query->orWhereLike('assets.filename', "%.$extension");
