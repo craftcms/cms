@@ -417,4 +417,21 @@ class ImageTransformsTest extends Unit
             FileHelper::unlink($cachePath);
         }
     }
+
+    public function testStoreLocalSourceResizesInPlaceWithoutDestination(): void
+    {
+        $path = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . uniqid('store-local-source-', true) . '.png';
+        imagepng(imagecreatetruecolor(200, 100), $path);
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $maxCachedCloudImageSize = $generalConfig->maxCachedCloudImageSize;
+        $generalConfig->maxCachedCloudImageSize = 50;
+
+        try {
+            ImageTransforms::storeLocalSource($path);
+            self::assertSame([50, 25], array_slice(getimagesize($path), 0, 2));
+        } finally {
+            $generalConfig->maxCachedCloudImageSize = $maxCachedCloudImageSize;
+            FileHelper::unlink($path);
+        }
+    }
 }
