@@ -1,6 +1,7 @@
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {createApp, defineComponent, h, type App} from 'vue';
 import Widget from './Widget.vue';
+import WidgetHeaderActions from './WidgetHeaderActions.vue';
 import type {DashboardWidget} from './types';
 
 const state = vi.hoisted(() => ({loadSettingsUi: vi.fn()}));
@@ -21,15 +22,35 @@ const TestWidget = defineComponent({
       h('div', slots.header?.()),
 });
 
-function mount(settings: (open: boolean) => void) {
+function mount(
+  settings: (open: boolean) => void = () => {},
+  props: Partial<DashboardWidget> = {}
+) {
   host = document.createElement('div');
   document.body.append(host);
   app = createApp({
-    setup: () => () => h(Widget, {widget, ready: true, onSettings: settings}),
+    setup: () => () =>
+      h(Widget, {
+        widget: {...widget, ...props},
+        ready: true,
+        onSettings: settings,
+      }),
   });
   app.component('test-widget', TestWidget);
+  app.component('test-widget-with-actions', TestWidgetWithActions);
   app.mount(host);
 }
+
+/** A widget's component that adds a button to the header. */
+const TestWidgetWithActions = defineComponent({
+  setup:
+    (_, {slots}) =>
+    () =>
+      h('div', [
+        slots.header?.(),
+        h(WidgetHeaderActions, () => h('button', {class: 'refresh'})),
+      ]),
+});
 
 afterEach(() => {
   app?.unmount();
@@ -87,4 +108,18 @@ it('counts its settings as closed again when they can’t load', async () => {
   await vi.waitFor(() => expect(settings).toHaveBeenCalledWith(true));
   await vi.waitFor(() => expect(settings.mock.lastCall).toEqual([false]));
   expect(host.querySelector('.settings-face')).toBeNull();
+});
+
+it('shows buttons the widget adds to its header, with no title or settings', async () => {
+  mount(undefined, {
+    title: null,
+    subtitle: null,
+    hasSettings: false,
+    component: 'test-widget-with-actions',
+  });
+
+  await vi.waitFor(() =>
+    expect(host.querySelector('.widget-header .refresh')).not.toBeNull()
+  );
+  expect(host.querySelector('.widget-header--bare')).not.toBeNull();
 });

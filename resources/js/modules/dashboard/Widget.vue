@@ -33,6 +33,16 @@
     settings: [open: boolean];
   }>();
 
+  /**
+   * Whether the header leaves out its band: when the widget shows a title of
+   * its own, or has no title or settings button to show in it.
+   */
+  const headerIsBare = computed(
+    () =>
+      header.ownTitles.value > 0 ||
+      !(props.widget.title || props.widget.subtitle || props.widget.hasSettings)
+  );
+
   const settings = ref(props.widget.id < 0);
   const container = ref<HTMLElement>();
 
@@ -163,11 +173,12 @@
           <template #header>
             <!-- A title row at the top of the card's body, rather than a
                  header bar: the widget's title, and its settings button
-                 beside the title's first line. -->
+                 beside the title's first line. With neither, it's bare, with
+                 no band, so buttons the widget adds still have somewhere to
+                 go. -->
             <div
-              v-if="widget.title || widget.subtitle || widget.hasSettings"
               class="widget-header"
-              :class="{'widget-header--bare': header.ownTitles.value > 0}"
+              :class="{'widget-header--bare': headerIsBare}"
             >
               <div
                 v-if="
