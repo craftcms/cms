@@ -9,7 +9,7 @@ import * as SlidePickerButtonStories from './slide-picker-button.stories';
 
 <Canvas of={SlidePickerButtonStories.Default} sourceState="shown" />
 
-Use it where a slide picker sits in a dense row, such as a widget's column count or a field layout element's width. A full-size picker's segments are too small to hit there, so the whole button is the target and the segments in the popover are large. Where there's room for a full-size picker, use one: it takes one less step.
+It's the preferred way to pick a number from a short scale, because it meets WCAG 2.2 AA's minimum target size (2.5.8 Target Size (Minimum)): the whole button is a 24×24 CSS px target, and the segments in the popover are large. A full-size slide picker's segments are smaller than that at their default size. Use one only where there's room to make every segment at least `1.5rem` wide and tall, where it saves a step. It fits a dense row too, such as a widget's column count or a field layout element's width.
 
 <Canvas of={SlidePickerButtonStories.InARow} sourceState="shown" />
 

@@ -7,7 +7,7 @@ Follows the WAI-ARIA APG [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slide
 - A continuous range, or fine adjustment by dragging. Use `craft-slide-rule`.
 - An exact number someone already knows, or a wide range. Use `craft-input` with `type="number"`.
 - Named choices that aren't points on a scale. Use `craft-radio-group` or `craft-select`.
-- A picker in a dense row, where there's no room for segments big enough to hit. Use `craft-slide-picker-button`.
+- A picker without room for segments of at least 24×24 CSS px, which is most of them at the default size. Use `craft-slide-picker-button`, the preferred way to pick from a short scale.
 
 ## Requirements
 
@@ -34,7 +34,7 @@ Follows the WAI-ARIA APG [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slide
 ### Pointer
 
 - [x] Clicking a segment sets the value with a single pointer action. There's no dragging. Per WCAG 2.5.7 (Dragging Movements). Verified by `emits input then change on segment click` in `slide-picker.test.ts`.
-- [ ] Every segment is at least 24×24 CSS px, or has room around it. Per WCAG 2.5.8 (Target Size (Minimum)). Known gap: segments are 0.5rem wide and touch each other. The keyboard isn't a pointer alternative for this criterion.
+- [ ] Every segment is at least 24×24 CSS px, or has room around it. Per WCAG 2.5.8 (Target Size (Minimum)). Known gap at the default size: segments are 0.5rem wide and touch each other. The keyboard isn't a pointer alternative for this criterion.
 
 ### Visual
 
@@ -53,3 +53,4 @@ Follows the WAI-ARIA APG [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slide
 
 - 3.3.2 (Labels or Instructions): give the picker a visible label. See [Accessibility](./SlidePicker.mdx#accessibility).
 - 1.3.1 (Info and Relationships): set `value-unit` or `valueLabel` when the number alone doesn't say what it counts. See [Accessibility](./SlidePicker.mdx#accessibility).
+- 2.5.8 (Target Size (Minimum)): set `--c-slide-picker-segment-width` and `--c-slide-picker-segment-height` to at least `1.5rem`, or use `craft-slide-picker-button`. See [Accessibility](./SlidePicker.mdx#accessibility).

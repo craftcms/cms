@@ -4,7 +4,7 @@ Follows the WAI-ARIA APG [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/d
 
 **Not for:**
 
-- A slide picker with room for its full-size segments. Use `craft-slide-picker`, which takes one less step.
+- A slide picker with room for segments of at least 24×24 CSS px. `craft-slide-picker` takes one less step there.
 - A continuous range, or fine adjustment by dragging. Use `craft-slide-rule`.
 - Named choices that aren't points on a scale. Use `craft-select` or `craft-radio-group`.
 
