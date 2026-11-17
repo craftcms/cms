@@ -12,11 +12,15 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface;
 use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Gql\ArgumentManager;
+use CraftCms\Cms\Gql\ElementQueryConditionBuilder;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Override;
+use WeakMap;
 
 use function CraftCms\Cms\t;
 
@@ -43,6 +47,9 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
 
     private BaseRelationField $field;
 
+    /** @var WeakMap<ElementQueryInterface, array{list<int>, list<int>}>|null Each loaded query’s IDs, and those of them that exist */
+    private static ?WeakMap $existingIds = null;
+
     /**
      * Returns the relation field type whose settings, editor, and GraphQL type the cells use.
      *
@@ -63,6 +70,11 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
             if (($config[$attribute] ?? null) === '') {
                 $config[$attribute] = null;
             }
+        }
+
+        // A max of zero means no limit, as the cells’ queries and validation treat it
+        if (is_numeric($config['maxRelations'] ?? null) && (int) $config['maxRelations'] === 0) {
+            $config['maxRelations'] = null;
         }
 
         if (($config['selectionLabel'] ?? null) === '') {
@@ -156,7 +168,41 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
     #[Override]
     public function serializeValue(mixed $value, bool $forDb = false): array
     {
-        return array_map(intval(...), $this->all($this->normalizeValue($value))->ids());
+        $query = $this->normalizeValue($value);
+
+        // Checked along with the table’s other cells, unless the query’s IDs changed since
+        $ids = self::idList($query);
+        if ($ids !== null && isset(self::$existingIds[$query]) && self::$existingIds[$query][0] === $ids) {
+            return self::$existingIds[$query][1];
+        }
+
+        return array_map(intval(...), $this->all($query)->ids());
+    }
+
+    /**
+     * Checks which of the related elements exist for many cell values with one query, for {@see serializeValue()}.
+     *
+     * @param  array<mixed>  $values
+     */
+    public function loadExistingIds(array $values): void
+    {
+        $queries = array_values(array_filter(
+            $values,
+            fn (mixed $value): bool => $value instanceof ElementQueryInterface && self::idList($value) !== null,
+        ));
+        if ($queries === []) {
+            return;
+        }
+
+        /** @var list<list<int>> $idLists */
+        $idLists = array_map(self::idList(...), $queries);
+        $ids = array_values(array_unique(array_merge(...$idLists)));
+        $existing = $ids === [] ? [] : array_flip(array_map(intval(...), $this->all(static::fieldType()::elementType()::find()->id($ids))->ids()));
+
+        self::$existingIds ??= new WeakMap;
+        foreach ($queries as $i => $query) {
+            self::$existingIds[$query] = [$idLists[$i], array_values(array_filter($idLists[$i], fn (int $id): bool => isset($existing[$id])))];
+        }
     }
 
     #[Override]
@@ -208,9 +254,13 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
     /**
      * Returns the related elements that the GraphQL schema allows, as relation fields do.
      *
+     * With the resolve info, relations nested in the selection are eager-loaded with the schema’s conditions too,
+     * as element resolvers load them.
+     *
+     * @param  array{argumentManager?: ArgumentManager, conditionBuilder?: ElementQueryConditionBuilder}|null  $context
      * @return list<ElementInterface>
      */
-    public function gqlValue(ElementQueryInterface $query): array
+    public function gqlValue(ElementQueryInterface $query, ?ResolveInfo $resolveInfo = null, ?array $context = null): array
     {
         $conditions = $this->field()->getEagerLoadingGqlConditions();
         if ($conditions === null) {
@@ -220,6 +270,18 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
         $query = clone $query;
         foreach ($conditions as $param => $value) {
             $query->$param($value);
+        }
+
+        if ($resolveInfo !== null) {
+            $conditionBuilder = $context['conditionBuilder'] ?? new ElementQueryConditionBuilder;
+            $conditionBuilder->setResolveInfo($resolveInfo);
+            $conditionBuilder->setArgumentManager($context['argumentManager'] ?? new ArgumentManager);
+
+            foreach ($conditionBuilder->extractQueryConditions() as $method => $parameters) {
+                if (method_exists($query, $method)) {
+                    $query->$method($parameters);
+                }
+            }
         }
 
         // Capped as element resolvers cap their queries
@@ -261,11 +323,19 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
         }
 
         // The IDs the value was normalized from, without querying for them, as relation fields do
-        if (is_array($value->id) && array_is_list($value->id) && array_all($value->id, fn (mixed $id): bool => is_int($id))) {
-            return $value->id;
-        }
+        return self::idList($value) ?? $this->serializeValue($value);
+    }
 
-        return $this->serializeValue($value);
+    /**
+     * Returns the IDs a query was normalized from, if it’s limited to a list of them.
+     *
+     * @return list<int>|null
+     */
+    private static function idList(ElementQueryInterface $query): ?array
+    {
+        $ids = $query->id;
+
+        return is_array($ids) && array_is_list($ids) && array_all($ids, fn (mixed $id): bool => is_int($id)) ? $ids : null;
     }
 
     #[Override]

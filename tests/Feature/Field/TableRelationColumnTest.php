@@ -10,17 +10,23 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\FieldContext;
+use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\TableCells\Entries as EntriesCell;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
 use CraftCms\Cms\Field\TableCellTypes;
+use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
@@ -264,4 +270,81 @@ it('caps related elements in GraphQL at maxGraphqlResults', function () {
 
     expect(array_map(fn ($user) => $user->id, $field->cellType($field->columns['col1'])->gqlValue($value[0]['users'])))
         ->toBe([$users[0]->id, $users[1]->id]);
+});
+
+it('applies the GraphQL schema to relations nested in entries cells', function () {
+    $related = Field::factory()->create(['handle' => 'relatedEntries', 'type' => EntriesField::class]);
+    $cells = Field::factory()->create([
+        'handle' => 'cells',
+        'type' => Table::class,
+        'settings' => ['columns' => ['col1' => ['heading' => 'Entries', 'handle' => 'entries', 'type' => 'entries']]],
+    ]);
+    $entryType = EntryType::factory()
+        ->withFieldLayout(FieldLayout::factory()->withContentTab([
+            new CustomField(config: ['fieldUid' => $related->uid]),
+            new CustomField(config: ['fieldUid' => $cells->uid]),
+        ]))
+        ->create(['handle' => 'shared']);
+    $allowed = Section::factory()->withEntryTypes($entryType)->create(['handle' => 'allowed']);
+    $excluded = Section::factory()->withEntryTypes($entryType)->create(['handle' => 'excluded']);
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $entry = fn (Section $section, string $title, array $fieldValues = []) => tap(
+        EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => $title]),
+        function (Entry $entry) use ($fieldValues) {
+            $entry->setFieldValues($fieldValues);
+            expect(Elements::saveElement($entry))->toBeTrue();
+        },
+    );
+    $secret = $entry($excluded, 'Secret');
+    $public = $entry($allowed, 'Public');
+    $target = $entry($allowed, 'Target', ['relatedEntries' => [$secret->id, $public->id]]);
+    $owner = $entry($allowed, 'Owner', ['cells' => [['col1' => [$target->id]]]]);
+
+    Cms::config()->enableGraphqlCaching = false;
+    $gql = app(Gql::class);
+    $gql->flushCaches();
+    $result = $gql->executeQuery(
+        new GqlSchema(['name' => 'Allowed only', 'scope' => ["sites.{$owner->getSite()->uid}:read", "sections.$allowed->uid:read"]]),
+        "{ entry(id: $owner->id) { ... on shared_Entry { cells { entries { title ... on shared_Entry { relatedEntries { title } } } } } } }",
+    );
+
+    expect($result['data']['entry']['cells'][0]['entries'] ?? $result)->toBe([
+        ['title' => 'Target', 'relatedEntries' => [['title' => 'Public']]],
+    ]);
+});
+
+it('treats a max relations of zero as unlimited', function (mixed $maxRelations) {
+    $target = EntryModel::factory()->createElement();
+    $field = relationTable(['maxRelations' => $maxRelations]);
+    $cell = $field->cellType($field->columns['col1']);
+    $value = $field->normalizeValue([['col1' => [$target->id]]], null);
+
+    expect($cell->getSettings()['maxRelations'])->toBeNull()
+        ->and($cell->uiControl(new TableCellContext(['col1'], $value[0]['col1']))->getValue())->toBe([$target->id]);
+})->with([0, '0']);
+
+it('checks related elements for all cells with a fixed number of queries', function () {
+    $targets = EntryModel::factory(3)->create()->pluck('id')->all();
+    $field = relationTable(['minRelations' => 1]);
+
+    $queryCount = function (int $rows) use ($field, $targets): int {
+        $value = $field->normalizeValue(array_map(fn (int $id) => ['col1' => [$id]], array_slice($targets, 0, $rows)), null);
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $field->validateTableData($value, fn () => null);
+        $serialized = $field->serializeValueForDb($value, new Entry);
+        DB::disableQueryLog();
+
+        expect(array_column($serialized, 'col1'))->toBe(array_map(fn (int $id) => [$id], array_slice($targets, 0, $rows)));
+
+        return count(DB::getQueryLog());
+    };
+
+    // Once to warm up memoized lookups, such as the number of sites
+    $queryCount(1);
+
+    expect($queryCount(3))->toBe($queryCount(1));
 });

@@ -506,6 +506,8 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
             return;
         }
 
+        $this->loadRelationCellIds($value);
+
         $invalid = false;
         foreach ($value as $rowIndex => &$row) {
             foreach ($this->columns as $colId => $col) {
@@ -716,6 +718,8 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
             return $value;
         }
 
+        $this->loadRelationCellIds($value);
+
         $serialized = [];
         $supportsMb4 = DB::supportsMb4();
 
@@ -753,6 +757,8 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
         if ($this->hasMissingCellTypes()) {
             return $value;
         }
+
+        $this->loadRelationCellIds($value);
 
         $serialized = [];
         $supportsMb4 = DB::supportsMb4();
@@ -905,6 +911,18 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
         }
 
         return $replaced;
+    }
+
+    /**
+     * Checks which related elements exist for each relation column’s cells at once, rather than cell by cell.
+     *
+     * @param  array<array-key, mixed>  $value
+     */
+    private function loadRelationCellIds(array $value): void
+    {
+        foreach ($this->relationCells() as $colId => $cell) {
+            $cell->loadExistingIds(array_column($value, $colId));
+        }
     }
 
     /** @return array<string, BaseRelationCell> */

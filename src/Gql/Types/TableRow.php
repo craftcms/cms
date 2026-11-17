@@ -39,7 +39,7 @@ class TableRow extends ObjectType
         $cell = $column !== null ? app(TableCellTypes::class)->create($column) : null;
 
         // Relation cells return only the elements the schema allows
-        return $cell instanceof BaseRelationCell ? $cell->gqlValue($value) : [];
+        return $cell instanceof BaseRelationCell ? $cell->gqlValue($value, $resolveInfo, is_array($context) ? $context : null) : [];
     }
 
     /**
