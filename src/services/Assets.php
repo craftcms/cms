@@ -303,20 +303,32 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
+        $oldFolderPath = $folder->path;
+        $volume->renameDirectory(rtrim($oldFolderPath, '/'), $newName);
 
         $folder->name = $newName;
         $folder->path = $newFolderPath;
         $this->storeFolderRecord($folder);
 
-        // Rebuild the descendants' paths from their parents, rather than replacing the old path prefix,
-        // so subfolders whose stored path differs in case from the renamed folder's still follow along
-        $parentFolders = [$folder];
-        while ($parentFolder = array_shift($parentFolders)) {
+        // Walk the subfolders by parent ID, since a subfolder's path can differ in case from its parent's
+        $parentFolders = [[$folder, $oldFolderPath]];
+        while ($parentFolders) {
+            [$parentFolder, $oldParentPath] = array_shift($parentFolders);
             foreach ($this->findFolders(['parentId' => $parentFolder->id]) as $childFolder) {
-                $childFolder->path = $parentFolder->path . $childFolder->name . '/';
+                $oldChildPath = $childFolder->path;
+                $newChildPath = $parentFolder->path . basename($oldChildPath) . '/';
+
+                // If the path differs in case, its directory only moved along with the parent's on case-insensitive storage
+                if (
+                    !str_starts_with($oldChildPath, $oldParentPath) &&
+                    (!$volume->directoryExists(rtrim($newChildPath, '/')) || $volume->directoryExists(rtrim($oldChildPath, '/')))
+                ) {
+                    continue;
+                }
+
+                $childFolder->path = $newChildPath;
                 $this->storeFolderRecord($childFolder);
-                $parentFolders[] = $childFolder;
+                $parentFolders[] = [$childFolder, $oldChildPath];
             }
         }
 
@@ -917,9 +929,6 @@ class Assets extends Component
                     $folderModel->name = $part;
                     $folderModel->path = $path;
                     $this->storeFolderRecord($folderModel);
-                } else {
-                    // The lookup may be case-insensitive, so continue from the existing folder's actual path
-                    $path = $folderModel->path;
                 }
 
                 // Ensure a physical folder exists, if needed.

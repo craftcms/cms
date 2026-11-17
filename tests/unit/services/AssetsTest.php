@@ -30,43 +30,49 @@ class AssetsTest extends TestCase
         $volume = Craft::$app->getVolumes()->getVolumeById(1000);
         $fsPath = Craft::$app->getPath()->getTempPath() . '/assets-test-' . StringHelper::randomString(6);
         $volume->setFs(new Local(['handle' => 'assetsTest', 'path' => $fsPath]));
-        $volume->createDirectory('Uploads');
 
-        $folder = new VolumeFolder(['name' => 'Uploads', 'parentId' => 1000, 'volumeId' => 1000, 'path' => 'Uploads/']);
-        $assets->storeFolderRecord($folder);
-        $subfolder = new VolumeFolder(['name' => 'my-entry', 'parentId' => $folder->id, 'volumeId' => 1000, 'path' => 'uploads/my-entry/']);
-        $assets->storeFolderRecord($subfolder);
-        $nestedFolder = new VolumeFolder(['name' => 'nested', 'parentId' => $subfolder->id, 'volumeId' => 1000, 'path' => 'uploads/my-entry/nested/']);
-        $assets->storeFolderRecord($nestedFolder);
+        // The temp directory is case-sensitive. `uploads/moved/` lives inside `Uploads/`, as it would on
+        // case-insensitive storage, while `uploads/separate/` is a separate directory.
+        $volume->createDirectory('Uploads/moved/nested');
+        $volume->createDirectory('uploads/separate');
+
+        $folder = $this->storeFolder(1000, 'Uploads/');
+        $folderIds = [
+            'moved' => $movedId = $this->storeFolder($folder, 'uploads/moved/'),
+            'nested' => $this->storeFolder($movedId, 'uploads/moved/nested/'),
+            'separate' => $this->storeFolder($folder, 'uploads/separate/'),
+            'recordOnly' => $this->storeFolder($folder, 'Uploads/record-only/'),
+        ];
 
         try {
-            $assets->renameFolderById($folder->id, 'Renamed');
+            $assets->renameFolderById($folder, 'Renamed');
 
             $paths = (new Query())
-                ->select(['path'])
+                ->select(['path', 'id'])
                 ->from(Table::VOLUMEFOLDERS)
-                ->where(['id' => [$subfolder->id, $nestedFolder->id]])
-                ->orderBy(['id' => SORT_ASC])
-                ->column();
-            self::assertSame(['Renamed/my-entry/', 'Renamed/my-entry/nested/'], $paths);
+                ->where(['id' => $folderIds])
+                ->pairs();
+
+            self::assertSame([
+                'moved' => 'Renamed/moved/',
+                'nested' => 'Renamed/moved/nested/',
+                'separate' => 'uploads/separate/',
+                'recordOnly' => 'Renamed/record-only/',
+            ], array_map(fn(int $id) => array_search($id, $paths), $folderIds));
         } finally {
             FileHelper::removeDirectory($fsPath);
         }
     }
 
-    public function testEnsureFolderUsesExistingFolderPathCase(): void
+    private function storeFolder(int $parentId, string $path): int
     {
-        if (Craft::$app->getDb()->getIsPgsql()) {
-            $this->markTestSkipped('Folder path lookups are case-sensitive on PostgreSQL.');
-        }
-
-        $assets = Craft::$app->getAssets();
-        $folder = new VolumeFolder(['name' => 'Uploads', 'parentId' => 1000, 'volumeId' => 1000, 'path' => 'Uploads/']);
-        $assets->storeFolderRecord($folder);
-
-        $subfolder = $assets->ensureFolderByFullPathAndVolume('uploads/my-entry', Craft::$app->getVolumes()->getVolumeById(1000));
-
-        self::assertSame($folder->id, $subfolder->parentId);
-        self::assertSame('Uploads/my-entry/', $subfolder->path);
+        $folder = new VolumeFolder([
+            'name' => basename($path),
+            'parentId' => $parentId,
+            'volumeId' => 1000,
+            'path' => $path,
+        ]);
+        Craft::$app->getAssets()->storeFolderRecord($folder);
+        return $folder->id;
     }
 }

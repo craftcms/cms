@@ -16,8 +16,7 @@
 - Fixed a bug where the “Save and send activation email” button on users’ Permissions screens didn’t send activation emails for users without the “Administrate users” permission. ([#20566](https://github.com/craftcms/cms/issues/20566))
 - Fixed a bug where project config handlers for a path weren’t called when a value nested within it was set before the path existed. ([#20717](https://github.com/craftcms/cms/pull/20717))
 - Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails, so updates and plugin installs that relied on that, such as for private VCS repositories without a GitHub token, now fail instead. ([#20742](https://github.com/craftcms/cms/pull/20742))
-- Fixed a bug where renaming an asset folder didn’t update the paths of subfolders whose paths differed in case from the folder’s, such as subfolders created by an Assets field’s upload location subpath. ([#20773](https://github.com/craftcms/cms/issues/20773))
-- Fixed a bug where subfolders created for a path that differed in case from an existing folder’s got a path in the given case, rather than the existing folder’s. ([#20773](https://github.com/craftcms/cms/issues/20773))
+- Fixed a bug where renaming an asset folder didn’t update the paths of subfolders whose paths differed in case from the folder’s, such as subfolders created by an Assets field’s upload location subpath, when the filesystem moved them along with it. ([#20773](https://github.com/craftcms/cms/issues/20773))
 
 ## 5.12.1 - 2026-11-10
 
