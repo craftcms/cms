@@ -111,11 +111,14 @@
       </craft-button>
     </craft-pane>
 
-    <p v-if="canContinue" class="mt-lg text-center" aria-live="polite">
-      <a :href="$page.url">{{ t('Continue to the control panel') }}</a>
-    </p>
-    <p v-else class="mt-lg text-center text-quiet" role="timer">
+    <p v-if="!canContinue" class="mt-lg text-center text-quiet" role="timer">
       {{ countdown }}
+    </p>
+    <!-- Mounted from the start, so the link is announced when it's added. -->
+    <p role="status" :class="{'mt-lg text-center': canContinue}">
+      <a v-if="canContinue" :href="$page.url">{{
+        t('Continue to the control panel')
+      }}</a>
     </p>
   </AuthBase>
 </template>
