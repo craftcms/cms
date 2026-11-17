@@ -105,6 +105,7 @@
 - Added `CraftCms\Cms\User\Elements\User::isLocked()` and `CraftCms\Cms\User\Validation\UserRules::unique()`. ([#20794](https://github.com/craftcms/cms/pull/20794))
 - Added `CraftCms\Cms\Update\Maintenance::startUpdate()` and `finishUpdate()`. `finishUpdate()` only turns off maintenance mode if `startUpdate()` turned it on. ([#20797](https://github.com/craftcms/cms/pull/20797))
 - Added `CraftCms\Cms\Twig\Twig::with()` and `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`. ([#20798](https://github.com/craftcms/cms/pull/20798))
+- Fixed an error that occurred when batched queue jobs, such as resaving or propagating elements, queued their next batch on non-sync queues. ([#20791](https://github.com/craftcms/cms/issues/20791), [#20812](https://github.com/craftcms/cms/pull/20812))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where Matrix fields’ “Create Button Label” setting wasn’t applied in Blocks view mode. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where the `siblingOf`, `prevSiblingOf`, and `nextSiblingOf` element query params, and elements’ `getPrevSibling()` and `getNextSibling()` methods, didn’t return the siblings of elements that have a parent. ([#20748](https://github.com/craftcms/cms/issues/20748), [#20761](https://github.com/craftcms/cms/pull/20761))
