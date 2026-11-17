@@ -53,7 +53,7 @@ class ConfigStorage
         $index = Cache::get(ProjectConfig::STORED_CACHE_KEY);
 
         if (($index['version'] ?? null) !== $version) {
-            return $this->rebuildCache($version, $cacheDuration);
+            return $this->rebuildCache($cacheDuration);
         }
 
         $entries = $index['roots'] === [] ? [] : Cache::many(array_map($this->rootCacheKey(...), $index['roots']));
@@ -63,7 +63,7 @@ class ConfigStorage
             $entry = $entries[$this->rootCacheKey($root)] ?? null;
 
             if (($entry['version'] ?? null) !== $version) {
-                return $this->rebuildCache($version, $cacheDuration);
+                return $this->rebuildCache($cacheDuration);
             }
 
             $data[$root] = $entry['value'];
@@ -90,14 +90,14 @@ class ConfigStorage
         $data = [];
 
         if (($index['version'] ?? null) !== $version) {
-            return array_intersect_key($this->rebuildCache($version, $cacheDuration), array_flip($roots));
+            return array_intersect_key($this->rebuildCache($cacheDuration), array_flip($roots));
         }
 
         foreach (array_intersect($roots, $index['roots']) as $root) {
             $entry = $entries[$this->rootCacheKey($root)] ?? null;
 
             if (($entry['version'] ?? null) !== $version) {
-                return array_intersect_key($this->rebuildCache($version, $cacheDuration), array_flip($roots));
+                return array_intersect_key($this->rebuildCache($cacheDuration), array_flip($roots));
             }
 
             $data[$root] = $entry['value'];
@@ -107,8 +107,12 @@ class ConfigStorage
     }
 
     /** @return array<string|int, mixed> */
-    private function rebuildCache(string $version, ?int $cacheDuration): array
+    private function rebuildCache(?int $cacheDuration): array
     {
+        // Another process may have changed the config since this request loaded its version, so stamp the entries
+        // with the stored version. It's read before the rows: if a change lands in between, the entries get the
+        // older version and are rebuilt by the next reader, rather than storing old rows under the new version.
+        $version = DB::table(Table::INFO)->value('configVersion');
         $data = [];
 
         // Paths only need parent-before-child ordering, not locale-aware sorting.

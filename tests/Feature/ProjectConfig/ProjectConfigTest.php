@@ -195,6 +195,22 @@ it('reloads a cached key after another process changes the config or the key is 
         ->and($projectConfig->get()['system']['name'])->toBe('After');
 })->with(['config changed' => false, 'key evicted' => true]);
 
+it('stamps a rebuilt cache with the stored config version when another process changed it mid-request', function () {
+    $projectConfig = app(ProjectConfig::class);
+    Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+    $projectConfig->reset();
+    $projectConfig->get('system.name');
+
+    // Another process saves a change, so this request's config version is now out of date.
+    $newVersion = Str::random(12);
+    DB::table(Table::PROJECTCONFIG)->insert(['path' => 'laterRoot.value', 'value' => '"New"']);
+    DB::table(Table::INFO)->update(['configVersion' => $newVersion]);
+    Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+
+    expect($projectConfig->get('laterRoot.value'))->toBe('New')
+        ->and(Cache::get(ProjectConfig::STORED_CACHE_KEY)['version'])->toBe($newVersion);
+});
+
 it('replays forced external changes against the original config', function (bool $changed) {
     $original = ['value' => 'old'];
     $incoming = ['value' => $changed ? 'new' : 'old'];
