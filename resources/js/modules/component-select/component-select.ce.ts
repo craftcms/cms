@@ -19,9 +19,9 @@ import {
  * back-reference like the legacy class kept.
  *
  * Every forwarding member below guards for the pre-boot window (the
- * `ControllerElement` base retries on `requestAnimationFrame` until
- * {@link rootSelector} resolves): getters fall back to `false`/`[]`, and the
- * action methods no-op until `this.instance` exists. `getInputValue` is the
+ * `ControllerElement` base waits until {@link rootSelector} resolves): getters
+ * fall back to `false`/`[]`, and the action methods no-op until
+ * `this.instance` exists. `getInputValue` is the
  * one exception — it's stored on the element itself (not the controller), so
  * it survives being set before boot completes; see its accessor below.
  */

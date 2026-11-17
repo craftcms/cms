@@ -10,7 +10,7 @@ import type CraftTextarea from './textarea.js';
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `textarea.ts` surfaces it here without touching this file.
  *
- * Lion's own `label` and `help-text` are slots here, so they are set through
+ * `label` and `help-text` are slots here, so they are set through
  * the `label-slot` and `help-text-slot` args rather than as attributes.
  */
 const {args, argTypes, template} =

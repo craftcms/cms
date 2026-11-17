@@ -15,10 +15,16 @@ jobs:
     name: 'Comment'
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    # The run fails when benchmarks are slower, and still uploads its report then
+    if: >-
+      github.event.workflow_run.event == 'pull_request'
+      && contains(fromJSON('["success", "failure"]'), github.event.workflow_run.conclusion)
 
     steps:
+      # A run that failed before benchmarking has no report
       - name: Download the report
+        id: download
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: benchmarks
@@ -27,6 +33,7 @@ jobs:
           github-token: ${{ github.token }}
 
       - name: Comment on the pull request
+        if: steps.download.outcome == 'success'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}

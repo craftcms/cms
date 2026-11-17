@@ -343,7 +343,7 @@ export default class CraftInputDateTime extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    this.addEventListener('model-value-changed', this.#onModelValueChanged);
+    this.addEventListener('input', this.#onPartInput);
     this.addEventListener('focusin', this.#syncInputFocus);
     this.addEventListener('focusout', this.#syncInputFocus);
     this.#resizeObserver ??= new ResizeObserver(() => this.#queueStackedSync());
@@ -351,7 +351,7 @@ export default class CraftInputDateTime extends LitElement {
   }
 
   override disconnectedCallback() {
-    this.removeEventListener('model-value-changed', this.#onModelValueChanged);
+    this.removeEventListener('input', this.#onPartInput);
     this.removeEventListener('focusin', this.#syncInputFocus);
     this.removeEventListener('focusout', this.#syncInputFocus);
     this.#resizeObserver?.disconnect();
@@ -542,12 +542,10 @@ export default class CraftInputDateTime extends LitElement {
 
     input.disabled = this.disabled;
     input.readOnly = this.readonly;
-    // Known gap (see input-date-time.a11y.md): neither craft-input nor Lion
-    // defines `required`, so this reaches no native input.
-    (input as CraftInput & {required?: boolean}).required = required;
+    input.required = required;
 
-    if (input.modelValue !== value) {
-      input.modelValue = value;
+    if (input.value !== value) {
+      input.value = value;
     }
 
     if (this.describedBy) {
@@ -564,17 +562,17 @@ export default class CraftInputDateTime extends LitElement {
     input.labelSrOnly = true;
   }
 
-  #onModelValueChanged = (event: Event) => {
-    const input = event.target;
+  #onPartInput = (event: Event) => {
+    const input =
+      event.target instanceof Element
+        ? event.target.closest('[data-date-time-part]')
+        : null;
 
-    if (
-      (event as CustomEvent).detail?.initialize ||
-      !(input instanceof CraftInput)
-    ) {
+    if (!(input instanceof CraftInput)) {
       return;
     }
 
-    const value = String(input.modelValue ?? '');
+    const value = input.value;
 
     switch (input.dataset.dateTimePart) {
       case 'date':

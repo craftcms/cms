@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Dashboard\Contracts;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 
 /**
@@ -16,6 +17,11 @@ use CraftCms\Cms\Validation\Contracts\Validatable;
 interface WidgetInterface extends ConfigurableComponentInterface, SavableComponentInterface, Validatable
 {
     public ?int $colspan { get; set; }
+
+    /**
+     * The widget’s color: a {@see Color} value, or `null` for none.
+     */
+    public ?string $color { get; set; }
 
     /**
      * Returns the widget’s SVG icon, if it has one.

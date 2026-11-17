@@ -24,7 +24,6 @@
  * and `modules/admin-table/types/legacy.ts`.
  */
 import {createApp, type App} from 'vue';
-import LegacyAdminTable from '@/modules/admin-table/components/LegacyAdminTable.vue';
 import {
   DELEGATED_OPTIONS,
   type LegacyAdminTableSettings,
@@ -80,25 +79,41 @@ function render(
   settings: LegacyAdminTableSettings,
   element: HTMLElement
 ): LegacyAdminTableInstance {
-  const app: App = createApp(LegacyAdminTable, {
-    columns: settings.columns ?? [],
-    tableData: settings.tableData ?? [],
-    emptyMessage: settings.emptyMessage,
-    deleteAction: settings.deleteAction ?? null,
-    deleteConfirmationMessage: settings.deleteConfirmationMessage ?? null,
-    deleteSuccessMessage: settings.deleteSuccessMessage ?? null,
-    deleteFailMessage: settings.deleteFailMessage ?? null,
-  });
+  let app: App | null = null;
+  let instance: {reset?: () => void} | null = null;
+  let destroyed = false;
 
-  const instance = app.mount(element) as {reset?: () => void};
+  // The table loads on first use: the shim is installed on every control panel
+  // page, but only a few legacy templates ever build one.
+  void import('@/modules/admin-table/components/LegacyAdminTable.vue').then(
+    ({default: LegacyAdminTable}) => {
+      if (destroyed) {
+        return;
+      }
+
+      app = createApp(LegacyAdminTable, {
+        columns: settings.columns ?? [],
+        tableData: settings.tableData ?? [],
+        emptyMessage: settings.emptyMessage,
+        deleteAction: settings.deleteAction ?? null,
+        deleteConfirmationMessage: settings.deleteConfirmationMessage ?? null,
+        deleteSuccessMessage: settings.deleteSuccessMessage ?? null,
+        deleteFailMessage: settings.deleteFailMessage ?? null,
+      });
+      instance = app.mount(element) as {reset?: () => void};
+    }
+  );
 
   return {
     settings,
     // The legacy `reload()` re-fetched from `tableDataEndpoint`. A table that
     // reaches the shim has no endpoint to re-fetch from, so the nearest honest
     // meaning is to put back the rows it was given.
-    reload: () => instance.reset?.(),
-    destroy: () => app.unmount(),
+    reload: () => instance?.reset?.(),
+    destroy: () => {
+      destroyed = true;
+      app?.unmount();
+    },
   };
 }
 

@@ -23,7 +23,6 @@ const payload: ElementPreview = {
   paramValue: 'param',
   siteTokenParam: 'siteToken',
   siteToken: null,
-  iframeResizerOptions: false,
 };
 
 describe('Craft.Preview', () => {

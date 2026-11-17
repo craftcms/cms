@@ -127,7 +127,7 @@ describe('craft-input-search', () => {
     clearButton(element)!.click();
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('');
+    expect(element.value).toBe('');
     expect(element.querySelector('input')!.value).toBe('');
     expect(document.activeElement).toBe(element.querySelector('input'));
     expect(events).toEqual(['input', 'clear']);
@@ -173,7 +173,7 @@ describe('craft-input-search', () => {
         new KeyboardEvent('keyup', {key: 'Escape', bubbles: true})
       );
 
-    expect(element.modelValue).toBe('');
+    expect(element.value).toBe('');
     expect(event.defaultPrevented).toBe(true);
     expect(reachedParent).toBe(false);
 
@@ -204,7 +204,7 @@ describe('craft-input-search', () => {
       new KeyboardEvent('keydown', {key: 'Escape', bubbles: true})
     );
 
-    expect(element.modelValue).toBe('');
+    expect(element.value).toBe('');
     expect(reachedParent).toBe(false);
   });
 

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\NativeFields;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\User\Elements\User;
 use Override;
 
 /**
@@ -121,5 +123,17 @@ abstract class BaseNativeField extends BaseField
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         return $this->translatable;
+    }
+
+    /**
+     * Returns whether the element is the current user’s own data, such as their account or one of their addresses.
+     *
+     * Only inputs for the current user’s own data should get `autocomplete` tokens, so browsers don’t fill in
+     * the current user’s details when editing someone else’s.
+     */
+    protected function belongsToCurrentUser(?ElementInterface $element): bool
+    {
+        return ($element instanceof User && $element->getIsCurrent())
+            || ($element instanceof Address && $element->getBelongsToCurrentUser());
     }
 }

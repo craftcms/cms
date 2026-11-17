@@ -27,7 +27,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
-use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\ImageHelper;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
@@ -63,7 +62,6 @@ class Assets
         private readonly Folders $folders,
         private readonly Elements $elements,
         private readonly AssetTransformers $assetTransformers,
-        private readonly CraftAssetTransformDriver $craftAssetTransformDriver,
     ) {}
 
     /**
@@ -265,7 +263,7 @@ class Assets
 
         try {
             $url = $transform !== null
-                ? $this->craftAssetTransformDriver->withImmediateTransforms(
+                ? $this->assetTransformers->withImmediateTransforms(
                     fn (): string => $this->assetTransformers->transform($asset, $transform)->url,
                 )
                 : $asset->getUrl();

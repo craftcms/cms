@@ -2,31 +2,26 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Asset\AssetTransformDrivers;
 use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Asset\Contracts\AssetTransformDriver;
 use CraftCms\Cms\Asset\Contracts\PreloadsAssetTransforms;
 use CraftCms\Cms\Asset\Data\AssetTransformDriverDefinition;
-use CraftCms\Cms\Asset\Data\AssetTransformer;
 use CraftCms\Cms\Asset\Data\AssetTransformRequest;
 use CraftCms\Cms\Asset\Data\AssetTransformResult;
 use CraftCms\Cms\Asset\Models\Asset;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\ImageTransforms;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->driver = new GqlAssetTransformDriver;
     $driver = $this->driver;
-    app(AssetTransformDrivers::class)->extend('gql', fn () => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-        'uid' => Str::uuid()->toString(),
-        'name' => 'GraphQL',
-        'handle' => 'gql',
-        'driver' => 'gql',
-    ]), false);
-    Cms::config()->defaultAssetTransformer('gql');
+    app(AssetTransformers::class)->extend('gql', fn () => $driver);
+    config()->set('filesystems.disks.local.asset_transformer', 'gql');
 });
 
 it('keeps directive transforms local to their resolved Assets', function () {
@@ -72,7 +67,6 @@ it('resolves transform result fields for a capable non-image driver', function (
         {
             asset(id: {$asset->id}) {
                 url(width: 320)
-                custom: url(transformer: "gql", width: 640)
                 width(width: 320)
                 height(height: 180)
                 format(format: "webp")
@@ -85,7 +79,6 @@ it('resolves transform result fields for a capable non-image driver', function (
         GQL)
         ->assertOk()
         ->assertJsonPath('data.asset.url', '/gql-transform.webp')
-        ->assertJsonPath('data.asset.custom', '/gql-transform.webp')
         ->assertJsonPath('data.asset.width', 320)
         ->assertJsonPath('data.asset.height', 180)
         ->assertJsonPath('data.asset.format', 'webp')
@@ -93,15 +86,91 @@ it('resolves transform result fields for a capable non-image driver', function (
         ->assertJsonPath('data.transformed.url', '/gql-transform.webp');
 });
 
-it('applies transformer and parameter overrides to named transforms', function () {
-    $driver = new GqlAssetTransformDriver('/explicit-transform.webp');
-    app(AssetTransformDrivers::class)->extend('explicit-gql', fn () => $driver);
-    app(AssetTransformers::class)->saveAssetTransformer(new AssetTransformer([
-        'uid' => Str::uuid()->toString(),
-        'name' => 'Explicit GraphQL',
-        'handle' => 'explicit-gql',
-        'driver' => 'explicit-gql',
-    ]), false);
+it('resolves source values for Assets the transformer can’t transform', function () {
+    config()->set('filesystems.disks.uploads', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/gql-asset-transforms'),
+        'url' => 'https://example.test/uploads',
+    ]);
+    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true]);
+    $asset = Asset::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'clip.mp4',
+        'kind' => 'video',
+        'width' => 1920,
+        'height' => 1080,
+    ]);
+    gqlActivateFullAccessSchema();
+
+    graphQL(<<<GQL
+        {
+            asset(id: {$asset->id}) {
+                url(width: 320)
+                width @transform(width: 320)
+                height(width: 320)
+                format(format: "webp")
+                mimeType @transform(width: 320)
+            }
+            transformed: asset(id: {$asset->id}) @transform(width: 200) {
+                url
+            }
+        }
+        GQL)
+        ->assertOk()
+        ->assertJsonMissingPath('errors')
+        ->assertJsonPath('data.asset.url', 'https://example.test/uploads/clip.mp4')
+        ->assertJsonPath('data.asset.width', 1920)
+        ->assertJsonPath('data.asset.height', 1080)
+        ->assertJsonPath('data.asset.format', 'mp4')
+        ->assertJsonPath('data.asset.mimeType', $asset->getMimeType())
+        ->assertJsonPath('data.transformed.url', 'https://example.test/uploads/clip.mp4');
+});
+
+it('generates craft transforms before returning their URLs when requested', function () {
+    Queue::fake();
+    config()->set('filesystems.disks.uploads', [
+        'driver' => 'local',
+        'root' => storage_path('framework/testing/gql-asset-transforms'),
+        'url' => 'https://example.test/uploads',
+    ]);
+    Storage::disk('uploads')->deleteDirectory('');
+    $volume = Volume::factory()->create(['fs' => 'uploads', 'hasUrls' => true]);
+    $asset = Asset::factory()->createElement([
+        'volumeId' => $volume->id,
+        'folderId' => VolumeFolder::factory()->create(['volumeId' => $volume->id])->id,
+        'filename' => 'photo.jpg',
+        'kind' => 'image',
+        'width' => 1200,
+        'height' => 800,
+        'dateModified' => now()->subMinute(),
+    ]);
+    Storage::disk('uploads')->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+    gqlActivateFullAccessSchema();
+
+    $response = graphQL(<<<GQL
+        {
+            asset(id: {$asset->id}) {
+                lazy: url(width: 100)
+                field: url(width: 200, immediately: true)
+            }
+            assets(id: [{$asset->id}]) @transform(width: 300, immediately: true) {
+                url
+            }
+        }
+        GQL)
+        ->assertOk()
+        ->assertJsonMissingPath('errors');
+
+    expect($response->json('data.asset.lazy'))->toContain('generate-transform');
+
+    foreach ([$response->json('data.asset.field'), $response->json('data.assets.0.url')] as $url) {
+        expect($url)->toStartWith('https://example.test/uploads/')
+            ->and(Storage::disk('uploads')->exists(Str::between($url, 'https://example.test/uploads/', '?')))->toBeTrue();
+    }
+});
+
+it('applies parameter overrides to named transforms', function () {
     app(ImageTransforms::class)->saveTransform(new ImageTransform([
         'name' => 'Thumbnail',
         'handle' => 'thumbnail',
@@ -113,14 +182,16 @@ it('applies transformer and parameter overrides to named transforms', function (
     graphQL(<<<GQL
         {
             asset(id: {$asset->id}) {
-                url(handle: "thumbnail", transformer: "explicit-gql", width: 480)
-                width(handle: "thumbnail", transformer: "explicit-gql", width: 480)
+                url(handle: "thumbnail", width: 480)
+                width(handle: "thumbnail", width: 480)
             }
         }
         GQL)
         ->assertOk()
-        ->assertJsonPath('data.asset.url', '/explicit-transform.webp')
+        ->assertJsonPath('data.asset.url', '/gql-transform.webp')
         ->assertJsonPath('data.asset.width', 480);
+
+    expect($this->driver->request->parameters['width'])->toBe(480);
 });
 
 it('keeps Asset field resolution order-independent', function () {
@@ -173,7 +244,7 @@ class GqlAssetTransformDriver implements AssetTransformDriver, PreloadsAssetTran
 
     public function definition(): AssetTransformDriverDefinition
     {
-        return new AssetTransformDriverDefinition('GraphQL', [
+        return new AssetTransformDriverDefinition([
             'ratio' => ['numeric'],
         ]);
     }

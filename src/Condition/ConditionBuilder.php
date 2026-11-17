@@ -68,6 +68,9 @@ readonly class ConditionBuilder
             ];
         }
 
+        // Same order as Collection::sortBy(['group', 'label', 'hint']), without a data_get() per comparison
+        usort($types, fn (array $a, array $b) => [$a['group'], $a['label'], $a['hint']] <=> [$b['group'], $b['label'], $b['hint']]);
+
         return new ConditionBuilderPayload(
             config: [
                 ...$condition->getBuilderConfig(),
@@ -76,7 +79,7 @@ readonly class ConditionBuilder
             ],
             value: $condition->getConfig(),
             rules: $rules,
-            ruleTypes: collect($types)->sortBy(['group', 'label', 'hint'])->values()->all(),
+            ruleTypes: $types,
             addRuleLabel: $condition->addRuleLabel,
         );
     }

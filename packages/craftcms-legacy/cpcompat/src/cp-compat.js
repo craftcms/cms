@@ -386,8 +386,8 @@
       var $el = $('<craft-input-password/>');
       var el = $input[0];
       if (el) {
-        // Lion pushes these control props onto the slotted input on upgrade, so
-        // mirror them onto the host (see InputPassword::hostAttributes()).
+        // The host carries these control props too, as the server renders
+        // them (see InputPassword::hostAttributes()).
         if (el.name) {
           $el.attr('name', el.name);
         }
@@ -489,8 +489,8 @@
       var $el = $('<craft-input-color/>');
       var el = $input[0];
       if (el) {
-        // Lion pushes these control props onto the slotted input on upgrade, so
-        // mirror them onto the host (see InputColor::hostAttributes()). The
+        // The host carries these control props too, as the server renders
+        // them (see InputColor::hostAttributes()). The
         // legacy .color-input value is already bare hex (# stripped).
         if (el.name) {
           $el.attr('name', el.name);
@@ -570,7 +570,7 @@
 
       var self = this;
       this.$container.on('change', function () {
-        self.setValue(self.$container[0].modelValue);
+        self.setValue(self.$container[0].value);
       });
     }
 
@@ -619,7 +619,7 @@
         return;
       }
 
-      this.$container[0].modelValue = this.value;
+      this.$container[0].value = this.value;
       this.$buttons = this.$container.find('.slide-picker__segment');
 
       if (triggerEvent !== false) {
@@ -713,7 +713,7 @@
       },
 
       get showing() {
-        return !!(this.$el && this.$el[0] && this.$el[0].opened);
+        return !!(this.$el && this.$el[0] && this.$el[0].open);
       },
 
       show: function () {

@@ -1109,25 +1109,29 @@ class Html
             }, $html) ?? '';
         }
 
-        // CSS selectors
+        // CSS selectors. Only the text before each `{` is a selector (or an at-rule prelude), so declaration values,
+        // such as `light-dark(#000,#fff)` or a URL's host name, are left alone. `url(#id)` references were handled above.
         $html = preg_replace_callback(
             '/(<style\b[^>]*>)(.*?)(<\/style>)/is',
-            function (array $match) use ($namespace, $withClasses, $ids) {
-                $html = preg_replace_callback(
-                    "/(?<![\w'\"])#([^'\"\s]*)(?=[,\\s\\{])/",
-                    function (array $match) use ($namespace, $ids): string {
-                        if (isset($ids[$match[1]])) {
-                            return '#'.$namespace.'-'.$match[1];
-                        }
+            fn (array $match) => $match[1].preg_replace_callback(
+                '/[^{};]+(?:\{|$)/',
+                function (array $selector) use ($namespace, $withClasses, $ids): string {
+                    $selector = preg_replace_callback(
+                        "/(?<![\w'\"])#([^\s'\",{}.:\[\]>+~#();]+)(?=[\s,{.:\[>+~)])/",
+                        fn (array $match): string => isset($ids[$match[1]]) ? '#'.$namespace.'-'.$match[1] : $match[0],
+                        $selector[0],
+                    ) ?? $selector[0];
 
-                        return $match[0];
-                    }, $match[2]);
-                if ($withClasses) {
-                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $match[2]);
-                }
+                    if ($withClasses) {
+                        $selector = preg_replace("/(?<!['\"])\\.((?:--|-?[a-zA-Z_])[\\w\\-]*)(?=[\\s,{.:\\[>+~)])/", ".$namespace-$1", $selector) ?? $selector;
+                    }
 
-                return $match[1].$html.$match[3];
-            }, $html) ?? '';
+                    return $selector;
+                },
+                $match[2],
+            ).$match[3],
+            $html,
+        ) ?? '';
     }
 
     /**

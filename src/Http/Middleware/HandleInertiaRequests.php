@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
@@ -17,6 +17,7 @@ use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Cp\SiteSwitcher;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Queue\QueueState;
 use CraftCms\Cms\Support\Api;
@@ -24,6 +25,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\EditUserScreens;
@@ -32,11 +34,13 @@ use CraftCms\Cms\Utility\Utilities\AiGuidance;
 use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\ViewServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\View;
+use Illuminate\View\View;
 use Inertia\Inertia;
 use Inertia\Middleware;
+use Inertia\OnceProp;
 use Inertia\Support\Header;
 use Override;
 
@@ -50,11 +54,11 @@ use function CraftCms\Cms\currentUserElement;
 class HandleInertiaRequests extends Middleware
 {
     /**
-     * Marks that the `app` view composer has been bound for this request.
+     * Marks a request whose `app` root view should receive the HTML stack.
      *
-     * @see self::handle()
+     * @see self::compose()
      */
-    private const string APP_COMPOSER_BOUND = '_craft_app_view_composer_bound';
+    private const string RENDERS_ROOT_VIEW = '_craft_renders_root_view';
 
     #[Override]
     public function handle(Request $request, Closure $next)
@@ -68,32 +72,11 @@ class HandleInertiaRequests extends Middleware
         }
 
         /**
-         * Bound once per request, not once per run of this middleware.
-         *
-         * `headHtml()` and `bodyHtml()` drain as they render, and a composer
-         * bound twice fires twice against the same stack: the first call takes
-         * the assets, the second finds the stack empty and overwrites them with
-         * empty strings. That's not hypothetical — the Yii2 adapter's legacy
-         * action bridge re-dispatches through the router, so every middleware
-         * here runs a second time, and every bridged screen was shipping a
-         * document with no jQuery, Garnish or `cp.js` at all. Controls that
-         * delegate to legacy JS were inert as a result.
-         *
-         * The flag lives on the request because the bridge's internal request is
-         * a duplicate of this one and inherits its attributes, while a container
-         * binding would persist between requests under a long-lived worker and
-         * disable the composer for good after the first.
+         * The flag lives on the request because the Yii2 adapter's legacy action
+         * bridge re-dispatches a duplicate of this request, which inherits its
+         * attributes.
          */
-        if (! $request->attributes->getBoolean(self::APP_COMPOSER_BOUND)) {
-            $request->attributes->set(self::APP_COMPOSER_BOUND, true);
-
-            View::composer('app', function ($view) use ($htmlStack) {
-                $view->with([
-                    'headHtml' => $htmlStack->headHtml(),
-                    'bodyHtml' => $htmlStack->bodyHtml(),
-                ]);
-            });
-        }
+        $request->attributes->set(self::RENDERS_ROOT_VIEW, true);
 
         $response = parent::handle($request, $next);
 
@@ -119,6 +102,29 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
+     * Passes the request's head and body HTML to the `app` root view.
+     *
+     * Registered once at boot by {@see ViewServiceProvider}, rather than per request: a
+     * long-lived worker such as Laravel Octane keeps the view factory between requests, so per-request
+     * composers would pile up, and earlier requests' composers would drain their stale stacks first.
+     * `headHtml()` and `bodyHtml()` drain as they render, so a second composer would also overwrite the
+     * assets with empty strings.
+     */
+    public function compose(View $view): void
+    {
+        if (! request()->attributes->getBoolean(self::RENDERS_ROOT_VIEW)) {
+            return;
+        }
+
+        $htmlStack = app(HtmlStack::class);
+
+        $view->with([
+            'headHtml' => $htmlStack->headHtml(),
+            'bodyHtml' => $htmlStack->bodyHtml(),
+        ]);
+    }
+
+    /**
      * The root template that's loaded on the first page visit.
      *
      * @see https://inertiajs.com/server-side-setup#root-template
@@ -131,12 +137,18 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determines the current asset version.
      *
+     * It covers plugins' Vite builds as well as the control panel's, so an open tab reloads to pick up a republished
+     * plugin build rather than keep running the old one.
+     *
      * @see https://inertiajs.com/asset-versioning
      */
     #[Override]
     public function version(Request $request): ?string
     {
-        return Cp::vite()->manifestHash();
+        $version = Cp::vite()->manifestHash();
+        $pluginsHash = app(Plugins::class)->getViteManifestHash();
+
+        return $pluginsHash === null ? $version : md5($version.$pluginsHash);
     }
 
     /**
@@ -152,7 +164,11 @@ class HandleInertiaRequests extends Middleware
         $isInstalled = Cms::isInstalled();
 
         if (! $isInstalled) {
-            return parent::share($request);
+            return [
+                ...parent::share($request),
+                // The CP boot reads its config from here, as it does once Craft is installed.
+                'craft' => fn () => ['general' => Cp::inertiaConfig()],
+            ];
         }
 
         // The site the CP is working with, not the request's: `getCurrentSite()`
@@ -171,10 +187,6 @@ class HandleInertiaRequests extends Middleware
         if (! $updatePending) {
             $currentUser = currentUserElement();
         }
-
-        $systemIcon = ($generalConfig->cpIconUrl && Edition::isAtLeast(Edition::Pro))
-            ? Html::img(Aliases::get($generalConfig->cpIconUrl))->render()
-            : Icons::svg('c-outline');
 
         return [
             ...parent::share($request),
@@ -214,7 +226,9 @@ class HandleInertiaRequests extends Middleware
                 'general' => Cp::inertiaConfig(),
                 'system' => [
                     'name' => Cms::systemName(),
-                    'icon' => $systemIcon,
+                    'icon' => (Edition::isAtLeast(Edition::Pro) ? Cp::iconHtml() : null) ?? Icons::svg('c-outline'),
+                    // Only the login and other auth pages show it, so it's sent once rather than with every visit.
+                    'logo' => Inertia::once(Cp::logoHtml(...)),
                 ],
                 'app' => [
                     'version' => Cms::VERSION,
@@ -229,7 +243,8 @@ class HandleInertiaRequests extends Middleware
                     'id' => $currentUser->id,
                     'username' => $currentUser->username,
                     'email' => $currentUser->email,
-                    'name' => $currentUser->name,
+                    // Not `->name`, which would load the user's field layout to check that `name` isn't a field
+                    'name' => $currentUser->getName(),
                     'thumbHtml' => $currentUser->getThumbHtml(30),
                     // The colors of the user’s default photo, which their own messages and comments are tinted with.
                     'photoColors' => $currentUser->photoColors(),
@@ -238,6 +253,7 @@ class HandleInertiaRequests extends Middleware
                         ?? $generalConfig->accessibilityDefaults['underlineLinks']
                         ?? false),
                     'aiAssistant' => Assistant::isAvailable(),
+                    'showPermissions' => app(EditUserScreens::class)->showPermissionsScreen(),
                     'showTokens' => app(EditUserScreens::class)->showTokensScreen($currentUser),
                     // Where the AI assistant’s guidance and skills are edited, for its chat to link to.
                     'personalGuidanceUrl' => Assistant::isAvailable() ? Url::cpUrl('myaccount/'.EditUserScreens::AI_ASSISTANT) : null,
@@ -257,10 +273,7 @@ class HandleInertiaRequests extends Middleware
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
-                // Rebuild on each visit so plugins and nav listeners can
-                // respond to the current request. Keep the updater independent
-                // of tables or columns that pending migrations may add.
-                'nav' => fn (): array => $updatePending ? [] : $nav->getTree(),
+                'nav' => $this->navProp($nav, $updatePending),
                 // The site switcher that leads the breadcrumbs. Per-request
                 // rather than `once`, since its links point at whichever page
                 // you're currently on.
@@ -270,5 +283,18 @@ class HandleInertiaRequests extends Middleware
                     : (object) $nav->getBadgeCounts(),
             ],
         ];
+    }
+
+    /**
+     * The nav tree, rebuilt on each visit so plugins and nav listeners can respond to the current request, but sent
+     * only when it differs from the tree the client holds: the once prop's key is a hash of the tree, so a client that
+     * names it in `X-Inertia-Except-Once-Props` keeps its copy, and gets the new tree as soon as anything in it changes.
+     */
+    private function navProp(Navigation $nav, bool $updatePending): OnceProp
+    {
+        // Keep the updater independent of tables or columns that pending migrations may add.
+        $tree = $updatePending ? [] : array_map(fn (NavItem $item): array => $item->toArray(), $nav->getTree());
+
+        return Inertia::once(fn (): array => $tree)->as('craft.nav.'.md5(Json::encode($tree)));
     }
 }

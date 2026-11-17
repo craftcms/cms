@@ -33,7 +33,7 @@ use Laravel\Passport\Passport;
 use Mcp\Capability\Attribute\McpTool;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Notification::fake();
 

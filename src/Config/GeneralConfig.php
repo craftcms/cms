@@ -633,7 +633,7 @@ class GeneralConfig extends BaseConfig
      * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
      *
      * ::: tip
-     * You can run `php craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
+     * You can run `php artisan craft:utils:ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
      * :::
      *
      * ::: code
@@ -697,18 +697,82 @@ class GeneralConfig extends BaseConfig
     public array $cpHeadTags = [];
 
     /**
-     * @var string|null Site icon
+     * @var string|null The server path to the control panel’s icon, shown beside the system name in the global sidebar.
      *
-     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     * This can be set to an aliased path such as `@root/branding/icon.svg`.
+     *
+     * A square SVG file is recommended. It will be displayed at 32px by 32px.
+     *
+     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. The selected
+     * theme may differ from the operating system’s, so use the [`light-dark()`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark)
+     * CSS function or `currentColor` within the SVG, rather than a `prefers-color-scheme` media query.
+     *
+     * ```xml
+     * <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+     *   <style>.bg { fill: light-dark(#e5422b, #ff7a66); }</style>
+     *   <rect class="bg" width="32" height="32" rx="6"/>
+     * </svg>
+     * ```
+     *
+     * ::: code
+     * ```php Static Config
+     * ->cpIconPath('@root/branding/icon.svg')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_CP_ICON_PATH=@root/branding/icon.svg
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public ?string $cpIconPath = null;
+
+    /**
+     * @var string|null The URL to the control panel’s icon.
+     *
+     * ::: warning
+     * This setting is deprecated. Set `cpIconPath` instead, which takes precedence over it.
+     * :::
      *
      * @group System
      */
     public ?string $cpIconUrl = null;
 
     /**
-     * @var string|null Login page logo
+     * @var string|null The server path to the logo shown on the login page and other sign-in screens.
      *
-     * SVG file recommended. The logo will be displayed at 288px wide.
+     * This can be set to an aliased path such as `@root/branding/logo.svg`.
+     *
+     * An SVG file is recommended. It will be displayed at 288px wide.
+     *
+     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. Use the
+     * [`light-dark()`](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/light-dark) CSS function or
+     * `currentColor` within the SVG, as you would for `cpIconPath`. Once nobody is logged in, sign-in screens
+     * show the theme the last user to sign in on the browser had selected.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->cpLogoPath('@root/branding/logo.svg')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_CP_LOGO_PATH=@root/branding/logo.svg
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 6.0.0
+     */
+    public ?string $cpLogoPath = null;
+
+    /**
+     * @var string|null The URL to the logo shown on the login page and other sign-in screens.
+     *
+     * ::: warning
+     * This setting is deprecated. Set `cpLogoPath` instead, which takes precedence over it.
+     * :::
      *
      * @group System
      */
@@ -766,22 +830,6 @@ class GeneralConfig extends BaseConfig
      * @since 5.12.0
      */
     public ?string $customIconPath = null;
-
-    /**
-     * @var string The asset transformer to use when none is selected explicitly.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->defaultAssetTransformer('craft')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DEFAULT_ASSET_TRANSFORMER=craft
-     * ```
-     * :::
-     *
-     * @group Assets
-     */
-    public string $defaultAssetTransformer = 'craft';
 
     /**
      * @var string The two-letter country code that addresses will be set to by default.
@@ -2280,19 +2328,6 @@ class GeneralConfig extends BaseConfig
     public bool $preventUserEnumeration = true;
 
     /**
-     * @var array<string, mixed> Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
-     *
-     * ```php Static Config
-     * ->previewIframeResizerOptions([
-     *     'autoResize' => false,
-     * ])
-     * ```
-     *
-     * @group System
-     */
-    public array $previewIframeResizerOptions = [];
-
-    /**
      * @var mixed The amount of time content preview tokens can be used before expiring.
      *
      * Defaults to <config5:defaultTokenDuration> value.
@@ -2990,6 +3025,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string|null The Laravel filesystem disk that should stage upload sessions.
      *
+     * If this isn’t set, upload sessions are staged on the local `craft-tmp` disk. Sites that run on more than one
+     * server must set it to a disk that every server shares, so each part of an upload can reach any of them.
+     *
      * @group Assets
      */
     public ?string $uploadSessionDisk = null;
@@ -3129,7 +3167,7 @@ class GeneralConfig extends BaseConfig
      * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
      *
      * ```bash
-     * php craft utils/update-usernames
+     * php artisan craft:utils:update-usernames
      * ```
      *
      * ::: code
@@ -3172,37 +3210,6 @@ class GeneralConfig extends BaseConfig
      * @since 5.9.0
      */
     public bool $useIdnaNontransitionalToUnicode = false;
-
-    /**
-     * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
-     *
-     * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
-     *
-     * It works by setting the height of the iframe to match the height of the inner web page, and the iframe’s container will be scrolled rather
-     * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
-     * than the visible portion of the iframe.
-     *
-     * If you have a [decoupled front end](https://craftcms.com/docs/5.x/reference/element-types/entries.html#previewing-decoupled-front-ends), you will need to include
-     * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
-     * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
-     * `x-craft-live-preview` query string parameter.
-     *
-     * ::: tip
-     * You can customize the behavior of iFrame Resizer via the <config5:previewIframeResizerOptions> config setting.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->useIframeResizer(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_USE_IFRAME_RESIZER=true
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public bool $useIframeResizer = false;
 
     /**
      * @var bool|string Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
@@ -3866,7 +3873,7 @@ class GeneralConfig extends BaseConfig
      * Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
      *
      * ::: tip
-     * You can run `php craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
+     * You can run `php artisan craft:utils:ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
      * :::
      *
      * ```php
@@ -3943,12 +3950,38 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Site icon
+     * The server path to the control panel’s icon, shown beside the system name in the global sidebar.
      *
-     * Square SVG file recommended. The logo will be displayed at 32px by 32px.
+     * This can be set to an aliased path such as `@root/branding/icon.svg`.
+     *
+     * A square SVG file is recommended. It will be displayed at 32px by 32px.
+     *
+     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. The selected
+     * theme may differ from the operating system’s, so use the `light-dark()` CSS function or `currentColor` within
+     * the SVG, rather than a `prefers-color-scheme` media query.
+     *
+     * ```php
+     * ->cpIconPath('@root/branding/icon.svg')
+     * ```
      *
      * @group System
      *
+     * @since 6.0.0
+     * @see $cpIconPath
+     */
+    public function cpIconPath(?string $value): self
+    {
+        $this->cpIconPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The URL to the control panel’s icon.
+     *
+     * @group System
+     *
+     * @deprecated in 6.0.0. {@see cpIconPath()} should be used instead.
      * @see $cpIconUrl
      */
     public function cpIconUrl(?string $value): self
@@ -3959,12 +3992,37 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Login page logo
+     * The server path to the logo shown on the login page and other sign-in screens.
      *
-     * SVG file recommended. The logo will be displayed at 288px wide.
+     * This can be set to an aliased path such as `@root/branding/logo.svg`.
+     *
+     * An SVG file is recommended. It will be displayed at 288px wide.
+     *
+     * SVG files are rendered inline, so they can adapt to the control panel’s light and dark themes. Use the
+     * `light-dark()` CSS function or `currentColor` within the SVG, as you would for {@see cpIconPath()}.
+     *
+     * ```php
+     * ->cpLogoPath('@root/branding/logo.svg')
+     * ```
      *
      * @group System
      *
+     * @since 6.0.0
+     * @see $cpLogoPath
+     */
+    public function cpLogoPath(?string $value): self
+    {
+        $this->cpLogoPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The URL to the logo shown on the login page and other sign-in screens.
+     *
+     * @group System
+     *
+     * @deprecated in 6.0.0. {@see cpLogoPath()} should be used instead.
      * @see $cpLogoUrl
      */
     public function cpLogoUrl(?string $value): self
@@ -4021,24 +4079,6 @@ class GeneralConfig extends BaseConfig
     public function customIconPath(?string $value): self
     {
         $this->customIconPath = $value;
-
-        return $this;
-    }
-
-    /**
-     * The asset transformer to use when none is selected explicitly.
-     *
-     * @group Assets
-     *
-     * @see $defaultAssetTransformer
-     */
-    public function defaultAssetTransformer(string $value): self
-    {
-        if ($value === '') {
-            throw new RuntimeException('`defaultAssetTransformer` cannot be empty.');
-        }
-
-        $this->defaultAssetTransformer = $value;
 
         return $this;
     }
@@ -5655,28 +5695,6 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
-     *
-     * ```php
-     * ->previewIframeResizerOptions([
-     *     'autoResize' => false,
-     * ])
-     * ```
-     *
-     * @group System
-     *
-     * @param  array<string, mixed>  $value
-     *
-     * @see $previewIframeResizerOptions
-     */
-    public function previewIframeResizerOptions(array $value): self
-    {
-        $this->previewIframeResizerOptions = $value;
-
-        return $this;
-    }
-
-    /**
      * The amount of time content preview tokens can be used before expiring.
      *
      * Defaults to <config5:defaultTokenDuration> value.
@@ -6333,6 +6351,9 @@ class GeneralConfig extends BaseConfig
     /**
      * The Laravel filesystem disk that should stage upload sessions.
      *
+     * If this isn’t set, upload sessions are staged on the local `craft-tmp` disk. Sites that run on more than one
+     * server must set it to a disk that every server shares, so each part of an upload can reach any of them.
+     *
      * @group Assets
      */
     public function uploadSessionDisk(?string $value): self
@@ -6470,7 +6491,7 @@ class GeneralConfig extends BaseConfig
      * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
      *
      * ```bash
-     * php craft utils/update-usernames
+     * php artisan craft:utils:update-usernames
      * ```
      *
      * ```php
@@ -6513,39 +6534,6 @@ class GeneralConfig extends BaseConfig
     public function useIdnaNontransitionalToUnicode(bool $value = false): self
     {
         $this->useIdnaNontransitionalToUnicode = $value;
-
-        return $this;
-    }
-
-    /**
-     * Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
-     *
-     * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
-     *
-     * It works by setting the height of the iframe to match the height of the inner web page, and the iframe’s container will be scrolled rather
-     * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
-     * than the visible portion of the iframe.
-     *
-     * If you have a [decoupled front end](https://craftcms.com/docs/5.x/reference/element-types/entries.html#previewing-decoupled-front-ends), you will need to include
-     * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
-     * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
-     * `x-craft-live-preview` query string parameter.
-     *
-     * ::: tip
-     * You can customize the behavior of iFrame Resizer via the <config5:previewIframeResizerOptions> config setting.
-     * :::
-     *
-     * ```php
-     * ->useIframeResizer(true)
-     * ```
-     *
-     * @group System
-     *
-     * @see $useIframeResizer
-     */
-    public function useIframeResizer(bool $value = true): self
-    {
-        $this->useIframeResizer = $value;
 
         return $this;
     }

@@ -69,7 +69,8 @@ Set `data-color` on the chip to override that. Because the attribute lands on th
 
 ## Sizing
 
-`size` sets how much room the chip gives its contents — the padding around the label, and the thumbnail in the prefix:
+`size` sets how much room the chip gives its contents — the padding around the label, and the thumbnail in the prefix.
+`xsmall` is as tall as a labeled [Badge](?path=/docs/components-badge--docs), with its smaller text, for a chip set among badges:
 
 <Canvas of={ChipStories.Sizes} sourceState="shown" />
 
@@ -90,6 +91,13 @@ Element indexes size their chips this way, so each step below is what an index s
 An explicit `size` still wins, so a large thumbnail can sit in a chip with a small chip's padding:
 
 <Canvas of={ChipStories.ThumbSizeOverride} sourceState="shown" />
+
+## Rounded
+
+`rounded` rounds the chip's ends fully, like a badge's, and its thumbnail with them.
+Combined with `size="xsmall"`, a chip sits among badges as one of them:
+
+<Canvas of={ChipStories.Rounded} sourceState="shown" />
 
 ## Prefix Placement
 

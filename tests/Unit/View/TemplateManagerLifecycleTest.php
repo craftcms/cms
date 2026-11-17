@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
@@ -12,8 +11,9 @@ use CraftCms\Cms\View\Events\PageTemplateRendered;
 use CraftCms\Cms\View\Events\PageTemplateRendering;
 use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
-use CraftCms\Cms\View\LegacyAssets\ContentWindowAsset;
+use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
 use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
@@ -56,6 +56,13 @@ class TemplateManagerLifecycleTestRenderer implements TemplateRendererInterface
     ): string {
         return ($this->renderStringUsing)($template, $variables, $templateMode);
     }
+}
+
+class TemplateManagerLifecycleTestAsset implements LegacyAssetInterface
+{
+    public array $depends = [];
+
+    public function register(HtmlStack $htmlStack): void {}
 }
 
 beforeEach(function () {
@@ -288,8 +295,7 @@ it('renders inline strings without file lifecycle events', function () {
     Event::assertNotDispatched(PageTemplateRendered::class);
 });
 
-it('registers the iframe resizer for Live Preview page requests', function (bool $enabled, ?string $param, bool $hasToken, bool $expected) {
-    Cms::config()->useIframeResizer = $enabled;
+it('registers Live Preview assets on Live Preview page requests', function (?string $param, bool $hasToken, TemplateMode $templateMode, bool $expected) {
     $param = match ($param) {
         'encrypted' => Crypt::encrypt('x'),
         default => $param,
@@ -303,15 +309,22 @@ it('registers the iframe resizer for Live Preview page requests', function (bool
     $registry = Mockery::spy(InternalAssetRegistry::class);
     app()->instance(InternalAssetRegistry::class, $registry);
 
-    $this->manager->renderPageTemplate('example', ['value' => 'test'], TemplateMode::Site, renderer: 'test');
+    $manager = new class(app(), $this->resolver, app(PageLifecycle::class)) extends TemplateManager
+    {
+        protected array $livePreviewAssets = [TemplateManagerLifecycleTestAsset::class];
+    };
+    $renderer = $this->renderer;
+    $manager->extend('test', static fn () => $renderer);
+
+    $manager->renderPageTemplate('example', ['value' => 'test'], $templateMode, renderer: 'test');
 
     $expected
-        ? $registry->shouldHaveReceived('register')->with(ContentWindowAsset::class)->once()
-        : $registry->shouldNotHaveReceived('register', [ContentWindowAsset::class]);
+        ? $registry->shouldHaveReceived('register')->with(TemplateManagerLifecycleTestAsset::class)->once()
+        : $registry->shouldNotHaveReceived('register', [TemplateManagerLifecycleTestAsset::class]);
 })->with([
-    'enabled, live preview' => [true, 'encrypted', true, true],
-    'disabled' => [false, 'encrypted', true, false],
-    'not live preview' => [true, null, true, false],
-    'param without a token' => [true, 'encrypted', false, false],
-    'param that is not encrypted' => [true, 'x', true, false],
+    'live preview' => ['encrypted', true, TemplateMode::Site, true],
+    'control panel template' => ['encrypted', true, TemplateMode::Cp, false],
+    'not live preview' => [null, true, TemplateMode::Site, false],
+    'param without a token' => ['encrypted', false, TemplateMode::Site, false],
+    'param that is not encrypted' => ['x', true, TemplateMode::Site, false],
 ]);

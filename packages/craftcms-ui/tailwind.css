@@ -51,14 +51,6 @@
   --color-neutral-on-normal: var(--c-color-neutral-on-normal);
   --color-neutral-on-quiet: var(--c-color-neutral-on-quiet);
 
-  /* ——— Brand ——— */
-  --color-brand-fill-loud: var(--c-color-brand-fill-loud);
-  --color-brand-fill-quiet: var(--c-color-brand-fill-quiet);
-  --color-brand-border-loud: var(--c-color-brand-border-loud);
-  --color-brand-border-quiet: var(--c-color-brand-border-quiet);
-  --color-brand-on-loud: var(--c-color-brand-on-loud);
-  --color-brand-on-quiet: var(--c-color-brand-on-quiet);
-
   /* ——— Accent ——— */
   --color-accent-fill-loud: var(--c-color-accent-fill-loud);
   --color-accent-fill-normal: var(--c-color-accent-fill-normal);
@@ -114,11 +106,7 @@
   --color-danger-on-normal: var(--c-color-danger-on-normal);
   --color-danger-on-quiet: var(--c-color-danger-on-quiet);
 
-  /* ——— Border utilities ——— */
-  --color-border-faint: var(--c-color-neutral-border-quiet);
-  --color-border-subtle: var(--c-color-neutral-border-quiet);
-  --color-border-default: var(--c-color-neutral-border-normal);
-  --color-border-strong: var(--c-color-neutral-border-loud);
+  /* ——— Form control border ——— */
   --color-border-form: var(--c-form-control-border-color);
 
   /* ——— Border colors that follow the surrounding data-color ———

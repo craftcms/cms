@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\File;
+use Illuminate\Encryption\MissingAppKeyException;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -46,6 +47,21 @@ readonly class AssetUploads implements UploadHandler
     public function start(Request $request, string $filename, int $size, array $parameters): UploadSessionData
     {
         return $this->uploads->start($request, self::class, $filename, $size, $parameters);
+    }
+
+    /**
+     * Returns the credential that authorizes requests to an upload session’s stdio routes, which stdio clients send in
+     * place of the MCP access token they don’t have.
+     */
+    public function credential(string $id): string
+    {
+        $key = (string) config('app.key');
+
+        if ($key === '') {
+            throw new MissingAppKeyException;
+        }
+
+        return hash_hmac('sha256', "craft-mcp-upload|$id", $key);
     }
 
     /**

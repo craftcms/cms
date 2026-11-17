@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element;
 
+use Carbon\CarbonInterface;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementActionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
 use CraftCms\Cms\Field\Exceptions\InvalidFieldException;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -21,12 +23,18 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\Translation\Locale;
+use DateTimeInterface;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Uri;
 use RuntimeException;
@@ -628,6 +636,53 @@ class ElementHelper
         }
 
         $lastElement?->setNext(false);
+    }
+
+    /**
+     * Returns the date values that an object template references, set to print in the
+     * current locale the way element cards show them.
+     *
+     * Passed as object template variables, they take precedence over the element’s own
+     * values for `{foo}` shorthand, while filters like `|date` still get a date. Field
+     * previews are reduced to plain text, so templates that escape their output escape
+     * them only once.
+     *
+     * @since 6.0.0
+     *
+     * @return array<string, CarbonInterface>
+     */
+    public static function objectTemplateDateVariables(ElementInterface $element, string $template): array
+    {
+        $variables = [];
+        preg_match_all('/\w+/', $template, $matches);
+        $words = array_flip($matches[0]);
+        $formatDatetime = fn (DateTimeInterface $date): string => I18N::getFormatter()->asDatetime($date, Locale::LENGTH_SHORT);
+
+        foreach ($element->attributes() as $attribute) {
+            if (
+                isset($words[$attribute]) &&
+                Typecast::isDateTimeProperty($element::class, $attribute) &&
+                ($value = $element->$attribute ?? null) instanceof DateTimeInterface
+            ) {
+                $variables[$attribute] = Date::instance($value)->settings(['toStringFormat' => $formatDatetime]);
+            }
+        }
+
+        foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            if (
+                ! isset($variables[$field->handle]) &&
+                isset($words[$field->handle]) &&
+                ($value = $element->getFieldValue($field->handle)) instanceof DateTimeInterface
+            ) {
+                $variables[$field->handle] = Date::instance($value)->settings([
+                    'toStringFormat' => $field instanceof PreviewableFieldInterface
+                        ? fn (DateTimeInterface $date): string => Html::decode(strip_tags($field->getPreviewHtml($date, $element)))
+                        : $formatDatetime,
+                ]);
+            }
+        }
+
+        return $variables;
     }
 
     /**

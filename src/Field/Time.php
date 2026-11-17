@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
@@ -146,20 +145,6 @@ class Time extends Field implements InlineEditableFieldInterface, InputSchemaFie
     public function getInputId(): string
     {
         return sprintf('%s-time', parent::getInputId());
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return FormFields::timeHtml([
-            'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $value,
-            'minTime' => DateTimeHelper::timeToSeconds($this->min),
-            'maxTime' => DateTimeHelper::timeToSeconds($this->max),
-            'minuteIncrement' => $this->minuteIncrement,
-        ]);
     }
 
     /** @return list<TimeRule> */

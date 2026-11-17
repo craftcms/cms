@@ -35,8 +35,6 @@ function slotBasedMarkup(attrs = 'searchable'): string {
 }
 
 function getSearchInput(element: CraftActionMenu): HTMLInputElement | null {
-  // Note: Lion moves the content node inside its overlay wrapper and strips
-  // the `slot` attribute, so query by the search container class instead.
   return element.querySelector<HTMLInputElement>('.action-menu__search input');
 }
 
@@ -81,12 +79,12 @@ describe('slot-based content added after setup', () => {
       changed = (event as CustomEvent).detail.item;
     });
 
-    element.opened = true;
+    element.open = true;
     await element.updateComplete;
 
     added.click();
 
-    expect(element.opened).toBe(false);
+    expect(element.open).toBe(false);
     expect(changed).toBe(added);
   });
 });
@@ -173,13 +171,13 @@ describe('searchable (slot-based)', () => {
   it('resets the filter when the menu closes', async () => {
     const element = await createFromMarkup(slotBasedMarkup());
 
-    element.opened = true;
+    element.open = true;
     await element.updateComplete;
 
     typeIntoSearch(element, 'date');
     expect(visibleLabels(element)).toEqual(['Date']);
 
-    element.opened = false;
+    element.open = false;
     await element.updateComplete;
 
     expect(getSearchInput(element)!.value).toBe('');
@@ -459,7 +457,7 @@ describe('groups', () => {
     return element;
   }
 
-  /** The generated content container, as Lion leaves it. */
+  /** The generated content container. */
   function contentNode(element: CraftActionMenu): HTMLElement {
     return (
       (element.querySelector<HTMLElement>('.action-menu__search')

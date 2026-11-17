@@ -650,6 +650,42 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /**
+     * Moves the errors validation copied from invalid entries, keyed `handle[uid].attribute`, onto the controls their
+     * blocks show them on.
+     */
+    #[Override]
+    public function uiErrors(ElementInterface $element, array $errors): array
+    {
+        $entryErrors = [];
+        $pattern = sprintf('/^%s\[([^\]]+)\]\.(.+)$/', preg_quote($this->handle, '/'));
+
+        foreach ($errors as $key => $messages) {
+            if (preg_match($pattern, (string) $key, $match)) {
+                $entryErrors[$match[1]][$match[2]] = $messages;
+                unset($errors[$key]);
+            }
+        }
+
+        if ($entryErrors === []) {
+            return $errors;
+        }
+
+        foreach ($this->inlineEntries($element) ?? [] as $identity => $entry) {
+            if ($entry->uid !== null && isset($entryErrors[$entry->uid])) {
+                $errors = $this->addNestedUiErrors($errors, $entry, $entryErrors[$entry->uid], "{$this->handle}.entries.{$identity}");
+                unset($entryErrors[$entry->uid]);
+            }
+        }
+
+        // Entries without a block, such as new ones posted without a UUID, show their errors on the field.
+        foreach ($entryErrors as $messages) {
+            $errors[$this->handle] = [...$errors[$this->handle] ?? [], ...array_merge(...array_values($messages))];
+        }
+
+        return $errors;
+    }
+
+    /**
      * Returns the entries the field shows inline with their own fields, indexed by the identity their blocks have in
      * the UI, or `null` if the field shows its entries as cards or in an element index.
      *
@@ -667,7 +703,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
     }
 
     /** @return list<Entry> */
-    protected function entriesForUi(mixed $value): array
+    private function entriesForUi(mixed $value): array
     {
         // Include disabled entries and in-memory values retained after validation.
         $entries = array_values(match (true) {

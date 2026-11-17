@@ -16,7 +16,7 @@
     }
   );
 
-  const {general, system} = useCraftData();
+  const {system} = useCraftData();
 </script>
 
 <template>
@@ -31,13 +31,15 @@
       :class="{'cp-login__wrapper--wide': props.wide}"
     >
       <h1 class="flex justify-center">
-        <img
-          v-if="general.cpLogoUrl"
-          :src="general.cpLogoUrl"
-          :alt="system.name"
-          class="cp-login__logo"
-          width="288px"
-        />
+        <template v-if="system.logo">
+          <!-- Inline, so an SVG logo's styles can follow the theme -->
+          <span
+            class="cp-login__logo"
+            aria-hidden="true"
+            v-html="system.logo"
+          ></span>
+          <span class="sr-only">{{ system.name }}</span>
+        </template>
         <template v-else>
           {{ system.name }}
         </template>
@@ -102,8 +104,14 @@
   }
 
   .cp-login__logo {
-    display: inline-block;
+    display: block;
     width: calc(288rem / 16);
+    max-width: 100%;
+  }
+
+  .cp-login__logo > :deep(:is(svg, img)) {
+    display: block;
+    width: 100%;
     height: auto;
   }
 

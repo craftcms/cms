@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {ButtonVariant, t} from '@craftcms/ui';
-  import {computed} from 'vue';
+  import {computed, useTemplateRef, watch} from 'vue';
   import ActionList from '@/common/components/ActionList.vue';
   import type {ActionItem} from '@/common/types';
 
@@ -47,14 +47,27 @@
     props.flush === true ? '' : props.flush || undefined
   );
 
+  // The default invoker is rendered once (see below), so a new label, such as
+  // a renamed element's, is set on it directly.
+  const defaultInvoker = useTemplateRef<HTMLElement>('defaultInvoker');
+  watch(
+    () => props.label,
+    (label) => {
+      if (label) {
+        defaultInvoker.value?.setAttribute('aria-label', label);
+      } else {
+        defaultInvoker.value?.removeAttribute('aria-label');
+      }
+    }
+  );
+
   function isDanger(action: ActionItem): boolean {
     return 'variant' in action && action.variant === 'danger';
   }
 
   /**
    `v-once` on the invoker slot is load-bearing, not an optimization.
-   `craft-action-menu` (Lion `OverlayMixin`) imperatively relocates/restructures
-   its own light DOM. If Vue keeps the invoker in its reactive patch path, a
+   `craft-action-menu` imperatively restructures its own light DOM. If Vue keeps the invoker in its reactive patch path, a
    later re-render patches the invoker's slot fragment against DOM the element
    moved and throws "Cannot read properties of null (reading 'insertBefore')".
    Being passive isn't enough: Vue's block optimization flattens dynamic
@@ -89,6 +102,7 @@
   >
     <slot v-once name="invoker" :label="label" :attributes="{slot: 'invoker'}">
       <craft-button
+        ref="defaultInvoker"
         slot="invoker"
         type="button"
         size="small"

@@ -1,5 +1,6 @@
 import {afterEach, expect, it, vi} from 'vitest';
 import {FileUpload, UploadError} from '@/upload-client';
+import * as uploadRequests from '@/upload-request';
 import {fileUploadOptions} from './uploads';
 
 const {showError} = vi.hoisted(() => ({showError: vi.fn()}));
@@ -30,6 +31,23 @@ it.each([
     );
   }
 );
+
+it('uploads into the site the inserted reference points to', async () => {
+  const error = new UploadError('Stop after the session request.', 422);
+  const uploadRequest = vi
+    .spyOn(uploadRequests, 'uploadRequest')
+    .mockRejectedValue(error);
+
+  await expect(
+    fileUploadOptions(12, 3)!.onInsertFile!(new File(['contents'], 'file.txt'))
+  ).rejects.toBe(error);
+  expect(uploadRequest).toHaveBeenCalledWith(
+    expect.any(String),
+    'POST',
+    expect.objectContaining({folderId: 12, siteId: 3}),
+    expect.anything()
+  );
+});
 
 it('reports an upload failure without inserting a link', async () => {
   const error = new UploadError('The file is not allowed.', 422);

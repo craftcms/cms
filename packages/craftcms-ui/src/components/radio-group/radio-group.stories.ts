@@ -19,8 +19,8 @@ import {
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `radio-group.ts` surfaces it here without touching this file.
  *
- * Lion's own `label` and `help-text` are slots here, so they are set through
- * the `label-slot` and `help-text-slot` args rather than as attributes.
+ * `label` and `help-text` are slots as well as attributes, so the slots are
+ * set through the `label-slot` and `help-text-slot` args.
  */
 const {args, argTypes} =
   getStorybookHelpers<CraftRadioGroup>('craft-radio-group');
@@ -32,19 +32,16 @@ const meta = {
   component: 'craft-radio-group',
   args: {...args, name: 'scientist', 'label-slot': 'Scientists'},
   argTypes,
-  // The options are written out rather than generated: each one carries a
-  // `choiceValue`, which is a property rather than an attribute, so it cannot
-  // be expressed in a slot's markup string.
   render: (args) => html`
     <craft-radio-group name="${args.name ?? ''}" ?disabled="${args.disabled}">
       <label slot="label">${args['label-slot']}</label>
-      <craft-radio .choiceValue="${'curie'}">
+      <craft-radio value="${'curie'}">
         <label slot="label">Marie Curie</label>
       </craft-radio>
-      <craft-radio .choiceValue="${'lovelace'}" checked>
+      <craft-radio value="${'lovelace'}" checked>
         <label slot="label">Ada Lovelace</label>
       </craft-radio>
-      <craft-radio .choiceValue="${'hopper'}">
+      <craft-radio value="${'hopper'}">
         <label slot="label">Grace Hopper</label>
       </craft-radio>
     </craft-radio-group>
@@ -110,7 +107,7 @@ const alignments = () =>
   ['Start', 'Center', 'End'].map(
     (label) =>
       html`<craft-radio
-        .choiceValue="${label.toLowerCase()}"
+        value="${label.toLowerCase()}"
         ?checked="${label === 'Center'}"
       >
         <label slot="label">${label}</label>
@@ -121,7 +118,7 @@ const withIcons = (checked: string) =>
   VIEW_MODES.map(
     (option) =>
       html`<craft-radio
-        .choiceValue="${option.value}"
+        value="${option.value}"
         ?checked="${option.value === checked}"
       >
         <span slot="icon" aria-hidden="true">${unsafeSVG(option.svg)}</span>
@@ -176,7 +173,7 @@ export const IconButtons: Story = {
     a11y: {
       config: {
         // The best-practice rule only counts visible text as a label, so it
-        // doesn't see the icons' names, and Lion always gives each input an
+        // doesn't see the icons' names, and each input has an
         // `aria-describedby` for its help text, which the rule then flags.
         rules: [{id: 'label-title-only', enabled: false}],
       },
@@ -191,10 +188,7 @@ export const IconButtons: Story = {
         ['thumbs', 'grid', 'Thumbnails'],
       ].map(
         ([value, icon, label]) =>
-          html`<craft-radio
-            .choiceValue="${value}"
-            ?checked="${value === 'list'}"
-          >
+          html`<craft-radio value="${value}" ?checked="${value === 'list'}">
             <label slot="label"
               ><craft-icon name="${icon}" label="${label}"></craft-icon
             ></label>
@@ -392,7 +386,7 @@ export const IllustrationPalette: Story = {
                       name="palette-${role.token}"
                       style="--c-radio-card-icon-size: 7.5rem; --c-radio-card-min-size: 12rem; --c-radio-card-max-size: 12rem"
                     >
-                      <craft-radio .choiceValue="${role.token}">
+                      <craft-radio value="${role.token}">
                         <span slot="icon" aria-hidden="true"
                           >${unsafeSVG(PALETTE_SAMPLE.svg)}</span
                         >

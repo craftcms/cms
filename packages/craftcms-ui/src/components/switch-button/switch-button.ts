@@ -1,7 +1,7 @@
-import {LionSwitchButton} from '@lion/ui/switch.js';
-import {css, type PropertyValues} from 'lit';
+import {css, html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {baseFormControlStyles} from '@src/styles/form.styles';
+import {emitChange, emitInput} from '@src/utilities/form-events';
 
 /**
  * @summary The toggle itself — the track and thumb a `craft-switch` renders.
@@ -9,16 +9,44 @@ import {baseFormControlStyles} from '@src/styles/form.styles';
  * It is the switch's internal control rather than something to use directly:
  * on its own it has no label, no hidden input, and nothing posts. Reach for
  * `craft-switch`, which supplies all three and drives this.
+ *
+ * @fires {Event} input - When the user toggles it.
+ * @fires {Event} change - When the user toggles it.
  */
-export default class CraftSwitchButton extends LionSwitchButton {
+export default class CraftSwitchButton extends LitElement {
+  /** Whether the switch is on. */
+  @property({type: Boolean, reflect: true}) checked = false;
+
+  /** Whether the switch can't be toggled. */
+  @property({type: Boolean, reflect: true}) disabled = false;
+
   /**
    * Display-only mixed state (thumb centered, `aria-checked="mixed"`).
    * State transitions are managed by `craft-switch`.
    */
   @property({type: Boolean, reflect: true}) indeterminate = false;
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.setAttribute('role', 'switch');
+    this.addEventListener('click', this.#onClick);
+    this.addEventListener('keydown', this.#onKeydown);
+    this.addEventListener('keyup', this.#onKeyup);
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.removeEventListener('click', this.#onClick);
+    this.removeEventListener('keydown', this.#onKeydown);
+    this.removeEventListener('keyup', this.#onKeyup);
+  }
+
   override updated(changedProperties: PropertyValues): void {
     super.updated(changedProperties);
+    if (changedProperties.has('disabled')) {
+      this.tabIndex = this.disabled ? -1 : 0;
+      this.setAttribute('aria-disabled', String(this.disabled));
+    }
     if (
       changedProperties.has('indeterminate') ||
       changedProperties.has('checked')
@@ -30,10 +58,67 @@ export default class CraftSwitchButton extends LionSwitchButton {
     }
   }
 
+  override render() {
+    return html`
+      <div class="btn">
+        <div class="switch-button__track"></div>
+        <div class="switch-button__thumb"></div>
+      </div>
+    `;
+  }
+
+  #toggle(): void {
+    if (this.disabled) {
+      return;
+    }
+    this.focus();
+    this.checked = !this.checked;
+    emitInput(this);
+    emitChange(this);
+  }
+
+  #onClick = (): void => this.#toggle();
+
+  /** Space would scroll the page; it toggles on release, like a button. */
+  #onKeydown = (event: KeyboardEvent): void => {
+    if (event.key === ' ') {
+      event.preventDefault();
+    }
+  };
+
+  #onKeyup = (event: KeyboardEvent): void => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      this.#toggle();
+    }
+  };
+
   static override get styles() {
     return [
-      ...super.styles,
       css`
+        :host {
+          position: relative;
+          outline: 0;
+        }
+
+        :host([hidden]) {
+          display: none;
+        }
+
+        .btn {
+          position: relative;
+          height: 100%;
+          outline: 0;
+        }
+
+        .switch-button__track {
+          width: 100%;
+          height: 100%;
+        }
+
+        .switch-button__thumb {
+          position: absolute;
+        }
+
         :host {
           --c-switch-height: var(--c-size-control-sm);
           --c-switch-thumb-offset: 5px;
@@ -61,11 +146,6 @@ export default class CraftSwitchButton extends LionSwitchButton {
 
         .btn {
           width: 100%;
-        }
-
-        /* The host's own focus ring covers this, so drop Lion's thumb outline */
-        :host(:focus:not([disabled])) .switch-button__thumb {
-          outline: none;
         }
 
         .switch-button__track {

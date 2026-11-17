@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\PluginStore;
 
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
-use CraftCms\Cms\Support\Json;
-use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 use Override;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,7 +27,7 @@ class RemoveController extends BaseUpdaterController
     {
         $this->data = $this->initialData();
         $state = $this->realInitialState();
-        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+        $state['data'] = $this->hashedData();
 
         return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),

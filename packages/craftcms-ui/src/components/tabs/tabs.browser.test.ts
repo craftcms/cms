@@ -136,6 +136,32 @@ it('moves focus with the selection', async () => {
   }
 });
 
+it('takes only the arrow keys along its own axis, leaving the others to the page', async () => {
+  const {element, tabs} = await strip();
+  const {userEvent} = await import('vite-plus/test/browser');
+  const spacer = document.createElement('div');
+  spacer.style.blockSize = '300vh';
+  document.body.append(spacer);
+  window.scrollTo(0, 0);
+
+  tabs[0]!.focus();
+  await userEvent.keyboard('{ArrowDown}');
+
+  await expect.poll(() => window.scrollY).toBeGreaterThan(0);
+  expect(element.selectedIndex).toBe(0);
+
+  element.setAttribute('placement', 'inline-start');
+  await element.updateComplete;
+  tabs[0]!.focus();
+  await userEvent.keyboard('{ArrowDown}');
+
+  await expect.poll(() => element.selectedIndex).toBe(1);
+  expect(document.activeElement).toBe(tabs[1]);
+
+  await userEvent.keyboard('{ArrowRight}');
+  expect(element.selectedIndex).toBe(1);
+});
+
 it('tabs from the selected tab into its panel and back', async () => {
   const {element, tabs, slottedPanels} = await strip();
   const {userEvent} = await import('vite-plus/test/browser');
@@ -381,6 +407,37 @@ it('moves the selection to the first tab when the selected slotted tab is remove
   expect(getComputedStyle(slottedPanels[0]!).display).not.toBe('none');
 });
 
+it('hides the panel left behind when the selected slotted tab is removed without it', async () => {
+  const {element, tabs, slottedPanels} = await strip();
+
+  element.selectedIndex = 2;
+  await element.updateComplete;
+  tabs[2]!.remove();
+
+  await expect.poll(() => element.selectedIndex).toBe(0);
+  await expect
+    .poll(() => slottedPanels.map((panel) => panel.hasAttribute('selected')))
+    .toEqual([true, false, false]);
+  expect(
+    slottedPanels.map((panel) => getComputedStyle(panel).display !== 'none')
+  ).toEqual([true, false, false]);
+});
+
+it('wires up a slotted panel that replaces one whose tab stays', async () => {
+  const {element, tabs, slottedPanels} = await strip();
+
+  const replacement = document.createElement('div');
+  replacement.slot = 'panel';
+  replacement.textContent = 'New panel 0';
+  slottedPanels[0]!.replaceWith(replacement);
+
+  await expect.poll(() => replacement.getAttribute('role')).toBe('tabpanel');
+  expect(tabs[0]!.getAttribute('aria-controls')).toBe(replacement.id);
+  expect(replacement.getAttribute('aria-labelledby')).toBe(tabs[0]!.id);
+  expect(element.selectedIndex).toBe(0);
+  expect(getComputedStyle(replacement).display).not.toBe('none');
+});
+
 it('moves the selection to the first tab when the selected external tab is removed', async () => {
   const {element, tabs, sections} = await externalStrip();
 
@@ -418,7 +475,7 @@ async function overflowingStrip(width: string): Promise<{
   container: HTMLElement;
   element: Strip;
   tabs: HTMLElement[];
-  menu: HTMLElement & {opened: boolean};
+  menu: HTMLElement & {open: boolean};
 }> {
   const container = document.createElement('div');
   container.style.inlineSize = width;
@@ -446,6 +503,20 @@ async function overflowingStrip(width: string): Promise<{
     menu: element.shadowRoot!.querySelector('[part="overflow-menu"]')!,
   };
 }
+
+it('keeps focus on the tab End selects in an overflowing strip', async () => {
+  const {element, tabs} = await overflowingStrip('26rem');
+  const {userEvent} = await import('vite-plus/test/browser');
+  await expect.poll(() => tabs.some((tab) => tab.hidden)).toBe(true);
+
+  tabs[0]!.focus();
+  await userEvent.keyboard('{End}');
+  await element.updateComplete;
+
+  const selected = tabs[element.selectedIndex]!;
+  expect(selected.hidden).toBe(false);
+  expect(document.activeElement).toBe(selected);
+});
 
 describe('after it is moved in the document', () => {
   beforeEach(() => {
@@ -502,7 +573,7 @@ it('keeps focus in the open overflow menu while the strip resizes', async () => 
   }
 
   expect(tabs.filter((tab) => tab.hidden).length).toBe(collapsed);
-  expect(menu.opened).toBe(true);
+  expect(menu.open).toBe(true);
   expect(item.isConnected).toBe(true);
   expect(item.matches(':focus-within')).toBe(true);
 });
@@ -526,12 +597,12 @@ it('keeps its overflow menu’s events inside the strip', async () => {
     const target = tabs.filter((tab) => tab.hidden).at(-1)!;
 
     await userEvent.click(menu.querySelector('[slot="invoker"]')!);
-    await expect.poll(() => menu.opened).toBe(true);
+    await expect.poll(() => menu.open).toBe(true);
     const item = [...menu.querySelectorAll('craft-action-item')].find(
       (el) => el.textContent?.trim() === target.textContent
     )!;
     await userEvent.click(item);
-    await expect.poll(() => menu.opened).toBe(false);
+    await expect.poll(() => menu.open).toBe(false);
     await expect.poll(() => tabs.indexOf(target)).toBe(element.selectedIndex);
     await new Promise((resolve) => requestAnimationFrame(resolve));
 

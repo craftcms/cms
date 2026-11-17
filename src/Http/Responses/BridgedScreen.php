@@ -84,7 +84,16 @@ final class BridgedScreen
          */
         LegacyReadyShim::register();
 
-        $variables['tabs'] = self::tabs($variables['tabs'] ?? null);
+        /**
+         * `selectedTab` travels with the fragments only to pick the tab out
+         * here; the shell has no use for it.
+         */
+        $variables['tabs'] = self::tabs(
+            $variables['tabs'] ?? null,
+            $variables['selectedTab'] ?? null,
+            is_string($variables['title'] ?? null) ? $variables['title'] : null,
+        );
+        unset($variables['selectedTab']);
 
         return Inertia::render(self::PAGE)
             ->with($variables)
@@ -179,19 +188,27 @@ final class BridgedScreen
      * The tab strip, rendered.
      *
      * `cp/Screen` draws HTML into the shell's slots, so tabs arrive rendered
-     * rather than as the raw config the Twig layout took. `<craft-tabs>` is
-     * preferred: it pairs the screen's own panes to its tabs, so a legacy
-     * screen gets the same tab component as the rest of the control panel
-     * without its author touching anything. The shim returns null whenever it
-     * isn't certain, and the legacy strip covers that.
+     * rather than as the raw config the Twig layout took. A Craft 6 component
+     * is preferred — tabs over the screen's own panes, or a nav where the tabs
+     * turn out to be links to its other pages — so a legacy screen gets the
+     * same components as the rest of the control panel without its author
+     * touching anything. The shim returns null whenever it isn't certain, and
+     * the legacy strip covers that.
      */
-    private static function tabs(mixed $tabs): ?string
-    {
+    private static function tabs(
+        mixed $tabs,
+        mixed $selectedTab = null,
+        ?string $title = null,
+    ): ?string {
         if (! is_array($tabs)) {
             return null;
         }
 
-        return LegacyTabsShim::apply($tabs)
+        return LegacyTabsShim::apply(
+            $tabs,
+            is_string($selectedTab) || is_int($selectedTab) ? $selectedTab : null,
+            $title,
+        )
             ?? (count($tabs) > 1
                 ? template('_includes/tabs', [
                     'tabs' => $tabs,

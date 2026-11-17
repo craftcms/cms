@@ -19,6 +19,9 @@
     fieldId,
     inputId,
     nodeHasErrors,
+    routeErrorsToOutlets,
+    scopedId,
+    UiFieldIdScope,
     uiTabPanelId,
     visitControls,
   } from './runtime';
@@ -47,6 +50,7 @@
    * tabs leave the hash alone.
    */
   const isSlideout = useIsSlideout();
+  const idScope = inject(UiFieldIdScope, undefined);
 
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
@@ -180,7 +184,9 @@
     let found = false;
 
     visitControls([node], (control) => {
-      found ||= fieldId(control.path) === id || inputId(control.path) === id;
+      found ||=
+        scopedId(idScope, fieldId(control.path)) === id ||
+        scopedId(idScope, inputId(control.path)) === id;
     });
 
     return found;
@@ -204,11 +210,17 @@
     {immediate: true}
   );
 
+  /** The errors each tab is flagged for, with the ones shown in outlets moved there. */
+  const tabErrors = computed(() =>
+    routeErrorsToOutlets(props.nodes, props.errors)
+  );
+
+  function tabHasErrors(tab: UiNodePayload): boolean {
+    return nodeHasErrors(tab, tabErrors.value.errors, tabErrors.value.outlets);
+  }
+
   watch(
-    () =>
-      tabs.value
-        .filter((tab) => nodeHasErrors(tab, props.errors))
-        .map((tab) => tab.uid),
+    () => tabs.value.filter(tabHasErrors).map((tab) => tab.uid),
     (uids) => uids.forEach(renderTab),
     {immediate: true}
   );
@@ -236,7 +248,7 @@
   });
 
   function tabPanelId(tab: (typeof tabs.value)[number]): string {
-    return uiTabPanelId(tab.uid, props.scope);
+    return scopedId(idScope, uiTabPanelId(tab.uid, props.scope));
   }
 
   function panelAttributes(node: UiNodePayload): {id?: string} {
@@ -244,7 +256,9 @@
       return {};
     }
 
-    return {id: `${uiTabPanelId(node.uid, props.scope)}-tab`};
+    return {
+      id: `${scopedId(idScope, uiTabPanelId(node.uid, props.scope))}-tab`,
+    };
   }
 
   /**
@@ -286,10 +300,11 @@
           v-if="tab.props.icon"
           :name="tab.props.icon"
           slot="prefix"
+          class="ui-node-list__tab-icon"
         ></craft-icon>
         {{ tab.props.label }}
         <craft-icon
-          v-if="nodeHasErrors(tab, errors)"
+          v-if="tabHasErrors(tab)"
           name="circle-exclamation"
           :label="t('Errors')"
           slot="suffix"
@@ -360,9 +375,14 @@
     margin-inline-start: auto;
   }
 
+  .ui-node-list__tabs {
+    /* A page's main column sets this (see PageScreen.vue). */
+    --c-tabs-gap: var(--cp-content-tabs-gap, var(--c-spacing-lg));
+  }
+
   .ui-node-list__tabs::part(strip) {
     box-sizing: border-box;
-    block-size: var(--cp-header-height);
+    block-size: calc(var(--cp-header-height) + 1px);
     align-items: stretch;
   }
 
@@ -373,5 +393,15 @@
   .ui-node-list__tabs craft-tab {
     align-items: center;
     padding-block: 0;
+  }
+
+  /* A step back from the label, but the selected tab's icon keeps its color. */
+  .ui-node-list__tab-icon {
+    --c-icon-size: var(--cp-chrome-icon-size);
+    color: var(--color-slate-700);
+  }
+
+  craft-tab[selected] .ui-node-list__tab-icon {
+    color: inherit;
   }
 </style>

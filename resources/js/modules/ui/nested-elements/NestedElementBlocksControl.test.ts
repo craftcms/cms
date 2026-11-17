@@ -8,9 +8,9 @@ import {
 import type {ActionItems} from '@/common/types';
 import type {UiControlPayload} from '../types';
 
-// `craft-action-menu` is a Lion overlay and doesn't bootstrap under happy-dom.
-// These tests are about which items NestedElementBlocksControl composes, so stand in for it
-// and record the props each block's menu is handed.
+// These tests are about which items NestedElementBlocksControl composes, so
+// stand in for the action menu and record the props each block's menu is
+// handed.
 const menuStub = vi.hoisted(() => ({
   instances: [] as Array<{actions: ActionItems}>,
 }));
@@ -72,9 +72,21 @@ vi.mock('@/common/components/ActionMenu.vue', async () => {
   };
 });
 
+import '@craftcms/ui/components/checkbox/checkbox';
 import NestedElementBlocksControl from './NestedElementBlocksControl.vue';
 import {FieldActionItems} from '../runtime';
 import {isBlockCollapsed} from '@/modules/matrix/collapsed-blocks';
+
+/**
+ * Checks a `craft-checkbox` the way a browser does: the click that carries the
+ * modifier keys, then the input's `change`.
+ */
+function check(box: Element, shiftKey = false): void {
+  box.dispatchEvent(new MouseEvent('click', {bubbles: true, shiftKey}));
+  const input = box.querySelector('input')!;
+  input.checked = true;
+  input.dispatchEvent(new Event('change', {bubbles: true}));
+}
 
 describe('NestedElementBlocksControl', () => {
   let app: ReturnType<typeof createApp> | undefined;
@@ -266,41 +278,6 @@ describe('NestedElementBlocksControl', () => {
       'Delete',
       'Add New Type above',
     ]);
-  });
-
-  it('offers only owner-specific creation choices in their requested order while retaining existing blocks', async () => {
-    const state = mount(
-      {
-        entries: {existing: {type: 'existingType', collapsed: true}},
-        sortOrder: ['existing'],
-      },
-      {
-        entryTypes: [
-          {value: 'existingType', label: 'Existing Type'},
-          {value: 'first', label: 'First'},
-          {value: 'second', label: 'Second'},
-        ],
-        createEntryTypes: ['second', 'first'],
-        blocks: {existing: {label: 'Existing content'}},
-      }
-    );
-    await nextTick();
-    const buttons = [
-      ...container!.querySelectorAll<HTMLElement>('[data-ui-matrix-add]'),
-    ];
-    expect(buttons.map((button) => button.textContent?.trim())).toEqual([
-      'Add Second',
-      'Add First',
-    ]);
-    expect(container!.textContent).toContain('Existing content');
-    invoke('existing', 'Add Second above');
-    await nextTick();
-    const value = state.value as {
-      entries: Record<string, {type: string}>;
-      sortOrder: string[];
-    };
-    expect(value.sortOrder.at(-1)).toBe('existing');
-    expect(value.entries[value.sortOrder[0]!]!.type).toBe('second');
   });
 
   it('remembers a collapsed block in storage rather than the value', async () => {
@@ -678,6 +655,42 @@ describe('NestedElementBlocksControl', () => {
     expect(emitted).toHaveLength(0);
   });
 
+  /**
+   * The field is rebuilt when its blocks change. A save that applies a draft
+   * replaces the blocks created in it with new ones, which mustn't take focus
+   * out from under someone typing in them.
+   */
+  it('keeps focus in a block replaced by a save, but not in a deleted one', async () => {
+    const block = {type: 'newType', enabled: true};
+    const state = mount({
+      entries: {'draft-a': block, 'draft-b': block},
+      sortOrder: ['draft-a', 'draft-b'],
+    });
+    await nextTick();
+    const checkbox = (uid: string) =>
+      container!.querySelector<HTMLInputElement>(
+        `[data-id="${uid}"] craft-checkbox input`
+      )!;
+    checkbox('draft-b').focus();
+
+    state.value = {
+      entries: {'saved-a': block, 'saved-b': block},
+      sortOrder: ['saved-a', 'saved-b'],
+    };
+    await nextTick();
+    await nextTick();
+
+    expect(document.activeElement).toBe(checkbox('saved-b'));
+
+    // The next block takes a deleted one's place, but not its focus.
+    checkbox('saved-a').focus();
+    state.value = {entries: {'saved-b': block}, sortOrder: ['saved-b']};
+    await nextTick();
+    await nextTick();
+
+    expect(container!.contains(document.activeElement)).toBe(false);
+  });
+
   it('ignores a block action fired by a different Matrix field', async () => {
     mount({
       entries: {'block-a': {type: 'newType', enabled: true}},
@@ -819,11 +832,7 @@ describe('NestedElementBlocksControl', () => {
       expect(item('block-a', 'delete')?.label).toBe('Delete');
 
       for (const box of container!.querySelectorAll('craft-checkbox')) {
-        box.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-        Object.assign(box, {checked: true});
-        box.dispatchEvent(
-          new CustomEvent('model-value-changed', {bubbles: true})
-        );
+        check(box);
       }
       await nextTick();
 
@@ -1213,14 +1222,7 @@ describe('NestedElementBlocksControl', () => {
     }
 
     async function selectFirst(): Promise<void> {
-      const box = container!.querySelector(
-        '[data-matrix-block] craft-checkbox'
-      )!;
-      Object.assign(box, {checked: true});
-      box.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      check(container!.querySelector('[data-matrix-block] craft-checkbox')!);
       await nextTick();
     }
 
@@ -1565,11 +1567,7 @@ describe('NestedElementBlocksControl', () => {
 
     const boxes = container!.querySelectorAll('craft-checkbox');
     for (const box of [boxes[0]!, boxes[2]!]) {
-      box.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-      Object.assign(box, {checked: true});
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      check(box);
     }
     await nextTick();
 
@@ -1630,13 +1628,7 @@ describe('NestedElementBlocksControl', () => {
     );
     expect(boxes).toHaveLength(2);
 
-    // `craft-checkbox` reports its change from the host, not an inner input.
-    const first = boxes[0]!;
-    Object.assign(first, {checked: true});
-    first.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-    first.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    check(boxes[0]!);
     await nextTick();
 
     expect(
@@ -1688,19 +1680,9 @@ describe('NestedElementBlocksControl', () => {
     await nextTick();
 
     const blocks = [...container!.querySelectorAll('[data-matrix-block]')];
-    // Blocks are selected from their checkboxes; `craft-checkbox` reports its
-    // change from the host, after the click that carries the Shift key.
-    const check = (block: Element, shiftKey = false): void => {
-      const box = block.querySelector('craft-checkbox')!;
-      Object.assign(box, {checked: true});
-      box.dispatchEvent(new MouseEvent('click', {bubbles: true, shiftKey}));
-      box.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
-    };
-    check(blocks[0]!);
+    check(blocks[0]!.querySelector('craft-checkbox')!);
     await nextTick();
-    check(blocks[1]!, true);
+    check(blocks[1]!.querySelector('craft-checkbox')!, true);
     await nextTick();
 
     expect(blocks[0]!.hasAttribute('data-selected')).toBe(true);
@@ -1990,15 +1972,5 @@ describe('NestedElementBlocksControl', () => {
     expect((emitted.at(-1) as {sortOrder: string[]}).sortOrder[0]).toMatch(
       /^uid:/
     );
-  });
-
-  it('renders its blocks when the value is present', async () => {
-    mount({
-      entries: {'uid:block-a': {type: 'newType'}},
-      sortOrder: ['uid:block-a'],
-    });
-    await nextTick();
-
-    expect(container!.querySelectorAll('[data-matrix-block]').length).toBe(1);
   });
 });

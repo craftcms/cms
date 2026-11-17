@@ -50,7 +50,7 @@ it('returns focus to a popover’s button once a slideout opened from inside it 
   await userEvent.click(page.getByRole('button', {name: 'Edit columns'}));
 
   await expect.poll(() => panelId).not.toBe('');
-  await expect.poll(() => popover.opened).toBe(false);
+  await expect.poll(() => popover.open).toBe(false);
 
   closeSlideout(panelId);
 

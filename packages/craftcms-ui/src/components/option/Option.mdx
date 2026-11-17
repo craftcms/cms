@@ -10,7 +10,7 @@ There are no stories on this page because an option outside a listbox has nothin
 
 ```html
 <craft-select-rich label="Entry type">
-  <craft-option .choiceValue="${'article'}" hint="article">
+  <craft-option .value="${'article'}" hint="article">
     <craft-icon name="newspaper"></craft-icon>
     Article
   </craft-option>
@@ -36,8 +36,8 @@ Wrap related options in `<craft-option-group>` to list them under a heading. The
 
 ```html
 <craft-option-group label="Pome">
-  <craft-option .choiceValue="${'apple'}">Apple</craft-option>
-  <craft-option .choiceValue="${'pear'}">Pear</craft-option>
+  <craft-option .value="${'apple'}">Apple</craft-option>
+  <craft-option .value="${'pear'}">Pear</craft-option>
 </craft-option-group>
 ```
 
@@ -45,7 +45,7 @@ Wrap related options in `<craft-option-group>` to list them under a heading. The
 
 ## Accessibility
 
-Lion supplies the option semantics and selection state.
+Each option is a `role="option"` whose `aria-selected` follows `selected` and whose `aria-disabled` follows `disabled`. The listbox around it decides what selecting it does.
 
 Remember that everything inside the option is announced. A decorative icon should be hidden, or every entry in the list will be read with the same prefix before the part that distinguishes it. A `craft-icon` without a `label` is hidden already. Give an `<img>` an empty `alt`, and an inline `<svg>` `aria-hidden="true"`. Artwork that carries meaning needs a text alternative instead.
 

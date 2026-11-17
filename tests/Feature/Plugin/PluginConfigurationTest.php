@@ -115,10 +115,8 @@ it('normalizes disabled and uninstalled handles without constructing them during
     $this->assertDatabaseMissing(Table::PLUGINS, ['handle' => 'uninstalled-plugin']);
 });
 
-it('flushes submitted overrides and omitted configuration values to the database on the test connection', function () {
-    $input = FluentTestPlugin::config()->foo('File foo')->bar('File bar');
-    Config::set('craft.fluent-test-plugin', $input);
-    new ConfigServiceProvider(app())->register();
+it('flushes submitted settings but not configuration overrides to the database on the test connection', function () {
+    Config::set('craft.fluent-test-plugin', ['bar' => 'File bar']);
     $plugin = $this->plugins->getPlugin('fluent-test-plugin');
     $settings = $plugin->getSettings();
     $projectConfig = app(ProjectConfig::class);
@@ -126,7 +124,7 @@ it('flushes submitted overrides and omitted configuration values to the database
     expect($this->plugins->savePluginSettings($plugin, ['foo' => 'Submitted']))->toBeTrue();
     expect($plugin->getSettings())->toBe($settings)
         ->and($settings->validationData())->toBe(['foo' => 'Submitted', 'bar' => 'File bar'])
-        ->and($projectConfig->get('plugins.fluent-test-plugin.settings'))->toBe(['bar' => 'File bar', 'foo' => 'Submitted']);
+        ->and($projectConfig->get('plugins.fluent-test-plugin.settings'))->toBe(['bar' => 'Stored bar', 'foo' => 'Submitted']);
     expect(DB::table(Table::PROJECTCONFIG)
         ->whereIn('path', ['plugins.fluent-test-plugin.settings.foo', 'plugins.fluent-test-plugin.settings.bar'])
         ->orderBy('path')->pluck('value', 'path')->all())->toBe([
@@ -139,18 +137,16 @@ it('flushes submitted overrides and omitted configuration values to the database
     expect(DB::table(Table::PROJECTCONFIG)
         ->whereIn('path', ['plugins.fluent-test-plugin.settings.foo', 'plugins.fluent-test-plugin.settings.bar'])
         ->orderBy('path')->pluck('value', 'path')->all())->toBe([
-            'plugins.fluent-test-plugin.settings.bar' => '"File bar"',
+            'plugins.fluent-test-plugin.settings.bar' => '"Stored bar"',
             'plugins.fluent-test-plugin.settings.foo' => '"Submitted"',
         ]);
 
     $projectConfig->reset();
 
-    expect($projectConfig->get('plugins.fluent-test-plugin.settings'))->toBe(['bar' => 'File bar', 'foo' => 'Submitted'])
-        ->and($this->plugins->getStoredPluginInfo('fluent-test-plugin')['settings'])->toBe(['bar' => 'Stored bar', 'foo' => 'Stored foo'])
+    expect($projectConfig->get('plugins.fluent-test-plugin.settings'))->toBe(['bar' => 'Stored bar', 'foo' => 'Submitted'])
         ->and($plugin->getSettings())->toBe($settings)
         ->and($settings->foo)->toBe('Submitted')
-        ->and(Config::get('craft.fluent-test-plugin'))->toBe(['foo' => 'File foo', 'bar' => 'File bar'])
-        ->and($input->configData())->toBe(['foo' => 'File foo', 'bar' => 'File bar']);
+        ->and($settings->bar)->toBe('File bar');
 });
 
 it('does not write invalid settings to the database when project config is flushed', function () {

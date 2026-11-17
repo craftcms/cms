@@ -101,7 +101,6 @@ export default {
               if (
                 declaration.superclass.package ||
                 declaration.superclass.module?.startsWith('node_modules') ||
-                declaration.superclass.module?.startsWith('@lion') ||
                 declaration.superclass.module?.startsWith('@awesome.me')
               ) {
                 // Keep the superclass info but don't let CEM traverse it
@@ -121,7 +120,7 @@ export default {
     // elements between them exposed 408 members no consumer can call.
     //
     // Dropped: TypeScript `private`/`protected`, JS `#private` fields, and the
-    // `_`/`__` prefixes Lion and this package use for the same thing. Anything
+    // `_`/`__` prefixes this package uses for the same thing. Anything
     // meant to be public and prefixed should be renamed rather than exempted.
     {
       name: 'drop-internal-members',

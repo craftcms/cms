@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Assets;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
@@ -41,6 +44,16 @@ it('promotes an element type’s own “All” source to the All checkbox', func
     expect($props['allLabel'])->toBe('All entries')
         ->and(array_column($props['options'], 'value'))
         ->not->toContain(BaseRelationField::ALL_SOURCES);
+});
+
+it('lists a custom source saved without a label', function () {
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:unlabeled', 'condition' => Entry::createCondition()->getConfig()],
+    ]);
+
+    expect(sourcesProps(Entries::class)['options'])
+        ->toContain(['label' => '', 'value' => 'custom:unlabeled']);
 });
 
 it('falls back to “All” for element types with no such source', function () {

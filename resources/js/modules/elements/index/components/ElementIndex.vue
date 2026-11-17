@@ -18,6 +18,8 @@
   import type {StructureMove} from '@/modules/elements/index/composables/useElementIndexStructure';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
   import ElementIndexExportMenu from '@/modules/elements/index/components/ElementIndexExportMenu.vue';
+  import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItems} from '@/common/types';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
   import {commandShortcut} from '@/common/utils/keyShortcuts';
   import {resizeThumbs} from '@/modules/elements/index/composables/useElementIndexThumbSize';
@@ -57,6 +59,11 @@
       tableAppearance?: Exclude<TableAppearanceValue, 'raised'>;
       toolbarAsForm?: boolean;
       quickEdit?: ElementIndexQuickEdit;
+      /**
+       * Items for a menu beside the `primary-action` slot's button, which only
+       * gets one when there are any.
+       */
+      menuActions?: ActionItems;
     }>(),
     {
       contained: false,
@@ -374,7 +381,8 @@
             canEditInline ||
             exportElements ||
             $slots['toolbar-actions'] ||
-            $slots['toolbar-actions-after']
+            $slots['toolbar-actions-after'] ||
+            $slots['primary-action']
           "
           #actions
         >
@@ -408,6 +416,25 @@
               "
             />
             <slot name="toolbar-actions-after" :element-index="elementIndex" />
+            <!-- The main action comes last, with a menu beside it for anything else. -->
+            <craft-button-group
+              v-if="$slots['primary-action'] && menuActions?.length"
+            >
+              <slot name="primary-action" :element-index="elementIndex" />
+              <ActionMenu icon="chevron-down" :actions="menuActions">
+                <template #invoker="{label}">
+                  <craft-button
+                    slot="invoker"
+                    :variant="ButtonVariant.Primary"
+                    type="button"
+                    icon
+                  >
+                    <craft-icon name="chevron-down" :label="label"></craft-icon>
+                  </craft-button>
+                </template>
+              </ActionMenu>
+            </craft-button-group>
+            <slot v-else name="primary-action" :element-index="elementIndex" />
           </div>
         </template>
         <template #search-options v-if="$slots['search-options']">
@@ -513,7 +540,7 @@
             !isInlineEditing &&
             !pending &&
             !loading &&
-            structure !== undefined &&
+            elementIndex.structure != null &&
             mode === 'structure'
           "
           :is-row-collapsed="structureView.isCollapsed"
@@ -599,7 +626,7 @@
         :item-label="elementIndex.elementLowerDisplayName"
         :items-label="elementIndex.elementPluralLowerDisplayName"
         :page-size-label="
-          t('{type} per Page', {type: elementIndex.elementPluralDisplayName})
+          t('{type} per page', {type: elementIndex.elementPluralDisplayName})
         "
         @page-size-change="table.setPageSize"
       />
@@ -693,7 +720,7 @@
     display: flex;
     align-items: center;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
     background-color: var(--c-surface-default);
   }
 

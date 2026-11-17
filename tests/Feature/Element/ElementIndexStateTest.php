@@ -116,13 +116,26 @@ it('pulls in restricted source keys that are nested, after the key they follow',
     expect(sourceKeys($sources))->toBe(['heading:Custom', 'custom:a', 'custom:b-child', 'custom:c']);
 });
 
-it('appends a nested source key when the key it follows was not included', function () {
+// Such as an Assets field's restricted subfolder, which is listed before Temporary Uploads
+it('places a nested source key before the key that follows it when no key before it was included', function () {
     setUpRestrictableEntrySources();
 
     $sources = $this->indexState->sources(
         Entry::class,
         ElementSources::CONTEXT_MODAL,
         restrictTo: ['custom:b/custom:b-child', 'custom:c'],
+    );
+
+    expect(sourceKeys($sources))->toBe(['heading:Custom', 'custom:b-child', 'custom:c']);
+});
+
+it('appends a nested source key when no key around it was included', function () {
+    setUpRestrictableEntrySources();
+
+    $sources = $this->indexState->sources(
+        Entry::class,
+        ElementSources::CONTEXT_MODAL,
+        restrictTo: ['custom:c', 'nope', 'custom:b/custom:b-child'],
     );
 
     expect(sourceKeys($sources))->toBe(['heading:Custom', 'custom:c', 'custom:b-child']);

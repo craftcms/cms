@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderActionsResolving;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
@@ -16,6 +19,7 @@ use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -104,7 +108,7 @@ it('narrows the sources to the ones the opener allows', function (?string $sourc
     $props = ($this->postBody)(['elementType' => User::class, 'sources' => ['inactive'], 'source' => $source])->json('props');
     expect($props['source']['key'])->toBe('inactive')
         ->and($props['pagination']['total'])->toBe(1)->and($props['data'])->toHaveCount(1);
-})->with(['absent' => null, 'invalid' => 'missing']);
+})->with(['absent' => null, 'invalid' => 'missing', 'not allowed' => 'admins']);
 
 // A click in the modal is a selection. A linked title would instead navigate
 // the CP behind the modal to the element's edit screen, dropping the selection
@@ -218,6 +222,26 @@ describe('asset folders', function () {
             ]);
     });
 
+    it('lets plugins add buttons for the folder on screen, but not in the folder picker', function () {
+        $parent = Folders::ensureFolderByFullPathAndVolume('parent', $this->volume);
+        $root = Folders::getRootFolderByVolumeId($this->volume->id);
+
+        Event::listen(function (FolderActionsResolving $event) {
+            $event->actions[] = [
+                'label' => "Generate in {$event->folder->id} ({$event->context})",
+                'action' => ['type' => 'event', 'name' => 'my-plugin:generate'],
+            ];
+        });
+
+        expect(($this->postAssets)(['folderId' => $parent->id])['folderActions'])->toBe([[
+            'label' => "Generate in {$parent->id} (modal)",
+            'action' => ['type' => 'event', 'name' => 'my-plugin:generate'],
+        ]])
+            ->and(($this->postAssets)()['folderActions'][0]['label'])->toBe("Generate in {$root->id} (modal)")
+            ->and(($this->postAssets)(['folderId' => $parent->id, 'foldersOnly' => true])['folderActions'])->toBe([])
+            ->and(($this->postBody)()->json('props.folderActions'))->toBe([]);
+    });
+
     it('searches subfolders when asked to, as the assets index does', function () {
         $child = Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
         $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);
@@ -229,7 +253,7 @@ describe('asset folders', function () {
         ]);
         Search::indexElementAttributes($nestedAsset);
 
-        $search = ['folderId' => $parent->id, 'search' => 'nested-needle', 'showFolders' => false];
+        $search = ['folderId' => $parent->id, 'search' => 'nested-needle'];
         $ids = fn (array $props) => collect($props['data'])->pluck('id')->all();
 
         $props = ($this->postAssets)($search);
@@ -239,6 +263,32 @@ describe('asset folders', function () {
         $props = ($this->postAssets)([...$search, 'includeSubfolders' => 1]);
         expect($props['includeSubfolders'])->toBeTrue()
             ->and($ids($props))->toContain($nestedAsset->id);
+
+        $props = ($this->postAssets)([...$search, 'includeSubfolders' => 1, 'showFolders' => false]);
+        expect($props['canSearchSubfolders'])->toBeFalse()
+            ->and($props['includeSubfolders'])->toBeFalse()
+            ->and($ids($props))->not->toContain($nestedAsset->id);
+    });
+
+    it('keeps a subfolder source within that subfolder', function () {
+        $child = Folders::ensureFolderByFullPathAndVolume('restricted/child', $this->volume);
+        Folders::ensureFolderByFullPathAndVolume('outside', $this->volume);
+        $restricted = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'restricted/']);
+        $sources = ["volume:{$this->volume->uid}", "volume:{$this->volume->uid}/folder:{$restricted->uid}"];
+        $crumbs = fn (array $props) => collect($props['folderBreadcrumbs'])->pluck('folderId')->all();
+
+        $props = ($this->postAssets)([
+            'source' => "folder:{$restricted->uid}",
+            'sources' => $sources,
+            'folderId' => Folders::getRootFolderByVolumeId($this->volume->id)->id,
+        ]);
+
+        expect(collect($props['data'])->pluck('label')->all())->toBe(['child'])
+            ->and($crumbs($props))->toBe([$restricted->id]);
+
+        $props = ($this->postAssets)(['source' => "folder:{$restricted->uid}", 'sources' => $sources, 'folderId' => $child->id]);
+
+        expect($crumbs($props))->toBe([$restricted->id, $child->id]);
     });
 
     it('ignores a requested folder outside the current volume', function () {
@@ -253,6 +303,26 @@ describe('asset folders', function () {
         expect(collect($props['data'])->pluck('label')->all())->toBe(['mine'])
             ->and($props['folderBreadcrumbs'])->toHaveCount(1);
     });
+});
+
+it('keeps the opener’s selection condition when the user changes the filters', function () {
+    EntryModel::factory()->createElement(['title' => 'Allowed']);
+    EntryModel::factory()->createElement(['title' => 'Excluded']);
+
+    $titleCondition = fn (string $operator, string $value) => [
+        'class' => EntryCondition::class,
+        'elementType' => Entry::class,
+        'conditionRules' => [
+            ['class' => TitleConditionRule::class, 'operator' => $operator, 'value' => $value],
+        ],
+    ];
+
+    $response = ($this->postBody)([
+        'selectionCondition' => $titleCondition('=', 'Allowed'),
+        'condition' => $titleCondition('!=', 'Neither'),
+    ])->assertOk();
+
+    expect(collect($response->json('props.data'))->pluck('label')->all())->toBe(['Allowed']);
 });
 
 it('excludes the target IDs supplied by replacement modals', function () {

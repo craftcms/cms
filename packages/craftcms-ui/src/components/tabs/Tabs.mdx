@@ -34,7 +34,7 @@ Selection is a **property**, not slotted state. Read or set `selectedIndex` (`se
 
 <Canvas of={TabsStories.SelectedIndex} sourceState="shown" />
 
-Do not toggle `selected` on a tab — Lion owns that attribute and will overwrite it.
+Do not toggle `selected` on a tab — the strip owns that attribute and will overwrite it.
 
 ## Layout
 
@@ -82,7 +82,7 @@ Disabled tabs are skipped by arrow-key navigation, rather than being focusable a
 
 ## Accessibility
 
-Lion supplies the whole tab contract: the `role`, `aria-controls`, and `aria-labelledby` wiring, the roving tabindex, and arrow/Home/End navigation.
+The strip supplies the whole tab contract: the `role`, `aria-controls`, and `aria-labelledby` wiring, the roving tabindex, and arrow/Home/End navigation.
 
 It follows the APG [Tabs with Automatic Activation](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/examples/tabs-automatic/) pattern: the arrow keys move focus and selection together.
 

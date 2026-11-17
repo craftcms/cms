@@ -13,12 +13,14 @@ const stageTypes = [
   {
     type,
     label: 'User Review',
+    icon: 'user-magnifying-glass',
     settings: {approvalsRequired: 1, approvalMode: 'total', userGroups: []},
     settingsUi: null,
   },
   {
     type: 'plugin\\AutomatedStage',
     label: 'Automated review',
+    icon: null,
     settings: {rule: 'passing'},
     settingsUi: null,
   },
@@ -93,6 +95,23 @@ describe('WorkflowStagesInput', () => {
     await nextTick();
   }
 
+  it('shows stage type icons and falls back to plus for types without icons', async () => {
+    mount([stage('editorial', 'Editorial')]);
+    await nextTick();
+
+    const menu =
+      container!.querySelectorAll<CraftActionMenu>('craft-action-menu')[1]!;
+    await vi.waitFor(() =>
+      expect(menu.querySelectorAll('craft-action-item')).toHaveLength(2)
+    );
+
+    const items = [...menu.querySelectorAll('craft-action-item')];
+    expect(items.map((item) => [item.textContent?.trim(), item.icon])).toEqual([
+      ['User Review', 'user-magnifying-glass'],
+      ['Automated review', 'plus'],
+    ]);
+  });
+
   it('reorders complete stages', async () => {
     const updates = mount([
       stage('editorial', 'Editorial'),
@@ -156,7 +175,7 @@ describe('WorkflowStagesInput', () => {
 
     const nameInput = container!.querySelector('craft-input');
 
-    expect(nameInput?.getAttribute('has-feedback-for')).toBe('error');
+    expect(nameInput?.hasAttribute('invalid')).toBe(true);
     expect(nameInput?.textContent).toContain('The name field is required.');
   });
 });

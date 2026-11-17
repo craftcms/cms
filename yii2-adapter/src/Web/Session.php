@@ -278,6 +278,8 @@ class Session extends \yii\web\Session
             return;
         }
 
+        $original = $counters;
+
         foreach ($counters as $key => $count) {
             if ($count > 0) {
                 unset($counters[$key]);
@@ -287,7 +289,10 @@ class Session extends \yii\web\Session
             }
         }
 
-        $this->set($this->flashParam, $counters);
+        // Only write when something changed, so lazy sessions stay unsaved.
+        if ($counters !== $original) {
+            $this->set($this->flashParam, $counters);
+        }
     }
 
     /**
@@ -328,6 +333,7 @@ class Session extends \yii\web\Session
         $this->ensureFlashCountersUpdated();
 
         $counters = $this->get($this->flashParam, []);
+        $original = $counters;
         $flashes = [];
 
         $session = $this->getIlluminateSession()->all();
@@ -347,7 +353,10 @@ class Session extends \yii\web\Session
             }
         }
 
-        $this->set($this->flashParam, $counters);
+        // Only write when something changed, so lazy sessions stay unsaved.
+        if ($counters !== $original) {
+            $this->set($this->flashParam, $counters);
+        }
 
         foreach ($this->getIlluminateFlashKeys() as $key) {
             if (!array_key_exists($key, $flashes) && is_string($session[$key] ?? null)) {

@@ -14,6 +14,7 @@
 
 ### Visual
 
+- [x] Clipped text takes its direction from its own content, so it keeps its start visible and ends in the ellipsis even when it's written the other way from the page, such as an English title in a right-to-left control panel. Per WCAG 1.3.2 (Meaningful Sequence). Verified by `keeps the start of %s visible when it overflows` in `truncate.browser.test.ts`, with left-to-right text in a right-to-left page and the reverse.
 - [x] A slotted link keeps its own underline unless an ancestor sets `--c-truncate-link-decoration`, so wrapping a link in `craft-truncate` doesn't strip the cue that marks it as a link. Per WCAG 1.4.1 (Use of Color). Verified by `leaves a link in a truncate outside a chip as it is` in `chip.browser.test.ts`.
 
 ## Depends on usage

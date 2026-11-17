@@ -129,18 +129,8 @@
     pendingShiftKey.value = event.shiftKey;
   }
 
-  /**
-   * `craft-checkbox` dispatches `model-value-changed` from the host, not from an
-   * inner `<input>`, so an `instanceof HTMLInputElement` test reads every change
-   * as unchecked. It also re-fires on programmatic `.checked` updates, which
-   * turned each selection into an immediate deselection.
-   */
-  function checkboxValue(event: Event): boolean {
-    return Boolean((event.target as {checked?: boolean} | null)?.checked);
-  }
-
   function onCheckboxChange(id: Id, event: Event): void {
-    props.selection.setChecked(id, checkboxValue(event), {
+    props.selection.setChecked(id, (event.target as HTMLInputElement).checked, {
       shiftKey: pendingShiftKey.value,
     });
   }
@@ -263,7 +253,7 @@
               .disabled="
                 readOnly || interactionsDisabled || !selection.canSelect(id)
               "
-              @model-value-changed="onCheckboxChange(id, $event)"
+              @change="onCheckboxChange(id, $event)"
             >
               <label slot="label">{{
                 selectLabel?.(id, index) ?? t('Select')
@@ -272,7 +262,7 @@
             <slot name="label" :id="id" :index="index" />
           </div>
 
-          <div class="flex gap-1 items-center" data-card-actions>
+          <div class="flex items-center" data-card-actions>
             <slot name="actions" :id="id" :index="index" />
             <span
               v-if="sortable"
@@ -309,3 +299,11 @@
     </component>
   </component>
 </template>
+
+<style scoped>
+  /* Over a cover image the buttons have a backing of their own, so they need
+     room between them that plain ones don't. */
+  craft-card[cover-src] [data-card-actions] {
+    gap: var(--c-spacing-sm);
+  }
+</style>

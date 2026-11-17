@@ -32,10 +32,10 @@ class Asset extends Element
         /** @var AssetElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if (! empty($arguments) && Gql::isAssetTransformField($fieldName)) {
-            $transform = Gql::prepareTransformArguments($arguments);
+        $definition = Gql::isAssetTransformField($fieldName) ? Gql::prepareTransformArguments($arguments) : [];
 
-            return Gql::resolveAssetTransform($source, $transform, $fieldName);
+        if (! empty($definition)) {
+            return Gql::resolveAssetTransform($source, $definition, $fieldName, ($arguments['immediately'] ?? false) === true);
         }
 
         $transform = app(AssetTransformContext::class)->get($source);
@@ -45,6 +45,7 @@ class Asset extends Element
                 $source,
                 $transform->definition,
                 $fieldName,
+                $transform->immediately,
             );
         }
 

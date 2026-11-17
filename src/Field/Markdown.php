@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field;
 
 use Closure;
-use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
-use CraftCms\Cms\Asset\Data\Volume;
-use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
-use CraftCms\Cms\Condition\Contracts\ConditionInterface;
-use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
+use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Concerns\ProvidesAssetSettings;
 use CraftCms\Cms\Field\Concerns\ProvidesLinkField;
 use CraftCms\Cms\Field\Concerns\TracksReferences;
 use CraftCms\Cms\Field\Conditions\TextFieldConditionRule;
@@ -24,17 +21,12 @@ use CraftCms\Cms\Field\Data\MarkdownData;
 use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Facades\Conditions;
-use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
-use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Controls\Choice;
-use CraftCms\Cms\Ui\Controls\ConditionBuilder;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
 use CraftCms\Cms\Ui\Controls\Number;
@@ -47,18 +39,17 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
  */
 class Markdown extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface, TracksReferencesFieldInterface
 {
+    use ProvidesAssetSettings;
     use ProvidesLinkField;
     use TracksReferences;
 
@@ -155,21 +146,6 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
 
     public ?int $byteLimit = null;
 
-    /** @var list<string>|'*' */
-    public array|string $availableVolumes = '*';
-
-    public ?string $uploadVolume = null;
-
-    public bool $showUnpermittedVolumes = false;
-
-    /**
-     * @phpstan-var ElementConditionInterface|array{class:class-string<ElementConditionInterface>}|null
-     *
-     * @see getAssetSelectionCondition()
-     * @see setAssetSelectionCondition()
-     */
-    private array|null|ElementConditionInterface $_assetSelectionCondition = null;
-
     /** @param array<string, mixed> $config */
     public function __construct(array $config = [])
     {
@@ -191,21 +167,7 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
         }
 
         $config = $this->prepareLinkSettingsConfig($config);
-
-        if (array_key_exists('availableVolumes', $config)) {
-            $config['availableVolumes'] = match (true) {
-                $config['availableVolumes'] === '*',
-                $config['availableVolumes'] === ['*'] => '*',
-                is_array($config['availableVolumes']) => $config['availableVolumes'],
-                $config['availableVolumes'] === null,
-                $config['availableVolumes'] === '' => [],
-                default => [$config['availableVolumes']],
-            };
-        }
-
-        if (($config['uploadVolume'] ?? null) === '') {
-            $config['uploadVolume'] = null;
-        }
+        $config = $this->prepareAssetSettingsConfig($config);
 
         if (($config['htmlSanitizer'] ?? null) === '') {
             $config['htmlSanitizer'] = null;
@@ -224,12 +186,7 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
             $this->placeholder = Str::shortcodesToEmoji($this->placeholder);
         }
 
-        // Add the “Viewable” rule by default
-        if (! isset($config['id']) && is_null($this->getAssetSelectionCondition())) {
-            $condition = $this->createAssetSelectionCondition();
-            $condition->getConditionRules()->addRule(new ViewableConditionRule(['value' => true]));
-            $this->setAssetSelectionCondition($condition);
-        }
+        $this->addDefaultAssetSelectionCondition($config);
     }
 
     #[Override]
@@ -263,15 +220,19 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
             ->types($this->linkPickerConfig())
             ->showLabelField($this->linkSettingsShowLabelField)
             ->advancedFields($this->linkSettingsAdvancedFields)
+            ->assetSources($this->assetSourceKeys())
+            ->assetCondition($this->getAssetSelectionCondition())
+            ->assetReferenceElement($context->element)
+            // Let the selection condition determine whether they can view unpermitted files
+            ->assetAnyUploader()
+            ->uploadFolderId($this->uploadFolderId())
+            ->uploadSiteId($context->element->siteId ?? app(RequestedSite::class)->get()->id ?? Sites::getCurrentSite()->id)
             ->value($context->value instanceof MarkdownData ? $context->value->getRaw() : $context->value);
     }
 
     #[Override]
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
-        $volumeOptions = $this->volumeOptions();
-        $assetSelectionCondition = $this->getAssetSelectionCondition() ?? $this->createAssetSelectionCondition();
-
         return Ui::make([
             UiField::make(t('Markdown Flavor'))
                 ->instructions(t('The Markdown flavor that should be used when rendering this field.'))
@@ -320,33 +281,7 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
                 ->add(...$this->linkSettingsNodes()), 'markdown-link-settings')
             ->addGroup(t('Assets'), fn (Group $group): Group => $group
                 ->collapsible()
-                ->add(
-                    UiField::make(t('Available Volumes'))
-                        ->instructions(t('The volumes that should be available when selecting assets.'))
-                        ->control(Choice::make('availableVolumes')
-                            ->multiple()
-                            ->options([
-                                ['label' => t('All'), 'value' => '*'],
-                                ...$volumeOptions,
-                            ])
-                            ->value($this->availableVolumes === '*' ? ['*'] : $this->availableVolumes)),
-                    UiField::make(t('Show unpermitted volumes'))
-                        ->instructions(t('Whether to show volumes that the user doesn’t have permission to view.'))
-                        ->control(Lightswitch::make('showUnpermittedVolumes')->value($this->showUnpermittedVolumes)),
-                    UiField::make(t('Selectable Assets Condition'))
-                        ->instructions(mb_ucfirst(t('Only allow assets to be selected if they match the following rules:')))
-                        ->control(ConditionBuilder::make('assetSelectionCondition')
-                            ->conditionClass($assetSelectionCondition::class)
-                            ->queryParams(['site'])
-                            ->forProjectConfig()
-                            ->value($assetSelectionCondition->getConfig())),
-                    UiField::make(t('Upload Volume'))
-                        ->instructions(t('The volume where pasted or dropped files should be uploaded.'))
-                        ->control(Choice::make('uploadVolume')->options([
-                            ['label' => t('No uploads'), 'value' => ''],
-                            ...$volumeOptions,
-                        ])->value($this->uploadVolume)),
-                ), 'markdown-asset-settings')
+                ->add(...$this->assetSettingsNodes()), 'markdown-asset-settings')
             ->addGroup(t('Advanced'), fn (Group $group): Group => $group
                 ->collapsible()
                 ->add(
@@ -410,18 +345,6 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
             ->all();
     }
 
-    /** @return list<array{label: string, value: string}> */
-    public function volumeOptions(): array
-    {
-        return Volumes::getAllVolumes()
-            ->map(fn (Volume $volume) => [
-                'label' => $volume->name,
-                'value' => $volume->uid,
-            ])
-            ->values()
-            ->all();
-    }
-
     #[Override]
     public function getSettings(): array
     {
@@ -430,54 +353,7 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
             $settings['placeholder'] = Str::emojiToShortcodes($settings['placeholder']);
         }
 
-        if ($assetSelectionCondition = $this->getAssetSelectionCondition()) {
-            $settings['assetSelectionCondition'] = $assetSelectionCondition->getConfig();
-        }
-
-        return $settings;
-    }
-
-    /**
-     * Returns the element condition that should be used to determine which assets are selectable by this field.
-     */
-    public function getAssetSelectionCondition(): ?ElementConditionInterface
-    {
-        if ($this->_assetSelectionCondition !== null && ! $this->_assetSelectionCondition instanceof ConditionInterface) {
-            /** @var ElementConditionInterface $condition */
-            $condition = Conditions::createCondition($this->_assetSelectionCondition);
-            if (! empty($condition->getConditionRules()->getRules())) {
-                $this->_assetSelectionCondition = $condition;
-            } else {
-                $this->_assetSelectionCondition = null;
-            }
-        }
-
-        return $this->_assetSelectionCondition;
-    }
-
-    /**
-     * Sets the element condition that should be used to determine which assets are selectable by this field.
-     *
-     * @param  ElementConditionInterface|string|array|null  $condition
-     *
-     * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
-     */
-    public function setAssetSelectionCondition(mixed $condition): void
-    {
-        if ($condition instanceof ConditionInterface && ! $condition->getConditionRules()->getRules()) {
-            $condition = null;
-        }
-
-        // Don't instantiate it unless we actually end up needing it.
-        $this->_assetSelectionCondition = $condition;
-    }
-
-    /**
-     * Creates an element condition that should be used to determine which assets are selectable by this field.
-     */
-    protected function createAssetSelectionCondition(): ElementConditionInterface
-    {
-        return AssetElement::createCondition();
+        return [...$settings, ...$this->assetSelectionConditionSettings()];
     }
 
     #[Override]
@@ -515,30 +391,7 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
             'initialRows' => ['nullable', 'integer', 'min:1'],
             'charLimit' => ['nullable', 'integer', 'min:1'],
             'byteLimit' => ['nullable', 'integer', 'min:1'],
-            'uploadVolume' => ['nullable', Rule::in(Arr::pluck($this->volumeOptions(), 'value'))],
-            'availableVolumes' => [
-                function ($attribute, mixed $value, Closure $fail) {
-                    if ($value === '*') {
-                        return;
-                    }
-
-                    if (! is_array($value)) {
-                        $fail(t('Invalid volumes.'));
-
-                        return;
-                    }
-
-                    foreach ($value as $volumeUid) {
-                        if (! is_string($volumeUid) || ! in_array($volumeUid, Arr::pluck($this->volumeOptions(), 'value'), true)) {
-                            $fail(t('Invalid volumes.'));
-
-                            return;
-                        }
-                    }
-                },
-            ],
-            'showUnpermittedVolumes' => ['boolean'],
-        ], $this->linkSettingsRules());
+        ], $this->assetSettingsRules(), $this->linkSettingsRules());
     }
 
     #[Override]
@@ -582,107 +435,6 @@ class Markdown extends Field implements InlineEditableFieldInterface, InputSchem
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): ?MarkdownData
     {
         return $this->normalizeMarkdownValue($value, true);
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->input($value, $element, $inline, false);
-    }
-
-    private function input(mixed $value, ?ElementInterface $element, bool $inline, bool $static): string
-    {
-        $id = $this->getInputId();
-        $placeholder = $this->placeholder !== null
-            ? t(Str::unescapeShortcodes($this->placeholder), category: 'site')
-            : null;
-        $assetSourceKeys = $this->assetSourceKeys();
-        $settings = [
-            'assetCondition' => $this->getAssetSelectionCondition()?->getConfig(),
-            'assetCriteria' => $this->assetSelectionCriteria(),
-            'assetSources' => $assetSourceKeys,
-            'describedBy' => $this->describedBy === null ? null : collect(explode(' ', $this->describedBy))
-                ->map(fn (string $id) => InputNamespace::namespaceId($id))
-                ->implode(' '),
-            'disabled' => $static,
-            'encode' => $this->encode,
-            'flavor' => $this->flavor,
-            'inlineOnly' => $this->inlineOnly,
-            'linkAdvancedFields' => $this->linkSettingsAdvancedFields,
-            'linkTypes' => $this->linkPickerConfig(),
-            'maxLength' => $static ? null : $this->charLimit,
-            'placeholder' => $placeholder,
-            'rows' => $this->initialRows,
-            'sanitizeHtml' => $this->sanitizeHtml,
-            'htmlSanitizer' => $this->htmlSanitizer,
-            'showLinkLabelField' => $this->linkSettingsShowLabelField,
-            'showStats' => $this->showStats,
-            'showToolbar' => $this->showToolbar && ! $inline && ! $static,
-            'toolbarButtons' => $assetSourceKeys === []
-                ? array_values(array_diff($this->toolbarButtons, [self::TOOLBAR_ASSET]))
-                : $this->toolbarButtons,
-            'uploadFolderId' => $static ? null : $this->uploadFolderId(),
-            'uploadSiteId' => $element->siteId ?? Sites::getCurrentSite()->id,
-            'value' => $this->rawValue($value),
-        ];
-
-        return template('_components/fieldtypes/Markdown/input', [
-            'id' => $id,
-            'name' => $this->handle,
-            'disabled' => $static,
-            'settings' => $settings,
-        ]);
-    }
-
-    /** @return list<string> */
-    private function assetSourceKeys(): array
-    {
-        return $this->availableAssetVolumes()
-            ->map(fn (Volume $volume) => "volume:$volume->uid")
-            ->all();
-    }
-
-    /** @return array{uploaderId: null} */
-    private function assetSelectionCriteria(): array
-    {
-        // Let the selection condition determine whether they can view unpermitted files
-        return ['uploaderId' => null];
-    }
-
-    private function uploadFolderId(): ?int
-    {
-        $volume = $this->uploadVolume();
-
-        if (! $volume || ! Gate::check("saveAssets:$volume->uid")) {
-            return null;
-        }
-
-        return Folders::getRootFolderByVolumeId($volume->id)?->id;
-    }
-
-    private function uploadVolume(): ?Volume
-    {
-        if (! $this->uploadVolume) {
-            return null;
-        }
-
-        return Volumes::getVolumeByUid($this->uploadVolume);
-    }
-
-    /** @return Collection<int, Volume> */
-    private function availableAssetVolumes(): Collection
-    {
-        $volumes = Volumes::getAllVolumes();
-
-        if ($this->availableVolumes !== '*') {
-            $volumes = $volumes->filter(fn (Volume $volume) => in_array($volume->uid, $this->availableVolumes, true));
-        }
-
-        if (! $this->showUnpermittedVolumes) {
-            $volumes = $volumes->filter(fn (Volume $volume) => Gate::check("viewAssets:$volume->uid"));
-        }
-
-        return $volumes->values();
     }
 
     /** @return list<Closure> */

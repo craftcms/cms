@@ -257,6 +257,15 @@ export default defineConfig(async ({mode}) => {
             'no-undef': 'off',
             'vue/require-default-prop': 'off',
             'typescript/no-explicit-any': 'off',
+            'no-restricted-properties': [
+              'error',
+              {
+                object: 'crypto',
+                property: 'randomUUID',
+                message:
+                  'Use uuid() from @/common/craft/strings; crypto.randomUUID() only exists in secure contexts.',
+              },
+            ],
           },
           globals: {
             Craft: 'readonly',
@@ -400,7 +409,7 @@ export default defineConfig(async ({mode}) => {
       emptyOutDir: true,
       rollupOptions: {
         // App builds drop entry exports by default, which would empty the
-        // `vue.ts`/`cp-module.ts`/`garnish.ts` entries that plugin bundles
+        // `vue.ts`/`inertia.ts`/`cp-module.ts`/`garnish.ts` entries that plugin bundles
         // import through the import map.
         preserveEntrySignatures: 'exports-only',
       },
@@ -482,6 +491,7 @@ export default defineConfig(async ({mode}) => {
                   'yii2-adapter/resources/js/element-editor.ts',
                   'resources/js/cp-module.ts',
                   'resources/js/garnish.ts',
+                  'resources/js/inertia.ts',
                   'resources/js/legacy.ts',
                   'resources/js/uploads.ts',
                   'resources/js/vue.ts',

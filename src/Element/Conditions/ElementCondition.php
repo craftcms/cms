@@ -204,6 +204,28 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         return parent::isConditionRuleSelectable($rule);
     }
 
+    /**
+     * Whether {@see selectableConditionRules()} includes rules for the field layouts' fields, which takes loading them.
+     */
+    private bool $includeFieldRuleTypes = true;
+
+    #[Override]
+    protected function selectableConditionRuleTypesFor(ConditionRuleInterface $rule): array
+    {
+        if ($rule instanceof FieldConditionRuleInterface || $rule instanceof GeneratedFieldConditionRule) {
+            return parent::selectableConditionRuleTypesFor($rule);
+        }
+
+        // Other rules don't come from the field layouts, so there's no need to load them all to check one.
+        $this->includeFieldRuleTypes = false;
+
+        try {
+            return $this->resolveSelectableConditionRuleTypes();
+        } finally {
+            $this->includeFieldRuleTypes = true;
+        }
+    }
+
     protected function selectableConditionRules(): array
     {
         $types = [
@@ -238,51 +260,66 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
                 $types[] = TitleConditionRule::class;
             }
 
-            $labels = $this->customFieldIndex()['labels'];
-            $seenFieldRules = [];
+            if ($this->includeFieldRuleTypes) {
+                array_push($types, ...$this->fieldConditionRuleTypes());
+            }
+        }
 
-            foreach ($this->getFieldLayouts() as $fieldLayout) {
-                foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
-                    // Discard fields with empty labels
-                    $label = $labels[spl_object_id($layoutElement)] ?? $layoutElement->label();
-                    if ($label === null) {
-                        continue;
-                    }
-                    $field = $layoutElement->getField();
-                    $type = $field->getElementConditionRuleType();
-                    if ($type === null) {
-                        continue;
-                    }
+        return $types;
+    }
 
-                    if (is_string($type)) {
-                        $type = ['class' => $type];
-                    }
-                    if (! is_subclass_of($type['class'], FieldConditionRuleInterface::class)) {
-                        throw new InvalidTypeException($type['class'], FieldConditionRuleInterface::class);
-                    }
+    /**
+     * Returns the rule types for the field layouts' custom and generated fields.
+     *
+     * @return list<array{class: string}>
+     */
+    private function fieldConditionRuleTypes(): array
+    {
+        $types = [];
+        $labels = $this->customFieldIndex()['labels'];
+        $seenFieldRules = [];
 
-                    $type['fieldUid'] = $field->uid;
-
-                    // A field shared by many layouts would otherwise offer one rule per layout, which the
-                    // condition builder can't tell apart and only shows once
-                    $key = Json::encode([$type, $label, $field->handle]);
-                    if (isset($seenFieldRules[$key])) {
-                        continue;
-                    }
-                    $seenFieldRules[$key] = true;
-
-                    $type['layoutElementUid'] = $field->layoutElement->uid;
-
-                    $types[] = $type;
+        foreach ($this->getFieldLayouts() as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
+                // Discard fields with empty labels
+                $label = $labels[spl_object_id($layoutElement)] ?? $layoutElement->label();
+                if ($label === null) {
+                    continue;
+                }
+                $field = $layoutElement->getField();
+                $type = $field->getElementConditionRuleType();
+                if ($type === null) {
+                    continue;
                 }
 
-                foreach ($fieldLayout->getGeneratedFields() as $field) {
-                    if (($field['name'] ?? '') !== '' && ($field['handle'] ?? '') !== '') {
-                        $types[] = [
-                            'class' => GeneratedFieldConditionRule::class,
-                            'fieldUid' => $field['uid'],
-                        ];
-                    }
+                if (is_string($type)) {
+                    $type = ['class' => $type];
+                }
+                if (! is_subclass_of($type['class'], FieldConditionRuleInterface::class)) {
+                    throw new InvalidTypeException($type['class'], FieldConditionRuleInterface::class);
+                }
+
+                $type['fieldUid'] = $field->uid;
+
+                // A field shared by many layouts would otherwise offer one rule per layout, which the
+                // condition builder can't tell apart and only shows once
+                $key = Json::encode([$type, $label, $field->handle]);
+                if (isset($seenFieldRules[$key])) {
+                    continue;
+                }
+                $seenFieldRules[$key] = true;
+
+                $type['layoutElementUid'] = $field->layoutElement->uid;
+
+                $types[] = $type;
+            }
+
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                if (($field['name'] ?? '') !== '' && ($field['handle'] ?? '') !== '') {
+                    $types[] = [
+                        'class' => GeneratedFieldConditionRule::class,
+                        'fieldUid' => $field['uid'],
+                    ];
                 }
             }
         }

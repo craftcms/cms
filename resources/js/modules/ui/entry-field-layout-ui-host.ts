@@ -244,9 +244,9 @@ export function defineEntryFieldLayoutUiHost(
                     : undefined;
                   return editor?.getDraftElementId?.(id) ?? id;
                 },
-                refresh: async () => {
+                refresh: async (options) => {
                   const parent = nativeOwner ?? requestNestedOwnerEditor(this);
-                  if (parent?.refresh) return parent.refresh();
+                  if (parent?.refresh) return parent.refresh(options);
                   if (!this.#payload.value) {
                     return;
                   }

@@ -13,12 +13,12 @@ It is the icon primitive the rest of the library builds on — buttons, action i
 
 ## Sizing and Color
 
-Icons inherit `currentColor` and are sized in `em`, so they take the color and size of the text around them.
-That is deliberate: an icon beside a label should match that label without either being set explicitly.
+Icons inherit `currentColor`, so they take the color of the text around them.
 
-<Canvas of={IconStories.InheritsText} sourceState="shown" />
+They're 12×12px (`--c-size-icon-sm`) by default, whatever the size of the text around them, so icons stay consistent across the control panel.
+Where text is set bigger or smaller than usual and icons sit beside it, set `--c-icon-size` to another `--c-size-icon-*` token alongside the font size. It's inherited, so it reaches every icon inside, including those within other components. Small buttons do this themselves, giving their icons `--c-size-icon-xs`.
 
-To change an icon's size, change the font size of what contains it.
+<Canvas of={IconStories.SizeAndColor} sourceState="shown" />
 
 ## Naming an Icon
 

@@ -12,6 +12,7 @@ use CraftCms\Cms\Entry\Conditions\FieldConditionRule;
 use CraftCms\Cms\Entry\Conditions\PostDateConditionRule;
 use CraftCms\Cms\Entry\Conditions\SavableConditionRule;
 use CraftCms\Cms\Entry\Conditions\SectionConditionRule;
+use CraftCms\Cms\Entry\Conditions\SectionTypeConditionRule;
 use CraftCms\Cms\Entry\Conditions\TypeConditionRule;
 use CraftCms\Cms\Entry\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -113,6 +114,48 @@ describe('SectionConditionRule', function () {
         $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->count())->toBeGreaterThanOrEqual(1);
+    });
+});
+
+describe('SectionTypeConditionRule', function () {
+    beforeEach(function () {
+        $this->single = EntryModel::factory()->forSection(Section::factory()->create(['type' => SectionType::Single]))->create();
+        $this->channel = EntryModel::factory()->forSection(Section::factory()->create(['type' => SectionType::Channel]))->create();
+        $this->structure = EntryModel::factory()->forSection(Section::factory()->create(['type' => SectionType::Structure]))->create();
+        Sections::refreshSections();
+    });
+
+    it('matches and queries entries in sections of the selected types', function (string $operator, array $expected) {
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(SectionTypeConditionRule::class);
+        $rule->operator = $operator;
+        $rule->values = [SectionType::Single->value, SectionType::Structure->value];
+
+        $ids = ['single' => $this->single->id, 'channel' => $this->channel->id, 'structure' => $this->structure->id];
+        $expectedIds = array_map(fn (string $key) => $ids[$key], $expected);
+
+        $query = Entry::find()->id(array_values($ids))->status(null);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        $matched = array_keys(array_filter(
+            $ids,
+            fn (int $id) => $rule->matchElement(Entry::find()->id($id)->status(null)->one()),
+        ));
+
+        expect($query->ids())->toEqualCanonicalizing($expectedIds)
+            ->and($matched)->toEqualCanonicalizing($expected);
+    })->with([
+        'in' => ['in', ['single', 'structure']],
+        'not in' => ['ni', ['channel']],
+    ]);
+
+    it('doesn’t match sectionless entries, which its query leaves out', function () {
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(SectionTypeConditionRule::class);
+        $rule->operator = 'ni';
+        $rule->values = [SectionType::Single->value];
+
+        expect($rule->matchElement(new Entry))->toBeFalse();
     });
 });
 

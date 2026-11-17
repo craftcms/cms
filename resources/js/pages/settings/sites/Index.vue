@@ -81,7 +81,7 @@
       ? []
       : [
           {
-            label: t('New Group'),
+            label: t('New group'),
             icon: 'plus',
             onClick: () => openModal('create'),
           },
@@ -93,7 +93,7 @@
   <div class="contents">
     <LayoutSlot name="title">
       <div class="flex gap-md items-center">
-        <h1 class="title text-xl">
+        <h1 class="title cp-h1">
           {{ title }}
         </h1>
 
@@ -107,14 +107,14 @@
 
           <div slot="content">
             <craft-action-item @click.prevent="openModal('update')">
-              {{ t('Rename Group') }}
+              {{ t('Rename group') }}
             </craft-action-item>
             <craft-action-item
               variant="danger"
               .disabled="tableNode.props.rows.length > 0"
               @click.prevent="handleDeleteClick"
             >
-              {{ t('Delete Group') }}
+              {{ t('Delete group') }}
             </craft-action-item>
           </div>
         </craft-action-menu>
@@ -136,7 +136,7 @@
               :href="create({}, {query: {groupId: group?.id}}).url"
             >
               <craft-icon name="plus" slot="prefix"></craft-icon>
-              {{ t('New Site') }}
+              {{ t('New site') }}
             </CpButtonLink>
           </craft-empty>
         </template>
@@ -144,7 +144,7 @@
     </div>
 
     <ModalForm
-      :title="form.id ? t('Rename Group') : t('New Group')"
+      :title="form.id ? t('Rename group') : t('New group')"
       :is-active="modalActive"
       :loading="form.processing"
       @submit="saveGroup"

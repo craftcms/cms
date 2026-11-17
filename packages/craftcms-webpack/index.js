@@ -395,7 +395,6 @@ const getConfig = ({context, type, watchPaths, postcssConfig, config = {}}) => {
         fabric: 'fabric',
         'element-resize-detector': 'elementResizeDetectorMaker',
         garnishjs: 'Garnish',
-        'iframe-resizer': 'iFrameResize',
         picturefill: 'picturefill',
       },
     };

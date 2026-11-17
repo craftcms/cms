@@ -13,7 +13,11 @@
   import {computed, shallowRef, useTemplateRef} from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItems} from '@/common/types';
-  import {sideIcons, type CompareSide} from '@/modules/elements/compareLayout';
+  import {
+    sideIcons,
+    sideLetters,
+    type CompareSide,
+  } from '@/modules/elements/compareLayout';
 
   const props = defineProps<{
     side: CompareSide;
@@ -32,6 +36,11 @@
      * has no menu, since it doesn't tell the sides apart.
      */
     shared?: {site: boolean; version: boolean};
+    /**
+     * Whether the screen names the sides by their letters, when nothing else
+     * tells them apart, so the side's A/B icon shows at every width.
+     */
+    lettered?: boolean;
   }>();
 
   const hasSiteMenu = computed(() =>
@@ -107,11 +116,15 @@
     <craft-icon
       :name="sideIcons[side]"
       class="compare-version-header__side-icon"
+      :class="{'compare-version-header__side-icon--shown': lettered}"
       aria-hidden="true"
     ></craft-icon>
     <h2 :id="headingId" class="compare-version-header__title">
+      <!-- Names the side by its letter, which its icon shows. -->
       <span class="sr-only">{{
-        side === 'from' ? t('Compared with:') : t('Showing:')
+        side === 'from'
+          ? t('{letter}, compared with:', {letter: sideLetters[side]})
+          : t('{letter}, showing:', {letter: sideLetters[side]})
       }}</span>
       <ActionMenu
         v-if="showsSite"
@@ -205,6 +218,10 @@
     font-size: var(--c-text-base);
   }
 
+  .compare-version-header__side-icon--shown {
+    display: inline-flex;
+  }
+
   .compare-version-header__title {
     display: flex;
     align-items: center;
@@ -250,6 +267,7 @@
   .compare-version-header craft-button::part(label) {
     overflow: hidden;
     text-overflow: ellipsis;
+    unicode-bidi: plaintext;
   }
 
   .compare-version-header__label {
@@ -260,6 +278,7 @@
     font-weight: var(--font-weight-medium);
     text-overflow: ellipsis;
     white-space: nowrap;
+    unicode-bidi: plaintext;
   }
 
   /* The suffix stacks what's in it; the badge goes beside the chevron. */

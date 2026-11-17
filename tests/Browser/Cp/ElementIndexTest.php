@@ -111,7 +111,7 @@ it('filters the entries by status', function () {
     Elements::saveElement($charlie);
 
     visitCp('content/entries/articles')
-        ->click('#main >> role=button[name="Status All"]')
+        ->click('#main >> role=combobox[name="Status"]')
         ->click('role=option[name="Disabled"]')
         ->assertQueryStringHas('status', 'disabled')
         ->assertDontSeeIn('#main tbody', 'Alpha')

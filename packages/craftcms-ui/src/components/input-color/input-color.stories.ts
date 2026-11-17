@@ -11,8 +11,8 @@ import type CraftInputColor from './input-color.js';
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `input-color.ts` surfaces it here without touching this file.
  *
- * The template is written out rather than generated: the value is Lion's
- * `modelValue`, a property rather than an attribute, and the label is a slot.
+ * The template is written out rather than generated: the value is the
+ * `value` property rather than an attribute, and the label is a slot.
  */
 const {args, argTypes} =
   getStorybookHelpers<CraftInputColor>('craft-input-color');
@@ -23,7 +23,7 @@ type CraftInputColorArgs = CraftInputColor & typeof args;
 const field = (args: Record<string, unknown>, extra: unknown = '') => html`
   <craft-input-color
     ?disabled="${args.disabled}"
-    .modelValue="${args.value ?? ''}"
+    .value="${args.value ?? ''}"
     .presets="${(args.presets as string[]) ?? []}"
   >
     <label slot="label">${args['label-slot']}</label>
@@ -67,14 +67,11 @@ export const WithPresets: Story = {
   args: {presets: ['#ffffff', '000000', '#7ab55c', 'e5422b']},
 };
 
-/** Validation feedback goes in the `feedback` slot, as on any Lion field. */
+/** Validation feedback goes in the `feedback` slot, alongside `invalid`. */
 export const WithError: Story = {
   args: {value: 'not-a-color'},
   render: (args) =>
-    html`<craft-input-color
-      .modelValue="${args.value ?? ''}"
-      has-feedback-for="error"
-    >
+    html`<craft-input-color .value="${args.value ?? ''}" invalid>
       <label slot="label">${args['label-slot']}</label>
       <div slot="feedback">
         <ul class="error-list">

@@ -65,6 +65,16 @@ class NestedElementManager extends Component
     private static array $renderedPropagationFormats = [];
 
     /**
+     * Forgets the propagation keys rendered so far, so a long-lived worker doesn't keep them between requests.
+     *
+     * @internal
+     */
+    public static function forgetRenderedPropagationKeys(): void
+    {
+        self::$renderedPropagationFormats = [];
+    }
+
+    /**
      * @param  class-string<NestedElementInterface>  $elementType
      * @param  Closure(ElementInterface): ElementQueryInterface  $queryFactory
      * @param  array<string,mixed>  $config

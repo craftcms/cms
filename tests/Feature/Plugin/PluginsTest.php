@@ -546,7 +546,7 @@ it('does not read file overrides without installed information', function () {
     expect($this->plugins->createPlugin('test-plugin')->getSettings()->foo)->toBeNull();
 });
 
-it('saves submitted overrides and omitted file values without mutating configuration input', function () {
+it('saves submitted settings without overridden file values or mutating configuration input', function () {
     app()->offsetUnset(TestPlugin::class);
     $input = new TestPluginSettings()->foo('File foo')->bar('File bar');
     Config::set('craft.test-plugin', $input);
@@ -558,12 +558,26 @@ it('saves submitted overrides and omitted file values without mutating configura
 
     expect($plugin->getSettings())->toBe($settings)
         ->and($settings->validationData())->toBe(['foo' => 'Submitted', 'bar' => 'File bar'])
-        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe(['bar' => 'File bar', 'foo' => 'Submitted'])
+        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe([])
         ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'File foo', 'bar' => 'File bar'])
         ->and($input->validationData())->toBe(['foo' => 'File foo', 'bar' => 'File bar']);
 });
 
-it('saves full validation data even when configuration data is customized', function () {
+it('keeps stored values of settings overridden by configuration when saving', function (array $stored, array $expected) {
+    app(ProjectConfig::class)->set('plugins.test-plugin.settings', $stored);
+    Config::set('craft.test-plugin', ['bar' => 'File bar']);
+    $plugin = $this->plugins->createPlugin('test-plugin', ['settings' => $stored]);
+
+    expect($this->plugins->savePluginSettings($plugin, ['foo' => 'Submitted', 'bar' => 'File bar']))->toBeTrue();
+
+    expect($plugin->getSettings()->validationData())->toBe(['foo' => 'Submitted', 'bar' => 'File bar'])
+        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe($expected);
+})->with([
+    'stored' => [['foo' => 'CP foo', 'bar' => 'CP bar'], ['bar' => 'CP bar', 'foo' => 'Submitted']],
+    'not stored' => [['foo' => 'CP foo'], ['foo' => 'Submitted']],
+]);
+
+it('saves validation data outside the configured settings when configuration data is customized', function () {
     app()->offsetUnset(TestPlugin::class);
     $plugin = new class(app()) extends TestPlugin
     {
@@ -591,7 +605,7 @@ it('saves full validation data even when configuration data is customized', func
 
     expect($plugin->getSettings()->validationData())->toBe(['foo' => 'Submitted', 'bar' => 'Saved bar'])
         ->and($plugin->getSettings()->configData())->toBe(['foo' => 'Config foo'])
-        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe(['bar' => 'Saved bar', 'foo' => 'Submitted'])
+        ->and(app(ProjectConfig::class)->get('plugins.test-plugin.settings'))->toBe(['bar' => 'Saved bar'])
         ->and(Config::get('craft.test-plugin'))->toBe(['foo' => 'Config foo'])
         ->and($input->validationData())->toBe(['foo' => 'Input foo', 'bar' => 'Input bar']);
 });

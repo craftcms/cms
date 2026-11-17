@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -21,8 +22,6 @@ return new class extends Migration
         $filesystems = is_array($filesystems) ? $filesystems : [];
         $volumes = $projectConfig->get(ProjectConfig::PATH_VOLUMES);
         $volumes = is_array($volumes) ? $volumes : [];
-        $transformers = $projectConfig->get(ProjectConfig::PATH_ASSET_TRANSFORMERS);
-        $transformers = is_array($transformers) ? $transformers : [];
         $configuredDisks = config('filesystems.disks', []);
         $configuredDisks = is_array($configuredDisks) ? $configuredDisks : [];
         $missingDisks = [];
@@ -33,15 +32,6 @@ return new class extends Migration
             }
 
             $this->requireConfiguredDisk($volume['fs'] ?? null, $filesystems, $configuredDisks, $missingDisks);
-        }
-
-        foreach ($transformers as $transformer) {
-            if (! is_array($transformer) || ($transformer['driver'] ?? null) !== 'craft') {
-                continue;
-            }
-
-            $settings = is_array($transformer['settings'] ?? null) ? $transformer['settings'] : [];
-            $this->requireConfiguredDisk($settings['filesystem'] ?? null, $filesystems, $configuredDisks, $missingDisks);
         }
 
         foreach (DB::table(Table::VOLUMES)->pluck('fs') as $reference) {
@@ -56,6 +46,7 @@ return new class extends Migration
                 $missingDisks,
             ));
             $suggestions = Str::indent($suggestions, '        ');
+            $publishCommand = app(TerminalCommands::class)->artisan('config:publish filesystems --no-interaction');
 
             throw new RuntimeException(<<<MESSAGE
                 The Craft Filesystem concept has been removed.
@@ -64,7 +55,7 @@ return new class extends Migration
 
                 If config/filesystems.php does not exist, publish it first:
 
-                    php artisan config:publish filesystems --no-interaction
+                    $publishCommand
 
                 Add these entries to its `disks` array:
 
@@ -94,21 +85,6 @@ return new class extends Migration
             $volumes[$uid] = $volume;
         }
 
-        foreach ($transformers as $uid => $transformer) {
-            if (! is_array($transformer) || ($transformer['driver'] ?? null) !== 'craft') {
-                continue;
-            }
-
-            $settings = is_array($transformer['settings'] ?? null) ? $transformer['settings'] : [];
-            $reference = $settings['filesystem'] ?? null;
-            $diskName = $this->diskName($reference);
-            unset($settings['filesystem']);
-            $settings['disk'] = $diskName === null ? null : $this->diskReference($reference, $diskName);
-            $settings['hasUrls'] = $this->referenceHasUrls($reference, $filesystems, $configuredDisks);
-            $transformer['settings'] = $settings;
-            $transformers[$uid] = $transformer;
-        }
-
         foreach (DB::table(Table::VOLUMES)->select(['id', 'fs'])->get() as $volume) {
             $diskName = $this->diskName($volume->fs);
             if ($diskName === null) {
@@ -128,7 +104,6 @@ return new class extends Migration
 
         try {
             $projectConfig->set(ProjectConfig::PATH_VOLUMES, $volumes, 'Convert volumes to Laravel filesystem disks');
-            $projectConfig->set(ProjectConfig::PATH_ASSET_TRANSFORMERS, $transformers, 'Convert asset transformers to Laravel filesystem disks');
             $projectConfig->remove('fs', 'Remove Craft filesystem definitions');
             $projectConfig->saveModifiedConfigData();
         } finally {

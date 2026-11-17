@@ -39,15 +39,15 @@
           v-if="accessOptions.length"
           name="access-choice"
           :label="t('Access')"
-          .modelValue="access"
-          @model-value-changed="access = $event.target.modelValue"
+          .value="access"
+          @change="access = $event.currentTarget.value"
         >
           <craft-radio
             v-for="option in accessOptions"
             :key="option.value"
             :label="option.label"
             :help-text="option.description"
-            .choiceValue="option.value"
+            .value="option.value"
             .checked="option.value === access"
           ></craft-radio>
         </craft-radio-group>

@@ -13,6 +13,7 @@ use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -66,6 +67,15 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
     /** @var array<string, mixed>|null */
     private ?array $selectionCondition = null;
 
+    /** @var array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null */
+    private ?array $referenceElement = null;
+
+    /** @var array{criteria: array<string, mixed>, siteId: int|null}|null */
+    private ?array $search = null;
+
+    /** @var list<int> */
+    private array $disabledElementIds = [];
+
     /**
      * The view modes a relation field can be set to, mirroring
      * {@see BaseRelationField::supportedViewModes()}. The
@@ -100,6 +110,16 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             'condition' => isset($control->props['selectionCondition'])
                 ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
                 : null,
+            // The modal only needs the reference element's IDs, so pass them through rather than loading it again
+            'jsSettings' => $control->props['referenceElement'] ?? [],
+            // Sent by AssetSelect, as the Vue control passes them to the selector modal
+            'modalSettings' => array_filter([
+                'indexSettings' => isset($control->props['showFolders'])
+                    ? ['showFolders' => (bool) $control->props['showFolders']]
+                    : null,
+                'defaultSource' => $control->props['defaultSource'] ?? null,
+                'defaultSourcePath' => $control->props['defaultSourcePath'] ?? null,
+            ], fn (mixed $setting) => $setting !== null),
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
             'single' => $control->props['single'] ?? false,
@@ -124,7 +144,15 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
     #[Override]
     public function valueProps(): array
     {
-        return ['elements'];
+        // The element type too, so the elements can be drawn again once copied.
+        return ['elements', 'elementType'];
+    }
+
+    /** Elements are only copied between controls that select the same element type, unless a narrower scope is set. */
+    #[Override]
+    public function getValueScope(): ?string
+    {
+        return parent::getValueScope() ?? $this->elementType;
     }
 
     public function component(): string
@@ -240,6 +268,47 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
         return $this;
     }
 
+    /**
+     * Sets the element the selection condition is evaluated against, such as the element being edited, for rules
+     * that refer to it.
+     */
+    public function referenceElement(?ElementInterface $element): static
+    {
+        $this->referenceElement = $element?->id ? [
+            'referenceElementId' => $element->id,
+            'referenceElementOwnerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+            'referenceElementSiteId' => $element->siteId,
+        ] : null;
+
+        return $this;
+    }
+
+    /**
+     * Shows a search input that relates the elements matching `$criteria` it finds, in the site `$siteId`. `null`
+     * criteria hide it.
+     *
+     * @param  array<string, mixed>|null  $criteria
+     */
+    public function search(?array $criteria, ?int $siteId = null): static
+    {
+        $this->search = $criteria === null ? null : ['criteria' => $criteria, 'siteId' => $siteId];
+
+        return $this;
+    }
+
+    /**
+     * Sets the elements that can’t be selected, such as the element being edited when the field doesn’t allow self
+     * relations.
+     *
+     * @param  list<int>  $ids
+     */
+    public function disabledElementIds(array $ids): static
+    {
+        $this->disabledElementIds = $ids;
+
+        return $this;
+    }
+
     public function viewMode(string $viewMode): static
     {
         if (! in_array($viewMode, self::viewModes(), true)) {
@@ -342,6 +411,9 @@ class ElementSelect extends Control implements ReadableValueControl, WritableVal
             'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
+            ...($this->referenceElement !== null ? ['referenceElement' => $this->referenceElement] : []),
+            ...($this->search !== null ? ['search' => $this->search] : []),
+            ...($this->disabledElementIds !== [] ? ['disabledElementIds' => $this->disabledElementIds] : []),
         ];
     }
 

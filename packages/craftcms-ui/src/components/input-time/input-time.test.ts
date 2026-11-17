@@ -13,7 +13,7 @@ describe('craft-input-time', () => {
     ) as CraftInputTime;
     element.minuteIncrement = 15;
     element.disabledTimeRanges = [['12:00', '13:00']];
-    element.modelValue = '12:30';
+    element.value = '12:30';
     document.body.append(element);
     await element.updateComplete;
 
@@ -32,7 +32,7 @@ describe('craft-input-time', () => {
     ) as CraftInputTime;
     element.minuteIncrement = 15;
     element.forceRoundTime = true;
-    element.modelValue = '12:08';
+    element.value = '12:08';
     document.body.append(element);
     await element.updateComplete;
 
@@ -42,6 +42,6 @@ describe('craft-input-time', () => {
     input.dispatchEvent(new Event('change', {bubbles: true}));
 
     expect(input.value).toBe('12:15');
-    expect(element.modelValue).toBe('12:15');
+    expect(element.value).toBe('12:15');
   });
 });

@@ -189,7 +189,9 @@ and `prepareEditScreen()` customizations are rendered around the native forms.
 Buttons at the end of the editor's footer, apart from the save controls, come from `additionalButtonDescriptors()`.
 Element types override `defineAdditionalButtonDescriptors()` and plugins listen for `ElementAdditionalButtonDescriptorsResolving`.
 Each item takes the same `behavior` descriptor as an action menu item (`link`, `download`, `slideout`, `formModal`, …)
-plus optional `icon` and `variant`, so it runs without submitting the editor's form. With the Yii
+plus optional `icon` and `variant`, so it runs without submitting the editor's form. An `event` behavior
+(`['type' => 'event', 'name' => 'my-plugin:open', 'detail' => […]]`) dispatches a window event for a plugin's own
+script, as `event` menu actions do (see [Server-driven menu actions](server-driven-menu-actions.md)). With the Yii
 adapter installed, Craft 5 additional buttons HTML (`getAdditionalButtons()`, `EVENT_DEFINE_ADDITIONAL_BUTTONS`,
 and `additionalButtonsHtml()` from `prepareEditScreen()`) renders in the same place:
 
@@ -291,18 +293,20 @@ Register the Vue components from the plugin's existing Control Panel asset bundl
 asset loader:
 
 ```ts
-Cp.booting((cp) => {
-  cp.$components.register('my-plugin:notice', NoticeNode)
-  cp.$components.register('my-plugin:slug', SlugControl)
-})
+import {registerComponent} from '@craftcms/cp'
+
+registerComponent('my-plugin:notice', NoticeNode)
+registerComponent('my-plugin:slug', SlugControl)
 ```
 
-The registry also accepts lazy component loaders. Register components before the Inertia application mounts.
+`registerComponent()` also accepts lazy component loaders, such as `() => import('./SlugControl.vue')`.
 
 A Control component rendered by the core `Field` Node receives `control`, `value`, `label`, `editable`, `invalid`,
 `required`, full `values` and `errors`, touched paths, and the containing scope. Emit `update:value` with the canonical
 value and optionally `typing` or `discrete` as the change kind. Only editable Controls may submit a `name` or apply
-browser-required constraints. Use `inputName(control.path)` for the ordinary nested request shape.
+browser-required constraints. Use `inputName(control.path)` for the ordinary nested request shape. Plugins import
+`inputName` and the `UiControlPayload`, `UiNodePayload`, `UiPayload`, `UiValue`, `UiChange` and `UiChangeKind` types
+from `@craftcms/cp`; see **Plugins → UI Controls & Modals** in Storybook.
 
 ## Observing field values in the Control Panel
 
@@ -328,7 +332,7 @@ the absolute scope containing that Control. `kind` is `typing` or `discrete`. `v
 Control's canonical value. For composite Controls it may be an object or array, not a string.
 
 For the initial value or to read another path after a change, use `ui.getValue(path)`. Plugin scripts can discover UIs
-that have already mounted with `Cp.$ui.active()`; it returns the currently mounted renderer handles. The same handle
+that have already mounted with `UiValues.active()` from `@craftcms/cp`; it returns the currently mounted renderer handles. The same handle
 remains valid as its values change and is removed from `active()` when the renderer unmounts. Reads return snapshots,
 not mutable access to renderer state. Batch updates made through the renderer's `setValues()` are visible in full to
 every event listener. Initial rendering, unchanged values, server refreshes, and `resetValues()` do not emit change
@@ -337,7 +341,8 @@ events; explicit `setValue()` and `setValues()` calls do when an editable value 
 This API applies only to Craft 6 UI-rendered fields. Legacy HTML fields and the Yii2 adapter keep their own JavaScript
 and DOM contracts. `craft:ui-value-change` is an observation API, not a save hook or authorization boundary.
 
-The test plugin contains complete reference implementations:
+The test plugin contains complete reference implementations. Being core test fixtures, its components import from
+core paths; a plugin imports the same names from `@craftcms/cp`:
 
 - `tests/TestClasses/TestPlugin/src/UI/Nodes/Notice.php`
 - `tests/TestClasses/TestPlugin/src/UI/Controls/Slug.php`
@@ -348,6 +353,39 @@ The test plugin contains complete reference implementations:
 Resolution rejects unregistered types and non-JSON-safe properties. Either renderer invalidates the complete UI when a
 registered component is missing, its loader fails, or rendering throws. Do not catch these failures and submit a partial
 UI.
+
+### Copying and pasting field values
+
+Fields whose Control can be both read and written get "Copy value" and "Paste value" actions. A value can only be pasted
+into a Control drawn by the same component, in the same value scope (`Control::valueScope()`, which relation fields set
+to their field's UID). A Control component can narrow that further, and change how its copied values are previewed in
+the "copied" card, which shows their text by default:
+
+```ts
+import {UiValues} from '@craftcms/cp'
+
+// Whether `control` takes this copied value, such as one that fits its max length.
+UiValues.registerValueAcceptor('my-plugin:slug', (control, {value}) => {
+  const {maxLength} = control.props as {maxLength: number}
+
+  return typeof value === 'string' && value.length <= maxLength
+})
+
+// A node to show in place of the value's text, or `null` to show the text.
+// It's only for looking at: it can't take focus, and screen readers read the text.
+UiValues.registerValuePreview('my-plugin:slug', ({value}) => {
+  const code = document.createElement('code')
+  code.textContent = String(value)
+  return code
+})
+```
+
+The preview gets the copied value, the props its Control named in `valueProps`, and the value as it was put on the
+clipboard: `text`, `html` when there was any, and `items` when it's a list or one of the Control's options: each item's
+`label`, with the option's `icon` and `color` when it has them. Controls without a preview of their own show items, such
+as selected options, as badges with their icons or colors, and other values as text. A preview may return a
+promise. If it throws or rejects, the card shows the value's text. Either one runs off the card's edges when it's too big
+for it, fading out as it reaches them.
 
 ## Modes, errors, and refresh
 

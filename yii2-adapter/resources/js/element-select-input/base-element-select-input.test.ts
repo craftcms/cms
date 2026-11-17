@@ -98,6 +98,20 @@ it('stages the element the modal should replace', () => {
   expect(showModal).toHaveBeenCalledOnce();
 });
 
+it('gives a full field’s modal its container to return to', () => {
+  const {input} = chipActionInput();
+  // Its chips' action menus have no `.action-btn` to fall back on
+  const $container = jquery(
+    '<div><div class="chip"><div class="chip-actions"></div></div></div>'
+  );
+  input.$container = $container;
+  input.settings.criteria = {};
+  input.canAddMoreElements = () => false;
+  input.getDisabledElementIds = () => [];
+
+  expect(input.getModalSettings().triggerElement()).toBe($container);
+});
+
 it('removes the whole selection when the chip is part of it', () => {
   const $chip = {chip: true};
   const $selection = {selection: true};
@@ -163,6 +177,26 @@ it("moves elements from their reorder buttons' menus", () => {
   expect(input.moveElementBackward).toHaveBeenCalledOnce();
   expect(vi.mocked(input.moveElementBackward).mock.calls[0]![0][0]).toBe(
     button
+  );
+});
+
+it("moves focus to the last chip's action menu once the field is full", () => {
+  class UninitializedElementSelectInput extends BaseElementSelectInput {}
+
+  const input = new UninitializedElementSelectInput();
+  const chip = (id: number) =>
+    `<li><div class="element chip" data-id="${id}"><div slot="suffix"><craft-action-menu><craft-button slot="invoker"></craft-button><div slot="content"></div></craft-action-menu></div></div></li>`;
+  const container = document.createElement('div');
+  container.innerHTML = `<ul class="elements">${chip(1)}${chip(2)}</ul>`;
+  input.$container = jquery(container);
+  input.$elements = input.$container.find('.element');
+  input.settings = {allowAdd: true, limit: 2} as BaseElementSelectInputSettings;
+
+  const $focusTarget = input.getNextLogicalFocusElement();
+
+  expect($focusTarget.length).toBe(1);
+  expect($focusTarget[0]).toBe(
+    container.querySelector('[data-id="2"] [slot="invoker"]')
   );
 });
 

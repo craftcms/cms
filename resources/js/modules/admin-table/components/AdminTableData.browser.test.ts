@@ -206,7 +206,7 @@ it('keeps thin columns, and the delete column, as narrow as their content', asyn
   const text = document.createRange();
   text.selectNodeContents(cell);
   const lines = new Set([...text.getClientRects()].map((rect) => rect.top));
-  const name = page.getByRole('cell', {name: 'Body'}).element();
+  const name = page.getByRole('cell', {name: 'Body', exact: true}).element();
 
   expect(lines.size).toBe(1);
   expect(cell.getBoundingClientRect().width).toBeLessThan(
@@ -325,15 +325,14 @@ it('shows the empty state right under the column headers, without an empty row',
 });
 
 async function setControl(host: HTMLElement, selector: string, value: string) {
-  const control = host.querySelector<HTMLElement & {modelValue: string}>(
-    selector
-  )!;
+  const control = host.querySelector<HTMLElement & {value: string}>(selector)!;
   await (control as typeof control & {updateComplete: Promise<boolean>})
     .updateComplete;
-  control.modelValue = value;
-  control.dispatchEvent(
-    new CustomEvent('model-value-changed', {bubbles: true})
-  );
+  control.value = value;
+  const target =
+    control.querySelector('input:not([type="hidden"]), select') ?? control;
+  target.dispatchEvent(new Event('input', {bubbles: true}));
+  target.dispatchEvent(new Event('change', {bubbles: true}));
   await nextTick();
 }
 function rowNames(host: HTMLElement) {
@@ -445,9 +444,9 @@ it('explains blocked deletion on keyboard focus while keeping the row editable a
   expect(document.activeElement).toBe(button);
   const tooltip =
     row.querySelector<HTMLElementTagNameMap['craft-tooltip']>('craft-tooltip')!;
-  await vi.waitFor(() => expect(tooltip.opened).toBe(true));
+  await vi.waitFor(() => expect(tooltip.open).toBe(true));
   await userEvent.keyboard('{Escape}');
-  await vi.waitFor(() => expect(tooltip.opened).toBe(false));
+  await vi.waitFor(() => expect(tooltip.open).toBe(false));
   expect(document.activeElement).toBe(button);
 });
 
@@ -661,6 +660,54 @@ it('uses independent endpoints and confirmations for row and bulk deletion', asy
   expect(confirmDelete).toHaveBeenLastCalledWith('Delete these records?');
 });
 
+it('names rows in their delete buttons and confirmations, and counts the rows a bulk deletion takes', async () => {
+  const confirmDelete = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  const request = vi.spyOn(actionClient, 'delete');
+  const host = mountNode({
+    deletable: true,
+    deleteUrl: '/settings/delete-one',
+    bulkDeleteUrl: '/settings/delete-many',
+    rows: [...records, {id: 3, name: 'Gamma', _deleteLabel: 'Remove Gamma'}],
+  });
+
+  await expect
+    .element(page.getByRole('button', {name: 'Delete Beta'}))
+    .toBeInTheDocument();
+  await expect
+    .element(page.getByRole('button', {name: 'Remove Gamma'}))
+    .toBeInTheDocument();
+  await page.getByRole('button', {name: 'Delete Alpha'}).click();
+  expect(confirmDelete).toHaveBeenLastCalledWith(
+    'Are you sure you want to delete “Alpha”?'
+  );
+
+  const rows = host.querySelectorAll('tbody tr');
+  const deleteSelected = async () => {
+    await host.querySelector('craft-action-menu')!.show();
+    Array.from(host.querySelectorAll<HTMLElement>('craft-action-item'))
+      .find((item) => item.textContent?.trim() === 'Delete')!
+      .click();
+  };
+  rows[0]!.dispatchEvent(
+    new KeyboardEvent('keydown', {key: ' ', bubbles: true})
+  );
+  await nextTick();
+  await deleteSelected();
+  expect(confirmDelete).toHaveBeenLastCalledWith(
+    'Are you sure you want to delete 1 item?'
+  );
+
+  for (const row of [rows[1]!, rows[2]!]) {
+    row.dispatchEvent(new KeyboardEvent('keydown', {key: ' ', bubbles: true}));
+  }
+  await nextTick();
+  await deleteSelected();
+  expect(confirmDelete).toHaveBeenLastCalledWith(
+    'Are you sure you want to delete 3 items?'
+  );
+  expect(request).not.toHaveBeenCalled();
+});
+
 it('filters rows by status and search, clears selection, and restores manual ordering when filters are cleared', async () => {
   const {host, handle} = mountTable({reorderable: true});
   expect(host.querySelectorAll('tbody craft-reorder-button')).toHaveLength(2);
@@ -714,6 +761,78 @@ it('restores existing status, sorting, and column preferences while keeping the 
   expect(host.querySelectorAll('tbody craft-reorder-button')).toHaveLength(2);
 });
 
+it('keeps the actions column out of the view menu and after every other column', async () => {
+  localStorage.setItem(
+    `Craft-admin-table-test.adminTable.${window.location.pathname}.settings-table.columns`,
+    '{"visible":["actions","count"],"hidden":[]}'
+  );
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'count', label: 'Count'},
+    ],
+    deletable: true,
+    deleteUrl: '/settings/delete',
+    columnsToggleable: true,
+  });
+  await nextTick();
+
+  expect(
+    Array.from(host.querySelectorAll('thead th'), (th) =>
+      th.textContent?.trim()
+    ).filter(Boolean)
+  ).toEqual(['Name', 'Count', 'Actions']);
+  expect(
+    host
+      .querySelector<HTMLElement & {options: Array<{value: string}>}>(
+        'craft-checkbox-select'
+      )!
+      .options.map((option) => option.value)
+  ).toEqual(['name', 'count']);
+});
+
+it('offers “Use defaults” once the columns or sort change, and restores both', async () => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name', sortable: true},
+      {key: 'count', label: 'Count'},
+    ],
+    deletable: true,
+    deleteUrl: '/settings/delete',
+    columnsToggleable: true,
+  });
+  await nextTick();
+  const headers = () =>
+    Array.from(host.querySelectorAll('thead th'), (th) =>
+      th.textContent?.trim()
+    ).filter(Boolean);
+  const useDefaults = () =>
+    Array.from(host.querySelectorAll<HTMLElement>('craft-button')).find(
+      (button) => button.textContent?.trim() === 'Use defaults'
+    );
+  expect(useDefaults()).toBeUndefined();
+
+  const select = host.querySelector<HTMLElement & {value: string[]}>(
+    'craft-checkbox-select'
+  )!;
+  select.value = ['name'];
+  select.dispatchEvent(new Event('change'));
+  await nextTick();
+  expect(headers()).toEqual(['Name', 'Actions']);
+  useDefaults()!.click();
+  await nextTick();
+  expect(headers()).toEqual(['Name', 'Count', 'Actions']);
+  expect(useDefaults()).toBeUndefined();
+
+  host.querySelector<HTMLButtonElement>('thead th button')!.click();
+  await nextTick();
+  expect(rowNames(host)).toEqual(['Alpha', 'Beta']);
+  useDefaults()!.click();
+  await nextTick();
+  expect(rowNames(host)).toEqual(['Beta', 'Alpha']);
+  expect(useDefaults()).toBeUndefined();
+});
+
 it('loads the requested page and returns to page one when the page size changes', async () => {
   const loadRows = vi.fn(async (request: AdminTableRequest) =>
     result(`Page ${request.page}`, request.page)
@@ -763,9 +882,9 @@ it('renders the initial server page and updates it through Inertia without echoi
   expect(rowNames(host)).toEqual(['Loaded']);
   expect(get).not.toHaveBeenCalled();
   expect(
-    host.querySelector<HTMLElement & {modelValue: string}>(
+    host.querySelector<HTMLElement & {value: string}>(
       'craft-input-search[name=search]'
-    )?.modelValue
+    )?.value
   ).toBe('Article');
   get.mockImplementationOnce((_url, _query, visit) => {
     options.rows = [{id: 1, name: 'Filtered'}];
@@ -815,9 +934,9 @@ it('renders the initial server page and updates it through Inertia without echoi
   await nextTick();
   expect(rowNames(host)).toEqual(['Loaded']);
   expect(
-    host.querySelector<HTMLElement & {modelValue: string}>(
+    host.querySelector<HTMLElement & {value: string}>(
       'craft-input-search[name=search]'
-    )?.modelValue
+    )?.value
   ).toBe('Article');
   await new Promise((resolve) => setTimeout(resolve, 350));
   expect(get).toHaveBeenCalledTimes(1);
@@ -935,9 +1054,9 @@ it('keeps a newer search while an earlier Inertia response updates the node', as
   visits[0]!.onFinish();
 
   expect(
-    host.querySelector<HTMLElement & {modelValue: string}>(
+    host.querySelector<HTMLElement & {value: string}>(
       'craft-input-search[name=search]'
-    )?.modelValue
+    )?.value
   ).toBe('Latest');
   await vi.waitFor(() => expect(get.mock.lastCall?.[1].search).toBe('Latest'));
 
@@ -948,9 +1067,9 @@ it('keeps a newer search while an earlier Inertia response updates the node', as
 
   await vi.waitFor(() => expect(rowNames(host)).toEqual(['Latest response']));
   expect(
-    host.querySelector<HTMLElement & {modelValue: string}>(
+    host.querySelector<HTMLElement & {value: string}>(
       'craft-input-search[name=search]'
-    )?.modelValue
+    )?.value
   ).toBe('Latest');
 });
 

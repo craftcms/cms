@@ -9,7 +9,7 @@ namespace crafttests\unit\helpers;
 
 use craft\helpers\HtmlPurifier;
 use craft\test\TestCase;
-use CraftCms\Cms\Support\Facades\Deprecator;
+use crafttests\_support\LegacyUsageSpy;
 use HTMLPurifier_Config;
 
 /**
@@ -46,14 +46,18 @@ class HtmlPurifierTest extends TestCase
 
     public function testProcessWithForwardableConfig(): void
     {
-        Deprecator::deleteAllLogs();
+        $usage = LegacyUsageSpy::bind();
 
-        $html = HtmlPurifier::process('<p id="test" bad-attr="bad">Hello</p>', [
-            'Attr.EnableID' => true,
-        ]);
+        try {
+            $html = HtmlPurifier::process('<p id="test" bad-attr="bad">Hello</p>', [
+                'Attr.EnableID' => true,
+            ]);
+        } finally {
+            LegacyUsageSpy::unbind();
+        }
 
         self::assertSame('<p id="test">Hello</p>', $html);
-        self::assertNotEmpty(Deprecator::getRequestLogs());
+        self::assertContains('craft\\helpers\\HtmlPurifier::process', $usage->keys);
     }
 
     public function testConvertToUtf8(): void

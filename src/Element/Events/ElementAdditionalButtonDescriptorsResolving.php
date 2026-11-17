@@ -11,7 +11,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
  * @event ElementAdditionalButtonDescriptorsResolving The event that is triggered when defining the buttons shown at the end of an element editor's footer.
  *
  * Items take the same `behavior` descriptors as the action menu (`link`, `download`,
- * `slideout`, `formModal`, …), so they don't submit the editor's form. Items may also
+ * `slideout`, `formModal`, `event`, …), so they don't submit the editor's form. Items may also
  * set `icon` and `variant`.
  *
  * {@see HasControlPanelUI::additionalButtonDescriptors()}

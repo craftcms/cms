@@ -1,11 +1,12 @@
-import {LionSwitch} from '@lion/ui/switch.js';
-import CraftSwitchButton from '../switch-button/switch-button.js';
+import type CraftSwitchButton from '../switch-button/switch-button.js';
+import '../switch-button/switch-button.js';
 import styles from './switch.styles.js';
 import {baseFieldStyles} from '@src/styles/form.styles';
-import {html, nothing, type PropertyValues} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
-import {HasLabel} from '@src/mixins/HasLabel';
+import {emitChange} from '@src/utilities/form-events';
+import {ChoiceInput, choiceInputStyles} from '@src/mixins/ChoiceInput';
 
 function splitIds(value: string | null): string[] {
   return (value ?? '').split(/\s+/).filter(Boolean);
@@ -16,10 +17,6 @@ function escapeCssId(id: string): string {
     ? CSS.escape(id)
     : id;
 }
-
-const SYNTHETIC_CHANGE = Symbol.for('craft-switch-synthetic-change');
-
-type SyntheticChangeEvent = Event & {[SYNTHETIC_CHANGE]?: boolean};
 
 /**
  * @summary A switch, for a setting that takes effect as soon as it is
@@ -35,11 +32,13 @@ type SyntheticChangeEvent = Event & {[SYNTHETIC_CHANGE]?: boolean};
  *   attribute.
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages.
+ *
+ * @fires {Event} input - When the user toggles it.
+ * @fires {Event} change - When the user toggles it, or it's turned on, off
+ *   or indeterminate without muting.
  */
-export default class CraftSwitch extends HasLabel(LionSwitch) {
-  static override get styles() {
-    return [...super.styles, baseFieldStyles, styles];
-  }
+export default class CraftSwitch extends ChoiceInput(LitElement) {
+  static override styles = [...choiceInputStyles, baseFieldStyles, styles];
 
   /** Size of the control. */
   @property({type: String, reflect: true}) size: 'small' | 'medium' = 'medium';
@@ -60,13 +59,6 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
    */
   @property({type: String, attribute: 'off-label'}) offLabel = '';
 
-  /**
-   * The value posted by the hidden input when the switch is on. Mirrors the
-   * legacy lightswitch's `value` param. (Named `checkedValue` because Lion
-   * already defines a `value` accessor that proxies the input node.)
-   */
-  @property({attribute: 'value'}) checkedValue = '1';
-
   /** The value posted by the hidden input when the switch is indeterminate. */
   @property({attribute: 'indeterminate-value'}) indeterminateValue = '-';
 
@@ -77,25 +69,27 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
    */
   @property({type: Boolean, reflect: true}) indeterminate = false;
 
-  private __externalLabelledByNodes: HTMLElement[] = [];
-
-  private __externalDescribedByNodes: HTMLElement[] = [];
-
   private __clickableExternalLabels = new Set<HTMLElement>();
 
   // While true, programmatic state changes don't dispatch a `change` event,
   // backing the `muteEvent` argument of turnOn()/turnOff()/turnIndeterminate().
   #suppressNativeChange = false;
 
-  /**
-   * Adds the switch's own input to Lion's slot map, so the component owns the
-   * native control rather than expecting one to be slotted in.
-   */
+  /** The value posted when the switch is on, like the legacy lightswitch's. */
+  protected override get _defaultValue(): string {
+    return '1';
+  }
+
+  override get _control(): CraftSwitchButton | undefined {
+    return super._control as CraftSwitchButton | undefined;
+  }
+
+  /** The switch button, and the hidden input that posts. */
   override get slots() {
     return {
       ...super.slots,
       input: () => {
-        const btnEl = this.createScopedElement('craft-switch-button');
+        const btnEl = document.createElement('craft-switch-button');
         btnEl.setAttribute('size', this.size);
         btnEl.setAttribute('data-tag-name', 'craft-switch-button');
         return btnEl;
@@ -124,31 +118,32 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
     };
   }
 
-  /**
-   * Registers the elements the switch renders into its own shadow root.
-   */
-  static override get scopedElements() {
-    return {
-      ...super.scopedElements,
-      'craft-switch-button': CraftSwitchButton,
-    };
-  }
-
   override connectedCallback(): void {
+    if (!this.name) {
+      this.name = this._hiddenInputNode?.name ?? '';
+    }
     super.connectedCallback();
-    this.__adoptExternalAria();
-    // LionSwitch's own `checked-changed` listener (added in
-    // super.connectedCallback) stops propagation, but listeners on the same
-    // node still run.
-    this.addEventListener('checked-changed', this.__forwardNativeChange);
+    this.__setupExternalLabelClicks();
     this.addEventListener('keydown', this.__onKeydown);
+    // Capturing, so the hidden input posts the new state by the time the
+    // event bubbles out of the switch.
+    this.addEventListener('input', this.#onToggle, true);
+    this.addEventListener('change', this.#onToggle, true);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.removeEventListener('checked-changed', this.__forwardNativeChange);
     this.removeEventListener('keydown', this.__onKeydown);
+    this.removeEventListener('input', this.#onToggle, true);
+    this.removeEventListener('change', this.#onToggle, true);
     this.__teardownExternalLabelClicks();
+  }
+
+  /** The button isn't labelable, so its label toggles it here. */
+  protected override _onLabelClick(): void {
+    if (!this.disabled) {
+      this._control?.click();
+    }
   }
 
   /**
@@ -165,7 +160,7 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
   /** The value the hidden input should post for the current state. */
   protected get _postedValue(): string {
     if (this.checked) {
-      return this.checkedValue;
+      return this.value;
     }
     if (this.indeterminate) {
       return this.indeterminateValue;
@@ -214,7 +209,7 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
         [
           'checked',
           'indeterminate',
-          'checkedValue',
+          'value',
           'indeterminateValue',
           'disabled',
           'size',
@@ -239,7 +234,7 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
    * runs where none is (e.g. outside the control panel).
    */
   private __syncToggleTargets(): void {
-    const btn = this._inputNode;
+    const btn = this._control;
     if (!btn) {
       return;
     }
@@ -296,14 +291,10 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
       return;
     }
     this.indeterminate = false;
-    if (this.checked !== checked) {
-      this.checked = checked;
-      // `checked-changed` from the switch button re-dispatches `change`.
-    } else if (wasIndeterminate) {
-      // Leaving the indeterminate state counts as a change, like the legacy
-      // lightswitch's turnOff().
-      this.__dispatchNativeChange();
-    }
+    // Leaving the indeterminate state counts as a change, like the legacy
+    // lightswitch's turnOff().
+    this.checked = checked;
+    this.__dispatchNativeChange();
   }
 
   // ---------------------------------------------------------------------------
@@ -347,14 +338,9 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
       if (this.indeterminate && !this.checked) {
         return;
       }
-      const wasChecked = this.checked;
       this.checked = false;
       this.indeterminate = true;
-      if (!wasChecked) {
-        // `checked` didn't flip, so no `checked-changed` fires; dispatch the
-        // change ourselves, like the legacy lightswitch's turnIndeterminate().
-        this.__dispatchNativeChange();
-      }
+      this.__dispatchNativeChange();
     }, muteEvent);
   }
 
@@ -366,31 +352,21 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
       mutate();
       return;
     }
-    // Hold the flag until the update settles so both the synchronous dispatch
-    // (leaving indeterminate) and the async `checked-changed` forward are muted.
     this.#suppressNativeChange = true;
     mutate();
-    void this.updateComplete.then(() => {
-      this.#suppressNativeChange = false;
-    });
+    this.#suppressNativeChange = false;
   }
 
   private __onKeydown = (event: KeyboardEvent): void => {
     if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
       return;
     }
-    if (this.disabled || event.target !== this._inputNode) {
+    if (this.disabled || event.target !== this._control) {
       return;
     }
     event.preventDefault();
     const rtl = getComputedStyle(this).direction === 'rtl';
     this._setCheckedState(event.key === (rtl ? 'ArrowLeft' : 'ArrowRight'));
-  };
-
-  private __forwardNativeChange = (event: Event): void => {
-    if (event.target === this._inputNode) {
-      this.__dispatchNativeChange();
-    }
   };
 
   private __dispatchNativeChange(): void {
@@ -400,64 +376,28 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
     // Legacy CP code (e.g. Craft.FieldToggle, which powers toggle/
     // reverseToggle reveals) listens for native change events on the switch
     // button.
-    const event = new Event('change', {bubbles: true});
-    (event as SyntheticChangeEvent)[SYNTHETIC_CHANGE] = true;
-    this._inputNode?.dispatchEvent(event);
+    if (this._control) {
+      emitChange(this._control);
+    }
   }
 
-  /**
-   * LionField converts native change events on the input node into
-   * `user-input-changed` events, which ChoiceInputMixin treats as a toggle.
-   * Our own synthetic change events (dispatched for legacy JS interop) must
-   * not feed back into that path, or the switch would toggle forever.
-   */
-  protected override _onChange(ev?: Event): void {
-    if (ev && SYNTHETIC_CHANGE in ev) {
-      return;
+  #onToggle = (event: Event): void => {
+    if (event.target === this._control) {
+      this.__syncHiddenInput();
     }
-    super._onChange(ev);
-  }
-
-  /**
-   * Registers server-rendered (already namespaced) aria-labelledby /
-   * aria-describedby references with Lion, which otherwise rebuilds those
-   * attributes from its own tracked nodes and would drop them. Also makes
-   * external `<label>` elements toggle the switch, like the legacy
-   * lightswitch's native label association.
-   */
-  private __adoptExternalAria(): void {
-    const btn = this._inputNode;
-    if (!btn) {
-      return;
-    }
-    const rootNode = this.getRootNode() as Document | ShadowRoot;
-    for (const id of splitIds(btn.getAttribute('aria-labelledby'))) {
-      const el = rootNode.getElementById(id);
-      if (el && !this.__externalLabelledByNodes.includes(el)) {
-        this.addToAriaLabelledBy(el, {reorder: false});
-        this.__externalLabelledByNodes.push(el);
-      }
-    }
-    for (const id of splitIds(btn.getAttribute('aria-describedby'))) {
-      const el = rootNode.getElementById(id);
-      if (el && !this.__externalDescribedByNodes.includes(el)) {
-        this.addToAriaDescribedBy(el, {reorder: false});
-        this.__externalDescribedByNodes.push(el);
-      }
-    }
-    this.__setupExternalLabelClicks();
-  }
+  };
 
   private __setupExternalLabelClicks(): void {
-    const btn = this._inputNode;
+    const btn = this._control;
     if (!btn) {
       return;
     }
     const rootNode = this.getRootNode() as Document | ShadowRoot;
     const labels = new Set<HTMLElement>(
-      this.__externalLabelledByNodes.filter(
-        (el) => el instanceof HTMLLabelElement
-      )
+      splitIds(btn.getAttribute('aria-labelledby'))
+        .map((id) => rootNode.getElementById?.(id))
+        .filter((el): el is HTMLLabelElement => el instanceof HTMLLabelElement)
+        .filter((el) => el !== this._labelNode)
     );
     if (btn.id) {
       for (const el of rootNode.querySelectorAll(
@@ -489,11 +429,11 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
     if (event.composedPath().includes(this)) {
       return;
     }
-    this._inputNode?.click();
+    this._control?.click();
   };
 
   private __syncSwitchButton(): void {
-    const btn = this._inputNode as CraftSwitchButton | undefined;
+    const btn = this._control as CraftSwitchButton | undefined;
     if (!btn) {
       return;
     }
@@ -526,12 +466,7 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
     const text = this._stateDescriptionText;
     node.textContent = text;
     if (text) {
-      // `reorder: false` appends the description after Lion's own help-text
-      // and feedback references instead of re-sorting them by slot order.
-      this.addToAriaDescribedBy(node, {
-        idPrefix: 'state-description',
-        reorder: false,
-      });
+      this.addToAriaDescribedBy(node, {idPrefix: 'state-description'});
     } else {
       this.removeFromAriaDescribedBy(node);
     }
@@ -547,7 +482,12 @@ export default class CraftSwitch extends HasLabel(LionSwitch) {
   }
 
   protected override _groupOneTemplate() {
-    return html`${super._groupOneTemplate()} ${this._stateDescriptionTemplate()}`;
+    return html`${super._groupOneTemplate()} ${this._feedbackTemplate()}
+    ${this._stateDescriptionTemplate()}`;
+  }
+
+  protected override _groupTwoTemplate() {
+    return this._inputGroupTemplate();
   }
 
   protected _stateDescriptionTemplate() {

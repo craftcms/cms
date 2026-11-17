@@ -1,5 +1,6 @@
 import {beforeEach, expect, it, vi} from 'vite-plus/test';
 import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
+import '../badge/badge.js';
 import '../button/button.js';
 import '../icon/icon.js';
 import '../thumbnail/thumbnail.js';
@@ -367,6 +368,62 @@ it('keeps a small chip as tall as its suffix button, unless it is auto', async (
   );
 });
 
+it('makes an xsmall chip as tall as a labeled badge, with its text size', async () => {
+  for (const {attrs, markup} of [
+    leadingParts.thumbnail,
+    {attrs: '', markup: ''},
+  ]) {
+    document.body.innerHTML = `
+      <style>:root { --c-size-control-sm: 24px; --c-text-sm: 13px; }</style>
+      <div style="display: flex; align-items: start; gap: 8px">
+        <craft-badge fill="gray">Label</craft-badge>
+        <craft-chip size="xsmall" ${attrs}>${markup}Label</craft-chip>
+      </div>`;
+    const badge = document.querySelector('craft-badge')!;
+    const chip = document.querySelector('craft-chip')!;
+    await Promise.all(
+      [badge, chip].map(
+        (element) =>
+          (element as HTMLElement & {updateComplete: Promise<unknown>})
+            .updateComplete
+      )
+    );
+    const badgeBox = badge.shadowRoot!.querySelector('[part="badge"]')!;
+    const chipBox = chip.shadowRoot!.querySelector('.cp-chip')!;
+
+    expect(box(chipBox).height, attrs || 'label only').toBe(
+      box(badgeBox).height
+    );
+    expect(getComputedStyle(chipBox).fontSize).toBe(
+      getComputedStyle(badgeBox).fontSize
+    );
+  }
+});
+
+it('rounds a rounded chip’s ends fully, and its thumbnail with them', async () => {
+  const {attrs, markup} = leadingParts.thumbnail;
+  document.body.innerHTML = `
+    <style>:root { --c-size-control-sm: 24px; --c-radius-full: 9999px; }</style>
+    <div style="display: flex">
+      <craft-chip size="xsmall" rounded ${attrs}>${markup}Label</craft-chip>
+    </div>`;
+  const chip = document.querySelector('craft-chip')!;
+  const thumbnail = chip.querySelector('craft-thumbnail')!;
+  await (chip as HTMLElement & {updateComplete: Promise<unknown>})
+    .updateComplete;
+  await (thumbnail as HTMLElement & {updateComplete: Promise<unknown>})
+    .updateComplete;
+  const chipBox = chip.shadowRoot!.querySelector('.cp-chip')!;
+  const image = thumbnail.shadowRoot!.querySelector('img')!;
+
+  expect(
+    parseFloat(getComputedStyle(chipBox).borderTopLeftRadius)
+  ).toBeGreaterThanOrEqual(box(chipBox).height / 2);
+  expect(
+    parseFloat(getComputedStyle(image).borderTopLeftRadius)
+  ).toBeGreaterThanOrEqual(box(image).height / 2);
+});
+
 it('makes medium and large chips as tall as a button of the same size', async () => {
   const sizes = {medium: 34, large: 44};
 
@@ -643,7 +700,7 @@ it('centers a truncated label on its capitals without clipping its descenders', 
     .shadowRoot!.querySelector('.cp-chip')!
     .getBoundingClientRect();
   const context = document.createElement('canvas').getContext('2d')!;
-  context.font = style.font;
+  context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
   const capHeight = context.measureText('H').actualBoundingBoxAscent;
   const range = document.createRange();
   range.selectNodeContents(document.getElementById('text')!);

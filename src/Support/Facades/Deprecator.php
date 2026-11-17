@@ -16,6 +16,7 @@ use Override;
  * @method static \CraftCms\Cms\Deprecator\Models\DeprecationError|null getLogById(int $logId)
  * @method static bool deleteLogById(int $id)
  * @method static bool deleteAllLogs()
+ * @method static array findOrigin(array $traces)
  *
  * @see \CraftCms\Cms\Deprecator\Deprecator
  */

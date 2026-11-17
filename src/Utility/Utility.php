@@ -75,6 +75,17 @@ abstract class Utility implements ComponentInterface
         return null;
     }
 
+    /**
+     * Returns whether the utility’s page should cap its content at the control
+     * panel’s readable width and center it, as settings pages do.
+     *
+     * Return a CSS length, such as `'40rem'`, to cap it at that width instead.
+     */
+    public static function contentMaxWidth(): bool|string
+    {
+        return false;
+    }
+
     #[\Override]
     public static function isSelectable(): bool
     {

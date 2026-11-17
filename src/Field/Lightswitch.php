@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -145,31 +144,6 @@ class Lightswitch extends Field implements DefaultableFieldInterface, InlineEdit
             ->onLabel(t($this->onLabel, category: 'site'))
             ->offLabel(t($this->offLabel, category: 'site'))
             ->value((bool) $context->value);
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->_inputHtmlInternal($value, false);
-    }
-
-    /**
-     * Render html for both static and interactive lightswitch field
-     */
-    private function _inputHtmlInternal(mixed $value, bool $static): string
-    {
-        $id = $this->getInputId();
-
-        return FormFields::lightswitchFromConfig([
-            'id' => $id,
-            'labelId' => $this->getLabelId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'on' => (bool) $value,
-            'onLabel' => t($this->onLabel, category: 'site'),
-            'offLabel' => t($this->offLabel, category: 'site'),
-            'disabled' => $static,
-        ])->toHtml();
     }
 
     #[Override]

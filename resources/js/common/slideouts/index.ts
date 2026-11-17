@@ -13,6 +13,7 @@ export type {
   OpenSlideoutOptions,
   SlideoutController,
   SlideoutInstance,
+  SlideoutReloadOptions,
   SlideoutSaveResult,
 } from './types';
 

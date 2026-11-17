@@ -289,15 +289,15 @@ class VolumeMixin
 
     public function write(): Closure
     {
-        $mixin = $this;
+        $legacyConfigForDisk = $this->legacyConfigForDisk(...);
 
-        return function(string $path, string $contents, array $config = []) use ($mixin): void {
+        return function(string $path, string $contents, array $config = []) use ($legacyConfigForDisk): void {
             /**
              * @var Volume $this
              *
              * @phpstan-ignore-next-line
              */
-            if (!$this->sourceDisk()->put($path, $contents, $mixin->legacyConfigForDisk($config))) {
+            if (!$this->sourceDisk()->put($path, $contents, $legacyConfigForDisk($config))) {
                 throw new FilesystemException("Unable to write file at path: $path");
             }
         };
@@ -305,9 +305,9 @@ class VolumeMixin
 
     public function read(): Closure
     {
-        $mixin = $this;
+        $readException = $this->readException(...);
 
-        return function(string $path) use ($mixin): string {
+        return function(string $path) use ($readException): string {
             /**
              * @var Volume $this
              *
@@ -318,7 +318,7 @@ class VolumeMixin
             try {
                 $contents = $disk->get($path);
             } catch (Throwable $e) {
-                throw $mixin->readException($disk, $path, $e);
+                throw $readException($disk, $path, $e);
             }
 
             if ($contents === null) {
@@ -331,9 +331,9 @@ class VolumeMixin
 
     public function writeFileFromStream(): Closure
     {
-        $mixin = $this;
+        $legacyConfigForDisk = $this->legacyConfigForDisk(...);
 
-        return function(string $path, $stream, array $config = []) use ($mixin): void {
+        return function(string $path, $stream, array $config = []) use ($legacyConfigForDisk): void {
             if (!is_resource($stream)) {
                 throw new FilesystemException("Unable to write stream to path: $path");
             }
@@ -344,7 +344,7 @@ class VolumeMixin
                  *
                  * @phpstan-ignore-next-line
                  */
-                if (!$this->sourceDisk()->writeStream($path, $stream, $mixin->legacyConfigForDisk($config))) {
+                if (!$this->sourceDisk()->writeStream($path, $stream, $legacyConfigForDisk($config))) {
                     throw new FilesystemException("Unable to write stream to path: $path");
                 }
             } catch (Throwable $e) {
@@ -407,9 +407,9 @@ class VolumeMixin
 
     public function getFileStream(): Closure
     {
-        $mixin = $this;
+        $readException = $this->readException(...);
 
-        return function(string $uriPath) use ($mixin) {
+        return function(string $uriPath) use ($readException) {
             /**
              * @var Volume $this
              *
@@ -420,7 +420,7 @@ class VolumeMixin
             try {
                 $stream = $disk->readStream($uriPath);
             } catch (Throwable $e) {
-                throw $mixin->readException($disk, $uriPath, $e);
+                throw $readException($disk, $uriPath, $e);
             }
 
             if (!is_resource($stream)) {
@@ -445,9 +445,9 @@ class VolumeMixin
 
     public function createDirectory(): Closure
     {
-        $mixin = $this;
+        $legacyConfigForDisk = $this->legacyConfigForDisk(...);
 
-        return function(string $path, array $config = []) use ($mixin): void {
+        return function(string $path, array $config = []) use ($legacyConfigForDisk): void {
             $path = trim($path, '/');
             if ($path === '') {
                 return;
@@ -458,7 +458,7 @@ class VolumeMixin
              *
              * @phpstan-ignore-next-line
              */
-            if (!$this->sourceDisk()->makeDirectory($path, $mixin->legacyConfigForDisk($config))) {
+            if (!$this->sourceDisk()->makeDirectory($path, $legacyConfigForDisk($config))) {
                 throw new FilesystemException("Unable to create directory at path: $path");
             }
         };
@@ -484,9 +484,9 @@ class VolumeMixin
 
     public function renameDirectory(): Closure
     {
-        $mixin = $this;
+        $swapPathPrefix = $this->swapPathPrefix(...);
 
-        return function(string $path, string $newName) use ($mixin): void {
+        return function(string $path, string $newName) use ($swapPathPrefix): void {
             $sourcePath = trim($path, '/');
 
             /**
@@ -526,7 +526,7 @@ class VolumeMixin
             usort($directories, fn(string $a, string $b) => substr_count($a, '/') <=> substr_count($b, '/'));
 
             foreach ($directories as $directory) {
-                $targetDirectory = $mixin->swapPathPrefix($directory, $sourcePath, $targetPath);
+                $targetDirectory = $swapPathPrefix($directory, $sourcePath, $targetPath);
 
                 if (!$disk->makeDirectory($targetDirectory)) {
                     throw new FilesystemException("Unable to create directory at path: $targetDirectory");
@@ -534,7 +534,7 @@ class VolumeMixin
             }
 
             foreach ($disk->allFiles($sourcePath) as $file) {
-                $targetFile = $mixin->swapPathPrefix($file, $sourcePath, $targetPath);
+                $targetFile = $swapPathPrefix($file, $sourcePath, $targetPath);
 
                 if (!$disk->move($file, $targetFile)) {
                     throw new FilesystemException("Unable to move $file to $targetFile");

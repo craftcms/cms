@@ -6,6 +6,7 @@
  */
 
 import {Base} from '../base';
+import {ESC_KEY} from '../constants';
 import {bod} from '../globals';
 import {isCtrlKeyPressed} from '../utils/env';
 import {getElement} from '../utils/dom';
@@ -65,6 +66,10 @@ type ShortcutKeyboardEvent = KeyboardEvent & {
  * Shortcuts are dispatched top-down: a `keydown` is offered to the current
  * layer's shortcuts first, then bubbles to lower layers only when the layer opts
  * in (`options.bubble`) or `ev.bubbleShortcut()` is called.
+ *
+ * An Escape keydown that something inside a layer already handled
+ * (`defaultPrevented`), such as a menu or tooltip closing on it, triggers no
+ * shortcut, so one Escape press closes one thing.
  */
 export class UiLayerManager extends Base {
   /** The layer stack; index `0` is the base document layer. */
@@ -285,6 +290,11 @@ export class UiLayerManager extends Base {
 
   triggerShortcut(ev: ShortcutKeyboardEvent, layerIndex?: number): void {
     if (layerIndex === undefined) {
+      // Checked only as the key first arrives: a shortcut that bubbles has
+      // already prevented the default itself.
+      if (ev.keyCode === ESC_KEY && ev.defaultPrevented) {
+        return;
+      }
       layerIndex = this.layer;
     }
     const layer = this.layers[layerIndex]!;

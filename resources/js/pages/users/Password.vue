@@ -45,7 +45,7 @@
   <UserScreen>
     <div class="grid gap-6 min-w-0">
       <section class="grid gap-3 min-w-0">
-        <h2 class="text-base">{{ t('Change your password') }}</h2>
+        <h2 class="cp-h3">{{ t('Change your password') }}</h2>
 
         <craft-field-group>
           <CraftInputPassword
@@ -64,7 +64,7 @@
 
       <section class="grid gap-3 min-w-0">
         <div>
-          <h2 class="text-base">{{ t('Two-Step Verification') }}</h2>
+          <h2 class="cp-h3">{{ t('Two-Step Verification') }}</h2>
           <p>
             {{
               t(

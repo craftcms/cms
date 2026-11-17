@@ -113,11 +113,6 @@ class Settings
         ];
 
         if ($this->generalConfig->allowAdminChanges) {
-            $settings[$label]['addresses'] = [
-                'iconName' => 'map-location',
-                'label' => t('Addresses'),
-            ];
-
             $settings[$label]['email'] = [
                 'url' => route('craft.cp.settings.email.index'),
                 'iconName' => 'envelope',
@@ -147,6 +142,13 @@ class Settings
             'iconName' => 'image',
             'label' => t('Assets'),
         ];
+
+        if ($this->generalConfig->allowAdminChanges) {
+            $settings[$label]['addresses'] = [
+                'iconName' => 'map-location',
+                'label' => t('Addresses'),
+            ];
+        }
 
         $settings[$label]['fields'] = [
             'iconName' => 'pen-to-square',

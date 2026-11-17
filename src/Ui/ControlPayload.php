@@ -38,6 +38,7 @@ readonly class ControlPayload implements JsonSerializable
         public bool $readable = false,
         public bool $writable = false,
         public array $valueProps = [],
+        public ?string $valueScope = null,
     ) {}
 
     /** @return array<string, mixed> */
@@ -57,6 +58,7 @@ readonly class ControlPayload implements JsonSerializable
             + ($this->readable ? ['readable' => true] : [])
             + ($this->writable ? ['writable' => true] : [])
             + ($this->valueProps === [] ? [] : ['valueProps' => $this->valueProps])
+            + ($this->valueScope === null ? [] : ['valueScope' => $this->valueScope])
             + ($this->uis === [] ? [] : ['uis' => array_map(
                 fn (NestedUiPayload $ui): array => $ui->jsonSerialize(),
                 $this->uis,

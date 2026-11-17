@@ -8,7 +8,6 @@ use CraftCms\Cms\View\HtmlStack;
 use CraftCms\Cms\View\LegacyAssets\CpAsset;
 use CraftCms\Cms\View\LegacyAssets\DatepickerI18nAsset;
 use CraftCms\Cms\View\LegacyAssets\GarnishAsset;
-use CraftCms\Cms\View\LegacyAssets\IframeResizerAsset;
 use CraftCms\Cms\View\LegacyAssets\JqueryPaymentAsset;
 use CraftCms\Cms\View\LegacyAssets\JqueryUiAsset;
 use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
@@ -21,7 +20,8 @@ use function CraftCms\Cms\craftAsset;
  * The legacy `Craft` helpers and jQuery plugins (`Craft.js`), which plugins
  * got from `CpAsset` on any page they registered it on, front end included,
  * along with the vendor libraries `CpAsset` used to bring, jQuery and Garnish
- * among them.
+ * among them, and Craft 5's `Craft.publishableSections`, built in the browser
+ * from core's `Craft.creatableSections`.
  *
  * @internal
  */
@@ -35,11 +35,11 @@ class CraftJsAsset implements LegacyAssetInterface
         DatepickerI18nAsset::class,
         PicturefillAsset::class,
         SelectizeAsset::class,
-        IframeResizerAsset::class,
     ];
 
     public function register(HtmlStack $htmlStack): void
     {
+        $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/publishable-sections.js'));
         $htmlStack->jsFile(craftAsset('legacy/cpcompat/dist/craft.js'));
     }
 }

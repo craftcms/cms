@@ -16,7 +16,7 @@
 
 <template>
   <div
-    class="py-1 px-(--cp-container-padding) border-b border-b-quiet flex justify-between items-center gap-4 min-h-(--cp-header-height)"
+    class="py-1 px-(--cp-container-padding) border-b border-b-quiet flex justify-between items-center gap-4 min-h-[calc(var(--cp-header-height)+1px)]"
   >
     <div class="flex items-center gap-1 shrink-0">
       <h3 :id="panel.headingId" class="text-md/4" tabindex="-1">

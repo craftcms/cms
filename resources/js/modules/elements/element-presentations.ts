@@ -113,31 +113,40 @@ async function refetchChanged(): Promise<void> {
   });
 
   await Promise.all(
-    [...groups.values()].map(async ({query, siteId, ids}) => {
-      const sent = new Map(
-        [...ids].map((id) => {
-          const key = entryKey(query, siteId, id);
-          return [key, nextGeneration(key)];
-        })
-      );
-      const {data} = await actionClient.post<{
-        elements?: ElementPresentation[];
-      }>('relational-fields/structured-elements', {
-        elementType: query.elementType,
-        elementIds: [...ids],
-        siteId,
-        viewMode: query.viewMode,
-        thumbSize: query.thumbSize ?? null,
-      });
+    [...groups.values()].map(({query, siteId, ids}) =>
+      fetchInto(query, siteId, [...ids])
+    )
+  );
+}
 
-      data.elements?.forEach((element) => {
-        const key = entryKey(query, siteId, element.id);
-        if (sent.has(key) && generations.get(key) === sent.get(key)) {
-          cache.set(key, element);
-        }
-      });
+/** Fetches elements drawn one way in one site, and caches them. */
+async function fetchInto(
+  query: PresentationQuery,
+  siteId: number | null,
+  ids: number[]
+): Promise<void> {
+  const sent = new Map(
+    ids.map((id) => {
+      const key = entryKey(query, siteId, id);
+      return [key, nextGeneration(key)];
     })
   );
+  const {data} = await actionClient.post<{
+    elements?: ElementPresentation[];
+  }>('relational-fields/structured-elements', {
+    elementType: query.elementType,
+    elementIds: ids,
+    siteId,
+    viewMode: query.viewMode,
+    thumbSize: query.thumbSize ?? null,
+  });
+
+  data.elements?.forEach((element) => {
+    const key = entryKey(query, siteId, element.id);
+    if (sent.has(key) && generations.get(key) === sent.get(key)) {
+      cache.set(key, element);
+    }
+  });
 }
 
 function listen(): void {
@@ -199,6 +208,8 @@ export function useElementPresentations(
     fallbackSiteId: unknown,
     options?: {replace?: boolean}
   ): void;
+  /** Fetches elements nothing has rendered yet, such as pasted ones. */
+  load(elements: PresentedElement[]): Promise<void>;
 } {
   const consumer: Consumer = {
     query: () => toValue(query),
@@ -284,6 +295,19 @@ export function useElementPresentations(
           cache.set(key, presentation);
         }
       });
+    },
+    load: async (elements) => {
+      const bySite = new Map<number | null, number[]>();
+      elements.forEach(({id, siteId}) => {
+        const site = siteKey(siteId);
+        bySite.set(site, [...(bySite.get(site) ?? []), id]);
+      });
+
+      await Promise.all(
+        [...bySite].map(([siteId, ids]) =>
+          fetchInto(toValue(query), siteId, ids)
+        )
+      );
     },
   };
 }

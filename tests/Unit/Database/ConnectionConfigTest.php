@@ -112,6 +112,23 @@ it('builds sqlite requirement checker dsn values from the connection config', fu
     DB::purge('sqlite_dsn_test');
 });
 
+it('builds requirement checker dsn values from read/write connection config', function () {
+    config()->set('database.connections.pgsql_dsn_test', [
+        'driver' => 'pgsql',
+        'read' => ['host' => ['10.0.0.2', '10.0.0.3'], 'port' => 5434],
+        'write' => ['host' => ['10.0.0.1'], 'port' => 5433],
+        'database' => 'craft',
+        'username' => 'craft',
+        'password' => 'secret',
+    ]);
+
+    $connection = DB::connection('pgsql_dsn_test');
+
+    expect(ConnectionConfig::dsn($connection))->toBe('pgsql:host=10.0.0.1;port=5433;dbname=craft;user=craft;password=secret');
+
+    DB::purge('pgsql_dsn_test');
+});
+
 it('uses the current sqlite connection for bulk operations after boot', function (bool $explicitConnection) {
     $original = DB::getDefaultConnection();
     config()->set('database.connections.bulk_ops_after_boot', ['driver' => 'sqlite', 'database' => ':memory:']);

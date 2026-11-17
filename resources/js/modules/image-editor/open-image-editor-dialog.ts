@@ -46,15 +46,20 @@ export async function openImageEditorDialog(
       }),
   });
 
-  // Torn down once the dialog has finished closing, so its exit transition and
-  // focus return aren't cut short.
+  // Torn down once the editor's dialog has finished closing, so its exit
+  // transition and focus return aren't cut short. Its confirmation and tooltips
+  // fire the same event from inside the host while the editor stays open.
   host.addEventListener(
     'craft-after-hide',
-    () => {
+    (event) => {
+      if (!(event.target as Element).matches('.image-editor-dialog')) {
+        return;
+      }
+
       app.unmount();
       host.remove();
     },
-    {capture: true, once: true}
+    {capture: true}
   );
 
   app.config.compilerOptions.isCustomElement = (tag: string) =>

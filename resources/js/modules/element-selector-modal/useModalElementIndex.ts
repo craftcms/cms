@@ -7,6 +7,7 @@ import {
 import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
 import {isInteractiveClick} from '@/common/utils/dom';
 import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
+import type {ActionItemButton} from '@/common/types';
 
 type Row = ElementIndexRow;
 
@@ -20,6 +21,7 @@ export interface FolderCrumb {
 /** The extras `ModalIndexViewModel` adds to the shared index payload. */
 type ModalIndexData = ContentIndexData & {
   folderBreadcrumbs?: FolderCrumb[];
+  folderActions?: ActionItemButton[];
   canSearchSubfolders?: boolean;
   includeSubfolders?: boolean;
 };
@@ -96,11 +98,19 @@ export function useModalElementIndex(options: Options) {
     () => new Set(options.disabledFolderIds?.() ?? [])
   );
   const selectFolders = options.selectFolders ?? false;
+  // The folder the modal opened in, such as an Assets field's upload location,
+  // is where it starts rather than where it stays: it seeds the query that
+  // switching sources and opening folders update.
+  const {folderId, ...params} = options.params;
   const index = useDetachedElementIndex({
     initial: options.initial,
+    initialQuery:
+      folderId === undefined || folderId === null
+        ? {}
+        : {folderId: Number(folderId)},
     fetch: async (query) => {
       const {data} = await actionClient.post(options.action, {
-        ...options.params,
+        ...params,
         ...query,
       });
 
@@ -117,6 +127,9 @@ export function useModalElementIndex(options: Options) {
         : !row.isFolder && !disabledIds.value.has(Number(row.id))),
     // A move has one destination.
     multiSelect: !selectFolders,
+    structure: true,
+    // Choosing a parent relates only the parent.
+    selectDescendants: false,
   });
   // Brings back the view mode, columns and sort this index last used, which
   // the server can't know when it renders the first payload.
@@ -127,6 +140,11 @@ export function useModalElementIndex(options: Options) {
   /** The trail from the volume root to the folder on screen, for assets. */
   const folderBreadcrumbs = computed(
     () => (index.payload.value as ModalIndexData).folderBreadcrumbs ?? []
+  );
+
+  /** The buttons plugins add for the folder on screen. */
+  const folderActions = computed(
+    () => (index.payload.value as ModalIndexData).folderActions ?? []
   );
 
   /**
@@ -304,6 +322,7 @@ export function useModalElementIndex(options: Options) {
     includeSubfolders,
     setIncludeSubfolders,
     folderBreadcrumbs,
+    folderActions,
     openFolder,
     itemBehavior,
     selectedElements,

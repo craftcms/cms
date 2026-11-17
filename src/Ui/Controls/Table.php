@@ -208,6 +208,30 @@ class Table extends Control implements ReadableValueControl, WritableValueContro
         return $ui;
     }
 
+    /**
+     * Tables with money columns are scoped to those columns' currencies, so an amount is never
+     * pasted into a column that would read it in another currency. A scope set with {@see valueScope()}
+     * narrows that one rather than replacing it.
+     */
+    #[\Override]
+    public function getValueScope(): ?string
+    {
+        $currencies = [];
+
+        foreach (array_map($this->columnProps(...), $this->columns) as $key => $column) {
+            if (($column['type'] ?? null) === 'money') {
+                $currencies[$key] = $column['currency'] ?? 'USD';
+            }
+        }
+
+        ksort($currencies);
+
+        $scope = parent::getValueScope();
+        $money = $currencies ? 'money:'.http_build_query($currencies) : null;
+
+        return $scope !== null && $money !== null ? "{$scope}|{$money}" : $scope ?? $money;
+    }
+
     #[\Override]
     public function nestsUis(): bool
     {
@@ -284,6 +308,23 @@ class Table extends Control implements ReadableValueControl, WritableValueContro
      */
     private function columnProps(array $column): array
     {
+        if (isset($column['control'])) {
+            // A column drawn by a control of its own, such as a Table field's cell, takes the settings pasted
+            // cells are checked against from that control, wherever the column configured them.
+            $controlProps = $column['control']->props();
+            if (isset($controlProps['types'])) {
+                $controlProps['types'] = array_column($controlProps['types'], 'id');
+            }
+            $column = [...$column, ...Arr::only($controlProps, ['options', 'types', 'currency', 'min', 'max', 'alpha'])];
+        } else {
+            // Columns without a control or a type are single-line text, as TableColumn::control() draws them.
+            $column['type'] ??= 'singleline';
+
+            if (in_array($column['type'], ['select', 'radio'], true)) {
+                $column['options'] = TableColumn::options($column['options'] ?? []);
+            }
+        }
+
         if (isset($column['info']) && ! isset($column['infoHtml'])) {
             $column['infoHtml'] = Markdown::parseParagraph((string) $column['info']);
         }

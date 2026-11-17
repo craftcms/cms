@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Ui\Contracts\Control as ControlContract;
 use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Ui;
 
@@ -19,6 +20,8 @@ abstract class Control implements ControlContract
     protected ControlMode $mode = ControlMode::Editable;
 
     protected bool $reactive = false;
+
+    private ?string $valueScope = null;
 
     /** @var string|list<string>|null */
     protected string|array|null $deltaGroup = null;
@@ -199,6 +202,27 @@ abstract class Control implements ControlContract
     public function nestsUis(): bool
     {
         return false;
+    }
+
+    /**
+     * Limits the values a {@see WritableValueControl} takes to ones read from a control with the same value scope,
+     * when what it can take depends on more than the value itself — the field a relation field’s selectable elements
+     * are configured on, say.
+     */
+    final public function valueScope(?string $scope): static
+    {
+        $this->valueScope = $scope;
+
+        return $this;
+    }
+
+    /**
+     * Returns the value scope: the one set with {@see valueScope()}, or one the control derives from its own settings.
+     * Values are only copied between readable and writable controls with the same scope.
+     */
+    public function getValueScope(): ?string
+    {
+        return $this->valueScope;
     }
 
     /**

@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
-  import {nextTick, onMounted, ref, useId, watch} from 'vue';
+  import {inject, nextTick, onMounted, ref, useId, watch} from 'vue';
   import {firstFocusableWithin, revealElement} from '@/common/utils/dom';
-  import {fieldId} from '@/modules/ui/runtime';
+  import {fieldId, scopedId, UiFieldIdScope} from '@/modules/ui/runtime';
 
   const props = withDefaults(
     defineProps<{
@@ -22,9 +22,11 @@
   /** The error keys whose field is on the page, which get a link to it. */
   const linkedKeys = ref(new Set<string>());
 
+  const fieldIdScope = inject(UiFieldIdScope, undefined);
+
   /** An error's key is its control's path, which names the field wrapping it. */
   function targetId(key: string): string {
-    return fieldId(key.split('.'));
+    return scopedId(fieldIdScope, fieldId(key.split('.')));
   }
 
   function findLinkedKeys(): void {

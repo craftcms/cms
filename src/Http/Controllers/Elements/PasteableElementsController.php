@@ -9,9 +9,9 @@ use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
+use CraftCms\Cms\Element\ElementIndexState;
 use CraftCms\Cms\Element\ElementSources as ElementSourcesService;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
-use CraftCms\Cms\Support\Facades\ElementSources;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use Illuminate\Http\JsonResponse;
@@ -35,13 +35,18 @@ readonly class PasteableElementsController
     /** How many copied elements are checked at once. */
     private const int LIMIT = 100;
 
-    public function __invoke(ElementIndexRequest $request, ElementIndexes $elementIndexes, RequestedSite $requestedSite): JsonResponse
-    {
+    public function __invoke(
+        ElementIndexRequest $request,
+        ElementIndexes $elementIndexes,
+        ElementIndexState $elementIndexState,
+        RequestedSite $requestedSite,
+    ): JsonResponse {
         $request->validate([
             'elementIds' => ['required', 'array', 'max:'.self::LIMIT],
             'elementIds.*' => ['integer'],
             'sources' => ['nullable', 'array'],
             'sources.*' => ['string'],
+            'showFolders' => ['nullable', 'boolean'],
             'siteId' => ['nullable', 'integer'],
             'viewMode' => ['nullable', 'string', Rule::in(ElementSelect::viewModes())],
             'thumbSize' => ['nullable', Rule::enum(ChipThumbSize::class)],
@@ -55,10 +60,13 @@ readonly class PasteableElementsController
             ? $request->integer('siteId')
             : ($requestedSite->get()->id ?? Sites::getPrimarySite()->id);
 
-        $sources = ElementSources::getSources($elementType, $request->context())
-            ->filter(fn (array $source): bool => $source['type'] !== ElementSourcesService::TYPE_HEADING
-                && isset($source['key'])
-                && (! is_array($allowedSources) || in_array($source['key'], $allowedSources, true)));
+        // Resolved as the selector modal resolves them, so a nested source the field allows, such as an Assets
+        // field's restricted subfolder, counts too.
+        $sources = $elementIndexState
+            ->sources($elementType, $request->context(), restrictTo: is_array($allowedSources) ? array_values($allowedSources) : null)
+            ->filter(fn (array $source): bool => $source['type'] !== ElementSourcesService::TYPE_HEADING && isset($source['key']));
+        // The selector only opens subfolders when it lists them.
+        $includeSubfolders = ! $request->has('showFolders') || $request->boolean('showFolders');
 
         $condition = $request->condition();
         $criteria = $request->criteria();
@@ -71,8 +79,8 @@ readonly class PasteableElementsController
                 break;
             }
 
-            // The selector can open a volume's subfolders, so anything in them can be chosen.
-            if ($elementType === Asset::class && str_starts_with($source['key'], 'volume:')) {
+            // The selector can open a folder's subfolders, so anything in them can be chosen.
+            if ($elementType === Asset::class && $includeSubfolders && isset($source['criteria']['folderId'])) {
                 $source['criteria']['includeSubfolders'] = true;
             }
 

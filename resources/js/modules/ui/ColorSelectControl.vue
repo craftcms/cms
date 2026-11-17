@@ -1,11 +1,7 @@
 <script setup lang="ts">
   import CraftSelectColor from '@craftcms/ui/components/select-color/select-color';
   import type {UiControlPayload} from './types';
-  import {
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-  } from './runtime';
+  import {inputName} from './runtime';
 
   // The select uses __blank__ internally; form values use an empty string.
   const BLANK_VALUE = '__blank__';
@@ -28,24 +24,24 @@
     (event: 'update:value', value: string, kind: 'discrete'): void;
   }>();
 
-  const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftSelectColor)) {
+  function onChange(event: Event): void {
+    if (!(event.currentTarget instanceof CraftSelectColor)) {
       throw new TypeError('Expected a color select event target.');
     }
 
-    const modelValue = event.target.modelValue;
+    const value = event.currentTarget.value;
     emit(
       'update:value',
-      modelValue === BLANK_VALUE ? '' : String(modelValue ?? ''),
+      value === BLANK_VALUE ? '' : String(value ?? ''),
       'discrete'
     );
-  });
+  }
 </script>
 
 <template>
   <craft-select-color
     :name="editable ? inputName(control.path) : ''"
-    .modelValue="
+    .value="
       !value && control.props.allowTransparent
         ? BLANK_VALUE
         : String(value ?? '')
@@ -56,7 +52,7 @@
     .required="editable && required"
     :readonly="control.mode === 'readOnly'"
     .disabled="!editable"
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onModelValueChanged"
+    :invalid="invalid"
+    @change="onChange"
   ></craft-select-color>
 </template>

@@ -30,7 +30,7 @@
     class="cart-dialog"
     :label="t('Cart')"
     close-on-outside-click
-    .opened="opened"
+    .open="opened"
     @craft-hide="setOpened(false)"
   >
     <div class="cart">
@@ -44,7 +44,7 @@
 
       <template v-else>
         <section class="grid gap-md">
-          <h2 class="m-0">{{ t('Items in your cart') }}</h2>
+          <h2 class="cp-h2">{{ t('Items in your cart') }}</h2>
 
           <template v-if="cart.lineItems.length">
             <ul class="cart__items">

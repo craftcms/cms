@@ -20,7 +20,7 @@
       :is="collapsible ? 'craft-disclosure' : 'section'"
       class="workflow-review-run"
       :appearance="collapsible ? 'plain' : undefined"
-      :opened.prop="collapsible ? run.current : undefined"
+      :open.prop="collapsible ? run.current : undefined"
     >
       <craft-button
         v-if="collapsible"
@@ -123,7 +123,7 @@
     }
   }
 
-  .workflow-review-run[opened] .workflow-review-run__chevron {
+  .workflow-review-run[open] .workflow-review-run__chevron {
     transform: none;
   }
 
@@ -155,7 +155,7 @@
     margin-block-end: calc(-1 * var(--c-spacing-md));
 
     &
-      > li:has(> :is(craft-disclosure:not([opened]), section))
+      > li:has(> :is(craft-disclosure:not([open]), section))
       + li
       :deep(.workflow-review-stage > .workflow-review-stage__heading) {
       border-block-start: 1px solid var(--c-color-neutral-border-quiet);
@@ -165,7 +165,7 @@
       > li:last-child
       :deep(
         :is(
-          craft-disclosure.workflow-review-stage:not([opened])
+          craft-disclosure.workflow-review-stage:not([open])
             > .workflow-review-stage__heading,
           section.workflow-review-stage
             > .workflow-review-stage__heading:last-child

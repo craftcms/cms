@@ -57,6 +57,8 @@ craft-badge {
 Its colors come from the generic colorable tokens — `--c-color-fill-quiet` for the surface, `--c-color-border-quiet` for the border, `--c-color-on-quiet` for the text.
 Because `fill` scopes those tokens, change a badge's color through `fill` rather than by overriding them.
 
+Icons slotted into a neutral badge take `--c-badge-icon-color`, which is the text color in the light theme and white in the dark theme and in black badges. Tinted badges' icons take their tint, and an icon with a `color` of its own keeps it.
+
 ## Accessibility
 
 The default indicator is decorative and deliberately unlabeled: the badge's own text already names the status, and a labeled dot beside it would be announced twice.

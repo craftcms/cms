@@ -318,8 +318,10 @@ it('submits Entry UI values and preserves refresh context', async () => {
 
   const input = host.querySelector('craft-input');
   if (!input) throw new Error('Expected the title input.');
-  input.modelValue = 'Edited';
-  input.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+  input.value = 'Edited';
+  input
+    .querySelector('input, textarea, select')!
+    .dispatchEvent(new Event('input', {bubbles: true}));
   await nextTick();
 
   await refreshOwner?.();

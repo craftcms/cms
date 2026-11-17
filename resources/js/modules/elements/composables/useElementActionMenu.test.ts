@@ -146,6 +146,37 @@ describe('useElementActionMenu', () => {
     expect(options).toEqual({opener: element});
   });
 
+  it('dispatches an event behavior on the window with its detail and trigger', () => {
+    container = document.createElement('div');
+    container.innerHTML = '<craft-action-item></craft-action-item>';
+    document.body.append(container);
+    const element = container.querySelector('craft-action-item')!;
+    const listener = vi.fn();
+    window.addEventListener('my-plugin:open', listener);
+    const [item] = createElementActionMenu()([
+      {
+        label: 'Open my editor',
+        behavior: {
+          type: 'event',
+          name: 'my-plugin:open',
+          detail: {elementId: 12},
+        },
+      },
+    ]);
+    if (!item || !('onClick' in item) || !item.onClick) {
+      throw new Error('Expected a button action.');
+    }
+    element.addEventListener('click', item.onClick);
+
+    (element as HTMLElement).click();
+    window.removeEventListener('my-plugin:open', listener);
+
+    expect(listener).toHaveBeenCalledOnce();
+    const {detail} = listener.mock.calls[0]![0] as CustomEvent;
+    expect(detail.elementId).toBe(12);
+    expect(detail.trigger).toBe(element);
+  });
+
   it("opens the sidebar's entry type rather than the saved one", () => {
     window.Craft!.baseCpUrl = '/admin';
     const toActionItems = createElementActionMenu({

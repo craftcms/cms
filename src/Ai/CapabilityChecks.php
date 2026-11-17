@@ -24,7 +24,6 @@ use Laravel\Ai\Files\Document;
 use Laravel\Ai\Files\File;
 use Laravel\Ai\Files\Image;
 use Laravel\Ai\Files\Video;
-use Laravel\Ai\Responses\StructuredAgentResponse;
 use Throwable;
 
 use function CraftCms\Cms\enum_value;
@@ -214,7 +213,7 @@ class CapabilityChecks
             return $this->failedResult(Capability::StructuredOutput, $resolved, $exception);
         }
 
-        $data = $response instanceof StructuredAgentResponse ? $response->toArray() : [];
+        $data = $response->toArray();
 
         return $this->checkResult(Capability::StructuredOutput, $resolved, ($data['word'] ?? null) === 'lighthouse' && ($data['number'] ?? null) === 42);
     }

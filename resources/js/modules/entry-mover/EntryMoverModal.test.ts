@@ -94,13 +94,7 @@ describe('EntryMoverModal', () => {
         .disabled
     ).toBe(true);
 
-    const group = container.querySelector(
-      'craft-radio-group'
-    ) as HTMLElement & {
-      modelValue: string;
-    };
-    group.modelValue = '16';
-    group.dispatchEvent(new Event('model-value-changed'));
+    container.querySelector<HTMLInputElement>('craft-radio input')!.click();
     await flush();
 
     container.querySelector('form')!.requestSubmit();

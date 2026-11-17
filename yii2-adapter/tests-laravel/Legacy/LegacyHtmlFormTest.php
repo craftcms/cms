@@ -54,6 +54,7 @@ use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\InputNamespace;
+use CraftCms\Cms\Ui\Controls\Color as ColorControl;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
@@ -391,6 +392,15 @@ it('preserves legacy hooks on public field aliases', function() {
         ->and(method_exists(PlainText::class, 'getSettingsHtml'))->toBeTrue()
         ->and($control)->toBeInstanceOf(LegacyHtmlControl::class)
         ->and($control->props()['fragment']['html'])->toContain('built-in-alias');
+});
+
+it('renders the core control for built-in field subclasses that don’t render their own input', function() {
+    $context = fn(bool $inline = false) => new FieldContext(path: ['fields', 'body'], ui: new UiContext(), inline: $inline);
+
+    expect(new class(['handle' => 'tone']) extends Color {
+    }->uiControl($context()))->toBeInstanceOf(ColorControl::class)
+        ->and(new InlineHtmlOverrideField(['handle' => 'body'])->uiControl($context()))->not->toBeInstanceOf(LegacyHtmlControl::class)
+        ->and(new InlineHtmlOverrideField(['handle' => 'body'])->uiControl($context(true)))->toBeInstanceOf(LegacyHtmlControl::class);
 });
 
 it('preserves legacy hooks on each built-in field alias', function(string $fieldClass) {

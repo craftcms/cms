@@ -5,11 +5,9 @@ import type {
   UiPayload,
   UiProperties,
 } from '@/modules/ui/types';
+import '@craftcms/ui/components/checkbox/checkbox';
+import '@craftcms/ui/components/checkbox-group/checkbox-group';
 import Settings from './Settings.vue';
-
-interface CheckboxGroupElement extends HTMLElement {
-  modelValue: string[];
-}
 
 const state = vi.hoisted(() => ({
   setRequire2fa: vi.fn(),
@@ -63,15 +61,13 @@ afterEach(() => {
 
 it('keeps the exclusive two-step verification value shape', () => {
   mount();
-  const group = container.querySelector<CheckboxGroupElement>(
-    'craft-checkbox-group'
+  const all = container.querySelector<HTMLInputElement>(
+    'craft-checkbox-group craft-checkbox input'
   );
-  if (!group) throw new Error('Expected the two-step verification group.');
+  if (!all) throw new Error('Expected the two-step verification group.');
 
-  group.modelValue = ['all'];
-  group.dispatchEvent(new CustomEvent('model-value-changed'));
-  group.modelValue = [];
-  group.dispatchEvent(new CustomEvent('model-value-changed'));
+  all.click();
+  all.click();
 
   expect(state.setRequire2fa).toHaveBeenNthCalledWith(1, 'all');
   expect(state.setRequire2fa).toHaveBeenNthCalledWith(2, false);

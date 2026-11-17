@@ -15,7 +15,6 @@ use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\ElementTypes;
-use CraftCms\Cms\Element\Operations\ElementPlaceholders;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -295,6 +294,10 @@ it('rejects embedded inline edits through an unscoped relation query', function 
 it('accepts embedded inline edits through a generic owner-scoped nested query', function () {
     $owner = UserModel::factory()->createElement();
     $address = AddressModel::factory()->withOwnedElement($owner, 1)->createElement([
+        'countryCode' => 'US',
+        'administrativeArea' => 'OR',
+        'locality' => 'Portland',
+        'postalCode' => '97201',
         'addressLine1' => 'Before save',
     ]);
     $manager = User::find()->id($owner->id)->one()->getAddressManager()->getIndexData($owner);
@@ -475,16 +478,15 @@ it('rolls back prior saves when a later element fails', function () {
         'title' => 'Second Before Save',
     ]);
 
-    app()->instance(Elements::class, new class(app(ElementPlaceholders::class), app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $secondEntry->id) extends Elements
+    app()->instance(Elements::class, new class(app(ElementTypes::class), app(ElementCaches::class), app(Releases::class), $secondEntry->id) extends Elements
     {
         public function __construct(
-            ElementPlaceholders $placeholders,
             ElementTypes $elementTypes,
             ElementCaches $elementCaches,
             Releases $releases,
             private readonly int $failingElementId,
         ) {
-            parent::__construct($placeholders, $elementTypes, $elementCaches, $releases);
+            parent::__construct($elementTypes, $elementCaches, $releases);
         }
 
         public function saveElement(
