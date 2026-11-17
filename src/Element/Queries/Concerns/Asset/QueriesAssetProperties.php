@@ -120,6 +120,11 @@ trait QueriesAssetProperties
         $query->where(function (Builder $query) use ($value, $param, $kinds) {
             $query->whereParam('assets.kind', $value);
 
+            // A file has only one kind, so files can't match “and” by their extensions.
+            if ($param->operator === QueryParam::AND) {
+                return;
+            }
+
             foreach ($param->values as $kind) {
                 if (! isset($kinds[$kind])) {
                     continue;

@@ -47,4 +47,5 @@ test('kind', function (mixed $param, int $expectedCount) {
     ['image, audio', 3],
     ['not image', 2],
     [['not', 'image', 'audio'], 1],
+    ['and image, audio', 0],
 ]);
