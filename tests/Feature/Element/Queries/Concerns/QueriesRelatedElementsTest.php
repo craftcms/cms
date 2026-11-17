@@ -3,16 +3,21 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType as EntryTypeModel;
 use CraftCms\Cms\Field\Entries;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
+use CraftCms\Cms\Section\Models\Section as SectionModel;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -195,4 +200,35 @@ test('reference-tracking fields match when named, and all fields match with *', 
         ->and(entryQuery()->relatedTo(['targetElement' => $target, 'field' => '*'])->ids())->toEqualCanonicalizing([$linkSource->id, $relationSource->id, $tableSource->id])
         ->and(entryQuery()->relatedTo(['sourceElement' => $linkSource, 'field' => '*'])->ids())->toBe([$target->id])
         ->and(entryQuery()->notRelatedTo(['targetElement' => $target, 'field' => 'linkTarget'])->ids())->toEqualCanonicalizing([$target->id, $relationSource->id, $tableSource->id]);
+});
+
+test('reference-tracking fields nested in Matrix entries match when named', function () {
+    actingAs(User::findOne());
+
+    $linkField = Field::factory()->create(['handle' => 'linkTarget', 'type' => Link::class, 'settings' => ['types' => ['entry']]]);
+    Fields::refreshFields();
+    $blockType = EntryTypeModel::factory()->withField($linkField)->create(['handle' => 'linkBlock', 'hasTitleField' => false, 'titleFormat' => '{id}']);
+    EntryTypes::refreshEntryTypes();
+    $matrixField = Field::factory()->create(['handle' => 'blocks', 'type' => Matrix::class, 'settings' => ['entryTypes' => [$blockType->id]]]);
+    Fields::refreshFields();
+    $ownerType = EntryTypeModel::factory()->withField($matrixField)->create(['handle' => 'blockOwner']);
+    EntryTypes::refreshEntryTypes();
+    $section = SectionModel::factory()->withEntryTypes($ownerType)->create();
+    Sections::refreshSections();
+
+    $target = EntryModel::factory()->createElement();
+    $ownerModel = EntryModel::factory()->forSection($section)->forEntryType($ownerType)->create();
+    $owner = entryQuery()->id($ownerModel->id)->status(null)->one();
+
+    $block = new EntryElement([
+        'fieldId' => $matrixField->id,
+        'ownerId' => $owner->id,
+        'typeId' => $blockType->id,
+        'siteId' => $owner->siteId,
+    ]);
+    $block->setFieldValue('linkTarget', ['type' => 'entry', 'value' => "{entry:$target->id@$target->siteId:url}"]);
+    expect(Elements::saveElement($block))->toBeTrue();
+
+    expect(entryQuery()->relatedTo(['targetElement' => $target, 'field' => 'blocks.linkTarget'])->ids())->toBe([$owner->id])
+        ->and(entryQuery()->relatedTo(['sourceElement' => $owner, 'field' => 'blocks.linkTarget'])->ids())->toBe([$target->id]);
 });

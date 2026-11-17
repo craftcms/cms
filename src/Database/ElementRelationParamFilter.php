@@ -364,6 +364,7 @@ class ElementRelationParamFilter
                     }
                 } elseif ($fieldModel instanceof Matrix) {
                     $nestedFieldIds = [];
+                    $nestedReferenceFieldIds = [];
 
                     // Searching by a specific nested field?
                     if (isset($fieldHandleParts[1])) {
@@ -371,74 +372,96 @@ class ElementRelationParamFilter
                         // the field layouts on this field
                         foreach ($fieldModel->getEntryTypes() as $entryType) {
                             $nestedField = $entryType->getFieldLayout()->getFieldByHandle($fieldHandleParts[1]);
-                            if ($nestedField) {
+                            if (! $nestedField) {
+                                continue;
+                            }
+
+                            // Reference-tracking fields store their targets in fieldreferences; some, such as
+                            // Table fields, store relations too.
+                            if ($nestedField instanceof TracksReferencesFieldInterface) {
+                                $nestedReferenceFieldIds[] = $nestedField->id;
+                            }
+
+                            if (! $nestedField instanceof TracksReferencesFieldInterface || $nestedField instanceof RelationalFieldInterface) {
                                 $nestedFieldIds[] = $nestedField->id;
                             }
                         }
 
-                        if (empty($nestedFieldIds)) {
+                        if (empty($nestedFieldIds) && empty($nestedReferenceFieldIds)) {
                             continue;
                         }
                     }
 
-                    if ($dir === self::DIR_FORWARD) {
-                        self::$relateSourcesCount++;
-                        self::$relateTargetNestedElementsCount++;
+                    $nestedTables = [];
 
-                        $sourcesAlias = 'sources'.self::$relateSourcesCount;
-                        $targetNestedElementsAlias = 'target_nestedelements'.self::$relateTargetNestedElementsCount;
-                        $targetContainerElementsAlias = 'target_containerelements'.self::$relateTargetNestedElementsCount;
-
-                        $subQuery = DB::table(Table::RELATIONS, $sourcesAlias)
-                            ->select("$sourcesAlias.targetId")
-                            ->join(Table::ENTRIES." as $targetNestedElementsAlias", "$targetNestedElementsAlias.id", '=', "$sourcesAlias.sourceId")
-                            ->join(Table::ELEMENTS." as $targetContainerElementsAlias", "$targetContainerElementsAlias.id", '=', "$targetNestedElementsAlias.id")
-                            ->whereIn("$targetNestedElementsAlias.primaryOwnerId", $relElementIds)
-                            ->where("$targetNestedElementsAlias.fieldId", $fieldModel->id)
-                            ->where("$targetContainerElementsAlias.enabled", true)
-                            ->whereNull("$targetContainerElementsAlias.dateDeleted");
-
-                        if ($relCriteria['sourceSite']) {
-                            $subQuery->where(function (Builder $query) use ($relCriteria, $sourcesAlias) {
-                                $query->whereNull("$sourcesAlias.sourceSiteId")
-                                    ->orWhereIn("$sourcesAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
-                            });
-                        }
-
-                        if (! empty($nestedFieldIds)) {
-                            $subQuery->whereIn("$sourcesAlias.fieldId", $nestedFieldIds);
-                        }
-                    } else {
-                        self::$relateSourceNestedElementsCount++;
-                        $sourceNestedElementsAlias = 'source_nestedelements'.self::$relateSourceNestedElementsCount;
-                        $sourceContainerElementsAlias = 'source_containerelements'.self::$relateSourceNestedElementsCount;
-                        $nestedElementTargetsAlias = 'nestedelement_targets'.self::$relateSourceNestedElementsCount;
-
-                        $subQuery = DB::table(Table::ENTRIES, $sourceNestedElementsAlias)
-                            ->select("$sourceNestedElementsAlias.primaryOwnerId")
-                            ->join(Table::ELEMENTS." as $sourceContainerElementsAlias", "$sourceContainerElementsAlias.id", '=', "$sourceNestedElementsAlias.id")
-                            ->join(Table::RELATIONS." as $nestedElementTargetsAlias", "$nestedElementTargetsAlias.sourceId", '=', "$sourceNestedElementsAlias.id")
-                            ->where("$sourceContainerElementsAlias.enabled", true)
-                            ->whereNull("$sourceContainerElementsAlias.dateDeleted")
-                            ->whereIn("$nestedElementTargetsAlias.targetId", $relElementIds)
-                            ->where("$sourceNestedElementsAlias.fieldId", $fieldModel->id);
-
-                        if ($relCriteria['sourceSite']) {
-                            $subQuery->where(function (Builder $query) use ($relCriteria, $nestedElementTargetsAlias) {
-                                $query->whereNull("$nestedElementTargetsAlias.sourceSiteId")
-                                    ->orWhereIn("$nestedElementTargetsAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
-                            });
-                        }
-
-                        if (! empty($nestedFieldIds)) {
-                            $subQuery->whereIn("$nestedElementTargetsAlias.fieldId", $nestedFieldIds);
-                        }
+                    if (! isset($fieldHandleParts[1]) || ! empty($nestedFieldIds)) {
+                        $nestedTables[] = [Table::RELATIONS, $nestedFieldIds];
                     }
 
-                    $query->orWhereIn('elements.id', $subQuery);
-                    $applied = true;
+                    if (! empty($nestedReferenceFieldIds)) {
+                        $nestedTables[] = [Table::FIELDREFERENCES, $nestedReferenceFieldIds];
+                    }
 
-                    unset($subQuery);
+                    foreach ($nestedTables as [$nestedTable, $nestedTableFieldIds]) {
+                        if ($dir === self::DIR_FORWARD) {
+                            self::$relateSourcesCount++;
+                            self::$relateTargetNestedElementsCount++;
+
+                            $sourcesAlias = 'sources'.self::$relateSourcesCount;
+                            $targetNestedElementsAlias = 'target_nestedelements'.self::$relateTargetNestedElementsCount;
+                            $targetContainerElementsAlias = 'target_containerelements'.self::$relateTargetNestedElementsCount;
+
+                            $subQuery = DB::table($nestedTable, $sourcesAlias)
+                                ->select("$sourcesAlias.targetId")
+                                ->join(Table::ENTRIES." as $targetNestedElementsAlias", "$targetNestedElementsAlias.id", '=', "$sourcesAlias.sourceId")
+                                ->join(Table::ELEMENTS." as $targetContainerElementsAlias", "$targetContainerElementsAlias.id", '=', "$targetNestedElementsAlias.id")
+                                ->whereIn("$targetNestedElementsAlias.primaryOwnerId", $relElementIds)
+                                ->where("$targetNestedElementsAlias.fieldId", $fieldModel->id)
+                                ->where("$targetContainerElementsAlias.enabled", true)
+                                ->whereNull("$targetContainerElementsAlias.dateDeleted");
+
+                            if ($relCriteria['sourceSite']) {
+                                $subQuery->where(function (Builder $query) use ($relCriteria, $sourcesAlias) {
+                                    $query->whereNull("$sourcesAlias.sourceSiteId")
+                                        ->orWhereIn("$sourcesAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
+                                });
+                            }
+
+                            if (! empty($nestedTableFieldIds)) {
+                                $subQuery->whereIn("$sourcesAlias.fieldId", $nestedTableFieldIds);
+                            }
+                        } else {
+                            self::$relateSourceNestedElementsCount++;
+                            $sourceNestedElementsAlias = 'source_nestedelements'.self::$relateSourceNestedElementsCount;
+                            $sourceContainerElementsAlias = 'source_containerelements'.self::$relateSourceNestedElementsCount;
+                            $nestedElementTargetsAlias = 'nestedelement_targets'.self::$relateSourceNestedElementsCount;
+
+                            $subQuery = DB::table(Table::ENTRIES, $sourceNestedElementsAlias)
+                                ->select("$sourceNestedElementsAlias.primaryOwnerId")
+                                ->join(Table::ELEMENTS." as $sourceContainerElementsAlias", "$sourceContainerElementsAlias.id", '=', "$sourceNestedElementsAlias.id")
+                                ->join($nestedTable." as $nestedElementTargetsAlias", "$nestedElementTargetsAlias.sourceId", '=', "$sourceNestedElementsAlias.id")
+                                ->where("$sourceContainerElementsAlias.enabled", true)
+                                ->whereNull("$sourceContainerElementsAlias.dateDeleted")
+                                ->whereIn("$nestedElementTargetsAlias.targetId", $relElementIds)
+                                ->where("$sourceNestedElementsAlias.fieldId", $fieldModel->id);
+
+                            if ($relCriteria['sourceSite']) {
+                                $subQuery->where(function (Builder $query) use ($relCriteria, $nestedElementTargetsAlias) {
+                                    $query->whereNull("$nestedElementTargetsAlias.sourceSiteId")
+                                        ->orWhereIn("$nestedElementTargetsAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
+                                });
+                            }
+
+                            if (! empty($nestedTableFieldIds)) {
+                                $subQuery->whereIn("$nestedElementTargetsAlias.fieldId", $nestedTableFieldIds);
+                            }
+                        }
+
+                        $query->orWhereIn('elements.id', $subQuery);
+                        $applied = true;
+
+                        unset($subQuery);
+                    }
                 } else {
                     Log::warning('Attempting to load relations for a non-relational field: '.$fieldModel->handle);
 
