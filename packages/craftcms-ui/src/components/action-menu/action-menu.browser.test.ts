@@ -248,7 +248,7 @@ it('renders its items when it opens before the browser has been idle', async () 
   }
 });
 
-it('renders only the items still in the page once the browser is idle', async () => {
+it('renders only the items still in the page, at idle unless they show', async () => {
   const idleCallbacks = new Map<number, IdleRequestCallback>();
   let nextHandle = 1;
   vi.stubGlobal('requestIdleCallback', (callback: IdleRequestCallback) => {
@@ -292,6 +292,17 @@ it('renders only the items still in the page once the browser is idle', async ()
 
     await removed!.updateComplete;
     expect(removed!.hasUpdated).toBe(true);
+
+    // One moved out of the menu shows, so it renders without waiting for idle.
+    const moved = document.createElement('craft-action-item');
+    moved.textContent = 'Moved';
+    menu.querySelector('[slot="content"]')!.append(moved);
+    await Promise.resolve();
+    document.body.append(moved);
+
+    await expect
+      .element(page.getByRole('button', {name: 'Moved'}))
+      .toBeVisible();
   } finally {
     vi.unstubAllGlobals();
   }

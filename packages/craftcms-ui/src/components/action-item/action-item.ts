@@ -220,9 +220,14 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     super.connectedCallback();
     this.addEventListener('click', this._blockDisabledClick, {capture: true});
     this.addEventListener('click', this);
-    // Picks up the first render it was waiting for when it was removed.
+    // Picks up the first render it was waiting for when it was removed: at
+    // idle if it's back in a closed menu, or now if it shows.
     if (this.#releaseFirstRender) {
-      queueFirstRender(this);
+      if (this.#inClosedMenu()) {
+        queueFirstRender(this);
+      } else {
+        this.renderNow();
+      }
     }
   }
 
@@ -253,6 +258,14 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     }
   }
 
+  #inClosedMenu(): boolean {
+    const menu = this.closest<HTMLElement & {open?: boolean}>(
+      'craft-action-menu'
+    );
+
+    return !!menu && !menu.open;
+  }
+
   /** Lets a first render that's waiting for its closed menu go ahead. */
   #releaseFirstRender: (() => void) | null = null;
 
@@ -262,11 +275,7 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
    * its menu opens, which renders them at once with {@link renderNow}.
    */
   protected override scheduleUpdate(): void | Promise<unknown> {
-    const menu = this.hasUpdated
-      ? null
-      : this.closest<HTMLElement & {open?: boolean}>('craft-action-menu');
-
-    if (!menu || menu.open) {
+    if (this.hasUpdated || !this.#inClosedMenu()) {
       return super.scheduleUpdate();
     }
 
