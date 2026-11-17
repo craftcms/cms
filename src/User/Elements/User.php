@@ -17,13 +17,16 @@ use CraftCms\Cms\Cp\Html\StatusHtml;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Actions\Restore;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\DeletionBlockers\Contracts\DeletionBlockerInterface;
 use CraftCms\Cms\Element\DeletionBlockers\EntryAuthorsBlocker;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
@@ -32,17 +35,17 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Http\ViewModels\UserEditViewModel;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Assets as AssetsService;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -84,7 +87,6 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Traits\Macroable;
 use LogicException;
 use Override;
 use Stringable;
@@ -124,7 +126,6 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     use ConfirmsPasswords;
     use HasNames;
     use LegacyConstants;
-    use Macroable;
     use Notifiable;
 
     public const string GQL_TYPE_NAME = 'User';
@@ -194,18 +195,27 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Photo asset ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the user’s photo asset.', nullable: true)]
+    #[Gql(exclude: true)]
+    #[Mcp(update: false)]
     public ?int $photoId = null;
 
     /**
      * @var bool Active
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is active.')]
+    #[Gql(exclude: true)]
+    #[Mcp(update: false)]
     public bool $active = false;
 
     /**
      * @var bool Pending
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is pending activation.')]
+    #[Gql(exclude: true)]
+    #[Mcp(update: false)]
     public bool $pending = false;
 
     /**
@@ -224,18 +234,22 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var bool Admin
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user is an admin.')]
+    #[Gql(exclude: true)]
     public bool $admin = false;
 
     /**
      * @var string|null Username
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s username.', readable: true)]
     public ?string $username = null;
 
     /**
      * @var string|null Email
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s email address.', readable: true)]
     public ?string $email = null;
 
     /**
@@ -247,6 +261,8 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * @var int|null Affiliated site ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Id, 'The ID of the site the user is affiliated with.', nullable: true, readable: true)]
+    #[Mcp(update: false)]
     public ?int $affiliatedSiteId = null;
 
     /**
@@ -273,6 +289,9 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var bool Whether the user has a dashboard
      */
+    #[ElementProperty(ElementPropertyType::Boolean, 'Whether the user has a dashboard.')]
+    #[Gql(exclude: true)]
+    #[Mcp(update: false)]
     public bool $hasDashboard = false;
 
     /**
@@ -293,6 +312,8 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
     /**
      * @var string|null New password
      */
+    #[ElementProperty(ElementPropertyType::String, 'A new password for the user.')]
+    #[Gql(exclude: true)]
     public ?string $newPassword = null;
 
     /**
@@ -511,7 +532,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             ],
             self::STATUS_PENDING => [
                 'label' => t('Pending'),
-                'color' => Color::Orange,
+                'color' => Color::Sky,
             ],
             self::STATUS_SUSPENDED => [
                 'label' => t('Suspended'),
@@ -590,6 +611,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
                 ],
                 [
                     'heading' => t('Account Type'),
+                    'handle' => 'account-type',
                 ],
                 [
                     'key' => 'credentialed',
@@ -618,7 +640,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
             $groups = UserGroups::getAllGroups();
 
             if ($groups->isNotEmpty()) {
-                $sources[] = ['heading' => t('Groups')];
+                $sources[] = ['heading' => t('Groups'), 'handle' => 'groups'];
 
                 foreach ($groups as $group) {
                     $sources[] = [
@@ -1199,6 +1221,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * Returns the user’s full name or username.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s full name or username.', readable: true, writable: false, nonNull: true)]
     public function getName(): string
     {
         return $this->_name ??= $this->_defineName();
@@ -1223,6 +1246,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
      * Returns the user’s first name or username.
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The user’s first name or username.', readable: true, writable: false)]
     public function getFriendlyName(): ?string
     {
         $this->_friendlyName ??= $this->_defineFriendlyName() ?? false;
@@ -1274,6 +1298,13 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         };
     }
 
+    protected function thumb(): ?Thumb
+    {
+        $photo = $this->getPhoto();
+
+        return $photo || $this->uid ? $this->ownThumb($photo) : null;
+    }
+
     protected function thumbUrl(int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         if ($photo = $this->getPhoto()) {
@@ -1281,6 +1312,27 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         }
 
         return null;
+    }
+
+    /**
+     * Returns the two colors of the user’s default photo’s gradient, chosen from their UID, as the names of
+     * `--color-{name}-500` palette colors.
+     *
+     * @return array{string, string}
+     */
+    public function photoColors(): array
+    {
+        $uid = strtolower($this->uid ?? '00ff');
+        $totalColors = count(self::$photoColors);
+        /** @phpstan-ignore-next-line */
+        $color1Index = base_convert(substr($uid, 0, 2), 16, 10) % $totalColors;
+        /** @phpstan-ignore-next-line */
+        $color2Index = base_convert(substr($uid, 2, 2), 16, 10) % $totalColors;
+        if ($color2Index === $color1Index) {
+            $color2Index = ($color1Index + 1) % $totalColors;
+        }
+
+        return [self::$photoColors[$color1Index], self::$photoColors[$color2Index]];
     }
 
     protected function thumbSvg(): ?string
@@ -1292,18 +1344,7 @@ class User extends Element implements AuthenticatableContract, AuthorizableContr
         $names = array_filter([$this->firstName, $this->lastName]) ?: [$this->getName()];
         $initials = implode('', array_map(fn ($name) => mb_strtoupper(mb_substr($name, 0, 1)), $names));
 
-        // Choose a color based on the UUID
-        $uid = strtolower($this->uid ?? '00ff');
-        $totalColors = count(self::$photoColors);
-        /** @phpstan-ignore-next-line */
-        $color1Index = base_convert(substr($uid, 0, 2), 16, 10) % $totalColors;
-        /** @phpstan-ignore-next-line */
-        $color2Index = base_convert(substr($uid, 2, 2), 16, 10) % $totalColors;
-        if ($color2Index === $color1Index) {
-            $color2Index = ($color1Index + 1) % $totalColors;
-        }
-        $color1 = self::$photoColors[$color1Index % $totalColors];
-        $color2 = self::$photoColors[$color2Index % $totalColors];
+        [$color1, $color2] = $this->photoColors();
 
         $gradientId = sprintf('gradient-%s', Str::random(10));
 
@@ -1805,31 +1846,17 @@ XML;
                         'requireElevatedSession' => true,
                     ];
 
-                    $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());
                     $sessionItems[] = [
-                        'id' => $copyImpersonationUrlId,
+                        'id' => sprintf('action-copy-impersonation-url-%s', mt_rand()),
                         'icon' => 'clipboard',
                         'label' => t('Copy impersonation URL…'),
+                        'action' => self::behaviorAction([
+                            'type' => 'copyUrl',
+                            'actionUrl' => Url::actionUrl('users/get-impersonation-url'),
+                            'params' => ['userId' => $this->id],
+                            'prompt' => t('Copy the impersonation URL, and open it in a new private window.'),
+                        ]),
                     ];
-
-                    HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.elevatedSessionManager.requireElevatedSession(() => {
-      Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
-        data: {userId: $userId},
-      }).then((response) => {
-        Craft.ui.createCopyTextPrompt({
-          label: $message,
-          value: response.data.url,
-        })
-      });
-  });
-});
-JS, [
-                        InputNamespace::namespaceId($copyImpersonationUrlId),
-                        $this->id,
-                        t('Copy the impersonation URL, and open it in a new private window.'),
-                    ]);
                 }
             }
         }
@@ -1898,36 +1925,19 @@ JS, [
         ];
     }
 
-    /** @return array<string, string> */
+    /** @return array<string, mixed> */
     private function _copyPasswordResetUrlActionItem(string $label): array
     {
-        $id = sprintf('action-copy-password-reset-url-%s', mt_rand());
-
-        HtmlStack::jsWithVars(fn ($id, $userId, $message) => <<<JS
-$('#' + $id).on('activate', () => {
-  Craft.elevatedSessionManager.requireElevatedSession(() => {
-    Craft.sendActionRequest('POST', 'users/get-password-reset-url', {
-      data: {userId: $userId}
-    }).then((response) => {
-      Craft.ui.createCopyTextPrompt({
-        label: $message,
-        value: response.data.url,
-      })
-    }).catch(({response}) => {
-      Craft.cp.displayError(response.data.message);
-    });
-  });
-});
-JS, [
-            InputNamespace::namespaceId($id),
-            $this->id,
-            t('Copy the activation URL'),
-        ]);
-
         return [
-            'id' => $id,
+            'id' => sprintf('action-copy-password-reset-url-%s', mt_rand()),
             'icon' => 'clipboard',
             'label' => $label,
+            'action' => self::behaviorAction([
+                'type' => 'copyUrl',
+                'actionUrl' => Url::actionUrl('users/get-password-reset-url'),
+                'params' => ['userId' => $this->id],
+                'prompt' => t('Copy the activation URL'),
+            ]),
         ];
     }
 
@@ -2323,12 +2333,18 @@ JS, [
 
         if (! $isNew && $changePassword && isset($newPassword) && ! app()->runningInConsole()) {
             $guard = craftAuth();
+            $currentUser = $guard->user();
 
-            if (! method_exists($guard, 'logoutOtherDevices')) {
-                throw new LogicException('Craft auth guard does not support logging out other devices.');
+            if ($currentUser instanceof UserModel && $currentUser->id === $this->id) {
+                if (! method_exists($guard, 'logoutOtherDevices')) {
+                    throw new LogicException('Craft auth guard does not support logging out other devices.');
+                }
+
+                // The guard verifies the password against its own (stale) user model, then rehashes and saves it
+                $currentUser->password = $this->password;
+                $guard->logoutOtherDevices($newPassword);
+                $this->password = $currentUser->password;
             }
-
-            $guard->logoutOtherDevices($newPassword);
         }
 
         if ($this->sendVerificationEmailAfterRequest && isset($this->unverifiedEmail)) {

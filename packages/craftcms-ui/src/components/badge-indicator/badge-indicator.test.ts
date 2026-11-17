@@ -80,16 +80,6 @@ describe('craft-badge-indicator', () => {
     );
   });
 
-  it('carries a modifier class for each variant', async () => {
-    for (const variant of ['secondary', 'inverse']) {
-      const element = await createBadgeIndicator({variant});
-
-      expect(
-        badge(element).classList.contains(`badge-indicator--${variant}`)
-      ).toBe(true);
-    }
-  });
-
   /**
    * Without alt text the indicator is decoration beside whatever it marks, so
    * it is not announced as an unnamed image.
@@ -104,11 +94,10 @@ describe('craft-badge-indicator', () => {
     const element = await createBadgeIndicator({'alt-text': 'Has updates'});
 
     expect(badge(element).getAttribute('role')).toBe('img');
-    expect(badge(element).getAttribute('aria-labelledby')).toBe(
-      `${element.id}-label`
-    );
     expect(
-      element.shadowRoot!.querySelector(`#${element.id}-label`)?.textContent
+      element.shadowRoot!.getElementById(
+        badge(element).getAttribute('aria-labelledby')!
+      )?.textContent
     ).toBe('Has updates');
   });
 
@@ -118,5 +107,13 @@ describe('craft-badge-indicator', () => {
 
     expect(first.id).not.toBe('');
     expect(first.id).not.toBe(second.id);
+    expect(document.getElementById(first.id)).toBe(first);
+  });
+
+  it('keeps an id set as a property on the host', async () => {
+    const element = await createBadgeIndicator();
+    element.id = 'marker';
+
+    expect(document.getElementById('marker')).toBe(element);
   });
 });

@@ -43,16 +43,11 @@
   }
 
   function updateRequire2fa(
-    event: CustomEvent,
+    event: Event,
     setValue: UiControlOverrideProps['setValue']
   ): void {
-    const target = event.currentTarget;
-    const values =
-      target instanceof HTMLElement &&
-      'modelValue' in target &&
-      Array.isArray(target.modelValue)
-        ? target.modelValue.map(String)
-        : [];
+    const values = (event.currentTarget as HTMLElement & {value: string[]})
+      .value;
 
     setValue(
       values.includes('all') ? 'all' : values.length > 0 ? values : false
@@ -73,16 +68,16 @@
       <craft-checkbox-group
         :name="editable ? inputName(control.path) : ''"
         :aria-label="label"
-        .modelValue="require2faValues(value)"
-        :disabled="!editable"
-        :aria-invalid="invalid ? 'true' : undefined"
-        @model-value-changed="updateRequire2fa($event, setValue)"
+        .value="require2faValues(value)"
+        .disabled="!editable"
+        .invalid="invalid"
+        @change="updateRequire2fa($event, setValue)"
       >
         <craft-checkbox
           v-for="option in options(control)"
           :key="option.value"
-          .choiceValue="option.value"
-          :disabled="!editable || (value === 'all' && option.value !== 'all')"
+          .value="option.value"
+          .disabled="!editable || (value === 'all' && option.value !== 'all')"
         >
           <label slot="label" :class="{'font-bold': option.value === 'all'}">
             {{ option.label }}

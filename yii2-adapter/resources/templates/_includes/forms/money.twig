@@ -1,0 +1,10 @@
+{# Renders a <craft-input-money> from the legacy money variables (`id`,
+   `name`, `value`, `currency`, `decimals`, `formattingLocale`,
+   `decimalSeparator`/`groupSeparator`, `showCurrency`, `showClear`, `size`,
+   `disabled`, `describedBy`, `inputAttributes`).
+
+   The legacy-to-component mapping lives in FormFields::moneyFromConfig(). The
+   component formats the amount and shows the currency itself, replacing the
+   `.money-container` markup and `Craft.Money`. #}
+
+{{- craft.cp.money(_context)|raw -}}

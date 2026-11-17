@@ -29,6 +29,16 @@ trait Queryable
         return new ElementQuery(static::class);
     }
 
+    /**
+     * Returns a new element query for this element type, as Eloquent’s `Model::query()` does.
+     *
+     * @return ElementQuery<static>
+     */
+    public static function query(): ElementQueryInterface
+    {
+        return static::find();
+    }
+
     public static function findOne(mixed $criteria = null): ?static
     {
         return static::findByCondition($criteria, true);

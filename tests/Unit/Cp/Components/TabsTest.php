@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\Tab;
 use CraftCms\Cms\Cp\Components\Tabs;
+use CraftCms\Cms\Cp\Enums\TabsAppearance;
 use CraftCms\Cms\Cp\Enums\TabsLayout;
 use CraftCms\Cms\Cp\Enums\TabsPlacement;
 use Illuminate\Support\HtmlString;
@@ -173,11 +174,20 @@ it('validates placement strings against the enum', function () {
         ->toThrow(ValueError::class);
 });
 
+it('renders the appearance, validating strings against the enum', function () {
+    expect(Tabs::make()->label('Tabs')->appearance(TabsAppearance::Fill)->toHtml())
+        ->toContain('appearance="fill"');
+
+    expect(fn () => Tabs::make()->label('Tabs')->appearance('dotted')->toHtml())
+        ->toThrow(ValueError::class);
+});
+
 it('omits the new settings when unset, so the web component defaults apply', function () {
     $html = Tabs::make()->label('Tabs')->tab('One', 'Panel one')->toHtml();
 
     expect($html)->not->toContain('size=')
-        ->and($html)->not->toContain('placement=');
+        ->and($html)->not->toContain('placement=')
+        ->and($html)->not->toContain('appearance=');
 });
 
 it('builds placement and size from the registry', function () {

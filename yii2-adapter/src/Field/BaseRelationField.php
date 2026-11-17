@@ -10,6 +10,7 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldControl;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldHtml;
+use CraftCms\Yii2Adapter\Field\Concerns\LegacyRelationFieldInput;
 use CraftCms\Yii2Adapter\Field\Concerns\LegacyRelationFieldSettings;
 use CraftCms\Yii2Adapter\Field\Contracts\LegacyField;
 use CraftCms\Yii2Adapter\Ui\Concerns\LegacySettingsUi;
@@ -19,11 +20,25 @@ abstract class BaseRelationField extends CoreBaseRelationField implements Legacy
 {
     use LegacyFieldControl;
     use LegacyFieldHtml;
+    use LegacyRelationFieldInput;
     use LegacyRelationFieldSettings {
         getSettingsHtml as private legacyRelationSettingsHtml;
     }
     use LegacySettingsUi {
         settingsUi as private legacySettingsUi;
+    }
+
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+        $this->init();
+    }
+
+    /**
+     * Initializes the field after it’s configured, as Yii’s `BaseObject` did.
+     */
+    public function init(): void
+    {
     }
 
     public function settingsUi(UiContext $context = new UiContext()): Ui

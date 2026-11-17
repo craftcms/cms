@@ -8,7 +8,7 @@
 
 namespace craft\markdown;
 
-use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 
 /**
  * Markdown parser
@@ -32,7 +32,7 @@ class MarkdownExtra extends BaseMarkdownParser
         parent::logIgnoredSettings();
 
         if ($this->codeAttributesOnPre) {
-            Deprecator::log(
+            LegacyUsage::record(
                 sprintf('%s::$codeAttributesOnPre', static::class),
                 sprintf('`%s::$codeAttributesOnPre` is deprecated and ignored. Code block attributes use the CommonMark defaults.', static::class),
             );

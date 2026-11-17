@@ -1,0 +1,7 @@
+{# Renders a range slider paired with a number input from the legacy range
+   variables (`id`, `name`, `value`, `min`, `max`, `step`, `suffix`, `class`,
+   `title`, `disabled`, `orientation`, `labelledBy`/`labelId`, `describedBy`,
+   `inputAttributes`). The markup and the script that keeps the two inputs in
+   step live in FormFields::rangeHtml(). #}
+
+{{- craft.cp.range(_context)|raw -}}

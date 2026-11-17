@@ -11,7 +11,7 @@
     <craft-progress-bar
       :total="totalEntries"
       :processed="processedEntries"
-      :pending="pending"
+      .pending="pending"
       show-status
     ></craft-progress-bar>
   </div>

@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftInputColor from './input-color.js';
-import './input-color.js';
+import {colorPickerValueToHex} from './input-color.js';
 
 async function createInputColor(): Promise<CraftInputColor> {
   const element = document.createElement('craft-input-color');
@@ -42,17 +42,17 @@ describe('craft-input-color', () => {
     );
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('abc');
+    expect(element.value).toBe('abc');
     expect(input.value).toBe('abc');
   });
 
   it('preserves shorthand values while expanding the picker and preview values', async () => {
     const element = await createInputColor();
 
-    element.modelValue = 'abc';
+    element.value = 'abc';
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('abc');
+    expect(element.value).toBe('abc');
     expect(pickerInput(element).value).toBe('#aabbcc');
     expect(preview(element).getAttribute('style')).toContain(
       'background-color: #aabbcc'
@@ -62,7 +62,7 @@ describe('craft-input-color', () => {
   it('keeps invalid text values and clears the preview', async () => {
     const element = await createInputColor();
 
-    element.modelValue = 'not-a-color';
+    element.value = 'not-a-color';
     await element.updateComplete;
 
     expect(textInput(element).value).toBe('not-a-color');
@@ -79,8 +79,33 @@ describe('craft-input-color', () => {
     );
     await element.updateComplete;
 
-    expect(element.modelValue).toBe('112233');
+    expect(element.value).toBe('112233');
     expect(textInput(element).value).toBe('112233');
+  });
+
+  it('emits one change per committed color, picked or typed, after the value updates', async () => {
+    const form = document.createElement('form');
+    const element = document.createElement('craft-input-color');
+    element.name = 'fill';
+    form.append(element);
+    document.body.append(form);
+    await element.updateComplete;
+    const committed: (string | null)[] = [];
+    element.addEventListener('change', () =>
+      committed.push(textInput(element).value)
+    );
+    form.addEventListener('change', () =>
+      committed.push(new FormData(form).get('fill') as string)
+    );
+
+    element.value = '445566';
+    const picker = pickerInput(element);
+    picker.value = '#112233';
+    picker.dispatchEvent(new Event('change', {bubbles: true}));
+    textInput(element).value = 'abcdef';
+    textInput(element).dispatchEvent(new Event('change', {bubbles: true}));
+
+    expect(committed).toEqual(['112233', '112233', 'abcdef', 'abcdef']);
   });
 
   it('parses presets from a JSON attribute and normalizes them for the picker datalist', async () => {
@@ -112,7 +137,7 @@ describe('craft-input-color', () => {
     element.name = 'fill';
     form.append(element);
     document.body.append(form);
-    element.modelValue = '#abc';
+    element.value = '#abc';
     await element.updateComplete;
 
     expect(new FormData(form).get('fill')).toBe('abc');
@@ -121,5 +146,74 @@ describe('craft-input-color', () => {
     await element.updateComplete;
 
     expect(new FormData(form).has('fill')).toBe(false);
+  });
+
+  it('strips a leading # from a server-rendered value without emitting input', async () => {
+    const form = document.createElement('form');
+    form.innerHTML = `
+      <craft-input-color name="settings[color]">
+        <input slot="input" type="text" name="settings[color]" value="#2563EB">
+      </craft-input-color>`;
+    const events: string[] = [];
+    form.addEventListener('input', (event) => events.push(event.type));
+    form.addEventListener('change', (event) => events.push(event.type));
+    document.body.append(form);
+    const element = form.querySelector('craft-input-color')!;
+    await element.updateComplete;
+
+    expect(textInput(element).value).toBe('2563EB');
+    expect(element.value).toBe('2563EB');
+    expect(new FormData(form).get('settings[color]')).toBe('2563EB');
+    expect(events).toEqual([]);
+  });
+
+  it('previews translucent hex values, expanding 4-digit shorthand', async () => {
+    const element = await createInputColor();
+
+    element.value = 'f008';
+    await element.updateComplete;
+
+    expect(element.value).toBe('f008');
+    expect(preview(element).getAttribute('style')).toContain(
+      'background-color: #ff000088'
+    );
+  });
+
+  it('only sets the alpha attribute on the native picker when alpha is enabled', async () => {
+    const element = await createInputColor();
+
+    expect(pickerInput(element).hasAttribute('alpha')).toBe(false);
+
+    element.alpha = true;
+    await element.updateComplete;
+
+    expect(pickerInput(element).hasAttribute('alpha')).toBe(true);
+  });
+
+  it('gives pickers without alpha support 6-digit values', async () => {
+    const element = await createInputColor();
+
+    element.alpha = true;
+    element.setAttribute('presets', '["#ff000080"]');
+    element.value = '11223344';
+    await element.updateComplete;
+
+    const option = element.shadowRoot!.querySelector('datalist option');
+
+    expect(pickerInput(element).value).toBe('#112233');
+    expect(option?.getAttribute('value')).toBe('#ff0000');
+  });
+});
+
+describe('colorPickerValueToHex', () => {
+  it('converts native color input values to bare hex', () => {
+    expect(colorPickerValueToHex('#112233')).toBe('112233');
+    expect(colorPickerValueToHex('color(srgb 1 0.5 0)')).toBe('ff8000');
+    expect(colorPickerValueToHex('color(srgb 1 0.5 0 / 1)')).toBe('ff8000');
+    expect(colorPickerValueToHex('color(srgb 0 0 1 / 0.5)')).toBe('0000ff80');
+    expect(colorPickerValueToHex('color(srgb 1.2 -0.1 0 / 0)')).toBe(
+      'ff000000'
+    );
+    expect(colorPickerValueToHex('not-a-color')).toBe('not-a-color');
   });
 });

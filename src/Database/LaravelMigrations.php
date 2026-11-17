@@ -24,6 +24,7 @@ class LaravelMigrations
         $this->ensureSessionsTable();
         $this->ensureNotificationsTable();
         $this->ensurePassportTables();
+        $this->ensureAgentConversationTables();
     }
 
     public function ensurePasswordResetTokensTable(): void
@@ -102,6 +103,20 @@ class LaravelMigrations
 
     public function ensurePassportTables(): void
     {
+        if (! Schema::hasTable(Table::OAUTH_DEVICE_CODES)) {
+            Schema::create(Table::OAUTH_DEVICE_CODES, function (Blueprint $table) {
+                $table->char('id', 80)->primary();
+                $table->foreignId('user_id')->nullable()->index();
+                $table->foreignUuid('client_id')->index();
+                $table->char('user_code', 8)->unique();
+                $table->text('scopes');
+                $table->boolean('revoked');
+                $table->dateTime('user_approved_at')->nullable();
+                $table->dateTime('last_polled_at')->nullable();
+                $table->dateTime('expires_at')->nullable();
+            });
+        }
+
         if (! Schema::hasTable(Table::OAUTH_AUTH_CODES)) {
             Schema::create(Table::OAUTH_AUTH_CODES, function (Blueprint $table) {
                 $table->char('id', 80)->primary();
@@ -146,6 +161,46 @@ class LaravelMigrations
                 $table->text('grant_types');
                 $table->boolean('revoked');
                 $table->timestamps();
+            });
+        }
+    }
+
+    /**
+     * Creates the tables `laravel/ai` stores agent conversations in, such as the AI assistant’s.
+     */
+    public function ensureAgentConversationTables(): void
+    {
+        if (! Schema::hasTable(Table::AGENT_CONVERSATIONS)) {
+            Schema::create(Table::AGENT_CONVERSATIONS, function (Blueprint $table) {
+                $table->string('id', 36)->primary();
+                $table->string('participant_type')->nullable();
+                $table->unsignedBigInteger('participant_id')->nullable();
+                $table->string('title');
+                $table->timestamps();
+
+                $table->index(['participant_type', 'participant_id', 'updated_at'], 'participant_updated_at_index');
+            });
+        }
+
+        if (! Schema::hasTable(Table::AGENT_CONVERSATION_MESSAGES)) {
+            Schema::create(Table::AGENT_CONVERSATION_MESSAGES, function (Blueprint $table) {
+                $table->string('id', 36)->primary();
+                $table->string('conversation_id', 36)->index();
+                $table->string('participant_type')->nullable();
+                $table->unsignedBigInteger('participant_id')->nullable();
+                $table->string('agent');
+                $table->string('role', 25);
+                // Wider than `laravel/ai`’s own migration, as MySQL’s `text` can’t hold a message’s images, or a long message.
+                $table->longText('content');
+                $table->longText('attachments');
+                $table->longText('steps');
+                $table->text('usage');
+                $table->text('meta');
+                $table->string('status', 25);
+                $table->timestamps();
+
+                $table->index(['conversation_id', 'participant_type', 'participant_id', 'updated_at'], 'conversation_index');
+                $table->index(['participant_type', 'participant_id', 'agent'], 'participant_index');
             });
         }
     }

@@ -93,7 +93,7 @@ describe('toDateTime', function () {
             ->and(abs($date->getTimestamp() - $expected->getTimestamp()))->toBeLessThanOrEqual(1);
     })->with([
         'timestamp' => [new DateTime('@1625575906'), 1625575906],
-        'now' => [fn () => new DateTime, 'now'],
+        'now' => [fn () => now(), 'now'],
         'no params' => [false, ['date' => '', 'time' => '']],
         'invalid separator' => [false, '2018.08.09 20:00:00'],
         'null type' => [false, null],

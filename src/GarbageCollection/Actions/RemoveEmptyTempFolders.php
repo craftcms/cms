@@ -10,7 +10,6 @@ use CraftCms\Cms\Filesystem\Models\UploadSession;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Find all temp upload folders with no assets in them and remove them.
@@ -35,7 +34,7 @@ class RemoveEmptyTempFolders extends GarbageCollectionAction
                     ->unique()
                     ->values();
                 $emptyFolderIds = DB::table(Table::VOLUMEFOLDERS, 'folders')
-                    ->leftJoin(new Alias(Table::ASSETS, 'assets'), 'assets.folderId', 'folders.id')
+                    ->leftJoin(Table::ASSETS.' as assets', 'assets.folderId', 'folders.id')
                     ->whereNull(['folders.volumeId', 'assets.id'])
                     ->whereNotNull(['folders.parentId', 'folders.path'])
                     ->when(

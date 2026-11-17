@@ -16,7 +16,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Gql\Data\GqlSchema;
-use CraftCms\Cms\Support\Facades\Structures;
+use CraftCms\Cms\Structure\Structures;
 use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
 use CraftCms\Yii2Adapter\Field\BaseRelationField;
 use GraphQL\Type\Definition\Type;
@@ -120,11 +120,11 @@ class Categories extends BaseRelationField
                 ->all();
 
             // Fill in any gaps
-            Structures::fillGapsInElements($categories);
+            app(Structures::class)->fillGapsInElements($categories);
 
             // Enforce the branch limit
             if ($this->branchLimit) {
-                Structures::applyBranchLimitToElements($categories, $this->branchLimit);
+                app(Structures::class)->applyBranchLimitToElements($categories, $this->branchLimit);
             }
 
             $value = array_map(fn(Category $category) => $category->id, $categories);
@@ -182,11 +182,11 @@ class Categories extends BaseRelationField
             )));
 
             // Fill in any gaps
-            Structures::fillGapsInElements($categories);
+            app(Structures::class)->fillGapsInElements($categories);
 
             // Enforce the branch limit
             if ($this->branchLimit) {
-                Structures::applyBranchLimitToElements($categories, $this->branchLimit);
+                app(Structures::class)->applyBranchLimitToElements($categories, $this->branchLimit);
             }
 
             foreach ($categories as $category) {

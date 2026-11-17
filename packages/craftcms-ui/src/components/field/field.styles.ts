@@ -33,7 +33,9 @@ export default css`
   .form-field__status-indicator {
     position: absolute;
     inset-block-start: 0;
-    inset-inline-start: calc(var(--c-spacing-lg) * -1);
+    inset-inline-start: calc(
+      var(--c-field-indicator-inset, var(--c-spacing-lg)) * -1
+    );
     width: 2px;
     height: 100%;
     cursor: help;
@@ -42,33 +44,37 @@ export default css`
   }
 
   .form-field--modified .form-field__status-indicator {
-    background-color: var(--blue-600, #2563eb);
-    box-shadow: 0 0 5px hsl(221deg 83% 53% / 15%);
+    background-color: var(--c-field-modified-indicator, #7c3cf4);
+    box-shadow: 0 0 5px
+      color-mix(
+        in srgb,
+        var(--c-field-modified-indicator, #7c3cf4) 15%,
+        transparent
+      );
   }
 
   .form-field--outdated .form-field__status-indicator {
-    background-color: var(--bg-pending, #c96a11);
-    box-shadow: 0 0 5px hsl(27deg 96% 61% / 15%);
+    background-color: var(--bg-pending, var(--c-status-pending-fill));
+    box-shadow: 0 0 5px
+      color-mix(
+        in srgb,
+        var(--bg-pending, var(--c-status-pending-fill)) 15%,
+        transparent
+      );
   }
 
   /* Heading row (the CP's .field > .heading) */
   .form-field__label {
+    --_heading-gap: var(--c-spacing);
+    --_label-text-bearing: calc(var(--c-spacing) * 0.375);
     position: relative;
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: var(--_heading-gap);
     align-items: center;
     font-size: var(--c-field-label-font-size, inherit);
     font-weight: var(--c-field-label-font-weight, bold);
     color: var(--c-field-label-color, inherit);
-    margin-block-end: var(
-      --c-field-label-margin-block-end,
-      var(--c-spacing-sm)
-    );
-
-    &:has(+ .form-field__help-text) {
-      margin-block-end: 0;
-    }
   }
 
   /* Pushes slotted label extras to the far end of the heading row. */
@@ -87,34 +93,36 @@ export default css`
     inset-inline-end: 0;
   }
 
+  .field-actions--beside-label {
+    position: static;
+  }
+
+  .field-actions--after-text {
+    margin-inline-start: var(--_label-text-bearing);
+  }
+
   ::slotted([slot='label']) {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--c-spacing-xs);
+    gap: var(--_heading-gap);
     align-items: center;
     line-height: var(--c-field-label-line-height, inherit);
   }
 
-  .read-only-badge {
+  .read-only-badge,
+  ::slotted([slot='label-badge']) {
     font-size: calc(11rem / 16);
     font-weight: normal;
     line-height: 1.45;
     padding-block: 0;
     padding-inline: 0.25em;
-    background-color: var(--gray-100, #e9ebec);
-    color: var(--gray-700, #3f4d5a);
-    border: 1px solid var(--border-hairline, hsl(211deg 20% 44% / 25%));
+    border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-sm, 3px);
   }
 
-  /* Instructions (.field > .instructions in the CP) */
-  .form-field__help-text {
-    display: block;
-    margin-block-end: var(--c-spacing-sm);
-  }
-
-  .form-field__group-two .form-field__help-text {
-    margin-block: var(--c-spacing-xs, 0.3125rem) 0;
+  .read-only-badge {
+    background-color: var(--c-color-neutral-fill-quiet);
+    color: var(--c-color-neutral-on-quiet);
   }
 
   /* Input container (.field > .input in the CP) */
@@ -157,14 +165,6 @@ export default css`
     min-width: 0;
     margin: 0;
     font-size: 100%;
-  }
-
-  /* Tip/warning notices (field-notice.blade.php renders these with p-0 mt-1) */
-  .field-notice {
-    --c-callout-icon-padding-inline: 0;
-    --c-callout-text-padding-inline: var(--c-spacing-sm) 0;
-    padding: 0;
-    margin-block-start: var(--c-spacing-xs, 0.25rem);
   }
 
   /* Error styling hook, mirroring .field.has-errors / .input.errors */

@@ -32,6 +32,7 @@ use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Element\Validation\ElementRules;
+use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
@@ -39,6 +40,7 @@ use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\BulkOps;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
@@ -47,6 +49,7 @@ use CraftCms\Cms\Support\Url;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -114,9 +117,16 @@ readonly class ElementWrites
             }
             $generatedFieldValues = [];
             $updated = false;
+            $language = $siteElement->getSite()->getLanguage();
 
             foreach ($generatedFields as $field) {
-                $value = renderObjectTemplate($field['template'] ?? '', $siteElement, escaperStrategy: 'html');
+                $template = $field['template'] ?? '';
+                $value = I18N::withLocale($language, $language, fn () => renderObjectTemplate(
+                    $template,
+                    $siteElement,
+                    ElementHelper::objectTemplateDateVariables($siteElement, $template),
+                    escaperStrategy: 'html',
+                ));
                 $value = normalizeValue($value) ?? '';
 
                 if ($value !== ($content[$field['uid']] ?? '')) {
@@ -393,6 +403,52 @@ readonly class ElementWrites
         ?ElementSiteSettings &$siteSettingsRecord = null,
         ?bool $inheritedUpdateSearchIndex = null,
     ): bool {
+        return $this->elements->ensureSaveScope(function () use (
+            $element,
+            $runValidation,
+            $propagate,
+            $updateSearchIndex,
+            $supportedSites,
+            $forceTouch,
+            $crossSiteValidate,
+            $saveContent,
+            &$siteSettingsRecord,
+            $inheritedUpdateSearchIndex,
+        ) {
+            return $this->saveInScope(
+                $element,
+                $runValidation,
+                $propagate,
+                $updateSearchIndex,
+                $supportedSites,
+                $forceTouch,
+                $crossSiteValidate,
+                $saveContent,
+                $siteSettingsRecord,
+                $inheritedUpdateSearchIndex,
+            );
+        });
+    }
+
+    /**
+     * Saves an element, within an element save scope.
+     *
+     * @param  array<int, array{siteId:int, siteUid:string, propagate:bool, enabledByDefault:bool}>|null  $supportedSites
+     *
+     * @see saveInternal()
+     */
+    private function saveInScope(
+        ElementInterface $element,
+        bool $runValidation,
+        bool $propagate,
+        ?bool $updateSearchIndex,
+        ?array $supportedSites,
+        bool $forceTouch,
+        bool $crossSiteValidate,
+        bool $saveContent,
+        ?ElementSiteSettings &$siteSettingsRecord,
+        ?bool $inheritedUpdateSearchIndex,
+    ): bool {
         $originalScenario = $element->ruleset->getScenario();
         try {
             $isNewElement = ! $element->id;
@@ -560,7 +616,7 @@ readonly class ElementWrites
                             foreach ($fieldLayout->getCustomFields() as $field) {
                                 $validUids[$field->layoutElement->uid] = true;
 
-                                if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
+                                if (($saveContent || in_array($field->handle, $dirtyFields)) && ($field::dbType() !== null || $field instanceof MissingField)) {
                                     $value = $element->getFieldValue($field->handle);
                                     if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
                                         continue;
@@ -970,10 +1026,9 @@ readonly class ElementWrites
                 'target' => '_blank',
             ]).
             $message.
-            Html::tag('span', '', [
-                'data-icon' => 'external',
-                'aria-label' => t('Open in a new tab'),
-                'role' => 'img',
+            Html::tag('craft-icon', '', [
+                'name' => 'external',
+                'label' => t('Open in a new tab'),
             ]).
             Html::endTag('a');
         }

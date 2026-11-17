@@ -5,7 +5,7 @@
    * reordering, and how a row presents itself; callers describe each row
    * through the callbacks below.
    */
-  import {computed, useId} from 'vue';
+  import {computed, shallowRef, useId} from 'vue';
   import {CraftActionItem, t, type ReorderMove} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
@@ -23,6 +23,8 @@
     sublabel?: (item: T) => string | null;
     /** An icon to lead the row with, if any. */
     icon?: (item: T) => string | null;
+    /** A status dot to end the row with, such as a disabled source's. */
+    status?: (item: T) => {status: 'disabled'; label: string} | null;
     /**
      * The row's kind, surfaced as `cs-item--<kind>` alongside `cs-item`. Kept
      * opaque so this list can mark a heading apart without knowing what a
@@ -76,6 +78,7 @@
       label: props.label(item).trim(),
       sublabel: props.sublabel?.(item) ?? null,
       icon: props.icon?.(item) ?? null,
+      status: props.status?.(item) ?? null,
       type: props.itemType?.(item) ?? null,
       actions: props.actions?.(item, index) ?? [],
       moves: props.moves?.(item, index) ?? [],
@@ -175,6 +178,26 @@
   const labelIds = new Map<string, string>();
 
   /**
+   * The row whose item has keyboard focus. The item's button is in its shadow
+   * root, where CSS on the row can't see `:focus-visible`, so it's tracked here
+   * and the row draws the ring.
+   */
+  const focusRingRowId = shallowRef<string | null>(null);
+
+  function syncFocusRing(event: FocusEvent): void {
+    const item =
+      event.type === 'focusin'
+        ? (event.target as Element).closest('.cs-item__select')
+        : null;
+    const control = event.composedPath()[0];
+
+    focusRingRowId.value =
+      item && control instanceof Element && control.matches(':focus-visible')
+        ? (item.closest<HTMLElement>('.cs-item')?.dataset.rowId ?? null)
+        : null;
+  }
+
+  /**
    * The id of a row's label, for its menu button to be described by. Kept per
    * row rather than per position: the button is rendered once, so an id that
    * followed the index would point at another row after a reorder.
@@ -193,7 +216,7 @@
 </script>
 
 <template>
-  <ol class="cs-list">
+  <ol class="cs-list" @focusin="syncFocusRing" @focusout="syncFocusRing">
     <!-- The row is a plain list item rather than the button itself: a native
       drag can't start from inside a <button>, and the handle and menu are
       controls of their own that mustn't nest inside another. -->
@@ -209,9 +232,10 @@
         'cs-item--heading': row.type === 'heading',
         'cs-item--dragging': isDragging(row.index),
         'cs-item--drop-target': getDropIntoId() === row.id,
+        'cs-item--focus-ring': focusRingRowId === row.id,
       }"
     >
-      <span class="cs-item__control">
+      <span class="cs-item__control cs-item__control--handle">
         <craft-reorder-button
           class="cs-item__handle"
           :position="position(row.index)"
@@ -235,7 +259,7 @@
 
       <craft-action-item
         class="cs-item__select"
-        :current="row.id === selected"
+        .current="row.id === selected"
         @click="select(row.item, row.id)"
       >
         <craft-icon v-if="row.icon" :name="row.icon" slot="icon" />
@@ -256,6 +280,13 @@
             row.sublabel
           }}</span>
         </span>
+        <craft-status
+          v-if="row.status"
+          slot="suffix"
+          class="cs-item__status"
+          :status="row.status.status"
+          :label="row.status.label"
+        ></craft-status>
       </craft-action-item>
 
       <!-- Every row's button says “Actions”, so it's described by its row. -->
@@ -318,8 +349,37 @@
     --c-color-fill-quiet: transparent;
   }
 
+  // Likewise focus: the ring goes around the whole row, handle and menu
+  // included (see `focusRingRowId`), raised so the next row's fill doesn't
+  // cover it.
+  .cs-item__select::part(control):focus-visible {
+    outline: none;
+  }
+
+  // The row's fill and ring frame the item, so its label needn't be inset from
+  // the handle: no start padding, and pulled back over the label's own margin.
+  .cs-item__select::part(control) {
+    margin-inline-start: calc(var(--c-spacing-sm) * -1);
+    padding-inline-start: 0;
+  }
+
+  .cs-item--focus-ring {
+    z-index: 1;
+    outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
+      var(--c-color-focus-outline);
+    outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
+  // The selected row's border would run into a tight ring, so it's set apart.
+  .cs-item--focus-ring.cs-item--active {
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
   @media (hover: hover) {
-    .cs-item:not(.cs-item--active, .cs-item--dragging):hover {
+    // Only over the item itself: the handle and menu show their own hover.
+    .cs-item:not(.cs-item--active, .cs-item--dragging):has(
+        .cs-item__select:hover
+      ) {
       background-color: var(--c-color-neutral-fill-quiet);
     }
   }
@@ -332,6 +392,10 @@
 
     .cs-item__label {
       font-weight: bold;
+    }
+
+    .cs-item__handle {
+      font-size: var(--c-text-base);
     }
   }
 
@@ -385,6 +449,26 @@
     flex: none;
     align-items: center;
     height: calc(1lh + 2 * var(--c-spacing-sm) + 2px);
+  }
+
+  // Except the handle's, which stretches to the row so the handle sits in its
+  // middle, beside a label and handle alike.
+  .cs-item__control--handle {
+    align-self: stretch;
+    height: auto;
+  }
+
+  // A block, so it doesn't sit on the text's baseline in the item's suffix,
+  // which is centered on the row. Solid red, through the status component's
+  // own custom properties: the border takes the fill's color, so it has no
+  // outline.
+  .cs-item__status {
+    --c-status-disabled-fill: var(--c-status-expired-fill);
+    --c-status-disabled-border: var(--c-status-expired-fill);
+
+    display: block;
+    // Centers it under the action menu buttons of the rows that have one.
+    margin-inline-end: var(--c-spacing-xs);
   }
 
   .cs-item__text {

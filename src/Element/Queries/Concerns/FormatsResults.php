@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use Illuminate\Database\Query\Builder;
@@ -91,6 +93,7 @@ trait FormatsResults
      *
      * @param  bool  $value  The property value
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Causes the query results to be returned in reverse order.')]
     public function inReverse(bool $value = true): static
     {
         $this->inReverse = $value;
@@ -153,6 +156,7 @@ trait FormatsResults
      *
      * @param  bool  $value  The property value (defaults to true)
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Causes the query results to be returned in the order specified by the `id` argument.')]
     public function fixedOrder(bool $value = true): static
     {
         $this->fixedOrder = $value;
@@ -245,8 +249,9 @@ trait FormatsResults
             callback: fn ($order) => ! isset($order['column']) || ! $order['column'] instanceof OrderByPlaceholderExpression,
         );
 
-        // Order by was set
-        if (count($elementQuery->query->orders) > 0) {
+        // Order by was set, or the query is unioned: Laravel puts orders added after union() on the combined
+        // result, where the default order's table-qualified columns don't exist.
+        if (count($elementQuery->query->orders) > 0 || ! empty($elementQuery->query->unions)) {
             return;
         }
 
@@ -312,7 +317,7 @@ trait FormatsResults
                 return $order;
             }
 
-            $order['column'] = $elementQuery->columnMap[$order['column']] ?? $order['column'];
+            $order['column'] = $elementQuery->resolveColumn($order['column']);
 
             return $order;
         }, $orders);

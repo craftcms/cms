@@ -28,8 +28,6 @@ export interface ElementInfo {
 
 /** The `element-selector-modals/body` response. */
 export interface ElementIndexBody {
-  /** Legacy `ElementIndexHtml` markup. Only the volume-folder path reads it. */
-  html: string;
   /** `ModalIndexViewModel::toArray()`. The Vue index reads it. */
   props: Record<string, unknown>;
 }

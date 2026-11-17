@@ -1,6 +1,7 @@
 import {router} from '@inertiajs/vue3';
 import {isInteractiveClick} from '@/common/utils/dom';
 import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
+import {pageParam} from '@/common/craft/url';
 
 interface AssetIndexItem {
   id: string | number;
@@ -26,7 +27,7 @@ export function useAssetIndexItemBehavior(
     const current = new URLSearchParams(window.location.search);
 
     current.delete('source');
-    current.delete(Craft.pageTrigger ?? 'page');
+    current.delete(pageParam());
 
     for (const [key, value] of current) {
       if (!url.searchParams.has(key)) {

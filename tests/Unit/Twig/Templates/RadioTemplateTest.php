@@ -8,7 +8,7 @@ use function CraftCms\Cms\renderString;
 
 it('renders the web component from the legacy radio variables', function () {
     $html = renderString(
-        "{% include '_includes/forms/radio' with {id: 'r', name: 'mode', value: 'auto', label: 'Auto', checked: true} only %}",
+        "{{ craft.cp.radio({id: 'r', name: 'mode', value: 'auto', label: 'Auto', checked: true})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 
@@ -23,7 +23,7 @@ it('renders the web component from the legacy radio variables', function () {
 
 it('renders custom-option mode with the Other label and wrapped text input', function () {
     $html = renderString(
-        "{% include '_includes/forms/radio' with {id: 'r', name: 'mode', custom: true} only %}",
+        "{{ craft.cp.radio({id: 'r', name: 'mode', custom: true})|raw }}",
         templateMode: TemplateMode::Cp,
     );
 

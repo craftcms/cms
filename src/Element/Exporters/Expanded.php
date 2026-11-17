@@ -57,7 +57,7 @@ class Expanded extends ElementExporter
                 }
             }
 
-            $datetimeAttributes = ComponentHelper::datetimeAttributes($element);
+            $datetimeAttributes = array_intersect(ComponentHelper::datetimeAttributes($element), array_keys($attributes));
             $otherAttributes = array_diff(array_keys($attributes), $datetimeAttributes);
             $elementArr = $element->toArray($otherAttributes);
 

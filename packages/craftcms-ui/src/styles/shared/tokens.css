@@ -1,44 +1,32 @@
 /*
   [data-theme] re-resolves these var()-based tokens against a themed subtree's
-  palette; a var() is substituted where it's declared. What's in a light or dark
-  surface (a white or black card, chip, or badge) is themed too
-  (see scripts/utils.js).
+  palette; a var() is substituted where it's declared. What's in a black card,
+  chip, badge, or tooltip is themed dark too (see scripts/utils.js).
 */
 :root,
 :host,
 [data-theme],
 :where(
-  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='black']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='white'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='white']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='white'] > *
-),
-:where(
-  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='white']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='black'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='black']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='black'] > *
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *,
+  craft-tooltip > [slot='content'] > *,
+  craft-info-icon > *
 ) {
-  --c-text-lg: calc(16rem / 16);
+  --c-text-xl: calc(20rem / 16);
+  --c-text-lg: calc(18rem / 16);
+  --c-text-md: calc(16rem / 16);
   --c-text-base: calc(14rem / 16);
   --c-text-sm: calc(12rem / 16);
   --c-text-xs: calc(9rem / 16);
 
-  --c-leading-normal: 1.42;
+  --c-leading-normal: 1.5;
+
+  /* White cards, chips, badges, and Matrix blocks. */
+  --c-surface-white: var(--c-surface-raised);
+
+  /* A white dot's ring, so it stands off a white surface. */
+  --c-indicator-white-ring: rgb(0 0 0 / 50%);
 
   /* Focus outline tokens */
   --c-color-focus-outline: var(--color-blue-500);
@@ -52,10 +40,22 @@
   --c-surface-sunken: var(--color-base-100);
   --c-surface-form: var(--color-base-100);
   --c-surface-overlay: var(--color-base-50);
+  --c-surface-page: var(--color-base-200);
+  --c-surface-details: color-mix(
+    in oklab,
+    var(--color-base-100),
+    var(--color-base-50) 40%
+  );
   --c-surface-shade: rgba(0 0 0 / 25%);
   --c-table-border-color: color-mix(
     var(--c-color-neutral-border-quiet) 60%,
     transparent
+  );
+  /* A hovered row takes a fainter tint of a selected row's accent fill. */
+  --c-table-row-hover: color-mix(
+    in oklab,
+    var(--c-color-accent-fill-quiet),
+    transparent 50%
   );
   --c-border-raised: color-mix(
     in srgb,
@@ -66,6 +66,38 @@
   --c-card-fill-selected: var(--c-color-neutral-fill-loud);
   --c-card-border-selected: var(--c-color-neutral-border-loud);
   --c-card-text-selected: var(--c-color-neutral-on-loud);
+
+  /* Element cards' and Matrix blocks' header bars (see cp.css), for an
+     uncolored element at the top level and a white one: slate's quiet fill,
+     part transparent, so it stands off the element's body by about as much as
+     a gray element's header does off its own. */
+  --c-card-header-fill-neutral: color-mix(
+    in srgb,
+    var(--c-color-slate-fill-quiet) 70%,
+    transparent
+  );
+  --c-card-header-fill-white: var(--c-card-header-fill-neutral);
+  /* A selected white element's header: a step stronger than its accent body,
+     as the unselected one is than its white body (darker in the light theme,
+     lighter in the dark one). */
+  --c-card-header-fill-white-selected: var(--c-color-accent-fill-normal);
+
+  /* How strongly an asset thumbnail tile shades what's under it with the text
+     color, so it reads as its own layer. About the details pane's lightness
+     over the white panel. */
+  --c-thumbnail-tile-shade: 3%;
+
+  /* Gray elements (cards, Matrix blocks, chips) take slate, the chrome's own
+     neutral: as light as the gray palette, but blue-gray. */
+  --c-element-gray-fill-quiet: var(--c-color-slate-fill-quiet);
+  --c-element-gray-border-quiet: var(--c-color-slate-border-quiet);
+  --c-element-gray-on-quiet: var(--c-color-slate-on-quiet);
+  --c-element-gray-fill-normal: var(--c-color-slate-fill-normal);
+  --c-element-gray-border-normal: var(--c-color-slate-border-normal);
+  --c-element-gray-on-normal: var(--c-color-slate-on-normal);
+  --c-element-gray-fill-loud: var(--c-color-slate-fill-loud);
+  --c-element-gray-border-loud: var(--c-color-slate-border-loud);
+  --c-element-gray-on-loud: var(--c-color-slate-on-loud);
 
   /*
   Needs to remain statically dark between dark and light mode
@@ -91,7 +123,7 @@
 
   /* Shadows */
   --c-shadow-sunken: inset 0 2px 4px
-    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+    rgb(var(--c-shadow-tint) / calc(0.05 * var(--c-shadow-multiplier)));
   --c-shadow-raised: var(--c-shadow-sm);
   --c-shadow-overlay: var(--c-shadow-lg);
 
@@ -100,7 +132,7 @@
   --c-color-mix-active: currentColor 20%;
 
   --c-font-body:
-    system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
+    'Inter', system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto',
     'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
     'Helvetica Neue', sans-serif;
   --c-font-mono:
@@ -142,31 +174,42 @@
     small padding above and below. Add a header's own border widths to it.
   */
   --c-size-header: calc(var(--c-size-control-sm) + var(--c-spacing-sm) * 2);
+  --c-size-footer: calc(54rem / 16);
 
   /*
-    Craft's box shadows scale their opacity by this, so each theme can deepen
-    them all at once. Tailwind's own --shadow-* stay stock. Declared here
-    rather than in variables.css so a themed subtree re-resolves them against
-    its own multiplier.
+    Craft's box shadows scale their opacity by this, and take their color from
+    the tint, so each theme can deepen and tint them all at once. Tailwind's
+    own --shadow-* stay stock. Declared here rather than in variables.css so a
+    themed subtree re-resolves them against its own multiplier and tint.
   */
   --c-shadow-multiplier: 1;
-  --c-shadow-2xs: 0 1px rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+  --c-shadow-tint: 34 44 82;
+  --c-shadow-2xs: 0 1px
+    rgb(var(--c-shadow-tint) / calc(0.05 * var(--c-shadow-multiplier)));
   --c-shadow-xs: 0 1px 2px 0
-    rgb(0 0 0 / calc(0.05 * var(--c-shadow-multiplier)));
+    rgb(var(--c-shadow-tint) / calc(0.05 * var(--c-shadow-multiplier)));
   --c-shadow-sm:
-    0 1px 3px 0 rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
-    0 1px 2px -1px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
+    0 1px 3px 0
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier))),
+    0 1px 2px -1px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-md:
-    0 4px 6px -1px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
-    0 2px 4px -2px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
+    0 4px 6px -1px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier))),
+    0 2px 4px -2px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-lg:
-    0 10px 15px -3px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
-    0 4px 6px -4px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
+    0 10px 15px -3px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier))),
+    0 4px 6px -4px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-xl:
-    0 20px 25px -5px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier))),
-    0 8px 10px -6px rgb(0 0 0 / calc(0.1 * var(--c-shadow-multiplier)));
+    0 20px 25px -5px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier))),
+    0 8px 10px -6px
+      rgb(var(--c-shadow-tint) / calc(0.1 * var(--c-shadow-multiplier)));
   --c-shadow-2xl: 0 25px 50px -12px
-    rgb(0 0 0 / calc(0.25 * var(--c-shadow-multiplier)));
+    rgb(var(--c-shadow-tint) / calc(0.25 * var(--c-shadow-multiplier)));
 
   /**
   Status
@@ -182,10 +225,16 @@
   --c-status-enabled-border: var(--color-emerald-700);
   --c-status-enabled-text: var(--color-emerald-700);
 
+  /* A field whose value differs from the canonical element's */
+  --c-field-modified-indicator: var(--color-violet-600);
+
+  /* How far filled callouts blend toward the surface */
+  --c-callout-fill-mute: 0%;
+
   /* Pending */
-  --c-status-pending-fill: var(--color-orange-400);
-  --c-status-pending-text: var(--color-orange-700);
-  --c-status-pending-border: var(--color-orange-700);
+  --c-status-pending-fill: var(--color-sky-400);
+  --c-status-pending-text: var(--color-sky-700);
+  --c-status-pending-border: var(--color-sky-700);
 
   /* Expired */
   --c-status-expired-fill: var(--color-red-400);
@@ -196,15 +245,6 @@
   --c-status-disabled-fill: var(--color-slate-200);
   --c-status-disabled-text: var(--color-slate-600);
   --c-status-disabled-border: var(--color-slate-600);
-
-  /*
-    Lion reads this for the label, help text, and value of a disabled field,
-    and falls back to its own #767676 — which is 4.09:1 on our default surface,
-    under the 4.5:1 a disabled field's help text still has to meet to be read.
-    Pointing it at the token above puts it at 5.05:1, the same as the enabled
-    help text.
-  */
-  --disabled-text-color: var(--c-status-disabled-text);
 
   /**
  Static colors
@@ -262,12 +302,28 @@
   --c-input-radius: var(--c-form-control-radius);
   --c-input-spacing-inline: var(--c-form-control-spacing-inline);
   --c-input-shadow: inset 0 2px 4px
-    rgb(0 0 0 / calc(0.08 * var(--c-shadow-multiplier)));
+    rgb(var(--c-shadow-tint) / calc(0.08 * var(--c-shadow-multiplier)));
 
   /* Checkbox */
   --c-checkbox-size: var(--c-size-control-xs);
   --c-checkbox-radius: var(--c-radius-sm);
-  --c-checkbox-group-spacing: calc(24px - var(--c-checkbox-size));
+  --c-checkbox-group-spacing: calc(20px - var(--c-checkbox-size));
+
+  /* A radio's icon, beside its label or on a card */
+  --c-radio-icon-size: 1.25rem;
+  --c-radio-card-icon-size: 3.75rem;
+
+  /* Radio cards, in a `craft-radio-group` with `appearance="cards"` */
+  --c-radio-card-min-size: 5rem;
+  --c-radio-card-max-size: 7rem;
+
+  --c-illustration-surface: var(--color-base-100);
+  --c-illustration-paper: var(--color-base-50);
+  --c-illustration-subtle: var(--color-slate-100);
+  --c-illustration-field: var(--color-slate-50);
+  --c-illustration-figure: var(--color-slate-500);
+  --c-illustration-line: var(--color-slate-500);
+  --c-illustration-mark: var(--color-base-950);
 
   /* Slide rule */
   --c-slide-rule-height: var(--c-size-touch-target);
@@ -283,8 +339,6 @@
   --c-pane-border-style: solid;
   --c-pane-border-color: transparent;
   --c-pane-radius: var(--c-radius-md);
-  --c-pane-shadow:
-    0 0 0 1px var(--gray-200), 0 2px 12px hsl(from var(--gray-200) h s l / 50%);
 
   /* Layers (z-index), lowest to highest.
      Only for things that stack against other parts of the page; a component
@@ -319,14 +373,17 @@
   --c-modal-text: var(--c-text-default);
   --c-modal-radius: var(--c-radius-lg);
   /* A hairline, on top of the shadow, so modals keep an edge in either theme. */
-  --c-modal-border-width: 1px;
-  --c-modal-border-style: solid;
-  --c-modal-border-color: var(--c-color-border-quiet);
+  --c-modal-ring: 0 0 0 1px rgb(var(--c-shadow-tint) / 18%);
   --c-modal-padding: var(--c-pane-padding);
+  --c-modal-header-height: calc(
+    var(--c-size-control-sm) + var(--c-modal-padding) * 2 + 1px
+  );
+  --c-modal-footer-height: var(--c-size-footer);
 
   /* Slideouts */
   --c-slideout-shadow:
-    0 0 0 1px rgb(0 0 0 / calc(0.25 * var(--c-shadow-multiplier))),
+    0 0 0 1px
+      rgb(var(--c-shadow-tint) / calc(0.25 * var(--c-shadow-multiplier))),
     var(--c-shadow-2xl);
 }
 
@@ -340,6 +397,7 @@
 ) {
   --c-text-default: var(--color-slate-900);
   --c-text-quiet: var(--color-slate-600);
+  --c-form-control-placeholder: var(--color-slate-600);
   --c-form-control-border-color: var(--color-slate-400);
 }
 
@@ -348,60 +406,30 @@
    images (which follow their embedding element's color scheme) would follow
    the OS instead, coming out dark on a dark OS. */
 :root,
-[data-theme='light'],
-:where(
-  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='white']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='black'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='black']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='black'] > *
-) {
+[data-theme='light'] {
   color-scheme: light;
-}
-
-/* What's in a light surface on a dark page undoes the dark theme's own values
-   below, which it would otherwise inherit. */
-:where(
-  craft-card[data-color='white']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='white']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='white']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='black'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='black']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='black'] > *
-) {
-  --c-color-border-quiet-transparency: 60%;
-  --c-select-color-swatch-edge: initial;
-  --c-select-color-swatch-ring: initial;
+  --c-badge-icon-color: currentColor;
 }
 
 [data-theme='dark'],
 :where(
-  craft-card[data-color='black']:not([data-theme='dark'] *) > *,
-  craft-chip[data-color='black']:not([appearance~='plain']):not(
-      [data-theme='dark'] *
-    )
-    > *,
-  craft-badge[fill='black']:not([data-theme='dark'] *) > *,
-  [data-theme='dark'] craft-card[data-color='white'] > *,
-  [data-theme='dark']
-    craft-chip[data-color='white']:not([appearance~='plain'])
-    > *,
-  [data-theme='dark'] craft-badge[fill='white'] > *
+  craft-card[data-color='black'] > *,
+  craft-chip[data-color='black']:not([appearance~='plain']) > *,
+  craft-badge[fill='black'] > *,
+  craft-tooltip > [slot='content'] > *,
+  craft-info-icon > *
 ) {
   color-scheme: dark;
+  /* Icons in neutral badges stand out from their pale label text. */
+  --c-badge-icon-color: var(--c-text-white);
+  /* The dark palette's 600 is pale; its 400 keeps the bar vivid. */
+  --c-field-modified-indicator: var(--color-violet-400);
+  /* Filled callouts read loud against a dark surface. */
+  --c-callout-fill-mute: 30%;
   /* Like other hairlines here, so the no-color swatch keeps an edge. */
   --c-select-color-swatch-edge: var(--c-color-neutral-border-quiet);
+  /* Black checkers barely darken a dark fill, so the no-color swatch's lighten it. */
+  --c-select-color-swatch-checker: rgb(255 255 255 / 15%);
   /* Color swatches get a faint ring only here, to stand off the dark surface. */
   --c-select-color-swatch-ring: rgb(0 0 0 / 15%);
   --c-surface-default: color-mix(
@@ -416,15 +444,67 @@
     var(--color-black) 25%
   );
   --c-surface-overlay: var(--c-surface-default);
+  --c-surface-page: var(--c-surface-sunken);
+  /* A little darker than the content beside it, as in the light theme. */
+  --c-surface-details: color-mix(
+    in oklab,
+    var(--c-surface-default),
+    var(--c-surface-sunken) 40%
+  );
+  /* The dark accent fill is more saturated, so the hover takes less of it. */
+  --c-table-row-hover: color-mix(
+    in oklab,
+    var(--c-color-accent-fill-quiet),
+    transparent 75%
+  );
 
   /* Shadows read fainter against dark surfaces. */
   --c-shadow-multiplier: 1.5;
+  --c-shadow-tint: 2 6 20;
+  --c-modal-ring: 0 0 0 1px rgb(255 255 255 / 25%);
 
   --c-border-raised-selected: var(--color-base-500);
   --c-card-fill-selected: var(--color-base-300);
   --c-card-border-selected: var(--color-base-500);
   --c-card-text-selected: var(--c-text-default);
+  /* Lighter than the element's body, as a colored header is than its own. A
+     white body is about as light as slate's quiet fill here, so a white
+     element's header takes the normal step. */
+  --c-card-header-fill-neutral: color-mix(
+    in srgb,
+    var(--c-color-slate-fill-quiet) 75%,
+    transparent
+  );
+  --c-card-header-fill-white: color-mix(
+    in srgb,
+    var(--c-color-slate-fill-normal) 60%,
+    transparent
+  );
+  /* The details surface is the panel's own here, so tiles stay unfilled. */
+  --c-thumbnail-tile-shade: 0%;
+  /* Gray elements keep the gray palette. */
+  --c-element-gray-fill-quiet: var(--c-color-gray-fill-quiet);
+  --c-element-gray-border-quiet: var(--c-color-gray-border-quiet);
+  --c-element-gray-on-quiet: var(--c-color-gray-on-quiet);
+  --c-element-gray-fill-normal: var(--c-color-gray-fill-normal);
+  --c-element-gray-border-normal: var(--c-color-gray-border-normal);
+  --c-element-gray-on-normal: var(--c-color-gray-on-normal);
+  --c-element-gray-fill-loud: var(--c-color-gray-fill-loud);
+  --c-element-gray-border-loud: var(--c-color-gray-border-loud);
+  --c-element-gray-on-loud: var(--c-color-gray-on-loud);
   --c-color-border-quiet-transparency: 40%;
+  /* As light as white surfaces can get with quiet text at 4.5:1 and form
+     controls' borders at 3:1 on them. */
+  --c-surface-white: color-mix(
+    in oklab,
+    var(--c-surface-raised),
+    var(--color-white) 10%
+  );
+  /* White is a shade of gray here, so a white dot is solid, like a gray one. */
+  --c-indicator-white-ring: var(--c-color-white-fill-loud);
+
+  --c-illustration-field: var(--color-slate-400);
+  --c-illustration-figure: var(--color-base-50);
 }
 
 .underline-links {

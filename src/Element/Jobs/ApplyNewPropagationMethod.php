@@ -153,8 +153,9 @@ class ApplyNewPropagationMethod extends BatchedJob
                         ->status(null)
                         ->drafts(null)
                         ->provisionalDrafts(null)
-                        ->select(['elements.id'])
-                        ->value('id');
+                        ->limit(1)
+                        ->pluck('elements.id')
+                        ->first();
 
                     if ($parentId !== null) {
                         // If we've cloned the parent, use the clone's ID instead

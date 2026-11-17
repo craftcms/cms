@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Gql\Types\Input;
 
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Addresses as AddressesFacade;
 use GraphQL\Type\Definition\InputObjectType;
@@ -116,7 +117,7 @@ class Addresses extends InputObjectType
                 ];
 
                 // Get the field input types
-                foreach (AddressesFacade::getFieldLayout()->getCustomFields() as $field) {
+                foreach (GqlHelper::filterMutableFields(AddressesFacade::getFieldLayout()->getCustomFields()) as $field) {
                     /** @var Field $field */
                     $fields[$field->handle] = $field->getContentGqlMutationArgumentType();
                 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {type InertiaLinkProps, Link} from '@inertiajs/vue3';
   import {type Component, computed, defineComponent, h, useAttrs} from 'vue';
+  import {isExternalUrl} from '@craftcms/ui/utilities/external-links';
 
   defineOptions({inheritAttrs: false});
 
@@ -23,13 +24,30 @@
     );
   }
 
+  /**
+   * Whether an event came from a nav item's subnav rather than from the item.
+   * The subnav sits inside the item, so a press anywhere in it that a child
+   * doesn't handle itself, such as on the space between and beside the
+   * children, bubbles up to the item's handlers and would visit the item's own
+   * page. The item's link fills its row, so a press on the row goes through it.
+   */
+  function isSubnavEvent(event: MouseEvent): boolean {
+    const element = event.currentTarget as Element;
+    const link = element.shadowRoot?.querySelector('a[href]');
+
+    return (
+      element.querySelector(':scope > [slot="subnav"]') !== null &&
+      !(link && event.composedPath().includes(link))
+    );
+  }
+
   function guardMouseHandler(handler: unknown): MouseHandler | undefined {
     if (typeof handler !== 'function') {
       return undefined;
     }
 
     return (event: MouseEvent) => {
-      if (!isModifiedClick(event)) {
+      if (!isModifiedClick(event) && !isSubnavEvent(event)) {
         (handler as MouseHandler)(event);
       }
     };
@@ -114,6 +132,11 @@
     return props.href instanceof Object ? props.href.url : props.href;
   });
 
+  // A link to another host leaves the app, in a new tab.
+  const useInertia = computed(
+    () => props.inertia && !isExternalUrl(hrefString.value)
+  );
+
   const customElement = computed(() =>
     typeof props.as === 'string' && props.as.includes('-')
       ? props.as
@@ -135,7 +158,7 @@
 </script>
 
 <template>
-  <template v-if="inertia">
+  <template v-if="useInertia">
     <Link
       v-bind="{
         prefetch: defaultPrefetch,
@@ -155,8 +178,10 @@
     </Link>
   </template>
   <template v-else>
+    <!-- Marked, so the control panel's handling of plain links leaves it to the browser too. -->
     <component
       v-bind="{...$attrs, ...customElementAttributes}"
+      data-inertia="false"
       :is="as || 'a'"
       :href="hrefString"
       :class="customElement ? undefined : classes"

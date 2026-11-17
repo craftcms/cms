@@ -29,6 +29,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
@@ -391,6 +392,29 @@ it('uses the editor’s own site crumb rather than the shared one', function () 
             // site pickers otherwise.
             expect($props['crumbs'][0]['id'])->toBe('site-crumb');
             expect($props['craft']['siteCrumb'])->toBeNull();
+
+            return true;
+        });
+});
+
+it('points the return URL at the site being switched to', function () {
+    $other = Site::factory()->create();
+    $section = Section::factory()->withSites($other)->create();
+    $entry = EntryModel::factory()->forSection($section)->createElement();
+    $indexUrl = cp_url('content/entries/'.$section->handle, ['site' => Sites::getPrimarySite()->handle, 'sort' => 'title']);
+
+    get(cp_url(sprintf('entries/%s/%d-%s', $section->handle, $entry->id, $entry->slug), [
+        'returnUrl' => Crypt::encrypt($indexUrl),
+    ]))
+        ->assertOk()
+        ->assertInertia(function (AssertableInertia $page) use ($other, $indexUrl) {
+            $item = collect($page->toArray()['props']['crumbs'][0]['items'])->firstWhere('label', $other->name);
+            parse_str((string) parse_url($item['href'], PHP_URL_QUERY), $query);
+            parse_str((string) parse_url(Crypt::decrypt($query['returnUrl']), PHP_URL_QUERY), $returnQuery);
+
+            expect($query['site'])->toBe($other->handle)
+                ->and(parse_url(Crypt::decrypt($query['returnUrl']), PHP_URL_PATH))->toBe(parse_url($indexUrl, PHP_URL_PATH))
+                ->and($returnQuery)->toBe(['site' => $other->handle, 'sort' => 'title']);
 
             return true;
         });

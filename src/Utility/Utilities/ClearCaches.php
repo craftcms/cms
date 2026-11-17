@@ -13,11 +13,14 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
+use CraftCms\Cms\View\CompiledViews;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Override;
 use Symfony\Component\Filesystem\Path;
+use Throwable;
 
 use function CraftCms\Cms\t;
 
@@ -136,6 +139,43 @@ class ClearCaches extends Utility
     }
 
     /**
+     * Clears the caches with the given keys, or all of them when `$keys` is `'*'`.
+     *
+     * @param  list<string>|'*'  $keys
+     * @return list<string> The keys of the caches that were cleared.
+     */
+    public static function clear(array|string $keys): array
+    {
+        $cleared = [];
+
+        foreach (self::cacheOptions() as $cacheOption) {
+            if (is_array($keys) && ! in_array($cacheOption['key'], $keys, true)) {
+                continue;
+            }
+
+            $action = $cacheOption['action'];
+
+            if (is_string($action)) {
+                try {
+                    File::cleanDirectory($action);
+                } catch (InvalidArgumentException) {
+                    // the directory doesn't exist
+                } catch (Throwable $e) {
+                    Log::warning("Could not clear the directory $action: ".$e->getMessage(), [__METHOD__]);
+                }
+            } elseif (isset($cacheOption['params'])) {
+                app()->call($action, $cacheOption['params']);
+            } else {
+                $action();
+            }
+
+            $cleared[] = $cacheOption['key'];
+        }
+
+        return $cleared;
+    }
+
+    /**
      * @param  CacheOptionInput|Closure(): CacheOptionInput  $option
      */
     public static function add(string $key, array|Closure $option): void
@@ -180,6 +220,7 @@ class ClearCaches extends Utility
     private static function defaultCacheOptions(): array
     {
         $pathService = app(\CraftCms\Cms\Support\Path::class);
+        $compiledViewsPath = CompiledViews::path();
 
         return [
             [
@@ -213,6 +254,14 @@ class ClearCaches extends Utility
                 ]),
                 'action' => $pathService->compiledTemplates(create: false),
             ],
+            ...($compiledViewsPath === null ? [] : [[
+                'key' => 'compiled-views',
+                'label' => t('Compiled views'),
+                'info' => t('Contents of {path}', [
+                    'path' => sprintf('`%s/`', File::relativePath($compiledViewsPath, Aliases::get('@root'))),
+                ]),
+                'action' => CompiledViews::clear(...),
+            ]]),
             [
                 'key' => 'compiled-classes',
                 'label' => t('Compiled classes'),

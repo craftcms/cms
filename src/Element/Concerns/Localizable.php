@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Concerns;
 
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
-use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
@@ -28,14 +30,11 @@ use RuntimeException;
 trait Localizable
 {
     /**
-     * @see getIsCrossSiteCopyable()
-     */
-    private bool $isCrossSiteCopyable;
-
-    /**
      * @var int|null The site ID the element is associated with
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Int, 'The ID of the site the {element} is associated with.', readable: true)]
+    #[Gql(write: false)]
     public ?int $siteId = null;
 
     /**
@@ -127,28 +126,6 @@ trait Localizable
             ->revisions($this->getIsRevision());
     }
 
-    public function getIsCrossSiteCopyable(): bool
-    {
-        if (isset($this->isCrossSiteCopyable)) {
-            return $this->isCrossSiteCopyable;
-        }
-
-        if (! Sites::isMultiSite()) {
-            return $this->isCrossSiteCopyable = false;
-        }
-
-        if (count(ElementHelper::editableSiteIdsForElement($this)) <= 1) {
-            return $this->isCrossSiteCopyable = false;
-        }
-
-        // Check if the element exists in other sites
-        $otherSiteStatuses = ElementHelper::siteStatusesForElement($this, true);
-        $otherSiteIds = array_keys($otherSiteStatuses);
-        $existsInOtherSites = ! empty(array_diff($otherSiteIds, [$this->siteId]));
-
-        return $this->isCrossSiteCopyable = $existsInOtherSites;
-    }
-
     /**
      * @throws RuntimeException if [[siteId]] is invalid
      */
@@ -161,6 +138,7 @@ trait Localizable
         throw new RuntimeException("Invalid site ID: {$this->siteId}");
     }
 
+    #[ElementProperty(ElementPropertyType::String, 'The language of the site the {element} is associated with.', readable: true, writable: false)]
     public function getLanguage(): string
     {
         return $this->getSite()->getLanguage();

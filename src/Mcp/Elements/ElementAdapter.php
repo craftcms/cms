@@ -10,7 +10,7 @@ use CraftCms\Cms\User\Contracts\CraftUser;
 use Mcp\Exception\ToolCallException;
 
 /**
- * Exposes an element type through the `elements.*` MCP tools.
+ * Exposes an element type through the `elements_*` MCP tools.
  *
  * Register adapters with {@see ElementAdapterRegistry}. Extending {@see BaseElementAdapter} is recommended.
  *
@@ -27,7 +27,7 @@ interface ElementAdapter
     public static function elementType(): string;
 
     /**
-     * Describes the criteria, attributes, and field-schema context the `elements.*` tools accept for this type.
+     * Describes the criteria, attributes, and field-schema context the `elements_*` tools accept for this type.
      *
      * @return array{
      *     type: string,
@@ -44,7 +44,7 @@ interface ElementAdapter
     public function schema(): array;
 
     /**
-     * Returns the base query for `elements.list`.
+     * Returns the base query for `elements_list`.
      *
      * @throws ToolCallException if the actor may not list elements of this type.
      */
@@ -64,7 +64,7 @@ interface ElementAdapter
     public function serialize(ElementInterface $element, ?array $fields = null, bool $summary = false): array;
 
     /**
-     * Returns the element whose custom-field schema `elements.field-schema` describes.
+     * Returns the element whose custom-field schema `elements_field_schema` describes.
      *
      * @param  ElementInterface|null  $element  The existing element, or `null` for a new element described by the context.
      * @param  array<string, mixed>  $context  Values matching the `fieldSchemaContext` schema.
@@ -79,7 +79,7 @@ interface ElementAdapter
     public function create(array $attributes, array $fields, CraftUser $actor): array;
 
     /**
-     * Creates an element as an unpublished draft, for `elements.create` with `asUnpublishedDraft`.
+     * Creates an element as an unpublished draft, for `elements_create` with `asUnpublishedDraft`.
      *
      * @param  array<string, mixed>  $attributes  Values matching the `createAttributes` schema.
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.
@@ -97,7 +97,7 @@ interface ElementAdapter
     public function update(ElementInterface $element, array $attributes, array $fields, CraftUser $actor): array;
 
     /**
-     * Applies proposed changes in memory before `elements.validate` validates the element.
+     * Applies proposed changes in memory before `elements_validate` validates the element.
      *
      * @param  array<string, mixed>  $attributes  Values matching the `updateAttributes` schema.
      * @param  array<string, mixed>  $fields  Custom field values keyed by field handle.

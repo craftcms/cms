@@ -15,7 +15,7 @@ use Stringable;
  *
  *     Callout::make()
  *         ->variant('warning')
- *         ->title(t('Heads up'))
+ *         ->label(t('Heads up'))
  *         ->content(t('Changing this may result in data loss.'));
  *
  * Renders directly (no Blade view) — the component is a single element whose
@@ -29,7 +29,7 @@ class Callout extends ViewComponent
     use HasAppearance;
     use HasVariant;
 
-    protected ?string $title = null;
+    protected ?string $label = null;
 
     protected ?string $icon = null;
 
@@ -48,9 +48,14 @@ class Callout extends ViewComponent
         return 'craft-callout';
     }
 
-    public function title(?string $title): static
+    /**
+     * Title text, shown above the body. Named `label` rather than `title`, as
+     * on `<craft-callout>`, since `title` is a global HTML attribute that
+     * would add a native tooltip.
+     */
+    public function label(?string $label): static
     {
-        $this->title = $title;
+        $this->label = $label;
 
         return $this;
     }
@@ -130,7 +135,7 @@ class Callout extends ViewComponent
         return [
             'variant' => $this->getVariant(),
             'appearance' => $this->getAppearance(),
-            'title' => $this->title,
+            'label' => $this->label,
             'icon' => $this->icon,
             'hide-icon' => $this->hideIcon,
             'rounded' => $this->rounded,

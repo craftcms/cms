@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Dashboard\Data;
 
-use CraftCms\Cms\Ui\UiPayload;
-
 /**
  * @since 6.0.0
  */
@@ -16,6 +14,7 @@ readonly class WidgetTypeData
         public string $name,
         public ?int $maxColspan,
         public bool $selectable,
-        public ?UiPayload $settingsUi,
+        /** Whether widgets of the type have settings, whose UI the dashboard loads when a widget is added. */
+        public bool $hasSettings,
     ) {}
 }

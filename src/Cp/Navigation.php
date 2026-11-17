@@ -20,7 +20,9 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\UserPermissions;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Http\Request;
@@ -50,6 +52,8 @@ readonly class Navigation
         private GeneralConfig $generalConfig,
         private ElementSources $elementSources,
         private Settings $settings,
+        private CustomNavigations $customNavigations,
+        private NavCustomizer $navCustomizer,
     ) {}
 
     /**
@@ -60,7 +64,11 @@ readonly class Navigation
      */
     public function getItems(): array
     {
-        return $this->applySelection($this->applyBadgeCounts($this->getTree()));
+        $collapsed = [];
+        $pageHrefs = [];
+        $tree = $this->customizedTree($collapsed, $pageHrefs);
+
+        return $this->applySelection($this->applyBadgeCounts($tree), $pageHrefs);
     }
 
     /**
@@ -109,13 +117,195 @@ readonly class Navigation
     }
 
     /**
-     * The whole navigation tree, without selection or badge counts.
+     * The whole navigation tree, as the current user has it laid out, without
+     * selection or badge counts. Hidden items are left out.
      *
      * @return NavItem[]
      */
     public function getTree(): array
     {
+        $collapsed = [];
+
+        return $this->customizedTree($collapsed);
+    }
+
+    /**
+     * The nav as the current user has it laid out, with entry pages that are
+     * left with one source linking straight to it.
+     *
+     * Pages are collapsed after the customizations are applied, so the
+     * source's own customizations, such as a new name or a move to another
+     * page, still apply, and a page is only collapsed if it ends up with one
+     * source.
+     *
+     * @param  array<array-key, string>  $collapsed  Set to the collapsed sources' ids, mapped to their pages' ids
+     * @param  array<string, string>  $pageHrefs  Set to the collapsed pages' own URLs, by their ids
+     * @return NavItem[]
+     */
+    private function customizedTree(array &$collapsed, array &$pageHrefs = []): array
+    {
+        $user = currentUser();
+        $tree = $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user);
+
+        if (! $this->listsSources(Entry::class)) {
+            return $tree;
+        }
+
+        $pageIds = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION)
+            ->mapWithKeys(fn (string $page) => [$this->pageItemId($page) => true])
+            ->all();
+
+        return $this->collapseSingleSourcePages($tree, $pageIds, $collapsed, $pageHrefs);
+    }
+
+    /**
+     * Lists entry pages the nav didn't have before beside the pages they were
+     * added before or after, in the default and user group navigations that
+     * were saved with an order for those pages. Items an order doesn't list
+     * follow the ones it does, so new pages would otherwise end up after them.
+     *
+     * A new page goes after the closest page before it that a navigation
+     * lists, or else before the closest page after it.
+     *
+     * @param  list<string>  $oldPages  The entry pages the nav had before
+     */
+    public function placeAddedEntryPages(array $oldPages): void
+    {
+        $ids = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION)
+            ->map($this->pageItemId(...))
+            ->values()
+            ->all();
+
+        // Without pages, entries had one page, at `content/entries`.
+        $newIds = array_values(array_diff($ids, array_map($this->pageItemId(...), $oldPages ?: ['Entries'])));
+
+        if ($newIds === []) {
+            return;
+        }
+
+        $default = $this->customNavigations->getDefault();
+        $placed = $this->placeBeside($default, $ids, $newIds, []);
+
+        if ($placed !== $default) {
+            $this->customNavigations->saveDefault($placed);
+        }
+
+        foreach ($this->customNavigations->getGroupNavigations() as $navigation) {
+            $nav = $this->placeBeside($navigation['nav'], $ids, $newIds, $placed['items'] ?? []);
+
+            if ($nav !== $navigation['nav']) {
+                $this->customNavigations->saveGroupNavigation($navigation['userGroup'], $nav);
+            }
+        }
+    }
+
+    /**
+     * Adds items to a customization's order beside their siblings.
+     *
+     * New items are placed until none are left that can be, so one beside
+     * another new item gets placed once that one is.
+     *
+     * @param  array<mixed>  $nav
+     * @param  list<string>  $ids  The sibling items' ids, in order
+     * @param  list<string>  $newIds  The ids of the items to add
+     * @param  array<mixed>  $baseItems  The items of the customization `$nav` is layered over
+     * @return array<mixed>
+     */
+    private function placeBeside(array $nav, array $ids, array $newIds, array $baseItems): array
+    {
+        if (! is_array($nav['order'] ?? null)) {
+            return $nav;
+        }
+
+        do {
+            $placedAny = false;
+
+            foreach ($newIds as $id) {
+                if ($this->orderParent($nav['order'], $id) !== null) {
+                    continue;
+                }
+
+                $index = (int) array_search($id, $ids, true);
+                $anchors = [
+                    ...array_map(fn (string $before) => [$before, 1], array_reverse(array_slice($ids, 0, $index))),
+                    ...array_map(fn (string $after) => [$after, 0], array_slice($ids, $index + 1)),
+                ];
+
+                foreach ($anchors as [$anchor, $offset]) {
+                    // Only the order of the parent the anchor ends up in, which
+                    // the navigation it's layered over can set.
+                    $parent = $nav['items'][$anchor]['parent'] ?? $baseItems[$anchor]['parent'] ?? 'nav-group-content';
+
+                    if (! is_array($nav['order'][$parent] ?? null) || ! in_array($anchor, $nav['order'][$parent], true)) {
+                        continue;
+                    }
+
+                    array_splice($nav['order'][$parent], (int) array_search($anchor, $nav['order'][$parent], true) + $offset, 0, [$id]);
+
+                    if ($parent === ($baseItems[$id]['parent'] ?? 'nav-group-content')) {
+                        unset($nav['items'][$id]['parent']);
+                    } else {
+                        $nav['items'][$id]['parent'] = $parent;
+                    }
+
+                    $nav['items'] = array_filter($nav['items'] ?? []);
+
+                    if ($nav['items'] === []) {
+                        unset($nav['items']);
+                    }
+
+                    $placedAny = true;
+
+                    break;
+                }
+            }
+        } while ($placedAny);
+
+        return $nav;
+    }
+
+    /**
+     * The parent whose order lists an item.
+     *
+     * @param  array<mixed>  $order
+     */
+    private function orderParent(array $order, string $id): ?string
+    {
+        $parent = array_find_key($order, fn (mixed $ids) => is_array($ids) && in_array($id, $ids, true));
+
+        return $parent === null ? null : (string) $parent;
+    }
+
+    /** An entry page's nav item id. */
+    private function pageItemId(string $page): string
+    {
+        return $this->itemId(sprintf('content/%s', ElementSources::pageSlug($page)));
+    }
+
+    /**
+     * The navigation tree as Craft and plugins build it, before any customization.
+     *
+     * @return NavItem[]
+     */
+    public function getBaseTree(): array
+    {
         return $this->buildTree();
+    }
+
+    /**
+     * The navigation tree as a user group's members get it before any
+     * customization: built with the group's permissions, and nobody else's.
+     *
+     * @return NavItem[]
+     */
+    public function getBaseTreeForGroup(UserGroup $group): array
+    {
+        return app(UserPermissions::class)->actingAsGroup(
+            $group,
+            // Element sources are remembered per request, for whoever asked
+            // first, so the group's are worked out afresh.
+            fn () => app()->make(self::class, ['elementSources' => app()->build(ElementSources::class)])->buildTree(),
+        );
     }
 
     /**
@@ -158,11 +348,26 @@ readonly class Navigation
     public function getSourceBadgeCounts(): array
     {
         $siteId = $this->navSiteId();
-
-        return array_map(
+        $counts = array_map(
             fn (array $badge): int => $badge['elementType']::sourceBadgeCount($badge['source'], $siteId),
             $this->sourceBadges(),
         );
+
+        if ($counts === []) {
+            return $counts;
+        }
+
+        // A page that links straight to its one source shows that source's count.
+        $collapsed = [];
+        $this->customizedTree($collapsed);
+
+        foreach ($collapsed as $sourceId => $pageId) {
+            if (isset($counts[$sourceId])) {
+                $counts[$pageId] = $counts[$sourceId];
+            }
+        }
+
+        return $counts;
     }
 
     /**
@@ -253,7 +458,7 @@ readonly class Navigation
                 ->icon('gauge'),
         ]);
 
-        $contentGroup = new NavItem()->label(t('Content'))->group(true);
+        $contentGroup = new NavItem()->id('nav-group-content')->label(t('Content'))->group(true);
         $contentItems = collect();
 
         if ($this->listsSources(Entry::class)) {
@@ -275,8 +480,7 @@ readonly class Navigation
                             Entry::class,
                             sprintf('content/%s', ElementSources::pageSlug($page)),
                             $page,
-                        ))
-                    )
+                        )))
                 );
             } else {
                 $contentItems->add(new NavItem()
@@ -324,6 +528,11 @@ readonly class Navigation
                 $pluginNavItem = new NavItem($pluginNavItem);
             }
 
+            // A group heading has no URL to take an id from.
+            if ($pluginNavItem->group) {
+                $pluginNavItem->id ??= 'nav-group-'.$plugin->handle;
+            }
+
             $pluginNavItems->add($pluginNavItem);
         }
 
@@ -342,7 +551,7 @@ readonly class Navigation
 
         $navItems = $navItems->merge($groupedPluginNavItems);
 
-        $administrationGroup = new NavItem()->label(t('Administration'))->group(true);
+        $administrationGroup = new NavItem()->id('nav-group-administration')->label(t('Administration'))->group(true);
         $administrationItems = [];
 
         if ($this->listsSources(User::class)) {
@@ -401,7 +610,7 @@ readonly class Navigation
                     ->icon(
                         $this->generalConfig->allowAdminChanges
                             ? 'gear'
-                            : 'gear-slash',
+                            : 'custom-icons/gear-slash',
                     )
                     ->subnav($this->settingsSubnav());
 
@@ -420,7 +629,7 @@ readonly class Navigation
         event($event = new CpNavItemsResolving($navItems->all()));
 
         return collect($event->navItems)
-            ->map($this->normalize(...))
+            ->map(fn (NavItem $item) => $this->normalize($item))
             ->all();
     }
 
@@ -445,6 +654,7 @@ readonly class Navigation
     {
         $items = [];
         $group = null;
+        $headingIds = [];
 
         // Scoped to the site the CP is working with, so switching sites leaves
         // the nav listing only the sources that run on the new one.
@@ -458,6 +668,11 @@ readonly class Navigation
         foreach ($sources as $source) {
             if (($source['type'] ?? null) === ElementSources::TYPE_HEADING) {
                 $heading = (string) ($source['heading'] ?? '');
+                // A heading Craft defines has a handle, since its label is
+                // translated. One added in the sources' settings is named as
+                // it was typed.
+                $headingId = $this->sourceItemId($indexUri, 'heading-'.($source['handle'] ?? Str::slug($heading)));
+                $headingIds[$headingId] = ($headingIds[$headingId] ?? 0) + 1;
 
                 // A blank heading separates a trailing run of un-configured
                 // sources rather than naming one, so it closes the open group
@@ -466,6 +681,7 @@ readonly class Navigation
                     $heading === ''
                         ? null
                         : new NavItem()
+                            ->id($headingIds[$headingId] > 1 ? "$headingId-{$headingIds[$headingId]}" : $headingId)
                             ->label($heading)
                             ->group(true)
                             ->subnav([]);
@@ -516,6 +732,67 @@ readonly class Navigation
                     $item->subnav !== [],
             ),
         );
+    }
+
+    /**
+     * A page with only one source has nothing to choose between, so its item
+     * links straight to that source, with no subnav, and takes its badge. A
+     * heading over the source doesn't count as a choice either.
+     *
+     * The page keeps its own id, so the trail and anything else that refers
+     * to it still find it.
+     *
+     * @param  NavItem[]  $items
+     * @param  array<string, bool>  $pageIds  The entry pages' item ids
+     * @param  array<array-key, string>  $collapsed  Collapsed sources' ids, mapped to their pages' ids
+     * @param  array<string, string>  $pageHrefs  Collapsed pages' own URLs, by their ids
+     * @return NavItem[]
+     */
+    private function collapseSingleSourcePages(array $items, array $pageIds, array &$collapsed, array &$pageHrefs): array
+    {
+        foreach ($items as $item) {
+            if (! is_array($item->subnav)) {
+                continue;
+            }
+
+            if (! isset($pageIds[$item->id])) {
+                $item->subnav = $this->collapseSingleSourcePages($item->subnav, $pageIds, $collapsed, $pageHrefs);
+
+                continue;
+            }
+
+            $leaves = [];
+            $collect = function (array $children) use (&$collect, &$leaves): void {
+                foreach ($children as $child) {
+                    if ($child->group) {
+                        $collect(is_array($child->subnav) ? $child->subnav : []);
+                    } else {
+                        $leaves[] = $child;
+                    }
+                }
+            };
+            $collect($item->subnav);
+
+            if (count($leaves) !== 1) {
+                continue;
+            }
+
+            $source = $leaves[0];
+
+            if ($item->id !== null && $item->href !== null) {
+                $pageHrefs[$item->id] = $item->href;
+            }
+
+            $item->href($source->href)->subnav(false);
+            $item->badgeCount = $source->badgeCount;
+            $item->badgeLabel = $source->badgeLabel;
+
+            if ($source->id !== null && $item->id !== null) {
+                $collapsed[$source->id] = $item->id;
+            }
+        }
+
+        return $items;
     }
 
     /**
@@ -680,6 +957,7 @@ readonly class Navigation
             }
 
             $groups[] = new NavItem()
+                ->id('nav-settings-group-'.Str::slug($this->settings->sectionName($section)))
                 ->label($section)
                 ->group(true)
                 ->subnav($children);
@@ -705,40 +983,97 @@ readonly class Navigation
 
     /**
      * Settings name the light icons drawn large on the settings index; the
-     * nav draws the solid ones, where they exist.
+     * nav draws the solid ones, where they exist. Craft's own custom icons
+     * come in pairs, with the light one named `<name>-light`.
      */
     private function solidIconName(?string $icon): ?string
     {
-        if ($icon === null || ! str_starts_with($icon, 'light/')) {
-            return $icon;
+        if ($icon === null) {
+            return null;
         }
 
-        $name = substr($icon, strlen('light/'));
+        if (str_starts_with($icon, 'light/')) {
+            $name = substr($icon, strlen('light/'));
 
-        return is_file(CmsAssets::resourcesPath("icons/solid/$name.svg"))
-            ? $name
-            : $icon;
+            return is_file(CmsAssets::resourcesPath("icons/solid/$name.svg"))
+                ? $name
+                : $icon;
+        }
+
+        if (str_starts_with($icon, 'custom-icons/') && str_ends_with($icon, '-light')) {
+            $solid = substr($icon, 0, -strlen('-light'));
+
+            if (is_file(CmsAssets::resourcesPath("icons/$solid.svg"))) {
+                return $solid;
+            }
+        }
+
+        return $icon;
     }
 
     /**
      * Gives an item its id and an absolute URL, renders an icon it can't name,
      * and does the same for anything beneath it.
+     *
+     * An item without a URL — a group heading — takes its id from its label,
+     * under its parent's, so headings don't all end up sharing one.
      */
-    private function normalize(NavItem $item): NavItem
+    private function normalize(NavItem $item, ?string $parentId = null): NavItem
     {
-        $item->id ??= $this->itemId((string) $item->href);
-
         if ($item->href !== null && $item->href !== '') {
+            $item->id ??= $this->itemId($this->idPath($item->href));
             $item->href = Url::cpUrl($item->href);
+        } else {
+            $item->id ??= $this->itemId(sprintf('%s/%s', $parentId ?? 'group', Str::slug((string) $item->label)));
         }
 
         $this->resolveIcon($item);
 
         if (is_array($item->subnav)) {
-            $item->subnav = array_map($this->normalize(...), $item->subnav);
+            $item->subnav = array_map(
+                fn (NavItem $child) => $this->normalize($child, $item->id),
+                $item->subnav,
+            );
         }
 
         return $item;
+    }
+
+    /**
+     * The path an item's id is taken from: its URL relative to the control
+     * panel, so the id is the same whichever host the URL was built for —
+     * `route()` gives an absolute URL, and a navigation saved on one environment
+     * has to apply on the next.
+     */
+    private function idPath(string $href): string
+    {
+        $isAbsolute = Url::isAbsoluteUrl($href);
+
+        if (! $isAbsolute && ! str_starts_with($href, '/')) {
+            return $href;
+        }
+
+        if ($isAbsolute) {
+            $host = parse_url($href, PHP_URL_HOST);
+            $cpHosts = [parse_url(Url::baseCpUrl(), PHP_URL_HOST), $this->request->getHost()];
+
+            if (! in_array($host, $cpHosts, true)) {
+                return $href;
+            }
+        }
+
+        $path = (string) parse_url($href, PHP_URL_PATH);
+        $basePath = rtrim((string) parse_url(Url::baseCpUrl(), PHP_URL_PATH), '/');
+
+        if ($basePath !== '' && str_starts_with($path, $basePath.'/')) {
+            $path = substr($path, strlen($basePath));
+        }
+
+        // `cp_url()` adds the site the CP is working with, which mustn't
+        // change an item's id.
+        $query = trim((string) preg_replace('/(^|&)site=[^&]*/', '', (string) parse_url($href, PHP_URL_QUERY)), '&');
+
+        return Url::stripCpTrigger($path).($query !== '' ? '?'.$query : '');
     }
 
     /**
@@ -795,9 +1130,10 @@ readonly class Navigation
      * Marks the trail to the most specific matching item.
      *
      * @param  NavItem[]  $items
+     * @param  array<string, string>  $pageHrefs  Collapsed pages' own URLs, by their ids, which they match as well as their sources'
      * @return NavItem[]
      */
-    private function applySelection(array $items): array
+    private function applySelection(array $items, array $pageHrefs = []): array
     {
         $path = $this->request->craftPath();
 
@@ -811,6 +1147,7 @@ readonly class Navigation
         $findBest = function (array $items) use (
             &$findBest,
             $path,
+            $pageHrefs,
             &$best,
             &$bestLength,
             &$bestQuerySize,
@@ -820,23 +1157,22 @@ readonly class Navigation
                     $findBest($item->subnav);
                 }
 
-                $itemPath = $this->navItemPath((string) $item->href);
-                parse_str(
-                    (string) parse_url((string) $item->href, PHP_URL_QUERY),
-                    $params,
-                );
-                $querySize = count($params);
+                foreach (array_filter([$item->href, $pageHrefs[$item->id] ?? null]) as $href) {
+                    $itemPath = $this->navItemPath($href);
+                    parse_str((string) parse_url($href, PHP_URL_QUERY), $params);
+                    $querySize = count($params);
 
-                if (
-                    $this->pathMatches($path, $itemPath) &&
-                    $this->queryMatches((string) $item->href) &&
-                    ($bestLength < strlen($itemPath) ||
-                        ($bestLength === strlen($itemPath) &&
-                            $querySize > $bestQuerySize))
-                ) {
-                    $best = $item;
-                    $bestLength = strlen($itemPath);
-                    $bestQuerySize = $querySize;
+                    if (
+                        $this->pathMatches($path, $itemPath) &&
+                        $this->queryMatches($href) &&
+                        ($bestLength < strlen($itemPath) ||
+                            ($bestLength === strlen($itemPath) &&
+                                $querySize > $bestQuerySize))
+                    ) {
+                        $best = $item;
+                        $bestLength = strlen($itemPath);
+                        $bestQuerySize = $querySize;
+                    }
                 }
             }
         };

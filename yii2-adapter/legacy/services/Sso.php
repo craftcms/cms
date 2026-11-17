@@ -19,7 +19,6 @@ use CraftCms\Cms\Support\MemoizableArray;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Auth\SessionGuard;
 use Throwable;
-use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -224,7 +223,7 @@ class Sso extends Component
     public function findUser(ProviderInterface $provider, string $idpIdentifier): ?User
     {
         return User::find()
-            ->join(new Alias(Table::SSO_IDENTITIES, 's_i'), 's_i.userId', '=', 'users.id')
+            ->join(Table::SSO_IDENTITIES . ' as s_i', 's_i.userId', '=', 'users.id')
             ->where('s_i.provider', $provider->getHandle())
             ->where('s_i.identityId', $idpIdentifier)
             ->first();

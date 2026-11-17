@@ -6,14 +6,17 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementCapability;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 
@@ -111,6 +114,15 @@ trait QueriesDraftsAndRevisions
     /** @param ElementQuery<*> $elementQuery */
     private function applyDraftParams(ElementQuery $elementQuery): void
     {
+        if ($elementQuery->isNestedCondition) {
+            $this->rejectNestedJoinParams($elementQuery, [
+                'releaseId' => $elementQuery->releaseId !== null,
+                'draftCreator' => (bool) $elementQuery->draftCreator,
+                'provisionalDrafts' => $elementQuery->provisionalDrafts !== null,
+                'savedDraftsOnly' => $elementQuery->savedDraftsOnly,
+            ]);
+        }
+
         if ($elementQuery->releaseId !== null) {
             $elementQuery->drafts = true;
         }
@@ -121,16 +133,23 @@ trait QueriesDraftsAndRevisions
             return;
         }
 
-        $joinType = $elementQuery->drafts === true ? 'inner' : 'left';
-        $elementQuery->query->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', 'elements.draftId', type: $joinType);
+        // A nested condition can’t add the drafts join to the outer query, so it narrows by the draft ID instead
+        if ($elementQuery->isNestedCondition) {
+            if ($elementQuery->drafts === true) {
+                $elementQuery->whereNotNull('elements.draftId');
+            }
+        } else {
+            $joinType = $elementQuery->drafts === true ? 'inner' : 'left';
+            $elementQuery->query->join(Table::DRAFTS.' as drafts', 'drafts.id', 'elements.draftId', type: $joinType);
 
-        $elementQuery->query->addSelect([
-            'elements.draftId as draftId',
-            'drafts.creatorId as draftCreatorId',
-            'drafts.provisional as isProvisionalDraft',
-            'drafts.name as draftName',
-            'drafts.notes as draftNotes',
-        ]);
+            $elementQuery->query->addSelect([
+                'elements.draftId as draftId',
+                'drafts.creatorId as draftCreatorId',
+                'drafts.provisional as isProvisionalDraft',
+                'drafts.name as draftName',
+                'drafts.notes as draftNotes',
+            ]);
+        }
 
         if ($elementQuery->draftId) {
             $elementQuery->where('elements.draftId', $elementQuery->draftId);
@@ -141,9 +160,9 @@ trait QueriesDraftsAndRevisions
             $elementQuery->whereExists(function (Builder $query) use ($elementQuery) {
                 $query
                     ->selectRaw('1')
-                    ->from(new Alias(Table::RELEASE_ITEMS, 'release_items'))
+                    ->from(Table::RELEASE_ITEMS, 'release_items')
                     ->join(
-                        new Alias(Table::RELEASES, 'releases'),
+                        Table::RELEASES.' as releases',
                         'releases.id',
                         'release_items.releaseId',
                     )
@@ -203,21 +222,34 @@ trait QueriesDraftsAndRevisions
     /** @param ElementQuery<*> $elementQuery */
     private function applyRevisionParams(ElementQuery $elementQuery): void
     {
+        if ($elementQuery->isNestedCondition) {
+            $this->rejectNestedJoinParams($elementQuery, [
+                'revisionCreator' => (bool) $elementQuery->revisionCreator,
+            ]);
+        }
+
         if ($elementQuery->revisions === false) {
             $elementQuery->where($this->placeholderCondition(fn (Builder $q) => $q->whereNull('elements.revisionId')));
 
             return;
         }
 
-        $joinType = $elementQuery->revisions === true ? 'inner' : 'left';
-        $elementQuery->query->join(new Alias(Table::REVISIONS, 'revisions'), 'revisions.id', 'elements.revisionId', type: $joinType);
+        // A nested condition can’t add the revisions join to the outer query, so it narrows by the revision ID instead
+        if ($elementQuery->isNestedCondition) {
+            if ($elementQuery->revisions === true) {
+                $elementQuery->whereNotNull('elements.revisionId');
+            }
+        } else {
+            $joinType = $elementQuery->revisions === true ? 'inner' : 'left';
+            $elementQuery->query->join(Table::REVISIONS.' as revisions', 'revisions.id', 'elements.revisionId', type: $joinType);
 
-        $elementQuery->query->addSelect([
-            'elements.revisionId as revisionId',
-            'revisions.creatorId as revisionCreatorId',
-            'revisions.num as revisionNum',
-            'revisions.notes as revisionNotes',
-        ]);
+            $elementQuery->query->addSelect([
+                'elements.revisionId as revisionId',
+                'revisions.creatorId as revisionCreatorId',
+                'revisions.num as revisionNum',
+                'revisions.notes as revisionNotes',
+            ]);
+        }
 
         if ($elementQuery->revisionId) {
             $elementQuery->where('elements.revisionId', $elementQuery->revisionId);
@@ -229,6 +261,25 @@ trait QueriesDraftsAndRevisions
 
         if ($elementQuery->revisionCreator) {
             $elementQuery->where('revisions.creatorId', $elementQuery->revisionCreator);
+        }
+    }
+
+    /**
+     * Throws if a nested where() closure sets a param that needs the drafts or revisions join, which a nested
+     * condition can’t add to the outer query.
+     *
+     * @param  ElementQuery<*>  $elementQuery
+     * @param  array<string, bool>  $params  Whether each param is set
+     */
+    private function rejectNestedJoinParams(ElementQuery $elementQuery, array $params): void
+    {
+        foreach ($params as $param => $isSet) {
+            if ($isSet) {
+                throw new InvalidArgumentException(sprintf(
+                    'The `%s` param can’t be set in a nested where() closure, because it needs a join a nested condition can’t add. Set it on the outer query instead.',
+                    $param,
+                ));
+            }
         }
     }
 
@@ -253,6 +304,8 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether draft {elements} should be returned.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function drafts(?bool $value = true): static
     {
         $this->drafts = $value;
@@ -264,6 +317,8 @@ trait QueriesDraftsAndRevisions
      * Causes the query to return provisional drafts for the matching elements,
      * when they exist for the current user.
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Whether canonical {elements} should be replaced with provisional drafts if those exist.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function withProvisionalDrafts(bool $value = true): static
     {
         $this->withProvisionalDrafts = $value;
@@ -296,6 +351,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The ID of the draft to return (from the `drafts` table)', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function draftId(?int $value = null): static
     {
         $this->draftId = $value;
@@ -328,6 +385,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'Narrows the query results to drafts attached to the release with this ID.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function releaseId(?int $value = null): static
     {
         $this->releaseId = $value;
@@ -369,6 +428,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'Narrows the query results to only drafts of a given {element}. Set to `false` to fetch unpublished drafts.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function draftOf(mixed $value): static
     {
         if ($value instanceof ElementInterface) {
@@ -439,6 +500,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The drafts’ creator ID', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function draftCreator(mixed $value): static
     {
         $this->draftCreator = match (true) {
@@ -475,6 +538,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether provisional drafts should be returned.', requires: ElementCapability::Drafts)]
+    #[Gql(Gql::CanQueryDrafts)]
     public function provisionalDrafts(?bool $value = true): static
     {
         $this->provisionalDrafts = $value;
@@ -550,6 +615,8 @@ trait QueriesDraftsAndRevisions
      *     ->one();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether revision {elements} should be returned.', requires: ElementCapability::Revisions)]
+    #[Gql(Gql::CanQueryRevisions)]
     public function revisions(?bool $value = true): static
     {
         $this->revisions = $value;
@@ -582,6 +649,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The ID of the revision to return (from the `revisions` table)', requires: ElementCapability::Revisions)]
+    #[Gql(Gql::CanQueryRevisions)]
     public function revisionId(?int $value = null): static
     {
         $this->revisionId = $value;
@@ -619,6 +688,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Scalar, 'The source {element} ID that revisions should be returned for.', requires: ElementCapability::Revisions)]
+    #[Gql(Gql::CanQueryRevisions)]
     public function revisionOf(mixed $value): static
     {
         $this->revisionOf = match (true) {
@@ -660,6 +731,8 @@ trait QueriesDraftsAndRevisions
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Int, 'The revisions’ creator ID', requires: ElementCapability::Revisions)]
+    #[Gql(Gql::CanQueryRevisions)]
     public function revisionCreator(mixed $value): static
     {
         $this->revisionCreator = match (true) {

@@ -11,7 +11,6 @@ parameters:
     paths:
         - src
         - legacy
-        - constants
     excludePaths:
         - legacy/test
         - legacy/config/mimeTypes.php

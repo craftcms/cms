@@ -10,8 +10,8 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Events\ElementPersisted;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Site\Sites;
 use CraftCms\Cms\Support\Facades\Activities;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Container\Attributes\Singleton;
 use WeakMap;
 
@@ -26,15 +26,14 @@ readonly class ElementWriteActivity
     /** @var WeakMap<ElementInterface, bool> */
     private WeakMap $writes;
 
-    /** @var WeakMap<ElementInterface, array{entry: Entry, authorChanged: bool}> */
+    /** @var WeakMap<ElementInterface, array{entry: Entry, fieldValues: array<string, mixed>, authorChanged: bool}> */
     private WeakMap $originalEntries;
 
     /** @var WeakMap<ElementInterface, Asset> */
     private WeakMap $originalAssets;
 
-    public function __construct(
-        private Sites $sites,
-    ) {
+    public function __construct()
+    {
         $this->writes = new WeakMap;
         $this->originalEntries = new WeakMap;
         $this->originalAssets = new WeakMap;
@@ -65,6 +64,7 @@ readonly class ElementWriteActivity
             if ($original !== null) {
                 $this->originalEntries[$element] = [
                     'entry' => $original,
+                    'fieldValues' => EntryActivity::fieldValues($original, $element->getDirtyFields()),
                     'authorChanged' => $element->getAuthorIds() !== $original->getAuthorIds(),
                 ];
             }
@@ -107,6 +107,7 @@ readonly class ElementWriteActivity
                 EntryActivity::recordUpdated(
                     $element,
                     $originalEntry['entry'],
+                    $originalEntry['fieldValues'],
                     $element->getDirtyAttributes(),
                     $element->getDirtyFields(),
                     $originalEntry['authorChanged'],
@@ -127,7 +128,7 @@ readonly class ElementWriteActivity
     {
         Activities::record(new ElementSiteAdded(
             subject: $element,
-            site: $this->sites->getSiteById($element->siteId),
+            site: Sites::getSiteById($element->siteId),
         ));
     }
 

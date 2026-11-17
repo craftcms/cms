@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Builder;
 
@@ -119,6 +121,7 @@ trait QueriesSizes
      *
      * @uses $width
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the assets’ image widths.')]
     public function width(mixed $value): static
     {
         $this->width = $value;
@@ -157,6 +160,7 @@ trait QueriesSizes
      *
      * @uses $height
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the assets’ image heights.')]
     public function height(mixed $value): static
     {
         $this->height = $value;
@@ -193,6 +197,7 @@ trait QueriesSizes
      *
      * @uses $size
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the assets’ file sizes (in bytes).')]
     public function size(mixed $value): static
     {
         $this->size = $value;

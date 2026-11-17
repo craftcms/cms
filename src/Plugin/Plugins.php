@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Plugin;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -115,12 +116,14 @@ class Plugins
     /** @var array<string, string[]> */
     private array $scripts = [];
 
+    /** @param array<string, array<string, mixed>>|null $composerPlugins */
     public function __construct(
         private readonly Repository $cache,
         private readonly Application $app,
         Filesystem $files,
         GeneralConfig $generalConfig,
         private readonly PackageManifest $packageManifest,
+        ?array $composerPlugins = null,
     ) {
         $forceDisabledPlugins = $generalConfig->safeMode ? '*' : $generalConfig->disabledPlugins;
         $this->forceDisabledPlugins = array_fill_keys(is_string($forceDisabledPlugins) ? str($forceDisabledPlugins)->explode(',')->all() : ($forceDisabledPlugins ?? []), true);
@@ -129,11 +132,11 @@ class Plugins
 
         $path = $app->basePath('vendor/craftcms/plugins.php');
 
-        if (! $files->exists($path)) {
+        if ($composerPlugins === null && ! $files->exists($path)) {
             return;
         }
 
-        $plugins = require $path;
+        $plugins = $composerPlugins ?? require $path;
 
         if (! is_array($plugins)) {
             throw new UnexpectedValueException("Plugin manifest [$path] must return an array.");
@@ -610,7 +613,9 @@ class Plugins
                 throw new InvalidPluginException($handle);
             }
 
-            event(new PluginUninstalling($plugin));
+            if ($plugin) {
+                event(new PluginUninstalling($plugin));
+            }
 
             DB::beginTransaction();
             try {
@@ -657,9 +662,8 @@ class Plugins
 
             if ($plugin) {
                 $plugin->removeAssets();
+                event(new PluginUninstalled($plugin));
             }
-
-            event(new PluginUninstalled($plugin));
 
             return true;
         } finally {
@@ -739,11 +743,18 @@ class Plugins
             return false;
         }
 
-        // Update the plugin’s settings in the project config
-        $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData());
-        app(ProjectConfig::class)->set(
-            path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
-            value: $pluginSettings,
+        // Update the plugin’s settings in the project config, keeping the stored values of
+        // settings that are overridden by config/craft/<handle>.php
+        $projectConfig = app(ProjectConfig::class);
+        $path = ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings';
+        $overrides = Config::get("craft.$plugin->handle", []);
+
+        $projectConfig->set(
+            path: $path,
+            value: [
+                ...array_diff_key(ProjectConfigHelper::packAssociativeArrays($pluginSettings->validationData()), $overrides),
+                ...array_intersect_key($projectConfig->get($path) ?? [], $overrides),
+            ],
             message: "Change settings for plugin “{$plugin->handle}”",
         );
 
@@ -1132,6 +1143,24 @@ class Plugins
      */
     public function getPluginIconSvg(string $handle): string
     {
+        return file_get_contents($this->pluginIconPath($handle) ?? Icons::resolveIconPath('default-plugin'));
+    }
+
+    /**
+     * Returns whether a plugin has its own SVG icon, rather than the default one {@see getPluginIconSvg()} falls back to.
+     *
+     * @param  string  $handle  The plugin’s handle
+     */
+    public function hasPluginIcon(string $handle): bool
+    {
+        return $this->pluginIconPath($handle) !== null;
+    }
+
+    /**
+     * Returns the path to a plugin’s own `icon.svg`, if it has one.
+     */
+    private function pluginIconPath(string $handle): ?string
+    {
         $basePaths = [];
 
         // If it's installed, let the plugin say where it lives
@@ -1146,18 +1175,12 @@ class Plugins
             $basePaths[] = dirname($basePath).'/resources';
         }
 
-        $iconPath = Arr::first(
+        $basePath = Arr::first(
             array_unique($basePaths),
             fn (string $basePath) => is_file($basePath.'/icon.svg') && File::isSvg($basePath.'/icon.svg'),
         );
 
-        if ($iconPath === null) {
-            $iconPath = Icons::resolveIconPath('default-plugin');
-        } else {
-            $iconPath .= '/icon.svg';
-        }
-
-        return file_get_contents($iconPath);
+        return $basePath === null ? null : $basePath.'/icon.svg';
     }
 
     /**
@@ -1311,12 +1334,8 @@ class Plugins
     {
         $html = '';
 
-        foreach ($this->viteConfigs as $vite) {
-            $html .= (clone app(Vite::class))
-                ->useHotFile($vite['hotFile'])
-                ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/'))
-                ->withEntryPoints($vite['input'])
-                ->toHtml();
+        foreach ($this->viteConfigs as $config) {
+            $html .= Cp::viteTags(array_values($config['input']), $this->vite($config));
         }
 
         foreach ($this->styles as $styles) {
@@ -1332,6 +1351,28 @@ class Plugins
         }
 
         return $html;
+    }
+
+    /**
+     * Returns a hash of the Vite manifests of the builds {@see getAssetsHtml()} loads, which changes whenever one is
+     * republished.
+     *
+     * Like {@see Vite::manifestHash()}, it leaves out builds served by a running dev server and ones that aren't
+     * published, and returns `null` when that leaves none.
+     */
+    public function getViteManifestHash(): ?string
+    {
+        $hashes = array_filter(array_map(fn (array $config) => $this->vite($config)->manifestHash(), $this->viteConfigs));
+
+        return $hashes === [] ? null : md5(implode(',', $hashes));
+    }
+
+    /** @param array{hotFile: string, buildDirectory: string, input: string[]} $config */
+    private function vite(array $config): Vite
+    {
+        return (clone app(Vite::class))
+            ->useHotFile($config['hotFile'])
+            ->useBuildDirectory(Str::chopEnd($config['buildDirectory'], '/'));
     }
 
     /**

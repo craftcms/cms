@@ -8,8 +8,11 @@ import {
   type UploaderSettings,
 } from './base-uploader';
 import {UploadQueue} from './upload-queue';
-import {imageColorsCompletionData} from './image-colors';
+import {showUploadDuplicates} from './upload-notification';
+import {imageCompletionData} from './image-completion-data';
+import {namePastedFiles} from './pasted-files';
 import {store} from '@/routes/craft/actions/craft/cp/uploads';
+import {showError} from '@/modules/messages/messages';
 
 declare const Craft: any;
 
@@ -22,7 +25,7 @@ export class Uploader extends BaseUploader {
   private inputAccept = new Map<HTMLInputElement, string>();
   private dropZones: HTMLElement[] = [];
   private destroyed = false;
-  private uploads = new UploadQueue();
+  private uploads = new UploadQueue<CraftCms.Cms.Asset.Data.UploadResult>();
 
   static get defaults(): UploaderSettings {
     return {
@@ -96,7 +99,7 @@ export class Uploader extends BaseUploader {
     }));
     picker.on('restriction-failed', (_file, error) => {
       if (!this.destroyed) {
-        Craft.cp.displayError(error.message);
+        showError(error.message);
       }
     });
     picker.on('files-added', (files) => {
@@ -113,7 +116,7 @@ export class Uploader extends BaseUploader {
       } finally {
         this.selectionCount = 0;
         if (this.rejectedFiles.length) {
-          Craft.cp.displayError(
+          showError(
             t(
               this.rejectedFiles.length === 1
                 ? 'The file {files} could not be uploaded, because the field limit has been reached.'
@@ -157,7 +160,7 @@ export class Uploader extends BaseUploader {
           if (files.length) {
             event.preventDefault();
             event.stopPropagation();
-            this.addFiles(files);
+            this.addFiles(namePastedFiles(files));
           }
         },
         {signal: this.listeners.signal}
@@ -215,7 +218,7 @@ export class Uploader extends BaseUploader {
           ...this.formData,
           ...(this.settings.replace ? {operation: 'replace'} : {}),
         },
-        completionData: imageColorsCompletionData,
+        completionData: imageCompletionData,
         csrfToken: Craft.csrfTokenValue,
       },
       undefined,
@@ -227,7 +230,12 @@ export class Uploader extends BaseUploader {
         },
         progress: (loaded, total) =>
           this.uploadCallbacks.progress?.({loaded, total}),
-        done: (result) => this.uploadCallbacks.done?.({...upload, result}),
+        done: (result) => {
+          if (result.duplicates?.length) {
+            showUploadDuplicates(file.name, result.duplicates);
+          }
+          this.uploadCallbacks.done?.({...upload, result});
+        },
         fail: (error, canceled) => {
           if (!this.destroyed) {
             this.uploadCallbacks.fail?.({...upload, error, canceled});

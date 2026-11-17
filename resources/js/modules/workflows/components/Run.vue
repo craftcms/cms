@@ -15,12 +15,12 @@
 </script>
 
 <template>
-  <craft-pane appearance="outline-fill" padding="sm">
+  <craft-pane appearance="outline-fill" padding="md">
     <component
       :is="collapsible ? 'craft-disclosure' : 'section'"
       class="workflow-review-run"
       :appearance="collapsible ? 'plain' : undefined"
-      :opened.prop="collapsible ? run.current : undefined"
+      :open.prop="collapsible ? run.current : undefined"
     >
       <craft-button
         v-if="collapsible"
@@ -123,7 +123,7 @@
     }
   }
 
-  .workflow-review-run[opened] .workflow-review-run__chevron {
+  .workflow-review-run[open] .workflow-review-run__chevron {
     transform: none;
   }
 
@@ -134,6 +134,10 @@
     gap: var(--c-spacing-sm);
   }
 
+  .workflow-review-run__content {
+    gap: var(--c-spacing-md);
+  }
+
   .workflow-review-stages,
   .workflow-review-events {
     margin: 0;
@@ -141,12 +145,36 @@
     list-style: none;
   }
 
-  .workflow-review-run__content {
+  craft-disclosure > .workflow-review-run__content {
     margin-block-start: var(--c-spacing-xs);
-    padding-block-end: var(--c-spacing-sm);
   }
 
-  .workflow-review-submission {
-    padding-inline: var(--c-spacing-xs);
+  .workflow-review-stages {
+    --_stage-radius: calc(var(--c-pane-radius, var(--c-radius-md)) - 1px);
+    gap: 0;
+    margin-block-end: calc(-1 * var(--c-spacing-md));
+
+    &
+      > li:has(> :is(craft-disclosure:not([open]), section))
+      + li
+      :deep(.workflow-review-stage > .workflow-review-stage__heading) {
+      border-block-start: 1px solid var(--c-color-neutral-border-quiet);
+    }
+
+    &
+      > li:last-child
+      :deep(
+        :is(
+          craft-disclosure.workflow-review-stage:not([open])
+            > .workflow-review-stage__heading,
+          section.workflow-review-stage
+            > .workflow-review-stage__heading:last-child
+        )
+      ) {
+      --c-button-radius-end-start: var(--_stage-radius);
+      --c-button-radius-end-end: var(--_stage-radius);
+      border-end-start-radius: var(--_stage-radius);
+      border-end-end-radius: var(--_stage-radius);
+    }
   }
 </style>

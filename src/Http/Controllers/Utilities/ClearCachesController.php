@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use CraftCms\Cms\Support\File;
+use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
-use Throwable;
+
+use function CraftCms\Cms\t;
 
 /**
  * @since 6.0.0
  */
 readonly class ClearCachesController
 {
+    use RespondsWithFlash;
+
     public function __construct(Utilities $utilitiesService)
     {
         if (! $utilitiesService->checkAuthorization(ClearCaches::class)) {
@@ -27,35 +27,17 @@ readonly class ClearCachesController
         }
     }
 
-    public function clearCaches(Request $request, Application $app): Response
+    public function clearCaches(Request $request): Response
     {
         $caches = $request->validate([
             'caches' => ['required'],
         ])['caches'];
 
-        foreach (ClearCaches::cacheOptions() as $cacheOption) {
-            if (is_array($caches) && ! in_array($cacheOption['key'], $caches, true)) {
-                continue;
-            }
+        ClearCaches::clear(is_array($caches) ? array_values($caches) : '*');
 
-            $action = $cacheOption['action'];
-
-            if (is_string($action)) {
-                try {
-                    File::cleanDirectory($action);
-                } catch (InvalidArgumentException) {
-                    // the directory doesn't exist
-                } catch (Throwable $e) {
-                    Log::warning("Could not clear the directory $action: ".$e->getMessage(), [__METHOD__]);
-                }
-            } elseif (isset($cacheOption['params'])) {
-                $app->call($action, $cacheOption['params']);
-            } else {
-                $action();
-            }
-        }
-
-        return back();
+        // The utility's form announces the result itself; a JSON caller, such
+        // as the command palette, is told what happened.
+        return $request->expectsJson() ? $this->asJsonSuccess(t('Caches cleared.')) : back();
     }
 
     public function invalidateTags(Request $request): Response

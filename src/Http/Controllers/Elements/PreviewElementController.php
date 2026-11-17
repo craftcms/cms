@@ -5,24 +5,25 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers\Elements;
 
 use CraftCms\Cms\Element\ElementHelper;
-use CraftCms\Cms\Http\Controllers\Elements\Concerns\EditsElement;
 use CraftCms\Cms\Http\Requests\ElementRequest;
-use CraftCms\Cms\Support\Facades\HtmlStack;
-use Illuminate\View\View;
+use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use Illuminate\Support\Facades\Crypt;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
+ * The element's edit screen with Live Preview open and nothing else to go back
+ * to, for linking straight into a preview. Saving leaves for `returnUrl`.
+ *
  * @since 6.0.0
  */
 class PreviewElementController
 {
-    use EditsElement;
-
     public function __construct(
         protected readonly ElementRequest $request,
     ) {}
 
-    public function __invoke(int $id, ?string $slug = null): Response|View
+    public function __invoke(int $id, ?string $slug = null): Response|CpScreenResponse|InertiaResponse
     {
         $element = $this->request->element([
             'id' => $id,
@@ -34,39 +35,17 @@ class PreviewElementController
 
         abort_if(is_null($element), 400, 'No element was identified by the request.');
 
+        $response = app(EditElementController::class)->setElement($element)();
+
+        if (! $response instanceof InertiaResponse) {
+            return $response;
+        }
+
         $redirectUrl = $this->request->getSigned('returnUrl', ElementHelper::postEditUrl($element));
 
-        HtmlStack::jsWithVars(fn (
-            $elementType,
-            $elementId,
-            $draftId,
-            $revisionId,
-            $siteId,
-            $redirectUrl,
-        ) => <<<JS
-        (() => {
-          const preview = new Craft.Preview({
-            elementType: $elementType,
-            elementId: $elementId,
-            draftId: $draftId,
-            revisionId: $revisionId,
-            siteId: $siteId,
-            standaloneMode: true,
-            redirectUrl: $redirectUrl,
-          })
-          preview.open();
-        })();
-        JS, [
-            $element::class,
-            $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
-            ! $element->isProvisionalDraft ? $element->draftId : null,
-            $element->revisionId,
-            $element->siteId,
-            $redirectUrl,
+        return $response->with('standalonePreview', [
+            'redirect' => Crypt::encrypt($redirectUrl),
+            'editUrl' => $element->getCpEditUrl(),
         ]);
-
-        [$docTitle, $title] = $this->editElementTitles($element);
-
-        return view('_layouts/base', compact('docTitle', 'title'));
     }
 }

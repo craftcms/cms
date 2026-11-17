@@ -1,19 +1,20 @@
 import {css} from 'lit';
 export default css`
-  :host([checked]),
-  :host([aria-selected='true']) {
-    background-color: var(--c-color-neutral-fill-loud);
-    color: var(--c-color-neutral-on-loud);
-  }
-
   :host {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--c-spacing-sm);
     --c-option-wide-threshold: 640;
-    /* LionOption hard-codes a white fill */
-    background-color: transparent;
+    cursor: default;
     padding-inline: var(--c-spacing-md);
     padding-block: var(--c-spacing-sm);
     font: inherit;
     border-radius: var(--c-radius-sm);
+  }
+
+  :host([hidden]) {
+    display: none;
   }
 
   :host(:hover) {
@@ -22,12 +23,6 @@ export default css`
   }
 
   :host([active]) {
-    background-color: var(--c-color-neutral-fill-loud);
-    color: var(--c-color-neutral-on-loud);
-  }
-
-  :host([checked]),
-  :host([aria-selected='true']) {
     background-color: var(--c-color-neutral-fill-loud);
     color: var(--c-color-neutral-on-loud);
   }
@@ -46,14 +41,32 @@ export default css`
     white-space: nowrap;
   }
 
-  :host([active]) .hint,
-  :host([aria-selected='true']) .hint {
+  /* The quieter hint loses too much contrast against the hover fill */
+  :host(:hover) .hint {
+    color: var(--c-color-neutral-on-normal);
+  }
+
+  :host([active]) .hint {
     color: var(--c-color-neutral-on-loud);
   }
 
   .choice-field__label {
     display: grid;
     max-width: 100%;
+  }
+
+  .content {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
+    min-width: 0;
+  }
+
+  @media (forced-colors: active) {
+    :host([active]) {
+      outline: var(--c-focus-outline-width) solid Highlight;
+      outline-offset: calc(var(--c-focus-outline-width) * -1);
+    }
   }
 
   :host([wide]) .choice-field__label {

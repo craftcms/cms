@@ -42,10 +42,20 @@ type Story = StoryObj<any>;
 
 /** Every `size` value, for the size stories below. */
 const chipSizes = [
+  {size: 'xsmall', label: 'X-Small'},
   {size: 'auto', label: 'Auto'},
   {size: 'small', label: 'Small'},
   {size: 'medium', label: 'Medium'},
   {size: 'large', label: 'Large'},
+] as const;
+
+/** Every `thumb-size` value, for the thumb-size stories below. */
+const chipThumbSizes = [
+  {thumbSize: 'sm', label: 'Small'},
+  {thumbSize: 'md', label: 'Medium'},
+  {thumbSize: 'lg', label: 'Large'},
+  {thumbSize: 'xl', label: 'XL'},
+  {thumbSize: '2xl', label: '2XL'},
 ] as const;
 
 /**
@@ -80,7 +90,8 @@ export const SuffixOnly: Story = {
 /**
  * `selectable` adds the selection checkbox; `selected` styles the chip to match
  * a selected thumbnail tile in the element index, so a selection reads the same
- * whichever view mode the elements are shown in.
+ * whichever view mode the elements are shown in. `select-disabled` disables
+ * the checkbox while keeping the chip's selected state.
  */
 export const Selectable: Story = {
   args: {},
@@ -93,6 +104,12 @@ export const Selectable: Story = {
       >
       <craft-chip selectable selected select-label="Select About us"
         >About us</craft-chip
+      >
+      <craft-chip selectable select-disabled select-label="Select Contact"
+        >Contact</craft-chip
+      >
+      <craft-chip selectable selected select-disabled select-label="Select News"
+        >News</craft-chip
       >
     </div>
   `,
@@ -223,10 +240,11 @@ export const Icon: Story = {
 };
 
 /**
- * The four `size` values on a bare chip. `small`, the default, is as tall as
+ * The five `size` values on a bare chip. `small`, the default, is as tall as
  * a small suffix button so adding one doesn't change its height; `auto` has
- * the same padding without that minimum. `medium` and `large` add more
- * padding and a larger thumbnail.
+ * the same padding without that minimum. `xsmall` is as tall as a labeled
+ * badge, with its smaller text. `medium` and `large` add more padding and a
+ * larger thumbnail.
  */
 export const Sizes: Story = {
   parameters: {controls: {disable: true}},
@@ -243,8 +261,89 @@ export const Sizes: Story = {
 };
 
 /**
- * The same sizes with a thumbnail and a suffix, where the thumbnail's size
- * steps up with the chip's.
+ * With \`prefix-placement="block-start"\`, the thumbnail sits above the label,
+ * for a tile in a grid; the checkbox and suffix share a row along the top.
+ * Thumbnail tiles in element indexes are drawn this way, at every
+ * \`thumb-size\`; each chip takes the size that suits its thumbnail.
+ */
+export const Stacked: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: start"
+    >
+      ${chipThumbSizes.map(
+        ({thumbSize, label}) => html`
+          <craft-chip
+            prefix-placement="block-start"
+            appearance="outline-fill"
+            data-color="white"
+            thumb-size="${thumbSize}"
+            show-thumb
+            selectable
+            select-label="Select ${label}"
+          >
+            <img slot="thumbnail" src="https://picsum.photos/240/240" alt="" />
+            ${label}
+            <craft-button icon size="small" variant="plain" slot="suffix">
+              <craft-icon name="ellipsis" label="Actions"></craft-icon>
+            </craft-button>
+          </craft-chip>
+        `
+      )}
+    </div>
+  `,
+};
+
+/**
+ * Each `thumb-size`, with the thumbnail beside the label. Left without a
+ * `size`, the chip takes the one that suits its thumbnail: `small` for `sm`,
+ * `medium` for `md`, and `large` from `lg` up.
+ */
+export const ThumbSizes: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div
+      style="display: flex; flex-direction: column; gap: 0.75rem; align-items: start"
+    >
+      ${chipThumbSizes.map(
+        ({thumbSize, label}) => html`
+          <craft-chip thumb-size="${thumbSize}" show-thumb>
+            <img slot="thumbnail" src="https://picsum.photos/240/240" alt="" />
+            ${label}
+            <craft-button icon size="small" variant="plain" slot="suffix">
+              <craft-icon name="ellipsis" label="Actions"></craft-icon>
+            </craft-button>
+          </craft-chip>
+        `
+      )}
+    </div>
+  `,
+};
+
+/**
+ * An explicit `size` wins over the one `thumb-size` picks. Both chips have an
+ * `xl` thumbnail; the second keeps a small chip's padding around it.
+ */
+export const ThumbSizeOverride: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div style="display: flex; gap: 0.75rem; align-items: start">
+      <craft-chip thumb-size="xl" show-thumb>
+        <img slot="thumbnail" src="https://picsum.photos/240/240" alt="" />
+        Size from thumb-size
+      </craft-chip>
+      <craft-chip thumb-size="xl" size="small" show-thumb>
+        <img slot="thumbnail" src="https://picsum.photos/240/240" alt="" />
+        size="small"
+      </craft-chip>
+    </div>
+  `,
+};
+
+/**
+ * The same sizes with a thumbnail and a suffix, where the thumbnail steps up
+ * with the chip: 26px, 32px, then 40px. `thumb-size` sets a larger one.
  */
 export const SizesWithContent: Story = {
   parameters: {controls: {disable: true}},
@@ -263,6 +362,33 @@ export const SizesWithContent: Story = {
           </craft-chip>
         `
       )}
+    </div>
+  `,
+};
+
+/**
+ * `rounded` rounds the chip's ends fully, and its thumbnail with them. At
+ * `xsmall`, a rounded chip sits among badges as one of them.
+ */
+export const Rounded: Story = {
+  parameters: {controls: {disable: true}},
+  render: () => html`
+    <div
+      style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center"
+    >
+      <craft-chip size="xsmall" rounded show-status>
+        <craft-status slot="status" status="live"></craft-status>
+        Welcome to Craft 6
+      </craft-chip>
+      <craft-chip size="xsmall" rounded show-thumb>
+        <img slot="thumbnail" src="https://picsum.photos/120/120" alt="" />
+        Showcase image
+      </craft-chip>
+      <craft-badge fill="gray" no-prefix>Badge</craft-badge>
+      <craft-chip rounded show-thumb>
+        <img slot="thumbnail" src="https://picsum.photos/120/120" alt="" />
+        Small
+      </craft-chip>
     </div>
   `,
 };

@@ -4,11 +4,12 @@
   import '@craftcms/ui/components/disclosure/disclosure';
   import '@craftcms/ui/components/spinner/spinner';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject} from 'vue';
+  import {useMounted} from '@vueuse/core';
+  import {computed} from 'vue';
   import {useDelayedLoading} from '@/common/composables/useDelayedLoading';
   import UiNodeList from './UiNodeList.vue';
-  import {UiRefreshingFields} from './runtime';
-  import {useOutlet} from './outlets';
+  import {useOptionalUiRenderer} from './renderer/context';
+  import {useOutlets} from './outlets';
   import type {UiChange, UiNodePayload, UiPayload} from './types';
 
   type GroupNodeProps = {
@@ -57,7 +58,7 @@
   const emit = defineEmits<{
     (event: 'change', change: UiChange): void;
   }>();
-  const refreshingFields = inject(UiRefreshingFields, undefined);
+  const refreshingFields = useOptionalUiRenderer()?.refreshingFields;
   const loading = computed(() => {
     if (!props.node.props.dependsOn) {
       return false;
@@ -68,11 +69,25 @@
     );
   });
   const showLoading = useDelayedLoading(loading);
-  const outlet = useOutlet(() => props.node.props.outlet);
+  const outlets = useOutlets();
+  const outlet = outlets.outlet(() => props.node.props.outlet);
+  const outletPending = outlets.pending(() => props.node.props.outlet);
+  const mounted = useMounted();
+  /**
+   * Holds back a group bound for an outlet until the outlet is registered, or
+   * known not to be coming. Waiting for mount lets controls later in the form
+   * mark their outlets as pending first.
+   */
+  const awaitingOutlet = computed(
+    () =>
+      Boolean(props.node.props.outlet) &&
+      !outlet.value &&
+      (!mounted.value || outletPending.value)
+  );
 </script>
 
 <template>
-  <Teleport :to="outlet" :disabled="!outlet">
+  <Teleport v-if="!awaitingOutlet" :to="outlet" :disabled="!outlet">
     <craft-field
       v-if="node.props.asField"
       fieldset
@@ -161,7 +176,7 @@
       v-else
       :is="node.props.collapsible ? 'craft-disclosure' : 'fieldset'"
       :label="node.props.collapsible ? node.props.label : undefined"
-      .opened="
+      .open="
         node.props.collapsible ? (node.props.expanded ?? false) : undefined
       "
       :class="{

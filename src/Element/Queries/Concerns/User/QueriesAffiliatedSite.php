@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Arr;
@@ -76,6 +78,7 @@ trait QueriesAffiliatedSite
      *
      * @uses $affiliatedSiteId
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Determines which site(s) the users should be affiliated with.')]
     public function affiliatedSite(mixed $value): self
     {
         $this->affiliatedSiteId = match (true) {
@@ -146,6 +149,7 @@ trait QueriesAffiliatedSite
      *
      * @uses $affiliatedSiteId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Determines which site(s) the users should be affiliated with.')]
     public function affiliatedSiteId(mixed $value): self
     {
         if (is_array($value) && strtolower((string) reset($value)) === 'not') {

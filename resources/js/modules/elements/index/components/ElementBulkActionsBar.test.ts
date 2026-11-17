@@ -6,13 +6,15 @@ const actions = vi.hoisted(() => ({
   run: vi.fn(async (..._args: unknown[]) => {}),
 }));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
+const copyElements = vi.hoisted(() => vi.fn());
+vi.mock('@/modules/elements/clipboard', () => ({copyElements}));
 
 const BulkActionsBar = (await import('./ElementBulkActionsBar.vue')).default;
 const apps: App[] = [];
 const containers: HTMLElement[] = [];
 
 beforeEach(() => {
-  vi.stubGlobal('Craft', {cp: {copyElements: vi.fn()}, siteId: 1});
+  vi.stubGlobal('Craft', {siteId: 1});
   vi.stubGlobal(
     'fetch',
     vi.fn(async () => new Response('<svg></svg>'))
@@ -23,6 +25,7 @@ afterEach(() => {
   apps.splice(0).forEach((app) => app.unmount());
   containers.splice(0).forEach((container) => container.remove());
   actions.run.mockClear();
+  copyElements.mockClear();
   vi.unstubAllGlobals();
 });
 
@@ -127,7 +130,7 @@ it('copies the selected nested-element metadata', async () => {
     })
   );
 
-  expect(window.Craft?.cp?.copyElements).toHaveBeenCalledWith([
+  expect(copyElements).toHaveBeenCalledWith([
     {
       type: 'Entry',
       id: 11,
@@ -164,8 +167,7 @@ it('omits actions when any selected row lacks the required capability', async ()
 });
 
 it('copies the selected element with its site ID', async () => {
-  const copyElements = vi.fn();
-  vi.stubGlobal('Craft', {cp: {copyElements}, siteId: 1});
+  vi.stubGlobal('Craft', {siteId: 1});
   const container = mount(
     {
       key: 'Copy',
@@ -195,7 +197,7 @@ it('copies the selected element with its site ID', async () => {
 
 it('previews the selected asset', async () => {
   const PreviewFileModal = vi.fn();
-  vi.stubGlobal('Craft', {cp: {copyElements: vi.fn()}, PreviewFileModal});
+  vi.stubGlobal('Craft', {PreviewFileModal});
   const container = mount({
     key: 'PreviewAsset',
     label: 'Preview file',
@@ -215,6 +217,31 @@ it('previews the selected asset', async () => {
   );
 
   expect(PreviewFileModal).toHaveBeenCalledWith(11);
+});
+
+it('opens a new element placed by the selected one', async () => {
+  const assign = vi.fn();
+  vi.stubGlobal('location', {...window.location, assign});
+  const container = mount({
+    key: 'new-child',
+    label: 'Create a new child entry',
+    bulk: false,
+    action: {
+      type: 'event',
+      name: 'craft:new-element',
+      detail: {
+        url: 'https://example.com/admin/entries/blog/new?site=en',
+        param: 'parentId',
+      },
+    },
+  });
+  await nextTick();
+
+  container.querySelector('craft-action-item')!.click();
+
+  expect(assign).toHaveBeenCalledWith(
+    'https://example.com/admin/entries/blog/new?site=en&parentId=11'
+  );
 });
 
 it.each(['edit', 'view'] as const)(
@@ -245,5 +272,102 @@ it.each(['edit', 'view'] as const)(
     expect(secondAction).not.toHaveBeenCalled();
     window.removeEventListener(eventName, globalAction);
     expect(globalAction).not.toHaveBeenCalled();
+  }
+);
+
+it.each([
+  [100, false, true],
+  [101, false, false],
+  [101, true, true],
+])(
+  'with %i selected, an action that can be queued (%s) is listed: %s',
+  async (selectedCount, queueable, listed) => {
+    const container = mount(
+      {
+        key: 'plugin\\Archive',
+        label: 'Archive',
+        syncLimit: 100,
+        queueable,
+        action: {type: 'http', url: '/perform', body: {}},
+      },
+      {},
+      {selectedCount}
+    );
+    await nextTick();
+
+    expect(container.querySelector('craft-action-item') !== null).toBe(listed);
+  }
+);
+
+it('links Compare to the two selected elements in the index’s site, when their rows don’t name one', async () => {
+  const container = mount(
+    {
+      key: 'compare',
+      label: 'Compare',
+      selectionAttribute: 'comparable',
+      selectionCount: 2,
+      action: {type: 'event', name: 'craft:compare-elements'},
+    },
+    {},
+    {
+      selectedIds: [11, 12],
+      selectedElements: [
+        {id: 11, capabilities: {comparable: true}},
+        {id: 12, siteId: 3, capabilities: {comparable: true}},
+      ],
+      siteId: 2,
+    }
+  );
+  await nextTick();
+
+  const item = container.querySelector<HTMLElement & {href?: string}>(
+    'craft-action-item'
+  )!;
+  const href = new URL(
+    item.href ?? item.getAttribute('href')!,
+    window.location.href
+  );
+
+  expect(href.pathname).toMatch(/\/compare\/11\/12$/);
+  expect(href.searchParams.get('fromSiteId')).toBe('2');
+  expect(href.searchParams.get('siteId')).toBe('3');
+});
+
+it.each([
+  ['the same field layout', 1, 1, true],
+  ['different field layouts', 1, 2, false],
+  ['no field layouts', null, null, false],
+  ['rows without field layout data', undefined, undefined, true],
+])(
+  'offers Compare only for two elements with the same field layout: %s',
+  async (_case, fromLayoutId, toLayoutId, listed) => {
+    const container = mount(
+      {
+        key: 'compare',
+        label: 'Compare',
+        selectionAttribute: 'comparable',
+        selectionCount: 2,
+        action: {type: 'event', name: 'craft:compare-elements'},
+      },
+      {},
+      {
+        selectedIds: [11, 12],
+        selectedElements: [
+          {
+            id: 11,
+            capabilities: {comparable: true},
+            fieldLayoutId: fromLayoutId,
+          },
+          {
+            id: 12,
+            capabilities: {comparable: true},
+            fieldLayoutId: toLayoutId,
+          },
+        ],
+      }
+    );
+    await nextTick();
+
+    expect(container.querySelector('craft-action-item') !== null).toBe(listed);
   }
 );

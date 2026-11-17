@@ -24,7 +24,7 @@ class ReleasePolicy
 
     public function attach(CraftUser $actor, Release $release, ElementInterface $draft): bool
     {
-        return $release->status->isMutable()
+        return $release->status->isEditable()
             && $draft::hasDrafts()
             && (! $draft instanceof NestedElementInterface || $draft->getPrimaryOwnerId() === null)
             && $this->canProspectivelyPublish($draft, $actor);
@@ -32,14 +32,29 @@ class ReleasePolicy
 
     public function detach(CraftUser $actor, Release $release, ElementInterface $draft): bool
     {
-        return $release->status->isMutable() && $this->publishDraft($actor, $draft);
+        if (! $release->status->isEditable()) {
+            return false;
+        }
+
+        // Once the live element is gone, the draft can't be published, so anyone
+        // who manages the release needs to be able to clear it out.
+        if (! $draft->getIsUnpublishedDraft() && $draft->getCanonical(true)->trashed) {
+            return $this->manage($actor, $release);
+        }
+
+        return $this->publishDraft($actor, $draft);
     }
 
     public function publish(CraftUser $actor, Release $release): bool
     {
         return $actor->can('publishReleases')
-            && $release->status->isMutable()
+            && $release->status->isEditable()
             && $release->items()->exists();
+    }
+
+    public function schedule(CraftUser $actor, Release $release): bool
+    {
+        return $release->status->isMutable() && $this->publish($actor, $release);
     }
 
     public function publishDraft(CraftUser $actor, ElementInterface $draft): bool

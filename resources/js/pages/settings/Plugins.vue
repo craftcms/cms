@@ -15,6 +15,7 @@
     defineProps<{
       pluginInfo: Record<string, PluginInfo>;
       readOnly?: boolean;
+      composerUnavailableReason?: string | null;
     }>(),
     {pluginInfo: () => ({}), readOnly: false}
   );
@@ -37,7 +38,8 @@
   });
 
   // After the cms license response comes back, check the plugin licenses
-  watch(pluginLicenses, () => {
+  watch(pluginLicenses, (licenses) => {
+    http.pluginLicenses = licenses;
     http.post(PluginsController.getLicenseInfo().url, {
       onSuccess: (data) => {
         pluginLicenseData.value = data;
@@ -61,6 +63,9 @@
 
 <template>
   <CpContainer>
+    <craft-callout v-if="composerUnavailableReason" variant="warning">
+      {{ composerUnavailableReason }}
+    </craft-callout>
     <PluginsList :read-only="readOnly" :plugin-info="fullPluginInfo" />
   </CpContainer>
 </template>

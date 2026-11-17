@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\User;
 
+use CraftCms\Cms\Cp\CustomNavigations;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
@@ -27,7 +28,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\currentUserElement;
@@ -196,7 +196,7 @@ readonly class UserGroups
                 'g.description',
                 'g.uid',
             ])
-            ->join(new Alias(Table::USERGROUPS_USERS, 'gu'), 'gu.groupId', 'g.id')
+            ->join(Table::USERGROUPS_USERS.' as gu', 'gu.groupId', 'g.id')
             ->where('gu.userId', $userId)
             ->get()
             ->mapInto(UserGroup::class);
@@ -357,6 +357,9 @@ readonly class UserGroups
             ProjectConfig::PATH_USER_GROUPS.'.'.$group->uid,
             "Delete the “{$group->handle}” user group",
         );
+
+        // Resolved here, since it depends on this service.
+        app(CustomNavigations::class)->deleteGroupNavigation((string) $group->uid);
 
         return true;
     }

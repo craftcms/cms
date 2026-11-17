@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Entry;
 use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\EntryQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Facades\UserGroups;
@@ -14,7 +16,6 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\User\Data\UserGroup;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -139,7 +140,7 @@ trait QueriesAuthors
 
             $query->$groupIdOperator(
                 DB::table(Table::ENTRIES_AUTHORS, "entries_authors$i")
-                    ->join(new Alias(Table::USERGROUPS_USERS, "usergroups_users$i"), "usergroups_users$i.userId", '=', "entries_authors$i.authorId")
+                    ->join(Table::USERGROUPS_USERS." as usergroups_users$i", "usergroups_users$i.userId", '=', "entries_authors$i.authorId")
                     ->whereColumn('entries.id', "entries_authors$i.entryId")
                     ->whereNumericParam("usergroups_users$i.groupId", $groupIdCheck),
             );
@@ -177,6 +178,7 @@ trait QueriesAuthors
      *
      * @uses $authorId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the entries’ authors.')]
     public function authorId(mixed $value): static
     {
         $this->authorId = $value;
@@ -217,6 +219,7 @@ trait QueriesAuthors
      *
      * @uses $authorGroupId
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the user group the entries’ authors belong to.')]
     public function authorGroup(mixed $value): static
     {
         if (is_string($value) && ($group = UserGroups::getGroupByHandle($value))) {
@@ -273,6 +276,7 @@ trait QueriesAuthors
      *
      * @uses $authorGroupId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the user group the entries’ authors belong to, per the groups’ IDs.')]
     public function authorGroupId(mixed $value): static
     {
         $this->authorGroupId = $value;

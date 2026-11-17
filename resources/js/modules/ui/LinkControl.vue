@@ -215,7 +215,6 @@
         ref="popover"
         class="craft-link-popover"
         :for="buttonId"
-        :label="t('Link')"
         placement="bottom-start"
         @craft-show="onShow"
         @craft-after-show="onAfterShow"
@@ -245,7 +244,7 @@
       :name="editable ? inputName(control.path) : ''"
       .showLabelField="control.props.showLabelField"
       .advancedFields="control.props.advancedFields"
-      :disabled="!editable"
+      .disabled="!editable"
       @link-change="change"
     />
   </div>

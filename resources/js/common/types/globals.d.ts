@@ -2,10 +2,12 @@ import type {ConfigService} from '@craftcms/ui';
 import type {QueueService} from '@/modules/queue/queue';
 import type {CpComponentRegistry} from '@/bootstrap/components';
 import type {ElementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
+import type {AssistantApi} from '@/bootstrap/assistant';
 import type {InertiaPageRegistry} from '@/bootstrap/inertia-pages';
-import type {Router} from '@inertiajs/core';
+import type {Page, Router} from '@inertiajs/core';
 import type {HttpResponse} from '@craftcms/ui/utilities/api/http';
 import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
+import type {UiValueChangeDetail, uiValues} from '@/modules/ui/ui-values';
 
 type LegacySettingValue =
   | string
@@ -32,32 +34,13 @@ interface LegacyModalInstance {
 }
 
 // Set up interfaces and types
-interface ProgressBarInterface {
-  // oxlint-disable-next-line @typescript-eslint/no-misused-new
-  new (
-    $element: JQuery,
-    displaySteps?: boolean,
-    settings?: LegacyWidgetSettings
-  ): ProgressBarInterface;
-
-  $progressBar: JQuery;
-
-  setItemCount(count: number): void;
-
-  setProcessedItemCount(count: number): void;
-
-  updateProgressBar(): void;
-
-  showProgressBar(): void;
-}
-
 interface IntervalManagerInterface {
   // oxlint-disable-next-line @typescript-eslint/no-misused-new
   new (settings?: LegacyWidgetSettings): IntervalManagerInterface;
 
   stop(): void;
 
-  start(): void;
+  start(page?: Page): void;
 }
 
 type Site = {
@@ -74,7 +57,9 @@ interface CpServices {
 
 interface CpStatic extends CpServices {
   $components: CpComponentRegistry;
+  $ui: typeof uiValues;
   $elementDetailsPanels: ElementDetailsPanelRegistry;
+  $assistant: AssistantApi;
   /** @deprecated Use `$elementDetailsPanels`. */
   $elementDetailsTabs: ElementDetailsPanelRegistry;
   $inertia: InertiaPageRegistry;
@@ -135,9 +120,9 @@ interface ElementSelectorModalSettings {
 }
 
 interface CraftStatic {
+  autofocusPreferred?: boolean;
   csrfTokenName?: string;
   csrfTokenValue?: string;
-  ProgressBar: ProgressBarInterface;
   IntervalManager: IntervalManagerInterface;
   t(message: string, params?: LegacyWidgetSettings, category?: string): string;
   sendActionRequest(
@@ -170,6 +155,10 @@ interface CraftStatic {
   getCpUrl(path: string, params?: string | LegacyWidgetSettings): string;
   defaultIndexCriteria: LegacyWidgetSettings;
   siteId?: number;
+  /** The control panel's syntax highlighter. */
+  highlighter: import('@tanstack/highlight/core').Highlighter;
+  /** The user's formatting locale, as a BCP 47 tag for `Intl`. */
+  formattingLocale?: string;
   cp?: {
     jobInfo?: unknown[];
     displayedJobInfo?: unknown;
@@ -177,17 +166,6 @@ interface CraftStatic {
     trigger?: (event: string, data?: LegacySettingValue) => void;
     $notificationContainer?: {length: number};
     $notificationHeading?: {length: number};
-    copyElements?: (
-      elementInfo: Array<{
-        type: string;
-        id: string | number;
-        siteId?: number | null;
-        draftId?: number | null;
-        revisionId?: number | null;
-        fieldId?: number | null;
-        ownerId?: number | null;
-      }>
-    ) => void;
     displayNotification: (
       type: any,
       message?: string,
@@ -257,14 +235,10 @@ interface CraftStatic {
 
   // Asset editing, still served by the legacy bundle.
   isImagick?: boolean;
-  PreviewFileModal: new (
-    assetId: number,
-    settings?: LegacyWidgetSettings
-  ) => LegacyModalInstance;
-  AssetImageEditor: new (
-    assetId: number,
-    settings?: LegacyWidgetSettings
-  ) => LegacyModalInstance;
+  PreviewFileModal: typeof import('@/modules/preview-file-modal').PreviewFileModal;
+  openAssetImageEditor: typeof import('@/modules/image-editor').openAssetImageEditor;
+  /** @deprecated `openAssetImageEditor()` should be used instead. */
+  AssetImageEditor: typeof import('@/modules/image-editor').AssetImageEditor;
   Uploaders: typeof import('@/modules/uploader');
 }
 
@@ -278,12 +252,16 @@ declare global {
   let Craft: CraftStatic;
   let Garnish: GarnishStatic;
   let $: JQueryStatic;
+  interface DocumentEventMap {
+    'craft:ui-value-change': CustomEvent<UiValueChangeDetail>;
+  }
   interface Window {
     bootedCallbacks: Array<(craft: CraftStatic) => void>;
     bootingCallbacks: Array<(craft: CraftStatic) => void>;
-    CpConfig: LegacyWidgetSettings;
+    CpPage: Page;
     Cp: CpStatic;
-    Craft: CraftStatic;
+    // Untyped until CraftStatic covers what's still reached through it
+    Craft: any;
     $?: JQueryStatic;
     jQuery?: JQueryStatic;
     Garnish: GarnishStatic;

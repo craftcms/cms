@@ -13,12 +13,10 @@ use InvalidArgumentException;
  */
 class McpConfig extends BaseConfig
 {
-    public string $endpoint = 'mcp';
-
     /** @var list<string> */
     public array $middleware = [];
 
-    /** Additional instructions appended to the full admin MCP guidance returned by info.get. */
+    /** Additional instructions appended to the full admin MCP guidance returned by info_get. */
     public string $instructions = '';
 
     /** @param array<string, mixed>|string $value */
@@ -36,13 +34,6 @@ class McpConfig extends BaseConfig
         }
 
         return $config;
-    }
-
-    public function endpoint(string $value): self
-    {
-        $this->endpoint = $value;
-
-        return $this;
     }
 
     /** @param list<string> $value */

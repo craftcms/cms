@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Workflow\UserReview;
 
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Number;
@@ -25,7 +26,7 @@ use function CraftCms\Cms\t;
 /**
  * @since 6.0.0
  */
-class UserReviewStage extends WorkflowStage
+class UserReviewStage extends WorkflowStage implements Iconic
 {
     #[\Override]
     protected bool $showDefaultReviewActions = false;
@@ -40,6 +41,11 @@ class UserReviewStage extends WorkflowStage
     public static function displayName(): string
     {
         return t('User Review');
+    }
+
+    public function getIcon(): ?string
+    {
+        return 'user-magnifying-glass';
     }
 
     public function getRules(): array
@@ -121,6 +127,50 @@ class UserReviewStage extends WorkflowStage
     public function outstandingReviewers(WorkflowStageContext $context): Collection
     {
         return $this->stateMachine($context)->outstandingReviewers();
+    }
+
+    /**
+     * Returns whether a user is one of the stage’s reviewers, as its details list them.
+     */
+    public function isReviewer(WorkflowStageContext $context, CraftUser $user): bool
+    {
+        $userId = $user->getCraftUserId();
+
+        return $userId !== null && $this->stateMachine($context)->state()->reviewers->contains('id', $userId);
+    }
+
+    /**
+     * Returns whether a user’s approval of the stage stands, including one carried from an earlier stage.
+     */
+    public function hasApproved(WorkflowStageContext $context, CraftUser $user): bool
+    {
+        $userId = $user->getCraftUserId();
+
+        return $userId !== null && $this->stateMachine($context)->state()->effectiveApprovalIds->contains($userId);
+    }
+
+    /**
+     * Returns the stage’s payload without a user’s approval, including one carried from an earlier stage, so they
+     * have to approve it again.
+     *
+     * @return array<string, mixed>
+     */
+    public function revokeApproval(WorkflowStageContext $context, CraftUser $user): array
+    {
+        $userId = $user->getCraftUserId();
+        $payload = $context->payload;
+        $payload['decisions'] = collect(UserReviewDecisions::fromPayload($payload)->all)
+            ->reject(fn (UserReviewDecisionData $decision): bool => $decision->reviewerId === $userId)
+            ->map(fn (UserReviewDecisionData $decision): array => $decision->toArray())
+            ->values()
+            ->all();
+        $payload['revokedApprovalIds'] = UserReviewDecisions::revokedApprovalIds($payload)
+            ->push($userId)
+            ->unique()
+            ->values()
+            ->all();
+
+        return $payload;
     }
 
     private function stateMachine(WorkflowStageContext $context): UserReviewStateMachine

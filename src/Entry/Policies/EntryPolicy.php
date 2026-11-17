@@ -11,6 +11,7 @@ use CraftCms\Cms\Section\Data\Section;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Contracts\CraftUser;
+use RuntimeException;
 
 /**
  * @since 6.0.0
@@ -19,7 +20,7 @@ class EntryPolicy extends ElementPolicy
 {
     public function view(CraftUser $user, Entry $entry): bool
     {
-        if (! $section = $entry->getSection()) {
+        if (! $section = $this->section($entry)) {
             return false;
         }
 
@@ -41,7 +42,7 @@ class EntryPolicy extends ElementPolicy
 
     public function save(CraftUser $user, Entry $entry): bool
     {
-        if (! $section = $entry->getSection()) {
+        if (! $section = $this->section($entry)) {
             return false;
         }
 
@@ -68,7 +69,7 @@ class EntryPolicy extends ElementPolicy
 
     public function delete(CraftUser $user, Entry $entry): bool
     {
-        if (! $section = $entry->getSection()) {
+        if (! $section = $this->section($entry)) {
             return false;
         }
 
@@ -93,7 +94,7 @@ class EntryPolicy extends ElementPolicy
 
     public function duplicate(CraftUser $user, Entry $entry): bool
     {
-        if (! $section = $entry->getSection()) {
+        if (! $section = $this->section($entry)) {
             return false;
         }
 
@@ -104,7 +105,7 @@ class EntryPolicy extends ElementPolicy
 
     public function duplicateAsDraft(CraftUser $user, Entry $entry): bool
     {
-        if (! $section = $entry->getSection()) {
+        if (! $section = $this->section($entry)) {
             return false;
         }
 
@@ -124,7 +125,7 @@ class EntryPolicy extends ElementPolicy
 
     public function deleteForSite(CraftUser $user, Entry $entry): bool
     {
-        if (! $section = $entry->getSection()) {
+        if (! $section = $this->section($entry)) {
             return false;
         }
 
@@ -149,7 +150,7 @@ class EntryPolicy extends ElementPolicy
 
     public function changeAuthor(CraftUser $user, Entry $entry): bool
     {
-        $section = $entry->getSection();
+        $section = $this->section($entry);
 
         if (! $section) {
             return false;
@@ -166,7 +167,7 @@ class EntryPolicy extends ElementPolicy
 
     public function author(CraftUser $user, Entry $entry): bool
     {
-        $section = $entry->getSection();
+        $section = $this->section($entry);
 
         if (! $section) {
             return false;
@@ -177,7 +178,7 @@ class EntryPolicy extends ElementPolicy
 
     public function move(CraftUser $user, Entry $entry): bool
     {
-        if (! $section = $entry->getSection()) {
+        if (! $section = $this->section($entry)) {
             return false;
         }
 
@@ -208,6 +209,18 @@ class EntryPolicy extends ElementPolicy
     {
         return $this->move($user, $entry) &&
             $user->can("saveEntries:$section->uid");
+    }
+
+    /**
+     * Returns the entry's section, or null if it doesn't have one or the section was deleted.
+     */
+    private function section(Entry $entry): ?Section
+    {
+        try {
+            return $entry->getSection();
+        } catch (RuntimeException) {
+            return null;
+        }
     }
 
     private function compatibleSectionsCount(Entry $entry): int

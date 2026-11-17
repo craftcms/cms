@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import {t} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
@@ -7,11 +8,13 @@
   import WidgetManager from '@/modules/dashboard/WidgetManager.vue';
   import {useDashboard} from '@/modules/dashboard/useDashboard';
   import type {DashboardWidget, WidgetType} from '@/modules/dashboard/types';
+  import {widgetName} from '@/modules/dashboard/widgetName';
   import CpContainer from '@/common/components/CpContainer.vue';
 
   const props = defineProps<{
     widgets: DashboardWidget[];
     widgetTypes: Record<string, WidgetType>;
+    widgetColors: CraftCms.Cms.Shared.Enums.Color[];
   }>();
 
   useAppLayout({title: t('Dashboard')});
@@ -32,8 +35,26 @@
     undo,
     reorder,
     resize,
+    recolor,
     refreshGrid,
+    settingsToggled,
   } = useDashboard(props);
+
+  /** Remounts a widget whenever its settings, data, or markup change. */
+  const widgetKeys = computed(
+    () =>
+      new Map(
+        widgets.value.map((widget) => [
+          widget.id,
+          JSON.stringify([
+            widget.id,
+            widget.settings,
+            widget.data,
+            widget.fragment,
+          ]),
+        ])
+      )
+  );
 </script>
 
 <template>
@@ -46,7 +67,7 @@
               slot="invoker"
               type="button"
               icon="plus"
-              :disabled="busy"
+              .disabled="busy"
               >{{ t('New widget') }}</craft-button
             ></template
           ></ActionMenu
@@ -56,20 +77,20 @@
           :widgets="savedWidgets"
           :columns="columns"
           :busy="busy"
+          :colors="widgetColors"
           @remove="remove"
           @reorder="reorder"
           @resize="resize"
+          @recolor="recolor"
         />
       </div>
     </LayoutSlot>
-    <craft-callout v-if="deleted" class="mb-4" role="status">
-      <span>{{
-        t('“{name}” deleted.', {name: deleted.title || deleted.name})
-      }}</span>
+    <craft-callout v-if="deleted" class="block mb-lg" role="status">
+      <span>{{ t('“{name}” deleted.', {name: widgetName(deleted)}) }}</span>
       <craft-button
         slot="action"
         type="button"
-        :disabled="busy"
+        .disabled="busy"
         @click="undo"
         >{{ t('Undo') }}</craft-button
       >
@@ -81,14 +102,7 @@
     <div id="dashboard-grid" ref="container" class="dashboard-grid">
       <Widget
         v-for="widget in widgets"
-        :key="
-          JSON.stringify([
-            widget.id,
-            widget.settings,
-            widget.data,
-            widget.fragment,
-          ])
-        "
+        :key="widgetKeys.get(widget.id)"
         class="item"
         :data-colspan="widget.colspan"
         :widget="widget"
@@ -96,6 +110,7 @@
         @saved="saved(widget.id, $event)"
         @cancel="cancel(widget.id)"
         @resize="refreshGrid"
+        @settings="settingsToggled(widget.id, $event)"
       />
     </div>
   </CpContainer>
@@ -107,5 +122,29 @@
   }
   .item {
     margin-block-end: 14px;
+  }
+
+  /* A widget with no color has no fill of its own, like an uncolored element
+     card, and, like element cards (see cp.css), it and a white widget still get
+     a filled header bar. */
+  .dashboard-grid
+    :deep(craft-card:not([data-color]):not([active])::part(header)) {
+    background-color: var(--c-card-header-fill-neutral);
+  }
+  .dashboard-grid
+    :deep(craft-card[data-color='white']:not([active])::part(header)) {
+    background-color: var(--c-card-header-fill-white);
+  }
+
+  /* Headers take the body's own inline padding (card.styles.ts's .card-body,
+     16px growing to 24px on wide cards; cqi resolves against the same card),
+     so a widget's title lines up with its content. */
+  .dashboard-grid :deep(craft-card::part(header)) {
+    padding-block: var(--c-spacing-md);
+    padding-inline: clamp(
+      var(--c-spacing-lg),
+      2cqi + var(--c-spacing-md),
+      calc(var(--c-spacing) * 6)
+    );
   }
 </style>

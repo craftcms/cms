@@ -49,14 +49,14 @@ class DatabaseServiceProvider extends ServiceProvider
             ->give(fn () => $this->app->make(MigrationRepository::class, ['table' => Table::MIGRATIONS]));
 
         $this->app
-            ->when(BulkOps::class)
+            ->when([BulkOps::class, BulkOpDeferrals::class])
             ->needs(ConnectionInterface::class)
-            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+            ->give(function () {
+                $resolver = $this->app->make(ConnectionResolverInterface::class);
+                $default = $resolver->connection();
 
-        $this->app
-            ->when(BulkOpDeferrals::class)
-            ->needs(ConnectionInterface::class)
-            ->give(fn () => $this->app->make(ConnectionResolverInterface::class)->connection(config('database.bulk_ops_connection', 'db2')));
+                return $resolver->connection(config('database.bulk_ops_connection', $default->getDriverName() === 'sqlite' ? $resolver->getDefaultConnection() : 'db2'));
+            });
 
         Connection::macro('isMysql', fn (bool $strict = false) => $strict ? $this->getDriverName() === 'mysql' : in_array($this->getDriverName(), ['mysql', 'mariadb']));
         Connection::macro('isMaria', fn () => $this->getDriverName() === 'mariadb');
@@ -67,6 +67,19 @@ class DatabaseServiceProvider extends ServiceProvider
             $this->isMysql() => 'MySQL',
             $this->isSqlite() => 'SQLite',
             default => 'PostgreSQL',
+        });
+        /**
+         * Laravel's schema builder always introspects the write connection. Craft checks columns
+         * while serving requests, so this one introspects the read connection when the connection
+         * would read from it, which keeps those checks working when only the read replica is up.
+         */
+        Connection::macro('getReadSchemaBuilder', function (): SchemaBuilder {
+            /** @var Connection $this */
+            if ($this->getReadPdo() === $this->getRawPdo()) {
+                return $this->getSchemaBuilder();
+            }
+
+            return DB::connection($this->getName().'::read')->getSchemaBuilder();
         });
         Connection::macro('supportsMb4', function () {
             if (Context::hasHidden('craft.supportsMb4')) {

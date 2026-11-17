@@ -105,7 +105,12 @@ export function useAdminTable<TData extends Record<string, any>>(
       const key =
         column.id ??
         ('accessorKey' in column ? String(column.accessorKey) : undefined);
-      return key && typeof column.header === 'string' && column.header
+      // Columns that can't be hidden, such as row actions, stay out of the
+      // View menu and after the columns it orders.
+      return key &&
+        column.enableHiding !== false &&
+        typeof column.header === 'string' &&
+        column.header
         ? [{key, label: column.header, sortable: !!column.enableSorting}]
         : [];
     })
@@ -113,6 +118,11 @@ export function useAdminTable<TData extends Record<string, any>>(
   const pinnedColumn = computed(() => viewColumns.value[0]);
   const toggleableKeys = computed(() =>
     viewColumns.value.slice(1).map((column) => column.key)
+  );
+  const defaultVisibleColumns = computed(() =>
+    toggleableKeys.value.filter(
+      (key) => !options.hiddenColumnsByDefault.includes(key)
+    )
   );
   const storedColumns = preference<{
     visible: string[];
@@ -127,10 +137,12 @@ export function useAdminTable<TData extends Record<string, any>>(
     ...(initialColumns?.visible ?? []).filter((key) =>
       toggleableKeys.value.includes(key)
     ),
-    ...toggleableKeys.value.filter(
-      (key) => !known.has(key) && !options.hiddenColumnsByDefault.includes(key)
-    ),
+    ...defaultVisibleColumns.value.filter((key) => !known.has(key)),
   ]);
+
+  function sameKeys(a: string[], b: string[]): boolean {
+    return a.length === b.length && a.every((key, index) => key === b[index]);
+  }
 
   function saveVisibleColumns(visible: string[]): void {
     visibleColumns.value = visible;
@@ -151,10 +163,7 @@ export function useAdminTable<TData extends Record<string, any>>(
             !visibleColumns.value.includes(key)
         ),
       ];
-      if (
-        next.length !== visibleColumns.value.length ||
-        next.some((key, index) => key !== visibleColumns.value[index])
-      ) {
+      if (!sameKeys(next, visibleColumns.value)) {
         saveVisibleColumns(next);
       }
     },
@@ -236,6 +245,19 @@ export function useAdminTable<TData extends Record<string, any>>(
         ]);
     },
   });
+  const viewCustomized = computed(
+    () =>
+      sorting.value.length > 0 ||
+      !sameKeys(visibleColumns.value, defaultVisibleColumns.value)
+  );
+
+  /** Returns the View menu's sort and columns to their defaults. */
+  function resetView(): void {
+    visibleColumns.value = defaultVisibleColumns.value;
+    storedColumns.value = null;
+    if (sorting.value.length > 0) onSortingChange([]);
+  }
+
   const orderingDisabled = computed(
     () =>
       !!search.value ||
@@ -376,10 +398,16 @@ export function useAdminTable<TData extends Record<string, any>>(
     onPaginationChange,
   });
 
+  /**
+   * Reloads a page of rows. A `quiet` refresh keeps the current rows in
+   * place while it loads, and doesn't interrupt a load already underway.
+   */
   async function refresh(
-    page = pagination.value?.current_page ?? 1
+    page = pagination.value?.current_page ?? 1,
+    {quiet = false}: {quiet?: boolean} = {}
   ): Promise<boolean> {
     if (!options.loadRows) return true;
+    if (quiet && loading.value) return false;
 
     const params: AdminTableRequest = {
       page,
@@ -393,7 +421,7 @@ export function useAdminTable<TData extends Record<string, any>>(
           }))
         : undefined,
     };
-    const pending = pageData.load(params);
+    const pending = pageData.load(params, {quiet});
     const request = pageData.request.value;
     const success = await pending;
     const result = pagination.value;
@@ -401,7 +429,7 @@ export function useAdminTable<TData extends Record<string, any>>(
 
     pageSize.value = result.per_page;
     if (!pageRows.value.length && page > 1 && page > result.last_page) {
-      return refresh(Math.max(1, result.last_page));
+      return refresh(Math.max(1, result.last_page), {quiet});
     }
     return true;
   }
@@ -503,6 +531,8 @@ export function useAdminTable<TData extends Record<string, any>>(
     viewSortOptions,
     viewSortField,
     viewSortDirection,
+    viewCustomized,
+    resetView,
     onColumnsReorder,
     refresh,
     removeRows,

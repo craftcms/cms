@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cookie;
 
 test('remembered username', function () {
+    $this->freezeSecond();
+
     expect(app(AuthMethods::class)->getRememberedUsername())->toBeNull();
 
     $user = User::findOne();

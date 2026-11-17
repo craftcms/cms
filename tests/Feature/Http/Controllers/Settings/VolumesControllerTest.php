@@ -80,7 +80,7 @@ it('requires admin changes', function () {
 
     get(action([VolumesController::class, 'edit'], ['volumeId' => $volume->id]))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('ui.nodes', fn (Collection $nodes): bool => $nodes
+            ->where('ui.nodes', fn (Collection $nodes): bool => collect(flattenUiNodes($nodes->toArray()))
                 ->filter(fn (array $node): bool => isset($node['control']))
                 ->every(fn (array $node): bool => $node['control']['mode'] === 'readOnly'))
             ->where('contentNotice', fn (string $notice): bool => str_contains(
@@ -144,9 +144,9 @@ describe('create / edit', function () {
                 ->where('title', t('Create a new asset volume'))
                 ->where('ui.values.volumeId', null)
                 ->where('ui.values.name', '')
-                ->where('ui.values.assetTransformer', '')
                 ->where('submit.url', action([VolumesController::class, 'store']))
                 ->where('ui.nodes', function (Collection $nodes): bool {
+                    $nodes = collect(flattenUiNodes($nodes->toArray()));
                     $paths = $nodes->pluck('control.path');
 
                     return $nodes->contains(
@@ -160,7 +160,7 @@ describe('create / edit', function () {
                         )
                         && $paths->doesntContain(['transformFsHandle'])
                         && $paths->doesntContain(['transformSubpath'])
-                        && $paths->contains(['assetTransformer']);
+                        && $paths->doesntContain(['assetTransformer']);
                 }));
     });
 
@@ -177,7 +177,7 @@ describe('create / edit', function () {
 
     test('filesystem options disable targets used by other root volumes', function () {
         $volume = createTestVolume();
-        $hasDiskOption = fn (bool $disabled): Closure => fn (Collection $nodes): bool => $nodes->contains(
+        $hasDiskOption = fn (bool $disabled): Closure => fn (Collection $nodes): bool => collect(flattenUiNodes($nodes->toArray()))->contains(
             fn (array $node): bool => ($node['control']['path'] ?? null) === ['fsHandle']
                 && collect($node['control']['props']['options'] ?? [])
                     ->flatMap(fn (array $item): array => $item['options'] ?? [$item])
@@ -212,7 +212,6 @@ describe('create / edit', function () {
                 'fsHandle' => 'test-disk',
                 'hasUrls' => true,
                 'subpath' => '',
-                'assetTransformer' => 'craft',
                 'titleTranslationMethod' => 'site',
                 'titleTranslationKeyFormat' => '',
                 'altTranslationMethod' => 'none',
@@ -224,8 +223,7 @@ describe('create / edit', function () {
             ->assertOk()
             ->assertJsonPath('ui.values.handle', 'newVolume')
             ->assertJsonPath('ui.values.fsHandle', 'test-disk')
-            ->assertJsonPath('ui.values.hasUrls', true)
-            ->assertJsonPath('ui.values.assetTransformer', 'craft');
+            ->assertJsonPath('ui.values.hasUrls', true);
     });
 
     test('edit returns 404 for non-existent volume', function () {
@@ -243,7 +241,6 @@ describe('store', function () {
                 'handle' => 'newVolume',
                 'fsHandle' => 'test-disk',
                 'hasUrls' => true,
-                'assetTransformer' => 'craft',
             ],
             ['Accept' => 'text/html', 'X-Inertia' => 'true'],
         );
@@ -252,8 +249,7 @@ describe('store', function () {
         $volume = app(Volumes::class)->getVolumeByHandle('newVolume');
         expect($volume)->not()->toBeNull();
         expect($volume->name)->toBe('New Volume')
-            ->and($volume->hasUrls)->toBeTrue()
-            ->and($volume->getAssetTransformerHandle(false))->toBe('craft');
+            ->and($volume->hasUrls)->toBeTrue();
         $response->assertRedirect(Url::cpUrl("settings/assets/volumes/{$volume->id}"));
     });
 
@@ -311,16 +307,6 @@ describe('store', function () {
             'handle' => '',
             'fsHandle' => '',
         ])->assertUnprocessable();
-    });
-
-    test('store validates the Asset Transformer reference shape', function () {
-        postJson(action([VolumesController::class, 'store']), [
-            'name' => 'Invalid Transform Volume',
-            'handle' => 'invalidTransformVolume',
-            'fsHandle' => 'test-disk',
-            'assetTransformer' => [],
-        ])->assertUnprocessable()
-            ->assertJsonValidationErrors('assetTransformer');
     });
 
     test('store validates changes made by saving event listeners', function () {

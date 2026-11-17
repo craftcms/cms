@@ -172,11 +172,14 @@ export class HoverIntentGroup {
 
     this.#closeSiblingsOf(member);
 
-    if (state.open || state.openTimer !== undefined) {
+    if (state.open || (!immediate && state.openTimer !== undefined)) {
       return;
     }
 
     if (immediate || this.#warm) {
+      // A hover still warming up would only open it again, later.
+      clearTimeout(state.openTimer);
+      state.openTimer = undefined;
       this.#open(member, state);
 
       return;
@@ -435,12 +438,20 @@ export class HoverIntentGroup {
 /**
  * Nav flyouts.
  *
- * Tooltips get their own group when they adopt this — the two shouldn't share
- * warmth, since reading a nav flyout says nothing about wanting tooltips.
+ * Each kind of overlay gets its own group — they shouldn't share warmth, since
+ * reading a nav flyout says nothing about wanting tooltips.
  */
 export const flyoutHoverIntent = new HoverIntentGroup({
   warmUpDelay: 250,
   closeDelay: 150,
+  coolDownDelay: 500,
+  graceDelay: 300,
+});
+
+/** `craft-link` details. */
+export const linkHoverIntent = new HoverIntentGroup({
+  warmUpDelay: 500,
+  closeDelay: 300,
   coolDownDelay: 500,
   graceDelay: 300,
 });

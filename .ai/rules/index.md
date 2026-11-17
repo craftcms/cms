@@ -11,11 +11,10 @@ Before planning or editing, find the row whose globs match the file's path and r
 | packages/craftcms-legacy/** | .ai/rules/craftcms-legacy.md |
 | packages/craftcms-ui/** | .ai/rules/craftcms-ui.md |
 | src/Field/** | .ai/rules/field.md |
-| resources/templates/_includes/forms/** | .ai/rules/forms.md |
+| resources/templates/_includes/forms/**, yii2-adapter/resources/templates/_includes/forms/**, src/Cp/FormFields.php, src/Field/BaseRelationField.php | .ai/rules/forms.md |
 | resources/js/** | .ai/rules/js.md |
 | src/Database/Migrations/** | .ai/rules/migrations.md |
 | src/** | .ai/rules/src.md |
 | yii2-adapter/tests-laravel/** | .ai/rules/tests-laravel.md |
-| tests-playwright/** | .ai/rules/tests-playwright.md |
 | tests/** | .ai/rules/tests.md |
 | yii2-adapter/** | .ai/rules/yii2-adapter.md |

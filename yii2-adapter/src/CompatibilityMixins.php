@@ -9,6 +9,7 @@ use craft\base\FieldLayoutComponent;
 use CraftCms\Cms\Asset\Data\FolderCriteria as AssetFolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume as AssetVolume;
 use CraftCms\Cms\Asset\Data\VolumeFolder as AssetVolumeFolder;
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Element\Actions\ElementAction;
 use CraftCms\Cms\Element\Element;
@@ -23,14 +24,16 @@ use CraftCms\Cms\Gql\Data\GqlSchema;
 use CraftCms\Cms\Gql\Data\GqlToken;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Data\ImageTransformIndex;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCatalog;
 use CraftCms\Yii2Adapter\Behavior\LegacyBehaviorCompatibility;
 use CraftCms\Yii2Adapter\Behavior\Mixins\LegacyBehaviorMixin;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
+use CraftCms\Yii2Adapter\Mixins\AssetMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementMixin;
 use CraftCms\Yii2Adapter\Mixins\ElementQueryMixin;
 use CraftCms\Yii2Adapter\Mixins\FieldLayoutMixin;
+use CraftCms\Yii2Adapter\Mixins\ImageTransformIndexMixin;
 use CraftCms\Yii2Adapter\Mixins\NestedElementManagerMixin;
 use CraftCms\Yii2Adapter\Mixins\UserMixin;
 use CraftCms\Yii2Adapter\Mixins\ValidateMixin;
@@ -47,7 +50,7 @@ readonly class CompatibilityMixins
         }
 
         Field::macro('trigger', function($name, mixed $event = null): void {
-            Deprecator::log('Field-trigger', 'Calling ->trigger on a Field is deprecated. Switch to component events instead.');
+            LegacyUsage::record('Field-trigger', 'Calling ->trigger on a Field is deprecated. Switch to component events instead.');
 
             $event ??= new YiiEvent();
 
@@ -71,6 +74,7 @@ readonly class CompatibilityMixins
         ElementQuery::mixin(new ElementQueryMixin());
         FieldLayout::mixin(new FieldLayoutMixin());
         User::mixin(new UserMixin());
+        Asset::mixin(new AssetMixin());
         NestedElementManager::mixin(new NestedElementManagerMixin());
         AssetFolderCriteria::mixin(new ValidateMixin());
         AssetVolume::mixin(new ValidateMixin());
@@ -82,6 +86,7 @@ readonly class CompatibilityMixins
         Widget::mixin(new ValidateMixin());
         ImageTransform::mixin(new ValidateMixin());
         ImageTransformIndex::mixin(new ValidateMixin());
+        ImageTransformIndex::mixin(new ImageTransformIndexMixin());
 
         app()->booted(function() {
             LegacyBehaviorCompatibility::registerDefinedBehaviorMethodsFromRegisteredEvents();

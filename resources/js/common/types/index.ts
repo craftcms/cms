@@ -69,7 +69,8 @@ export interface ChipIndicator {
 export interface BreadcrumbItem {
   /**
    * Identifies a crumb the screen owns. `site-crumb` marks a screen's own site
-   * switcher, which the shared one defers to.
+   * switcher, which the shared one defers to; `revision-crumb` marks an element
+   * editor's switcher between its current state, drafts and revisions.
    */
   id?: string | null;
   href?: string | null;
@@ -106,6 +107,14 @@ export type ShortcutProps =
 export interface ActionItemDisplay {
   type: 'display';
   is: Component;
+}
+
+/** A small badge after an item's label, such as one marking a version “Edited”. */
+export interface ActionItemBadge {
+  label: string;
+  /** A palette color or status variant. Defaults to gray. */
+  fill?: string;
+  icon?: string;
 }
 
 export interface ActionItemButton {
@@ -146,6 +155,8 @@ export interface ActionItemButton {
   iconSvg?: string;
   /** A status dot in place of the icon, as a palette color or status variant. */
   status?: string;
+  /** A badge after the label, in a menu. */
+  badge?: ActionItemBadge;
   hidden?: boolean;
   disabled?: boolean;
   disabledReason?: string | null;
@@ -179,6 +190,8 @@ export interface ActionItemLink {
   iconSvg?: string;
   /** A status dot in place of the icon, as a palette color or status variant. */
   status?: string;
+  /** A badge after the label, in a menu. */
+  badge?: ActionItemBadge;
   /** A dot beside the label, for a nav entry with a badge count. */
   indicator?: boolean;
   /** A number after the label, for a nav entry that counts what it lists. */
@@ -196,6 +209,8 @@ export interface ActionItemLink {
    * CP, and for the handful of places still handing off to the legacy stack.
    */
   external?: boolean;
+  /** Where the link opens, such as `_blank` for a new tab. Implies `external`. */
+  target?: string;
   /**
    * Marks this as the one currently in effect, for a list that's a choice
    * rather than a set of commands — a source switcher, say. When any item in a
@@ -373,6 +388,11 @@ export const TableAppearance = {
    * `--cp-container-padding` to match.
    */
   Flush: 'flush',
+  /**
+   * Sits inside the container's padding, with its outer cells' content flush
+   * with its edges.
+   */
+  Aligned: 'aligned',
   /** Sits in a raised pane. */
   Raised: 'raised',
 } as const;
@@ -442,4 +462,11 @@ export interface UserGroup {
   description?: string | null;
   uid: string;
   permissions?: Array<string>;
+}
+
+/** Markup the server rendered, with the head and body HTML its assets need. */
+export interface HtmlFragment {
+  readonly html: string;
+  readonly headHtml: string;
+  readonly bodyHtml: string;
 }

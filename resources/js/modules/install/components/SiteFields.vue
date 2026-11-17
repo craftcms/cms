@@ -1,39 +1,29 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
-  import {computed} from 'vue';
   import CraftInput from '@craftcms/ui/vue/CraftInput.vue';
-  import InputCallout from '@/common/components/InputCallout.vue';
+  import FieldTip from '@/common/components/FieldTip.vue';
   import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import Select from '@/common/form/Select.vue';
   import {usePage} from '@inertiajs/vue3';
   import type {BaseOption, SelectItem} from '@/common/types';
 
-  const emit = defineEmits<{
-    (e: 'update:modelValue', data: any): void;
-  }>();
-  const props = withDefaults(
+  withDefaults(
     defineProps<{
-      modelValue?: any;
       localeOptions: Array<BaseOption & {id: string}>;
       errors?: Record<string, string>;
     }>(),
-    {modelValue: () => ({}), errors: () => ({}), localeOptions: () => []}
+    {errors: () => ({}), localeOptions: () => []}
   );
+
+  const name = defineModel<string>('name');
+  const baseUrl = defineModel<string>('baseUrl');
+  const language = defineModel<string>('language', {required: true});
 
   const page = usePage<{
     baseUrlTextExpanderTriggers: TextExpanderTriggers;
     languageOptions: Array<SelectItem>;
   }>();
-
-  const model = computed({
-    get() {
-      return props.modelValue;
-    },
-    set(value) {
-      emit('update:modelValue', value);
-    },
-  });
 </script>
 
 <template>
@@ -41,13 +31,13 @@
     name="name"
     :label="t('System Name')"
     id="site-name"
-    v-model="model.name"
+    v-model="name"
     maxlength="255"
     :error="errors?.name"
   />
 
   <CraftInput
-    v-model="model.baseUrl"
+    v-model="baseUrl"
     :label="t('Base URL')"
     :help-text="t('The base URL for the site.')"
     id="base-url"
@@ -55,8 +45,8 @@
     :error="errors?.baseUrl"
     :text-expander-triggers="page.props.baseUrlTextExpanderTriggers"
   >
-    <InputCallout
-      slot="after"
+    <FieldTip
+      slot="tip"
       :message="
         t(
           'Type <kbd>$</kbd> to choose an environment variable, or <kbd>@</kbd> to choose an alias.'
@@ -68,7 +58,7 @@
   </CraftInput>
 
   <Select
-    v-model="model.language"
+    v-model="language"
     :options="localeOptions"
     :label="t('Language')"
     id="site-language"

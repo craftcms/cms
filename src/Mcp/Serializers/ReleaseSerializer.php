@@ -38,7 +38,7 @@ readonly class ReleaseSerializer
             'itemCount' => $release->items_count,
             'lastError' => $actor->can('publishReleases') ? $release->lastError : null,
             'publishAttempts' => $release->publishAttempts,
-            'readOnly' => ! $release->status->isMutable(),
+            'readOnly' => ! $release->status->isEditable(),
         ];
 
         if (! $includeItems) {

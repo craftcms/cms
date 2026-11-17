@@ -1,8 +1,8 @@
 <script setup lang="ts">
   import {actionClient, getActionUrl, t} from '@craftcms/ui';
   import type {UrlMethodPair} from '@inertiajs/core';
-  import {useForm} from '@inertiajs/vue3';
-  import {computed, provide, shallowRef, toRaw} from 'vue';
+  import {useForm, usePage} from '@inertiajs/vue3';
+  import {computed, provide, shallowRef, toRaw, watch} from 'vue';
   import type {
     ActionItem,
     ActionItemButton,
@@ -27,44 +27,56 @@
   import {useSettingsSave} from '@/modules/settings/composables/useSettingsSave';
   import CpContainer from '@/common/components/CpContainer.vue';
 
-  const props = defineProps<{
-    ui: UiPayload;
-    /** Omit for node-only screens with no form submission. */
-    submit?: UrlMethodPair;
-    elevatedFields?: string[] | '*';
-    refreshUrl?: string;
-    formActions?: FormAction[];
-    defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
-    /** Server-rendered markup for the details column. */
-    metadataHtml?: string;
-    /** Controls for the details column, submitted alongside `ui`. */
-    sidebarUi?: UiPayload;
-    contentMaxWidth?: boolean;
-    formAdditionalButtons?: ActionItemButton[];
-    /**
-     * Leaves the form actions out of the footer, for a page that renders its
-     * own Save button in the `sidebar-actions` slot, which receives them.
-     */
-    formActionsInSidebar?: boolean;
-    /** See `ScreenProps.hideFooter`. */
-    hideFooter?: boolean;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      ui: UiPayload;
+      /** Omit for node-only screens with no form submission. */
+      submit?: UrlMethodPair;
+      elevatedFields?: string[] | '*';
+      refreshUrl?: string;
+      formActions?: FormAction[];
+      defaultFormActions?: UseAppLayoutOptions['defaultFormActions'];
+      /** Server-rendered markup for the details column. */
+      metadataHtml?: string;
+      /** Controls for the details column, submitted alongside `ui`. */
+      sidebarUi?: UiPayload;
+      /**
+       * Caps and centers the content column. Unset, a page is centered unless
+       * it's a lone admin table, which spans the pane. See
+       * `ScreenProps.contentMaxWidth`.
+       */
+      contentMaxWidth?: boolean;
+      formAdditionalButtons?: ActionItemButton[];
+      /**
+       * Leaves the form actions out of the footer, for a page that renders its
+       * own Save button in the `sidebar-actions` slot, which receives them.
+       */
+      formActionsInSidebar?: boolean;
+      /** See `ScreenProps.hideFooter`. */
+      hideFooter?: boolean;
+    }>(),
+    // Without a default, Vue casts an absent boolean prop to `false`, which
+    // would read as the page opting out.
+    {contentMaxWidth: undefined}
+  );
   const emit = defineEmits<{
     (event: 'change', change: UiChange, values: UiPayload['values']): void;
   }>();
+  const page = usePage();
+  const shownUi = shownPayload(() => props.ui);
+  const shownSidebarUi = shownPayload(() => props.sidebarUi);
   const inertiaForm = useForm({});
   const {advanceBaseline, errors, onMutation, renderer} = useInertiaUiRenderer(
     inertiaForm,
-    () => props.ui
+    () => shownUi.value
   );
   const {
     advanceBaseline: advanceSidebarBaseline,
     errors: sidebarErrors,
     onMutation: onSidebarMutation,
     renderer: sidebarRenderer,
-  } = useInertiaUiRenderer(inertiaForm, () => props.sidebarUi ?? null);
+  } = useInertiaUiRenderer(inertiaForm, () => shownSidebarUi.value ?? null);
   const elevatedBaseline = shallowRef(structuredClone(currentValues()));
-  const elevatedFields = props.elevatedFields;
 
   const save = props.submit
     ? useSettingsSave(inertiaForm, () => props.submit!, {
@@ -83,34 +95,43 @@
             save?.({redirect: false});
           }
         },
+        hasShiftSaveShortcut: () =>
+          submissionActions.value.some(
+            (item) =>
+              item.shortcut && item.shift && !item.hidden && !item.disabled
+          ),
         transform: currentValues,
         onSuccess: () => {
           elevatedBaseline.value = structuredClone(currentValues());
           advanceBaseline();
           advanceSidebarBaseline();
         },
-        passwordConfirmation: elevatedFields
-          ? {
-              required: () => {
-                const values = currentValues();
-                const fields =
-                  elevatedFields === '*'
-                    ? [
-                        ...new Set([
-                          ...Object.keys(elevatedBaseline.value),
-                          ...Object.keys(values),
-                        ]),
-                      ]
-                    : elevatedFields;
+        passwordConfirmation: {
+          required: () => {
+            const elevatedFields = props.elevatedFields;
 
-                return fields.some(
-                  (field) =>
-                    normalize(values[field]) !==
-                    normalize(elevatedBaseline.value[field])
-                );
-              },
+            if (!elevatedFields) {
+              return false;
             }
-          : undefined,
+
+            const values = currentValues();
+            const fields =
+              elevatedFields === '*'
+                ? [
+                    ...new Set([
+                      ...Object.keys(elevatedBaseline.value),
+                      ...Object.keys(values),
+                    ]),
+                  ]
+                : elevatedFields;
+
+            return fields.some(
+              (field) =>
+                normalize(values[field]) !==
+                normalize(elevatedBaseline.value[field])
+            );
+          },
+        },
       }).save
     : undefined;
 
@@ -183,7 +204,7 @@
   }
 
   const isBareTable = computed(() => {
-    const [node, ...rest] = props.ui.nodes;
+    const [node, ...rest] = shownUi.value.nodes;
     return (
       rest.length === 0 &&
       node?.component === 'craft:admin-table' &&
@@ -209,7 +230,7 @@
     formActions: props.formActionsInSidebar ? [] : translatedFormActions.value,
     formAdditionalButtons: props.formAdditionalButtons,
     hideFooter: props.hideFooter,
-    contentMaxWidth: props.contentMaxWidth ?? true,
+    contentMaxWidth: props.contentMaxWidth ?? !isBareTable.value,
     onSave: save,
   }));
 
@@ -242,11 +263,29 @@
 
   function currentValues(): UiPayload['values'] {
     return {
-      ...toRaw(renderer.value?.currentValues() ?? props.ui.values),
+      ...toRaw(renderer.value?.currentValues() ?? shownUi.value.values),
       ...toRaw(
-        sidebarRenderer.value?.currentValues() ?? props.sidebarUi?.values
+        sidebarRenderer.value?.currentValues() ?? shownSidebarUi.value?.values
       ),
     };
+  }
+
+  /**
+   * The payload to render, which passes over the one a failed save sends
+   * back. That page is built from the stored values, while the form keeps the
+   * submitted ones, which the nodes on screen were refreshed for as they
+   * changed.
+   */
+  function shownPayload<T extends UiPayload | undefined>(source: () => T) {
+    const shown = shallowRef(source());
+
+    watch(source, (payload) => {
+      if (Object.keys(page.props.errors ?? {}).length === 0) {
+        shown.value = payload;
+      }
+    });
+
+    return shown;
   }
 
   function normalize(value: UiValue): string {
@@ -262,11 +301,11 @@
       <template #[contentSlot]>
         <component
           :is="isBareTable ? 'div' : 'craft-field-group'"
-          :class="isBareTable ? undefined : 'py-lg'"
+          :class="isBareTable ? undefined : 'ui-page__fields py-lg'"
         >
           <UiRenderer
             ref="renderer"
-            :payload="ui"
+            :payload="shownUi"
             :refresh="refreshUrl ? refresh : undefined"
             :errors="errors"
             @update:mutation="onMutation"
@@ -284,11 +323,11 @@
       </template>
     </CpContainer>
     <MetadataDetails :html="metadataHtml">
-      <template v-if="sidebarUi" #default>
+      <template v-if="shownSidebarUi" #default>
         <craft-field-group>
           <UiRenderer
             ref="sidebarRenderer"
-            :payload="sidebarUi"
+            :payload="shownSidebarUi"
             :errors="sidebarErrors"
             @update:mutation="onSidebarMutation"
           />
@@ -310,3 +349,12 @@
     </MetadataDetails>
   </component>
 </template>
+
+<style scoped>
+  /* The tab strip spaces itself from the panels, so the group's gap would double it. */
+  .ui-page__fields > :deep(.ui-node-list__tabs) {
+    margin-block-end: calc(
+      -1 * var(--gap, var(--c-field-group-gap, var(--c-spacing-lg)))
+    );
+  }
+</style>

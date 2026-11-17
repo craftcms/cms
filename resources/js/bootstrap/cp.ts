@@ -1,15 +1,41 @@
-import {createInertiaApp, router} from '@inertiajs/vue3';
+import {
+  createInertiaApp,
+  http as inertiaHttp,
+  router,
+  usePage,
+} from '@inertiajs/vue3';
+import type {Page} from '@inertiajs/core';
+import {handleControlPanelLinks} from '@/common/inertia-links';
+import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
 import type {DefineComponent} from 'vue';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {http} from '@craftcms/ui/utilities/api/http';
 import {setUrlDefaults} from '@/wayfinder';
-import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
+import {
+  inertiaPageRegistry,
+  preloadInertiaPage,
+  resolveInertiaPage,
+} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
 import {registerSlideoutGlobals} from '@/common/slideouts';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
 import {configureIcons} from './icons.js';
+import {installSessionTimeout} from '@/modules/auth/session-timeout';
+import {installClipboard} from '@/modules/elements/clipboard';
+import {installElementInstanceRefresh} from '@/modules/elements/element-instances';
+import {installFieldValueClipboard} from '@/modules/ui/copiedFieldValue';
+import {installAnnouncer} from '@/common/announcer';
+import {installNavigationProgress} from '@/modules/navigation/progress';
+import {observeFieldToggles} from '@/modules/field-toggle/observe';
+import {answerElevatedSessionRequests} from '@/modules/auth/elevated-session';
+import {
+  broadcast,
+  relayBroadcastEvents,
+  type BroadcastMessage,
+} from '@/common/craft/broadcast';
 import {config, installCpApp, queue} from './cp-app';
 import {cpComponentRegistry} from './components.js';
+import {assistantApi} from './assistant.js';
 import {
   elementDetailsPanelRegistry,
   warnDeprecated,
@@ -18,6 +44,8 @@ import type {ScreenPageProps} from '@/common/composables/screen';
 import {setUpInertiaMessages} from '@/modules/messages/inertia';
 import {trackScrollbarWidth} from '@/common/utils/scrollbarWidth';
 import {registerSubmitShortcut} from '@/common/utils/submitShortcut';
+import {uiValues} from '@/modules/ui/ui-values';
+import {runLifecyclePhase} from './lifecycle';
 
 type TranslationStore = Record<string, Record<string, string>>;
 
@@ -73,6 +101,10 @@ const Cp = {
     return cpComponentRegistry;
   },
 
+  get $ui() {
+    return uiValues;
+  },
+
   // Plugin bundles must use the mounted app's router, not their own module copy.
   get $router() {
     return router;
@@ -82,6 +114,10 @@ const Cp = {
     return elementDetailsPanelRegistry;
   },
 
+  get $assistant() {
+    return assistantApi;
+  },
+
   /** @deprecated Use `$elementDetailsPanels`. */
   get $elementDetailsTabs() {
     warnDeprecated('Cp.$elementDetailsTabs', 'Cp.$elementDetailsPanels');
@@ -89,10 +125,18 @@ const Cp = {
     return elementDetailsPanelRegistry;
   },
 
+  /**
+   * A callback registered once the app has mounted never runs. `onBooted()`
+   * from `@craftcms/cp` runs late callbacks straight away.
+   */
   booted(callback: (instance: typeof window.Cp) => void) {
     bootedCallbacks.push(callback);
   },
 
+  /**
+   * A callback registered once booting has started never runs. `onBooting()`
+   * from `@craftcms/cp` runs late callbacks straight away.
+   */
   booting(callback: (instance: typeof window.Cp) => void) {
     bootingCallbacks.push(callback);
   },
@@ -103,7 +147,11 @@ const Cp = {
 
   init() {
     config.initialize(this.initialConfig);
-    configureIcons(config.get('iconBaseUrl', '/vendor/craft/icons'));
+    configureIcons(
+      config.get('iconBaseUrl', '/vendor/craft/icons'),
+      config.get('earthIcon', 'earth-americas')
+    );
+    installSessionTimeout();
 
     setUrlDefaults(() => ({
       cpTrigger: routeSegment(String(config.get('cpTrigger') ?? '')),
@@ -117,10 +165,26 @@ const Cp = {
       canAccessQueueManager: config.get('canAccessQueueManager', false),
     });
 
+    installAnnouncer();
+    installClipboard();
+    installElementInstanceRefresh();
+    installFieldValueClipboard();
+    observeFieldToggles();
+    answerElevatedSessionRequests();
+    relayBroadcastEvents();
+
+    // The command palette's “Run pending queue jobs”.
+    window.addEventListener('craft:run-queue', () => {
+      void queue.runQueue({force: true});
+    });
+
     setTranslations(this.initialConfig.translations ?? {});
   },
 
-  async start() {
+  /**
+   * @param page The initial page, when the root view has already parsed it. Inertia reads it from the DOM otherwise.
+   */
+  async start(page?: Page) {
     this.init();
 
     http.defaults.headers['X-Requested-With'] = 'XMLHttpRequest';
@@ -128,14 +192,25 @@ const Cp = {
 
     bootingCallbacks.forEach((callback) => callback(this));
     bootingCallbacks = [];
+    runLifecyclePhase('booting');
 
     // Before the app mounts, so the shell keeps clear of the page scrollbar from the first paint.
     trackScrollbarWidth();
 
     // Before the app mounts, so the first page's messages have somewhere to go.
     setUpInertiaMessages();
+    relayPageBroadcasts();
+
+    // A prefetched page's component loads with its response, rather than once
+    // its link is clicked.
+    inertiaHttp.onResponse((response) => {
+      preloadInertiaPage(response);
+
+      return response;
+    });
 
     await createInertiaApp({
+      page,
       resolve: async (name) => {
         const page = await resolveInertiaPage(name);
 
@@ -143,6 +218,8 @@ const Cp = {
         return page as DefineComponent;
       },
       layout: defaultPageLayout,
+      // Replaced by installNavigationProgress(), installed below.
+      progress: false,
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
         installCpApp(app);
@@ -150,12 +227,16 @@ const Cp = {
     });
 
     handleNonInertiaRequests();
+    handleControlPanelLinks();
+    observeExternalLinks();
     handleAccessibleRouting();
+    installNavigationProgress();
     registerSlideoutGlobals();
     registerSubmitShortcut();
 
     bootedCallbacks.forEach((callback) => callback(this));
     bootedCallbacks = [];
+    runLifecyclePhase('booted');
   },
 };
 
@@ -163,6 +244,29 @@ const Cp = {
  * When navigating to a new page, set keyboard focus on the route focus anchor and
  * announce route change.
  */
+/**
+ * Broadcasts the messages the server queued for the page with
+ * `session()->broadcastToJs()`, such as a full-page element save, so other
+ * tabs and this one hear about them. `success` and `error` cover visits, and the first
+ * `navigate` the page the CP loaded on; later `navigate`s restore history,
+ * whose messages have already gone out.
+ */
+function relayPageBroadcasts() {
+  const relay = (page: {props: Record<string, unknown>}) => {
+    const messages = page.props.broadcasts as BroadcastMessage[] | undefined;
+    messages?.forEach(broadcast);
+  };
+
+  const stopInitial = router.on('navigate', (event) => {
+    stopInitial();
+    relay(event.detail.page);
+  });
+  router.on('success', (event) => relay(event.detail.page));
+  // A visit that comes back with validation errors fires this instead, after
+  // its page is in place.
+  router.on('error', () => relay(usePage()));
+}
+
 function handleAccessibleRouting() {
   const {announce} = useAnnouncer();
   let previousPathname = window.location.pathname;
@@ -172,9 +276,12 @@ function handleAccessibleRouting() {
     if (pathname === previousPathname) return;
     previousPathname = pathname;
 
-    const routeFocusAnchor: HTMLElement | null =
-      document.getElementById('route-focus-anchor');
-    routeFocusAnchor?.focus();
+    // A frame later, once the new page has finished rendering: focusing makes
+    // the browser lay the page out, and a layout taken while the page is
+    // still being built is thrown away and done again.
+    requestAnimationFrame(() =>
+      document.getElementById('route-focus-anchor')?.focus()
+    );
 
     if (!props.title) return;
 
@@ -185,41 +292,43 @@ function handleAccessibleRouting() {
 function handleNonInertiaRequests() {
   let fallbackUrl = '';
 
-  router.on('start', (event) => {
+  // `before` rather than `start`: a visit that reuses a prefetched response
+  // never fires `start`.
+  router.on('before', (event) => {
     const visit = event.detail.visit;
 
-    if (visit.prefetch || visit.async || visit.method !== 'get') {
+    if (visit.prefetch) {
       return;
     }
 
-    fallbackUrl = visit.url.href;
+    fallbackUrl = visit.method === 'get' && !visit.async ? visit.url.href : '';
   });
 
-  router.on('finish', (event) => {
-    const visit = event.detail.visit;
-
-    if (fallbackUrl === visit.url.href) {
-      fallbackUrl = '';
-    }
-  });
-
+  // Show non-Inertia HTML responses, including error pages, as full pages
+  // instead of Inertia's modal.
   router.on('httpException', (event) => {
     const response = event.detail.response;
 
-    const shouldReload =
-      [200, 302, 301].includes(response.status) &&
-      response.headers['content-type']?.includes('text/html');
+    if (!response.headers['content-type']?.includes('text/html')) {
+      return;
+    }
 
     if (response.headers['x-redirect']) {
       fallbackUrl = response.headers['x-redirect'];
     }
 
-    if (!fallbackUrl || !shouldReload) {
+    event.preventDefault();
+
+    if (fallbackUrl) {
+      window.location.assign(fallbackUrl);
       return;
     }
 
-    event.preventDefault();
-    window.location.assign(fallbackUrl);
+    // There's no URL to reload (e.g. a failed POST), so render the response
+    // in place of the current document.
+    document.open();
+    document.write(String(response.data));
+    document.close();
   });
 }
 

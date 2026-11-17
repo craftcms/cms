@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\LightswitchFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\DefaultableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
@@ -30,14 +29,13 @@ use Illuminate\Database\Query\Builder;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Lightswitch represents a Lightswitch field.
  *
  * @since 6.0.0
  */
-class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Lightswitch extends Field implements DefaultableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -146,31 +144,6 @@ class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, Defa
             ->onLabel(t($this->onLabel, category: 'site'))
             ->offLabel(t($this->offLabel, category: 'site'))
             ->value((bool) $context->value);
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return $this->_inputHtmlInternal($value, false);
-    }
-
-    /**
-     * Render html for both static and interactive lightswitch field
-     */
-    private function _inputHtmlInternal(mixed $value, bool $static): string
-    {
-        $id = $this->getInputId();
-
-        return template('_includes/forms/lightswitch', [
-            'id' => $id,
-            'labelId' => $this->getLabelId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'on' => (bool) $value,
-            'onLabel' => t($this->onLabel, category: 'site'),
-            'offLabel' => t($this->offLabel, category: 'site'),
-            'disabled' => $static,
-        ]);
     }
 
     #[Override]

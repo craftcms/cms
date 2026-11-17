@@ -186,7 +186,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      * @param FormatterInterface|null $formatter
      * @return string
      */
-    public function formatAddress(Address $address, array $options = [], FormatterInterface $formatter = null): string
+    public function formatAddress(Address $address, array $options = [], ?FormatterInterface $formatter = null): string
     {
         return app(\CraftCms\Cms\Address\Addresses::class)->formatAddress($address, $options, $formatter);
     }

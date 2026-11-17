@@ -43,6 +43,9 @@ function review(
     canOverride: true,
     canRestart: true,
     canApply: false,
+    isReviewer: false,
+    hasApproved: false,
+    rollbackStage: null,
     ...overrides,
   };
 }

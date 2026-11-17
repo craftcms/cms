@@ -11,6 +11,7 @@ use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrated;
 use CraftCms\Cms\Element\Queries\Events\ElementHydrating;
 use CraftCms\Cms\Element\Queries\Events\ElementsHydrated;
+use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Json;
@@ -190,7 +191,7 @@ trait HydratesElements
                 $element->setDirtyFieldTracking(false);
 
                 foreach ($fieldLayout->getCustomFields() as $field) {
-                    if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
+                    if (($field::dbType() !== null || $field instanceof MissingField) && isset($content[$field->layoutElement->uid])) {
                         $handle = $field->layoutElement->handle ?? $field->handle;
                         $element->setFieldValue($handle, $content[$field->layoutElement->uid]);
                     }

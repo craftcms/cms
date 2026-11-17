@@ -16,6 +16,7 @@ use Override;
 use Ramsey\Uuid\Validator\GenericValidator;
 use ReflectionClass;
 use RuntimeException;
+use Spoofchecker;
 use Throwable;
 use Transliterator;
 use voku\helper\ASCII;
@@ -38,6 +39,14 @@ class Str extends \Illuminate\Support\Str
      * @see escapeShortcodes()
      */
     private static ?array $shortcodeEscapeMap = null;
+
+    /**
+     * Each language’s case transliterator, or `false` if ICU has none for it. Creating one takes 10–30µs, and most
+     * languages have none, so each is created once.
+     *
+     * @var array<string, Transliterator|false>
+     */
+    private static array $transliterators = [];
 
     /**
      * Returns ASCII character mappings, merging in any custom defined mappings
@@ -136,7 +145,8 @@ class Str extends \Illuminate\Support\Str
             $encoding = mb_strtolower($encoding);
         }
 
-        $encoding ??= static::encoding($str);
+        // Text whose encoding can't be detected is usually Windows-1252, the most common encoding for text that isn't UTF-8
+        $encoding ??= mb_strtolower(mb_detect_encoding($str, mb_detect_order(), true) ?: 'windows-1252');
 
         $str = mb_convert_encoding($str, 'UTF-8', $encoding);
 
@@ -329,29 +339,103 @@ class Str extends \Illuminate\Support\Str
 
     /**
      * Returns a regex pattern for invisible characters.
+     *
+     * Whitespace characters (spaces, tabs, and line breaks) aren’t included.
      */
     public static function invisibleCharsPattern(): string
     {
         $invisibleCharCodes = [
+            '0000-0008', // control characters (excluding whitespace)
+            '000e-001f', // control characters (excluding whitespace)
+            '007f-0084', // delete + C1 control characters (excluding next line)
+            '0086-009f', // C1 control characters
             '00ad', // soft hyphen
-            '0083', // no break
+            '034f', // combining grapheme joiner
+            '115f', // Hangul choseong filler
+            '1160', // Hangul jungseong filler
+            '180e', // Mongolian vowel separator
             '200b', // zero width space
             '200c', // zero width non-joiner
             '200d', // zero width joiner
             '200e', // LTR character
             '200f', // RTL character
+            '202a-202e', // bidi embeddings and overrides
+            '2060', // word joiner
+            '2061', // function application
             '2062', // invisible times
             '2063', // invisible comma
             '2064', // invisible plus
+            '2066-2069', // bidi isolates
+            '2800', // braille pattern blank
+            '3164', // Hangul filler
             'feff', // zero width non-break space
+            'ffa0', // halfwidth Hangul filler
         ];
 
         array_walk(
             $invisibleCharCodes,
-            fn (&$charCode) => $charCode = sprintf('\\x{%s}', $charCode)
+            fn (&$charCode) => $charCode = preg_replace('/[0-9a-f]{4}/', '\\x{$0}', $charCode)
         );
 
-        return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
+        return sprintf('/[%s]/iu', implode('', $invisibleCharCodes));
+    }
+
+    /**
+     * Removes private-use and unassigned Unicode characters from a string.
+     *
+     * Private-use characters have no standard meaning, so they render differently (or as icons) depending on the
+     * font. Unassigned characters are determined by the Unicode version PCRE was built with, so characters added
+     * in newer Unicode versions, such as new emoji, may be removed as well.
+     */
+    public static function stripPrivateAndUnassignedChars(string $str): string
+    {
+        if ($str === '') {
+            return '';
+        }
+
+        return preg_replace('/[\p{Co}\p{Cn}]/u', '', $str) ?? $str;
+    }
+
+    /**
+     * Returns whether two strings could be mistaken for each other when displayed.
+     *
+     * Case, full-width and other compatibility forms, invisible characters, and whitespace differences are ignored,
+     * and look-alike characters from different scripts (such as the Latin “C” and Cyrillic “С”, U+0421) are treated
+     * as the same, per [Unicode Technical Standard #39](https://www.unicode.org/reports/tr39/).
+     *
+     * Only whole strings are compared, so `Craft` and `Craft Companion` aren’t confusable, even when one is spelled
+     * with look-alikes.
+     */
+    public static function areConfusable(string $a, string $b): bool
+    {
+        $clean = fn (string $str): string => static::squish(preg_replace(static::invisibleCharsPattern(), '', $str) ?? $str);
+        $fold = fn (string $str): string => mb_convert_case(Normalizer::normalize($str, Normalizer::FORM_KC) ?: $str, MB_CASE_FOLD, 'UTF-8');
+
+        $a = $clean($a);
+        $b = $clean($b);
+        $foldedA = $fold($a);
+        $foldedB = $fold($b);
+
+        if ($foldedA === $foldedB) {
+            return true;
+        }
+
+        if (! class_exists(Spoofchecker::class)) {
+            return false;
+        }
+
+        $checker = new Spoofchecker;
+        $checker->setChecks(Spoofchecker::SINGLE_SCRIPT_CONFUSABLE | Spoofchecker::MIXED_SCRIPT_CONFUSABLE);
+
+        // Look-alikes don’t always survive a change of case: Greek “ΚΑΤΟ” looks like “KATO”, but “κατο” doesn’t
+        // look like “kato”. So compare the lowercase and uppercase forms, plus the original strings as-is and
+        // lowercased, since case folding and NFKC can turn a look-alike into a different letter (the long “ſ” (U+017F)
+        // becomes “s”, not “f”).
+        return
+            $checker->areConfusable($foldedA, $foldedB) ||
+            $checker->areConfusable(mb_strtoupper($foldedA, 'UTF-8'), mb_strtoupper($foldedB, 'UTF-8')) ||
+            $checker->areConfusable($a, $b) ||
+            $checker->areConfusable(mb_strtolower($a, 'UTF-8'), mb_strtolower($b, 'UTF-8'));
     }
 
     /**
@@ -670,7 +754,8 @@ class Str extends \Illuminate\Support\Str
             }
         }
 
-        $transliterator = Transliterator::create(sprintf('%s-%s', Locale::languageId($language), $case));
+        $id = sprintf('%s-%s', Locale::languageId($language), $case);
+        $transliterator = self::$transliterators[$id] ??= Transliterator::create($id) ?? false;
 
         if (! $transliterator) {
             return null;

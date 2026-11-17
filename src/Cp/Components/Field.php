@@ -23,10 +23,11 @@ use function CraftCms\Cms\t;
  * control.
  *
  *     Field::make()
+ *         ->id('handle')
  *         ->label(t('Handle'))
  *         ->required()
  *         ->instructions(t('How you’ll refer to this field in the templates.'))
- *         ->input(FormFields::textHtml(['name' => 'handle']))
+ *         ->input(Input::make()->name('handle'))
  *         ->errors($model->errors()->get('handle'));
  *
  * @since 6.0.0
@@ -80,6 +81,10 @@ class Field extends ViewComponent
     protected string|Htmlable|Stringable|ViewComponent|null $labelExtra = null;
 
     protected string|Htmlable|Stringable|ViewComponent|null $actions = null;
+
+    protected ?string $attribute = null;
+
+    protected ?string $errorKey = null;
 
     protected function tagName(): string
     {
@@ -269,6 +274,69 @@ class Field extends ViewComponent
         $this->width = $width;
 
         return $this;
+    }
+
+    /**
+     * The attribute the field edits, rendered as `data-attribute`. Defaults to
+     * the input's id when the input is a component.
+     */
+    public function attribute(?string $attribute): static
+    {
+        $this->attribute = $attribute;
+
+        return $this;
+    }
+
+    /**
+     * The validation error key the field shows errors for, rendered as
+     * `data-error-key`. Defaults to the attribute when the input is a component.
+     */
+    public function errorKey(?string $errorKey): static
+    {
+        $this->errorKey = $errorKey;
+
+        return $this;
+    }
+
+    #[Override]
+    public function toHtml(): string
+    {
+        $this->wireInput();
+
+        return parent::toHtml();
+    }
+
+    /**
+     * Gives a component input the field's `id` (the shell becomes `{id}-field`).
+     * `<craft-field>` links the label and descriptions in the browser.
+     */
+    private function wireInput(): void
+    {
+        $input = $this->input;
+
+        if (! $input instanceof ViewComponent) {
+            return;
+        }
+
+        if (method_exists($input, 'getId') && method_exists($input, 'id')) {
+            if ($input->getId() === null && $this->id !== null) {
+                $input->id($this->id);
+                $this->id = "{$this->id}-field";
+            } elseif ($input->getId() !== null && $this->id === null) {
+                $this->id = "{$input->getId()}-field";
+            }
+        }
+
+        if ($this->isDisabled() && method_exists($input, 'disabled')) {
+            $input->disabled();
+        }
+
+        $attribute = $this->attribute ?? (method_exists($input, 'getId') ? $input->getId() : null);
+
+        $this->attributes['data'] = ($this->attributes['data'] ?? []) + array_filter([
+            'attribute' => $attribute,
+            'error-key' => $this->errorKey ?? $attribute,
+        ]);
     }
 
     #[Override]

@@ -2607,10 +2607,32 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a regex pattern for invisible characters.
      *
+     * Whitespace characters (spaces, tabs, and line breaks) aren’t included.
+     *
      * @since 5.6.1
      */
     public static function invisibleCharsRegex(): string
     {
         return Str::invisibleCharsPattern();
+    }
+
+    /**
+     * Removes private-use and unassigned Unicode characters from a string.
+     *
+     * @since 5.12.0
+     */
+    public static function stripPrivateAndUnassignedChars(string $str): string
+    {
+        return Str::stripPrivateAndUnassignedChars($str);
+    }
+
+    /**
+     * Returns whether two strings could be mistaken for each other when displayed.
+     *
+     * @since 5.12.0
+     */
+    public static function areConfusable(string $a, string $b): bool
+    {
+        return Str::areConfusable($a, $b);
     }
 }

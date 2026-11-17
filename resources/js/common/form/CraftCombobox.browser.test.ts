@@ -29,7 +29,7 @@ it('describes the input with its environment variable callout', async () => {
   mount({callouts: ['envVars']});
 
   await expect
-    .element(page.getByRole('textbox', {name: 'Timezone'}))
+    .element(page.getByRole('combobox', {name: 'Timezone'}))
     .toHaveAccessibleDescription(
       /^This can begin with an environment variable\.\s+Learn more$/
     );
@@ -39,7 +39,7 @@ it('has no description without callouts', async () => {
   mount({});
 
   await expect
-    .element(page.getByRole('textbox', {name: 'Timezone'}))
+    .element(page.getByRole('combobox', {name: 'Timezone'}))
     .toHaveAccessibleDescription('');
 });
 
@@ -50,7 +50,7 @@ it('only describes the input with slotted content marked as a description', asyn
   );
 
   await expect
-    .element(page.getByRole('textbox', {name: 'Timezone'}))
+    .element(page.getByRole('combobox', {name: 'Timezone'}))
     .toHaveAccessibleDescription('');
   await expect
     .element(page.getByRole('button', {name: 'Refresh'}))

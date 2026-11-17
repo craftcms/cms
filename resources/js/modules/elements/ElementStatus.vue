@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {computed} from 'vue';
-  import {capitalize, colors} from '@craftcms/ui';
+  import {capitalize, colors, statusColor} from '@craftcms/ui';
 
   type Color = string | {value: string};
 
@@ -22,20 +22,21 @@
     switch (props.value) {
       case 'live':
       case 'on':
-      case 'success':
+      case 'active':
       case 'enabled':
-        return 'success';
-
       case 'off':
       case 'suspended':
       case 'expired':
+      case 'pending':
+      case 'warning':
+        return statusColor(props.value);
+
+      case 'success':
+        return 'success';
+
       case 'danger':
       case 'red':
         return 'danger';
-
-      case 'pending':
-      case 'warning':
-        return 'warning';
 
       case 'info':
         return 'info';
@@ -85,11 +86,11 @@
 
 <template>
   <div
+    :data-color="mode === 'badge' ? variant : undefined"
     :class="{
       'inline-flex border items-center': true,
       'gap-2 border-transparent': mode === 'inline',
-      [`bg-${variant}-fill-quiet border-${variant}-border-quiet`]:
-        mode === 'badge',
+      'bg-fill-quiet border-[var(--c-color-border-quiet)]': mode === 'badge',
       'gap-1 px-1.5 py-0.5 rounded-full text-xs': mode === 'badge',
     }"
   >

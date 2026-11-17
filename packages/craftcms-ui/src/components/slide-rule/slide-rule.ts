@@ -1,7 +1,7 @@
 import {html, LitElement, type PropertyValues} from 'lit';
 import {property, query} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
-import {FormAssociated} from '@src/mixins/FormAssociated';
+import {FormAssociated, type FormValue} from '@src/mixins/FormAssociated';
 import {t} from '@src/utilities/translate';
 import styles from './slide-rule.styles.js';
 
@@ -34,6 +34,15 @@ const DEFAULT_GRADUATION_WIDTH = 10;
  * @fires {CustomEvent<{value:number}>} craft-drag-end - A drag ended.
  */
 export default class CraftSlideRule extends FormAssociated(LitElement) {
+  /**
+   * Delegate focus into the shadow root, so `host.focus()` and a `<label for>`
+   * pointing at the host land on the slider.
+   */
+  static override shadowRootOptions: ShadowRootInit = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+
   static override styles = [styles];
 
   /** Minimum selectable value (the slide range floor). */
@@ -56,14 +65,14 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
 
   /** Whether the control responds to input. */
   get #editable(): boolean {
-    return !this.disabled;
+    return !this.disabled && !this._formDisabled;
   }
 
-  override _formValue(): string | null {
-    return this.name ? String(this.value) : null;
+  override _formValue(): string {
+    return String(this.value);
   }
 
-  override _restoreFormValue(value: string | null): void {
+  override _restoreFormValue(value: FormValue): void {
     this.value = Math.min(Math.max(Number(value ?? 0), this.min), this.max);
   }
 
@@ -302,19 +311,33 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
 
     if (this.#dragging) {
       event.preventDefault();
-      this.#dragging = false;
-      this._root.classList.remove('dragging');
     } else {
       // A tap without a drag sets the value at the tapped position.
       this.#setValueFromPointer(event);
     }
+
+    this.#endDrag(event);
+  }
+
+  /** Ends a press the browser took over, keeping whatever the drag reached. */
+  #handlePointerCancel(event: PointerEvent) {
+    if (this.#rotateIntent) {
+      this.#endDrag(event);
+    }
+  }
+
+  #endDrag(event: PointerEvent) {
+    this.#dragging = false;
+    this._root.classList.remove('dragging');
 
     if (this.value !== this.#valueAtDragStart) {
       this.#emitChange();
     }
 
     this.#emitDrag('craft-drag-end');
-    this._root.releasePointerCapture(event.pointerId);
+    if (this._root.hasPointerCapture(event.pointerId)) {
+      this._root.releasePointerCapture(event.pointerId);
+    }
     this.#startPositionX = 0;
     this.#rotateIntent = false;
   }
@@ -385,11 +408,12 @@ export default class CraftSlideRule extends FormAssociated(LitElement) {
         aria-valuemax=${this.max}
         aria-valuenow=${this.value}
         aria-valuetext=${this.#valueText(this.value)}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
+        aria-disabled=${this.#editable ? 'false' : 'true'}
         @keydown=${this.#handleKeyDown}
         @pointerdown=${this.#handlePointerDown}
         @pointermove=${this.#handlePointerMove}
         @pointerup=${this.#handlePointerUp}
+        @pointercancel=${this.#handlePointerCancel}
       >
         <div class="cursor"></div>
         <div class="graduations">

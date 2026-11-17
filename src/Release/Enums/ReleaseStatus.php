@@ -41,4 +41,13 @@ enum ReleaseStatus: string
     {
         return in_array($this, [self::Draft, self::Failed], true);
     }
+
+    /**
+     * Whether the release's details and drafts can be changed. Unlike [[isMutable()]],
+     * scheduled releases can be adjusted up until they start publishing.
+     */
+    public function isEditable(): bool
+    {
+        return in_array($this, [self::Draft, self::Scheduled, self::Failed], true);
+    }
 }

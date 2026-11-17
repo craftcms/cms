@@ -5,13 +5,16 @@ import {
   NestedOwnerEditorKey,
   type NestedOwnerContext,
 } from '@/modules/elements/nested-owner';
+import {ConfigService} from '@craftcms/ui/services/Config';
 import type {BulkActionItem} from '@/modules/elements/types/actions';
 import type {NestedElementsProps, NestedElement} from './nested-elements';
 import NestedElementsIndex from './NestedElementsIndex.vue';
 import {NestedElementsControlKey} from './nested-elements-context';
 import {
   button,
+  COPY_ACTION,
   DELETE_ACTION,
+  DUPLICATE_ACTION,
   goToPage,
   inlineTitleInput,
   nestedElement,
@@ -33,6 +36,11 @@ vi.mock('@craftcms/ui', async (original) => ({
   actionClient: request,
 }));
 vi.mock('@craftcms/ui/actions.mjs', () => ({runAction: actions.run}));
+const copyElements = vi.hoisted(() => vi.fn());
+vi.mock('@/modules/elements/clipboard', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  copyElements,
+}));
 const openSlideout = vi.hoisted(() => vi.fn(async () => null));
 vi.mock('@/common/slideouts', () => ({openSlideout}));
 
@@ -47,6 +55,7 @@ describe('NestedElementsIndex', () => {
   let restoreElementInternals = () => {};
 
   afterEach(() => {
+    ConfigService.resetInstance();
     openSlideout.mockClear();
     app?.unmount();
     root?.remove();
@@ -93,14 +102,14 @@ describe('NestedElementsIndex', () => {
     action: string,
     label: string
   ): ActionItemButton {
-    const item = standardNestedActions.find((candidate) =>
-      candidate.key.endsWith(
-        action === 'copy'
-          ? '\\Copy'
-          : action === 'duplicate'
-            ? '\\Duplicate'
-            : '\\Delete'
-      )
+    const key =
+      action === 'copy'
+        ? COPY_ACTION
+        : action === 'duplicate'
+          ? DUPLICATE_ACTION
+          : DELETE_ACTION;
+    const item = standardNestedActions.find(
+      (candidate) => candidate.key === key
     )!;
 
     return nestedElementAction(elementId, item, label) as ActionItemButton;
@@ -115,12 +124,14 @@ describe('NestedElementsIndex', () => {
     ],
     reorderable = true,
     actions,
+    statusMenuValue,
   }: {
     editable?: boolean;
     mode?: 'table' | 'cards';
     pages?: NestedElement[][];
     reorderable?: boolean;
     actions?: BulkActionItem[] | null;
+    statusMenuValue?: string;
   } = {}) {
     restoreElementInternals = stubElementInternals();
     const server = {reorderable};
@@ -134,21 +145,15 @@ describe('NestedElementsIndex', () => {
         mode: viewMode,
         reorderable: server.reorderable,
         actions,
+        statusMenuValue,
       });
     const craft = {
-      cp: {
-        copyElements: vi.fn(),
-        displayError: vi.fn(),
-        displayNotice: vi.fn(),
-        getCopiedElements: () => [],
-        onCopyElements: vi.fn(),
-      },
       elementTypeNames: {Entry: ['Entry', 'Entries', 'entry', 'entries']},
       findDeltaData: (_before: string, after: string, names: string[]) =>
         `${after}&modifiedDeltaNames[]=${encodeURIComponent(names[0]!)}`,
-      pageTrigger: 'p',
       systemUid: 'test',
     };
+    ConfigService.getInstance().initialize({pageTrigger: 'p'});
     vi.stubGlobal('Craft', craft);
     vi.stubGlobal(
       'fetch',
@@ -299,23 +304,24 @@ describe('NestedElementsIndex', () => {
 
     const release = holdLoads();
     button(root, 'Refresh').click();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(true));
-    expect(previous().disabled).toBe(true);
+    await vi.waitFor(() => expect(previous().disabled).toBe(true));
     expect(next().disabled).toBe(true);
     expect(button(root, 'Export').disabled).toBe(true);
+    expect(pageInput(root).disabled).toBeFalsy();
     release();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(false));
+    await vi.waitFor(() => expect(previous().disabled).toBe(false));
+    expect(button(root, 'Export').disabled).toBe(false);
 
     let finishExport!: () => void;
     actions.run.mockImplementationOnce(
       () => new Promise<void>((resolve) => (finishExport = resolve))
     );
     exportButton(root, 'XLSX').click();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(true));
-    expect(previous().disabled).toBe(true);
+    await vi.waitFor(() => expect(previous().disabled).toBe(true));
     expect(button(root, 'Export').disabled).toBe(true);
+    expect(pageInput(root).disabled).toBeFalsy();
     finishExport();
-    await vi.waitFor(() => expect(pageInput(root).disabled).toBe(false));
+    await vi.waitFor(() => expect(previous().disabled).toBe(false));
   });
 
   it('stops Enter in embedded pager and export inputs from reaching the owner', async () => {
@@ -363,7 +369,7 @@ describe('NestedElementsIndex', () => {
     await nextTick();
     expect(
       [...root.querySelectorAll('[role="status"]')].some((status) =>
-        status.textContent?.includes('1 item selected')
+        status.textContent?.includes('1 entry selected')
       )
     ).toBe(true);
     button(root, 'Clear selection').click();
@@ -404,8 +410,11 @@ describe('NestedElementsIndex', () => {
         'true'
       )
     );
-    expect(root.querySelectorAll('tr.cp-table-row')).toHaveLength(0);
-    expect(root.querySelector('craft-spinner')).not.toBeNull();
+    expect(root.querySelectorAll('tr[data-nested-id]')).toHaveLength(0);
+    expect(
+      root.querySelectorAll('tr.cp-table-row[aria-hidden="true"]')
+    ).toHaveLength(2);
+    expect(root.querySelector('craft-spinner')).toBeNull();
 
     release();
     await waitForIdle(root);
@@ -645,11 +654,42 @@ describe('NestedElementsIndex', () => {
     );
   });
 
+  it('runs server bulk actions against the status menu’s selection', async () => {
+    const {root} = mount({
+      statusMenuValue: 'trashed',
+      actions: [
+        {
+          key: 'Restore',
+          label: 'Restore',
+          action: {
+            type: 'http',
+            method: 'POST',
+            url: '/actions/element-indexes/perform-action',
+            body: {elementAction: 'Restore'},
+          },
+        },
+      ],
+    });
+    selectRow(root, 11);
+    await nextTick();
+
+    actionItem(root, 'Restore').click();
+    await vi.waitFor(() => expect(actions.run).toHaveBeenCalledOnce());
+
+    expect(actions.run.mock.calls[0]![0]).toMatchObject({
+      body: {
+        elementAction: 'Restore',
+        elementIds: [11],
+        criteria: {status: 'trashed'},
+      },
+    });
+  });
+
   it('preserves server table actions and intercepts only the primary edit link', async () => {
     const pluginAction = vi.fn();
     window.addEventListener('plugin:inspect', pluginAction, {once: true});
     const editUrl = '/edit/11?elementId=11';
-    const {root, craft} = mount({
+    const {root} = mount({
       pages: [
         [
           element(
@@ -687,7 +727,7 @@ describe('NestedElementsIndex', () => {
     actionItem(firstRow, 'Inspect in plugin').click();
     actionItem(firstRow, 'Copy from server').click();
     await vi.waitFor(() => expect(pluginAction).toHaveBeenCalledOnce());
-    expect(craft.cp.copyElements).toHaveBeenCalledWith([
+    expect(copyElements).toHaveBeenCalledWith([
       expect.objectContaining({id: 11}),
     ]);
 
@@ -741,7 +781,7 @@ describe('NestedElementsIndex', () => {
   });
 
   it('leaves table links native when the owner is read-only', () => {
-    const {root, craft} = mount({editable: false, pages: [[element(11)]]});
+    const {root} = mount({editable: false, pages: [[element(11)]]});
     const link = root.querySelector<HTMLAnchorElement>(
       'a[href="/edit/11?elementId=11"]'
     )!;

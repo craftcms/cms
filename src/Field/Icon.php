@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Cp\IconSets;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
@@ -37,7 +37,7 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
+class Icon extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
 {
     /**
      * @var array<string, array{name: string, terms: string, pro: bool, styles: list<string>}> Info about the available icons
@@ -90,6 +90,15 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public bool $includeProIcons = false;
 
     /**
+     * @var string[] The icon sets that should be selectable.
+     *
+     * {@see IconSets::FONT_AWESOME} refers to the built-in Font Awesome icons.
+     *
+     * @since 5.12.0
+     */
+    public array $iconSets = [IconSets::FONT_AWESOME];
+
+    /**
      * @var bool Whether GraphQL values should be returned as objects with `name` and `styles` keys.
      */
     public bool $fullGraphqlData = true;
@@ -105,6 +114,10 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             $config['fullGraphqlData'] = Arr::pull($config, 'graphqlMode') === 'full';
         }
 
+        if (isset($config['iconSets']) && ! is_array($config['iconSets'])) {
+            $config['iconSets'] = array_filter([$config['iconSets']]);
+        }
+
         // Default fullGraphqlData to false for existing fields
         if (isset($config['id']) && ! isset($config['fullGraphqlData'])) {
             $config['fullGraphqlData'] = false;
@@ -114,12 +127,54 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     }
 
     #[Override]
+    public function getRules(): array
+    {
+        return array_merge(parent::getRules(), [
+            'iconSets' => [
+                'required',
+                'array',
+                function (string $attribute, mixed $value, Closure $fail) {
+                    if (is_array($value) && array_diff($value, array_keys(app(IconSets::class)->getIconSetNames()))) {
+                        $fail('validation.in')->translate();
+                    }
+                },
+            ],
+        ]);
+    }
+
+    #[Override]
+    public function getMessages(): array
+    {
+        return array_merge(parent::getMessages(), [
+            'iconSets.required' => t('At least one icon set must be selected.'),
+        ]);
+    }
+
+    #[Override]
     public function settingsUi(UiContext $context = new UiContext): Ui
     {
+        $iconSets = app(IconSets::class);
+        $hasCustomIconSets = ! empty($iconSets->getIconSets());
+        $options = [];
+
+        foreach ($iconSets->getIconSetNames() as $handle => $name) {
+            $options[] = ['label' => $name, 'value' => $handle];
+        }
+
         return Ui::make([
+            UiField::make(t('Icon Sets'))
+                ->instructions(t('Which icon sets should be selectable?'))
+                ->control(Choice::make('iconSets')
+                    ->multiple()
+                    ->sortable()
+                    ->options($options)
+                    ->value($this->iconSets)
+                    ->reactive())
+                ->visible($hasCustomIconSets),
             UiField::make(t('Include Pro icons'))
                 ->instructions(t('Should icons that are exclusive to Font Awesome Pro be selectable?'))
-                ->control(Lightswitch::make('includeProIcons')->value($this->includeProIcons)),
+                ->control(Lightswitch::make('includeProIcons')->value($this->includeProIcons))
+                ->visible(in_array(IconSets::FONT_AWESOME, $this->iconSets, true)),
         ])->when(
             Cms::config()->enableGql,
             fn (Ui $ui): Ui => $ui->add(
@@ -143,6 +198,12 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             return null;
         }
 
+        if ($customIcon = IconSets::parse($value)) {
+            [$set, $name] = $customIcon;
+
+            return new IconData($name, [], $set);
+        }
+
         return new IconData($value, self::iconStyles($value));
     }
 
@@ -151,27 +212,15 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     {
         return IconPicker::make($context->path)
             ->freeOnly(! $this->includeProIcons)
-            ->value($context->value instanceof IconData ? $context->value->name : $context->value);
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        /** @var IconData|null $value */
-        return FormFields::iconPickerHtml([
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $value?->name,
-            'freeOnly' => ! $this->includeProIcons,
-        ]);
+            ->sets($this->iconSets)
+            ->value($context->value instanceof IconData ? $context->value->serialize() : $context->value);
     }
 
     #[Override]
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var IconData|null $value */
-        return $value ? Html::tag('div', Icons::svg($value->name), ['class' => 'cp-icon']) : '';
+        return $value ? Html::tag('div', Icons::svg($value->serialize()), ['class' => 'cp-icon']) : '';
     }
 
     #[Override]
@@ -184,7 +233,7 @@ class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     public function getThumbHtml(mixed $value, ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         /** @var IconData|null $value */
-        return $value ? Html::tag('div', Icons::svg($value->name), ['class' => 'cp-icon']) : null;
+        return $value ? Html::tag('div', Icons::svg($value->serialize()), ['class' => 'cp-icon']) : null;
     }
 
     #[Override]

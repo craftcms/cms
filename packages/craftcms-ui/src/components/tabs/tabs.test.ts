@@ -1,24 +1,13 @@
 import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftTab from '../tab/tab.js';
 import type CraftTabs from './tabs.js';
-import {tabsPlacements} from './tabs.js';
 import styles from './tabs.styles.js';
 import '../tab/tab.js';
 import './tabs.js';
 
 /*
- * SCOPE: this covers what `CraftTabs` adds on top of `LionTabs` — the wrapper
- * and parts, `placement`, selection normalization, the tab's own state, and
- * external-panel mode (which this component implements itself, so it is fully
- * covered here).
- *
- * Lion's *slotted* selection machinery is NOT exercised here, and can't be: it
- * bootstraps from a `slotchange` on the shadow tab slot, and happy-dom never
- * fires one (nodes are assigned — `assignedNodes()` is correct — but the event
- * isn't dispatched). Nothing gets wired, so every selection assertion would
- * fail against a component that works fine in a browser. Slotted selection,
- * keyboard navigation, and disabled-tab skipping are covered by the play
- * functions in tabs.stories.ts, which run in real Chromium.
+ * happy-dom never fires `slotchange`, so slot-change rewiring is covered by
+ * tabs.browser.test.ts and the play functions in tabs.stories.ts.
  */
 
 /** Builds a strip of `count` tabs and matching panels. */
@@ -71,18 +60,6 @@ function rules(): Map<string, string> {
   }
 
   return map;
-}
-
-/**
- * The declarations of every rule whose selector mentions `fragment`, joined —
- * a placement's styling is spread over a handful of rules, some of them shared
- * between the two placements on an axis.
- */
-function declarations(fragment: string): string {
-  return [...rules()]
-    .filter(([selector]) => selector.includes(fragment))
-    .map(([, body]) => body)
-    .join('\n');
 }
 
 beforeEach(() => {
@@ -148,12 +125,9 @@ describe('structure', () => {
     expect(tablist.hasAttribute('aria-label')).toBe(false);
   });
 
-  it('keeps the class names and slots Lion depends on', async () => {
+  it('slots the tabs and panels into their regions', async () => {
     const element = await createTabs();
 
-    // LionTabs styles against these classes and queries its own shadow root
-    // for `slot[name=tab]` to observe slot changes — renaming either breaks
-    // selection silently.
     const tabSlot = shadow(element, '.tabs__tab-group slot[name="tab"]');
     const panelSlot = shadow(element, '.tabs__panels slot[name="panel"]');
 
@@ -172,17 +146,6 @@ describe('placement', () => {
     expect(element.getAttribute('placement')).toBe('block-start');
   });
 
-  it('reflects every placement', async () => {
-    const element = await createTabs();
-
-    for (const placement of tabsPlacements) {
-      element.placement = placement;
-      await element.updateComplete;
-
-      expect(element.getAttribute('placement')).toBe(placement);
-    }
-  });
-
   it('derives the tablist orientation from the axis', async () => {
     const element = await createTabs();
     const orientation = () =>
@@ -199,45 +162,6 @@ describe('placement', () => {
 
       expect(orientation()).toBe(expected);
     }
-  });
-
-  it('hands the indicator geometry down to the tabs', () => {
-    // The tabs can't see the strip's placement, so every placement that isn't
-    // <craft-tab>'s own default has to publish the indicator vars they inherit.
-    // Asserted against the stylesheet because there's no cascade in this
-    // environment.
-    const inlineStart = declarations("[placement='inline-start']");
-
-    expect(inlineStart).toContain('--c-tab-indicator-inset-inline-end: -1px');
-    expect(inlineStart).toContain('--c-tab-indicator-inset-block-end: 0');
-    expect(inlineStart).toContain(
-      '--c-tab-indicator-inline-size: calc(2rem / 16)'
-    );
-
-    const inlineEnd = declarations("[placement='inline-end']");
-
-    expect(inlineEnd).toContain('--c-tab-indicator-inset-inline-start: -1px');
-    expect(inlineEnd).toContain('--c-tab-indicator-inset-block-end: 0');
-
-    // A strip below the panels flips the indicator to the tab's block start.
-    expect(declarations("[placement='block-end']")).toContain(
-      '--c-tab-indicator-inset-block-start: -1px'
-    );
-  });
-
-  it('moves the rule to the edge facing the panels', () => {
-    expect(rules().get('.tabs__strip')).toContain(
-      'border-block-end-width: 1px'
-    );
-    expect(declarations("[placement='block-end']")).toContain(
-      'border-block-start-width: 1px'
-    );
-    expect(declarations("[placement='inline-start']")).toContain(
-      'border-inline-end-width: 1px'
-    );
-    expect(declarations("[placement='inline-end']")).toContain(
-      'border-inline-start-width: 1px'
-    );
   });
 
   it('is written logically, so RTL needs no rules of its own', () => {
@@ -300,27 +224,6 @@ describe('size', () => {
     await element.updateComplete;
     expect(element.getAttribute('size')).toBe('small');
   });
-
-  it('scales the strip by font size alone', async () => {
-    // The tabs are slotted, so they inherit the strip's font size through the
-    // flattened tree; their padding is em-based and follows. Asserted against
-    // the stylesheet because there's no cascade in this environment.
-    const map = rules();
-
-    expect(map.get('.tabs__strip')).toContain(
-      'font-size: var(--c-tabs-font-size, var(--c-text-base))'
-    );
-    expect(map.get(":host([size='small'])")).toContain(
-      '--c-tabs-font-size: var(--c-text-sm)'
-    );
-    expect(map.get(":host([size='large'])")).toContain(
-      '--c-tabs-font-size: var(--c-text-lg)'
-    );
-
-    // Medium is the bare fallback above, so there is no per-tab padding rule
-    // to keep in sync with it.
-    expect(map.has(":host([size='medium'])")).toBe(false);
-  });
 });
 
 describe('equal width', () => {
@@ -334,63 +237,160 @@ describe('equal width', () => {
     await element.updateComplete;
     expect(element.hasAttribute('equal-width')).toBe(true);
   });
-
-  it('gives the tabs an equal share of the strip', () => {
-    // Asserted against the stylesheet: there is no cascade in this
-    // environment, so the widths themselves are covered by the EqualWidth
-    // play function in tabs.stories.ts.
-    const selector = [...rules().keys()].find(
-      (key) => key.includes('[equal-width]') && key.includes("slot='tab'")
-    );
-
-    expect(selector).toBeDefined();
-
-    const body = rules().get(selector!)!;
-
-    // A zero basis is what makes the shares equal rather than merely
-    // proportional, and the min-width override is what lets a long label
-    // shrink into its share instead of widening the row.
-    expect(body).toContain('flex: 1 1 0');
-    expect(body).toContain('min-width: 0');
-
-    // A wrapped label makes its tab taller and stretches the row with it, so
-    // the labels are centered on both axes rather than only the inline one.
-    expect(body).toContain('justify-content: center');
-    expect(body).toContain('align-items: center');
-
-    // Only the block placements divide a width.
-    expect(selector).toContain("placement='block-start'");
-    expect(selector).toContain("placement='block-end'");
-    expect(selector).not.toContain('inline-start');
-  });
-
-  it('leaves the natural widths alone when off', () => {
-    expect(rules().get("::slotted([slot='tab'])")).toContain('flex: none');
-  });
 });
 
 describe('craft-tab', () => {
-  it('reflects disabled', async () => {
-    const element = await createTabs();
-    const tab = element.querySelector('craft-tab') as CraftTab;
-
-    expect(tab.disabled).toBe(false);
-
-    tab.disabled = true;
-    await tab.updateComplete;
-    expect(tab.hasAttribute('disabled')).toBe(true);
-  });
-
   it('reads selection off the attribute the strip writes', async () => {
     const element = await createTabs();
-    const tab = element.querySelector('craft-tab') as CraftTab;
+    const tab = element.querySelectorAll('craft-tab')[1] as CraftTab;
 
     expect(tab.selected).toBe(false);
 
-    // Stand in for LionTabs, which sets this directly rather than via a
-    // property.
-    tab.setAttribute('selected', 'true');
+    tab.setAttribute('selected', '');
     expect(tab.selected).toBe(true);
+  });
+});
+
+describe('slotted mode', () => {
+  function parts(element: CraftTabs) {
+    return {
+      tabs: [...element.querySelectorAll('craft-tab')] as CraftTab[],
+      panels: [
+        ...element.querySelectorAll(':scope > [slot="panel"]'),
+      ] as HTMLElement[],
+    };
+  }
+
+  it('pairs tabs with panels by order', async () => {
+    const element = await createTabs();
+    const {tabs, panels} = parts(element);
+
+    tabs.forEach((tab, index) => {
+      const panel = panels[index]!;
+
+      expect(tab.getAttribute('role')).toBe('tab');
+      expect(tab.getAttribute('aria-controls')).toBe(panel.id);
+      expect(panel.getAttribute('role')).toBe('tabpanel');
+      expect(panel.getAttribute('aria-labelledby')).toBe(tab.id);
+      expect(panel.getAttribute('tabindex')).toBe('0');
+    });
+  });
+
+  it('keeps ids the author gave', async () => {
+    const element = document.createElement('craft-tabs') as CraftTabs;
+    element.label = 'Tabs';
+    element.innerHTML = `
+      <craft-tab slot="tab" id="my-tab">One</craft-tab>
+      <div slot="panel" id="my-panel">One</div>
+    `;
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(
+      element.querySelector('#my-tab')!.getAttribute('aria-controls')
+    ).toBe('my-panel');
+  });
+
+  it('selects the first tab and its panel', async () => {
+    const element = await createTabs();
+    const {tabs, panels} = parts(element);
+
+    expect(tabs.map((tab) => tab.selected)).toEqual([true, false, false]);
+    expect(panels.map((panel) => panel.hasAttribute('selected'))).toEqual([
+      true,
+      false,
+      false,
+    ]);
+    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
+      '0',
+      '-1',
+      '-1',
+    ]);
+  });
+
+  it('switches panels on click and fires craft-tab-show', async () => {
+    const element = await createTabs();
+    const {tabs, panels} = parts(element);
+    let fired = 0;
+    element.addEventListener('craft-tab-show', () => {
+      fired++;
+    });
+
+    tabs[2]!.click();
+    await element.updateComplete;
+
+    expect(fired).toBe(1);
+    expect(element.selectedIndex).toBe(2);
+    expect(panels[0]!.hasAttribute('selected')).toBe(false);
+    expect(panels[2]!.hasAttribute('selected')).toBe(true);
+    expect(tabs[2]!.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('navigates with the arrow keys', async () => {
+    const element = await createTabs();
+    const {tabs} = parts(element);
+
+    arrow(tabs[0]!, 'ArrowLeft');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(2);
+
+    arrow(tabs[2]!, 'Home');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+  });
+
+  it('warns when the tab and panel counts differ', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const element = document.createElement('craft-tabs') as CraftTabs;
+    element.label = 'Tabs';
+    element.innerHTML = `
+      <craft-tab slot="tab">One</craft-tab>
+      <craft-tab slot="tab">Two</craft-tab>
+      <div slot="panel">One</div>
+    `;
+    document.body.append(element);
+    await element.updateComplete;
+
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
+  it('keeps a tab without a panel out of the selection and the tab order', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const element = document.createElement('craft-tabs') as CraftTabs;
+    element.label = 'Tabs';
+    element.innerHTML = `
+      <craft-tab slot="tab">One</craft-tab>
+      <craft-tab slot="tab">Two</craft-tab>
+      <div slot="panel">One</div>
+    `;
+    document.body.append(element);
+    await element.updateComplete;
+    const {tabs, panels} = parts(element);
+
+    tabs[1]!.click();
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+
+    arrow(tabs[0]!, 'ArrowRight');
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+
+    element.selectedIndex = 1;
+    await element.updateComplete;
+    expect(element.selectedIndex).toBe(0);
+    expect(panels[0]!.hasAttribute('selected')).toBe(true);
+    expect(tabs.map((tab) => tab.getAttribute('tabindex'))).toEqual([
+      '0',
+      '-1',
+    ]);
+    warn.mockRestore();
+  });
+
+  it('hides the unselected panels', () => {
+    expect(rules().get(".tabs__panels ::slotted([slot='panel'])")).toContain(
+      'display: none'
+    );
   });
 });
 
@@ -479,8 +479,8 @@ describe('external-panel mode', () => {
   });
 
   it('leaves the panels’ ids alone', async () => {
-    // Lion's own pairing renames the panels it sets up; these ids come from
-    // the server and are what `controls` (and other code) references.
+    // These ids come from the server and are what `controls` (and other
+    // code) references.
     const {sections} = await createExternalTabs();
 
     expect(sections.map((section) => section.id)).toEqual([

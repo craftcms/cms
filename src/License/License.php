@@ -13,6 +13,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -76,11 +77,7 @@ readonly class License
      */
     public function keyPath(): string
     {
-        if (defined('CRAFT_LICENSE_KEY_PATH')) {
-            return CRAFT_LICENSE_KEY_PATH;
-        }
-
-        return config_path('craft/license.key');
+        return Env::get('CRAFT_LICENSE_KEY_PATH') ?: config_path('craft/license.key');
     }
 
     /**

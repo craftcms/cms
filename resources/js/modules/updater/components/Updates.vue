@@ -46,6 +46,7 @@
     total: number;
     critical: boolean;
     allowUpdates: boolean;
+    allowPurchases: boolean;
     updates: UpdatesCollection;
   }
 
@@ -226,7 +227,7 @@
         <craft-button
           type="button"
           variant="accent"
-          :loading="isUpdatingAll"
+          .loading="isUpdatingAll"
           @click="startUpdateAll"
         >
           {{ t('Update all') }}
@@ -240,6 +241,7 @@
           v-if="cmsUpdate"
           v-bind="cmsUpdate"
           :allow-updates="allowUpdates"
+          :allow-purchases="data?.allowPurchases ?? false"
         />
 
         <!-- Plugin Updates -->
@@ -248,6 +250,7 @@
           :key="plugin.handle"
           v-bind="plugin"
           :allow-updates="allowUpdates"
+          :allow-purchases="data?.allowPurchases ?? false"
         />
       </div>
     </div>
@@ -258,7 +261,7 @@
     <craft-spinner
       slot="graphic"
       style="--size: 3rem"
-      :visible="true"
+      .visible="true"
     ></craft-spinner>
   </craft-empty>
 </template>

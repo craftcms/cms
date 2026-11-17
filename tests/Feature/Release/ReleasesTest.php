@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
+use CraftCms\Cms\Activity\ActivityTimelinePresenter;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\EventTypes\DraftApplied;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
@@ -18,7 +20,6 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
-use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
@@ -143,7 +144,7 @@ it('publishes changed disabled and unpublished entries together and retains immu
         ->and($history->items->every(fn ($item): bool => $item->publishedElementId !== null && $item->publishedAt !== null))->toBeTrue()
         ->and(DB::table(Table::DRAFTS)->whereIn('id', $draftIds)->exists())->toBeFalse()
         ->and(fn () => $this->releases->update($published, 'Renamed launch', null, $this->actor))
-        ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.')
+        ->toThrow(ReleaseException::class, 'Releases that are publishing or published cannot be changed.')
         ->and(fn () => $this->releases->delete($published, $this->actor))
         ->toThrow(ReleaseException::class, 'Scheduled and completed releases cannot be changed.');
 
@@ -264,11 +265,12 @@ it('publishes an approved draft with Matrix content without resetting its approv
     $approve();
     expect($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Approved);
 
-    // Editing a block is still a change to the draft, which needs approving again.
+    // Editing a block is still a change to the draft, which takes it out of review until it's resubmitted.
     $block = $entry->getFieldValue('blocks')->one();
     $block->setFieldValue('blockText', 'Doors open at nine.');
     expect(Elements::saveElement($block))->toBeTrue()
-        ->and($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Pending);
+        ->and($workflows->latestRun($entry)->status)->toBe(WorkflowStatus::Withdrawn);
+    $workflows->submitForReview($entry);
     $approve();
 
     $release = $this->releases->create('Launch', null, $this->actor);
@@ -591,11 +593,14 @@ it('records release publication in the activity of each published entry', functi
         ->subject(ActivitySubject::fromElement($canonical))
         ->sole();
 
-    expect($event->eventType)->toBe(ReleaseDraftPublished::class)
-        ->and(app(Activities::class)->format($event)->toHtml())->toBe(sprintf(
-            'Published with the <a href="%s">Launch &lt;day&gt;</a> release',
-            route('craft.cp.releases.show', $release),
-        ));
+    $presented = app(ActivityTimelinePresenter::class)->events(collect([$event]), $this->actor)->sole();
+
+    expect($event->eventType)->toBe(DraftApplied::class)
+        ->and($event->operationId)->toBe("release:$release->id")
+        ->and($presented['operation'])->toBe([
+            'label' => 'Launch <day>',
+            'url' => route('craft.cp.releases.show', $release),
+        ]);
 });
 
 it('requires release publication permission even when a manager can publish the member', function () {

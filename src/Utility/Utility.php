@@ -62,6 +62,30 @@ abstract class Utility implements ComponentInterface
         return '';
     }
 
+    /**
+     * Returns the title of the utility page being shown, when it's a subpage
+     * of the utility (`admin/utilities/the-handle/…`), such as one of its
+     * items.
+     *
+     * A subpage takes this title, and gets a breadcrumb of its own after a
+     * link back to the utility.
+     */
+    public static function subpageTitle(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * Returns whether the utility’s page should cap its content at the control
+     * panel’s readable width and center it, as settings pages do.
+     *
+     * Return a CSS length, such as `'40rem'`, to cap it at that width instead.
+     */
+    public static function contentMaxWidth(): bool|string
+    {
+        return false;
+    }
+
     #[\Override]
     public static function isSelectable(): bool
     {

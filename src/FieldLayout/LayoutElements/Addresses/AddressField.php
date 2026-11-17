@@ -71,6 +71,7 @@ class AddressField extends BaseField
 
         return AddressControl::make('address')
             ->countryCode($context->element->countryCode)
+            ->belongsToCurrentUser($context->element->getBelongsToCurrentUser())
             ->value($context->element->toArray([
                 'addressLine1',
                 'addressLine2',
@@ -112,5 +113,11 @@ class AddressField extends BaseField
         return Html::tag('div', app(Addresses::class)->formatAddress($address), [
             'class' => 'no-truncate',
         ]);
+    }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'map-location';
     }
 }

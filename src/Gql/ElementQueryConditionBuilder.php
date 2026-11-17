@@ -227,7 +227,9 @@ class ElementQueryConditionBuilder extends Component
             return [];
         }
 
-        return [GqlHelper::prepareTransformArguments($arguments)];
+        $transform = GqlHelper::prepareTransformArguments($arguments);
+
+        return empty($transform) ? [] : [$transform];
     }
 
     private function _isInsideAssetQuery(): bool
@@ -330,8 +332,9 @@ class ElementQueryConditionBuilder extends Component
                         } else {
                             // Loop through what schema allows for this content type
                             foreach ($additionalArguments as $argumentName => $argumentValue) {
-                                // If they also want to filter by field that is enforced by schema
-                                if (isset($arguments[$argumentName])) {
+                                // If they also want to filter by field that is enforced by schema.
+                                // (Non-array values, such as `editable`, are always enforced as-is.)
+                                if (isset($arguments[$argumentName]) && is_array($argumentValue)) {
                                     if (! is_array($arguments[$argumentName])) {
                                         $arguments[$argumentName] = [$arguments[$argumentName]];
                                     }

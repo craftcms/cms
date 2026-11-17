@@ -5,17 +5,16 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Http\Controllers;
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 use Override;
 use RuntimeException;
@@ -59,7 +58,7 @@ class ConfigSyncController extends BaseUpdaterController
     {
         $this->data = $this->initialData();
         $state = $this->realInitialState();
-        $state['data'] = Crypt::encrypt(Json::encode($this->data));
+        $state['data'] = $this->hashedData();
 
         return Inertia::render('updater/Index', [
             'title' => $this->pageTitle(),
@@ -215,7 +214,9 @@ class ConfigSyncController extends BaseUpdaterController
 
         if ($error) {
             return [
-                'error' => $error."\n\n".t('Try running `composer install` from your terminal to resolve.'),
+                'error' => $error."\n\n".t('Try running `{command}` from your terminal to resolve.', [
+                    'command' => app(TerminalCommands::class)->composer('install'),
+                ]),
                 'options' => [
                     $this->finishedState(['label' => t('Cancel')]),
                     $this->actionOption(t('Try again'), self::ACTION_RETRY, ['submit' => true]),

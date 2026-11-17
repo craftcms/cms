@@ -18,7 +18,6 @@ use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
 use Webauthn\AuthenticatorAttestationResponse;
 use Webauthn\CredentialRecord;
-use Webauthn\Exception\InvalidUserHandleException;
 use Webauthn\PublicKeyCredential;
 use Webauthn\PublicKeyCredentialCreationOptions;
 use Webauthn\PublicKeyCredentialOptions;
@@ -229,20 +228,32 @@ class Passkeys
             return false;
         }
 
+        // Depending on the Craft version a passkey was registered and last used with, the stored credential and the
+        // authenticator can each hold either the raw or the base64url-encoded user UID as the user handle, and the two
+        // don't necessarily match. As long as both are a valid form of this user's UID, go with the authenticator's.
+        $validUserHandles = [$this->userElement($user)->uid, $userEntity->id];
+        if (in_array($credentialRecord->userHandle, $validUserHandles, true)) {
+            $responseUserHandle = $authenticatorAssertionResponse->userHandle;
+            if (in_array($responseUserHandle, $validUserHandles, true)) {
+                $credentialRecord->userHandle = $responseUserHandle;
+            }
+            $userHandle = $credentialRecord->userHandle;
+        } else {
+            $userHandle = $userEntity->id;
+        }
+
         try {
             $updatedCredentialRecord = $this->webauthnServer()->getAuthenticatorAssertionResponseValidator()->check(
                 $credentialRecord,
                 $authenticatorAssertionResponse,
                 $requestOptions,
                 request()->host(),
-                $userEntity->id,
+                $userHandle,
             );
 
             $this->webauthnServer()->getCredentialRepository()->saveCredentialSource($updatedCredentialRecord);
 
             return $updatedCredentialRecord;
-        } catch (InvalidUserHandleException $exception) {
-            throw $exception;
         } catch (Throwable $e) {
             Log::warning('Authenticator Assertion Response Validation failed: '.$e->getMessage());
 

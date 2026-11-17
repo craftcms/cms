@@ -25,7 +25,8 @@ afterEach(() => {
 async function mountTable(
   keyed = false,
   refresh?: (values: UiValues) => Promise<UiPayload>,
-  controlProps: Partial<TableControlProps> = {}
+  controlProps: Partial<TableControlProps> = {},
+  values?: UiValues
 ) {
   form = document.createElement('form');
   const host = document.createElement('div');
@@ -35,12 +36,19 @@ async function mountTable(
   const errors = ref<UiPayload['errors']>([]);
   let inertiaUi!: InertiaForm<TableUiValues>;
   let advanceBaseline!: () => void;
-  const source = {...payload(keyed), refreshable: Boolean(refresh)};
+  const source = {
+    ...payload(keyed),
+    refreshable: Boolean(refresh),
+    ...(values ? {values} : {}),
+  };
   Object.assign(source.nodes[0]!.control!.props, controlProps);
   if (controlProps.columns?.title?.required) {
     for (const rowUi of source.nodes[0]!.control!.uis ?? []) {
       rowUi.nodes[0]!.props.required = true;
     }
+  }
+  if (controlProps.rowTemplate) {
+    source.nodes[0]!.control!.uis = [];
   }
   if (refresh) {
     source.nodes[0]!.control!.reactive = true;
@@ -76,6 +84,8 @@ async function mountTable(
 }
 
 async function settle() {
+  // The lazily registered controls render once their chunks load.
+  await vi.dynamicImportSettled();
   await nextTick();
   for (const element of form.querySelectorAll('*')) {
     if ('updateComplete' in element) await element.updateComplete;
@@ -325,6 +335,39 @@ describe('Vue table rows', () => {
     expect(form.querySelectorAll('tbody tr')).toHaveLength(4);
   });
 
+  it('leaves Enter to controls inside an HTML column', async () => {
+    const info = '<button type="button">More info</button>';
+    await mountTable(
+      false,
+      undefined,
+      {
+        columns: {
+          label: {type: 'heading', html: true, heading: 'Label'},
+          title: {type: 'singleline', heading: 'Title'},
+        },
+      },
+      {
+        rows: [
+          {label: info, title: 'Alpha'},
+          {label: info, title: 'Beta'},
+        ],
+      }
+    );
+    const button = form.querySelector<HTMLButtonElement>('tbody th button')!;
+    const event = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    button.focus();
+    button.dispatchEvent(event);
+    await settle();
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(button);
+  });
+
   it('blocks row additions, deletion, reordering, and row-creating paste during submission without omitting cell values', async () => {
     const {inertiaUi, mutation} = await mountTable();
     inertiaUi.processing = true;
@@ -362,6 +405,103 @@ describe('Vue table rows', () => {
     button('Add a row').click();
     await settle();
     expect(form.querySelectorAll('tbody tr')).toHaveLength(3);
+  });
+
+  it('pastes spreadsheet cells rightward and downward, keeping only values each column can take', async () => {
+    const cell = (key: string, component: string, props = {}) => ({
+      type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+      component: 'craft:field',
+      props: {label: key},
+      control: {
+        type: component,
+        component,
+        props,
+        path: [key],
+        mode: 'editable' as const,
+        deltaGroup: ['rows'],
+      },
+    });
+    const {mutation} = await mountTable(
+      false,
+      undefined,
+      {
+        columns: {
+          title: {type: 'singleline', heading: 'Title'},
+          quantity: {type: 'number', heading: 'Quantity'},
+          stocked: {type: 'checkbox', heading: 'Stocked'},
+          size: {type: 'select', heading: 'Size'},
+        },
+        defaultValues: {},
+        rowTemplate: {
+          scope: [],
+          refreshable: false,
+          nodes: [
+            cell('title', 'craft:text'),
+            cell('quantity', 'craft:number', {inputType: 'number'}),
+            cell('stocked', 'craft:checkbox'),
+            cell('size', 'craft:choice', {
+              presentation: 'select',
+              placeholder: false,
+              options: [
+                {label: 'Small', value: 's'},
+                {label: 'Medium', value: 'm'},
+                {label: 'Large', value: 'l', disabled: true},
+              ],
+            }),
+          ],
+        },
+      },
+      {
+        rows: [
+          {title: 'Alpha', quantity: '3', stocked: false, size: 's'},
+          {title: 'Beta', quantity: '7', stocked: true, size: 'm'},
+        ],
+      }
+    );
+    const paste = (column: string, row: number, text: string) => {
+      const data = new DataTransfer();
+      data.setData('text/plain', text);
+      const event = new ClipboardEvent('paste', {
+        clipboardData: data,
+        bubbles: true,
+        cancelable: true,
+      });
+      form
+        .querySelectorAll(`tbody td[data-column="${column}"]`)
+        [row]!.querySelector('craft-field')!
+        .dispatchEvent(event);
+      return event;
+    };
+
+    expect(
+      paste(
+        'title',
+        0,
+        '"Pears\nripe"\t5\tTRUE\tmedium\r\nPlums\t0x10\tno\tLarge\r\nFigs\t2\r\n'
+      ).defaultPrevented
+    ).toBe(true);
+    await settle();
+
+    expect(mutation.value.rows).toEqual([
+      {title: 'Pears\nripe', quantity: '5', stocked: true, size: 'm'},
+      {title: 'Plums', quantity: '7', stocked: false, size: 'm'},
+      {title: 'Figs', quantity: '2', stocked: false, size: ''},
+    ]);
+    const submitted = new FormData(form);
+    expect(submitted.get('rows[1][title]')).toBe('Plums');
+    expect(submitted.get('rows[0][quantity]')).toBe('5');
+    expect(submitted.get('rows[1][quantity]')).toBe('7');
+    expect(submitted.get('rows[2][title]')).toBe('Figs');
+
+    paste('quantity', 2, '1e309\tyes\tSmall');
+    await settle();
+
+    expect((mutation.value.rows as UiValues[])[2]).toEqual({
+      title: 'Figs',
+      quantity: '2',
+      stocked: true,
+      size: 's',
+    });
   });
 
   it('locks row structure while a refresh is pending and unlocks it when the response arrives', async () => {
@@ -527,6 +667,47 @@ describe('Vue table rows', () => {
       'row7',
     ]);
     expect(new FormData(form).get('rows[row7][title]')).toBe('Alpha');
+  });
+
+  it('keeps the server’s row order for keyed rows with integer keys, through edits and reordering', async () => {
+    const {mutation} = await mountTable(
+      true,
+      undefined,
+      {rowOrder: ['2', '0', '1']},
+      {rows: {2: {title: 'Tue'}, 0: {title: 'Sun'}, 1: {title: 'Mon'}}}
+    );
+    const submittedOrder = () =>
+      [...new FormData(form).entries()].filter(([name]) => name !== 'rows');
+    expect(submittedOrder()).toEqual([
+      ['rows[2][title]', 'Tue'],
+      ['rows[0][title]', 'Sun'],
+      ['rows[1][title]', 'Mon'],
+    ]);
+
+    const input = form.querySelector<HTMLInputElement>(
+      'input[name="rows[0][title]"]'
+    )!;
+    input.value = 'Sunday';
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    await settle();
+    expect(submittedOrder().map(([name]) => name)).toEqual([
+      'rows[2][title]',
+      'rows[0][title]',
+      'rows[1][title]',
+    ]);
+
+    reorder(2, 'up');
+    await settle();
+    expect(submittedOrder()).toEqual([
+      ['rows[2][title]', 'Tue'],
+      ['rows[1][title]', 'Mon'],
+      ['rows[0][title]', 'Sunday'],
+    ]);
+    expect(mutation.value.rows).toEqual({
+      0: {title: 'Sunday'},
+      1: {title: 'Mon'},
+      2: {title: 'Tue'},
+    });
   });
 
   it.each([false, true])(

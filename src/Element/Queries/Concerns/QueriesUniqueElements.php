@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Support\Facades\DB;
@@ -53,13 +55,18 @@ trait QueriesUniqueElements
             return;
         }
 
-        $preferSites = collect($elementQuery->preferSites ?? [Sites::getCurrentSite()->id])
+        $preferSites = collect($elementQuery->preferSites ?? [])
             ->map(fn (string|int $preferSite) => match (true) {
                 is_numeric($preferSite) => $preferSite,
                 ! is_null($site = Sites::getSiteByHandle($preferSite)) => $site->id,
                 default => null,
             })
-            ->filter();
+            ->filter()
+            ->values();
+
+        if ($preferSites->isEmpty()) {
+            $preferSites = collect([Sites::getCurrentSite()->id]);
+        }
 
         $cases = [];
 
@@ -68,8 +75,26 @@ trait QueriesUniqueElements
         }
 
         $caseGroup = new CaseGroup($cases, new Value($preferSites->count()));
+        $query = $elementQuery->getQuery();
 
-        $siteRows = $elementQuery->getQuery()
+        if (DB::isPgsql() && ! $query->distinct && empty($query->groups)) {
+            // Pick each element's preferred row with a single DISTINCT ON subquery, rather than a correlated subquery
+            // that PostgreSQL ends up evaluating against all elements_sites rows
+            $preferredSites = $query
+                ->cloneWithout(['orders', 'limit', 'offset'])
+                ->cloneWithoutBindings(['order'])
+                ->distinct('elements.id')
+                ->select('elements_sites.id')
+                ->orderBy('elements.id')
+                ->orderBy($caseGroup)
+                ->orderBy('elements_sites.id');
+
+            $elementQuery->whereIn('elements_sites.id', $preferredSites);
+
+            return;
+        }
+
+        $siteRows = $query
             ->cloneWithout(['orders', 'limit', 'offset'])
             ->cloneWithoutBindings(['order'])
             ->select([
@@ -113,6 +138,7 @@ trait QueriesUniqueElements
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Determines whether only {elements} with unique IDs should be returned by the query.')]
     public function unique(bool $value = true): static
     {
         $this->unique = $value;
@@ -150,6 +176,7 @@ trait QueriesUniqueElements
      * ```
      */
     /** @param array<int, int|string>|null $value */
+    #[ElementQueryParam(ElementQueryParamType::ScalarOrScalars, 'Determines which site should be selected when querying multi-site {elements}.')]
     public function preferSites(?array $value = null): static
     {
         $this->preferSites = $value;

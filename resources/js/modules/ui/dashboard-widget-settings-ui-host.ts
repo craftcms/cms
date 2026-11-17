@@ -2,6 +2,7 @@ import type {CpComponentRegistry} from '@/bootstrap/components';
 import {createApp, defineComponent, h, ref, shallowRef, type App} from 'vue';
 import UiRenderer from './UiRenderer.vue';
 import type {UiPayload} from './types';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
 
 // TODO: Remove this legacy bridge once Dashboard widget settings are rendered by the Inertia/Vue Dashboard.
 
@@ -95,15 +96,12 @@ export function defineDashboardWidgetSettingsUiHost(
           throw new Error('A widget type is required to refresh its settings.');
         }
 
-        const {data} = await Craft.sendActionRequest(
-          'POST',
+        const {data} = await actionClient.post(
           'dashboard/refresh-widget-settings',
           {
-            data: {
-              type: this.#widgetType,
-              settings: values,
-              namespace: scope.join('.'),
-            },
+            type: this.#widgetType,
+            settings: values,
+            namespace: scope.join('.'),
           }
         );
 

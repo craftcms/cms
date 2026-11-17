@@ -237,6 +237,8 @@ class Users
             ], ['userId']);
 
         $this->userPreferences[$userId] = $preferences;
+
+        Cms::forgetTimezone();
     }
 
     /**
@@ -442,6 +444,14 @@ class Users
         $photo->avoidFilenameConflicts = true;
         $photo->newFolderId = $folderId;
         $this->elements->saveElement($photo);
+    }
+
+    /**
+     * Returns the user field layout.
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        return app(Fields::class)->getLayoutByType(User::class);
     }
 
     /**
@@ -1250,7 +1260,7 @@ class Users
 
         $cp = (
             Edition::get()->value < Edition::Pro->value ||
-            ($isCpRequest && $user->can('accessCp')) ||
+            (($isCpRequest || app()->runningInConsole()) && $user->can('accessCp')) ||
             (Cms::config()->headlessMode && ! Url::isAbsoluteUrl($fePath))
         );
         $scheme = Url::getSchemeForTokenizedUrl($cp);

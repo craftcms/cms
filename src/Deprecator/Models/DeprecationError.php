@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Deprecator\Models;
 
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
+use CraftCms\Cms\Support\Facades\Markdown;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 
 /**
@@ -41,7 +44,7 @@ class DeprecationError extends BaseModel
 
     public function getOriginHtml(): string
     {
-        $html = Str::replace('/', '/<wbr/>', $this->file);
+        $html = Str::replace('/', '/<wbr/>', Html::encode($this->file));
 
         if ($this->line) {
             $html .= ':'.$this->line;
@@ -56,11 +59,8 @@ class DeprecationError extends BaseModel
     {
         return [
             'id' => $this->id,
-            'message' => Str::markdown($this->message, [
-                'inlineOnly' => true,
-                'encode' => true,
-            ]),
-            'origin' => $this->getOriginHtml(),
+            'message' => Markdown::parseParagraph(Html::encode($this->message), MarkdownService::FLAVOR_PRE_ENCODED),
+            'origin' => $this->file.($this->line ? ':'.$this->line : ''),
             'lastOccurrence' => $this->lastOccurrence,
         ];
     }

@@ -8,10 +8,10 @@ use CraftCms\Cms\Element\Revisions;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\PreviewElementController;
-use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Support\Facades\Elements;
-use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Crypt;
+use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -20,7 +20,7 @@ beforeEach(function () {
     actingAs(User::findOne());
 });
 
-it('renders preview pages for saved drafts and honors signed return urls', function () {
+it('renders the edit screen for the draft, to open in Live Preview', function () {
     $entry = EntryModel::factory()->createElement([
         'title' => 'Canonical Title',
         'slug' => 'canonical-title',
@@ -30,65 +30,38 @@ it('renders preview pages for saved drafts and honors signed return urls', funct
     $draft->title = 'Draft Title';
     Elements::saveElement($draft);
 
-    $request = Mockery::mock(ElementRequest::class);
-    $request->shouldReceive('element')
-        ->once()
-        ->with(['id' => $entry->id], true)
-        ->andReturn($draft);
-    $request->shouldReceive('getSigned')
-        ->once()
-        ->with('returnUrl', ElementHelper::postEditUrl($draft))
-        ->andReturn('entries');
-
-    HtmlStack::clear();
-
-    $view = new PreviewElementController($request)->__invoke($entry->id, "-$entry->slug");
-    $html = $view->render();
-
-    expect($view->getData()['title'])->toBe('Draft Title')
-        ->and($view->getData()['docTitle'])->toContain("($draft->draftName)")
-        ->and($html)->toContain('new Craft.Preview({')
-        ->and($html)->toContain(sprintf('elementId: %d', $draft->id))
-        ->and($html)->toContain(sprintf('draftId: %d', $draft->draftId))
-        ->and($html)->toContain('revisionId: null')
-        ->and($html)->toContain('redirectUrl: "entries"');
+    get(action(PreviewElementController::class, [
+        'id' => $entry->id,
+        'slug' => "-$entry->slug",
+        'draftId' => $draft->draftId,
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('elements/Edit')
+            ->where('title', 'Draft Title')
+            ->where('draftId', $draft->draftId)
+            ->where('standalonePreview.redirect', fn (string $redirect) => Crypt::decrypt($redirect) === ElementHelper::postEditUrl($draft))
+        );
 });
 
-it('renders preview pages for provisional drafts using canonical ids in the preview config', function () {
+it('leaves for a signed return url once saved', function () {
     $entry = EntryModel::factory()->createElement([
         'title' => 'Canonical Title',
         'slug' => 'canonical-title',
     ]);
 
-    $draft = app(Drafts::class)->createDraft($entry, auth()->id(), provisional: true);
-    $draft->title = 'Edited Title';
-    Elements::saveElement($draft);
-
-    $request = Mockery::mock(ElementRequest::class);
-    $request->shouldReceive('element')
-        ->once()
-        ->with(['id' => $entry->id], true)
-        ->andReturn($draft);
-    $request->shouldReceive('getSigned')
-        ->once()
-        ->with('returnUrl', ElementHelper::postEditUrl($draft))
-        ->andReturn(ElementHelper::postEditUrl($draft));
-
-    HtmlStack::clear();
-
-    $view = new PreviewElementController($request)->__invoke($entry->id, "-$entry->slug");
-    $html = $view->render();
-
-    expect($view->getData()['title'])->toBe('Edited Title')
-        ->and($view->getData()['docTitle'])->toContain('Edited')
-        ->and($html)->toContain(sprintf('elementId: %d', $entry->id))
-        ->and($html)->toContain('draftId: null')
-        ->and($html)->toContain(
-            sprintf('redirectUrl: %s', json_encode(ElementHelper::postEditUrl($draft), JSON_THROW_ON_ERROR)),
+    get(action(PreviewElementController::class, [
+        'id' => $entry->id,
+        'slug' => "-$entry->slug",
+        'returnUrl' => Crypt::encrypt('entries'),
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('standalonePreview.redirect', fn (string $redirect) => Crypt::decrypt($redirect) === 'entries')
         );
 });
 
-it('renders preview pages for revisions', function () {
+it('renders the edit screen for revisions', function () {
     $entry = EntryModel::factory()->createElement([
         'title' => 'Current Title',
         'slug' => 'current-title',
@@ -97,26 +70,17 @@ it('renders preview pages for revisions', function () {
     $revisionElementId = app(Revisions::class)->createRevision($entry, auth()->id());
     $revision = Elements::getElementById($revisionElementId, Entry::class, $entry->siteId);
 
-    $request = Mockery::mock(ElementRequest::class);
-    $request->shouldReceive('element')
-        ->once()
-        ->with(['id' => $entry->id], true)
-        ->andReturn($revision);
-    $request->shouldReceive('getSigned')
-        ->once()
-        ->with('returnUrl', ElementHelper::postEditUrl($revision))
-        ->andReturn(ElementHelper::postEditUrl($revision));
-
-    HtmlStack::clear();
-
-    $view = new PreviewElementController($request)->__invoke($entry->id, "-$entry->slug");
-    $html = $view->render();
-
-    expect($view->getData()['title'])->toBe($revision->title)
-        ->and($view->getData()['docTitle'])->toContain($revision->getRevisionLabel())
-        ->and($html)->toContain(sprintf('elementId: %d', $revision->id))
-        ->and($html)->toContain('draftId: null')
-        ->and($html)->toContain(sprintf('revisionId: %d', $revision->revisionId));
+    get(action(PreviewElementController::class, [
+        'id' => $entry->id,
+        'slug' => "-$entry->slug",
+        'revisionId' => $revision->revisionId,
+    ]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('elements/Edit')
+            ->where('elementId', $revision->id)
+            ->has('standalonePreview.redirect')
+        );
 });
 
 it('redirects to the canonical edit url when the requested draft is invalid', function () {
@@ -130,6 +94,17 @@ it('redirects to the canonical edit url when the requested draft is invalid', fu
         'slug' => "-$entry->slug",
         'draftId' => 999999,
     ]))->assertRedirect($entry->getCpEditUrl());
+});
+
+it('works without the slug, as Craft 5’s route did', function () {
+    $entry = EntryModel::factory()->createElement([
+        'title' => 'Canonical Title',
+        'slug' => 'canonical-title',
+    ]);
+
+    get(action(PreviewElementController::class, ['id' => $entry->id]))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page->has('standalonePreview'));
 });
 
 it('returns a bad request when no element matches the preview request', function () {

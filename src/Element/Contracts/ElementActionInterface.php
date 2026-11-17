@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Element\Contracts;
 
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
+use CraftCms\Cms\Element\Actions\ElementAction;
+use CraftCms\Cms\Element\ElementActions;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Validation\Contracts\Validatable;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +22,19 @@ interface ElementActionInterface extends ComponentInterface, ConfigurableCompone
      * Returns whether this action can be performed on more than one selected element at once.
      */
     public static function supportsBulk(): bool;
+
+    /**
+     * Returns whether this action can be performed on its elements from a queue job,
+     * a chunk of elements at a time.
+     *
+     * Element indexes perform an action on more than
+     * {@see ElementActions::SYNC_LIMIT} elements from a queue
+     * job, and only allow actions that return `true` here.
+     * An action that returns `true` must not depend on the request, keep state
+     * between chunks, or set a response. {@see ElementAction}
+     * returns `true` unless the action is a download.
+     */
+    public function supportsQueue(): bool;
 
     /**
      * @param  class-string<ElementInterface>  $elementType

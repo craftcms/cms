@@ -1,6 +1,7 @@
 import {actionClient, t, isHttpError} from '@craftcms/ui';
 import SaveElementIndexElementsController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/ElementIndex/SaveElementIndexElementsController';
 import type {InlineEditingSaveResult} from './composables/useInlineEditing';
+import {showError} from '@/modules/messages/messages';
 
 export async function saveInlineElements(
   body: URLSearchParams,
@@ -25,7 +26,7 @@ export async function saveInlineElements(
       : cause instanceof Error
         ? cause.message
         : null;
-    window.Craft?.cp?.displayError?.(message || t('Couldn’t save.'));
+    showError(message || t('Couldn’t save.'));
 
     return false;
   }

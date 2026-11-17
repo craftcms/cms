@@ -6,7 +6,6 @@ namespace CraftCms\Cms\GarbageCollection\Actions;
 
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -19,7 +18,7 @@ class DeleteOrphanedStructureElements extends GarbageCollectionAction
             'deleting orphaned structure elements',
             function () {
                 DB::table(Table::STRUCTUREELEMENTS, 'se')
-                    ->leftJoin(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'se.elementId')
+                    ->leftJoin(Table::ELEMENTS.' as e', 'e.id', 'se.elementId')
                     ->whereNotNull('se.elementId')
                     ->whereNull('e.id')
                     ->pluck('se.id')

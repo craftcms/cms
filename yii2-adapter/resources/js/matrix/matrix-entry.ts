@@ -20,6 +20,7 @@ import {
   legacyGarnish,
   setJqData,
 } from './interop';
+import {getCpUrl} from '@/common/craft/url';
 
 type JsonValue =
   | string
@@ -365,7 +366,10 @@ export class MatrixEntry extends Base {
 
     // Remember that?
     if (!this.isNew) {
-      MatrixInput.rememberCollapsedEntryId(this.id!);
+      MatrixInput.rememberCollapsedEntryId(
+        this.id!,
+        this.matrix.settings!.siteId
+      );
     }
 
     this.setCollapsedInput('1');
@@ -430,7 +434,10 @@ export class MatrixEntry extends Base {
 
     // Remember that?
     if (!this.isNew) {
-      MatrixInput.forgetCollapsedEntryId(this.id!);
+      MatrixInput.forgetCollapsedEntryId(
+        this.id!,
+        this.matrix.settings!.siteId
+      );
     }
 
     this.setCollapsedInput('');
@@ -674,9 +681,7 @@ export class MatrixEntry extends Base {
 
       case 'editEntryType': {
         new Craft.CpScreenSlideout(
-          Craft.getCpUrl(
-            `settings/entry-types/${this.container.dataset.typeId}`
-          )
+          getCpUrl(`settings/entry-types/${this.container.dataset.typeId}`)
         );
         break;
       }

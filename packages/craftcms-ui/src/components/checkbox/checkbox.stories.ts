@@ -10,8 +10,8 @@ import type CraftCheckbox from './checkbox.js';
  * controls and the API tables follow the component's JSDoc. Adding a property
  * to `checkbox.ts` surfaces it here without touching this file.
  *
- * Lion's own `label` and `help-text` are slots here, so they are set through
- * the `label-slot` and `help-text-slot` args rather than as attributes.
+ * `label` and `help-text` are slots as well as attributes, so the slots are
+ * set through the `label-slot` and `help-text-slot` args.
  */
 const {args, argTypes, template} =
   getStorybookHelpers<CraftCheckbox>('craft-checkbox');

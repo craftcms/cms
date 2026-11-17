@@ -7,7 +7,6 @@ namespace CraftCms\Yii2Adapter\Element\Queries\Concerns\Category;
 use CraftCms\Yii2Adapter\Database\DeprecatedTable;
 use CraftCms\Yii2Adapter\Element\Queries\CategoryQuery;
 use Illuminate\Database\Query\Builder;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -60,7 +59,7 @@ trait QueriesRef
             });
 
             if ($joinGroups) {
-                $this->join(new Alias(DeprecatedTable::CATEGORYGROUPS, 'categorygroups'), 'categorygroups.id', '=', 'categories.groupId');
+                $this->join(DeprecatedTable::CATEGORYGROUPS . ' as categorygroups', 'categorygroups.id', '=', 'categories.groupId');
             }
         });
     }

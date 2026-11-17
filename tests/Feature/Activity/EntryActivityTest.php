@@ -31,6 +31,8 @@ use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Tests\Support\Fields\HtmlText;
+use CraftCms\Cms\Tests\Support\MatrixControllerFixture;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\Date;
@@ -203,6 +205,41 @@ it('shows changes between disabled relation targets in the activity timeline', f
     'provisional draft' => true,
 ]);
 
+it('records edits to nested Matrix entries as an entry update', function (bool $provisional) {
+    $fixture = MatrixControllerFixture::create();
+    $owner = MatrixControllerFixture::saveBlocks($fixture, [['title' => 'Block', 'innerText' => 'Old heading']]);
+    $block = $owner->getFieldValue('matrixField')->one();
+    $edited = $provisional
+        ? app(Drafts::class)->createDraft($owner, User::findOne()->id, provisional: true)
+        : $owner;
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $edited->setFieldValueFromRequest('matrixField', [
+        'entries' => ["uid:$block->uid" => [
+            'type' => $fixture['entryType']->handle,
+            'title' => 'Block',
+            'fields' => ['innerText' => 'New heading'],
+        ]],
+        'sortOrder' => [$block->uid],
+    ]);
+    expect(Elements::saveElement($edited, updateSearchIndex: false))->toBeTrue();
+
+    if ($provisional) {
+        app(Drafts::class)->applyDraft($edited);
+    }
+
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($owner))->sole();
+    $change = collect($event->changes)->sole();
+
+    expect($event->eventType)->toBe(ElementUpdated::class)
+        ->and($change->label)->toBe('Matrix Field')
+        ->and($change->old[$block->id]['fields']['innerText'])->toBe('Old heading')
+        ->and($change->new[$block->id]['fields']['innerText'])->toBe('New heading');
+})->with([
+    'direct save' => false,
+    'provisional draft' => true,
+]);
+
 it('records a status change instead of a generic update', function () {
     $result = EntryModel::factory()
         ->withField('bodyField', PlainText::class, value: 'Old body')
@@ -221,7 +258,7 @@ it('records a status change instead of a generic update', function () {
     expect($events)->toHaveCount(1)
         ->and($events->first()->eventType)->toBe(ElementStatusChanged::class)
         ->and($events->first()->data)->toEqual(['oldStatus' => 'live', 'newStatus' => 'disabled'])
-        ->and($this->activities->format($events->first()))->toBe('Status changed from Live to Disabled')
+        ->and($this->activities->format($events->first()))->toBe('Changed the status from Live to Disabled')
         ->and($events->first()->changes)->toContainEqual(
             new ActivityChange($field->name, 'Old body', 'New body'),
         );
@@ -243,6 +280,46 @@ it('records an update while omitting unsafe field values', function () {
 
     expect($event->eventType)->toBe(ElementUpdated::class)
         ->and($event->changes)->toBeEmpty();
+});
+
+it('records HTML fields’ changes by their text, omitting ones that are still HTML', function (string $value, ?string $text) {
+    $result = EntryModel::factory()
+        ->withField('bodyField', HtmlText::class, value: '<p>Old <em>body</em></p>')
+        ->createElementWithFields(['title' => 'Old title']);
+    $entry = $result->element;
+    $field = $entry->getFieldLayout()->getFieldByHandle('bodyField');
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $entry->setFieldValue($field->handle, $value);
+
+    expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue();
+
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->firstOrFail();
+
+    expect($event->eventType)->toBe(ElementUpdated::class)
+        ->and($event->changes)->toEqual($text === null ? [] : [new ActivityChange($field->name, 'Old body', $text)]);
+})->with([
+    'rich text' => ['<p>New <strong>body</strong></p><ul><li>One</li></ul>', "New body\n• One"],
+    'markup only' => ['<p>Old <strong>body</strong></p>', null],
+    'tags once decoded' => ['<p>&lt;img src=x onerror=alert(1)&gt;</p>', null],
+]);
+
+it('records clearing an HTML field by its original text', function () {
+    $result = EntryModel::factory()
+        ->withField('bodyField', HtmlText::class, value: '<p>Old <em>body</em></p>')
+        ->createElementWithFields(['title' => 'Old title']);
+    $entry = $result->element;
+    $field = $entry->getFieldLayout()->getFieldByHandle('bodyField');
+    DB::table(Table::ACTIVITYEVENTS)->delete();
+
+    $entry->setFieldValue($field->handle, '');
+
+    expect(Elements::saveElement($entry, updateSearchIndex: false))->toBeTrue()
+        ->and($entry->getFieldValue($field->handle))->toBeNull();
+
+    $event = $this->activities->query()->subject(ActivitySubject::fromElement($entry))->firstOrFail();
+
+    expect($event->changes)->toEqual([new ActivityChange($field->name, 'Old body', null)]);
 });
 
 it('does not record cancelled saves', function () {

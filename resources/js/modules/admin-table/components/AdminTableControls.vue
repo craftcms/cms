@@ -19,6 +19,7 @@
     columnsToggleable: boolean;
     viewColumnOptions: CheckboxOption[];
     viewSortOptions: SortOption[];
+    viewCustomized: boolean;
     createLabel?: string | null;
     createUrl?: string | null;
     createMenuItems?: Array<{label: string; url: string}> | null;
@@ -32,7 +33,10 @@
   const viewTableColumns = defineModel<string[]>('tableColumns', {
     required: true,
   });
-  const emit = defineEmits<{'reorder-columns': [options: CheckboxOption[]]}>();
+  const emit = defineEmits<{
+    'reorder-columns': [options: CheckboxOption[]];
+    'use-default-view': [];
+  }>();
   const hasCreateAction = computed(
     () => !!props.createUrl || !!props.createMenuItems?.length
   );
@@ -72,10 +76,13 @@
       <IndexViewSettings
         :options="viewColumnOptions"
         :sort-options="viewSortOptions"
+        show-table-columns
+        :customized="viewCustomized"
         v-model:sort-field="viewSortField"
         v-model:sort-direction="viewSortDirection"
         v-model:table-columns="viewTableColumns"
         @reorder="emit('reorder-columns', $event)"
+        @use-defaults="emit('use-default-view')"
       />
     </template>
     <template v-if="hasCreateAction" #actions>

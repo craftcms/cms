@@ -479,6 +479,17 @@ describe('DisclosureMenu item building', () => {
     expect(el.getAttribute('data-action')).toBe('entries/save');
   });
 
+  it('renders a named icon as a craft-icon rather than a glyph attribute', async () => {
+    const {trigger} = buildMenu();
+    const menu = new DisclosureMenu(trigger);
+    const el = menu.addItem({label: 'Edit', icon: 'edit', iconColor: 'red'});
+    await Promise.resolve();
+    expect(el.hasAttribute('data-icon')).toBe(false);
+    const icon = el.querySelector(':scope > span.icon.red > craft-icon');
+    expect(icon?.getAttribute('name')).toBe('edit');
+    expect(el.firstElementChild).toBe(icon?.parentElement);
+  });
+
   it('throws on an unsupported item configuration', () => {
     const {trigger} = buildMenu();
     const menu = new DisclosureMenu(trigger);

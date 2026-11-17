@@ -45,8 +45,9 @@ class ElementMoved extends ActivityEventType
     public static function format(ActivityEvent $event): string
     {
         return t(
-            'Moved from {origin} to {destination}',
+            'Moved this {type} from {origin} to {destination}',
             [
+                'type' => self::subjectTypeName($event),
                 'origin' => self::positionDescription($event->data['origin']),
                 'destination' => self::positionDescription($event->data['destination']),
             ],

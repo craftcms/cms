@@ -41,6 +41,8 @@ use CraftCms\Cms\Field\Events\FieldLifecycleSaved;
 use CraftCms\Cms\Field\Events\FieldLifecycleSaving;
 use CraftCms\Cms\Field\Events\FieldMergeFromCompleted;
 use CraftCms\Cms\Field\Events\FieldMergeIntoCompleted;
+use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\Gql\Data\GqlSchema;
@@ -57,6 +59,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Enums\ControlMode;
+use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
 use GraphQL\Type\Definition\FieldDefinition;
@@ -323,6 +326,45 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         return null;
     }
 
+    public function uiErrors(ElementInterface $element, array $errors): array
+    {
+        return $errors;
+    }
+
+    /**
+     * Adds a nested element's errors to its owner's, keyed by the controls that show them in the nested element's UI
+     * under `$scope`. Errors none of its controls shows go to this field.
+     *
+     * The nested element's errors are passed in rather than read from it, because they're copied to its owner when
+     * it's validated and the owner can be saved or swapped for another instance before its UI is rendered.
+     *
+     * @param  array<string, list<string>>  $errors  The owner's errors
+     * @param  array<string, list<string>>  $nestedErrors  The nested element's errors, keyed as validated
+     * @return array<string, list<string>>
+     */
+    protected function addNestedUiErrors(array $errors, ElementInterface $nested, array $nestedErrors, string $scope): array
+    {
+        $fieldLayout = $nested->getFieldLayout() ?? new FieldLayout;
+
+        foreach ($fieldLayout->getCustomFields() as $field) {
+            $nestedErrors = $field->uiErrors($nested, $nestedErrors);
+        }
+
+        $ui = app(FieldLayoutCompiler::class)->compile($fieldLayout, $nested, new UiContext(errors: $nestedErrors));
+
+        // An error a control owns on a deeper path's behalf keeps that path, so the control can still place it.
+        foreach ($ui->errors as $error) {
+            $path = sprintf('%s.%s', $scope, implode('.', $error['source'] ?? $error['path']));
+            $errors[$path] = [...$errors[$path] ?? [], ...$error['messages']];
+        }
+
+        if ($ui->globalErrors !== []) {
+            $errors[$this->handle] = [...$errors[$this->handle] ?? [], ...$ui->globalErrors];
+        }
+
+        return $errors;
+    }
+
     public static function isMultiInstance(): bool
     {
         return static::dbType() !== null;
@@ -404,7 +446,20 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return reset($valuesSql);
         }
 
-        return new Coalesce($valuesSql);
+        $sql = new Coalesce($valuesSql);
+
+        // COALESCE doesn't preserve its arguments' type affinity on SQLite.
+        if (DB::getDriverName() === 'sqlite') {
+            $dbType = $instances[0]->dbTypeForValueSql();
+            if (is_array($dbType)) {
+                $dbType = $dbType[$key ?? array_key_first($dbType)];
+            }
+            if ($dbType !== null && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
+                return new Cast($sql, 'NUMERIC');
+            }
+        }
+
+        return $sql;
     }
 
     /**
@@ -432,6 +487,12 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             'handle' => [
                 'required',
                 new HandleRule(self::RESERVED_HANDLES),
+                Rule::when($this->validateHandleUniqueness, [
+                    Rule::unique(Table::FIELDS, 'handle')
+                        ->where('context', $this->context ?? Fields::getFieldContext())
+                        ->ignore($this->id)
+                        ->withoutTrashed('dateDeleted'),
+                ]),
             ],
             'translationMethod' => [
                 'required',
@@ -776,7 +837,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
         // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15609
-        if (DB::isMysql() && is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
+        if (is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT && DB::isMysql()) {
             $orderBy = new Cast($orderBy, 'CHAR(255)');
         }
 
@@ -856,14 +917,15 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             return $value->serialize();
         }
 
+        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
+        // (before the "arrayable" check, since Carbon dates have a toArray() method)
+        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
+            return DateTimeHelper::toIso8601($value);
+        }
+
         // If it's "arrayable", convert to array
         if (is_object($value) && method_exists($value, 'toArray')) {
             return $value->toArray();
-        }
-
-        // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof DateTimeInterface || DateTimeHelper::isIso8601($value)) {
-            return DateTimeHelper::toIso8601($value);
         }
 
         return $value;
@@ -884,14 +946,6 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         $value = $this->serializeValue($from->getFieldValue($this->handle), $from);
 
         $to->setFieldValue($this->handle, $value);
-    }
-
-    /**
-     * @see CrossSiteCopyableFieldInterface::copyCrossSiteValue()
-     */
-    public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void
-    {
-        $this->copyValue($from, $to);
     }
 
     public function getElementConditionRuleType(): array|string|null
@@ -932,14 +986,16 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             $sql = new Coalesce([
                 new JsonExtract(
                     'elements_sites.content',
-                    "$.\"{$this->layoutElement->uid}\".\"{$key}\"",
+                    [$this->layoutElement->uid, $key],
                 ),
                 $sql,
             ]);
         }
 
+        // Resolving the default connection through the facade adds up over every field instance of a source
+        $db = DB::connection();
         $castType = null;
-        if (DB::isMysql()) {
+        if ($db->isMysql()) {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
             $castType = match (Query::parseColumnType($dbType)) {
@@ -962,14 +1018,24 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             };
         }
 
-        // for pgsql, we have to make sure decimals column type is cast to decimal, otherwise they won't be sorted correctly
+        // PostgreSQL extracts JSON values as text, so numeric field types need explicit casts.
         // see https://github.com/craftcms/cms/issues/15828, https://github.com/craftcms/cms/issues/15973
-        if (DB::getDriverName() === 'pgsql') {
+        if ($db->getDriverName() === 'pgsql') {
             $castType = match (Query::parseColumnType($dbType)) {
                 Query::TYPE_DECIMAL => 'DECIMAL',
+                Query::TYPE_TINYINT,
+                Query::TYPE_SMALLINT => 'SMALLINT',
                 Query::TYPE_INTEGER => 'INTEGER',
+                Query::TYPE_BIGINT => 'BIGINT',
+                Query::TYPE_FLOAT => 'REAL',
+                Query::TYPE_DOUBLE => 'DOUBLE PRECISION',
                 default => null,
             };
+        }
+
+        // JSON extraction has no type affinity on SQLite, even for numeric values.
+        if ($db->getDriverName() === 'sqlite' && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
+            $castType = 'NUMERIC';
         }
 
         if ($castType !== null) {

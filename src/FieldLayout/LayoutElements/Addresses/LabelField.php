@@ -44,4 +44,10 @@ class LabelField extends TitleField
     {
         return t('Label');
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'tag';
+    }
 }

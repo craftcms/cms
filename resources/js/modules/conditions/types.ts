@@ -41,11 +41,15 @@ export type GroupDraft = {
 
 export const ConditionEditor: InjectionKey<{
   payload: () => BuilderPayload;
-  rules: Record<string, RulePayload>;
+  rules: Readonly<Record<string, RulePayload>>;
   errors: () => UiPayload['errors'];
   editable: () => boolean;
   value: () => ConditionConfig;
-  changed: () => void;
+  addRule: (group: GroupDraft, rule: RulePayload) => void;
+  addGroup: (group: GroupDraft) => void;
+  removeChild: (group: GroupDraft, index: number) => void;
+  setOperator: (group: GroupDraft, operator: GroupDraft['operator']) => void;
+  updateRule: (id: string, rule: RulePayload) => void;
   status: (id: string, valid: boolean) => void;
   registerRule: (
     id: string,

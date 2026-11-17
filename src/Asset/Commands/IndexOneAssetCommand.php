@@ -22,11 +22,12 @@ class IndexOneAssetCommand extends Command implements PromptsForMissingInput
 
     #[Override]
     protected $signature = 'craft:index-assets:one
-        {handle : The handle of the volume to index. You can optionally provide a volume sub-path, e.g. `php craft index-assets/one volume-handle/path/to/folder`.}
+        {handle : The handle of the volume to index. You can optionally provide a volume sub-path, e.g. `craft:index-assets:one volume-handle/path/to/folder`.}
         {startAt=0 : Index of the asset to start with.}
         {--createMissingAssets=true : Auto-create new asset records when missing.}
         {--deleteMissingAssets=false : Delete all the asset records that have their files missing.}
         {--deleteEmptyFolders=false : Delete empty folders.}
+        {--analyzeImages=false : Sample missing image colors and metadata, and queue images for AI tasks.}
     ';
 
     #[Override]

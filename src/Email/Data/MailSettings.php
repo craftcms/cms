@@ -53,9 +53,14 @@ readonly class MailSettings
         return Env::parse($this->mailer);
     }
 
+    /**
+     * Returns the custom template path, or `null` when none is set. Craft 5 stored an empty string for “no template”.
+     */
     public function resolvedTemplate(): ?string
     {
-        return Env::parse($this->template);
+        $template = Env::parse($this->template);
+
+        return $template !== '' ? $template : null;
     }
 
     /**

@@ -107,7 +107,7 @@ class Markdown extends BaseUiElement
             throw new InvalidArgumentException('Persisted Markdown FieldLayout elements require stable UIDs.');
         }
 
-        return MarkdownContent::make($this->uid, $this->content)
+        return MarkdownContent::make($this->uid, t($this->content, category: 'site'))
             ->displayInPane($this->displayInPane)
             ->width($this->width);
     }

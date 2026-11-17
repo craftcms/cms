@@ -8,6 +8,8 @@ export function indexData(
     elementType: 'Entry',
     elementDisplayName: 'Entry',
     elementPluralDisplayName: 'Entries',
+    elementLowerDisplayName: 'entry',
+    elementPluralLowerDisplayName: 'entries',
     context: 'modal',
     source: {type: 'native', key: '*', label: 'All entries'},
     sources: [],

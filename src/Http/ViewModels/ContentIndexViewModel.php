@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Data\ActionItem;
 use CraftCms\Cms\Cp\Data\NavItem;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\Navigation;
 use CraftCms\Cms\Cp\RequestedSite;
@@ -30,7 +32,10 @@ use CraftCms\Cms\Support\Url;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as IlluminatePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Gate;
+use Inertia\RenderContext;
+use Inertia\Support\Header;
 
 use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
@@ -57,9 +62,6 @@ use function Termwind\render;
 abstract class ContentIndexViewModel extends ViewModel
 {
     protected const string RENDER_CONTEXT = 'index';
-
-    /** The thumbnail edge length (px) requested for the thumbnail grid view. */
-    private const int THUMB_SIZE = 200;
 
     private ?ElementIndexSourceSettings $resolvedSourceSettings = null;
 
@@ -91,6 +93,9 @@ abstract class ContentIndexViewModel extends ViewModel
 
     private ?Site $resolvedSite = null;
 
+    /** @var array{status: string, drafts: bool, trashed: bool}|null */
+    private ?array $statusSelection = null;
+
     /** @var Collection<int, Site>|null */
     private ?Collection $selectableSites = null;
 
@@ -112,6 +117,44 @@ abstract class ContentIndexViewModel extends ViewModel
     }
 
     /**
+     * Leaves the rows out of a page load that doesn't name a view mode.
+     *
+     * The view mode and thumbnail size the rows are rendered for live in the
+     * browser's view state, which the server can't see. Rows rendered without
+     * them would draw at the defaults until the index re-requested them, so
+     * the page draws placeholders instead and requests the rows itself once it
+     * has read its view state (see `useElementIndex`'s `restore()`). That visit
+     * puts `viewMode` in the URL, so later visits come with rows again.
+     */
+    #[\Override]
+    public function toInertiaProperties(RenderContext $context): array
+    {
+        $properties = parent::toInertiaProperties($context);
+
+        return $context->request->header(Header::PARTIAL_COMPONENT) === $context->component
+            ? $properties
+            : $this->withoutDeferredRows($properties);
+    }
+
+    /**
+     * Leaves the rows out of a payload whose request doesn't name the view
+     * mode they're for.
+     *
+     * @param  array<string, mixed>  $properties
+     * @return array<string, mixed>
+     */
+    protected function withoutDeferredRows(array $properties): array
+    {
+        if ($this->request->filled('viewMode')) {
+            return $properties;
+        }
+
+        unset($properties['data'], $properties['pagination'], $properties['structure']);
+
+        return $properties;
+    }
+
+    /**
      * The render context — index screens always render in the `index`
      * context, and the client echoes it back on XHR element endpoints.
      */
@@ -120,9 +163,31 @@ abstract class ContentIndexViewModel extends ViewModel
         return static::RENDER_CONTEXT;
     }
 
+    /**
+     * The element status to filter by.
+     *
+     * The status menu's Drafts and Trashed options share its `status` param,
+     * but they aren't element statuses (see {@see drafts()} and
+     * {@see trashed()}), so they're never returned here.
+     */
     public function status(): string
     {
-        return $this->request->input('status', '') ?? '';
+        return $this->statusSelection()['status'];
+    }
+
+    /**
+     * The status menu's selected option: an element status, `drafts` or
+     * `trashed`.
+     */
+    public function statusMenuValue(): string
+    {
+        $selection = $this->statusSelection();
+
+        return match (true) {
+            $selection['trashed'] => 'trashed',
+            $selection['drafts'] => 'drafts',
+            default => $selection['status'],
+        };
     }
 
     public function search(): ?string
@@ -158,9 +223,16 @@ abstract class ContentIndexViewModel extends ViewModel
     /**
      * Whether the index is listing drafts or trashed elements. Both disable
      * structure reordering: a move only makes sense against the canonical tree.
+     *
+     * Where the status menu offers them, they're its selection; elsewhere they
+     * come from the request's criteria, which only those indexes apply.
      */
     public function drafts(): bool
     {
+        if ($this->offersDraftsAndTrashed()) {
+            return $this->statusSelection()['drafts'];
+        }
+
         return filter_var(
             $this->request->criteria()['drafts'] ?? false,
             FILTER_VALIDATE_BOOLEAN,
@@ -169,10 +241,91 @@ abstract class ContentIndexViewModel extends ViewModel
 
     public function trashed(): bool
     {
+        if ($this->offersDraftsAndTrashed()) {
+            return $this->statusSelection()['trashed'];
+        }
+
         return filter_var(
             $this->request->criteria()['trashed'] ?? false,
             FILTER_VALIDATE_BOOLEAN,
         );
+    }
+
+    /**
+     * The status menu's options for listing drafts or trashed elements in
+     * place of the canonical ones. The menu shows them after the element
+     * statuses.
+     *
+     * @return list<array{label: string, value: string, icon: string}>
+     */
+    private function draftsAndTrashedOptions(): array
+    {
+        if (! $this->offersDraftsAndTrashed()) {
+            return [];
+        }
+
+        return [
+            ...($this->canHaveDrafts() ? [['label' => t('Drafts'), 'value' => 'drafts', 'icon' => 'draft']] : []),
+            ['label' => t('Trashed'), 'value' => 'trashed', 'icon' => 'trash'],
+        ];
+    }
+
+    /**
+     * Whether the status menu offers Drafts and Trashed. Craft 5 offers them
+     * on the index screen and the embedded index.
+     */
+    private function offersDraftsAndTrashed(): bool
+    {
+        return in_array(static::RENDER_CONTEXT, [
+            ElementSources::CONTEXT_INDEX,
+            ElementSources::CONTEXT_EMBEDDED_INDEX,
+        ], true);
+    }
+
+    /**
+     * The `status` param, split into an element status and the Drafts and
+     * Trashed options that share it.
+     *
+     * @return array{status: string, drafts: bool, trashed: bool}
+     */
+    private function statusSelection(): array
+    {
+        if ($this->statusSelection !== null) {
+            return $this->statusSelection;
+        }
+
+        $status = $this->request->input('status');
+
+        return $this->statusSelection = $this->offersDraftsAndTrashed()
+            ? app(ElementIndexes::class)->statusSelection($this->elementType, $status)
+            : ['status' => is_string($status) ? $status : '', 'drafts' => false, 'trashed' => false];
+    }
+
+    /**
+     * The criteria the status menu's selection adds to the index query. On
+     * the index screen, as in Craft 5, picking an element status also leaves
+     * out unpublished drafts, which only belong under Drafts.
+     *
+     * @return array<string, mixed>
+     */
+    private function statusMenuCriteria(): array
+    {
+        if (! $this->offersDraftsAndTrashed()) {
+            return [];
+        }
+
+        $criteria = app(ElementIndexes::class)->statusSelectionCriteria($this->statusSelection());
+
+        if (
+            $criteria === [] &&
+            static::RENDER_CONTEXT === ElementSources::CONTEXT_INDEX &&
+            $this->status() !== '' &&
+            $this->canHaveDrafts()
+        ) {
+            return ['drafts' => false];
+        }
+
+        return $criteria;
     }
 
     /** @return array<string, mixed>|null */
@@ -218,20 +371,32 @@ abstract class ContentIndexViewModel extends ViewModel
         ];
     }
 
-    /** @return array<int, array{label: string, value: string}> */
+    /**
+     * The status menu's options: All, the element statuses, then Drafts and
+     * Trashed. Element types without statuses only get All, Drafts and
+     * Trashed, since filtering by status is a no-op for them.
+     *
+     * @return list<array{label: string, value: string, icon?: string}>
+     */
     public function statusOptions(): array
     {
-        // Status filtering is a no-op for element types without statuses
-        // (QueriesStatuses ignores it), so don't offer the filter at all.
-        if (! $this->showStatusMenu()) {
+        $showStatusMenu = $this->showStatusMenu();
+        $draftsAndTrashedOptions = $this->draftsAndTrashedOptions();
+
+        if (! $showStatusMenu && ! $draftsAndTrashedOptions) {
             return [];
         }
 
-        return collect($this->elementType::statuses())
-            ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
-            ->prepend(['label' => t('All'), 'value' => ''])
-            ->values()
-            ->all();
+        return [
+            ['label' => t('All'), 'value' => ''],
+            ...($showStatusMenu
+                ? collect($this->elementType::statuses())
+                    ->map(fn ($label, $value) => ['label' => $label, 'value' => $value])
+                    ->values()
+                    ->all()
+                : []),
+            ...$draftsAndTrashedOptions,
+        ];
     }
 
     public function showStatusMenu(): bool
@@ -324,7 +489,7 @@ abstract class ContentIndexViewModel extends ViewModel
      *
      * When every source is site-specific the list narrows to the sites those
      * sources between them cover, so the menu never offers a site the index
-     * would come up empty on. Mirrors {@see ElementIndexHtml}.
+     * would come up empty on.
      *
      * @return Collection<int, Site>
      */
@@ -437,7 +602,9 @@ abstract class ContentIndexViewModel extends ViewModel
         );
         $current = $choices->first(fn (array $option): bool => $option['selected']);
 
-        if ($current === null) {
+        // A page with one source has nothing to choose between, and the page
+        // crumb already names it, so a crumb for the source would repeat it.
+        if ($current === null || ($this->elementType::multiPageSources() && $choices->count() === 1)) {
             return $crumbs;
         }
 
@@ -512,6 +679,16 @@ abstract class ContentIndexViewModel extends ViewModel
         return $this->elementType::pluralDisplayName();
     }
 
+    public function elementLowerDisplayName(): string
+    {
+        return $this->elementType::lowerDisplayName();
+    }
+
+    public function elementPluralLowerDisplayName(): string
+    {
+        return $this->elementType::pluralLowerDisplayName();
+    }
+
     public function canHaveDrafts(): bool
     {
         return $this->elementType::hasDrafts();
@@ -520,7 +697,17 @@ abstract class ContentIndexViewModel extends ViewModel
     /** @return array<array-key, mixed> */
     public function viewModes(): array
     {
-        return $this->sourceSettings()->viewModes;
+        $viewModes = $this->sourceSettings()->viewModes;
+
+        if (! $this->drafts() && ! $this->trashed()) {
+            return $viewModes;
+        }
+
+        // Drafts and trashed elements aren't part of the structure.
+        return array_values(array_filter(
+            $viewModes,
+            fn (array $viewMode): bool => ($viewMode['mode'] ?? null) !== ElementIndexViewMode::Structure->value,
+        ));
     }
 
     public function selectedSubnavItem(): ?string
@@ -556,6 +743,43 @@ abstract class ContentIndexViewModel extends ViewModel
     public function defaultTableColumns(): array
     {
         return $this->sourceSettings()->defaultTableColumns;
+    }
+
+    /**
+     * The sort the source falls back to when none is requested.
+     *
+     * @return array<int, array{field: string, direction: string}>
+     */
+    public function defaultSort(): array
+    {
+        return $this->sourceSettings()->defaultSort;
+    }
+
+    /**
+     * How the source's cards show their thumbnails, going by its first field
+     * layout that provides them, so the placeholders drawn while its rows and
+     * cards load can match them. Null when the source's elements have none.
+     *
+     * @return array{style: string, alignment: 'start'|'end'}|null
+     */
+    public function cardThumbs(): ?array
+    {
+        $sourceKey = $this->sourceState()[0];
+        $fieldLayouts = collect($this->sourceSettings()->fieldLayouts
+            ?: ($sourceKey !== null ? ElementSources::getFieldLayoutsForSource($this->elementType, $sourceKey) : []));
+        $hasOwnThumbs = $this->elementType::hasThumbs();
+        $fieldLayout = $hasOwnThumbs
+            ? $fieldLayouts->first()
+            : $fieldLayouts->first(fn (FieldLayout $fieldLayout) => $fieldLayout->hasThumbField());
+
+        if (! $hasOwnThumbs && $fieldLayout === null) {
+            return null;
+        }
+
+        return [
+            'style' => $fieldLayout?->getCardThumbStyle() ?? (is_a($this->elementType, Asset::class, true) ? 'auto' : 'normal'),
+            'alignment' => $fieldLayout?->getCardThumbAlignment() === 'start' ? 'start' : 'end',
+        ];
     }
 
     /** @return list<array<string, mixed>> */
@@ -939,7 +1163,8 @@ abstract class ContentIndexViewModel extends ViewModel
             // through to a visible source rather than list a hidden one.
             if (
                 $resolved[0] !== null &&
-                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $siteId))
+                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $siteId)) &&
+                $this->allowsSource($resolved[0])
             ) {
                 return $resolved;
             }
@@ -952,10 +1177,20 @@ abstract class ContentIndexViewModel extends ViewModel
         $sources = array_filter($this->sourceCandidates($siteId), fn (array $source): bool => isset($source['key'])
             && ($source['type'] ?? null) !== ElementSources::TYPE_HEADING
             && ! ($source['disabled'] ?? false));
-        $source = ($requestedSource === null ? array_find($sources, fn (array $source): bool => $source['key'] === '*') : null)
+        // A nested source, such as an asset subfolder, is requested by its own key, which only the listed sources
+        // can resolve to its full key path.
+        $source = array_find($sources, fn (array $source): bool => $source['key'] === ($requestedSource ?? '*'))
             ?? array_first($sources);
 
         return [$source['keyPath'] ?? $source['key'] ?? null, $source];
+    }
+
+    /**
+     * Whether a requested source key can be opened, for indexes that only allow some of their sources.
+     */
+    protected function allowsSource(string $sourceKey): bool
+    {
+        return true;
     }
 
     /** @return list<array<string, mixed>> */
@@ -1051,9 +1286,17 @@ abstract class ContentIndexViewModel extends ViewModel
      */
     protected function mode(): string
     {
-        return $this->request->input('viewMode')
+        $mode = $this->request->input('viewMode')
             ?: $this->request->input('viewState.mode')
             ?: $this->sourceSettings()->defaultViewMode;
+
+        // Without structure mode on offer, show the first mode that is, as the
+        // client does.
+        if ($mode === ElementIndexViewMode::Structure->value && ($this->drafts() || $this->trashed())) {
+            return $this->viewModes()[0]['mode'] ?? ElementIndexViewMode::Table->value;
+        }
+
+        return $mode;
     }
 
     /** @return string[] */
@@ -1086,7 +1329,7 @@ abstract class ContentIndexViewModel extends ViewModel
             source: $this->sourceState()[1],
             condition: $this->request->condition(),
             baseCriteria: $this->baseCriteria(),
-            criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : [],
+            criteria: static::RENDER_CONTEXT === ElementSources::CONTEXT_MODAL ? $this->request->criteria() : $this->statusMenuCriteria(),
             // Collapsed subtrees are excluded by the query itself, so a
             // collapsed branch never reaches the client (and never counts
             // toward pagination). Only structure mode collapses anything —
@@ -1095,6 +1338,9 @@ abstract class ContentIndexViewModel extends ViewModel
                 ? $this->request->collapsedElementIds()
                 : [],
         )['query'];
+
+        // Applied on top of the filters, which the user can change, so they can't widen what's selectable
+        $this->request->selectionCondition()?->modifyQuery($query);
 
         // Ahead of the source's own criteria, which shouldn't get to override
         // the site the user picked (the legacy index drops `criteria.siteId`
@@ -1119,9 +1365,7 @@ abstract class ContentIndexViewModel extends ViewModel
     protected function baseCriteria(): array
     {
         return [
-            'drafts' => $this->canHaveDrafts() ? null : false,
-            'draftOf' => false,
-            'savedDraftsOnly' => true,
+            ...app(ElementIndexes::class)->baseCriteria($this->elementType),
             ...($this->sourceState()[1]['criteria'] ?? []),
         ];
     }
@@ -1350,15 +1594,38 @@ abstract class ContentIndexViewModel extends ViewModel
      * Rendered once per cell: rendering resolves the chip's thumbnail URLs,
      * which can queue transforms or fire `ThumbUrlResolving` handlers.
      *
+     * The chip isn't refreshed in place when its element is saved: the index
+     * compiles it as a Vue template, and reloads its rows itself.
+     *
      * @param  array<string, mixed>  $config  Additional {@see ElementHtml::elementChipHtml()} config
      */
     protected function chipHtml(ElementInterface $element, array $config = []): string
     {
         return app(ElementHtml::class)->elementChipHtml($element, [
+            'autoReload' => false,
             'context' => static::RENDER_CONTEXT,
             'appearance' => 'plain',
+            'thumbSize' => $this->thumbSize(),
             ...$config,
         ]);
+    }
+
+    /**
+     * The size of the index's thumbnails, as chosen in the View menu (see the
+     * `useElementIndexThumbSize` composable); their chips take a size to suit.
+     * Tiles come in every size and default to a card's thumbnail size; table
+     * rows stop at that size and default to small.
+     */
+    protected function thumbSize(): ChipThumbSize
+    {
+        $thumbs = $this->mode() === ElementIndexViewMode::Thumbs->value;
+        $size = ChipThumbSize::tryFrom((string) $this->request->input('thumbSize'));
+
+        if ($size !== null && ($thumbs || in_array($size, [ChipThumbSize::Sm, ChipThumbSize::Md, ChipThumbSize::Lg], true))) {
+            return $size;
+        }
+
+        return $thumbs ? ChipThumbSize::Lg : ChipThumbSize::Sm;
     }
 
     /**
@@ -1378,7 +1645,8 @@ abstract class ContentIndexViewModel extends ViewModel
                 'context' => static::RENDER_CONTEXT,
                 // Folders (no edit URL) navigate via their own card handler, so
                 // don't wrap them in a link that would swallow the click.
-                'hyperlink' => $this->editUrl($element) !== null,
+                // Trashed elements can't be edited.
+                'hyperlink' => ! $element->trashed && $this->editUrl($element) !== null,
                 'showEditButton' => false,
                 'autoReload' => false,
                 'selectable' => false,
@@ -1409,10 +1677,10 @@ abstract class ContentIndexViewModel extends ViewModel
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
             ...$this->baseRowData($element),
-            'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL
+            'url' => $this->linksToElements() && ! $element->trashed
                 ? $this->editUrl($element)
                 : null,
-            'thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit),
+            'thumbHtml' => $element->getThumbHtml($this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit),
             ...$this->extraThumbData($element),
         ], $elements);
     }
@@ -1435,9 +1703,27 @@ abstract class ContentIndexViewModel extends ViewModel
     private function elementUrls(ElementInterface $element): array
     {
         return [
-            'cpEditUrl' => currentUser()?->can('view', $element) ? $element->getCpEditUrl() : null,
+            'cpEditUrl' => ! $element->trashed && currentUser()?->can('view', $element) ? $this->withEditReturnUrl($element->getCpEditUrl()) : null,
             'viewUrl' => $element->getUrl(),
         ];
+    }
+
+    /**
+     * Adds this index, as it's currently shown, to an element's edit URL as the
+     * editor's `returnUrl` param. The index takes its source from the URL alone,
+     * so without it the editor would return to the index's first source.
+     *
+     * Only index screens have a URL worth returning to; a modal or embedded
+     * index lives inside another page.
+     */
+    private function withEditReturnUrl(?string $url): ?string
+    {
+        // Encrypted once and shared by every row.
+        $returnUrl = once(fn (): ?string => static::RENDER_CONTEXT === ElementSources::CONTEXT_INDEX
+            ? Crypt::encrypt($this->request->fullUrl())
+            : null);
+
+        return $url !== null && $returnUrl !== null ? Url::urlWithParams($url, ['returnUrl' => $returnUrl]) : $url;
     }
 
     /**
@@ -1471,14 +1757,17 @@ abstract class ContentIndexViewModel extends ViewModel
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
         $elementHtml ??= app(ElementHtml::class);
+        $capabilities = [
+            ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            ...$this->extraCapabilities($element),
+        ];
 
         return [
             'label' => $element->getUiLabel(),
             ...$this->elementUrls($element),
-            'capabilities' => [
-                ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
-                ...$this->extraCapabilities($element),
-            ],
+            'capabilities' => $capabilities,
+            // So Compare is only offered for two elements with the same field layout.
+            ...($capabilities['comparable'] ? ['fieldLayoutId' => $element->getFieldLayout()?->id] : []),
             ...$this->extraRowData($element),
         ];
     }
@@ -1515,8 +1804,17 @@ abstract class ContentIndexViewModel extends ViewModel
         ];
     }
 
+    /**
+     * Whether titles and thumbnails link to their elements. A modal's don't,
+     * since a click there selects.
+     */
+    protected function linksToElements(): bool
+    {
+        return static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL;
+    }
+
     protected function editUrl(ElementInterface $element): ?string
     {
-        return $element->getCpEditUrl();
+        return $this->withEditReturnUrl($element->getCpEditUrl());
     }
 }

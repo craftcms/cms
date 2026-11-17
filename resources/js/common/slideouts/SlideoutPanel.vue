@@ -12,10 +12,10 @@
    */
   import {
     computed,
+    nextTick,
     onBeforeUnmount,
     onMounted,
     ref,
-    provide,
     useTemplateRef,
     watch,
   } from 'vue';
@@ -23,30 +23,29 @@
     addModalAttributes,
     ESC_KEY,
     releaseFocusWithin,
-    setFocusWithin,
     trapFocusWithin,
   } from '@craftcms/garnish';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {useWindowSize} from '@vueuse/core';
+  import {useResizeObserver, useWindowSize} from '@vueuse/core';
+  import {
+    getActivePreview,
+    previewEditorOffset,
+  } from '@/modules/elements/live-preview/previews';
   import AppLayout from '@/common/layouts/AppLayout.vue';
   import ResizeHandle from '@/common/components/ResizeHandle.vue';
   import {useResizable} from '@/common/composables/useResizable';
-  import SlideoutScreen from '@/common/layouts/screens/SlideoutScreen.vue';
-  import {
-    createScreenPropsStore,
-    provideScreenContext,
-    ScreenPagePropsKey,
-    ScreenPropsStoreKey,
-    ScreenShellKey,
-  } from '@/common/composables/screen';
+  import {focusDialogStart} from '@/common/utils/dialog-focus';
+  import {provideSlideoutScreen} from './screenContext';
   import {
     registerPanel,
+    shadeElement,
     uiLayerManager,
     unregisterPanel,
     type StackedPanel,
   } from './panel-stack';
   import {closeSlideout, notifySlideoutSaved, reloadSlideout} from './store';
-  import {SlideoutControllerKey, type SlideoutInstance} from './types';
+  import type {SlideoutInstance} from './types';
+  import {slideoutTitleId} from './useSlideout';
 
   const props = defineProps<{
     instance: SlideoutInstance;
@@ -56,22 +55,14 @@
   /** Room kept beside a slideout. Mirrored by the panel's stylesheet cap. */
   const SLIDEOUT_MIN_GAP = 80;
 
-  provide(ScreenShellKey, SlideoutScreen);
-  provide(ScreenPropsStoreKey, createScreenPropsStore());
-  provideScreenContext('slideout');
-
-  // Without this the shell would read its chrome off `usePage()` — the page
-  // *behind* the slideout — and show that screen's title and edit URL.
-  provide(ScreenPagePropsKey, () => props.instance.props);
-
-  provide(SlideoutControllerKey, {
-    get instance() {
-      return props.instance;
-    },
+  provideSlideoutScreen(() => props.instance, {
     close: (options?: {force?: boolean}) =>
       closeSlideout(props.instance.id, options),
-    reload: () => reloadSlideout(props.instance.id),
+    reload: (options) => reloadSlideout(props.instance.id, options),
     saved: (result) => notifySlideoutSaved(props.instance.id, result),
+    get coversPreviewEditor() {
+      return previewEditor !== null;
+    },
   });
 
   /**
@@ -81,13 +72,56 @@
    * panels slide in from, so `Craft.slideoutPosition` flips it.
    */
   const positionProp = computed(() =>
-    Object.getOwnPropertyDescriptor(window.Craft, 'slideoutPosition')?.value ===
-    'start'
+    Object.getOwnPropertyDescriptor(window.Craft ?? {}, 'slideoutPosition')
+      ?.value === 'start'
       ? 'inset-inline-end'
       : 'inset-inline-start'
   );
 
   const panelEl = useTemplateRef<HTMLElement>('panel');
+
+  /**
+   * The dialog is named by its screen's title (`SlideoutScreen`), once a
+   * screen has loaded to supply one.
+   */
+  const titleId = computed(() => slideoutTitleId(props.instance.containerId));
+  const ariaLabelledBy = computed(() =>
+    props.instance.component ? titleId.value : undefined
+  );
+
+  /**
+   * Moves focus from the panel, where it's parked while loading, to the
+   * screen's title, or to its first field when the user prefers autofocus.
+   */
+  function focusScreen(): void {
+    const el = panelEl.value;
+    if (!el) {
+      return;
+    }
+    focusDialogStart(
+      el,
+      el.querySelector<HTMLElement>(`[id="${titleId.value}"]`)
+    );
+  }
+
+  /**
+   * Live Preview's editor pane, when this opened during a preview. The panel
+   * then covers only that pane, as a sheet sliding up from the bottom, and
+   * the shade stops at its edge, leaving the preview visible beside it.
+   */
+  const activePreview = getActivePreview();
+  const previewEditor = activePreview?.editor.value ?? null;
+  const previewEditorWidth = ref(previewEditor?.offsetWidth ?? 0);
+  const previewEditorStart = ref(
+    previewEditor ? previewEditorOffset(previewEditor) : 0
+  );
+
+  if (previewEditor) {
+    useResizeObserver(previewEditor, () => {
+      previewEditorWidth.value = previewEditor.offsetWidth;
+      previewEditorStart.value = previewEditorOffset(previewEditor);
+    });
+  }
 
   /**
    * Drag-to-resize from the panel's inner edge, as the details column does.
@@ -145,6 +179,13 @@
       return panelEl.value!;
     },
     position(index: number, total: number) {
+      if (previewEditor) {
+        // There's no room beside the pane to stagger panels into, so each
+        // covers the one before it.
+        offset.value = 'var(--slideout-preview-start)';
+        return;
+      }
+
       const depth = total - 1 - index;
       const step = `min((100vw - var(--slideout-panel-width)) / ${total}, var(--slideout-panel-width) / 2)`;
 
@@ -159,6 +200,10 @@
   };
 
   onMounted(() => {
+    if (previewEditor) {
+      activePreview!.editorCovers.value++;
+    }
+
     const el = panelEl.value!;
 
     addModalAttributes(el);
@@ -184,15 +229,46 @@
     // After `addLayer`, which the stack relies on to work out which container
     // to leave visible to assistive technology.
     registerPanel(stackPanel);
+    fitShadeToPreviewEditor();
 
     // A locally-built panel (see `openSlideoutWith`) arrives with its component
     // already set, so the watcher below never fires for it.
     if (props.instance.component) {
-      setFocusWithin(el);
+      focusScreen();
     }
   });
 
+  function fitShadeToPreviewEditor(): void {
+    if (previewEditor) {
+      const shade = shadeElement();
+      shade.style.insetInlineStart = `${previewEditorStart.value}px`;
+      shade.style.width = `${previewEditorWidth.value}px`;
+    }
+  }
+
+  watch([previewEditorWidth, previewEditorStart], fitShadeToPreviewEditor);
+
+  const panelStyle = computed(() =>
+    previewEditor
+      ? {
+          '--slideout-preview-width': `${previewEditorWidth.value}px`,
+          '--slideout-preview-start': `${previewEditorStart.value}px`,
+          insetInlineStart: offset.value,
+        }
+      : {
+          ...(props.instance.width
+            ? {'--slideout-width': props.instance.width}
+            : {}),
+          ...resizer.style.value,
+          [positionProp.value]: offset.value,
+        }
+  );
+
   onBeforeUnmount(() => {
+    if (previewEditor) {
+      activePreview!.editorCovers.value--;
+    }
+
     const el = panelEl.value!;
 
     // By element, not the bare pop: with two slideout stacks interleaving,
@@ -204,14 +280,17 @@
   });
 
   // The screen arrives a request after the panel does, so focus can't be
-  // placed until there's something in it to focus.
+  // placed until there's something in it to focus. After the render, which
+  // swaps the spinner for the screen: before it, only the panel is there.
   watch(
     () => props.instance.component,
-    (component) => {
-      if (component && panelEl.value) {
-        setFocusWithin(panelEl.value);
+    async (component) => {
+      if (component) {
+        await nextTick();
+        focusScreen();
       }
-    }
+    },
+    {flush: 'post'}
   );
 </script>
 
@@ -222,19 +301,20 @@
   <div
     ref="panel"
     class="slideout-panel"
-    :class="{'slideout-panel--resizing': resizer.isResizing.value}"
+    :class="{
+      'slideout-panel--resizing': resizer.isResizing.value,
+      'slideout-panel--in-preview': previewEditor,
+    }"
     tabindex="-1"
+    :aria-labelledby="ariaLabelledBy"
     :data-slideout-id="instance.id"
     :data-focus-scope="instance.id"
-    :style="{
-      ...(instance.width ? {'--slideout-width': instance.width} : {}),
-      ...resizer.style.value,
-      [positionProp]: offset,
-    }"
+    :style="panelStyle"
   >
     <!-- `prevent-autofocus`: it comes first in the panel, and opening the panel
       shouldn't land focus on it instead of the screen's first field. -->
     <ResizeHandle
+      v-if="!previewEditor"
       class="slideout-panel__resize-handle prevent-autofocus"
       :class="{
         'slideout-panel__resize-handle--end':
@@ -252,7 +332,7 @@
     <AppLayout v-else-if="instance.component">
       <component :is="instance.component" v-bind="instance.props" />
     </AppLayout>
-    <!-- Where `Craft.cp.announce()` speaks while this panel is the top modal
+    <!-- Where `announce()` speaks while this panel is the top modal
       layer; the page's global region sits behind `aria-hidden` by then. -->
     <span class="sr-only" role="status" data-slideout-live-region></span>
   </div>
@@ -302,8 +382,22 @@
     }
   }
 
+  /* Over Live Preview's editor pane, covering it exactly, as a nested view
+     sliding in from the end. Stacked panels sit on top of each other. */
+  .slideout-panel--in-preview {
+    width: var(--slideout-preview-width);
+    /* Over the editor's own border, so it carries one of its own. */
+    border-inline-start: 1px solid var(--c-color-border-quiet);
+    border-radius: 0;
+    box-shadow: none;
+
+    @media screen and (prefers-reduced-motion: no-preference) {
+      transition: inset-inline-start linear 250ms;
+    }
+  }
+
   @media (width < var(--breakpoint-sm)) {
-    .slideout-panel {
+    .slideout-panel:not(.slideout-panel--in-preview) {
       /* Full-width sheet on small screens, matching the legacy slideout —
          there isn't room to peek, so stacked panels sit on top of each other.
          `!important` because the inline offset is set per-panel. */

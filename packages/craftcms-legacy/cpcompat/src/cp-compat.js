@@ -386,8 +386,8 @@
       var $el = $('<craft-input-password/>');
       var el = $input[0];
       if (el) {
-        // Lion pushes these control props onto the slotted input on upgrade, so
-        // mirror them onto the host (see InputPassword::hostAttributes()).
+        // The host carries these control props too, as the server renders
+        // them (see InputPassword::hostAttributes()).
         if (el.name) {
           $el.attr('name', el.name);
         }
@@ -474,7 +474,7 @@
         );
       }
 
-      this.settings = $.extend({presets: []}, settings || {});
+      this.settings = $.extend({presets: [], alpha: false}, settings || {});
 
       var $container = $(container);
       this.$container = $container;
@@ -489,8 +489,8 @@
       var $el = $('<craft-input-color/>');
       var el = $input[0];
       if (el) {
-        // Lion pushes these control props onto the slotted input on upgrade, so
-        // mirror them onto the host (see InputColor::hostAttributes()). The
+        // The host carries these control props too, as the server renders
+        // them (see InputColor::hostAttributes()). The
         // legacy .color-input value is already bare hex (# stripped).
         if (el.name) {
           $el.attr('name', el.name);
@@ -501,6 +501,9 @@
       }
       if (this.settings.presets && this.settings.presets.length) {
         $el.attr('presets', JSON.stringify(this.settings.presets));
+      }
+      if (this.settings.alpha) {
+        $el.attr('alpha', '');
       }
 
       $input.attr('slot', 'input').appendTo($el);
@@ -597,7 +600,7 @@
         el.removeAttribute('described-by');
       }
 
-      el.readonly = !!this.settings.readOnly;
+      el.readOnly = !!this.settings.readOnly;
 
       this.$buttons = this.$container.find('.slide-picker__segment');
 
@@ -710,7 +713,7 @@
       },
 
       get showing() {
-        return !!(this.$el && this.$el[0] && this.$el[0].opened);
+        return !!(this.$el && this.$el[0] && this.$el[0].open);
       },
 
       show: function () {
@@ -772,6 +775,43 @@
     // Initial pass for markup already present in the DOM.
     sweep(document);
   }
+
+  /**
+   * Holds jQuery ready callbacks registered from here on until a bridged
+   * screen's markup is mounted.
+   *
+   * Vue mounts a bridged screen after the document is ready, so a plugin
+   * script's `$(fn)` or `$(document).ready(fn)` would otherwise run against a
+   * page without its markup. `Craft.whenReady()` only exists on bridged
+   * screens, and queues callbacks until the screen calls `Craft.flushReady()`.
+   *
+   * This file loads after the rest of Craft's legacy scripts and before plugin
+   * asset bundles, so Craft's own ready callbacks keep their timing. Holding
+   * those too would run `Craft.initUiElements()` again over markup the screen
+   * has already initialized.
+   */
+  function deferReadyUntilScreenMounts() {
+    var $ = window.jQuery;
+    var whenReady = window.Craft && window.Craft.whenReady;
+
+    if (!$ || typeof whenReady !== 'function') {
+      return;
+    }
+
+    var ready = $.fn.ready;
+
+    $.fn.ready = function (fn) {
+      var $this = this;
+
+      whenReady(function () {
+        ready.call($this, fn);
+      });
+
+      return this;
+    };
+  }
+
+  deferReadyUntilScreenMounts();
 
   // Run after the DOM is ready so jQuery and Craft (both loaded via blocking
   // scripts) are guaranteed to be present, regardless of this file's position.

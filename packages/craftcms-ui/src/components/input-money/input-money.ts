@@ -15,6 +15,48 @@ type MaskedInput = HTMLInputElement & {
   };
 };
 
+type CurrencyFormat = {
+  currency: string;
+  decimal: string;
+  group: string;
+  decimals: number;
+};
+
+/**
+ * Reads the symbol, separators and decimal places for a currency in a locale.
+ * A currency code or locale `Intl` rejects falls back to a plain two-decimal
+ * number, in the locale when it is valid, so the field still renders.
+ */
+function currencyFormat(locale: string, currency: string): CurrencyFormat {
+  const plain = {minimumFractionDigits: 2, maximumFractionDigits: 2};
+  const attempts: [string | undefined, Intl.NumberFormatOptions][] = [
+    [locale, {style: 'currency', currency}],
+    [locale, plain],
+    [undefined, plain],
+  ];
+
+  for (const [attemptLocale, options] of attempts) {
+    let formatter: Intl.NumberFormat;
+
+    try {
+      formatter = new Intl.NumberFormat(attemptLocale, options);
+    } catch {
+      continue;
+    }
+
+    const parts = formatter.formatToParts(12345.6);
+
+    return {
+      currency: parts.find(({type}) => type === 'currency')?.value ?? '',
+      decimal: parts.find(({type}) => type === 'decimal')?.value ?? '.',
+      group: parts.find(({type}) => type === 'group')?.value ?? ',',
+      decimals: formatter.resolvedOptions().maximumFractionDigits ?? 2,
+    };
+  }
+
+  return {currency: '', decimal: '.', group: ',', decimals: 2};
+}
+
 /**
  * @summary A locale-aware money input with a currency label and clear button.
  * Extends `craft-input`, so it carries the same label, help text, validation,
@@ -94,10 +136,35 @@ export default class CraftInputMoney extends CraftInput {
    */
   override type = 'text';
 
+  #format!: CurrencyFormat;
+
   constructor() {
     super();
 
     this.inputMode = 'decimal';
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (this.hasUpdated) {
+      this.#applyMask();
+    }
+  }
+
+  override willUpdate(changedProperties: PropertyValues) {
+    super.willUpdate(changedProperties);
+
+    if (
+      !this.hasUpdated ||
+      changedProperties.has('locale') ||
+      changedProperties.has('currency')
+    ) {
+      this.#format = currencyFormat(
+        this.locale.replaceAll('_', '-'),
+        this.currency
+      );
+    }
   }
 
   override updated(changedProperties: PropertyValues) {
@@ -123,22 +190,7 @@ export default class CraftInputMoney extends CraftInput {
   }
 
   #input(): MaskedInput | undefined {
-    return this._inputNode as MaskedInput | undefined;
-  }
-
-  #format() {
-    const formatter = new Intl.NumberFormat(this.locale.replaceAll('_', '-'), {
-      style: 'currency',
-      currency: this.currency,
-    });
-    const parts = formatter.formatToParts(12345.6);
-
-    return {
-      currency: parts.find(({type}) => type === 'currency')?.value ?? '',
-      decimal: parts.find(({type}) => type === 'decimal')?.value ?? '.',
-      group: parts.find(({type}) => type === 'group')?.value ?? ',',
-      decimals: formatter.resolvedOptions().maximumFractionDigits,
-    };
+    return this._control as MaskedInput | undefined;
   }
 
   #applyMask() {
@@ -148,8 +200,8 @@ export default class CraftInputMoney extends CraftInput {
       return;
     }
 
-    const value = String(this.modelValue ?? '');
-    const format = this.#format();
+    const value = this.value;
+    const format = this.#format;
     input.inputmask?.remove();
     input.addEventListener('keydown', this.#replaceSelectedSign, true);
     // Seed the value before masking. `setValue()` afterwards would dispatch a
@@ -197,11 +249,10 @@ export default class CraftInputMoney extends CraftInput {
   };
 
   #hasValue(): boolean {
-    return this.modelValue !== '' && this.modelValue != null;
+    return this.value !== '';
   }
 
   #clear = () => {
-    this.modelValue = '';
     this.value = '';
     this.#input()?.inputmask?.setValue('');
     this.#input()?.focus();
@@ -214,7 +265,7 @@ export default class CraftInputMoney extends CraftInput {
 
     return html`<div class="input-group__prefix">
       <span class="currency"
-        >${`(${this.currency}) ${this.#format().currency}`}</span
+        >${`(${this.currency}) ${this.#format.currency}`}</span
       >
     </div>`;
   }
@@ -233,7 +284,7 @@ export default class CraftInputMoney extends CraftInput {
         @mousedown=${(event: Event) => event.preventDefault()}
         @click=${this.#clear}
       >
-        <craft-icon name="xmark-large" style="font-size: 0.8em"></craft-icon>
+        <craft-icon name="xmark-large"></craft-icon>
       </craft-button>
     </div>`;
   }

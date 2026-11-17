@@ -41,7 +41,7 @@ class GetAttrNode extends GetAttrExpression
         // Differences noted below with `DIFF` comments.
 
         $env = $compiler->getEnvironment();
-        $arrayAccessSandbox = false;
+        $arrayAccessObject = null;
 
         // optimize array calls
         if (
@@ -61,27 +61,26 @@ class GetAttrNode extends GetAttrExpression
                 $compiler
                     ->raw(') || ')
                     ->raw($var)
-                    ->raw(' instanceof ArrayAccess ? (')
+                    // DIFF: Eloquent models must use TemplateHelper::attribute(), even for null/missing offsets.
+                    ->raw(' instanceof ArrayAccess && !'.$var.' instanceof \\Illuminate\\Database\\Eloquent\\Model ? (')
                     ->raw($var)
                     ->raw('[');
                 $this->compileArrayKey($compiler);
-                $compiler->raw('] ?? null) : null)');
-
-                return;
+                $compiler->raw('] ?? null) : ('.$var.' instanceof \\Illuminate\\Database\\Eloquent\\Model ? ');
+            } else {
+                $compiler
+                    ->raw(') || ')
+                    ->raw($var)
+                    ->raw(' instanceof ArrayAccess && in_array(')
+                    ->raw($var.'::class')
+                    ->raw(', CoreExtension::ARRAY_LIKE_CLASSES, true) ? (')
+                    ->raw($var)
+                    ->raw('[');
+                $this->compileArrayKey($compiler);
+                $compiler->raw('] ?? null) : ');
             }
 
-            $arrayAccessSandbox = true;
-
-            $compiler
-                ->raw(') || ')
-                ->raw($var)
-                ->raw(' instanceof ArrayAccess && in_array(')
-                ->raw($var.'::class')
-                ->raw(', CoreExtension::ARRAY_LIKE_CLASSES, true) ? (')
-                ->raw($var)
-                ->raw('[');
-            $this->compileArrayKey($compiler);
-            $compiler->raw('] ?? null) : ');
+            $arrayAccessObject = $var;
         }
 
         if ($this->getAttribute('ignore_strict_check')) {
@@ -118,6 +117,9 @@ class GetAttrNode extends GetAttrExpression
 
         if ($nullSafe) {
             $compiler->raw($this->getVarName($compiler));
+        } elseif ($arrayAccessObject !== null) {
+            // DIFF: Reuse the evaluated object when an Eloquent model bypasses the optimized array path.
+            $compiler->raw($arrayAccessObject);
         } else {
             $compiler->subcompile($this->getNode('node'));
         }
@@ -140,7 +142,10 @@ class GetAttrNode extends GetAttrExpression
             ->raw(', ')->repr($this->getNode('node')->getTemplateLine())
             ->raw(')');
 
-        if ($arrayAccessSandbox) {
+        if ($arrayAccessObject !== null) {
+            if (! $env->hasExtension(SandboxExtension::class)) {
+                $compiler->raw(' : null)');
+            }
             $compiler->raw(')');
         }
 

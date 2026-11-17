@@ -1,16 +1,22 @@
 <script setup lang="ts">
   import {computed, inject} from 'vue';
+  import {ButtonVariant} from '@craftcms/ui';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import {openSlideout} from '@/common/slideouts';
   import type {ActionItemLink} from '@/common/types';
   import {AdminTableCreateSlideout} from '../create-slideout';
 
-  const props = defineProps<{
-    label: string | null;
-    url?: string | null;
-    menuItems?: Array<{label: string; url: string}> | null;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      label: string | null;
+      url?: string | null;
+      menuItems?: Array<{label: string; url: string}> | null;
+      /** The button's style. Defaults to `primary`. */
+      variant?: ButtonVariant;
+    }>(),
+    {variant: ButtonVariant.Primary}
+  );
 
   const menuActions = computed<ActionItemLink[]>(
     () =>
@@ -49,21 +55,21 @@
 <template>
   <CpButtonLink
     v-if="url && slideout"
-    variant="primary"
+    :variant="variant"
     icon="plus"
     :href="url"
     :inertia="false"
     @click="openInSlideout"
     >{{ label }}</CpButtonLink
   >
-  <CpButtonLink v-else-if="url" variant="primary" icon="plus" :href="url">{{
+  <CpButtonLink v-else-if="url" :variant="variant" icon="plus" :href="url">{{
     label
   }}</CpButtonLink>
   <ActionMenu v-else-if="menuActions.length" :actions="menuActions">
     <template #invoker="{attributes}">
       <craft-button
         type="button"
-        variant="primary"
+        :variant="variant"
         icon="plus"
         v-bind="attributes"
       >

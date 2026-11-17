@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Cp\Components;
 
-use CraftCms\Cms\Support\Html;
-
 /**
  * Radio group container — the PHP counterpart to the `<craft-radio-group>`
  * web component (and to the legacy `_includes/forms/radioGroup` template).
@@ -28,7 +26,8 @@ class RadioGroup extends ChoiceGroup
 
     protected ?string $targetPrefix = null;
 
-    protected bool $buttons = false;
+    /** @var 'buttons'|'button-group'|'cards'|'card-group'|null */
+    protected ?string $appearance = null;
 
     protected function tagName(): string
     {
@@ -51,12 +50,17 @@ class RadioGroup extends ChoiceGroup
     }
 
     /**
-     * Shows the options as a row of joined buttons. They're still radios, so
-     * they're announced as radios and the arrow keys move the selection.
+     * Draws the options as separate `buttons` or `cards`, or joined in a
+     * `button-group` or `card-group`, rather than a stacked list. Cards show
+     * each option's thumbnail large. They're still radios, so they're announced
+     * as radios and the arrow keys move the selection. Options with a thumbnail
+     * default to `card-group`.
+     *
+     * @param  'buttons'|'button-group'|'cards'|'card-group'|null  $appearance
      */
-    public function buttons(bool $buttons = true): static
+    public function appearance(?string $appearance): static
     {
-        $this->buttons = $buttons;
+        $this->appearance = $appearance;
 
         return $this;
     }
@@ -70,41 +74,11 @@ class RadioGroup extends ChoiceGroup
                 'radio-group',
                 $this->toggle ? 'fieldtoggle' : null,
             ]),
-            // Lays the options out as a row; see `craft-radio-group`'s styles.
-            'thumbnails' => $this->hasThumbnails(),
-            'buttons' => $this->buttons,
+            'appearance' => $this->appearance ?? ($this->hasThumbnails() ? 'card-group' : null),
             'data' => [
                 'target-prefix' => $this->toggle ? ($this->targetPrefix ?? '#') : null,
             ],
         ];
-    }
-
-    /**
-     * Renders a Radio's thumbnail above it, in its own `label` so clicking the
-     * illustration selects the option — the behaviour Craft 5 got from wrapping
-     * the image and the input in one `label`.
-     */
-    #[\Override]
-    protected function optionLeadingHtml(ViewComponent $option): string
-    {
-        $thumbnail = $option instanceof Radio ? $option->getThumbnail() : null;
-
-        if ($thumbnail === null) {
-            return '';
-        }
-
-        $aspectRatio = $thumbnail['aspectRatio'] ?? null;
-
-        return Html::tag('label', Html::tag('img', '', [
-            'src' => $thumbnail['src'],
-            'width' => $thumbnail['width'] ?? null,
-            'height' => $thumbnail['height'] ?? null,
-            'style' => $aspectRatio !== null ? ['aspect-ratio' => $aspectRatio] : null,
-            'alt' => '',
-        ]), [
-            'class' => 'radio-thumbnail',
-            'for' => $option->getId(),
-        ]);
     }
 
     private function hasThumbnails(): bool

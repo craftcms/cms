@@ -21,6 +21,12 @@ export interface ScreenProps {
   /** Hides save controls without hiding non-save element actions. */
   saveDisabled?: boolean;
   /**
+   * The page shows its own read-only notices and hides its save controls with
+   * `saveDisabled`, so the shell ignores the `readOnly` page prop: no settings
+   * notice, and the footer keeps the page's other actions.
+   */
+  handlesReadOnly?: boolean;
+  /**
    * Hides the content footer altogether, for a page that puts its save
    * controls elsewhere and has nothing else to show there.
    */
@@ -73,6 +79,11 @@ export interface ScreenProps {
    * slideout is narrow already.
    */
   contentMaxWidth?: boolean | string;
+  /**
+   * Ends the content header with a rule, for a screen whose content starts
+   * right under its title row, such as a listing sorted from that row.
+   */
+  headerRule?: boolean;
   /**
    * Fits the shell to the viewport instead of letting the document scroll,
    * so `page-main` gets a definite height to fill (e.g. a full-bleed editor).
@@ -166,6 +177,8 @@ export interface ScreenSlots {
   'footer-meta'?: () => any;
   /** Right details column beside the content. Craft 5: `details`. */
   'content-details'?: () => any;
+  /** Atop the panel, spanning the secondary nav and the content. */
+  'page-header'?: () => any;
   /** Global page footer. */
   'page-footer'?: () => any;
 }

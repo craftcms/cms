@@ -68,6 +68,12 @@ class ContentBlock extends Element implements NestedElementInterface
     }
 
     #[Override]
+    public static function supportsRevisions(): bool
+    {
+        return true;
+    }
+
+    #[Override]
     public static function trackChanges(): bool
     {
         return true;

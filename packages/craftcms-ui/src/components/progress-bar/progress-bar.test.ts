@@ -58,6 +58,29 @@ describe('craft-progress-bar', () => {
     expect(fill(element).style.width).toBe('50%');
   });
 
+  it('settles a derived value in a single update', async () => {
+    const element = document.createElement('craft-progress-bar');
+    element.total = 50;
+    element.processed = 25;
+    document.body.append(element);
+
+    expect(await element.updateComplete).toBe(true);
+    expect(track(element).getAttribute('aria-valuenow')).toBe('50');
+  });
+
+  it('fires craft-complete once, when the processed count reaches the total', async () => {
+    const element = await createProgressBar({total: '2', processed: '1'});
+    let completions = 0;
+    element.addEventListener('craft-complete', () => completions++);
+
+    element.processed = 2;
+    await element.updateComplete;
+    element.label = 'Done';
+    await element.updateComplete;
+
+    expect(completions).toBe(1);
+  });
+
   /**
    * A pending bar has no value to report, so it fills the track and drops
    * `aria-valuenow` rather than claiming a number it does not have.

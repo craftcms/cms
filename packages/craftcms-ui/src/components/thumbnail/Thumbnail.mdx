@@ -37,6 +37,10 @@ The box is sized by `--c-thumbnail-size` rather than by the image, so a column o
 
 <Canvas of={ThumbnailStories.CustomSize} sourceState="shown" />
 
+Inside a chip, the chip sets `--c-thumbnail-size` from its `thumb-size`, so the same thumbnail grows with it. See [Chip](?path=/docs/components-chip--docs#thumbnail-size).
+
+<Canvas of={ThumbnailStories.InChipThumbSizes} sourceState="shown" />
+
 ## Your Own Content
 
 With no `src`, the default slot renders instead — and still gets the box, the rounding, and the checkered backing:

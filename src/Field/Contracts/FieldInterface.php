@@ -280,6 +280,17 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     public function uiWarning(?ElementInterface $element = null): ?string;
 
     /**
+     * Rekeys the errors the field added to an element so the element's UI can show each one where it was raised.
+     *
+     * A field that shows nested elements' fields, such as Matrix, moves their errors from the keys it copied
+     * them to onto the paths of the nested controls.
+     *
+     * @param  array<string, list<string>>  $errors  The element's errors, keyed as {@see ElementInterface::uiErrors()} keys them
+     * @return array<string, list<string>>
+     */
+    public function uiErrors(ElementInterface $element, array $errors): array;
+
+    /**
      * Prepare the field value for validation.
      *
      * Use this method to normalize or transform the value before
@@ -354,7 +365,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
      * - If an existing element was retrieved from the database, the value will be whatever is stored in the field’s
      *   `content` table column. (Or if the field doesn’t have a `content` table column per [[hasContentColumn()]],
      *   the value will be `null`.)
-     * - If the field is being cleared out (e.g. via the `resave/entries` command with `--to :empty:`),
+     * - If the field is being cleared out (e.g. via the `resave:entries` command with `--to :empty:`),
      *   the value will be an empty string (`''`).
      *
      * There are cases where a pre-normalized value could be passed in as well, so be sure to account for that.

@@ -10,7 +10,9 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Gql\Events\ElementPopulated;
 use CraftCms\Cms\Gql\Events\ElementPopulating;
 use CraftCms\Cms\Gql\Exceptions\GqlException;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Support\Facades\Elements;
+use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\Argument;
 use GraphQL\Type\Definition\InputObjectField;
@@ -18,6 +20,8 @@ use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\WrappingType;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
+use InvalidArgumentException;
 
 /**
  * @since 6.0.0
@@ -45,6 +49,11 @@ abstract class ElementMutationResolver extends MutationResolver
      */
     protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
+        // Make sure an authenticated user can save the element before it’s modified
+        if ($element->id) {
+            $this->requireUserAuthorization($element, 'save');
+        }
+
         $normalized = false;
 
         if ($resolveInfo) {
@@ -67,15 +76,28 @@ abstract class ElementMutationResolver extends MutationResolver
         $arguments = $event->arguments;
         $element = $event->element;
 
+        // For authenticated requests, custom field values are set after everything else, so field layout conditions
+        // can be evaluated against the populated element
+        $authenticated = GqlHelper::getSchemaUser() !== null;
+        $fieldValues = [];
+
         foreach ($arguments as $argument => $value) {
             if (isset($contentFields[$argument])) {
                 if (! $normalized) {
                     $value = $this->normalizeValue($argument, $value);
                 }
-                $element->setFieldValueFromRequest($argument, $value);
+                if ($authenticated) {
+                    $fieldValues[$argument] = $value;
+                } else {
+                    $element->setFieldValueFromRequest($argument, $value);
+                }
             } elseif ($element->canSetProperty($argument)) {
                 $element->{$argument} = $value;
             }
+        }
+
+        if (! empty($fieldValues)) {
+            GqlHelper::populateFieldValues($element, $fieldValues);
         }
 
         // Fire an 'afterMutationPopulateElement' event
@@ -93,6 +115,8 @@ abstract class ElementMutationResolver extends MutationResolver
      */
     protected function saveElement(ElementInterface $element): ElementInterface
     {
+        $this->requireUserAuthorization($element, 'save');
+
         /** @var Element $element */
         if ($element->enabled && $element->ruleset->inScenarios(ElementRules::SCENARIO_DEFAULT)) {
             $element->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
@@ -125,6 +149,31 @@ abstract class ElementMutationResolver extends MutationResolver
         }
 
         return $element;
+    }
+
+    /**
+     * Ensures that the user an authenticated schema was created for (if any) is authorized to perform an action on
+     * an element, and throws an exception if not.
+     *
+     * @param  string  $action  `save`, `saveCanonical`, `delete`, or `createDrafts`
+     *
+     * @throws Error
+     */
+    protected function requireUserAuthorization(ElementInterface $element, string $action): void
+    {
+        $user = GqlHelper::getSchemaUser();
+
+        if (! $user) {
+            return;
+        }
+
+        if (! in_array($action, ['save', 'saveCanonical', 'delete', 'createDrafts'], true)) {
+            throw new InvalidArgumentException("Invalid action: $action");
+        }
+
+        if (! Gate::forUser($user)->allows($action, $element)) {
+            throw new Error('Unable to perform the action.');
+        }
     }
 
     /**

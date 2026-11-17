@@ -65,7 +65,7 @@
 </script>
 
 <template>
-  <template v-if="!newMigrations">
+  <template v-if="!newMigrations.length">
     <craft-empty :label="t('No pending content migrations.')"></craft-empty>
   </template>
   <template v-if="allMigrations.length">
@@ -81,4 +81,14 @@
   </template>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  :deep(.cp-table tr > :is(th, td)) {
+    &:first-child {
+      padding-inline-start: 0;
+    }
+
+    &:last-child {
+      padding-inline-end: 0;
+    }
+  }
+</style>

@@ -6,7 +6,9 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Mcp\Attributes\QueryParamsSchema;
 use CraftCms\Cms\Mcp\ElementQueryCriteria;
 use CraftCms\Cms\Mcp\ElementQueryFactory;
 use CraftCms\Cms\Mcp\ElementResourceLinks;
@@ -19,6 +21,7 @@ use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Result\CallToolResult;
 use Mcp\Schema\ToolAnnotations;
+use Mcp\Server\RequestContext;
 
 /**
  * @since 6.0.0
@@ -27,28 +30,14 @@ readonly class Search
 {
     private const int DefaultLimit = 25;
 
-    private const array CriteriaSchema = [
-        'type' => 'object',
-        'properties' => [
-            'site' => ElementQueryCriteria::SchemaProperties['site'],
-            'siteId' => ElementQueryCriteria::SchemaProperties['siteId'],
-            'status' => ElementQueryCriteria::SchemaProperties['status'],
-            'relatedTo' => ElementQueryCriteria::SchemaProperties['relatedTo'],
-            'with' => ElementQueryCriteria::SchemaProperties['with'],
-            'archived' => ElementQueryCriteria::SchemaProperties['archived'],
-            'orderBy' => ElementQueryCriteria::SchemaProperties['orderBy'],
-            'offset' => ElementQueryCriteria::SchemaProperties['offset'],
-            'limit' => [
-                ...ElementQueryCriteria::SchemaProperties['limit'],
-                'default' => self::DefaultLimit,
-                'description' => 'Maximum results to return per element type.',
-            ],
-            'section' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Entry section handle or handles.'],
-            'volume' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'Asset volume handle or handles.'],
-            'folderId' => [...ElementQueryCriteria::IntegerOrIntegersSchema, 'description' => 'Asset folder ID or IDs.'],
-            'group' => [...ElementQueryCriteria::StringOrStringsSchema, 'description' => 'User group handle or handles.'],
+    private const array CriteriaProperties = [
+        'orderBy' => ElementQueryCriteria::SchemaProperties['orderBy'],
+        'offset' => ElementQueryCriteria::SchemaProperties['offset'],
+        'limit' => [
+            ...ElementQueryCriteria::SchemaProperties['limit'],
+            'default' => self::DefaultLimit,
+            'description' => 'Maximum results to return per element type.',
         ],
-        'additionalProperties' => false,
     ];
 
     public function __construct(
@@ -60,20 +49,26 @@ readonly class Search
     ) {}
 
     /**
-     * @param  list<string>  $types  Registered element reference handles or PHP classes; see craft://element-types and info.get. Defaults to all registered types.
+     * @param  list<string>  $types  Registered element reference handles or PHP classes; see craft://element-types and info_get. Defaults to all registered types.
      * @param  array<string, mixed>  $criteria  Search criteria applied to each compatible element type.
      * @param  list<string>|null  $fields
      */
     #[McpTool(
-        name: 'search.query',
+        name: 'search_query',
         description: 'Searches across registered Craft CMS element types using Craft search syntax.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function query(
+        RequestContext $context,
         string $query,
         #[Schema(items: ['type' => 'string'])]
         array $types = [],
-        #[Schema(definition: self::CriteriaSchema)]
+        #[QueryParamsSchema([
+            Element::class => ['site', 'siteId', 'status', 'relatedTo', 'with', 'archived'],
+            Entry::class => ['section'],
+            Asset::class => ['volume', 'folderId'],
+            User::class => ['group'],
+        ], self::CriteriaProperties)]
         array $criteria = [],
         #[Schema(definition: ElementSerializer::FieldsSchema)]
         ?array $fields = [],
@@ -85,6 +80,7 @@ readonly class Search
         }
 
         $actor = $this->actor->user();
+        $fields = ElementSerializer::fieldsArgument($context, $fields);
         $requestedTypes = $types !== [];
         $types = $this->resolveTypes($types ?: $this->elementQueries->registeredTypes());
         $userType = array_find($types, static fn (string $type): bool => is_a($type, User::class, true));

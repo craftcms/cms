@@ -53,6 +53,7 @@ export default css`
   }
 
   .tabs__tab-group {
+    display: flex;
     flex: 1;
     min-width: 0;
     gap: var(--c-tabs-tab-gap, var(--c-spacing-lg));
@@ -67,8 +68,24 @@ export default css`
     flex: none;
   }
 
-  /* Overrides LionTabs' bold, which would otherwise beat the tab's own
-     selected weight and its width-reserving label copy. */
+  /*
+   * Except the selected tab, which is never collapsed: when it alone is wider
+   * than the strip, it shrinks and truncates its label instead. Not while the
+   * overflow is being measured, which needs every tab's natural width.
+   */
+  :host(
+      :is([placement='block-start'], [placement='block-end']):not([equal-width])
+    )
+    .tabs__tab-group:not(.tabs__tab-group--measuring)
+    ::slotted([slot='tab'][selected]) {
+    flex: 0 1 auto;
+    min-width: 0;
+    --_tab-text-overflow: clip;
+    --_tab-text-wrap: nowrap;
+  }
+
+  /* Beats any selected weight from outside the tab, which would otherwise
+     fight the tab's own and its width-reserving label copy. */
   .tabs__tab-group ::slotted([slot='tab'][selected]) {
     font-weight: var(--c-tab-font-weight-active, var(--font-weight-semibold));
   }
@@ -121,6 +138,14 @@ export default css`
 
   .tabs__overflow[hidden] {
     display: none;
+  }
+
+  .tabs__panels ::slotted([slot='panel']) {
+    display: none;
+  }
+
+  .tabs__panels ::slotted([slot='panel'][selected]) {
+    display: block;
   }
 
   ::slotted([slot='panel']) {
@@ -212,5 +237,55 @@ export default css`
 
   :host([placement='inline-end']) .tabs__strip {
     border-inline-start-width: 1px;
+  }
+
+  /*
+   * Fill: the tabs sit on a quiet track instead of a rule, and the selected
+   * one is raised out of it. Its border carries the selection, so it keeps 3:1
+   * against the track. The underline indicator isn't drawn.
+   */
+  :host([appearance='fill']) {
+    --_track-padding: var(--c-spacing-sm);
+    --_tab-radius: var(--c-form-control-radius);
+    --c-tab-border-active: transparent;
+    --c-tab-spacing-inline: var(--c-spacing-md);
+    --c-tabs-tab-gap: var(--_track-padding);
+  }
+
+  :host([appearance='fill']) .tabs__strip {
+    padding: var(--_track-padding);
+    border-width: 0;
+    border-radius: calc(var(--_tab-radius) + var(--_track-padding));
+    background-color: var(--c-color-neutral-fill-quiet);
+  }
+
+  :host([appearance='fill']) ::slotted([slot='tab']) {
+    border: 1px solid transparent;
+    border-radius: var(--_tab-radius);
+    color: var(--c-color-neutral-on-quiet);
+  }
+
+  @media (hover: hover) {
+    :host([appearance='fill']) ::slotted([slot='tab']:hover:not([selected])) {
+      background-color: color-mix(
+        in srgb,
+        var(--c-surface-raised) 60%,
+        transparent
+      );
+      color: var(--c-color-neutral-on-normal);
+    }
+  }
+
+  :host([appearance='fill']) ::slotted([slot='tab'][selected]) {
+    border-color: var(--color-slate-500);
+    background-color: var(--c-surface-raised);
+    color: var(--c-color-neutral-on-normal);
+    box-shadow: var(--c-shadow-xs);
+  }
+
+  @media (forced-colors: active) {
+    :host([appearance='fill']) ::slotted([slot='tab'][selected]) {
+      border-color: Highlight;
+    }
   }
 `;

@@ -2,6 +2,7 @@ import {css, html, type PropertyValues} from 'lit';
 import CraftInput from '../input/input.js';
 import {t} from '@src/utilities/translate';
 import '../icon/icon.js';
+import type CraftButton from '../button/button.js';
 import '../button/button.js';
 
 /**
@@ -130,9 +131,9 @@ export default class CraftInputSearch extends CraftInput {
 
     super.connectedCallback();
 
-    this._inputNode?.setAttribute('enterkeyhint', 'search');
-    if (!this._inputNode?.hasAttribute('autocomplete')) {
-      this._inputNode?.setAttribute('autocomplete', 'off');
+    this._control?.setAttribute('enterkeyhint', 'search');
+    if (!this._control?.hasAttribute('autocomplete')) {
+      this._control?.setAttribute('autocomplete', 'off');
     }
     this.#syncClearButton();
   }
@@ -141,7 +142,7 @@ export default class CraftInputSearch extends CraftInput {
     super.updated(changedProperties);
 
     if (
-      changedProperties.has('modelValue') ||
+      changedProperties.has('value') ||
       changedProperties.has('disabled') ||
       changedProperties.has('readOnly')
     ) {
@@ -170,35 +171,36 @@ export default class CraftInputSearch extends CraftInput {
   override get slots() {
     return {
       ...super.slots,
-      prefix: () => ({
-        template: html`<craft-icon name="search"></craft-icon>`,
-        renderAsDirectHostChild: true,
-      }),
+      prefix: () => html`<craft-icon slot="prefix" name="search"></craft-icon>`,
     };
   }
 
   /**
    * Empties the field, moves focus to it, and fires `clear`.
    */
-  override clear() {
+  clear() {
     if (this.disabled || this.readOnly) {
       return;
     }
 
-    this.modelValue = '';
-    this._inputNode?.dispatchEvent(new Event('input', {bubbles: true}));
-    this._inputNode?.focus();
-    this.dispatchEvent(new CustomEvent('clear', {bubbles: true}));
+    this.value = '';
+    this._control?.dispatchEvent(
+      new Event('input', {bubbles: true, composed: true})
+    );
+    this._control?.focus();
+    this.dispatchEvent(
+      new CustomEvent('clear', {bubbles: true, composed: true})
+    );
   }
 
   #hasValue(): boolean {
-    return String(this.modelValue ?? '') !== '';
+    return this.value !== '';
   }
 
   #onKeydown = (event: KeyboardEvent) => {
     if (
       event.key !== 'Escape' ||
-      event.target !== this._inputNode ||
+      event.target !== this._control ||
       !this.#hasValue()
     ) {
       return;
@@ -227,7 +229,7 @@ export default class CraftInputSearch extends CraftInput {
       this.requestUpdate();
     } else if (!show && this.#clearButton) {
       if (this.#clearButton.contains(document.activeElement)) {
-        this._inputNode?.focus();
+        this._control?.focus();
       }
       this.#clearButton.remove();
       this.#clearButton = null;
@@ -236,8 +238,8 @@ export default class CraftInputSearch extends CraftInput {
     }
   }
 
-  #createClearButton(): HTMLElement {
-    const button = document.createElement('craft-button');
+  #createClearButton(): CraftButton {
+    const button = document.createElement('craft-button') as CraftButton;
     button.slot = 'search-clear';
     button.setAttribute('data-search-clear', '');
     button.setAttribute('type', 'button');
@@ -250,6 +252,13 @@ export default class CraftInputSearch extends CraftInput {
     icon.setAttribute('name', 'xmark-large');
     icon.setAttribute('label', t('Clear search'));
     button.append(icon);
+
+    // Out of the Tab order: a keyboard user empties the field with Escape,
+    // or by selecting the text and deleting it. Set after the button's first
+    // update, which otherwise puts it back to 0.
+    button.updateComplete.then(() => {
+      button.tabIndex = -1;
+    });
 
     return button;
   }

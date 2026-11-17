@@ -1,10 +1,15 @@
 <script setup lang="ts">
   import {onMounted, ref} from 'vue';
   import {useHttp} from '@inertiajs/vue3';
+  import {t} from '@craftcms/ui';
   import {show} from '@actions/Utilities/DeprecationErrorsController';
 
   const props = defineProps<{
     logId: number;
+  }>();
+
+  const emit = defineEmits<{
+    (e: 'close'): void;
   }>();
 
   const http = useHttp<Record<string, never>, {html: string}>({});
@@ -20,14 +25,20 @@
 </script>
 
 <template>
-  <craft-pane class="max-w-4xl">
-    <template v-if="http.processing">
+  <craft-pane :label="t('Stack Trace')">
+    <craft-button
+      slot="header-actions"
+      type="button"
+      icon="xmark-large"
+      :aria-label="t('Close')"
+      variant="plain"
+      size="small"
+      flush="inline-end"
+      @click="emit('close')"
+    ></craft-button>
+    <div v-if="http.processing" class="flex h-80 items-center justify-center">
       <craft-spinner></craft-spinner>
-    </template>
-    <template v-if="http.wasSuccessful">
-      <div v-html="data?.html"></div>
-    </template>
+    </div>
+    <div v-else-if="http.wasSuccessful" v-html="data?.html"></div>
   </craft-pane>
 </template>
-
-<style scoped lang="scss"></style>

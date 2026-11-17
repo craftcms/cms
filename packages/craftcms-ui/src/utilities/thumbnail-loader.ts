@@ -68,6 +68,12 @@ export class ThumbnailLoader {
   destroy() {
     this.workers.forEach((worker) => worker.deactivate());
     this.#abortController?.abort();
+
+    for (const key in ThumbnailLoader.invisibleThumbs) {
+      if (ThumbnailLoader.invisibleThumbs[key]?.[0] === this) {
+        delete ThumbnailLoader.invisibleThumbs[key];
+      }
+    }
   }
 }
 

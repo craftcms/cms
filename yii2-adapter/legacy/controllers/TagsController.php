@@ -17,6 +17,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Search;
 use CraftCms\Cms\Support\Url;
+use Illuminate\Support\Facades\DB as DbFacade;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -194,7 +195,7 @@ class TagsController extends Controller
         $tags = Tag::find()
             ->groupId($tagGroupId)
             ->title(Db::escapeParam($search) . '*')
-            ->orderBy(['LENGTH([[title]])' => SORT_ASC])
+            ->orderBy(DbFacade::raw('LENGTH(' . DbFacade::getQueryGrammar()->wrap('elements_sites.title') . ')'))
             ->limit(5)
             ->all();
 

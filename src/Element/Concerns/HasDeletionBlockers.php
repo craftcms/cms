@@ -20,14 +20,7 @@ trait HasDeletionBlockers
     public static function deletionBlockers(ElementCollection $elements, bool $hardDelete): array
     {
         $blockers = [
-            new RelationDeletionBlocker(Entry::class, $elements, $hardDelete, [
-                'elementIndexSettings' => [
-                    'defaultTableColumns' => [
-                        ['section'],
-                    ],
-                    'defaultSort' => ['section', 'asc'],
-                ],
-            ]),
+            new RelationDeletionBlocker(Entry::class, $elements, $hardDelete),
             new FieldReferencesDeletionBlocker($elements, $hardDelete),
         ];
 

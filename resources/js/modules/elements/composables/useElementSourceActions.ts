@@ -51,10 +51,9 @@ export function useElementSourceActions(options: ElementSourceActionsOptions) {
 
   const visitOptions = {
     // Switching sources rebuilds the list view (data, columns, sort, actions,
-    // pagination…), but the source nav itself and the publishable sections
-    // behind the New-entry button don't change — so skip re-sending those two
-    // rather than re-fetching the whole page.
-    except: ['sources', 'publishableSections'],
+    // pagination…), but the source nav itself doesn't change — so skip
+    // re-sending it rather than re-fetching the whole page.
+    except: ['sources'],
     preserveState: true,
     preserveScroll: true,
   };

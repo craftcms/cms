@@ -1,7 +1,9 @@
-import {effectScope, nextTick} from 'vue';
+import {createApp, effectScope, h, nextTick, type App} from 'vue';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type {ContentIndexData} from '@/modules/elements/index/composables/useContentIndexData';
+import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
 import {indexData} from '@/modules/elements/index/fixtures/indexData';
+import {prefixedKey} from '@/common/composables/useStorage';
 import {useModalElementIndex} from './useModalElementIndex';
 
 const post = vi.hoisted(() => vi.fn());
@@ -9,6 +11,13 @@ const post = vi.hoisted(() => vi.fn());
 vi.mock('@craftcms/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@craftcms/ui')>()),
   actionClient: {post},
+}));
+vi.mock('@/modules/elements/index/components/ElementIndexToolbar.vue', () => ({
+  default: {render: () => null},
+}));
+vi.mock('@inertiajs/vue3', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@inertiajs/vue3')>()),
+  usePage: () => ({props: {readOnly: false}}),
 }));
 
 const volume = {type: 'native', key: 'volume:abc', label: 'Uploads'};
@@ -29,14 +38,17 @@ function assetsData(overrides: Partial<ContentIndexData> = {}) {
 
 let scope: ReturnType<typeof effectScope>;
 
-function mountIndex(initial = assetsData()) {
+function mountIndex(
+  initial = assetsData(),
+  params: Record<string, unknown> = {elementType: 'Asset'}
+) {
   scope = effectScope();
 
   return scope.run(() =>
     useModalElementIndex({
       action: 'element-selector-modals/body',
       initial,
-      params: {elementType: 'Asset'},
+      params,
     })
   )!;
 }
@@ -87,7 +99,7 @@ function dblClick(
 }
 
 beforeEach(() => {
-  vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+  vi.stubGlobal('Craft', {systemUid: 'test'});
   post.mockResolvedValue({data: {props: assetsData()}});
 });
 
@@ -241,6 +253,59 @@ describe('double-clicking', () => {
     expect(index.view.selection.selectedIds.value).toEqual([]);
   });
 
+  it('selects nothing when read-only', () => {
+    scope = effectScope();
+    const index = scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData(),
+        params: {elementType: 'Asset'},
+        readOnly: true,
+      })
+    )!;
+
+    expect(dblClick(index, index.view.elementIndex.data[1]!).handled).toBe(
+      true
+    );
+    expect(index.view.selection.selectedIds.value).toEqual([]);
+  });
+
+  it('saves its view settings under the storage key it is given', () => {
+    localStorage.clear();
+    scope = effectScope();
+    scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData(),
+        params: {elementType: 'Asset'},
+        storageKey: 'commerce-user-completed-orders',
+      })
+    );
+
+    expect(
+      localStorage.getItem(prefixedKey('commerce-user-completed-orders'))
+    ).not.toBeNull();
+  });
+
+  it('reports a failed request to onError', async () => {
+    const onError = vi.fn();
+    const failure = new Error('offline');
+    post.mockRejectedValueOnce(failure);
+    scope = effectScope();
+    const index = scope.run(() =>
+      useModalElementIndex({
+        action: 'element-selector-modals/body',
+        initial: assetsData(),
+        params: {elementType: 'Asset'},
+        onError,
+      })
+    )!;
+
+    await index.visitor.visit({});
+
+    expect(onError).toHaveBeenCalledWith(failure);
+  });
+
   it('chooses nothing from a control inside an asset', () => {
     const index = mountIndex();
 
@@ -313,6 +378,29 @@ describe('leaving a folder', () => {
     index.changeSource(otherVolume.key);
 
     expect(lastQuery()).toMatchObject({source: otherVolume.key});
+    expect(lastQuery()).not.toHaveProperty('folderId');
+  });
+
+  // Such as an Assets field's upload location within its volume.
+  it('goes back to the volume’s root from the folder the modal opened in', async () => {
+    // Requested by its path, which the sidebar lists by the source's own key
+    const index = mountIndex(assetsData(), {
+      elementType: 'Asset',
+      source: `volume:xyz/${volume.key}`,
+      folderId: 5,
+    });
+
+    expect(index.activeSourceKey.value).toBe(volume.key);
+
+    // Any request made before leaving it, such as reaching into subfolders
+    index.setIncludeSubfolders(true);
+    expect(lastQuery()).toMatchObject({
+      source: `volume:xyz/${volume.key}`,
+      folderId: 5,
+    });
+
+    index.changeSource(volume.key);
+    expect(lastQuery()).toMatchObject({source: volume.key});
     expect(lastQuery()).not.toHaveProperty('folderId');
   });
 
@@ -394,5 +482,98 @@ describe('picking folders', () => {
       true
     );
     expect(lastQuery()).toMatchObject({folderId: 7});
+  });
+});
+
+describe('searching subfolders', () => {
+  const searching = {
+    search: 'cat',
+    canSearchSubfolders: true,
+  } as Partial<ContentIndexData>;
+
+  it('is only offered while searching a folder that has subfolders', () => {
+    expect(mountIndex().canSearchSubfolders.value).toBe(false);
+    scope.stop();
+    expect(
+      mountIndex(assetsData({search: 'cat'})).canSearchSubfolders.value
+    ).toBe(false);
+    scope.stop();
+    expect(mountIndex(assetsData(searching)).canSearchSubfolders.value).toBe(
+      true
+    );
+  });
+
+  it('asks for subfolders’ assets, and stops asking once it’s turned off', async () => {
+    const index = mountIndex(assetsData(searching));
+
+    index.setIncludeSubfolders(true);
+    await vi.waitFor(() =>
+      expect(lastQuery()).toMatchObject({search: 'cat', includeSubfolders: 1})
+    );
+
+    index.setIncludeSubfolders(false);
+    await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(2));
+    expect(lastQuery()).not.toHaveProperty('includeSubfolders');
+  });
+});
+
+describe('structure sources', () => {
+  let app: App | undefined;
+  let host: HTMLElement | undefined;
+
+  afterEach(() => {
+    app?.unmount();
+    host?.remove();
+    localStorage.clear();
+  });
+
+  it('nests children under their parent', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('<svg></svg>'))
+    );
+    const section = {
+      type: 'native',
+      key: 'section:abc',
+      label: 'Pages',
+      structureId: 1,
+    };
+    const initial = indexData(undefined, {
+      source: section,
+      sources: [section],
+      sites: [],
+      actions: [],
+      viewState: {mode: 'structure'},
+      viewModes: [
+        {mode: 'structure', title: 'Structure', icon: 'structure'},
+        {mode: 'table', title: 'Table', icon: 'table'},
+      ],
+      structure: {id: 1, editable: false, maxLevels: null},
+      data: [
+        {id: 1, label: 'About', title: 'About', level: 1, hasDescendants: true},
+        {id: 2, label: 'Team', title: 'Team', level: 2, hasDescendants: false},
+      ],
+    } as Partial<ContentIndexData>);
+    post.mockResolvedValue({data: {props: initial}});
+    host = document.createElement('div');
+    document.body.append(host);
+    app = createApp({
+      setup() {
+        const index = useModalElementIndex({
+          action: 'element-selector-modals/body',
+          initial,
+          params: {elementType: 'Entry'},
+        });
+        return () =>
+          h(ElementIndex, {view: index.view, itemBehavior: index.itemBehavior});
+      },
+    });
+    app.mount(host);
+    await nextTick();
+
+    const rows = host.querySelectorAll<HTMLElement>('tr.cp-table-row');
+    expect(rows[0]!.style.getPropertyValue('--structure-level')).toBe('1');
+    expect(rows[1]!.style.getPropertyValue('--structure-level')).toBe('2');
+    expect(rows[0]!.querySelector('.cp-table-structure-toggle')).not.toBeNull();
   });
 });

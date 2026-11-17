@@ -1,7 +1,6 @@
 import {toHandle} from '@craftcms/ui/utilities/string';
 import {BaseInputGenerator} from './base-input-generator';
-
-declare const Craft: any;
+import {ConfigService} from '@craftcms/ui/services/Config';
 
 /**
  * Generates a handle from a source value. Port of `Craft.HandleGenerator`.
@@ -22,7 +21,7 @@ export class HandleGenerator extends BaseInputGenerator {
   override generateTargetValue(sourceVal: string): string {
     return toHandle(sourceVal, {
       allowNonAlphaStart: this.settings!.allowNonAlphaStart ?? false,
-      handleCasing: Craft.handleCasing,
+      handleCasing: ConfigService.getInstance().get('handleCasing'),
     });
   }
 }

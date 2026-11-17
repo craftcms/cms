@@ -15,6 +15,8 @@
   import SystemInfo from '@/common/components/SystemInfo.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import AssistantToggle from '@/modules/ai/assistant/AssistantToggle.vue';
+  import CommandPaletteTrigger from '@/modules/command-palette/components/CommandPaletteTrigger.vue';
 
   // Passed in rather than read here: `crumbs` is a page prop, but whether there's
   // a context menu depends on the shell's own slots, which a child can't see.
@@ -36,7 +38,12 @@
       : ['start', 'indicators', 'end', 'breadcrumbs']
   );
 
-  const {toggle: toggleSidebar, toggleButton} = useGlobalSidebar();
+  const {
+    toggle: toggleSidebar,
+    toggleButton,
+    collapsed: sidebarCollapsed,
+    width: sidebarWidth,
+  } = useGlobalSidebar();
 
   // The composable returns focus here when the floating sidebar closes, and it
   // can't reach into a template of its own to find the button.
@@ -51,6 +58,9 @@
   const maintenanceMode = computed(() => page.props.craft.maintenanceMode);
   const notifications = computed(() => page.props.craft.general.notifications);
   const devMode = computed(() => page.props.craft.devMode);
+  const hasAssistant = computed(
+    () => page.props.craft.currentUser?.aiAssistant ?? false
+  );
 
   /**
    * Which bridge drew this screen, for the badge below. Only the two bridged
@@ -76,7 +86,10 @@
 </script>
 
 <template>
-  <header class="cp-header-bar" data-theme="dark">
+  <header
+    class="cp-header-bar"
+    :style="{'--cp-header-sidebar-width': sidebarWidth}"
+  >
     <template v-for="section in sectionOrder" :key="section">
       <div class="cp-header-bar__start" v-if="section === 'start'">
         <craft-button
@@ -121,19 +134,18 @@
       </div>
 
       <div class="cp-header-bar__end" v-else-if="section === 'end'">
-        <div class="flex gap-md items-center">
-          <craft-button
-            icon
-            :variant="ButtonVariant.Plain"
-            type="button"
-            size="small"
-          >
-            <craft-icon name="search" :label="t('Search')"></craft-icon>
-          </craft-button>
-          <cp-notification-center
-            :notifications.prop="notifications"
-          ></cp-notification-center>
-          <UserMenu />
+        <div class="cp-header-bar__actions flex gap-sm items-center">
+          <div class="cp-header-bar__icons flex items-center">
+            <CommandPaletteTrigger />
+            <AssistantToggle v-if="hasAssistant" />
+            <cp-notification-center
+              :notifications.prop="notifications"
+              :flush="isLarge ? 'inline-end' : undefined"
+            ></cp-notification-center>
+          </div>
+          <div class="cp-header-bar__user">
+            <UserMenu />
+          </div>
         </div>
       </div>
 
@@ -142,16 +154,27 @@
         v-else-if="section === 'breadcrumbs'"
       >
         <div class="flex gap-md items-center">
-          <SystemInfo v-if="isLarge" />
+          <SystemInfo
+            v-if="isLarge"
+            class="cp-header-bar__system"
+            :class="{'cp-header-bar__system--collapsed': sidebarCollapsed}"
+          />
           <div
             class="flex flex-nowrap items-center gap-md"
             v-show="crumbs || hasContextMenu"
           >
-            <span class="text-xs text-(--c-text-quiet) px-sm" v-if="isLarge"
+            <span
+              v-if="isLarge && sidebarCollapsed"
+              class="cp-header-bar__separator"
+              aria-hidden="true"
               >/</span
             >
-            <Breadcrumbs v-if="crumbs" :items="crumbs" class="gap-md" />
-            <div v-show="hasContextMenu" class="context-menu-container">
+            <Breadcrumbs v-if="crumbs" :items="crumbs" />
+            <div
+              v-show="hasContextMenu"
+              class="context-menu-container"
+              data-command-palette-actions
+            >
               <LayoutSlotOutlet name="context-menu">
                 <slot name="context-menu"></slot>
               </LayoutSlotOutlet>
@@ -164,43 +187,38 @@
 </template>
 
 <style scoped>
-  html:not([data-theme='dark']) .cp-header-bar {
-    --c-surface-sunken: color-mix(
-      in oklab,
-      var(--color-base-50),
-      var(--color-black) 10%
-    );
-  }
-
   .cp-header-bar {
-    --badge-border-color: var(--c-surface-sunken);
-    background-color: var(--c-surface-sunken);
-    padding-block-start: calc(var(--c-spacing-sm) - 1px);
+    --badge-border-color: var(--c-surface-page);
+    padding-block-start: var(--c-spacing-sm);
     padding-block-end: var(--c-spacing-sm);
-    padding-inline: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
     padding-inline-end: calc(
-      var(--c-spacing-sm) + var(--cp-scrollbar-width, 0px)
+      var(--c-spacing-md) + var(--cp-scrollbar-width, 0px)
     );
-    min-height: calc(42rem / 16);
+    min-height: var(--cp-header-height);
     display: grid;
-    gap: var(--spacing);
+    gap: var(--c-spacing-sm);
     grid-template-areas: 'start . indicators end' 'breadcrumbs breadcrumbs breadcrumbs breadcrumbs';
     grid-template-columns:
       var(--c-size-touch-target)
       1fr auto auto;
     grid-template-rows: repeat(2, auto);
     align-items: center;
-    border-block-start: 1px solid rgba(0 0 0 / 0.25);
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-    box-shadow: var(--c-shadow-xs), var(--c-shadow-lg);
     position: relative;
     z-index: var(--c-layer-header);
 
+    @media (width < var(--breakpoint-lg)) {
+      /* As much above the menu button as beside it. */
+      padding-block-start: var(--c-spacing-md);
+      border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+    }
+
     @media (width >= var(--breakpoint-lg)) {
-      padding-inline: var(--c-spacing-md);
-      padding-inline-end: calc(
-        var(--c-spacing-md) + var(--cp-scrollbar-width, 0px)
-      );
+      /* As tall as the collapsed sidebar and the details rail are wide, so the
+         system icon sits in the corner square they make. */
+      min-height: var(--cp-rail-width);
+      padding-inline-start: var(--c-spacing-md);
+      padding-inline-end: var(--cp-scrollbar-width, 0px);
       gap: calc(var(--spacing) * 3);
       grid-template-areas: 'breadcrumbs indicators end';
       grid-template-rows: auto;
@@ -219,6 +237,20 @@
     grid-area: end;
   }
 
+  /* As wide as the details rail, so the avatar centers on its tabs and the
+     icons end where the details pane does. */
+  @media (width >= var(--breakpoint-lg)) {
+    .cp-header-bar__actions {
+      gap: 0;
+    }
+
+    .cp-header-bar__user {
+      display: flex;
+      justify-content: center;
+      inline-size: var(--cp-rail-width);
+    }
+  }
+
   .cp-header-bar__indicators {
     grid-area: indicators;
     display: flex;
@@ -231,11 +263,88 @@
     --c-link-decoration-hover: underline;
     grid-area: breadcrumbs;
     overflow: auto;
+    /* Room inside the scroll area for focus rings, which it would clip. */
+    padding: var(--c-spacing-sm);
+    margin: calc(var(--c-spacing-sm) * -1);
+  }
+
+  /* The logo is a collapsed nav item's size and sits in its column, so it holds
+     still as the sidebar collapses and the name starts where the collapsed
+     content does. */
+  .cp-header-bar__system {
+    flex: none;
+    inline-size: calc(var(--cp-header-sidebar-width) - var(--c-spacing-md) * 2);
+  }
+
+  .cp-header-bar__system--collapsed {
+    inline-size: auto;
+    max-inline-size: calc(var(--cp-sidebar-width) - var(--c-spacing-md) * 2);
+  }
+
+  /* Matches craft-breadcrumb-item's separators. */
+  .cp-header-bar__separator {
+    --_chevron-stroke: 1px;
+    --_chevron-angle: 30deg;
+    --_chevron-reach: calc(12rem / 16 * tan(var(--_chevron-angle)));
+    --_chevron-arm: calc(12rem / 16 / cos(var(--_chevron-angle)));
+    position: relative;
+    display: inline-block;
+    flex: none;
+    inline-size: calc(var(--_chevron-reach) + var(--_chevron-stroke));
+    block-size: calc(24rem / 16);
+    color: var(--c-color-neutral-border-quiet);
+    font-size: 0;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      inset-inline-start: calc(var(--_chevron-reach) / 2);
+      block-size: var(--_chevron-arm);
+      border-inline-start: var(--_chevron-stroke) solid currentColor;
+    }
+
+    &::before {
+      inset-block-start: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+      rotate: calc(var(--_chevron-angle) * -1);
+    }
+
+    &::after {
+      inset-block-end: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+      rotate: var(--_chevron-angle);
+    }
+
+    &:dir(rtl) {
+      scale: -1 1;
+    }
+  }
+
+  /* Every crumb but the current one, back to full strength on hover. */
+  .cp-header-bar__breadcrumbs
+    :deep(craft-breadcrumb-item:not([aria-current='page'])) {
+    --c-text-link: var(--cp-chrome-text-color);
+    color: var(--cp-chrome-text-color);
+
+    &:hover {
+      --c-text-link: var(--c-text-default);
+      color: var(--c-text-default);
+    }
   }
 
   .cp-header-bar__breadcrumbs
     :deep(craft-breadcrumb-item[aria-current='page']) {
-    --c-chip-text: var(--color-slate-700);
-    color: var(--color-slate-700);
+    --c-chip-text: var(--color-slate-800);
+    color: var(--color-slate-800);
+  }
+
+  /* Plain buttons draw their icons in this, so it recolors them alone. */
+  .cp-header-bar__icons {
+    --c-color-neutral-on-quiet: var(--cp-chrome-icon-color);
+  }
+
+  .cp-header-bar__breadcrumbs
+    :deep(craft-breadcrumb-item > craft-icon[slot='prefix']) {
+    --c-icon-size: var(--cp-chrome-icon-size);
+    color: var(--cp-chrome-icon-color);
   }
 </style>

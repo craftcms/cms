@@ -14,6 +14,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import {useScreenContentReady} from '@/common/composables/screen';
   import {useAppLayout} from '@/common/composables/useAppLayout';
+  import {Tabs} from '@/modules/tabs';
 
   const props = defineProps<{
     content?: string | null;
@@ -22,6 +23,10 @@
     contentNotice?: string | null;
     errorSummary?: string | null;
     toolbar?: string | null;
+    contextMenu?: string | null;
+    actionButton?: string | null;
+    actionMenu?: string | null;
+    fullPageForm?: boolean;
     additionalButtons?: string | null;
     sidebar?: string | null;
     bodyClass?: Array<string> | string | null;
@@ -47,6 +52,11 @@
   const fragment = (html?: string | null) =>
     html ? {html, headHtml: '', bodyHtml: ''} : null;
 
+  /** Whether the screen's own save controls belong in the content footer. */
+  const savesFromFooter = computed(
+    () => Boolean(props.fullPageForm) && Boolean(props.actionButton)
+  );
+
   /**
    * Screens whose behavior is driven from JS — the element editor, notably —
    * wait on this before wiring themselves up.
@@ -65,6 +75,9 @@
         props.contentNotice,
         props.errorSummary,
         props.toolbar,
+        props.contextMenu,
+        props.actionButton,
+        props.actionMenu,
         props.additionalButtons,
         props.sidebar,
         props.details,
@@ -184,23 +197,17 @@
   });
 
   /**
-   * Boots the legacy tab controller over the injected tabs fragment.
+   * Boots the tab controller over the injected tabs fragment.
    *
-   * `Craft.Tabs` is never auto-initialized — it's constructed explicitly, the
-   * way `cp-screen-slideout` does for the same fragment. Without this the tab
-   * strip renders but selecting a tab does nothing, because nothing is
-   * toggling `.hidden` on the panes the legacy content declares.
+   * It's constructed explicitly, the way `cp-screen-slideout` does for the
+   * same fragment. Without this the tab strip renders but selecting a tab does
+   * nothing, because nothing is toggling `.hidden` on the panes the legacy
+   * content declares.
    */
-  let tabManager: any = null;
+  let tabManager: Tabs | null = null;
 
   function bootTabs(element: HTMLElement): void {
     fragmentReady();
-
-    const Tabs = (window as any).Craft?.Tabs;
-
-    if (!Tabs) {
-      return;
-    }
 
     const pane = (element.querySelector('.pane-tabs') ??
       element) as HTMLElement;
@@ -208,7 +215,7 @@
     tabManager = new Tabs(pane);
 
     const paneFor = (ev: any): HTMLElement | null => {
-      const href = ev?.$tab?.attr?.('href');
+      const href = ev?.tab?.getAttribute('href');
 
       return href ? document.querySelector<HTMLElement>(href) : null;
     };
@@ -222,12 +229,47 @@
   }
 
   onBeforeUnmount(() => {
-    tabManager?.destroy?.();
+    tabManager?.destroy();
     tabManager = null;
   });
 </script>
 
 <template>
+  <LayoutSlot v-if="contextMenu" name="context-menu">
+    <HtmlFragmentRenderer
+      :fragment="fragment(contextMenu)"
+      @ready="fragmentReady"
+    />
+  </LayoutSlot>
+
+  <!-- A full-page form's `actionButton` is the screen's own save controls:
+       Craft 5 drew them in the header, and this shell draws save controls in
+       the content footer, so they go there and stand in for the shell's. -->
+  <LayoutSlot v-if="savesFromFooter" name="primary-action">
+    <HtmlFragmentRenderer
+      class="flex flex-wrap items-center gap-md"
+      :fragment="fragment(actionButton)"
+      @ready="fragmentReady"
+    />
+  </LayoutSlot>
+
+  <LayoutSlot
+    v-if="(actionButton && !savesFromFooter) || actionMenu"
+    name="content-actions"
+  >
+    <HtmlFragmentRenderer
+      v-if="actionButton && !savesFromFooter"
+      class="flex flex-wrap items-center gap-md"
+      :fragment="fragment(actionButton)"
+      @ready="fragmentReady"
+    />
+    <HtmlFragmentRenderer
+      v-if="actionMenu"
+      :fragment="fragment(actionMenu)"
+      @ready="fragmentReady"
+    />
+  </LayoutSlot>
+
   <LayoutSlot v-if="tabs" name="content-tabs">
     <HtmlFragmentRenderer :fragment="fragment(tabs)" @ready="bootTabs" />
   </LayoutSlot>

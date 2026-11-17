@@ -11,6 +11,8 @@ import type {SourceItem} from '@/modules/elements/types/sources';
 
 interface ElementIndexSortContext {
   sort: Array<SortItem>;
+  /** The sort the source falls back to when none is requested. */
+  defaultSort?: Array<{field: string; direction: string}>;
   source?: SourceItem | null;
   /** The sortable attributes; switching to one starts at its `defaultDir`. */
   sortOptions?: Array<SortOption>;
@@ -114,6 +116,7 @@ export function useElementIndexSort(
 
     if (requestedPrimary.id === 'score') {
       changeServerSort([{id: 'score', desc: true}]);
+      sortingState.value = [{id: 'score', desc: true}];
       return;
     }
 
@@ -137,6 +140,9 @@ export function useElementIndexSort(
         desc: item.direction === 'desc',
       })),
     ]);
+    // Show the new sort right away rather than when the rows arrive. The View
+    // menu's select would otherwise snap back to the old field and send it.
+    sortingState.value = [primary];
     confirmedSort.value = [
       {
         field: primary.id,
@@ -177,8 +183,13 @@ export function useElementIndexSort(
   const sortField = computed<string>({
     get: () => sortingState.value[0]?.id ?? 'title',
     set: (field) => {
+      // The select reports the value it was given, e.g. after "Use defaults".
+      if (field === sortField.value) {
+        return;
+      }
+
       // A newly chosen attribute starts at its own default direction (e.g.
-      // dates sort newest-first); only same-field changes keep the current one.
+      // dates sort newest-first).
       const option = props.sortOptions?.find((o) => o.value === field);
       onSortingChange([
         {
@@ -201,6 +212,42 @@ export function useElementIndexSort(
 
   const sortingConfig = {...serverSortingConfig, onSortingChange};
 
+  /**
+   * Whether the sort is the source's default, or one the index imposes: a
+   * search's by score, or structure view's.
+   */
+  const isDefault = computed(() => {
+    const active = sortingState.value[0];
+    const fallback = props.defaultSort?.[0];
+
+    return (
+      !active ||
+      !fallback ||
+      ['score', 'structure'].includes(active.id) ||
+      (active.id === fallback.field &&
+        active.desc === (fallback.direction === 'desc'))
+    );
+  });
+
+  /**
+   * Returns to the source's default sort, which the server applies when none
+   * is requested. The page folds this into one visit with the other View menu
+   * settings (see `useElementIndex`).
+   */
+  function resetToDefault(): IndexRestore | null {
+    const fallback = props.defaultSort?.[0];
+
+    if (isDefault.value || !fallback) {
+      return null;
+    }
+
+    sortingState.value = [
+      {id: fallback.field, desc: fallback.direction === 'desc'},
+    ];
+
+    return {params: {sort: null}, only: ['data', 'sort', 'pagination']};
+  }
+
   return {
     sortingState,
     sortingConfig,
@@ -208,5 +255,7 @@ export function useElementIndexSort(
     sortField,
     sortDirection,
     restore,
+    isDefault,
+    resetToDefault,
   };
 }

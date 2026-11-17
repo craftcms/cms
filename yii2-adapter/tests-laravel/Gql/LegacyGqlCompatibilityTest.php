@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use craft\events\DefineGqlArgumentsEvent;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\events\RegisterGqlDirectivesEvent;
@@ -9,6 +10,8 @@ use craft\events\RegisterGqlMutationsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\ArgumentManager as LegacyArgumentManager;
+use craft\gql\base\ElementArguments as LegacyElementArguments;
+use craft\gql\base\StructureElementArguments as LegacyStructureElementArguments;
 use craft\gql\TypeLoader as LegacyTypeLoader;
 use craft\helpers\Gql as LegacyGqlHelper;
 use craft\models\GqlSchema;
@@ -23,11 +26,16 @@ use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\GqlArguments;
 use CraftCms\Cms\Gql\GqlDirectives;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\GqlHelper;
+use CraftCms\Cms\Http\Controllers\Gql\SchemasController;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockDirective;
 use CraftCms\Cms\Tests\TestClasses\Gql\MockType;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\Session;
+use Inertia\Testing\AssertableInertia;
 use yii\base\Event;
 
 uses(DatabaseTestCase::class);
@@ -196,6 +204,50 @@ it('shares registry and loader state across modern and legacy namespaces', funct
     expect(LegacyTypeLoader::loadType('SharedType'))->toBeInstanceOf(ObjectType::class);
 });
 
+it('gives legacy element argument classes their Craft 5 draft, revision, and structure arguments', function() {
+    app(Gql::class)->setActiveSchema(GqlHelper::createFullAccessSchema());
+    $structureArguments = LegacyGqlCompatibilityStructureArguments::getArguments();
+    $elementArguments = LegacyGqlCompatibilityElementArguments::getArguments();
+
+    expect($structureArguments)->toHaveKeys(['level', 'ancestorOf', 'positionedAfter', 'status', 'revisions'])
+        ->and($structureArguments)->not()->toHaveKey('drafts')
+        ->and($elementArguments)->toHaveKeys(['drafts', 'draftOf', 'revisions', 'revisionOf', 'status', 'title'])
+        ->and($elementArguments)->not()->toHaveKey('level');
+});
+
+it('lets legacy define-arguments listeners change draft and revision arguments', function() {
+    app(Gql::class)->setActiveSchema(GqlHelper::createFullAccessSchema());
+
+    $handler = function(DefineGqlArgumentsEvent $event) {
+        unset($event->arguments['drafts']);
+        $event->arguments['revisions']['description'] = 'Changed by a listener.';
+    };
+
+    Event::on(LegacyElementArguments::class, LegacyElementArguments::EVENT_DEFINE_ARGUMENTS, $handler);
+
+    try {
+        $arguments = LegacyGqlCompatibilityElementArguments::getArguments();
+
+        expect($arguments)->not()->toHaveKey('drafts')
+            ->and($arguments)->toHaveKey('draftOf')
+            ->and($arguments['revisions']['description'])->toBe('Changed by a listener.');
+    } finally {
+        Event::off(LegacyElementArguments::class, LegacyElementArguments::EVENT_DEFINE_ARGUMENTS, $handler);
+    }
+});
+
+it('offers the @transform directive permission on the schema screen when the legacy setting disables it', function() {
+    Cms::config()->disableGraphqlTransformDirective = true;
+    $this->actingAs(User::factory()->admin()->create());
+    Session::passwordConfirmed();
+
+    $this->get(action([SchemasController::class, 'create']))
+        ->assertInertia(fn(AssertableInertia $page) => $page
+            ->where('permissions', fn($permissions) => collect($permissions)
+                ->pluck('permissions')
+                ->contains(fn(array $groupPermissions) => array_key_exists('directive:transform', $groupPermissions))));
+});
+
 class AdapterGqlDirective extends MockDirective
 {
     public static function name(): string
@@ -242,5 +294,17 @@ class LegacyReplacementArgumentHandler extends AdapterArgumentHandler
     public function setArgumentManager(ArgumentManager $argumentManager): void
     {
         $this->argumentManager = $argumentManager;
+    }
+}
+
+class LegacyGqlCompatibilityElementArguments extends LegacyElementArguments
+{
+}
+
+class LegacyGqlCompatibilityStructureArguments extends LegacyStructureElementArguments
+{
+    public static function getDraftArguments(): array
+    {
+        return [];
     }
 }

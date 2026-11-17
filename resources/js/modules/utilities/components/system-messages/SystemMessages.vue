@@ -3,7 +3,6 @@
   import {ref} from 'vue';
   import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
   import type {ScreenPageProps} from '@/common/composables/screen';
-  import {useAppLayout} from '@/common/composables/useAppLayout';
   import {openSlideoutWith} from '@/common/slideouts';
   import type {BaseOption} from '@/common/types';
   import type {SystemMessageData} from '@/modules/utilities/types/utilities';
@@ -15,9 +14,14 @@
     primaryLanguage: string;
   }>();
 
-  useAppLayout({contentMaxWidth: true});
-
-  const localMessages = ref([...props.messages]);
+  /**
+   * Utility content is server-rendered HTML compiled by DynamicHtmlRenderer, so
+   * `messages` is a static literal that never updates. Reloading the
+   * `contentHtml` prop would remount this component and drop focus from the
+   * editor's opener, so saved copies are applied to this local list instead.
+   * Copy each message so saving never writes through to the prop objects.
+   */
+  const localMessages = ref(props.messages.map((message) => ({...message})));
 
   function openEditor(
     message: Omit<SystemMessageData, 'language'>,
@@ -62,13 +66,14 @@
 <template>
   <div id="messages" class="grid gap-6">
     <section v-for="message in localMessages" :key="message.key">
-      <h2 class="text-lg mb-2">{{ message.heading }}</h2>
+      <h2 class="cp-h2 mb-2">{{ message.heading }}</h2>
       <craft-card>
         <span slot="label" class="font-medium">{{ message.subject }}</span>
 
         <craft-button
           slot="actions"
           type="button"
+          variant="plain"
           icon
           size="small"
           @click="openEditor(message, $event)"

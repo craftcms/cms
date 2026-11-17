@@ -160,7 +160,12 @@ it('resolves CP timezone preferences after switching users and request context',
     Users::shouldReceive('getUserPreference')->once()->with(43, 'timeZone')->andReturn('America/New_York');
 
     expect(Cms::timezone())->toBe('Asia/Tokyo')
-        ->and(Cms::timezone())->toBe('America/New_York');
+        ->and(Cms::timezone())->toBe('Asia/Tokyo');
+
+    // Logging in as another user forgets the resolved time zone
+    Cms::forgetTimezone();
+
+    expect(Cms::timezone())->toBe('America/New_York');
 
     app()->instance('request', Request::create('/site'));
 
@@ -300,6 +305,16 @@ it('returns false when the database connection fails during installed checks', f
 
     expect(Cms::isInstalled())->toBeFalse()
         ->and(Context::getHidden('craft.isInstalled'))->toBeFalse();
+});
+
+it('returns true when only the read connection is reachable', function () {
+    createInfoRow();
+    $db = DB::connection();
+    $db->setReadPdo($db->getPdo());
+    $db->setPdo(fn () => throw new PDOException('connection failed'));
+    $db->useWriteConnectionWhenReading(false);
+
+    expect(Cms::isInstalled())->toBeTrue();
 });
 
 it('logs and returns false when fetching the info row fails', function () {

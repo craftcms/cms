@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Twig\Events\PageEnded;
 use CraftCms\Cms\Twig\Events\PageStarting;
 use CraftCms\Cms\Twig\Exceptions\TemplateExitException;
@@ -10,10 +11,16 @@ use CraftCms\Cms\View\Events\PageTemplateRendered;
 use CraftCms\Cms\View\Events\PageTemplateRendering;
 use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
+use CraftCms\Cms\View\HtmlStack;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
 use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateResolver;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Event;
 
 class TemplateManagerLifecycleTestRenderer implements TemplateRendererInterface
@@ -49,6 +56,13 @@ class TemplateManagerLifecycleTestRenderer implements TemplateRendererInterface
     ): string {
         return ($this->renderStringUsing)($template, $variables, $templateMode);
     }
+}
+
+class TemplateManagerLifecycleTestAsset implements LegacyAssetInterface
+{
+    public array $depends = [];
+
+    public function register(HtmlStack $htmlStack): void {}
 }
 
 beforeEach(function () {
@@ -280,3 +294,37 @@ it('renders inline strings without file lifecycle events', function () {
     Event::assertNotDispatched(PageTemplateRendering::class);
     Event::assertNotDispatched(PageTemplateRendered::class);
 });
+
+it('registers Live Preview assets on Live Preview page requests', function (?string $param, bool $hasToken, TemplateMode $templateMode, bool $expected) {
+    $param = match ($param) {
+        'encrypted' => Crypt::encrypt('x'),
+        default => $param,
+    };
+    app()->instance('request', Request::create('/', parameters: array_filter(['x-craft-live-preview' => $param])));
+
+    if ($hasToken) {
+        Context::addHidden(HandleTokenRequest::TOKEN_KEY, 'token');
+    }
+
+    $registry = Mockery::spy(InternalAssetRegistry::class);
+    app()->instance(InternalAssetRegistry::class, $registry);
+
+    $manager = new class(app(), $this->resolver, app(PageLifecycle::class)) extends TemplateManager
+    {
+        protected array $livePreviewAssets = [TemplateManagerLifecycleTestAsset::class];
+    };
+    $renderer = $this->renderer;
+    $manager->extend('test', static fn () => $renderer);
+
+    $manager->renderPageTemplate('example', ['value' => 'test'], $templateMode, renderer: 'test');
+
+    $expected
+        ? $registry->shouldHaveReceived('register')->with(TemplateManagerLifecycleTestAsset::class)->once()
+        : $registry->shouldNotHaveReceived('register', [TemplateManagerLifecycleTestAsset::class]);
+})->with([
+    'live preview' => ['encrypted', true, TemplateMode::Site, true],
+    'control panel template' => ['encrypted', true, TemplateMode::Cp, false],
+    'not live preview' => [null, true, TemplateMode::Site, false],
+    'param without a token' => ['encrypted', false, TemplateMode::Site, false],
+    'param that is not encrypted' => ['x', true, TemplateMode::Site, false],
+]);

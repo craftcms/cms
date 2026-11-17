@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
+use CraftCms\Cms\Mcp\Schema\ElementSchemaTypes;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Typecast;
+use LogicException;
 use Mcp\Exception\ToolCallException;
 
 /**
@@ -32,55 +37,11 @@ class ElementQueryCriteria
         ],
     ];
 
+    /** Paging and sorting properties that MCP tools add to element query params. */
     public const array SchemaProperties = [
-        'id' => [
-            ...self::IntegerOrIntegersSchema,
-            'description' => 'Element ID or IDs.',
-        ],
-        'uid' => [
-            ...self::StringOrStringsSchema,
-            'description' => 'Element UID or UIDs.',
-        ],
-        'site' => [
-            ...self::StringOrStringsSchema,
-            'description' => 'Site handle or handles.',
-        ],
-        'siteId' => [
-            ...self::IntegerOrIntegersSchema,
-            'description' => 'Site ID or IDs.',
-        ],
-        'status' => [
-            'anyOf' => [
-                ['type' => 'string'],
-                ['type' => 'array', 'items' => ['type' => 'string']],
-                ['type' => 'null'],
-            ],
-            'description' => 'Element status criteria. Use null to include all statuses.',
-        ],
-        'search' => [
-            'type' => 'string',
-            'description' => 'Native Craft element search query.',
-        ],
-        'trashed' => [
-            'type' => ['boolean', 'null'],
-            'description' => 'true returns deleted elements, false returns active elements, and null includes both. Use status: null when listing deleted elements.',
-        ],
-        'relatedTo' => [
-            'type' => 'array',
-            'description' => 'Native Craft relation criteria, such as related element IDs.',
-        ],
-        'with' => [
-            'type' => 'array',
-            'items' => ['type' => 'string'],
-            'description' => 'Eager-loading handles or paths.',
-        ],
-        'archived' => [
-            'type' => 'boolean',
-            'description' => 'Whether archived elements may be returned.',
-        ],
         'orderBy' => [
             'type' => 'string',
-            'description' => 'Native Craft element order expression.',
+            'description' => 'Comma-separated columns to order by, each optionally followed by `asc` or `desc`, such as `postDate desc, title`.',
         ],
         'offset' => [
             'type' => 'integer',
@@ -97,35 +58,35 @@ class ElementQueryCriteria
         ],
     ];
 
-    public const array EntrySchemaProperties = [
-        'slug' => [...self::StringOrStringsSchema, 'description' => 'Entry slug criteria.'],
-        'section' => [...self::StringOrStringsSchema, 'description' => 'Section handle or handles.'],
-        'sectionId' => [...self::IntegerOrIntegersSchema, 'description' => 'Section ID or IDs.'],
-        'type' => [...self::StringOrStringsSchema, 'description' => 'Entry type handle or handles.'],
-        'typeId' => [...self::IntegerOrIntegersSchema, 'description' => 'Entry type ID or IDs.'],
-        'authorId' => [...self::IntegerOrIntegersSchema, 'description' => 'Author user ID or IDs.'],
-    ];
+    /**
+     * Returns JSON Schema properties for the params an element type's query declares with {@see ElementQueryParam} that
+     * apply to the element type.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  list<string>|null  $only  Param names to return, whether or not they apply to the element type. Every name must be declared.
+     * @return array<string, array<string, mixed>>
+     */
+    public static function properties(string $elementType, ?array $only = null): array
+    {
+        if ($only === null) {
+            $params = ElementQueryParam::forElementType($elementType);
+        } else {
+            $queryClass = $elementType::find()::class;
+            $params = ElementQueryParam::all($queryClass);
+            $missing = array_diff($only, array_keys($params));
 
-    public const array AssetSchemaProperties = [
-        'volume' => [...self::StringOrStringsSchema, 'description' => 'Asset volume handle or handles.'],
-        'volumeId' => [...self::IntegerOrIntegersSchema, 'description' => 'Asset volume ID or IDs.'],
-        'folderId' => [...self::IntegerOrIntegersSchema, 'description' => 'Asset folder ID or IDs.'],
-        'filename' => [...self::StringOrStringsSchema, 'description' => 'Asset filename criteria.'],
-        'kind' => [...self::StringOrStringsSchema, 'description' => 'Asset file-kind criteria.'],
-    ];
+            if ($missing !== []) {
+                throw new LogicException("[$queryClass] does not declare the query params: ".implode(', ', $missing).'.');
+            }
 
-    public const array UserSchemaProperties = [
-        'group' => [...self::StringOrStringsSchema, 'description' => 'User group handle or handles.'],
-        'groupId' => [...self::IntegerOrIntegersSchema, 'description' => 'User group ID or IDs.'],
-        'username' => [...self::StringOrStringsSchema, 'description' => 'Username criteria.'],
-        'email' => [...self::StringOrStringsSchema, 'description' => 'User email criteria.'],
-        'firstName' => ['type' => 'string', 'description' => 'First name criteria.'],
-        'lastName' => ['type' => 'string', 'description' => 'Last name criteria.'],
-        'fullName' => ['type' => 'string', 'description' => 'Full name criteria.'],
-        'admin' => ['type' => 'boolean', 'description' => 'Whether to return admin users.'],
-        'hasPhoto' => ['type' => 'boolean', 'description' => 'Whether to return users with a photo.'],
-        'lastLoginDate' => ['type' => 'string', 'description' => 'Last login date criteria.'],
-    ];
+            $params = Arr::only($params, $only);
+        }
+
+        return collect($params)->map(fn (ElementQueryParam $param, string $name): array => [
+            ...ElementSchemaTypes::queryParam($param->type),
+            'description' => trim($param->descriptionFor($elementType).' '.$param->companion(Mcp::class)?->hint),
+        ])->all();
+    }
 
     /**
      * @param  array<string, array<string, mixed>>  $properties
@@ -151,10 +112,33 @@ class ElementQueryCriteria
     {
         $criteria['limit'] = $this->limit($criteria['limit'] ?? self::DefaultLimit);
         $criteria['offset'] = $this->offset($criteria['offset'] ?? 0);
+        $orderBy = Arr::pull($criteria, 'orderBy');
 
         Typecast::configure($query, $criteria);
 
+        if ($orderBy !== null) {
+            $this->orderBy($query, $orderBy);
+            $criteria['orderBy'] = $orderBy;
+        }
+
         return $criteria;
+    }
+
+    /**
+     * Applies each column of a `column [asc|desc], ...` string on its own, since
+     * element queries deprecate directions and column lists in one string.
+     */
+    private function orderBy(ElementQueryInterface $query, mixed $orderBy): void
+    {
+        if (! is_string($orderBy)) {
+            throw new ToolCallException('Element query criteria.orderBy must be a string.');
+        }
+
+        foreach (explode(',', $orderBy) as $column) {
+            if (preg_match('/^\s*(\S.*?)(?:\s+(asc|desc))?\s*$/i', $column, $matches)) {
+                $query->orderBy($matches[1], strtolower($matches[2] ?? 'asc'));
+            }
+        }
     }
 
     /**
@@ -201,8 +185,13 @@ class ElementQueryCriteria
     {
         if (isset($schema['anyOf']) && is_array($schema['anyOf'])) {
             return collect($schema['anyOf'])
-                ->map(fn (array $option): string => $this->type($option))
+                ->flatMap(fn (array $option): array => explode('|', $this->type($option)))
+                ->unique()
                 ->implode('|');
+        }
+
+        if (isset($schema['enum']) && is_array($schema['enum'])) {
+            return 'string';
         }
 
         $type = $schema['type'] ?? 'mixed';
@@ -212,7 +201,9 @@ class ElementQueryCriteria
         }
 
         if ($type === 'array' && isset($schema['items']) && is_array($schema['items'])) {
-            return $this->type($schema['items']).'[]';
+            $itemType = $this->type($schema['items']);
+
+            return (str_contains($itemType, '|') ? "($itemType)" : $itemType).'[]';
         }
 
         return is_string($type) ? $type : 'mixed';

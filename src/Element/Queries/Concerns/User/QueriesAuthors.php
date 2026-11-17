@@ -6,6 +6,8 @@ namespace CraftCms\Cms\Element\Queries\Concerns\User;
 
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -103,6 +105,7 @@ trait QueriesAuthors
      *
      * @uses $authors
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Narrows the query results based on whether the users are listed as the author of any entries.')]
     public function authors(?bool $value = true): self
     {
         $this->authors = $value;

@@ -120,8 +120,10 @@ readonly class JobProgress
             ->orderByRaw('CASE WHEN status = ? THEN 1 ELSE 0 END DESC', [JobStatus::Pending->value])
             // Then by now or dateCreated + delay, with furthest delayed jobs first
             ->orderByRaw("$delay DESC", [now()->getTimestamp()])
-            // Lastly by dateCreated
-            ->orderBy('dateCreated');
+            // Then by dateCreated
+            ->orderBy('dateCreated')
+            // Lastly by uid, so jobs created in the same second keep their order from page to page
+            ->orderBy('uid');
     }
 
     /**

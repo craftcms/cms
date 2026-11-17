@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import '@craftcms/ui/components/timeline-item/timeline-item';
-  import {computed} from 'vue';
+  import {computed, useSlots} from 'vue';
   import type {ActivityEvent} from '@/modules/activity/composables/useActivityTimeline';
   import ActivityTimelineActor from './ActivityTimelineActor.vue';
   import ActivityTimelineChanges from './ActivityTimelineChanges.vue';
@@ -14,8 +14,31 @@
     last: boolean;
   }>();
 
+  defineSlots<{
+    /** More of the event, below its changes, such as a comment’s text. */
+    default?(): unknown;
+    /** Beside the event’s time, before it, such as an actions menu. */
+    'meta-start'?(): unknown;
+  }>();
+
+  const slots = useSlots();
   const hasBody = computed(
-    () => props.event.source.label !== 'Craft' || props.event.changes.length > 0
+    () =>
+      props.event.source.label !== 'Craft' ||
+      props.event.changes.length > 0 ||
+      Boolean(slots.default)
+  );
+
+  // the operation becomes a link, so it's split out of the translated sentence;
+  // events without an origin, such as from a release, show the operation in its place
+  const originParts = computed(() =>
+    (props.event.origin
+      ? t('via {origin}: {operation}', {
+          origin: props.event.origin,
+          operation: '\u0000',
+        })
+      : t('via {origin}', {origin: '\u0000'})
+    ).split('\u0000')
   );
 
   function sentenceFragment(text: string | null): string {
@@ -27,14 +50,13 @@
 
 <template>
   <article :data-activity-event="event.id" class="activity-timeline__event">
-    <craft-timeline-item :last="last">
+    <craft-timeline-item .last="last">
       <craft-icon slot="marker" :name="event.icon ?? 'wave-pulse'" />
 
       <div slot="heading" class="activity-timeline__summary">
         <ActivityTimelineActor
           :actor="event.actor"
           :impersonator="event.impersonator"
-          :origin="event.origin"
         />
 
         <span
@@ -44,6 +66,22 @@
         />
         <span v-else class="activity-timeline__description">
           {{ sentenceFragment(event.description.text) }}
+        </span>
+        <span
+          v-if="event.origin || event.operation"
+          class="activity-timeline__origin"
+        >
+          <template v-if="event.operation">
+            {{ originParts[0]
+            }}<a v-if="event.operation.url" :href="event.operation.url">{{
+              event.operation.label
+            }}</a
+            ><template v-else>{{ event.operation.label }}</template
+            >{{ originParts[1] }}
+          </template>
+          <template v-else>{{
+            t('via {origin}', {origin: event.origin})
+          }}</template>
         </span>
       </div>
 
@@ -59,9 +97,12 @@
           v-if="event.changes.length"
           :changes="event.changes"
         />
+
+        <slot />
       </div>
 
-      <div slot="meta">
+      <div slot="meta" class="activity-timeline__meta">
+        <slot name="meta-start" />
         <time
           :datetime="event.occurredAt"
           :title="event.formattedOccurredAt.full"
@@ -78,8 +119,15 @@
     min-width: 0;
   }
 
-  .activity-timeline__description {
+  .activity-timeline__description,
+  .activity-timeline__origin {
     margin-inline-start: 0.25em;
+  }
+
+  .activity-timeline__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--c-spacing-sm);
   }
 
   .activity-timeline__body {

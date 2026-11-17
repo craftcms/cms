@@ -1,5 +1,7 @@
 import {css, html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
+import {linkTarget, newTabCue} from '@src/utilities/external-links';
 
 /**
  * A single crumb inside `craft-breadcrumbs`. Renders its default-slot content
@@ -21,64 +23,111 @@ export default class CraftBreadcrumbItem extends LitElement {
    */
   @property({reflect: true}) href?: string;
 
-  /** The link target (only used when `href` is set). */
-  /** Browsing context for the link, as on a native anchor. */
+  /**
+   * Browsing context for the link, as on a native anchor. Unset, a link to
+   * another host opens in a new tab.
+   */
   @property() target?: '_blank' | '_parent' | '_self' | '_top';
 
-  /** The link rel (only used when `href` and `target` are set). */
   /**
    * Link relationship. Defaults to `noreferrer noopener`, which is what a
    * crumb opening in a new tab should carry.
    */
   @property() rel = 'noreferrer noopener';
 
-  static override styles = css`
-    :host {
-      white-space: nowrap;
-      display: inline-flex;
-      gap: var(--c-spacing-sm);
-      align-items: center;
-      color: inherit;
-    }
+  static override styles = [
+    visuallyHiddenStyles,
+    css`
+      :host {
+        white-space: nowrap;
+        display: inline-flex;
+        gap: var(--c-spacing-sm);
+        align-items: center;
+        color: inherit;
+      }
 
-    .label {
-      display: inline-flex;
-      align-items: center;
-      font-weight: var(--font-weight-medium);
-      color: inherit;
-      text-decoration: none;
-    }
+      .label {
+        display: inline-flex;
+        align-items: center;
+        font-weight: var(--font-weight-medium);
+        color: inherit;
+        text-decoration: none;
+      }
 
-    /* The current page, which <craft-breadcrumbs> marks on the last crumb. */
-    :host([aria-current='page']) .label {
-      font-weight: var(--font-weight-light);
-    }
+      /* The current page, which <craft-breadcrumbs> marks on the last crumb. */
+      :host([aria-current='page']) .label {
+        font-weight: var(--font-weight-light);
+      }
 
-    a.label:hover {
-      text-decoration: underline;
-    }
+      a.label:hover {
+        text-decoration: underline;
+      }
 
-    slot[name='suffix']::slotted(*) {
-      margin-inline-start: var(--c-spacing-sm);
-    }
+      slot[name='suffix']::slotted(*) {
+        margin-inline-start: var(--c-spacing-sm);
+      }
 
-    slot[name='separator']::slotted(*) {
-      color: var(--c-text-quiet);
-      margin-block: 0;
-      margin-inline: var(--c-spacing-sm);
-    }
-  `;
+      /* With the crumb's gap, its margin puts as much space before it as the
+         list's gap puts after it (see craft-breadcrumbs), centering it. */
+      slot[name='separator']::slotted(*) {
+        color: var(--color-slate-300);
+        font-size: var(--c-text-base);
+        font-weight: var(--font-weight-light);
+        margin-block: 0;
+        margin-inline: var(--c-spacing-sm) 0;
+      }
+
+      slot[name='separator']::slotted([data-default]) {
+        --_chevron-stroke: 1px;
+        --_chevron-angle: 30deg;
+        --_chevron-reach: calc(12rem / 16 * tan(var(--_chevron-angle)));
+        --_chevron-arm: calc(12rem / 16 / cos(var(--_chevron-angle)));
+        position: relative;
+        display: inline-block;
+        inline-size: calc(var(--_chevron-reach) + var(--_chevron-stroke));
+        block-size: calc(24rem / 16);
+        color: var(--c-color-neutral-border-quiet);
+        font-size: 0;
+      }
+
+      slot[name='separator']::slotted([data-default])::before,
+      slot[name='separator']::slotted([data-default])::after {
+        content: '';
+        position: absolute;
+        inset-inline-start: calc(var(--_chevron-reach) / 2);
+        block-size: var(--_chevron-arm);
+        border-inline-start: var(--_chevron-stroke) solid currentColor;
+      }
+
+      slot[name='separator']::slotted([data-default])::before {
+        inset-block-start: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+        rotate: calc(var(--_chevron-angle) * -1);
+      }
+
+      slot[name='separator']::slotted([data-default])::after {
+        inset-block-end: calc((12rem / 16 - var(--_chevron-arm)) / 2);
+        rotate: var(--_chevron-angle);
+      }
+
+      :host(:dir(rtl)) slot[name='separator']::slotted([data-default]) {
+        scale: -1 1;
+      }
+    `,
+  ];
 
   override render() {
+    const target = linkTarget(this.href, this.target);
     const label = this.href
       ? html`<a
           part="label"
           class="label"
           href=${this.href}
-          target=${this.target ?? nothing}
-          rel=${this.target ? this.rel : nothing}
-          ><slot></slot
-        ></a>`
+          target=${target ?? nothing}
+          rel=${target ? this.rel : nothing}
+          ><slot></slot>${!this.target && target
+            ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
+            : nothing}</a
+        >`
       : html`<span part="label" class="label"><slot></slot></span>`;
 
     return html`

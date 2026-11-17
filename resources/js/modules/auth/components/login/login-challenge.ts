@@ -4,10 +4,12 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {t} from '@craftcms/ui';
 import {CraftAuthChallengeForm} from '../auth-challenge-form';
 import componentStyles from './login-form.styles.js';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 // Side-effect imports: ensure both forms call CraftAuthChallengeForm.register()
 // before isNative() is ever queried.
 import '../totp/totp-form.js';
 import '../recovery-codes/recovery-code-form.js';
+import {appendBodyHtml, appendHeadHtml} from '@craftcms/ui/utilities/dom';
 
 export interface TwoFactorData {
   authForm: string;
@@ -19,10 +21,7 @@ export interface TwoFactorData {
 }
 
 declare const Craft: {
-  appendHeadHtml: (html: string) => Promise<void>;
-  appendBodyHtml: (html: string) => Promise<void>;
-  initUiElements: (container: Element) => void;
-  createAuthFormHandler: (
+  createAuthFormHandler?: (
     method: string,
     container: Element,
     onSuccess: () => void,
@@ -49,12 +48,21 @@ export default class CraftLoginChallenge extends LitElement {
 
   #initialized = false;
 
+  #assetsAppendedFor: TwoFactorData | null = null;
+
+  /** The native form most recently focused, so each one is focused once. */
+  #focusedForm: Element | null = null;
+
   override async updated(changed: Map<string, unknown>) {
     super.updated(changed);
 
     const isNativeMethod = CraftAuthChallengeForm.isNative(
       this.data?.authMethod
     );
+
+    if (isNativeMethod && !this._switching) {
+      await this.#focusNativeForm();
+    }
 
     if (
       !isNativeMethod &&
@@ -65,6 +73,26 @@ export default class CraftLoginChallenge extends LitElement {
       this.#initialized = true;
       await this.#initLegacyForm();
     }
+  }
+
+  /**
+   * Focuses a native form's code input when it's first shown, including after
+   * switching methods: on the login screen it's the only thing to fill in.
+   * Legacy forms are focused the same way in {@link #initLegacyForm}.
+   */
+  async #focusNativeForm(): Promise<void> {
+    const form = this._container?.firstElementChild;
+
+    if (
+      !(form instanceof CraftAuthChallengeForm) ||
+      form === this.#focusedForm
+    ) {
+      return;
+    }
+
+    this.#focusedForm = form;
+    await form.updateComplete;
+    form.focus();
   }
 
   async #initLegacyForm() {
@@ -82,9 +110,23 @@ export default class CraftLoginChallenge extends LitElement {
       return;
     }
 
-    await Craft.appendHeadHtml(this.data.headHtml);
-    await Craft.appendBodyHtml(this.data.bodyHtml);
-    Craft.initUiElements($authForm);
+    if (this.#assetsAppendedFor !== this.data) {
+      this.#assetsAppendedFor = this.data;
+      await appendHeadHtml(this.data.headHtml);
+      await appendBodyHtml(this.data.bodyHtml);
+    }
+    initLegacyUi($authForm);
+
+    // Auth methods registered with the Yii2 adapter's legacy handler API.
+    // Without the adapter on the page there's nothing to wire the form up, so
+    // say so rather than leaving its submit button spinning forever.
+    if (typeof Craft.createAuthFormHandler !== 'function') {
+      this.#dispatchLoginFailed(
+        t('This authentication method isn’t available here.')
+      );
+
+      return;
+    }
 
     Craft.createAuthFormHandler(
       this.data.authMethod,
@@ -98,15 +140,7 @@ export default class CraftLoginChallenge extends LitElement {
           })
         );
       },
-      (message) => {
-        this.dispatchEvent(
-          new CustomEvent('login-failed', {
-            bubbles: true,
-            composed: true,
-            detail: {message},
-          })
-        );
-      }
+      (message) => this.#dispatchLoginFailed(message)
     );
 
     // defer injecting the form until after the form handlers are loaded
@@ -118,9 +152,20 @@ export default class CraftLoginChallenge extends LitElement {
       ?.focus();
   }
 
+  #dispatchLoginFailed(message: string) {
+    this.dispatchEvent(
+      new CustomEvent('login-failed', {
+        bubbles: true,
+        composed: true,
+        detail: {message},
+      })
+    );
+  }
+
   async #switchMethod(method: {name: string; handle: string; url: string}) {
     this._switching = true;
     this.#initialized = false;
+    let failureMessage: string | null = null;
 
     try {
       const response = await fetch(method.url, {
@@ -129,14 +174,21 @@ export default class CraftLoginChallenge extends LitElement {
           'Content-Type': 'application/json',
         },
       });
+      const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch challenge data.');
+      if (response.ok && data) {
+        this.data = data;
+      } else {
+        failureMessage = data?.message ?? t('A server error occurred.');
       }
-
-      this.data = await response.json();
+    } catch {
+      failureMessage = t('A server error occurred.');
     } finally {
       this._switching = false;
+    }
+
+    if (failureMessage !== null) {
+      this.#dispatchLoginFailed(failureMessage);
     }
   }
 

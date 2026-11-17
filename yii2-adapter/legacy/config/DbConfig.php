@@ -62,7 +62,7 @@ class DbConfig extends BaseConfig
      * You can change the character set and collation across all existing database tables using this terminal command:
      *
      * ```bash
-     * php craft db/convert-charset
+     * php artisan craft:db:convert-charset
      * ```
      * :::
      *
@@ -96,7 +96,7 @@ class DbConfig extends BaseConfig
      * You can change the character set and collation across all existing database tables using this terminal command:
      *
      * ```bash
-     * php craft db/convert-charset
+     * php artisan craft:db:convert-charset
      * ```
      * :::
      *
@@ -345,6 +345,8 @@ class DbConfig extends BaseConfig
         // If we don't have a DSN yet, create one from the deprecated settings
         if (!isset($this->dsn)) {
             $this->_updateDsn();
+        } else {
+            $this->dsn($this->dsn);
         }
     }
 
@@ -380,7 +382,7 @@ class DbConfig extends BaseConfig
      * You can change the character set and collation across all existing database tables using this terminal command:
      *
      * ```bash
-     * php craft db/convert-charset
+     * php artisan craft:db:convert-charset
      * ```
      * :::
      *
@@ -438,7 +440,7 @@ class DbConfig extends BaseConfig
      * You can change the character set and collation across all existing database tables using this terminal command:
      *
      * ```bash
-     * php craft db/convert-charset
+     * php artisan craft:db:convert-charset
      * ```
      * :::
      *

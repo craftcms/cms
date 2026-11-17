@@ -7,9 +7,14 @@ use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\RequireToken;
 use CraftCms\Cms\RouteToken\RouteTokens;
+use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Route;
+
+use function Pest\Laravel\get;
 
 beforeEach(function () {
     $this->middleware = app(HandleTokenRequest::class);
@@ -99,4 +104,15 @@ it('does not let a hidden action parameter override a resolved token route', fun
     ));
 
     expect($path)->toBe('token/route');
+});
+
+it('resolves the site from the tokenized URL rather than the token route', function () {
+    Route::get('current-site', fn () => Sites::getCurrentSite()->handle)->middleware(['craft', 'craft.web']);
+    $site = Site::factory()->create(['baseUrl' => 'https://localhost/fr']);
+    Sites::refreshSites();
+    $token = app(RouteTokens::class)->createToken('current-site');
+
+    get('https://localhost/fr?'.Cms::config()->tokenParam.'='.$token)
+        ->assertOk()
+        ->assertContent($site->handle);
 });

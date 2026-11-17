@@ -104,8 +104,7 @@
 
       <!-- A bridged legacy screen has no Inertia form to drive `FormActions`.
            It posts natively instead, so it gets a plain submit button — the
-           same contract as Craft 5's page form. `craft-button` extends
-           `LionButtonSubmit`, so `type="submit"` submits the enclosing form. -->
+           same contract as Craft 5's page form. -->
       <LayoutSlotOutlet
         v-else-if="fullPageForm && !readOnly"
         name="primary-action"

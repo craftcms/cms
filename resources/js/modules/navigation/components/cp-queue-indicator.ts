@@ -5,6 +5,7 @@ import type {JobInfo} from '@/modules/queue/types';
 
 import '@craftcms/ui/components/progress/progress';
 import {QueueService} from '@/modules/queue/queue';
+import {getCpUrl} from '@/common/craft/url';
 
 @customElement('cp-queue-indicator')
 class CpQueueIndicator extends LitElement {
@@ -41,11 +42,6 @@ class CpQueueIndicator extends LitElement {
     }
 
     this.#queue.addEventListener('job-update', this.#handleJobUpdate);
-
-    // Set initial visibility based on current state
-    this.#updateVisibility();
-    // Either track or run the queue based on initial state
-    this.#updateQueue();
   }
 
   override disconnectedCallback() {
@@ -53,9 +49,7 @@ class CpQueueIndicator extends LitElement {
     this.#queue.removeEventListener('job-update', this.#handleJobUpdate);
   }
 
-  protected override update(changedProperties: PropertyValues) {
-    super.update(changedProperties);
-
+  protected override updated(changedProperties: PropertyValues) {
     if (
       changedProperties.has('hasReservedJobs') ||
       changedProperties.has('hasWaitingJobs')
@@ -101,11 +95,11 @@ class CpQueueIndicator extends LitElement {
   }
 
   get #queueManagerUrl(): string | null {
-    if (this.#queue.canAccessQueueManager) {
+    if (!this.#queue.canAccessQueueManager) {
       return null;
     }
 
-    return Craft.getCpUrl('utilities/queue-manager');
+    return getCpUrl('utilities/queue-manager');
   }
 
   protected override render() {

@@ -1,5 +1,6 @@
 import {FieldLayoutDesigner} from '@/modules/field-layout-designer/field-layout-designer';
 import {ControllerElement} from '@/common/web-components';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 
 /**
  * `<craft-field-layout-designer>` — boots a {@link FieldLayoutDesigner} around the
@@ -24,7 +25,7 @@ export default class CraftFieldLayoutDesigner extends ControllerElement<FieldLay
 
   protected override booted(): void {
     // Upgrade any nested Craft UI elements, scoped to this host.
-    window.Craft?.initUiElements?.(this);
+    initLegacyUi(this);
   }
 
   /**

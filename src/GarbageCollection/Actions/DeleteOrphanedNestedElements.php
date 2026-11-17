@@ -9,7 +9,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * Deletes elements which have a `fieldId` value, but it’s set to an invalid field ID,
@@ -37,16 +36,16 @@ class DeleteOrphanedNestedElements extends GarbageCollectionAction
             function () {
                 // IDs of nested elements where the owner no longer exists
                 $ids1 = DB::table(Table::ELEMENTS, 'el')
-                    ->join(new Alias($this->table, 't'), 't.id', 'el.id')
-                    ->leftJoin(new Alias(Table::ELEMENTS_OWNERS, 'eo'), 'eo.elementId', 'el.id')
+                    ->join($this->table.' as t', 't.id', 'el.id')
+                    ->leftJoin(Table::ELEMENTS_OWNERS.' as eo', 'eo.elementId', 'el.id')
                     ->whereNotNull("t.{$this->fieldForeignKey}")
                     ->whereNull('eo.elementId')
                     ->pluck('el.id');
 
                 // IDs of nested elements where the field no longer exists
                 $ids2 = DB::table(Table::ELEMENTS, 'el')
-                    ->join(new Alias($this->table, 't'), 't.id', 'el.id')
-                    ->leftJoin(new Alias(Table::FIELDS, 'f'), 'f.id', "t.{$this->fieldForeignKey}")
+                    ->join($this->table.' as t', 't.id', 'el.id')
+                    ->leftJoin(Table::FIELDS.' as f', 'f.id', "t.{$this->fieldForeignKey}")
                     ->whereNotNull("t.{$this->fieldForeignKey}")
                     ->whereNull('f.id')
                     ->pluck('el.id');

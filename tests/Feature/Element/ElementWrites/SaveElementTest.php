@@ -20,14 +20,18 @@ use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
+use CraftCms\Cms\Field\Date;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
 use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Section\Models\SectionSiteSettings;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Tests\TestClasses\TestEntryWithAfterValidate;
 use CraftCms\Cms\User\Elements\User;
@@ -497,6 +501,27 @@ it('stores generated field values after save', function () {
         ->and(count(Event::getListeners(ElementLifecyclePropagated::class)))->toBe($listeners + 1);
 });
 
+it('formats dates that generated fields print in the site’s locale', function () {
+    Sites::getPrimarySite()->setLanguage('de');
+    $entry = EntryModel::factory()
+        ->withField('startDate', Date::class, ['showTime' => true])
+        ->withField('day', Date::class, ['showTime' => false])
+        ->withField('endDate', Date::class)
+        ->createElementWithFields()->element;
+    $entry->getFieldLayout()->setGeneratedFields([[
+        'uid' => 'generated',
+        'handle' => 'dates',
+        'template' => '{startDate} | {day} | {postDate} | {startDate|date("Y")} | [{endDate}]',
+    ]]);
+    $entry->postDate = new DateTime('2026-03-04 05:06:00');
+    $entry->setFieldValue('startDate', new DateTime('2026-10-09 10:00:00'));
+    $entry->setFieldValue('day', new DateTime('2027-02-28'));
+
+    expect($this->writes->saveElement($entry, updateSearchIndex: false))->toBeTrue()
+        ->and($entry->getGeneratedFieldValues()['dates'])
+        ->toBe('09.10.2026, 10:00 PDT | 28.02.2027 | 04.03.2026, 05:06 | 2026 | []');
+});
+
 it('completes nested generated values across localized saves, duplicates, and merges', function () {
     $secondary = Site::factory()->create();
     Sites::refreshSites();
@@ -565,3 +590,51 @@ it('returns false when an afterValidate hook adds errors during save validation'
         ->and($entry->errors()->has('customError'))->toBeTrue()
         ->and(entryQuery()->id($baseEntry->id)->firstOrFail()->title)->toBe('Existing entry');
 });
+
+it('keeps missing field values on every site when the element is saved', function (bool $saveContent) {
+    $secondSite = Site::factory()->create();
+    Sites::refreshSites();
+
+    $entryType = EntryType::factory()->withFieldLayout()->create(['hasTitleField' => true]);
+    $section = Section::factory()->withEntryTypes($entryType)->create();
+    SectionSiteSettings::factory()->create([
+        'sectionId' => $section->id,
+        'siteId' => $secondSite->id,
+        'hasUrls' => true,
+    ]);
+    Sections::refreshSections();
+
+    $result = EntryModel::factory()
+        ->forSection($section)
+        ->forEntryType($entryType)
+        ->withField('body', PlainText::class, value: '<p>English body</p>')
+        ->createElementWithFields();
+    $entryId = $result->element->id;
+
+    DB::table(Table::FIELDS)->where('handle', 'body')->update(['translationMethod' => 'site']);
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $secondSiteEntry = Entry::find()->id($entryId)->siteId($secondSite->id)->status(null)->one();
+    $secondSiteEntry->setFieldValue('body', '<p>Corps français</p>');
+    expect($this->writes->saveElement($secondSiteEntry, updateSearchIndex: false))->toBeTrue();
+
+    DB::table(Table::FIELDS)->where('handle', 'body')->update(['type' => 'Plugin\\Fields\\Uninstalled']);
+    Fields::refreshFields();
+    EntryTypes::refreshEntryTypes();
+
+    $entry = Entry::find()->id($entryId)->siteId(Sites::getPrimarySite()->id)->status(null)->one();
+    expect($this->writes->saveElement($entry, updateSearchIndex: false, saveContent: $saveContent))->toBeTrue();
+
+    $layoutElementUid = $entry->getFieldLayout()->getCustomFieldElements()[0]->uid;
+    $bodyBySite = DB::table(Table::ELEMENTS_SITES)
+        ->where('elementId', $entryId)
+        ->pluck('content', 'siteId')
+        ->map(fn (?string $content) => json_decode((string) $content, true)[$layoutElementUid] ?? null)
+        ->all();
+
+    expect($bodyBySite)->toBe([
+        Sites::getPrimarySite()->id => '<p>English body</p>',
+        $secondSite->id => '<p>Corps français</p>',
+    ]);
+})->with(['changed content only' => false, 'all content' => true]);

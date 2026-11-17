@@ -18,6 +18,19 @@ abstract class Field extends CoreField implements LegacyField, LegacySettingsCom
     use LegacyFieldHtml;
     use LegacySettingsUi;
 
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+        $this->init();
+    }
+
+    /**
+     * Initializes the field after it’s configured, as Yii’s `BaseObject` did.
+     */
+    public function init(): void
+    {
+    }
+
     public function getSettingsHtml(): ?string
     {
         return null;

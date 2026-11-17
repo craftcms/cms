@@ -11,7 +11,7 @@ use CraftCms\Cms\Activity\ActivityEventType;
  */
 class DraftSaved extends ActivityEventType
 {
-    protected const string LABEL = 'Draft saved';
+    protected const string LABEL = 'Saved a draft';
 
     protected const string ICON = 'floppy-disk';
 }

@@ -1,21 +1,14 @@
-import {Validator} from '@lion/ui/form-core.js';
-import {type InjectionKey, type Ref, type Slots} from 'vue';
+import {type InjectionKey, type Ref} from 'vue';
 import type {
   CanonicalUiValue,
   UiChange,
   UiControlPayload,
   UiNodePayload,
-  NestedUiPayload,
+  UiPayload,
   UiValue,
   UiValues,
 } from './types';
 import type {ActionItems} from '@/common/types';
-
-export const UiFailure: InjectionKey<(message: string) => void> =
-  Symbol('UiFailure');
-
-export const UiPending: InjectionKey<Readonly<Ref<boolean>>> =
-  Symbol('UiPending');
 
 /**
  * Whether the page's table defaults to the `flush` appearance, spanning the
@@ -24,36 +17,9 @@ export const UiPending: InjectionKey<Readonly<Ref<boolean>>> =
 export const UiTableFlush: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol('UiTableFlush');
 
-export const UiErrors: InjectionKey<{
-  clearChildren(path: string[]): void;
-  childrenCleared(path: string[]): boolean;
-}> = Symbol('UiErrors');
-
 export type UiControlBehavior = {
   comparisonValue: (value: UiValue) => UiValue;
 };
-
-export const UiControlBehaviors: InjectionKey<
-  (path: string[], behavior: UiControlBehavior) => () => void
-> = Symbol('UiControlBehaviors');
-
-export const UiControlStructure: InjectionKey<
-  (control: Pick<UiControlPayload, 'path'>, uis: NestedUiPayload[]) => void
-> = Symbol('UiControlStructure');
-
-export const UiControlOverrides: InjectionKey<Readonly<Slots>> =
-  Symbol('UiControlOverrides');
-
-/** Modified delta groups as dotted paths, provided to every field beneath. */
-export const UiModifiedGroups: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol('UiModifiedGroups');
-
-/**
- * Dotted paths of every control changed since the UI was last reset. A field
- * holding nested UIs badges when one lands at or below it — see FieldNode.
- */
-export const UiChangedPaths: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol('UiChangedPaths');
 
 /**
  * Lets a field's control rewrite the field's "⋮" menu with state only the
@@ -72,17 +38,19 @@ export const FieldActionItems: InjectionKey<
 export const FieldLabelSrOnly: InjectionKey<Readonly<Ref<boolean>>> =
   Symbol('FieldLabelSrOnly');
 
-/** Control paths whose changes have an active UI refresh. */
-export const UiRefreshingFields: InjectionKey<Readonly<Ref<Set<string>>>> =
-  Symbol('UiRefreshingFields');
+/**
+ * Reloads the UI an admin table belongs to after the table changes, when that
+ * UI isn't the page's own — such as a form fetched for a modal.
+ */
+export const UiTableRefresh: InjectionKey<() => void> =
+  Symbol('UiTableRefresh');
 
-class ServerError extends Validator {
-  static override validatorName = 'ServerError';
-
-  override execute(): boolean {
-    return true;
-  }
-}
+/**
+ * A prefix for the ids of the fields and tab panels rendered within, for a form
+ * shown beside another form with the same layout, such as the Compare screen's
+ * two editors, so each id stays its own. See {@link scopedId}.
+ */
+export const UiFieldIdScope: InjectionKey<string> = Symbol('UiFieldIdScope');
 
 /**
  * The value a control should render with.
@@ -116,27 +84,6 @@ export function controlValueAt(
 
   // SAFETY: what a Control ships as its empty value is a form value.
   return control.emptyValue as UiValue;
-}
-
-export function serverErrorValidators(invalid: boolean): Validator[] {
-  return invalid
-    ? [
-        new ServerError(undefined, {
-          getMessage: () => '',
-          visibilityDuration: Infinity,
-        }),
-      ]
-    : [];
-}
-
-export function ignoreModelValueInitialization(
-  callback: (event: Event) => void
-): (event: Event) => void {
-  return (event) => {
-    if (!(event instanceof CustomEvent) || !event.detail?.initialize) {
-      callback(event);
-    }
-  };
 }
 
 export function uiChangeFromEvent(change: UiChange | Event): UiChange | null {
@@ -181,6 +128,11 @@ export function fieldId(path: string[]): string {
   );
 
   return `ui-${encoded.join('-')}`;
+}
+
+/** An id within a {@link UiFieldIdScope}, when there is one. */
+export function scopedId(scope: string | undefined, id: string): string {
+  return scope ? `${scope}-${id}` : id;
 }
 
 /** The id of the control's own input, which sits inside that field. */
@@ -376,6 +328,115 @@ export function pathsMatch(left: string[], right: string[]): boolean {
     left.length === right.length &&
     left.every((segment, index) => segment === right[index])
   );
+}
+
+/**
+ * Whether any of a node's controls, including those nested in it, has an
+ * error, or any of its outlets is among `outlets`, the outlets holding errors
+ * (see {@link routeErrorsToOutlets}).
+ */
+export function nodeHasErrors(
+  node: UiNodePayload,
+  errors: UiPayload['errors'],
+  outlets?: Set<string>
+): boolean {
+  const controlPath = node.control?.path;
+
+  return Boolean(
+    (controlPath &&
+      errors.some((error) => pathsMatch(error.path, controlPath))) ||
+    outlets?.has(outletName(node) ?? '') ||
+    node.children?.some((child) => nodeHasErrors(child, errors, outlets)) ||
+    node.control?.uis?.some((ui) =>
+      ui.nodes.some((child) => nodeHasErrors(child, errors, outlets))
+    )
+  );
+}
+
+/** The name of an outlet node, or `undefined` for any other node. */
+function outletName(node: UiNodePayload): string | undefined {
+  const name = node.props.name;
+
+  return node.component === 'craft:outlet' && typeof name === 'string'
+    ? name
+    : undefined;
+}
+
+/**
+ * Places errors for flagging tabs. An error that no control owns exactly,
+ * such as one a save raised within a control, moves onto the nearest control
+ * whose path it's under, as the server places the errors it renders with.
+ *
+ * Errors a control shows in an outlet then move onto that outlet, so they
+ * flag the outlet's tab rather than the control's. A control names them with
+ * an `errorOutlets` prop, mapping each outlet's name to the settings within
+ * the control whose errors it shows. An outlet missing from `nodes` leaves
+ * its errors with the control.
+ */
+export function routeErrorsToOutlets(
+  nodes: UiNodePayload[],
+  errors: UiPayload['errors']
+): {errors: UiPayload['errors']; outlets: Set<string>} {
+  const controlPaths: string[][] = [];
+  visitControls(nodes, (control) => controlPaths.push(control.path));
+  const owned = errors.map((error) => {
+    if (
+      error.source ||
+      controlPaths.some((path) => pathsMatch(path, error.path))
+    ) {
+      return error;
+    }
+
+    const owner = controlPaths
+      .filter(
+        (path) =>
+          path.length < error.path.length &&
+          pathsMatch(error.path.slice(0, path.length), path)
+      )
+      .sort((a, b) => b.length - a.length)[0];
+
+    return owner ? {...error, path: owner, source: error.path} : error;
+  });
+
+  const present = new Set<string>();
+  const routes: {path: string[]; outlet: string; keys: string[]}[] = [];
+
+  const visit = (node: UiNodePayload): void => {
+    const name = outletName(node);
+    if (name) {
+      present.add(name);
+    }
+
+    const errorOutlets = node.control?.props.errorOutlets as
+      | Record<string, string[]>
+      | undefined;
+    for (const [outlet, keys] of Object.entries(errorOutlets ?? {})) {
+      routes.push({path: node.control!.path, outlet, keys});
+    }
+
+    node.children?.forEach(visit);
+  };
+  nodes.forEach(visit);
+
+  const outlets = new Set<string>();
+  const remaining = owned.filter((error) => {
+    const source = error.source ?? error.path;
+    const route = routes.find(
+      ({path, outlet, keys}) =>
+        present.has(outlet) &&
+        source.length > path.length &&
+        pathsMatch(source.slice(0, path.length), path) &&
+        keys.includes(source[path.length]!)
+    );
+
+    if (route) {
+      outlets.add(route.outlet);
+    }
+
+    return !route;
+  });
+
+  return {errors: remaining, outlets};
 }
 
 /**

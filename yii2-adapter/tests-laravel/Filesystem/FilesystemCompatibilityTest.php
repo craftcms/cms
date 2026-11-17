@@ -9,7 +9,6 @@ use craft\fs\Local;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Filesystem\Data\FsListing;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Ui\Controls\Lightswitch;
 use CraftCms\Cms\Ui\Controls\Text;
 use CraftCms\Cms\Ui\UiContext;
@@ -123,29 +122,6 @@ it('fails when legacy listings contain invalid values', function() {
 
     expect(fn() => Storage::disk('legacy-compatibility')->listContents('', true)->toArray())
         ->toThrow(UnableToListContents::class);
-});
-
-it('logs one actionable deprecation per concrete legacy filesystem class', function() {
-    $filesystem = new LegacyFilesystemCompatibilityTestFs([
-        'name' => 'Legacy Compatibility',
-        'handle' => 'legacy-compatibility',
-    ]);
-    $filesystem->register();
-    config()->set('filesystems.disks.legacy-compatibility-copy', [
-        'driver' => 'craft-fs-bridge',
-        'fsHandle' => 'legacy-compatibility',
-    ]);
-
-    Storage::disk('legacy-compatibility');
-    Storage::disk('legacy-compatibility-copy');
-
-    $logs = collect(Deprecator::getRequestLogs())
-        ->where('key', 'filesystem-bridge:' . LegacyFilesystemCompatibilityTestFs::class)
-        ->values();
-
-    expect($logs)->toHaveCount(1)
-        ->and($logs[0]->message)
-        ->toContain('getDiskConfig()');
 });
 
 it('combines base URL fields with legacy settings HTML', function() {

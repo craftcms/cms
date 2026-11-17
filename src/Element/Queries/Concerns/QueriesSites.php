@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Site\Data\Site;
@@ -36,6 +38,11 @@ trait QueriesSites
     protected function initQueriesSites(): void
     {
         $this->beforeQuery(static function (ElementQuery $elementQuery) {
+            // A nested condition leaves the default site to the query it’s nested in
+            if ($elementQuery->isNestedCondition && $elementQuery->siteId === null) {
+                return;
+            }
+
             // Make sure the siteId param is set
             try {
                 if (! $elementQuery->elementType::isLocalized()) {
@@ -125,6 +132,7 @@ trait QueriesSites
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Determines which site(s) the {elements} should be queried in. Defaults to the current (requested) site.')]
     public function site($value): static
     {
         if ($value === null) {
@@ -192,6 +200,7 @@ trait QueriesSites
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Determines which site(s) the {elements} should be queried in. Defaults to the current (requested) site.')]
     public function siteId($value): static
     {
         $this->siteId = self::normalizeSiteId($value);
@@ -231,6 +240,7 @@ trait QueriesSites
      *     ->all();
      * ```
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Determines which site(s) the {elements} should be queried in, based on their language.')]
     public function language(mixed $value): static
     {
         $this->siteId = self::siteIdsFromLanguage($value);

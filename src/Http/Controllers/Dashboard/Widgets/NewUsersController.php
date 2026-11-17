@@ -13,7 +13,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 use function CraftCms\Cms\t;
 
@@ -45,7 +44,7 @@ readonly class NewUsersController
         $query = DB::table(Table::USERS)->when(
             $request->input('userGroupId'),
             fn (Builder $query) => $query
-                ->join(new Alias(Table::USERGROUPS_USERS, 'usergroups_users'), 'usergroups_users.userId', 'users.id')
+                ->join(Table::USERGROUPS_USERS.' as usergroups_users', 'usergroups_users.userId', 'users.id')
                 ->where('usergroups_users.groupId', $request->integer('userGroupId')),
         );
 

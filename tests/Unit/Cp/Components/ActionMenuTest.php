@@ -24,3 +24,24 @@ it('renders keywords for the search filter', function () {
     expect(ActionMenu::make()->items([['label' => 'News', 'keywords' => 'news story']])->toHtml())
         ->toContainTag('craft-action-item', ['data-keywords' => 'news story']);
 });
+
+it('asks for an elevated session before posting when an item requires one', function () {
+    $items = ActionMenu::make()->menuItems([
+        ['label' => 'Remove', 'action' => 'auth/remove-method', 'requireElevatedSession' => true],
+        ['label' => 'Rename', 'action' => 'auth/rename-method'],
+    ])->getItems();
+
+    expect($items[0]['action'])->toMatchArray(['type' => 'http', 'requireElevatedSession' => true])
+        ->and($items[1]['action'])->not->toHaveKey('requireElevatedSession');
+});
+
+it('makes its invoker flush only when asked', function () {
+    expect(ActionMenu::make()->items([['label' => 'News']])->toHtml())
+        ->not->toContain('flush');
+
+    expect(ActionMenu::make()->items([['label' => 'News']])->flush()->toHtml())
+        ->toMatch('/<craft-button [^>]*\bflush\b[^>]*slot="invoker"|<craft-button [^>]*slot="invoker"[^>]*\bflush\b/');
+
+    expect(ActionMenu::make()->items([['label' => 'News']])->flush('inline')->toHtml())
+        ->toContain('flush="inline"');
+});

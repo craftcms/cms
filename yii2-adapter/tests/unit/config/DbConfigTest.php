@@ -60,5 +60,13 @@ class DbConfigTest extends Unit
             ->database('db2');
         self::assertEquals('db2', $config->database);
         self::assertEquals("pgsql:host=127.0.0.1;dbname=db2;port=5432", $config->dsn);
+
+        $config = new DbConfig([
+            'dsn' => 'mysql:host=127.0.0.1;dbname=db',
+        ]);
+        self::assertEquals('mysql', $config->driver);
+        self::assertEquals('127.0.0.1', $config->server);
+        self::assertEquals('db', $config->database);
+        self::assertEquals('utf8mb4', $config->getCharset());
     }
 }

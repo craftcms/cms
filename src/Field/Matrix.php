@@ -153,8 +153,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         $ns = $field->handle.'_'.Str::random(5);
 
         $exists = DB::table(Table::ENTRIES, "entries_$ns")
-            ->join(new Alias(Table::ELEMENTS, "elements_$ns"), "elements_$ns.id", '=', "entries_$ns.id")
-            ->join(new Alias(Table::ELEMENTS_OWNERS, "elements_owners_$ns"), "elements_owners_$ns.elementId", '=', "elements_$ns.id")
+            ->join(Table::ELEMENTS." as elements_$ns", "elements_$ns.id", '=', "entries_$ns.id")
+            ->join(Table::ELEMENTS_OWNERS." as elements_owners_$ns", "elements_owners_$ns.elementId", '=', "elements_$ns.id")
             ->where("entries_$ns.fieldId", $field->id)
             ->where("elements_$ns.enabled", true)
             ->whereNull("elements_$ns.dateDeleted")
@@ -280,6 +280,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
      * @see entryManager()
      */
     private NestedElementManager $_entryManager;
+
+    /**
+     * Owners' entry counts while {@see nestedEntriesControl()} renders, keyed by field, owner, and site IDs.
+     *
+     * Static, as nested entries' permission checks get their own instances of the field.
+     *
+     * @var array<string, int>|null
+     */
+    private static ?array $renderingTotalEntries = null;
 
     public function __construct($config = [])
     {
@@ -618,7 +627,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             $uis[$uid] = app(FieldLayoutCompiler::class)->ui(
                 $entry->getFieldLayout(),
                 $entry,
-                new UiContext(mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode),
+                new UiContext(
+                    mode: $context->mode === ControlMode::Editable ? $context->ui->mode : $context->mode,
+                    preview: $context->ui->preview,
+                ),
             );
             $sortOrder[] = $uid;
         }
@@ -631,13 +643,67 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->create($this->createConfig($context->element, $creationTypes))
             ->uis($uis)
             ->siteName($this->localizedSiteName($context->element))
+            ->siteId($context->element?->siteId)
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);
     }
 
+    /**
+     * Moves the errors validation copied from invalid entries, keyed `handle[uid].attribute`, onto the controls their
+     * blocks show them on.
+     */
+    #[Override]
+    public function uiErrors(ElementInterface $element, array $errors): array
+    {
+        $entryErrors = [];
+        $pattern = sprintf('/^%s\[([^\]]+)\]\.(.+)$/', preg_quote($this->handle, '/'));
+
+        foreach ($errors as $key => $messages) {
+            if (preg_match($pattern, (string) $key, $match)) {
+                $entryErrors[$match[1]][$match[2]] = $messages;
+                unset($errors[$key]);
+            }
+        }
+
+        if ($entryErrors === []) {
+            return $errors;
+        }
+
+        foreach ($this->inlineEntries($element) ?? [] as $identity => $entry) {
+            if ($entry->uid !== null && isset($entryErrors[$entry->uid])) {
+                $errors = $this->addNestedUiErrors($errors, $entry, $entryErrors[$entry->uid], "{$this->handle}.entries.{$identity}");
+                unset($entryErrors[$entry->uid]);
+            }
+        }
+
+        // Entries without a block, such as new ones posted without a UUID, show their errors on the field.
+        foreach ($entryErrors as $messages) {
+            $errors[$this->handle] = [...$errors[$this->handle] ?? [], ...array_merge(...array_values($messages))];
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Returns the entries the field shows inline with their own fields, indexed by the identity their blocks have in
+     * the UI, or `null` if the field shows its entries as cards or in an element index.
+     *
+     * @return array<string, Entry>|null
+     */
+    public function inlineEntries(ElementInterface $element): ?array
+    {
+        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID, self::VIEW_MODE_INDEX])) {
+            return null;
+        }
+
+        $entries = $this->entriesForUi($element->getFieldValue($this->handle));
+
+        return array_combine(ElementHelper::nestedElementIdentities($entries), $entries);
+    }
+
     /** @return list<Entry> */
-    protected function entriesForUi(mixed $value): array
+    private function entriesForUi(mixed $value): array
     {
         // Include disabled entries and in-memory values retained after validation.
         $entries = array_values(match (true) {
@@ -710,6 +776,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             // Not `id`: `data-id` is the block's UID, which is what both
             // renderers, the sort order and the posted value are all keyed by.
             'element-id' => $entry->isProvisionalDraft ? $entry->getCanonicalId() : $entry->id,
+            // Matches the block to the same entry in another version, such as on the Compare screen.
+            'canonical-id' => $entry->getCanonicalId(),
             'draft-id' => $entry->isProvisionalDraft ? null : $entry->draftId,
             'revision-id' => $entry->revisionId,
             'owner-id' => $entry->getOwnerId(),
@@ -1064,14 +1132,26 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         /** @var EntryQuery<Entry>|ElementCollection<int,Entry> $value */
         $value = $owner->getFieldValue($this->handle);
 
-        if ($value instanceof EntryQuery) {
-            return (clone $value)
-                ->status(null)
-                ->siteId($owner->siteId)
-                ->getCountForPagination();
+        if (! $value instanceof EntryQuery) {
+            return $value->count();
         }
 
-        return $value->count();
+        $key = "$this->id:$owner->id:$owner->siteId";
+
+        if (isset(self::$renderingTotalEntries[$key])) {
+            return self::$renderingTotalEntries[$key];
+        }
+
+        $total = (clone $value)
+            ->status(null)
+            ->siteId($owner->siteId)
+            ->getCountForPagination();
+
+        if (self::$renderingTotalEntries !== null && $this->id && $owner->id) {
+            self::$renderingTotalEntries[$key] = $total;
+        }
+
+        return $total;
     }
 
     #[Override]
@@ -1408,19 +1488,31 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             && $context->ui->mode === ControlMode::Editable
             && ! ($owner?->getIsRevision() ?? false);
 
-        return $this->entryManager()->uiControl(
-            $context->path,
-            $owner,
-            $this->viewMode,
-            $this->nestedElementManagerConfig($context->value, $owner, ! $editable),
-        );
+        // Previews show their entries as a list of cards, which fits side by side and shows which ones changed.
+        $viewMode = $context->ui->preview ? self::VIEW_MODE_CARDS : $this->viewMode;
+
+        // Every nested entry's permission checks ask whether the owner has reached Max Entries, and nothing adds entries
+        // while they render, so the owner's entries are counted once.
+        $totalEntries = self::$renderingTotalEntries;
+        self::$renderingTotalEntries ??= [];
+
+        try {
+            return $this->entryManager()->uiControl(
+                $context->path,
+                $owner,
+                $viewMode,
+                $this->nestedElementManagerConfig($context->value, $owner, ! $editable, $viewMode),
+            );
+        } finally {
+            self::$renderingTotalEntries = $totalEntries;
+        }
     }
 
     /**
      * @param  EntryQuery<Entry>|ElementCollection<int,Entry>|null  $value
      * @return array<string, mixed>
      */
-    private function nestedElementManagerConfig(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static): array
+    private function nestedElementManagerConfig(EntryQuery|ElementCollection|null $value, ?ElementInterface $owner, bool $static, string $viewMode): array
     {
         if (Event::hasListeners(EntryTypesForFieldResolving::class)) {
             if ($owner?->hasEagerLoadedElements($this->handle)) {
@@ -1443,7 +1535,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
         }
 
         $config = [
-            'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
+            'showInGrid' => $viewMode === self::VIEW_MODE_CARDS_GRID,
             'nestedActionEvents' => true,
             'prevalidate' => false,
             'static' => $static,
@@ -1481,7 +1573,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
         }
 
-        if ($this->viewMode !== self::VIEW_MODE_INDEX) {
+        if ($viewMode !== self::VIEW_MODE_INDEX) {
             return $config;
         }
 
@@ -2076,14 +2168,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             }
 
             if (isset($entryData['fields'])) {
-                foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
-                    try {
-                        if ($fromRequest) {
-                            $entry->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                        } else {
+                if ($fromRequest) {
+                    // Respect field layout conditions
+                    ElementHelper::setNestedFieldValuesFromRequest($entry, $entryData['fields']);
+                } else {
+                    foreach ($entryData['fields'] as $fieldHandle => $fieldValue) {
+                        try {
                             $entry->setFieldValue($fieldHandle, $fieldValue);
+                        } catch (InvalidFieldException) {
                         }
-                    } catch (InvalidFieldException) {
                     }
                 }
             }

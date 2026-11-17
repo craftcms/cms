@@ -11,6 +11,7 @@ use CraftCms\Cms\Cp\SelectOptions;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Models\Site as SiteModel;
 use CraftCms\Cms\Site\SiteGroups;
@@ -91,7 +92,7 @@ readonly class SitesController
                 ],
                 'handle' => ['html' => Html::tag('code', Html::encode($site->handle))],
                 'status' => ['html' => Html::tag('craft-badge', Html::encode($site->getEnabled() ? t('Enabled') : t('Disabled')), [
-                    'fill' => $site->getEnabled() ? 'success' : 'default',
+                    'fill' => $site->getEnabled() ? 'success' : Color::Gray->value,
                 ])],
                 'language' => ['html' => Html::tag('code', Html::encode($site->getLanguage()))],
                 'primary' => $site->primary ? ['icon' => 'check', 'label' => t('Yes')] : null,
@@ -106,7 +107,7 @@ readonly class SitesController
             ]))
             ->emptyMessage(t('No sites exist yet.'))
             ->unless($this->readOnly, fn (Table $table) => $table
-                ->createAction(t('New Site'), route('craft.cp.settings.sites.create', isset($group) ? ['groupId' => $group->id] : []))
+                ->createAction(t('New site'), route('craft.cp.settings.sites.create', isset($group) ? ['groupId' => $group->id] : []))
                 ->createActionInPageHeader()
                 ->deletable()
                 ->when(isset($group), fn (Table $table) => $table->reorderable(route('craft.cp.settings.sites.reorder'), t('New order saved.'))));
@@ -123,7 +124,7 @@ readonly class SitesController
             'nameTextExpanderTriggers' => Inertia::defer(fn () => SelectOptions::getEnvTextExpanderTriggers()),
             'group' => $group ?? null,
             'subnav' => [
-                new NavItem()->label(t('All Sites'))->href(Url::cpUrl('settings/sites'))->selected(! isset($group)),
+                new NavItem()->label(t('All sites'))->href(Url::cpUrl('settings/sites'))->selected(! isset($group)),
                 ...$groups->map(fn ($siteGroup) => new NavItem()
                     ->label($siteGroup->name)
                     ->href(Url::cpUrl('settings/sites', ['groupId' => $siteGroup->id]))
@@ -235,13 +236,10 @@ readonly class SitesController
             throw ValidationException::withMessages($site->errors()->getMessages());
         }
 
-        if ($isNew) {
-            Flash::success(t('Site created'));
-
-            return to_route('craft.cp.settings.sites.index');
-        }
-
-        return $this->asSuccess(t('Site saved.'));
+        return $this->asSuccess(
+            $isNew ? t('Site created') : t('Site saved.'),
+            redirect: $isNew ? $this->createdRedirectUrl(route('craft.cp.settings.sites.edit', ['site' => $site->id])) : null,
+        );
     }
 
     public function reorder(Request $request): \Symfony\Component\HttpFoundation\Response

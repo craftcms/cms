@@ -132,10 +132,10 @@ it('falls back to the global template when no site-specific override is set', fu
         ->and($html)->not->toContain('<table class="wrapper"');
 });
 
-it('uses the default markdown template when no template is configured', function () {
+it('uses the default markdown template when no template is configured', function (?string $template) {
     ProjectConfig::set('email', array_merge(
         ProjectConfig::get('email') ?? [],
-        ['template' => null],
+        ['template' => $template],
     ));
 
     $user = UserModel::factory()->createElement();
@@ -150,4 +150,8 @@ it('uses the default markdown template when no template is configured', function
     expect($html)->toContain('<table class="wrapper"')
         ->and($html)->not->toContain('custom-system-message')
         ->and($html)->not->toContain('site-specific-message');
-});
+})->with([
+    'null' => [null],
+    // Craft 5 stored an empty string when no template was set
+    'empty string' => [''],
+]);

@@ -1,3 +1,4 @@
+import {copyElements as copyToClipboard} from '@/modules/elements/clipboard';
 import type {ElementActionSelection} from '../types/actions';
 
 export function copyElements(
@@ -5,12 +6,15 @@ export function copyElements(
   elementIds: ReadonlyArray<string | number>,
   selectedElements: ReadonlyArray<ElementActionSelection>
 ): void {
-  window.Craft?.cp?.copyElements?.(
+  copyToClipboard(
     elementIds.map((id) => {
       const element = selectedElements.find(
         (candidate) => String(candidate.id) === String(id)
       );
-      const data = element?.cardAttributes?.data;
+      // Card data attributes hold the element's ids
+      const data = element?.cardAttributes?.data as
+        | Record<string, number | null | undefined>
+        | undefined;
 
       return {
         type: element?.type ?? elementType,

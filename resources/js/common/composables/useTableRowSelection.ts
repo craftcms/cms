@@ -1,15 +1,59 @@
-import {computed, type MaybeRefOrGetter, toValue} from 'vue';
+import {
+  computed,
+  type ComputedRef,
+  type MaybeRefOrGetter,
+  type Ref,
+  toValue,
+} from 'vue';
 import type {Row, Table} from '@tanstack/vue-table';
 import type {CraftTableFeatures} from '@/common/table/craftTable';
 import {isInteractiveClick} from '@/common/utils/dom';
 import {
+  type Selectable,
   type SelectableId,
   useSelectable,
 } from '@/common/composables/useSelectable';
 
-export interface TableRowSelectionOptions {
+export interface TableRowSelectionOptions<TData = any> {
   selectable: MaybeRefOrGetter<boolean>;
   readOnly: MaybeRefOrGetter<boolean>;
+  /**
+   * The selected rows, for a table that only holds one page of a longer list
+   * and remembers selections made on other pages. Defaults to the selected rows
+   * the table holds.
+   */
+  selectedRows?: MaybeRefOrGetter<readonly TData[]>;
+  /** Called whenever the whole selection is cleared. */
+  onClear?: () => void;
+}
+
+/** The type of a row's `id`. */
+type RowId<TData> = TData extends {id: infer Id extends SelectableId}
+  ? Id
+  : SelectableId;
+
+/** What {@link useTableRowSelection} returns, and what `DataTable` takes as `selection`. */
+export interface TableRowSelection<TData extends Record<string, any>> {
+  /** The underlying selection, for list bodies that take a `selection` prop. */
+  readonly selection: Selectable<RowId<TData>>;
+  readonly selectedIds: ComputedRef<readonly RowId<TData>[]>;
+  readonly selectedRows: ComputedRef<readonly TData[]>;
+  readonly hasSelection: ComputedRef<boolean>;
+  readonly readOnly: ComputedRef<boolean>;
+  readonly anchorIndex: Ref<number | null>;
+  clearSelection(): void;
+  onToggleAllSelected(checked: boolean): void;
+  selectRow(
+    row: Row<CraftTableFeatures, TData>,
+    state: {checked: boolean; shiftKey?: boolean}
+  ): void;
+  /** Toggles the row a click landed on, unless it was on a control inside it. */
+  selectRowFromEvent(
+    row: Row<CraftTableFeatures, TData> | undefined,
+    event: MouseEvent
+  ): void;
+  toggleRow(row: Row<CraftTableFeatures, TData>): void;
+  extendSelectionTo(row: Row<CraftTableFeatures, TData>): void;
 }
 
 /**
@@ -23,10 +67,17 @@ export interface TableRowSelectionOptions {
  */
 export function useTableRowSelection<TData extends Record<string, any>>(
   table: MaybeRefOrGetter<Table<CraftTableFeatures, TData>>,
-  options: TableRowSelectionOptions
-) {
+  options: TableRowSelectionOptions<NoInfer<TData>>
+): TableRowSelection<TData> {
   const readOnly = computed(() => toValue(options.readOnly));
   const selectable = computed(() => toValue(options.selectable));
+  const selectedRows = computed<readonly TData[]>(
+    () =>
+      toValue(options.selectedRows) ??
+      toValue(table)
+        .getSelectedRowModel()
+        .rows.map((row) => row.original)
+  );
 
   const rows = (): Array<Row<CraftTableFeatures, TData>> =>
     toValue(table).getRowModel().rows;
@@ -35,7 +86,7 @@ export function useTableRowSelection<TData extends Record<string, any>>(
   ): Row<CraftTableFeatures, TData> | undefined =>
     rows().find((row) => row.original.id === id);
 
-  const selection = useSelectable({
+  const selection = useSelectable<RowId<TData>>({
     ids: () => rows().map((row) => row.original.id),
     enabled: selectable,
     readOnly,
@@ -46,11 +97,11 @@ export function useTableRowSelection<TData extends Record<string, any>>(
     store: {
       isSelected: (id) => rowFor(id)?.getIsSelected() ?? false,
       setSelected: (id, selected) => rowFor(id)?.toggleSelected(selected),
-      selectedIds: () =>
-        toValue(table)
-          .getSelectedRowModel()
-          .rows.map((row) => row.original.id),
-      clear: () => toValue(table).resetRowSelection(),
+      selectedIds: () => selectedRows.value.map((row) => row.id),
+      clear: () => {
+        toValue(table).resetRowSelection();
+        options.onClear?.();
+      },
     },
   });
 
@@ -60,14 +111,9 @@ export function useTableRowSelection<TData extends Record<string, any>>(
     selection.clear();
   }
 
-  // craft-checkbox (Lion) fires `model-value-changed` on programmatic `.checked`
-  // updates too, so only act when the incoming value actually differs.
   function onToggleAllSelected(checked: boolean) {
     if (readOnly.value) return;
-    const t = toValue(table);
-    if (checked !== t.getIsAllRowsSelected()) {
-      t.toggleAllRowsSelected(checked);
-    }
+    toValue(table).toggleAllRowsSelected(checked);
   }
 
   function selectRow(
@@ -115,6 +161,7 @@ export function useTableRowSelection<TData extends Record<string, any>>(
     // `selection` prop (ElementCards, ElementThumbs, …).
     selection,
     selectedIds,
+    selectedRows,
     hasSelection,
     readOnly,
     anchorIndex,
@@ -126,7 +173,3 @@ export function useTableRowSelection<TData extends Record<string, any>>(
     extendSelectionTo,
   };
 }
-
-export type TableRowSelection<TData extends Record<string, any>> = ReturnType<
-  typeof useTableRowSelection<TData>
->;

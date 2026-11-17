@@ -1,5 +1,5 @@
 import {DragDrop} from '@craftcms/garnish';
-import {createButton, isHttpError, t} from '@craftcms/ui';
+import {create, isHttpError, t} from '@craftcms/ui';
 import {onBeforeUnmount, onMounted, ref} from 'vue';
 import {
   type AssetMoveConflict,
@@ -13,6 +13,7 @@ import {
   moveFolders,
 } from '@/modules/assets/assetMover';
 import type {ElementIndexOperations} from '@/modules/elements/index/types/model';
+import {showError, showNotice} from '@/modules/messages/messages';
 
 /** A pending filename-conflict prompt awaiting the user's choice. */
 export interface AssetMoveConflictPrompt {
@@ -262,7 +263,7 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
           .movedCount;
       }
     } catch (e) {
-      Craft.cp?.displayError?.(t('Couldn’t move the selected items.'));
+      showError(t('Couldn’t move the selected items.'));
       throw e;
     } finally {
       if (movedCount > 0) {
@@ -271,7 +272,7 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
     }
 
     if (movedCount > 0) {
-      Craft.cp?.displayNotification?.('notice', t('Move reverted.'));
+      showNotice(t('Move reverted.'));
     }
   }
 
@@ -281,12 +282,12 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
     });
 
     if (!move) {
-      Craft.cp?.displayNotification?.('notice', message);
+      showNotice(message);
       return;
     }
 
-    const undoButton = createButton({label: t('Undo')});
-    const notice = (Craft.cp?.displayNotification?.('notice', message, {
+    const undoButton = create('craft-button', {type: 'button'}, t('Undo'));
+    const notice = (showNotice(message, {
       details: undoButton,
     }) ?? null) as Notice | null;
     undoNotice = notice;
@@ -340,7 +341,7 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
       const message = isHttpError<{message?: string}>(e)
         ? e.response?.data?.message
         : undefined;
-      Craft.cp?.displayError?.(message ?? t('A server error occurred.'));
+      showError(message ?? t('A server error occurred.'));
       return 0;
     }
 
@@ -377,9 +378,7 @@ export function useAssetMoveDrag(index: ElementIndexOperations) {
       const message = isHttpError<{message?: string}>(e)
         ? e.response?.data?.message
         : undefined;
-      Craft.cp?.displayError?.(
-        message ?? t('Couldn’t move the selected items.')
-      );
+      showError(message ?? t('Couldn’t move the selected items.'));
       throw e;
     }
   }

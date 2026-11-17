@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries;
 use Closure;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesAuthors;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesEntryDates;
 use CraftCms\Cms\Element\Queries\Concerns\Entry\QueriesEntryTypes;
@@ -33,6 +35,8 @@ use function CraftCms\Cms\currentUser;
  * @template T of Entry
  *
  * @extends ElementQuery<T>
+ *
+ * @implements NestedElementQueryInterface<T>
  *
  * @since 6.0.0
  */
@@ -148,7 +152,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         // Always consider “now” to be the current time @ 59 seconds into the minute.
         // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
-        $currentTime = now()->endOfMinute()->setTimezone('UTC');
+        $currentTime = now()->endOfMinute();
 
         return match ($status) {
             Entry::STATUS_LIVE => fn (Builder $query) => $query
@@ -180,6 +184,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      * @uses $editable
      */
     /** @return self<T> */
+    #[ElementQueryParam(ElementQueryParamType::NullableBoolean, 'Whether to only return {elements} that the user has permission to edit.')]
     public function editable(?bool $value = true): self
     {
         $this->editable = $value;
@@ -286,6 +291,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 
         $query->where(function (Builder $query) use ($outerQuery, $value, $entryQuery, $peerDraftPermissionPrefix, $peerPermissionPrefix, $permissionPrefix, $user, $sections) {
             $partialAccessSections = [];
+            $fullyAuthorizedSectionIds = [];
 
             foreach ($sections as $section) {
                 if (! $user->can("$permissionPrefix:$section->uid")) {
@@ -339,7 +345,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             }
 
             // They don't have access to anything
-            if (empty($partialAccessSections) && $value) {
+            if (empty($partialAccessSections) && empty($fullyAuthorizedSectionIds) && $value) {
                 $outerQuery->whereRaw('0 = 1');
 
                 return;

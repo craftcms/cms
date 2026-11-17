@@ -71,6 +71,15 @@ const config: StorybookConfig = {
           },
         }),
       ],
+      server: {
+        ...config.server,
+        // As vite.config.js does for the dev server: Storybook replaces its
+        // `server` block, and watching vendor/ grows memory until it runs out.
+        watch: {
+          ...config.server?.watch,
+          ignored: ['**/vendor/**', '**/cms-assets/**'],
+        },
+      },
       resolve: {
         ...config.resolve,
         alias: {

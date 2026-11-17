@@ -3,30 +3,12 @@ import {
   elementId,
   uiChangeFromEvent,
   uiTabPanelId,
-  ignoreModelValueInitialization,
   namespaceId,
   setValue,
   unsetValue,
   valueAt,
 } from './runtime';
 import type {UiChange} from './types';
-
-describe('ignoreModelValueInitialization', () => {
-  it('only forwards changes after initialization', () => {
-    const changes: Event[] = [];
-    const listener = ignoreModelValueInitialization((event) => {
-      changes.push(event);
-    });
-    const change = new CustomEvent('model-value-changed');
-
-    listener(
-      new CustomEvent('model-value-changed', {detail: {initialize: true}})
-    );
-    listener(change);
-
-    expect(changes).toEqual([change]);
-  });
-});
 
 describe('uiChangeFromEvent', () => {
   it('passes a UiChange through untouched', () => {

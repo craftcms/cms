@@ -407,10 +407,13 @@ export class BaseDrag<
     if (typeof handle === 'string') {
       // Legacy split commas and forced `:first` per selector to dodge
       // craftcms/cms#12896. `querySelector` is inherently first-match, so the
-      // `:first` hack is dropped.
+      // `:first` hack is dropped. Legacy handles were resolved with jQuery's
+      // `find()`, which accepts a leading combinator (`> .element`) relative
+      // to the item; `querySelector` needs an explicit `:scope` for that.
       return handle
         .split(',')
-        .map((s) => item.querySelector(s.trim()))
+        .map((s) => s.trim())
+        .map((s) => item.querySelector(/^[>+~]/.test(s) ? `:scope ${s}` : s))
         .filter((el): el is Element => el !== null);
     }
 

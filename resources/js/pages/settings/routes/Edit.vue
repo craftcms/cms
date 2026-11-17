@@ -119,7 +119,7 @@
       <div class="route-uri-field">
         <craft-input
           :label="t('If the URI looks like this')"
-          :has-feedback-for="form.errors.uriParts ? 'error' : ''"
+          :invalid="Boolean(form.errors.uriParts)"
         >
           <MixedInput
             slot="input"

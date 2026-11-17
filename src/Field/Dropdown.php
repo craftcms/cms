@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
-use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -12,7 +11,9 @@ use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
+use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\Choice;
+use CraftCms\Cms\Ui\Controls\Combobox;
 
 use function CraftCms\Cms\t;
 
@@ -63,53 +64,30 @@ class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface,
     }
 
     #[\Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
+    public function uiControl(FieldContext $context): Control
     {
-        return $this->inputHtmlInternal($value, $element, false);
-    }
+        $hasBlankOption = collect($this->options)->contains(fn (array $option): bool => ($option['value'] ?? null) === '');
 
-    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static): string
-    {
-        /** @var SingleOptionFieldData $value */
-        $options = $this->translatedOptions(true, $value, $element);
+        // A native select can't show icons or colors
+        if (collect($this->options)->contains(fn (array $option): bool => ($option['icon'] ?? '') !== '' || ($option['color'] ?? '') !== '')) {
+            $value = $this->encodeValue($context->value);
 
-        $hasBlankOption = false;
-        foreach ($options as &$option) {
-            if (isset($option['value']) && $option['value'] === '') {
-                $option['value'] = '__blank__';
-                $hasBlankOption = true;
-            }
-            if (isset($option['label']) && $option['label'] === '') {
-                $option['label'] = ' ';
-            }
+            return Combobox::make($context->path)
+                ->requireOptionMatch()
+                ->showAllOnEmpty()
+                ->clearable(! $hasBlankOption)
+                ->options($this->comboboxOptions($context))
+                ->value($value === '__blank__' && ! $hasBlankOption ? null : $value);
         }
 
-        if (! $value->valid) {
-            if (! $static) {
-                DeltaRegistry::setInitialValue($this->handle, $this->encodeValue($value->value));
-            }
+        $control = parent::uiControl($context);
 
-            $default = $this->defaultValue();
-            if ($default !== null) {
-                $value = $this->normalizeValue($default, null);
-            } else {
-                $value = null;
-
-                // Add a blank option to the beginning if one doesn't already exist
-                if (! $hasBlankOption) {
-                    array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
-                }
-            }
+        // A blank option is encoded as __blank__, so Choice can't tell it supplies its own empty state
+        if ($control instanceof Choice && $hasBlankOption) {
+            $control->withoutPlaceholder();
         }
 
-        return FormFields::selectizeHtml([
-            'id' => $this->getInputId(),
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $this->encodeValue($value),
-            'options' => $options,
-            'disabled' => $static,
-        ]);
+        return $control;
     }
 
     /** @return string|list<string> */

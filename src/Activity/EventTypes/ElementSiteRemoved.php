@@ -14,15 +14,18 @@ use function CraftCms\Cms\t;
  */
 class ElementSiteRemoved extends ActivityEventType
 {
-    protected const string LABEL = 'Removed from site';
+    protected const string LABEL = 'Removed this element from a site';
 
     protected const string ICON = 'circle-minus';
 
     public static function format(ActivityEvent $event): string
     {
         return t(
-            'Removed from {site}',
-            ['site' => $event->snapshots['site']['name']],
+            'Removed this {type} from {site}',
+            [
+                'type' => self::subjectTypeName($event),
+                'site' => $event->snapshots['site']['name'],
+            ],
         );
     }
 }

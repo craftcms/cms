@@ -166,9 +166,9 @@ it('eager loads nested elements per site and collects cache expiry data', functi
     });
 
     TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderExpirableTargetElement::class, [
-        ['id' => 201, 'siteId' => 1, 'title' => 'Alpha', 'expiryDate' => new DateTime('+10 minutes')],
-        ['id' => 202, 'siteId' => 1, 'title' => 'Beta', 'expiryDate' => new DateTime('+5 minutes')],
-        ['id' => 301, 'siteId' => 2, 'title' => 'Gamma', 'expiryDate' => new DateTime('+15 minutes')],
+        ['id' => 201, 'siteId' => 1, 'title' => 'Alpha', 'expiryDate' => now()->addMinutes(10)],
+        ['id' => 202, 'siteId' => 1, 'title' => 'Beta', 'expiryDate' => now()->addMinutes(5)],
+        ['id' => 301, 'siteId' => 2, 'title' => 'Gamma', 'expiryDate' => now()->addMinutes(15)],
     ]);
 
     TestElementEagerLoaderQuery::setRows(TestElementEagerLoaderNestedTargetElement::class, [

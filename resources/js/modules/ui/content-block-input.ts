@@ -3,6 +3,8 @@ import '@craftcms/ui/components/empty/empty';
 import '@craftcms/ui/components/spinner/spinner';
 import {t} from '@craftcms/ui';
 
+export type ContentBlockViewMode = 'grouped' | 'pane' | 'inline';
+
 class CraftContentBlockInput extends HTMLElement {
   private listener?: AbortController;
 
@@ -40,11 +42,13 @@ class CraftContentBlockInput extends HTMLElement {
     }
 
     const pane = document.createElement('div');
-    pane.className = 'pane';
     pane.dataset.contentBlock = '';
     const spinner = document.createElement('craft-spinner');
     spinner.setAttribute('label', t('Loading'));
-    pane.append(spinner, this.removeButton());
+    pane.append(spinner);
+    if (this.hasAttribute('clear-label')) {
+      pane.append(this.removeButton());
+    }
     empty.replaceWith(pane);
     this.changed();
   }

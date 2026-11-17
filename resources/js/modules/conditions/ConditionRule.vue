@@ -60,15 +60,13 @@
   function change(_change: UiChange, values: UiValues): void {
     const inputs = valueAt(values, payload.value.ui.scope);
 
-    editor.rules[props.rule.id] = {
+    editor.updateRule(props.rule.id, {
       ...payload.value,
       config: {
         ...payload.value.config,
         ...(inputs as UiValues),
       },
-    };
-
-    editor.changed();
+    });
   }
 
   async function refresh(values: UiValues): Promise<UiPayload> {
@@ -90,11 +88,9 @@
 
     if (!refreshed) return;
 
-    editor.rules[props.rule.id] = refreshed;
     latestUiPayload.value = refreshed.ui;
     uiKey.value++;
-
-    editor.changed();
+    editor.updateRule(props.rule.id, refreshed);
   }
 </script>
 
@@ -106,35 +102,40 @@
       role="group"
       :aria-label="payload.label"
     >
-      <div class="condition-rule__content flex items-start gap-2">
-        <TypeConfigurator
-          :key="uiKey"
-          ref="typeConfigurator"
-          class="min-w-0 flex-1"
-          :types="editor.payload().ruleTypes"
-          :selected-type-label="payload.label"
-          :ui="payload.ui"
-          :errors="editor.errors()"
-          :disabled="!editor.editable()"
-          :ui-disabled="switching"
-          :refresh="refresh"
-          @select="switchType"
-          @change="change"
-        />
+      <TypeConfigurator
+        :key="uiKey"
+        ref="typeConfigurator"
+        :types="editor.payload().ruleTypes"
+        :selected-type-label="payload.label"
+        :ui="payload.ui"
+        :errors="editor.errors()"
+        :disabled="!editor.editable()"
+        :ui-disabled="switching"
+        :refresh="refresh"
+        @select="switchType"
+        @change="change"
+      >
+        <template v-if="editor.editable()" #actions>
+          <div class="condition-rule__remove flex items-center">
+            <craft-button
+              type="button"
+              icon="xmark-large"
+              variant="danger-plain"
+              size="small"
+              flush="inline-end"
+              :aria-label="t('Remove')"
+              @click="emit('remove')"
+            />
+          </div>
+        </template>
+      </TypeConfigurator>
 
-        <craft-button
-          v-if="editor.editable()"
-          type="button"
-          class="ms-auto self-center"
-          icon="xmark-large"
-          variant="danger-plain"
-          size="small"
-          :aria-label="t('Remove')"
-          @click="emit('remove')"
-        />
-      </div>
-
-      <craft-callout v-if="error" role="alert" variant="danger" class="mt-2">
+      <craft-callout
+        v-if="error"
+        role="alert"
+        variant="danger"
+        class="block mt-md"
+      >
         {{ error }}
       </craft-callout>
     </div>
@@ -149,3 +150,9 @@
     </div>
   </div>
 </template>
+
+<style scoped>
+  .condition-rule__remove {
+    block-size: var(--c-button-height, var(--c-size-control-md));
+  }
+</style>

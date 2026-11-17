@@ -1,100 +1,43 @@
 <script setup lang="ts">
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import '@craftcms/ui/components/chip/chip';
-  import {t} from '@craftcms/ui';
-  import {computed, reactive, ref, useId} from 'vue';
+  import {actionClient, t} from '@craftcms/ui';
+  import {
+    computed,
+    defineAsyncComponent,
+    nextTick,
+    reactive,
+    ref,
+    useId,
+    watch,
+  } from 'vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import ElementList from '@/modules/elements/components/ElementList.vue';
   import {useElementList} from '@/modules/elements/composables/useElementList';
-  import {
-    createElementActionMenu,
-    type ElementActionMenuItem,
-  } from '@/modules/elements/composables/useElementActionMenu';
-  import type {ActionItem} from '@/common/types';
-  import type {UiChangeKind, UiControlPayload, UiProperties} from './types';
+  import {createElementActionMenu} from '@/modules/elements/composables/useElementActionMenu';
+  import type {UiChangeKind, UiControlPayload} from './types';
   import {inputName} from './runtime';
-  import AssetUploadButton from '@/pages/assets/AssetUploadButton.vue';
+  import {useUiPreview} from './uiPreview';
   import {openSlideout} from '@/common/slideouts';
   import EditElementController from '@/actions/CraftCms/Cms/Http/Controllers/Elements/EditElementController';
+  import SelectionToolbar from './element-select/SelectionToolbar.vue';
+  import RelationSearch from './element-select/RelationSearch.vue';
+  import {chipMenu, selectionMenu} from './element-select/chipMenu';
+  import {usePasteableElements} from './element-select/usePasteableElements';
+  import {elementFocusTarget} from './element-select/elementFocusTarget';
+  import {useElementPresentations} from '@/modules/elements/element-presentations';
+  import {useFocusThroughRedraw} from '@/common/composables/useFocusThroughRedraw';
+  import type {
+    ElementPresentation,
+    ElementSelectProps,
+  } from './element-select/types';
 
-  /**
-   * TODO: Extract the element-select markup into a reusable Vue component
-   * equivalent to `_includes/forms/elementSelect.twig`.
-   */
-  type ElementPresentation = {
-    id: number;
-    label: string;
-    siteId?: number | string | null;
-    /**
-     * What the element itself permits, decided server-side. Absent for elements
-     * learned from the selector modal, which only reports the common six —
-     * those chips get the field's own actions until the next server render
-     * fills the rest in.
-     */
-    url?: string | null;
-    /** The element's control panel edit screen, if it has one. */
-    cpEditUrl?: string | null;
-    canEdit?: boolean;
-    canCopy?: boolean;
-    draftId?: number | null;
-    revisionId?: number | null;
-    /**
-     * The chip's status dot, already resolved to a fill and a label — which
-     * status definitions exist, and what they're called, is an element-type
-     * concern. `null` for types that don't show one.
-     */
-    status?: {fill: string; label: string; draft: boolean} | null;
-    /**
-     * The element's own action menu, as the server describes it — including the
-     * extras an element type adds (an asset's Preview file, Download, Show in
-     * folder, Open in Image Editor).
-     */
-    actions?: ElementActionMenuItem[];
-    /**
-     * View-mode extras, rendered server-side for the active mode only — the
-     * control asks for card parts in card modes and a thumbnail in thumbs mode,
-     * so a list field pays for neither.
-     */
-    cardAttributes?: Record<
-      string,
-      string | number | boolean | null | undefined
-    >;
-    cardHeaderHtml?: string;
-    cardContentHtml?: string;
-    cardFooterHtml?: string;
-    thumbHtml?: string;
-  };
+  // Only Assets fields that allow uploads render it, so it brings Uppy with it
+  // on demand.
+  const AssetUploadButton = defineAsyncComponent(
+    () => import('@/pages/assets/AssetUploadButton.vue')
+  );
 
-  /** Mirrors `ElementSelect::viewModes()`, itself a mirror of the field setting. */
-  type ElementSelectViewMode =
-    | 'list'
-    | 'list-inline'
-    | 'thumbs'
-    | 'cards'
-    | 'cards-grid';
-  type ElementSelectElement =
-    | 'craft-element-select-input'
-    | 'craft-entry-select-input'
-    | 'craft-asset-select-input';
-  type ElementSelectProps = {
-    elementType: string;
-    customElement: ElementSelectElement;
-    elements: ElementPresentation[];
-    context: string;
-    sources: string[] | null;
-    criteria: UiProperties;
-    selectionCondition?: UiProperties;
-    selectionLabel: string;
-    limit: number | null;
-    single?: boolean;
-    showSiteMenu: boolean;
-    viewMode: ElementSelectViewMode;
-    /** Lower-cased, for "Edit entry" / "Copy entry". */
-    elementDisplayName: string;
-    /** `AssetSelect` only; absent for every other element type. */
-    canUpload?: boolean;
-    uploadFolderId?: number | null;
-    showFolders?: boolean;
-  };
   const props = defineProps<{
     control: UiControlPayload<ElementSelectProps>;
     value: Array<number | string> | number | string | null | undefined;
@@ -152,8 +95,28 @@
     );
   }
 
-  /** One relation can't be reordered, and a read-only field can't be either. */
-  const sortable = computed(() => props.editable && ids.value.length > 1);
+  /** `next`, cut down to the field's limit from the start. */
+  function withinLimit(next: number[]): number[] {
+    return limit.value === null
+      ? next
+      : next.slice(0, Math.max(limit.value, 1));
+  }
+
+  /**
+   * A field that maintains hierarchy keeps its elements in structure order,
+   * nested by level, as Craft 5's `_elements/structurelist` drew them.
+   */
+  const maintainHierarchy = computed(
+    () => props.control.props.maintainHierarchy === true
+  );
+
+  /**
+   * One relation can't be reordered, and a read-only field can't be either. A
+   * hierarchy's order is the structure's, so it can't be reordered by hand.
+   */
+  const sortable = computed(
+    () => props.editable && ids.value.length > 1 && !maintainHierarchy.value
+  );
 
   /**
    * Whether the field is full. At the limit the add and upload controls come
@@ -168,10 +131,46 @@
     return Number(value);
   }
 
+  /** The site an element is drawn in. */
+  function siteOf(id: number): number | string | null | undefined {
+    return (
+      providedPresentations.value.get(id)?.siteId ??
+      presentations.get(id)?.siteId ??
+      (props.control.props.criteria.siteId as number | string | null)
+    );
+  }
+
+  /**
+   * Elements drawn through the page's shared cache, so they're refetched when
+   * they're saved, here or in another tab. The server's renders seed it; the
+   * one the field mounted with only fills gaps, since it may be older.
+   */
+  const cached = useElementPresentations(
+    () => ({
+      elementType: props.control.props.elementType,
+      viewMode: props.control.props.viewMode,
+      thumbSize: props.control.props.thumbSize,
+    }),
+    () => ids.value.map((id) => ({id, siteId: Number(siteOf(id)) || null}))
+  );
+  /** Elements fetched since the server last rendered the field. */
+  const loaded = new Set<number>();
+  watch(
+    () => props.control.props.elements,
+    (elements, previous) => {
+      loaded.clear();
+      cached.seed(elements, props.control.props.criteria.siteId, {
+        replace: previous !== undefined,
+      });
+    },
+    {immediate: true}
+  );
+
   function presentation(value: number | string): ElementPresentation {
     const id = elementId(value);
 
     return (
+      cached.get(id, siteOf(id)) ??
       providedPresentations.value.get(id) ??
       presentations.get(id) ?? {id, label: String(id)}
     );
@@ -181,21 +180,47 @@
 
   /**
    * Chip selection, with the shift-range and toggle behavior of the element
-   * index — the anchor is the last individually-toggled chip, and shift selects
-   * the inclusive range between it and the clicked one.
+   * index. Selection is the input to bulk removal: "Remove" on a selected chip
+   * removes the whole selection, which is what Craft 5's
+   * `defineElementActions` does via `elementSelect.isSelected()`.
    *
-   * Selection is the input to bulk removal: "Remove" on a selected chip removes
-   * the whole selection, which is what Craft 5's `defineElementActions` does via
-   * `elementSelect.isSelected()`.
+   * It's only worth offering when more than one element can be related — a
+   * single-relation field has nothing to bulk-act on. A `null` limit is
+   * unlimited, so it counts as more than one. A read-only field offers it too:
+   * its selection can still be copied, just not removed.
    */
-  /**
-   * Selection is only worth offering when more than one element can be related —
-   * a single-relation field has nothing to bulk-act on. A `null` limit is
-   * unlimited, so it counts as more than one.
-   */
-  const selectable = computed(() => props.editable && limit.value !== 1);
+  const selectable = computed(() => limit.value !== 1);
 
   const viewMode = computed(() => props.control.props.viewMode);
+
+  /**
+   * Elements selected without a presentation, such as ones pasted in, which
+   * come as IDs alone, are fetched, so they draw as themselves rather than as
+   * their IDs. Each is fetched once until the server renders the field again.
+   */
+  watch(
+    ids,
+    (current) => {
+      // One that leaves loses its cached presentation, so it's fetched again
+      // if it comes back.
+      loaded.forEach((id) => current.includes(id) || loaded.delete(id));
+      const missing = current.filter(
+        (id) =>
+          !loaded.has(id) &&
+          !cached.get(id, siteOf(id)) &&
+          !providedPresentations.value.has(id) &&
+          !presentations.has(id)
+      );
+
+      if (missing.length) {
+        missing.forEach((id) => loaded.add(id));
+        cached
+          .load(missing.map((id) => ({id, siteId: Number(siteOf(id)) || null})))
+          .catch(() => {});
+      }
+    },
+    {immediate: true}
+  );
 
   /**
    * What the card and thumb bodies draw, in the field's current order.
@@ -213,46 +238,24 @@
     ids.value.map((selectedValue) => ({
       ...presentation(selectedValue),
       id: elementId(selectedValue),
+      ...(maintainHierarchy.value ? {} : {level: undefined}),
     }))
+  );
+
+  // Refetched presentations redraw the same elements without losing focus.
+  useFocusThroughRedraw(
+    () => dropZone.value,
+    listData,
+    () => ids.value.join()
   );
 
   const list = useElementList({
     ids,
     viewMode,
     selectable,
-    readOnly: () => !props.editable,
   });
 
-  const {
-    selectedIds,
-    hasSelection,
-    allSelected,
-    someSelected,
-    isSelected,
-    setChecked,
-    toggleAll,
-    clear: clearSelection,
-    handleClick: selectChip,
-    prune: pruneSelection,
-  } = list.selection;
-
-  /**
-   * Built here rather than inline: the ICU braces in the plural form read as
-   * nested interpolation to the template compiler.
-   */
-  const selectionCountLabel = computed(() =>
-    t('{num, number} {num, plural, =1{item} other{items}} selected', {
-      num: selectedIds.value.length,
-    })
-  );
-
-  /**
-   * `craft-checkbox` dispatches from the host rather than an inner `<input>`, so
-   * the checked state has to be read off the target as a plain property.
-   */
-  function checkboxValue(event: Event): boolean {
-    return Boolean((event.target as {checked?: boolean} | null)?.checked);
-  }
+  const {selectedIds, isSelected, prune: pruneSelection} = list.selection;
 
   // ───────────────────────────── reordering ─────────────────────────────
 
@@ -266,6 +269,77 @@
 
     next.splice(finishIndex, 0, moved);
     updateValue(next);
+  }
+
+  // ───────────────────────────── hierarchy ─────────────────────────────
+
+  /**
+   * Relates `next`. A hierarchy is then put back in structure order by the
+   * server, which fills in missing ancestors and applies the branch limit, as
+   * `relational-fields/structured-input-html` does for Craft 5's input. The
+   * chips show straight away, and move into place when the server answers,
+   * unless the selection has changed again in the meantime.
+   */
+  async function relate(next: number[], siteId?: number | string | null) {
+    updateValue(next);
+
+    if (!maintainHierarchy.value || next.length === 0) {
+      return;
+    }
+
+    let elements: ElementPresentation[];
+
+    try {
+      const {data} = await actionClient.post<{
+        elements?: ElementPresentation[];
+      }>('relational-fields/structured-elements', {
+        elementType: props.control.props.elementType,
+        elementIds: next,
+        siteId: siteId ?? null,
+        branchLimit: props.control.props.branchLimit ?? null,
+        thumbSize: props.control.props.thumbSize ?? null,
+      });
+      elements = data.elements ?? [];
+    } catch {
+      return;
+    }
+
+    if (ids.value.join() !== next.join()) {
+      return;
+    }
+
+    for (const element of elements) {
+      presentations.set(element.id, element);
+    }
+
+    updateValue(elements.map((element) => element.id));
+  }
+
+  /** `remove`, plus the descendants of each, which can't stay without their ancestor. */
+  function withDescendants(remove: Set<number>): Set<number> {
+    if (!maintainHierarchy.value) {
+      return remove;
+    }
+
+    const removing = new Set<number>();
+    let branchLevel: number | null = null;
+
+    for (const element of listData.value) {
+      const level = element.level ?? 1;
+
+      if (branchLevel !== null && level > branchLevel) {
+        removing.add(element.id);
+        continue;
+      }
+
+      branchLevel = remove.has(element.id) ? level : null;
+
+      if (branchLevel !== null) {
+        removing.add(element.id);
+      }
+    }
+
+    return removing;
   }
 
   // ───────────────────────────── selection modal ─────────────────────────────
@@ -303,6 +377,19 @@
    * reason for being async: a page full of relation fields shouldn't pay for the
    * element index unless someone actually opens one.
    */
+  /** The element being edited and its owners, when the field can't relate them. */
+  const unrelatable = computed(
+    () => props.control.props.disabledElementIds ?? []
+  );
+
+  /**
+   * A branch limit of one means a new choice replaces the old one, as it does
+   * in Craft 5.
+   */
+  const replacesBranch = computed(
+    () => maintainHierarchy.value && props.control.props.branchLimit === 1
+  );
+
   async function openSelector(replacing: number | null = null): Promise<void> {
     const {createElementSelectorModal} =
       await import('@/modules/element-selector-modal/create-element-selector-modal');
@@ -315,6 +402,8 @@
             limit.value -
               (replacing === null ? ids.value.length : ids.value.length - 1)
           );
+    /** The element chosen last, which takes focus once the field is full. */
+    let chosenLast: number | undefined;
 
     const modal = await createElementSelectorModal(
       props.control.props.elementType,
@@ -323,15 +412,35 @@
         sources: props.control.props.sources,
         criteria: props.control.props.criteria as Record<string, unknown>,
         condition: props.control.props.selectionCondition,
+        ...props.control.props.referenceElement,
         showSiteMenu: props.control.props.showSiteMenu,
         indexSettings: {showFolders: props.control.props.showFolders ?? true},
+        defaultSource: props.control.props.defaultSource,
+        defaultSourcePath: props.control.props.defaultSourcePath,
         multiSelect: replacing === null && remaining !== 1,
         // Already-related elements can't be picked again — except the one being
         // replaced, which would otherwise disable the obvious no-op choice.
-        disabledElementIds: ids.value.filter((id) => id !== replacing),
+        disabledElementIds: [
+          ...ids.value.filter((id) => id !== replacing),
+          ...unrelatable.value,
+        ],
         modalTitle: props.control.props.selectionLabel,
         selectBtnLabel: props.control.props.selectionLabel,
-        triggerElement: () => addButton.value,
+        // A full field has no Add button: the element chosen last takes focus,
+        // else the one being replaced, else the last one. The field itself is
+        // the last resort, as it still says which panel a slideout opened from
+        // the modal nests in.
+        triggerElement: () => {
+          const focusId = chosenLast ?? replacing ?? ids.value.at(-1);
+
+          return (
+            addButton.value ??
+            (focusId === undefined
+              ? null
+              : elementFocusTarget(dropZone.value, focusId)) ??
+            dropZone.value
+          );
+        },
         onSelect: (elements) => {
           const chosen = remember(
             elements as unknown as Array<Record<string, unknown>>
@@ -341,16 +450,17 @@
             return;
           }
 
-          const next =
-            replacing === null
-              ? [...ids.value, ...chosen]
-              : ids.value.flatMap((id) => (id === replacing ? chosen : [id]));
+          const current =
+            replacesBranch.value && replacing === null ? [] : ids.value;
 
-          updateValue(
-            limit.value === null
-              ? next
-              : next.slice(0, Math.max(limit.value, 1))
+          const next = withinLimit(
+            replacing === null
+              ? [...current, ...chosen]
+              : current.flatMap((id) => (id === replacing ? chosen : [id]))
           );
+          chosenLast = next.filter((id) => chosen.includes(id)).pop();
+
+          void relate(next, presentation(chosen[0]!).siteId);
         },
       }
     );
@@ -359,9 +469,85 @@
     await modal.show();
   }
 
+  // ───────────────────────────── search ─────────────────────────────
+
+  const search = ref<InstanceType<typeof RelationSearch> | null>(null);
+
+  /**
+   * The field, if it shows a search input. Previews show in modals, which the
+   * slideout a new entry opens in can't open over, so they don't create any.
+   */
+  const searchField = computed(() => {
+    const field = props.control.props;
+
+    return field.search
+      ? {
+          ...field,
+          search: field.search,
+          createSection: previewing ? null : field.createSection,
+        }
+      : null;
+  });
+
+  /**
+   * Relates an element the search input found or created. Focus stays in the
+   * search input, unless the field is now full and it's gone, in which case it
+   * moves to the element, as it does for a pasted one.
+   */
+  async function relateFound(element: ElementPresentation): Promise<void> {
+    if (ids.value.includes(element.id)) {
+      return;
+    }
+
+    presentations.set(element.id, element);
+    void relate(
+      withinLimit([...(replacesBranch.value ? [] : ids.value), element.id]),
+      element.siteId
+    );
+    await nextTick();
+
+    if (search.value?.isConnected()) {
+      search.value.focus();
+
+      return;
+    }
+
+    elementFocusTarget(dropZone.value, element.id)?.focus();
+  }
+
+  // ───────────────────────────── pasting ─────────────────────────────
+
+  const pasteable = usePasteableElements({
+    field: () => props.control.props,
+    editable: () => props.editable,
+    ids,
+    atLimit,
+    relate: (elements) => {
+      for (const element of elements) {
+        presentations.set(element.id, element);
+      }
+
+      const kept = withinLimit([
+        ...ids.value,
+        ...elements.map((element) => element.id),
+      ]);
+      void relate(kept, elements[0]?.siteId);
+
+      return kept;
+    },
+    container: dropZone,
+    fallbackFocus: addButton,
+  });
+
+  usePasteElementsShortcut(dropZone, {
+    canPaste: () => pasteable.candidates.value.length > 0,
+    paste: () => pasteable.paste(),
+  });
+
   // ───────────────────────────── chip actions ─────────────────────────────
 
   function removeIds(remove: Set<number>): void {
+    remove = withDescendants(remove);
     const next = ids.value.filter((id) => !remove.has(id));
     pruneSelection(next);
     updateValue(next);
@@ -370,207 +556,58 @@
   /** One dispatcher for every chip's menu, rather than one per element. */
   const toActionItems = createElementActionMenu();
 
-  /**
-   * The element's own actions.
-   *
-   * The server describes these per element, so an element type's extras arrive
-   * without the field knowing what any of them are. Elements picked since the
-   * last render have no descriptors yet — the selector reports only the common
-   * few — so those fall back to what can be derived client-side until the next
-   * server render fills them in.
-   */
-  function elementActions(value: number | string): ActionItem[] {
-    const element = presentation(value);
-    const type = props.control.props.elementDisplayName;
+  const menuField = computed(() => ({
+    elementType: props.control.props.elementType,
+    elementDisplayName: props.control.props.elementDisplayName,
+    editable: props.editable,
+    toActionItems,
+  }));
 
-    if (element.actions?.length) {
-      return toActionItems(element.actions);
-    }
+  const bulkActions = computed(() =>
+    selectionMenu(selectedIds.value.map(presentation), menuField.value, () =>
+      removeIds(new Set(selectedIds.value))
+    )
+  );
 
-    const actions: ActionItem[] = [];
-
-    if (element.url) {
-      actions.push({
-        icon: 'share',
-        label: t('View in a new tab'),
-        onClick: () => window.open(element.url!, '_blank', 'noopener'),
-      });
-    }
-
-    if (element.canCopy) {
-      actions.push({
-        icon: 'clone-dashed',
-        label: t('Copy {type}', {type}),
-        // `Craft.cp` owns the clipboard, including its confirmation toast.
-        onClick: () => Craft.cp?.copyElements?.([copyDescriptor(value)]),
-      });
-    }
-
-    return actions;
-  }
-
-  /** What `Craft.cp.copyElements()` wants for one element. */
-  type CopyDescriptor = {
-    type: string;
-    id: string | number;
-    siteId?: number | null;
-    draftId?: number | null;
-    revisionId?: number | null;
-  };
-
-  function copyDescriptor(value: number | string): CopyDescriptor {
-    const element = presentation(value);
-
-    return {
-      type: props.control.props.elementType,
-      id: element.id,
-      siteId: element.siteId === null ? null : Number(element.siteId),
-      draftId: element.draftId ?? null,
-      revisionId: element.revisionId ?? null,
-    };
-  }
-
-  /**
-   * The selection's own actions, for the toolbar menu.
-   *
-   * Copy covers only the elements the server said may be copied — a revision or
-   * one the user can't read is skipped rather than silently failing — so the item
-   * is offered whenever any of the selection is copyable. Remove needs an editable
-   * field: a read-only one can show and copy what it can't detach.
-   */
-  const bulkActions = computed<ActionItem[]>(() => {
-    if (!hasSelection.value) {
-      return [];
-    }
-
-    const actions: ActionItem[] = [];
-    const copyable = selectedIds.value.filter((id) => presentation(id).canCopy);
-
-    if (copyable.length) {
-      actions.push({
-        icon: 'clone-dashed',
-        label: t('Copy selected'),
-        onClick: () => Craft.cp?.copyElements?.(copyable.map(copyDescriptor)),
-      });
-    }
-
-    if (props.editable) {
-      actions.push({
-        icon: 'remove',
-        label: t('Remove selected'),
-        variant: 'danger',
-        onClick: () => removeIds(new Set(selectedIds.value)),
-      });
-    }
-
-    // @TODO Provide a way for plugins to register bulk actions for asset fields
-
-    return actions;
-  });
-
-  /**
-   * Opening the element's editor.
-   *
-   * The field's own affordance rather than one of the element's: the server's
-   * descriptors never include an edit item, because they're written for the
-   * editor itself, where you're already editing the thing.
-   */
   const editLabel = computed(() =>
     t('Edit {type}', {type: props.control.props.elementDisplayName})
   );
 
+  /**
+   * Previews show in modals, which slideouts can't open over, so their
+   * elements can't be edited.
+   */
+  const previewing = useUiPreview();
+
   function canEditElement(value: number | string): boolean {
-    return presentation(value).canEdit === true;
-  }
-
-  function editAction(value: number | string): ActionItem | null {
-    if (!canEditElement(value)) {
-      return null;
-    }
-
-    return {
-      icon: 'edit',
-      label: editLabel.value,
-      onClick: () => openEditor(value),
-    };
-  }
-
-  /** The menu for a chip or card, with the edit item where it belongs. */
-  function menuActions(value: number | string, index: number): ActionItem[] {
-    return chipActions(value, index, {withEdit: !list.isCards.value});
+    return !previewing && presentation(value).canEdit === true;
   }
 
   /**
-   * Joins menu sections with a separator between each.
-   *
-   * Empty sections drop out, so a menu never opens or closes on a rule, and two
-   * adjacent empty sections can't produce a double one.
+   * Each chip's menu, built once per render rather than per binding. Cards get
+   * a pencil straight to the editor, so their menu leaves the edit item out.
    */
-  function withSeparators(sections: ActionItem[][]): ActionItem[] {
-    return sections
-      .filter((section) => section.length > 0)
-      .flatMap((section, index) =>
-        index === 0 ? section : [{type: 'hr'} as ActionItem, ...section]
-      );
-  }
-
-  /**
-   * A chip or card's menu, in three sections: what the element itself offers,
-   * what the field offers for it, and detaching it.
-   *
-   * This is the place to regroup the menu — move an item between the arrays, or
-   * merge two sections into one, and the separators follow.
-   *
-   * `withEdit` is off in the card modes, where the pencil button beside the menu
-   * already opens the editor.
-   */
-  function chipActions(
-    value: number | string,
-    index: number,
-    {withEdit = true}: {withEdit?: boolean} = {}
-  ): ActionItem[] {
-    const id = elementId(value);
-
-    // What the element itself offers — server-described, so an element type's
-    // own actions (an asset's Preview file, Download, …) arrive here.
-    const elementSection = elementActions(value);
-
-    // What the field offers for that element.
-    const fieldSection: ActionItem[] = [];
-    const edit = withEdit ? editAction(value) : null;
-
-    if (edit) {
-      fieldSection.push(edit);
-    }
-
-    // Detaching it from the field. Separated because it's the one that changes
-    // the field's value.
-    const removeSection: ActionItem[] = [];
-
-    // A read-only field still offers the element's own actions and its editor —
-    // you can view, edit and copy what you can't detach.
-    if (props.editable) {
-      if (props.control.props.elementType) {
-        fieldSection.push({
-          icon: 'arrows-rotate',
-          label: t('Replace'),
-          onClick: () => void openSelector(id),
-        });
-      }
-
-      removeSection.push({
-        icon: 'remove',
-        label: t('Remove'),
-        variant: 'danger',
-        onClick: () =>
-          removeIds(
-            isSelected(id) ? new Set(selectedIds.value) : new Set([id])
-          ),
-      });
-    }
-
-    return withSeparators([elementSection, fieldSection, removeSection]);
-  }
+  const chipMenus = computed(
+    () =>
+      new Map(
+        listData.value.map((element) => [
+          element.id,
+          chipMenu(element, menuField.value, {
+            edit:
+              list.isCards.value || previewing
+                ? undefined
+                : {label: editLabel.value, open: () => openEditor(element.id)},
+            replace: () => void openSelector(element.id),
+            remove: () =>
+              removeIds(
+                isSelected(element.id)
+                  ? new Set(selectedIds.value)
+                  : new Set([element.id])
+              ),
+          }),
+        ])
+      )
+  );
 
   /**
    * A freshly uploaded asset joins the selection, the way choosing one does.
@@ -598,6 +635,10 @@
 
   /** Double-click opens the element's editor slideout, as it does on chips elsewhere. */
   function openEditor(value: number | string): void {
+    if (previewing) {
+      return;
+    }
+
     const element = presentation(value);
     const href =
       element.cpEditUrl ??
@@ -635,9 +676,15 @@
 </script>
 
 <template>
-  <!-- `ref="dropZone"`: the whole field accepts dropped files, as `$container`
-       does for Craft 5's `AssetSelectInput`. -->
-  <div ref="dropZone" class="w-full">
+  <!-- `ref="dropZone"`: the whole field accepts dropped and pasted files, as
+       `$container` does for Craft 5's `AssetSelectInput`. It takes focus on
+       click when uploads are allowed, so there's somewhere to paste into. -->
+  <div
+    ref="dropZone"
+    class="w-full"
+    :class="{'can-paste': showUpload}"
+    :tabindex="showUpload ? -1 : undefined"
+  >
     <input
       v-if="editable"
       type="hidden"
@@ -647,74 +694,26 @@
     <component :is="control.props.customElement" :id="id">
       <div class="relative" v-if="ids.length > 0">
         <!--
-          Selection toolbar. The whole bar is selection-only, so a field that
-          can't be selected (a single relation) has no use for it.
+          A field that can't be selected (a single relation) has no use for
+          the selection toolbar.
         -->
-        <div
-          class="element-selections-header flex justify-between items-center"
+        <SelectionToolbar
           v-if="selectable"
-        >
-          <div class="flex items-center gap-2">
-            <craft-checkbox
-              label-sr-only
-              .checked="allSelected"
-              .indeterminate="someSelected"
-              @model-value-changed="toggleAll(checkboxValue($event))"
-            >
-              <label slot="label">{{ t('Select all') }}</label>
-            </craft-checkbox>
-
-            <template v-if="hasSelection">
-              <div class="text-xs font-bold">{{ selectionCountLabel }}</div>
-              <craft-button
-                type="button"
-                size="small"
-                variant="plain"
-                @click="clearSelection()"
-              >
-                {{ t('Clear selection') }}
-              </craft-button>
-            </template>
-          </div>
-
-          <div class="flex items-center gap-sm ms-auto">
-            <ActionMenu
-              :actions="bulkActions"
-              :class="{
-                invisible: !hasSelection || !bulkActions.length,
-              }"
-            >
-              <template #invoker="{attributes}">
-                <craft-button
-                  type="button"
-                  variant="plain"
-                  size="small"
-                  flush
-                  v-bind="attributes"
-                >
-                  {{ t('Actions') }}
-                  <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-                </craft-button>
-              </template>
-            </ActionMenu>
-
-            <craft-badge
-              size="small"
-              no-prefix
-              v-if="limit !== null && (!hasSelection || !bulkActions.length)"
-            >
-              {{ ids.length }}/{{ limit }}
-            </craft-badge>
-          </div>
-        </div>
+          :selection="list.selection"
+          :actions="bulkActions"
+          :total="ids.length"
+          :limit="limit"
+          :element-display-name="control.props.elementDisplayName"
+          :element-plural-display-name="control.props.elementPluralDisplayName"
+        />
         <div class="elements-stage">
           <ElementList
             :data="listData"
             :view-mode="viewMode"
+            :thumb-size="control.props.thumbSize ?? undefined"
             :selection="list.selection"
             :selectable="selectable"
             :select-all="false"
-            :read-only="!editable"
             :sortable="sortable"
             @edit="(element) => openEditor(element.id)"
             @reorder="reorder"
@@ -731,7 +730,7 @@
               Cards get a pencil straight to the editor, so their menu leaves
               the edit item out; a chip keeps it in the menu.
             -->
-            <template #actions="{element, index}">
+            <template #actions="{element}">
               <craft-button
                 v-if="list.isCards.value && canEditElement(element.id)"
                 type="button"
@@ -742,13 +741,13 @@
                 @click="openEditor(element.id)"
               ></craft-button>
               <ActionMenu
-                v-if="menuActions(element.id, index).length"
-                :actions="menuActions(element.id, index)"
+                v-if="chipMenus.get(element.id)?.length"
+                :actions="chipMenus.get(element.id)!"
                 :flush="
                   list.isList.value
                     ? 'inline-start'
                     : list.isThumbs.value
-                      ? false
+                      ? 'inline-end'
                       : undefined
                 "
               />
@@ -759,7 +758,7 @@
 
       <div
         v-if="editable && !atLimit"
-        class="flex gap-md"
+        class="flex flex-wrap gap-md"
         :class="{'pt-md': ids.length > 0}"
       >
         <craft-button
@@ -774,17 +773,37 @@
           {{ control.props.selectionLabel }}
         </craft-button>
 
+        <RelationSearch
+          v-if="searchField"
+          ref="search"
+          :field="searchField"
+          :exclude-ids="[...ids, ...unrelatable]"
+          @select="relateFound"
+        />
+
         <AssetUploadButton
           v-if="control.props.canUpload !== undefined"
           variant="dashed"
           :can-upload="control.props.canUpload"
-          :folder-id="control.props.uploadFolderId ?? undefined"
+          :params="control.props.uploadParams ?? undefined"
           :allowed-kinds="uploadKinds"
           :drop-zone="dropZone"
           :reload-on-complete="false"
           :disabled="!showUpload"
           @uploaded="attachUploaded"
         />
+
+        <craft-button
+          v-if="pasteable.candidates.value.length"
+          type="button"
+          variant="outline"
+          icon="custom-icons/duplicate"
+          class="paste-btn"
+          data-element-select-paste=""
+          @click="pasteable.paste()"
+        >
+          {{ pasteable.label.value }}
+        </craft-button>
       </div>
 
       <div slot="footer">
@@ -795,12 +814,10 @@
 </template>
 
 <style lang="scss" scoped>
-  .element-selections-header {
-    margin-block-end: var(--c-spacing-md);
-    min-height: calc(var(--c-size-control-sm) + var(--c-spacing-sm) + 1px);
-    padding-block: 0 var(--c-spacing-sm);
-    padding-inline: 0;
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  .can-paste:focus {
+    outline: 2px solid var(--c-color-focus-ring);
+    outline-offset: var(--c-spacing-xs);
+    border-radius: var(--c-radius-sm);
   }
 
   .element-selection-footer {

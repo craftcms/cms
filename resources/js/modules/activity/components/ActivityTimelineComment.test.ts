@@ -29,8 +29,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it('renders an existing comment with its activity metadata', async () => {
-  const event: ActivityEvent = {
+function commentEvent(actor: ActivityEvent['actor']): ActivityEvent {
+  return {
     id: 'comment-1',
     component: 'craft:activity-timeline-comment',
     props: {},
@@ -42,7 +42,7 @@ it('renders an existing comment with its activity metadata', async () => {
       time: '9:41 AM',
       full: 'September 15, 2026 at 9:41 AM UTC',
     },
-    actor: {label: 'Ada', url: null, deleted: false},
+    actor,
     impersonator: null,
     source: {label: 'Craft'},
     description: {text: 'Commented', html: null},
@@ -56,7 +56,9 @@ it('renders an existing comment with its activity metadata', async () => {
       canDelete: false,
     },
   };
+}
 
+async function mountComment(event: ActivityEvent): Promise<void> {
   document.body.append(container);
   app = createApp({
     render: () =>
@@ -69,10 +71,32 @@ it('renders an existing comment with its activity metadata', async () => {
   });
   app.mount(container);
   await nextTick();
+}
+
+it('renders an existing comment with its activity metadata', async () => {
+  await mountComment(commentEvent({label: 'Ada', url: null, deleted: false}));
 
   expect(container.textContent).toContain('Ada commented');
   expect(container.textContent).toContain('Please clarify this.');
   expect(container.textContent).toContain('Edited');
+});
+
+it.each<[string, ActivityEvent['actor'], string]>([
+  [
+    'its author, with their own colors',
+    {label: 'Grace', url: null, deleted: false, photoColors: ['teal', 'amber']},
+    'var(--color-teal-500)',
+  ],
+  [
+    'an author without colors, without any',
+    {label: 'Craft', url: null, deleted: false},
+    '',
+  ],
+])('tints a comment by %s', async (_, actor, startColor) => {
+  await mountComment(commentEvent(actor));
+
+  const bubble = container.querySelector<HTMLElement>('.message-bubble')!;
+  expect(bubble.style.getPropertyValue('--photo-color-start')).toBe(startColor);
 });
 
 it('inserts mentions into the active composer without changing another comment', async () => {
@@ -147,50 +171,93 @@ it('inserts mentions into the active composer without changing another comment',
   expect(firstEditor.value).toBe('Another comment');
 });
 
-it('posts the comment on Ctrl/Command + Enter', async () => {
-  const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
-    data: {event: {id: 'comment-2'}},
-  });
+it.each([
+  {key: 'Enter', modifiers: {}, markdown: 'Looks good', posts: true},
+  {
+    key: 'Ctrl + Enter',
+    modifiers: {ctrlKey: true},
+    markdown: 'Looks good',
+    posts: true,
+  },
+  {
+    key: 'Command + Enter in a code block',
+    modifiers: {metaKey: true},
+    markdown: '```\na',
+    posts: true,
+  },
+  {
+    key: 'Enter after a code block',
+    modifiers: {},
+    markdown: '```\na\n```',
+    posts: true,
+  },
+  {
+    key: 'Shift + Enter',
+    modifiers: {shiftKey: true},
+    markdown: 'Looks good',
+    posts: false,
+  },
+  {
+    key: 'Enter in a code block',
+    modifiers: {},
+    markdown: 'Try:\n```twig\n{{ a }}',
+    posts: false,
+  },
+  {
+    key: 'Enter on a list item',
+    modifiers: {},
+    markdown: '- First\n- Second',
+    posts: false,
+  },
+  {
+    key: 'Enter on a numbered list item',
+    modifiers: {},
+    markdown: '1. First',
+    posts: false,
+  },
+])(
+  'on $key, posts the comment: $posts',
+  async ({modifiers, markdown, posts}) => {
+    const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
+      data: {event: {id: 'comment-2'}},
+    });
 
-  document.body.append(container);
-  app = createApp({
-    render: () =>
-      h(ActivityTimelineComment, {
-        elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
-        elementId: 12,
-        siteId: 1,
-      }),
-  });
-  app.mount(container);
-  await nextTick();
+    document.body.append(container);
+    app = createApp({
+      render: () =>
+        h(ActivityTimelineComment, {
+          elementType: 'CraftCms\\Cms\\Entry\\Elements\\Entry',
+          elementId: 12,
+          siteId: 1,
+        }),
+    });
+    app.mount(container);
+    await nextTick();
 
-  const editor = container.querySelector('textarea')!;
-  editor.value = 'Looks good';
-  editor.dispatchEvent(new InputEvent('input', {bubbles: true}));
-  await nextTick();
-
-  editor.dispatchEvent(
-    new KeyboardEvent('keydown', {key: 'Enter', bubbles: true})
-  );
-  expect(post).not.toHaveBeenCalled();
-
-  for (const modifier of ['metaKey', 'ctrlKey'] as const) {
-    post.mockClear();
-    editor.value = 'Looks good';
+    const editor = container.querySelector('textarea')!;
+    editor.value = markdown;
+    editor.setSelectionRange(markdown.length, markdown.length);
     editor.dispatchEvent(new InputEvent('input', {bubbles: true}));
     await nextTick();
 
-    editor.dispatchEvent(
-      new KeyboardEvent('keydown', {
-        key: 'Enter',
-        [modifier]: true,
-        bubbles: true,
-      })
-    );
-    await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(1));
-    expect(post.mock.calls[0]![1]).toMatchObject({markdown: 'Looks good'});
+    const event = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+      ...modifiers,
+    });
+    editor.dispatchEvent(event);
+
+    if (posts) {
+      await vi.waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+      expect(post.mock.calls[0]![1]).toMatchObject({markdown});
+    } else {
+      await nextTick();
+      expect(post).not.toHaveBeenCalled();
+    }
+    expect(event.defaultPrevented).toBe(posts);
   }
-});
+);
 
 it('blocks a comment that’s over the length limit', async () => {
   const post = vi.spyOn(actionClient, 'post').mockResolvedValue({
@@ -214,8 +281,8 @@ it('blocks a comment that’s over the length limit', async () => {
   editor.dispatchEvent(new InputEvent('input', {bubbles: true}));
   await nextTick();
 
-  const submit = [...container.querySelectorAll('craft-button')].find(
-    (button) => button.textContent?.trim() === 'Comment'
+  const submit = container.querySelector(
+    '.comment-field__submit'
   ) as HTMLElement & {disabled: boolean};
 
   expect(submit.disabled).toBe(true);

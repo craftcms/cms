@@ -109,7 +109,16 @@ export default Base.extend({
     return this;
   },
 
+  /**
+   * Registers a keyboard shortcut on a layer (the current one by default).
+   *
+   * @param {number|Object} shortcut A key code, or a `{keyCode, ctrl, shift, alt}` definition,
+   * optionally with a `description` and `group` to list it in the command palette's “Keyboard shortcuts”.
+   * @param {function} callback
+   * @param {number} [layer]
+   */
   registerShortcut: function (shortcut, callback, layer) {
+    const {description, group} = typeof shortcut === 'object' ? shortcut : {};
     shortcut = this._normalizeShortcut(shortcut);
     if (typeof layer === 'undefined') {
       layer = this.layer;
@@ -118,6 +127,8 @@ export default Base.extend({
       key: JSON.stringify(shortcut),
       shortcut: shortcut,
       callback: callback,
+      description: description,
+      group: group,
     });
     return this;
   },
@@ -154,6 +165,13 @@ export default Base.extend({
 
   triggerShortcut: function (ev, layerIndex) {
     if (typeof layerIndex === 'undefined') {
+      // An Escape that something inside the layer already handled, such as a
+      // menu or tooltip closing on it, triggers no shortcut, so one Escape
+      // press closes one thing. Checked only as the key first arrives: a
+      // shortcut that bubbles has already prevented the default itself.
+      if (ev.keyCode === Garnish.ESC_KEY && ev.isDefaultPrevented()) {
+        return;
+      }
       layerIndex = this.layer;
     }
     const layer = this.layers[layerIndex];

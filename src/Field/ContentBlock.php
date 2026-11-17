@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Field;
 
+use CraftCms\Cms\Cp\Cp;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Data\EagerLoadPlan;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\ElementCollection;
+use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
@@ -59,6 +61,8 @@ use function CraftCms\Cms\t;
 class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
 {
     private const string VIEW_MODE_GROUPED = 'grouped';
+
+    private const string VIEW_MODE_PANE = 'pane';
 
     private const string VIEW_MODE_INLINE = 'inline';
 
@@ -160,11 +164,14 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             UiField::make(t('View Mode'))
                 ->control(Choice::make('viewMode')
                     ->presentation(ChoicePresentation::Radios)
-                    ->options([
+                    ->options(array_map(fn (array $mode): array => [
+                        ...$mode,
+                        'thumbnail' => Cp::illustration("images/content-block/{$mode['value']}.svg"),
+                    ], [
                         ['label' => t('Grouped'), 'value' => self::VIEW_MODE_GROUPED],
-                        ['label' => t('In a pane'), 'value' => 'pane'],
+                        ['label' => t('In a pane'), 'value' => self::VIEW_MODE_PANE],
                         ['label' => t('Inline'), 'value' => self::VIEW_MODE_INLINE],
-                    ])
+                    ]))
                     ->value($this->viewMode)),
         ]);
     }
@@ -391,7 +398,9 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        $control = ContentBlockControl::make($context->path);
+        $control = ContentBlockControl::make($context->path)
+            ->viewMode($this->viewMode)
+            ->clearable(false);
 
         if (! $context->value instanceof ContentBlockElement) {
             return $control;
@@ -401,9 +410,36 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
             ->ui(app(FieldLayoutCompiler::class)->ui(
                 $context->value->getFieldLayout(),
                 $context->value,
-                new UiContext,
+                new UiContext(preview: $context->ui->preview),
             ))
             ->value([]);
+    }
+
+    /**
+     * Moves the errors validation copied from an invalid block, keyed `handle.attribute`, onto the controls the block
+     * shows them on.
+     */
+    #[Override]
+    public function uiErrors(ElementInterface $element, array $errors): array
+    {
+        $blockErrors = [];
+        $prefix = "{$this->handle}.";
+
+        foreach ($errors as $key => $messages) {
+            if (str_starts_with((string) $key, $prefix)) {
+                $blockErrors[substr((string) $key, strlen($prefix))] = $messages;
+            }
+        }
+
+        if ($blockErrors === [] || ! ($block = $element->getFieldValue($this->handle)) instanceof ContentBlockElement) {
+            return $errors;
+        }
+
+        foreach (array_keys($blockErrors) as $attribute) {
+            unset($errors[$prefix.$attribute]);
+        }
+
+        return $this->addNestedUiErrors($errors, $block, $blockErrors, $this->handle);
     }
 
     #[Override]
@@ -525,8 +561,12 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
                     ));
                 }
 
-                /** @phpstan-ignore-next-line */
-                return $element->getEagerLoadedElements($handle)?->first() ?? $this->createContentBlockElement($element);
+                // a clone isn't among the queried elements, so the batch load won't have set its content block
+                $eagerLoadedContentBlocks = $element->getEagerLoadedElements($handle);
+                if ($eagerLoadedContentBlocks !== null) {
+                    /** @phpstan-ignore-next-line */
+                    return $eagerLoadedContentBlocks->first() ?? $this->createContentBlockElement($element);
+                }
             }
         }
 
@@ -822,14 +862,15 @@ class ContentBlock extends Field implements ElementContainerFieldInterface, Fiel
         }
 
         if (isset($value['fields'])) {
-            foreach ($value['fields'] as $fieldHandle => $fieldValue) {
-                try {
-                    if ($fromRequest) {
-                        $contentBlock->setFieldValueFromRequest($fieldHandle, $fieldValue);
-                    } else {
+            if ($fromRequest) {
+                // Respect field layout conditions
+                ElementHelper::setNestedFieldValuesFromRequest($contentBlock, $value['fields']);
+            } else {
+                foreach ($value['fields'] as $fieldHandle => $fieldValue) {
+                    try {
                         $contentBlock->setFieldValue($fieldHandle, $fieldValue);
+                    } catch (InvalidFieldException) {
                     }
-                } catch (InvalidFieldException) {
                 }
             }
         }

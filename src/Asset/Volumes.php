@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
+use CraftCms\Cms\Activity\OperationTypes\VolumeOperation;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Events\VolumeDeleted;
@@ -176,14 +177,20 @@ class Volumes
             $volumeModel->fs = $data['fs'] ?? null;
             $volumeModel->hasUrls = $data['hasUrls'] ?? false;
             $volumeModel->subpath = $data['subpath'] ?? null;
-            $volumeModel->assetTransformer = $data['assetTransformer'] ?? null;
             $volumeModel->sortOrder = $data['sortOrder'];
             $volumeModel->titleTranslationMethod = $data['titleTranslationMethod'] ?? TranslationMethod::Site->value;
             $volumeModel->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $volumeModel->altTranslationMethod = $data['altTranslationMethod'] ?? TranslationMethod::None->value;
             $volumeModel->altTranslationKeyFormat = $data['altTranslationKeyFormat'] ?? null;
-            // Volumes saved before the setting existed should keep propagating to all sites
-            $volumeModel->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
+            if (isset($data['propagationMethod'])) {
+                $volumeModel->propagationMethod = $data['propagationMethod'];
+            } elseif ($isNewVolume) {
+                // The config was saved before the setting existed, so follow the add_propagation_method_to_volumes
+                // migration: keep saving assets to all sites on multi-site installs
+                $isMultiSite = DB::table(Table::SITES)->whereNull('dateDeleted')->count() > 1;
+                $volumeModel->propagationMethod = ($isMultiSite ? PropagationMethod::All : PropagationMethod::Custom)->value;
+            }
+            // Otherwise keep the existing volume's value, which the add_propagation_method_to_volumes migration set
             $volumeModel->uid = $volumeUid;
 
             // If assets are now saved to all sites, existing assets will need to be propagated to any sites they're missing from
@@ -248,7 +255,7 @@ class Volumes
                 ->where('assets.deletedWithVolume', true)
                 ->all();
 
-            Elements::restoreElements($assets);
+            VolumeOperation::for($volumeModel->id, $volumeModel->name)->scope(fn () => Elements::restoreElements($assets));
         }
 
         if ($propagateAssets) {
@@ -341,11 +348,13 @@ class Volumes
                 ->status(null)
                 ->all();
 
-            foreach ($assets as $asset) {
-                $asset->deletedWithVolume = true;
-                $asset->keepFileOnDelete = true;
-                Elements::deleteElement($asset);
-            }
+            VolumeOperation::for($volumeModel->id, $volumeModel->name)->scope(function () use ($assets): void {
+                foreach ($assets as $asset) {
+                    $asset->deletedWithVolume = true;
+                    $asset->keepFileOnDelete = true;
+                    Elements::deleteElement($asset);
+                }
+            });
 
             if ($volumeModel->fieldLayoutId) {
                 app(Fields::class)->deleteLayoutById($volumeModel->fieldLayoutId);

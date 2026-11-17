@@ -51,12 +51,12 @@ readonly class Activity
      * @return array{count: int, limit: int, offset: int, events: list<array<string, mixed>>}
      */
     #[McpTool(
-        name: 'activity.list',
+        name: 'activity_list',
         description: 'Lists an element’s activity timeline newest first, including recorded changes when available. Changes are not a complete content diff. Drafts share their canonical timeline. Comment edits and deletions are folded into their original event; date filters use the original occurrence time and do not discover later edits to older comments.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     public function list(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         ?int $id = null,
         #[Schema(format: 'uuid')]
@@ -117,12 +117,12 @@ readonly class Activity
 
     /** @return array{event: array<string, mixed>} */
     #[McpTool(
-        name: 'activity.comments.create',
-        description: 'Adds an editorial Markdown comment as the authenticated user. Use only when requested, not after every mutation. Explicitly requested mentions use [@username](craft-user:123) and send notifications. Retrying creates another comment; inspect activity.list after an uncertain result before retrying.',
+        name: 'activity_comments_create',
+        description: 'Adds an editorial Markdown comment as the authenticated user. Use only when requested, not after every mutation. Explicitly requested mentions use [@username](craft-user:123) and send notifications. Retrying creates another comment; inspect activity_list after an uncertain result before retrying.',
         annotations: new ToolAnnotations(destructiveHint: false, idempotentHint: false),
     )]
     public function createComment(
-        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info.get.')]
+        #[Schema(description: 'Registered element reference handle or PHP class; see craft://element-types and info_get.')]
         string $type,
         #[Schema(minLength: 1, maxLength: ActivityCommentRequest::MaxLength)]
         string $markdown,

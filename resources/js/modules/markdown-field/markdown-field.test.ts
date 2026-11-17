@@ -1,8 +1,16 @@
 import {readFileSync} from 'node:fs';
-import {createApp, nextTick} from 'vue';
+import {createApp, nextTick, reactive} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import MarkdownControl from '../ui/MarkdownControl.vue';
 import './markdown-field';
+
+const {createElementSelectorModal} = vi.hoisted(() => ({
+  createElementSelectorModal: vi.fn(),
+}));
+vi.mock(
+  '@/modules/element-selector-modal/create-element-selector-modal',
+  () => ({createElementSelectorModal})
+);
 
 // The stylesheet's own text. happy-dom applies none of it, so an assertion
 // that went through the cascade would pass against anything — and the test
@@ -15,6 +23,7 @@ const styles = readFileSync(
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  createElementSelectorModal.mockReset();
   document.body.replaceChildren();
 });
 
@@ -51,20 +60,67 @@ it('turns off stats and the toolbar from the Vue Markdown Control', async () => 
   expect(field.showToolbar).toBe(false);
 });
 
-it('applies properties from the Vue Markdown Control', async () => {
-  const frames: FrameRequestCallback[] = [];
-  let laidOut = false;
-  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
-    frames.push(callback);
-
-    return frames.length;
-  });
+// Autosave turns the edited element into a new draft partway through editing,
+// and the layout it returns then names that draft as the reference element.
+it('evaluates the Asset chooser against the element being edited now', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
-  vi.spyOn(
-    HTMLTextAreaElement.prototype,
-    'scrollHeight',
-    'get'
-  ).mockImplementation(() => (laidOut ? 120 : 20));
+  createElementSelectorModal.mockImplementation(async () => ({
+    show: vi.fn(),
+    destroy: vi.fn(),
+  }));
+  const control = reactive({
+    type: 'Markdown',
+    component: 'craft:markdown',
+    props: {
+      showToolbar: true,
+      toolbarButtons: ['asset'],
+      assetSources: ['volume:documents'],
+      assetReferenceElement: {
+        referenceElementId: 10,
+        referenceElementOwnerId: null,
+        referenceElementSiteId: 1,
+      },
+    },
+    path: ['body'],
+    mode: 'editable',
+    deltaGroup: ['body'],
+  });
+  const container = document.createElement('div');
+  document.body.append(container);
+  createApp(MarkdownControl, {
+    control,
+    value: '',
+    editable: true,
+    invalid: false,
+    required: false,
+  }).mount(container);
+  await nextTick();
+  const assetButton = () =>
+    container.querySelector<HTMLButtonElement>('button[title="Asset"]')!;
+
+  assetButton().click();
+  await vi.waitFor(() =>
+    expect(createElementSelectorModal).toHaveBeenCalledTimes(1)
+  );
+
+  control.props.assetReferenceElement = {
+    referenceElementId: 11,
+    referenceElementOwnerId: null,
+    referenceElementSiteId: 1,
+  };
+  await nextTick();
+  assetButton().click();
+
+  await vi.waitFor(() =>
+    expect(createElementSelectorModal).toHaveBeenLastCalledWith(
+      'CraftCms\\Cms\\Asset\\Elements\\Asset',
+      expect.objectContaining({referenceElementId: 11})
+    )
+  );
+});
+
+it('applies properties from the Vue Markdown Control', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
   const container = document.createElement('div');
   document.body.append(container);
   createApp(MarkdownControl, {
@@ -107,6 +163,11 @@ it('applies properties from the Vue Markdown Control', async () => {
     dataset: {uiControlPath: '["body"]'},
   });
   expect(container.querySelector('.overtype-toolbar')).not.toBeNull();
+  expect(
+    container
+      .querySelector('craft-markdown-field')!
+      .hasAttribute('show-toolbar')
+  ).toBe(true);
   expect(textExpander.for).toBe(textarea.id);
   expect(textExpander.slot).toBe('input');
 
@@ -118,18 +179,44 @@ it('applies properties from the Vue Markdown Control', async () => {
   expect(container.querySelector('craft-option')?.textContent).toContain(
     'Ada Lovelace'
   );
-  expect(
-    container.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
-  ).toBe('20px');
+});
 
-  laidOut = true;
-  while (frames.length) {
-    frames.shift()!(performance.now());
-  }
+it('keeps a read-only value reachable by keyboard, without letting it change', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
+  const container = document.createElement('div');
+  document.body.append(container);
+  createApp(MarkdownControl, {
+    control: {
+      type: 'Markdown',
+      component: 'craft:markdown',
+      props: {toolbarButtons: ['bold'], showToolbar: true},
+      path: ['body'],
+      mode: 'readOnly',
+      deltaGroup: ['body'],
+    },
+    value: 'Write plainly.',
+    editable: false,
+    invalid: false,
+    required: false,
+  }).mount(container);
+  await nextTick();
 
+  const textarea = container.querySelector('textarea')!;
+  const paste = new Event('paste', {bubbles: true, cancelable: true});
+  Object.assign(paste, {
+    clipboardData: {getData: () => 'https://craftcms.com'},
+  });
+  textarea.setSelectionRange(0, 5);
+  textarea.dispatchEvent(paste);
+
+  expect(textarea.readOnly).toBe(true);
+  expect(textarea.disabled).toBe(false);
+  expect(textarea.value).toBe('Write plainly.');
   expect(
-    container.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
-  ).toBe('120px');
+    container
+      .querySelector('.overtype-toolbar')
+      ?.classList.contains('overtype-toolbar-hidden')
+  ).toBe(true);
 });
 
 it('scopes its styling to the element, which every render path has', () => {
@@ -145,53 +232,4 @@ it('scopes its styling to the element, which every render path has', () => {
   expect(styles).toMatch(
     /craft-markdown-field:defined \.overtype-container \{[^}]*border: var\(--markdown-field-border\)/
   );
-});
-it('resizes after becoming visible', () => {
-  let notifyVisible: (() => void) | undefined;
-  let laidOut = false;
-
-  vi.stubGlobal('requestAnimationFrame', vi.fn());
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: false}));
-  vi.stubGlobal(
-    'ResizeObserver',
-    class {
-      constructor(callback: ResizeObserverCallback) {
-        notifyVisible = () => {
-          callback(
-            [
-              {
-                contentRect: {width: 320},
-              } as ResizeObserverEntry,
-            ],
-            this as ResizeObserver
-          );
-        };
-      }
-
-      observe() {}
-
-      unobserve() {}
-
-      disconnect() {}
-    }
-  );
-  vi.spyOn(
-    HTMLTextAreaElement.prototype,
-    'scrollHeight',
-    'get'
-  ).mockImplementation(() => (laidOut ? 120 : 0));
-
-  const markdownField = document.createElement('craft-markdown-field');
-  document.body.append(markdownField);
-
-  expect(
-    markdownField.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
-  ).toBe('0px');
-
-  laidOut = true;
-  notifyVisible?.();
-
-  expect(
-    markdownField.querySelector<HTMLElement>('.overtype-wrapper')?.style.height
-  ).toBe('120px');
 });

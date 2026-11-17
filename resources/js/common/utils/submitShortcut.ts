@@ -1,3 +1,6 @@
+import {t} from '@craftcms/ui/utilities/translate';
+import {registerShortcut} from '@/common/shortcuts';
+
 const textInputTypes = new Set([
   'text',
   'search',
@@ -53,6 +56,18 @@ export function submitFormOnCtrlEnter(event: KeyboardEvent): void {
   form.requestSubmit();
 }
 
-export function registerSubmitShortcut(root: Document = document): void {
-  root.addEventListener('keydown', submitFormOnCtrlEnter);
+export function registerSubmitShortcut(): void {
+  registerShortcut(
+    'Mod+Enter',
+    (event) => {
+      submitFormOnCtrlEnter(event);
+
+      // It prevents the default itself, when it submits.
+      return false;
+    },
+    {
+      description: () => t('Submit the form a text field is in'),
+      group: () => t('Forms'),
+    }
+  );
 }

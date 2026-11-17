@@ -2,7 +2,8 @@
   import {t} from '@craftcms/ui';
   import type {PluginInfo} from '@/modules/plugin-manager/types/plugins';
   import ActionMenu from '@/common/components/ActionMenu.vue';
-  import {computed, onMounted} from 'vue';
+  import {computed} from 'vue';
+  import {useEventListener} from '@vueuse/core';
   import type {ActionItem} from '@/common/types';
   import {
     disable,
@@ -12,10 +13,13 @@
   } from '@actions/PluginsController';
   import RemoveController from '@actions/PluginStore/RemoveController';
   import {router} from '@inertiajs/vue3';
+  import useCraftData from '@/common/composables/useCraftData';
 
   const props = defineProps<{
     plugin: PluginInfo;
   }>();
+
+  const {general} = useCraftData();
 
   const actions = computed(() => {
     const items: Array<ActionItem> = [
@@ -63,6 +67,7 @@
         icon: 'minus',
         label: t('Remove'),
         variant: 'danger',
+        disabled: !general.value.allowUpdates,
         action: {
           type: 'event',
           name: 'action:remove-plugin',
@@ -116,16 +121,16 @@
     return items;
   });
 
-  function handleRemove(event: CustomEvent) {
-    const {detail} = event;
+  useEventListener(window, 'action:remove-plugin', (event: Event) => {
+    const {detail} = event as CustomEvent<{packageName?: string}>;
+
+    if (detail?.packageName !== props.plugin.packageName) {
+      return;
+    }
 
     router.post(RemoveController.index(), {
       packageName: detail.packageName,
     });
-  }
-
-  onMounted(() => {
-    window.addEventListener('action:remove-plugin', handleRemove);
   });
 </script>
 

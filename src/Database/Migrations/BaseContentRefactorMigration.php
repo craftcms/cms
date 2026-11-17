@@ -21,7 +21,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
-use Tpetry\QueryExpressions\Language\Alias;
 use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
@@ -102,11 +101,11 @@ class BaseContentRefactorMigration extends Migration
                 'e.type',
                 ...$flatFieldColumns,
             ])
-            ->join(new Alias($contentTable, 'c'), function (JoinClause $join) {
+            ->join($contentTable.' as c', function (JoinClause $join) {
                 $join->on('c.elementId', '=', 'es.elementId')
                     ->where('c.siteId', '=', 'es.siteId');
             })
-            ->join(new Alias(Table::ELEMENTS, 'e'), 'e.id', '=', 'es.elementId')
+            ->join(Table::ELEMENTS.' as e', 'e.id', '=', 'es.elementId')
             ->whereIn('es.elementId', $ids);
 
         if (Schema::hasColumn($contentTable, 'title')) {

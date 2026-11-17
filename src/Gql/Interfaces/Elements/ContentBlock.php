@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Gql\Interfaces\Elements;
 
+use CraftCms\Cms\Field\Elements\ContentBlock as ContentBlockElement;
 use CraftCms\Cms\Gql\Arguments\Elements\ContentBlock as ContentBlockArguments;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Gql\GqlHelper;
@@ -48,6 +49,12 @@ class ContentBlock extends Element
     }
 
     #[Override]
+    protected static function elementType(): string
+    {
+        return ContentBlockElement::class;
+    }
+
+    #[Override]
     public static function getName(): string
     {
         return 'ContentBlockInterface';
@@ -61,31 +68,11 @@ class ContentBlock extends Element
         $allFieldArguments = ContentBlockArguments::getContentArguments();
 
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), [
-            'canonicalId' => [
-                'name' => 'canonicalId',
-                'type' => Type::int(),
-                'description' => 'Returns the content block’s canonical ID.',
-            ],
-            'canonicalUid' => [
-                'name' => 'canonicalUid',
-                'type' => Type::string(),
-                'description' => 'Returns the content block’s canonical UUID.',
-            ],
-            'fieldId' => [
-                'name' => 'fieldId',
-                'type' => Type::int(),
-                'description' => 'The ID of the field that contains the content block.',
-            ],
             'fieldHandle' => [
                 'name' => 'fieldHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the field that contains the content block.',
                 'complexity' => GqlHelper::singleQueryComplexity(),
-            ],
-            'ownerId' => [
-                'name' => 'ownerId',
-                'type' => Type::int(),
-                'description' => 'The ID of the content block’s owner element.',
             ],
             'localized' => [
                 'name' => 'localized',

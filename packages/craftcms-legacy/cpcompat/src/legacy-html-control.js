@@ -18,12 +18,25 @@ import {
   const elementName = 'craft-legacy-html-control';
   const componentNames = ['craft-legacy:html-field', 'craft-legacy:html'];
 
+  /**
+   * Brings the mounted fragment up to date in place when the new one differs
+   * only in what it would hand its native hosts, rather than remounting it
+   * under the user's focus and keystrokes.
+   *
+   * A native table's values are left out of the comparison: an autosave
+   * response renders the field with the values that save sent, and the live
+   * table already holds those, or newer ones typed since. As with native
+   * fields, a payload's values merge under the client's; reverting them goes
+   * through `value`.
+   */
   function refreshNativeHosts(root, previous, next) {
     if (
       !previous ||
       !next ||
-      previous.headHtml !== next.headHtml ||
-      previous.bodyHtml !== next.bodyHtml
+      withoutLoadedAssets(previous.headHtml) !==
+        withoutLoadedAssets(next.headHtml) ||
+      withoutLoadedAssets(previous.bodyHtml) !==
+        withoutLoadedAssets(next.bodyHtml)
     ) {
       return false;
     }
@@ -33,6 +46,13 @@ import {
     const capture = (html) => {
       const template = document.createElement('template');
       template.innerHTML = html;
+      const tables = [
+        ...template.content.querySelectorAll('craft-table-ui[data-payload]'),
+      ];
+      tables.forEach((table) => {
+        const {values, ...definition} = JSON.parse(table.dataset.payload);
+        table.dataset.payload = JSON.stringify(definition);
+      });
       const hosts = [...template.content.querySelectorAll(selector)];
       const metadata = hosts.map((host) => ({
         path:
@@ -49,17 +69,15 @@ import {
         host.setAttribute('data-native-path', metadata[index].path);
       });
 
-      return {html: template.innerHTML, metadata};
+      return {html: template.innerHTML, metadata, tables};
     };
     const before = capture(previous.html);
     const after = capture(next.html);
-    const hosts = [...root.querySelectorAll(selector)].filter(
-      (host) => host.closest('craft-legacy-html-control') === root
-    );
+    const hosts = ownedHosts(root, selector);
     if (
-      !hosts.length ||
       before.html !== after.html ||
-      hosts.length !== after.metadata.length
+      hosts.length !== after.metadata.length ||
+      ownedHosts(root, 'craft-table-ui').length !== after.tables.length
     ) {
       return false;
     }
@@ -74,6 +92,60 @@ import {
     return true;
   }
 
+  /**
+   * Gives the mounted native tables the values the fragment renders them with
+   * as what the server now holds, so edits a save settled, including ones
+   * typed back to the saved value, stop marking them as edited. Unsaved
+   * edits keep the values the user typed.
+   */
+  function rebaseTables(root, fragment) {
+    if (!fragment?.html?.includes('<craft-table-ui')) {
+      return;
+    }
+
+    const template = document.createElement('template');
+    template.innerHTML = fragment.html;
+    const payloads = [
+      ...template.content.querySelectorAll('craft-table-ui[data-payload]'),
+    ].map((table) => JSON.parse(table.dataset.payload));
+    const tables = ownedHosts(root, 'craft-table-ui');
+
+    if (payloads.length === tables.length) {
+      tables.forEach((table, index) => table.rebase?.(payloads[index]));
+    }
+  }
+
+  function ownedHosts(root, selector) {
+    return [...root.querySelectorAll(selector)].filter(
+      (host) => host.closest('craft-legacy-html-control') === root
+    );
+  }
+
+  /**
+   * Head or body HTML without the asset tags the page already has, which
+   * appending skips anyway. A request that registered an asset before
+   * rendering the field doesn't capture its tag again.
+   */
+  function withoutLoadedAssets(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html ?? '';
+    [...template.content.childNodes].forEach((node) => {
+      const loaded =
+        node instanceof HTMLScriptElement && node.src
+          ? [...document.querySelectorAll('script[src]')].some(
+              (script) => script.src === node.src
+            )
+          : node instanceof HTMLLinkElement && node.href
+            ? [...document.querySelectorAll('link[href]')].some(
+                (link) => link.href === node.href
+              )
+            : false;
+      if (loaded) node.remove();
+    });
+
+    return template.innerHTML.trim();
+  }
+
   class LegacyHtmlControl extends HTMLElement {
     _control = null;
     _values = null;
@@ -85,6 +157,7 @@ import {
     _form = null;
     _error = null;
     _errors = [];
+    _snapshot = null;
     ready = Promise.resolve();
 
     set node(node) {
@@ -101,6 +174,7 @@ import {
         this._control = control;
         applyMode(this, control?.mode);
         this.renderErrors();
+        rebaseTables(this, fragment);
 
         return;
       }
@@ -113,6 +187,7 @@ import {
         this._fragmentKey = fragmentKey;
         applyMode(this, control?.mode);
         this.renderErrors();
+        rebaseTables(this, fragment);
 
         return;
       }
@@ -171,6 +246,9 @@ import {
         });
       }
       restoreFormInputs(this, value, path);
+      // The editor set these values, such as when discarding changes, so the
+      // next keyup mustn't publish them as an edit.
+      this._snapshot = JSON.stringify(serializeFormInputsAsObject(this));
     }
 
     set scope(scope) {
@@ -194,6 +272,12 @@ import {
       this._form?.addEventListener('submit', this.handleSubmit, true);
       this.addEventListener('input', this.handleInput);
       this.addEventListener('change', this.handleInput);
+      // Legacy inputs (e.g. element select inputs) announce changes with
+      // jQuery's `.trigger('change')`, which native listeners never see.
+      window.jQuery?.(this).on('change', this.handleLegacyChange);
+      // Legacy scripts (e.g. Behave.js) can edit a value on keydown without an
+      // `input` event. Craft 5's element editor picked those up on keyup.
+      this.addEventListener('keyup', this.handleLegacyChange);
       this.ready = this.mount();
     }
 
@@ -201,13 +285,17 @@ import {
       this._form?.removeEventListener('submit', this.handleSubmit, true);
       this.removeEventListener('input', this.handleInput);
       this.removeEventListener('change', this.handleInput);
+      window.jQuery?.(this).off('change', this.handleLegacyChange);
+      this.removeEventListener('keyup', this.handleLegacyChange);
       this._form = null;
       this._runId++;
       this.dispose();
     }
 
     handleInput = (event) => {
-      if (event instanceof CustomEvent) {
+      // An unnamed control (e.g. an element select input's search box) isn't
+      // part of the value, so typing in it must not publish (and autosave).
+      if (event instanceof CustomEvent || event.target?.name === '') {
         return;
       }
 
@@ -215,6 +303,17 @@ import {
         this.publish(isTypingEvent(event) ? 'typing' : 'discrete');
       } catch (error) {
         this.invalidate(error);
+      }
+    };
+
+    handleLegacyChange = (event) => {
+      // Native change events reach `handleInput` directly, and inputs also
+      // trigger `change` as they initialize, before anything has changed.
+      if (
+        !event.originalEvent &&
+        JSON.stringify(serializeFormInputsAsObject(this)) !== this._snapshot
+      ) {
+        this.handleInput(event);
       }
     };
 
@@ -291,6 +390,7 @@ import {
         );
         this.renderErrors();
         window.Craft?.initUiElements?.(this);
+        this._snapshot = JSON.stringify(serializeFormInputsAsObject(this));
       } catch (error) {
         if (runId === this._runId) {
           this.invalidate(error);
@@ -334,6 +434,7 @@ import {
       }
 
       const value = serializeFormInputsAsObject(this);
+      this._snapshot = JSON.stringify(value);
 
       if (this._values && this._control?.path) {
         if (this._control.props?.expandValues) {
@@ -505,15 +606,23 @@ import {
         continue;
       }
 
-      const value =
-        control.name in values
-          ? values[control.name]
-          : expandedPath
-            ? valueAt(
-                values,
-                inputPath(control.name).slice(expandedPath.length)
-              )
-            : undefined;
+      let value;
+
+      if (control.name in values) {
+        value = values[control.name];
+      } else if (expandedPath) {
+        // An expanded value is keyed by path, so a `name[]` control reads the
+        // list at `name`, and a plain control whose path holds a list or an
+        // object (e.g. a relation field's empty reset input) keeps its own.
+        const segments = inputPath(control.name).slice(expandedPath.length);
+        const isList = segments.at(-1) === '';
+        value = valueAt(values, isList ? segments.slice(0, -1) : segments);
+
+        if (!isList && value && typeof value === 'object') {
+          continue;
+        }
+      }
+
       const expected = Array.isArray(value)
         ? value.map(String)
         : [String(value ?? '')];
@@ -543,7 +652,7 @@ import {
 
   function formControls(container) {
     return container.querySelectorAll(
-      'input[name], select[name], textarea[name]'
+      'input[name]:not([name=""]), select[name]:not([name=""]), textarea[name]:not([name=""])'
     );
   }
 
@@ -556,12 +665,15 @@ import {
   function isTypingEvent(event) {
     const target = event.target;
 
+    if (!['input', 'keyup'].includes(event.type)) {
+      return false;
+    }
+
     if (target instanceof HTMLTextAreaElement) {
-      return event.type === 'input';
+      return true;
     }
 
     return (
-      event.type === 'input' &&
       target instanceof HTMLInputElement &&
       ['text', 'email', 'url', 'tel', 'password', 'search'].includes(
         target.type

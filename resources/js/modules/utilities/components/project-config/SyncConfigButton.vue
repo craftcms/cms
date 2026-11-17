@@ -24,7 +24,7 @@
     <craft-button
       type="submit"
       variant="accent"
-      :loading="processing"
+      .loading="processing"
       v-bind="$attrs"
     >
       <slot name="label">

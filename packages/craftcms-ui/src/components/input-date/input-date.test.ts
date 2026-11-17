@@ -11,7 +11,7 @@ describe('craft-input-date', () => {
     const element = document.createElement(
       'craft-input-date'
     ) as CraftInputDate;
-    element.modelValue = '2026-08-05';
+    element.value = '2026-08-05';
     document.body.append(element);
     await element.updateComplete;
 

@@ -55,11 +55,16 @@ describe('uiControl', function () {
         $field = assetsField();
         $field->allowUploads = true;
         $field->defaultUploadLocationSource = null;
+        // Listed sources, shown whatever the permissions, resolve without the volumes table, unless the search input
+        // looks up its source's criteria.
+        $field->sources = ['volume:uploads'];
+        $field->showUnpermittedVolumes = true;
+        $field->showSearchInput = false;
 
         $control = $field->uiControl(new FieldContext(path: 'images'));
 
         expect($control)->toBeInstanceOf(AssetSelect::class)
             ->and($control->props()['canUpload'])->toBeFalse()
-            ->and($control->props()['uploadFolderId'])->toBeNull();
+            ->and($control->props()['uploadParams'])->toBeNull();
     });
 });

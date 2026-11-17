@@ -19,7 +19,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -382,8 +381,8 @@ class ElementRelationParamFilter
 
                         $subQuery = DB::table(Table::RELATIONS, $sourcesAlias)
                             ->select("$sourcesAlias.targetId")
-                            ->join(new Alias(Table::ENTRIES, $targetNestedElementsAlias), "$targetNestedElementsAlias.id", '=', "$sourcesAlias.sourceId")
-                            ->join(new Alias(Table::ELEMENTS, $targetContainerElementsAlias), "$targetContainerElementsAlias.id", '=', "$targetNestedElementsAlias.id")
+                            ->join(Table::ENTRIES." as $targetNestedElementsAlias", "$targetNestedElementsAlias.id", '=', "$sourcesAlias.sourceId")
+                            ->join(Table::ELEMENTS." as $targetContainerElementsAlias", "$targetContainerElementsAlias.id", '=', "$targetNestedElementsAlias.id")
                             ->whereIn("$targetNestedElementsAlias.primaryOwnerId", $relElementIds)
                             ->where("$targetNestedElementsAlias.fieldId", $fieldModel->id)
                             ->where("$targetContainerElementsAlias.enabled", true)
@@ -407,8 +406,8 @@ class ElementRelationParamFilter
 
                         $subQuery = DB::table(Table::ENTRIES, $sourceNestedElementsAlias)
                             ->select("$sourceNestedElementsAlias.primaryOwnerId")
-                            ->join(new Alias(Table::ELEMENTS, $sourceContainerElementsAlias), "$sourceContainerElementsAlias.id", '=', "$sourceNestedElementsAlias.id")
-                            ->join(new Alias(Table::RELATIONS, $nestedElementTargetsAlias), "$nestedElementTargetsAlias.sourceId", '=', "$sourceNestedElementsAlias.id")
+                            ->join(Table::ELEMENTS." as $sourceContainerElementsAlias", "$sourceContainerElementsAlias.id", '=', "$sourceNestedElementsAlias.id")
+                            ->join(Table::RELATIONS." as $nestedElementTargetsAlias", "$nestedElementTargetsAlias.sourceId", '=', "$sourceNestedElementsAlias.id")
                             ->where("$sourceContainerElementsAlias.enabled", true)
                             ->whereNull("$sourceContainerElementsAlias.dateDeleted")
                             ->whereIn("$nestedElementTargetsAlias.targetId", $relElementIds)

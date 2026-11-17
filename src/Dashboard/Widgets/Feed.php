@@ -76,7 +76,7 @@ class Feed extends Widget
         return 'craft:widget-feed';
     }
 
-    /** @return array{url: ?string, limit: int, feed: mixed, formattingLocale: string} */
+    /** @return array{url: ?string, limit: int, feed: mixed, formattingLocale: string, timeZone: string} */
     public function props(): array
     {
         $userId = currentUser()?->getCraftUserId();
@@ -85,6 +85,7 @@ class Feed extends Widget
             'url' => $this->url,
             'limit' => $this->limit,
             'formattingLocale' => str_replace('_', '-', I18N::getFormattingLocale()->id),
+            'timeZone' => I18N::getFormatter()->timeZone,
             'feed' => $userId ? Cache::get(sprintf('feed:%s:%s', $userId, $this->url)) : null,
         ];
     }

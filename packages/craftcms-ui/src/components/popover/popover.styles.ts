@@ -7,8 +7,9 @@ export default css`
   }
 
   /* With no box of its own, the popover can't take a button group's overlap,
-     so its invoker does. */
-  ::slotted([slot='invoker']) {
+     so its invoker does. A craft-button invoker takes it itself, along with
+     its own flush margin, which a margin set here would replace. */
+  ::slotted([slot='invoker']:not(craft-button)) {
     margin-inline-start: var(--c-button-group-overlap);
   }
 
@@ -16,38 +17,21 @@ export default css`
     --c-button-group-overlap: initial;
   }
 
-  /* The top layer's popover defaults would center it and paint it as a box of
-     its own; Lion positions the content, so the wrapper stays invisible. */
-  dialog[data-overlay-outer-wrapper][popover] {
-    inset: auto;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    overflow: visible;
-    width: auto;
-    height: auto;
-  }
-
   .popover-pane {
     border: 1px solid var(--c-color-neutral-border-quiet);
     border-radius: var(--c-radius-md);
     background-color: var(--c-surface-overlay);
     color: var(--c-text-default);
-    box-shadow: var(--c-shadow-sm);
+    box-shadow: var(--c-shadow-overlay);
     min-width: calc(180rem / 16);
     max-width: calc(320rem / 16);
     overflow: auto;
     overscroll-behavior: contain;
-
-    /* 40vh suits a popover that sits near what opened it. One anchored far
-       down the screen, or holding a long menu, wants the room it actually has
-       — which only the thing that opened it can measure. */
-    max-height: var(--popover-max-block-size, 40vh);
+    --_fitted-block-size: var(--_popover-available-block-size, 40vh);
+    max-height: var(--popover-max-block-size, var(--_fitted-block-size));
   }
 
-  /* The overlay wrapper is the one given the invoker's width, so the pane has
+  /* The positioned element is the one given the invoker's width, so the pane has
      to stop sizing itself or it stays at its own 320px cap and the match does
      nothing visible. */
   :host([match-invoker-width]) .popover-pane {

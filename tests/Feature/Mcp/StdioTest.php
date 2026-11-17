@@ -6,35 +6,51 @@ use CraftCms\Cms\Activity\EventTypes\CommentCreated;
 use CraftCms\Cms\Activity\Models\ActivityEvent;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry;
+use CraftCms\Cms\Field\Entries as EntriesField;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Mcp\CapabilityRegistry;
 use CraftCms\Cms\Mcp\Events\CollectingAdminInstructions;
 use CraftCms\Cms\Mcp\StdioTransport;
+use CraftCms\Cms\ProjectConfig\ConfigStorage;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Tests\Support\McpCapabilities\Example;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
 beforeEach(function (): void {
     Notification::fake();
 
-    $this->serve = function (string $user, array $messages): array {
-        $input = fopen('php://memory', 'r+');
-        fwrite($input, implode('', array_map(static fn (array $message): string => json_encode($message).PHP_EOL, [
-            ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
-                'protocolVersion' => '2025-11-25',
-                'capabilities' => (object) [],
-                'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
-            ]],
-            ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
-            ...$messages,
-        ])));
+    $this->serve = function (string $user, array $messages, bool $modern = false): array {
+        $messages = $modern
+            ? array_map(static fn (array $message): array => array_merge_recursive($message, ['params' => ['_meta' => [
+                'io.modelcontextprotocol/protocolVersion' => '2026-07-28',
+                'io.modelcontextprotocol/clientCapabilities' => (object) [],
+            ]]]), $messages)
+            : [
+                ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+                    'protocolVersion' => '2025-11-25',
+                    'capabilities' => (object) [],
+                    'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+                ]],
+                ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+                ...$messages,
+            ];
+        $input = tmpfile();
+        fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, $messages)));
         rewind($input);
         $outputPath = tempnam(sys_get_temp_dir(), 'mcp-stdio');
-        app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, $input, fopen($outputPath, 'w')));
+        app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen($outputPath, 'w')));
 
         $this->artisan('craft:mcp:serve', ['--user' => $user])->assertSuccessful();
 
         return collect(file($outputPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES))
-            ->map(static fn (string $line): array => json_decode($line, true))
+            ->map(static fn (string $line): array => Json::decode($line))
             ->keyBy('id')
             ->all();
     };
@@ -47,34 +63,35 @@ it('serves the capabilities the named user may use, except HTTP-only capabilitie
         $event->instructions[] = 'Use reviews.list before changing a product.';
     });
 
-    $editor = User::factory()->withPermissions(['useCraftMcp'])->create(['username' => 'editor']);
+    app(CapabilityRegistry::class)->register(Example::class);
+    $editor = User::factory()->withPermissions([])->create(['username' => 'editor']);
     $call = static fn (string $tool, array $arguments = []): array => ['jsonrpc' => '2.0', 'id' => $tool, 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]];
 
-    $admin = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [$call('info.get'), $call('configuration.list', ['type' => 'sections']), $call('assets.upload.prepare')]);
-    $editorResponses = ($this->serve)($editor->email, [$call('configuration.list', ['type' => 'sections'])]);
+    $admin = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [$call('info_get'), $call('configuration_list', ['type' => 'sections']), $call('example_http')]);
+    $editorResponses = ($this->serve)($editor->email, [$call('configuration_list', ['type' => 'sections'])]);
 
-    expect($admin['configuration.list'])->not->toHaveKey('error')
+    expect($admin['configuration_list'])->not->toHaveKey('error')
         ->and(strlen($admin['init']['result']['instructions']))->toBeLessThanOrEqual(2048)
-        ->and($admin['init']['result']['instructions'])->toContain('info.get')
+        ->and($admin['init']['result']['instructions'])->toContain('info_get')
         ->not->toContain('Preserve legal notices.', 'reviews.list')
-        ->and($admin['info.get']['result']['structuredContent']['instructions'])->toContain('hardDelete')
+        ->and($admin['info_get']['result']['structuredContent']['instructions'])->toContain('hardDelete')
         ->toEndWith("Preserve legal notices.\n\nUse reviews.list before changing a product.")
-        ->and($admin['configuration.list']['result']['structuredContent'])->toMatchArray(['type' => 'sections', 'items' => []])
-        ->and($admin['assets.upload.prepare']['error']['message'])->toBe('Tool not found: "assets.upload.prepare".')
-        ->and($editorResponses['configuration.list']['error']['message'])->toBe('Tool not found: "configuration.list".');
+        ->and($admin['configuration_list']['result']['structuredContent'])->toMatchArray(['type' => 'sections', 'items' => []])
+        ->and($admin['example_http']['error']['message'])->toBe('Tool not found: "example_http".')
+        ->and($editorResponses['configuration_list']['error']['message'])->toBe('Tool not found: "configuration_list".');
 });
 
-it('attributes every message’s activity to the named user and the MCP origin', function (): void {
+it('attributes every message’s activity to the named user and the MCP origin', function (bool $modern): void {
     $user = User::query()->firstOrFail();
     $entry = Entry::factory()->createElement(['title' => 'Release notes']);
     $comment = static fn (string $id, string $markdown): array => [
         'jsonrpc' => '2.0',
         'id' => $id,
         'method' => 'tools/call',
-        'params' => ['name' => 'activity.comments.create', 'arguments' => ['type' => 'entries', 'id' => $entry->id, 'markdown' => $markdown]],
+        'params' => ['name' => 'activity_comments_create', 'arguments' => ['type' => 'entries', 'id' => $entry->id, 'markdown' => $markdown]],
     ];
 
-    $responses = ($this->serve)((string) $user->id, [$comment('first', 'First'), $comment('second', 'Second')]);
+    $responses = ($this->serve)((string) $user->id, [$comment('first', 'First'), $comment('second', 'Second')], $modern);
 
     $events = ActivityEvent::query()->eventTypes(CommentCreated::class)->get();
 
@@ -83,11 +100,11 @@ it('attributes every message’s activity to the named user and the MCP origin',
         ->and($events)->toHaveCount(2)
         ->and($events->pluck('actorId')->unique()->all())->toBe([$user->id])
         ->and($events->pluck('snapshots.origin')->all())->toBe(['MCP', 'MCP']);
-});
+})->with(['handshake era' => false, '2026-07-28 era' => true]);
 
-it('refuses to serve users who may not use Craft MCP', function (Closure $user, string $message): void {
+it('refuses to serve missing or inactive users', function (Closure $user, string $message): void {
     Edition::set(Edition::Pro);
-    app()->bind(StdioTransport::class, fn ($app): StdioTransport => new StdioTransport($app, fopen('php://memory', 'r'), fopen('php://memory', 'w')));
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport(fopen('php://memory', 'r'), fopen('php://memory', 'w')));
 
     $this->artisan('craft:mcp:serve', ['--user' => $user()])
         ->expectsOutputToContain($message)
@@ -95,6 +112,169 @@ it('refuses to serve users who may not use Craft MCP', function (Closure $user, 
 })->with([
     'missing option' => [fn (): string => '', 'The --user option is required.'],
     'unknown user' => [fn (): string => 'nobody', 'No user exists with the ID, username, or email [nobody].'],
-    'suspended user' => [fn (): string => User::factory()->withPermissions(['useCraftMcp'])->create(['username' => 'suspended', 'suspended' => true])->username, 'The user [suspended] is not active.'],
-    'missing permission' => [fn (): string => User::factory()->withPermissions(['accessCp'])->create(['username' => 'viewer'])->username, 'The user [viewer] does not have permission to use Craft MCP.'],
+    'suspended user' => [fn (): string => User::factory()->withPermissions([])->create(['username' => 'suspended', 'suspended' => true])->username, 'The user [suspended] is not active.'],
 ]);
+
+it('saves project config changes before responding, rather than when the server stops', function (): void {
+    $input = tmpfile();
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
+        ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => (object) [],
+            'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+        ]],
+        ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+        ['jsonrpc' => '2.0', 'id' => 'create', 'method' => 'tools/call', 'params' => ['name' => 'configuration_create', 'arguments' => ['type' => 'site-groups', 'attributes' => ['name' => 'Archive']]]],
+    ])));
+    rewind($input);
+    StdioTestOutput::$saved = [];
+    stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
+    $this->beforeApplicationDestroyed(fn () => stream_wrapper_unregister('stdio-test-output'));
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen('stdio-test-output://', 'w')));
+
+    $this->artisan('craft:mcp:serve', ['--user' => User::query()->where('admin', true)->firstOrFail()->username])->assertSuccessful();
+
+    expect(StdioTestOutput::$saved['create'])->toBeTrue();
+});
+
+/** Records each response, and whether the Archive site group had been saved when it was written. */
+class StdioTestOutput
+{
+    /** @var array<string, bool> */
+    public static array $saved = [];
+
+    /** @var array<string, array<string, mixed>> */
+    public static array $responses = [];
+
+    /** Called with each response's ID, once it has been written. */
+    public static ?Closure $onResponse = null;
+
+    /** @var resource|null */
+    public $context;
+
+    public function stream_open(string $path, string $mode, int $options, ?string &$openedPath): bool
+    {
+        return true;
+    }
+
+    private string $buffer = '';
+
+    public function stream_write(string $data): int
+    {
+        $this->buffer .= $data;
+
+        while (($end = strpos($this->buffer, PHP_EOL)) !== false) {
+            $line = substr($this->buffer, 0, $end);
+            $this->buffer = substr($this->buffer, $end + strlen(PHP_EOL));
+            $response = Json::decode($line);
+            $id = $response['id'] ?? '';
+            self::$responses[$id] = $response;
+            self::$saved[$id] = DB::table('projectconfig')->where('path', 'like', 'siteGroups.%.name')->where('value', Json::encode('Archive'))->exists();
+
+            if (self::$onResponse !== null) {
+                (self::$onResponse)($id);
+            }
+        }
+
+        return strlen($data);
+    }
+}
+
+it('sees sections added since an earlier message read element sources', function (bool $modern): void {
+    EntryElement::sources(ElementSources::CONTEXT_MODAL);
+    $section = Section::factory()->create();
+
+    $responses = ($this->serve)(User::query()->where('admin', true)->firstOrFail()->username, [[
+        'jsonrpc' => '2.0',
+        'id' => 'create',
+        'method' => 'tools/call',
+        'params' => ['name' => 'configuration_create', 'arguments' => ['type' => 'fields', 'attributes' => [
+            'type' => EntriesField::class,
+            'name' => 'Related',
+            'handle' => 'related',
+            'settings' => ['sources' => ["section:$section->uid"]],
+        ]]],
+    ]], $modern);
+
+    expect($responses['create']['result']['isError'])->toBeFalse()
+        ->and($responses['create']['result']['structuredContent']['item']['settings']['sources'])->toBe(["section:$section->uid"]);
+})->with(['handshake era' => false, '2026-07-28 era' => true]);
+
+it('sees project config changes made by other processes since an earlier message', function (): void {
+    $get = static fn (string $id): array => ['jsonrpc' => '2.0', 'id' => $id, 'method' => 'tools/call', 'params' => ['name' => 'project_config_get', 'arguments' => ['path' => 'system.name']]];
+    $input = tmpfile();
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
+        ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => (object) [],
+            'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+        ]],
+        ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+        $get('before'),
+        $get('after'),
+    ])));
+    rewind($input);
+    StdioTestOutput::$responses = [];
+    StdioTestOutput::$onResponse = static function (string $id): void {
+        if ($id === 'before') {
+            DB::table('projectconfig')->where('path', 'system.name')->update(['value' => Json::encode('Renamed elsewhere')]);
+            app(ConfigStorage::class)->invalidate();
+        }
+    };
+    stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
+    $this->beforeApplicationDestroyed(function (): void {
+        StdioTestOutput::$onResponse = null;
+        stream_wrapper_unregister('stdio-test-output');
+    });
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen('stdio-test-output://', 'w')));
+
+    $this->artisan('craft:mcp:serve', ['--user' => User::query()->where('admin', true)->firstOrFail()->username])->assertSuccessful();
+
+    expect(StdioTestOutput::$responses['before']['result']['structuredContent']['value'])->not->toBe('Renamed elsewhere')
+        ->and(StdioTestOutput::$responses['after']['result']['structuredContent']['value'])->toBe('Renamed elsewhere');
+});
+
+it('sees records changed by other processes since an earlier message, and keeps those changes when saving', function (): void {
+    $call = static fn (string $id, string $tool, array $arguments): array => ['jsonrpc' => '2.0', 'id' => $id, 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]];
+    $field = ['type' => 'fields', 'identifier' => ['handle' => 'tagline']];
+    $input = tmpfile();
+    fwrite($input, implode('', array_map(static fn (array $message): string => Json::encode($message).PHP_EOL, [
+        ['jsonrpc' => '2.0', 'id' => 'init', 'method' => 'initialize', 'params' => [
+            'protocolVersion' => '2025-11-25',
+            'capabilities' => (object) [],
+            'clientInfo' => ['name' => 'stdio-test', 'version' => '1.0'],
+        ]],
+        ['jsonrpc' => '2.0', 'method' => 'notifications/initialized'],
+        $call('create', 'configuration_create', ['type' => 'fields', 'attributes' => ['type' => PlainText::class, 'name' => 'Tagline', 'handle' => 'tagline']]),
+        $call('before', 'configuration_get', $field),
+        $call('after', 'configuration_get', $field),
+        $call('update', 'configuration_update', [...$field, 'attributes' => ['name' => 'Tagline 2']]),
+    ])));
+    rewind($input);
+    StdioTestOutput::$responses = [];
+    // Change the field the way another process, such as `craft project-config:set`, would.
+    StdioTestOutput::$onResponse = static function (string $id): void {
+        if ($id === 'before') {
+            $uid = StdioTestOutput::$responses['create']['result']['structuredContent']['item']['uid'];
+            DB::table('projectconfig')->where('path', "fields.$uid.instructions")->update(['value' => Json::encode('Changed elsewhere')]);
+            DB::table('fields')->where('uid', $uid)->update(['instructions' => 'Changed elsewhere']);
+            app(ConfigStorage::class)->invalidate();
+        }
+    };
+    stream_wrapper_register('stdio-test-output', StdioTestOutput::class);
+    $this->beforeApplicationDestroyed(function (): void {
+        StdioTestOutput::$onResponse = null;
+        stream_wrapper_unregister('stdio-test-output');
+    });
+    app()->bind(StdioTransport::class, fn (): StdioTransport => new StdioTransport($input, fopen('stdio-test-output://', 'w')));
+
+    $this->artisan('craft:mcp:serve', ['--user' => User::query()->where('admin', true)->firstOrFail()->username])->assertSuccessful();
+
+    $uid = StdioTestOutput::$responses['create']['result']['structuredContent']['item']['uid'];
+
+    expect(StdioTestOutput::$responses['after']['result']['structuredContent']['item']['instructions'])->toBe('Changed elsewhere')
+        ->and(StdioTestOutput::$responses['update'])->not->toHaveKey('error')
+        ->and(StdioTestOutput::$responses['update']['result']['isError'])->toBeFalse()
+        ->and(DB::table('projectconfig')->whereIn('path', ["fields.$uid.name", "fields.$uid.instructions"])->pluck('value', 'path')->map(fn (string $value): mixed => Json::decode($value))->all())
+        ->toEqual(["fields.$uid.name" => 'Tagline 2', "fields.$uid.instructions" => 'Changed elsewhere']);
+});

@@ -62,11 +62,15 @@ export default class CraftInputTime extends CraftInput {
     super.disconnectedCallback();
   }
 
-  override updated(changedProperties: PropertyValues) {
+  override willUpdate(changedProperties: PropertyValues) {
+    super.willUpdate(changedProperties);
+
     if (changedProperties.has('minuteIncrement')) {
       this.step = this.minuteIncrement * 60;
     }
+  }
 
+  override updated(changedProperties: PropertyValues) {
     super.updated(changedProperties);
     this.#validate();
   }
@@ -76,18 +80,18 @@ export default class CraftInputTime extends CraftInput {
       return;
     }
 
-    if (this.forceRoundTime) {
-      const rounded = this.#round(event.target.value);
-      event.target.value = rounded;
-      this.modelValue = rounded;
-      this.value = rounded;
+    const input = event.target;
+
+    if (this.forceRoundTime && this.#round(input.value) !== input.value) {
+      this.value = this.#round(input.value);
+      input.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
     }
 
     this.#validate();
   }
 
   #validate() {
-    const input = this._inputNode;
+    const input = this._control;
 
     if (!input) {
       return;

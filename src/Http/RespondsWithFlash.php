@@ -182,6 +182,17 @@ trait RespondsWithFlash
         return redirect()->to($this->getPostedRedirectUrl($object) ?? $redirect);
     }
 
+    /**
+     * Where saving a newly-created record lands when no redirect was posted, as
+     * with Save and continue editing: its edit page, rather than back to the
+     * blank form that created it. JSON requests handle their own navigation.
+     */
+    protected function createdRedirectUrl(string $editUrl): ?string
+    {
+        return $this->getPostedRedirectUrl()
+            ?? (request()->expectsJson() ? null : $editUrl);
+    }
+
     protected function getPostedRedirectUrl(?object $object = null): ?string
     {
         $url = request('redirect');
@@ -196,8 +207,7 @@ trait RespondsWithFlash
             abort(400, 'Request contained an invalid body param');
         }
 
-        // I'm not sure why, but decrypt ac
-        if (! $url) {
+        if (! is_string($url)) {
             return null;
         }
 
@@ -221,6 +231,6 @@ trait RespondsWithFlash
             return Url::cpUrl($url);
         }
 
-        return $url;
+        return Url::url($url);
     }
 }

@@ -14,7 +14,12 @@ use function CraftCms\Cms\t;
  */
 class ColorRule implements ValidationRule
 {
-    private string $pattern = '/^(?:#[0-9a-f]{6}|transparent)$/';
+    /**
+     * @param  bool  $allowAlpha  Whether 8-digit hex values with an alpha channel should be allowed.
+     */
+    public function __construct(
+        public readonly bool $allowAlpha = false,
+    ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
@@ -22,7 +27,11 @@ class ColorRule implements ValidationRule
             $value = self::normalizeColor($value);
         }
 
-        $valid = ! is_array($value) && preg_match($this->pattern, (string) $value);
+        $pattern = $this->allowAlpha
+            ? '/^(?:#[0-9a-f]{6}(?:[0-9a-f]{2})?|transparent)$/'
+            : '/^(?:#[0-9a-f]{6}|transparent)$/';
+
+        $valid = ! is_array($value) && preg_match($pattern, (string) $value);
 
         if (! $valid) {
             $fail(t('{attribute} is invalid.', [
@@ -31,6 +40,12 @@ class ColorRule implements ValidationRule
         }
     }
 
+    /**
+     * Normalizes a color value.
+     *
+     * Shorthand hex values are expanded (`#abc` => `#aabbcc`, `#abcd` => `#aabbccdd`),
+     * and fully-opaque alpha channels are removed (`#aabbccff` => `#aabbcc`).
+     */
     public static function normalizeColor(string $color): string
     {
         // lowercase
@@ -45,9 +60,13 @@ class ColorRule implements ValidationRule
             $color = '#'.$color;
         }
 
-        // #abc => #aabbcc
-        if (strlen($color) === 4) {
-            return '#'.$color[1].$color[1].$color[2].$color[2].$color[3].$color[3];
+        $length = strlen($color);
+        if ($length === 4 || $length === 5) {
+            $color = '#'.implode('', array_map(fn (string $char) => $char.$char, str_split(substr($color, 1))));
+        }
+
+        if (strlen($color) === 9 && str_ends_with($color, 'ff')) {
+            $color = substr($color, 0, 7);
         }
 
         return $color;

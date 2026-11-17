@@ -8,6 +8,8 @@ use CraftCms\Cms\Support\Facades\Markdown;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Contracts\Control as ControlContract;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\NestedUiPayload;
@@ -26,7 +28,7 @@ use Illuminate\Support\Arr;
  *
  * @since 6.0.0
  */
-class Table extends Control
+class Table extends Control implements ReadableValueControl, WritableValueControl
 {
     /** @var array<string, array<string, mixed>> */
     private array $columns = [];
@@ -206,6 +208,30 @@ class Table extends Control
         return $ui;
     }
 
+    /**
+     * Tables with money columns are scoped to those columns' currencies, so an amount is never
+     * pasted into a column that would read it in another currency. A scope set with {@see valueScope()}
+     * narrows that one rather than replacing it.
+     */
+    #[\Override]
+    public function getValueScope(): ?string
+    {
+        $currencies = [];
+
+        foreach (array_map($this->columnProps(...), $this->columns) as $key => $column) {
+            if (($column['type'] ?? null) === 'money') {
+                $currencies[$key] = $column['currency'] ?? 'USD';
+            }
+        }
+
+        ksort($currencies);
+
+        $scope = parent::getValueScope();
+        $money = $currencies ? 'money:'.http_build_query($currencies) : null;
+
+        return $scope !== null && $money !== null ? "{$scope}|{$money}" : $scope ?? $money;
+    }
+
     #[\Override]
     public function nestsUis(): bool
     {
@@ -282,6 +308,23 @@ class Table extends Control
      */
     private function columnProps(array $column): array
     {
+        if (isset($column['control'])) {
+            // A column drawn by a control of its own, such as a Table field's cell, takes the settings pasted
+            // cells are checked against from that control, wherever the column configured them.
+            $controlProps = $column['control']->props();
+            if (isset($controlProps['types'])) {
+                $controlProps['types'] = array_column($controlProps['types'], 'id');
+            }
+            $column = [...$column, ...Arr::only($controlProps, ['options', 'types', 'currency', 'min', 'max', 'alpha'])];
+        } else {
+            // Columns without a control or a type are single-line text, as TableColumn::control() draws them.
+            $column['type'] ??= 'singleline';
+
+            if (in_array($column['type'], ['select', 'radio'], true)) {
+                $column['options'] = TableColumn::options($column['options'] ?? []);
+            }
+        }
+
         if (isset($column['info']) && ! isset($column['infoHtml'])) {
             $column['infoHtml'] = Markdown::parseParagraph((string) $column['info']);
         }
@@ -300,6 +343,10 @@ class Table extends Control
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'keyed' => $this->keyed,
+            // JSON objects lose the order of integer-like keys, so send it separately
+            'rowOrder' => $this->keyed && is_array($value) && array_any(array_keys($value), fn ($key) => is_int($key))
+                ? array_map(strval(...), array_keys($value))
+                : null,
             'hiddenRows' => $this->hiddenRows ?: null,
             'defaultValues' => $this->rowDefaults(),
             'addRowLabel' => $this->addRowLabel,

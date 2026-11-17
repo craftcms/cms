@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element;
 
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Workflow\Contracts\WorkflowableInterface;
 use CraftCms\Cms\Workflow\Data\WorkflowReviewData;
@@ -127,20 +128,31 @@ class ElementEditorActions
         return $actions;
     }
 
-    /** @return array{label: string, actionUrl: null, params: array{}, redirect: null, panelId: null} */
+    /** @return array{label: string, actionUrl: string|null, params: array{}, redirect: null, panelId: null} */
     private function primaryAction(ElementInterface $element, ?string $label): array
     {
+        $isUnpublishedDraft = $element->getIsUnpublishedDraft();
+        $canSaveCanonical = Gate::check('saveCanonical', $element);
+        $isNamedDraft = $element->getIsDraft()
+            && ! $element->isProvisionalDraft
+            && ! $isUnpublishedDraft;
+
         $label ??= match (true) {
-            $element->getIsUnpublishedDraft() => Gate::check('saveCanonical', $element)
+            $isUnpublishedDraft => $canSaveCanonical
                 ? mb_ucfirst(t('Create {type}', ['type' => $element::lowerDisplayName()]))
                 : mb_ucfirst(t('Save {type}', ['type' => t('draft')])),
-            $element->getIsDraft() && ! $element->isProvisionalDraft => mb_ucfirst(t('Save {type}', ['type' => t('draft')])),
+            $isNamedDraft => mb_ucfirst(t('Save {type}', ['type' => t('draft')])),
             default => t('Save'),
         };
 
+        // Without an action URL the editor applies whatever draft it's on. As in
+        // Craft 5, that's only right for provisional drafts and for unpublished
+        // drafts the user can publish; other drafts stay drafts when saved.
+        $savesAsDraft = $isNamedDraft || ($isUnpublishedDraft && ! $canSaveCanonical);
+
         return [
             'label' => $label,
-            'actionUrl' => null,
+            'actionUrl' => $savesAsDraft ? Url::actionUrl('elements/save-draft') : null,
             'params' => [],
             'redirect' => null,
             'panelId' => null,
@@ -210,12 +222,18 @@ class ElementEditorActions
             $element->hasRevisions() &&
             Gate::check('saveCanonical', $element)
         ) {
+            // Keep the editor's return URL, so saving after the revert still goes back where it was opened from
+            $returnUrl = request()->query('returnUrl');
+
             $actions[] = [
                 'label' => t('Revert content from this revision'),
                 'actionUrl' => Url::actionUrl('elements/revert'),
                 'params' => [
                     ...$this->identityParams($element),
                     'revisionId' => $element->revisionId,
+                    ...(is_string($returnUrl) && $returnUrl !== ''
+                        ? ['redirectParams' => Json::encode(['returnUrl' => $returnUrl])]
+                        : []),
                 ],
                 'redirect' => Crypt::encrypt('{cpEditUrl}'),
                 'variant' => 'outline',

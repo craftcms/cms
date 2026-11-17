@@ -12,10 +12,9 @@ type EntryType = {
   icon: {name: string; family?: string} | null;
 };
 
-// The shape the index actually receives: a nested resource collection comes
-// through wrapped in `data`.
-type PublishableSection = {
-  entryTypes: {data: Array<EntryType>};
+type CreatableSection = {
+  entryTypes: Array<EntryType>;
+  entryTypeIdsBySite: Record<number, Array<number>>;
   handle: string;
   id: number;
   name: string;
@@ -27,6 +26,10 @@ type PublishableSection = {
 
 vi.mock('@/common/composables/useCraftData', () => ({
   default: () => ({site: {value: {id: 1}}}),
+}));
+
+vi.mock('@inertiajs/vue3', () => ({
+  usePage: () => ({url: '/admin/content/entries/blog?sort=title'}),
 }));
 
 // The menu is what's under test, not how it opens: record what it's handed and
@@ -79,7 +82,7 @@ function section(
   handle: string,
   entryTypes: Array<EntryType>,
   sites = [1]
-): PublishableSection {
+): CreatableSection {
   return {
     handle,
     id: entryTypes[0]?.id ?? 0,
@@ -88,7 +91,10 @@ function section(
     type: 'channel',
     sites,
     canSave: true,
-    entryTypes: {data: entryTypes},
+    entryTypes,
+    entryTypeIdsBySite: Object.fromEntries(
+      sites.map((id) => [id, entryTypes.map((type) => type.id)])
+    ),
   };
 }
 
@@ -102,7 +108,7 @@ const sectionSource = (handle: string, ids?: number[]): SourceItem => ({
 async function mount(props: {
   sources: Array<Source>;
   source?: SourceItem;
-  publishableSections: Array<PublishableSection>;
+  creatableSections: Array<CreatableSection>;
 }) {
   const container = document.createElement('div');
   document.body.append(container);
@@ -125,7 +131,7 @@ it('links directly to the entry type when it is the only one on screen', async (
   const container = await mount({
     sources: [sectionSource('blog')],
     source: sectionSource('blog'),
-    publishableSections: [blog],
+    creatableSections: [blog],
   });
   const button = container.querySelector('craft-button')!;
   // No menu to choose from — there's nothing to choose.
@@ -136,6 +142,41 @@ it('links directly to the entry type when it is the only one on screen', async (
   expect(href).toContain('type=article');
 });
 
+it('only offers the entry types available in the site being viewed', async () => {
+  const blog = {
+    ...section(
+      'blog',
+      [entryType('article', 1), entryType('review', 2)],
+      [1, 2]
+    ),
+    entryTypeIdsBySite: {1: [1], 2: [1, 2]},
+  };
+  const container = await mount({
+    sources: [sectionSource('blog')],
+    source: sectionSource('blog'),
+    creatableSections: [blog],
+  });
+
+  expect(container.querySelector('.menu')).toBeNull();
+  expect(container.querySelector('craft-button')!.href).toContain(
+    'type=article'
+  );
+});
+
+it('sends the new entry’s editor back to the index it was created from', async () => {
+  const blog = section('blog', [entryType('article', 1)]);
+  const container = await mount({
+    sources: [sectionSource('blog')],
+    source: sectionSource('blog'),
+    creatableSections: [blog],
+  });
+  const href = new URL(container.querySelector('craft-button')!.href!);
+
+  expect(href.searchParams.get('returnUrl')).toBe(
+    `${window.location.origin}/admin/content/entries/blog:QS:sort=title`
+  );
+});
+
 it('offers every entry type the section shows when there are several', async () => {
   const blog = section('blog', [
     entryType('article', 1),
@@ -144,7 +185,7 @@ it('offers every entry type the section shows when there are several', async () 
   await mount({
     sources: [sectionSource('blog')],
     source: sectionSource('blog'),
-    publishableSections: [blog],
+    creatableSections: [blog],
   });
 
   // One section, so no headings — just its types.
@@ -164,7 +205,7 @@ it('groups the types by section when the view spans several', async () => {
       sectionSource('news'),
     ],
     source: {type: 'native', key: '*', label: 'All entries', data: {}},
-    publishableSections: [blog, news],
+    creatableSections: [blog, news],
   });
 
   const groups = menu.actions as Array<ActionItemGroup>;
@@ -180,7 +221,7 @@ it('keeps to the sections this index actually shows', async () => {
   const hidden = section('hidden', [entryType('secret', 9)]);
   const container = await mount({
     sources: [sectionSource('blog')],
-    publishableSections: [blog, hidden],
+    creatableSections: [blog, hidden],
   });
 
   // Only one type is on screen, so it's a plain button rather than a menu.
@@ -193,7 +234,7 @@ it('leaves out sections the current site does not have', async () => {
   const elsewhere = section('elsewhere', [entryType('note', 5)], [2]);
   const container = await mount({
     sources: [sectionSource('blog'), sectionSource('elsewhere')],
-    publishableSections: [blog, elsewhere],
+    creatableSections: [blog, elsewhere],
   });
 
   expect(container.querySelector('.menu')).toBeNull();
@@ -213,7 +254,7 @@ it('links to the pinned type for a custom source', async () => {
   const container = await mount({
     sources: [sectionSource('blog'), pinned],
     source: pinned,
-    publishableSections: [blog],
+    creatableSections: [blog],
   });
   expect(container.querySelector('craft-button')!.href).toContain(
     'type=review'
@@ -223,7 +264,7 @@ it('links to the pinned type for a custom source', async () => {
 it('shows nothing when there is nothing to create', async () => {
   const container = await mount({
     sources: [sectionSource('blog')],
-    publishableSections: [],
+    creatableSections: [],
   });
 
   expect(container.innerHTML.replace(/<!--.*?-->/g, '')).toBe('');
@@ -232,7 +273,7 @@ it('shows nothing when there is nothing to create', async () => {
 it('always uses the primary variant', async () => {
   const one = await mount({
     sources: [sectionSource('blog')],
-    publishableSections: [section('blog', [entryType('article', 1)])],
+    creatableSections: [section('blog', [entryType('article', 1)])],
   });
   expect(one.querySelector('craft-button')!.getAttribute('variant')).toBe(
     'primary'
@@ -241,7 +282,7 @@ it('always uses the primary variant', async () => {
 
   const many = await mount({
     sources: [sectionSource('blog')],
-    publishableSections: [
+    creatableSections: [
       section('blog', [entryType('article', 1), entryType('review', 2)]),
     ],
   });
@@ -258,7 +299,7 @@ it('copes with a heading that arrives without children', async () => {
       {type: 'heading', heading: 'Channels'} as unknown as Source,
       sectionSource('blog'),
     ],
-    publishableSections: [section('blog', [entryType('article', 1)])],
+    creatableSections: [section('blog', [entryType('article', 1)])],
   });
 
   expect(container.querySelector('craft-button')).not.toBeNull();
@@ -268,7 +309,7 @@ it('gives each menu entry its entry type icon by name', async () => {
   // Icons arrive as `Icons::resolveIconData()` — an object, not a name.
   await mount({
     sources: [sectionSource('blog')],
-    publishableSections: [
+    creatableSections: [
       section('blog', [
         entryType('article', 1, {name: 'newspaper', family: 'light'}),
         entryType('review', 2),

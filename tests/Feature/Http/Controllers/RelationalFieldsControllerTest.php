@@ -5,8 +5,12 @@ declare(strict_types=1);
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\RelationalFieldsController;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Support\Facades\Drafts as DraftsFacade;
+use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Structures as StructuresFacade;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Auth;
@@ -149,4 +153,55 @@ it('applies the branch limit to structured elements', function () {
         ->toContain('Original Root')
         ->toContain('Child Entry')
         ->not->toContain($secondRoot->title);
+});
+
+it('returns a hierarchical selection in structure order with missing ancestors filled in', function () {
+    $structure = Structure::factory()->create();
+    $section = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => $structure->id,
+    ]);
+    Sections::refreshSections();
+    $news = EntryModel::factory()->forSection($section)->createElement(['title' => 'News']);
+    $clubNews = EntryModel::factory()->forSection($section)->createElement(['title' => 'Club news']);
+    $events = EntryModel::factory()->forSection($section)->createElement(['title' => 'Events']);
+    StructuresFacade::appendToRoot($structure->id, $news);
+    StructuresFacade::append($structure->id, $clubNews, $news);
+    StructuresFacade::appendToRoot($structure->id, $events);
+
+    $response = postJson(action([RelationalFieldsController::class, 'structuredElements']), [
+        'elementType' => EntryElement::class,
+        'elementIds' => [$events->id, $clubNews->id],
+        'siteId' => Site::first()->id,
+    ])->assertOk();
+
+    expect(array_map(
+        fn (array $element) => [$element['id'], $element['label'], $element['level']],
+        $response->json('elements'),
+    ))->toBe([
+        [$news->id, 'News', 1],
+        [$clubNews->id, 'Club news', 2],
+        [$events->id, 'Events', 1],
+    ]);
+});
+
+it('returns the parts a view mode draws its elements with', function () {
+    $entry = EntryModel::factory()->createElement();
+
+    $elements = fn (?string $viewMode) => postJson(action([RelationalFieldsController::class, 'structuredElements']), [
+        'elementType' => EntryElement::class,
+        'elementIds' => [$entry->id],
+        'siteId' => Site::first()->id,
+        'viewMode' => $viewMode,
+    ])->assertOk()->json('elements');
+
+    expect($elements('cards')[0])->toHaveKey('cardHeaderHtml')
+        ->and($elements('cards')[0]['cardHeaderHtml'])->toContain('card-titlebar-label')
+        ->and($elements(null)[0])->not->toHaveKey('cardHeaderHtml');
+
+    postJson(action([RelationalFieldsController::class, 'structuredElements']), [
+        'elementType' => EntryElement::class,
+        'elementIds' => [$entry->id],
+        'viewMode' => 'carousel',
+    ])->assertUnprocessable();
 });

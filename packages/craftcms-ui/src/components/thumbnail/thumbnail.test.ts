@@ -173,6 +173,19 @@ describe('craft-thumbnail placeholder', () => {
     expect(img.style.aspectRatio).toBe('120 / 87');
   });
 
+  // Vue sets these as properties, straight from the template's strings, and
+  // "80" >= "120" as strings: the portrait image got a landscape box, a
+  // square that letterboxed it, so its rounded corners didn't show.
+  it('orients a fit image by its numeric size, even when given strings', async () => {
+    const element = await createThumbnail({src: 'a.png'});
+    Object.assign(element, {width: '80', height: '120'});
+    await element.updateComplete;
+
+    expect(
+      image(element)!.classList.contains('thumbnail__image--portrait')
+    ).toBe(true);
+  });
+
   it('keeps the placeholder on the thumbnail box when cropping', async () => {
     const element = await createThumbnail({
       src: 'a.png',

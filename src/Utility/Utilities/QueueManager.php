@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Utility\Utilities;
 
-use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Utility\Utility;
@@ -40,13 +39,24 @@ class QueueManager extends Utility
     }
 
     #[Override]
+    public static function subpageTitle(): ?string
+    {
+        $job = self::getActiveJob(app(JobProgress::class));
+
+        return $job ? t($job->description) : null;
+    }
+
+    #[Override]
     public static function toolbarHtml(): string
     {
         $progressService = app(JobProgress::class);
 
+        if (self::getActiveJob($progressService)) {
+            return '';
+        }
+
         return Html::tag('QueueManagerToolbar', attributes: [
-            ':activeJob' => self::getActiveJob($progressService),
-            ':jobs' => $progressService->getJobInfo(),
+            ':hasJobs' => $progressService->jobsQuery()->exists(),
         ]);
     }
 
@@ -60,14 +70,11 @@ class QueueManager extends Utility
     public static function contentHtml(): string
     {
         $progressService = app(JobProgress::class);
-        $jobsData = app(JobProgress::class)->getJobInfo();
 
         return Html::tag('QueueManager', attributes: [
-            ':initialData' => $jobsData,
             ':activeJob' => self::getActiveJob($progressService),
-            ':hasReservedJobs' => $progressService->getByStatus(JobStatus::Reserved)->count() > 0,
-            ':hasWaitingJobs' => $progressService->getByStatus(JobStatus::Pending)->count() > 0,
-            ':totalJobs' => $progressService->getTotalJobs(),
+            ':hasReservedJobs' => $progressService->hasReservedJobs(),
+            ':hasWaitingJobs' => $progressService->hasPendingJobs(),
         ]);
     }
 

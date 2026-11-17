@@ -1,8 +1,10 @@
 <script setup lang="ts">
+  import {computed} from 'vue';
   import {actionClient} from '@craftcms/ui';
   import type {UiControlPayload, UiValues} from './types';
   import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
+  import ServerRenderedControlFrame from './ServerRenderedControlFrame.vue';
 
   const props = defineProps<{
     control: UiControlPayload;
@@ -12,7 +14,7 @@
   const emit = defineEmits<{
     (event: 'update:value', value: UiValues[], kind: 'discrete'): void;
   }>();
-  const {host, html} = useServerRenderedControl({
+  const {host, html, status, retry} = useServerRenderedControl({
     value: () => props.value,
     dependencies: [() => props.editable],
     async render() {
@@ -43,10 +45,29 @@
     },
     update: (value) => emit('update:value', value, 'discrete'),
   });
+
+  /** Each group's entry type count. An empty manager still shows one group. */
+  const placeholderGroups = computed(() => {
+    const counts = new Map<UiValues['group'], number>();
+    for (const entryType of props.value ?? []) {
+      counts.set(entryType.group, (counts.get(entryType.group) ?? 0) + 1);
+    }
+
+    return counts.size ? [...counts.values()] : [0];
+  });
 </script>
 
 <template>
-  <!-- v-html, not DynamicHtmlRenderer: Vue would compile the select
-       <template> into child nodes, leaving its content empty. -->
-  <div ref="host" v-html="html"></div>
+  <ServerRenderedControlFrame
+    :status="status"
+    :has-html="Boolean(html)"
+    :groups="placeholderGroups"
+    :buttons="editable ? 2 : 1"
+    :add-group="editable"
+    @retry="retry"
+  >
+    <!-- v-html, not DynamicHtmlRenderer: Vue would compile the select
+         <template> into child nodes, leaving its content empty. -->
+    <div ref="host" v-html="html"></div>
+  </ServerRenderedControlFrame>
 </template>

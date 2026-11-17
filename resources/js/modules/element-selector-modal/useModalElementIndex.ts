@@ -7,6 +7,7 @@ import {
 import {useDetachedElementIndex} from '@/modules/elements/index/composables/useDetachedElementIndex';
 import {isInteractiveClick} from '@/common/utils/dom';
 import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
+import type {ActionItemButton} from '@/common/types';
 
 type Row = ElementIndexRow;
 
@@ -17,7 +18,13 @@ export interface FolderCrumb {
   url: string | null;
 }
 
-type ModalIndexData = ContentIndexData & {folderBreadcrumbs?: FolderCrumb[]};
+/** The extras `ModalIndexViewModel` adds to the shared index payload. */
+type ModalIndexData = ContentIndexData & {
+  folderBreadcrumbs?: FolderCrumb[];
+  folderActions?: ActionItemButton[];
+  canSearchSubfolders?: boolean;
+  includeSubfolders?: boolean;
+};
 
 /** The row keys folder handling reads; `ElementIndex` hands behaviors bare items. */
 interface IndexItem {
@@ -74,6 +81,12 @@ interface Options {
    */
   selectFolders?: boolean;
   disabledFolderIds?: () => number[];
+  /** Lists elements without selecting them, to embed the index in a screen. */
+  readOnly?: boolean;
+  /** Keeps this index's view mode, columns and sort apart from other indexes of its element type. */
+  storageKey?: string;
+  /** Called when a request for the index fails, instead of the failure going unhandled. */
+  onError?: (cause: unknown) => void;
 }
 
 /** Adds modal fetching and selection rules to the shared detached index. */
@@ -85,23 +98,38 @@ export function useModalElementIndex(options: Options) {
     () => new Set(options.disabledFolderIds?.() ?? [])
   );
   const selectFolders = options.selectFolders ?? false;
+  // The folder the modal opened in, such as an Assets field's upload location,
+  // is where it starts rather than where it stays: it seeds the query that
+  // switching sources and opening folders update.
+  const {folderId, ...params} = options.params;
   const index = useDetachedElementIndex({
     initial: options.initial,
+    initialQuery:
+      folderId === undefined || folderId === null
+        ? {}
+        : {folderId: Number(folderId)},
     fetch: async (query) => {
       const {data} = await actionClient.post(options.action, {
-        ...options.params,
+        ...params,
         ...query,
       });
 
       return data.props as ContentIndexData;
     },
+    readOnly: options.readOnly,
+    storageKey: options.storageKey,
+    onError: options.onError,
     enableRowSelection: (row) =>
-      selectFolders
+      !options.readOnly &&
+      (selectFolders
         ? Boolean(row.isFolder) &&
           !disabledFolderIds.value.has(Number(row.folderId))
-        : !row.isFolder && !disabledIds.value.has(Number(row.id)),
+        : !row.isFolder && !disabledIds.value.has(Number(row.id))),
     // A move has one destination.
     multiSelect: !selectFolders,
+    structure: true,
+    // Choosing a parent relates only the parent.
+    selectDescendants: false,
   });
   // Brings back the view mode, columns and sort this index last used, which
   // the server can't know when it renders the first payload.
@@ -114,12 +142,37 @@ export function useModalElementIndex(options: Options) {
     () => (index.payload.value as ModalIndexData).folderBreadcrumbs ?? []
   );
 
+  /** The buttons plugins add for the folder on screen. */
+  const folderActions = computed(
+    () => (index.payload.value as ModalIndexData).folderActions ?? []
+  );
+
+  /**
+   * Whether a search is on screen that could reach into the subfolders of the
+   * folder being listed, as the assets index offers.
+   */
+  const canSearchSubfolders = computed(() => {
+    const payload = index.payload.value as ModalIndexData;
+
+    return Boolean(payload.search) && Boolean(payload.canSearchSubfolders);
+  });
+
+  const includeSubfolders = computed(() =>
+    Boolean((index.payload.value as ModalIndexData).includeSubfolders)
+  );
+
+  function setIncludeSubfolders(include: boolean): void {
+    index.visitor.merge(
+      {includeSubfolders: include ? 1 : undefined},
+      {resetPage: true}
+    );
+  }
+
   /**
    * Lists a folder's contents in place of the current listing.
    *
-   * The selection is cleared first: it can only hand back rows that are on
-   * screen, so one made in the old listing would linger in the table's state
-   * without being selectable or submitted.
+   * The selection is cleared first, like on a source switch: it belongs to the
+   * listing it was made in.
    */
   function openFolder(folderId: number): void {
     index.clearSelection();
@@ -227,7 +280,7 @@ export function useModalElementIndex(options: Options) {
    * because `onModalSelect` and `app/render-elements` both consume it.
    */
   const selectedElements = computed<SelectedElement[]>(() =>
-    table.getSelectedRowModel().rows.map(({original}) => {
+    index.view.selection.selectedRows.value.map((original) => {
       const info = elementInfo(original);
 
       return {
@@ -265,7 +318,11 @@ export function useModalElementIndex(options: Options) {
   return {
     ...index,
     changeSource,
+    canSearchSubfolders,
+    includeSubfolders,
+    setIncludeSubfolders,
     folderBreadcrumbs,
+    folderActions,
     openFolder,
     itemBehavior,
     selectedElements,

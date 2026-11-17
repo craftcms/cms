@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Ui\Contracts\Control as ControlContract;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Ui;
 
@@ -18,6 +20,8 @@ abstract class Control implements ControlContract
     protected ControlMode $mode = ControlMode::Editable;
 
     protected bool $reactive = false;
+
+    private ?string $valueScope = null;
 
     /** @var string|list<string>|null */
     protected string|array|null $deltaGroup = null;
@@ -161,10 +165,75 @@ abstract class Control implements ControlContract
         return false;
     }
 
+    /**
+     * Returns a JSON Schema for the values this control accepts, so clients such as the MCP server can
+     * fill in settings without the control panel. An empty schema accepts any value.
+     *
+     * @return array<string, mixed>
+     */
+    public function inputSchema(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns `oneOf` choices for a list of control options.
+     *
+     * @param  array<array-key, mixed>  $options
+     * @return list<array{const: mixed, title?: string}>
+     */
+    protected static function optionsSchema(array $options): array
+    {
+        $choices = [];
+
+        foreach ($options as $option) {
+            if (! is_array($option) || ! array_key_exists('value', $option) || ! empty($option['disabled'])) {
+                continue;
+            }
+
+            $label = isset($option['label']) ? trim(strip_tags((string) $option['label'])) : '';
+            $choices[] = ['const' => $option['value'], ...($label !== '' && $label !== (string) $option['value'] ? ['title' => $label] : [])];
+        }
+
+        return $choices;
+    }
+
     /** Whether the control renders nested uis. See the contract. */
     public function nestsUis(): bool
     {
         return false;
+    }
+
+    /**
+     * Limits the values a {@see WritableValueControl} takes to ones read from a control with the same value scope,
+     * when what it can take depends on more than the value itself — the field a relation field’s selectable elements
+     * are configured on, say.
+     */
+    final public function valueScope(?string $scope): static
+    {
+        $this->valueScope = $scope;
+
+        return $this;
+    }
+
+    /**
+     * Returns the value scope: the one set with {@see valueScope()}, or one the control derives from its own settings.
+     * Values are only copied between readable and writable controls with the same scope.
+     */
+    public function getValueScope(): ?string
+    {
+        return $this->valueScope;
+    }
+
+    /**
+     * The props the control draws its value with, read along with it, for a control that implements
+     * {@see ReadableValueControl}. None, by default.
+     *
+     * @return list<string>
+     */
+    public function valueProps(): array
+    {
+        return [];
     }
 
     /**

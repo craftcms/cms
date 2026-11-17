@@ -13,7 +13,7 @@ use function CraftCms\Cms\t;
  */
 class CommentDeleted extends CommentEvent
 {
-    protected const string LABEL = 'Comment removed';
+    protected const string LABEL = 'Removed a comment';
 
     protected const string ICON = 'comment-slash';
 

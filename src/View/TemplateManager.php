@@ -14,6 +14,8 @@ use CraftCms\Cms\View\Events\PageTemplateRendered;
 use CraftCms\Cms\View\Events\PageTemplateRendering;
 use CraftCms\Cms\View\Events\TemplateRendered;
 use CraftCms\Cms\View\Events\TemplateRendering;
+use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
+use CraftCms\Cms\View\LegacyAssets\LegacyAssetInterface;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Log;
@@ -30,6 +32,13 @@ use function Illuminate\Support\enum_value;
 #[Scoped]
 class TemplateManager extends Manager
 {
+    /**
+     * Legacy assets to register on site pages loaded in Live Preview.
+     *
+     * @var list<class-string<LegacyAssetInterface>>
+     */
+    protected array $livePreviewAssets = [];
+
     private ?string $renderingTemplate = null;
 
     private bool $isRenderingPageTemplate = false;
@@ -187,6 +196,8 @@ class TemplateManager extends Manager
                 $publicOnly,
                 $renderer,
             ): string {
+                $this->registerLivePreviewAssets($templateMode);
+
                 return $this->renderFileTemplate(
                     $template,
                     $variables,
@@ -307,6 +318,27 @@ class TemplateManager extends Manager
     protected function createBladeDriver(): TemplateRendererInterface
     {
         return $this->container->make(BladeRenderer::class);
+    }
+
+    /**
+     * Registers the scripts Live Preview needs on the previewed page, if any.
+     */
+    private function registerLivePreviewAssets(TemplateMode $templateMode): void
+    {
+        if (
+            $templateMode !== TemplateMode::Site ||
+            $this->livePreviewAssets === [] ||
+            request()->query('x-craft-live-preview') === null ||
+            ! request()->isPreview()
+        ) {
+            return;
+        }
+
+        $registry = app(InternalAssetRegistry::class);
+
+        foreach ($this->livePreviewAssets as $asset) {
+            $registry->register($asset);
+        }
     }
 
     /** @param array<string, mixed> $variables */

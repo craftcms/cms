@@ -10,8 +10,19 @@ import '../popover/popover.js';
 import '../tooltip/tooltip.js';
 import styles from './nav-item.styles';
 import {t} from '@src/utilities/translate.js';
+import {focusStaysWithin} from '@src/utilities/focus-out.js';
+import {isExternalUrl, newTabCue} from '@src/utilities/external-links.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles.js';
+import {
+  hasSlotted,
+  LightDomController,
+} from '@src/controllers/LightDomController.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {Appearance} from '@src/constants/appearances';
+import {
+  NavAppearance,
+  type NavAppearanceValue,
+} from '@src/constants/nav-appearances';
 import {
   flyoutHoverIntent,
   type HoverIntentMember,
@@ -36,9 +47,18 @@ import {
  * @slot - The item's label.
  * @slot subnav - Nested `craft-nav-item`s, shown beneath the item or in a
  *   flyout beside it.
+ *
+ * @cssproperty [--c-nav-item-size=--c-size-touch-target] - The row's height,
+ *   and its width too when it's `icon-only`.
+ * @cssproperty [--c-nav-item-color=inherit] - The label's color while the
+ *   item isn't hovered or `current`, which take the row's own color.
+ * @cssproperty [--c-nav-item-icon-color=inherit] - The icon's color while the
+ *   item isn't `active` or hovered, which take the row's own color.
+ * @cssproperty [--c-nav-item-border-active=--c-color-accent-fill-loud] - Color
+ *   of the bar marking the current page in a `tabs` strip.
  */
 export default class CraftNavItem extends LitElement {
-  static override styles = styles;
+  static override styles = [visuallyHiddenStyles, styles];
 
   /** Icon to render within the prefix. */
   @property()
@@ -67,7 +87,10 @@ export default class CraftNavItem extends LitElement {
   @property({type: Boolean, reflect: true})
   button: boolean = false;
 
-  /** Opens the item in a new tab and displays an external link icon in the suffix. */
+  /**
+   * Opens the item in a new tab and displays an external link icon in the
+   * suffix. A link to another host does so without it.
+   */
   @property({type: Boolean})
   external: boolean = false;
 
@@ -90,12 +113,23 @@ export default class CraftNavItem extends LitElement {
   iconOnly: boolean = false;
 
   /** Compensate for padding with a negative margin for better visual alignment */
-  @property()
+  @property({type: Boolean})
   flush: boolean = false;
 
   /** Whether the subnav starts open or closed. Active items always start open. */
   @property({reflect: true, attribute: 'initial-state'})
   initialState: 'open' | 'closed' = 'closed';
+
+  /**
+   * How the row is drawn: `list` (the default), a row in a column of them, or
+   * `tabs`, one of a horizontal strip, marked by a bar along the strip's rule
+   * rather than by a fill.
+   *
+   * Set by the `craft-nav-list` the item is in, which owns the layout the two
+   * halves have to agree on; see its `appearance`.
+   */
+  @property({reflect: true}) appearance: NavAppearanceValue =
+    NavAppearance.List;
 
   /**
    * Renders the item as a non-collapsible semantic group. When it has a
@@ -157,6 +191,13 @@ export default class CraftNavItem extends LitElement {
 
   #hoverListeners?: AbortController;
 
+  /**
+   * Render reads the light DOM: whether there's a subnav, an icon or a prefix,
+   * and the label's text. A framework can add or remove any of them, or edit
+   * the label in place, without the default slot reporting it.
+   */
+  private _lightDom = new LightDomController(this, {characterData: true});
+
   /** Torn down when the flyout closes; see {@link fitFlyout}. */
   #flyoutFitListeners?: AbortController;
 
@@ -194,6 +235,11 @@ export default class CraftNavItem extends LitElement {
     return this.labelNodes.some(
       (node) => node.nodeType !== Node.TEXT_NODE || !!node.textContent?.trim()
     );
+  }
+
+  /** Whether the item is a link that opens in a new tab. */
+  private get opensInNewTab(): boolean {
+    return !!this.href && (this.external || isExternalUrl(this.href));
   }
 
   /** The row itself, which the flyout and the tooltip anchor to. */
@@ -348,9 +394,7 @@ export default class CraftNavItem extends LitElement {
    * narrows the focus case.
    */
   #scheduleFlyoutClose = (event: Event) => {
-    const moved = (event as FocusEvent).relatedTarget;
-
-    if (moved instanceof Node && (moved === this || this.contains(moved))) {
+    if (focusStaysWithin(event as FocusEvent, this)) {
       return;
     }
 
@@ -359,13 +403,27 @@ export default class CraftNavItem extends LitElement {
 
   // The overlay closes itself on Escape and outside clicks; follow it, or the
   // state would say open and the next hover wouldn't reopen it.
-  #onFlyoutOpenedChanged = (event: Event) => {
-    const opened = (event.target as {opened?: boolean}).opened === true;
+  #onFlyoutToggle = (event: Event) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
 
-    this.flyoutOpen = opened;
+    this.#stopOverlayEvent(event);
+    this.flyoutOpen = event.type === 'craft-show';
 
-    if (!opened) {
+    if (!this.flyoutOpen) {
       flyoutHoverIntent.notifyClosed(this.#hoverIntent);
+    }
+  };
+
+  /**
+   * The flyout and the tooltip are part of the item, so their own events stay
+   * inside it: leaving the shadow root, they'd read as the item's. Events from
+   * slotted content, such as a subnav item's menu, pass through.
+   */
+  #stopOverlayEvent = (event: Event) => {
+    if (event.target === event.currentTarget) {
+      event.stopPropagation();
     }
   };
 
@@ -464,16 +522,21 @@ export default class CraftNavItem extends LitElement {
           'nav-item': true,
           'nav-item--icon': true,
           'nav-item--static': this.isStatic(useFlyout),
+          'nav-item--flyout-open': useFlyout && this.flyoutOpen,
         })}"
         id="${this.itemId}"
         type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
+        target="${this.opensInNewTab ? '_blank' : nothing}"
+        rel="${this.opensInNewTab ? 'noopener' : nothing}"
         aria-current="${this.href || this.button ? this.ariaCurrentState : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         aria-label="${
           (this.href || hasSubnav || this.button) && this.labelText
-            ? this.labelText
+            ? this.opensInNewTab
+              ? `${this.labelText}, ${newTabCue()}`
+              : this.labelText
             : nothing
         }"
         @click="${useFlyout && !this.href ? this.#toggleFlyout : nothing}"
@@ -488,7 +551,13 @@ export default class CraftNavItem extends LitElement {
       ${
         useFlyout
           ? this.renderFlyout(true)
-          : html`<craft-tooltip for="${this.itemId}" placement="right"
+          : html`<craft-tooltip
+              for="${this.itemId}"
+              placement="right"
+              @craft-show=${this.#stopOverlayEvent}
+              @craft-hide=${this.#stopOverlayEvent}
+              @craft-after-show=${this.#stopOverlayEvent}
+              @craft-after-hide=${this.#stopOverlayEvent}
               ><slot></slot
             ></craft-tooltip>`
       }
@@ -509,8 +578,11 @@ export default class CraftNavItem extends LitElement {
         for="${this.itemId}"
         placement="right-start"
         without-invoker-aria
-        .opened="${this.flyoutOpen}"
-        @opened-changed="${this.#onFlyoutOpenedChanged}"
+        .open="${this.flyoutOpen}"
+        @craft-show=${this.#onFlyoutToggle}
+        @craft-hide=${this.#onFlyoutToggle}
+        @craft-after-show=${this.#stopOverlayEvent}
+        @craft-after-hide=${this.#stopOverlayEvent}
       >
         <div class="flyout" id="${this.subnavId}">
           ${withLabel
@@ -647,6 +719,12 @@ export default class CraftNavItem extends LitElement {
   ) {
     return html`
       <div class="nav-item__suffix">
+        ${this.opensInNewTab && !this.iconOnly
+          ? html`<craft-icon
+              class="external-icon"
+              name="arrow-up-right-from-square"
+            ></craft-icon>`
+          : nothing}
         ${this.iconOnly
           ? nothing
           : html`<slot
@@ -679,6 +757,7 @@ export default class CraftNavItem extends LitElement {
           'nav-item--prefixed': hasPrefix,
           'nav-item--flush': this.flush,
           'nav-item--static': this.isStatic(useFlyout),
+          'nav-item--flyout-open': useFlyout && this.flyoutOpen,
         })}"
         id="${this.itemId}"
       >
@@ -696,21 +775,24 @@ export default class CraftNavItem extends LitElement {
         class="nav-item__action-item"
         type="${this.buttonType(useFlyout)}"
         href="${ifDefined(this.href || undefined)}"
+        target="${this.opensInNewTab ? '_blank' : nothing}"
+        rel="${this.opensInNewTab ? 'noopener' : nothing}"
         aria-current="${this.href || this.button ? this.ariaCurrentState : nothing}"
         aria-expanded="${useFlyout ? (this.flyoutOpen ? 'true' : 'false') : nothing}"
         aria-controls="${useFlyout ? this.subnavId : nothing}"
         @click="${useFlyout && !this.href ? this.#toggleFlyout : nothing}"
       >
-        <slot
-          id="${this.id}-label"
-          @slotchange="${() => this.requestUpdate()}"
-        ></slot>
+        <slot id="${this.id}-label"></slot>${
+          this.opensInNewTab
+            ? html`<span class="cp-visually-hidden">${newTabCue()}</span>`
+            : nothing
+        }
       </${tag}>
     `;
   }
 
   override render() {
-    const hasSubnav = !!this.querySelector(':scope > [slot="subnav"]');
+    const hasSubnav = hasSlotted(this, 'subnav');
     // A `slot` can only project its content in one place, so the subnav is
     // either indented below or in the flyout, never both.
     const display = this.subnavDisplay ?? (this.iconOnly ? 'flyout' : 'inline');
@@ -731,8 +813,7 @@ export default class CraftNavItem extends LitElement {
       toggleInPrefix ||
       !!this.icon ||
       this.indicator ||
-      !!this.querySelector(':scope > [slot="prefix"]') ||
-      !!this.querySelector(':scope > [slot="icon"]');
+      hasSlotted(this, 'prefix', 'icon');
     const subnavOpen = showToggle ? this.subnavState === 'open' : true;
 
     // Collapsed, a heading has no room for its name and nothing to sit above

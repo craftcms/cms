@@ -62,8 +62,9 @@ class JobProgress extends BaseModel
 
         $formatter = I18N::getFormatter();
 
-        $attributes['dateCreated'] = $this->dateCreated ? $formatter->asDateTime($this->dateCreated, withTimeZone: true) : null;
-        $attributes['dateUpdated'] = $this->dateUpdated ? $formatter->asDateTime($this->dateUpdated, withTimeZone: true) : null;
+        foreach (['dateCreated', 'dateUpdated', 'dateCompleted', 'dateFailed'] as $attribute) {
+            $attributes[$attribute] = $this->$attribute ? $formatter->asDateTime($this->$attribute, withTimeZone: true) : null;
+        }
 
         return $attributes;
     }

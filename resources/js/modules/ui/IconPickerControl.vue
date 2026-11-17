@@ -3,7 +3,7 @@
   import type {UiControlPayload} from './types';
   import {inputName} from './runtime';
 
-  type IconControlProps = {freeOnly?: boolean};
+  type IconControlProps = {freeOnly?: boolean; sets?: string[] | '*'};
 
   defineProps<{
     control: UiControlPayload<IconControlProps>;
@@ -21,8 +21,9 @@
   <IconPicker
     :model-value="value ?? ''"
     :name="editable ? inputName(control.path) : ''"
-    :error="invalid ? 'error' : undefined"
+    :invalid="invalid"
     :free-only="control.props.freeOnly"
+    :sets="control.props.sets"
     :disabled="!editable"
     @update:model-value="emit('update:value', $event ?? '', 'discrete')"
   />

@@ -31,6 +31,12 @@ class UserGroupSelect extends Combobox
     }
 
     #[\Override]
+    public function inputSchema(): array
+    {
+        return [...parent::inputSchema(), 'description' => 'User group UIDs.'];
+    }
+
+    #[\Override]
     public function props(mixed $value = null): array
     {
         $groups = UserGroups::getAllGroups()

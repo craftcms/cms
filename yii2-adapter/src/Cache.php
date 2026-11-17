@@ -30,15 +30,25 @@ class Cache extends \yii\caching\Cache
      */
     protected function getValue($key)
     {
-        return $this->laravelCache->get($key, false);
+        // The dependency-aware repository returns null when a native dependency has changed.
+        return $this->laravelCache->get($key, false) ?? false;
     }
 
     public function set($key, $value, $duration = null, $dependency = null)
     {
         if ($dependency instanceof Dependency) {
-            DependencyCache::put($key, $value, $this->convertDuration($duration), $dependency);
+            if ($this->serializer === null) {
+                $value = serialize([$value, null]);
+            } elseif ($this->serializer !== false) {
+                $value = call_user_func($this->serializer[0], [$value, null]);
+            }
 
-            return true;
+            return DependencyCache::put(
+                $this->buildKey($key),
+                $value,
+                $this->convertDuration($duration ?? $this->defaultDuration),
+                $dependency,
+            );
         }
 
         return parent::set($key, $value, $duration, $dependency);

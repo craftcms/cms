@@ -196,6 +196,7 @@ test('detects multisite elements', function () {
 
     $multiSiteEntry = Entry::factory()
         ->forSection(Section::factory()->withSites($secondarySite)->create())
+        ->enabledForSites($secondarySite)
         ->createElement();
     $singleSiteEntry = Entry::factory()
         ->forSection(Section::factory()->create())

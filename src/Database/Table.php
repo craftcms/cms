@@ -15,6 +15,14 @@ readonly class Table
 
     public const string ADDRESSES = 'addresses';
 
+    public const string AGENT_CONVERSATIONS = 'agent_conversations';
+
+    public const string AGENT_CONVERSATION_MESSAGES = 'agent_conversation_messages';
+
+    public const string AGENT_GUIDANCE = 'agent_guidance';
+
+    public const string AGENT_SKILLS = 'agent_skills';
+
     public const string ASSETINDEXDATA = 'assetindexdata';
 
     public const string ASSETINDEXINGSESSIONS = 'assetindexingsessions';
@@ -71,6 +79,8 @@ readonly class Table
 
     public const string GQLTOKENS = 'gqltokens';
 
+    public const string IMAGEHASHES = 'imagehashes';
+
     public const string IMAGETRANSFORMINDEX = 'imagetransformindex';
 
     public const string IMAGETRANSFORMS = 'imagetransforms';
@@ -84,6 +94,8 @@ readonly class Table
     public const string OAUTH_AUTH_CODES = 'oauth_auth_codes';
 
     public const string OAUTH_CLIENTS = 'oauth_clients';
+
+    public const string OAUTH_DEVICE_CODES = 'oauth_device_codes';
 
     public const string OAUTH_REFRESH_TOKENS = 'oauth_refresh_tokens';
 

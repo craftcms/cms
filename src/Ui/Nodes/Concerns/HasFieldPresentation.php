@@ -54,6 +54,8 @@ trait HasFieldPresentation
 
     private ?string $layoutUid = null;
 
+    private ?string $icon = null;
+
     /** Strings are plain text; Htmlable and Twig markup render as trusted HTML. */
     public function label(string|Htmlable|Stringable|null $label): static
     {
@@ -204,6 +206,17 @@ trait HasFieldPresentation
     }
 
     /**
+     * A system icon's name for the field, such as its field type's, for
+     * places that list fields by name — the command palette, say.
+     */
+    public function icon(?string $icon): static
+    {
+        $this->icon = $icon;
+
+        return $this;
+    }
+
+    /**
      * @return array{
      *     labelSrOnly: true|null,
      *     showStatus: false|null,
@@ -222,6 +235,7 @@ trait HasFieldPresentation
      *     warning: string|null,
      *     warningHtml: string|null,
      *     layoutUid: string|null,
+     *     icon: string|null,
      *     status: string|null,
      *     statusLabel: string|null,
      * }
@@ -246,6 +260,7 @@ trait HasFieldPresentation
             'warning' => $this->warning,
             'warningHtml' => $this->noticeHtml($this->warning),
             'layoutUid' => $this->layoutUid,
+            'icon' => $this->icon,
             'status' => $this->showStatus ? $this->status : null,
             'statusLabel' => $this->showStatus && $this->status !== null ? $this->statusLabel : null,
         ];

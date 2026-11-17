@@ -55,7 +55,7 @@ it('shows target dates and selects releases through the real picker', async () =
     ...container.querySelectorAll<HTMLElement>('craft-action-item'),
   ];
   expect(items.map((item) => item.textContent?.trim())).toEqual([
-    'October launch – Oct 15, 2026, 9:30 PM',
+    'October launch – Oct 15, 2026, 9:30 PM UTC',
     'Someday – No target date',
     'Create a release',
   ]);

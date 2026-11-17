@@ -499,7 +499,7 @@ class Connection extends DatabaseConnection
     /**
      * @inheritdoc
      */
-    public function trigger($name, Event $event = null)
+    public function trigger($name, ?Event $event = null)
     {
         if (
             in_array($name, [self::EVENT_COMMIT_TRANSACTION, self::EVENT_ROLLBACK_TRANSACTION]) &&

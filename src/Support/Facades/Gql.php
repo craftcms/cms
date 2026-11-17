@@ -19,6 +19,7 @@ use Override;
  * @method static \CraftCms\Cms\Gql\Data\GqlToken[] getTokens()
  * @method static \CraftCms\Cms\Gql\Data\GqlSchema|null getPublicSchema()
  * @method static array getAllSchemaComponents()
+ * @method static \CraftCms\Cms\Gql\Data\GqlSchema getSchemaForUser(\CraftCms\Cms\User\Elements\User $user, bool $includeMutations = true)
  * @method static void flushCaches()
  * @method static \CraftCms\Cms\Gql\Data\GqlToken|null getTokenById(int $id)
  * @method static \CraftCms\Cms\Gql\Data\GqlToken|null getTokenByName(string $tokenName)

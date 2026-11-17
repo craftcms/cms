@@ -18,7 +18,13 @@ import type {
   EditableTableValue,
   EditableTableSettings,
 } from './types';
+import {create} from '@craftcms/ui/utilities/create';
+import {HandleGenerator} from '@/modules/input-generators/handle-generator';
 import {type ReorderDirection} from '@craftcms/ui';
+import {trim, uuid} from '@/common/craft/strings';
+import {DataTableSorter} from '@/modules/data-table-sorter/data-table-sorter';
+import {t} from '@craftcms/ui/utilities/translate';
+import {hasMousePointerEvents} from '@/common/craft/pointer';
 
 // `Craft`, `$` (jQuery), and `Garnish` remain page globals. This class extends the
 // modern `@craftcms/garnish` `Base` but still orchestrates jQuery Craft/Garnish
@@ -48,6 +54,22 @@ function defaultOptionValue(
     }
   }
   return null;
+}
+
+function textInput(
+  name: string,
+  value: unknown,
+  col: EditableTableColumn,
+  type = 'text'
+): HTMLInputElement {
+  return create('input', {
+    type,
+    name,
+    className: 'text fullwidth',
+    autocomplete: 'off',
+    value: value instanceof Object || value == null ? '' : String(value),
+    placeholder: col.placeholder ?? '',
+  });
 }
 
 /** Column types rendered as text inputs, with row-nav, paste-import, and validation. */
@@ -160,8 +182,8 @@ export class EditableTable extends Base<EditableTableSettings> {
       editableTableData.set(tableEl, this);
     }
 
-    if (Craft.hasMousePointerEvents()) {
-      this.sorter = new Craft.DataTableSorter(this.$table, {
+    if (hasMousePointerEvents()) {
+      this.sorter = new DataTableSorter(this.$table, {
         handle: 'craft-reorder-button',
         helperClass: 'editabletablesorthelper',
         copyDraggeeInputValuesToHelper: true,
@@ -237,18 +259,9 @@ export class EditableTable extends Base<EditableTableSettings> {
         this.$tbody.add($actionButtons),
         'keypress,keyup,change,focus,blur,click,mousedown,mouseup',
         (ev: any) => {
-          const $target = $(ev.target);
-          const $tr = $target.closest('tr');
+          const $tr = $(ev.target).closest('tr');
           if ($tr.length && !editableTableRowData.get($tr[0])) {
-            const $textarea = $target.hasClass('editable-table-preview')
-              ? $target.next()
-              : null;
             this.createRowObj($tr);
-            setTimeout(() => {
-              if ($textarea && !$textarea.is(':focus')) {
-                $textarea.focus();
-              }
-            }, 100);
           }
         }
       );
@@ -339,7 +352,7 @@ export class EditableTable extends Base<EditableTableSettings> {
     if ($deleteBtn.length) {
       $deleteBtn.attr(
         'aria-label',
-        Craft.t('app', 'Delete row {index}', {
+        t('Delete row {index}', {
           index: $row.index() + 1,
         })
       );
@@ -351,9 +364,9 @@ export class EditableTable extends Base<EditableTableSettings> {
     }
 
     if ($actionsBtn.length) {
-      const name = `${Craft.t('app', 'Row {index}', {
+      const name = `${t('Row {index}', {
         index: $row.index() + 1,
-      })} ${Craft.t('app', 'Actions')}`;
+      })} ${t('Actions')}`;
       $actionsBtn.attr('aria-label', name);
 
       if (this.rowCount === 1) {
@@ -376,15 +389,9 @@ export class EditableTable extends Base<EditableTableSettings> {
     let message;
 
     if (!this.canAddRow()) {
-      message = Craft.t(
-        'app',
-        'Row could not be added. Maximum number of rows reached.'
-      );
+      message = t('Row could not be added. Maximum number of rows reached.');
     } else {
-      message = Craft.t(
-        'app',
-        'Row could not be deleted. Minimum number of rows reached.'
-      );
+      message = t('Row could not be deleted. Minimum number of rows reached.');
     }
 
     setTimeout(() => {
@@ -688,6 +695,7 @@ export class EditableTable extends Base<EditableTableSettings> {
                 name: name,
                 value: value instanceof Object ? null : value,
                 small: true,
+                sets: '*',
               })
               .appendTo($cell);
             break;
@@ -697,6 +705,7 @@ export class EditableTable extends Base<EditableTableSettings> {
               .createColorInput({
                 name: name,
                 value: value instanceof Object ? null : value,
+                alpha: col.alpha,
                 small: true,
               })
               .appendTo($cell);
@@ -751,7 +760,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             money.name = `${name}[value]`;
             money.label = col.heading ?? colId;
             money.setAttribute('label-sr-only', '');
-            money.modelValue = moneyValue === null ? '' : String(moneyValue);
+            money.value = moneyValue === null ? '' : String(moneyValue);
             money.currency = col.currency ?? 'USD';
             money.locale = String(moneyLocale);
             if (col.decimals !== undefined) money.decimals = col.decimals;
@@ -785,29 +794,16 @@ export class EditableTable extends Base<EditableTableSettings> {
 
           case 'email':
           case 'url': {
-            const $input = Craft.ui
-              .createTextInput({
-                name: name,
-                value: value instanceof Object ? null : value,
-                type: col.type,
-                placeholder: col.placeholder || null,
-              })
-              .appendTo($cell);
-            textExpanderTarget = $input[0];
+            textExpanderTarget = textInput(name, value, col, col.type);
+            $cell.append(textExpanderTarget);
             break;
           }
 
           case 'autosuggest':
           case 'template': {
             if (col.textExpanderTriggers) {
-              const $input = Craft.ui
-                .createTextInput({
-                  name,
-                  value: value instanceof Object ? null : value,
-                  placeholder: col.placeholder || null,
-                })
-                .appendTo($cell);
-              textExpanderTarget = $input[0];
+              textExpanderTarget = textInput(name, value, col);
+              $cell.append(textExpanderTarget);
               break;
             }
 
@@ -839,7 +835,7 @@ export class EditableTable extends Base<EditableTableSettings> {
                         }
                 )
               : [];
-            combobox.modelValue = String(value ?? '');
+            combobox.value = String(value ?? '');
             combobox.showAllOnEmpty = true;
             combobox.setAttribute('label-sr-only', '');
             $cell.append(combobox);
@@ -876,7 +872,7 @@ export class EditableTable extends Base<EditableTableSettings> {
         }
 
         if (col.textExpanderTriggers && textExpanderTarget) {
-          textExpanderTarget.id = `editable-table-input-${crypto.randomUUID()}`;
+          textExpanderTarget.id = `editable-table-input-${uuid()}`;
           textExpanderTarget.setAttribute('aria-label', col.heading ?? colId);
           const expander = document.createElement(
             'craft-text-expander'
@@ -896,7 +892,7 @@ export class EditableTable extends Base<EditableTableSettings> {
         class: 'flex gap-2 items-center justify-end self-end',
       });
 
-      if (Craft.hasMousePointerEvents()) {
+      if (hasMousePointerEvents()) {
         $div.append(document.createElement('craft-reorder-button'));
       }
 
@@ -913,7 +909,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             icon: 'xmark-large',
             size: 'small',
             variant: 'danger-plain',
-            'aria-label': Craft.t('app', 'Delete'),
+            'aria-label': t('Delete'),
             command: '--delete-row',
           })
         )
@@ -924,7 +920,7 @@ export class EditableTable extends Base<EditableTableSettings> {
       $('<input/>', {
         type: 'hidden',
         name: `${baseName}[${rowId}][rowId]`,
-        value: values.rowId ?? Craft.uuid(),
+        value: values.rowId ?? uuid(),
       }).appendTo($tr);
     }
 
@@ -978,7 +974,7 @@ export class Row extends Base {
 
     editableTableRowData.set(this.$tr[0], this);
 
-    if (!Craft.hasMousePointerEvents()) {
+    if (!hasMousePointerEvents()) {
       this.$tr.find('.move').hide();
     }
 
@@ -1010,7 +1006,6 @@ export class Row extends Base {
       td = this.tds[colId] = this.$tds[i];
 
       if (Craft.inArray(col.type, EditableTable.textualColTypes)) {
-        $('.editable-table-preview', td).remove();
         let $input;
         if (col.type === 'color') {
           $input = $('input.color-input', td);
@@ -1122,7 +1117,7 @@ export class Row extends Base {
         !input.val() &&
         !sourceInput.val()
       ) {
-        new Craft.HandleGenerator(input, sourceInput, {
+        new HandleGenerator(input, sourceInput, {
           allowNonAlphaStart: true,
         });
       }
@@ -1315,7 +1310,7 @@ export class Row extends Base {
 
   handlePaste(ev: any): void {
     // Native listener, so the event is native — read `clipboardData` directly.
-    const data = Craft.trim(ev.clipboardData.getData('Text'), ' \n\r');
+    const data = trim(ev.clipboardData.getData('Text'), ' \n\r');
     if (!data.match(/[\t\r\n]/)) {
       return;
     }

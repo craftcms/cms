@@ -15,8 +15,8 @@ use craft\config\GeneralConfig as LegacyGeneralConfig;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig as NewGeneralConfig;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Typecast;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use InvalidArgumentException;
 use RuntimeException;
@@ -262,7 +262,7 @@ class Config extends Component
      */
     public function getGeneral(): LegacyGeneralConfig
     {
-        Deprecator::log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `CraftCms\Cms\Cms::config()` (PHP) or `app.config.craft.general` (Twig) instead.');
+        LegacyUsage::record('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `CraftCms\Cms\Cms::config()` (PHP) or `app.config.craft.general` (Twig) instead.');
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_GENERAL);

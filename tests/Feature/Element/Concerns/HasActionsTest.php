@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Element\Actions\ClientAction;
 use CraftCms\Cms\Element\Actions\Delete;
 use CraftCms\Cms\Element\Actions\Duplicate;
-use CraftCms\Cms\Element\Actions\Edit;
 use CraftCms\Cms\Element\Actions\SetStatus;
-use CraftCms\Cms\Element\Actions\View;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Element\Events\ElementActionsResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -14,7 +13,11 @@ use Illuminate\Support\Facades\Event;
 
 function extractActionTypes(array $actions): array
 {
-    return array_map(fn ($action) => is_array($action) ? $action['type'] : $action, $actions);
+    return array_map(fn ($action) => match (true) {
+        $action instanceof ClientAction => $action->key,
+        is_array($action) => $action['type'],
+        default => $action,
+    }, $actions);
 }
 
 test('includes default actions', function () {
@@ -22,8 +25,8 @@ test('includes default actions', function () {
     $actionTypes = extractActionTypes($actions);
 
     expect($actionTypes)->toContain(Duplicate::class)
-        ->and($actionTypes)->toContain(Edit::class)
-        ->and($actionTypes)->toContain(View::class)
+        ->and($actionTypes)->toContain('edit')
+        ->and($actionTypes)->toContain('view')
         ->and($actionTypes)->toContain(Delete::class);
 });
 

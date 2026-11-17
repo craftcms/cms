@@ -23,6 +23,14 @@
   }>();
 
   const invokerId = useId();
+
+  /**
+   * A choice's value as a list key. Matrix offers entry type handles; other
+   * nested element fields offer attribute sets, rebuilt with each manager.
+   */
+  function choiceKey(value: T): string {
+    return typeof value === 'string' ? value : JSON.stringify(value);
+  }
   const addArea = ref<HTMLElement>();
   const addButtons = ref<HTMLElement>();
   const {width: addAreaWidth} = useElementSize(addArea);
@@ -121,8 +129,8 @@
     </ActionMenu>
     <div v-else ref="addButtons" class="flex w-max gap-sm items-center">
       <craft-button
-        v-for="(choice, index) in choices"
-        :key="index"
+        v-for="choice in choices"
+        :key="choiceKey(choice.value)"
         data-create-element
         type="button"
         variant="dashed"

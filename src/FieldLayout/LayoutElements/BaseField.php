@@ -4,17 +4,24 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
+use CraftCms\Cms\Element\Data\Thumb;
 use CraftCms\Cms\Element\ElementAttributeRenderer;
-use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\FieldChangeComparisons;
 use CraftCms\Cms\Field\Icon;
 use CraftCms\Cms\Field\Markdown as MarkdownField;
 use CraftCms\Cms\FieldLayout\Events\FieldLayoutComponentActionMenuItemsResolving;
+use CraftCms\Cms\FieldLayout\Events\FieldLayoutElementControlResolving;
 use CraftCms\Cms\FieldLayout\FieldLayoutElement;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
+use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\InputNamespace;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -22,6 +29,8 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Contracts\Control;
 use CraftCms\Cms\Ui\Contracts\Node;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\Controls\Checkbox;
 use CraftCms\Cms\Ui\Controls\Choice;
 use CraftCms\Cms\Ui\Controls\Markdown as MarkdownControl;
@@ -225,14 +234,22 @@ abstract class BaseField extends FieldLayoutElement
             'data-color' => $indicator['iconColor'] ?? null,
         ]), $this->selectorIndicators()));
 
+        // Indicators sit beside the label, or on their own row when there isn't one.
+        if ($indicatorHtml) {
+            $indicatorHtml = Html::tag('div', $indicatorHtml, [
+                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'shrink-0', 'gap-1'],
+            ]);
+        }
+
         if ($label !== null) {
             $label = Html::encode($label);
             $innerHtml .= Html::tag('div',
                 Html::tag('h4', $label, [
                     'title' => $label,
-                ]), [
+                ]).$indicatorHtml, [
                     'class' => 'fld-element-label',
                 ]);
+            $indicatorHtml = '';
         }
 
         $innerHtml .=
@@ -245,11 +262,7 @@ abstract class BaseField extends FieldLayoutElement
             ]).
             Html::endTag('div'); // .fld-attribute
 
-        if ($indicatorHtml) {
-            $innerHtml .= Html::tag('div', $indicatorHtml, [
-                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-1', 'mt-1'],
-            ]);
-        }
+        $innerHtml .= $indicatorHtml;
 
         $html = Html::tag('div', $innerHtml, [
             'class' => ['field-name'],
@@ -303,6 +316,18 @@ abstract class BaseField extends FieldLayoutElement
     protected function selectorIcon(): ?string
     {
         return null;
+    }
+
+    /**
+     * The field's icon in edit forms: its selector icon, when that's a system
+     * icon's name rather than an SVG file or markup. Native fields, which have
+     * no field type to take one from, name their own.
+     */
+    protected function uiIcon(): ?string
+    {
+        $icon = $this->selectorIcon();
+
+        return $icon !== null && preg_match('/^[\w\-\/]+$/', $icon) ? $icon : null;
     }
 
     /**
@@ -430,7 +455,17 @@ abstract class BaseField extends FieldLayoutElement
         $control = $this->uiControl($context);
 
         if ($control === null) {
-            return null;
+            event($event = new FieldLayoutElementControlResolving($this, $context));
+
+            if ($event->node !== null) {
+                return $event->node;
+            }
+
+            $control = $event->control;
+
+            if ($control === null) {
+                return null;
+            }
         }
 
         if ($context->mode !== ControlMode::Editable) {
@@ -465,6 +500,7 @@ abstract class BaseField extends FieldLayoutElement
                     : null,
             )
             ->layoutUid($this->uid)
+            ->icon($this->uiIcon())
             ->width($this->width)
             ->actions(...$this->uiActionNodes($context, $control));
     }
@@ -484,7 +520,7 @@ abstract class BaseField extends FieldLayoutElement
         $nodes = [];
         $uidPrefix = $this->uiActionsUid($control);
 
-        $items = $this->hasVisibleHeading($context) ? $this->resolveActionMenuItems($context) : [];
+        $items = $this->hasVisibleHeading($context) ? $this->resolveActionMenuItems($context, $control) : [];
         if ($items !== []) {
             $nodes[] = ActionMenu::make("$uidPrefix:menu", $items)
                 ->label(t('Field actions'));
@@ -515,9 +551,10 @@ abstract class BaseField extends FieldLayoutElement
      * Collects the field's action menu items, giving plugins a chance to amend
      * them.
      *
+     * @param  Control|null  $control  The field's control, which decides whether its value can be copied and pasted
      * @return list<array<string, mixed>>
      */
-    protected function resolveActionMenuItems(FieldLayoutElementContext $context): array
+    protected function resolveActionMenuItems(FieldLayoutElementContext $context, ?Control $control = null): array
     {
         event($event = new FieldLayoutComponentActionMenuItemsResolving(
             fieldLayoutComponent: $this,
@@ -526,71 +563,129 @@ abstract class BaseField extends FieldLayoutElement
             mode: $context->mode,
         ));
 
-        $copyAction = $this->crossSiteCopyAction($context);
-        if ($copyAction === null) {
+        $coreActions = array_values(array_filter([
+            $this->compareChangesAction($context),
+            ...$this->valueClipboardActions($context, $control),
+            $this->aiAssistantAction($context),
+        ]));
+
+        if ($coreActions === []) {
             return $event->items;
         }
 
         return [
-            $copyAction,
+            ...$coreActions,
             ...($event->items === [] ? [] : [['type' => 'hr']]),
             ...$event->items,
         ];
     }
 
-    /** @return array<string, mixed>|null */
-    private function crossSiteCopyAction(FieldLayoutElementContext $context): ?array
+    /**
+     * Returns the “Copy value” and “Paste value” actions, for a field whose control can be both read and written.
+     *
+     * “Paste value” is only offered on an editable field, and stays hidden until the clipboard holds a value the
+     * field’s control takes, which only the browser knows — see `FieldNode.vue`.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function valueClipboardActions(FieldLayoutElementContext $context, ?Control $control): array
+    {
+        if (! $control instanceof ReadableValueControl || ! $control instanceof WritableValueControl) {
+            return [];
+        }
+
+        $actions = [[
+            'icon' => 'clone-dashed',
+            'color' => Color::Fuchsia,
+            'label' => t('Copy value'),
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:copy-field-value',
+            ],
+        ]];
+
+        if ($context->mode === ControlMode::Editable && $context->ui->mode === ControlMode::Editable) {
+            $actions[] = [
+                'icon' => 'duplicate',
+                'color' => Color::Fuchsia,
+                'label' => t('Paste value'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:paste-field-value',
+                ],
+                'hidden' => true,
+            ];
+        }
+
+        return $actions;
+    }
+
+    /**
+     * Returns an action that adds the field to the AI assistant’s context, for users who can use it.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function aiAssistantAction(FieldLayoutElementContext $context): ?array
+    {
+        if (
+            ! $this->uid ||
+            ! $context->element?->id ||
+            $context->element->getIsRevision() ||
+            ! Assistant::isAvailable()
+        ) {
+            return null;
+        }
+
+        return [
+            'icon' => 'sparkles',
+            'label' => t('Add to AI chat'),
+            'action' => [
+                'type' => 'event',
+                'name' => 'craft:add-to-ai-assistant',
+            ],
+        ];
+    }
+
+    /**
+     * Returns an action that compares the field’s value on a draft, revision, or nested element with the value it
+     * was based on, for fields marked as modified. Outdated fields aren’t compared: the revision before the current
+     * element changed them can’t be told reliably from when the change was recorded.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function compareChangesAction(FieldLayoutElementContext $context): ?array
     {
         $element = $context->element;
 
         if (
             ! $this->uid ||
-            ! $element?->id ||
-            $context->mode !== ControlMode::Editable ||
-            $context->ui->mode !== ControlMode::Editable ||
-            ! $this->isCrossSiteCopyable($element) ||
-            ! $this->translatable($element) ||
-            ! $element->getIsCrossSiteCopyable()
+            $element === null ||
+            ! $this->showStatus() ||
+            ! FieldChangeComparisons::isComparable($element)
         ) {
             return null;
         }
 
-        $namespace = InputNamespace::get();
-        if (! $namespace || $namespace === 'fields') {
-            $namespace = null;
-        } elseif (str_ends_with($namespace, '[fields]')) {
-            $namespace = substr($namespace, 0, -strlen('[fields]'));
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
+        if ($this->statusClass($element, $static) !== AttributeStatus::Modified->value) {
+            return null;
         }
 
-        $siteIds = array_values(array_filter(
-            array_keys(ElementHelper::siteStatusesForElement($element, true)),
-            fn (int $siteId): bool => $siteId !== $element->siteId,
-        ));
-        $label = $this->showLabel() ? $this->label() : null;
-
         return [
-            'icon' => 'clone',
-            'label' => t('Copy value from site…'),
+            'icon' => 'code-compare',
+            'color' => '--c-field-modified-indicator',
+            'label' => t('Compare changes'),
             'action' => [
                 'type' => 'event',
-                'name' => 'craft:copy-value-from-site',
+                'name' => 'craft:compare-field-changes',
                 'detail' => [
                     'elementType' => $element::class,
                     'elementId' => $element->id,
-                    'draftId' => $element->draftId,
                     'siteId' => $element->siteId,
+                    'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+                    'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                     'layoutElementUid' => $this->uid,
-                    'label' => $label,
-                    'siteIds' => $siteIds,
-                ],
-            ],
-            'attributes' => [
-                'data' => [
-                    'cross-site-copy' => true,
-                    'element-id' => $element->id,
-                    'layout-element' => $this->uid,
-                    'label' => $label,
-                    'namespace' => $namespace,
+                    'label' => $this->showLabel() ? $this->label() : null,
                 ],
             ],
         ];
@@ -646,6 +741,22 @@ abstract class BaseField extends FieldLayoutElement
     public function thumbHtml(ElementInterface $element, int $size, ImageTransformMode $mode = ImageTransformMode::Fit): ?string
     {
         return null;
+    }
+
+    /**
+     * Returns the thumbnail the field provides for an element, if it has one.
+     *
+     * Fields that provide thumbnails should override this, so it can be known without rendering one.
+     *
+     * @param  ElementInterface  $element  The element the field is associated with
+     */
+    public function thumb(ElementInterface $element): ?Thumb
+    {
+        if ($this->thumbHtml($element, 120) === null) {
+            return null;
+        }
+
+        return new Thumb(fn (int $size, ImageTransformMode $mode) => $this->thumbHtml($element, $size, $mode));
     }
 
     /**
@@ -1045,14 +1156,6 @@ abstract class BaseField extends FieldLayoutElement
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
-    }
-
-    /**
-     * Returns whether field supports copying its value across sites.
-     */
-    public function isCrossSiteCopyable(ElementInterface $element): bool
-    {
-        return false;
     }
 
     /**

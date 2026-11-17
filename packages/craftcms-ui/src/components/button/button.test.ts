@@ -1,6 +1,10 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import type CraftButton from './button.js';
 import './button.js';
+import {
+  computeAccessibleDescription,
+  computeAccessibleName,
+} from 'dom-accessibility-api';
 
 async function createButton(
   attrs: Record<string, string> = {},
@@ -77,6 +81,50 @@ describe('craft-button link mode', () => {
     expect(rel).toContain('noopener');
   });
 
+  it('opens a link to another host in a new tab and says so', async () => {
+    const element = await createButton({href: 'https://craftcms.com/'});
+    const a = anchor(element)!;
+    expect(a.getAttribute('target')).toBe('_blank');
+    expect(a.getAttribute('rel')).toBe('noopener');
+    expect(a.textContent).toContain('Opens in a new window');
+  });
+
+  it('names an icon-only link with the host’s aria-label', async () => {
+    const element = await createButton(
+      {href: '/settings', 'aria-label': 'Open Settings'},
+      ''
+    );
+    const a = anchor(element)!;
+    expect(computeAccessibleName(a)).toBe('Open Settings');
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(content(element)!.classList.contains('a11y-error')).toBe(false);
+
+    element.setAttribute('aria-label', 'Open Users');
+    await new Promise((resolve) => setTimeout(resolve));
+    await element.updateComplete;
+    expect(computeAccessibleName(a)).toBe('Open Users');
+  });
+
+  it('describes a labeled link to another host as opening in a new window', async () => {
+    const element = await createButton(
+      {href: 'https://craftcms.com/', 'aria-label': 'Craft website'},
+      ''
+    );
+    const a = anchor(element)!;
+    expect(computeAccessibleName(a)).toBe('Craft website');
+    expect(computeAccessibleDescription(a)).toBe('Opens in a new window');
+  });
+
+  it('keeps its own target for a link to another host', async () => {
+    const element = await createButton({
+      href: 'https://craftcms.com/',
+      target: '_self',
+    });
+    const a = anchor(element)!;
+    expect(a.getAttribute('target')).toBe('_self');
+    expect(a.textContent).not.toContain('Opens in a new window');
+  });
+
   it('does not set rel when target is not _blank and no rel given', async () => {
     const element = await createButton({href: '/x'});
     expect(anchor(element)!.hasAttribute('rel')).toBe(false);
@@ -95,6 +143,64 @@ describe('craft-button link mode', () => {
     await element.updateComplete;
     await new Promise((resolve) => setTimeout(resolve));
     expect(content(element)!.classList.contains('a11y-error')).toBe(true);
+  });
+});
+
+describe('craft-button shortcut', () => {
+  function shortcut(element: CraftButton) {
+    return element.shadowRoot?.querySelector('craft-shortcut') ?? null;
+  }
+
+  it('renders no shortcut without the attribute', async () => {
+    const element = await createButton();
+    expect(shortcut(element)).toBeNull();
+  });
+
+  it('shows a plain key, hidden from screen readers', async () => {
+    const element = await createButton({shortcut: 'K'}, 'Search');
+    expect(shortcut(element)?.textContent).toBe('K');
+    expect(shortcut(element)?.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('reads modifiers from a JSON shortcut', async () => {
+    const element = await createButton(
+      {shortcut: '{"key": "S", "alt": true, "shift": true}'},
+      'Save'
+    );
+    expect(shortcut(element)?.textContent).toBe('S');
+    expect(shortcut(element)?.alt).toBe(true);
+    expect(shortcut(element)?.shift).toBe(true);
+  });
+
+  it('announces its shortcut with aria-keyshortcuts', async () => {
+    vi.spyOn(navigator, 'platform', 'get').mockReturnValue('MacIntel');
+    const element = await createButton(
+      {shortcut: '{"key": "s", "shift": true}'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Meta+Shift+S');
+
+    element.shortcut = null;
+    await element.updateComplete;
+    expect(element.hasAttribute('aria-keyshortcuts')).toBe(false);
+    vi.restoreAllMocks();
+  });
+
+  it('keeps an aria-keyshortcuts its author set', async () => {
+    const element = await createButton(
+      {shortcut: 'S', 'aria-keyshortcuts': 'Control+Enter'},
+      'Save'
+    );
+    expect(element.getAttribute('aria-keyshortcuts')).toBe('Control+Enter');
+  });
+
+  /** Vue's in-DOM compiler sets attribute values as string properties. */
+  it('reads modifiers from JSON set as a property', async () => {
+    const element = await createButton({}, 'Save');
+    element.shortcut = '{"key": "S", "alt": true}';
+    await element.updateComplete;
+    expect(shortcut(element)?.textContent).toBe('S');
+    expect(shortcut(element)?.alt).toBe(true);
   });
 });
 
@@ -129,12 +235,43 @@ describe('craft-button link semantics', () => {
     expect(element.type).toBe('button');
   });
 
-  it('keeps Lion button semantics when there is no href', async () => {
+  it('is a button and a tab stop when there is no href', async () => {
     const element = await createButton();
     expect(element.getAttribute('role')).toBe('button');
     expect(element.tabIndex).toBe(0);
-    // Defaults to "button" even though we extend LionButtonSubmit.
     expect(element.type).toBe('button');
+  });
+
+  it('keeps a role its author set', async () => {
+    const element = await createButton({role: 'tab'});
+    expect(element.getAttribute('role')).toBe('tab');
+  });
+
+  it('says it is disabled until it is enabled again', async () => {
+    const element = await createButton({disabled: ''});
+    expect(element.getAttribute('aria-disabled')).toBe('true');
+
+    element.disabled = false;
+    await element.updateComplete;
+
+    expect(element.hasAttribute('aria-disabled')).toBe(false);
+    expect(element.tabIndex).toBe(0);
+  });
+
+  it('keeps an aria-disabled its author set on an enabled button', async () => {
+    const element = await createButton({'aria-disabled': 'true'});
+    expect(element.getAttribute('aria-disabled')).toBe('true');
+    expect(element.tabIndex).toBe(0);
+  });
+
+  it('ignores click() while disabled', async () => {
+    const element = await createButton({disabled: ''});
+    const onClick = vi.fn();
+    element.addEventListener('click', onClick);
+
+    element.click();
+
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('honors an explicit type="submit"', async () => {
@@ -228,13 +365,6 @@ describe('craft-button link semantics', () => {
 });
 
 describe('craft-button actions', () => {
-  it('parses a JSON action attribute into the action property', async () => {
-    const element = await createButton({
-      action: '{"type":"event","name":"craft:test"}',
-    });
-    expect(element.action).toEqual({type: 'event', name: 'craft:test'});
-  });
-
   it('runs an event action on click, with trigger and sourceEvent in the detail', async () => {
     const element = await createButton({
       action:
@@ -333,6 +463,30 @@ describe('craft-button action feedback', () => {
       vi.advanceTimersByTime(element.feedbackDuration * 2);
 
       expect(states).toEqual(['success']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('returns to idle without scheduling a reset when its action settles after removal', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const element = await createButton({
+        action: '{"type":"event","name":"craft:test-feedback"}',
+      });
+      const states: string[] = [];
+      element.addEventListener('craft-state-change', (event) => {
+        states.push((event as CustomEvent<{state: string}>).detail.state);
+      });
+
+      const run = element.triggerAction();
+      element.remove();
+      await run;
+      vi.advanceTimersByTime(element.feedbackDuration * 2);
+
+      expect(states).toEqual(['success']);
+      expect(element.actionState).toBe('idle');
     } finally {
       vi.useRealTimers();
     }
@@ -537,7 +691,7 @@ describe('craft-button icon spacing', () => {
 
 describe('craft-button press state', () => {
   it('clears the press when a native drag ends instead of a mouseup', async () => {
-    // A drag handle never gets the mouseup Lion waits for; without this it
+    // A drag handle never gets the mouseup the press waits for; without this it
     // stays `active`, looking selected, until the next click anywhere.
     const button = await createButton();
 

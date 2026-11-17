@@ -3,6 +3,7 @@
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ElementIndex from '@/modules/elements/index/components/ElementIndex.vue';
   import {useElementIndexPage} from '@/modules/elements/index/composables/useElementIndexPage';
+  import {elementIndexQueryParams} from '@/modules/elements/index/composables/useContentIndexData';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
   import type {ElementIndexRoute} from '@/modules/elements/index/composables/useElementIndexVisits';
   import {
@@ -10,6 +11,7 @@
     type SourcesLanding,
   } from '@/modules/elements/index/composables/useCustomizeSources';
   import ElementBulkActionsBar from './ElementBulkActionsBar.vue';
+  import {indexQueryCriteria} from '@/modules/elements/index/index-criteria';
   import {computed, ref} from 'vue';
   import CustomizeSourcesModal from '@/modules/elements/index/components/customize-sources/CustomizeSourcesModal.vue';
   import type {ElementIndexItemBehavior} from '@/modules/elements/types/item-behavior';
@@ -19,6 +21,7 @@
   import {router} from '@inertiajs/vue3';
   import type {BulkActionEventDetail} from '@/modules/elements/types/actions';
   import type {ElementIndexModel} from '@/modules/elements/index/types/model';
+  import type {ActionItems} from '@/common/types';
 
   const props = defineProps<{
     /** The page's index route — the one per-page piece of the pipeline. */
@@ -38,6 +41,8 @@
      * offer it.
      */
     customizableSources?: boolean;
+    /** Items for the menu beside the `primary-action` slot's button. */
+    menuActions?: ActionItems;
   }>();
 
   const page =
@@ -55,9 +60,22 @@
     },
   });
 
-  const {elementIndex, selection} = page.view;
+  const {elementIndex, selection, selectAll} = page.view;
   const footerActive = computed(
-    () => Boolean(elementIndex.actions?.length) && selection.hasSelection.value
+    () => Boolean(elementIndex.actions?.length) && selectAll.count.value > 0
+  );
+  /**
+   * With every result selected, the server rebuilds the index's query rather
+   * than taking the IDs, since most of the rows were never loaded.
+   */
+  const actionParams = computed(() =>
+    selectAll.active.value
+      ? {
+          ...elementIndexQueryParams(elementIndex),
+          selectAll: true,
+          exceptIds: selectAll.exceptIds.value,
+        }
+      : indexQueryCriteria(elementIndex)
   );
 
   function onActionPerformed(): void {
@@ -135,12 +153,17 @@
       :view="page.view"
       :item-behavior="itemBehavior"
       :footer-active="footerActive"
+      offers-select-all
       :enable-adjust-page-size="true"
       :with-bottom-border="false"
       :quick-edit="quickEdit"
+      :menu-actions="menuActions"
     >
       <template #toolbar-actions v-if="$slots['toolbar-actions']">
         <slot name="toolbar-actions" :element-index="elementIndex" />
+      </template>
+      <template #primary-action v-if="$slots['primary-action']">
+        <slot name="primary-action" :element-index="elementIndex" />
       </template>
       <template #search-options v-if="$slots['search-options']">
         <slot name="search-options" />
@@ -148,23 +171,27 @@
       <template #navbar v-if="$slots.navbar">
         <slot name="navbar" />
       </template>
-      <template #footer>
+      <template #footer="{pagination}">
         <ElementBulkActionsBar
           :selected-ids="selection.selectedIds.value"
-          :selected-elements="
-            page.view.table
-              .getSelectedRowModel()
-              .rows.map(({original}) => original)
-          "
+          :selected-count="selectAll.count.value"
+          :selects-all="selectAll.active.value"
+          :selected-elements="selection.selectedRows.value"
           :actions="elementIndex.actions"
           :element-type="elementIndex.elementType"
           :source="elementIndex.source?.key"
           :context="elementIndex.context"
+          :params="actionParams"
+          :site-id="elementIndex.siteId"
           @edit="editElement"
           @view="viewElement"
           @performed="onActionPerformed"
           @clear="page.clearSelection"
-        />
+        >
+          <template #center>
+            <component :is="pagination" />
+          </template>
+        </ElementBulkActionsBar>
       </template>
     </ElementIndex>
 

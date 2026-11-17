@@ -6,6 +6,7 @@
  */
 
 import {Base} from '../base';
+import {ESC_KEY} from '../constants';
 import {bod} from '../globals';
 import {isCtrlKeyPressed} from '../utils/env';
 import {getElement} from '../utils/dom';
@@ -16,6 +17,13 @@ export interface ShortcutDef {
   ctrl?: boolean;
   shift?: boolean;
   alt?: boolean;
+  /**
+   * What the shortcut does, for the command palette's “Keyboard shortcuts”
+   * list. Shortcuts without one aren't listed.
+   */
+  description?: string;
+  /** The list's heading to show it under. */
+  group?: string;
 }
 
 interface NormalizedShortcut {
@@ -29,6 +37,8 @@ interface RegisteredShortcut {
   key: string;
   shortcut: NormalizedShortcut;
   callback: (ev: KeyboardEvent) => void;
+  description?: string;
+  group?: string;
 }
 
 interface LayerOptions {
@@ -56,6 +66,10 @@ type ShortcutKeyboardEvent = KeyboardEvent & {
  * Shortcuts are dispatched top-down: a `keydown` is offered to the current
  * layer's shortcuts first, then bubbles to lower layers only when the layer opts
  * in (`options.bubble`) or `ev.bubbleShortcut()` is called.
+ *
+ * An Escape keydown that something inside a layer already handled
+ * (`defaultPrevented`), such as a menu or tooltip closing on it, triggers no
+ * shortcut, so one Escape press closes one thing.
  */
 export class UiLayerManager extends Base {
   /** The layer stack; index `0` is the base document layer. */
@@ -195,15 +209,21 @@ export class UiLayerManager extends Base {
   /**
    * Register a keyboard shortcut on a layer (the current one by default).
    *
-   * @param shortcut - A key code, or a `{keyCode, ctrl?, shift?, alt?}` definition.
+   * @param shortcut - A key code, or a `{keyCode, ctrl?, shift?, alt?}` definition,
+   *   optionally with a `description` and `group` to list it in the command
+   *   palette's “Keyboard shortcuts”.
    * @param callback - Invoked (after `preventDefault`) when the shortcut matches.
    * @param layer - Layer index to scope the shortcut to; defaults to the current layer.
    * @returns `this`, for chaining.
    *
    * @example
    * ```ts
-   * import {Garnish, ESC_KEY} from '@craftcms/garnish';
+   * import {Garnish, ESC_KEY, S_KEY} from '@craftcms/garnish';
    * Garnish.uiLayerManager!.registerShortcut(ESC_KEY, () => closeThing());
+   * Garnish.uiLayerManager!.registerShortcut(
+   *   {keyCode: S_KEY, ctrl: true, description: 'Save', group: 'Forms'},
+   *   () => save()
+   * );
    * ```
    */
   registerShortcut(
@@ -219,6 +239,9 @@ export class UiLayerManager extends Base {
       key: JSON.stringify(normalized),
       shortcut: normalized,
       callback,
+      ...(typeof shortcut === 'object'
+        ? {description: shortcut.description, group: shortcut.group}
+        : {}),
     });
     return this;
   }
@@ -267,6 +290,11 @@ export class UiLayerManager extends Base {
 
   triggerShortcut(ev: ShortcutKeyboardEvent, layerIndex?: number): void {
     if (layerIndex === undefined) {
+      // Checked only as the key first arrives: a shortcut that bubbles has
+      // already prevented the default itself.
+      if (ev.keyCode === ESC_KEY && ev.defaultPrevented) {
+        return;
+      }
       layerIndex = this.layer;
     }
     const layer = this.layers[layerIndex]!;

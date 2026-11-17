@@ -498,7 +498,6 @@
         initTableData: [],
         isEmpty: false,
         isLoading: true,
-        searchClearTitle: Craft.escapeHtml(Craft.t('app', 'Clear')),
         searchTerm:
           new URL(window.location.href).searchParams.get('search') || '',
         selectAll: null,
@@ -511,6 +510,12 @@
     methods: {
       init() {
         let tableBody = this.$el.querySelector(this.tableBodySelector);
+
+        // init() runs on every vuetable:loaded, so tear down the previous instance first
+        if (this.sortable) {
+          this.sortable.destroy();
+          this.sortable = null;
+        }
 
         if (this.canReorder) {
           this.sortable = Sortable.create(tableBody, {
@@ -565,6 +570,11 @@
 
           this.$nextTick(() => {
             this.initTableData = this.$refs.vuetable.tableData;
+
+            // vuetable reloads the unfiltered data, so reapply any active search
+            if (this.searchTerm) {
+              this.applySearch();
+            }
           });
         }
 
@@ -679,39 +689,43 @@
         this.handleOnSelectCallback(this.checks);
       },
 
+      /**
+       * Data mode only: show the rows of `initTableData` that match the current search term.
+       */
+      applySearch() {
+        let tableData = this.initTableData;
+        let searchTerm = this.searchTerm.toLowerCase();
+
+        if (searchTerm !== '') {
+          tableData = tableData.filter((row) => {
+            let includes = false;
+
+            this.searchParams.some((param) => {
+              Object.entries(row).some(([key, value]) => {
+                // Force string values
+                value = String(value);
+
+                if (key === param && value.toLowerCase().includes(searchTerm)) {
+                  return (includes = true);
+                }
+              });
+
+              // Break if we have a match
+              return includes;
+            });
+
+            return includes;
+          });
+        }
+
+        this.isEmpty = tableData.length == 0;
+        this.$refs.vuetable.tableData = tableData;
+      },
+
       handleSearch: debounce(function () {
         // in data mode - match and show/hide via JS
         if (!this.isApiMode && this.tableData.length) {
-          let tableData = this.initTableData;
-          let searchTerm = this.searchTerm.toLowerCase();
-
-          if (searchTerm !== '') {
-            tableData = tableData.filter((row) => {
-              let includes = false;
-
-              this.searchParams.some((param) => {
-                Object.entries(row).some(([key, value]) => {
-                  // Force string values
-                  value = String(value);
-
-                  if (
-                    key === param &&
-                    value.toLowerCase().includes(searchTerm)
-                  ) {
-                    return (includes = true);
-                  }
-                });
-
-                // Break if we have a match
-                return includes;
-              });
-
-              return includes;
-            });
-          }
-
-          this.isEmpty = tableData.length == 0;
-          this.$refs.vuetable.tableData = tableData;
+          this.applySearch();
         } else {
           // in API mode - send to the endpoint to handle
           if (this.$refs.vuetable.currentPage !== 1) {
@@ -785,9 +799,25 @@
           this.deselectAll();
           this.$refs.vuetable.reload();
         } else {
-          Vue.delete(this.$refs.vuetable.tableData, index);
+          // Remove the row from the source data, not just the (possibly search-filtered) visible rows,
+          // so it doesn’t come back when the table is refreshed or the search changes
+          const sourceIndex = this.initTableData.findIndex(
+            (row) => row.id === id
+          );
+
+          if (sourceIndex !== -1) {
+            Vue.delete(this.initTableData, sourceIndex);
+          } else {
+            Vue.delete(this.$refs.vuetable.tableData, index);
+          }
+
           this.removeCheck(id);
-          this.$refs.vuetable.refresh();
+
+          if (this.searchTerm) {
+            this.applySearch();
+          } else {
+            this.$refs.vuetable.refresh();
+          }
         }
 
         if (
@@ -1019,19 +1049,17 @@
           });
         }
 
+        // Copy each column so the caller’s objects aren’t mutated (and titles aren’t re-escaped on every recompute)
         let customColumns = map(this.columns, (item) => {
+          // Escape Title
+          let column = {...item, title: Craft.escapeHtml(item.title)};
+
           // Do not allow sorting for if you can manually reorder items
-          if (
-            (this.reorderAction || this.paginatedReorderAction) &&
-            item.hasOwnProperty('sortField')
-          ) {
-            delete item.sortField;
+          if (this.reorderAction || this.paginatedReorderAction) {
+            delete column.sortField;
           }
 
-          // Escape Title
-          item.title = Craft.escapeHtml(item.title);
-
-          return item;
+          return column;
         });
 
         columns = [...columns, ...customColumns];

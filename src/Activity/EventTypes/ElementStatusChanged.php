@@ -18,7 +18,7 @@ use function CraftCms\Cms\t;
  */
 class ElementStatusChanged extends ActivityEventType
 {
-    protected const string LABEL = 'Status changed';
+    protected const string LABEL = 'Changed the status';
 
     protected const string ICON = 'circle-half-stroke';
 
@@ -46,7 +46,7 @@ class ElementStatusChanged extends ActivityEventType
     public static function format(ActivityEvent $event): string
     {
         return t(
-            'Status changed from {oldStatus} to {newStatus}',
+            'Changed the status from {oldStatus} to {newStatus}',
             [
                 'oldStatus' => t(Str::headline($event->data['oldStatus'])),
                 'newStatus' => t(Str::headline($event->data['newStatus'])),

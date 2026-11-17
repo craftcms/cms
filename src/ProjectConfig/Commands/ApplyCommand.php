@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
@@ -52,7 +53,7 @@ class ApplyCommand extends Command
     public function handle(Updates $updates, ProjectConfig $projectConfig, Plugins $plugins): int
     {
         if ($updates->isCraftUpdatePending() || $updates->isPluginUpdatePending()) {
-            $this->components->error('Craft has pending migrations. Please run `craft migrate:all` first.');
+            $this->components->error('Craft has pending migrations. Please run `'.app(TerminalCommands::class)->craft('migrate:all').'` first.');
 
             return self::FAILURE;
         }
@@ -73,7 +74,7 @@ class ApplyCommand extends Command
                 ]));
             }
 
-            $this->components->warn('Try running `composer install` from your terminal to resolve.');
+            $this->components->warn('Try running `'.app(TerminalCommands::class)->composer('install').'` from your terminal to resolve.');
 
             return self::FAILURE;
         }

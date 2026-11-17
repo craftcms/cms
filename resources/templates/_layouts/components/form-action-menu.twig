@@ -1,5 +1,4 @@
 {% macro actionList(actions, destructive) %}
-    {% import '_includes/forms' as forms %}
     <ul>
         {% for action in actions %}
             <li>
@@ -21,7 +20,7 @@
                 } %}
                 <a {{ attr(linkAttributes) }}>
                     {% if action.shortcut ?? false %}
-                        {{ forms.optionShortcutLabel('S', action.shift ?? false) }}
+                        <craft-shortcut {{ attr({shift: action.shift ?? false}) }}>S</craft-shortcut>
                     {% endif %}
                     {{ action.label }}
                 </a>

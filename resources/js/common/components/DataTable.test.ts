@@ -1,8 +1,26 @@
 import {createApp, h, nextTick} from 'vue';
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import '@craftcms/ui/components/checkbox/checkbox';
+import type {useReorderableRows} from '@/common/composables/useReorderableRows';
 import DataTable from './DataTable.vue';
 import {useCraftTable} from '@/common/table/craftTable';
 import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
+
+let reorderableRows: Parameters<typeof useReorderableRows>[0] | undefined;
+vi.mock('@/common/composables/useReorderableRows', async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import('@/common/composables/useReorderableRows')
+    >();
+
+  return {
+    useReorderableRows: (options: Parameters<typeof useReorderableRows>[0]) => {
+      reorderableRows = options;
+
+      return actual.useReorderableRows(options);
+    },
+  };
+});
 
 let teardown: (() => void) | undefined;
 beforeEach(() => {
@@ -23,6 +41,8 @@ function mountTable(
     interactionsDisabled?: boolean;
     excludeSecond?: boolean;
     rowBehavior?: {onClick: () => boolean};
+    canReorderRow?: (row: {id: number}) => boolean;
+    onReorder?: (startIndex: number, finishIndex: number) => void;
   } = {}
 ) {
   const table = useCraftTable({
@@ -56,6 +76,9 @@ function mountTable(
         readOnly: options.readOnly,
         rowBehavior: options.rowBehavior,
         interactionsDisabled: options.interactionsDisabled,
+        reorderable: Boolean(options.canReorderRow),
+        canReorderRow: options.canReorderRow,
+        onReorder: options.onReorder,
       } as never),
   });
   app.mount(root);
@@ -83,16 +106,8 @@ it.each(['readOnly', 'interactionsDisabled'] as const)(
     const {root, selection, table} = mountTable({[option]: true});
     selection.selection.select(1, true);
     await nextTick();
-    const all = root.querySelector<HTMLElement & {checked: boolean}>(
-      'thead craft-checkbox'
-    )!;
-    all.checked = true;
-    all.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
-    const row = root.querySelector<HTMLElement & {checked: boolean}>(
-      'tbody craft-checkbox'
-    )!;
-    row.checked = false;
-    row.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+    toggle(root.querySelector('thead craft-checkbox')!, true);
+    toggle(root.querySelector('tbody craft-checkbox')!, false);
     root.querySelector('tbody tr')!.dispatchEvent(
       new KeyboardEvent('keydown', {
         key: ' ',
@@ -137,11 +152,7 @@ it('marks no rows clickable while selection is read-only', async () => {
 
 it('selects eligible rows through the shared select-all checkbox', async () => {
   const {root, selection} = mountTable({excludeSecond: true});
-  const all = root.querySelector<HTMLElement & {checked: boolean}>(
-    'thead craft-checkbox'
-  )!;
-  all.checked = true;
-  all.dispatchEvent(new CustomEvent('model-value-changed', {bubbles: true}));
+  toggle(root.querySelector('thead craft-checkbox')!, true);
   await nextTick();
 
   expect(selection.selectedIds.value).toEqual([1, 3]);
@@ -196,3 +207,34 @@ it('leaves ordinary link clicks to the link without selecting its row', async ()
   expect(event.defaultPrevented).toBe(false);
   expect(selection.selectedIds.value).toEqual([]);
 });
+
+it('leaves rows that can’t be reordered without a handle, and ends the others’ range before them', async () => {
+  const {root} = mountTable({canReorderRow: (row) => row.id !== 3});
+  await nextTick();
+
+  const rows = [...root.querySelectorAll('tbody tr')];
+  const positions = rows.map(
+    (row) =>
+      (row.querySelector('craft-reorder-button') as {position?: string} | null)
+        ?.position ?? null
+  );
+
+  expect(positions).toEqual(['first', 'last', null]);
+});
+
+it('reports a drop among rows after one that can’t be reordered by their indexes among all rows', async () => {
+  const onReorder = vi.fn();
+  mountTable({canReorderRow: (row) => row.id !== 1, onReorder});
+  await nextTick();
+
+  reorderableRows!.onReorder(0, 1);
+
+  expect(onReorder).toHaveBeenCalledWith(1, 2);
+});
+
+/** Sets a checkbox the way a user would, ending with its `change`. */
+function toggle(checkbox: Element, checked: boolean): void {
+  const input = checkbox.querySelector('input')!;
+  input.checked = checked;
+  input.dispatchEvent(new Event('change', {bubbles: true}));
+}

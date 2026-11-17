@@ -8,40 +8,47 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\Event;
 use craft\console\Controller;
 use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
-use craft\events\SectionEvent;
 use craft\fields\Categories;
 use craft\fields\Tags;
 use craft\models\CategoryGroup;
+use craft\models\CategoryGroup_SiteSettings;
 use craft\models\TagGroup;
-use craft\services\Entries as EntriesService;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Section\Data\Section;
+use CraftCms\Cms\Section\Data\SectionSiteSettings;
 use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Structure\Enums\Mode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
+use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use CraftCms\Cms\Support\Facades\Users;
+use CraftCms\Cms\Support\Query;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\Models\UserPermission;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB as DbFacade;
-use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\helpers\Console;
+use function CraftCms\Cms\t;
 
 /**
  * Converts categories, tags, and global sets to entries.
@@ -146,19 +153,28 @@ class EntrifyController extends Controller
         $sectionCreated = false;
 
         if (!isset($this->section)) {
-            // Capture the new section handle
-            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
-                $this->section = $event->section->handle;
-            });
-            $this->run('sections/create', [
-                'fromCategoryGroup' => $categoryGroup->handle,
-            ]);
+            $sectionCreated = $this->_createSection(
+                $categoryGroup->name,
+                $categoryGroup->handle,
+                SectionType::Structure,
+                $categoryGroup->getFieldLayout(),
+                array_map(fn(CategoryGroup_SiteSettings $siteSettings) => new SectionSiteSettings([
+                    'siteId' => $siteSettings->siteId,
+                    'hasUrls' => $siteSettings->hasUrls,
+                    'uriFormat' => $siteSettings->uriFormat,
+                    'template' => $siteSettings->template,
+                ]), $categoryGroup->getSiteSettings()),
+                $categoryGroup->maxLevels,
+            );
+
+            if (!$sectionCreated) {
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
 
             // Add it to a “Categories” page
             $this->_addSectionToPage('Categories', 'sitemap');
 
             $projectConfigChanged = true;
-            $sectionCreated = true;
         }
 
         try {
@@ -385,13 +401,9 @@ class EntrifyController extends Controller
         $projectConfigChanged = false;
 
         if (!isset($this->section)) {
-            // Capture the new section handle
-            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
-                $this->section = $event->section->handle;
-            });
-            $this->run('sections/create', [
-                'fromTagGroup' => $tagGroup->handle,
-            ]);
+            if (!$this->_createSection($tagGroup->name, $tagGroup->handle, SectionType::Channel, $tagGroup->getFieldLayout())) {
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
 
             // Add it to a “Tags” page
             $this->_addSectionToPage('Tags', 'tags');
@@ -554,13 +566,9 @@ class EntrifyController extends Controller
         $sectionCreated = false;
 
         if (!isset($this->section)) {
-            // Capture the new section handle
-            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
-                $this->section = $event->section->handle;
-            });
-            $this->run('sections/create', [
-                'fromGlobalSet' => $globalSet->handle,
-            ]);
+            if (!$this->_createSection($globalSet->name, $globalSet->handle, SectionType::Single, $globalSet->getFieldLayout())) {
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
             $projectConfigChanged = true;
             $sectionCreated = true;
         }
@@ -636,11 +644,143 @@ class EntrifyController extends Controller
             ],
         ], $sectionCreated);
 
+        if ($sectionCreated) {
+            $this->_addToGlobalsPage($section);
+            $projectConfigChanged = true;
+        }
+
         if ($projectConfigChanged) {
             $this->_deployTip('global-set', $globalSet->handle);
         }
 
         return ExitCode::OK;
+    }
+
+    /**
+     * Lists a single converted from a global set on a “Globals” entry sources
+     * page, so global sets keep a place of their own in the control panel.
+     *
+     * Its row goes at the end of the page, after any global set converted
+     * before it. The saved sources are kept as they are, including custom
+     * sources limited to user groups and blank headings. Sources that were
+     * never customized are saved as they're shown first, so the rest of the
+     * list stays as it was.
+     */
+    private function _addToGlobalsPage(Section $section): void
+    {
+        $this->do('Adding it to the “Globals” sources page', function() use ($section) {
+            $elementSources = app(ElementSources::class);
+            $key = "section:$section->uid";
+            $sources = app(ProjectConfig::class)->get(ProjectConfig::PATH_ELEMENT_SOURCES . '.' . Entry::class)
+                ?: $elementSources->getSources(Entry::class, ElementSources::CONTEXT_SETTINGS, true)->all();
+
+            $sources = collect($sources)
+                ->reject(fn(array $source) => ($source['key'] ?? null) === $key)
+                ->map(fn(array $source) => [...$source, 'page' => $source['page'] ?? 'Entries'])
+                ->values()
+                ->all();
+
+            $elementSources->saveSources(Entry::class, [
+                ...$sources,
+                ['type' => ElementSources::TYPE_NATIVE, 'key' => $key, 'page' => 'Globals'],
+            ]);
+        });
+    }
+
+    /**
+     * Creates a section and entry type modeled after a category group, tag group, or global set.
+     *
+     * @param SectionSiteSettings[] $siteSettings
+     */
+    private function _createSection(
+        string $name,
+        string $handle,
+        SectionType $type,
+        FieldLayout $sourceFieldLayout,
+        array $siteSettings = [],
+        ?int $maxLevels = null,
+    ): bool {
+        $section = new Section([
+            'type' => $type,
+            'maxLevels' => $maxLevels,
+            'previewTargets' => [],
+        ]);
+        $section->name = $this->_promptForAttribute($section, 'name', 'Section name:', $name);
+        $section->handle = $this->_promptForAttribute($section, 'handle', 'Section handle:', $handle);
+
+        if (!$section->validate(['name', 'handle'])) {
+            $this->stderr($section->errors()->first() . PHP_EOL, Console::FG_RED);
+            return false;
+        }
+
+        if (empty($siteSettings)) {
+            $siteSettings = Sites::getAllSites(true)
+                ->map(fn(Site $site) => new SectionSiteSettings([
+                    'siteId' => $site->id,
+                    'hasUrls' => false,
+                ]))
+                ->all();
+        }
+        $section->setSiteSettings($siteSettings);
+
+        if (Collection::make($siteSettings)->contains(fn(SectionSiteSettings $siteSettings) => $siteSettings->hasUrls)) {
+            $section->previewTargets = [
+                [
+                    'label' => t('Primary {type} page', [
+                        'type' => Entry::lowerDisplayName(),
+                    ]),
+                    'urlFormat' => '{url}',
+                ],
+            ];
+        }
+
+        $entryType = new EntryType();
+        $entryType->name = $this->_promptForAttribute($entryType, 'name', 'Entry type name:', Str::singular($section->name));
+        $entryType->handle = $this->_promptForAttribute($entryType, 'handle', 'Entry type handle:', Str::toHandle($entryType->name));
+        $entryType->showStatusField = !$this->_forSingle;
+
+        $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig() ?? []);
+        $fieldLayout->type = Entry::class;
+        $entryType->setFieldLayout($fieldLayout);
+
+        try {
+            $this->do('Saving the entry type', function() use ($entryType) {
+                if (!EntryTypes::saveEntryType($entryType)) {
+                    throw new InvalidConfigException(Arr::first($entryType->getFirstErrors()) ?? 'Unable to save the entry type.');
+                }
+            });
+
+            $section->setEntryTypes([$entryType]);
+
+            $this->do('Saving the section', function() use ($section) {
+                if (!Sections::saveSection($section)) {
+                    throw new InvalidConfigException(Arr::first($section->getFirstErrors()) ?? 'Unable to save the section.');
+                }
+            });
+        } catch (InvalidConfigException) {
+            return false;
+        }
+
+        $this->section = $section->handle;
+        $this->success('Section created.');
+
+        return true;
+    }
+
+    private function _promptForAttribute(Section|EntryType $model, string $attribute, string $label, string $default): string
+    {
+        return $this->prompt($label, [
+            'required' => true,
+            'default' => $default,
+            'validator' => function(string $value, ?string &$error = null) use ($model, $attribute): bool {
+                $model->$attribute = $value;
+                if ($model->validate($attribute)) {
+                    return true;
+                }
+                $error = $model->errors()->first($attribute);
+                return false;
+            },
+        ]);
     }
 
     private function _section(): Section
@@ -731,7 +871,7 @@ class EntrifyController extends Controller
         $this->do('Updating user permissions', function() use ($map, $updateUserGroups) {
             foreach ($map as $oldPermission => $newPermissions) {
                 $userIds = DbFacade::table(Table::USERPERMISSIONS_USERS, 'upu')
-                    ->join(new Alias(Table::USERPERMISSIONS, 'up'), 'up.id', 'upu.permissionId')
+                    ->join(Table::USERPERMISSIONS . ' as up', 'up.id', 'upu.permissionId')
                     ->where('up.name', $oldPermission)
                     ->pluck('upu.userId')
                     ->unique();
@@ -743,21 +883,15 @@ class EntrifyController extends Controller
                 $insert = [];
 
                 foreach ($newPermissions as $newPermission) {
-                    $newPermissionId = DbFacade::table(Table::USERPERMISSIONS)
-                        ->where('name', $newPermission)
-                        ->value('id');
-
-                    if (!$newPermissionId) {
-                        $newPermissionId = DbFacade::table(Table::USERPERMISSIONS)
-                            ->insertGetId([
-                                'name' => $newPermission,
-                            ]);
-                    }
+                    $newPermissionId = UserPermission::firstOrCreate(['name' => $newPermission])->id;
 
                     foreach ($userIds as $userId) {
                         $insert[] = [
                             'permissionId' => $newPermissionId,
                             'userId' => $userId,
+                            'dateCreated' => $now = Query::prepareDateForDb(now()),
+                            'dateUpdated' => $now,
+                            'uid' => Str::uuid()->toString(),
                         ];
                     }
                 }
@@ -815,7 +949,7 @@ class EntrifyController extends Controller
 
     private function _deployTip(string $action, string $handle): void
     {
-        $command = "php craft entrify/$action $handle --section={$this->_section->handle}";
+        $command = app(TerminalCommands::class)->craft("entrify:$action $handle --section={$this->_section->handle}");
 
         if (!$this->_forSingle) {
             $command .= " --entry-type={$this->_entryType->handle} --author={$this->_author->username}";

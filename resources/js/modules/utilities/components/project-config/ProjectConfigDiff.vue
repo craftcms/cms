@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import {computed, ref, watch} from 'vue';
+  import {computed, ref} from 'vue';
   import {t} from '@craftcms/ui';
   import ProjectConfigController from '@actions/Utilities/ProjectConfigController';
   import {useFetch} from '@/common/composables/useFetch';
@@ -8,22 +8,15 @@
     invert: boolean;
   }>();
 
-  // const {isLoading, displayedLines, hasMoreLines, fetchDiff, showAll, cancel} =
-  //   useProjectConfigDiff(props.invert);
-
   const {data, isLoading} = useFetch<string>(
     ProjectConfigController.diff().url,
     {
       params: {invert: props.invert},
     }
   );
-  const diffLines = ref<string[]>([]);
+  const diffLines = computed(() => data.value?.split(/\n/) ?? []);
   const showAllLines = ref(false);
   const maxInitialLines = 20;
-
-  watch(data, (newValue) => {
-    diffLines.value = newValue?.split(/\n/) ?? [];
-  });
 
   function showAll(): void {
     showAllLines.value = true;
@@ -51,7 +44,7 @@
   >
     <!-- Loading state -->
     <div v-if="isLoading" class="diff-loading">
-      <craft-spinner :visible="true" class="spinner"></craft-spinner>
+      <craft-spinner .visible="true" class="spinner"></craft-spinner>
     </div>
 
     <!-- Diff content -->

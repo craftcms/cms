@@ -10,7 +10,6 @@ use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Volumes;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @since 6.0.0
@@ -31,8 +30,8 @@ class DeleteEmptyVolumeFoldersCommand extends Command
     public function handle(): int
     {
         $query = DB::table(Table::VOLUMEFOLDERS, 'folders')
-            ->leftJoin(new Alias(Table::ASSETS, 'assets'), 'assets.folderId', '=', 'folders.id')
-            ->leftJoin(new Alias(Table::VOLUMEFOLDERS, 'subfolders'), 'subfolders.parentId', '=', 'folders.id')
+            ->leftJoin(Table::ASSETS.' as assets', 'assets.folderId', '=', 'folders.id')
+            ->leftJoin(Table::VOLUMEFOLDERS.' as subfolders', 'subfolders.parentId', '=', 'folders.id')
             ->whereNull(['assets.id', 'subfolders.id'])
             ->whereNotNull(['folders.parentId', 'folders.path']);
 

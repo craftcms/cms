@@ -19,7 +19,7 @@ export type WorkflowIdentity = {
 
 export type WorkflowReleaseState = Pick<
   ElementEditPayload,
-  'canAddToRelease' | 'canCreateRelease' | 'releaseOptions'
+  'release' | 'canAddToRelease' | 'canCreateRelease' | 'releaseOptions'
 >;
 
 type WorkflowTransitionResponse = {

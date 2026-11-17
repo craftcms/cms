@@ -6,31 +6,6 @@ use CraftCms\Cms\Support\Search;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-$lightIcons = [
-    'clipboard-list-check',
-    'earth-africa',
-    'earth-americas',
-    'earth-asia',
-    'earth-europe',
-    'earth-oceania',
-    'envelope',
-    'files',
-    'folder-open',
-    'globe',
-    'image',
-    'map-location',
-    'newspaper',
-    'pen-to-square',
-    'plug',
-    'robot',
-    'signs-post',
-    'sitemap',
-    'sliders',
-    'sparkles',
-    'tags',
-    'user-group',
-];
-
 $styles = [
     'globe' => 'regular',
 ];
@@ -61,15 +36,11 @@ $repoCustomIcons = [
     'gear-slash',
     'graphql',
     'grip-dots',
-    'image-slash',
     'language',
-    'list-flip',
-    'list-tree-flip',
     'notification-bottom-left',
     'notification-bottom-right',
     'notification-top-left',
     'notification-top-right',
-    'share-flip',
     'slideout-left',
     'slideout-right',
     'thumb-left',
@@ -94,6 +65,12 @@ if (! is_file($metaPath) || ! is_dir($kitSvgsDir)) {
 }
 
 $meta = json_decode(file_get_contents($metaPath), true);
+
+/**
+ * Font Awesome 7 draws parts of some icons outside the 512-high viewBox (its icon canvas grew from 16 to 20px
+ * tall but the viewBox didn't), so let them overflow it, as Font Awesome's own web implementations do.
+ */
+$withVisibleOverflow = fn (string $svg): string => preg_replace('/^<svg\b/', '<svg overflow="visible"', $svg, 1);
 $index = [];
 $skipped = 0;
 $wrote = 0;
@@ -102,19 +79,17 @@ if (! is_dir($iconsDir.'/light')) {
     mkdir($iconsDir.'/light');
 }
 
-foreach ($lightIcons as $name) {
-    $svg = $meta[$name]['svg']['light']['raw'] ?? '';
+// Settings icons are drawn in the light style when one exists, so plugins can name any icon.
+foreach ($meta as $name => $info) {
+    $svg = $info['svg']['light']['raw'] ?? '';
 
     if ($svg === '') {
-        echo "Skipping light/$name.svg (kit metadata has no light SVG content)\n";
-        $skipped++;
-
         continue;
     }
 
     $iconPath = "$iconsDir/light/$name.svg";
     echo "Writing light/$name.svg ... ";
-    file_put_contents($iconPath, $svg);
+    file_put_contents($iconPath, $withVisibleOverflow($svg));
     echo "done\n";
     $wrote++;
 }
@@ -148,7 +123,7 @@ foreach ($meta as $name => $info) {
     }
 
     echo "Writing $dir/$name.svg ... ";
-    file_put_contents($iconPath, $svg);
+    file_put_contents($iconPath, $withVisibleOverflow($svg));
     echo "done\n";
     $wrote++;
 
@@ -162,6 +137,21 @@ foreach ($meta as $name => $info) {
         ];
     }
 
+}
+
+// The metadata lists a custom icon under the official icon's entry when they share a name (e.g. grip-dots),
+// and that entry only has the official styles, so take those custom icons from the kit's SVGs instead.
+foreach (glob("$kitSvgsDir/custom-icons/*.svg") ?: [] as $kitPath) {
+    $name = basename($kitPath, '.svg');
+
+    if (isset($meta[$name]['svg']['custom'])) {
+        continue;
+    }
+
+    echo "Writing custom-icons/$name.svg ... ";
+    file_put_contents("$iconsDir/custom-icons/$name.svg", $withVisibleOverflow(file_get_contents($kitPath)));
+    echo "done\n";
+    $wrote++;
 }
 
 echo "Finished writing $wrote icons ($skipped skipped).\n";

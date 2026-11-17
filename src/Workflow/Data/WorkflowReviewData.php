@@ -44,6 +44,12 @@ readonly class WorkflowReviewData implements Arrayable
         public bool $canOverride,
         public bool $canRestart,
         public bool $canApply,
+        /** Whether the viewer is one of the current stage’s reviewers, which is the final stage once the run is approved. */
+        public bool $isReviewer = false,
+        /** Whether the viewer’s approval of the current stage stands. */
+        public bool $hasApproved = false,
+        /** The name of the earlier stage the viewer reviews, which their edits would send the review back to. */
+        public ?string $rollbackStage = null,
     ) {}
 
     /**
@@ -56,6 +62,7 @@ readonly class WorkflowReviewData implements Arrayable
         ?WorkflowRun $run,
         Collection $runs,
         Collection $timelineItems,
+        ?WorkflowStageData $rollbackStage = null,
     ): self {
         $status = $run->status ?? WorkflowStatus::NotSubmitted;
         $stage = $run?->stages()->get($run->currentStage);
@@ -81,6 +88,10 @@ readonly class WorkflowReviewData implements Arrayable
             && in_array($run?->status, [WorkflowStatus::Pending, WorkflowStatus::Failed], true);
         $canRestart = in_array($run?->status, [WorkflowStatus::Pending, WorkflowStatus::Approved], true)
             && Gate::forUser($viewer)->allows('save', $draft);
+        $isReviewer = $context !== null
+            && $stageComponent instanceof UserReviewStage
+            && $stageComponent->isReviewer($context, $viewer);
+        $hasApproved = $isReviewer && $stageComponent->hasApproved($context, $viewer);
         $canApply = $run?->status === WorkflowStatus::Approved
             && Gate::forUser($viewer)->allows('save', $draft)
             && Gate::forUser($viewer)->allows('saveCanonical', $draft);
@@ -89,7 +100,7 @@ readonly class WorkflowReviewData implements Arrayable
             status: $status,
             statusLabel: $status->label(),
             statusIndicator: $status->indicator(),
-            submitLabel: $status === WorkflowStatus::Failed ? t('Resubmit for review') : t('Submit for review'),
+            submitLabel: in_array($status, [WorkflowStatus::Failed, WorkflowStatus::Invalidated, WorkflowStatus::Withdrawn], true) ? t('Resubmit for review') : t('Submit for review'),
             applyDisabledReason: $canApply ? null : t('This draft must be approved before it can be applied.'),
             runId: $run?->id,
             currentStage: $run?->currentStage,
@@ -103,6 +114,9 @@ readonly class WorkflowReviewData implements Arrayable
             canOverride: $canOverride,
             canRestart: $canRestart,
             canApply: $canApply,
+            isReviewer: $isReviewer,
+            hasApproved: $hasApproved,
+            rollbackStage: $rollbackStage !== null ? t($rollbackStage->name) : null,
         );
     }
 

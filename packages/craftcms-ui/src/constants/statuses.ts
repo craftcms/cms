@@ -37,7 +37,7 @@ const statusColors: Record<string, ColorValue> = {
   suspended: 'red',
   expired: 'red',
   warning: 'amber',
-  pending: 'orange',
+  pending: 'sky',
   grey: 'gray',
 };
 

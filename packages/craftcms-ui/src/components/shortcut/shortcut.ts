@@ -1,30 +1,39 @@
-import {css, html, LitElement} from 'lit';
+import {css, html, LitElement, unsafeCSS} from 'lit';
 import {property} from 'lit/decorators.js';
+import visuallyHiddenStyles from '@src/styles/visually-hidden.styles';
+import kbdStyles from '@src/styles/shared/kbd.css?inline';
+
+/** A modifier key, as shown and as named for assistive technology. */
+interface ModifierKey {
+  label: string;
+  name: string;
+}
 
 /**
  * Display keyboard shortcut helpers
  *
- * Cmd/Ctrl/Super is implied and the OS is automatically detected via the
- * navigator.platform string.
+ * Cmd/Ctrl is implied and the OS is automatically detected via the
+ * navigator.platform string. Each key is its own `<kbd>` keycap.
  *
  * @slot - Non-modifier key
+ *
+ * @cssproperty [--c-shortcut-shadow=var(--c-shadow-2xs)] - The keycaps' shadow.
  */
 export default class CraftShortcut extends LitElement {
-  static override styles = css`
-    :host {
-      display: inline-flex;
-    }
+  static override styles = [
+    visuallyHiddenStyles,
+    unsafeCSS(kbdStyles),
+    css`
+      :host {
+        display: inline-flex;
+      }
 
-    .shortcut {
-      font-size: 0.9em;
-      padding-block: 0;
-      padding-inline: var(--c-spacing-sm);
-      background-color: var(--c-color-neutral-fill-quiet);
-      border: 1px solid var(--c-color-neutral-border-quiet);
-      border-radius: var(--c-radius-sm);
-      box-shadow: var(--c-shadow-sm);
-    }
-  `;
+      .shortcut {
+        display: inline-flex;
+        gap: 0.25em;
+      }
+    `,
+  ];
 
   /** Display help text for alt */
   @property({type: Boolean})
@@ -66,20 +75,33 @@ export default class CraftShortcut extends LitElement {
     return 'Unknown';
   }
 
-  private renderShortcutPrefix() {
-    switch (this.os) {
-      case 'Mac':
-        return `${this.alt ? '⌥' : ''}${this.shift ? '⇧' : ''}⌘`;
-      case 'Linux':
-        return `Super+${this.alt ? 'Alt+' : ''}${this.shift ? 'Shift+' : ''}`;
-      default:
-        return `Ctrl+${this.alt ? 'Alt+' : ''}${this.shift ? 'Shift+' : ''}`;
+  /** The modifier keys, in the platform's usual order. */
+  private modifierKeys(): ModifierKey[] {
+    if (this.os === 'Mac') {
+      return [
+        ...(this.alt ? [{label: '⌥', name: 'Option'}] : []),
+        ...(this.shift ? [{label: '⇧', name: 'Shift'}] : []),
+        {label: '⌘', name: 'Command'},
+      ];
     }
+
+    return [
+      'Ctrl',
+      ...(this.alt ? ['Alt'] : []),
+      ...(this.shift ? ['Shift'] : []),
+    ].map((key) => ({label: key, name: key}));
   }
 
   override render() {
     return html`<span class="shortcut"
-      >${this.renderShortcutPrefix()}<slot></slot
+      >${this.modifierKeys().map((key) =>
+        key.label === key.name
+          ? html`<kbd class="shortcut__key">${key.label}</kbd>`
+          : html`<kbd class="shortcut__key"
+              ><span aria-hidden="true">${key.label}</span
+              ><span class="cp-visually-hidden">${key.name}</span></kbd
+            >`
+      )}<kbd class="shortcut__key"><slot></slot></kbd
     ></span>`;
   }
 }

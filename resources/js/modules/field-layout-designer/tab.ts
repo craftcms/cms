@@ -9,12 +9,14 @@ import {
   hudData,
   isSidebarTab,
 } from './support';
+import {isRtl} from '@/common/craft/direction';
 import {type ActionMenuItem} from '@craftcms/ui';
 import type {UiValues} from '@/modules/ui/types';
 import {createInitialIcon} from '@/common/utils/initialIcon';
-
-declare const Craft: any;
-declare const $: any;
+import {uuid} from '@/common/craft/strings';
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
 
 /**
  * A single tab within the {@link FieldLayoutDesigner}. Native DOM port of the
@@ -40,7 +42,7 @@ export class Tab extends Base {
 
     // New tab?
     if (!this.uid) {
-      this.uid = Craft.uuid();
+      this.uid = uuid();
       this.config = {
         uid: this.uid,
         name:
@@ -63,7 +65,7 @@ export class Tab extends Base {
     );
 
     this.addListener($tabContent, 'resize', () => {
-      this.designer.tabGrid.refreshCols(true);
+      this.designer.tabGrid?.refreshCols(true);
     });
 
     this.$addBtn = $tabContent.querySelector('[command="--add-field"]');
@@ -118,7 +120,7 @@ export class Tab extends Base {
     const $tab = this.$container.querySelector('.tabs .tab');
 
     const menu = document.createElement('craft-action-menu');
-    menu.label = Craft.t('app', 'Actions');
+    menu.label = t('Actions');
     // Disable the generated (default ellipsis) invoker when read-only.
     menu.disabled = !!this.designer.settings!.readOnly;
     // Anchor the settings slideout (focus return) to the menu element, since the
@@ -131,7 +133,7 @@ export class Tab extends Base {
     menu.actions = (): ActionMenuItem[] => {
       const items: ActionMenuItem[] = [
         {
-          label: Craft.t('app', 'Settings'),
+          label: t('Settings'),
           icon: 'gear',
           onClick: () => {
             this.createSettings();
@@ -145,11 +147,8 @@ export class Tab extends Base {
 
       if (hasPrev) {
         items.push({
-          label:
-            Craft.orientation === 'ltr'
-              ? Craft.t('app', 'Move to the left')
-              : Craft.t('app', 'Move to the right'),
-          icon: Craft.orientation === 'ltr' ? 'arrow-left' : 'arrow-right',
+          label: isRtl() ? t('Move to the right') : t('Move to the left'),
+          icon: isRtl() ? 'arrow-right' : 'arrow-left',
           onClick: () => {
             this.moveLeft();
           },
@@ -158,11 +157,8 @@ export class Tab extends Base {
 
       if (hasNext) {
         items.push({
-          label:
-            Craft.orientation === 'ltr'
-              ? Craft.t('app', 'Move to the right')
-              : Craft.t('app', 'Move to the left'),
-          icon: Craft.orientation === 'ltr' ? 'arrow-right' : 'arrow-left',
+          label: isRtl() ? t('Move to the left') : t('Move to the right'),
+          icon: isRtl() ? 'arrow-left' : 'arrow-right',
           onClick: () => {
             this.moveRight();
           },
@@ -172,14 +168,14 @@ export class Tab extends Base {
       items.push(
         this.isSidebar
           ? {
-              label: Craft.t('app', 'Move to content'),
+              label: t('Move to content'),
               icon: 'browser',
               onClick: () => {
                 this.setType('content');
               },
             }
           : {
-              label: Craft.t('app', 'Move to the sidebar'),
+              label: t('Move to the sidebar'),
               icon: 'sidebar-flip',
               onClick: () => {
                 this.setType('sidebar');
@@ -187,7 +183,7 @@ export class Tab extends Base {
             },
         {type: 'hr'},
         {
-          label: Craft.t('app', 'Remove'),
+          label: t('Remove'),
           icon: 'xmark-large',
           variant: 'danger',
           onClick: () => {
@@ -220,23 +216,20 @@ export class Tab extends Base {
   async createSettings(): Promise<void> {
     let data;
     try {
-      const response = await Craft.sendActionRequest(
-        'POST',
+      const response = await actionClient.post(
         'fields/render-layout-component-settings',
         {
-          data: {
-            ...this.settingsRequestData(),
-          },
+          ...this.settingsRequestData(),
         }
       );
       data = response.data;
     } catch (e: any) {
-      Craft.cp.displayError(e?.response?.data?.message);
+      showError(e?.response?.data?.message);
       throw e;
     }
 
     await openLayoutComponentSettings(data, {
-      title: this.config?.name || Craft.t('app', 'Settings'),
+      title: this.config?.name || t('Settings'),
       triggerElement: this.$actionBtn,
       requestData: () => this.settingsRequestData(),
       apply: (settings) => this.applyTabSettings(settings),
@@ -251,7 +244,7 @@ export class Tab extends Base {
    */
   async applyTabSettings(settings: UiValues): Promise<void> {
     if (!settings.name) {
-      const message = Craft.t('app', 'You must specify a tab name.');
+      const message = t('You must specify a tab name.');
 
       throw Object.assign(new Error(message), {
         name: 'TabNameRequired',
@@ -262,15 +255,12 @@ export class Tab extends Base {
     const config = Object.assign({}, this.config);
     delete config.elements;
 
-    const response = await Craft.sendActionRequest(
-      'POST',
+    const response = await actionClient.post(
       'fields/apply-layout-tab-settings',
       {
-        data: {
-          ...this.settingsRequestData(),
-          config,
-          settings,
-        },
+        ...this.settingsRequestData(),
+        config,
+        settings,
       }
     );
 
@@ -336,16 +326,16 @@ export class Tab extends Base {
 
     // The grid only lays out the content column.
     if (type === 'sidebar') {
-      this.designer.tabGrid.removeItems($(this.$container));
+      this.designer.tabGrid?.removeItems(this.$container);
       this.designer.$sidebarTabContainer.appendChild(this.$container);
     } else {
       this.designer.$contentTabContainer.appendChild(this.$container);
-      this.designer.tabGrid.addItems($(this.$container));
+      this.designer.tabGrid?.addItems(this.$container);
     }
 
     this.syncTypeWithColumn();
     this.updatePositionInConfig();
-    this.designer.tabGrid.refreshCols(true);
+    this.designer.tabGrid?.refreshCols(true);
     this.$actionBtn?.querySelector(':scope > [slot="invoker"]')?.focus();
   }
 
@@ -539,7 +529,7 @@ export class Tab extends Base {
       this.designer.$newTabBtn.focus();
     }
 
-    this.designer.tabGrid.removeItems($(this.$container));
+    this.designer.tabGrid?.removeItems(this.$container);
     this.designer.tabDrag!.removeItems(this.$container);
     this.$container.remove();
     this.designer.refreshSelectedFields();

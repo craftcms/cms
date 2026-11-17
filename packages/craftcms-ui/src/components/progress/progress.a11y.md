@@ -15,7 +15,7 @@ A circular progress indicator drawn on a `<canvas>`, using the WAI-ARIA [`progre
 - [x] The progressbar takes its accessible name from `label`. Per WCAG 4.1.2 (Name, Role, Value). Verified by `names itself` in `progress.test.ts`.
 - [x] The value is also written as hidden text ("60%"), since the drawn arc has no text of its own. Per WCAG 1.1.1 (Non-text Content). Verified by `announces the percentage in text` in `progress.test.ts`.
 - [x] An indeterminate indicator (`progress="-1"`) gives "Loading" as its hidden text instead of a number. Per WCAG 1.1.1 (Non-text Content). Verified by `announces loading when there is no value yet` in `progress.test.ts`.
-- [ ] An indeterminate indicator has no `aria-valuenow`. Per WCAG 4.1.2 (Name, Role, Value). Known gap: it renders an empty `aria-valuenow=""` rather than removing the attribute, and `announces loading when there is no value yet` in `progress.test.ts` asserts that empty value.
+- [x] An indeterminate indicator has no `aria-valuenow`. Per WCAG 4.1.2 (Name, Role, Value). Verified by `reports no value while indeterminate` in `progress.test.ts`.
 - [x] A failed indicator gives "Failed" as its hidden text. Per WCAG 1.1.1 (Non-text Content). Verified by `announces a failure` in `progress.test.ts`.
 - [ ] A failed indicator exposes the failure on the progressbar itself. Per WCAG 4.1.2 (Name, Role, Value). Known gap: the progressbar keeps its last `aria-valuenow`, and "Failed" lives only in the sibling hidden text.
 

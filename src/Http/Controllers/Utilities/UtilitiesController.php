@@ -78,19 +78,24 @@ readonly class UtilitiesController
         $toolbar = $htmlStack->capture(fn (): string => $class::toolbarHtml());
         $footer = $htmlStack->capture(fn (): string => $class::footerHtml());
 
+        $subpageTitle = $class::subpageTitle();
+
         return Inertia::render('utilities/Show', [
-            'crumbs' => [
+            'crumbs' => array_filter([
                 new ActionItem()->label(t('Utilities'))->href(Url::cpUrl('utilities')),
-                new ActionItem()->label($class::displayName()),
-            ],
+                new ActionItem()->label($class::displayName())
+                    ->href($subpageTitle !== null ? Url::cpUrl("utilities/$id") : null),
+                $subpageTitle !== null ? new ActionItem()->label($subpageTitle) : null,
+            ]),
             'id' => $id,
-            'title' => $class::displayName(),
+            'title' => $subpageTitle ?? $class::displayName(),
             // The HTML itself still renders through `DynamicHtmlRenderer`,
             // which compiles it as a Vue template — utility content can
             // reference Vue components (e.g. `<ProjectConfig>`).
             'contentHtml' => $content->html,
             'toolbarHtml' => $toolbar->html,
             'footerHtml' => $footer->html,
+            'contentMaxWidth' => $class::contentMaxWidth(),
             // Picked up by `AppLayout`'s `useAppendHtml()`, which appends and
             // executes these against the document on mount and on subsequent
             // Inertia visits.

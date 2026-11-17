@@ -32,6 +32,7 @@ class UserReviewNotification extends CpNotification implements ShouldQueueAfterC
         public readonly string $entryUrl,
         public readonly ?string $stageName = null,
         public readonly ?string $note = null,
+        public readonly ?string $userName = null,
     ) {
         parent::__construct($message);
 
@@ -59,6 +60,7 @@ class UserReviewNotification extends CpNotification implements ShouldQueueAfterC
                 'entry' => $this->entryTitle,
                 'stage' => $this->stageName,
                 'note' => $this->note,
+                'user' => $this->userName,
                 'link' => Template::raw($this->entryUrl),
             ],
         );

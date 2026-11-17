@@ -164,6 +164,33 @@ it('draws a hairline between separated fields that share a row, and only there',
   expect(follows()).toEqual([false, false, false]);
 });
 
+it('centers the hairline in the gap before a narrow field', async () => {
+  const fieldGroup = document.createElement('craft-field-group');
+  fieldGroup.separated = true;
+  fieldGroup.style.width = '900px';
+  fieldGroup.style.setProperty('--c-field-group-separator-spacing', '16px');
+  fieldGroup.innerHTML = `
+    <div class="width-25">Artist</div>
+    <div class="width-25">Year</div>
+    <div class="width-50">Medium</div>
+  `;
+  document.body.append(fieldGroup);
+  await fieldGroup.updateComplete;
+  await new Promise((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  );
+  const [artist, year] = fieldGroup.querySelectorAll<HTMLElement>('div');
+  const hairline = getComputedStyle(year!, '::before');
+  const gapMiddle =
+    (artist!.getBoundingClientRect().right +
+      year!.getBoundingClientRect().left) /
+    2;
+
+  expect(
+    year!.getBoundingClientRect().left + parseFloat(hairline.left)
+  ).toBeCloseTo(gapMiddle, 0);
+});
+
 it('keeps separated fields within a group too narrow for its full column gap', async () => {
   const fieldGroup = document.createElement('craft-field-group');
   fieldGroup.separated = true;
@@ -175,4 +202,38 @@ it('keeps separated fields within a group too narrow for its full column gap', a
 
   const field = fieldGroup.querySelector('div')!;
   expect(field.getBoundingClientRect().width).toBe(300);
+});
+
+it('drops a required sub-field’s asterisk in a required fieldset, leaving no gap for it', async () => {
+  await import('../../styles/cp.css');
+  await import('../field/field.js');
+  document.body.innerHTML = `
+    <craft-field fieldset required label="Field Limit">
+      <craft-field-group slot="input">
+        <craft-field required label="Minimum"><input slot="input"><button slot="actions">A</button></craft-field>
+        <craft-field label="Maximum"><input slot="input"><button slot="actions">A</button></craft-field>
+      </craft-field-group>
+    </craft-field>
+  `;
+  const [outer, required, optional] = [
+    ...document.querySelectorAll('craft-field'),
+  ];
+  for (const field of [outer!, required!, optional!]) {
+    await field.updateComplete;
+  }
+
+  const actionsOffset = (field: Element) => {
+    const label = field.querySelector(':scope > [slot="label"]')!;
+    const range = document.createRange();
+    range.selectNodeContents(label.firstChild!);
+
+    return (
+      field.querySelector('button')!.getBoundingClientRect().left -
+      range.getBoundingClientRect().right
+    );
+  };
+
+  const asterisk = required!.querySelector('craft-icon[name="asterisk"]')!;
+  expect(getComputedStyle(asterisk).display).toBe('none');
+  expect(actionsOffset(required!)).toBeCloseTo(actionsOffset(optional!), 0);
 });

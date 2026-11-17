@@ -26,14 +26,23 @@ class SelectColor extends ViewComponent
 
     protected ?string $blankLabel = null;
 
+    protected bool $allowCustom = false;
+
     /** @var list<string>|null */
     protected ?array $colors = null;
+
+    /** @var array<string, string> */
+    protected array $labels = [];
 
     protected bool $required = false;
 
     protected bool $readOnly = false;
 
+    protected bool $invalid = false;
+
     protected ?string $describedBy = null;
+
+    protected ?string $labelledBy = null;
 
     protected function tagName(): string
     {
@@ -76,11 +85,35 @@ class SelectColor extends ViewComponent
     }
 
     /**
-     * @param  list<string>|null  $colors
+     * Appends a "Custom…" option, valued `__custom__`, for a color that isn't
+     * one of {@see self::colors()}. The caller takes that color itself.
+     */
+    public function allowCustom(bool $allowCustom = true): static
+    {
+        $this->allowCustom = $allowCustom;
+
+        return $this;
+    }
+
+    /**
+     * @param  list<string>|null  $colors  Palette color names, or hex colors such as `#e5422b`.
      */
     public function colors(?array $colors): static
     {
         $this->colors = $colors;
+
+        return $this;
+    }
+
+    /**
+     * Names for the colors, by color. Palette colors are otherwise named after
+     * themselves, and hex colors by their values.
+     *
+     * @param  array<string, string>  $labels
+     */
+    public function labels(array $labels): static
+    {
+        $this->labels = $labels;
 
         return $this;
     }
@@ -106,21 +139,47 @@ class SelectColor extends ViewComponent
         return $this;
     }
 
+    /**
+     * Names the element labelling this control, for a caller that provides the
+     * label itself rather than through the `label` attribute — a table column
+     * heading, say.
+     */
+    public function labelledBy(?string $labelledBy): static
+    {
+        $this->labelledBy = $labelledBy;
+
+        return $this;
+    }
+
+    /**
+     * Marks the value as having failed validation, such as on the server.
+     */
+    public function invalid(bool $invalid = true): static
+    {
+        $this->invalid = $invalid;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
         return [
             'id' => $this->getId(),
             'name' => $this->name,
-            'model-value' => $this->value,
+            'value' => $this->value,
             'label' => $this->label,
             'allow-transparent' => $this->allowTransparent,
             'blank-label' => $this->blankLabel,
+            'allow-custom' => $this->allowCustom,
             'colors' => $this->colors !== null ? Json::encode($this->colors) : null,
+            'labels' => $this->labels !== [] ? Json::encode($this->labels) : null,
             'required' => $this->required,
             'readonly' => $this->readOnly,
+            'invalid' => $this->invalid,
             'disabled' => $this->isDisabled(),
-            'aria' => ['describedby' => $this->describedBy],
+            'described-by' => $this->describedBy,
+            'labelled-by' => $this->labelledBy,
         ];
     }
 }

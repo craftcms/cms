@@ -21,6 +21,7 @@
    * renders items a caller places itself — `ActionMenu` uses it for the items
    * inside its own `content` slot.
    */
+  import {config, router} from '@inertiajs/vue3';
   import {computed, type Component} from 'vue';
   import {t} from '@craftcms/ui/utilities/translate';
   import {attrs as serverAttributes} from '@craftcms/ui/utilities/attrs';
@@ -28,6 +29,7 @@
   import {useNavItemActions} from '@/common/composables/useNavItemActions';
   import type {
     ActionItem,
+    ActionItemBadge,
     ActionItemButton,
     ActionItemGroup,
     ActionItemLink,
@@ -36,12 +38,18 @@
 
   /** One descriptor flattened to what the elements are actually given. */
   interface RenderedAction {
+    /**
+     * The descriptor's `id`, else its kind and link or label, numbered when
+     * repeated — so an item keeps its element when items before it change.
+     */
+    key: string;
     kind: 'hr' | 'heading' | 'display' | 'link' | 'button';
     is?: Component;
     href?: string;
     external?: boolean;
     label?: string;
     status?: string;
+    badge?: ActionItemBadge;
     onClick?: (event: Event) => void;
     /**
      * Everything optional, with the unset keys left out entirely. Binding an
@@ -50,10 +58,14 @@
      * an unset `variant` would land as `variant=""` instead of `neutral`.
      *
      * `.`-prefixed keys are set as DOM properties, which `action`, `feedback`
-     * and `shortcut` need since they're objects rather than strings.
+     * and `shortcut` need since they're objects rather than strings, and
+     * `checked` and `disabled` since Lit reads a `"false"` attribute as on.
      */
     attrs: Record<string, unknown>;
   }
+
+  /** How long a nav item's page, fetched while it's pointed at, is kept. */
+  const NAV_PREFETCH_CACHE_FOR = '5s';
 
   const {
     actions = [],
@@ -76,6 +88,16 @@
     mode?: 'trail' | 'flyout' | 'inline';
     /** Nav only. Collapsed to a rail: labels become tooltips, all flyout. */
     iconOnly?: boolean;
+  }>();
+
+  defineSlots<{
+    /**
+     * Added to a nav item's row, beside its link. Give it `slot="actions"`.
+     * Passed on to nested items too.
+     */
+    'item-actions'?(props: {
+      action: ActionItemGroup | ActionItemButton | ActionItemLink;
+    }): unknown;
   }>();
 
   const isNav = computed(() => as === 'craft-nav-item');
@@ -103,11 +125,21 @@
    * stray rule — so it's dropped when rendering as buttons rather than asking
    * every caller to keep two lists.
    */
-  const rendered = computed<Array<RenderedAction>>(() =>
-    actions.flatMap(renderAction)
-  );
+  const rendered = computed<Array<RenderedAction>>(() => {
+    const seen = new Map<string, number>();
 
-  function renderAction(action: ActionItem): Array<RenderedAction> {
+    return actions.flatMap(renderAction).map((action) => {
+      const base = `${action.kind}:${String(action.attrs.id ?? action.href ?? action.label ?? '')}`;
+      const count = seen.get(base) ?? 0;
+      seen.set(base, count + 1);
+
+      return {...action, key: count ? `${base}#${count}` : base};
+    });
+  });
+
+  function renderAction(
+    action: ActionItem
+  ): Array<Omit<RenderedAction, 'key'>> {
     if (action.type === 'hr') {
       return as === 'craft-action-item' ? [{kind: 'hr', attrs: {}}] : [];
     }
@@ -133,7 +165,7 @@
 
   function renderControl(
     action: ActionItemButton | ActionItemLink
-  ): Array<RenderedAction> {
+  ): Array<Omit<RenderedAction, 'key'>> {
     const isItem = as === 'craft-action-item';
     const marks = isItem && selectable.value;
     const attrs = defined({
@@ -142,7 +174,7 @@
       // `craft-action-item` draws the checkmark gutter for its `checkbox`
       // type only; the others have no such notion.
       type: marks ? 'checkbox' : undefined,
-      checked: marks ? Boolean(action.selected) : undefined,
+      '.checked': marks ? Boolean(action.selected) : undefined,
       variant: action.variant,
       'icon-color': action.iconColor,
       '.action': action.action,
@@ -162,11 +194,14 @@
         {
           kind: 'link',
           href: link.href,
-          external: link.external,
+          // A link that opens elsewhere isn't an Inertia visit, which would
+          // take over this tab instead.
+          external: link.external || Boolean(link.target),
           label: action.label,
           status: isItem ? action.status : undefined,
+          badge: isItem ? action.badge : undefined,
           onClick: action.onClick,
-          attrs: defined({...attrs, size}),
+          attrs: defined({...attrs, target: link.target, size}),
         },
       ];
     }
@@ -176,10 +211,11 @@
         kind: 'button',
         label: action.label,
         status: isItem ? action.status : undefined,
+        badge: isItem ? action.badge : undefined,
         onClick: action.onClick,
         attrs: defined({
           ...attrs,
-          disabled: action.disabled,
+          '.disabled': action.disabled,
           size: isItem ? undefined : size,
         }),
       },
@@ -383,6 +419,46 @@
       as: 'craft-nav-item',
       '.external': external,
       inertia: !external,
+      // Fetched on press, as other links are, and kept only briefly: long
+      // enough to cover the wait for the click, not so long that the page
+      // could be out of date when it's shown.
+      prefetch: 'click',
+      cacheFor: NAV_PREFETCH_CACHE_FOR,
+      ...(shared.href && !external ? hoverPrefetchHandlers(shared.href) : {}),
+    };
+  }
+
+  let hoverPrefetch: ReturnType<typeof setTimeout> | undefined;
+
+  /**
+   * Pointing at a nav item says where you're going well before the click, so
+   * the page is fetched then, and is usually there by the time you click.
+   *
+   * Inertia's `Link` can't do this alongside fetching on press: given both
+   * modes, it drops the press, so a click quicker than the hover delay waited
+   * for the click to fetch, then fetched the page a second time once the delay
+   * ran out. This fetches the page the same way `Link` does, so whichever
+   * starts first, the other and the click's visit reuse it.
+   */
+  function hoverPrefetchHandlers(href: string): Record<string, unknown> {
+    const cancel = () => clearTimeout(hoverPrefetch);
+
+    return {
+      onMouseenter: () => {
+        cancel();
+        hoverPrefetch = setTimeout(
+          () =>
+            router.prefetch(
+              href,
+              {method: 'get'},
+              {cacheFor: NAV_PREFETCH_CACHE_FOR}
+            ),
+          config.get('prefetch.hoverDelay')
+        );
+      },
+      onMouseleave: cancel,
+      // The press fetches it now; `Link` keeps `mousedown` to itself.
+      onPointerdown: cancel,
     };
   }
 
@@ -462,93 +538,147 @@
         @click="lent.onClick"
       ></craft-button>
 
+      <!-- Whatever the caller adds to the row; give it `slot="actions"`. -->
+      <slot name="item-actions" :action="action"></slot>
+
       <craft-nav-list v-if="childrenOf(action).length" slot="subnav">
         <ActionList
           :actions="childrenOf(action)"
           as="craft-nav-item"
           :mode="iconOnly ? 'flyout' : mode"
           :icon-only="iconOnly && subnavDisplay(action) === 'inline'"
-        />
+        >
+          <template
+            v-if="$slots['item-actions']"
+            #item-actions="{action: child}"
+          >
+            <slot name="item-actions" :action="child"></slot>
+          </template>
+        </ActionList>
       </craft-nav-list>
     </component>
   </template>
 
-  <template v-else v-for="(action, index) in rendered" :key="index">
-    <hr v-if="action.kind === 'hr'" class="action-list__separator" />
+  <template v-else>
+    <template v-for="action in rendered" :key="action.key">
+      <hr v-if="action.kind === 'hr'" class="action-list__separator" />
 
-    <!-- `role="presentation"`: it labels its items visually but must never
+      <!-- `role="presentation"`: it labels its items visually but must never
       take focus or be matched by the menu's item selector. -->
-    <div
-      v-else-if="action.kind === 'heading'"
-      :class="{
-        'action-list__heading': true,
-        'action-list__heading--marked': selectable,
-      }"
-      role="presentation"
-    >
-      {{ action.label }}
-    </div>
+      <div
+        v-else-if="action.kind === 'heading'"
+        :class="{
+          'action-list__heading': true,
+          'action-list__heading--marked': selectable,
+        }"
+        role="presentation"
+      >
+        {{ action.label }}
+      </div>
 
-    <component v-else-if="action.kind === 'display'" :is="action.is" />
+      <component v-else-if="action.kind === 'display'" :is="action.is" />
 
-    <!-- Routed through `CpLink` so a link action is an Inertia visit, unless
+      <!-- Routed through `CpLink` so a link action is an Inertia visit, unless
       the descriptor owns its click (see `ownsClick`). The element keeps its
       `href`, so the anchor in its shadow root still gives real link semantics;
       `CpLink` adds the handler on the host that cancels the navigation in
       favor of a visit. -->
-    <component
-      v-else-if="action.kind === 'link' && action.onClick"
-      v-bind="action.attrs"
-      :is="as"
-      :href="action.href"
-      @click="action.onClick"
-    >
-      <craft-indicator
-        v-if="action.status"
-        slot="icon"
-        :fill="action.status"
-      ></craft-indicator>
-      {{ action.label }}
-    </component>
+      <component
+        v-else-if="action.kind === 'link' && action.onClick"
+        v-bind="action.attrs"
+        :is="as"
+        :href="action.href"
+        @click="action.onClick"
+      >
+        <craft-indicator
+          v-if="action.status"
+          slot="icon"
+          :fill="action.status"
+        ></craft-indicator>
+        {{ action.label }}
+        <craft-badge
+          v-if="action.badge"
+          class="action-list__badge"
+          :fill="action.badge.fill ?? 'gray'"
+          size="small"
+        >
+          <craft-icon
+            v-if="action.badge.icon"
+            :name="action.badge.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ action.badge.label }}
+        </craft-badge>
+      </component>
 
-    <CpLink
-      v-else-if="action.kind === 'link'"
-      v-bind="action.attrs"
-      :as="as"
-      :href="action.href!"
-      :inertia="!action.external"
-    >
-      <craft-indicator
-        v-if="action.status"
-        slot="icon"
-        :fill="action.status"
-      ></craft-indicator>
-      {{ action.label }}
-    </CpLink>
+      <CpLink
+        v-else-if="action.kind === 'link'"
+        v-bind="action.attrs"
+        :as="as"
+        :href="action.href!"
+        :inertia="!action.external"
+      >
+        <craft-indicator
+          v-if="action.status"
+          slot="icon"
+          :fill="action.status"
+        ></craft-indicator>
+        {{ action.label }}
+        <craft-badge
+          v-if="action.badge"
+          class="action-list__badge"
+          :fill="action.badge.fill ?? 'gray'"
+          size="small"
+        >
+          <craft-icon
+            v-if="action.badge.icon"
+            :name="action.badge.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ action.badge.label }}
+        </craft-badge>
+      </CpLink>
 
-    <component
-      v-else
-      type="button"
-      v-bind="action.attrs"
-      :is="as"
-      @click="action.onClick"
-    >
-      <craft-indicator
-        v-if="action.status"
-        slot="icon"
-        :fill="action.status"
-      ></craft-indicator>
-      {{ action.label }}
-    </component>
+      <component
+        v-else
+        type="button"
+        v-bind="action.attrs"
+        :is="as"
+        @click="action.onClick"
+      >
+        <craft-indicator
+          v-if="action.status"
+          slot="icon"
+          :fill="action.status"
+        ></craft-indicator>
+        {{ action.label }}
+        <craft-badge
+          v-if="action.badge"
+          class="action-list__badge"
+          :fill="action.badge.fill ?? 'gray'"
+          size="small"
+        >
+          <craft-icon
+            v-if="action.badge.icon"
+            :name="action.badge.icon"
+            slot="prefix"
+          ></craft-icon>
+          {{ action.badge.label }}
+        </craft-badge>
+      </component>
+    </template>
   </template>
 </template>
 
 <style scoped lang="css">
-  /* `craft-action-menu` styles the separators it generates itself inline, and
-     its shadow `::slotted()` rule can't reach inside the slotted content — so
-     a slotted rule has to bring its own margin and line to match. With the
-     menu's gap between items, the space around it matches the menu's
-     padding. */
+  /* Beside the label it's about, rather than across at the item's far end. */
+  .action-list__badge {
+    margin-inline-start: var(--c-spacing-xs);
+    vertical-align: middle;
+  }
+
+  /* Matching what `craft-action-menu` applies inline to the separators in a
+     menu, for the lists that aren't in one. */
   .action-list__separator {
     margin-block: calc(var(--c-spacing-sm) - var(--c-spacing-xs));
     margin-inline: 0;

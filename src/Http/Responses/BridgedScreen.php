@@ -12,6 +12,7 @@ use CraftCms\Cms\View\LegacyReadyShim;
 use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Support\Header;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\template;
@@ -72,17 +73,7 @@ final class BridgedScreen
             return $index;
         }
 
-        /**
-         * Otherwise this is server-rendered legacy markup, and legacy JS
-         * expects the environment a normal document build gives it: the
-         * libraries (jQuery, Garnish, `cp.js` — all `Position::BodyEnd`) loaded
-         * in source order, before anything that uses them. A client-side visit
-         * can't offer that, so it becomes a hard visit.
-         *
-         * The rule is deliberately total: bridged screen + Inertia visit → hard
-         * visit, with no partial case to get wrong.
-         */
-        if ($request->inertia()) {
+        if (self::needsHardVisit($request)) {
             return Inertia::location($request->fullUrl());
         }
 
@@ -93,12 +84,39 @@ final class BridgedScreen
          */
         LegacyReadyShim::register();
 
-        $variables['tabs'] = self::tabs($variables['tabs'] ?? null);
+        /**
+         * `selectedTab` travels with the fragments only to pick the tab out
+         * here; the shell has no use for it.
+         */
+        $variables['tabs'] = self::tabs(
+            $variables['tabs'] ?? null,
+            $variables['selectedTab'] ?? null,
+            is_string($variables['title'] ?? null) ? $variables['title'] : null,
+        );
+        unset($variables['selectedTab']);
 
         return Inertia::render(self::PAGE)
             ->with($variables)
             ->with(['screen' => ['mode' => 'page'], 'bridged' => 'screen'])
             ->toResponse($request);
+    }
+
+    /**
+     * Whether a request for a server-rendered screen has to become a hard visit.
+     *
+     * Legacy JS expects the environment a normal document build gives it: the
+     * libraries (jQuery, Garnish, `cp.js` — all `Position::BodyEnd`) loaded in
+     * source order, before anything that uses them. A client-side visit can't
+     * offer that, so it becomes a hard visit.
+     *
+     * The one exception is a partial reload of the screen already on display,
+     * such as the shell loading its deferred props once the page is up. It
+     * swaps nothing and runs no legacy JS, and a hard visit would only load
+     * the page again to defer the same props, forever.
+     */
+    public static function needsHardVisit(Request $request): bool
+    {
+        return $request->inertia() && $request->header(Header::PARTIAL_COMPONENT) !== self::PAGE;
     }
 
     /**
@@ -170,19 +188,27 @@ final class BridgedScreen
      * The tab strip, rendered.
      *
      * `cp/Screen` draws HTML into the shell's slots, so tabs arrive rendered
-     * rather than as the raw config the Twig layout took. `<craft-tabs>` is
-     * preferred: it pairs the screen's own panes to its tabs, so a legacy
-     * screen gets the same tab component as the rest of the control panel
-     * without its author touching anything. The shim returns null whenever it
-     * isn't certain, and the legacy strip covers that.
+     * rather than as the raw config the Twig layout took. A Craft 6 component
+     * is preferred — tabs over the screen's own panes, or a nav where the tabs
+     * turn out to be links to its other pages — so a legacy screen gets the
+     * same components as the rest of the control panel without its author
+     * touching anything. The shim returns null whenever it isn't certain, and
+     * the legacy strip covers that.
      */
-    private static function tabs(mixed $tabs): ?string
-    {
+    private static function tabs(
+        mixed $tabs,
+        mixed $selectedTab = null,
+        ?string $title = null,
+    ): ?string {
         if (! is_array($tabs)) {
             return null;
         }
 
-        return LegacyTabsShim::apply($tabs)
+        return LegacyTabsShim::apply(
+            $tabs,
+            is_string($selectedTab) || is_int($selectedTab) ? $selectedTab : null,
+            $title,
+        )
             ?? (count($tabs) > 1
                 ? template('_includes/tabs', [
                     'tabs' => $tabs,

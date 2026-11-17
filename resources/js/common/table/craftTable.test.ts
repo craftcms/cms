@@ -35,7 +35,7 @@ function pagination(page: number): PaginationData {
 beforeEach(() => {
   visit.mockClear();
   // useServerSort reads the CP's page-param name off the legacy global.
-  vi.stubGlobal('Craft', {pageTrigger: 'page'});
+  vi.stubGlobal('Craft', {});
 });
 
 describe('useCraftTable', () => {

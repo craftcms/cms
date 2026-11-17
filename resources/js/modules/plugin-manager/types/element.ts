@@ -54,7 +54,7 @@ export interface AssetElement extends CraftElementInterface {
   kind: string;
   alt: string | null;
   size: number;
-  keptFile: boolean | null;
+  trashedFileExists: boolean;
   dateModified: string;
   newLocation: string | null;
   locationError: string | null;

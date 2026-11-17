@@ -81,7 +81,7 @@ describe.each(themes)('in the %s theme', (theme) => {
     }
   );
 
-  it.each(['white', 'black'])(
+  it.each(theme === 'dark' ? ['black'] : ['white', 'black'])(
     'rings a %s dot at 3:1 against its own fill',
     async (fill) => {
       const {dot} = await render(
@@ -96,4 +96,16 @@ describe.each(themes)('in the %s theme', (theme) => {
       ).toBeGreaterThanOrEqual(3);
     }
   );
+});
+
+it('draws a white dot solid, like a gray one, in the dark theme', async () => {
+  const {dot, background} = await render(
+    'dark',
+    '--c-surface-default',
+    'fill="white"'
+  );
+  const style = getComputedStyle(dot);
+
+  expect(style.borderTopColor).toBe(style.backgroundColor);
+  expect(contrast(style.backgroundColor, background)).toBeGreaterThanOrEqual(3);
 });

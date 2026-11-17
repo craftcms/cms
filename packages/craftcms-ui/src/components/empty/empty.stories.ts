@@ -38,6 +38,11 @@ export const LabelOnly: Story = {
   args: {icon: ''},
 };
 
+/** `outline` draws a quiet border around the empty state. */
+export const Outline: Story = {
+  args: {appearance: 'outline'},
+};
+
 /** The default slot holds whatever gets the reader out of the empty state. */
 export const WithAction: Story = {
   args: {

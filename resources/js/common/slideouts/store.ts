@@ -1,7 +1,9 @@
-import {markRaw, reactive, shallowReadonly} from 'vue';
+import {markRaw, nextTick, reactive, shallowReadonly} from 'vue';
 import {
+  closestComposed,
   focusReturnFor,
   isFocusable,
+  menuInvokerOf,
   type FocusReturnResolver,
 } from '@craftcms/ui/utilities/focus-return';
 import {t} from '@craftcms/ui/utilities/translate';
@@ -11,6 +13,7 @@ import {fetchSlideoutPage, type SlideoutPage} from './request';
 import type {
   OpenSlideoutOptions,
   SlideoutInstance,
+  SlideoutReloadOptions,
   SlideoutSaveResult,
 } from './types';
 import type {ScreenPageProps} from '@/common/composables/screen';
@@ -199,12 +202,28 @@ export function openSlideoutWith(
   return panel;
 }
 
-/** The panel an element lives in, or `null` if it's on the base page. */
+/**
+ * The panel an element lives in, or `null` if it's on the base page. Looks past
+ * shadow roots, as an opener can be a control inside a web component, and from
+ * a popover to its invoker, as a popover can be mounted on `<body>`.
+ */
 function originPanel(opener: HTMLElement | null): string | null {
-  return (
-    opener?.closest<HTMLElement>('[data-slideout-id]')?.dataset.slideoutId ??
-    null
-  );
+  const seen = new Set<Element>();
+
+  for (
+    let node: HTMLElement | null = opener;
+    node && !seen.has(node);
+    node = menuInvokerOf(node)
+  ) {
+    seen.add(node);
+    const panel = closestComposed(node, '[data-slideout-id]');
+
+    if (panel) {
+      return panel.dataset.slideoutId ?? null;
+    }
+  }
+
+  return null;
 }
 
 /** Ids of the panels stacked above `panelId`, or all of them for `null`. */
@@ -288,12 +307,15 @@ export function notifySlideoutSaved(
   return true;
 }
 
-export async function reloadSlideout(id: string): Promise<void> {
+export async function reloadSlideout(
+  id: string,
+  options?: SlideoutReloadOptions
+): Promise<void> {
   const panel = findSlideout(id);
 
   // Local panels (see openSlideoutWith) have nothing to re-fetch.
   if (panel && panel.href) {
-    await loadInto(panel);
+    await loadInto(panel, options);
   }
 }
 
@@ -400,7 +422,23 @@ export function closeAllSlideouts(): void {
   }
 }
 
-async function loadInto(panel: SlideoutInstance): Promise<void> {
+/** Fetches a panel's screen into it, as opening or reloading it does. */
+export async function loadInto(
+  panel: SlideoutInstance,
+  {preserveState = false}: SlideoutReloadOptions = {}
+): Promise<void> {
+  // Without the spinner, which takes the screen's place and unmounts it.
+  if (preserveState) {
+    const page = await loadSlideoutPage(panel.href, panel.containerId);
+
+    panel.component = markRaw(page.component);
+    panel.props = page.props;
+    // Resolves once the screen has rendered them.
+    await nextTick();
+
+    return;
+  }
+
   panel.loading = true;
   panel.error = null;
 

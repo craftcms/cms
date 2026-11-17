@@ -1,36 +1,61 @@
 <script setup lang="ts">
   import {computed} from 'vue';
   import {t} from '@craftcms/ui';
-  import CpLink from '@/common/components/CpLink.vue';
+  import AvatarStack from './AvatarStack.vue';
+  import EntryList from './EntryList.vue';
   import type {DashboardWidget} from './types';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   const props = defineProps<{widget: DashboardWidget}>();
 
+  type Author = {
+    id: number | null;
+    name: string;
+    thumbHtml?: string | null;
+  };
+
   type Entry = {
-    url: string;
+    id: number;
+    url: string | null;
     title: string;
-    dateCreated?: string;
-    dateLabel?: string;
-    author?: string;
+    thumbHtml?: string | null;
+    section?: string | null;
+    dateCreated?: string | null;
+    dateLabel?: string | null;
+    authors?: Author[];
   };
 
   const entries = computed<Entry[]>(() => props.widget.data?.entries ?? []);
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body">
-      <ul v-if="entries.length" class="space-y-3" role="list">
-        <li v-for="entry in entries" :key="entry.url">
-          <CpLink :href="entry.url">{{ entry.title }}</CpLink>
-          <span v-if="entry.dateCreated" class="light nowrap ms-1">
-            {{ entry.dateLabel
-            }}{{ entry.author ? `, ${entry.author}` : '' }}</span
-          >
-        </li>
-      </ul>
+      <EntryList v-if="entries.length" :items="entries">
+        <template #details="{item}">
+          <time
+            v-if="item.dateLabel"
+            :datetime="item.dateCreated ?? undefined"
+            >{{ item.dateLabel }}</time
+          ><template v-if="item.dateLabel && item.section">
+            <span class="recent-entries__separator" aria-hidden="true">·</span
+            ><span class="sr-only">, </span></template
+          >{{ item.section }}
+        </template>
+        <template #aside="{item}">
+          <AvatarStack :people="item.authors ?? []" />
+        </template>
+      </EntryList>
       <craft-empty v-else :label="t('No entries exist yet.')"></craft-empty>
     </div>
   </craft-card>
 </template>
+
+<style scoped>
+  .recent-entries__separator {
+    margin-inline: var(--c-spacing-sm);
+  }
+</style>

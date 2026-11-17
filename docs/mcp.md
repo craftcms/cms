@@ -1,20 +1,26 @@
 # MCP server
 
-Craft exposes its content and configuration to AI agents and other clients over the [Model Context Protocol](https://modelcontextprotocol.io). The server is built on the official `mcp/sdk` PHP package. Over HTTP, it speaks the stateless transport for protocol version `2026-07-28`. Over stdio, it speaks the session-based protocol that local MCP clients use.
+Craft exposes its content and configuration to AI agents and other clients over the [Model Context Protocol](https://modelcontextprotocol.io). The server is built on the official `mcp/sdk` PHP package. Each HTTP endpoint supports both handshake-based clients and the stateless protocol version `2026-07-28`, with per-request metadata. Over stdio, it speaks the session-based protocol that local MCP clients use.
 
 Craft runs three MCP servers:
 
-| Server        | URL                                     | Who can use it                                                     |
-| ------------- | --------------------------------------- | ------------------------------------------------------------------ |
-| Authenticated | `{cpTrigger}/mcp`, such as `/admin/mcp` | Users with the **Access the control panel** and **Use Craft MCP** permissions, through OAuth |
-| Public        | Configurable, `/mcp` by default         | Anyone, but only for capabilities and content an administrator has approved |
-| Stdio         | `php craft mcp:serve --user=…`          | Whoever can run Craft's CLI, acting as the named user with the **Use Craft MCP** permission |
+| Server        | URL                             | Who can use it                                                     |
+| ------------- | ------------------------------- | ------------------------------------------------------------------ |
+| Authenticated | Configurable, `/{cpTrigger}/mcp` by default, or `/mcp` with public registration | Any active user, through OAuth |
+| Public        | Configurable, `/mcp` by default | Anyone, but only for capabilities and content an administrator has approved |
+| Stdio         | `php craft mcp:serve --user=…`  | Whoever can run Craft's CLI, acting as the named user              |
 
-The authenticated and stdio servers are always available. The public server is disabled until an administrator enables it under **Settings → MCP**.
+The stdio server is always available. The authenticated and public servers are disabled until an administrator enables them under **Settings → MCP**.
+
+The two HTTP servers can share an endpoint. Requests with a bearer token go to the authenticated server, and the rest go to the public server. Clients discover OAuth from a `401` response, which a shared endpoint can't send, so authenticated clients should connect to the separate **Authorization Endpoint** (`/{cpTrigger}/mcp/auth` by default, or `/mcp/auth` with public registration) instead. It always requires a token and serves the authenticated server.
+
+When an endpoint is under the control panel, such as `/admin/mcp`, Craft treats its requests as control panel requests, so users also need the **Access the control panel** permission.
 
 ## How a request is handled
 
-The HTTP servers are stateless. Every request builds a new server instance, discovers the capabilities the current request may use, and then handles the JSON-RPC message.
+Every HTTP request builds a new server instance, discovers the capabilities the current request may use, and then handles the JSON-RPC message. Handshake clients start with `initialize`, then send the returned `Mcp-Session-Id` and negotiated `MCP-Protocol-Version` headers on subsequent requests. `DELETE` with those headers tears down the session. Modern clients send protocol metadata on each request without a session.
+
+Handshake sessions use Laravel's default cache store, with a one-hour sliding expiration. Configure a persistent store such as Redis or the database, not `array` or `null`. Multi-instance deployments must share that store, or use session affinity with persistent local storage. Public sessions are separate from authenticated sessions, which are bound to the user's ID and granted MCP scopes. Sessions never replace authentication or preserve capability approvals: permissions, scopes, and public approvals are checked on every request.
 
 ```mermaid
 sequenceDiagram
@@ -28,7 +34,7 @@ sequenceDiagram
     Client->>Route: POST JSON-RPC message
     Route->>Route: Authenticate, authorize, set activity origin
     Route->>Controller: admin() or public()
-    Controller->>Factory: Build stateless server
+    Controller->>Factory: Build dual-protocol server
     Factory->>Discovery: Discover capabilities
     Discovery->>Discovery: Merge core and registered classes
     Discovery->>Discovery: Remove capabilities the request may not use
@@ -58,7 +64,7 @@ An MCP capability is a public method on a class, marked with one of the SDK's at
 
 Identities must be unique across core and every plugin. Craft throws a `LogicException` when two capabilities share an identity, so a plugin cannot replace a core capability.
 
-Core tools use dotted, resource-oriented names, such as `elements.list`, `configuration.create`, and `drafts.apply`. Core resources use the `craft://` scheme, such as `craft://sections` and `craft://sections/{section}`.
+Core tools use snake_case, resource-oriented names, such as `elements_list`, `configuration_create`, and `drafts_apply`. Name plugin tools the same way, prefixed with the plugin handle, such as `reviews_list`. Use only lowercase letters, digits, and underscores, and keep names to 64 characters or fewer. The MCP spec also allows dots and hyphens, but not every client accepts them. VS Code and Cursor warn about dots, and claude.ai and the Claude and OpenAI APIs reject them. Core resources use the `craft://` scheme, such as `craft://sections` and `craft://sections/{section}`.
 
 ### Element tools
 
@@ -66,27 +72,27 @@ One set of tools works with every element type. Each takes a `type`, such as `en
 
 | Tool                    | Purpose                                                                     |
 | ----------------------- | --------------------------------------------------------------------------- |
-| `elements.schema`       | Describes what the other tools accept for a type                            |
-| `elements.list`         | Queries elements with element query criteria                                |
-| `elements.get`          | Gets an element by ID or UID                                                |
-| `elements.field-schema` | Gets the custom-field JSON Schema for an existing or new element            |
-| `elements.create`       | Creates an element                                                          |
-| `elements.update`       | Updates an element                                                          |
-| `elements.delete`       | Soft-deletes or hard-deletes an element                                     |
-| `elements.restore`      | Restores a soft-deleted element                                             |
-| `elements.validate`     | Validates an element, optionally with proposed changes, without saving it   |
-| `elements.duplicate`    | Duplicates an element, for types that support it                            |
+| `elements_schema`       | Describes what the other tools accept for a type                            |
+| `elements_list`         | Queries elements with element query criteria                                |
+| `elements_get`          | Gets an element by ID or UID                                                |
+| `elements_field_schema` | Gets the custom-field JSON Schema for an existing or new element            |
+| `elements_create`       | Creates an element                                                          |
+| `elements_update`       | Updates an element                                                          |
+| `elements_delete`       | Soft-deletes or hard-deletes an element                                     |
+| `elements_restore`      | Restores a soft-deleted element                                             |
+| `elements_validate`     | Validates an element, optionally with proposed changes, without saving it   |
+| `elements_duplicate`    | Duplicates an element, for types that support it                            |
 
-The tools' own input schemas are kept small, because clients load every tool definition into the agent's context. Each type's full schemas live in its description instead, which `elements.schema` returns. The same description is available as the `craft://element-types/{type}` resource, and `craft://element-types` lists the supported types. A description includes:
+The tools' own input schemas are kept small, because clients load every tool definition into the agent's context. Each type's full schemas live in its description instead, which `elements_schema` returns. The same description is available as the `craft://element-types/{type}` resource, and `craft://element-types` lists the supported types. A description includes:
 
-- `criteria`, the element query criteria `elements.list` accepts;
-- `createAttributes` and `updateAttributes`, the built-in attributes `elements.create`, `elements.update`, and `elements.validate` accept;
-- `fieldSchemaContext`, the `context` that selects a new element's field layout in `elements.field-schema`, such as `{"sectionId": 1}` for entries;
+- `criteria`, the element query criteria `elements_list` accepts;
+- `createAttributes` and `updateAttributes`, the built-in attributes `elements_create`, `elements_update`, and `elements_validate` accept;
+- `fieldSchemaContext`, the `context` that selects a new element's field layout in `elements_field_schema`, such as `{"sectionId": 1}` for entries;
 - `duplicateModes` and `notes`.
 
 Craft validates `criteria`, `attributes`, and `context` against these schemas and returns a tool error naming each invalid property. Attributes a schema doesn't declare are rejected.
 
-Operations that only make sense for one type keep their own tools, such as `assets.create`, which takes the file to upload, and `users.field-layout.update`.
+Operations that only make sense for one type keep their own tools, such as `assets_create`, which takes the file to upload, and `users_field_layout_update`.
 
 ### Configuration tools
 
@@ -94,16 +100,18 @@ Six tools manage sections, entry types, fields, volumes, sites, site groups, use
 
 | Tool | Purpose |
 | --- | --- |
-| `configuration.schema` | Lists types and available operations, or returns a selected operation's input schema and deletion effects |
-| `configuration.list` | Returns `{type, count, items}` for one type |
-| `configuration.get` | Returns `{type, item}` for a supported identifier |
-| `configuration.create` | Creates a record from `attributes` and returns `{type, item}` |
-| `configuration.update` | Updates supplied `attributes` and returns `{type, item}` |
-| `configuration.delete` | Deletes a record with optional type-specific `options` and returns `{type, deleted: true}` |
+| `configuration_schema` | Lists types and available operations, or returns a selected operation's input schema and deletion effects |
+| `configuration_list` | Returns `{type, count, items}` for one type, with each item's `revision` |
+| `configuration_get` | Returns `{type, item, revision}` for a supported identifier |
+| `configuration_create` | Creates a record from `attributes` and returns `{type, item, revision}` |
+| `configuration_update` | Updates supplied `attributes` and returns `{type, item, revision}` |
+| `configuration_delete` | Deletes a record with optional type-specific `options` and returns `{type, deleted: true}` |
 
-Call `configuration.schema` without arguments to discover type values. Supply `type` and `operation` to fetch the full input schema before calling that operation. Craft validates the input against this schema before dispatching to the type's configuration service. These schemas are loaded on demand rather than repeated in the tool catalog.
+Call `configuration_schema` without arguments to discover type values. Supply `type` and `operation` to fetch the full input schema before calling that operation. Craft validates the input against this schema before dispatching to the type's configuration service. These schemas are loaded on demand rather than repeated in the tool catalog.
 
 Put exactly one supported lookup key in `identifier`. Keep replacement values in `attributes`, so an update can use `{"identifier": {"handle": "news"}, "attributes": {"handle": "articles"}}`. Omitted attributes retain their values; explicit nulls are accepted only where the selected schema permits them. The outer `type` selects the configuration type; `attributes.type` can select a section kind or field class.
+
+`revision` is an opaque hash of the record's complete project config, including nested settings and field layouts. Pass the revision a change is based on as `expectedRevision` to `configuration_update` or `configuration_delete`. Craft compares it with the current config while holding the project config lock, and refuses the call without changing anything if the record has changed since. `expectedRevision` is optional for compatibility, but without it an update based on an old read can overwrite newer changes, such as replacing a field layout that another client has since changed. A user group's revision includes its permissions, and a user group CP navigation's revision includes the default navigation it builds on.
 
 All configuration tools require administrator access. Writes also require `allowAdminChanges`. Read the selected delete schema's effects before deleting: behavior depends on the type and can affect related content. For sites, `options.transferContentTo` selects the destination site ID. Existing `craft://` resources remain available. Permission assignment and project-config operations keep their dedicated tools.
 
@@ -113,25 +121,34 @@ The authenticated server uses OAuth 2.1 through Laravel Passport. Craft publishe
 
 - **Protected resource metadata** at `/.well-known/oauth-protected-resource/{path}`.
 - **Authorization server metadata** at `/.well-known/oauth-authorization-server/{path}`.
-- **Dynamic client registration** at `{cpTrigger}/mcp/oauth/register`.
-- **Authorization** at `{cpTrigger}/mcp/oauth/authorize`, using the authorization code grant with PKCE (`S256`).
+- **Dynamic client registration** at `{authorizationEndpoint}/oauth/register`.
+- **Authorization** at `{authorizationEndpoint}/oauth/authorize`, using the authorization code grant with PKCE (`S256`).
 
-Tokens must carry the `mcp:use` scope and are checked by the `craft-mcp` auth guard. An unauthenticated request receives a `401` response with a `WWW-Authenticate` header pointing at the protected resource metadata.
+Tokens are checked by the `craft-mcp` auth guard. An unauthenticated request receives a `401` response with a `WWW-Authenticate` header pointing at the protected resource metadata and requesting every MCP scope.
 
-Craft adds its scope and guard alongside the host application's Passport configuration. It does not replace existing scopes, the default scope, or the authorization guard.
+Each token carries one of three access levels. A broader scope includes the narrower ones:
 
-After authentication, the user also needs the `accessCp` and `useCraftMcp` permissions. Individual capabilities can require more.
+| Scope       | Grants                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `mcp:read`  | Resources, prompts, and tools with `readOnlyHint: true`.                                    |
+| `mcp:write` | Also tools without `readOnlyHint: true`.                                                   |
+| `mcp:admin` | Also capabilities marked `#[RequiresAdmin]` or `#[RequiresAdminChanges]`, including reads. |
+
+The user chooses the access level on the consent screen. It defaults to read only, and administrators are the only users offered full access. When a client authorizes again while the user still has an active token for it, Craft skips the consent screen and keeps the level the user chose before. Clients can send `prompt=consent` to show the screen anyway. Scopes only narrow access: the user's Craft permissions still apply. Upload sessions require `mcp:write`. The stdio server is not scoped.
+
+Craft adds its scopes and guard alongside the host application's Passport configuration. It does not replace existing scopes, the default scope, or the authorization guard.
+
+After authentication, the user needs no particular permission, unless the endpoint is under the control panel. Individual capabilities can require more. Capabilities that expose control panel details, such as `info_get`, `elements_schema`, and `preferences_*`, require `accessCp`.
 
 ### Configuration
 
-Configure the authenticated server with the `mcp` general config setting:
+Enable the authenticated server and choose its endpoints under **Settings → MCP**. Those settings are stored in project config under `mcp`. Configure the rest with the `mcp` general config setting:
 
 ```php
 use CraftCms\Cms\Config\GeneralConfig;
 
 return GeneralConfig::create()
     ->mcp([
-        'endpoint' => 'mcp',
         'middleware' => [MyMcpMiddleware::class],
         'instructions' => 'Preserve legal notices when editing content.',
     ]);
@@ -139,9 +156,8 @@ return GeneralConfig::create()
 
 | Setting       | Description                                                                                       |
 | ------------- | ------------------------------------------------------------------------------------------------- |
-| `endpoint`    | Path below the control panel trigger. Defaults to `mcp`.                                          |
 | `middleware`  | Extra route middleware appended to the authenticated server and its upload routes.                |
-| `instructions` | Additional guidance returned by `info.get` for authenticated HTTP and stdio clients. Defaults to an empty string. |
+| `instructions` | Additional guidance returned by `info_get` for authenticated HTTP and stdio clients. Defaults to an empty string. |
 
 To try capabilities locally without completing an OAuth flow, [run the server over stdio](#running-the-server-over-stdio) instead.
 
@@ -149,9 +165,9 @@ The public server is configured in the control panel. Its settings are stored in
 
 ### Server instructions
 
-The admin server is the authenticated HTTP or stdio server acting as a Craft user, including editors. Its available capabilities depend on that user's permissions and `allowAdminChanges`. HTTP clients receive brief startup instructions through `server/discover`; stdio clients receive them during `initialize`. These direct clients to call `info.get` before using other Craft capabilities.
+The admin server is the authenticated HTTP or stdio server acting as a Craft user, including editors. Its available capabilities depend on that user's permissions and `allowAdminChanges`. HTTP clients receive brief startup instructions through `server/discover`; stdio clients receive them during `initialize`. For users with control panel access, these direct clients to call `info_get` before using other Craft capabilities.
 
-The `instructions` field in the `info.get` result contains the full guidance for discovery, identifiers, reading and editing content, pagination, and destructive operations, followed by site and plugin additions. Startup instructions stay below Claude Code's default 2,048-character limit. Task-specific guidance remains in element schemas and tool descriptions.
+The `instructions` field in the `info_get` result contains the full guidance for discovery, identifiers, reading and editing content, pagination, and destructive operations, followed by site and plugin additions. Startup instructions stay below Claude Code's default 2,048-character limit. Task-specific guidance remains in element schemas and tool descriptions.
 
 The `mcp.instructions` general config setting appends site guidance to the core instructions. It accepts a string through the array or JSON configuration above, or through `McpConfig::create()->instructions('…')`.
 
@@ -164,22 +180,26 @@ use Illuminate\Support\Facades\Event;
 public function boot(): void
 {
     Event::listen(CollectingAdminInstructions::class, function (CollectingAdminInstructions $event): void {
-        $event->instructions[] = 'Use reviews.list before changing a product.';
+        $event->instructions[] = 'Use reviews_list before changing a product.';
     });
 }
 ```
 
 Craft combines core instructions, site instructions, and plugin contributions in that order, separated by blank lines. Empty contributions are omitted. The event exposes only plugin contributions, so listeners cannot remove core or site instructions. Instructions guide clients; the server still enforces permissions independently. Avoid secrets in instructions because every user who can connect to the admin server receives them.
 
+The `mcp.instructions` setting is for developers. The site’s team writes guidance for content in the control panel’s **AI Guidance & Skills** utility, and each user can add their own. Clients get it with the `guidance_get` tool, and the site’s skills with `skills_list` and `skills_get`. Users who can use the utility can save guidance with `guidance_update` and manage skills with `skills_create`, `skills_update`, and `skills_delete`, and any user can save their own guidance with `guidance_update_personal`. The core instructions tell clients to read guidance before writing content. See [Ask AI](ask-ai.md#guidance-and-skills).
+
 Keep site and plugin contributions short. State when they apply and which capability or resource provides the details. Put task-specific procedures beside their tool schemas or in resources so unrelated tasks do not need to load them.
 
-The event runs each time `info.get` is called. Server discovery, stdio initialization, and unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instruction configuration. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
+To add short guidance to the startup instructions instead, listen for `CraftCms\Cms\Mcp\Events\CollectingServerInstructions` the same way. Unlike `info_get`, every user who connects receives these, including users without control panel access.
+
+The `CollectingAdminInstructions` event runs each time `info_get` is called. Server discovery, stdio initialization, and unauthenticated CORS preflight requests do not collect instructions. Restart stdio clients after changing instruction configuration. The public server keeps separate instructions and receives neither `mcp.instructions` nor these plugin contributions.
 
 ### Element pagination and permission replacement
 
-`elements.list`, `drafts.list`, and `revisions.list` return normalized `limit`, `offset`, and `nextOffset`. `search.query` returns those values for each element type in `pagination`, keyed by its reference handle or class name. Pass a non-null `nextOffset` as `criteria.offset` with the same filters and a stable ordering, including an ID tie-breaker. For searches, continue each type separately through `types`. A null `nextOffset` marks the end of that query. Permission checks can leave a page empty even when later pages contain visible records; `count` only counts the visible records on the current page.
+`elements_list`, `drafts_list`, and `revisions_list` return normalized `limit`, `offset`, and `nextOffset`. `search_query` returns those values for each element type in `pagination`, keyed by its reference handle or class name. Pass a non-null `nextOffset` as `criteria.offset` with the same filters and a stable ordering, including an ID tie-breaker. For searches, continue each type separately through `types`. A null `nextOffset` marks the end of that query. Permission checks can leave a page empty even when later pages contain visible records; `count` only counts the visible records on the current page.
 
-`user-permissions.user.get` and `user-permissions.user.set` return effective `permissions`, including group grants, and a separate `directPermissions` list. To change direct assignments, read and modify `directPermissions`, then pass the complete new list to `user-permissions.user.set`. An empty list clears direct assignments while retaining group grants. Group permission tools return `permissions`; `user-permissions.group.set` replaces that complete list.
+`user_permissions_user_get` and `user_permissions_user_set` return effective `permissions`, including group grants, and a separate `directPermissions` list. To change direct assignments, read and modify `directPermissions`, then pass the complete new list to `user_permissions_user_set`. An empty list clears direct assignments while retaining group grants. Group permission tools return `permissions`; `user_permissions_group_set` replaces that complete list. To add or remove specific permissions without resending the complete list, use `user_permissions_user_update` or `user_permissions_group_update`. Stored permissions that aren't registered in the current request, such as those of plugins that only register permissions for control panel requests, are kept when included; other unregistered permissions are rejected.
 
 ## Running the server over stdio
 
@@ -197,7 +217,7 @@ MCP clients that launch servers as local processes, such as desktop agents and c
 }
 ```
 
-The command is also available as `php artisan craft:mcp:serve`. `--user` accepts a user ID, username, or email address. The user must be active and have the **Use Craft MCP** permission. The **Access the control panel** permission is not required.
+The command is also available as `php artisan craft:mcp:serve`. `--user` accepts a user ID, username, or email address. The user must be active.
 
 ### Authentication
 
@@ -215,7 +235,8 @@ Stdio activity events are labeled with the `MCP` origin, as HTTP ones are.
 
 - Capabilities are discovered once, when the session starts. Restart the client's server after changing the user's permissions or admin status.
 - Each message is handled in a fresh request scope, as each job in a queue worker is. Singleton services, such as those for fields, entry types, volumes, and project config, keep what they loaded for the life of the process. Restart the client's server after changing the content model elsewhere, such as in the control panel.
-- Capabilities marked with `#[RequiresHttp]`, such as `assets.upload.prepare`, are not offered. Use file references with `assets.create` and `assets.replace` instead.
+- Capabilities marked with `#[RequiresHttp]` are not offered.
+- `assets_upload_prepare` returns upload URLs under the action trigger on `APP_URL`, which must be the site's absolute URL, so clients can upload files the server can't read, such as files on the host of a container it runs in. Each upload comes with its own token, in `upload.authorization.token`, which clients send as a bearer token and which only authorizes that upload.
 - The server writes only protocol messages to stdout. PHP errors go to stderr. Keep log channels that write to stdout disabled when running it.
 
 ## The public server
@@ -229,7 +250,7 @@ The public server serves unauthenticated clients, so each piece of access is opt
 
 The public server is rate-limited to 60 requests per minute per IP address.
 
-Core's public tools are `craft-context-get`, which describes the approved content, and `craft-query`, which runs element queries against it. `craft-query` accepts a restricted set of criteria and constrains every query, relation, and eager-loading path to public content.
+Core's public tools are `craft_context_get`, which describes the approved content, and `craft_query`, which runs element queries against it. `craft_query` accepts a restricted set of criteria and constrains every query, relation, and eager-loading path to public content.
 
 > [!IMPORTANT]
 > `#[PublicMcp]` moves a capability to the public server. It is not also available on the authenticated server. Expose a separate method if both audiences need the same behavior.
@@ -284,7 +305,7 @@ readonly class ReviewCapabilities
      * @return array{count: int, reviews: list<array{id: int, rating: int, body: string}>}
      */
     #[McpTool(
-        name: 'reviews.list',
+        name: 'reviews_list',
         description: 'Lists reviews for an entry, newest first.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -324,7 +345,7 @@ Follow core's conventions where they apply:
 - Name tools `{plugin-or-resource}.{action}`, and choose names that will not collide with core.
 - Accept exactly one of `id`, `uid`, or `handle` when looking up a record, and reject ambiguous input.
 - Return list results as `['count' => ..., '{items}' => [...]]`.
-- Set `readOnlyHint` on reads and `destructiveHint` on deletes and replacements.
+- Set `readOnlyHint` on reads and `destructiveHint` on deletes and replacements. Tools without `readOnlyHint: true` require the `mcp:write` scope.
 - Report missing and unauthorized records with the same message, so a tool does not reveal records the user cannot view.
 
 ### Resources, resource templates, and prompts
@@ -367,7 +388,7 @@ public function review(string $review): array
 #[McpPrompt(name: 'acme-summarize-reviews', title: 'Summarize reviews')]
 public function summarize(int $entryId): array
 {
-    return [new PromptMessage(Role::User, new TextContent("Summarize the reviews for entry $entryId using reviews.list."))];
+    return [new PromptMessage(Role::User, new TextContent("Summarize the reviews for entry $entryId using reviews_list."))];
 }
 ```
 
@@ -375,7 +396,7 @@ Use a plugin-specific URI scheme. `craft://` is reserved for core.
 
 ### Authorization
 
-Every capability on the authenticated server already requires `accessCp` and `useCraftMcp`. Add these attributes to require more:
+Capabilities on the authenticated server are available to any active user by default. Add these attributes to require more:
 
 | Attribute                         | Requirement                                                                         |
 | --------------------------------- | ----------------------------------------------------------------------------------- |
@@ -384,7 +405,7 @@ Every capability on the authenticated server already requires `accessCp` and `us
 | `#[RequiresAdminChanges]`         | The user is an administrator and `allowAdminChanges` is enabled. Use it for tools that write project config. |
 | `#[RequiresHttp]`                 | The request arrived over HTTP. Use it for capabilities that return URLs authenticated by the MCP access token, which a stdio client does not have. |
 
-These attributes decide whether a capability is listed at all. They do not check access to individual records. Inside the method, authorize each element with Laravel's gate, as the `reviews.list` example does. `McpActor::user()` returns the authenticated user and throws a `ToolCallException` when there is none.
+These attributes decide whether a capability is listed at all. `#[RequiresAdmin]` and `#[RequiresAdminChanges]` also require the `mcp:admin` scope. They do not check access to individual records. Inside the method, authorize each element with Laravel's gate, as the `reviews_list` example does. `McpActor::user()` returns the authenticated user and throws a `ToolCallException` when there is none.
 
 Register plugin permissions with `UserPermissions` as usual. The permission handle in `#[RequiresPermission]` is the same handle `$user->can()` checks.
 
@@ -397,7 +418,7 @@ use CraftCms\Cms\Mcp\Attributes\PublicMcp;
 
 /** @return array{averageRating: float|null} */
 #[McpTool(
-    name: 'reviews.public-rating',
+    name: 'reviews_public_rating',
     title: 'Get an entry’s public rating',
     description: 'Returns the average rating for a public entry.',
     annotations: new ToolAnnotations(readOnlyHint: true),
@@ -419,13 +440,13 @@ A public capability runs without a user, so `McpActor::user()` throws. It must e
 | `elementTypes()`               | Approved element type names, other than entries and assets                   |
 | `elementFlags()`               | Whether drafts, revisions, and inactive elements are allowed                 |
 
-Prefer composing `CraftCms\Cms\Mcp\Public\ElementQuery`, which backs `craft-query`, over writing new public queries. It already applies every scope.
+Prefer composing `CraftCms\Cms\Mcp\Public\ElementQuery`, which backs `craft_query`, over writing new public queries. It already applies every scope.
 
 ## Extending core capabilities
 
 ### Adding an element type to the element tools
 
-To make a plugin's element type available through the `elements.*` tools, extend `BaseElementAdapter` and register the adapter with `ElementAdapterRegistry`:
+To make a plugin's element type available through the `elements_*` tools, extend `BaseElementAdapter` and register the adapter with `ElementAdapterRegistry`:
 
 ```php
 <?php
@@ -496,11 +517,29 @@ The handle is the `type` clients pass, and it must be unique. `BaseElementAdapte
 - populating declared attributes and custom field values, then saving the element the same way the control panel does;
 - restoring, validating, and serializing.
 
-Without `createAttributesSchema()`, `elements.create` reports that the type can't be created. Override other methods for type-specific behavior. For example, `fieldSchemaContextSchema()` and `fieldSchemaElement()` select the field layout of a new element, `duplicateModes()` and `duplicate()` add duplication, and `notes()` adds guidance to the type's description. Implement `ElementAdapter` directly only if the base class doesn't fit.
+Without `createAttributesSchema()`, `elements_create` reports that the type can't be created. Override other methods for type-specific behavior. For example, `fieldSchemaContextSchema()` and `fieldSchemaElement()` select the field layout of a new element, `duplicateModes()` and `duplicate()` add duplication, and `notes()` adds guidance to the type's description. Implement `ElementAdapter` directly only if the base class doesn't fit.
 
 ### Exposing a custom element type publicly
 
-Registered element types appear under **Public Content → Element Types**. When an administrator approves one, `craft-query` can query it by its `refHandle()`, using the common criteria (`id`, `uid`, `site`, `siteId`, `search`, `status`, `limit`, `offset`, and `orderBy`) plus its custom fields. Entries, assets, and users are controlled by sections, volumes, and user groups instead.
+Registered element types appear under **Public Content → Element Types**. When an administrator approves one, `craft_query` can query it by its `refHandle()`, using the common criteria (`id`, `uid`, `site`, `siteId`, `search`, `status`, `limit`, `offset`, and `orderBy`) plus its custom fields. Entries, assets, and users are controlled by sections, volumes, and user groups instead.
+
+### Hiding capabilities from users
+
+Craft dispatches `CraftCms\Cms\Mcp\Events\DiscoveringCapability` for each tool, resource, and prompt the authenticated or stdio server would expose to the current user, after its own permission and token scope checks. Set `allowed` to `false` to hide one:
+
+```php
+use CraftCms\Cms\Mcp\Events\DiscoveringCapability;
+use Illuminate\Support\Facades\Event;
+use Mcp\Capability\Registry\ToolReference;
+
+Event::listen(DiscoveringCapability::class, function (DiscoveringCapability $event): void {
+    if ($event->reference instanceof ToolReference && $event->reference->tool->name === 'reviews_delete' && ! $event->user?->can('deleteReviews')) {
+        $event->allowed = false;
+    }
+});
+```
+
+The event can't hide capabilities approved for the public server.
 
 ### Changing serialized elements
 
@@ -529,7 +568,7 @@ Event::listen(ElementSerializing::class, function (ElementSerializing $event): v
 
 ### Describing a custom field's input
 
-Tools such as `elements.create` and `elements.field-schema` describe custom fields with JSON Schema. Craft infers a schema for most field types. Implement `InputSchemaFieldInterface` on a field type to supply its own:
+Tools such as `elements_create` and `elements_field_schema` describe custom fields with JSON Schema. Craft infers a schema for most field types. Implement `InputSchemaFieldInterface` on a field type to supply its own:
 
 ```php
 use CraftCms\Cms\Field\Field;
@@ -548,7 +587,7 @@ Return the schema for a non-null value. Craft adds `null` for optional fields, a
 
 ### Adding a content model check
 
-The `content-model.audit` tool runs checks registered with `CheckRegistry`. A check implements `CraftCms\Cms\Mcp\ContentModel\Check`:
+The `content_model_audit` tool runs checks registered with `CheckRegistry`. A check implements `CraftCms\Cms\Mcp\ContentModel\Check`:
 
 ```php
 <?php
@@ -592,11 +631,11 @@ public function boot(CheckRegistry $checks): void
 }
 ```
 
-`count` is the total number of findings. `findings` holds at most `$limit` of them. The check ID must be unique, and clients can pass it to `content-model.audit` to run only that check.
+`count` is the total number of findings. `findings` holds at most `$limit` of them. The check ID must be unique, and clients can pass it to `content_model_audit` to run only that check.
 
 ## Testing plugin capabilities
 
-Register the capability class in the test, act as a user with the `mcp:use` scope on the `craft-mcp` guard, and post a JSON-RPC message to the authenticated server:
+Enable the authenticated server in the test's project config so its routes are registered. Then register the capability class, act as a user with an MCP scope on the `craft-mcp` guard, and post a JSON-RPC message to the authenticated server:
 
 ```php
 use CraftCms\Cms\Mcp\CapabilityRegistry;
@@ -604,14 +643,14 @@ use Laravel\Passport\Passport;
 
 it('lists reviews for an entry', function (): void {
     app(CapabilityRegistry::class)->register(ReviewCapabilities::class);
-    Passport::actingAs($user, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($user, ['mcp:read'], 'craft-mcp');
 
-    postJson(route('craft.cp.mcp.server'), [
+    postJson(route('craft.mcp.server'), [
         'jsonrpc' => '2.0',
         'id' => 1,
         'method' => 'tools/call',
         'params' => [
-            'name' => 'reviews.list',
+            'name' => 'reviews_list',
             'arguments' => ['entryId' => $entry->id],
             '_meta' => [
                 'io.modelcontextprotocol/protocolVersion' => '2026-07-28',
@@ -621,13 +660,13 @@ it('lists reviews for an entry', function (): void {
     ], [
         'MCP-Protocol-Version' => '2026-07-28',
         'Mcp-Method' => 'tools/call',
-        'Mcp-Name' => 'reviews.list',
+        'Mcp-Name' => 'reviews_list',
     ])
         ->assertOk()
         ->assertJsonPath('result.structuredContent.count', 1);
 });
 ```
 
-Laravel caches a route's controller instance. When a test sends several MCP requests whose available capabilities differ, call `Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController()` between them.
+Laravel caches a route's controller instance. When a test sends several MCP requests whose available capabilities differ, call `Route::getRoutes()->getByName('craft.mcp.server')->flushController()` between them.
 
 Cover the authorization boundary as well as the happy path: a user without the required permission should get error `-32602`, and a user who cannot view a record should get the same error message as for a missing record.

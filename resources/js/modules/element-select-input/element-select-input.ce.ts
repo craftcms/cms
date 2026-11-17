@@ -2,8 +2,9 @@ import {ControllerElement} from '@/common/web-components';
 import {AssetSelectInput} from '@/modules/asset-select-input/asset-select-input';
 import {BaseElementSelectInput} from './base-element-select-input';
 import {EntrySelectInput} from './entry-select-input';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 
-declare const Craft: any;
+const INPUT_CLASS_TIMEOUT = 10_000;
 
 type ElementSelectInputConstructor = new (
   settings?: ConstructorParameters<typeof BaseElementSelectInput>[0]
@@ -14,8 +15,35 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
   protected readonly defaultInputClass: ElementSelectInputConstructor =
     BaseElementSelectInput;
 
+  /**
+   * Markup inserted over AJAX (a new Matrix entry, a slideout) can connect
+   * before the script defining a plugin's `input-class` runs, so boot waits
+   * for the class, for up to {@link INPUT_CLASS_TIMEOUT} ms.
+   */
+  override connectedCallback(): void {
+    this.#bootOnceInputClassLoads(performance.now() + INPUT_CLASS_TIMEOUT);
+  }
+
+  #bootOnceInputClassLoads(deadline: number): void {
+    if (!this.isConnected) {
+      return;
+    }
+
+    const name = this.getAttribute('input-class');
+    if (
+      name &&
+      !(this.#globalInputClass(name) instanceof Function) &&
+      performance.now() < deadline
+    ) {
+      requestAnimationFrame(() => this.#bootOnceInputClassLoads(deadline));
+      return;
+    }
+
+    super.connectedCallback();
+  }
+
   protected create(): BaseElementSelectInput {
-    Craft.initUiElements(this);
+    initLegacyUi(this);
 
     const Input = this.#inputClass();
 
@@ -37,7 +65,7 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
    *
    * Along with {@link removeElement}, this is the seam for hosts that render the
    * chips' action menus themselves (`ElementSelectControl.vue`) instead of
-   * letting `Craft.addActionsToChip()` inject them: `instance` is protected, so
+   * letting `addActionsToChip()` inject them: `instance` is protected, so
    * the menu items talk to the custom element rather than the controller.
    */
   replaceElement(id: number | string): void {
@@ -62,20 +90,20 @@ export default class CraftElementSelectInput extends ControllerElement<BaseEleme
   }
 
   /**
-   * The controller's jQuery-wrapped chip for `id`, or `null` when it isn't
-   * booted yet or doesn't know that chip — its methods take jQuery objects, and
-   * `$elements` is the collection they operate on.
+   * The controller's chip for `id`, or `null` when it isn't booted yet or
+   * doesn't know that chip. A plugin's legacy class (`input-class`) takes
+   * jQuery collections, so it gets one.
    */
   #chip(id: number | string): any {
-    const $elements = this.instance?.$elements;
+    const instance: any = this.instance;
 
-    if (!$elements?.length) {
-      return null;
+    if (Array.isArray(instance?.elements)) {
+      return instance.getElementById(id) ?? null;
     }
 
-    const $chip = $elements.filter(`[data-id="${id}"]`);
+    const $chip = instance?.$elements?.filter(`[data-id="${id}"]`);
 
-    return $chip.length ? $chip : null;
+    return $chip?.length ? $chip : null;
   }
 
   #inputClass(): ElementSelectInputConstructor {

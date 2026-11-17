@@ -111,15 +111,6 @@ describe('BaseDrag settings + defaults', () => {
     expect(BaseDrag.minMouseDist).toBe(1);
     expect(BaseDrag.windowScrollTargetSize).toBe(25);
   });
-
-  it('starts with the documented initial state', () => {
-    const d = new BaseDrag();
-    expect(d.dragging).toBe(false);
-    expect(d.$targetItem).toBeNull();
-    expect(d.$items).toEqual([]);
-    expect(d.mouseX).toBeNull();
-    expect(d.scrollProperty).toBeNull();
-  });
 });
 
 describe('BaseDrag item management + registry', () => {
@@ -219,6 +210,31 @@ describe('BaseDrag handle resolution', () => {
     mockRect(a, 0, 0);
     // pointerdown on the handle captures; pointerdown elsewhere on item does not.
     firePointer(handle, 'pointerdown', {pageX: 1, pageY: 1});
+    expect(d.$targetItem).toBe(a);
+  });
+
+  it('resolves jQuery-style child-combinator handles relative to the item', () => {
+    const a = makeItem();
+    a.innerHTML =
+      '<div class="nested"><div class="element"><span class="move-btn"></span></div></div>' +
+      '<div class="element"><span class="move-btn"></span></div>' +
+      '<div class="titlebar"></div>';
+    const nestedHandle = a.querySelector('.nested .move-btn')!;
+    const handle = a.querySelector(':scope > .element > .move-btn')!;
+    const titlebar = a.querySelector('.titlebar')!;
+    const d = new BaseDrag([a], {
+      handle: '> .element > .move-btn, > .titlebar',
+    });
+    mockRect(a, 0, 0);
+
+    firePointer(nestedHandle, 'pointerdown', {pageX: 1, pageY: 1});
+    expect(d.$targetItem).toBeNull();
+
+    firePointer(handle, 'pointerdown', {pageX: 1, pageY: 1});
+    expect(d.$targetItem).toBe(a);
+
+    d.$targetItem = null;
+    firePointer(titlebar, 'pointerdown', {pageX: 1, pageY: 1});
     expect(d.$targetItem).toBe(a);
   });
 

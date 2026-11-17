@@ -26,8 +26,8 @@ The `suffix` slot holds trailing content, before any shortcut:
 
 <Canvas of={ActionItemStories.WithSuffix} sourceState="shown" />
 
-A `shortcut` is shown at the end of the item.
-It is display only — the item renders the keys but does not bind them, so the shortcut has to be wired up separately:
+A `shortcut` is shown at the end of the item, and announced with `aria-keyshortcuts` on its button or link.
+The item doesn't bind the keys, so the shortcut has to be wired up separately:
 
 <Canvas of={ActionItemStories.WithShortcut} sourceState="shown" />
 

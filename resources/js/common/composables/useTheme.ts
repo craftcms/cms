@@ -3,9 +3,27 @@ import {getCurrentScope, onScopeDispose, ref, watchEffect} from 'vue';
 import type {CraftData} from './useCraftData';
 
 /**
+ * Tells the server which theme is showing, matching `Theme::COOKIE`, since it
+ * can't see the operating system's setting behind the System theme.
+ */
+const THEME_COOKIE = 'CraftTheme';
+
+/**
+ * Remembers the signed-in user's preference, matching
+ * `Theme::PREFERENCE_COOKIE`, so logged-out pages such as the login page keep
+ * showing the theme the last user chose.
+ */
+const PREFERENCE_COOKIE = 'CraftThemePreference';
+
+function setCookie(name: string, value: string): void {
+  document.cookie = `${name}=${value}; path=/; max-age=31536000; samesite=lax${location.protocol === 'https:' ? '; secure' : ''}`;
+}
+
+/**
  * Applies the control panel theme as `data-theme="dark"` on `<html>`, when the
- * user chose Dark, or System — the default, and what logged-out pages use — and
- * the operating system is dark. Read from the shared page props, so saving the preference takes effect
+ * user chose Dark, or System — the default — and the operating system is dark.
+ * Logged-out pages get the last signed-in user's preference from the server.
+ * Read from the shared page props, so saving the preference takes effect
  * without a full reload, and System follows the operating system as it changes.
  */
 export function useTheme(): void {
@@ -31,6 +49,12 @@ export function useTheme(): void {
       document.documentElement.dataset.theme = 'dark';
     } else {
       delete document.documentElement.dataset.theme;
+    }
+
+    setCookie(THEME_COOKIE, dark ? 'dark' : 'light');
+
+    if (page.props?.craft?.currentUser) {
+      setCookie(PREFERENCE_COOKIE, theme);
     }
   });
 }

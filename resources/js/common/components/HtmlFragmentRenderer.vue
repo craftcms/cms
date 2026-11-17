@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {initLegacyUi} from '@/common/craft/legacy-ui';
   import {
     appendBodyHtml,
     appendElementHtml,
@@ -6,16 +7,20 @@
     type AppendHtmlDisposer,
   } from '@craftcms/ui';
   import {onBeforeUnmount, ref, watch} from 'vue';
+  import type {HtmlFragment} from '@/common/types';
 
   const props = withDefaults(
     defineProps<{
-      fragment?: CraftCms.Cms.View.HtmlFragment | null;
-      /** Override loading while retaining stale-run cleanup and ready handling. */
+      fragment?: HtmlFragment | null;
+      /**
+       * Override loading while retaining stale-run cleanup and ready handling.
+       * Resolves with a function that removes what it added.
+       */
       render?: (
-        fragment: CraftCms.Cms.View.HtmlFragment,
+        fragment: HtmlFragment,
         container: HTMLElement,
         active: () => boolean
-      ) => Promise<AppendHtmlDisposer | undefined>;
+      ) => Promise<(() => void) | undefined>;
       /** Tag name for the container element. */
       as?: string;
     }>(),
@@ -126,10 +131,9 @@
         }
       }
 
-      // Upgrade legacy UI elements (lightswitches, field toggles, menus, …)
-      // the same way CpScreenSlideout does after injecting fragment content.
+      // Plugin markup in the fragment may still use legacy UI hooks
       if (html) {
-        window.Craft?.initUiElements?.(element);
+        initLegacyUi(element);
       }
 
       emit('ready', element);

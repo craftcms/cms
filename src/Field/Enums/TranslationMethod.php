@@ -20,6 +20,18 @@ enum TranslationMethod: string
     case Language = 'language';
     case Custom = 'custom';
 
+    /**
+     * Resolves a stored translation method.
+     *
+     * Craft 5 stored empty or unknown methods, which used the translation key format when one was set,
+     * and translated for each site otherwise.
+     */
+    public static function fromStored(?string $value, ?string $translationKeyFormat): self
+    {
+        return self::tryFrom($value ?? '')
+            ?? (($translationKeyFormat ?? '') !== '' ? self::Custom : self::Site);
+    }
+
     public function description(): ?string
     {
         return match ($this) {

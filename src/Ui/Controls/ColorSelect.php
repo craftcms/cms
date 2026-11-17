@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ui\Controls;
 
 use CraftCms\Cms\Cp\Components\SelectColor as SelectColorComponent;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Illuminate\Support\Arr;
@@ -14,7 +16,7 @@ use Illuminate\Support\Arr;
  *
  * @since 6.0.0
  */
-class ColorSelect extends Control
+class ColorSelect extends Control implements ReadableValueControl, WritableValueControl
 {
     private bool $allowTransparent = false;
 

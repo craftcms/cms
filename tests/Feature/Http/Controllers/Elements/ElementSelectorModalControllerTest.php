@@ -3,17 +3,23 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Events\FolderActionsResolving;
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Element\Conditions\TitleConditionRule;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Entry\Conditions\EntryCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementSelectorModalController;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Folders;
+use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Volumes;
 use CraftCms\Cms\Tests\TestClasses\Field\ModeThumbnailField;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
+use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
@@ -26,22 +32,32 @@ beforeEach(function () {
         array_merge([
             'context' => ElementSources::CONTEXT_MODAL,
             'elementType' => Entry::class,
+            'viewMode' => 'table',
         ], $payload),
         ['Accept' => 'application/json'],
     );
 });
 
-it('serves index props alongside the html the legacy index still boots from', function () {
+it('serves the index props the modal renders from', function () {
     $response = ($this->postBody)();
 
     $response->assertOk();
-    // The HTML is still there — the modal hasn't stopped using it yet.
-    expect($response->json('html'))->toBeString()->not->toBeEmpty();
+    expect($response->json('html'))->toBeNull();
 
     $props = $response->json('props');
     expect($props)->toBeArray();
     expect($props['elementType'])->toBe(Entry::class);
     expect($props['sources'])->toBeArray()->not->toBeEmpty();
+});
+
+it('leaves the rows out of a first payload that names no view mode', function () {
+    EntryModel::factory()->createElement();
+
+    $props = ($this->postBody)(['viewMode' => null])->assertOk()->json('props');
+
+    expect($props['sources'])->not->toBeEmpty()
+        ->and($props)->not->toHaveKeys(['data', 'pagination', 'structure']);
+    expect(($this->postBody)()->json('props.data'))->toHaveCount(1);
 });
 
 it('resolves sources in the modal context, not the index context', function () {
@@ -54,7 +70,7 @@ it('uses fit for modal thumbnail presence and list rendering', function (string 
     $entry = EntryModel::factory()->withField('thumbnail', ModeThumbnailField::class, value: $supportedMode)
         ->createElementWithFields()->element;
     $layout = $entry->getFieldLayout();
-    $layout->thumbFieldKey = 'layoutElement:'.$layout->getCustomFieldElements()[0]->uid;
+    $layout->thumbSources = ['layoutElement:'.$layout->getCustomFieldElements()[0]->uid];
     expect(Fields::saveLayout($layout))->toBeTrue();
 
     $response = ($this->postBody)()->assertOk();
@@ -92,7 +108,7 @@ it('narrows the sources to the ones the opener allows', function (?string $sourc
     $props = ($this->postBody)(['elementType' => User::class, 'sources' => ['inactive'], 'source' => $source])->json('props');
     expect($props['source']['key'])->toBe('inactive')
         ->and($props['pagination']['total'])->toBe(1)->and($props['data'])->toHaveCount(1);
-})->with(['absent' => null, 'invalid' => 'missing']);
+})->with(['absent' => null, 'invalid' => 'missing', 'not allowed' => 'admins']);
 
 // A click in the modal is a selection. A linked title would instead navigate
 // the CP behind the modal to the element's edit screen, dropping the selection
@@ -182,6 +198,14 @@ describe('asset folders', function () {
             ->and($thumb['labelLinkAttributes'])->toBe(['data-folder-link' => '']);
     });
 
+    it('keeps folder links in read-only mode', function () {
+        Folders::ensureFolderByFullPathAndVolume('a-subfolder', $this->volume);
+
+        $title = ($this->postAssets)(['readOnly' => true])['data'][0]['title'];
+
+        expect($title)->toMatch('/<a class="label-link" href="[^"]*assets\/testvolume\/a-subfolder" data-folder-link>/');
+    });
+
     it('lists the requested subfolder, with a trail back to the volume root', function () {
         Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
         $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);
@@ -198,6 +222,75 @@ describe('asset folders', function () {
             ]);
     });
 
+    it('lets plugins add buttons for the folder on screen, but not in the folder picker', function () {
+        $parent = Folders::ensureFolderByFullPathAndVolume('parent', $this->volume);
+        $root = Folders::getRootFolderByVolumeId($this->volume->id);
+
+        Event::listen(function (FolderActionsResolving $event) {
+            $event->actions[] = [
+                'label' => "Generate in {$event->folder->id} ({$event->context})",
+                'action' => ['type' => 'event', 'name' => 'my-plugin:generate'],
+            ];
+        });
+
+        expect(($this->postAssets)(['folderId' => $parent->id])['folderActions'])->toBe([[
+            'label' => "Generate in {$parent->id} (modal)",
+            'action' => ['type' => 'event', 'name' => 'my-plugin:generate'],
+        ]])
+            ->and(($this->postAssets)()['folderActions'][0]['label'])->toBe("Generate in {$root->id} (modal)")
+            ->and(($this->postAssets)(['folderId' => $parent->id, 'foldersOnly' => true])['folderActions'])->toBe([])
+            ->and(($this->postBody)()->json('props.folderActions'))->toBe([]);
+    });
+
+    it('searches subfolders when asked to, as the assets index does', function () {
+        $child = Folders::ensureFolderByFullPathAndVolume('parent/child', $this->volume);
+        $parent = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'parent/']);
+        $nestedAsset = AssetModel::factory()->createElement([
+            'volumeId' => $this->volume->id,
+            'folderId' => $child->id,
+            'filename' => 'nested-needle.txt',
+            'kind' => 'text',
+        ]);
+        Search::indexElementAttributes($nestedAsset);
+
+        $search = ['folderId' => $parent->id, 'search' => 'nested-needle'];
+        $ids = fn (array $props) => collect($props['data'])->pluck('id')->all();
+
+        $props = ($this->postAssets)($search);
+        expect($props['canSearchSubfolders'])->toBeTrue()
+            ->and($ids($props))->not->toContain($nestedAsset->id);
+
+        $props = ($this->postAssets)([...$search, 'includeSubfolders' => 1]);
+        expect($props['includeSubfolders'])->toBeTrue()
+            ->and($ids($props))->toContain($nestedAsset->id);
+
+        $props = ($this->postAssets)([...$search, 'includeSubfolders' => 1, 'showFolders' => false]);
+        expect($props['canSearchSubfolders'])->toBeFalse()
+            ->and($props['includeSubfolders'])->toBeFalse()
+            ->and($ids($props))->not->toContain($nestedAsset->id);
+    });
+
+    it('keeps a subfolder source within that subfolder', function () {
+        $child = Folders::ensureFolderByFullPathAndVolume('restricted/child', $this->volume);
+        Folders::ensureFolderByFullPathAndVolume('outside', $this->volume);
+        $restricted = Folders::findFolder(['volumeId' => $this->volume->id, 'path' => 'restricted/']);
+        $sources = ["volume:{$this->volume->uid}", "volume:{$this->volume->uid}/folder:{$restricted->uid}"];
+        $crumbs = fn (array $props) => collect($props['folderBreadcrumbs'])->pluck('folderId')->all();
+
+        $props = ($this->postAssets)([
+            'source' => "folder:{$restricted->uid}",
+            'sources' => $sources,
+            'folderId' => Folders::getRootFolderByVolumeId($this->volume->id)->id,
+        ]);
+
+        expect(collect($props['data'])->pluck('label')->all())->toBe(['child'])
+            ->and($crumbs($props))->toBe([$restricted->id]);
+
+        $props = ($this->postAssets)(['source' => "folder:{$restricted->uid}", 'sources' => $sources, 'folderId' => $child->id]);
+
+        expect($crumbs($props))->toBe([$restricted->id, $child->id]);
+    });
+
     it('ignores a requested folder outside the current volume', function () {
         Folders::ensureFolderByFullPathAndVolume('mine', $this->volume);
         $otherVolumeId = Volume::factory()->create(['fs' => 'test-disk'])->id;
@@ -212,6 +305,26 @@ describe('asset folders', function () {
     });
 });
 
+it('keeps the opener’s selection condition when the user changes the filters', function () {
+    EntryModel::factory()->createElement(['title' => 'Allowed']);
+    EntryModel::factory()->createElement(['title' => 'Excluded']);
+
+    $titleCondition = fn (string $operator, string $value) => [
+        'class' => EntryCondition::class,
+        'elementType' => Entry::class,
+        'conditionRules' => [
+            ['class' => TitleConditionRule::class, 'operator' => $operator, 'value' => $value],
+        ],
+    ];
+
+    $response = ($this->postBody)([
+        'selectionCondition' => $titleCondition('=', 'Allowed'),
+        'condition' => $titleCondition('!=', 'Neither'),
+    ])->assertOk();
+
+    expect(collect($response->json('props.data'))->pluck('label')->all())->toBe(['Allowed']);
+});
+
 it('excludes the target IDs supplied by replacement modals', function () {
     $first = EntryModel::factory()->createElement();
     $second = EntryModel::factory()->createElement();
@@ -222,4 +335,57 @@ it('excludes the target IDs supplied by replacement modals', function () {
     ])->assertOk();
 
     expect(array_column($response->json('props.data'), 'id'))->toBe([$replacement->id]);
+});
+
+describe('read-only indexes', function () {
+    it('links table titles to their elements', function () {
+        $titles = collect(($this->postBody)([
+            'elementType' => User::class,
+            'readOnly' => true,
+        ])->json('props.data'))->pluck('title');
+
+        expect($titles)->not->toBeEmpty();
+        $titles->each(fn (string $title) => expect($title)->toContain('CpLink'));
+    });
+
+    it('hands thumbs the url to navigate to', function () {
+        $thumbs = collect(($this->postBody)([
+            'elementType' => User::class,
+            'viewMode' => 'thumbs',
+            'readOnly' => true,
+        ])->json('props.data'));
+
+        expect($thumbs)->not->toBeEmpty();
+        $thumbs->each(fn (array $thumb) => expect($thumb['url'])->not->toBeNull());
+    });
+
+    it('narrows the elements by the requested criteria', function () {
+        $user = UserModel::factory()->createElement();
+
+        $props = ($this->postBody)([
+            'elementType' => User::class,
+            'readOnly' => true,
+            'criteria' => ['id' => $user->id],
+        ])->json('props');
+
+        expect($props['pagination']['total'])->toBe(1);
+    });
+});
+
+describe('read-only card view', function () {
+    beforeEach(function () {
+        $this->cardContent = fn (bool $readOnly) => ($this->postBody)([
+            'elementType' => User::class,
+            'viewMode' => 'cards',
+            'readOnly' => $readOnly,
+        ])->json('props.data.0.cardContentHtml');
+    });
+
+    it('links card titles to their elements', function () {
+        expect(($this->cardContent)(true))->toContain('href="');
+    });
+
+    it('leaves card titles unlinked when selecting', function () {
+        expect(($this->cardContent)(false))->not->toContain('href="');
+    });
 });

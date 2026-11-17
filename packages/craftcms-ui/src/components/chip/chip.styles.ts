@@ -74,6 +74,16 @@ export default css`
     overflow: clip;
   }
 
+  /* The label clips for its ellipsis, so a label link's ring is drawn on the chip and its own is turned off. */
+  :host([data-link-focus-visible]) {
+    --c-focus-outline-style: none;
+  }
+
+  :host([data-link-focus-visible]) .cp-chip {
+    outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+    outline-offset: var(--c-focus-outline-offset);
+  }
+
   :host([full-width]) .cp-chip {
     display: flex;
     flex: 1 1 auto;
@@ -99,11 +109,10 @@ export default css`
     min-height: var(--c-size-control-md);
   }
 
-  /* Outside the plain appearance, small and medium chips are as tall as a
-     medium button, thumbnail included: it's inset by the border and the
-     padding it keeps from the chip's edges. */
-  .cp-chip--small:not(.cp-chip--plain),
-  .cp-chip--medium:not(.cp-chip--plain) {
+  /* Outside the plain appearance, small chips are as tall as a medium
+     button, thumbnail included: it's inset by the border and the padding it
+     keeps from the chip's edges. */
+  .cp-chip--small:not(.cp-chip--plain) {
     --_thumb-size: calc(
       var(--c-size-control-md) - var(--_border-width) * 2 -
         var(--_chip-block-padding) * 2
@@ -111,10 +120,48 @@ export default css`
     min-height: var(--c-size-control-md);
   }
 
+  .cp-chip--xsmall {
+    --_thumb-size: calc(
+      var(--c-size-control-sm) - var(--_border-width) * 2 -
+        var(--_chip-block-padding) * 2
+    );
+    min-height: var(--c-size-control-sm);
+    font-size: var(--c-text-sm);
+  }
+
   .cp-chip--large {
     --_chip-spacing: 1em;
     --_thumb-size: calc(40rem / 16);
     min-height: var(--c-size-control-lg);
+  }
+
+  /* Thumbnail sizes, overriding the one the chip's size gives it: two
+     classes, so they win over the sizes' own. sm keeps the thumbnail a small
+     chip gives it. From lg, the corners grow along with the thumbnail. */
+  .cp-chip.cp-chip--thumb-md {
+    --_thumb-size: calc(60rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-lg {
+    --_thumb-size: calc(120rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-xl {
+    --_thumb-size: calc(180rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-2xl {
+    --_thumb-size: calc(240rem / 16);
+  }
+
+  .cp-chip.cp-chip--thumb-lg,
+  .cp-chip.cp-chip--thumb-xl,
+  .cp-chip.cp-chip--thumb-2xl {
+    --_radius: var(--c-radius-lg);
+  }
+
+  .cp-chip.cp-chip--rounded {
+    --_radius: var(--c-radius-full);
   }
 
   /* Alignment */
@@ -242,8 +289,14 @@ export default css`
     width: auto;
   }
 
+  /* As wide as a status dot (craft-indicator's \`md\` size plus its border),
+     so a wider status, like the draft icon, overflows evenly and lines up
+     with the dots. */
   ::slotted([slot='status']) {
     display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    inline-size: calc(0.6em + 2px);
   }
 
   /* A status, such as the draft icon, isn't the chip's own: only its icon
@@ -321,6 +374,15 @@ export default css`
     text-decoration-line: var(--c-link-decoration);
   }
 
+  /* A label in a link or a span is a flex item of the body, which the
+     body's own ellipsis doesn't reach, so it truncates itself. */
+  .cp-chip__body::slotted(a),
+  .cp-chip__body::slotted(span) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .cp-chip__body::slotted(a:hover) {
     text-decoration-line: var(--c-link-decoration-hover);
   }
@@ -328,9 +390,113 @@ export default css`
   /* Suffix */
 
   .cp-chip__suffix {
+    margin-inline-start: calc(var(--c-spacing) * 1.5 - var(--_chip-gap));
     padding-block: var(--_chip-block-padding);
     display: flex;
     flex-direction: column;
+  }
+
+  /*
+   * Stacked: the prefix sits above the label, both centered, for a tile in a
+   * grid. The checkbox and suffix share a row along the top, so reaching for
+   * one never lands on the thumbnail. Grid areas place each part, so a part
+   * that isn't rendered leaves its cell empty rather than shifting the rest.
+   */
+  .cp-chip--stacked {
+    display: inline-grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'prefix prefix prefix'
+      'main main main';
+    justify-items: center;
+    row-gap: var(--_chip-block-padding);
+    padding: var(--_chip-block-padding);
+  }
+
+  :host([full-width]) .cp-chip--stacked {
+    display: grid;
+  }
+
+  :host([full-width][prefix-placement='block-start']) {
+    display: block;
+    flex: 1 1 auto;
+    container: chip / inline-size;
+  }
+
+  /* Conditions can't read var(), so 18px is a large chip's padding and border on both sides. */
+  @container chip (inline-size < calc(240rem / 16 + 18px)) {
+    .cp-chip--stacked.cp-chip--thumb-2xl {
+      --_thumb-size: calc(180rem / 16);
+    }
+  }
+
+  @container chip (inline-size < calc(180rem / 16 + 18px)) {
+    .cp-chip--stacked:is(.cp-chip--thumb-2xl, .cp-chip--thumb-xl) {
+      --_thumb-size: calc(120rem / 16);
+    }
+  }
+
+  @container chip (inline-size < calc(120rem / 16 + 18px)) {
+    .cp-chip--stacked:is(
+      .cp-chip--thumb-2xl,
+      .cp-chip--thumb-xl,
+      .cp-chip--thumb-lg
+    ) {
+      --_thumb-size: calc(60rem / 16);
+    }
+  }
+
+  .cp-chip--stacked.cp-chip--has-header {
+    grid-template-areas:
+      'select . suffix'
+      'prefix prefix prefix'
+      'main main main';
+  }
+
+  .cp-chip--stacked .cp-chip__select {
+    grid-area: select;
+    justify-self: start;
+  }
+
+  /* The header row is as tall as a checkbox, with or without one, so a
+     checkbox sits as far from the top as from the side, and a taller suffix
+     centers on it, spilling evenly into the padding above and the gap below. */
+  .cp-chip--stacked.cp-chip--has-header {
+    grid-template-rows: var(--c-chip-checkbox-size, calc(14rem / 16)) auto auto;
+  }
+
+  /* The rows are spaced by the chip's padding and row gap alone, so the
+     parts drop the block padding that insets them in an inline chip. */
+  .cp-chip--stacked :is(.cp-chip__thumbnail, .cp-chip__body, .cp-chip__suffix) {
+    padding-block: 0;
+  }
+
+  .cp-chip--stacked .cp-chip__prefix {
+    grid-area: prefix;
+  }
+
+  /* Clear of the chip's edges, the thumbnail's corners aren't concentric
+     with the chip's, so they keep a radius of their own. */
+  .cp-chip--stacked .cp-chip__thumbnail {
+    --c-thumbnail-image-radius: var(--c-radius-md);
+  }
+
+  .cp-chip--stacked .cp-chip__main {
+    grid-area: main;
+    justify-self: stretch;
+    justify-content: center;
+    padding-inline-end: 0;
+  }
+
+  .cp-chip--stacked .cp-chip__body {
+    flex-grow: 0;
+  }
+
+  .cp-chip--stacked .cp-chip__suffix {
+    grid-area: suffix;
+    justify-self: end;
+    align-self: center;
+    margin-inline-start: 0;
   }
 
   /*
@@ -390,10 +556,10 @@ export default css`
   }
 
   /*
-   * White chips take white's own colors, which swap in the dark theme, so a
-   * white chip looks white in the light theme and black in the dark one, as a
-   * black chip does the reverse. Scoped to the two filled tiers so outline and
-   * plain stay transparent.
+   * White chips take the theme-aware raised surface, its border, and the
+   * default text color, rather than white's static colors, which stay light in
+   * dark mode. Scoped to the two filled tiers so outline and plain stay
+   * transparent.
    *
    * The palette is repointed too, for controls that inherit it, like the
    * action menu's button, whose hover tints from --c-color-fill-quiet.
@@ -401,17 +567,11 @@ export default css`
   :host([data-color='white'][appearance~='fill']:not([selected])) .cp-chip,
   :host([data-color='white'][appearance~='outline-fill']:not([selected]))
     .cp-chip {
-    --c-color-fill-quiet: var(--c-chip-fill, var(--c-color-white-fill-quiet));
-    --c-color-on-quiet: var(--c-chip-text, var(--c-color-white-on-quiet));
-    background-color: var(--c-chip-fill, var(--c-color-white-fill-quiet));
-    border-color: var(--c-chip-border-color, var(--c-color-white-edge));
-    color: var(--c-chip-text, var(--c-color-white-on-quiet));
-  }
-
-  :host([data-color='black'][appearance~='fill']:not([selected])) .cp-chip,
-  :host([data-color='black'][appearance~='outline-fill']:not([selected]))
-    .cp-chip {
-    border-color: var(--c-chip-border-color, var(--c-color-black-edge));
+    --c-color-fill-quiet: var(--c-chip-fill, var(--c-surface-white));
+    --c-color-on-quiet: var(--c-chip-text, var(--c-text-default));
+    background-color: var(--c-chip-fill, var(--c-surface-white));
+    border-color: var(--c-chip-border-color, var(--c-border-raised));
+    color: var(--c-chip-text, var(--c-text-default));
   }
 
   :host([data-color='white'][appearance~='outline']) .cp-chip,
@@ -431,6 +591,12 @@ export default css`
        Invisible, except in forced colors, where it gives the chip an edge. */
     outline: 1px solid transparent;
     outline-offset: -1px;
+  }
+
+  /* Over the inset a leading thumbnail would otherwise get, too. */
+  .cp-chip--plain.cp-chip--leads-with-thumbnail,
+  .cp-chip--plain.cp-chip--leads-with-prefix {
+    padding-inline-start: 0;
   }
 
   .cp-chip--plain .cp-chip__main:last-child {

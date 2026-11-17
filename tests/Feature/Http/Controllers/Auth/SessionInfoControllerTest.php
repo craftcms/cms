@@ -11,6 +11,7 @@ use CraftCms\Cms\Tests\TestClasses\OAuth\FakeOAuthProvider;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\View\TemplateHooks;
+use Illuminate\Session\SessionManager;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Session;
 
@@ -20,20 +21,21 @@ use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 use function Pest\Laravel\travel;
 
-test('session info returns csrf token without extending the session', function () {
-    $response = getJson(action([SessionInfoController::class, 'show'], [
-        'dontExtendSession' => 1,
-    ]));
+test('session info saves a new session for the csrf token it returns', function () {
+    $response = getJson(action([SessionInfoController::class, 'show']));
 
     $response
         ->assertOk()
-        ->assertHeaderMissing('Set-Cookie')
+        ->assertCookie(config('session.cookie'))
         ->assertJson([
             'isGuest' => true,
             'csrfTokenName' => '_token',
         ]);
 
-    expect($response->json('csrfTokenValue'))->toBeString();
+    $saved = unserialize(app(SessionManager::class)->driver()->getHandler()->read($response->getCookie(config('session.cookie'))->getValue()));
+
+    expect($response->json('csrfTokenValue'))->toBeString()
+        ->and($saved['_token'] ?? null)->toBe($response->json('csrfTokenValue'));
 });
 
 test('elevated session timeout does not extend the session', function () {
@@ -176,4 +178,25 @@ test('password confirmation validates its options', function () {
         'minimumRemainingSeconds' => -1,
         'force' => 'sometimes',
     ])->assertJsonValidationErrors(['minimumRemainingSeconds', 'force']);
+});
+
+test('login methods are available to a signed-out user', function () {
+    Edition::set(Edition::Pro);
+    app(GeneralConfig::class)->oauthProviders([
+        'test' => [
+            'driver' => FakeOAuthProvider::class,
+            'clientId' => 'client-id',
+            'clientSecret' => 'client-secret',
+            'label' => 'Continue with Test OAuth',
+        ],
+    ]);
+
+    getJson(action([SessionInfoController::class, 'loginMethods'], ['loginName' => 'admin@example.com']))
+        ->assertOk()
+        ->assertJsonPath('alternativeLoginMethods.html', fn (string $html): bool => str_contains($html, 'Continue with Test OAuth'));
+});
+
+test('login methods require a login name', function () {
+    getJson(action([SessionInfoController::class, 'loginMethods']))
+        ->assertJsonValidationErrors(['loginName']);
 });

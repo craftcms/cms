@@ -1,4 +1,7 @@
-import {beforeEach, expect, it} from 'vite-plus/test';
+import {beforeEach, expect, it, vi} from 'vite-plus/test';
+import {ThumbnailLoader} from '@src/utilities/thumbnail-loader';
+import '../badge/badge.js';
+import '../button/button.js';
 import '../icon/icon.js';
 import '../thumbnail/thumbnail.js';
 import '../truncate/truncate.js';
@@ -365,6 +368,62 @@ it('keeps a small chip as tall as its suffix button, unless it is auto', async (
   );
 });
 
+it('makes an xsmall chip as tall as a labeled badge, with its text size', async () => {
+  for (const {attrs, markup} of [
+    leadingParts.thumbnail,
+    {attrs: '', markup: ''},
+  ]) {
+    document.body.innerHTML = `
+      <style>:root { --c-size-control-sm: 24px; --c-text-sm: 13px; }</style>
+      <div style="display: flex; align-items: start; gap: 8px">
+        <craft-badge fill="gray">Label</craft-badge>
+        <craft-chip size="xsmall" ${attrs}>${markup}Label</craft-chip>
+      </div>`;
+    const badge = document.querySelector('craft-badge')!;
+    const chip = document.querySelector('craft-chip')!;
+    await Promise.all(
+      [badge, chip].map(
+        (element) =>
+          (element as HTMLElement & {updateComplete: Promise<unknown>})
+            .updateComplete
+      )
+    );
+    const badgeBox = badge.shadowRoot!.querySelector('[part="badge"]')!;
+    const chipBox = chip.shadowRoot!.querySelector('.cp-chip')!;
+
+    expect(box(chipBox).height, attrs || 'label only').toBe(
+      box(badgeBox).height
+    );
+    expect(getComputedStyle(chipBox).fontSize).toBe(
+      getComputedStyle(badgeBox).fontSize
+    );
+  }
+});
+
+it('rounds a rounded chip’s ends fully, and its thumbnail with them', async () => {
+  const {attrs, markup} = leadingParts.thumbnail;
+  document.body.innerHTML = `
+    <style>:root { --c-size-control-sm: 24px; --c-radius-full: 9999px; }</style>
+    <div style="display: flex">
+      <craft-chip size="xsmall" rounded ${attrs}>${markup}Label</craft-chip>
+    </div>`;
+  const chip = document.querySelector('craft-chip')!;
+  const thumbnail = chip.querySelector('craft-thumbnail')!;
+  await (chip as HTMLElement & {updateComplete: Promise<unknown>})
+    .updateComplete;
+  await (thumbnail as HTMLElement & {updateComplete: Promise<unknown>})
+    .updateComplete;
+  const chipBox = chip.shadowRoot!.querySelector('.cp-chip')!;
+  const image = thumbnail.shadowRoot!.querySelector('img')!;
+
+  expect(
+    parseFloat(getComputedStyle(chipBox).borderTopLeftRadius)
+  ).toBeGreaterThanOrEqual(box(chipBox).height / 2);
+  expect(
+    parseFloat(getComputedStyle(image).borderTopLeftRadius)
+  ).toBeGreaterThanOrEqual(box(image).height / 2);
+});
+
 it('makes medium and large chips as tall as a button of the same size', async () => {
   const sizes = {medium: 34, large: 44};
 
@@ -387,6 +446,36 @@ it('makes medium and large chips as tall as a button of the same size', async ()
       ).toBe(control);
     }
   }
+});
+
+it('puts a stacked chip’s suffix and thumbnail in the same place with or without a checkbox', async () => {
+  const tile = (selectable: boolean) => `
+    <craft-chip prefix-placement="block-start" full-width show-thumb thumb-size="lg" ${selectable ? 'selectable' : ''} style="width: 200px">
+      <div slot="thumbnail"><craft-thumbnail src="${image}" alt="Thumbnail"></craft-thumbnail></div>
+      Label
+      <craft-button slot="suffix" size="small" icon="ellipsis" aria-label="Actions"></craft-button>
+    </craft-chip>`;
+  document.body.innerHTML = tile(true) + tile(false);
+  const chips = [...document.querySelectorAll('craft-chip')];
+  await Promise.all(chips.map((chip) => chip.updateComplete));
+
+  const offsets = chips.map((chip) => {
+    const top = chip
+      .shadowRoot!.querySelector('.cp-chip')!
+      .getBoundingClientRect().top;
+    const offset = (selector: string) =>
+      Math.round(
+        chip.shadowRoot!.querySelector(selector)!.getBoundingClientRect().top -
+          top
+      );
+
+    return {
+      suffix: offset('.cp-chip__suffix'),
+      thumbnail: offset('.cp-chip__prefix'),
+    };
+  });
+
+  expect(offsets[1]).toEqual(offsets[0]);
 });
 
 it('sizes to its content, or fills its parent when full-width', async () => {
@@ -611,7 +700,7 @@ it('centers a truncated label on its capitals without clipping its descenders', 
     .shadowRoot!.querySelector('.cp-chip')!
     .getBoundingClientRect();
   const context = document.createElement('canvas').getContext('2d')!;
-  context.font = style.font;
+  context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
   const capHeight = context.measureText('H').actualBoundingBoxAscent;
   const range = document.createRange();
   range.selectNodeContents(document.getElementById('text')!);
@@ -643,33 +732,35 @@ it('draws a selected chip with the accent’s normal border', async () => {
 });
 
 // Inheriting controls, like the action menu's button, tint their hover from
-// --c-color-fill-quiet. A white chip looks black in the dark theme, so they
-// take what they'd get in a black chip on a light page, not a white hover.
+// --c-color-fill-quiet. The white palette's is static white, which left a
+// white hover on a dark chip.
 it.each([
   ['default', ''],
   ['selected', 'selected'],
 ])(
-  'hands slotted controls in a white chip on a dark page what a black chip gives them on a light one (%s)',
+  'hands its own fill to slotted controls in the dark theme (%s)',
   async (_, attrs) => {
-    await import('../../styles/cp.css');
+    await import('../../styles/shared/color-palette.css');
+    await import('../../styles/shared/colorable.css');
+    await import('../../styles/shared/variables.css');
+    await import('../../styles/shared/tokens.css');
 
-    const chip = (color: string) => `
-      <craft-chip data-color="${color}" appearance="outline-fill" ${attrs}>
-        Label
-        <div slot="suffix" style="background-color: var(--c-color-fill-quiet)">…</div>
-      </craft-chip>`;
     document.body.innerHTML = `
-      <div data-theme="dark">${chip('white')}</div>
-      <div>${chip('black')}</div>`;
-    const chips = [...document.querySelectorAll('craft-chip')];
-    await Promise.all(chips.map((element) => element.updateComplete));
+      <div data-theme="dark">
+        <craft-chip data-color="white" appearance="outline-fill" ${attrs}>
+          Label
+          <div slot="suffix" id="action" style="background-color: var(--c-color-fill-quiet)">…</div>
+        </craft-chip>
+      </div>`;
+    const chip = document.querySelector('craft-chip')!;
+    await chip.updateComplete;
 
-    const [white, black] = chips.map(
-      (element) =>
-        getComputedStyle(element.querySelector('[slot="suffix"]')!)
-          .backgroundColor
+    expect(
+      getComputedStyle(document.querySelector('#action')!).backgroundColor
+    ).toBe(
+      getComputedStyle(chip.shadowRoot!.querySelector('.cp-chip')!)
+        .backgroundColor
     );
-    expect(white).toBe(black);
   }
 );
 
@@ -929,15 +1020,11 @@ it('tints a selected colored chip’s controls from its own fill, not the accent
   ).toBe(getComputedStyle(own).backgroundColor);
 });
 
-it('makes non-plain chips as tall as a medium button, thumbnail included', async () => {
+it('makes non-plain small chips as tall as a medium button, thumbnail included', async () => {
   await import('../../styles/cp.css');
   document.body.innerHTML = `
     <div><craft-chip>Label</craft-chip></div>
     <div><craft-chip show-thumb>
-      <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
-      Label
-    </craft-chip></div>
-    <div><craft-chip size="medium" show-thumb>
       <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
       Label
     </craft-chip></div>
@@ -951,8 +1038,34 @@ it('makes non-plain chips as tall as a medium button, thumbnail included', async
     (chip) => box(chip.shadowRoot!.querySelector('.cp-chip')!).height
   );
 
-  expect(heights.slice(0, 3)).toEqual([32, 32, 32]);
-  expect(heights[3]).toBeLessThan(32);
+  expect(heights.slice(0, 2)).toEqual([32, 32]);
+  expect(heights[2]).toBeLessThan(32);
+});
+
+it('steps the thumbnail up from small to medium to large', async () => {
+  await import('../../styles/cp.css');
+  document.body.innerHTML = ['small', 'medium', 'large']
+    .map(
+      (size) => `<div><craft-chip size="${size}" show-thumb>
+        <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+        Label
+      </craft-chip></div>`
+    )
+    .join('');
+  const chips = [...document.querySelectorAll('craft-chip')];
+  for (const chip of chips) {
+    await chip.updateComplete;
+  }
+  const widths = chips.map(
+    (chip) =>
+      box(
+        chip
+          .querySelector('craft-thumbnail')!
+          .shadowRoot!.querySelector('[part="thumbnail"]')!
+      ).width
+  );
+
+  expect(widths).toEqual([26, 32, 40]);
 });
 
 it('styles the badges in a filled black chip as in the dark theme', async () => {
@@ -1028,4 +1141,184 @@ it('centers a chip with a thumbnail on its line, rather than sitting on the base
   expect(
     Math.abs(box.top + box.height / 2 - (cell.top + cell.height / 2))
   ).toBeLessThanOrEqual(1);
+});
+
+// A tile in a grid: the thumbnail above the label, both centered, and the
+// checkbox and suffix in a row of their own along the top, clear of the
+// thumbnail so reaching for one doesn't select the tile instead.
+it('stacks the prefix above the label, with the checkbox and suffix on top', async () => {
+  document.body.innerHTML = `
+    <div style="width: 240px; display: flex">
+      <craft-chip prefix-placement="block-start" full-width thumb-size="lg" show-thumb selectable>
+        <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+        Label
+        <div slot="suffix"><div style="width: 24px; height: 24px"></div></div>
+      </craft-chip>
+    </div>`;
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+  const part = (selector: string) =>
+    chip.shadowRoot!.querySelector(selector)!.getBoundingClientRect();
+
+  const outer = part('.cp-chip');
+  const select = part('.cp-chip__select');
+  const suffix = part('.cp-chip__suffix');
+  const prefix = part('.cp-chip__prefix');
+  const main = part('.cp-chip__main');
+
+  expect(outer.width).toBe(240);
+  expect(select.bottom).toBeLessThanOrEqual(prefix.top);
+  expect(suffix.bottom).toBeLessThanOrEqual(prefix.top);
+  expect(select.left).toBeLessThan(suffix.left);
+  expect(prefix.bottom).toBeLessThanOrEqual(main.top);
+  // Centered across the tile.
+  const center = outer.left + outer.width / 2;
+  expect(Math.abs(prefix.left + prefix.width / 2 - center)).toBeLessThan(1);
+});
+
+it.each([
+  [300, 240],
+  [250, 180],
+  [180, 120],
+  [100, 60],
+])(
+  'steps a full-width stacked 2xl tile’s thumbnail down to fit a %ipx parent',
+  async (width, thumb) => {
+    document.body.innerHTML = `
+      <div style="width: ${width}px; display: flex">
+        <craft-chip prefix-placement="block-start" full-width thumb-size="2xl" show-thumb>
+          <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+          Label
+        </craft-chip>
+      </div>`;
+    const chip = document.querySelector('craft-chip')!;
+    const thumbnail = chip.querySelector('craft-thumbnail')!;
+    await chip.updateComplete;
+    await thumbnail.updateComplete;
+
+    expect(box(chip.shadowRoot!.querySelector('.cp-chip')!).width).toBe(width);
+    expect(box(thumbnail.shadowRoot!.querySelector('.thumbnail')!).width).toBe(
+      thumb
+    );
+  }
+);
+
+// The thumbnail size and the chip's: a thumb-size picks a chip size to suit,
+// unless the chip has one of its own.
+it('sizes the thumbnail by thumb-size, and the chip to suit it', async () => {
+  const render = async (attrs: string) => {
+    document.body.innerHTML = `
+      <craft-chip show-thumb ${attrs}>
+        <div slot="thumbnail"><craft-thumbnail src="${image}"></craft-thumbnail></div>
+        Label
+      </craft-chip>`;
+    const chip = document.querySelector('craft-chip')!;
+    const thumbnail = chip.querySelector('craft-thumbnail')!;
+    await chip.updateComplete;
+    await thumbnail.updateComplete;
+    const inner = chip.shadowRoot!.querySelector('.cp-chip')!;
+
+    return {
+      thumb: box(thumbnail.shadowRoot!.querySelector('.thumbnail')!).width,
+      size: ['small', 'medium', 'large'].find((size) =>
+        inner.classList.contains(`cp-chip--${size}`)
+      ),
+    };
+  };
+
+  expect(await render('thumb-size="md"')).toEqual({thumb: 60, size: 'medium'});
+  expect(await render('thumb-size="2xl"')).toEqual({thumb: 240, size: 'large'});
+  expect(await render('thumb-size="xl" size="small"')).toEqual({
+    thumb: 180,
+    size: 'small',
+  });
+  expect((await render('')).size).toBe('small');
+});
+
+function hiddenThumbChip() {
+  document.body.innerHTML = `
+    <craft-chip show-thumb>
+      <div slot="thumbnail">
+        <div data-sizes="20px" data-src="${image}" hidden></div>
+      </div>
+      Label
+    </craft-chip>`;
+  const chip = document.querySelector('craft-chip')!;
+
+  return {chip, thumb: chip.querySelector<HTMLElement>('[data-sizes]')!};
+}
+
+function watchedThumbs(): HTMLElement[] {
+  return Object.values(ThumbnailLoader.invisibleThumbs).map(
+    ([, thumb]) => thumb
+  );
+}
+
+it('stops watching a hidden thumb once the chip is removed', async () => {
+  const {chip, thumb} = hiddenThumbChip();
+  await chip.updateComplete;
+  expect(watchedThumbs()).toContain(thumb);
+
+  chip.remove();
+
+  expect(watchedThumbs()).not.toContain(thumb);
+});
+
+it('loads a thumb shown while the chip was detached, once it is added back', async () => {
+  const {chip, thumb} = hiddenThumbChip();
+  await chip.updateComplete;
+
+  chip.remove();
+  thumb.hidden = false;
+  document.body.append(chip);
+
+  await vi.waitFor(() => expect(thumb.querySelector('img')).not.toBeNull());
+});
+
+it.each(['small', 'medium', 'large'])(
+  'insets a stacked %s chip’s checkbox as far from the top as from the side',
+  async (size) => {
+    document.body.innerHTML = `
+      <craft-chip prefix-placement="block-start" size="${size}" selectable>
+        <span slot="prefix" style="display: block; width: 40px; height: 40px"></span>
+        Label
+      </craft-chip>`;
+    const chip = document.querySelector('craft-chip')!;
+    await chip.updateComplete;
+
+    const base = chip.shadowRoot!.querySelector('.cp-chip')!;
+    const checkbox = chip
+      .shadowRoot!.querySelector('.cp-chip__select')!
+      .getBoundingClientRect();
+    const edges = base.getBoundingClientRect();
+
+    expect(checkbox.top - edges.top).toBeCloseTo(checkbox.left - edges.left, 0);
+  }
+);
+
+it('keeps a stacked chip’s parts from padding its rows beyond the chip’s own spacing', async () => {
+  document.body.innerHTML = `
+    <craft-chip prefix-placement="block-start" thumb-size="lg" selectable show-thumb>
+      <div slot="thumbnail" style="width: 100%; height: 100%"></div>
+      <craft-button slot="suffix" size="small" icon="ellipsis"></craft-button>
+      Label
+    </craft-chip>`;
+  const chip = document.querySelector('craft-chip')!;
+  await chip.updateComplete;
+
+  const shadow = chip.shadowRoot!;
+  const edges = shadow.querySelector('.cp-chip')!.getBoundingClientRect();
+  const checkbox = shadow
+    .querySelector('.cp-chip__select')!
+    .getBoundingClientRect();
+  const label = shadow.querySelector('.cp-chip__body')!.getBoundingClientRect();
+  const button = chip.querySelector('craft-button')!.getBoundingClientRect();
+  const inset = checkbox.left - edges.left;
+
+  expect(checkbox.top - edges.top).toBeCloseTo(inset, 0);
+  expect(edges.bottom - label.bottom).toBeCloseTo(inset, 0);
+  expect((button.top + button.bottom) / 2).toBeCloseTo(
+    (checkbox.top + checkbox.bottom) / 2,
+    0
+  );
 });

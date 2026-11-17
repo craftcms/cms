@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import type {Selectable} from '@/common/composables/useSelectable';
+  import {usePasteElementsShortcut} from '@/modules/elements/composables/usePasteElementsShortcut';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {useEventListener} from '@vueuse/core';
   import {
@@ -139,7 +141,9 @@
   canInteractWithOrder = computed(
     () => canReorder.value && !busy.value && !loading.value
   );
-  const {selection, selectedIds, clearSelection} = queryState.selection;
+  const {selectedIds, clearSelection} = queryState.selection;
+  // Nested elements always have numeric ids.
+  const selection = queryState.selection.selection as Selectable<number>;
 
   operations = useNestedElementOperations({
     elements,
@@ -158,6 +162,11 @@
     busy,
     error,
     ownerId: preparedOwnerId,
+  });
+
+  usePasteElementsShortcut(container, {
+    canPaste: () => operations.canPaste.value,
+    paste: () => operations.paste(),
   });
   const actions = useNestedElementActions({
     elements,
@@ -375,7 +384,9 @@
         <craft-button
           v-if="editable && operations.canPaste.value"
           type="button"
-          :variant="ButtonVariant.Fill"
+          variant="outline"
+          icon="custom-icons/duplicate"
+          class="paste-btn"
           .disabled="busy || loading"
           @click="operations.paste()"
           >{{ operations.pasteButtonLabel.value }}</craft-button
@@ -409,11 +420,14 @@
           :context="model.view.elementIndex.context"
           :params="
             manager
-              ? nestedIndexParams(
-                  manager,
-                  manager.ownerId,
-                  control.index?.initial
-                )
+              ? {
+                  ...nestedIndexParams(
+                    manager,
+                    manager.ownerId,
+                    control.index?.initial
+                  ),
+                  criteria: {status: model.view.status.value || null},
+                }
               : {}
           "
           :perform="actions.perform"

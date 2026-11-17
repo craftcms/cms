@@ -1,7 +1,66 @@
 import humanizeDuration from 'humanize-duration';
+import type {WindowWithCraft} from '../types/globals.js';
 
 // @TODO grab this from the config
 const defaultCpLocale = 'en';
+
+/**
+ * The locale numbers and dates are formatted in: the user's formatting locale,
+ * then the control panel's language.
+ */
+export function formattingLocale(): string {
+  if (typeof window === 'undefined') {
+    return defaultCpLocale;
+  }
+
+  return (
+    (window as WindowWithCraft).Craft?.formattingLocale ||
+    document.documentElement.lang ||
+    defaultCpLocale
+  );
+}
+
+/**
+ * A date, in the user's formatting locale. Long dates by default, e.g. “October 30, 2026”.
+ * A value that isn't a date formats as an empty string.
+ */
+export function formatDate(
+  value: Date | string | number,
+  options: Intl.DateTimeFormatOptions = {dateStyle: 'long'}
+): string {
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat(formattingLocale(), options).format(date);
+}
+
+/** An amount of money, in the user's formatting locale unless given another. Whole amounts drop their cents. */
+export function formatCurrency(
+  value: number | string | null,
+  currency: string,
+  locale: string = formattingLocale()
+): string {
+  const amount = Number(value ?? 0);
+  const formatter = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+  });
+  const scale = 10 ** (formatter.resolvedOptions().maximumFractionDigits ?? 2);
+
+  if (!Number.isInteger(Math.round(amount * scale) / scale)) {
+    return formatter.format(amount);
+  }
+
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
 
 export function formatNumber(number: number | string, format?: string) {
   // If d3 is available, use it for compatibility
@@ -32,7 +91,7 @@ export function formatNumber(number: number | string, format?: string) {
       ? parseInt(decimalMatch[1]!, 10)
       : 0;
 
-    return new Intl.NumberFormat(defaultCpLocale, {
+    return new Intl.NumberFormat(formattingLocale(), {
       useGrouping: hasThousandSeparator,
       minimumFractionDigits: maximumFractionDigits,
       maximumFractionDigits: maximumFractionDigits,
@@ -40,7 +99,7 @@ export function formatNumber(number: number | string, format?: string) {
   }
 
   // Default: format with thousand separators, no decimal places
-  return new Intl.NumberFormat(defaultCpLocale, {
+  return new Intl.NumberFormat(formattingLocale(), {
     useGrouping: true,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,

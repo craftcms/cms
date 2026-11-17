@@ -7,8 +7,12 @@ namespace CraftCms\Cms\Element\Queries\Concerns;
 use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
+use CraftCms\Cms\Gql\Attributes\Gql;
+use CraftCms\Cms\Mcp\Attributes\Mcp;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 
@@ -49,13 +53,16 @@ trait QueriesStatuses
             }
 
             // only set archived=false if 'archived' doesn't show up in the status param
-            // (applyStatus() will normalize $elementQuery->status to an array if applicable)
-            if (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status)) {
+            // (applyStatus() will normalize $elementQuery->status to an array if applicable),
+            // and leave it to the query a nested condition is nested in
+            if (! $elementQuery->isNestedCondition && (! is_array($elementQuery->status) || ! in_array($elementQuery->elementType::STATUS_ARCHIVED, $elementQuery->status))) {
                 $elementQuery->whereBool('elements.archived', false);
             }
         });
     }
 
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Narrows the query results to only {elements} that have been archived.')]
+    #[Gql(Gql::CanQueryInactiveElements)]
     public function archived(bool $value = true): static
     {
         $this->archived = $value;
@@ -92,6 +99,9 @@ trait QueriesStatuses
      *
      * @param  string|string[]|null  $value  The property value
      */
+    #[ElementQueryParam(ElementQueryParamType::NullableStringOrStrings, 'Narrows the query results based on the {elements}’ statuses.')]
+    #[Gql(Gql::CanQueryInactiveElements)]
+    #[Mcp(hint: 'Pass null to include all statuses.')]
     public function status(array|string|null $value): static
     {
         $this->status = $value;
@@ -140,7 +150,7 @@ trait QueriesStatuses
             return;
         }
 
-        $query->where(function (Builder $q) use ($elementQuery, $statuses, $glue) {
+        $query->whereNested(function (Builder $q) use ($elementQuery, $statuses, $glue) {
             foreach ($statuses as $status) {
                 if ($glue === 'not') {
                     $q->whereNot($elementQuery->placeholderCondition($elementQuery->statusCondition($status)));

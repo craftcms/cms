@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import '@craftcms/ui/components/timeline-item/timeline-item';
-  import ActivityCommentCard from '@/modules/activity/components/ActivityCommentCard.vue';
+  import MarkdownHtml from '@/common/components/MarkdownHtml.vue';
+  import MessageBubble from '@/common/components/MessageBubble.vue';
+  import {usePhotoColors} from '@/common/composables/usePhotoColors';
   import ActivityTimelineActor from '@/modules/activity/components/ActivityTimelineActor.vue';
 
   type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
@@ -16,12 +18,14 @@
     }>(),
     {last: false}
   );
+
+  const photoColors = usePhotoColors(() => props.event.actor.photoColors);
 </script>
 
 <template>
   <craft-timeline-item :last.prop="last">
     <craft-icon slot="marker" :name="event.icon" />
-    <div v-if="!event.noteHtml" slot="heading" class="workflow-review-summary">
+    <div slot="heading" class="workflow-review-summary">
       <ActivityTimelineActor
         :actor="event.actor"
         :impersonator="event.impersonator"
@@ -29,23 +33,15 @@
       {{ event.description }}
     </div>
     <time
-      v-if="!event.noteHtml"
       slot="meta"
       :datetime="event.occurredAt"
       :title="event.formattedOccurredAt.full"
     >
       {{ event.formattedOccurredAt.time }}
     </time>
-    <ActivityCommentCard
-      v-if="event.noteHtml"
-      class="workflow-review-comment"
-      :actor="event.actor"
-      :impersonator="event.impersonator"
-      :description-text="event.description"
-      :html="event.noteHtml"
-      :occurred-at="event.occurredAt"
-      :formatted-occurred-at="event.formattedOccurredAt"
-    />
+    <MessageBubble v-if="event.noteHtml" :style="photoColors">
+      <MarkdownHtml :html="event.noteHtml" />
+    </MessageBubble>
   </craft-timeline-item>
 </template>
 

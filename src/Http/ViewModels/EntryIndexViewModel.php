@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Http\ViewModels;
 
+use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Section\Data\Section;
-use CraftCms\Cms\Section\Resources\SectionResource;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Url;
 use Override;
@@ -32,12 +32,6 @@ class EntryIndexViewModel extends ContentIndexViewModel
         return $this->sectionHandle ?? '';
     }
 
-    /** @return list<array<string, mixed>> */
-    public function publishableSections(): array
-    {
-        return SectionResource::collection(Sections::getPublishableSections())->resolve();
-    }
-
     /**
      * The entry index is a page of its own — `content/entries`, or
      * `content/{page}` for a custom index page.
@@ -51,28 +45,26 @@ class EntryIndexViewModel extends ContentIndexViewModel
     /**
      * Sections have index URLs of their own, which is what the rest of the CP
      * links them by — see {@see Section::getCpIndexUri()}, whose shape this
-     * matches. Singles share one source, and so one `singles` URL.
+     * matches.
      *
      * @param  array<string, mixed>  $source
      */
     #[Override]
     protected function sourceUrl(array $source): ?string
     {
-        $handle = $source['key'] === 'singles'
-            ? 'singles'
-            : ($source['data']['handle'] ?? null);
+        $handle = str_starts_with((string) $source['key'], 'section:') ? ($source['data']['handle'] ?? null) : null;
 
-        // Anything that isn't a section source (a custom source, say) has no
-        // URL of its own, so fall back to the `?source=` query.
+        // Anything that isn't a section source has no URL of its own, so fall
+        // back to the `?source=` query. That includes a custom source limited
+        // to one section, which carries the section's handle too.
         return $handle === null
             ? parent::sourceUrl($source)
             : Url::cpUrl(sprintf('%s/%s', $this->pageUri(), $handle));
     }
 
     /**
-     * Maps the section-handle route segment (e.g. `content/entries/blog`,
-     * `content/entries/singles`) to its source key (`singles` for Single
-     * sections, `section:{uid}` otherwise).
+     * Maps the section-handle route segment (e.g. `content/entries/blog`) to
+     * its source key (`section:{uid}`).
      */
     #[Override]
     protected function defaultSourceKey(): ?string
@@ -81,13 +73,30 @@ class EntryIndexViewModel extends ContentIndexViewModel
             return null;
         }
 
-        if ($this->sectionHandle === 'singles') {
-            return 'singles';
-        }
-
         $section = Sections::getSectionByHandle($this->sectionHandle);
 
         return $section ? "section:$section->uid" : null;
+    }
+
+    /**
+     * Whether the user can move each entry to another section, for the Move to
+     * action's `selectionAttribute`.
+     *
+     * @return array<string, bool>
+     */
+    #[Override]
+    protected function extraCapabilities(ElementInterface $element): array
+    {
+        if (! $element instanceof Entry) {
+            return [];
+        }
+
+        $maxLevels = $element->getSection()?->maxLevels;
+
+        return [
+            'movable' => $element->canMove(),
+            'acceptsChildren' => ! $maxLevels || (int) $element->level < $maxLevels,
+        ];
     }
 
     /**

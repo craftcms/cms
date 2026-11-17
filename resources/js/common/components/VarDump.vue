@@ -1,19 +1,21 @@
 <script setup lang="ts">
+  import CodeHighlight from '@/common/components/CodeHighlight.vue';
+
   defineProps<{
     data: any;
   }>();
 </script>
 
 <template>
-  <pre v-bind="$attrs">{{ JSON.stringify(data, null, 2) }}</pre>
+  <CodeHighlight language="json" :value="data" class="var-dump" />
 </template>
 
 <style scoped lang="scss">
-  pre {
+  .var-dump {
     font-size: 0.7rem;
     padding: var(--c-spacing-md);
-    border: 1px solid var(--color-slate-400);
-    background-color: var(--color-slate-50);
+    border: 1px solid var(--c-color-neutral-border-quiet);
+    background-color: var(--c-color-neutral-fill-quiet);
     border-radius: var(--c-radius-md);
     overflow: auto;
   }

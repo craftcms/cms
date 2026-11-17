@@ -15,13 +15,10 @@ use CraftCms\Cms\Auth\OAuth\OAuth;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\User\Contracts\CraftUser;
 use CraftCms\Cms\User\Models\User;
-use CraftCms\Cms\View\HtmlStack;
-use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\HtmlString;
@@ -35,7 +32,6 @@ use function CraftCms\Cms\action_url;
 use function CraftCms\Cms\cp_url;
 use function CraftCms\Cms\craftAuth;
 use function CraftCms\Cms\site_url;
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
@@ -80,39 +76,6 @@ readonly class LoginController extends AuthenticationController
     public function redirect(): Response
     {
         return redirect(URL::defaultReturnUrl());
-    }
-
-    public function showLoginModal(Request $request, Impersonation $impersonation, HtmlStack $HtmlStack): JsonResponse
-    {
-        $forElevatedSession = $request->boolean('forElevatedSession');
-
-        // if we're showing the modal for session elevation, and we got this far,
-        // it means that the time left doesn't exceed minimum requirement,
-        // but there might still be some time left;
-        // to avoid strange behaviour, clear out whatever's left so that we start with the right amount of time
-        // see https://github.com/craftcms/cms/pull/18753
-        if ($forElevatedSession) {
-            $request->session()->forget($this->generalConfig->getPasswordConfirmationKey());
-        }
-
-        // If the current user is being impersonated, get the impersonator instead
-        if ($forElevatedSession && ($impersonator = $impersonation->getImpersonator())) {
-            $staticEmail = $impersonator->email;
-        } else {
-            $staticEmail = $request->validate(['email' => ['required']])['email'];
-        }
-
-        $html = template('_special/login-modal', [
-            'action' => route('craft.cp.login.attempt'),
-            'staticEmail' => $staticEmail,
-            'forElevatedSession' => $forElevatedSession,
-        ], templateMode: TemplateMode::Cp);
-
-        return new JsonResponse([
-            'html' => $html,
-            'headHtml' => $HtmlStack->headHtml(),
-            'bodyHtml' => $HtmlStack->bodyHtml(),
-        ]);
     }
 
     public function attemptLogin(Request $request, Impersonation $impersonation, LoginRateLimiter $loginRateLimiter): Response

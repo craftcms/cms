@@ -151,6 +151,24 @@ it('executes a query through the new service', function () {
         ->toBe(['data' => ['ping' => 'pong']]);
 });
 
+it('shows resolver error details only when debug mode is enabled', function () {
+    Cms::config()->devMode = false;
+    app(GqlQueries::class)->register(ThrowingMockQuery::class);
+    $firstError = fn (bool $debug) => app(Gql::class)->executeQuery(
+        app(Gql::class)->getPublicSchema(),
+        '{throwingQuery}',
+        debugMode: $debug,
+    )['errors'][0];
+
+    config()->set('app.debug', true);
+    expect($firstError(true))->toHaveKey('extensions.debugMessage', 'Internal resolver failure');
+
+    config()->set('app.debug', false);
+    expect($firstError(false))
+        ->toHaveKey('message', 'Something went wrong when processing the GraphQL query.')
+        ->not->toHaveKey('extensions.debugMessage');
+});
+
 it('allows pre-execution listeners to short-circuit query execution', function () {
     $schema = app(Gql::class)->getPublicSchema();
 
@@ -433,6 +451,51 @@ class MockMutation extends BaseMutation
                 'type' => Type::string(),
                 'args' => [],
                 'resolve' => static fn () => 'mocked',
+            ],
+        ];
+    }
+}
+
+it('exposes the expected element arguments and fields', function () {
+    CraftCms\Cms\Section\Models\Section::factory()
+        ->withEntryTypes(CraftCms\Cms\Entry\Models\EntryType::factory()->create(['handle' => 'article']))
+        ->create(['handle' => 'news', 'type' => SectionType::Channel->value]);
+    CraftCms\Cms\Section\Models\Section::factory()
+        ->withEntryTypes(CraftCms\Cms\Entry\Models\EntryType::factory()->create(['handle' => 'page']))
+        ->create(['handle' => 'pages', 'type' => SectionType::Structure->value]);
+    Volume::factory()->create(['handle' => 'images']);
+    app(Gql::class)->flushCaches();
+
+    $schema = app(Gql::class)->getSchemaDef(GqlHelper::createFullAccessSchema(), true);
+    $names = fn (array $items): array => collect($items)->map(fn ($item) => $item->name)->sort()->values()->all();
+    $args = fn (ObjectType $type, string $field): array => $names($type->getField($field)->args);
+
+    $snapshot = [];
+
+    foreach (['ElementInterface', 'EntryInterface', 'AssetInterface', 'UserInterface', 'AddressInterface'] as $interface) {
+        $snapshot["fields: $interface"] = $names($schema->getType($interface)->getFields());
+    }
+
+    foreach (['entries', 'assets', 'users', 'addresses'] as $query) {
+        $snapshot["query: $query"] = $args($schema->getQueryType(), $query);
+    }
+
+    foreach (['save_news_article_Entry', 'save_news_article_Draft', 'save_pages_page_Entry', 'save_images_Asset'] as $mutation) {
+        $snapshot["mutation: $mutation"] = $args($schema->getMutationType(), $mutation);
+    }
+
+    expect(json_encode($snapshot, JSON_PRETTY_PRINT))->toMatchSnapshot();
+});
+
+class ThrowingMockQuery extends BaseQuery
+{
+    public static function getQueries(bool $checkToken = true): array
+    {
+        return [
+            'throwingQuery' => [
+                'type' => Type::string(),
+                'args' => [],
+                'resolve' => static fn () => throw new RuntimeException('Internal resolver failure'),
             ],
         ];
     }

@@ -5,16 +5,17 @@
    */
   import {t} from '@craftcms/ui/utilities/translate';
   import {useId} from 'vue';
-  import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import ResizeHandle from '@/common/components/ResizeHandle.vue';
   import type {UseResizableReturn} from '@/common/composables/useResizable';
-  import type {ScreenSlots} from '../types';
 
   defineProps<{
     resizer: UseResizableReturn;
   }>();
 
-  defineSlots<Pick<ScreenSlots, 'content-details'>>();
+  defineSlots<{
+    /** The screen's details panels, or the page's details content. */
+    default(): unknown;
+  }>();
 
   // `aria-controls` needs a real id, and `#details` is taken — legacy CSS
   // pins it to 350px, overriding the grid track.
@@ -31,9 +32,7 @@
     />
     <div :id="detailsId" class="cp-details">
       <h2 class="sr-only">{{ t('Details') }}</h2>
-      <LayoutSlotOutlet name="content-details">
-        <slot name="content-details"></slot>
-      </LayoutSlotOutlet>
+      <slot></slot>
     </div>
   </div>
 </template>

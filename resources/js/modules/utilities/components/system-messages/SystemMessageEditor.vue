@@ -19,7 +19,7 @@
   import type CraftInput from '@craftcms/ui/components/input/input';
   import '@craftcms/ui/components/input/input';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import {commentToolbarButtons} from '@/modules/markdown-field/commentToolbarButtons';
+  import {commentToolbarButtons} from '@/modules/markdown-field/toolbarPresets';
   import '@/modules/markdown-field/markdown-field';
   import '@craftcms/ui/components/text-expander/text-expander';
 
@@ -65,12 +65,8 @@
     },
   });
 
-  function onSubjectChanged(event: CustomEvent<{initialize?: boolean}>): void {
-    if (event.detail?.initialize) {
-      return;
-    }
-
-    form.subject = String((event.target as CraftInput).modelValue ?? '');
+  function onSubjectChanged(event: Event): void {
+    form.subject = (event.currentTarget as CraftInput).value;
   }
 
   async function loadLanguage(value: string): Promise<void> {
@@ -108,24 +104,24 @@
           :options="locales"
           :disabled="loader.processing"
         />
-        <craft-spinner :visible="loader.processing" style="--size: 1rem" />
+        <craft-spinner .visible="loader.processing" style="--size: 1rem" />
       </div>
 
       <craft-field
         :label="t('Subject')"
         :help-text="t('Evaluated as a Twig template.')"
-        :has-errors="Boolean(form.errors.subject)"
+        .hasErrors="Boolean(form.errors.subject)"
         width="full"
         required
       >
         <craft-input
           slot="input"
-          .modelValue="form.subject"
+          .value="form.subject"
           maxlength="1000"
           required
-          :disabled="loader.processing"
-          :aria-invalid="form.errors.subject ? 'true' : undefined"
-          @model-value-changed="onSubjectChanged"
+          .disabled="loader.processing"
+          :invalid="Boolean(form.errors.subject)"
+          @input="onSubjectChanged"
         >
           <input :id="subjectId" slot="input" />
         </craft-input>
@@ -136,7 +132,7 @@
         />
         <span
           slot="tip"
-          v-html="t('Type <kbd>{{</kbd> to insert a message variable.')"
+          v-html="t('Type <kbd>{{</kbd> to choose a message variable.')"
         ></span>
         <ul v-if="form.errors.subject" slot="feedback" class="error-list">
           <li>{{ form.errors.subject }}</li>
@@ -146,7 +142,7 @@
       <craft-field
         :label="t('Body')"
         :help-text="t('Evaluated as a twig template, then parsed as markdown.')"
-        :has-errors="Boolean(form.errors.body)"
+        .hasErrors="Boolean(form.errors.body)"
         required
       >
         <craft-markdown-field
@@ -158,7 +154,7 @@
           .toolbarButtons="commentToolbarButtons"
           sanitize-html
           required
-          :disabled="loader.processing"
+          .disabled="loader.processing"
           :aria-invalid="form.errors.body ? 'true' : undefined"
           .value="form.body"
           @input="form.body = ($event.target as HTMLTextAreaElement).value"
@@ -170,7 +166,7 @@
         />
         <span
           slot="tip"
-          v-html="t('Type <kbd>{{</kbd> to insert a message variable.')"
+          v-html="t('Type <kbd>{{</kbd> to choose a message variable.')"
         ></span>
         <ul v-if="form.errors.body" slot="feedback" class="error-list">
           <li>{{ form.errors.body }}</li>

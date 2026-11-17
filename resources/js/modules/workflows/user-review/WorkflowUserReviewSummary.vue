@@ -5,19 +5,20 @@
   type WorkflowReviewData = CraftCms.Cms.Workflow.Data.WorkflowReviewData;
   type WorkflowRun = WorkflowReviewData['runs'][number];
   type WorkflowStage = WorkflowRun['stages'][number];
-  type Reviewer = {name: string};
+  type Reviewer = {name: string; thumbHtml: string | null};
   type Group = {
     name: string;
     approvals: number;
     approvedReviewers?: Reviewer[];
     carriedReviewers: Reviewer[];
+    requiredReviewers?: Reviewer[];
     remainingReviewers: Reviewer[];
   };
 
   type ReviewerSection = {
     reviewers: Reviewer[];
     label: string;
-    fill: 'green' | 'orange';
+    fill: 'teal' | 'sky';
   };
 
   const props = defineProps<{
@@ -28,6 +29,7 @@
     approvals?: number;
     approvedReviewers?: Reviewer[];
     carriedReviewers?: Reviewer[];
+    requiredReviewers?: Reviewer[];
     remainingReviewers?: Reviewer[];
     groups?: Group[];
   }>();
@@ -35,16 +37,22 @@
   function reviewerSections(
     approved: Reviewer[] | undefined,
     carried: Reviewer[] | undefined,
+    required: Reviewer[] | undefined,
     remaining: Reviewer[] | undefined
   ): ReviewerSection[] {
     return [
-      {reviewers: approved ?? [], label: t('Approved'), fill: 'green'},
+      {reviewers: approved ?? [], label: t('Approved'), fill: 'teal'},
       {
         reviewers: carried ?? [],
         label: t('Approved previously'),
-        fill: 'green',
+        fill: 'teal',
       },
-      {reviewers: remaining ?? [], label: t('Pending'), fill: 'orange'},
+      {
+        reviewers: required ?? [],
+        label: t('Approval required'),
+        fill: 'sky',
+      },
+      {reviewers: remaining ?? [], label: t('Pending'), fill: 'sky'},
     ];
   }
 
@@ -52,6 +60,7 @@
     reviewerSections(
       props.approvedReviewers,
       props.carriedReviewers,
+      props.requiredReviewers,
       props.remainingReviewers
     )
   );
@@ -80,8 +89,12 @@
           class="workflow-user-review-summary__reviewer-row"
         >
           <span class="workflow-user-review-summary__reviewer">
-            <craft-avatar :label="reviewer.name" />
-            <span class="workflow-user-review-summary__name">
+            <span
+              class="workflow-user-review-summary__thumb"
+              aria-hidden="true"
+              v-html="reviewer.thumbHtml"
+            ></span>
+            <span class="workflow-user-review-summary__name text-box-trim">
               {{ reviewer.name }}
             </span>
           </span>
@@ -97,21 +110,24 @@
         :key="group.name"
         class="workflow-user-review-summary__group"
       >
-        <span class="workflow-user-review-summary__group-label">{{
-          group.name
-        }}</span>
-        <span>
-          {{
-            t('{count} of {required} approved', {
-              count: group.approvals,
-              required: approvalsRequired,
-            })
-          }}
-        </span>
+        <div class="workflow-user-review-summary__group-heading">
+          <span class="workflow-user-review-summary__group-label">{{
+            group.name
+          }}</span>
+          <span class="workflow-user-review-summary__group-count">
+            {{
+              t('{count} of {required} approved', {
+                count: group.approvals,
+                required: approvalsRequired,
+              })
+            }}
+          </span>
+        </div>
         <ul
           v-for="section in reviewerSections(
             group.approvedReviewers,
             group.carriedReviewers,
+            group.requiredReviewers,
             group.remainingReviewers
           )"
           v-show="section.reviewers.length"
@@ -124,8 +140,12 @@
             class="workflow-user-review-summary__reviewer-row"
           >
             <span class="workflow-user-review-summary__reviewer">
-              <craft-avatar :label="reviewer.name" />
-              <span class="workflow-user-review-summary__name">
+              <span
+                class="workflow-user-review-summary__thumb"
+                aria-hidden="true"
+                v-html="reviewer.thumbHtml"
+              ></span>
+              <span class="workflow-user-review-summary__name text-box-trim">
                 {{ reviewer.name }}
               </span>
             </span>
@@ -140,8 +160,8 @@
 </template>
 
 <style scoped>
-  .workflow-user-review-summary {
-    margin-inline: var(--c-spacing-xs);
+  .workflow-user-review-summary::part(body) {
+    padding: var(--c-spacing-md);
   }
 
   .workflow-user-review-summary__reviewers {
@@ -154,7 +174,7 @@
 
   .workflow-user-review-summary__groups {
     display: grid;
-    gap: var(--c-spacing-md);
+    gap: calc(var(--c-spacing) * 3.5);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -165,8 +185,27 @@
     gap: var(--c-spacing-xs);
   }
 
+  .workflow-user-review-summary__group-label,
+  .workflow-user-review-summary__group-count {
+    font-size: var(--c-text-sm);
+    text-box: trim-both cap alphabetic;
+  }
+
   .workflow-user-review-summary__group-label {
-    font-weight: var(--c-font-weight-semibold);
+    font-weight: bold;
+  }
+
+  .workflow-user-review-summary__group-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--c-spacing-sm) var(--c-spacing-md);
+    margin-block-end: var(--c-spacing-sm);
+  }
+
+  .workflow-user-review-summary__group-count {
+    margin-inline-start: auto;
+    color: var(--c-text-quiet);
   }
 
   .workflow-user-review-summary__reviewer-row,
@@ -182,11 +221,13 @@
 
   .workflow-user-review-summary__reviewer {
     min-width: 0;
-    gap: var(--c-spacing-xs);
+    gap: var(--c-spacing-sm);
   }
 
-  .workflow-user-review-summary__reviewer craft-avatar {
-    --size: var(--c-size-icon-lg);
+  .workflow-user-review-summary__thumb {
+    --c-thumb-icon-size: var(--c-size-control-sm);
+    --c-thumbnail-size: var(--c-size-control-sm);
+    display: flex;
     flex: none;
   }
 

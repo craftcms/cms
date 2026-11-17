@@ -77,10 +77,6 @@ const targetAttributes = [
   'aria-activedescendant',
   'aria-busy',
 ] as const;
-const popoverConfig = {
-  handlesAccessibility: false,
-  visibilityTriggerFunction: undefined,
-};
 // How long an announcement stays in the live region before it's cleared out
 const announcementTimeout = 5000;
 
@@ -134,6 +130,15 @@ export default class CraftTextExpander extends LitElement {
       this.#bindTarget();
     }
   });
+  // The combobox library marks the keyboard-current suggestion with
+  // aria-selected; craft-option highlights `active` instead.
+  #highlightObserver = new MutationObserver((records) => {
+    for (const {target} of records) {
+      if (target instanceof CraftOption) {
+        target.active = target.getAttribute('aria-selected') === 'true';
+      }
+    }
+  });
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -146,6 +151,7 @@ export default class CraftTextExpander extends LitElement {
 
   override disconnectedCallback(): void {
     this.#unbindTarget();
+    this.#highlightObserver.disconnect();
     this.#listbox?.remove();
     if (this.#announceTimeout !== null) {
       clearTimeout(this.#announceTimeout);
@@ -188,8 +194,12 @@ export default class CraftTextExpander extends LitElement {
     return html`
       <craft-popover
         exportparts="popup"
-        .config=${popoverConfig}
+        without-invoker-aria
+        manual
+        @craft-show=${this.#stopPopoverEvent}
         @craft-hide=${this.#onPopoverHide}
+        @craft-after-show=${this.#stopPopoverEvent}
+        @craft-after-hide=${this.#stopPopoverEvent}
       >
         <div class="text-expander__popup" slot="content">
           ${this.loading
@@ -216,6 +226,10 @@ export default class CraftTextExpander extends LitElement {
     this.#listbox.addEventListener('pointerdown', this.#onOptionPointerDown);
     this.#listbox.addEventListener('pointerup', this.#onOptionPointerUp);
     this.#listbox.addEventListener('combobox-commit', this.#onComboboxCommit);
+    this.#highlightObserver.observe(this.#listbox, {
+      subtree: true,
+      attributeFilter: ['aria-selected'],
+    });
     this.append(this.#listbox);
   }
 
@@ -438,6 +452,17 @@ export default class CraftTextExpander extends LitElement {
         ? t('{name} suggestions collapsed', {name: label})
         : t('Suggestions collapsed')
     );
+    this.#stopPopoverEvent(event);
+  };
+
+  /**
+   * The popup is part of the expander, so its own events stay inside it:
+   * leaving the shadow root, they'd read as the expander's.
+   */
+  #stopPopoverEvent = (event: Event): void => {
+    if (event.target === this.popoverElement) {
+      event.stopPropagation();
+    }
   };
 
   #evaluate(selectedOption?: Readonly<TextExpanderOption>): void {
@@ -721,8 +746,37 @@ export default class CraftTextExpander extends LitElement {
     this.#inputRange.setStartOffset(position);
     this.#inputRange.setEndOffset(position);
     this.#caretRect = this.#inputRange.getBoundingClientRect();
-    this.popoverElement.repositionOverlay();
+    this.popoverElement.placement = this.#placementFor(this.#caretRect);
+    this.popoverElement.reposition();
     return true;
+  }
+
+  /**
+   * Below the caret, unless there isn't room there for the list at its
+   * tallest and there's more room above. Judged by the list's full height
+   * rather than its current one, so it doesn't open below while it's loading
+   * or short and then grow into a cramped space, with plenty of room above,
+   * and keeps to one side as the matches change.
+   */
+  #placementFor(caret: DOMRect): 'bottom-start' | 'top-start' {
+    const view = this.ownerDocument.documentElement.clientHeight;
+    const listbox = this.querySelector<HTMLElement>('[slot="listbox"]');
+    const popup = this.renderRoot.querySelector<HTMLElement>(
+      '.text-expander__popup'
+    );
+    const listHeight = listbox
+      ? parseFloat(getComputedStyle(listbox).maxHeight) || 0
+      : 0;
+    const padding = popup
+      ? parseFloat(getComputedStyle(popup).paddingTop) +
+        parseFloat(getComputedStyle(popup).paddingBottom)
+      : 0;
+    const below = view - caret.bottom;
+    const above = caret.top;
+
+    return below < listHeight + padding && above > below
+      ? 'top-start'
+      : 'bottom-start';
   }
 
   #close(): void {

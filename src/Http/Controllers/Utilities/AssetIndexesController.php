@@ -40,11 +40,13 @@ readonly class AssetIndexesController
             'volumes' => ['required', 'array'],
             'cacheImages' => ['nullable', 'boolean'],
             'listEmptyFolders' => ['nullable', 'boolean'],
+            'analyzeImages' => ['nullable', 'boolean'],
         ]);
 
         $volumeIds = array_map(fn ($volumeId) => (int) $volumeId, $validated['volumes']);
         $cacheRemoteImages = (bool) ($validated['cacheImages'] ?? false);
         $listEmptyFolders = (bool) ($validated['listEmptyFolders'] ?? false);
+        $analyzeImages = (bool) ($validated['analyzeImages'] ?? false);
 
         // Filter out any disallowed volumes
         $allowedVolumeIds = array_map(fn ($volume) => $volume->id, AssetIndexes::volumes());
@@ -54,7 +56,7 @@ readonly class AssetIndexesController
             return $this->asFailure(t('No volumes specified.'));
         }
 
-        $indexingSession = $this->assetIndexer->startIndexingSession($volumeIds, $cacheRemoteImages, $listEmptyFolders);
+        $indexingSession = $this->assetIndexer->startIndexingSession($volumeIds, $cacheRemoteImages, $listEmptyFolders, $analyzeImages);
 
         $data = ['session' => $indexingSession];
         $error = null;

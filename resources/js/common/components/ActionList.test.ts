@@ -1,6 +1,7 @@
 import {createApp, defineComponent, h, nextTick} from 'vue';
 import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import '@craftcms/ui/components/action-item/action-item';
+import '@craftcms/ui/components/badge/badge';
 import '@craftcms/ui/components/button/button';
 import '@craftcms/ui/components/indicator/indicator';
 import type {ActionItems} from '@/common/types';
@@ -161,6 +162,29 @@ describe('ActionList', () => {
     expect(click.defaultPrevented).toBe(false);
   });
 
+  it('opens a link with a target there, rather than making an Inertia visit', async () => {
+    const container = mount({
+      actions: [
+        {
+          type: 'link',
+          href: '/admin/entries/blog/1',
+          label: 'Open in a new tab',
+          target: '_blank',
+        },
+      ],
+      as: 'craft-action-item',
+    });
+    await nextTick();
+
+    const item = container.querySelector('craft-action-item')!;
+    const click = new MouseEvent('click', {bubbles: true, cancelable: true});
+
+    item.dispatchEvent(click);
+
+    expect(item.target).toBe('_blank');
+    expect(click.defaultPrevented).toBe(false);
+  });
+
   it('keeps a separator between menu items and drops it between buttons', async () => {
     const actions: ActionItems = [{label: 'One'}, {type: 'hr'}, {label: 'Two'}];
 
@@ -310,4 +334,36 @@ describe('ActionList', () => {
       expect(all!.querySelector('craft-indicator')).toBeNull();
     }
   );
+
+  it('marks a menu item with a badge beside its label', async () => {
+    const container = mount({
+      actions: [
+        {type: 'link', href: '/current', label: 'Current'},
+        {
+          type: 'link',
+          href: '/current?edits=1',
+          label: 'Current',
+          badge: {label: 'Edited', fill: 'violet', icon: 'pen-circle'},
+        },
+      ],
+      as: 'craft-action-item',
+    });
+    await nextTick();
+
+    const [saved, edited] = [
+      ...container.querySelectorAll('craft-action-item'),
+    ];
+    const badge = edited!.querySelector('craft-badge') as HTMLElement & {
+      fill?: string;
+    };
+
+    expect(badge.textContent?.trim()).toBe('Edited');
+    expect(badge.fill).toBe('violet');
+    // In the label, not a slot at the item's far end.
+    expect(badge.slot).toBe('');
+    expect(edited!.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Current Edited'
+    );
+    expect(saved!.querySelector('craft-badge')).toBeNull();
+  });
 });

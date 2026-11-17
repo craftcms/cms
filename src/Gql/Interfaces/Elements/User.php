@@ -13,6 +13,7 @@ use CraftCms\Cms\Gql\Types\Generators\UserType;
 use CraftCms\Cms\Gql\Types\UserGroup;
 use CraftCms\Cms\Support\Facades\Gql;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -51,6 +52,12 @@ class User extends Element
     }
 
     #[Override]
+    protected static function elementType(): string
+    {
+        return UserElement::class;
+    }
+
+    #[Override]
     public static function getName(): string
     {
         return 'UserInterface';
@@ -61,21 +68,6 @@ class User extends Element
     public static function getFieldDefinitions(): array
     {
         return Gql::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
-            'friendlyName' => [
-                'name' => 'friendlyName',
-                'type' => Type::string(),
-                'description' => 'The user’s first name or username.',
-            ],
-            'fullName' => [
-                'name' => 'fullName',
-                'type' => Type::string(),
-                'description' => 'The user’s full name.',
-            ],
-            'name' => [
-                'name' => 'name',
-                'type' => Type::nonNull(Type::string()),
-                'description' => 'The user’s full name or username.',
-            ],
             'preferences' => [
                 'name' => 'preferences',
                 'type' => Type::nonNull(Type::string()),
@@ -88,35 +80,10 @@ class User extends Element
                 'description' => 'The user’s preferred language.',
                 'complexity' => GqlHelper::nPlus1Complexity(),
             ],
-            'username' => [
-                'name' => 'username',
-                'type' => Type::string(),
-                'description' => 'The username.',
-            ],
-            'firstName' => [
-                'name' => 'firstName',
-                'type' => Type::string(),
-                'description' => 'The user’s first name.',
-            ],
-            'lastName' => [
-                'name' => 'lastName',
-                'type' => Type::string(),
-                'description' => 'The user’s last name.',
-            ],
-            'email' => [
-                'name' => 'email',
-                'type' => Type::string(),
-                'description' => 'The user’s email.',
-            ],
             'affiliatedSiteHandle' => [
                 'name' => 'affiliatedSiteHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the site the user is affiliated with.',
-            ],
-            'affiliatedSiteId' => [
-                'name' => 'affiliatedSiteId',
-                'type' => Type::int(),
-                'description' => 'The ID of the site the user is affiliated with.',
             ],
             'addresses' => [
                 'name' => 'addresses',

@@ -30,6 +30,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Element;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
+use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\Markdown;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
@@ -114,6 +115,12 @@ class DatabaseSeeder extends Seeder
 
         $this->components->task('Installing test plugin', fn () => Plugins::installPlugin('test-plugin'));
 
+        // The workbench’s scripted provider needs no API key. See Workbench\App\Ai\WorkbenchAiProvider.
+        $this->components->task('Setting the default AI provider', fn () => app(ProjectConfig::class)->set(
+            ProjectConfig::PATH_AI.'.defaults.text',
+            ['provider' => 'workbench', 'model' => null],
+        ));
+
         $this->components->task('Creating notifications', function (): void {
             $user = User::query()->firstOrFail();
 
@@ -161,7 +168,6 @@ class DatabaseSeeder extends Seeder
                     'fsHandle' => 'assets',
                     'hasUrls' => true,
                     'subpath' => $handle,
-                    'assetTransformer' => 'craft',
                 ]);
 
                 if (! Volumes::saveVolume($volume)) {
@@ -192,10 +198,28 @@ class DatabaseSeeder extends Seeder
             }
         });
 
+        $linkField = null;
+        $this->components->task('Creating Link field', function () use (&$linkField): void {
+            $linkField = Fields::createField([
+                'type' => Link::class,
+                'name' => 'Link',
+                'handle' => 'linkField',
+                'settings' => [
+                    'types' => ['url', 'entry', 'email', 'tel'],
+                    'showLabelField' => true,
+                    'advancedFields' => ['target', 'urlSuffix', 'title'],
+                ],
+            ]);
+
+            if (! Fields::saveField($linkField)) {
+                throw new RuntimeException('Failed to create the Link field.');
+            }
+        });
+
         Fields::refreshFields();
 
         $fieldLayout = null;
-        $this->components->task('Creating field layout', function () use (&$fieldLayout, $markdownField) {
+        $this->components->task('Creating field layout', function () use (&$fieldLayout, $markdownField, $linkField) {
             $fieldLayout = FieldLayout::create([
                 'uid' => Str::uuid()->toString(),
                 'type' => Entry::class,
@@ -214,6 +238,11 @@ class DatabaseSeeder extends Seeder
                                     'uid' => Str::uuid()->toString(),
                                     'type' => CustomField::class,
                                     'fieldUid' => $markdownField->uid,
+                                ],
+                                [
+                                    'uid' => Str::uuid()->toString(),
+                                    'type' => CustomField::class,
+                                    'fieldUid' => $linkField->uid,
                                 ],
                             ],
                         ],
@@ -239,11 +268,12 @@ class DatabaseSeeder extends Seeder
 
         $this->createSection($site, 'Home', SectionType::Single, Element::HOMEPAGE_URI, [$pageType]);
         $this->createSection($site, 'Pages', SectionType::Structure, '{parent.uri}/{slug}', [$pageType]);
-        $this->createSection($site, 'Posts', SectionType::Channel, 'blog/{slug}', [$pageType]);
+        $this->createSection($site, 'Posts', SectionType::Channel, 'blog/{slug}', [$pageType], '_blog/entry');
 
         $this->createSampleEntries($site);
         $this->seedWorkflow(Sections::getSectionByHandle('posts') ?? throw new RuntimeException('Posts section not found.'));
         $this->call(MatrixPlaygroundSeeder::class);
+        $this->call(FieldShowcaseSeeder::class);
     }
 
     private function createSampleEntries(Site $site): void
@@ -332,6 +362,8 @@ MARKDOWN,
         $user = User::query()->firstOrFail();
         $editor = UserFactory::new()->admin()->createElement([
             'fullName' => 'Ada Lovelace',
+            'firstName' => 'Ada',
+            'lastName' => 'Lovelace',
             'username' => 'ada',
             'email' => 'ada@example.com',
         ]);
@@ -485,11 +517,11 @@ MARKDOWN,
     }
 
     /** @param list<EntryType> $entryTypes */
-    public function createSection(Site $site, string $title, SectionType $sectionType = SectionType::Channel, ?string $uriFormat = null, array $entryTypes = []): ?Section
+    public function createSection(Site $site, string $title, SectionType $sectionType = SectionType::Channel, ?string $uriFormat = null, array $entryTypes = [], ?string $template = null): ?Section
     {
         $section = null;
 
-        $this->components->task("{$title} section ({$sectionType->label()})", function () use ($uriFormat, $entryTypes, $sectionType, $title, $site, &$section) {
+        $this->components->task("{$title} section ({$sectionType->label()})", function () use ($uriFormat, $entryTypes, $sectionType, $title, $site, $template, &$section) {
             Sections::saveSection($section = new Section([
                 'name' => $title,
                 'handle' => Str::slug($title),
@@ -499,6 +531,7 @@ MARKDOWN,
                         'siteId' => $site->id,
                         'hasUrls' => ! is_null($uriFormat),
                         'uriFormat' => $uriFormat,
+                        'template' => $template,
                     ]),
                 ],
                 'entryTypes' => $entryTypes,

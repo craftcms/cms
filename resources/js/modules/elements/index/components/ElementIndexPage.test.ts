@@ -1,5 +1,12 @@
-import {createApp, h, nextTick, reactive, ref, type Slots} from 'vue';
-import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {computed, createApp, h, nextTick, reactive, ref, type Slots} from 'vue';
+import {
+  afterEach,
+  beforeEach,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vite-plus/test';
 import type {Table} from '@tanstack/vue-table';
 import {
   type CraftTableFeatures,
@@ -129,7 +136,9 @@ async function mountPage(
       inlineEditable: true,
     },
   ],
-  mode = 'table'
+  mode = 'table',
+  elementIndex: Record<string, unknown> = {},
+  slots: Record<string, () => unknown> = {}
 ) {
   const viewState = reactive({mode});
   const elementTable = useCraftTable({
@@ -142,14 +151,23 @@ async function mountPage(
     },
   });
 
+  const selection = useTableRowSelection(elementTable, {
+    selectable: true,
+    readOnly: false,
+  });
+
   page.elementIndex = {
     clearSelection: vi.fn(),
     refresh: vi.fn(),
     view: {
-      selection: useTableRowSelection(elementTable, {
-        selectable: true,
-        readOnly: false,
-      }),
+      selection,
+      selectAll: {
+        active: ref(false),
+        exceptIds: computed(() => []),
+        count: computed(() => selection.selectedIds.value.length),
+        selectAll: vi.fn(),
+        selectPage: vi.fn(),
+      },
       elementIndex: reactive({
         sources: [
           {type: 'native', key: '*', label: 'All entries'},
@@ -170,6 +188,7 @@ async function mountPage(
         data,
         exporters: [{type: 'Expanded', name: 'Expanded', formattable: true}],
         sites: [],
+        ...elementIndex,
       }),
       table: elementTable,
       data: ref(data),
@@ -192,6 +211,7 @@ async function mountPage(
       exportElements: vi.fn(),
       structureView: {isCollapsed: () => false, isPending: () => false},
       loading: ref(false),
+      pending: ref(false),
       processing: ref(false),
       filterContext: ref(null),
       visibleViewModes: ref([]),
@@ -203,10 +223,14 @@ async function mountPage(
 
   const app = createApp({
     render: () =>
-      h(ElementIndexPage, {
-        route: {url: () => '/admin/entries'} as never,
-        ...props,
-      }),
+      h(
+        ElementIndexPage,
+        {
+          route: {url: () => '/admin/entries'} as never,
+          ...props,
+        },
+        slots
+      ),
   });
 
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
@@ -227,6 +251,54 @@ function clickAction(container: HTMLElement, label: string) {
   expect(item).toBeDefined();
   item!.click();
 }
+
+it.each([
+  {
+    name: 'trashed',
+    elementIndex: {trashed: true, drafts: false},
+    criteria: {status: null, trashed: true},
+  },
+  {
+    name: 'drafts',
+    elementIndex: {trashed: false, drafts: true},
+    criteria: {status: null, drafts: true, draftOf: null},
+  },
+])(
+  'runs element actions against the $name elements it lists',
+  async ({elementIndex, criteria}) => {
+    const container = await mountPage({}, undefined, 'table', {
+      ...elementIndex,
+      status: '',
+      canHaveDrafts: true,
+      siteId: 1,
+      actions: [
+        {
+          key: 'Restore',
+          label: 'Restore',
+          bulk: true,
+          action: {
+            type: 'http',
+            method: 'POST',
+            url: '/actions/element-indexes/perform-action',
+            body: {elementAction: 'Restore'},
+          },
+        },
+      ],
+    });
+
+    const item = Array.from(
+      container.querySelectorAll<HTMLElement & {action?: {body: unknown}}>(
+        'craft-action-item'
+      )
+    ).find((item) => item.textContent?.trim() === 'Restore');
+
+    expect(item?.action?.body).toMatchObject({
+      elementAction: 'Restore',
+      baseCriteria: {siteId: 1},
+    });
+    expect(item?.action?.body).toHaveProperty('criteria', criteria);
+  }
+);
 
 it('passes the Actions invoker to the bulk Edit slideout', async () => {
   const container = await mountPage();
@@ -261,6 +333,66 @@ it('offers inline editing and export on page tables', async () => {
 
   expect(container.textContent).toContain('Edit inline');
   expect(container.textContent).toContain('Export');
+});
+
+it('puts the primary action last, with a menu beside it only for extra actions', async () => {
+  // `craft-button-group` calls attachInternals(), which happy-dom doesn't implement.
+  const attachInternals = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    'attachInternals'
+  );
+  Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
+    configurable: true,
+    value: () => ({setFormValue: vi.fn()}),
+  });
+  onTestFinished(() => {
+    if (attachInternals) {
+      Object.defineProperty(
+        HTMLElement.prototype,
+        'attachInternals',
+        attachInternals
+      );
+    } else {
+      delete (HTMLElement.prototype as Partial<HTMLElement>).attachInternals;
+    }
+  });
+
+  const upload = {'primary-action': () => h('craft-button', 'Upload files')};
+  let container = await mountPage(
+    {
+      menuActions: [
+        {label: 'Generate image', action: {type: 'event', name: 'x'}},
+      ],
+    },
+    undefined,
+    'table',
+    {},
+    upload
+  );
+  const group = container.querySelector('craft-button-group')!;
+  const exportButton = [...container.querySelectorAll('craft-button')].find(
+    (button) => button.textContent?.trim() === 'Export'
+  );
+
+  expect(group.parentElement?.lastElementChild).toBe(group);
+  expect(group.firstElementChild?.textContent).toBe('Upload files');
+  expect(
+    [...group.querySelectorAll('craft-action-item')].map((item) =>
+      item.textContent?.trim()
+    )
+  ).toEqual(['Generate image']);
+  expect(exportButton).toBeDefined();
+  expect(group.contains(exportButton!)).toBe(false);
+
+  teardown?.();
+  container = await mountPage({}, undefined, 'table', {}, upload);
+
+  const uploadButton = [...container.querySelectorAll('craft-button')].find(
+    (button) => button.textContent === 'Upload files'
+  )!;
+
+  expect(container.querySelector('craft-button-group')).toBeNull();
+  expect(uploadButton.parentElement?.lastElementChild).toBe(uploadButton);
 });
 
 it('hides inline editing outside table mode', async () => {

@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Mcp\Public;
 
 use Closure;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer as BaseElementSerializer;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
+use DateTimeInterface;
 
 /**
  * @since 6.0.0
@@ -21,38 +22,34 @@ class ElementSerializer
 
     /**
      * @param  list<string>|null  $fields
-     * @param  Closure(ElementInterface): ?array<string, mixed>|null  $serializeNested
+     * @param  Closure(ElementInterface, list<string>, bool): ?array<string, mixed>|null  $serializeNested
+     * @param  list<string>  $nestedPaths
      * @return array<string, mixed>
      */
-    public function serialize(ElementInterface $element, ?array $fields = [], ?Closure $serializeNested = null): array
+    public function serialize(ElementInterface $element, ?array $fields = [], ?Closure $serializeNested = null, array $nestedPaths = []): array
     {
-        $data = $element instanceof User
-            ? $this->serializeUser($element)
-            : null;
+        $data = ['type' => $element::class, 'id' => $element->id, 'uid' => $element->uid];
 
-        return $this->serializer->serialize($element, $data, public: true, fields: $fields, serializeNested: $serializeNested);
+        foreach (array_keys(ElementProperty::readable($element::class)) as $name) {
+            $value = $element->$name;
+            $data[$name] = $value instanceof DateTimeInterface ? $this->date($value) : $value;
+        }
+
+        if ($element instanceof User && $element->affiliatedSiteId) {
+            $data['affiliatedSiteHandle'] = Sites::getSiteById($element->affiliatedSiteId, true)?->handle;
+        }
+
+        return $this->serializer->serialize($element, $data, public: true, fields: $fields, serializeNested: $serializeNested, nestedPaths: $nestedPaths);
     }
 
-    /** @return array<string, mixed> */
-    private function serializeUser(User $user): array
+    /**
+     * Returns a summary of an element.
+     *
+     * @return array<string, mixed>
+     */
+    public function summarize(ElementInterface $element): array
     {
-        return Arr::whereNotNull([
-            'id' => $user->id,
-            'uid' => $user->uid,
-            'username' => $user->username,
-            'email' => $user->email,
-            'name' => $user->getName(),
-            'friendlyName' => $user->getFriendlyName(),
-            'fullName' => $user->fullName,
-            'firstName' => $user->firstName,
-            'lastName' => $user->lastName,
-            'affiliatedSiteId' => $user->affiliatedSiteId,
-            'affiliatedSiteHandle' => $user->affiliatedSiteId
-                ? Sites::getSiteById($user->affiliatedSiteId, true)?->handle
-                : null,
-            'dateCreated' => $this->date($user->dateCreated),
-            'dateUpdated' => $this->date($user->dateUpdated),
-        ]);
+        return $this->serializer->summarize($element);
     }
 
     private function date(mixed $date): ?string

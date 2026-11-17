@@ -3,6 +3,7 @@ import '@craftcms/ui/components/pane/pane';
 import {createApp, defineComponent, h, ref} from 'vue';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser/context';
+import Modal from './Modal.vue';
 import ModalForm from './ModalForm.vue';
 
 let teardown: () => void;
@@ -60,7 +61,7 @@ function mount() {
                     'craft-dialog',
                     {
                       label: 'Confirm settings',
-                      '.opened': confirmation.value,
+                      '.open': confirmation.value,
                       'onCraft-hide': () => (confirmation.value = false),
                     },
                     'Confirm these settings.'
@@ -143,7 +144,7 @@ it('dismisses only the nested dialog and preserves non-dismissible forms and key
     .click();
   await expect.element(parent).toBeVisible();
   await expect.element(confirmationDialog).not.toBeInTheDocument();
-  expect(getComputedStyle(document.body).overflow).toBe('hidden');
+  expect(parent.element().matches(':modal')).toBe(true);
   dismissible.value = false;
   await userEvent.keyboard('{Escape}');
   await expect.element(parent).toBeVisible();
@@ -199,4 +200,55 @@ it('animates entering and leaving while keeping the page blocked, unless reduced
   await expect.element(dialog).not.toBeInTheDocument();
   await expect.element(trigger).toHaveFocus();
   expect(getComputedStyle(document.body).overflow).not.toBe('hidden');
+});
+
+it('eases its size to new content, but takes a resize at once', async () => {
+  const tall = ref(false);
+  const host = document.createElement('div');
+  document.body.append(host);
+  const app = createApp(
+    defineComponent({
+      setup: () => () =>
+        h(Modal, {isActive: true, label: 'Trace', resizable: true}, () =>
+          h('div', {style: {height: tall.value ? '400px' : '100px'}}, 'Body')
+        ),
+    })
+  );
+  app.mount(host);
+  teardown = () => app.unmount();
+
+  const dialog = page.getByRole('dialog', {name: 'Trace', exact: true});
+  await expect.element(dialog).toBeVisible();
+  await new Promise<void>((resolve) =>
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+  );
+  await Promise.all(
+    dialog
+      .element()
+      .getAnimations({subtree: true})
+      .map((animation) => animation.finished)
+  );
+  const box = document.querySelector<HTMLElement>('.cp-modal > .content')!;
+  const before = box.offsetHeight;
+  const reducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+  tall.value = true;
+  if (reducedMotion) {
+    await vi.waitFor(() => expect(box.offsetHeight).toBe(before + 300));
+    expect(box.getAnimations()).toHaveLength(0);
+  } else {
+    await vi.waitFor(() => expect(box.getAnimations()).toHaveLength(1));
+    const animation = box.getAnimations()[0]!;
+    const from = (animation.effect as KeyframeEffect).getKeyframes()[0]!;
+    expect(from.height).toBe(`${before}px`);
+    await animation.finished;
+    expect(box.offsetHeight).toBe(before + 300);
+  }
+
+  page.getByRole('button', {name: 'Resize', exact: true}).element().focus();
+  await userEvent.keyboard('{ArrowUp}');
+  await vi.waitFor(() => expect(box.offsetHeight).toBeLessThan(before + 300));
+  expect(box.getAnimations()).toHaveLength(0);
 });

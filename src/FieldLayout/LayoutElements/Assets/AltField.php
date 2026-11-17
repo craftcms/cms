@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements\Assets;
 
+use CraftCms\Cms\Asset\Analysis\Tasks\GenerateAltText;
 use CraftCms\Cms\Asset\Elements\Asset;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\FieldLayout\LayoutElements\TextareaField;
+use CraftCms\Cms\Http\Controllers\Assets\GenerateAltTextController;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Ai;
 use CraftCms\Cms\Support\Html;
+use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use Override;
 
@@ -50,6 +55,36 @@ class AltField extends TextareaField
     }
 
     #[Override]
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        $items = parent::actionMenuItems($element, $static);
+
+        if (
+            ! $static &&
+            $element instanceof Asset &&
+            $element->id &&
+            $element->kind === FileKind::Image->value &&
+            Ai::available(GenerateAltText::handle()) &&
+            Gate::check('save', $element)
+        ) {
+            $items[] = [
+                'icon' => 'sparkles',
+                'label' => t('Generate alt text'),
+                'action' => [
+                    'type' => 'event',
+                    'name' => 'craft:generate-field-value',
+                    'detail' => [
+                        'url' => action(GenerateAltTextController::class),
+                        'params' => ['assetId' => $element->id, 'siteId' => $element->siteId],
+                    ],
+                ],
+            ];
+        }
+
+        return $items;
+    }
+
+    #[Override]
     public function previewable(): bool
     {
         return true;
@@ -62,17 +97,6 @@ class AltField extends TextareaField
             'aria' => [
                 'hidden' => true,
             ],
-        ]);
-    }
-
-    /**
-     * @return array{class: list<string>, id: string, describedBy: string|null, rows: int|null, cols: int|null, name: string, value: mixed, maxlength: int|null, autofocus: bool, disabled: bool, readonly: bool, required: bool, title: string|null, placeholder: string|null}
-     */
-    #[Override]
-    protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
-    {
-        return Arr::merge(parent::inputTemplateVariables($element, $static), [
-            'class' => ['nicetext'],
         ]);
     }
 
@@ -101,8 +125,8 @@ class AltField extends TextareaField
     }
 
     #[Override]
-    public function isCrossSiteCopyable(ElementInterface $element): bool
+    protected function uiIcon(): ?string
     {
-        return true;
+        return 'universal-access';
     }
 }

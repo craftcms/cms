@@ -6,10 +6,12 @@ use craft\base\Model;
 use craft\elements\Tag;
 use craft\helpers\FileHelper;
 use craft\web\twig\variables\Paginate;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Models\Element;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\DeprecatedConcepts;
 use CraftCms\Yii2Adapter\Tests\DatabaseTestCase;
 use Illuminate\Support\Facades\DB;
@@ -58,12 +60,18 @@ it('copies a core component’s errors without the deprecated error getter', fun
         ->and(loggedDeprecationKeys())->not->toContain(FieldLayout::class . '->getErrors');
 });
 
-it('validates tag title uniqueness without deprecated query or error methods', function() {
-    $this->artisan('craft:add-tags-support --force --no-interaction')->assertSuccessful();
+/**
+ * Installs tag support and creates a tag group with the given tag titles.
+ *
+ * @param list<string> $titles
+ * @return array{groupId: int, tagIds: list<int>}
+ */
+function createTagGroupWithTags(array $titles): array
+{
+    test()->artisan('craft:add-tags-support --force --no-interaction')->assertSuccessful();
     DeprecatedConcepts::resetSupport();
 
     $schema = Craft::$app->getDb()->getSchema();
-    $siteId = Sites::getPrimarySite()->id;
     $groupId = 101;
 
     DB::table($schema->getRawTableName('taggroups'))->insert([
@@ -76,14 +84,26 @@ it('validates tag title uniqueness without deprecated query or error methods', f
         'uid' => (string) Str::uuid(),
     ]);
 
-    $existingId = Element::factory()->set('type', Tag::class)->title('Paris')->create()->id;
-    DB::table($schema->getRawTableName('tags'))->insert([
-        'id' => $existingId,
-        'groupId' => $groupId,
-        'deletedWithGroup' => null,
-        'dateCreated' => now(),
-        'dateUpdated' => now(),
-    ]);
+    $tagIds = [];
+
+    foreach ($titles as $title) {
+        $tagId = Element::factory()->set('type', Tag::class)->title($title)->create()->id;
+        DB::table($schema->getRawTableName('tags'))->insert([
+            'id' => $tagId,
+            'groupId' => $groupId,
+            'deletedWithGroup' => null,
+            'dateCreated' => now(),
+            'dateUpdated' => now(),
+        ]);
+        $tagIds[] = $tagId;
+    }
+
+    return ['groupId' => $groupId, 'tagIds' => $tagIds];
+}
+
+it('validates tag title uniqueness without deprecated query or error methods', function() {
+    ['groupId' => $groupId, 'tagIds' => [$existingId]] = createTagGroupWithTags(['Paris']);
+    $siteId = Sites::getPrimarySite()->id;
 
     $existing = Tag::find()->id($existingId)->siteId($siteId)->status(null)->one();
     $duplicate = new Tag();
@@ -97,4 +117,19 @@ it('validates tag title uniqueness without deprecated query or error methods', f
     expect($existing->errors()->has('title'))->toBeFalse()
         ->and($duplicate->errors()->has('title'))->toBeTrue()
         ->and(loggedDeprecationKeys())->not->toContain('ElementQuery-andWhere', Tag::class . '->addError');
+});
+
+it('searches for tags shortest first without deprecated ordering', function() {
+    ['groupId' => $groupId] = createTagGroupWithTags(['Parisian', 'Paris', 'Parisiana']);
+    $this->actingAs(User::factory()->admin()->create());
+
+    $response = $this->postJson('/' . Cms::config()->cpTrigger . '/actions/tags/search-for-tags', [
+        'search' => 'Paris',
+        'tagGroupId' => $groupId,
+    ]);
+
+    $response->assertOk();
+
+    expect(array_column($response->json('tags'), 'title'))->toBe(['Paris', 'Parisian', 'Parisiana'])
+        ->and(array_filter(loggedDeprecationKeys(), fn(string $key) => str_contains($key, '::orderBy')))->toBe([]);
 });

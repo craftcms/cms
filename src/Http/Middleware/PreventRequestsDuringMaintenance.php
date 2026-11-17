@@ -47,17 +47,25 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
         $route = $request->route();
 
         if (! $route instanceof Route) {
-            return $this->matchesCraftRoute($request)
-                ? $next($request)
-                : parent::handle($request, $next);
+            $route = $this->matchRoute($request);
+
+            if ($route === null) {
+                return parent::handle($request, $next);
+            }
+
+            // Craft routes are checked again once they're resolved, by the `craft` middleware group
+            if ($this->isCraftRoute($route)) {
+                return $next($request);
+            }
+        }
+
+        // Routes outside the `craft` group that allow maintenance decide who they let in themselves
+        if ($route->getMetadata(self::ALLOW_DURING_MAINTENANCE_METADATA) === true) {
+            return $next($request);
         }
 
         if (! $this->isCraftRoute($route)) {
             return parent::handle($request, $next);
-        }
-
-        if ($route->getMetadata(self::ALLOW_DURING_MAINTENANCE_METADATA) === true) {
-            return $next($request);
         }
 
         if (
@@ -129,12 +137,12 @@ class PreventRequestsDuringMaintenance extends LaravelMiddleware
         return false;
     }
 
-    private function matchesCraftRoute(Request $request): bool
+    private function matchRoute(Request $request): ?Route
     {
         try {
-            return $this->isCraftRoute($this->router->getRoutes()->match($request));
+            return $this->router->getRoutes()->match($request);
         } catch (HttpExceptionInterface) {
-            return false;
+            return null;
         }
     }
 

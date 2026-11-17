@@ -35,6 +35,7 @@ use Override;
  * @method static bool hasIssues(string $handle)
  * @method static string[] getLicenseIssues(string $handle)
  * @method static string getPluginIconSvg(string $handle)
+ * @method static bool hasPluginIcon(string $handle)
  * @method static string|false|null getPluginLicenseKey(string $handle)
  * @method static bool setPluginLicenseKey(string $handle, string|null $licenseKey = null)
  * @method static string|null normalizePluginLicenseKey(string|null $licenseKey = null)
@@ -43,6 +44,7 @@ use Override;
  * @method static void addStyle(string $handle, string $path)
  * @method static void addScript(string $handle, string $path)
  * @method static string getAssetsHtml()
+ * @method static string|null getViteManifestHash()
  *
  * @see \CraftCms\Cms\Plugin\Plugins
  */

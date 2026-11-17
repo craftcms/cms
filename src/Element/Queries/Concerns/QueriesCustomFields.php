@@ -27,12 +27,36 @@ trait QueriesCustomFields
     /**
      * @var FieldInterface[]|null The fields that may be involved in this query.
      */
-    public ?array $customFields = null;
+    public ?array $customFields = null {
+        get {
+            if ($this->customFieldsPending) {
+                $this->gatherCustomFields();
+            }
+
+            return $this->customFields;
+        }
+    }
 
     /**
      * @var array<int, array{handle: string, uid: string}>|null The generated field handles that may be involved in this query.
      */
-    public ?array $generatedFields = null;
+    public ?array $generatedFields = null {
+        get {
+            if ($this->customFieldsPending) {
+                $this->gatherCustomFields();
+            }
+
+            return $this->generatedFields;
+        }
+    }
+
+    /**
+     * Whether the query is prepared but hasn't gathered its field layouts’ custom and generated fields yet.
+     *
+     * Building every layout costs more than most queries do, and many never reference a field,
+     * so they’re gathered when something first needs them.
+     */
+    private bool $customFieldsPending = false;
 
     /**
      * @var bool Whether custom fields should be factored into the query.
@@ -55,28 +79,55 @@ trait QueriesCustomFields
     protected function initQueriesCustomFields(): void
     {
         $this->beforeQuery(static function (ElementQuery $elementQuery) {
-            // Gather custom fields and generated field handles
             $elementQuery->customFields = [];
             $elementQuery->generatedFields = [];
+            $elementQuery->customFieldsPending = $elementQuery->withCustomFields;
 
-            if ($elementQuery->withCustomFields) {
-                foreach ($elementQuery->fieldLayouts() as $fieldLayout) {
-                    foreach ($fieldLayout->getCustomFields() as $field) {
-                        $elementQuery->customFields[] = $field;
-                    }
-                    foreach ($fieldLayout->getGeneratedFields() as $field) {
-                        $elementQuery->generatedFields[] = $field;
-                    }
-                }
+            if ($elementQuery->customFieldValues === []) {
+                return;
             }
-
-            // Map custom field handles to their content values
-            $elementQuery->addCustomFieldsToColumnMap();
-            $elementQuery->addGeneratedFieldsToColumnMap();
 
             $elementQuery->applyCustomFieldParams($elementQuery);
             $elementQuery->applyGeneratedFieldParams($elementQuery);
         });
+    }
+
+    /**
+     * Gathers the custom fields and generated field handles from the query’s field layouts,
+     * and maps their handles to their content values.
+     */
+    private function gatherCustomFields(): void
+    {
+        $this->customFieldsPending = false;
+        $customFields = [];
+        $generatedFields = [];
+
+        foreach ($this->fieldLayouts() as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                $customFields[] = $field;
+            }
+            foreach ($fieldLayout->getGeneratedFields() as $field) {
+                $generatedFields[] = $field;
+            }
+        }
+
+        $this->customFields = $customFields;
+        $this->generatedFields = $generatedFields;
+
+        $this->addCustomFieldsToColumnMap();
+        $this->addGeneratedFieldsToColumnMap();
+    }
+
+    /**
+     * Returns whether a column name is mapped to a column or expression, gathering the custom fields first if it could name one.
+     */
+    private function hasColumnMapping(string $column): bool
+    {
+        if ($this->customFieldsPending && $this->isCustomFieldHandle(explode('.', $column, 2)[0])) {
+            $this->gatherCustomFields();
+        }
+
+        return isset($this->columnMap[$column]);
     }
 
     /**

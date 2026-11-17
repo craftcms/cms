@@ -16,20 +16,23 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\FieldLayout\FieldLayoutComponent;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
+use CraftCms\Cms\Gql\GqlEntityRegistry;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Search\Search;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\PHP;
-use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Tests\Support\DatabaseLock;
 use CraftCms\Cms\Tests\Support\GuardsUtcDateBindings;
 use CraftCms\Cms\Tests\Support\IsolatesParallelFiles;
 use CraftCms\Cms\Tests\Support\RegistersPackageAliases;
-use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\Tests\Support\SkipsRepeatedDstHour;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Cache\ArrayStore;
+use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance;
 use Illuminate\Foundation\Testing\CachedState;
@@ -42,12 +45,15 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Mcp\Capability\Discovery\CachedDiscoverer;
+use Mcp\Capability\Discovery\Discoverer;
+use Mcp\Capability\Discovery\DiscovererInterface;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Override;
 use Pdo\Pgsql;
+use Psr\Log\NullLogger;
 use ReflectionProperty;
 
 class TestCase extends Orchestra
@@ -119,6 +125,7 @@ class TestCase extends Orchestra
         Cms::config()->timezone('America/Los_Angeles');
         Cms::setDefaultTimezone();
 
+        SkipsRepeatedDstHour::register();
         GuardsUtcDateBindings::register();
 
         // Tests run in Cp by default
@@ -132,10 +139,6 @@ class TestCase extends Orchestra
             app(Search::class)->useFullText = false;
         }
 
-        File::cleanDirectory(config_path('craft/'.app(ProjectConfig::class)->folderName));
-
-        File::cleanDirectory(storage_path('runtime/compiled_classes'));
-
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
@@ -143,16 +146,6 @@ class TestCase extends Orchestra
         Http::preventStrayRequests();
 
         $this->withoutVite();
-
-        // Always start with a fresh default admin user
-        if ($user = User::first()) {
-            $user->update([
-                'username' => 'craftcms',
-                'password' => Hash::make('craftcms2018!!'),
-                'email' => 'support@craftcms.com',
-                'admin' => true,
-            ]);
-        }
     }
 
     protected function connectionsToTransact(): array
@@ -192,6 +185,9 @@ class TestCase extends Orchestra
         FieldLayoutComponent::flushMacros();
         Widget::flushMacros();
 
+        // GraphQL types are built from the schema of the test that first asks for them
+        GqlEntityRegistry::flush();
+
         // ElementQuery has its own $macros property (not via Macroable trait)
         new ReflectionProperty(ElementQuery::class, 'macros')->setValue(null, []);
 
@@ -199,7 +195,6 @@ class TestCase extends Orchestra
         $resets = [
             [Element::class, 'sources', []],
             [BaseElementLinkType::class, 'fetchedElements', []],
-            [Typecast::class, 'types', []],
             [PHP::class, 'basePaths', []],
             [FieldLayoutComponent::class, 'defaultElementConditions', []],
             [CustomField::class, 'defaultElementEditConditions', []],
@@ -258,6 +253,14 @@ class TestCase extends Orchestra
     #[Override]
     protected function defineEnvironment($app): void
     {
+        // Cache only file discovery across applications, not per-user filtering or plugin registrations.
+        static $discoverer = new CachedDiscoverer(
+            new Discoverer,
+            new CacheRepository(new ArrayStore(serializesValues: true)),
+            new NullLogger,
+        );
+        $app->instance(DiscovererInterface::class, $discoverer);
+
         $projectConfigFolder = 'project';
 
         if (($token = getenv('TEST_TOKEN')) !== false) {
@@ -267,6 +270,10 @@ class TestCase extends Orchestra
             File::ensureDirectoryExists($storagePath);
             File::ensureDirectoryExists($app->storagePath('framework'));
             File::ensureDirectoryExists($app->storagePath('framework/testing'));
+
+            $compiledViewsPath = $app->storagePath('framework/views');
+            File::ensureDirectoryExists($compiledViewsPath);
+            $app->make(ConfigRepository::class)->set('view.compiled', $compiledViewsPath);
 
             $app->afterResolving(ProjectConfig::class, function (ProjectConfig $projectConfig) use ($projectConfigFolder) {
                 $projectConfig->folderName = $projectConfigFolder;
@@ -279,8 +286,7 @@ class TestCase extends Orchestra
         File::cleanDirectory(storage_path('runtime/compiled_classes'));
         File::cleanDirectory(storage_path('logs'));
 
-        $app->useEnvironmentPath(__DIR__);
-        $app->bootstrapWith([LoadEnvironmentVariables::class]);
+        $this->loadEnvironmentVariables($app);
 
         tap($app->make(ConfigRepository::class), function (ConfigRepository $config) {
             $config->set('inertia.pages.paths', [__DIR__.'/../resources/js/pages']);
@@ -313,6 +319,10 @@ class TestCase extends Orchestra
                         $connectionConfig['synchronous'],
                     );
 
+                    // Disposable databases need rollback, not durability after a process or machine crash.
+                    $connectionConfig['journal_mode'] = 'MEMORY';
+                    $connectionConfig['synchronous'] = 'OFF';
+
                     ConnectionConfig::ensureSqliteDatabaseFile((string) ($connectionConfig['database'] ?? ''));
                 }
 
@@ -343,5 +353,16 @@ class TestCase extends Orchestra
 
             DB::setDefaultConnection($connection);
         });
+    }
+
+    /**
+     * Loads `tests/.env`, which configures the test database connection.
+     *
+     * The variables stay in the process environment for the rest of the run.
+     */
+    protected function loadEnvironmentVariables(Application $app): void
+    {
+        $app->useEnvironmentPath(__DIR__);
+        $app->bootstrapWith([LoadEnvironmentVariables::class]);
     }
 }

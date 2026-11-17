@@ -6,10 +6,12 @@
   import type {UiControlPayload, UiValue} from './types';
   import {inputName} from './runtime';
   import {useServerRenderedControl} from './useServerRenderedControl';
+  import ServerRenderedControlFrame from './ServerRenderedControlFrame.vue';
 
   type EntryTypeSelectProps = {
     allowOverrides?: boolean;
     create?: boolean;
+    extraValueKeys?: string[];
   };
 
   const props = defineProps<{
@@ -22,7 +24,7 @@
   }>();
   let headHtml = '';
   let bodyHtml = '';
-  const {host, html} = useServerRenderedControl({
+  const {host, html, status, retry} = useServerRenderedControl({
     value: () => props.value,
     dependencies: [() => props.control.props, () => props.editable],
     async render() {
@@ -34,6 +36,7 @@
         value: props.value ?? [],
         allowOverrides: Boolean(props.control.props.allowOverrides),
         create: Boolean(props.control.props.create),
+        extraValueKeys: props.control.props.extraValueKeys ?? [],
         name: inputName(props.control.path),
         disabled: !props.editable,
       });
@@ -96,5 +99,13 @@
 </script>
 
 <template>
-  <div ref="host" v-html="html"></div>
+  <ServerRenderedControlFrame
+    :status="status"
+    :has-html="Boolean(html)"
+    :chips="value?.length ?? 0"
+    :buttons="control.props.create && editable ? 2 : 1"
+    @retry="retry"
+  >
+    <div ref="host" v-html="html"></div>
+  </ServerRenderedControlFrame>
 </template>

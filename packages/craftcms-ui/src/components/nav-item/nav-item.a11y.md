@@ -11,11 +11,11 @@ Used inside `craft-nav-list`; see [`nav-list.a11y.md`](../nav-list/nav-list.a11y
 - [x] An item with no `href`, no flyout and no `button` renders as plain text, not a control. Per WCAG 4.1.2 (Name, Role, Value). Verified by `leaves a hrefless item with nothing to disclose as a label` and `stays a label without it` in `nav-item.test.ts`.
 - [x] A link carries `aria-current="page"` when `current`, `aria-current="true"` when only `active` (an ancestor of the current page), and `aria-current="false"` otherwise. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `announces only the page itself as the page` in `nav-item.test.ts`.
 - [ ] An item rendered as a button carries `aria-current="true"` on the native `<button>` when `current`, never `page`. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
-- [x] Collapsed (`icon-only`), the row's link or button is named by `aria-label` with the item's label text, since the label moves into a tooltip or the flyout. Per WCAG 4.1.2 (Name, Role, Value) and 2.5.3 (Label in Name). Verified by `names a rail item, whose label is projected away from it` and `is a named button with a tooltip when collapsed` in `nav-item.test.ts`.
+- [x] Collapsed (`icon-only`), the row's link or button is named by `aria-label` with the item's label text, since the label moves into a tooltip or the flyout. The name follows the label when its text changes. Per WCAG 4.1.2 (Name, Role, Value) and 2.5.3 (Label in Name). Verified by `names a rail item, whose label is projected away from it` and `is a named button with a tooltip when collapsed` in `nav-item.test.ts`, and `renames a rail item whose label text is edited in place` in `nav-item.browser.test.ts`.
 - [x] Collapsed, the first-letter stand-in for a missing icon is hidden from assistive technology, so the name isn't read twice. Per WCAG 1.1.1 (Non-text Content). Verified by `stands the first letter in for a missing icon when collapsed` in `nav-item.test.ts`.
 - [x] Collapsed, a `group` heading becomes an `<hr>` that keeps the heading's text as its `aria-label`. Per WCAG 1.3.1 (Info and Relationships). Verified by `turns a collapsed heading into the rule between the runs it separates` in `nav-item.test.ts`.
 - [ ] A heading over a subnav (a `group` item, or an item whose label is styled text) is exposed as a heading, or names the nested list. Per WCAG 1.3.1 (Info and Relationships). Known gap: the label renders as a plain `<span>`, so the grouping is visual only and the heading isn't announced as one.
-- [ ] With `external`, the link opens in a new tab and its external-link icon carries a text alternative. Per WCAG 1.1.1 (Non-text Content). Known gap: `external` is declared but never rendered, so it sets no `target` and shows no icon.
+- [x] A link with `external`, or to another host, opens in a new tab with `rel="noopener"`, shows an external-link icon, and says it opens in a new window in hidden text, or in its `aria-label` when collapsed. The icon stays decorative, since the text carries its meaning. A link to the same host opens in the same tab. Per WCAG 1.1.1 (Non-text Content) and 3.2.5 (Change on Request). Verified by `opens a link %s in a new tab, with an icon, and says so`, `names a collapsed link as opening in a new tab` and `opens a link to this host in the same tab` in `nav-item.test.ts`.
 
 ### Subnav disclosure
 
@@ -25,7 +25,7 @@ Used inside `craft-nav-list`; see [`nav-list.a11y.md`](../nav-list/nav-list.a11y
 - [x] The flyout toggle carries `aria-expanded`, `aria-controls` pointing at the flyout, and an `aria-label` naming its branch. Per WCAG 4.1.2 (Name, Role, Value). Verified by `opens the flyout from its own disclosure instead` in `nav-item.test.ts`.
 - [x] A row with a flyout carries `aria-expanded` and `aria-controls` on its own link or button, not on the positioning anchor, and a childless row carries neither. Per WCAG 4.1.2 (Name, Role, Value). Verified by `tells a screen reader that a labeled item discloses a flyout`, `points the rail item at the flyout it expands`, `keeps the anchor out of the flyout aria, which it cannot carry` and `leaves a childless item without a disclosure to announce` in `nav-item.test.ts`.
 - [ ] Only a button carries `aria-expanded`, as in the Disclosure Navigation Menu example. Per WCAG 4.1.2 (Name, Role, Value). Known deviation: a link row with a flyout also carries it, although activating the link navigates rather than toggling the flyout.
-- [ ] The flyout panel isn't announced as an unnamed dialog. Per WCAG 4.1.2 (Name, Role, Value). Known gap: `craft-popover` gives its panel `role="dialog"`, and the item sets no `label` on it.
+- [ ] The flyout panel isn't announced as an unnamed dialog. Per WCAG 4.1.2 (Name, Role, Value). Known gap, inherited from `craft-popover`; see `popover.a11y.md`.
 
 ### Keyboard and focus
 
@@ -57,3 +57,5 @@ Used inside `craft-nav-list`; see [`nav-list.a11y.md`](../nav-list/nav-list.a11y
 - 4.1.2 (Name, Role, Value): give every item label text, including collapsed ones. See [Accessibility](./NavItem.mdx#accessibility).
 - 2.4.4 (Link Purpose (In Context)): use `href` for anything that goes somewhere, and `button` only for actions. See [Accessibility](./NavItem.mdx#accessibility).
 - 1.3.1 (Info and Relationships): set `current` and `active` to match the page. See [Accessibility](./NavItem.mdx#accessibility).
+- 1.4.11 (Non-text Contrast): keep a `--c-nav-item-icon-color` at 3:1 against the nav's background. See [Accessibility](./NavItem.mdx#accessibility).
+- 2.5.8 (Target Size (Minimum)): keep `--c-nav-item-size` at 24px or more. See [Accessibility](./NavItem.mdx#accessibility).

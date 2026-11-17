@@ -30,8 +30,14 @@ export interface BulkActionItem {
    * over `action` when both are given.
    */
   onClick?: (event: Event) => void;
+  /** The most selected elements the action is performed on within the request. */
+  syncLimit?: number;
+  /** Whether the action can run from a queue job, for more elements than `syncLimit`. */
+  queueable?: boolean;
   /** Row capability that every selected element must expose as truthy. */
   selectionAttribute?: keyof ElementCapabilities;
+  /** How many rows must be selected for the action, when it takes an exact number, such as Compare's two. */
+  selectionCount?: number;
   /** The primitive action descriptor. Ignored when `onClick` is set; absent for disabled/placeholder items. */
   action?:
     | {
@@ -66,7 +72,9 @@ export interface ElementCapabilities {
   copyable: boolean;
   duplicatable: boolean;
   deletable: boolean;
-  /** Asset rows: the file can be renamed or moved. */
+  /** The element can be shown on the Compare screen. */
+  comparable?: boolean;
+  /** Asset rows: the file can be renamed or moved. Entry rows: the entry can be moved to another section. */
   movable?: boolean;
   /** Asset rows: the file can be replaced with an upload. */
   replaceable?: boolean;
@@ -98,6 +106,8 @@ export interface ElementActionSelection {
   fieldId?: number | null;
   draftId?: number | null;
   revisionId?: number | null;
+  /** The element's field layout ID, on rows that can be compared. */
+  fieldLayoutId?: number | null;
   data?: {entryTypeId?: number | null};
   cardAttributes?: {
     data?: Record<string, unknown>;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CraftCms\Cms\ProjectConfig;
 
 use CraftCms\Cms\Address\Addresses;
-use CraftCms\Cms\Asset\AssetTransformers;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
 use CraftCms\Cms\ProjectConfig\Commands\CheckCommand;
@@ -60,11 +59,7 @@ class ProjectConfigServiceProvider extends ServiceProvider
             return;
         }
 
-        app(ProjectConfig::class)->flush();
-
-        if (app(ProjectConfig::class)->waitingToUpdateParsedConfigTimes) {
-            app(ProjectConfig::class)->updateParsedConfigTimes();
-        }
+        app(ProjectConfig::class)->flushChanges();
     }
 
     public function boot(ProjectConfig $projectConfig): void
@@ -95,11 +90,6 @@ class ProjectConfigServiceProvider extends ServiceProvider
             ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, fn (ConfigEvent $event) => app(Addresses::class)->handleChangedAddressFieldLayout($event))
             ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, fn (ConfigEvent $event) => app(Addresses::class)->handleChangedAddressFieldLayout($event))
             ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, fn (ConfigEvent $event) => app(Addresses::class)->handleChangedAddressFieldLayout($event))
-            // Asset Transformers
-            ->onAdd(ProjectConfig::PATH_ASSET_TRANSFORMERS.'.{uid}', fn (ConfigEvent $event) => app(AssetTransformers::class)->handleChangedAssetTransformer($event))
-            ->onUpdate(ProjectConfig::PATH_ASSET_TRANSFORMERS.'.{uid}', fn (ConfigEvent $event) => app(AssetTransformers::class)->handleChangedAssetTransformer($event))
-            ->onRemove(ProjectConfig::PATH_ASSET_TRANSFORMERS.'.{uid}', fn (ConfigEvent $event) => app(AssetTransformers::class)->handleDeletedAssetTransformer($event))
-            ->onRemove(ProjectConfig::PATH_ASSET_TRANSFORMERS, fn () => app(AssetTransformers::class)->handleAssetTransformersRemoved())
             // Fields
             ->onAdd(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))
             ->onUpdate(ProjectConfig::PATH_FIELDS.'.{uid}', fn (ConfigEvent $event) => Fields::handleChangedField($event))

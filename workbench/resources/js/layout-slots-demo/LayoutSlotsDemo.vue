@@ -1,23 +1,29 @@
 <script setup lang="ts">
   /**
    * A plugin-owned page. Everything here goes through public API only — the
-   * global `craft:layout-slot` component — the way a third-party plugin would.
+   * global `craft:layout-slot` and `craft:screen-panel` components — the way a
+   * third-party plugin would.
    *
    * The page owns the screen, so it may replace any slot. The same component
    * on a page the plugin doesn't own renders nothing — see the dashboard widget.
    */
-  import {reactive, resolveComponent} from 'vue';
+  import {reactive, ref, resolveComponent} from 'vue';
 
   defineProps<{owner: string}>();
 
   const LayoutSlot = resolveComponent('craft:layout-slot');
   const CpContainer = resolveComponent('craft:cp-container');
+  const ScreenPanel = resolveComponent('craft:screen-panel');
 
   const playground = reactive({
     sidebar: false,
     notice: false,
     unknown: false,
+    panels: false,
   });
+
+  /** How many times the sync panel's header action ran. */
+  const syncs = ref(0);
 </script>
 
 <template>
@@ -75,6 +81,15 @@
         </label>
 
         <label class="flex items-center gap-sm">
+          <input v-model="playground.panels" type="checkbox" />
+          <span>
+            Add details panels with <code>craft:screen-panel</code> — the
+            <code>content-details</code> content becomes a “Details” panel
+            beside them.
+          </span>
+        </label>
+
+        <label class="flex items-center gap-sm">
           <input v-model="playground.unknown" type="checkbox" />
           Fill <code>actions</code>, which isn't a slot — nothing renders, and
           the console warns.
@@ -90,6 +105,39 @@
   <LayoutSlot v-if="playground.notice" name="content-notices">
     <craft-callout variant="info">A notice from the page.</craft-callout>
   </LayoutSlot>
+
+  <template v-if="playground.panels">
+    <ScreenPanel
+      id="sync"
+      label="Sync"
+      icon="arrows-rotate"
+      :order="10"
+      :status="{label: `Synced ${syncs}×`, indicator: 'live'}"
+    >
+      <div class="p-md text-sm">
+        A panel from the page, with a status and a header action. Its state
+        lives in the page: synced {{ syncs }} times.
+      </div>
+
+      <template #header-actions>
+        <craft-button type="button" size="small" @click="syncs++">
+          Sync now
+        </craft-button>
+      </template>
+    </ScreenPanel>
+
+    <ScreenPanel
+      id="notes"
+      label="Notes"
+      icon="note-sticky"
+      initial-icon
+      :order="20"
+    >
+      <div class="p-md text-sm">
+        Without an icon of its own, a panel can show its label’s first letter.
+      </div>
+    </ScreenPanel>
+  </template>
 
   <LayoutSlot v-if="playground.unknown" name="actions">
     <craft-button type="button">Never shown</craft-button>

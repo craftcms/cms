@@ -4,24 +4,36 @@
   import {t} from '@craftcms/ui';
   import Modal from '@/common/components/Modal.vue';
   import CraftInputSearch from '@craftcms/ui/vue/CraftInputSearch.vue';
-  import {computed, nextTick, ref, watch} from 'vue';
+  import {computed, nextTick, ref, useId, watch} from 'vue';
   import {watchDebounced} from '@vueuse/core';
   import {useHttp} from '@inertiajs/vue3';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import {useAsyncIcon} from '../composables/useAsyncIcon';
   import IconController from '@actions/IconController';
 
-  /** An icon the picker offers: its name, and the SVG it's drawn with. */
-  type IconOption = {name: string; svg: string};
-  type PickerOptionsResponse = {icons: IconOption[]};
+  /**
+   * An icon the picker offers: its name, the SVG it's drawn with, the value
+   * it's stored as (`set-handle:name` for custom icon sets), and its set.
+   */
+  type IconOption = {name: string; svg: string; value: string; set: string};
+  type IconSetInfo = {handle: string; name: string};
+  type PickerOptionsResponse = {icons: IconOption[]; sets: IconSetInfo[]};
 
   const model = defineModel<string>();
   const props = withDefaults(
     defineProps<{
       label?: string;
       name?: string;
+      /** A validation message, shown below the picker. */
       error?: string;
+      /** Marks the picker invalid without a message, when one is shown elsewhere. */
+      invalid?: boolean;
       freeOnly?: boolean;
+      /**
+       * The icon sets to offer, in order (`fontawesome` for Font Awesome), or
+       * `'*'` for all of them. Font Awesome alone when unset.
+       */
+      sets?: string[] | '*' | null;
       disabled?: boolean;
       // Used by the legacy `<craft-icon-picker>` mount bridge: `id` lets a
       // wrapping `craft-field` label associate with the control, and
@@ -41,6 +53,8 @@
   const modalActive = ref<boolean>(false);
   /** The icons on offer, or null before the first load. */
   const icons = ref<IconOption[] | null>(null);
+  const iconSets = ref<IconSetInfo[]>([]);
+  const headingIdPrefix = `icon-picker-set-${useId()}`;
   const chooseButton = ref<HTMLElement | null>(null);
   const searchForm = ref<HTMLFormElement | null>(null);
 
@@ -61,11 +75,16 @@
   function loadIcons() {
     http.get(
       IconController.pickerOptions(undefined, {
-        query: {search: query.value, freeOnly: props.freeOnly},
+        query: {
+          search: query.value,
+          freeOnly: props.freeOnly,
+          ...(props.sets ? {sets: props.sets} : {}),
+        },
       }).url,
       {
         onSuccess: (response) => {
           icons.value = response.icons;
+          iconSets.value = response.sets ?? [];
 
           announce(
             `${t('Loading complete')} - ${t(
@@ -101,16 +120,41 @@
     {debounce: 300}
   );
 
+  /** The icons grouped by set, in the sets' order, leaving out empty sets. */
+  const iconGroups = computed(() =>
+    iconSets.value
+      .map((set) => ({
+        ...set,
+        icons: (icons.value ?? []).filter((icon) => icon.set === set.handle),
+      }))
+      .filter((group) => group.icons.length)
+  );
+
   const buttonLabel = computed(() => (model.value ? t('Change') : t('Choose')));
+  const field = ref<HTMLElement>();
+
+  /**
+   * Picking an icon is an edit, so once the value has reached the input it's
+   * announced the way typing would announce it.
+   */
+  function announceChange(): void {
+    void nextTick(() => {
+      const input = field.value?.querySelector('input');
+      input?.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
+      input?.dispatchEvent(new Event('change', {bubbles: true}));
+    });
+  }
 
   function choose(name: string) {
     modalActive.value = false;
     model.value = name;
+    announceChange();
     chooseButton.value?.focus();
   }
 
   function removeIcon() {
     model.value = '';
+    announceChange();
     nextTick(() => {
       chooseButton.value?.focus();
     });
@@ -119,16 +163,17 @@
 
 <template>
   <craft-input
+    ref="field"
     v-bind="$attrs"
     :id="id"
     :label="label"
     :name="name"
     :aria-labelledby="labelledBy"
     :aria-describedby="describedBy"
-    :has-feedback-for="error ? 'error' : ''"
+    :invalid="invalid || Boolean(error)"
     hidden-input
-    .modelValue="model"
-    :disabled="disabled"
+    .value="model"
+    .disabled="disabled"
   >
     <div class="flex gap-2 items-center" slot="before">
       <div class="icon-preview" :lang="contentLang">
@@ -156,6 +201,9 @@
         >
       </div>
     </div>
+    <ul v-if="error" class="error-list" slot="feedback">
+      <li>{{ error }}</li>
+    </ul>
   </craft-input>
 
   <!-- Teleported: the picker usually sits inside a web component (a field,
@@ -177,7 +225,7 @@
           slot="header"
           role="search"
           @submit.prevent="loadIcons()"
-          class="sticky top-0 pt-lg px-lg pb-md bg-(--c-surface-raised)"
+          class="sticky top-0 pt-lg px-lg pb-sm bg-(--c-surface-raised)"
         >
           <CraftInputSearch v-model="query">
             <craft-spinner
@@ -202,18 +250,36 @@
           </template>
 
           <template v-else>
-            <ul class="icon-grid" :lang="contentLang">
-              <li v-for="icon in icons" :key="icon.name">
-                <button
-                  type="button"
-                  class="icon-picker--icon"
-                  :title="icon.name"
-                  :aria-label="icon.name"
-                  @click="choose(icon.name)"
-                  v-html="icon.svg"
-                ></button>
-              </li>
-            </ul>
+            <section
+              v-for="group in iconGroups"
+              :key="group.handle"
+              class="icon-group"
+              :aria-labelledby="
+                iconGroups.length > 1
+                  ? `${headingIdPrefix}-${group.handle}`
+                  : undefined
+              "
+            >
+              <h3
+                v-if="iconGroups.length > 1"
+                :id="`${headingIdPrefix}-${group.handle}`"
+                class="mt-0 mb-sm text-base font-semibold"
+              >
+                {{ group.name }}
+              </h3>
+              <ul class="icon-grid" :lang="contentLang">
+                <li v-for="icon in group.icons" :key="icon.value">
+                  <button
+                    type="button"
+                    class="icon-picker--icon"
+                    :title="icon.name"
+                    :aria-label="icon.name"
+                    @click="choose(icon.value)"
+                    v-html="icon.svg"
+                  ></button>
+                </li>
+              </ul>
+            </section>
           </template>
         </div>
       </craft-pane>
@@ -247,23 +313,27 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    padding-block-start: var(--c-spacing-sm);
   }
 
   .icon-grid {
     display: grid;
-    grid-template-columns: repeat(
-      auto-fill,
-      minmax(var(--c-size-control-md), 1fr)
-    );
+    grid-template-columns: repeat(auto-fill, var(--c-size-control-md));
+    justify-content: center;
     gap: var(--c-spacing-sm);
+  }
+
+  .icon-group + .icon-group {
+    margin-block-start: var(--c-spacing-lg);
   }
 
   .icon-picker--icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--ui-control-height);
-    height: var(--ui-control-height);
+    box-sizing: border-box;
+    width: var(--c-size-control-md);
+    height: var(--c-size-control-md);
     border-radius: var(--c-radius-sm);
     background-color: var(--c-color-fill-quiet);
     border: 1px solid var(--c-color-border-quiet);

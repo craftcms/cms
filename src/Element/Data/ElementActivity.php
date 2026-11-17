@@ -55,7 +55,7 @@ class ElementActivity extends Component
         return [
             'userId' => $this->user->id,
             'userName' => $this->user->getName(),
-            'userThumb' => $this->user->getThumbHtml(26),
+            'userThumb' => $this->user->getThumbHtml(24),
             'type' => $this->type->value,
             'message' => $message,
         ];

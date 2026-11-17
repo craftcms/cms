@@ -50,6 +50,19 @@ describe('workflow registration', () => {
       })
     ).toEqual({label: 'Awaiting approval', indicator: 'pending'});
     expect(
+      panel.status!({
+        ...payload,
+        workflow: {
+          ...payload.workflow,
+          current: {
+            status: 'withdrawn',
+            statusLabel: 'Withdrawn',
+            statusIndicator: 'disabled',
+          } as CraftCms.Cms.Workflow.Data.WorkflowReviewData,
+        },
+      })
+    ).toBeNull();
+    expect(
       panel.visible!({
         ...payload,
         workflow: {

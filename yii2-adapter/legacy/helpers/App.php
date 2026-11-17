@@ -16,6 +16,7 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
+use craft\db\sqlite\Schema as SqliteSchema;
 use craft\db\Table;
 use craft\mail\Mailer;
 use craft\mail\Message;
@@ -28,11 +29,12 @@ use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Email\Data\EmailSettings;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -40,11 +42,11 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Yii2Adapter\Cache;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use InvalidArgumentException;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\db\Exception as DbException;
-use yii\db\sqlite\Schema as SqliteSchema;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
@@ -526,6 +528,41 @@ class App
     }
 
     /**
+     * Returns whether Craft is running in a [DDEV](https://ddev.com) project.
+     *
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see TerminalCommands::environment()} instead.
+     */
+    public static function isDdev(): bool
+    {
+        return app(TerminalCommands::class)->environment() === 'ddev';
+    }
+
+    /**
+     * Returns a Craft console command, as it should be run from a terminal for the current environment.
+     *
+     * @param string $command The command and its arguments, without the `craft` executable
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see TerminalCommands::craft()} instead.
+     */
+    public static function craftCommand(string $command): string
+    {
+        return app(TerminalCommands::class)->craft($command);
+    }
+
+    /**
+     * Returns a Composer command, as it should be run from a terminal for the current environment.
+     *
+     * @param string $command The command and its arguments, without the `composer` executable
+     * @since 5.13.0
+     * @deprecated 6.0.0 use {@see TerminalCommands::composer()} instead.
+     */
+    public static function composerCommand(string $command): string
+    {
+        return app(TerminalCommands::class)->composer($command);
+    }
+
+    /**
      * Returns whether Craft is running on a Windows environment
      *
      * @since 5.0.0
@@ -659,7 +696,6 @@ class App
                 'defaultSchema' => $dbConfig->schema,
             ];
         } else {
-            // SQLite or other: use Yii2's built-in schema support
             $schemaConfig = [
                 'class' => SqliteSchema::class,
             ];
@@ -675,7 +711,7 @@ class App
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
             'charset' => $dbConfig->getCharset(),
-            'tablePrefix' => $dbConfig->tablePrefix ?? '',
+            'tablePrefix' => config("database.connections.$driver.prefix") ?: ($dbConfig->tablePrefix ?? ''),
             'enableLogging' => app()->hasDebugModeEnabled(),
             'enableProfiling' => app()->hasDebugModeEnabled(),
             'schemaMap' => [
@@ -722,42 +758,35 @@ class App
     public static function mailerConfig(?MailSettings $settings = null): array
     {
         if ($settings?->template) {
-            Deprecator::log(
+            LegacyUsage::record(
                 'craft\\models\\MailSettings::$template',
                 '`craft\\models\\MailSettings::$template` is deprecated. Set the template via the email settings in Settings → Email instead.',
             );
         }
 
         if ($settings && !empty($settings->siteOverrides)) {
-            Deprecator::log(
+            LegacyUsage::record(
                 'craft\\models\\MailSettings::$siteOverrides',
                 '`craft\\models\\MailSettings::$siteOverrides` is deprecated and no longer has any effect. Use the email settings in Settings → Email instead.',
             );
         }
 
-        $fromEmail = data_get(config('mail'), 'from.address');
-        $fromName = data_get(config('mail'), 'from.name');
-        $replyTo = data_get(config('mail'), 'reply_to.address');
-
-        if (!is_string($fromEmail) || $fromEmail === '') {
-            $fromEmail = Env::get('FROM_EMAIL_ADDRESS');
-        }
-
-        if (!is_string($fromName) || $fromName === '') {
-            $fromName = Env::get('FROM_EMAIL_NAME');
-        }
-
-        if (!is_string($replyTo) || $replyTo === '') {
-            $replyTo = null;
-        }
+        $emailSettings = $settings
+            ? new EmailSettings(
+                fromEmail: $settings->fromEmail,
+                fromName: $settings->fromName,
+                replyToEmail: $settings->replyToEmail,
+            )
+            : EmailSettings::fromProjectConfig();
+        $resolved = $emailSettings->resolveForSite();
 
         return [
             'class' => Mailer::class,
             'messageClass' => Message::class,
-            'from' => ($fromEmail && is_string($fromEmail)) ? [
-                $fromEmail => is_string($fromName) ? $fromName : null,
+            'from' => $resolved->fromEmail ? [
+                $resolved->fromEmail => $resolved->fromName,
             ] : [],
-            'replyTo' => $replyTo,
+            'replyTo' => $resolved->replyToEmail ?: null,
             'template' => null,
             'siteOverrides' => [],
             'transport' => app('mail.manager')->mailer()->getSymfonyTransport(),

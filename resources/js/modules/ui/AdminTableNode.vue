@@ -31,10 +31,9 @@
   } from '@/modules/elements/types/actions';
   import {AdminTableCreateSlideout} from '@/modules/admin-table/create-slideout';
   import {useElementQuickEdit} from '@/modules/elements/composables/useElementQuickEdit';
-  import AdminTableDeleteModal from './AdminTableDeleteModal.vue';
   import UiModal from './UiModal.vue';
   import {useInertiaTable} from './useInertiaTable';
-  import {UiTableFlush} from './runtime';
+  import {UiTableFlush, UiTableRefresh} from './runtime';
   import type {UiValues} from './types';
 
   import type {
@@ -51,6 +50,7 @@
     TableNodePayload,
     TableRow,
   } from './table-types';
+  import {showError, showNotice} from '@/modules/messages/messages';
 
   const props = defineProps<{
     node: TableNodePayload;
@@ -63,6 +63,7 @@
     onRefresh?: () => void;
   }>();
   const pageTableFlush = inject(UiTableFlush, ref(false));
+  const onRefresh = props.onRefresh ?? inject(UiTableRefresh, undefined);
   provide(UiTableFlush, ref(false));
   const quickEdit = useElementQuickEdit({refreshResults: refreshTable});
   provide(
@@ -148,6 +149,14 @@
     // content needs its own explicit `_search` to stay searchable.
     if ('html' in value) return '';
     return value.label ?? '';
+  }
+
+  /** Names the row, as its selection checkbox and delete button do. */
+  function rowLabel(row: TableRow): string {
+    return (
+      cellText(row[props.node.props.columns[0]?.key ?? ''] ?? null) ||
+      String(row.id)
+    );
   }
 
   function rowSearchText(row: TableRow): string {
@@ -361,6 +370,7 @@
           enableSorting: !!column.sortable,
           meta: {
             trackSize: column.width,
+            columnClass: column.thin ? 'thin' : undefined,
             headerSrOnly: column.headerSrOnly,
             wrap: column.wrap,
           },
@@ -414,7 +424,9 @@
             ) {
               actions.push(
                 h(DeleteButton, {
-                  label: row.original._deleteLabel,
+                  label:
+                    row.original._deleteLabel ??
+                    t('Delete {name}', {name: rowLabel(row.original)}),
                   disabled: deletePending.value,
                   disabledReason: row.original._deleteDisabledReason,
                   onClick: () => deleteRow(row.original),
@@ -424,7 +436,7 @@
 
             return actions;
           },
-          {meta: {trackSize: '60px'}}
+          {meta: {trackSize: '60px', columnClass: 'thin'}}
         )
       );
     }
@@ -469,15 +481,11 @@
   }
 
   function notifyOrderUpdated(): void {
-    Craft.cp?.displayNotice?.(
-      props.node.props.reorderSuccessMessage ?? t('Order updated.')
-    );
+    showNotice(props.node.props.reorderSuccessMessage ?? t('Order updated.'));
   }
 
   function onOrderFailed(): void {
-    Craft.cp?.displayError?.(
-      props.node.props.reorderFailMessage ?? t('Couldn’t reorder.')
-    );
+    showError(props.node.props.reorderFailMessage ?? t('Couldn’t reorder.'));
   }
 
   const deletingRow = ref<TableRow | null>(null);
@@ -499,20 +507,13 @@
 
       return true;
     } catch (error: any) {
-      Craft.cp?.displayError?.(
+      showError(
         error?.response?.data?.message ?? t('A server error occurred.')
       );
       return false;
     } finally {
       deletePending.value = false;
     }
-  }
-
-  function onModalDeleted(): void {
-    const row = deletingRow.value;
-    deletingRow.value = null;
-    if (row?.id !== undefined) adminTable.value?.removeRows([row.id]);
-    refreshTable();
   }
 
   async function deleteRow(row: TableRow): Promise<void> {
@@ -525,7 +526,7 @@
     )
       return;
 
-    if (props.node.props.deleteModalUrl || slots['delete-modal']) {
+    if (slots['delete-modal']) {
       deletingRow.value = row;
       return;
     }
@@ -533,7 +534,7 @@
     const message =
       row._deleteConfirmMessage ??
       props.node.props.deleteConfirmMessage ??
-      t('Are you sure?');
+      t('Are you sure you want to delete “{name}”?', {name: rowLabel(row)});
 
     if (!confirm(message)) {
       return;
@@ -552,7 +553,11 @@
     if (!ids.length || !url || deletePending.value) return;
 
     const message =
-      props.node.props.bulkDeleteConfirmMessage ?? t('Are you sure?');
+      props.node.props.bulkDeleteConfirmMessage ??
+      t(
+        'Are you sure you want to delete {num, number} {num, plural, =1{item} other{items}}?',
+        {num: ids.length}
+      );
 
     if (!confirm(message)) {
       return;
@@ -611,12 +616,12 @@
   );
 
   function onLoadFailed(): void {
-    Craft.cp?.displayError?.(t('An error occurred.'));
+    showError(t('An error occurred.'));
   }
 
   function refreshUi(): void {
-    if (props.onRefresh) {
-      props.onRefresh();
+    if (onRefresh) {
+      onRefresh();
 
       return;
     }
@@ -625,8 +630,8 @@
   }
 
   function refreshTable(): void {
-    if (props.onRefresh) {
-      props.onRefresh();
+    if (onRefresh) {
+      onRefresh();
 
       return;
     }
@@ -667,11 +672,7 @@
       :request-state="inertia.requestState.value"
       :page-size="node.props.perPage"
       :page-size-options="node.props.perPageOptions"
-      :get-row-label="
-        (row) =>
-          cellText(row[node.props.columns[0]?.key ?? ''] ?? null) ||
-          String(row.id)
-      "
+      :get-row-label="rowLabel"
       :get-search-text="rowSearchText"
       :get-row-status="(row) => row._status?.value"
       :get-sort-value="sortValue"
@@ -679,6 +680,7 @@
         (row) => row._deletable !== false && !row._deleteDisabledReason
       "
       :reorderable="!!node.props.reorderUrl"
+      :can-reorder-row="(row) => row._reorderable !== false"
       :reorder-rows="node.props.reorderUrl ? reorderRows : undefined"
       :move-to-page="node.props.moveToPageUrl ? moveToPage : undefined"
       :selectable="hasBulkFooter"
@@ -724,16 +726,7 @@
       :row="deletingRow"
       :label="cellText(deletingRow[node.props.columns[0]?.key ?? ''] ?? null)"
       :close="() => (deletingRow = null)"
-    >
-      <AdminTableDeleteModal
-        v-if="node.props.deleteModalUrl"
-        :modal-url="node.props.deleteModalUrl"
-        :delete-url="deleteUrl(deletingRow)!"
-        :row-id="deletingRow.id!"
-        @close="deletingRow = null"
-        @deleted="onModalDeleted"
-      />
-    </slot>
+    />
     <UiModal
       v-if="menuModal"
       :modal-url="menuModal.modalUrl"

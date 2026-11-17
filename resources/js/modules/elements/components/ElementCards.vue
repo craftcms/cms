@@ -1,9 +1,10 @@
 <script setup lang="ts">
   import {attrs, t, type ServerAttributes} from '@craftcms/ui';
   import {computed, normalizeClass} from 'vue';
-  import {usePage} from '@inertiajs/vue3';
   import SelectableCardList from '@/common/components/SelectableCardList.vue';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
+  import PlaceholderShape from '@/common/components/PlaceholderShape.vue';
+  import type {CardThumbSettings} from '@/modules/elements/types/view-state';
   import type {Selectable} from '@/common/composables/useSelectable';
   import {isInteractiveClick} from '@/common/utils/dom';
   import {
@@ -29,6 +30,12 @@
       data?: Array<CardElement>;
       selectable?: boolean;
       selectAll?: boolean;
+      /**
+       * Draws the select-all header for cards that can't be selected, with a
+       * disabled checkbox that assistive tech skips, so they line up with
+       * selectable cards beside them.
+       */
+      placeholderSelectAll?: boolean;
       singleColumn?: boolean;
       sortable?: boolean;
       interactionsDisabled?: boolean;
@@ -36,6 +43,16 @@
       loading?: boolean;
       renderServerActions?: boolean;
       itemBehavior?: ElementIndexItemBehavior<CardElement>;
+      /**
+       * How many placeholder cards to draw in place of the cards, such as while
+       * they load. Takes the place of the loading spinner.
+       */
+      placeholders?: number;
+      /**
+       * How the placeholder cards show a thumbnail, as the cards' field layout
+       * has it, or null for none.
+       */
+      placeholderThumb?: CardThumbSettings | null;
     }>(),
     {
       data: () => [],
@@ -43,13 +60,13 @@
       selectAll: true,
       singleColumn: false,
       sortable: false,
+      readOnly: false,
       loading: false,
       renderServerActions: true,
+      placeholders: 0,
+      placeholderThumb: null,
     }
   );
-
-  const page = usePage<{readOnly: boolean}>();
-  const readOnly = computed(() => props.readOnly ?? page.props.readOnly);
 
   // Selection is handed in rather than derived from a table, so this body works
   // for anything with an ordered list of ids — the element index, a relation
@@ -62,18 +79,28 @@
 
   const ids = computed(() => props.data.map((element) => element.id));
 
+  /** Classes the list item carries instead of the card, such as for quick-edit's `.element` lookup. */
+  const ITEM_CLASSES = new Set(['element', 'error']);
+
+  function serverClasses(element: CardElement | undefined): string[] {
+    return normalizeClass(attrs(element?.cardAttributes).class)
+      .split(/\s+/)
+      .filter(Boolean);
+  }
+
   /** Per-card attributes the shared frame passes straight through. */
   function itemClass(id: string | number): unknown {
     const element = props.data.find((candidate) => candidate.id === id);
-    const classes = normalizeClass(element?.cardAttributes?.class).split(/\s+/);
 
-    return {element: true, error: classes.includes('error')};
+    return {element: true, error: serverClasses(element).includes('error')};
   }
 
   function itemAttrs(id: string | number): Record<string, unknown> | undefined {
     const element = props.data.find((candidate) => candidate.id === id);
 
-    return element ? props.itemBehavior?.attrs?.(element) : undefined;
+    return element
+      ? {'data-id': String(id), ...props.itemBehavior?.attrs?.(element)}
+      : undefined;
   }
 
   function cardAttrs(id: string | number): Record<string, unknown> | undefined {
@@ -83,8 +110,16 @@
       return undefined;
     }
 
+    // Without `data-settings`, so the CP's chip refresh leaves Vue's cards to
+    // their owner, which refetches the data they're drawn from instead.
+    const {'data-settings': _settings, ...cardAttributes} = attrs(
+      element.cardAttributes,
+      {exclude: ['class']}
+    );
+
     return {
-      ...attrs(element.cardAttributes, {exclude: ['class']}),
+      ...cardAttributes,
+      class: serverClasses(element).filter((name) => !ITEM_CLASSES.has(name)),
       'thumb-alignment': element.thumbAlignment ?? undefined,
     };
   }
@@ -104,7 +139,7 @@
       return;
     }
 
-    if (props.selectable && !readOnly.value && !props.interactionsDisabled) {
+    if (props.selectable && !props.readOnly && !props.interactionsDisabled) {
       props.selection.handleClick(id, event);
     }
   }
@@ -150,18 +185,43 @@
       event.preventDefault();
     }
   }
-
-  function checkboxValue(event: Event): boolean {
-    // `craft-checkbox` dispatches `model-value-changed` from the host, not from
-    // an inner `<input>`, so an `instanceof HTMLInputElement` test reads every
-    // change as unchecked. Since it also re-fires on programmatic `.checked`
-    // updates, that turned each selection into an immediate deselection.
-    return Boolean((event.target as {checked?: boolean} | null)?.checked);
-  }
 </script>
 
 <template>
-  <div class="grid flex-1 place-items-center min-h-50" v-if="loading">
+  <template v-if="placeholders > 0">
+    <div
+      class="card-grid-header"
+      v-if="selectable && selectAll"
+      aria-hidden="true"
+    >
+      <PlaceholderShape class="checkbox-placeholder" />
+    </div>
+    <ul
+      :class="{'card-grid': true, 'card-grid--single': singleColumn}"
+      aria-hidden="true"
+    >
+      <li v-for="index in placeholders" :key="index">
+        <PlaceholderShape
+          v-if="
+            placeholderThumb?.style === 'cover' ||
+            placeholderThumb?.style === 'auto'
+          "
+          class="card-cover-placeholder"
+        />
+        <craft-card v-else :thumb-alignment="placeholderThumb?.alignment">
+          <PlaceholderShape
+            v-if="placeholderThumb"
+            slot="thumbnail"
+            class="card-thumb-placeholder"
+          />
+          <PlaceholderShape slot="header" class="card-label-placeholder" />
+          <PlaceholderShape />
+          <PlaceholderShape class="card-text-placeholder" />
+        </craft-card>
+      </li>
+    </ul>
+  </template>
+  <div class="grid flex-1 place-items-center min-h-50" v-else-if="loading">
     <craft-spinner></craft-spinner>
   </div>
   <template v-else-if="data.length > 0">
@@ -171,10 +231,25 @@
         .checked="selection.allSelected.value"
         .indeterminate="selection.someSelected.value"
         .disabled="readOnly || interactionsDisabled"
-        @model-value-changed="selection.toggleAll(checkboxValue($event))"
+        @change="
+          selection.toggleAll(($event.target as HTMLInputElement).checked)
+        "
       >
         <label slot="label">{{ t('Select all') }}</label>
       </craft-checkbox>
+    </div>
+    <div
+      v-else-if="placeholderSelectAll"
+      class="card-grid-header"
+      aria-hidden="true"
+      inert
+    >
+      <craft-checkbox label-sr-only disabled>
+        <label slot="label">{{ t('Select all') }}</label>
+      </craft-checkbox>
+    </div>
+    <div v-if="$slots['header-after']" class="card-grid-header-after">
+      <slot name="header-after" />
     </div>
 
     <SelectableCardList
@@ -239,6 +314,31 @@
 </template>
 
 <style scoped lang="scss">
+  .checkbox-placeholder {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
+  .card-thumb-placeholder {
+    inline-size: var(--c-thumbnail-size);
+    block-size: var(--c-thumbnail-size);
+  }
+
+  .card-cover-placeholder {
+    aspect-ratio: 4 / 3;
+    block-size: auto;
+    border-radius: var(--c-card-radius, var(--c-radius-md));
+  }
+
+  .card-label-placeholder {
+    inline-size: 50%;
+  }
+
+  .card-text-placeholder {
+    inline-size: 70%;
+    margin-block-start: var(--c-spacing-sm);
+  }
+
   .card-grid-header {
     margin-block-end: var(--c-spacing-md);
     display: flex;

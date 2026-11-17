@@ -1,7 +1,17 @@
 import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
-import {createApp, defineComponent, h, type App} from 'vue';
+import {
+  createApp,
+  defineComponent,
+  h,
+  nextTick,
+  onBeforeUnmount,
+  reactive,
+  type App,
+} from 'vue';
+import {useAnnouncer} from '@/common/composables/useAnnouncer';
+import {broadcast} from '@/common/craft/broadcast';
 import {useDashboard} from './useDashboard';
-import type {DashboardWidget} from './types';
+import type {DashboardWidget, WidgetType} from './types';
 
 const state = vi.hoisted(() => ({
   post: vi.fn(),
@@ -9,7 +19,8 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock('@craftcms/ui', () => ({
   actionClient: {post: state.post},
-  t: (message: string) => message,
+  t: (message: string, params: Record<string, unknown> = {}) =>
+    message.replace(/\{(\w+)\}/g, (_, key: string) => String(params[key])),
 }));
 const messages = vi.hoisted(() => ({
   showMessage: vi.fn(),
@@ -46,29 +57,69 @@ function widget(id: number): DashboardWidget {
     type: 'Example',
     colspan: 1,
     maxColspan: 4,
+    color: 'gray',
     title: `Widget ${id}`,
     subtitle: null,
     name: 'Example',
     settings: {limit: id},
-    settingsUi: null,
+    hasSettings: false,
     component: null,
     data: null,
     fragment: {html: '', headHtml: '', bodyHtml: ''},
   };
 }
 
-function mount(widgets: DashboardWidget[]) {
+/** Like a dashboard widget, it reports its settings closed as it goes. */
+const WidgetFrame = defineComponent({
+  props: {id: {type: Number, required: true}},
+  setup(props, {slots}) {
+    onBeforeUnmount(() => dashboard.settingsToggled(props.id, false));
+    return () =>
+      h('div', {class: 'dashboard-widget', 'data-id': props.id}, slots);
+  },
+});
+
+function mount(
+  widgets: DashboardWidget[],
+  widgetTypes: Record<string, WidgetType> = {}
+) {
+  const props = reactive({widgets, widgetTypes});
   host = document.createElement('div');
   document.body.append(host);
   app = createApp(
     defineComponent({
       setup() {
-        dashboard = useDashboard({widgets, widgetTypes: {}});
-        return () => h('div', {ref: dashboard.container});
+        dashboard = useDashboard(props);
+        // A widget's content remounts when its data changes, as the
+        // dashboard's does. One with `later` data gets it later, as HTML
+        // widgets do.
+        return () =>
+          h(
+            'div',
+            {ref: dashboard.container},
+            dashboard.widgets.value.map((item) =>
+              h(
+                WidgetFrame,
+                {key: item.id, id: item.id},
+                {
+                  default: () => [
+                    (item.data as {later?: boolean} | null)?.later
+                      ? h('div', {key: 'later'})
+                      : h(
+                          'a',
+                          {key: JSON.stringify(item.data), href: '#'},
+                          item.title ?? ''
+                        ),
+                  ],
+                }
+              )
+            )
+          );
       },
     })
   );
   app.mount(host);
+  return props;
 }
 
 beforeEach(() => {
@@ -100,6 +151,93 @@ it('keeps the saved layout when resizing or reordering fails', async () => {
   expect(messages.error).toHaveBeenLastCalledWith('Couldn’t reorder widgets.');
 });
 
+it('shows a widget’s new color while it saves, and its saved color again if saving fails', async () => {
+  mount([widget(1)]);
+  let fail!: (error: Error) => void;
+  state.post.mockReturnValue(
+    new Promise((_, reject) => {
+      fail = reject;
+    })
+  );
+
+  const saving = dashboard.recolor(dashboard.widgets.value[0]!, 'red');
+  expect(dashboard.widgets.value[0]!.color).toBe('red');
+
+  fail(new Error('offline'));
+  await saving;
+
+  expect(dashboard.widgets.value[0]!.color).toBe('gray');
+  expect(messages.error).toHaveBeenLastCalledWith('Couldn’t save widget.');
+});
+
+it('shows widgets in their new order while it saves, and the saved order again if saving fails', async () => {
+  mount([widget(1), widget(2), widget(3)]);
+  let fail!: (error: Error) => void;
+  state.post.mockReturnValue(
+    new Promise((_, reject) => {
+      fail = reject;
+    })
+  );
+
+  const saving = dashboard.reorder(2, 0);
+  expect(dashboard.widgets.value.map((item) => item.id)).toEqual([3, 1, 2]);
+
+  fail(new Error('offline'));
+  await saving;
+
+  expect(dashboard.widgets.value.map((item) => item.id)).toEqual([1, 2, 3]);
+  expect(messages.error).toHaveBeenLastCalledWith('Couldn’t reorder widgets.');
+});
+
+it('announces where a widget moved once the new order is saved', async () => {
+  mount([widget(1), widget(2), widget(3)]);
+  state.post.mockResolvedValue({data: {}});
+
+  await dashboard.reorder(2, 0);
+
+  expect(useAnnouncer().announcement.value).toBe(
+    'Moved Widget 3 to position 1'
+  );
+});
+
+const exampleType: WidgetType = {
+  iconSvg: null,
+  name: 'Example',
+  maxColspan: 2,
+  selectable: true,
+  hasSettings: true,
+};
+
+it('loads a new widget’s settings UI before showing it with its settings open', async () => {
+  mount([widget(1)], {Example: exampleType});
+  const ui = {scope: ['newwidget1-settings'], nodes: [], values: {}};
+  state.post.mockResolvedValueOnce({data: {ui}});
+
+  await dashboard.actions.value[0]!.onClick();
+
+  expect(state.post).toHaveBeenCalledWith(expect.any(String), {
+    type: 'Example',
+    namespace: 'newwidget1-settings',
+  });
+  expect(dashboard.widgets.value.at(-1)).toMatchObject({
+    id: -1,
+    type: 'Example',
+    hasSettings: true,
+    settingsUi: ui,
+  });
+});
+
+it('adds no widget when its settings UI can’t be loaded', async () => {
+  mount([widget(1)], {Example: exampleType});
+  state.post.mockRejectedValueOnce(new Error('offline'));
+
+  await dashboard.actions.value[0]!.onClick();
+
+  expect(dashboard.widgets.value.map((item) => item.id)).toEqual([1]);
+  expect(messages.error).toHaveBeenCalledWith('Couldn’t load widget settings.');
+  expect(dashboard.busy.value).toBe(false);
+});
+
 it('undo restores a deleted widget at the end', async () => {
   mount([widget(1), widget(2)]);
   state.post.mockResolvedValueOnce({data: {}});
@@ -122,4 +260,95 @@ it('keeps a widget and its undo state unchanged when deletion fails', async () =
 
   expect(dashboard.widgets.value.map((item) => item.id)).toEqual([1]);
   expect(dashboard.deleted.value).toBeUndefined();
+});
+
+it('reloads its widgets once elements are saved, after any open settings close', async () => {
+  mount([widget(1), widget(2)]);
+  dashboard.settingsToggled(2, true);
+
+  broadcast({event: 'saveElement', id: 7});
+  broadcast({event: 'saveElement', id: 8});
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  expect(state.reload).not.toHaveBeenCalled();
+
+  dashboard.settingsToggled(2, false);
+
+  expect(state.reload).toHaveBeenCalledOnce();
+  expect(state.reload).toHaveBeenCalledWith({only: ['widgets']});
+
+  broadcast({event: 'saveElement', id: 7});
+  broadcast({event: 'saveElement', id: 8});
+  await vi.waitFor(() => expect(state.reload).toHaveBeenCalledTimes(2));
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  expect(state.reload).toHaveBeenCalledTimes(2);
+});
+
+it('sets aside widgets reloaded while settings are open, and reloads them once they close', async () => {
+  const props = mount([widget(1), widget(2)]);
+  dashboard.settingsToggled(2, true);
+
+  props.widgets = [{...widget(1), data: {entries: []}}, widget(2)];
+  await nextTick();
+
+  expect(dashboard.widgets.value[0]!.data).toBeNull();
+  expect(state.reload).not.toHaveBeenCalled();
+
+  dashboard.settingsToggled(2, false);
+
+  expect(state.reload).toHaveBeenCalledWith({only: ['widgets']});
+});
+
+it('doesn’t reload a page it’s left with settings open after elements were saved', async () => {
+  mount([widget(1), widget(2)]);
+  dashboard.settingsToggled(2, true);
+  broadcast({event: 'saveElement', id: 7});
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  app.unmount();
+  await Promise.resolve();
+
+  expect(state.reload).not.toHaveBeenCalled();
+});
+
+it('keeps focus in a widget that remounts when it’s reloaded', async () => {
+  const props = mount([widget(1), widget(2)]);
+  await nextTick();
+  host.querySelectorAll<HTMLElement>('a')[1]!.focus();
+
+  props.widgets = [widget(1), {...widget(2), data: {entries: []}}];
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(document.activeElement?.textContent).toBe('Widget 2');
+});
+
+it('leaves focus alone when reloaded widgets come in another order', async () => {
+  const props = mount([widget(1), widget(2), widget(3)]);
+  await nextTick();
+  host.querySelectorAll<HTMLElement>('a')[1]!.focus();
+
+  props.widgets = [{...widget(2), data: {entries: []}}, widget(1), widget(3)];
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(document.activeElement).toBe(document.body);
+});
+
+it('keeps focus in a widget whose content comes in after it remounts', async () => {
+  const props = mount([widget(1), widget(2), widget(3)]);
+  await nextTick();
+  host.querySelectorAll<HTMLElement>('a')[1]!.focus();
+
+  props.widgets = [widget(1), {...widget(2), data: {later: true}}, widget(3)];
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(document.activeElement).toBe(document.body);
+
+  const link = document.createElement('a');
+  link.href = '#';
+  link.textContent = 'Widget 2';
+  host.querySelector('[data-id="2"] > div')!.append(link);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  expect(document.activeElement).toBe(link);
 });

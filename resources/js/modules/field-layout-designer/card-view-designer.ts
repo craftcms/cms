@@ -4,8 +4,10 @@ import {Base} from '@craftcms/garnish';
 import {cvdData} from './support';
 import type {FieldLayoutDesigner} from './field-layout-designer';
 import type {Element as FldElement} from './element';
-
-declare const Craft: any;
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
+import {announce} from '@/common/announcer';
 
 /**
  * The card view designer (preview + thumbnail/attribute management). Native DOM
@@ -19,9 +21,26 @@ export class CardViewDesigner extends Base {
   $previewContainer: any = null;
   $libraryContainer: CraftCheckboxSelect;
   $thumbManagementContainer: any = null;
+  $thumbSources: CraftCheckboxSelect | null = null;
+  /** The thumb source for the owner's icon, offered while it has one. */
+  iconThumbOption: {label: string; value: string} | null = null;
   alwaysShowThumbAlignmentBtns = false;
+  hasThumbAlignment = false;
   abortController: AbortController | null = null;
   attribute: any = null;
+  previewCardObserver = new ResizeObserver(() => this.snapPreviewCard());
+  /**
+   * The preview's sample image depends on the theme, so it's rendered again
+   * when the theme changes without a page load (System following the
+   * operating system, say).
+   */
+  themeObserver = new MutationObserver(() => void this.updatePreview());
+  /**
+   * Watches for the owner's Name, Color, and Icon controls while some are
+   * missing, as a form can render them after the card view designer, such as
+   * in an Appearance tab whose fields render once it's first shown.
+   */
+  appearanceControlObserver: MutationObserver | null = null;
 
   constructor(designer: FieldLayoutDesigner, container: HTMLElement) {
     super();
@@ -43,17 +62,28 @@ export class CardViewDesigner extends Base {
     this.alwaysShowThumbAlignmentBtns =
       designer.settings!.alwaysShowThumbAlignmentBtns;
 
-    const $thumbSelectDropdown = this.$thumbManagementContainer.querySelector(
-      'select[id$="thumb-source"]'
+    this.$thumbSources = this.$thumbManagementContainer.querySelector(
+      'craft-checkbox-select[id$="thumb-sources"]'
     );
-    this.addListener($thumbSelectDropdown, 'change', (ev: any) => {
-      this.manageThumbnails(ev.target);
-    });
-
-    if (this.alwaysShowThumbAlignmentBtns) {
-      // always show the thumbnail alignment buttons
-      this.showThumbAlignment();
+    const iconOption = this.$thumbManagementContainer.dataset.iconOption;
+    this.iconThumbOption = iconOption ? JSON.parse(iconOption) : null;
+    if (this.$thumbSources) {
+      this.addListener(this.$thumbSources, 'change', (ev: any) => {
+        if (
+          ev.target instanceof HTMLElement &&
+          ev.target.matches('input[type=checkbox]')
+        ) {
+          this.manageThumbnails();
+        }
+      });
+      this.addListener(this.$thumbSources, 'craft-order-change', () => {
+        this.manageThumbnails();
+      });
     }
+
+    this.hasThumbAlignment =
+      this.alwaysShowThumbAlignmentBtns || this.thumbSources().length > 0;
+    this.toggleThumbFields();
 
     // The thumb-alignment options are radios, so whichever way the selection
     // changes (clicks or arrow keys), the checked one's value is applied.
@@ -69,10 +99,73 @@ export class CardViewDesigner extends Base {
       });
     }
 
+    const $thumbStyleGroup = this.$thumbManagementContainer.querySelector(
+      '[id$="thumb-style"].radio-group'
+    );
+    if ($thumbStyleGroup) {
+      this.addListener($thumbStyleGroup, 'change', (ev: any) => {
+        const $radio = ev.target;
+        if ($radio instanceof HTMLInputElement && $radio.checked) {
+          this.manageThumbnailStyle($radio.value);
+        }
+      });
+    }
+
     this.listenToCheckboxEvents();
     this.listenToAppearanceControls();
+    this.observeAppearanceControls();
     this.disablePreviewLinks();
+    this.syncIconThumbOption();
     this.syncPreviewAppearance();
+    this.observePreviewCard();
+    this.themeObserver.observe(document.documentElement, {
+      attributeFilter: ['data-theme'],
+    });
+  }
+
+  /**
+   * Watches the preview card, and what's in it, for size changes, so it can
+   * be snapped to the workspace grid.
+   */
+  observePreviewCard(): void {
+    this.previewCardObserver.disconnect();
+    const card = this.$previewContainer?.querySelector('craft-card');
+
+    if (!card) {
+      return;
+    }
+
+    this.previewCardObserver.observe(card);
+    for (const child of Array.from(card.children) as Element[]) {
+      this.previewCardObserver.observe(child);
+    }
+  }
+
+  /**
+   * Rounds the preview card's height up to a whole number of the workspace
+   * grid's cells, plus its bottom border, so both of its outer edges land on a
+   * row of dots, as the chip's do.
+   */
+  snapPreviewCard(): void {
+    const card = this.$previewContainer?.querySelector('craft-card');
+
+    if (!card) {
+      return;
+    }
+
+    const cell = parseFloat(
+      getComputedStyle(this.$previewContainer, '::before').backgroundSize
+    );
+
+    card.style.removeProperty('--cvd-card-min-block-size');
+
+    if (!cell) {
+      return;
+    }
+
+    const height = card.getBoundingClientRect().height;
+    const snapped = Math.ceil((height - 1) / cell) * cell + 1;
+    card.style.setProperty('--cvd-card-min-block-size', `${snapped}px`);
   }
 
   /**
@@ -88,22 +181,92 @@ export class CardViewDesigner extends Base {
   /** Reflects changes to the Name, Color, and Icon controls in the preview card. */
   listenToAppearanceControls(): void {
     // The container may not be in the form yet, so listen on the document.
-    document.addEventListener('model-value-changed', this.onAppearanceChange);
+    document.addEventListener('input', this.onAppearanceChange);
   }
 
-  // The control's field re-dispatches the event, so it may come from either.
+  /** The owner's appearance controls that haven't rendered yet. */
+  missingAppearanceControls(): string[] {
+    return (['name', 'color', 'icon'] as const).filter(
+      (key) => !this.appearanceControl(key)
+    );
+  }
+
+  /**
+   * Syncs the icon thumb source and the preview as the owner's appearance
+   * controls render, for owners with an icon, like entry types.
+   */
+  observeAppearanceControls(): void {
+    let missing = this.missingAppearanceControls().length;
+    if (!this.iconThumbOption || missing === 0) {
+      return;
+    }
+
+    this.appearanceControlObserver = new MutationObserver(() => {
+      const nowMissing = this.missingAppearanceControls().length;
+      if (nowMissing < missing) {
+        missing = nowMissing;
+        this.syncIconThumbOption();
+        this.syncPreviewAppearance();
+      }
+      if (nowMissing === 0) {
+        this.appearanceControlObserver?.disconnect();
+        this.appearanceControlObserver = null;
+      }
+    });
+    // The container may not be in the form yet, so watch the whole page.
+    this.appearanceControlObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
+
+  // Typing reaches here from the native input inside the control.
   onAppearanceChange = (ev: Event): void => {
     const target = ev.target;
     if (
       target instanceof Node &&
       (['name', 'color', 'icon'] as const).some((key) => {
         const control = this.appearanceControl(key);
-        return control !== null && target.contains(control);
+        return control !== null && control.contains(target);
       })
     ) {
+      this.syncIconThumbOption();
       this.syncPreviewAppearance();
     }
   };
+
+  /** The value of the Name, Color, or Icon control, or `''` if there isn't one. */
+  appearanceValue(key: 'name' | 'color' | 'icon'): string {
+    return String(
+      (this.appearanceControl(key) as {value?: unknown} | null)?.value ?? ''
+    ).trim();
+  }
+
+  /**
+   * Offers the owner's icon as a thumb source only while an icon is selected.
+   * Until the Icon control renders, the thumb sources stay as they were saved.
+   */
+  syncIconThumbOption(): void {
+    const option = this.iconThumbOption;
+    if (!option || !this.$thumbSources || !this.appearanceControl('icon')) {
+      return;
+    }
+
+    const offered = this.$thumbSources.options.some(
+      ({value}) => value === option.value
+    );
+    if (this.appearanceValue('icon')) {
+      if (!offered) {
+        this.$thumbSources.addOption({checked: false, ...option});
+      }
+    } else if (offered) {
+      const checked = this.thumbSources().includes(option.value);
+      this.$thumbSources.removeOption(option.value);
+      if (checked) {
+        this.manageThumbnails();
+      }
+    }
+  }
 
   /**
    * Gives the preview card the owner's color, and its icon and name in the
@@ -116,19 +279,17 @@ export class CardViewDesigner extends Base {
       return;
     }
 
-    const value = (key: 'name' | 'color' | 'icon'): string =>
-      String((this.appearanceControl(key) as any)?.modelValue ?? '').trim();
     // Only for owners with a color or icon, like entry types, whose elements'
     // cards show the owner in their headers.
     if (!this.appearanceControl('color') && !this.appearanceControl('icon')) {
       return;
     }
 
-    const name = value('name');
+    const name = this.appearanceValue('name');
     // "No color" is the color select's `__blank__` option: no color of the
     // card's own, as the cards of elements without a color have.
-    const color = value('color').replace(/^__blank__$/, '');
-    const icon = value('icon');
+    const color = this.appearanceValue('color').replace(/^__blank__$/, '');
+    const icon = this.appearanceValue('icon');
     // The sample chip takes the color too, but not the icon: chips show a
     // thumbnail or status instead.
     const chip = this.$previewContainer?.querySelector('craft-chip.cvd-chip');
@@ -139,6 +300,8 @@ export class CardViewDesigner extends Base {
         element?.removeAttribute('data-color');
       }
     }
+
+    this.syncPreviewIconThumb(card, chip, icon, color);
 
     const header = card.querySelector(':scope > [slot="header"]');
     if (!header) {
@@ -160,10 +323,61 @@ export class CardViewDesigner extends Base {
     if (name) {
       const nameElement = document.createElement('div');
       nameElement.className = 'card-titlebar-label';
+      nameElement.setAttribute('data-card-label', '');
       nameElement.textContent = name;
       label.append(nameElement);
     }
     header.append(label);
+  }
+
+  /**
+   * Shows the owner's icon as the preview's thumbnail when it's the first
+   * thumb source, as it'll be for every element: faintly, in the owner's
+   * color, beside the content rather than covering the card.
+   */
+  syncPreviewIconThumb(
+    card: Element,
+    chip: Element | null,
+    icon: string,
+    color: string
+  ): void {
+    const option = this.iconThumbOption;
+    if (!icon || !option || this.thumbSources()[0] !== option.value) {
+      return;
+    }
+
+    card.removeAttribute('cover-src');
+    card.removeAttribute('luminance');
+    chip?.setAttribute('show-thumb', '');
+
+    for (const [element, slotClass] of [
+      [card, 'card-thumb'],
+      [chip, ''],
+    ] as const) {
+      if (!element) {
+        continue;
+      }
+
+      let slot = element.querySelector(':scope > [slot="thumbnail"]');
+      if (!slot) {
+        slot = document.createElement('div');
+        slot.setAttribute('slot', 'thumbnail');
+        element.prepend(slot);
+      }
+      slot.className = slotClass;
+
+      const thumb = document.createElement('div');
+      // Sized as the server renders an element's icon thumbnail.
+      thumb.className =
+        'thumb icon-thumb w-[var(--c-thumb-icon-size,24px)] h-[var(--c-thumb-icon-size,24px)]';
+      if (color) {
+        thumb.setAttribute('data-color', color);
+      }
+      const iconElement = document.createElement('craft-icon');
+      iconElement.setAttribute('name', icon);
+      thumb.append(iconElement);
+      slot.replaceChildren(thumb);
+    }
   }
 
   listenToCheckboxEvents(): void {
@@ -185,14 +399,14 @@ export class CardViewDesigner extends Base {
 
   updateCardViewConfig(): void {
     this.designer.updateConfig((config: any) => {
-      config.cardView = this.$libraryContainer.modelValue;
+      config.cardView = this.$libraryContainer.value;
       return config;
     });
   }
 
   async updatePreview(): Promise<void> {
     this.$previewContainer.classList.add('loading');
-    Craft.cp.announce(Craft.t('app', 'Loading'));
+    announce(t('Loading'));
 
     if (this.abortController) {
       this.abortController.abort();
@@ -202,42 +416,51 @@ export class CardViewDesigner extends Base {
 
     let response;
     try {
-      response = await Craft.sendActionRequest(
-        'POST',
+      response = await actionClient.post(
         'fields/render-card-preview',
         {
-          signal: this.abortController.signal,
-          data: {
-            fieldLayoutConfig: {
-              ...this.designer.config,
-              // Not part of `this.designer.config` (that lives at
-              // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
-              // needs a `type` on the layout config to instantiate a sample element.
-              type: this.designer.settings!.elementType,
-              generatedFields:
-                document
-                  .querySelector('craft-generated-fields-table')
-                  ?.serialize() ?? [],
-            },
+          fieldLayoutConfig: {
+            ...this.designer.config,
+            // Not part of `this.designer.config` (that lives at
+            // `designer.settings.elementType` instead), but `CardDesigner::previewHtml()`
+            // needs a `type` on the layout config to instantiate a sample element.
+            type: this.designer.settings!.elementType,
+            generatedFields:
+              document
+                .querySelector('craft-generated-fields-table')
+                ?.serialize() ?? [],
           },
-        }
+        },
+        {signal: this.abortController.signal}
       );
     } catch (e: any) {
       if (!isCancel(e)) {
-        Craft.cp.displayError(e?.response?.data?.message);
+        showError(e?.response?.data?.message);
         throw e;
       }
       // otherwise the request was canceled by a newer preview — ignore.
     } finally {
       this.$previewContainer.classList.remove('loading');
-      Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      announce(t('Loading complete'));
       this.abortController = null;
     }
 
     if (response) {
+      // The new card keeps the old one's snapped height until it's snapped
+      // itself, so it doesn't show at its natural height for a frame first,
+      // with a cover card's content a few pixels higher.
+      const snapped = this.$previewContainer
+        .querySelector('craft-card')
+        ?.style.getPropertyValue('--cvd-card-min-block-size');
       this.$previewContainer.innerHTML = response.data.previewHtml;
+      if (snapped) {
+        this.$previewContainer
+          .querySelector('craft-card')
+          ?.style.setProperty('--cvd-card-min-block-size', snapped);
+      }
       this.syncPreviewAppearance();
       this.disablePreviewLinks();
+      this.observePreviewCard();
     }
   }
 
@@ -292,100 +515,97 @@ export class CardViewDesigner extends Base {
     }
   }
 
-  manageThumbnails(target: any): void {
-    const $select = target;
-    let thumbFieldKey = null;
-
-    if ($select.value === '__none__' || $select.value === '__default__') {
-      if (
-        $select.value === '__none__' &&
-        !this.designer.settings!.alwaysShowThumbAlignmentBtns
-      ) {
-        // hide the alignment buttons
-        this.hideThumbAlignment();
-      }
-    } else {
-      thumbFieldKey = $select.value;
-      // show the alignment buttons
-      this.showThumbAlignment();
-    }
-
-    if (thumbFieldKey !== this.designer.config.thumbFieldKey) {
+  manageThumbnailStyle(style: string): void {
+    if (style !== this.designer.config.cardThumbStyle) {
       this.designer.updateConfig((config: any) => {
-        config.thumbFieldKey = thumbFieldKey;
+        config.cardThumbStyle = style;
         return config;
       });
+      this.toggleThumbFields();
       this.updatePreview();
     }
   }
 
+  thumbSources(): string[] {
+    return this.$thumbSources?.value ?? [];
+  }
+
+  manageThumbnails(): void {
+    const thumbSources = this.thumbSources();
+    this.hasThumbAlignment =
+      this.alwaysShowThumbAlignmentBtns || thumbSources.length > 0;
+
+    const current = (this.designer.config.thumbSources ?? []) as string[];
+    if (thumbSources.join() !== current.join()) {
+      this.designer.updateConfig((config: any) => {
+        config.thumbSources = thumbSources;
+        return config;
+      });
+      this.updatePreview();
+    }
+
+    this.toggleThumbFields();
+  }
+
+  /** The thumb sources a layout element provides, with its UID filled in. */
+  elementThumbOptions(
+    $container: HTMLElement
+  ): {value: string; label: string}[] {
+    const thumbOptions = $container.dataset.thumbOptions
+      ? JSON.parse($container.dataset.thumbOptions)
+      : [];
+    return thumbOptions.map((option: any) => ({
+      ...option,
+      value: option.value.replace(/\{uid}/g, $container.dataset.uid),
+    }));
+  }
+
   updateThumbnailsDropdown(element: FldElement, action: string): void {
-    const $select = this.$thumbManagementContainer.querySelector(
-      'select[id$="thumb-source"]'
-    );
-    if (!$select) {
+    if (!this.$thumbSources) {
       return;
     }
 
-    const thumbOptions = element.$container.dataset.thumbOptions
-      ? JSON.parse(element.$container.dataset.thumbOptions)
-      : null;
-    if (!thumbOptions?.length) {
-      return;
-    }
-
-    thumbOptions.forEach((option: any) => {
-      const value = option.value.replace(/\{uid}/g, element.uid);
+    let checkedRemoved = false;
+    for (const option of this.elementThumbOptions(element.$container)) {
       switch (action) {
-        case 'add': {
-          const $option = document.createElement('option');
-          $option.value = value;
-          $option.text = option.label;
-          $select.appendChild($option);
+        case 'add':
+          this.$thumbSources.addOption({checked: false, ...option});
           break;
-        }
-        case 'remove': {
-          const $option = $select.querySelector(`option[value="${value}"]`);
-          if ($option) {
-            const selected = $option.selected;
-            $option.remove();
-            if (selected) {
-              this.manageThumbnails($select);
-            }
-          }
+        case 'remove':
+          checkedRemoved ||= this.thumbSources().includes(option.value);
+          this.$thumbSources.removeOption(option.value);
           break;
-        }
       }
-    });
+    }
+
+    if (checkedRemoved) {
+      this.manageThumbnails();
+    }
   }
 
   updateThumbnailsDropdownOptionLabel($container: any): void {
-    const uid = $container.dataset.uid;
-    const $select = this.$thumbManagementContainer.querySelector(
-      'select[id$="thumb-source"]'
-    );
-    const $option = $select?.querySelector(`option[value="${uid}"]`);
-
-    if (!$option) {
-      return;
+    for (const option of this.elementThumbOptions($container)) {
+      this.$thumbSources?.updateOption(option.value, {label: option.label});
     }
-
-    const label =
-      $container.querySelector('.fld-element-label')?.textContent ??
-      this.attribute;
-    $option.textContent = label;
   }
 
-  showThumbAlignment(): void {
-    this.$thumbManagementContainer
-      .querySelectorAll('[data-attribute="thumb-alignment"]')
-      .forEach((el: HTMLElement) => el.classList.remove('hidden'));
-  }
+  /**
+   * Hides Thumb Alignment when there's no thumbnail, or it covers the card.
+   * Icon thumbnails never cover the card, so it stays while one is a source.
+   */
+  toggleThumbFields(): void {
+    const cover =
+      this.designer.config.cardThumbStyle === 'cover' &&
+      !(
+        this.iconThumbOption &&
+        this.thumbSources().includes(this.iconThumbOption.value)
+      );
 
-  hideThumbAlignment(): void {
     this.$thumbManagementContainer
       .querySelectorAll('[data-attribute="thumb-alignment"]')
-      .forEach((el: HTMLElement) => el.classList.add('hidden'));
+      .forEach((el: HTMLElement) =>
+        el.classList.toggle('hidden', !this.hasThumbAlignment || cover)
+      );
   }
 
   /**
@@ -395,10 +615,10 @@ export class CardViewDesigner extends Base {
    */
   override destroy(): void {
     this.abortController?.abort();
-    document.removeEventListener(
-      'model-value-changed',
-      this.onAppearanceChange
-    );
+    this.previewCardObserver.disconnect();
+    this.themeObserver.disconnect();
+    this.appearanceControlObserver?.disconnect();
+    document.removeEventListener('input', this.onAppearanceChange);
 
     if (this.$container) {
       cvdData.delete(this.$container);

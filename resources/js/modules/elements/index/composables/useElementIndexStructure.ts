@@ -4,7 +4,7 @@ import type {
   IndexVisitor,
   IndexRestore,
 } from '@/modules/elements/index/composables/useElementIndexVisits';
-import type {ViewState} from '@/modules/elements/types/view-state';
+import type {ViewMode, ViewState} from '@/modules/elements/types/view-state';
 
 interface ElementIndexStructureContext {
   structure: {id: number; editable: boolean; maxLevels: number | null} | null;
@@ -457,13 +457,11 @@ export function loadedBranchDepth(
 export function useElementIndexStructure(
   props: ElementIndexStructureContext,
   viewState: Ref<ViewState>,
-  visitor: IndexVisitor
+  visitor: IndexVisitor,
+  mode: () => ViewMode['mode']
 ) {
-  // The saved mode is shared by every source, so it can say `structure` on a
-  // source that isn't one.
   const isStructure = computed(
-    () =>
-      viewState.value.mode === 'structure' && props.source?.structureId != null
+    () => mode() === 'structure' && props.source?.structureId != null
   );
 
   /** The active structure, or `null` when the source isn't one. */

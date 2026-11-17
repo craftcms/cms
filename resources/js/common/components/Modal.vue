@@ -16,27 +16,15 @@
   import '@craftcms/ui/components/resize-grips/resize-grips';
   import type {ResizeGripsSize} from '@craftcms/ui';
   import {useResizableBox} from '@/common/composables/useResizableBox';
-
-  export interface ModalProps {
-    isActive?: boolean;
-    /** Accessible name; ModalForm supplies its visible title. */
-    label?: string;
-    overlay?: boolean;
-    width?: string;
-    height?: string;
-    maxHeight?: string;
-    /** Adds grips along its right and bottom edges, and in their corner, for resizing it. */
-    resizable?: boolean;
-    /**
-     * Whether Escape and a click on the overlay close it. Off for a modal
-     * holding work that closing would throw away — only its own buttons do.
-     */
-    dismissible?: boolean;
-  }
+  import {useAnimatedBoxSize} from '@/common/composables/useAnimatedBoxSize';
+  import type {ModalProps} from './modal';
 
   const emit = defineEmits<{
-    (e: 'close'): void;
+    /** Dismissal was asked for — `event` is the Escape press or the dialog's own request. */
+    (e: 'close', event: Event): void;
     (e: 'opened', el: Element): void;
+    /** Once it has finished closing, transition and all. */
+    (e: 'closed'): void;
   }>();
 
   const props = withDefaults(defineProps<ModalProps>(), {
@@ -46,24 +34,33 @@
     label: () => t('Dialog'),
     resizable: false,
     dismissible: true,
+    restoreFocus: true,
+    instant: false,
   });
 
   const stackId = Symbol('modal');
   const dialog = shallowRef<CraftDialog | null>(null);
   const reducedMotion = usePreferredReducedMotion();
-  const transitionDuration = computed(() =>
-    reducedMotion.value === 'reduce' ? 0 : 250
-  );
+  const transitionDuration = computed(() => {
+    const duration = reducedMotion.value === 'reduce' ? 0 : 250;
+
+    return {enter: props.instant ? 0 : duration, leave: duration};
+  });
   let invoker: HTMLElement | null = null;
 
-  function closeDialog(element = dialog.value): void {
+  /** Resolves once the dialog has closed and handed focus back. */
+  async function closeDialog(element = dialog.value): Promise<void> {
     if (!element) return;
 
     const returnTo = invoker;
     invoker = null;
-    element.opened = false;
-    void element.updateComplete.then(() => {
-      if ((!props.isActive || !element.isConnected) && returnTo?.isConnected) {
+    element.open = false;
+    await element.updateComplete.then(() => {
+      if (
+        props.restoreFocus &&
+        (!props.isActive || !element.isConnected) &&
+        returnTo?.isConnected
+      ) {
         returnTo.focus();
       }
     });
@@ -95,7 +92,7 @@
   );
   onBeforeUnmount(() => {
     leaveStack();
-    closeDialog();
+    void closeDialog();
   });
 
   /** Whether this is the innermost open modal — the one Escape is for. */
@@ -117,7 +114,8 @@
 
     event.preventDefault();
     event.stopPropagation();
-    if (props.isActive && props.dismissible && isTop.value) emit('close');
+    if (props.isActive && props.dismissible && isTop.value)
+      emit('close', event);
   }
 
   function opened(): void {
@@ -126,9 +124,14 @@
     }
   }
 
-  function closed(element: Element): void {
+  /**
+   * `closed` waits for the dialog to hand focus back, so a listener that moves
+   * focus itself isn't overridden by it.
+   */
+  async function closed(element: Element): Promise<void> {
     leaveStack();
-    if (element instanceof CraftDialog) closeDialog(element);
+    if (element instanceof CraftDialog) await closeDialog(element);
+    emit('closed');
   }
 
   const content = shallowRef<HTMLElement | null>(null);
@@ -137,6 +140,16 @@
     active: () => props.isActive,
     fixedHeight: () => Boolean(props.height),
   });
+  const sizeAnimation = useAnimatedBoxSize({
+    target: content,
+    enabled: () => reducedMotion.value !== 'reduce',
+  });
+
+  /** A size the user picked takes effect at once, not eased into. */
+  function resize(size: ResizeGripsSize): void {
+    sizeAnimation.settle();
+    resizer.applySize(size);
+  }
 
   const widthClass = computed(() => {
     return `w-${props.width}`;
@@ -165,6 +178,8 @@
   <Transition
     name="body"
     :duration="transitionDuration"
+    :enter-from-class="instant ? '' : 'body-enter-from'"
+    :enter-active-class="instant ? '' : 'body-enter-active'"
     @after-enter="opened"
     @after-leave="closed"
   >
@@ -172,7 +187,7 @@
       v-if="isActive"
       ref="dialog"
       :label="label"
-      .opened="true"
+      .open="true"
       no-header
       .closeOnOutsideClick="dismissible"
       :class="{'without-overlay': !overlay || isNested}"
@@ -191,8 +206,7 @@
           <craft-resize-grips
             .target="content"
             @craft-resize="
-              (event: CustomEvent<ResizeGripsSize>) =>
-                resizer.applySize(event.detail)
+              (event: CustomEvent<ResizeGripsSize>) => resize(event.detail)
             "
           ></craft-resize-grips>
         </div>
@@ -202,6 +216,12 @@
 </template>
 
 <style scoped>
+  /* Back to the CP's default, since a modal opened from a page's main column
+     would otherwise inherit that column's wider, fluid gutters. */
+  .cp-modal {
+    --cp-container-padding: var(--c-spacing-lg);
+  }
+
   /* A column flex box so slotted content can grow into a height the floor is
    holding open, instead of sitting at its natural height with a gap below. */
   .content {
@@ -210,18 +230,46 @@
     max-width: calc(100vw - (var(--c-spacing-lg) * 2));
     max-height: calc(100vh - (var(--c-spacing-lg) * 2));
     background-color: var(--c-modal-fill);
-    box-shadow: var(--c-shadow-overlay);
+    box-shadow: var(--c-modal-ring), var(--c-shadow-2xl);
+    outline: 1px solid transparent;
     -webkit-overflow-scrolling: touch;
     border-radius: var(--c-modal-radius);
-    border-width: var(--c-modal-border-width);
-    border-style: var(--c-modal-border-style);
-    border-color: var(--c-modal-border-color);
     position: relative;
     overflow-y: scroll;
+    overscroll-behavior: contain;
     /* Keeps the slotted content's own z-indexes — a sticky pane footer, say —
      from painting over the modal's chrome, such as the resize handle. Nothing
      can escape this box visually anyway; it scrolls. */
     isolation: isolate;
+  }
+
+  .content > :slotted(craft-pane),
+  .content > :slotted(form > craft-pane) {
+    --c-pane-border-width: 0;
+  }
+
+  .content > :slotted(craft-pane)::part(base),
+  .content > :slotted(form > craft-pane)::part(base) {
+    box-shadow: none;
+  }
+
+  .content > :slotted(craft-pane)::part(header),
+  .content > :slotted(form > craft-pane)::part(header) {
+    min-block-size: var(--c-modal-header-height);
+    padding-block: var(--c-spacing-sm);
+  }
+
+  .content > :slotted(craft-pane)::part(footer),
+  .content > :slotted(form > craft-pane)::part(footer) {
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-footer-height);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--cp-container-padding);
+  }
+
+  .content > :slotted(craft-pane)::part(footer-actions),
+  .content > :slotted(form > craft-pane)::part(footer-actions) {
+    align-self: center;
   }
 
   craft-dialog::part(surface) {

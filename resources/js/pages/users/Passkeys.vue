@@ -18,6 +18,7 @@
     verifyCreation,
     deleteMethod as deletePasskeyAction,
   } from '@actions/Users/PasskeysController';
+  import {showError} from '@/modules/messages/messages';
 
   defineOptions({
     inheritAttrs: false,
@@ -110,7 +111,7 @@
           optionsJSON: JSON.parse(optionsResponse.options),
         });
       } catch (e: any) {
-        craft?.cp?.displayError?.(e?.message);
+        showError(e?.message);
         return;
       }
 
@@ -195,16 +196,13 @@
 <template>
   <UserScreen>
     <div class="grid gap-4">
-      <div>
-        <h2>{{ t('Passkeys') }}</h2>
-        <p>
-          {{
-            t(
-              'Passkeys are an easy and secure way to identify yourself, using your fingerprint or facial recognition.'
-            )
-          }}
-        </p>
-      </div>
+      <p>
+        {{
+          t(
+            'Passkeys are an easy and secure way to identify yourself, using your fingerprint or facial recognition.'
+          )
+        }}
+      </p>
 
       <craft-callout v-if="!supported" variant="warning">
         {{ t('This browser doesn’t support passkeys.') }}
@@ -218,7 +216,7 @@
         <craft-button
           type="button"
           icon="plus"
-          :loading="adding"
+          .loading="adding"
           @click="addPasskey"
         >
           {{ t('Add a passkey') }}

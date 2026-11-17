@@ -168,6 +168,8 @@ readonly class SectionsController
             $section = new SectionData;
         }
 
+        $isNew = ! $section->id;
+
         // Main section settings
         $section->name = $request->input('name');
         $section->handle = $request->input('handle');
@@ -249,7 +251,10 @@ readonly class SectionsController
             throw ValidationException::withMessages($errors);
         }
 
-        return $this->asSuccess(t('Section saved.'));
+        return $this->asSuccess(
+            t('Section saved.'),
+            redirect: $isNew ? $this->createdRedirectUrl(route('craft.cp.settings.sections.edit', ['section' => $section->id])) : null,
+        );
     }
 
     public function destroy(Sections $sections, SectionModel $section): Response

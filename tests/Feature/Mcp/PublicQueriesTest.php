@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Mcp\Events\ElementSerializing;
 use CraftCms\Cms\Mcp\Public\ElementQuery;
+use CraftCms\Cms\Mcp\Public\ElementSerializer;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Support\Facades\Elements;
@@ -50,6 +51,13 @@ it('filters and sorts public users without widening group permissions', function
         ->and(array_column($query->query('user', [...$criteria, 'offset' => 1])['elements'], 'id'))->toBe([$first->id])
         ->and($query->query('user', [...$criteria, 'offset' => 2])['elements'])->toBe([])
         ->and(array_column($query->query('user', [...$criteria, 'orderBy' => 'firstName', 'offset' => 1])['elements'], 'id'))->toBe([$second->id]);
+});
+
+it('returns only readable element properties to public clients', function (): void {
+    $data = app(ElementSerializer::class)->serialize(EntryModel::factory()->createElement());
+
+    expect($data)->toHaveKeys(['id', 'uid', 'title', 'postDate', 'typeId'])
+        ->not->toHaveKeys(['forceSave', 'cpEditUrl', 'ruleset']);
 });
 
 it('rejects sorting and filtering on private account attributes', function (array $criteria): void {

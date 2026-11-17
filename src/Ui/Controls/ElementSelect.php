@@ -7,11 +7,13 @@ namespace CraftCms\Cms\Ui\Controls;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Component\Contracts\Colorable;
 use CraftCms\Cms\Condition\Conditions;
+use CraftCms\Cms\Cp\Enums\ChipThumbSize;
 use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Cp\RequestedSite;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
+use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementSources;
 use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -19,10 +21,13 @@ use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Ui\Contracts\ReadableValueControl;
+use CraftCms\Cms\Ui\Contracts\WritableValueControl;
 use CraftCms\Cms\Ui\ControlPayload;
 use CraftCms\Cms\Ui\UiHtmlRenderer;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
+use Override;
 
 use function CraftCms\Cms\t;
 
@@ -31,9 +36,9 @@ use function CraftCms\Cms\t;
  *
  * @since 6.0.0
  */
-class ElementSelect extends Control
+class ElementSelect extends Control implements ReadableValueControl, WritableValueControl
 {
-    #[\Override]
+    #[Override]
     protected mixed $value = [];
 
     /** @var class-string<ElementInterface>|null */
@@ -55,8 +60,21 @@ class ElementSelect extends Control
 
     private bool $showSiteMenu = false;
 
+    private bool $maintainHierarchy = false;
+
+    private ?int $branchLimit = null;
+
     /** @var array<string, mixed>|null */
     private ?array $selectionCondition = null;
+
+    /** @var array{referenceElementId: int, referenceElementOwnerId: int|null, referenceElementSiteId: int|null}|null */
+    private ?array $referenceElement = null;
+
+    /** @var array{criteria: array<string, mixed>, siteId: int|null}|null */
+    private ?array $search = null;
+
+    /** @var list<int> */
+    private array $disabledElementIds = [];
 
     /**
      * The view modes a relation field can be set to, mirroring
@@ -73,10 +91,9 @@ class ElementSelect extends Control
 
     public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
 
-    /** Thumbnails are rendered at the size the element index uses. */
-    private const int THUMB_SIZE = 120;
-
     private string $viewMode = self::VIEW_MODE_LIST;
+
+    private ?ChipThumbSize $thumbSize = null;
 
     public static function renderHtml(ControlPayload $control, mixed $value, array $attributes, UiHtmlRenderer $renderer): string
     {
@@ -85,7 +102,7 @@ class ElementSelect extends Control
         return Html::tag('div', FormFields::elementSelectHtml([
             'id' => $attributes['id'],
             'name' => $attributes['name'],
-            'elements' => self::elements($control->props['elementType'], $value),
+            'elements' => self::elements($control->props['elementType'], $value, $control->props['maintainHierarchy'] ?? false),
             'elementType' => $control->props['elementType'],
             'sources' => $control->props['sources'],
             'criteria' => $control->props['criteria'],
@@ -93,10 +110,22 @@ class ElementSelect extends Control
             'condition' => isset($control->props['selectionCondition'])
                 ? app(Conditions::class)->createCondition($control->props['selectionCondition'])
                 : null,
+            // The modal only needs the reference element's IDs, so pass them through rather than loading it again
+            'jsSettings' => $control->props['referenceElement'] ?? [],
+            // Sent by AssetSelect, as the Vue control passes them to the selector modal
+            'modalSettings' => array_filter([
+                'indexSettings' => isset($control->props['showFolders'])
+                    ? ['showFolders' => (bool) $control->props['showFolders']]
+                    : null,
+                'defaultSource' => $control->props['defaultSource'] ?? null,
+                'defaultSourcePath' => $control->props['defaultSourcePath'] ?? null,
+            ], fn (mixed $setting) => $setting !== null),
             'selectionLabel' => $control->props['selectionLabel'],
             'limit' => $control->props['limit'],
             'single' => $control->props['single'] ?? false,
             'showSiteMenu' => $control->props['showSiteMenu'],
+            'maintainHierarchy' => $control->props['maintainHierarchy'] ?? false,
+            'branchLimit' => $control->props['branchLimit'] ?? null,
             'allowAdd' => $editable,
             'allowRemove' => $editable,
             'sortable' => false,
@@ -104,6 +133,26 @@ class ElementSelect extends Control
             'useCustomElement' => true,
             'customElement' => $control->props['customElement'],
         ]));
+    }
+
+    /**
+     * The chips draw from the presentations of the elements the control was rendered with, so its value is read along
+     * with them.
+     *
+     * @return list<string>
+     */
+    #[Override]
+    public function valueProps(): array
+    {
+        // The element type too, so the elements can be drawn again once copied.
+        return ['elements', 'elementType'];
+    }
+
+    /** Elements are only copied between controls that select the same element type, unless a narrower scope is set. */
+    #[Override]
+    public function getValueScope(): ?string
+    {
+        return parent::getValueScope() ?? $this->elementType;
     }
 
     public function component(): string
@@ -191,9 +240,71 @@ class ElementSelect extends Control
         return $this;
     }
 
+    /**
+     * Shows the selected elements nested by their structure level, as a
+     * relation field with “Maintain hierarchy” does. New selections get their
+     * missing ancestors filled in, and removing an element removes its
+     * descendants.
+     */
+    public function maintainHierarchy(bool $maintainHierarchy = true): static
+    {
+        $this->maintainHierarchy = $maintainHierarchy;
+
+        return $this;
+    }
+
+    /** The most branches a hierarchical selection can have. */
+    public function branchLimit(?int $branchLimit): static
+    {
+        $this->branchLimit = $branchLimit;
+
+        return $this;
+    }
+
     public function selectionCondition(?ElementConditionInterface $condition): static
     {
         $this->selectionCondition = $condition?->getConfig();
+
+        return $this;
+    }
+
+    /**
+     * Sets the element the selection condition is evaluated against, such as the element being edited, for rules
+     * that refer to it.
+     */
+    public function referenceElement(?ElementInterface $element): static
+    {
+        $this->referenceElement = $element?->id ? [
+            'referenceElementId' => $element->id,
+            'referenceElementOwnerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
+            'referenceElementSiteId' => $element->siteId,
+        ] : null;
+
+        return $this;
+    }
+
+    /**
+     * Shows a search input that relates the elements matching `$criteria` it finds, in the site `$siteId`. `null`
+     * criteria hide it.
+     *
+     * @param  array<string, mixed>|null  $criteria
+     */
+    public function search(?array $criteria, ?int $siteId = null): static
+    {
+        $this->search = $criteria === null ? null : ['criteria' => $criteria, 'siteId' => $siteId];
+
+        return $this;
+    }
+
+    /**
+     * Sets the elements that can’t be selected, such as the element being edited when the field doesn’t allow self
+     * relations.
+     *
+     * @param  list<int>  $ids
+     */
+    public function disabledElementIds(array $ids): static
+    {
+        $this->disabledElementIds = $ids;
 
         return $this;
     }
@@ -212,6 +323,54 @@ class ElementSelect extends Control
         return $this;
     }
 
+    /**
+     * The thumbnail size, from {@see thumbSizes()} for the view mode. Left
+     * unset, or set to one the view mode doesn't offer, it's the view mode's
+     * default, as the element index's View menu has it.
+     */
+    public function thumbSize(ChipThumbSize|string|null $thumbSize): static
+    {
+        $this->thumbSize = is_string($thumbSize) ? ChipThumbSize::tryFrom($thumbSize) : $thumbSize;
+
+        return $this;
+    }
+
+    /**
+     * The thumbnail sizes a view mode offers, as the element index's View menu
+     * offers them: chips stop at a card's thumbnail size, thumbnail tiles come
+     * in every size, and cards have none to choose.
+     *
+     * @return list<ChipThumbSize>
+     */
+    public static function thumbSizes(string $viewMode): array
+    {
+        return match ($viewMode) {
+            self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE => [ChipThumbSize::Sm, ChipThumbSize::Md, ChipThumbSize::Lg],
+            self::VIEW_MODE_THUMBS => ChipThumbSize::cases(),
+            default => [],
+        };
+    }
+
+    /**
+     * The size a view mode's thumbnails are drawn at: `$thumbSize` if the view
+     * mode offers it, or else its default — a chip's own for chips, and a
+     * card's for thumbnail tiles. `null` for a view mode without thumbnail sizes.
+     */
+    public static function resolveThumbSize(string $viewMode, ?ChipThumbSize $thumbSize = null): ?ChipThumbSize
+    {
+        $sizes = self::thumbSizes($viewMode);
+
+        if ($sizes === []) {
+            return null;
+        }
+
+        if ($thumbSize !== null && in_array($thumbSize, $sizes, true)) {
+            return $thumbSize;
+        }
+
+        return $viewMode === self::VIEW_MODE_THUMBS ? ChipThumbSize::Lg : ChipThumbSize::Sm;
+    }
+
     /** @return list<string> */
     public static function viewModes(): array
     {
@@ -224,20 +383,22 @@ class ElementSelect extends Control
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function props(mixed $value = null): array
     {
         if ($this->elementType === null) {
             throw new InvalidArgumentException('ElementSelect Controls require an element type.');
         }
 
-        $elements = self::elements($this->elementType, $value);
+        $elements = self::elements($this->elementType, $value, $this->maintainHierarchy);
+        $thumbSize = self::resolveThumbSize($this->viewMode, $this->thumbSize);
 
         return [
             'elementType' => $this->elementType,
             'customElement' => self::customElement($this->elementType),
-            'elements' => array_map(fn (ElementInterface $element): array => self::elementPayload($element) + self::viewPayload($element, $this->viewMode), $elements),
+            'elements' => array_map(fn (ElementInterface $element): array => self::presentation($element, $this->viewMode, $thumbSize), $elements),
             'elementDisplayName' => $this->elementType::lowerDisplayName(),
+            'elementPluralDisplayName' => $this->elementType::pluralLowerDisplayName(),
             'sources' => $this->sources,
             'criteria' => $this->criteria,
             'context' => $this->context,
@@ -246,8 +407,26 @@ class ElementSelect extends Control
             'single' => $this->single,
             'showSiteMenu' => $this->showSiteMenu,
             'viewMode' => $this->viewMode,
+            'thumbSize' => $thumbSize?->value,
+            'maintainHierarchy' => $this->maintainHierarchy,
+            'branchLimit' => $this->branchLimit,
             ...($this->selectionCondition !== null ? ['selectionCondition' => $this->selectionCondition] : []),
+            ...($this->referenceElement !== null ? ['referenceElement' => $this->referenceElement] : []),
+            ...($this->search !== null ? ['search' => $this->search] : []),
+            ...($this->disabledElementIds !== [] ? ['disabledElementIds' => $this->disabledElementIds] : []),
         ];
+    }
+
+    /**
+     * What the control draws an element from: its chip data, plus whatever the
+     * view mode needs on top of that. Elements added client-side, such as pasted
+     * ones, are sent in the same shape.
+     *
+     * @return array<string, mixed>
+     */
+    public static function presentation(ElementInterface $element, string $viewMode = self::VIEW_MODE_LIST, ?ChipThumbSize $thumbSize = null): array
+    {
+        return self::elementPayload($element) + self::viewPayload($element, $viewMode, self::resolveThumbSize($viewMode, $thumbSize));
     }
 
     /**
@@ -259,18 +438,14 @@ class ElementSelect extends Control
      *
      * @return array<string, mixed>
      */
-    private static function viewPayload(ElementInterface $element, string $viewMode): array
+    private static function viewPayload(ElementInterface $element, string $viewMode, ?ChipThumbSize $thumbSize): array
     {
         if (in_array($viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID], true)) {
             return self::cardPayload($element);
         }
 
-        if ($viewMode === self::VIEW_MODE_THUMBS) {
-            return ['thumbHtml' => $element->getThumbHtml(self::THUMB_SIZE, ImageTransformMode::Fit)];
-        }
-
-        if (in_array($viewMode, [self::VIEW_MODE_LIST, self::VIEW_MODE_LIST_INLINE], true)) {
-            return ['thumbHtml' => $element->getThumbHtml(ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit)];
+        if ($thumbSize !== null) {
+            return ['thumbHtml' => $element->getThumbHtml($thumbSize->pixels() ?? ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit)];
         }
 
         return [];
@@ -329,6 +504,8 @@ class ElementSelect extends Control
             'status' => self::statusPayload($element),
             // The chip takes the element's color (an entry's type color, say), as element index chips do.
             'color' => $element instanceof Colorable ? $element->getColor()?->value : null,
+            // How deep the element sits in its structure, for fields that maintain hierarchy.
+            'level' => $element->level,
             'actions' => $element->actionMenuDescriptors(ElementActionContext::Field),
         ];
     }
@@ -376,7 +553,7 @@ class ElementSelect extends Control
      * @param  class-string<ElementInterface>  $elementType
      * @return list<ElementInterface>
      */
-    private static function elements(string $elementType, mixed $value): array
+    private static function elements(string $elementType, mixed $value, bool $withStructure = false): array
     {
         if (is_int($value) || is_string($value) && $value !== '') {
             $value = [$value];
@@ -386,7 +563,13 @@ class ElementSelect extends Control
             return [];
         }
 
-        return $elementType::find()
+        $query = $elementType::find();
+
+        if ($withStructure) {
+            $query->withStructure();
+        }
+
+        return $query
             ->site('*')
             ->preferSites(array_filter([app(RequestedSite::class)->get()?->id]))
             ->unique()

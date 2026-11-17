@@ -59,3 +59,56 @@ it('still renders markup that has no declaration to strip', async () => {
 
   teardown();
 });
+
+it('renders template interpolation in server HTML as text', async () => {
+  const {container, teardown} = await render(
+    '<span class="title">{{ 7 * 6 }}</span>'
+  );
+
+  expect(container.querySelector('span.title')?.textContent).toBe(
+    '{{ 7 * 6 }}'
+  );
+
+  teardown();
+});
+
+/**
+ * Escapers that leave `"` unencoded (`ENT_NOQUOTES`, `strip_tags()`, a DOM
+ * re-serialization) must not reopen interpolation, in text or in the
+ * `<textarea>`/`<title>` contents the compiler also interpolates.
+ */
+it.each([
+  ['text', '<span>{{"$emit.constructor(`window.pwned=1`)()"}}</span>'],
+  [
+    'a textarea',
+    '<textarea>{{"$emit.constructor(`window.pwned=1`)()"}}</textarea>',
+  ],
+  [
+    'a title',
+    '<svg><title>{{"$emit.constructor(`window.pwned=1`)()"}}</title></svg>',
+  ],
+  [
+    'text with every delimiter character',
+    '<span><{{ $emit.constructor(`window.pwned=1`)() }}></span>',
+  ],
+])(
+  'does not run template expressions in %s, however it was escaped',
+  async (_where, html) => {
+    const globals = window as unknown as {pwned?: number};
+    delete globals.pwned;
+
+    const {teardown} = await render(html);
+
+    expect(globals.pwned).toBeUndefined();
+
+    teardown();
+  }
+);
+
+it('still compiles bound attributes', async () => {
+  const {container, teardown} = await render('<span :data-n="7 * 6"></span>');
+
+  expect(container.querySelector('span')?.dataset.n).toBe('42');
+
+  teardown();
+});

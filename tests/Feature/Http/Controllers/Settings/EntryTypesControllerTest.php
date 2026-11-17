@@ -198,7 +198,7 @@ test('create can be loaded', function () {
             ->where('submit.method', 'post')
             ->where('refreshUrl', action([EntryTypesController::class, 'renderUi']))
             ->where('ui.nodes', function ($nodes): bool {
-                $designer = collect($nodes)->first(
+                $designer = collect(flattenUiNodes($nodes->toArray()))->first(
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['fieldLayout'],
                 );
 
@@ -213,8 +213,8 @@ it('offers the palette colors for the entry type color', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes', function ($nodes): bool {
                 // It's in the display settings group, which renders in the
-                // field layout designer's Appearance tab.
-                $group = collect($nodes)->firstWhere('uid', 'display-settings');
+                // card view designer's settings.
+                $group = collect(flattenUiNodes($nodes->toArray()))->firstWhere('uid', 'display-settings');
                 $color = collect($group['children'] ?? [])->first(
                     fn (array $node): bool => ($node['control']['path'] ?? null) === ['color'],
                 );
@@ -435,6 +435,24 @@ it('renders the entry type select', function () {
         ->toContainTag('craft-action-item', ['data-id' => $entryType->id, 'type' => 'checkbox', 'checked' => true])
         ->toContainTag('craft-action-item', ['data-id' => $other->id, 'type' => 'checkbox', 'checked' => false, 'icon' => 'newspaper', 'icon-color' => 'red'])
         ->toContain('>otherType</span>');
+});
+
+it('keeps extra value keys when rendering the entry type select', function () {
+    $entryType = EntryType::first();
+
+    $html = postJson(action([EntryTypesController::class, 'renderSelect']), [
+        'value' => [['id' => $entryType->id, 'name' => 'Renamed', 'pluginSetting' => 'x', 'other' => 'y']],
+        'allowOverrides' => true,
+        'create' => false,
+        'name' => 'entryTypes',
+        'disabled' => false,
+        'extraValueKeys' => ['pluginSetting', 'id'],
+    ])->assertOk()->json('html');
+
+    expect($html)->toContainTag('input', [
+        'name' => 'entryTypes[]',
+        'value' => sprintf('{"id":%s,"name":"Renamed","pluginSetting":"x"}', $entryType->id),
+    ]);
 });
 
 it('can render override settings', function () {

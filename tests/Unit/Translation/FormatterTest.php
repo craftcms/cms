@@ -145,6 +145,11 @@ test('asDate', function (int|string|DateTime $input, string $output, ?string $fo
         [$dateTime, '12:00:00', 'php:h:i:s'],
         [$dateTime, '00:00:00', 'php:H:i:s'],
 
+        // https://github.com/craftcms/cms/issues/20234
+        [$dateTime, 'sij 2021', 'php:M Y', 'hr-HR'],
+        [$dateTime, 'siječanj', 'php:F', 'hr-HR'],
+        [$dateTime, 'petak, 1. siječnja 2021. M', 'php:l, j. F Y. \M', 'hr-HR'],
+
         // https://github.com/craftcms/cms/issues/16953
         [new DateTime('1881-01-07 00:00:00', new DateTimeZone('Europe/Amsterdam')), '1/7/81', 'short'],
         [new DateTime('1881-01-07 00:00:00', new DateTimeZone('Europe/Amsterdam')), '07-01-1881', 'short', 'nl'],
@@ -544,3 +549,43 @@ test('date formatting follows the ICU default locale when its locale is empty', 
         IntlLocale::setDefault($previousLocale);
     }
 });
+
+test('date and time formatting appends the display time zone’s abbreviation on request', function () {
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'America/New_York';
+    $winter = Date::parse('2026-01-15 14:15:16', 'UTC');
+    $summer = Date::parse('2026-07-15 14:15:16', 'UTC');
+
+    expect($this->formatter->asDateTime($winter, 'short', withTimeZone: true))
+        ->toBe($this->formatter->asDateTime($winter, 'short').' EST')
+        ->and($this->formatter->asDateTime($summer, 'short', withTimeZone: true))
+        ->toBe($this->formatter->asDateTime($summer, 'short').' EDT')
+        ->and($this->formatter->asTime($winter, 'short', withTimeZone: true))
+        ->toBe($this->formatter->asTime($winter, 'short').' EST')
+        ->and($this->formatter->asDateTime($winter, 'short'))->toStartWith('1/15/26, 9:15');
+});
+
+test('date and time formatting doesn’t repeat a time zone the format already shows', function () {
+    $this->formatter->locale = 'en-US';
+    $this->formatter->timeZone = 'America/New_York';
+    $date = Date::parse('2026-01-15 14:15:16', 'UTC');
+
+    expect($this->formatter->asDateTime($date, 'long', withTimeZone: true))
+        ->toBe($this->formatter->asDateTime($date, 'long'))
+        ->and($this->formatter->asDateTime($date, "yyyy-MM-dd HH:mm 'zz'", withTimeZone: true))
+        ->toBe('2026-01-15 09:15 zz EST');
+});
+
+test('dates are formatted in the formatting locale’s own calendar', function (string $locale, string $year) {
+    $this->formatter->locale = $locale;
+    $this->formatter->timeZone = 'UTC';
+    $date = Date::parse('2026-10-25 12:00:00', 'UTC');
+
+    expect($this->formatter->asDate($date, 'yyyy'))->toBe($year)
+        ->and($this->formatter->asDateTime($date, 'yyyy'))->toBe($year);
+})->with([
+    'Gregorian' => ['en-US', '2026'],
+    'Persian' => ['fa-IR@numbers=latn', '1405'],
+    'Buddhist' => ['th-TH', '2569'],
+    'explicit calendar' => ['en-US@calendar=persian', '1405'],
+]);

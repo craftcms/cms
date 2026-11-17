@@ -10,5 +10,7 @@ export type {
   UploadTransportContext,
 } from './upload-client';
 
+// The standalone entry for pages outside the control panel, which don't get the
+// `@craftcms/cp` import map. Control panel code imports `Uploads` from there.
 const Uploads = {FileUpload, UploadError, registerTransport};
 registerCraftGlobals({Uploads});

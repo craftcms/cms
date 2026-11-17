@@ -20,5 +20,11 @@ readonly class AttachedReleaseData
         public bool $canManage,
         public int $draftId,
         public ?int $siteId,
+        /**
+         * Why the draft would stop the release from publishing, if it would.
+         *
+         * @var list<string>
+         */
+        public array $blockers,
     ) {}
 }

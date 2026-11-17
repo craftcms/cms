@@ -1,9 +1,7 @@
-{% from '_includes/forms' import fieldLayoutDesignerField %}
 
-{{ fieldLayoutDesignerField({
+{{ fieldLayoutDesignerField((fieldLayout ?? false) ?: create('CraftCms\\Cms\\FieldLayout\\FieldLayout'), {
     instructions: instructions ?? null,
     customizableTabs: customizableTabs ?? true,
     customizableUi: customizableUi ?? false,
     pretendTabName: pretendTabName ?? 'Content'|t('app'),
-    fieldLayout: (fieldLayout ?? false) ?: null,
 }) }}

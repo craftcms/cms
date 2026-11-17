@@ -1,5 +1,6 @@
 import {LitElement} from 'lit';
 import {customElement, property, query, queryAll} from 'lit/decorators.js';
+import {getCookie, setCookie} from '@/common/craft/cookies';
 
 @customElement('cp-global-sidebar')
 // oxlint-disable-next-line @typescript-eslint/no-unused-vars
@@ -11,15 +12,14 @@ class CpGlobalSidebar extends LitElement {
   trigger!: HTMLElement | null;
 
   @property({reflect: true})
-  state: 'expanded' | 'collapsed' | string =
-    Craft.getCookie('sidebar') ?? 'expanded';
+  state: 'expanded' | 'collapsed' | string = getCookie('sidebar') || 'expanded';
 
   override connectedCallback() {
     super.connectedCallback();
 
     if (this.trigger) {
-      this.trigger.addEventListener('craft-show', this.expand.bind(this));
-      this.trigger.addEventListener('craft-hide', this.collapse.bind(this));
+      this.trigger.addEventListener('craft-show', this.#handleShow);
+      this.trigger.addEventListener('craft-hide', this.#handleHide);
     }
 
     if (this.state === 'expanded') {
@@ -30,15 +30,19 @@ class CpGlobalSidebar extends LitElement {
   }
 
   override disconnectedCallback() {
-    super.disconnectedCallback();
-
     if (this.trigger) {
-      this.trigger.removeEventListener('craft-show', this.expand.bind(this));
-      this.trigger.removeEventListener('craft-hide', this.collapse.bind(this));
+      this.trigger.removeEventListener('craft-show', this.#handleShow);
+      this.trigger.removeEventListener('craft-hide', this.#handleHide);
     }
 
     this.state = 'expanded';
+
+    super.disconnectedCallback();
   }
+
+  #handleShow = () => this.expand();
+
+  #handleHide = () => this.collapse();
 
   itemHasTooltip(item: HTMLElement) {
     return item.querySelector('craft-tooltip');
@@ -54,13 +58,13 @@ class CpGlobalSidebar extends LitElement {
 
   expand() {
     document.body.setAttribute('data-sidebar', 'expanded');
-    Craft.setCookie('sidebar', 'expanded');
+    setCookie('sidebar', 'expanded');
     this.destroyTooltips();
   }
 
   collapse() {
     document.body.setAttribute('data-sidebar', 'collapsed');
-    Craft.setCookie('sidebar', 'collapsed');
+    setCookie('sidebar', 'collapsed');
     this.createTooltips();
   }
 

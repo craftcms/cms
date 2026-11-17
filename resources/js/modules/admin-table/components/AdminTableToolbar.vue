@@ -31,6 +31,14 @@
     min-width: 0;
   }
 
+  .admin-table-toolbar__view {
+    margin-inline-start: auto;
+  }
+
+  .admin-table-toolbar__view + .admin-table-toolbar__actions {
+    margin-inline-start: 0;
+  }
+
   .admin-table-toolbar__actions {
     display: flex;
     gap: var(--c-spacing-sm);

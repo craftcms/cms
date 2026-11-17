@@ -63,24 +63,65 @@ const LEGACY_NAMES = new Map(
   })
 );
 
-function normalizeIconName(name: string): string {
+/** Names that resolve to the globe for the system's time zone, as `Icons::earth()` picks it. */
+const EARTH_ALIASES = new Set(['world', 'earth']);
+
+/** Custom icons drawn by mirroring another icon, as `Icons::FLIPPED_ICONS` lists them. */
+const FLIPPED_NAMES = new Map(
+  Object.entries({
+    'list-flip': 'solid/list',
+    'list-tree-flip': 'solid/list-tree',
+    'share-flip': 'solid/share',
+    'sidebar-nav-flip': 'custom-icons/sidebar-nav',
+    'sidebar-nav-flip-light': 'custom-icons/sidebar-nav-light',
+  })
+);
+
+function normalizeIconName(
+  name: string,
+  earthIcon: string
+): {name: string; flip: boolean} {
   const suffix = name.endsWith('.svg') ? '.svg' : '';
   const baseName = suffix ? name.slice(0, -suffix.length) : name;
+  const resolve = (iconName: string) =>
+    EARTH_ALIASES.has(iconName)
+      ? earthIcon
+      : (LEGACY_NAMES.get(iconName) ?? iconName);
+  let variant: string | undefined;
+  let iconName = baseName;
 
   if (baseName.includes('/')) {
-    const [variant, ...iconName] = baseName.split('/');
-    const resolvedIconName = iconName.join('/');
-
-    return `${variant}/${LEGACY_NAMES.get(resolvedIconName) ?? resolvedIconName}${suffix}`;
+    const [prefix, ...rest] = baseName.split('/');
+    variant = prefix;
+    iconName = rest.join('/');
   }
 
-  return `${LEGACY_NAMES.get(baseName) ?? baseName}${suffix}`;
+  iconName = resolve(iconName);
+  const flipped = FLIPPED_NAMES.get(iconName);
+
+  // getIconUrl() keeps the extension of a name with a folder, so leave it off.
+  if (flipped !== undefined) {
+    return {name: flipped, flip: true};
+  }
+
+  return {
+    name: `${variant !== undefined ? `${variant}/` : ''}${iconName}${suffix}`,
+    flip: false,
+  };
 }
 
-export function configureIcons(baseUrl: string = '/vendor/craft/icons') {
+export function configureIcons(
+  baseUrl: string = '/vendor/craft/icons',
+  earthIcon: string = 'earth-americas'
+) {
   setIconResolver(
-    createUrlIconResolver((name, family, variant) =>
-      getIconUrl(normalizeIconName(name), family, variant, baseUrl)
-    )
+    createUrlIconResolver((name, family, variant) => {
+      const icon = normalizeIconName(name, earthIcon);
+
+      // A flipped icon's name says where its original is, whatever family the old name was given.
+      return icon.flip
+        ? {url: getIconUrl(icon.name, 'classic', 'solid', baseUrl), flip: true}
+        : getIconUrl(icon.name, family, variant, baseUrl);
+    })
   );
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Shared\Concerns;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Shared\Nameparser\CustomLanguage;
 use TheIconic\NameParser\Language\English;
 use TheIconic\NameParser\Language\German;
@@ -12,10 +14,13 @@ use TheIconic\NameParser\Parser as NameParser;
 
 trait HasNames
 {
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s full name.', nullable: true, readable: true)]
     public ?string $fullName = null;
 
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s first name.', nullable: true, readable: true)]
     public ?string $firstName = null;
 
+    #[ElementProperty(ElementPropertyType::String, 'The {element}’s last name.', nullable: true, readable: true)]
     public ?string $lastName = null;
 
     protected function normalizeNames(): void

@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
@@ -50,12 +49,7 @@ readonly class ImageEditorController
 
         abort_if(! $asset->getSupportsImageEditor(), 400, 'Unsupported file format');
 
-        $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
-
-        return new JsonResponse([
-            'html' => template('_special/image_editor'),
-            'focalPoint' => $focal,
-        ]);
+        return new JsonResponse($asset->getImageEditorSettings());
     }
 
     public function editImage(Request $request): Response
@@ -195,6 +189,15 @@ readonly class ImageEditorController
         $height = $cropData['height'] * $zoom * $adjustmentRatio;
         $x = $imageCenterX + ($cropData['offsetX'] * $zoom * $adjustmentRatio) - $width / 2;
         $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height / 2;
+
+        // Keep the crop within the image, since the crop box can sit slightly past its edges in the editor
+        // (see https://github.com/craftcms/cms/issues/20601)
+        $x2 = min($x + $width, $transformer->getEditedImageWidth());
+        $y2 = min($y + $height, $transformer->getEditedImageHeight());
+        $x = max($x, 0);
+        $y = max($y, 0);
+        $width = $x2 - $x;
+        $height = $y2 - $y;
 
         $focal = null;
 

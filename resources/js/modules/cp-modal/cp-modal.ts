@@ -1,14 +1,46 @@
-import {Modal, ESC_KEY, S_KEY, isMobileBrowser} from '@craftcms/garnish';
-import {uiLayerManager} from '@/modules/slideout/slideout';
+import {Base, isMobileBrowser, setFocusWithin} from '@craftcms/garnish';
 import {inputName} from '@/modules/ui/runtime';
 import type {UiValues} from '@/modules/ui/types';
 import {isHttpError} from '@craftcms/ui/utilities/api/http';
-import type {LegacyRequestOptions} from '@craftcms/ui/utilities/api/legacyRequest';
+import {
+  sendLegacyRequest,
+  type LegacyRequestOptions,
+} from '@craftcms/ui/utilities/api/legacyRequest';
+import {refreshComponentInstances} from '@/common/craft/component-instances';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
+import {loadElementThumbs} from '@/modules/element-thumb-loader/globals';
+import {
+  addErrorsToField,
+  clearErrorsFromField,
+} from '@/common/craft/field-errors';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {getCpUrl} from '@/common/craft/url';
+import {commandShortcut} from '@/common/utils/keyShortcuts';
+import {registerShortcut, type ShortcutRegistration} from '@/common/shortcuts';
+import {findDeltaData} from '@/common/craft/delta';
+import {t} from '@craftcms/ui/utilities/translate';
+import {
+  appendBodyHtml,
+  appendElementHtml,
+  appendHeadHtml,
+  serializeFormInputs,
+} from '@craftcms/ui/utilities/dom';
+import {jq} from '@/common/utils/jquery';
+import {setElementAttributes} from '@/common/craft/attributes';
+import {showError, showSuccess} from '@/modules/messages/messages';
 
 declare const Craft: any;
-declare const $: any;
+
+/** A `craft-dialog`. */
+interface CpModalDialog extends HTMLElement {
+  open: boolean;
+  noHeader: boolean;
+  label: string;
+}
 
 interface CpModalSettings {
+  /** The dialog's heading. Without one, the dialog has no header. */
+  title: string | null;
   params: UiValues;
   containerElement: string;
   containerAttributes: Record<string, string>;
@@ -31,16 +63,15 @@ interface CpModalRequestError extends Error {
   };
 }
 
-// Module-level (not a `static defaults`, which would collide with the base
-// `Modal.defaults`, a differently-shaped `ModalSettings`).
 const DEFAULTS: CpModalSettings = {
+  title: null,
   params: {},
   containerElement: 'form',
   containerAttributes: {
     action: '',
     method: 'post',
     novalidate: '',
-    class: 'cpmodal modal fitted',
+    class: 'cpmodal',
   },
   requestOptions: {},
   closeOnSubmit: true,
@@ -50,128 +81,121 @@ const DEFAULTS: CpModalSettings = {
 };
 
 /**
- * CpModal — a port of `Craft.CpModal` onto the modern `@craftcms/garnish`
- * `Modal`. Loads a control-panel screen (`action`) into a modal form, then
- * submits it with delta-encoded data and renders validation errors inline.
- * Booted from PHP deletion blockers (`new Craft.CpModal('…', {…})`).
+ * CpModal — `Craft.CpModal`, on a `craft-dialog`. Loads a control-panel screen
+ * (`action`) into a form in the dialog, then submits it with delta-encoded data
+ * and renders validation errors inline. Booted from PHP deletion blockers
+ * (`new Craft.CpModal('…', {…})`).
  *
- * The modal shell is modern (`extends Modal`), but — like its sibling
- * {@link CpScreenSlideout} — it keeps the jQuery seam (`declare const $`) for
- * the container/form operations, because the delta-tracking data
- * (`.data('initialSerializedValue' | 'delta-names' | 'serializer')`) and the
- * `Craft.ui.*` field-error helpers share those jQuery conventions with the rest
- * of the CP-screen framework. `Craft` stays a page global; `uiLayerManager`
- * comes from the slideout module.
+ * Emits `beforeLoad`, `load`, `submit`, `close` and `cancel`.
  */
-export class CpModal extends Modal {
+export class CpModal extends Base {
   action: string | null = null;
   namespace: string | null = null;
   succeeded = false;
-  resizeObserver: ResizeObserver | null = null;
+  visible = false;
+  dialog: CpModalDialog;
 
   #cpSettings: CpModalSettings;
   #abortController: AbortController | null = null;
   #ignoreFailedRequest = false;
-  #fieldsWithErrors: unknown[] = [];
+  #fieldsWithErrors: ArrayLike<Element>[] = [];
+  #shortcuts: ShortcutRegistration;
 
-  // jQuery refs (form-ops seam), mirroring the legacy `$`-prefixed fields.
-  #$container: any = null;
-  #$body: any = null;
-  #$content: any = null;
-  #$footer: any = null;
-  #$loadSpinner: any = null;
-  #$cancelBtn: any = null;
-  #$saveBtn: any = null;
+  #container: HTMLFormElement;
+  #content: HTMLElement;
+  #loadSpinner: HTMLElement & {hidden: boolean};
+  #cancelBtn: HTMLElement;
+  #saveBtn: (HTMLElement & {loading?: boolean}) | null = null;
+  #deltaNames: string[] = [];
+  #initialDeltaValues: UiValues = {};
+  #initialSerializedValue: string | undefined;
 
   constructor(action?: string, settings?: Partial<CpModalSettings>) {
-    // The parent Modal must init first (TS: no `this` before super), so it's
-    // constructed container-less and non-auto-showing; shade/esc closing is
-    // handled by CpModal itself (closeMeMaybe), so disable the built-ins.
-    super(undefined, {
-      autoShow: false,
-      hideOnShadeClick: false,
-      hideOnEsc: false,
-    });
+    super();
 
     this.#cpSettings = Object.assign({}, DEFAULTS, settings);
     this.action = action ?? null;
-    this.#fieldsWithErrors = [];
 
-    // Body / content
-    this.#$body = $('<div/>', {class: 'cpmodal-body'});
-    this.#$content = $('<div/>', {class: 'cpmodal-content'}).appendTo(
-      this.#$body
-    );
-
-    // Footer
-    this.#$footer = $('<div/>', {class: 'cpmodal-footer hidden'});
-    $('<div/>', {class: 'flex-grow'}).appendTo(this.#$footer);
-    const $btnContainer = $('<div/>', {class: 'flex flex-nowrap'}).appendTo(
-      this.#$footer
-    );
-
-    this.#$loadSpinner = $('<div/>', {
-      class: 'spinner',
-      title: Craft.t('app', 'Loading'),
-      'aria-label': Craft.t('app', 'Loading'),
-    }).prependTo($btnContainer);
-
-    this.#$cancelBtn = $('<button/>', {
-      type: 'button',
-      class: 'btn',
-      text: Craft.t('app', 'Cancel'),
-    }).appendTo($btnContainer);
-
-    if (this.#cpSettings.showSubmitButton) {
-      this.#$saveBtn = Craft.ui
-        .createSubmitButton({
-          label: Craft.t('app', 'Save'),
-          spinner: true,
-        })
-        .appendTo($btnContainer);
+    this.dialog = document.createElement('craft-dialog') as CpModalDialog;
+    this.dialog.classList.add('cpmodal-dialog');
+    if (this.#cpSettings.title) {
+      this.dialog.label = this.#cpSettings.title;
+    } else {
+      this.dialog.noHeader = true;
     }
 
-    // Container form — fresh id per instance (the legacy shared-id default was a
-    // latent bug: container ids feed the X-Craft-Container-Id header).
+    // Fresh id per instance: container ids feed the X-Craft-Container-Id header.
     const containerAttributes = Object.assign(
       {id: `cp-modal-${Math.floor(Math.random() * 100000000)}`},
       this.#cpSettings.containerAttributes
     );
-    this.#$container = $(
-      `<${this.#cpSettings.containerElement}/>`,
-      containerAttributes
+    // SAFETY: The container is a form unless a caller asks for another element.
+    this.#container = document.createElement(
+      this.#cpSettings.containerElement
+    ) as HTMLFormElement;
+    setElementAttributes(this.#container, containerAttributes);
+    jq()?.(this.#container).data('cpModal', this);
+
+    this.#content = document.createElement('div');
+    this.#content.className = 'cpmodal-content';
+
+    this.#loadSpinner = document.createElement(
+      'craft-spinner'
+    ) as HTMLElement & {
+      hidden: boolean;
+    };
+    this.#loadSpinner.className = 'cpmodal-spinner';
+    this.#loadSpinner.setAttribute('label', t('Loading'));
+    this.#container.append(this.#content, this.#loadSpinner);
+
+    this.#cancelBtn = this.#footerButton(t('Cancel'));
+
+    if (this.#cpSettings.showSubmitButton) {
+      this.#saveBtn = this.#footerButton(t('Save'));
+      this.#saveBtn.setAttribute('variant', 'primary');
+      this.#saveBtn.setAttribute('aria-keyshortcuts', commandShortcut('S'));
+    }
+
+    this.dialog.append(
+      this.#container,
+      this.#cancelBtn,
+      ...(this.#saveBtn ? [this.#saveBtn] : [])
     );
-    this.#$container.append(this.#$body.add(this.#$footer));
 
-    this.setContainer(this.#$container[0]);
-    this.#$container.data('cpModal', this);
-
-    // Shortcuts + events
-    uiLayerManager().registerShortcut(
-      {keyCode: S_KEY, ctrl: true},
-      (ev: Event) => {
-        this.handleSubmit(ev);
-      }
-    );
-    uiLayerManager().registerShortcut(ESC_KEY, () => {
+    this.addListener(this.#cancelBtn, 'click', () => {
+      this.closeMeMaybe();
+    });
+    if (this.#saveBtn) {
+      this.addListener(this.#saveBtn, 'click', () => {
+        this.#container.requestSubmit();
+      });
+    }
+    this.addListener(this.#container, 'submit', 'handleSubmit');
+    this.#shortcuts = registerShortcut('Mod+S', (ev) => this.handleSubmit(ev), {
+      target: this.dialog,
+      description: () => t('Save'),
+      group: () => t('Forms'),
+      isAvailable: () => this.visible,
+    });
+    this.dialog.addEventListener('craft-before-hide', (ev) => {
+      if (ev.target !== this.dialog) return;
+      ev.preventDefault();
       this.closeMeMaybe();
     });
 
-    this.addListener(this.#$cancelBtn[0], 'click', () => {
-      this.closeMeMaybe();
-    });
-    this.addListener(this.$shade, 'click', () => {
-      this.closeMeMaybe();
-    });
-    this.addListener(this.#$container[0], 'submit', 'handleSubmit');
+    document.body.append(this.dialog);
+    this.dialog.open = true;
+    this.visible = true;
 
-    this.resizeObserver = new ResizeObserver(() => {
-      if (this.visible) {
-        this.updateSizeAndPosition();
-      }
-    });
+    void this.load();
+  }
 
-    this.load();
+  #footerButton(label: string): HTMLElement {
+    const button = document.createElement('craft-button');
+    button.setAttribute('type', 'button');
+    button.setAttribute('slot', 'footer');
+    button.textContent = label;
+    return button;
   }
 
   load(data?: UiValues, refreshInitialData?: boolean): Promise<void> {
@@ -186,10 +210,9 @@ export class CpModal extends Modal {
 
       this.#abortController = new AbortController();
 
-      Craft.sendActionRequest(
-        'GET',
-        this.action,
-        $.extend(
+      sendLegacyRequest(
+        actionClient,
+        Object.assign(
           {
             params: Object.assign(
               {},
@@ -198,25 +221,21 @@ export class CpModal extends Modal {
             ),
             signal: this.#abortController.signal,
             headers: {
-              'X-Craft-Container-Id': this.#$container.attr('id'),
+              'X-Craft-Container-Id': this.#container.id,
             },
           },
-          this.#cpSettings.requestOptions
+          this.#cpSettings.requestOptions,
+          {method: 'get', url: this.action}
         )
       )
         .then((response: any) => {
           this.update(response.data)
             .then(() => {
               if (refreshInitialData !== false) {
-                this.#$container.data('delta-names', response.data.deltaNames);
-                this.#$container.data(
-                  'initial-delta-values',
-                  response.data.initialDeltaValues
-                );
-                this.#$container.data(
-                  'initialSerializedValue',
-                  this.#$container.serialize()
-                );
+                this.#deltaNames = response.data.deltaNames ?? [];
+                this.#initialDeltaValues =
+                  response.data.initialDeltaValues ?? {};
+                this.#initialSerializedValue = this.#serialize();
               }
               resolve();
             })
@@ -226,14 +245,13 @@ export class CpModal extends Modal {
         })
         .catch((e: Error) => {
           if (!this.#ignoreFailedRequest) {
-            Craft.cp.displayError();
+            showError();
             reject(e);
           }
           this.#ignoreFailedRequest = false;
         })
         .finally(() => {
           this.hideLoadSpinner();
-          this.show();
           this.#abortController = null;
         });
     });
@@ -244,42 +262,45 @@ export class CpModal extends Modal {
   }
 
   showLoadSpinner(): void {
-    this.#$loadSpinner.removeClass('hidden');
+    this.#loadSpinner.hidden = false;
   }
 
   hideLoadSpinner(): void {
-    this.#$loadSpinner.addClass('hidden');
+    this.#loadSpinner.hidden = true;
   }
 
-  update(data: any): Promise<void> {
+  async update(data: any): Promise<void> {
+    this.namespace = data.namespace;
+
+    if (data.bodyClass) {
+      this.#content.classList.add(
+        ...String(data.bodyClass).split(/\s+/).filter(Boolean)
+      );
+    }
+
+    // Runs any scripts in the content, as jQuery's `html()` did
+    this.#content.replaceChildren();
+    await appendElementHtml(data.content ?? '', this.#content);
+
+    if (data.submitButtonLabel && this.#saveBtn) {
+      this.#saveBtn.textContent = data.submitButtonLabel;
+    }
+
+    if (data.formAttributes) {
+      setElementAttributes(this.#container, data.formAttributes);
+    }
+
     return new Promise((resolve) => {
-      this.namespace = data.namespace;
-
-      if (data.bodyClass) {
-        this.#$body.addClass(data.bodyClass);
-      }
-
-      this.#$content.html(data.content);
-
-      if (data.submitButtonLabel) {
-        this.#$saveBtn?.text(data.submitButtonLabel);
-      }
-
-      if (data.formAttributes) {
-        Craft.setElementAttributes(this.#$container, data.formAttributes);
-      }
-
-      this.#$footer.removeClass('hidden');
-
       requestAnimationFrame(() => {
-        Craft.appendHeadHtml(data.headHtml);
-        Craft.appendBodyHtml(data.bodyHtml);
+        void appendHeadHtml(data.headHtml).then(() =>
+          appendBodyHtml(data.bodyHtml)
+        );
 
-        Craft.initUiElements(this.#$content);
-        Craft.cp.elementThumbLoader.load(this.#$content);
+        initLegacyUi(this.#content);
+        loadElementThumbs(this.#content);
 
         if (!isMobileBrowser()) {
-          Craft.setFocusWithin(this.#$content);
+          setFocusWithin(this.#content);
         }
 
         resolve();
@@ -289,11 +310,15 @@ export class CpModal extends Modal {
   }
 
   showSubmitSpinner(): void {
-    this.#$saveBtn?.addClass('loading');
+    if (this.#saveBtn) {
+      this.#saveBtn.loading = true;
+    }
   }
 
   hideSubmitSpinner(): void {
-    this.#$saveBtn?.removeClass('loading');
+    if (this.#saveBtn) {
+      this.#saveBtn.loading = false;
+    }
   }
 
   handleSubmit(ev: Event): void {
@@ -304,20 +329,20 @@ export class CpModal extends Modal {
   submit(): void {
     this.showSubmitSpinner();
 
-    const data = Craft.findDeltaData(
-      this.#$container.data('initialSerializedValue'),
-      this.#$container.serialize(),
-      this.#$container.data('delta-names'),
+    const data = findDeltaData(
+      this.#initialSerializedValue ?? '',
+      this.#serialize(),
+      this.#deltaNames,
       null,
-      this.#$container.data('initial-delta-values')
+      this.#initialDeltaValues
     );
 
-    Craft.sendActionRequest('POST', null, {
-      data,
-      headers: {
-        'X-Craft-Namespace': this.namespace,
-      },
-    })
+    actionClient
+      .post(getCpUrl(), data, {
+        headers: {
+          'X-Craft-Namespace': this.namespace,
+        },
+      })
       .then((response: any) => {
         this.handleSubmitResponse(response);
       })
@@ -333,10 +358,10 @@ export class CpModal extends Modal {
     this.clearErrors();
     const data = response.data || {};
     if (data.message) {
-      Craft.cp.displaySuccess(data.message, data.notificationSettings);
+      showSuccess(data.message, data.notificationSettings);
     }
     if (data.modelClass && data.modelId) {
-      Craft.refreshComponentInstances(data.modelClass, data.modelId);
+      void refreshComponentInstances(data.modelClass, data.modelId);
     }
     this.succeeded = true;
     const ev = {
@@ -356,12 +381,12 @@ export class CpModal extends Modal {
       !error.response ||
       ![400, 422].includes(error.response.status ?? 0)
     ) {
-      Craft.cp.displayError();
+      showError();
       throw error;
     }
 
     const data = error.response.data || {};
-    Craft.cp.displayError(data.message);
+    showError(data.message);
     if (data.errors) {
       this.showErrors(data.errors);
     }
@@ -375,44 +400,58 @@ export class CpModal extends Modal {
         ...(this.namespace ? [this.namespace] : []),
         ...name.split('.'),
       ];
-      const $field = this.#$container
-        .find(
+      const fields = new Set<Element>(
+        this.#container.querySelectorAll(
           `[data-attribute="${CSS.escape(name)}"], [data-error-key="${CSS.escape(name)}"]`
         )
-        .add(
-          this.#$container
-            .find(`[name="${CSS.escape(inputName(path))}"]`)
-            .closest('craft-field')
-        );
-      if ($field.length) {
-        Craft.ui.addErrorsToField($field, fieldErrors);
-        $field
-          .filter('craft-field')
-          .children('ul.errors')
-          .attr('slot', 'feedback');
-        this.#fieldsWithErrors.push($field);
+      );
+      for (const input of this.#container.querySelectorAll(
+        `[name="${CSS.escape(inputName(path))}"]`
+      )) {
+        const field = input.closest('craft-field');
+        if (field) {
+          fields.add(field);
+        }
+      }
+      if (fields.size) {
+        const field = [...fields];
+        addErrorsToField(field, fieldErrors);
+        for (const el of field) {
+          if (el.localName === 'craft-field') {
+            el.querySelector(':scope > ul.errors')?.setAttribute(
+              'slot',
+              'feedback'
+            );
+          }
+        }
+        this.#fieldsWithErrors.push(field);
       }
     });
-    this.updateSizeAndPosition();
   }
 
   clearErrors(): void {
     this.#fieldsWithErrors.forEach(($field) => {
-      Craft.ui.clearErrorsFromField($field);
+      clearErrorsFromField($field);
     });
     this.#fieldsWithErrors = [];
   }
 
+  /** Legacy code can swap in its own serializer through jQuery's `data()`. */
+  #serialize(): string {
+    const serializer = jq()?.(this.#container).data('serializer');
+    // `findDeltaData()` reads spaces as `%20`, as jQuery's serialize() wrote
+    // them; URLSearchParams writes them as `+`, and a literal `+` as `%2B`
+    return typeof serializer === 'function'
+      ? serializer()
+      : serializeFormInputs(this.#container).replaceAll('+', '%20');
+  }
+
   isDirty(): boolean {
-    const initialValue = this.#$container.data('initialSerializedValue');
-    if (initialValue === undefined) {
+    if (this.#initialSerializedValue === undefined) {
       return false;
     }
 
-    const serializer =
-      this.#$container.data('serializer') ||
-      (() => this.#$container.serialize());
-    return initialValue !== serializer();
+    return this.#initialSerializedValue !== this.#serialize();
   }
 
   closeMeMaybe(): void {
@@ -423,8 +462,7 @@ export class CpModal extends Modal {
     if (
       !this.isDirty() ||
       confirm(
-        Craft.t(
-          'app',
+        t(
           'Are you sure you want to close this screen? Any changes will be lost.'
         )
       )
@@ -434,27 +472,33 @@ export class CpModal extends Modal {
   }
 
   close(): void {
+    if (!this.visible) {
+      return;
+    }
+    this.visible = false;
+    this.#shortcuts.unregister();
+
     if (this.#abortController) {
       this.#ignoreFailedRequest = true;
       this.#abortController.abort();
     }
 
-    this.hide();
-    this.trigger('close');
-    this.destroy();
-  }
+    const dialog = this.dialog;
+    dialog.addEventListener('craft-after-hide', () => dialog.remove(), {
+      once: true,
+    });
+    dialog.open = false;
 
-  override onShow(): void {
-    super.onShow();
-    this.resizeObserver?.observe(this.#$body[0]);
-  }
-
-  override onHide(): void {
-    super.onHide();
-    this.resizeObserver?.disconnect();
     if (!this.succeeded) {
       this.trigger('cancel');
       this.#cpSettings.onCancel?.();
     }
+    this.trigger('close');
+    this.destroy();
+  }
+
+  /** @deprecated `close()` should be used instead. */
+  hide(): void {
+    this.close();
   }
 }

@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\IconSets;
 use CraftCms\Cms\Http\Controllers\IconController;
 use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -273,5 +276,65 @@ describe('pickerOptions', function () {
 
         expect(Cache::has('icon-picker-options-icons:free'))->toBeFalse();
         expect(Cache::has('icon-picker-options-icons'))->toBeFalse();
+    });
+});
+
+describe('custom icon sets', function () {
+    beforeEach(function () {
+        $this->iconDir = storage_path('framework/testing/custom-icons-'.Str::uuid());
+        File::ensureDirectoryExists($this->iconDir);
+        File::put("$this->iconDir/arrow-thing.svg", '<svg viewBox="0 0 10 10"><path d="M0 0h10v10z"/></svg>');
+        File::put("$this->iconDir/star.svg", '<svg viewBox="0 0 10 10"><path d="M5 0l5 10H0z"/></svg>');
+
+        Cms::config()->customIconPath = $this->iconDir;
+        app()->forgetInstance(IconSets::class);
+    });
+
+    afterEach(function () {
+        Cms::config()->customIconPath = null;
+        app()->forgetInstance(IconSets::class);
+        File::deleteDirectory($this->iconDir);
+    });
+
+    test('svg returns custom icon SVG markup', function () {
+        expect(get(action([IconController::class, 'svg'], ['icon' => 'custom:arrow-thing']))
+            ->assertOk()
+            ->json('iconSvg'))->toContain('d="M0 0h10v10z"');
+    });
+
+    test('pickerOptions only lists Font Awesome icons by default', function () {
+        $json = get(action([IconController::class, 'pickerOptions']))->assertOk()->json();
+
+        expect(collect($json['icons'])->pluck('set')->unique()->all())->toBe([IconSets::FONT_AWESOME])
+            ->and($json['sets'])->toBe([['handle' => IconSets::FONT_AWESOME, 'name' => 'Font Awesome']]);
+    });
+
+    test('pickerOptions lists the requested sets in order', function () {
+        $json = get(action([IconController::class, 'pickerOptions'], [
+            'sets' => [IconSets::CUSTOM, 'nonexistent', IconSets::FONT_AWESOME],
+        ]))->assertOk()->json();
+
+        $icons = collect($json['icons']);
+
+        expect(collect($json['sets'])->pluck('handle')->all())->toBe([IconSets::CUSTOM, IconSets::FONT_AWESOME])
+            ->and($icons->first())->toMatchArray(['name' => 'arrow-thing', 'value' => 'custom:arrow-thing', 'set' => IconSets::CUSTOM])
+            ->and($icons->firstWhere('name', 'gear'))->toMatchArray(['value' => 'gear', 'set' => IconSets::FONT_AWESOME]);
+    });
+
+    test('pickerOptions lists every set for *', function () {
+        expect(collect(get(action([IconController::class, 'pickerOptions'], ['sets' => '*']))
+            ->assertOk()
+            ->json('sets'))->pluck('handle')->all())->toBe([IconSets::FONT_AWESOME, IconSets::CUSTOM]);
+    });
+
+    test('pickerOptions searches custom icon names', function () {
+        expect(collect(get(action([IconController::class, 'pickerOptions'], ['sets' => [IconSets::CUSTOM], 'search' => 'arrow']))
+            ->assertOk()
+            ->json('icons'))->pluck('value')->all())->toBe(['custom:arrow-thing']);
+    });
+
+    test('pickerOptions rejects a non-array sets value', function () {
+        postJson(action([IconController::class, 'pickerOptions']), ['sets' => 'custom'])
+            ->assertJsonValidationErrors(['sets']);
     });
 });

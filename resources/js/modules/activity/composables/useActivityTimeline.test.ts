@@ -79,7 +79,7 @@ const grow = async (element: {contentHeight: number}, height: number) => {
   await nextTick();
 };
 
-it('stays scrolled to the newest activity as events render in, until the reader scrolls up', async () => {
+it('scrolls to the newest activity once loaded, and again when shown', async () => {
   const props = reactive<ActivityTimelineProps>({
     active: true,
     url: '/activity',
@@ -93,21 +93,12 @@ it('stays scrolled to the newest activity as events render in, until the reader 
   await grow(element, 600);
   expect(element.scrollTop).toBe(500);
 
-  // The scroll that pinning set off can arrive after more has rendered.
-  element.contentHeight = 700;
-  element.dispatchEvent(new Event('scroll'));
-  await grow(element, 700);
-  expect(element.scrollTop).toBe(600);
-
   element.scrollTop = 200;
   element.dispatchEvent(new Event('scroll'));
-  await grow(element, 800);
-  expect(element.scrollTop).toBe(200);
-
   props.active = false;
   await nextTick();
   props.active = true;
   await nextTick();
-  await grow(element, 900);
-  expect(element.scrollTop).toBe(800);
+  await grow(element, 700);
+  expect(element.scrollTop).toBe(600);
 });

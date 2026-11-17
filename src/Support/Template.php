@@ -9,7 +9,6 @@ use CraftCms\Cms\Component\Component;
 use CraftCms\Cms\Component\Contracts\Renderable;
 use CraftCms\Cms\Component\Exceptions\UnknownPropertyException;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
-use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Support\Facades\ElementCaches;
 use CraftCms\Cms\Support\Facades\Entries;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -18,6 +17,8 @@ use CraftCms\Cms\Twig\Variables\Paginate;
 use CraftCms\Cms\View\Enums\Position;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Contracts\Support\MessageBag as MessageBagContract;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
@@ -39,6 +40,16 @@ class Template
 {
     /** @var array<string, mixed> */
     protected static array $_fallbacks = [];
+
+    /**
+     * Forgets the preloaded fallback variables, such as singles, so a long-lived worker doesn't keep them between requests.
+     *
+     * @internal
+     */
+    public static function forgetFallbacks(): void
+    {
+        self::$_fallbacks = [];
+    }
 
     /** @param array<string, mixed> $context */
     public static function resolveVariable(string $name, array $context, bool $strict, int $lineno = -1, ?Source $source = null): mixed
@@ -97,18 +108,6 @@ class Template
                     return $object->$item();
                 }
             }
-
-            if ($object instanceof BaseModel && $object->hasAttribute($item)) {
-                if ($isDefinedTest) {
-                    return true;
-                }
-
-                if ($sandboxed) {
-                    $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $item, $lineno, $source);
-                }
-
-                return $object->$item;
-            }
         }
 
         foreach ($arguments as $key => $value) {
@@ -118,10 +117,28 @@ class Template
         }
 
         if ($type !== TwigTemplate::METHOD_CALL && $item instanceof Stringable) {
+            if ($sandboxed) {
+                $env->getExtension(SandboxExtension::class)->getChecker()->ensureToStringAllowed($item, $lineno, $source);
+            }
             $item = (string) $item;
         }
 
         if ($type !== TwigTemplate::METHOD_CALL && is_string($item)) {
+            if ($object instanceof Model && $arguments === []) {
+                if ($sandboxed) {
+                    $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $item, $lineno, $source);
+                }
+
+                if ($isDefinedTest) {
+                    return $object->hasAttribute($item)
+                        || $object->relationLoaded($item)
+                        || (! method_exists(Model::class, $item) && $object->isRelation($item))
+                        || isset($object->$item);
+                }
+
+                return $object->$item;
+            }
+
             if ($object instanceof ViewErrorBag) {
                 if (method_exists($object, $item)) {
                     return CoreExtension::getAttribute(
@@ -207,13 +224,14 @@ class Template
         HtmlStack::js($js, $position, $key);
     }
 
-    public static function script(string $script, int|Position $position = Position::BodyEnd): void
+    /** @param array<string, mixed> $options */
+    public static function script(string $script, int|Position $position = Position::BodyEnd, array $options = []): void
     {
         if (is_int($position)) {
             $position = Position::from($position);
         }
 
-        HtmlStack::script($script, $position);
+        HtmlStack::script($script, $position, $options);
     }
 
     /**
@@ -320,7 +338,14 @@ class Template
     /** @return array{Paginate, list<mixed>} */
     public static function paginateQuery(Builder $query): array
     {
-        $paginator = $query->paginate(pageName: $pageParam = Cms::config()->getPageTriggerParam());
+        $pageParam = Cms::config()->getPageTriggerParam();
+        $perPage = $query->getLimit() ?: ($query instanceof EloquentBuilder ? $query->getModel()->getPerPage() : 100);
+        $paginator = $query->paginate($perPage, ['*'], $pageParam);
+
+        if ($paginator->currentPage() > $paginator->lastPage()) {
+            $paginator = $query->paginate($perPage, ['*'], $pageParam, $paginator->lastPage(), $paginator->total());
+        }
+
         $paginator->appends(Arr::except(request()->query(), $pageParam));
 
         return [

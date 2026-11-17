@@ -1,17 +1,18 @@
 <script setup lang="ts">
-  function getVolumes(raw: string): Array<string> {
-    const parsed = JSON.parse(raw);
-    return Object.values(parsed);
-  }
+  import {computed} from 'vue';
 
-  defineProps<{
+  const props = defineProps<{
     value: string;
   }>();
+
+  const volumes = computed<Array<string>>(() =>
+    Object.values(JSON.parse(props.value))
+  );
 </script>
 
 <template>
   <ul class="">
-    <li v-for="volume in getVolumes(value)" :key="volume">
+    <li v-for="volume in volumes" :key="volume">
       {{ volume }}
     </li>
   </ul>

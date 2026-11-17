@@ -17,7 +17,16 @@
 
 export type HttpHeaders = Record<string, string | null | undefined>;
 export type HttpParams = Record<string, unknown> | URLSearchParams;
-export type HttpResponseType = 'json' | 'text' | 'blob' | 'arraybuffer';
+/**
+ * `stream` resolves with the response's body as a `ReadableStream`, which the
+ * request's `signal` can still abort. Rejected responses are read as usual.
+ */
+export type HttpResponseType =
+  | 'json'
+  | 'text'
+  | 'blob'
+  | 'arraybuffer'
+  | 'stream';
 
 export interface HttpRequestConfig<D = any> {
   url?: string;
@@ -333,6 +342,39 @@ async function readBody(
   }
 }
 
+/**
+ * The response header that lists messages for every open control panel tab,
+ * such as element saves, as JSON.
+ */
+const BROADCAST_HEADER = 'X-Craft-Broadcast';
+
+/**
+ * Hands each message in a response's `X-Craft-Broadcast` header to the
+ * control panel as a `craft:broadcast` event, which it broadcasts. An event,
+ * so it reaches the control panel from every copy of this module, such as the
+ * legacy bundle's.
+ */
+function relayBroadcasts(headers: Headers): void {
+  const value = headers.get(BROADCAST_HEADER);
+
+  if (!value || typeof window === 'undefined') {
+    return;
+  }
+
+  let messages: unknown;
+  try {
+    messages = JSON.parse(value);
+  } catch {
+    return;
+  }
+
+  if (Array.isArray(messages)) {
+    messages.forEach((detail) =>
+      window.dispatchEvent(new CustomEvent('craft:broadcast', {detail}))
+    );
+  }
+}
+
 function responseHeaders(response: Response): Record<string, string> {
   const headers: Record<string, string> = {};
   response.headers.forEach((value, name) => {
@@ -378,6 +420,8 @@ async function dispatch<T, D>(
       ? undefined
       : buildBody(config.data, headers);
 
+  let streaming = false;
+
   try {
     let fetchResponse: Response;
     try {
@@ -406,9 +450,24 @@ async function dispatch<T, D>(
       );
     }
 
+    // Whether or not the request succeeded, what it changed has changed.
+    relayBroadcasts(fetchResponse.headers);
+
+    const validateStatus =
+      config.validateStatus === undefined
+        ? defaultValidateStatus
+        : config.validateStatus;
+    const valid = !validateStatus || validateStatus(fetchResponse.status);
+    streaming = config.responseType === 'stream' && valid;
+
     let data: unknown;
     try {
-      data = await readBody(fetchResponse, config.responseType);
+      data = streaming
+        ? fetchResponse.body
+        : await readBody(
+            fetchResponse,
+            config.responseType === 'stream' ? undefined : config.responseType
+          );
     } catch (e) {
       if (controller.signal.aborted && !timedOut) {
         throw new HttpCancelledError(config);
@@ -428,12 +487,7 @@ async function dispatch<T, D>(
       config,
     };
 
-    const validateStatus =
-      config.validateStatus === undefined
-        ? defaultValidateStatus
-        : config.validateStatus;
-
-    if (validateStatus && !validateStatus(response.status)) {
+    if (!valid) {
       throw new HttpError(
         `Request failed with status code ${response.status}`,
         response.status >= 500 ? 'ERR_BAD_RESPONSE' : 'ERR_BAD_REQUEST',
@@ -447,7 +501,10 @@ async function dispatch<T, D>(
     if (timer) {
       clearTimeout(timer);
     }
-    config.signal?.removeEventListener('abort', onAbort);
+    // A stream is still being read, so the signal can still abort it.
+    if (!streaming) {
+      config.signal?.removeEventListener('abort', onAbort);
+    }
   }
 }
 

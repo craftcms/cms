@@ -2,16 +2,31 @@ import {computed, type Ref} from 'vue';
 import {toRefs} from '@vueuse/core';
 import {usePage} from '@inertiajs/vue3';
 import type {BreadcrumbItem} from '@/common/types';
+import type {CreatableSection} from '@/modules/elements/composables/useCreatableEntryTypes';
 
 export interface CpUser {
   username: string | null;
   email: string | null;
   id: number | null;
   thumbHtml: string | null;
+  /** The two `--color-{name}-500` palette colors of the user’s default photo’s gradient. */
+  photoColors: [string, string];
   name: string | null;
   admin: boolean;
   /** The "Underline links" accessibility preference. */
   underlineLinks: boolean;
+  /** Whether the user can use the AI assistant, and it can run. */
+  aiAssistant: boolean;
+  /** The account screen for the user’s own AI guidance, while they can use the assistant. */
+  personalGuidanceUrl: string | null;
+  /** The AI Guidance & Skills utility’s Guidance page, if the user can use it. */
+  aiGuidanceUrl: string | null;
+  /** The same utility’s Skills page, if the user can use it. */
+  aiSkillsUrl: string | null;
+  /** Whether the user's account has a Permissions screen. */
+  showPermissions: boolean;
+  /** Whether the user's account has a Tokens screen. */
+  showTokens: boolean;
 }
 
 export interface CraftData {
@@ -21,7 +36,10 @@ export interface CraftData {
   csrfTokenName: string | null;
   system: {
     name: string;
+    /** The control panel icon's decorative HTML: an inline SVG or an `<img>`. */
     icon: string | null;
+    /** The sign-in screens' logo's decorative HTML: an inline SVG or an `<img>`. */
+    logo: string | null;
   };
   app: {
     version: string;
@@ -43,14 +61,15 @@ export interface CraftData {
   allowAdminChanges: boolean;
   currentUser: CpUser | null;
   general: {
+    allowUpdates: boolean;
     cpTrigger: string | null;
     actionTrigger: string | null;
     csrfTokenName: string | null;
-    cpLogoUrl: string | null;
     useEmailAsUsername: boolean;
     rememberedUserSessionDuration: number;
     defaultCpLocale: string;
     notifications: CraftCms.Cms.Cp.Data.NotificationData[];
+    creatableSections: CreatableSection[];
   };
   nav: CraftCms.Cms.Cp.Data.NavItem[];
   /**

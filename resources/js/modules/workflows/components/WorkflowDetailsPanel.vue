@@ -94,10 +94,8 @@
               type="button"
               :variant="ButtonVariant.Primary"
               .disabled="applyDraftAction.disabled ?? false"
-              :focusable-when-disabled="
-                applyDraftAction.disabled && applyDraftAction.disabledReason
-                  ? true
-                  : undefined
+              .focusableWhenDisabled="
+                !!(applyDraftAction.disabled && applyDraftAction.disabledReason)
               "
               @click="applyDraft"
             >
@@ -148,10 +146,11 @@
   .workflow-details-panel__drafts {
     display: grid;
     gap: var(--c-spacing-sm);
-    padding: var(--c-spacing-md);
   }
 
   .workflow-details-panel__review + .workflow-details-panel__drafts {
+    margin-block-start: var(--c-spacing-lg);
+    padding-block-start: var(--c-spacing-lg);
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
   }
 

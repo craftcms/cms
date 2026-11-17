@@ -1,6 +1,7 @@
 import {closeAllSlideouts, closeSlideout, openSlideout} from './store';
 
 export {default as SlideoutHost} from './SlideoutHost.vue';
+export {createElementEditor, ElementEditorPanel} from './create-element-editor';
 export {useSlideout, useSlideoutOpener} from './useSlideout';
 export {
   closeAllSlideouts,
@@ -12,6 +13,7 @@ export type {
   OpenSlideoutOptions,
   SlideoutController,
   SlideoutInstance,
+  SlideoutReloadOptions,
   SlideoutSaveResult,
 } from './types';
 
@@ -26,5 +28,9 @@ export function registerSlideoutGlobals(): void {
     return;
   }
 
-  Object.assign(craft, {openSlideout, closeSlideout, closeAllSlideouts});
+  Object.assign(craft, {
+    openSlideout,
+    closeSlideout,
+    closeAllSlideouts,
+  });
 }

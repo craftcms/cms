@@ -9,6 +9,8 @@ namespace craft\db;
 
 use craft\helpers\Db as DbHelper;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use Illuminate\Database\Connection as IlluminateConnection;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\db\ColumnSchemaBuilder;
@@ -324,7 +326,6 @@ abstract class Migration extends \yii\db\Migration
         }
 
         $schema = $this->db->getSchema();
-        $schema->maxObjectNameLength = 10;
         $table = $schema->getRawTableName($table);
         $tableLength = strlen($table);
         $i = 0;
@@ -453,7 +454,37 @@ abstract class Migration extends \yii\db\Migration
      */
     public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null): void
     {
-        parent::addForeignKey($name ?? $this->db->getForeignKeyName(), $table, $columns, $refTable, $refColumns, $delete, $update);
+        $name ??= $this->db->getForeignKeyName();
+
+        if ($this->db->getLaravelConnection()->getDriverName() !== 'sqlite') {
+            parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
+            return;
+        }
+
+        // SQLite can only add foreign keys by rebuilding the table, which Laravel’s schema builder handles
+        $time = $this->beginCommand("add foreign key $name: $table (" . implode(',', (array)$columns) . ") references $refTable (" . implode(',', (array)$refColumns) . ')');
+        $schema = $this->db->getSchema();
+        $rawTable = $schema->getRawTableName($table);
+        $rawRefTable = $schema->getRawTableName($refTable);
+        $columns = is_string($columns) ? preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY) : $columns;
+        $refColumns = is_string($refColumns) ? preg_split('/\s*,\s*/', $refColumns, -1, PREG_SPLIT_NO_EMPTY) : $refColumns;
+
+        $this->db->getLaravelConnection()->withoutTablePrefix(
+            fn(IlluminateConnection $connection) => $connection->getSchemaBuilder()->table($rawTable, function(Blueprint $blueprint) use ($name, $columns, $refColumns, $rawRefTable, $delete, $update) {
+                $foreignKey = $blueprint->foreign($columns, $name)->references($refColumns)->on($rawRefTable);
+
+                if ($delete !== null) {
+                    $foreignKey->onDelete($delete);
+                }
+
+                if ($update !== null) {
+                    $foreignKey->onUpdate($update);
+                }
+            }),
+        );
+
+        $schema->refreshTableSchema($table);
+        $this->endCommand($time);
     }
 
     /**

@@ -116,6 +116,26 @@ it('can save email settings', function () {
         ->and($config['template'])->toBe('_emails/layout');
 });
 
+it('keeps transport adapter settings when saving email settings', function () {
+    ProjectConfig::set('email', [
+        'fromEmail' => 'old@example.com',
+        'fromName' => 'Old Sender',
+        'transportType' => 'craft\\mailgun\\MailgunAdapter',
+        'transportSettings' => ['domain' => '$MAILGUN_DOMAIN'],
+    ]);
+
+    post(action([EmailSettingsController::class, 'store']), [
+        'fromEmail' => 'test@example.com',
+        'fromName' => 'Test Sender',
+    ])->assertRedirectBack();
+
+    $config = ProjectConfig::get('email');
+
+    expect($config['fromEmail'])->toBe('test@example.com')
+        ->and($config['transportType'])->toBe('craft\\mailgun\\MailgunAdapter')
+        ->and($config['transportSettings'])->toBe(['domain' => '$MAILGUN_DOMAIN']);
+});
+
 it('can save email settings with an environment variable from email', function () {
     putenv('EMAIL_SETTINGS_FROM_EMAIL=test@example.com');
 

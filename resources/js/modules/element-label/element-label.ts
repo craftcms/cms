@@ -1,8 +1,11 @@
+let linkIdCounter = 0;
+
 /**
  * Element label
  *
- * Displays a tooltip (`<craft-tooltip>`) when the label link overflows its
- * container.
+ * Displays a tooltip (`<craft-tooltip>`) with the label link's full text when
+ * the link overflows its container. The tooltip references the link by id, so
+ * the link stays where it is.
  *
  * Ported out of the legacy CP bundle (`CraftElementLabel.js`) and made fully
  * jQuery-free. The legacy version hooked the `Craft.Tabs` `selectTab` event
@@ -18,8 +21,6 @@
 export class ElementLabel extends HTMLElement {
   private tooltip: HTMLElement | null = null;
   private resizeObserver: ResizeObserver | null = null;
-  private desiredWidth = 0;
-  private hasOverflow = false;
 
   get labelLink(): HTMLElement | null {
     return this.querySelector('.label-link');
@@ -43,86 +44,57 @@ export class ElementLabel extends HTMLElement {
     // the `Craft.Tabs` `selectTab` hook and `$(ready)` for.
     this.resizeObserver = new ResizeObserver(() => this.update());
     this.resizeObserver.observe(this);
+    this.resizeObserver.observe(this.labelLink);
   }
 
   update(): void {
-    this.desiredWidth = this.calculateWidth(this.innerText);
-    this.hasOverflow = this.desiredWidth > this.scrollWidth;
-
-    // If the label has an overflow, add a tooltip
-    if (!this.hasOverflow) {
+    const labelLink = this.labelLink;
+    if (!labelLink) {
       return;
     }
 
-    // Do we already have a tooltip?
-    this.tooltip = this.querySelector('craft-tooltip');
+    if (!this.isClipped(labelLink)) {
+      this.removeTooltip();
+      return;
+    }
 
-    // If not, create one
     if (!this.tooltip) {
-      this.createTooltip();
+      this.createTooltip(labelLink);
     }
   }
 
-  createTooltip(): void {
+  createTooltip(labelLink: HTMLElement): void {
+    labelLink.id ||= `craft-element-label-link-${++linkIdCounter}`;
+
     const tooltip = document.createElement('craft-tooltip');
-    tooltip.setAttribute('self-managed', 'true');
-    tooltip.setAttribute('text', this.innerText);
-    tooltip.setAttribute('aria-hidden', 'true');
-
-    // Make sure tooltips created show ellipses
-    Object.assign(tooltip.style, {
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-    });
-
-    // If there's a context label, make it a little nicer
-    const contextLabel = this.querySelector<HTMLElement>('.context-label');
-    if (contextLabel) {
-      tooltip.innerText = tooltip.innerText.replace(
-        contextLabel.innerText,
-        ` (${contextLabel.innerText})`
-      );
-    }
-
-    const labelLink = this.labelLink;
-    if (labelLink) {
-      this.insertBefore(tooltip, labelLink);
-      tooltip.appendChild(labelLink);
-    }
+    tooltip.setAttribute('for', labelLink.id);
+    tooltip.setAttribute('invoker-relation', 'label');
+    tooltip.textContent = (labelLink.textContent ?? '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    labelLink.after(tooltip);
 
     this.tooltip = tooltip;
+  }
+
+  removeTooltip(): void {
+    this.tooltip?.remove();
+    this.tooltip = null;
   }
 
   disconnectedCallback(): void {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
-
-    // Put the `.label-link` back into `<craft-element-label>` so that when
-    // `connectedCallback()` runs again after an insertBefore/insertAfter move,
-    // everything can re-initialize as expected. `Element.moveBefore`/`moveAfter`
-    // aren't used as they're still experimental (unavailable in Safari & FF).
-    const labelLink = this.labelLink;
-    if (labelLink) {
-      this.append(labelLink);
-    }
-
-    this.tooltip?.remove();
+    this.removeTooltip();
   }
 
-  calculateWidth(text: string): number {
-    const tag = document.createElement('span');
-    Object.assign(tag.style, {
-      position: 'absolute',
-      visibility: 'hidden',
-      whiteSpace: 'nowrap',
-      fontFamily: 'inherit',
-    });
-    tag.innerText = text;
-
-    this.appendChild(tag);
-    const result = tag.clientWidth;
-    this.removeChild(tag);
-    return result;
+  /**
+   * Whether the link, or an element inside it, clips its text. Inline
+   * elements can't clip, and report a zero `scrollWidth` and `clientWidth`.
+   */
+  isClipped(labelLink: HTMLElement): boolean {
+    return [labelLink, ...labelLink.querySelectorAll<HTMLElement>('*')].some(
+      (element) => element.scrollWidth > element.clientWidth
+    );
   }
 }

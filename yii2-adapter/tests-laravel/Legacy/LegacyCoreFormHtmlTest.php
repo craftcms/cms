@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Yii2Adapter\Tests\Legacy;
 
+use craft\fieldlayoutelements\BaseNativeField as LegacyBaseNativeField;
 use craft\fieldlayoutelements\entries\EntryTitleField as LegacyEntryTitleField;
 use craft\fields\Assets;
 use craft\fields\Entries;
@@ -14,6 +15,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\FieldLayout\FieldLayoutCompiler;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\Entries\EntryTitleField;
@@ -25,6 +27,7 @@ use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Ui\Enums\ControlMode;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
+use CraftCms\Cms\Ui\UiHtmlRenderer;
 use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\View\TemplateMode;
 use Mockery;
@@ -191,3 +194,68 @@ it('renders the complete legacy Table settings UI with its namespace and effecti
 
     expect($editablePayload['nodes'][0]['control']['mode'])->toBe(ControlMode::Editable->value);
 })->with([ControlMode::Editable, ControlMode::ReadOnly]);
+
+it('renders native fields that only implement inputHtml within core field chrome', function(ControlMode $mode, bool $static) {
+    Sites::partialMock()->shouldReceive('isMultiSite')->andReturn(false);
+    Sites::shouldReceive('getPrimarySite')->andReturn(new Site(['id' => 1, 'language' => 'en']));
+
+    $field = new class(['uid' => 'notes-element']) extends LegacyBaseNativeField {
+        public string $attribute = 'notes';
+
+        protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
+        {
+            return 'Plugin notes';
+        }
+
+        protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
+        {
+            HtmlStack::js('window.pluginNotes = true;');
+
+            return '<input name="notes" value="Draft" data-static="' . ($static ? 'true' : 'false') . '">';
+        }
+    };
+    $layout = FieldLayout::make(Entry::class)
+        ->tab('Content', fn(FieldLayoutTab $tab) => $tab->add($field));
+    $layout->getTabs()[0]->uid = 'content-tab';
+
+    $payload = app(FieldLayoutCompiler::class)->compile($layout, context: new UiContext(
+        namespace: ['fields'],
+        mode: $mode,
+        errors: ['notes' => 'Notes are invalid.'],
+    ));
+    $node = $payload->nodes[0]->children[0];
+    $html = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+
+    expect($node->control?->component)->toBe('craft-legacy:html')
+        ->and($node->control?->path)->toBe(['fields', 'notes'])
+        ->and($node->control?->mode)->toBe($mode)
+        ->and($node->control?->props['fragment']['bodyHtml'])->toContain('window.pluginNotes = true;')
+        ->and($html->filter('craft-field')->attr('label'))->toBe('Plugin notes')
+        ->and($html->filter('craft-field input[name="fields[notes]"]')->attr('data-static'))->toBe($static ? 'true' : 'false')
+        ->and($html->filter('craft-field .error-list')->text())->toBe('Notes are invalid.')
+        ->and($payload->values)->toBe(['fields' => ['notes' => ['fields[notes]' => 'Draft']]]);
+})->with([
+    'editable' => [ControlMode::Editable, false],
+    'read-only' => [ControlMode::ReadOnly, true],
+]);
+
+it('renders fields that implement formHtml as they are', function() {
+    $field = new class(['uid' => 'summary-element']) extends LegacyBaseNativeField {
+        public string $attribute = 'summary';
+
+        public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
+        {
+            return '<div data-plugin-summary><input name="summary" value="Plugin"></div>';
+        }
+    };
+    $layout = FieldLayout::make(Entry::class)
+        ->tab('Content', fn(FieldLayoutTab $tab) => $tab->add($field));
+    $layout->getTabs()[0]->uid = 'content-tab';
+
+    $payload = app(FieldLayoutCompiler::class)->compile($layout, context: new UiContext(namespace: ['fields']));
+    $html = new Crawler(app(UiHtmlRenderer::class)->render($payload));
+
+    expect($payload->nodes[0]->children[0]->control?->path)->toBe(['fields', '__legacyFieldLayout', 'summary-element'])
+        ->and($html->filter('[data-plugin-summary] input[name="fields[summary]"]')->attr('value'))->toBe('Plugin')
+        ->and($html->filter('craft-field'))->toHaveCount(0);
+});

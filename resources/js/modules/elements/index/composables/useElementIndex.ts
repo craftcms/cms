@@ -16,6 +16,7 @@ import type {
   useContentIndexData,
   ElementIndexRow,
 } from '@/modules/elements/index/composables/useContentIndexData';
+import {useElementIndexThumbSize} from '@/modules/elements/index/composables/useElementIndexThumbSize';
 import {useElementIndexColumns} from '@/modules/elements/index/composables/useElementIndexColumns';
 import {useElementIndexFilters} from '@/modules/elements/index/composables/useElementIndexFilters';
 import {useElementIndexPagination} from '@/modules/elements/index/composables/useElementIndexPagination';
@@ -27,6 +28,8 @@ import {
   useElementIndexStructure,
 } from '@/modules/elements/index/composables/useElementIndexStructure';
 import {useElementIndexViewMode} from '@/modules/elements/index/composables/useElementIndexViewMode';
+import {onElementChanged} from '@/modules/elements/element-instances';
+import {tryOnScopeDispose} from '@vueuse/core';
 import {useElementIndexViewState} from '@/modules/elements/index/composables/useElementIndexViewState';
 import type {
   IndexQueryParams,
@@ -36,12 +39,16 @@ import type {
 import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
 import type {
   ElementIndexModel,
+  ElementIndexSelectAll,
   ElementIndexView,
   ExportElementIndex,
 } from '@/modules/elements/index/types/model';
 import type {InlineEditingSaveResult} from '@/modules/elements/index/composables/useInlineEditing';
 import type {ElementIndexContext} from '@/modules/elements/index/index-context';
-import type {ViewMode} from '@/modules/elements/types/view-state';
+import type {
+  CardThumbSettings,
+  ViewMode,
+} from '@/modules/elements/types/view-state';
 
 interface UseElementIndexOptions {
   elementIndex: ReturnType<typeof useContentIndexData>;
@@ -77,8 +84,14 @@ interface UseElementIndexOptions {
     context: {elementIndex: ReturnType<typeof useContentIndexData>}
   ) => ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>;
   structure?: boolean;
+  /**
+   * Whether selecting a structure row also selects its descendants. Defaults
+   * to `structure`.
+   */
+  selectDescendants?: boolean;
   readOnly?: MaybeRefOrGetter<boolean>;
-  refresh: () => Promise<boolean>;
+  /** `silent` reloads without the loading state, keeping the rows on screen. */
+  refresh: (options?: {silent?: boolean}) => Promise<boolean>;
 }
 
 /** Shared state and table setup for page and detached element indexes. */
@@ -89,29 +102,19 @@ export function useElementIndex(options: UseElementIndexOptions) {
   const preferredSort = elementIndex.sort.filter(
     ({field}) => field !== 'score'
   );
-  const filters = useElementIndexFilters(visitor, {
-    search: elementIndex.search,
-    status: elementIndex.status,
-    conditions: elementIndex.currentCondition,
-    busy: options.busy,
-    preferredSort: () => {
-      const sourceKey = elementIndex.source?.key ?? '*';
-      const saved = viewState.value.sources?.[sourceKey]?.sort?.filter(
-        ({field}) => field !== 'score'
-      );
-
-      if (saved?.length) {
-        return saved;
-      }
-
-      return sourceKey === initialSourceKey ? preferredSort : [];
-    },
-    params: () => ({
-      source: elementIndex.source?.key,
-      viewMode: viewState.value.mode,
-      ...options.filterParams?.(),
-    }),
-  });
+  const sourceKey = () => elementIndex.source?.key ?? '*';
+  const {
+    mode: savedMode,
+    restore: restoreViewMode,
+    persistedMode,
+  } = useElementIndexViewMode(
+    viewState,
+    visitor,
+    sourceKey,
+    () => elementIndex.viewState?.mode,
+    () => visibleViewModes.value.map(({mode}) => mode),
+    (mode) => thumbSizeModeParams(mode)
+  );
   const pinnedColumn =
     options.pinnedColumn === undefined
       ? {key: 'title', label: elementIndex.elementDisplayName}
@@ -123,6 +126,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     tableColumns,
     reorder,
     restore: restoreColumns,
+    isDefault: columnsAreDefault,
+    resetToDefault: resetColumns,
   } = useElementIndexColumns(elementIndex, viewState, pinnedColumn, visitor);
   const columns = options.columns?.(baseColumns, {elementIndex}) ?? baseColumns;
   const {
@@ -131,22 +136,29 @@ export function useElementIndex(options: UseElementIndexOptions) {
     sortField,
     sortDirection,
     restore: restoreSort,
+    isDefault: sortIsDefault,
+    resetToDefault: resetSort,
   } = useElementIndexSort(elementIndex, viewState, visitor);
   const {paginationState, paginationConfig} = useElementIndexPagination(
     elementIndex,
     visitor
   );
-  const {mode: savedMode, restore: restoreViewMode} = useElementIndexViewMode(
-    viewState,
-    visitor,
-    () => elementIndex.viewState?.mode,
-    () => visibleViewModes.value.map(({mode}) => mode)
-  );
+  // The selection watcher below is sync, so it reruns this when a visit swaps
+  // in the next page's props, before the index unmounts. Throwing there would
+  // reject Inertia's swap, which then skips loading the next page's deferred
+  // props.
   const visibleViewModes = computed(() =>
-    elementIndex.viewModes.filter(
+    (elementIndex.viewModes ?? []).filter(
       (viewMode) =>
         !viewMode.structuresOnly || elementIndex.source?.structureId != null
     )
+  );
+  /**
+   * How cards show a thumbnail, as the source's field layout has it, or null
+   * when the source's elements have no thumbnails.
+   */
+  const cardThumbs = computed<CardThumbSettings | null>(
+    () => elementIndex.cardThumbs ?? null
   );
   const mode = computed<ViewMode['mode']>({
     get: () =>
@@ -157,17 +169,75 @@ export function useElementIndex(options: UseElementIndexOptions) {
       savedMode.value = value;
     },
   });
-  const inlineEditingActive = computed({
-    get: () => viewState.value.inlineEditing,
-    set: (value: boolean) => {
-      viewState.value.inlineEditing = value;
+  const filters = useElementIndexFilters(visitor, {
+    search: elementIndex.search,
+    status: elementIndex.statusMenuValue,
+    conditions: elementIndex.currentCondition,
+    busy: options.busy,
+    preferredSort: () => {
+      const saved = viewState.value.sources?.[sourceKey()]?.sort?.filter(
+        ({field}) => field !== 'score'
+      );
+
+      if (saved?.length) {
+        return saved;
+      }
+
+      return sourceKey() === initialSourceKey ? preferredSort : [];
     },
+    params: () => ({
+      source: elementIndex.source?.key,
+      viewMode: mode.value,
+      ...options.filterParams?.(),
+    }),
   });
+  const {
+    thumbSize,
+    options: thumbSizeOptions,
+    restore: restoreThumbSize,
+    modeParams: thumbSizeModeParams,
+    isDefault: thumbSizeIsDefault,
+    resetToDefault: resetThumbSize,
+  } = useElementIndexThumbSize(viewState, visitor, () => mode.value, sourceKey);
+  // The View menu only offers table columns in table and structure views, so
+  // only there do they count toward, or get reset by, "Use defaults".
+  const showsTableColumns = () =>
+    mode.value === 'table' || mode.value === 'structure';
+  const viewCustomized = computed(
+    () =>
+      !sortIsDefault.value ||
+      !thumbSizeIsDefault.value ||
+      (showsTableColumns() && !columnsAreDefault.value)
+  );
+
+  /** Returns the View menu's settings to the source's defaults in one visit. */
+  function resetView(): void {
+    const resets = [
+      resetSort(),
+      showsTableColumns() ? resetColumns() : null,
+      resetThumbSize(),
+    ].filter((reset): reset is IndexRestore => reset !== null);
+
+    if (resets.length === 0) {
+      return;
+    }
+
+    visitor.merge(Object.assign({}, ...resets.map((reset) => reset.params)), {
+      only: [...new Set(resets.flatMap((reset) => reset.only))],
+      resetPage: true,
+    });
+  }
+
+  // Not persisted: inline editing ends with the page.
+  const inlineEditingActive = shallowRef(false);
   const structureView = useElementIndexStructure(
     elementIndex,
     viewState,
-    visitor
+    visitor,
+    () => mode.value
   );
+  const selectDescendants =
+    options.selectDescendants ?? options.structure ?? false;
   const data = computed(() =>
     options.data
       ? options.data(elementIndex.data ?? [], mode.value, elementIndex)
@@ -176,9 +246,35 @@ export function useElementIndex(options: UseElementIndexOptions) {
         : (elementIndex.data ?? [])
   );
   const rowSelection = shallowRef<RowSelectionState>({});
+  /**
+   * Whether every element the index lists is selected, including those on
+   * pages that haven't been loaded, other than any deselected since.
+   */
+  const selectsAll = shallowRef(false);
+  const deselectedIds = shallowRef<ReadonlySet<string>>(new Set());
+
+  function selectRows(rows: ElementIndexRow[], selection = rowSelection.value) {
+    const next = {...selection};
+
+    for (const row of rows) {
+      const id = String(row.id);
+      if (
+        !deselectedIds.value.has(id) &&
+        (options.enableRowSelection?.(row) ?? true)
+      ) {
+        next[id] = true;
+      }
+    }
+
+    return next;
+  }
 
   watch(data, (rows) => {
-    if (options.structure && structureView.isStructure.value) {
+    if (selectsAll.value) {
+      rowSelection.value = selectRows(rows);
+    }
+
+    if (selectDescendants && structureView.isStructure.value) {
       rowSelection.value = selectDescendantsOfSelected(
         rowSelection.value,
         rows
@@ -228,9 +324,35 @@ export function useElementIndex(options: UseElementIndexOptions) {
       const next =
         typeof updater === 'function' ? updater(rowSelection.value) : updater;
       rowSelection.value =
-        options.structure && structureView.isStructure.value
+        selectDescendants && structureView.isStructure.value
           ? cascadeStructureSelection(rowSelection.value, next, data.value)
           : next;
+
+      // Deselecting the whole page, as the select-all checkbox does, ends
+      // the selection of every result, not just this page's share of it.
+      if (
+        selectsAll.value &&
+        !data.value.some((row) => rowSelection.value[String(row.id)])
+      ) {
+        selectsAll.value = false;
+        deselectedIds.value = new Set();
+        rowSelection.value = {};
+      }
+
+      if (selectsAll.value) {
+        const deselected = new Set(deselectedIds.value);
+
+        for (const row of data.value) {
+          const id = String(row.id);
+          if (rowSelection.value[id]) {
+            deselected.delete(id);
+          } else {
+            deselected.add(id);
+          }
+        }
+
+        deselectedIds.value = deselected;
+      }
     },
     ...sortingConfig,
     ...paginationConfig,
@@ -238,18 +360,36 @@ export function useElementIndex(options: UseElementIndexOptions) {
     // created with, which every later source or filter would keep showing as
     // its page count.
     get rowCount() {
-      return elementIndex.pagination.total;
+      return elementIndex.pagination?.total ?? 0;
     },
     enableMultiSort: false,
   });
+
+  /**
+   * Whether the rows are still to come. A page load leaves them out until it
+   * knows the view mode and thumbnail size to render them for; see `restore()`.
+   */
+  const pending = computed(() => elementIndex.data === undefined);
 
   function restore(): void {
     const restores = [
       restoreColumns(),
       restoreSort(),
       restoreViewMode(),
+      restoreThumbSize(),
       ...(options.structure ? [structureView.restore()] : []),
     ].filter((restore): restore is IndexRestore => restore !== null);
+
+    // Requested after the others have read the URL into the view state, so the
+    // mode and size are the ones the index will show. Naming the mode in the
+    // URL also gets the rows rendered along with any later page load. `queue`
+    // reports the thumbnail jobs rendering them queued.
+    if (pending.value) {
+      restores.unshift({
+        params: {viewMode: mode.value, ...thumbSizeModeParams(mode.value)},
+        only: ['data', 'pagination', 'structure', 'queue'],
+      });
+    }
 
     if (restores.length === 0) {
       return;
@@ -264,26 +404,150 @@ export function useElementIndex(options: UseElementIndexOptions) {
     );
   }
 
+  /**
+   * The selected rows on every page, by row id. The table only holds the page
+   * on screen, so rows selected on other pages are remembered as they were
+   * when last shown.
+   */
+  const selectedRowsById = shallowRef(new Map<string, ElementIndexRow>());
+
+  watch(
+    [rowSelection, data],
+    ([selected, rows]) => {
+      const shown = new Map(rows.map((row) => [String(row.id), row]));
+      const next = new Map<string, ElementIndexRow>();
+
+      for (const [id, isSelected] of Object.entries(selected)) {
+        const row = isSelected
+          ? (shown.get(id) ?? selectedRowsById.value.get(id))
+          : undefined;
+
+        if (row) next.set(id, row);
+      }
+
+      selectedRowsById.value = next;
+    },
+    {immediate: true, flush: 'sync'}
+  );
+
   const selection = useTableRowSelection(table, {
     selectable: true,
     readOnly: options.readOnly ?? false,
+    selectedRows: () => [...selectedRowsById.value.values()],
+    onClear: () => {
+      selectsAll.value = false;
+      deselectedIds.value = new Set();
+    },
   });
 
+  const selectAll: ElementIndexSelectAll = {
+    active: selectsAll,
+    exceptIds: computed(() => [...deselectedIds.value]),
+    count: computed(() =>
+      selectsAll.value
+        ? Math.max(
+            0,
+            (elementIndex.pagination?.total ?? 0) - deselectedIds.value.size
+          )
+        : selection.selectedIds.value.length
+    ),
+    selectAll: () => {
+      deselectedIds.value = new Set();
+      selectsAll.value = true;
+      rowSelection.value = selectRows(data.value);
+    },
+    selectPage: () => {
+      selection.clearSelection();
+      rowSelection.value = selectRows(data.value);
+    },
+  };
+
+  // A selection belongs to the elements the index lists, so it's dropped when
+  // they change, but kept across pages and sort orders. With every result
+  // selected, the server would otherwise act on whatever the new search or
+  // filters list.
   watch(
-    () => elementIndex.source?.key,
+    () =>
+      JSON.stringify([
+        elementIndex.source?.key,
+        elementIndex.siteId,
+        elementIndex.search,
+        elementIndex.status,
+        elementIndex.currentCondition,
+        elementIndex.drafts,
+        elementIndex.trashed,
+      ]),
     () => selection.clearSelection()
   );
+
+  const listing = () =>
+    JSON.stringify([
+      elementIndex.pagination?.current_page,
+      elementIndex.pagination?.per_page,
+      elementIndex.sort,
+    ]);
+  let previousListing = listing();
+
   watch(data, (rows, previous) => {
+    const currentListing = listing();
+    const samePage = currentListing === previousListing;
+    previousListing = currentListing;
+
     if (
-      rows.length !== previous.length ||
-      rows.some((row, index) => row.id !== previous[index]?.id)
+      rows.length === previous.length &&
+      rows.every((row, index) => row.id === previous[index]?.id)
     )
-      selection.selection.prune();
+      return;
+
+    selection.anchorIndex.value = null;
+
+    // When the same page reloads, rows that left it are gone, not on another
+    // page, so they leave the selection too.
+    if (!samePage || pending.value) return;
+
+    const kept = new Set(rows.map((row) => String(row.id)));
+    const departed = new Set(
+      previous
+        .map((row) => String(row.id))
+        .filter((id) => !kept.has(id) && rowSelection.value[id])
+    );
+
+    if (departed.size) {
+      rowSelection.value = Object.fromEntries(
+        Object.entries(rowSelection.value).filter(([id]) => !departed.has(id))
+      );
+    }
   });
 
   function changeSource(key: string): void {
     if (key === elementIndex.source?.key) return;
-    visitor.merge({source: key, viewMode: mode.value}, {resetPage: true});
+    const sourceMode = persistedMode(key);
+
+    // A source without a chosen mode gets its default, which only the server
+    // knows, so its thumbnail size can't be asked for until its rows arrive.
+    visitor.merge(
+      {
+        source: key,
+        viewMode: sourceMode ?? null,
+        ...(sourceMode
+          ? thumbSizeModeParams(sourceMode, key)
+          : {thumbSize: null}),
+      },
+      {
+        resetPage: true,
+        onFinish: ({completed}) => {
+          const thumbSizeRestore =
+            completed && !sourceMode && restoreThumbSize();
+
+          if (thumbSizeRestore) {
+            visitor.merge(thumbSizeRestore.params, {
+              only: thumbSizeRestore.only,
+              replace: true,
+            });
+          }
+        },
+      }
+    );
   }
 
   function changeSite(handle: string): void {
@@ -291,8 +555,11 @@ export function useElementIndex(options: UseElementIndexOptions) {
     visitor.merge({site: handle}, {resetPage: true});
   }
 
-  async function refresh(refreshOptions?: {selectId?: number}): Promise<void> {
-    const applied = await options.refresh();
+  async function refresh(refreshOptions?: {
+    selectId?: number;
+    silent?: boolean;
+  }): Promise<void> {
+    const applied = await options.refresh({silent: refreshOptions?.silent});
     if (!applied || refreshOptions?.selectId === undefined) return;
     const row = table
       .getRowModel()
@@ -300,8 +567,39 @@ export function useElementIndex(options: UseElementIndexOptions) {
     if (row) selection.selectRow(row, {checked: true});
   }
 
+  // Rows saved in another tab are reloaded, once for all the rows saved
+  // together. Saves in this one refresh the index where they happen, such as
+  // after a quick edit. The reload is silent, so the rows stay on screen, and
+  // focus within them, instead of making way for placeholders. While rows are
+  // edited inline, it waits until editing ends, so it doesn't redraw the
+  // inputs over unsaved changes.
+  let reloadQueued = false;
+  let reloadAfterEditing = false;
+  tryOnScopeDispose(
+    onElementChanged((id) => {
+      const shown =
+        id === null ||
+        elementIndex.data?.some((row) => Number(row.id) === id) === true;
+      if (!shown || reloadQueued) return;
+      if (inlineEditingActive.value) {
+        reloadAfterEditing = true;
+        return;
+      }
+      reloadQueued = true;
+      queueMicrotask(() => {
+        reloadQueued = false;
+        void refresh({silent: true});
+      });
+    })
+  );
+  watch(inlineEditingActive, (active) => {
+    if (active || !reloadAfterEditing) return;
+    reloadAfterEditing = false;
+    void refresh({silent: true});
+  });
+
   const processing = computed(
-    () => loading.value || Boolean(toValue(options.busy))
+    () => loading.value || pending.value || Boolean(toValue(options.busy))
   );
   const filterContext = computed<ElementIndexContext | null>(() =>
     elementIndex.source
@@ -318,6 +616,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
     table,
     data,
     selection,
+    selectAll,
     search: filters.search,
     status: filters.status,
     conditions: filters.conditions,
@@ -346,9 +645,16 @@ export function useElementIndex(options: UseElementIndexOptions) {
     reorder,
     sortField,
     sortDirection,
+    viewCustomized,
+    resetView,
     mode,
+    thumbSize,
+    thumbSizeOptions,
+    cardThumbs,
     loading,
+    pending,
     processing,
+    cancelPageLoad: () => visitor.cancel?.(),
     filterContext,
     visibleViewModes,
     structureView,

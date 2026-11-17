@@ -16,8 +16,10 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\User\Elements\User;
 use DateTimeInterface;
+use Twig\Markup;
 
 use function CraftCms\Cms\t;
 
@@ -57,12 +59,14 @@ class EntryActivity
     }
 
     /**
+     * @param  array<string, mixed>  $originalFieldValues  The original’s dirty field values, from fieldValues()
      * @param  string[]  $dirtyAttributes
      * @param  string[]  $dirtyFields
      */
     public static function recordUpdated(
         Entry $entry,
         Entry $original,
+        array $originalFieldValues,
         array $dirtyAttributes,
         array $dirtyFields,
         bool $authorChanged = true,
@@ -71,7 +75,7 @@ class EntryActivity
             $dirtyAttributes = array_values(array_diff($dirtyAttributes, ['authorIds']));
         }
 
-        [$changes, $contentChanged] = self::changes($entry, $original, $dirtyAttributes, $dirtyFields);
+        [$changes, $contentChanged] = self::changes($entry, $original, $originalFieldValues, $dirtyAttributes, $dirtyFields);
         $oldStatus = $original->getStatus();
         $newStatus = $entry->getStatus();
 
@@ -94,6 +98,34 @@ class EntryActivity
     }
 
     /**
+     * Returns the comparable values of an entry’s dirty fields.
+     *
+     * Capture the original’s values before saving: nested and related elements load lazily,
+     * and saving the entry can update them in place.
+     *
+     * @param  string[]  $dirtyFields
+     * @return array<string, mixed>
+     */
+    public static function fieldValues(Entry $entry, array $dirtyFields): array
+    {
+        $values = [];
+
+        foreach ($entry->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            if (! in_array($field->handle, $dirtyFields, true)) {
+                continue;
+            }
+
+            $value = $entry->getFieldValue($field->handle);
+            $values[$field->handle] = $field instanceof BaseRelationField
+                ? self::relationValues($value)
+                : $field->serializeValue($value, $entry);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param  array<string, mixed>  $originalFieldValues  The original’s dirty field values, from fieldValues()
      * @param  string[]  $dirtyAttributes
      * @param  string[]  $dirtyFields
      * @return array{list<ActivityChange>, bool}
@@ -101,6 +133,7 @@ class EntryActivity
     public static function changes(
         Entry $entry,
         Entry $original,
+        array $originalFieldValues,
         array $dirtyAttributes,
         array $dirtyFields,
     ): array {
@@ -118,25 +151,24 @@ class EntryActivity
             self::appendChange($changes, $contentChanged, t($label), $old, $new);
         }
 
-        foreach ($entry->getFieldLayout()?->getCustomFields() ?? [] as $field) {
-            if (! in_array($field->handle, $dirtyFields, true)) {
-                continue;
-            }
+        $newFieldValues = self::fieldValues($entry, $dirtyFields);
 
-            if ($field instanceof BaseRelationField) {
-                $old = self::relationValues($original->getFieldValue($field->handle));
-                $new = self::relationValues($entry->getFieldValue($field->handle));
-            } else {
-                $old = $field->serializeValue($original->getFieldValue($field->handle), $original);
-                $new = $field->serializeValue($entry->getFieldValue($field->handle), $entry);
+        foreach ($entry->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            $handle = (string) $field->handle;
+
+            if (! array_key_exists($handle, $newFieldValues)) {
+                continue;
             }
 
             self::appendChange(
                 $changes,
                 $contentChanged,
                 t($field->name, category: 'site'),
-                $old,
-                $new,
+                $originalFieldValues[$handle] ?? null,
+                $newFieldValues[$handle],
+                // A cleared value can be null, so the original value can be the only HTML one.
+                $entry->getFieldValue($handle) instanceof Markup
+                    || (array_key_exists($handle, $originalFieldValues) && $original->getFieldValue($handle) instanceof Markup),
             );
         }
 
@@ -150,9 +182,22 @@ class EntryActivity
         string $label,
         mixed $old,
         mixed $new,
+        bool $html = false,
     ): void {
         if ($old === $new) {
             return;
+        }
+
+        // HTML, such as rich text, is listed by its text. A change to its markup alone isn’t listed.
+        if ($html) {
+            $old = is_string($old) ? Html::toText($old) : $old;
+            $new = is_string($new) ? Html::toText($new) : $new;
+
+            if ($old === $new) {
+                $contentChanged = true;
+
+                return;
+            }
         }
 
         $oldSafe = self::normalizeSafeValue($old);
@@ -231,7 +276,7 @@ class EntryActivity
         }
 
         if (is_string($value)) {
-            return mb_check_encoding($value) && strip_tags($value) === $value;
+            return Html::isPlainText($value);
         }
 
         if (is_float($value)) {

@@ -38,7 +38,7 @@ it('requires the viewUsers permission', function () {
 });
 
 it('returns an Inertia response with elements and pagination', function () {
-    get("/{$this->cpTrigger}/users/all")
+    get("/{$this->cpTrigger}/users/all?viewMode=table")
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->component('users/Index')
@@ -94,6 +94,7 @@ it('scopes the list to the selected group', function () {
 
     get("/{$this->cpTrigger}/users?".http_build_query([
         'source' => "group:{$group->uid}",
+        'viewMode' => 'table',
     ]))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
@@ -114,7 +115,7 @@ it('paginates users via query params', function () {
         UserFactory::new()->createElement();
     }
 
-    get("/{$this->cpTrigger}/users/all?".http_build_query(['per_page' => 2]))
+    get("/{$this->cpTrigger}/users/all?".http_build_query(['per_page' => 2, 'viewMode' => 'table']))
         ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('pagination.per_page', 2)

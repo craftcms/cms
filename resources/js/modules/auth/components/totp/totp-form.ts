@@ -11,7 +11,7 @@ import {CraftAuthChallengeForm} from '../auth-challenge-form';
  * @fires login-failed   - Verification failed; bubbles to `craft-login-challenge`.   Detail: `{ message: string }`
  */
 export default class CraftTotpForm extends CraftAuthChallengeForm {
-  static override METHOD = 'totp';
+  static override METHOD = 'CraftCms\\Cms\\Auth\\Methods\\TOTP';
 
   @query('craft-input.totp-code')
   protected override _input?: HTMLElement & {value: string};

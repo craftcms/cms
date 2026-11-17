@@ -1,4 +1,5 @@
 import {computed, ref, watch} from 'vue';
+import {uuid} from '@/common/craft/strings';
 import {canonical, pathsMatch} from '../runtime';
 import type {UiControlPayload, UiValues, NestedUiPayload} from '../types';
 import {bindUiScope} from '../uiScope';
@@ -14,10 +15,25 @@ export function useTableRows(props: {
 
   function entries(value: TableValue): Array<[string, UiValues]> {
     if (!value) return [];
+    if (Array.isArray(value))
+      return value.map((row, index) => [String(index), row]);
 
-    return Array.isArray(value)
-      ? value.map((row, index) => [String(index), row])
-      : Object.entries(value);
+    const list = Object.entries(value);
+    if (!list.some(([key]) => /^(?:0|[1-9]\d*)$/.test(key))) return list;
+
+    // Objects list integer-like keys in ascending order, so restore the rows’ own order
+    const order = rows.value.length
+      ? rows.value.map((row) => row.key)
+      : (props.control.props.rowOrder ?? []);
+    const rank = (key: string) => {
+      const index = order.indexOf(key);
+      return index === -1 ? order.length : index;
+    };
+
+    return list
+      .map((entry, index) => ({entry, index}))
+      .sort((a, b) => rank(a.entry[0]) - rank(b.entry[0]) || a.index - b.index)
+      .map(({entry}) => entry);
   }
 
   function externalValue(): Exclude<TableValue, null> {
@@ -41,7 +57,7 @@ export function useTableRows(props: {
       }
     }
 
-    return {id: crypto.randomUUID(), key, value: {...value}};
+    return {id: uuid(), key, value: {...value}};
   }
 
   function reconcile(value: TableValue): void {

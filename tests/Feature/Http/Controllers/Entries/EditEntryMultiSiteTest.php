@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Icons;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Entry\Models\EntryType;
@@ -17,6 +19,7 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia;
 
 use function Pest\Laravel\actingAs;
@@ -116,6 +119,25 @@ it('renders a Sites pane with a status switch for each site', function () {
         );
 });
 
+it('links each other site in the Sites pane to the Compare screen against it', function () {
+    get($this->entry->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('sidebarUi', function (Collection $sidebarUi) {
+                $sites = collect($sidebarUi['nodes'])
+                    ->first(fn (array $node) => ($node['control']['component'] ?? null) === 'craft:element-sites')['control']['props']['sites'];
+                $url = parse_url((string) $sites[1]['compareUrl']);
+                parse_str($url['query'] ?? '', $query);
+
+                return $sites[0]['compareUrl'] === null
+                    && str_ends_with($url['path'] ?? '', "/compare/{$this->entry->id}")
+                    && ($query['siteId'] ?? null) === (string) $this->entry->siteId
+                    && ($query['fromSiteId'] ?? null) === (string) $this->secondSite->id;
+            })
+            ->etc()
+        );
+});
+
 it('omits the site switcher and per-site switches when the section is single-site', function () {
     $section = Section::factory()->withEntryTypes($this->entryType)->create(['handle' => 'solo']);
     Sections::refreshSections();
@@ -158,6 +180,27 @@ it('lists every site the section is enabled for in the Sites pane', function () 
                 $control = $nodes->first(fn (array $node) => ($node['control']['component'] ?? null) === 'craft:element-sites')['control'] ?? null;
 
                 return collect($control['props']['sites'] ?? [])->pluck('id')->contains($extraSite->id);
+            })
+            ->etc()
+        );
+});
+
+it('doesn’t link a site only the draft has to the Compare screen', function () {
+    $draft = app(Drafts::class)->createDraft($this->entry, auth()->id(), 'Translation');
+    DB::table(Table::ELEMENTS_SITES)
+        ->where('elementId', $this->entry->id)
+        ->where('siteId', $this->secondSite->id)
+        ->delete();
+
+    get($draft->getCpEditUrl())
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('sidebarUi', function (Collection $sidebarUi) {
+                $sites = collect(collect($sidebarUi['nodes'])
+                    ->first(fn (array $node) => ($node['control']['component'] ?? null) === 'craft:element-sites')['control']['props']['sites'])
+                    ->keyBy('id');
+
+                return $sites[$this->secondSite->id]['compareUrl'] === null;
             })
             ->etc()
         );

@@ -122,6 +122,7 @@ export function nestedIndexPayload(
     mode?: 'table' | 'cards';
     reorderable?: boolean;
     actions?: BulkActionItem[] | null;
+    statusMenuValue?: string;
   } = {}
 ): NestedContentIndexData {
   const page = options.page ?? 1;
@@ -134,6 +135,8 @@ export function nestedIndexPayload(
     elementType: 'Entry',
     elementDisplayName: 'Entry',
     elementPluralDisplayName: 'Entries',
+    elementLowerDisplayName: 'entry',
+    elementPluralLowerDisplayName: 'entries',
     canHaveDrafts: true,
     title: 'Entries',
     page: null,
@@ -151,6 +154,7 @@ export function nestedIndexPayload(
     source: {type: 'native', key: '__IMP__', label: 'Entries'},
     sources: [],
     status: '',
+    statusMenuValue: options.statusMenuValue ?? '',
     statusOptions: [],
     search: '',
     currentCondition: null,

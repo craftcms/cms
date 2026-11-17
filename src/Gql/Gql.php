@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Gql;
 
 use BadMethodCallException;
+use Closure;
 use CraftCms\Cms\Asset\Volumes;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Contracts\ElementInterface as BaseElementInterface;
+use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\ElementCaches;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -45,7 +47,9 @@ use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\UserGroups;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Data\UserGroup;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Cms\User\UserPermissions;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Exception;
@@ -70,19 +74,21 @@ use GraphQL\Validator\Rules\ValidationRule;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Throwable;
 
 use function CraftCms\Cms\craftAuth;
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\t;
 
 /**
  * @phpstan-import-type ArgumentConfig from Argument
  * @phpstan-import-type FieldDefinitionConfig from FieldDefinition
  *
- * @phpstan-type SchemaComponents array<string, array{label: string, info?: string, nested?: array<string, array{label: string, info?: string}>}>
+ * @phpstan-type SchemaComponents array<string, array{label: string, info?: string, authenticated?: bool|(Closure(User): bool), nested?: array<string, array{label: string, info?: string, authenticated?: bool|(Closure(User): bool)}>}>
  *
  * @since 6.0.0
  */
@@ -108,6 +114,15 @@ class Gql
 
     /** Complexity value for accessing a field that will trigger a query for every parent returned. */
     public const int GRAPHQL_COMPLEXITY_NPLUS1 = 500;
+
+    /** The Passport auth guard that authenticates OAuth access tokens sent to the GraphQL API. */
+    public const string AUTH_GUARD = 'craft-graphql';
+
+    /** The Passport scope that grants queries against the authenticated schema. */
+    public const string SCOPE_READ = 'graphql:read';
+
+    /** The Passport scope that grants queries and mutations against the authenticated schema. */
+    public const string SCOPE_WRITE = 'graphql:write';
 
     /**
      * @var Schema|null Currently loaded schema definition
@@ -331,6 +346,12 @@ class Gql
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $this->elementCaches->startCollectingCacheInfo();
 
+                // Field layout user conditions may be based on the user’s own content, so invalidate cached results
+                // when the user is saved
+                if ($schema->user) {
+                    $this->elementCaches->collectCacheTags(["element::{$schema->user->id}"]);
+                }
+
                 $result = GraphQL::executeQuery(
                     $schemaDef,
                     $query,
@@ -530,6 +551,88 @@ class Gql
             'queries' => $queries,
             'mutations' => $mutations,
         ];
+    }
+
+    /**
+     * Returns a schema for authenticated requests made on behalf of a user, made up of the schema components that
+     * support authenticated requests and are available to that user.
+     *
+     * Components support authenticated requests with an `authenticated` key on their config: `true` if they’re
+     * available to every authenticated user, or a closure that’s passed a [[User]] and returns whether they’re
+     * available to them. Components that support authenticated requests are responsible for limiting their results
+     * to what [[GqlSchema::$user]] may access.
+     *
+     * The schema’s scope is cached per user, and varies by the edition, the project config version, and the user’s
+     * permissions. Components whose `authenticated` callbacks depend on anything else should be available whenever
+     * the user might need them, and limit their results instead.
+     *
+     * @param  User  $user  The user the request is authenticated as
+     * @param  bool  $includeMutations  Whether mutation components should be included
+     */
+    public function getSchemaForUser(User $user, bool $includeMutations = true): GqlSchema
+    {
+        $cacheKey = sprintf(
+            'gql-user-scope::%s::%s::%s::%s::%s',
+            $user->id,
+            (int) $includeMutations,
+            Edition::get()->value,
+            Info::fetch()->configVersion,
+            $this->userPermissionsHash($user),
+        );
+
+        return new GqlSchema([
+            'name' => 'Authenticated Schema',
+            'uid' => "user:$user->uid",
+            'scope' => Cache::remember($cacheKey, Cms::config()->cacheDuration ?: null, fn (): array => $this->userScope($user, $includeMutations)),
+            'user' => $user,
+        ]);
+    }
+
+    /**
+     * Returns the schema components that are available to a user.
+     *
+     * @return list<string>
+     */
+    private function userScope(User $user, bool $includeMutations): array
+    {
+        $components = $this->getAllSchemaComponents();
+        $scope = [];
+
+        $collect = function (array $group) use (&$collect, &$scope, $user): void {
+            foreach ($group as $component => $config) {
+                $authenticated = $config['authenticated'] ?? false;
+
+                if ($authenticated === true || ($authenticated instanceof Closure && $authenticated($user))) {
+                    $scope[] = $component;
+                }
+
+                if (isset($config['nested'])) {
+                    $collect($config['nested']);
+                }
+            }
+        };
+
+        array_map($collect, $components['queries']);
+
+        if ($includeMutations) {
+            array_map($collect, $components['mutations']);
+        }
+
+        $scope[] = 'directive:parseRefs';
+        $scope[] = 'directive:transform';
+
+        return $scope;
+    }
+
+    /**
+     * Returns a hash of a user’s current permissions.
+     */
+    private function userPermissionsHash(User $user): string
+    {
+        $permissions = $user->admin ? ['*'] : app(UserPermissions::class)->getPermissionsByUserId($user->id)->all();
+        sort($permissions);
+
+        return md5(implode(',', $permissions));
     }
 
     public function flushCaches(): void
@@ -988,7 +1091,7 @@ class Gql
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
-        $devMode = Cms::config()->devMode;
+        $devMode = app()->hasDebugModeEnabled();
 
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
@@ -1067,6 +1170,26 @@ class Gql
                 '::'.Info::fetch()->configVersion.
                 '::'.serialize($variables).
                 ($operationName ? "::$operationName" : '');
+
+            // Results for logged-in users can include their provisional drafts and depend on their permissions (such as
+            // with `editable: true`, or authenticated schemas), so vary them by the user and their current permissions
+            $user = $schema->user ?? currentUserElement();
+
+            if ($user) {
+                $cacheKey .= "::$user->id::".$this->userPermissionsHash($user);
+
+                // Field layout user conditions are commonly based on the user’s groups as well
+                $groupIds = array_map(fn (UserGroup $group) => $group->id, $user->getGroups());
+                sort($groupIds);
+                $cacheKey .= '::'.implode(',', $groupIds);
+            }
+
+            // Preview tokens can swap in another user’s provisional drafts
+            $previewUserId = Context::getHidden(Drafts::CONTEXT_PREVIEW_USER_ID);
+
+            if ($previewUserId !== null && $previewUserId !== $user?->id) {
+                $cacheKey .= "::provisional:$previewUserId";
+            }
         } catch (Throwable $e) {
             report($e);
             $cacheKey = null;
@@ -1155,9 +1278,11 @@ class Gql
     private function siteSchemaComponents(): array
     {
         $sites = Sites::getAllSites(true);
+        $isMultiSite = Sites::isMultiSite();
         $queryComponents = [
             'settings.sites:read' => [
                 'label' => t('Query for sites'),
+                'authenticated' => true,
                 'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to elements.', [
                     'plural' => 'sites',
                     'singular' => 'site',
@@ -1171,6 +1296,7 @@ class Gql
                 'label' => t('Query for elements in the “{site}” site', [
                     'site' => $site->getName(),
                 ]),
+                'authenticated' => fn (User $user): bool => ! $isMultiSite || $user->can("editSite:$site->uid"),
             ];
         }
 
@@ -1183,10 +1309,12 @@ class Gql
         $queryComponents = [
             'elements.drafts:read' => [
                 'label' => t('Query for element drafts'),
+                'authenticated' => fn (User $user): bool => $user->can('accessCp'),
                 ...Edition::get()->supportsReleases() ? [
                     'nested' => [
                         'elements.releases:read' => [
                             'label' => t('Query for releases'),
+                            'authenticated' => fn (User $user): bool => $user->can('accessCp'),
                             'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to drafts.', [
                                 'plural' => 'releases',
                                 'singular' => 'release',
@@ -1198,9 +1326,11 @@ class Gql
             ],
             'elements.revisions:read' => [
                 'label' => t('Query for element revisions'),
+                'authenticated' => fn (User $user): bool => $user->can('accessCp'),
             ],
             'elements.inactive:read' => [
                 'label' => t('Query for non-enabled elements'),
+                'authenticated' => fn (User $user): bool => $user->can('accessCp'),
             ],
         ];
 
@@ -1216,6 +1346,7 @@ class Gql
         if (Sections::getAllSections()->isNotEmpty()) {
             $queryComponents['settings.sections:read'] = [
                 'label' => t('Query for sections'),
+                'authenticated' => fn (User $user): bool => $user->can('accessCp'),
                 'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
                     'plural' => 'sections',
                     'singular' => 'section',
@@ -1227,6 +1358,7 @@ class Gql
         if (EntryTypes::getAllEntryTypes()->isNotEmpty()) {
             $queryComponents['settings.entrytypes:read'] = [
                 'label' => t('Query for entry types'),
+                'authenticated' => fn (User $user): bool => $user->can('accessCp'),
                 'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to entries.', [
                     'plural' => 'entryTypes',
                     'singular' => 'entryType',
@@ -1242,9 +1374,11 @@ class Gql
             $prefix = "sections.$section->uid";
             $queryComponents["$prefix:read"] = [
                 'label' => t('Query for the “{name}” entry', ['name' => $name]),
+                'authenticated' => fn (User $user): bool => $user->can("viewEntries:$section->uid"),
             ];
             $mutationComponents["$prefix:save"] = [
                 'label' => t('Save the “{section}” entry', ['section' => $name]),
+                'authenticated' => fn (User $user): bool => $user->can("saveEntries:$section->uid"),
             ];
         }
 
@@ -1258,19 +1392,28 @@ class Gql
 
             $queryComponents["$prefix:read"] = [
                 'label' => t('Query for entries in the “{name}” section', ['name' => $name]),
+                'authenticated' => fn (User $user): bool => $user->can("viewEntries:$section->uid"),
             ];
 
             $mutationComponents["$prefix:edit"] = [
                 'label' => t('Edit entries in the “{name}” section', ['name' => $name]),
+                'authenticated' => fn (User $user): bool => (
+                    $user->can("createEntries:$section->uid") ||
+                    $user->can("saveEntries:$section->uid") ||
+                    $user->can("deleteEntries:$section->uid")
+                ),
                 'nested' => [
                     "$prefix:create" => [
                         'label' => t('Create entries in the “{section}” section', ['section' => $name]),
+                        'authenticated' => fn (User $user): bool => $user->can("createEntries:$section->uid"),
                     ],
                     "$prefix:save" => [
                         'label' => t('Save entries in the “{section}” section', ['section' => $name]),
+                        'authenticated' => fn (User $user): bool => $user->can("saveEntries:$section->uid"),
                     ],
                     "$prefix:delete" => [
                         'label' => t('Delete entries in the “{section}” section', ['section' => $name]),
+                        'authenticated' => fn (User $user): bool => $user->can("deleteEntries:$section->uid"),
                     ],
                 ],
             ];
@@ -1298,6 +1441,7 @@ class Gql
                     'name' => $name,
                     'type' => $type,
                 ]),
+                'authenticated' => true,
             ];
 
             $mutationComponents["$prefix:edit"] = [
@@ -1305,24 +1449,28 @@ class Gql
                     'name' => $name,
                     'type' => $type,
                 ]),
+                'authenticated' => true,
                 'nested' => [
                     "$prefix:create" => [
                         'label' => t('Create entries in the “{section}” {type} field', [
                             'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
+                        'authenticated' => true,
                     ],
                     "$prefix:save" => [
                         'label' => t('Save entries in the “{section}” {type} field', [
                             'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
+                        'authenticated' => true,
                     ],
                     "$prefix:delete" => [
                         'label' => t('Delete entries in the “{section}” {type} field', [
                             'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
+                        'authenticated' => true,
                     ],
                 ],
             ];
@@ -1342,6 +1490,7 @@ class Gql
         if ($volumes->isNotEmpty()) {
             $queryComponents['settings.volumes:read'] = [
                 'label' => t('Query for volumes'),
+                'authenticated' => fn (User $user): bool => $user->can('accessCp'),
                 'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to assets.', [
                     'plural' => 'volumes',
                     'singular' => 'volume',
@@ -1354,18 +1503,26 @@ class Gql
                 $prefix = "volumes.$volume->uid";
                 $queryComponents["$prefix:read"] = [
                     'label' => t('Query for assets in the “{name}” volume', ['name' => $name]),
+                    'authenticated' => fn (User $user): bool => $user->can("viewAssets:$volume->uid"),
                 ];
                 $mutationComponents["$prefix:edit"] = [
                     'label' => t('Edit assets in the “{volume}” volume', ['volume' => $name]),
+                    'authenticated' => fn (User $user): bool => (
+                        $user->can("saveAssets:$volume->uid") ||
+                        $user->can("deleteAssets:$volume->uid")
+                    ),
                     'nested' => [
                         "$prefix:create" => [
                             'label' => t('Create assets in the “{volume}” volume', ['volume' => $name]),
+                            'authenticated' => fn (User $user): bool => $user->can("saveAssets:$volume->uid"),
                         ],
                         "$prefix:save" => [
                             'label' => t('Modify assets in the “{volume}” volume', ['volume' => $name]),
+                            'authenticated' => fn (User $user): bool => $user->can("saveAssets:$volume->uid"),
                         ],
                         "$prefix:delete" => [
                             'label' => t('Delete assets from the “{volume}” volume', ['volume' => $name]),
+                            'authenticated' => fn (User $user): bool => $user->can("deleteAssets:$volume->uid"),
                         ],
                     ],
                 ];
@@ -1383,6 +1540,7 @@ class Gql
         if (Edition::get() === Edition::Solo) {
             $queryComponents['usergroups.solo:read'] = [
                 'label' => t('View {type}', ['type' => User::lowerDisplayName()]),
+                'authenticated' => fn (User $user): bool => $user->can('viewUsers'),
             ];
         } else {
             $userGroups = UserGroups::getAllGroups();
@@ -1390,6 +1548,7 @@ class Gql
             if ($userGroups->isNotEmpty()) {
                 $queryComponents['settings.usergroups:read'] = [
                     'label' => t('Query for user groups'),
+                    'authenticated' => fn (User $user): bool => $user->can('viewUsers'),
                     'info' => t('Adds “{plural}” and “{singular}” queries, and a “{field}” field to users.', [
                         'plural' => 'userGroups',
                         'singular' => 'userGroup',
@@ -1400,6 +1559,7 @@ class Gql
 
             $queryComponents['usergroups.everyone:read'] = [
                 'label' => t('Query for users'),
+                'authenticated' => fn (User $user): bool => $user->can('viewUsers'),
             ];
 
             foreach ($userGroups as $userGroup) {
@@ -1407,6 +1567,7 @@ class Gql
                 $prefix = "usergroups.$userGroup->uid";
                 $queryComponents["$prefix:read"] = [
                     'label' => t('Query for users in the “{name}” user group', ['name' => $name]),
+                    'authenticated' => fn (User $user): bool => $user->can('viewUsers'),
                 ];
             }
         }

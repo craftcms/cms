@@ -48,7 +48,7 @@
           <div class="mb-1">
             <strong>{{ t('Last update') }}</strong>
           </div>
-          <Date :value="session.dateUpdated.date" />
+          <Date :value="session.dateUpdated" />
         </div>
 
         <div class="session__progress">

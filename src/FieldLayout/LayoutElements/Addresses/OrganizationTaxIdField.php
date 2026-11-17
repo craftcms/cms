@@ -53,4 +53,10 @@ class OrganizationTaxIdField extends TextField
     {
         return t('Organization Tax ID');
     }
+
+    #[Override]
+    protected function uiIcon(): ?string
+    {
+        return 'receipt';
+    }
 }

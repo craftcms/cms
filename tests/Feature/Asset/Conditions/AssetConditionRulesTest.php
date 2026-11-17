@@ -9,6 +9,7 @@ use CraftCms\Cms\Asset\Conditions\FileSizeConditionRule;
 use CraftCms\Cms\Asset\Conditions\FileTypeConditionRule;
 use CraftCms\Cms\Asset\Conditions\HasAltConditionRule;
 use CraftCms\Cms\Asset\Conditions\HeightConditionRule;
+use CraftCms\Cms\Asset\Conditions\ImageTypeConditionRule;
 use CraftCms\Cms\Asset\Conditions\SavableConditionRule;
 use CraftCms\Cms\Asset\Conditions\UploaderConditionRule;
 use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
@@ -102,6 +103,32 @@ describe('FileTypeConditionRule', function () {
 
         expect($query->count())->toBe(1)
             ->and($query->one()->kind)->toBe('image');
+    });
+});
+
+describe('ImageTypeConditionRule', function () {
+    beforeEach(function () {
+        $this->logo = AssetModel::factory()->createElement(['kind' => 'image', 'filename' => 'logo.png']);
+        $this->photo = AssetModel::factory()->createElement(['kind' => 'image', 'filename' => 'photo.jpg']);
+        AssetModel::whereKey($this->logo->id)->update(['analysis' => json_encode(['type' => 'logo'])]);
+        AssetModel::whereKey($this->photo->id)->update(['analysis' => json_encode(['type' => 'photo'])]);
+
+        $condition = new AssetCondition(Asset::class);
+        $this->rule = $condition->createConditionRule(ImageTypeConditionRule::class);
+        $this->rule->operator = 'in';
+        $this->rule->values = ['logo'];
+    });
+
+    it('matchElement returns whether the image type is in the selected values', function () {
+        expect($this->rule->matchElement(Asset::find()->id($this->logo->id)->one()))->toBeTrue()
+            ->and($this->rule->matchElement(Asset::find()->id($this->photo->id)->one()))->toBeFalse();
+    });
+
+    it('modifyQuery filters assets by image type', function () {
+        $query = Asset::find();
+        $query->where(fn (Builder $builder) => $this->rule->modifyQuery($builder, $query));
+
+        expect($query->ids())->toBe([$this->logo->id]);
     });
 });
 

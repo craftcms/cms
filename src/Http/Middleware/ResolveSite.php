@@ -22,6 +22,12 @@ readonly class ResolveSite
 {
     public const string HAD_SITE_TOKEN_KEY = 'craft.siteToken.hadToken';
 
+    /**
+     * The path the site is resolved from when a middleware rewrote the request URI,
+     * such as an `action` param or a token route on a subpath site.
+     */
+    public const string REQUEST_PATH_ATTRIBUTE = 'craft.resolveSite.requestPath';
+
     public function __construct(
         private Sites $sites,
         private Updates $updates,
@@ -56,8 +62,16 @@ readonly class ResolveSite
             return $site;
         }
 
+        return $this->siteForPath($request, (string) $request->attributes->get(self::REQUEST_PATH_ATTRIBUTE, $request->decodedPath()));
+    }
+
+    /**
+     * Returns the site whose base URL best matches the request host and the given path.
+     */
+    public function siteForPath(Request $request, string $path): Site
+    {
         return $this->sites->getAllSites(false)
-            ->sortByDesc(fn (Site $site): int => $this->scoreSite($site, $request))
+            ->sortByDesc(fn (Site $site): int => $this->scoreSite($site, $request, $path))
             ->first() ?? $this->sites->getPrimarySite();
     }
 
@@ -87,10 +101,10 @@ readonly class ResolveSite
         return $site;
     }
 
-    private function scoreSite(Site $site, Request $request): int
+    private function scoreSite(Site $site, Request $request, string $path): int
     {
         $score = $site->getBaseUrl()
-            ? $this->scoreUrl($site->getBaseUrl(), $request)
+            ? $this->scoreUrl($site->getBaseUrl(), $request, $path)
             : 0;
 
         if ($site->primary) {
@@ -100,7 +114,7 @@ readonly class ResolveSite
         return $score;
     }
 
-    private function scoreUrl(string $url, Request $request): int
+    private function scoreUrl(string $url, Request $request, string $path): int
     {
         $parsed = parse_url($url);
 
@@ -121,7 +135,7 @@ readonly class ResolveSite
         }
 
         $parsedPath = trim((string) ($parsed['path'] ?? ''), '/');
-        $requestPath = trim($request->decodedPath(), '/');
+        $requestPath = trim($path, '/');
 
         if ($parsedPath !== '' && ! str_starts_with($requestPath.'/', $parsedPath.'/')) {
             return 0;

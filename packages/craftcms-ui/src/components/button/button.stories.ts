@@ -126,6 +126,40 @@ export const Icons: Story = {
   `,
 };
 
+/** A `shortcut` is shown at the end of the button. It is display only. */
+export const Shortcut: Story = {
+  render: () => html`
+    <div class="grid gap-4">
+      <div class="flex gap-2 items-center flex-wrap">
+        <craft-button
+          variant="outline"
+          size="small"
+          icon="search"
+          shortcut="K"
+          aria-keyshortcuts="Meta+K"
+          >Search</craft-button
+        >
+        <craft-button shortcut="S" aria-keyshortcuts="Meta+S"
+          >Save</craft-button
+        >
+        <craft-button
+          shortcut='{"key": "S", "alt": true, "shift": true}'
+          aria-keyshortcuts="Meta+Alt+Shift+S"
+          >Save as</craft-button
+        >
+      </div>
+      <div class="flex gap-2 items-center flex-wrap">
+        ${['xsmall', 'small', 'medium', 'large'].map(
+          (size) =>
+            html`<craft-button size="${size}" shortcut="K"
+              >${size}</craft-button
+            >`
+        )}
+      </div>
+    </div>
+  `,
+};
+
 /**
  * `flush` pulls a button out by the space around its content, so a `plain`
  * button's label or icon lines up with the text beside it. The dashed box is

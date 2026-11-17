@@ -15,21 +15,26 @@ export default css`
 
   ::slotted(.form-control) {
     ${baseComboboxStyles}
+    box-sizing: border-box;
   }
 
-  /* Lion sets the field's width as an inline min-width, which wins over this cap on wider fields */
+  /* The dropdown sets the field's width as an inline min-width, which wins over this cap on wider fields */
   #overlay-content-node-wrapper {
     max-inline-size: min(calc(360rem / 16), calc(100vw - var(--c-spacing-lg)));
-  }
-
-  ::slotted([slot='listbox']) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--c-spacing-xs);
-    border: 1px solid var(--c-color-neutral-border-quiet);
+    border: 1px solid var(--c-form-control-border-color);
     border-radius: var(--c-radius-md);
     background-color: var(--c-surface-overlay);
-    box-shadow: var(--c-shadow-sm);
+    box-shadow: var(--c-shadow-overlay);
+  }
+
+  /* Lion gives the listbox a white background, which the overlay's own surface has to show through. */
+  ::slotted([slot='listbox']) {
+    background: transparent;
+    display: grid;
+    max-block-size: calc(200rem / 16);
+    overflow: auto;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--c-spacing-xs);
     padding: var(--c-spacing-sm);
   }
 
@@ -41,13 +46,37 @@ export default css`
     border: 0;
   }
 
+  /*
+    The chevron's padding fills the end of the field beside the clear button, so
+    the whole area is a target for opening the list. It focuses the textbox, so
+    it shows the textbox's cursor.
+  */
   .indicator {
     position: absolute;
-    inset-block-start: 50%;
-    inset-inline-end: var(--c-input-spacing-inline);
-    transform: translateY(-50%);
+    inset-block: 0;
+    inset-inline-end: 0;
     width: 1em;
-    height: 1em;
+    height: auto;
+    padding-inline: calc(var(--c-input-spacing-inline) * 0.5)
+      var(--c-input-spacing-inline);
+  }
+
+  :host([multiple]) .indicator {
+    padding-inline-end: calc(
+      var(--c-input-spacing-inline) - var(--c-spacing-xs) -
+        var(--_input-border-width)
+    );
+  }
+
+  :host([multiple]) .clear {
+    inset-inline-end: calc(
+      var(--c-input-spacing-inline) * 1.5 + 1em - var(--c-spacing-xs) -
+        var(--_input-border-width)
+    );
+  }
+
+  :host(:not([disabled], [readonly])) .indicator {
+    cursor: text;
   }
 
   .clear {
@@ -73,7 +102,7 @@ export default css`
     padding-inline-start: calc(var(--c-input-spacing-inline) * 1.5 + 1em);
   }
 
-  :host([multiple-choice]) .input-group__input {
+  :host([multiple]) .input-group__input {
     ${baseFormControlStyles}
     display: flex;
     flex-wrap: wrap;
@@ -82,20 +111,20 @@ export default css`
     padding: var(--c-spacing-xs);
   }
 
-  :host([multiple-choice]) .input-group__input:focus-within {
+  :host([multiple]) .input-group__input:has(.combobox__textbox:focus-within) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
   }
 
-  /* Lion turns off the textbox's own outline, so draw the ring on its wrapper */
-  :host(:not([multiple-choice])) ::slotted(.form-control:focus-within) {
+  /* The textbox is the .form-control here, so it carries the ring itself */
+  :host(:not([multiple])) ::slotted(.form-control:focus-within) {
     outline: var(--c-focus-outline-width) var(--c-focus-outline-style)
       var(--c-color-focus-outline);
     outline-offset: var(--c-focus-outline-offset);
   }
 
-  :host([multiple-choice][has-feedback-for='error']) .input-group__input {
+  :host([multiple][invalid]) .input-group__input {
     border-color: var(--c-color-danger-border-loud);
   }
 
@@ -105,11 +134,30 @@ export default css`
     min-width: 0;
   }
 
-  :host([multiple-choice]) .combobox__textbox {
-    min-width: 8rem;
+  :host([multiple]) {
+    --_textbox-min-width: 3rem;
   }
 
-  :host([multiple-choice]) ::slotted(.form-control) {
+  :host([multiple][clearable]) {
+    --_textbox-min-width: calc(3rem + var(--c-size-control-sm));
+  }
+
+  :host([multiple]) .combobox__textbox {
+    min-width: var(--_textbox-min-width);
+  }
+
+  @supports (field-sizing: content) {
+    :host([multiple]) .combobox__textbox {
+      min-width: auto;
+    }
+
+    :host([multiple]) ::slotted(.form-control) {
+      field-sizing: content;
+      min-width: var(--_textbox-min-width);
+    }
+  }
+
+  :host([multiple]) ::slotted(.form-control) {
     height: calc(
       var(--c-input-height, var(--c-size-control-md)) - 2 *
         (var(--c-spacing-xs) + var(--_input-border-width))
@@ -119,42 +167,13 @@ export default css`
     border: 0;
     background: transparent;
     box-shadow: none;
-    outline: none;
+    /* Important so the page's global focus ring can't ring the textbox inside the field's */
+    outline: none !important;
   }
 
-  .token {
-    box-sizing: border-box;
-    max-width: 100%;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--c-spacing-xs);
-    padding: var(--c-spacing-xs);
-    border-radius: var(--c-radius-sm);
-    background: var(--c-color-neutral-fill-quiet);
-    overflow-wrap: anywhere;
-  }
-
-  .token button {
-    border: 0;
-    background: transparent;
-    font: inherit;
-    color: inherit;
-    cursor: pointer;
-  }
-
-  .combobox__option {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-  }
-
-  .combobox__optgroup {
-    padding-inline: var(--c-spacing-md);
-    padding-block: var(--c-spacing-sm);
-    font-size: 0.8em;
-    text-transform: uppercase;
-    color: var(--c-color-neutral-on-normal);
-    border-block-end: 1px solid var(--c-color-neutral-border-quiet);
+  ::slotted([slot='selection']) {
+    display: contents;
+    list-style: none;
   }
 
   .combobox__footer {

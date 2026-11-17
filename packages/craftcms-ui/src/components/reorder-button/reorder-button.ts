@@ -73,6 +73,13 @@ export default class CraftReorderButton extends LitElement {
   @property({reflect: true}) variant: string = 'plain';
 
   /**
+   * Forwarded to the underlying invoker button, to pull it out by the space
+   * around its icon so the icon lines up with the content beside it. See
+   * `craft-button`'s `flush`.
+   */
+  @property({reflect: true}) flush?: string;
+
+  /**
    * Disables the button: blocks pointer interaction (so it can't open the menu or
    * act as a drag handle), prevents reorder actions, and visually dims it. Defaults
    * to `false`.
@@ -91,6 +98,68 @@ export default class CraftReorderButton extends LitElement {
   /** Whether the item can move out to its parent's level. */
   @property({attribute: 'can-outdent', type: Boolean}) canOutdent = false;
 
+  /** Whether focus is inside the button. */
+  private _hasFocus = false;
+
+  /**
+   * Whether the button was taken out of the page with focus inside it, during
+   * the current task. A list moving the button takes it out and puts it back
+   * in the same task.
+   */
+  private _movedWhileFocused = false;
+
+  constructor() {
+    super();
+    this.addEventListener('focusin', () => {
+      this._hasFocus = true;
+    });
+    this.addEventListener('focusout', (event) => {
+      // Moving a focused element drops focus with no `relatedTarget` (Firefox
+      // fires no focusout at all), and so does clicking somewhere unfocusable.
+      // A move puts focus back in the same task, so check once it's over.
+      const to = event.relatedTarget;
+      if (to instanceof Node && !this.contains(to)) {
+        this._hasFocus = false;
+      } else if (!to) {
+        setTimeout(() => {
+          if (this.isConnected && !this.matches(':focus-within')) {
+            this._hasFocus = false;
+          }
+        });
+      }
+    });
+  }
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (!this._movedWhileFocused) {
+      return;
+    }
+
+    this._movedWhileFocused = false;
+    const active = document.activeElement;
+    if (!active || active === document.body) {
+      this._focusInvoker();
+    }
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+
+    if (!this._hasFocus) {
+      return;
+    }
+
+    this._movedWhileFocused = true;
+    setTimeout(() => {
+      this._movedWhileFocused = false;
+      if (!this.isConnected) {
+        this._hasFocus = false;
+      }
+    });
+  }
+
   override updated(changed: PropertyValues<this>) {
     super.updated(changed);
     if (changed.has('disabled')) {
@@ -100,6 +169,10 @@ export default class CraftReorderButton extends LitElement {
         this.removeAttribute('aria-disabled');
       }
     }
+  }
+
+  private _focusInvoker(): void {
+    this.shadowRoot?.querySelector<HTMLElement>('craft-button')?.focus();
   }
 
   private _canMove(direction: NestedReorderDirection): boolean {
@@ -118,6 +191,12 @@ export default class CraftReorderButton extends LitElement {
   private _reorder(direction: NestedReorderDirection) {
     if (this.disabled || !this._canMove(direction)) {
       return;
+    }
+
+    // Before the list hears about the move: it can disable or hide the item
+    // that was chosen, which would take focus with it.
+    if (this.matches(':focus-within')) {
+      this._focusInvoker();
     }
 
     this.dispatchEvent(
@@ -151,6 +230,17 @@ export default class CraftReorderButton extends LitElement {
     return dir?.toLowerCase() === 'rtl';
   }
 
+  /**
+   * The menu is part of the button, so its own events stay inside it: leaving
+   * the shadow root, they'd read as the button's. `craft-reorder` and
+   * `craft-move` are what it reports instead.
+   */
+  private _stopMenuEvent = (event: Event) => {
+    if (event.target === event.currentTarget) {
+      event.stopPropagation();
+    }
+  };
+
   override render() {
     const label = this.label ?? t('Reorder');
     const horizontal = this.orientation === 'horizontal';
@@ -171,7 +261,14 @@ export default class CraftReorderButton extends LitElement {
     const downLabel = horizontal ? t('Move backward') : t('Move down');
 
     return html`
-      <craft-action-menu ?disabled="${this.disabled}">
+      <craft-action-menu
+        ?disabled="${this.disabled}"
+        @craft-show=${this._stopMenuEvent}
+        @craft-hide=${this._stopMenuEvent}
+        @craft-after-show=${this._stopMenuEvent}
+        @craft-after-hide=${this._stopMenuEvent}
+        @craft-select=${this._stopMenuEvent}
+      >
         <craft-button
           slot="invoker"
           type="button"
@@ -179,6 +276,7 @@ export default class CraftReorderButton extends LitElement {
           inherit
           size="small"
           variant="${this.variant}"
+          flush=${ifDefined(this.flush)}
           ?disabled="${this.disabled}"
         >
           <craft-icon label="${label}">

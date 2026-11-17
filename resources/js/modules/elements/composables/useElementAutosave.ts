@@ -54,13 +54,30 @@ export interface ElementAutosaveDependencies {
 }
 
 /**
+ * The draft save in flight. Only one runs at a time, and it keeps that slot
+ * until its request settles, even when canceled, so the next save can't race
+ * it to the server.
+ */
+interface SaveRequest {
+  /** The change generation it carries — all a landing save acknowledges. */
+  readonly generation: number;
+  /** Aborted by `cancel()`, which also makes its outcome obsolete. */
+  readonly controller: AbortController;
+  /** Set when another save is asked for meanwhile; it runs once this settles. */
+  trailing: boolean;
+  /** Settles once this save, and the trailing one behind it, are done. */
+  done: Promise<void>;
+}
+
+/**
  * Autosaves the editor's unsaved changes into a provisional draft, the way the
  * legacy element editor does.
  *
  * The first save creates the draft; `draftId` then identifies it for every
  * later save and is exposed so the host can submit it alongside the form. The
- * canonical `elementId` is always sent, matching the hidden input the legacy
- * editor posts.
+ * `elementId` of the element the draft is made from is always sent, matching
+ * the hidden input the legacy editor posts — the canonical for a draft, the
+ * element itself otherwise.
  *
  * Saves are debounced and serialized — a save in flight defers the next one
  * rather than racing it, so a burst of typing collapses into one trailing
@@ -76,6 +93,10 @@ export function useElementAutosave<T extends object>(
   const savedAt = ref<string | null>(null);
   const error = ref<string | null>(null);
   const httpStatus = ref<number | null>(null);
+  /** Bumped by every save that lands, for whoever reacts to one. */
+  const saves = ref(0);
+  /** What the last successful save responded with. */
+  const lastResponse = shallowRef<unknown>(null);
 
   // The three pieces of what a save returned are held in one ref rather than
   // separately, so they can only ever be read as a matched set. The host
@@ -99,10 +120,7 @@ export function useElementAutosave<T extends object>(
     () => acknowledgedGeneration.value < changeGeneration.value
   );
 
-  let inFlight: Promise<void> | null = null;
-  let pending = false;
-  let controller: AbortController | null = null;
-  let canceled = false;
+  let current: SaveRequest | null = null;
 
   function enabled(): boolean {
     return typeof options.enabled === 'function'
@@ -110,13 +128,10 @@ export function useElementAutosave<T extends object>(
       : options.enabled;
   }
 
-  async function send(): Promise<void> {
-    const savingGeneration = changeGeneration.value;
+  async function send(request: SaveRequest): Promise<void> {
     status.value = 'saving';
     error.value = null;
     httpStatus.value = null;
-    canceled = false;
-    controller = new AbortController();
 
     const payload: UiValues = {
       elementType: options.elementType,
@@ -138,8 +153,14 @@ export function useElementAutosave<T extends object>(
 
     try {
       const {data} = await dependencies.post(options.url, payload, {
-        signal: controller.signal,
+        signal: request.controller.signal,
       });
+
+      // Canceled with the response already on its way: whatever the host has
+      // moved on to, this no longer describes it.
+      if (request.controller.signal.aborted) {
+        return;
+      }
 
       draftId.value = data.draftId ?? draftId.value;
       savedAt.value = data.timestamp ?? null;
@@ -158,9 +179,11 @@ export function useElementAutosave<T extends object>(
         modified: data.modifiedAttributes ?? [],
       };
       status.value = 'saved';
+      lastResponse.value = data;
+      saves.value++;
       acknowledgedGeneration.value = Math.max(
         acknowledgedGeneration.value,
-        savingGeneration
+        request.generation
       );
 
       options.onSaved?.(
@@ -172,7 +195,7 @@ export function useElementAutosave<T extends object>(
       );
     } catch (e) {
       // Our own abort, not a failure.
-      if (canceled) {
+      if (request.controller.signal.aborted) {
         return;
       }
 
@@ -181,8 +204,6 @@ export function useElementAutosave<T extends object>(
         error.value = e.response?.data?.message ?? null;
         httpStatus.value = e.response?.status ?? null;
       }
-    } finally {
-      controller = null;
     }
   }
 
@@ -198,22 +219,26 @@ export function useElementAutosave<T extends object>(
 
     // Coalesce: whoever is already saving will pick up the newer values on its
     // trailing run, so at most one extra request is ever queued.
-    if (inFlight) {
-      pending = true;
+    if (current) {
+      current.trailing = true;
 
-      return inFlight;
+      return current.done;
     }
 
-    inFlight = send().finally(async () => {
-      inFlight = null;
+    const request: SaveRequest = {
+      generation: changeGeneration.value,
+      controller: new AbortController(),
+      trailing: false,
+      done: Promise.resolve(),
+    };
+    current = request;
+    request.done = send(request).finally(() => {
+      current = null;
 
-      if (pending) {
-        pending = false;
-        await save();
-      }
+      return request.trailing ? save() : undefined;
     });
 
-    return inFlight;
+    return request.done;
   }
 
   // Driven by the UI renderers' change callbacks rather than a deep watch on
@@ -302,6 +327,25 @@ export function useElementAutosave<T extends object>(
     httpStatus.value = null;
   }
 
+  /**
+   * Waits for the save already on its way to the server, and calls off the
+   * ones queued behind it, for a submission that carries their values anyway.
+   * Aborting the request wouldn't stop the server, which would still create or
+   * update the draft, after the submission, with the older values. Returns
+   * `null` when no save is on its way.
+   */
+  function settle(): Promise<void> | null {
+    armed = false;
+
+    if (!current) {
+      return null;
+    }
+
+    current.trailing = false;
+
+    return current.done;
+  }
+
   function acknowledgeChanges(): void {
     acknowledgedGeneration.value = changeGeneration.value;
   }
@@ -309,14 +353,17 @@ export function useElementAutosave<T extends object>(
   /**
    * Abandons the in-flight save and any queued follow-up — the one coalesced
    * behind a request already out, and the one a keystroke armed but whose
-   * debounce has not run yet. The baseline only advances on a save that lands,
-   * so the edits go out with the next mutation.
+   * debounce has not run yet. Its response no longer applies, even one already
+   * on its way. The baseline only advances on a save that lands, so the edits
+   * go out with the next mutation.
    */
   function cancel(): void {
-    canceled = true;
-    pending = false;
     armed = false;
-    controller?.abort();
+
+    if (current) {
+      current.trailing = false;
+      current.controller.abort();
+    }
 
     if (status.value === 'saving') {
       status.value = 'idle';
@@ -329,12 +376,15 @@ export function useElementAutosave<T extends object>(
     savedAt: readonly(savedAt),
     error: readonly(error),
     httpStatus: readonly(httpStatus),
+    saves: readonly(saves),
+    lastResponse,
     modified,
     hasPendingChanges,
     ui: uiPayload,
     screen: screenPayload,
     save,
     schedule,
+    settle,
     cancel,
     suspend,
     setDraftId,

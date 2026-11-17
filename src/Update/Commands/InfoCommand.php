@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Update\Commands;
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
@@ -87,9 +88,9 @@ class InfoCommand extends Command
 
         $this->components->info(implode(' ', [
             ' Run',
-            $this->cyan('php craft update all'),
+            $this->cyan(app(TerminalCommands::class)->craft('update all')),
             $this->green('or'),
-            $this->cyan('php craft update {handle}'),
+            $this->cyan(app(TerminalCommands::class)->craft('update {handle}')),
             $this->green('to perform an update.'),
         ]));
 

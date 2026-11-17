@@ -15,17 +15,22 @@ use CraftCms\Cms\Address\Models\Address as AddressModel;
 use CraftCms\Cms\Address\Validation\AddressRules;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Element\Actions\Copy;
+use CraftCms\Cms\Element\Actions\ClientAction;
+use CraftCms\Cms\Element\Attributes\ElementProperty;
 use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
+use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
@@ -55,78 +60,93 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      * @see https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s ISO 3166-1 alpha-2 country code.', readable: true, nonNull: true)]
     public string $countryCode;
 
     /**
      * @var string|null Administrative area
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s state, province, region, or administrative area.', nullable: true, readable: true)]
     public ?string $administrativeArea = null;
 
     /**
      * @var string|null Locality
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s city, town, or locality.', nullable: true, readable: true)]
     public ?string $locality = null;
 
     /**
      * @var string|null Dependent locality
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s district, neighborhood, or suburb.', nullable: true, readable: true)]
     public ?string $dependentLocality = null;
 
     /**
      * @var string|null Postal code
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s postal or ZIP code.', nullable: true, readable: true)]
     public ?string $postalCode = null;
 
     /**
      * @var string|null Sorting code
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s sorting code.', nullable: true, readable: true)]
     public ?string $sortingCode = null;
 
     /**
      * @var string|null First line of the address
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s first street address line.', nullable: true, readable: true)]
     public ?string $addressLine1 = null;
 
     /**
      * @var string|null Second line of the address
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s second street address line.', nullable: true, readable: true)]
     public ?string $addressLine2 = null;
 
     /**
      * @var string|null Third line of the address
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s third street address line.', nullable: true, readable: true)]
     public ?string $addressLine3 = null;
 
     /**
      * @var string|null Organization name
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s organization or company name.', nullable: true, readable: true)]
     public ?string $organization = null;
 
     /**
      * @var string|null Organization tax ID
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::String, 'The address’s organization tax or VAT ID.', nullable: true, readable: true)]
     public ?string $organizationTaxId = null;
 
     /**
      * @var string|null Latitude
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Float, 'The address’s latitude coordinate.', nullable: true, readable: true)]
+    #[Gql(exclude: true)]
     public ?string $latitude = null;
 
     /**
      * @var string|null Longitude
      */
     #[AllowedInSandbox]
+    #[ElementProperty(ElementPropertyType::Float, 'The address’s longitude coordinate.', nullable: true, readable: true)]
+    #[Gql(exclude: true)]
     public ?string $longitude = null;
 
     /** @param array<string, mixed>|object $config */
@@ -215,12 +235,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return new AddressCondition(self::class);
     }
 
-    /** @return list<class-string<Copy>> */
+    /** @return list<ClientAction> */
     #[Override]
     protected static function defineActions(string $source): array
     {
         return [
-            Copy::class,
+            ClientAction::copy(),
         ];
     }
 
@@ -382,6 +402,29 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $owner = $this->getOwner();
 
         return $owner instanceof User && $owner->getIsCurrent();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    #[Override]
+    protected function extraActionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
+        if (empty($this->fieldId) || ! currentUser()?->isAdmin() || ! Cms::config()->allowAdminChanges) {
+            return [];
+        }
+
+        return [
+            [
+                'label' => t('Field settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'url' => Url::cpUrl("settings/fields/edit/$this->fieldId"),
+                ],
+            ],
+        ];
     }
 
     /** @return list<array<string, mixed>> */
@@ -652,6 +695,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * The address UI control posts its fields under `address`.
      *
+     * When the country changes, an administrative area that isn’t one of the new country’s is dropped. Autofill
+     * can post a new country along with an administrative area chosen from the previous country’s list, and
+     * keeping it would add it to the new country’s options, where autofill selects it again. An unrecognized
+     * administrative area is kept when the country doesn’t change or is cleared, or when neither country lists it.
+     * Surrounding whitespace is ignored when matching, as `AddressRules` trims it during validation.
+     *
      * @param  array<string,mixed>  $values
      */
     #[Override]
@@ -660,6 +709,26 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         if (isset($values['address']) && is_array($values['address'])) {
             $values = [...$values['address'], ...$values];
             unset($values['address']);
+        }
+
+        $previousCountryCode = $this->countryCode ?? null;
+        $countryCode = $values['countryCode'] ?? null;
+        if (
+            is_string($countryCode) && $countryCode !== '' &&
+            is_string($values['administrativeArea'] ?? null) &&
+            $countryCode !== $previousCountryCode
+        ) {
+            $subdivisions = app(Addresses::class)->getSubdivisionRepository();
+            $administrativeAreas = $subdivisions->getList([$countryCode]);
+            $previousAdministrativeAreas = $previousCountryCode ? $subdivisions->getList([$previousCountryCode]) : [];
+            $value = trim($values['administrativeArea']);
+
+            if (
+                ! isset($administrativeAreas[$value]) &&
+                ($administrativeAreas !== [] || isset($previousAdministrativeAreas[$value]))
+            ) {
+                $values['administrativeArea'] = null;
+            }
         }
 
         parent::setAttributesFromRequest($values);

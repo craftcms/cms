@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace craft\gql;
 
-use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use Override;
 
 /**
@@ -18,7 +18,7 @@ class ArgumentManager extends \CraftCms\Cms\Gql\ArgumentManager
     public function prepareArguments(array $arguments): array
     {
         if (isset($arguments['relatedToAll'])) {
-            Deprecator::log('graphql.arguments.relatedToAll', 'The `relatedToAll` argument has been deprecated. Use the `relatedTo` argument with the `["and", ...ids]` syntax instead.');
+            LegacyUsage::record('graphql.arguments.relatedToAll', 'The `relatedToAll` argument has been deprecated. Use the `relatedTo` argument with the `["and", ...ids]` syntax instead.');
             $ids = (array)$arguments['relatedToAll'];
             $ids = array_map(fn($value) => ['element' => $value], $ids);
             $arguments['relatedTo'] = array_merge(['and'], $ids);

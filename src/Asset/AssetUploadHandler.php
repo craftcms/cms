@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
+use CraftCms\Cms\Asset\Analysis\Data\ImageAnalysis;
 use CraftCms\Cms\Asset\Data\AssetIngest;
 use CraftCms\Cms\Asset\Data\AssetIngestResult;
 use CraftCms\Cms\Asset\Data\UploadResult;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\AssetIngestStatus;
+use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Validation\AssetRules;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Html\ElementHtml;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Filesystem\Data\UploadedFile;
-use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -40,6 +42,8 @@ readonly class AssetUploadHandler
         private Folders $folders,
         private Fields $fields,
         private Elements $elements,
+        private ImageDuplicates $imageDuplicates,
+        private ElementHtml $elementHtml,
     ) {}
 
     /**
@@ -90,14 +94,14 @@ readonly class AssetUploadHandler
 
     /**
      * @param  array<string, mixed>  $parameters
-     * @param  ImageColors|null  $colors  Colors the uploader already sampled from the file
+     * @param  ImageAnalysis|null  $analysis  What the uploader already read from the file
      */
     public function store(
         array $parameters,
         UploadedFile $file,
         bool $authorizedGuest = false,
         ?int $uploaderId = null,
-        ?ImageColors $colors = null,
+        ?ImageAnalysis $analysis = null,
     ): UploadResult {
         [$folder, $selectionCondition] = $this->resolveTarget($parameters, $authorizedGuest);
 
@@ -117,7 +121,7 @@ readonly class AssetUploadHandler
             sanitizeOnUpload: $authorizedGuest || ! request()->isCpRequest() || Cms::config()->sanitizeCpImageUploads,
             selectionCondition: $selectionCondition,
             temporaryFolder: $selectionCondition ? $this->assets->getUserTemporaryUploadFolder() : null,
-            colors: $colors,
+            analysis: $analysis,
             uploaderId: $uploaderId,
             asset: $asset,
         ));
@@ -152,6 +156,7 @@ readonly class AssetUploadHandler
 
         $filename = AssetsHelper::prepareAssetName($ingest->filename);
         $moveAfterSelection = false;
+        $fieldValues = [];
 
         if ($validTarget && $ingest->selectionCondition && $ingest->temporaryFolder) {
             $tempFolder = $ingest->temporaryFolder;
@@ -159,7 +164,9 @@ readonly class AssetUploadHandler
             if ($folder->id !== $tempFolder->id) {
                 // upload to the user's temp folder initially, with a temp name
                 $destinationFolder = $folder;
-                $destinationFilename = $filename;
+                $destinationFilename = $this->assets->getNameReplacementInFolder($filename, $folder->id);
+                // The staged asset is saved with the temporary volume’s field layout, so save field values after moving it
+                $fieldValues = ($dirtyFields = $asset->getDirtyFields()) ? $asset->getFieldValues($dirtyFields) : [];
                 $folder = $tempFolder;
                 $filename = uniqid('asset', true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
                 $moveAfterSelection = true;
@@ -167,7 +174,7 @@ readonly class AssetUploadHandler
         }
 
         $asset->uploadSource = $ingest->source;
-        $asset->uploadColors = $ingest->colors;
+        $asset->uploadAnalysis = $ingest->analysis;
         $asset->sanitizeOnUpload = $ingest->sanitizeOnUpload;
         $asset->setFilename($filename);
         $asset->setMimeType($ingest->mimeType);
@@ -193,7 +200,17 @@ readonly class AssetUploadHandler
         }
 
         if ($ingest->selectionCondition) {
-            if (! $ingest->selectionCondition->matchElement($asset)) {
+            // Match the asset as it will be once it’s moved to its upload location
+            $candidate = $asset;
+
+            if ($moveAfterSelection) {
+                $candidate = clone $asset;
+                $candidate->setFilename($destinationFilename);
+                $candidate->folderId = $destinationFolder->id;
+                $candidate->setVolumeId($destinationFolder->volumeId);
+            }
+
+            if (! $ingest->selectionCondition->matchElement($candidate)) {
                 $this->elements->deleteElement($asset, true);
 
                 return new AssetIngestResult(
@@ -208,10 +225,26 @@ readonly class AssetUploadHandler
             if ($moveAfterSelection) {
                 $asset->newFilename = $destinationFilename;
                 $asset->newFolderId = $destinationFolder->id;
+                // Fail rather than rename if the checked filename was taken since, so the condition still holds
+                $asset->avoidFilenameConflicts = false;
                 $asset->ruleset->useScenario(AssetRules::SCENARIO_MOVE);
 
                 if (! $this->elements->saveElement($asset)) {
+                    $this->elements->deleteElement($asset, true);
+
                     return new AssetIngestResult(AssetIngestStatus::Invalid, $asset);
+                }
+
+                if ($fieldValues !== []) {
+                    $asset->setVolumeId($destinationFolder->volumeId);
+                    $asset->setFieldValues($fieldValues);
+                    $asset->ruleset->useScenario(AssetRules::SCENARIO_DEFAULT);
+
+                    if (! $this->elements->saveElement($asset)) {
+                        $this->elements->deleteElement($asset, true);
+
+                        return new AssetIngestResult(AssetIngestStatus::Invalid, $asset);
+                    }
                 }
             }
         }
@@ -257,6 +290,7 @@ readonly class AssetUploadHandler
                 'suggestedFilename' => $asset->suggestedFilename,
                 'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->sourceHasUrls()) ? $conflictingAsset->getUrl() : null,
                 'url' => $url,
+                'duplicates' => $this->duplicates($asset),
             ]);
         }
 
@@ -264,20 +298,51 @@ readonly class AssetUploadHandler
             'filename' => $asset->getFilename(),
             'assetId' => $asset->id,
             'url' => $url,
+            'duplicates' => $this->duplicates($asset),
         ]);
     }
 
     /**
-     * @param  ImageColors|null  $colors  Colors the uploader already sampled from the file
+     * Returns the images an uploaded one looks like a copy of, which the uploader can view, so they can be told
+     * before they use it.
+     *
+     * @return list<array{id: int, title: string, url: string, chipHtml: string}>
      */
-    public function replace(int $assetId, UploadedFile $file, ?ImageColors $colors = null): UploadResult
+    private function duplicates(Asset $asset): array
+    {
+        if ($asset->kind !== FileKind::Image->value) {
+            return [];
+        }
+
+        return array_values(array_map(
+            fn (Asset $duplicate): array => [
+                'id' => $duplicate->id,
+                'title' => (string) $duplicate->title,
+                'url' => (string) $duplicate->getCpEditUrl(),
+                'chipHtml' => $this->elementHtml->elementChipHtml($duplicate, [
+                    'autoReload' => false,
+                    'hyperlink' => true,
+                    'hyperlinkUrl' => (string) $duplicate->getCpEditUrl(),
+                ]),
+            ],
+            array_filter(
+                $this->imageDuplicates->find($asset),
+                static fn (Asset $duplicate): bool => Gate::check('view', $duplicate),
+            ),
+        ));
+    }
+
+    /**
+     * @param  ImageAnalysis|null  $analysis  What the uploader already read from the file
+     */
+    public function replace(int $assetId, UploadedFile $file, ?ImageAnalysis $analysis = null): UploadResult
     {
         $asset = $this->assets->getAssetById($assetId);
         abort_unless($asset !== null, 404, 'Asset not found.');
         Gate::authorize('replaceFile', $asset);
 
         $asset->uploadSource = $file;
-        $asset->uploadColors = $colors;
+        $asset->uploadAnalysis = $analysis;
         $this->assets->replaceAssetFile($asset, $file->localPath(), $file->filename, $file->mimeType());
 
         if ($asset->errors()->isNotEmpty()) {

@@ -2,14 +2,11 @@ import {
   applyOverrideSettings,
   renderOverrideSettings,
 } from '@actions/Settings/EntryTypesController';
+import {initLegacyUi} from '@/common/craft/legacy-ui';
 import type {InertiaPageComponent} from '@/bootstrap/inertia-pages';
-
-// `Craft` and `$` (jQuery) remain page globals; the settings form is
-// server-rendered HTML, so the legacy seams the rest of the manager leans on
-// survive here (`Craft.sendActionRequest`, `Craft.initUiElements`,
-// `Craft.cp.displayError`).
-declare const Craft: any;
-declare const $: any;
+import {t} from '@craftcms/ui/utilities/translate';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {showError} from '@/modules/messages/messages';
 
 /**
  * Open the per-field entry-type override editor for a chip — the port of
@@ -44,14 +41,13 @@ export async function editEntryTypeOverrides(chip: HTMLElement): Promise<void> {
 
   let data;
   try {
-    const response = await Craft.sendActionRequest(
-      'POST',
+    const response = await actionClient.post(
       renderOverrideSettings().url,
-      {data: config}
+      config
     );
     data = response.data;
   } catch (e: any) {
-    Craft.cp.displayError(e?.response?.data?.message);
+    showError(e?.response?.data?.message);
     throw e;
   }
 
@@ -114,7 +110,7 @@ async function openVueSlideout(chip: HTMLElement, data: any): Promise<void> {
     EntryTypeOverrideSettings as InertiaPageComponent,
     {
       contextId,
-      title: Craft.t('app', '{label} Settings', {
+      title: t('{label} Settings', {
         label: name?.trim() ?? chip.dataset.label,
       }),
     },
@@ -131,11 +127,11 @@ async function requestOverrides(
   settingsNamespace: string,
   settings: string
 ): Promise<any> {
-  const response = await Craft.sendActionRequest(
-    'POST',
-    applyOverrideSettings().url,
-    {data: {id: chip.dataset.id, settingsNamespace, settings}}
-  );
+  const response = await actionClient.post(applyOverrideSettings().url, {
+    id: chip.dataset.id,
+    settingsNamespace,
+    settings,
+  });
   return response.data;
 }
 
@@ -143,7 +139,7 @@ async function requestOverrides(
  * Write applied overrides back onto the chip (legacy `applySettings`): swap
  * the label's contents, then rewrite the hidden-input JSON with the new
  * `{id, name, handle, description}` config while preserving the group the
- * manager stamped.
+ * manager stamped and any extra values the selection holds.
  */
 function writeOverrides(chip: HTMLElement, data: any): void {
   // Swap the label's contents (name/handle/description/indicators), keeping
@@ -161,15 +157,20 @@ function writeOverrides(chip: HTMLElement, data: any): void {
   }
 
   // Write the new override config into the hidden input, preserving the
-  // group the manager stamped (legacy `applySettings`).
+  // group the manager stamped (legacy `applySettings`) and any extra values
+  // the selection holds (see `EntryTypeSelect::extraValueKeys()`).
   const input = chip.querySelector('input');
   if (input) {
-    const config = {...data.config};
+    let config = {...data.config};
     try {
-      const group = JSON.parse(input.value).group;
-      if (group) {
-        config.group = group;
-      }
+      const {
+        id: _id,
+        name: _name,
+        handle: _handle,
+        description: _description,
+        ...preserved
+      } = JSON.parse(input.value);
+      config = {...preserved, ...config};
     } catch {
       // Not a JSON value — nothing to preserve.
     }
@@ -180,5 +181,5 @@ function writeOverrides(chip: HTMLElement, data: any): void {
   }
 
   // Re-init any UI within the chip (description info icon, indicator tooltips).
-  Craft.initUiElements($(chip));
+  initLegacyUi(chip);
 }

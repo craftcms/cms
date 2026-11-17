@@ -71,12 +71,11 @@ export function createLinkPopoverController(
     popover.className = 'craft-link-popover';
     popover.id = popoverId(triggerId);
     popover.placement = 'bottom-start';
-    // Lion positions the overlay against its slotted `invoker` by default, but
-    // the link button lives outside the popover. Easy enough, we just need to supply
-    // it as the overlay's `referenceNode` so Popper anchors to it without the
-    // button needing to be a slotted child.
-    popover.config = {referenceNode: trigger};
-    // Lion's content lives in the `content` slot (rendered inside the pane).
+    // The link button lives outside the popover. It anchors the popover, but
+    // this module opens and closes it and owns the button's `aria-expanded`.
+    popover.anchor = trigger;
+    popover.manual = true;
+    popover.withoutInvokerAria = true;
     popover.appendChild(content);
     document.body.appendChild(popover);
 
@@ -89,7 +88,7 @@ export function createLinkPopoverController(
       suspend as EventListener
     );
     linkField.addEventListener('element-select-end', resume);
-    popover.addEventListener('opened-changed', handlePopoverAfterHide);
+    popover.addEventListener('craft-after-hide', handlePopoverAfterHide);
 
     setDisclosureState(trigger, false);
     void showPopover(popover);
@@ -160,7 +159,7 @@ export function createLinkPopoverController(
     suspended = true;
     resumeFocusTarget = event.detail.restoreFocusTo ?? null;
     setDisclosureState(trigger, false);
-    event.detail.waitUntil(popover.close());
+    event.detail.waitUntil(popover.hide());
   }
 
   function resume(): void {
@@ -177,11 +176,6 @@ export function createLinkPopoverController(
 
   function handlePopoverAfterHide(event: Event): void {
     if (event.target !== popover) {
-      return;
-    }
-
-    // `opened-changed` fires on both open and close; only react to closes.
-    if (event instanceof CustomEvent && event.detail?.opened) {
       return;
     }
 
@@ -226,7 +220,7 @@ export function createLinkPopoverController(
       return;
     }
 
-    await target.open();
+    await target.show();
     setDisclosureState(trigger, true);
 
     if (focusTarget?.isConnected) {
@@ -250,7 +244,7 @@ export function createLinkPopoverController(
     }
 
     currentPopover?.removeEventListener(
-      'opened-changed',
+      'craft-after-hide',
       handlePopoverAfterHide
     );
     currentPopover?.remove();

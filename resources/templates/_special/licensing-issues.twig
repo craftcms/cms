@@ -41,51 +41,6 @@
     </craft-button>
   </craft-pane>
 
-  <p id="continue" class="mt-lg text-center text-(--c-text-quiet)" role="timer"></p>
+  <p id="continue" class="mt-lg text-center text-(--c-text-quiet)" role="timer"
+     data-licensing-continue="{{ duration }}" data-licensing-hash="{{ hash }}"></p>
 {% endblock %}
-
-{% js %}
-  const refreshBtn = document.getElementById('refresh-btn');
-  refreshBtn.addEventListener('click', async () => {
-    refreshBtn.loading = true;
-    try {
-      await Craft.sendApiRequest('GET', 'ping');
-      location.reload();
-    } finally {
-      refreshBtn.loading = false;
-    }
-  });
-
-  let duration = {{ duration|json_encode|raw }};
-  const hash = {{ hash|json_encode|raw }};
-  const $continue = $('#continue');
-  const updateContinue = async () => {
-    if (duration) {
-      const message = Craft.t('app', 'Continue to the control panel in {duration, number} {duration, plural, =1{second} other{seconds}}…', {
-        duration,
-      });
-      $continue.text(message);
-      setTimeout(() => {
-        duration--;
-        updateContinue();
-      }, 1000);
-    } else {
-      await Craft.sendActionRequest('POST', 'app/set-license-shun-cookie', {
-        data: {
-          hash,
-        },
-      });
-      $continue
-        .empty()
-        .removeAttr('role')
-        .attr('aria-live', 'polite')
-        .append($('<a/>', {
-          text: Craft.t('app', 'Continue to the control panel'),
-          class: 'go',
-          href: document.location.href,
-        }));
-    }
-  };
-
-  updateContinue();
-{% endjs %}

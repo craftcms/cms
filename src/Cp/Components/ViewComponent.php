@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
+use ReflectionMethod;
 use Stringable;
 use Twig\Markup;
 
@@ -60,13 +61,16 @@ abstract class ViewComponent implements Htmlable, Stringable
         foreach ($config as $key => $value) {
             $method = Str::camel((string) $key);
 
-            // Only fluent setters are configurable — getters
-            // (get*/is*) and the rendering API would otherwise swallow the
-            // value silently, since PHP ignores extra arguments.
-            $notASetter = in_array($method, ['configure', 'make', 'toHtml'], true)
-                || preg_match('/^(get|is|render)[A-Z]/', $method) === 1;
+            // Only public fluent setters are configurable — getters (get*/is*)
+            // and the rendering API would otherwise swallow the value silently,
+            // since PHP ignores extra arguments.
+            $isSetter = method_exists($this, $method)
+                && new ReflectionMethod($this, $method)->isPublic()
+                && ! new ReflectionMethod($this, $method)->isStatic()
+                && ! in_array($method, ['configure', 'toHtml', '__toString'], true)
+                && preg_match('/^(get|is)[A-Z]/', $method) !== 1;
 
-            if ($notASetter || ! method_exists($this, $method)) {
+            if (! $isSetter) {
                 throw new InvalidArgumentException(sprintf(
                     'Unknown %s config key "%s".',
                     static::class,

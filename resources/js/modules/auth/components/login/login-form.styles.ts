@@ -28,6 +28,7 @@ export default css`
   }
 
   .auth-form__error {
+    display: block;
     margin-block-start: var(--c-spacing-md);
   }
 

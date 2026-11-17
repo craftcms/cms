@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Address\Elements\Address;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Controllers\Settings\SettingsIndexController;
 use CraftCms\Cms\Mcp\CapabilityRegistry;
 use CraftCms\Cms\Mcp\Public\Access as PublicMcpAccess;
-use CraftCms\Cms\Mcp\PublicRouteRegistrar;
+use CraftCms\Cms\Mcp\RouteRegistrar;
 use CraftCms\Cms\Mcp\Settings;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Sites;
@@ -30,20 +31,89 @@ it('exposes the authenticated MCP connection settings', function () {
 
     get(action(SettingsIndexController::class))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('settings.Extend.mcp', [
-                'label' => 'MCP',
-                'url' => route('craft.cp.settings.mcp.index'),
-                'iconName' => 'light/robot',
-            ]))
+            ->where('settings.Extend.mcp.label', 'MCP')
+            ->where('settings.Extend.mcp.url', route('craft.cp.settings.mcp.index'))
+            ->where('settings.Extend.mcp.iconName', fn ($iconName) => in_array($iconName, ['robot', 'light/robot'], true)))
         ->assertOk();
 
     get(route('craft.cp.settings.mcp.index'))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Ui')
-            ->where('ui.values.endpoint', route('craft.cp.mcp.server'))
+            ->component('settings/mcp/Settings')
+            ->where('ui.values.enabled', true)
+            ->where('ui.values.route', '/mcp')
+            ->where('ui.values.authorizationRoute', '/mcp/auth')
             ->where('ui.values.publicEnabled', false)
-            ->where('ui.values.publicRoute', '/mcp'))
+            ->where('ui.values.publicRoute', '/mcp')
+            ->where('refreshUrl', route('craft.cp.settings.mcp.render-ui')))
         ->assertOk();
+});
+
+it('defaults the authenticated server to the control panel without public registration', function (bool $registration, string $route, string $authorizationRoute): void {
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->set('users.allowPublicRegistration', $registration);
+    $projectConfig->remove('mcp');
+    app()->forgetInstance(Settings::class);
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+
+    expect(app(Settings::class))
+        ->route->toBe(str_replace('{cp}', $cpTrigger, $route))
+        ->authorizationRoute->toBe(str_replace('{cp}', $cpTrigger, $authorizationRoute))
+        ->publicRoute->toBe('/mcp');
+})->with([
+    'without public registration' => [false, '/{cp}/mcp', '/{cp}/mcp/auth'],
+    'with public registration' => [true, '/mcp', '/mcp/auth'],
+]);
+
+it('notes control panel endpoints, endpoints both servers share, and missing OAuth signing keys', function (array $values, array $notices, bool $keys = true): void {
+    actingAs(User::find()->one());
+
+    if ($keys) {
+        $key = passportKey();
+        openssl_pkey_export($key, $privateKey);
+        config()->set('passport.private_key', $privateKey);
+        config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    }
+
+    $cpTrigger = trim((string) Cms::config()->cpTrigger, '/');
+    $values = array_map(fn (mixed $value): mixed => is_string($value) ? str_replace('{cp}', $cpTrigger, $value) : $value, $values);
+
+    $nodes = postJson(route('craft.cp.settings.mcp.render-ui'), ['values' => $values, 'scope' => []])
+        ->assertOk()
+        ->json('ui.nodes');
+
+    expect(collect($nodes)->flatMap(fn (array $node): array => $node['children'] ?? [])->where('component', 'craft:callout')->pluck('uid')->values()->all())->toBe($notices);
+})->with([
+    'separate site endpoints' => [['enabled' => true, 'route' => '/mcp', 'publicEnabled' => true, 'publicRoute' => '/public-mcp'], []],
+    'control panel endpoint' => [['enabled' => true, 'route' => '/{cp}/mcp', 'publicEnabled' => false, 'publicRoute' => '/mcp'], ['mcp-route-cp-notice']],
+    'shared endpoint' => [['enabled' => true, 'route' => '/mcp/', 'publicEnabled' => true, 'publicRoute' => '/mcp'], ['mcp-shared-endpoint-warning']],
+    'shared endpoint with a disabled server' => [['enabled' => true, 'route' => '/mcp', 'publicEnabled' => false, 'publicRoute' => '/mcp'], []],
+    'missing OAuth signing keys' => [['enabled' => true, 'route' => '/mcp', 'publicEnabled' => false, 'publicRoute' => '/mcp'], ['mcp-oauth-keys-warning'], false],
+]);
+
+it('sends requests to a shared endpoint by whether they carry a bearer token', function (): void {
+    $key = passportKey();
+    openssl_pkey_export($key, $privateKey);
+    config()->set('passport.private_key', $privateKey);
+    config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
+    enableMcp(['publicEnabled' => true, 'publicRoute' => '/mcp', 'publicTools' => ['craft_context_get']]);
+    $tools = fn (array $headers = []): array => array_column(
+        postJson('/mcp', McpRequest::payload('tools/list'), [...McpRequest::headers('tools/list'), ...$headers])->assertOk()->json('result.tools'),
+        'name',
+    );
+
+    expect($tools())->toBe(['craft_context_get']);
+
+    $this->app['auth']->forgetGuards();
+    postJson('/mcp', McpRequest::payload('tools/list'), [...McpRequest::headers('tools/list'), 'Authorization' => 'Bearer nope'])
+        ->assertUnauthorized()
+        ->assertHeader('WWW-Authenticate');
+
+    // The authorization endpoint always asks for a token, so clients can discover how to sign in
+    postJson('/mcp/auth', McpRequest::payload('tools/list'), McpRequest::headers('tools/list'))->assertUnauthorized();
+
+    Passport::actingAs(UserModel::query()->firstOrFail(), ['mcp:read'], 'craft-mcp');
+    Route::getRoutes()->getByName('craft.mcp.server')->flushController();
+    expect($tools(['Authorization' => 'Bearer token']))->toContain('elements_list')->not->toContain('craft_context_get');
 });
 
 it('stores public MCP settings in project config', function (): void {
@@ -51,13 +121,17 @@ it('stores public MCP settings in project config', function (): void {
     $siteHandle = Sites::getPrimarySite()->handle;
     $projectConfig = app(ProjectConfig::class);
 
-    post(route('craft.cp.settings.mcp.store'), new Settings([
-        'publicEnabled' => true,
-        'publicRoute' => '/services/mcp',
-        'publicElementTypes' => [Address::class, 'user'],
-        'publicSiteHandles' => [$siteHandle],
-        'publicTools' => ['craft-context-get', 'craft-query'],
-    ])->toArray())
+    post(route('craft.cp.settings.mcp.store'), [
+        ...new Settings([
+            'publicEnabled' => true,
+            'publicRoute' => '/services/mcp',
+            'publicElementTypes' => [Address::class],
+            'publicSiteHandles' => [$siteHandle],
+            'publicTools' => ['craft_context_get', 'craft_query'],
+        ])->toArray(),
+        // The Users group's “Query all users” option
+        'publicUsers' => ['*'],
+    ])
         ->assertRedirect()
         ->assertSessionHasNoErrors();
 
@@ -65,7 +139,14 @@ it('stores public MCP settings in project config', function (): void {
         ->and($projectConfig->get('mcp.publicRoute'))->toBe('/services/mcp')
         ->and($projectConfig->get('mcp.publicElementTypes'))->toBe([Address::class, 'user'])
         ->and($projectConfig->get('mcp.publicSiteHandles'))->toBe([$siteHandle])
-        ->and($projectConfig->get('mcp.publicTools'))->toBe(['craft-context-get', 'craft-query']);
+        ->and($projectConfig->get('mcp.publicTools'))->toBe(['craft_context_get', 'craft_query']);
+
+    app()->instance(Settings::class, new Settings($projectConfig->get('mcp')));
+    get(route('craft.cp.settings.mcp.index'))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('ui.values.publicElementTypes', [Address::class])
+            ->where('ui.values.publicUsers', ['*']))
+        ->assertOk();
 });
 
 it('serves only approved tools from the configured public endpoint', function (): void {
@@ -74,15 +155,15 @@ it('serves only approved tools from the configured public endpoint', function ()
         'publicEnabled' => true,
         'publicRoute' => $route,
         'publicSiteHandles' => [Sites::getPrimarySite()->handle],
-        'publicTools' => ['craft-context-get'],
+        'publicTools' => ['craft_context_get'],
     ]));
     app()->forgetInstance(PublicMcpAccess::class);
-    app(PublicRouteRegistrar::class)->register();
+    app(RouteRegistrar::class)->register();
 
     postJson($route, McpRequest::payload('tools/list'), McpRequest::headers('tools/list'))
         ->assertOk()
         ->assertJsonCount(1, 'result.tools')
-        ->assertJsonPath('result.tools.0.name', 'craft-context-get');
+        ->assertJsonPath('result.tools.0.name', 'craft_context_get');
 });
 
 it('queries only explicitly exposed public element types', function (): void {
@@ -92,18 +173,18 @@ it('queries only explicitly exposed public element types', function (): void {
         'publicRoute' => $route,
         'publicSiteHandles' => [Sites::getPrimarySite()->handle],
         'publicElementTypes' => ['user'],
-        'publicTools' => ['craft-query'],
+        'publicTools' => ['craft_query'],
     ]));
     app()->forgetInstance(PublicMcpAccess::class);
-    app(PublicRouteRegistrar::class)->register();
+    app(RouteRegistrar::class)->register();
 
     postJson(
         $route,
         McpRequest::payload('tools/call', [
-            'name' => 'craft-query',
+            'name' => 'craft_query',
             'arguments' => ['type' => 'user', 'criteria' => ['limit' => 1]],
         ]),
-        McpRequest::headers('tools/call', 'craft-query'),
+        McpRequest::headers('tools/call', 'craft_query'),
     )
         ->assertOk()
         ->assertJsonPath('result.isError', false)
@@ -130,11 +211,11 @@ it('discovers plugin capabilities in settings and requires approval before servi
     get(route('craft.cp.settings.mcp.index'))
         ->assertInertia(fn (AssertableInertia $page) => $page
             ->where('ui.nodes', function ($nodes) use ($property, $identity, $label): bool {
-                $field = collect($nodes)->firstWhere('control.path', [$property]);
+                $field = collect($nodes)->flatMap(fn (array $node): array => $node['children'] ?? [])->firstWhere('control.path', [$property]);
                 $permissions = $field['control']['props']['groups'][0]['permissions'] ?? [];
 
                 return ($permissions[$identity]['label'] ?? null) === $label
-                    && ! isset($permissions['example.manage']);
+                    && ! isset($permissions['example_manage']);
             })
             ->where("ui.values.$property", []));
 
@@ -142,7 +223,7 @@ it('discovers plugin capabilities in settings and requires approval before servi
         ->assertRedirect()
         ->assertSessionHasNoErrors();
     app()->forgetInstance(Settings::class);
-    app(PublicRouteRegistrar::class)->register();
+    app(RouteRegistrar::class)->register();
 
     postJson($settings->publicRoute, McpRequest::payload($method, $params), McpRequest::headers($method, $params['name'] ?? $params['uri'] ?? null))->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
@@ -170,7 +251,7 @@ it('discovers plugin capabilities in settings and requires approval before servi
     postJson($settings->publicRoute, McpRequest::payload($method, $params), McpRequest::headers($method, $params['name'] ?? $params['uri'] ?? null))->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
 })->with([
-    'tool' => ['publicTools', 'example.greet', 'Greet a visitor', 'tools/call', ['name' => 'example.greet', 'arguments' => ['name' => 'Ada']], 'result.structuredContent.greeting', 'Hello, Ada!'],
+    'tool' => ['publicTools', 'example_greet', 'Greet a visitor', 'tools/call', ['name' => 'example_greet', 'arguments' => ['name' => 'Ada']], 'result.structuredContent.greeting', 'Hello, Ada!'],
     'resource' => ['publicResources', 'example://welcome', 'Welcome message', 'resources/read', ['uri' => 'example://welcome'], 'result.contents.0.text', 'Welcome to the example plugin'],
     'resource template' => ['publicResourceTemplates', 'example://visitors/{name}', 'Visitor greeting', 'resources/read', ['uri' => 'example://visitors/Ada'], 'result.contents.0.text', 'Welcome, Ada'],
     'prompt' => ['publicPrompts', 'example-introduce', 'Introduce a visitor', 'prompts/get', ['name' => 'example-introduce', 'arguments' => ['name' => 'Ada']], 'result.messages.0.content.text', 'Introduce Ada'],
@@ -178,24 +259,24 @@ it('discovers plugin capabilities in settings and requires approval before servi
 
 it('applies Craft permissions to plugin capabilities on the authenticated server', function (): void {
     app(CapabilityRegistry::class)->register(Example::class);
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $user = UserModel::query()->firstOrFail();
-    Passport::actingAs($user, ['mcp:use'], 'craft-mcp');
+    Passport::actingAs($user, ['mcp:admin'], 'craft-mcp');
 
-    postJson(route('craft.cp.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example.manage']), McpRequest::headers('tools/call', 'example.manage'))
+    postJson(route('craft.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example_manage']), McpRequest::headers('tools/call', 'example_manage'))
         ->assertOk()
         ->assertJsonPath('result.content.0.text', 'Managed example');
 
-    Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController();
-    postJson(route('craft.cp.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example.greet', 'arguments' => ['name' => 'Ada']]), McpRequest::headers('tools/call', 'example.greet'))->assertBadRequest()
+    Route::getRoutes()->getByName('craft.mcp.server')->flushController();
+    postJson(route('craft.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example_greet', 'arguments' => ['name' => 'Ada']]), McpRequest::headers('tools/call', 'example_greet'))->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
 
     Edition::set(Edition::Pro);
     $user->admin = false;
-    app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp', 'useCraftMcp']);
+    app(UserPermissions::class)->saveUserPermissions($user->id, ['accessCp']);
 
-    Route::getRoutes()->getByName('craft.cp.mcp.server')->flushController();
-    postJson(route('craft.cp.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example.manage']), McpRequest::headers('tools/call', 'example.manage'))->assertBadRequest()
+    Route::getRoutes()->getByName('craft.mcp.server')->flushController();
+    postJson(route('craft.mcp.server'), McpRequest::payload('tools/call', ['name' => 'example_manage']), McpRequest::headers('tools/call', 'example_manage'))->assertBadRequest()
         ->assertJsonPath('error.code', -32602);
 });

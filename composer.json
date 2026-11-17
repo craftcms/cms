@@ -35,12 +35,12 @@
     "ext-pdo": "*",
     "ext-zip": "*",
     "bacon/bacon-qr-code": "^3.0",
-    "commerceguys/addressing": "^2.1.1",
+    "commerceguys/addressing": "^2.3.0",
     "composer/semver": "^3.3.2",
     "craftcms/cms-assets": "self.version",
     "craftcms/laravel-aliases": "^2.0",
     "craftcms/laravel-dependency-aware-cache": "^1.2.3",
-    "craftcms/laravel-ruleset-validation": "^1.1",
+    "craftcms/laravel-ruleset-validation": "^1.1.1",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~6.0.0",
     "craftcms/url-validator": "^1.0",
@@ -49,14 +49,14 @@
     "guzzlehttp/guzzle": "^7.2.0",
     "inertiajs/inertia-laravel": "^3.0",
     "intervention/image": "^4.2",
-    "laravel/ai": "^1.2",
-    "laravel/framework": "^13.17",
+    "laravel/ai": "^1.4",
+    "laravel/framework": "^13.38",
     "laravel/passport": "^13.0",
-    "laravel/wayfinder": "^0.1.12",
+    "laravel/wayfinder": "^0.1.23",
     "league/commonmark": "^2.8",
     "league/flysystem-path-prefixing": "^3.31",
     "league/uri": "^7.0",
-    "mcp/sdk": "0.8.1",
+    "mcp/sdk": "~0.9.0",
     "moneyphp/money": "^4.0",
     "phpoffice/phpspreadsheet": "^5.3",
     "pragmarx/google2fa": "^9.0",
@@ -88,6 +88,7 @@
     "intervention/image-driver-vips": "^4.1",
     "larastan/larastan": "^3.13",
     "laravel/boost": "^2.10.3",
+    "laravel/octane": "^2.24",
     "laravel/pao": "^1.0",
     "laravel/pint": "^1.22",
     "laravel/socialite": "^5.23",
@@ -96,8 +97,10 @@
     "pestphp/pest": "^5.0",
     "pestphp/pest-plugin-agent": "^5.0",
     "pestphp/pest-plugin-arch": "^5.0",
+    "pestphp/pest-plugin-browser": "^5.2",
     "pestphp/pest-plugin-laravel": "^5.0",
     "phpstan/phpstan": "^2.1",
+    "phpstan/tally": "^1.0.1",
     "rector/rector": "^2.3",
     "spatie/laravel-typescript-transformer": "^3.2"
   },
@@ -147,9 +150,13 @@
     "rector": "rector",
     "tests": [
       "Composer\\Config::disableProcessTimeout",
-      "./vendor/bin/pest --parallel --processes=4 --compact"
+      "./vendor/bin/pest --parallel --processes=auto --max-processes=4 --compact"
     ],
-    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./tests-laravel",
+    "tests-browser": [
+      "Composer\\Config::disableProcessTimeout",
+      "./vendor/bin/pest tests/Browser"
+    ],
+    "tests-adapter": "./yii2-adapter/vendor/bin/pest --configuration \"$(pwd)/yii2-adapter/phpunit.xml.dist\" --test-directory ./tests-laravel",
     "post-autoload-dump": [
       "@clear",
       "@prepare"
@@ -181,8 +188,7 @@
     "allow-plugins": {
       "craftcms/plugin-installer": true,
       "pestphp/pest-plugin": true,
-      "php-http/discovery": true,
-      "yiisoft/yii2-composer": true
+      "php-http/discovery": true
     }
   },
   "extra": {
@@ -194,6 +200,7 @@
         "Activities": "CraftCms\\Cms\\Support\\Facades\\Activities",
         "Addresses": "CraftCms\\Cms\\Support\\Facades\\Addresses",
         "Ai": "CraftCms\\Cms\\Support\\Facades\\Ai",
+        "Anchors": "CraftCms\\Cms\\Support\\Facades\\Anchors",
         "AssetIndexer": "CraftCms\\Cms\\Support\\Facades\\AssetIndexer",
         "Assets": "CraftCms\\Cms\\Support\\Facades\\Assets",
         "AuthMethods": "CraftCms\\Cms\\Support\\Facades\\AuthMethods",

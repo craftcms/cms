@@ -13,7 +13,7 @@ use CraftCms\Cms\Cp\Concerns\HasId;
  * form-associated, submits the selected value itself. Each option button
  * carries its own `value`, and reports whether it's selected with
  * `aria-pressed`. For a form setting that picks one value from a set of
- * options, use {@see RadioGroup} with `buttons()` instead.
+ * options, use {@see RadioGroup} with `appearance('button-group')` instead.
  *
  *     ButtonGroup::make()
  *         ->name('alignment')

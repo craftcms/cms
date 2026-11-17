@@ -6,7 +6,9 @@ namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Folders;
@@ -15,7 +17,6 @@ use CraftCms\Cms\Support\Query;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Tpetry\QueryExpressions\Language\Alias;
 
 /**
  * @internal
@@ -74,7 +75,7 @@ trait QueriesAssetLocation
                 throw new QueryAbortedException;
             }
 
-            $assetQuery->join(new Alias(Table::VOLUMEFOLDERS, 'volumeFolders'), 'volumeFolders.id', '=', 'assets.folderId');
+            $assetQuery->join(Table::VOLUMEFOLDERS.' as volumeFolders', 'volumeFolders.id', '=', 'assets.folderId');
 
             static::applyVolumeId($assetQuery, $assetQuery->volumeId);
             static::applyFolderId($assetQuery, $assetQuery->folderId, $assetQuery);
@@ -172,6 +173,7 @@ trait QueriesAssetLocation
      *
      * @uses $volumeId
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the volumes the assets belong to, per the volumes’ handles.')]
     public function volume(mixed $value): static
     {
         if (Query::normalizeParam($value, function ($item) {
@@ -230,6 +232,7 @@ trait QueriesAssetLocation
      *
      * @uses $volumeId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the volumes the assets belong to, per the volumes’ IDs.')]
     public function volumeId(mixed $value): static
     {
         $this->volumeId = $value;
@@ -273,6 +276,7 @@ trait QueriesAssetLocation
      *
      * @uses $folderId
      */
+    #[ElementQueryParam(ElementQueryParamType::IntOrInts, 'Narrows the query results based on the folders the assets belong to, per the folders’ IDs.')]
     public function folderId(mixed $value): static
     {
         $this->folderId = $value;
@@ -312,6 +316,7 @@ trait QueriesAssetLocation
      *
      * @uses $includeSubfolders
      */
+    #[ElementQueryParam(ElementQueryParamType::Boolean, 'Broadens the query results to include assets from any of the subfolders of the folder specified by `folderId`.')]
     public function includeSubfolders(bool $value = true): static
     {
         $this->includeSubfolders = $value;

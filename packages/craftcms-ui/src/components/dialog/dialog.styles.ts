@@ -42,8 +42,18 @@ export default css`
     margin: auto;
   }
 
+  dialog:focus-visible {
+    outline: none;
+  }
+
+  /*
+    Keeps scroll gestures over a modal's backdrop from reaching the page. It
+    only honours overscroll-behavior once it is a scroll container.
+  */
   dialog::backdrop {
     background-color: rgb(0 0 0 / 0.25);
+    overflow: hidden;
+    overscroll-behavior: contain;
   }
 
   /*
@@ -88,16 +98,14 @@ export default css`
     max-block-size: var(--_dialog-max-block-size);
     background-color: var(--c-surface-raised);
     box-sizing: border-box;
-    border-width: var(--c-modal-border-width, 1px);
-    border-style: var(--c-modal-border-style, solid);
-    border-color: var(--c-modal-border-color, var(--c-color-border-quiet));
     border-radius: var(--c-radius-lg);
-    box-shadow: var(--c-shadow-overlay);
+    box-shadow:
+      var(--c-modal-ring, 0 0 0 1px rgb(0 0 0 / 18%)), var(--c-shadow-lg);
+    outline: 1px solid transparent;
     overflow: hidden;
   }
 
   :host([fullscreen]) .surface {
-    border-width: 0;
     border-radius: 0;
   }
 
@@ -107,25 +115,18 @@ export default css`
     align-items: center;
     justify-content: space-between;
     gap: var(--c-spacing-md);
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-header-height);
     padding: var(--c-spacing-md);
     border-block-end: 1px solid var(--c-color-neutral-border-quiet);
-    box-shadow: var(--c-shadow-sm);
     position: relative;
     z-index: 2;
   }
 
   .title {
-    font-size: 1.25em;
+    font-size: var(--c-text-sm);
+    font-weight: bold;
     margin: 0;
-  }
-
-  .close {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: inherit;
-    padding: var(--c-spacing-xs);
-    line-height: 1;
   }
 
   .body {
@@ -137,6 +138,7 @@ export default css`
     */
     min-block-size: 0;
     overflow: auto;
+    overscroll-behavior: contain;
     padding: var(--c-spacing-lg);
   }
 
@@ -144,8 +146,12 @@ export default css`
     grid-row: 3;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     gap: var(--c-spacing-sm);
-    padding: var(--c-spacing-md);
+    box-sizing: border-box;
+    min-block-size: var(--c-modal-footer-height);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--c-spacing-md);
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
     box-shadow: var(--c-shadow-sm);
     position: relative;

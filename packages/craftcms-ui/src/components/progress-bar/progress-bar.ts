@@ -82,7 +82,11 @@ export default class CraftProgressBar extends LitElement {
 
   #lastProgress: number = 0;
 
-  protected override updated(changedProperties: PropertyValues): void {
+  #reachedComplete: boolean = false;
+
+  protected override willUpdate(changedProperties: PropertyValues): void {
+    super.willUpdate(changedProperties);
+
     // Update progress from item counts when they change
     if (changedProperties.has('total') || changedProperties.has('processed')) {
       if (this.total > 0) {
@@ -93,9 +97,7 @@ export default class CraftProgressBar extends LitElement {
 
         // Check if we just reached 100%
         if (newProgress >= 100 && this.#lastProgress < 100) {
-          this.dispatchEvent(
-            new CustomEvent('craft-complete', {bubbles: true, composed: true})
-          );
+          this.#reachedComplete = true;
         }
 
         this.progress = newProgress;
@@ -108,6 +110,17 @@ export default class CraftProgressBar extends LitElement {
         this.pending = false;
       }
       this.#lastProgress = this.progress;
+    }
+  }
+
+  protected override updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+
+    if (this.#reachedComplete) {
+      this.#reachedComplete = false;
+      this.dispatchEvent(
+        new CustomEvent('craft-complete', {bubbles: true, composed: true})
+      );
     }
   }
 

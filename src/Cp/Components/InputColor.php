@@ -11,10 +11,8 @@ use CraftCms\Cms\Support\Json;
  * paired with a native color-picker swatch and an optional preset datalist, the
  * modern replacement for the legacy `Craft.ColorInput` JS.
  *
- * It's an {@see Input} whose tag is fixed to craft-input-color. Like
- * {@see InputPassword}, the element extends LionInput directly (not craft-input),
- * so only the Lion-pushed control props live on the host; the value is stored as
- * bare hex (the component renders its own leading `#`). Presets are passed as a
+ * It's an {@see Input} whose tag is fixed to craft-input-color. The value is
+ * stored as bare hex (the component renders its own leading `#`). Presets are passed as a
  * JSON array attribute the component parses into its picker datalist.
  *
  *     InputColor::make()
@@ -28,6 +26,8 @@ class InputColor extends Input
 {
     /** @var array<int, string> */
     protected array $presets = [];
+
+    protected bool $alpha = false;
 
     #[\Override]
     protected function tagName(): string
@@ -48,17 +48,30 @@ class InputColor extends Input
         return $this;
     }
 
+    /**
+     * Whether the color can have an alpha channel. The native picker only
+     * offers opacity in browsers that support its `alpha` attribute; 8-digit hex
+     * values can be typed anywhere.
+     */
+    public function alpha(bool $alpha = true): static
+    {
+        $this->alpha = $alpha;
+
+        return $this;
+    }
+
     #[\Override]
     protected function hostAttributes(): array
     {
         $attributes = parent::hostAttributes();
 
-        // Drop `type`: the component pairs its own text field with a native
-        // colour swatch. The slotted native input still carries it via
+        // No `type` on the host: the component pairs its own text field with a
+        // native colour swatch. The slotted native input still carries it via
         // Input::inputHtml().
 
         $presets = array_values(array_filter($this->presets));
         $attributes['presets'] = $presets !== [] ? Json::encode($presets) : null;
+        $attributes['alpha'] = $this->alpha;
 
         return $attributes;
     }

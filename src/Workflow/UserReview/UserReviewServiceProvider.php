@@ -34,6 +34,7 @@ class UserReviewServiceProvider extends ServiceProvider
                     'entry' => t('Entry title'),
                     'stage' => t('Stage name'),
                     'note' => t('Review note'),
+                    'user' => t('Name of the user who acted'),
                     'link' => t('Entry link'),
                 ],
             ]));
@@ -45,10 +46,10 @@ class UserReviewServiceProvider extends ServiceProvider
     {
         return [
             'workflow_review_requested' => [t('When a workflow review is requested:'), t('Review requested for “{{entry}}”'), "{{entry}} is awaiting your approval in {{stage}}.\n\n<{{link}}>"],
-            'workflow_review_commented' => [t('When a workflow review is commented on:'), t('New review comment on “{{entry}}”'), "A reviewer commented on {{entry}} during {{stage}}.\n\n{{note}}\n\n<{{link}}>"],
-            'workflow_changes_requested' => [t('When changes are requested:'), t('Changes requested for “{{entry}}”'), "Changes were requested for {{entry}}.\n\n{{note}}\n\n<{{link}}>"],
-            'workflow_approved' => [t('When a workflow is approved:'), t('“{{entry}}” is approved'), "{{entry}} completed its approval workflow and can now be published.\n\n<{{link}}>"],
-            'workflow_invalidated' => [t('When a workflow review is invalidated:'), t('Approval reset for “{{entry}}”'), "The review was reset because {{entry}} changed.\n\n<{{link}}>"],
+            'workflow_review_commented' => [t('When a workflow review is commented on:'), t('New review comment on “{{entry}}”'), "{{user}} commented on {{entry}} during {{stage}}.\n\n{{note}}\n\n<{{link}}>"],
+            'workflow_changes_requested' => [t('When changes are requested:'), t('Changes requested for “{{entry}}”'), "{{user}} requested changes to {{entry}}.\n\n{{note}}\n\n<{{link}}>"],
+            'workflow_approved' => [t('When a workflow is approved:'), t('“{{entry}}” is approved'), "{{entry}} completed its approval workflow.\n\n<{{link}}>"],
+            'workflow_invalidated' => [t('When a workflow review is reset because its workflow changed:'), t('Approval reset for “{{entry}}”'), "The review for {{entry}} was reset because its workflow changed.\n\n<{{link}}>"],
         ];
     }
 }

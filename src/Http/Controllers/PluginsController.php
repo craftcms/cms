@@ -11,14 +11,15 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettingsUi;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Url;
-use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
-use CraftCms\Cms\View\LegacyAssets\PluginsAsset;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -36,8 +37,6 @@ readonly class PluginsController
 
     public function index(): CpScreenResponse
     {
-        app(InternalAssetRegistry::class)->register(PluginsAsset::class);
-
         $info = $this->plugins
             ->getAllPluginInfo()
             ->sortBy([
@@ -54,6 +53,9 @@ readonly class PluginsController
             ])
             ->inertiaPage('settings/Plugins', [
                 'pluginInfo' => fn () => $info,
+                'composerUnavailableReason' => fn () => $this->generalConfig->allowUpdates && $this->generalConfig->allowAdminChanges && currentUser()?->can('performUpdates')
+                    ? app(Composer::class)->getUnavailableReason(forUi: true)
+                    : null,
             ]);
     }
 
@@ -111,6 +113,51 @@ readonly class PluginsController
             $this->asFailure(t('Couldn’t disable plugin.'));
     }
 
+    /**
+     * Enables every installed plugin that's disabled.
+     */
+    public function enableAll(): Response
+    {
+        $success = true;
+
+        foreach ($this->installedPluginHandles() as $handle) {
+            if (! $this->plugins->isPluginEnabled($handle) && ! $this->plugins->enablePlugin($handle)) {
+                $success = false;
+            }
+        }
+
+        return $success ?
+            $this->asSuccess(t('Plugins enabled.')) :
+            $this->asFailure(t('Couldn’t enable all plugins.'));
+    }
+
+    /**
+     * Disables every enabled plugin.
+     */
+    public function disableAll(): Response
+    {
+        $success = true;
+
+        foreach ($this->installedPluginHandles() as $handle) {
+            if ($this->plugins->isPluginEnabled($handle) && ! $this->plugins->disablePlugin($handle)) {
+                $success = false;
+            }
+        }
+
+        return $success ?
+            $this->asSuccess(t('Plugins disabled.')) :
+            $this->asFailure(t('Couldn’t disable all plugins.'));
+    }
+
+    /** @return list<string> */
+    private function installedPluginHandles(): array
+    {
+        return array_values(array_filter(
+            array_keys($this->plugins->getComposerPluginInfo() ?? []),
+            $this->plugins->isPluginInstalled(...),
+        ));
+    }
+
     public function editSettings(string $handle, ?PluginInterface $plugin = null): mixed
     {
         if ($plugin === null && ($plugin = $this->plugins->getPlugin($handle)) === null) {
@@ -138,6 +185,15 @@ readonly class PluginsController
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
+        // Save and continue editing posts no `redirect`. Return to the settings
+        // page, as Craft 5's form did, rather than to the Referer, which browsers
+        // may trim to the site's origin. Legacy forms that post the
+        // `plugins/save-plugin-settings` action from their own pages still go
+        // back to them.
+        $settingsUrl = $request->expectsJson() || $request->isActionRequest()
+            ? null
+            : Url::cpUrl("settings/plugins/{$handle}");
+
         $requestClass = $plugin->getSettingsRequestClass();
         $settings = $request->input('settings', []);
 
@@ -146,11 +202,17 @@ readonly class PluginsController
             $settings = $request->safe()->input('settings', []);
         }
 
-        $success = $this->plugins->savePluginSettings($plugin, $settings);
+        if (! $this->plugins->savePluginSettings($plugin, $settings)) {
+            $errors = [];
 
-        return $success
-            ? $this->asSuccess(t('Plugin settings saved.'))
-            : $this->editSettings($handle, $plugin);
+            foreach ($plugin->getSettings()?->errors()->getMessages() ?? [] as $attribute => $messages) {
+                $errors["settings.$attribute"] = $messages;
+            }
+
+            throw ValidationException::withMessages($errors);
+        }
+
+        return $this->asSuccess(t('Plugin settings saved.'), redirect: $this->getPostedRedirectUrl() ?? $settingsUrl);
     }
 
     public function renderSettingsUi(Request $request, string $handle): JsonResponse

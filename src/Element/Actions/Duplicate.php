@@ -71,6 +71,16 @@ JS, [
         return null;
     }
 
+    /**
+     * Duplicating with descendants skips elements already duplicated as a
+     * descendant of another selected element, which a chunk can't know about.
+     */
+    #[\Override]
+    public function supportsQueue(): bool
+    {
+        return ! $this->deep;
+    }
+
     #[\Override]
     public function performAction(ElementQueryInterface $query): bool
     {

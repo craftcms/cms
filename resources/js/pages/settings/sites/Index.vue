@@ -1,8 +1,7 @@
 <script setup lang="ts">
   import {t} from '@craftcms/ui';
   import type {TextExpanderTriggers} from '@craftcms/ui/components/text-expander/text-expander';
-  import CalloutReadOnly from '@/common/components/CalloutReadOnly.vue';
-  import InputCallout from '@/common/components/InputCallout.vue';
+  import FieldTip from '@/common/components/FieldTip.vue';
   import {envVarsDocsUrl} from '@/common/utils/docsUrls';
   import AdminTableNode from '@/modules/ui/AdminTableNode.vue';
   import type {TableNodePayload} from '@/modules/ui/table-types';
@@ -82,7 +81,7 @@
       ? []
       : [
           {
-            label: t('New Group'),
+            label: t('New group'),
             icon: 'plus',
             onClick: () => openModal('create'),
           },
@@ -94,7 +93,7 @@
   <div class="contents">
     <LayoutSlot name="title">
       <div class="flex gap-md items-center">
-        <h1 class="title text-xl">
+        <h1 class="title cp-h1">
           {{ title }}
         </h1>
 
@@ -108,24 +107,20 @@
 
           <div slot="content">
             <craft-action-item @click.prevent="openModal('update')">
-              {{ t('Rename Group') }}
+              {{ t('Rename group') }}
             </craft-action-item>
             <craft-action-item
               variant="danger"
               .disabled="tableNode.props.rows.length > 0"
               @click.prevent="handleDeleteClick"
             >
-              {{ t('Delete Group') }}
+              {{ t('Delete group') }}
             </craft-action-item>
           </div>
         </craft-action-menu>
       </div>
     </LayoutSlot>
     <div class="@container">
-      <template v-if="readOnly">
-        <CalloutReadOnly />
-      </template>
-
       <AdminTableNode appearance="flush" :node="tableNode">
         <template #delete-modal="{row, label, close}">
           <DeleteSiteModal
@@ -135,16 +130,13 @@
           />
         </template>
         <template #empty-row>
-          <craft-empty
-            icon="light/earth-americas"
-            :label="t('No sites exist yet.')"
-          >
+          <craft-empty icon="light/world" :label="t('No sites exist yet.')">
             <CpButtonLink
               v-if="!readOnly"
               :href="create({}, {query: {groupId: group?.id}}).url"
             >
               <craft-icon name="plus" slot="prefix"></craft-icon>
-              {{ t('New Site') }}
+              {{ t('New site') }}
             </CpButtonLink>
           </craft-empty>
         </template>
@@ -152,7 +144,7 @@
     </div>
 
     <ModalForm
-      :title="form.id ? t('Rename Group') : t('New Group')"
+      :title="form.id ? t('Rename group') : t('New group')"
       :is-active="modalActive"
       :loading="form.processing"
       @submit="saveGroup"
@@ -171,8 +163,8 @@
               t('What this group will be called in the control panel.')
             "
           >
-            <InputCallout
-              slot="after"
+            <FieldTip
+              slot="tip"
               :message="
                 t('Type <kbd>$</kbd> to choose an environment variable.')
               "
@@ -191,8 +183,8 @@
           v-model="form.name"
           :error="form.errors?.name"
         >
-          <InputCallout
-            slot="after"
+          <FieldTip
+            slot="tip"
             :message="t('Type <kbd>$</kbd> to choose an environment variable.')"
             html
             :href="envVarsDocsUrl"

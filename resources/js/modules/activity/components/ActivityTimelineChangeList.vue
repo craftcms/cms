@@ -1,11 +1,25 @@
 <script setup lang="ts">
-  import {t} from '@craftcms/ui';
-  import ActivityTimelineChangeValue from './ActivityTimelineChangeValue.vue';
+  import ChangeComparison from '@/modules/ui/ChangeComparison.vue';
   import type {ActivityChange} from '@/modules/activity/composables/useActivityTimeline';
 
   defineProps<{
     changes: ActivityChange[];
   }>();
+
+  /**
+   * A change from one text to another, shown as a word diff. Any other change
+   * shows its values before and after.
+   */
+  function diff(
+    change: ActivityChange
+  ): {current: string; proposed: string} | null {
+    return typeof change.old === 'string' &&
+      typeof change.new === 'string' &&
+      change.old !== '' &&
+      change.new !== ''
+      ? {current: change.old, proposed: change.new}
+      : null;
+  }
 </script>
 
 <template>
@@ -18,16 +32,12 @@
       <strong class="activity-timeline__change-label">
         {{ change.label }}
       </strong>
-      <dl class="activity-timeline__change-comparison">
-        <div>
-          <dt>{{ t('Before') }}</dt>
-          <dd><ActivityTimelineChangeValue :value="change.old" /></dd>
-        </div>
-        <div>
-          <dt>{{ t('After') }}</dt>
-          <dd><ActivityTimelineChangeValue :value="change.new" /></dd>
-        </div>
-      </dl>
+      <ChangeComparison
+        :diff="diff(change)"
+        :from="{value: change.old}"
+        :to="{value: change.new}"
+        class="activity-timeline__change-values"
+      />
     </li>
   </ul>
 </template>
@@ -49,35 +59,13 @@
     border-block-start: 0;
   }
 
-  .activity-timeline__change-label,
-  .activity-timeline__change-comparison dd {
-    overflow-wrap: anywhere;
-  }
-
   .activity-timeline__change-label {
+    overflow-wrap: anywhere;
     font-weight: var(--font-weight-semibold);
   }
 
-  .activity-timeline__change-comparison {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--c-spacing-sm);
-    margin-block: var(--c-spacing-xs) 0;
-  }
-
-  .activity-timeline__change-comparison div {
-    min-width: 0;
-  }
-
-  .activity-timeline__change-comparison dt {
-    color: var(--c-text-quiet);
-    font-size: var(--c-text-xs);
-    font-weight: 600;
-  }
-
-  .activity-timeline__change-comparison dd {
-    margin-block: var(--c-spacing-xs) 0;
-    margin-inline: 0;
+  .activity-timeline__change-values {
+    margin-block-start: var(--c-spacing-xs);
   }
 
   @container (min-width: 32rem) {
@@ -87,7 +75,7 @@
       gap: var(--c-spacing-md);
     }
 
-    .activity-timeline__change-comparison {
+    .activity-timeline__change-values {
       margin-block-start: 0;
     }
   }

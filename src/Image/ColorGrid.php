@@ -60,6 +60,70 @@ class ColorGrid
     }
 
     /**
+     * Finds how light the darker and lighter parts of each of an image’s regions are, for choosing text colors that
+     * are legible over them.
+     *
+     * Each pixel counts toward the region its center is in. Pixels that are mostly transparent are left out, since
+     * what shows through them depends on what’s behind the image.
+     *
+     * @param  list<array{int, int, int, float}>  $pixels  The image’s pixels, row by row, as red, green, and blue values
+     *                                                     from 0 to 255, and an alpha value from 0 to 1
+     * @return list<list<array{float, float}|null>> Rows of each region’s 10th and 90th percentile WCAG relative
+     *                                              luminance, top to bottom, or `null` for regions with no mostly
+     *                                              opaque pixels
+     *
+     * @see Data\ImageColors::$luminance
+     */
+    public static function luminance(array $pixels, int $width, int $height, int $columns, int $rows): array
+    {
+        $cells = array_fill(0, $rows, array_fill(0, $columns, []));
+
+        foreach ($pixels as $index => [$red, $green, $blue, $alpha]) {
+            if ($alpha < 0.5) {
+                continue;
+            }
+
+            $x = $index % $width;
+            $y = intdiv($index, $width);
+            $column = min($columns - 1, (int) floor(($x + 0.5) * $columns / $width));
+            $row = min($rows - 1, (int) floor(($y + 0.5) * $rows / $height));
+            $cells[$row][$column][] = self::relativeLuminance($red, $green, $blue);
+        }
+
+        return array_map(fn (array $row): array => array_map(function (array $values): ?array {
+            if ($values === []) {
+                return null;
+            }
+
+            sort($values);
+
+            return [round(self::percentile($values, 0.1), 3), round(self::percentile($values, 0.9), 3)];
+        }, $row), $cells);
+    }
+
+    /**
+     * Returns the WCAG relative luminance of an sRGB color, from 0 (black) to 1 (white).
+     */
+    public static function relativeLuminance(int $red, int $green, int $blue): float
+    {
+        return 0.2126 * self::toLinear($red) + 0.7152 * self::toLinear($green) + 0.0722 * self::toLinear($blue);
+    }
+
+    /**
+     * Returns a percentile of sorted values, interpolating between the two nearest ones.
+     *
+     * @param  non-empty-list<float>  $sorted
+     */
+    private static function percentile(array $sorted, float $fraction): float
+    {
+        $position = (count($sorted) - 1) * $fraction;
+        $lower = (int) floor($position);
+        $upper = min(count($sorted) - 1, $lower + 1);
+
+        return $sorted[$lower] + ($sorted[$upper] - $sorted[$lower]) * ($position - $lower);
+    }
+
+    /**
      * Scales a grid up with Catmull-Rom interpolation between the regions' centers, so it can be scaled up further
      * without the creases that bilinear scaling leaves between regions.
      *

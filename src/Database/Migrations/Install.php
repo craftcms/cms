@@ -7,9 +7,12 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Database\Migrations;
 
 use Closure;
+use CraftCms\Cms\Asset\AssetsHelper;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Console\PromptTask;
+use CraftCms\Cms\Console\TerminalCommands;
+use CraftCms\Cms\Database\Expressions\JsonExtract;
 use CraftCms\Cms\Database\LaravelMigrations;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Migrations\Event\TablesCreated;
@@ -84,7 +87,7 @@ class Install extends Migration
     public function up(): void
     {
         if (! $this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error Run `composer install` or remove your `config/craft/project/` folder and try again.";
+            $message = "Project config validation failed: $error Run `".app(TerminalCommands::class)->composer('install').'` or remove your `config/craft/project/` folder and try again.';
 
             error($message);
             error('Aborting install.');
@@ -154,6 +157,7 @@ class Install extends Migration
             $table->string('subjectId')->nullable();
             $table->unsignedBigInteger('siteId')->nullable();
             $table->unsignedBigInteger('rootEventId')->nullable();
+            $table->string('operationId')->nullable();
             $table->jsonb('payload');
             $table->dateTime('occurredAt');
         });
@@ -183,6 +187,28 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
+        $logger?->subLabel('agent_guidance');
+        Schema::create(Table::AGENT_GUIDANCE, function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->integer('siteId')->nullable();
+            $table->integer('userId')->nullable();
+            $table->mediumText('body');
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+            $table->char('uid', 36)->default('0');
+        });
+
+        $logger?->subLabel('agent_skills');
+        Schema::create(Table::AGENT_SKILLS, function (Blueprint $table) {
+            $table->integer('id', true);
+            $table->string('title');
+            $table->string('description');
+            $table->mediumText('body');
+            $table->dateTime('dateCreated');
+            $table->dateTime('dateUpdated');
+            $table->char('uid', 36)->default('0');
+        });
+
         $logger?->subLabel('assetindexdata');
         Schema::create(Table::ASSETINDEXDATA, function (Blueprint $table) {
             $table->integer('id', true);
@@ -207,6 +233,7 @@ class Install extends Migration
             $table->integer('processedEntries')->default(0);
             $table->boolean('cacheRemoteImages')->nullable();
             $table->boolean('listEmptyFolders')->default(false)->nullable();
+            $table->boolean('analyzeImages')->default(false);
             $table->boolean('isCli')->default(false)->nullable();
             $table->boolean('actionRequired')->nullable()->default(false);
             $table->boolean('processIfRootEmpty')->default(false)->nullable();
@@ -228,9 +255,15 @@ class Install extends Migration
             $table->unsignedInteger('height')->nullable();
             $table->unsignedBigInteger('size')->nullable();
             $table->string('focalPoint', 13)->nullable()->default(null);
-            $table->json('colors')->nullable();
+            $table->json('analysis')->nullable();
+            // Generated from analysis, so images can be filtered by it. Postgres can only add stored generated columns.
+            $imageType = $table->string('imageType', 20)->nullable();
+            DB::getDriverName() === 'pgsql'
+                ? $imageType->storedAs(new JsonExtract('analysis', 'type'))
+                : $imageType->virtualAs(new JsonExtract('analysis', 'type'));
+            $table->string('previewText', AssetsHelper::PREVIEW_TEXT_LENGTH)->nullable();
             $table->boolean('deletedWithVolume')->nullable();
-            $table->boolean('keptFile')->nullable();
+            $table->boolean('trashedFileExists')->default(false);
             $table->dateTime('dateModified')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -262,11 +295,18 @@ class Install extends Migration
             $table->primary(['assetId', 'siteId']);
         });
 
+        $logger?->subLabel('imagehashes');
+        Schema::create(Table::IMAGEHASHES, function (Blueprint $table) {
+            $table->integer('assetId');
+            $table->tinyInteger('band');
+            $table->char('value', 4);
+            $table->primary(['assetId', 'band']);
+        });
+
         $logger?->subLabel('imagetransformindex');
         Schema::create(Table::IMAGETRANSFORMINDEX, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('assetId');
-            $table->string('transformer')->default(null)->nullable();
             $table->string('filename')->nullable();
             $table->string('format')->nullable();
             $table->string('transformString');
@@ -1003,7 +1043,6 @@ class Install extends Migration
             $table->string('fs');
             $table->boolean('hasUrls')->default(false);
             $table->string('subpath')->nullable();
-            $table->string('assetTransformer')->nullable();
             $table->string('titleTranslationMethod')->default(TranslationMethod::Site->value);
             $table->text('titleTranslationKeyFormat')->nullable();
             $table->string('altTranslationMethod')->default(TranslationMethod::Site->value);
@@ -1036,6 +1075,7 @@ class Install extends Migration
             $table->string('type');
             $table->unsignedSmallInteger('sortOrder')->nullable();
             $table->tinyInteger('colspan')->nullable();
+            $table->string('color')->nullable()->default('gray');
             $table->jsonb('settings')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -1062,17 +1102,22 @@ class Install extends Migration
         Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['rootEventId', 'occurredAt', 'id']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['operationId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'status', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);
         Schema::createIndex(Table::ASSETS, ['filename', 'folderId']);
         Schema::createIndex(Table::ASSETS, ['folderId']);
         Schema::createIndex(Table::ASSETS, ['volumeId']);
+        Schema::createIndex(Table::ASSETS, ['imageType']);
         Schema::createIndex(Table::BULKOPEVENTS, ['timestamp']);
         Schema::createIndex(Table::CHANGEDATTRIBUTES, ['elementId', 'siteId', 'dateUpdated']);
         Schema::createIndex(Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);
         Schema::createIndex(Table::CONTENTBLOCKS, ['primaryOwnerId']);
         Schema::createIndex(Table::CONTENTBLOCKS, ['fieldId']);
+        Schema::createIndex(Table::AGENT_GUIDANCE, ['siteId', 'userId']);
+        Schema::createIndex(Table::AGENT_GUIDANCE, ['userId']);
+        Schema::createIndex(Table::AGENT_SKILLS, ['title'], unique: true);
         Schema::createIndex(Table::RELEASES, ['status', 'publishedAt']);
         Schema::createIndex(Table::RELEASE_ITEMS, ['draftId'], unique: true);
         Schema::createIndex(Table::RELEASE_ITEMS, ['releaseId', 'canonicalId'], unique: true);
@@ -1122,6 +1167,7 @@ class Install extends Migration
         Schema::createIndex(Table::FIELDS, ['dateDeleted']);
         Schema::createIndex(Table::GQLTOKENS, ['accessToken'], unique: true);
         Schema::createIndex(Table::GQLTOKENS, ['name'], unique: true);
+        Schema::createIndex(Table::IMAGEHASHES, ['band', 'value']);
         Schema::createIndex(Table::IMAGETRANSFORMINDEX, ['assetId', 'transformString']);
         Schema::createIndex(Table::IMAGETRANSFORMS, ['name']);
         Schema::createIndex(Table::IMAGETRANSFORMS, ['handle']);
@@ -1225,6 +1271,7 @@ class Install extends Migration
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('uploaderId')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
         Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
+        Schema::table(Table::IMAGEHASHES, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
         Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::AUTHENTICATOR, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::CHANGEDATTRIBUTES, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete()->cascadeOnUpdate());
@@ -1234,6 +1281,8 @@ class Install extends Migration
         Schema::table(Table::CONTENTBLOCKS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::CONTENTBLOCKS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
         Schema::table(Table::CONTENTBLOCKS, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::AGENT_GUIDANCE, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete());
+        Schema::table(Table::AGENT_GUIDANCE, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('createdById')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::RELEASES, fn (Blueprint $table) => $table->foreign('scheduledById')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::RELEASE_ITEMS, fn (Blueprint $table) => $table->foreign('releaseId')->references('id')->on(Table::RELEASES)->cascadeOnDelete());

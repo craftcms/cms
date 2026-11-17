@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Components\InputColor;
 use CraftCms\Cms\Cp\FormFields;
+use Symfony\Component\DomCrawler\Crawler;
 
 describe('input-color', function () {
     it('renders a craft-input-color with a slotted hex input', function () {
@@ -20,7 +21,7 @@ describe('input-color', function () {
             ->and($html)->toContain('value="7ab55c"');
     });
 
-    it('keeps only the Lion control props on the host', function () {
+    it('keeps only the control props on the host', function () {
         $html = InputColor::make()->id('c')->name('c')->toHtml();
 
         // The component owns its type/layout; craft-input-only styling host
@@ -28,6 +29,13 @@ describe('input-color', function () {
         expect($html)->toContain('<craft-input-color name="c">')
             ->and($html)->not->toContain('maxlength')
             ->and($html)->not->toContain('<craft-input-color type=');
+    });
+
+    it('emits alpha on the host only when the legacy config asks for it', function () {
+        $host = fn (array $config) => new Crawler(FormFields::colorHtml(['id' => 'c', 'name' => 'c', ...$config]))->filter('craft-input-color');
+
+        expect($host(['alpha' => true])->attr('alpha'))->toBe('')
+            ->and($host([])->attr('alpha'))->toBeNull();
     });
 
     it('emits presets as a JSON array attribute', function () {

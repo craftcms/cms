@@ -5,16 +5,22 @@
    * `useAppLayout()` and `LayoutSlot`, so the shell decides where the header,
    * save controls and details column go.
    */
+  import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import {uuid} from '@/common/craft/strings';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {
     computed,
     nextTick,
+    onBeforeUnmount,
+    onMounted,
     provide,
+    ref,
     shallowReactive,
     useTemplateRef,
+    watch,
     type Component,
   } from 'vue';
-  import {router, usePage} from '@inertiajs/vue3';
+  import {router} from '@inertiajs/vue3';
   import DynamicHtmlRenderer from '@/common/components/DynamicHtmlRenderer.vue';
   import MetadataDetailsContent from '@/common/components/MetadataDetailsContent.vue';
   import AutosaveMessage from '@/modules/elements/components/AutosaveMessage.vue';
@@ -22,6 +28,7 @@
   import {createElementActionDispatcher} from '@/modules/elements/composables/useElementActionMenu';
   import ElementActivityAvatars from '@/modules/elements/components/ElementActivityAvatars.vue';
   import ElementViewButtons from '@/modules/elements/components/ElementViewButtons.vue';
+  import CpButtonLink from '@/common/components/CpButtonLink.vue';
   import LayoutSlot from '@/common/components/LayoutSlot.vue';
   import ErrorSummary from '@/common/form/ErrorSummary.vue';
   import {useAppLayout} from '@/common/composables/useAppLayout';
@@ -32,20 +39,37 @@
   import type {UiValues} from '@/modules/ui/types';
   import {isSidebarTab, type SidebarTabOutlets} from '@/modules/ui/sidebarTabs';
   import ElementDetailsPanels from '@/modules/elements/components/ElementDetailsPanels.vue';
+  import ScreenPanelsScope from '@/common/components/ScreenPanelsScope.vue';
   import {elementDetailsPanelRegistry} from '@/bootstrap/element-details-panels';
   import type {FormSaveOptions} from '@/common/types';
-  import WorkflowEditLockCallout from '@/modules/workflows/components/WorkflowEditLockCallout.vue';
+  import WorkflowEditLock from '@/modules/workflows/components/WorkflowEditLock.vue';
   import WorkflowDraftsStatus from '@/modules/workflows/components/WorkflowDraftsStatus.vue';
   import CpContainer from '@/common/components/CpContainer.vue';
-  import VarDump from '@/common/components/VarDump.vue';
   import LayoutSlotOutlet from '@/common/components/LayoutSlotOutlet.vue';
   import {NestedOwnerEditorKey} from '@/modules/elements/nested-owner';
+  import {
+    AssistantEditorKey,
+    assistantContainer,
+    registerAssistantEditor,
+    type AssistantEditor,
+  } from '@/modules/ai/assistant/context';
+  import {registerAssistantScreen} from '@/modules/ai/assistant/assistant';
+  import {useScreenPanels} from '@/common/composables/screenPanels';
+  import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
+  import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
+  import {getActivePreview} from '@/modules/elements/live-preview/previews';
+  import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ReleaseCallout from '@/modules/releases/components/ReleaseCallout.vue';
   import ReleasePicker from '@/modules/releases/components/ReleasePicker.vue';
-  import {provideReleaseEditorActions} from '@/modules/releases/releaseEditor';
+  import {
+    isReleasePreviewOpen,
+    provideReleaseEditorActions,
+  } from '@/modules/releases/releaseEditor';
   import type {ReleaseOption} from '@/modules/elements/composables/useElementEditor';
   import {create} from '@actions/ReleasesController';
   import {openSlideout} from '@/common/slideouts';
+  import {registerActions} from '@/modules/command-palette/registry';
+  import type {CommandPaletteItem} from '@/modules/command-palette/types';
   import {firstFocusableWithin} from '@/common/utils/dom';
 
   interface CreatedReleaseResponse {
@@ -105,6 +129,25 @@
 
   provide(NestedOwnerEditorKey, editor.nestedOwnerEditor);
 
+  // The AI assistant reads the form's values, and applies the changes it
+  // proposes, through the fields that render each control path.
+  const assistantParams = payload.aiAssistant;
+
+  if (assistantParams) {
+    const assistantEditor: AssistantEditor = {
+      id: uuid(),
+      params: () => payload.aiAssistant ?? assistantParams,
+      label: () => payload.title,
+      scope: () => uiPayload.value?.scope ?? [],
+      values: editor.formValues,
+      container: () =>
+        contentEl.value ? assistantContainer(contentEl.value) : null,
+    };
+
+    provide(AssistantEditorKey, assistantEditor);
+    onBeforeUnmount(registerAssistantEditor(assistantEditor));
+  }
+
   /**
    * Fields outside of a tab — in a field layout whose tab was never saved,
    * say — need the spacing a tab would otherwise give them.
@@ -113,6 +156,14 @@
     () =>
       uiPayload.value?.nodes.some((node) => node.component !== 'craft:tab') ??
       false
+  );
+
+  /** Whether the content starts with a tab strip, which sits flush with its top. */
+  const hasContentTabs = computed(
+    () =>
+      (uiPayload.value?.nodes.filter(
+        (node) => node.component === 'craft:tab' && !isSidebarTab(node)
+      ).length ?? 0) > 1
   );
 
   /** Field layout tabs that render as details panels, rather than tabs. */
@@ -153,14 +204,19 @@
       Boolean(payload.activityTimelineUrl) ||
       elementDetailsPanelRegistry.hasVisible(payload)
   );
-  const detailsPanels = useTemplateRef<{select: (panelId: string) => void}>(
-    'detailsPanels'
-  );
+  const detailsPanels = useTemplateRef<{
+    select: (panelId: string, options?: {focus?: string}) => void;
+  }>('detailsPanels');
 
-  const editorLocked = computed(
-    () =>
-      workflowReviewLocked.value || payload.readOnly || releaseDraftLocked.value
+  /**
+   * Shows the fields read-only until the draft can be edited, as a read-only
+   * payload's (such as a revision's) already are, so they stay legible and
+   * focusable. That payload isn't included, as its controls arrive that way.
+   */
+  const fieldsLocked = computed(
+    () => workflowReviewLocked.value || releaseDraftLocked.value
   );
+  const editorLocked = computed(() => fieldsLocked.value || payload.readOnly);
 
   const canChooseRelease = computed(
     () =>
@@ -181,6 +237,23 @@
     currentEntryTypeId: () => form.typeId ?? null,
     slideout,
   });
+
+  /**
+   * Whether the footer leaves out the saves, as in a release's editor, where
+   * the draft autosaves and the release applies it: only a workflow action,
+   * such as requesting review, is left.
+   */
+  const workflowActionsOnly = slideout?.workflowActionsOnly ?? false;
+
+  /**
+   * Whether the footer has nothing to offer: with only workflow actions
+   * allowed, there's no Cancel, so it's empty unless one of them is available.
+   */
+  const hideFooter = computed(
+    () =>
+      workflowActionsOnly &&
+      (editorLocked.value || !payload.editorActions.primary.panelId)
+  );
 
   const saveButtons = computed(() =>
     payload.editorActions.buttons.map((action) => ({
@@ -218,6 +291,13 @@
         onSuccess: () => activity.rebase(payload.updatedTimestamps),
       });
     }
+  }
+
+  /** Opens the Workflow panel in its comment box, to note what's ready for review. */
+  function openWorkflowComment(): void {
+    detailsPanels.value?.select('workflow', {
+      focus: '.comment-field textarea',
+    });
   }
 
   function primaryAction(options?: FormSaveOptions): void {
@@ -270,25 +350,263 @@
   });
 
   const isSlideout = useIsSlideout();
-  const page = usePage<{readOnly?: boolean}>();
-  const showElementControls = computed(
-    () => !isSlideout && !page.props.readOnly && !payload.release
+
+  // A slideout opened from within a preview edits beside that preview, so it
+  // doesn't open one of its own.
+  const inOpenPreview = isSlideout && getActivePreview() !== null;
+  const livePreview = useLivePreview(
+    () => (inOpenPreview ? null : (payload.preview ?? null)),
+    {
+      save: () => autosave.save(),
+      get hasPendingChanges() {
+        return autosave.hasPendingChanges.value;
+      },
+    }
   );
-  const showActionMenu = computed(
-    () => (isSlideout || !page.props.readOnly) && !payload.release
+  // Only a lack of targets leaves these out: previewing changes nothing, and
+  // Live Preview's pane keeps the editor's notices and locks.
+  const showViewButtons = computed(() => payload.previewTargets.length > 0);
+  const canPreview = computed(
+    () => !inOpenPreview && Boolean(payload.preview?.targets.length)
   );
+  const livePreviewPane =
+    useTemplateRef<InstanceType<typeof LivePreview>>('livePreviewPane');
+  const livePreviewTarget = computed(
+    () => livePreviewPane.value?.editorTarget ?? null
+  );
+  const livePreviewNoticesTarget = computed(
+    () => livePreviewPane.value?.noticesTarget ?? null
+  );
+  /** Whether the editor content is in Live Preview's pane rather than here. */
+  const contentInPreview = computed(
+    () =>
+      Boolean(livePreviewPane.value?.holdsEditor) &&
+      Boolean(livePreviewTarget.value)
+  );
+
+  // The AI assistant's panel goes in the screen the editor is shown in, such
+  // as a slideout, and in Live Preview's pane while it holds the content.
+  const screenPanels = useScreenPanels();
+  onBeforeUnmount(
+    registerAssistantScreen(
+      () =>
+        contentInPreview.value
+          ? (livePreviewPane.value?.panels ?? null)
+          : screenPanels,
+      Boolean(assistantParams)
+    )
+  );
+  // The content's height, kept while it's away so the page doesn't collapse
+  // and lose its scroll position. Read before the content moves.
+  const awayHeight = ref(0);
+  watch(
+    contentInPreview,
+    (away) => {
+      if (away) {
+        awayHeight.value = contentEl.value?.offsetHeight ?? 0;
+      }
+    },
+    {flush: 'pre'}
+  );
+  const previewButton = useTemplateRef<HTMLElement>('previewButton');
+
+  /** Whether the draft is in review, waiting on the user's approval of its current stage. */
+  const awaitingUserApproval = computed(
+    () =>
+      payload.workflow.current?.status === 'pending' &&
+      payload.workflow.current.isReviewer &&
+      !payload.workflow.current.hasApproved
+  );
+  const approvalNoticeDismissed = ref(false);
+  const releaseNoticeDismissed = ref(false);
+
+  /**
+   * Whether the release notice would only repeat what the release's preview
+   * already shows, beside the draft opened from it: that the draft is in an
+   * unscheduled release, which it isn't blocking, and editing it won't reopen
+   * an approved review, leaving it blocking.
+   */
+  const releaseNoticeRedundant = computed(
+    () =>
+      slideout !== null &&
+      payload.release !== null &&
+      isReleasePreviewOpen(payload.release.id) &&
+      payload.release.status !== 'scheduled' &&
+      payload.release.blockers.length === 0 &&
+      payload.workflow.current?.status !== 'approved'
+  );
+  const showReleaseNotice = computed(
+    () =>
+      payload.release !== null &&
+      !releaseNoticeDismissed.value &&
+      !releaseNoticeRedundant.value
+  );
+  const {announce} = useAnnouncer();
+
+  // Dismissing the release notice only hides it until the draft starts
+  // blocking the release, or the draft belongs to a different release.
+  watch(
+    () =>
+      [payload.release?.id, Boolean(payload.release?.blockers.length)] as const,
+    ([id, blocking], [previousId, wasBlocking]) => {
+      if (id !== previousId || (blocking && !wasBlocking)) {
+        releaseNoticeDismissed.value = false;
+      }
+
+      if (id === previousId && blocking && !wasBlocking) {
+        announce(
+          t('This draft is now blocking “{name}”.', {
+            name: payload.release!.name,
+          })
+        );
+      }
+    }
+  );
+  /** Live Preview's two panes don't fit on a phone, so it isn't offered there. */
+  const isPhone = cpBreakpoints.smaller('md');
+
+  watch(autosave.saves, () => {
+    livePreview.draftSaved(autosave.lastResponse.value);
+
+    // A newer save is on its way, so this one's page would only be replaced.
+    if (!autosave.hasPendingChanges.value) {
+      void livePreview.refresh();
+    }
+  });
+
+  // The screen is only there for the preview.
+  onMounted(() => {
+    if (payload.standalonePreview && canPreview.value) {
+      void livePreview.open();
+    }
+  });
+
+  /**
+   * What the command palette offers on this page: the Save button and its
+   * menu, discarding provisional changes, adding the draft to a release, and
+   * copying the element's ID, URL and reference tag. Read each time the
+   * palette opens; a slideout's editor leaves the palette to the page's.
+   */
+  function paletteActions(): CommandPaletteItem[] {
+    const items: CommandPaletteItem[] = [];
+    const description = t('This page');
+
+    if (!editorLocked.value) {
+      items.push(
+        {
+          id: 'editor-save',
+          label: payload.editorActions.primary.label,
+          description,
+          icon: 'floppy-disk',
+          run: () => primaryAction(),
+        },
+        ...formActionItems.value.map((action, index) => ({
+          id: `editor-save-menu-${index}`,
+          label: action.label,
+          description,
+          icon: 'floppy-disk',
+          run: action.onClick,
+        })),
+        ...saveButtons.value
+          .filter((button) => !button.disabled)
+          .map((button, index) => ({
+            id: `editor-button-${index}`,
+            label: button.label,
+            description,
+            icon: 'pen-to-square',
+            run: button.onClick,
+          }))
+      );
+
+      if (payload.notice && payload.canDiscardDraft) {
+        items.push({
+          id: 'editor-discard-changes',
+          label: t('Discard changes'),
+          description,
+          icon: 'arrow-rotate-left',
+          variant: 'danger',
+          confirm: t('Are you sure you want to discard your changes?'),
+          run: discardDraft,
+        });
+      }
+    }
+
+    if (!payload.readOnly && canChooseRelease.value) {
+      items.push(
+        ...payload.releaseOptions.map((release) => ({
+          id: `editor-add-to-release-${release.id}`,
+          label: t('Add to {release}', {release: release.name}),
+          description,
+          icon: 'rocket',
+          run: () => chooseRelease(release),
+        }))
+      );
+
+      if (payload.canCreateRelease) {
+        items.push({
+          id: 'editor-add-to-new-release',
+          label: t('Add to a new release'),
+          description,
+          icon: 'rocket',
+          run: () => createRelease(null),
+        });
+      }
+    }
+
+    const id = payload.canonicalId ?? payload.elementId;
+
+    if (id !== null) {
+      items.push({
+        id: 'editor-copy-id',
+        label: t('Copy ID'),
+        description,
+        icon: 'clipboard',
+        action: {type: 'clipboard', value: String(id)},
+      });
+
+      if (payload.refHandle) {
+        items.push({
+          id: 'editor-copy-reference-tag',
+          label: t('Copy reference tag'),
+          description,
+          icon: 'clipboard',
+          action: {type: 'clipboard', value: `{${payload.refHandle}:${id}}`},
+        });
+      }
+    }
+
+    if (payload.elementUrl) {
+      items.push({
+        id: 'editor-copy-url',
+        label: t('Copy URL'),
+        description,
+        icon: 'clipboard',
+        action: {type: 'clipboard', value: payload.elementUrl},
+      });
+    }
+
+    return items;
+  }
+
+  if (!isSlideout) {
+    onBeforeUnmount(registerActions(paletteActions).unregister);
+  }
 
   useAppLayout(() => ({
     title: payload.title,
     form,
     onSave: editorLocked.value ? undefined : primaryAction,
-    saveDisabled: editorLocked.value,
+    saveDisabled:
+      editorLocked.value ||
+      (workflowActionsOnly && !payload.editorActions.primary.panelId),
+    handlesReadOnly: true,
+    hideFooter: hideFooter.value,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
     defaultFormActions: [],
-    formActions: formActionItems.value,
-    formAdditionalButtons: saveButtons.value,
+    formActions: workflowActionsOnly ? [] : formActionItems.value,
+    formAdditionalButtons: workflowActionsOnly ? [] : saveButtons.value,
     editUrl: payload.cpEditUrl,
   }));
 </script>
@@ -305,7 +623,7 @@
   >
     <craft-badge
       v-if="payload.isProvisionalDraft"
-      fill="info"
+      fill="violet"
       class="relative text-sm font-normal inline-flex"
     >
       <craft-icon name="pen-circle" slot="prefix"></craft-icon>
@@ -326,8 +644,7 @@
   <LayoutSlot
     v-if="
       activity.activity.value.length ||
-      (!isSlideout && payload.workflow.draftReviews.length) ||
-      (showElementControls && payload.previewTargets.length)
+      (!isSlideout && payload.workflow.draftReviews.length)
     "
     name="content-toolbar-meta"
   >
@@ -336,19 +653,18 @@
       v-if="!isSlideout && payload.workflow.draftReviews.length"
       :drafts="payload.workflow.draftReviews"
     />
-    <ElementViewButtons
-      v-if="showElementControls"
-      :targets="payload.previewTargets"
-    />
   </LayoutSlot>
 
-  <LayoutSlot v-if="payload.additionalButtons.length" name="additional-buttons">
+  <LayoutSlot
+    v-if="!workflowActionsOnly && payload.additionalButtons.length"
+    name="additional-buttons"
+  >
     <craft-button
       v-for="button in payload.additionalButtons"
       :key="button.label"
       type="button"
       :variant="button.variant ?? 'outline'"
-      @click="dispatchBehavior(button.behavior)"
+      @click="dispatchBehavior(button.behavior, false, $event)"
     >
       <craft-icon
         v-if="button.icon"
@@ -359,10 +675,24 @@
     </craft-button>
   </LayoutSlot>
 
-  <LayoutSlot
-    v-if="showActionMenu && payload.actionMenu.length"
-    name="content-toolbar-actions"
-  >
+  <LayoutSlot v-if="showViewButtons" name="content-toolbar-actions">
+    <div class="flex gap-sm items-center">
+      <craft-button
+        v-if="canPreview && !isPhone"
+        ref="previewButton"
+        type="button"
+        size="small"
+        variant="plain"
+        icon="eye"
+        @click="livePreview.open()"
+      >
+        {{ t('Preview') }}
+      </craft-button>
+      <ElementViewButtons :targets="payload.previewTargets" />
+    </div>
+  </LayoutSlot>
+
+  <LayoutSlot v-if="payload.actionMenu.length" name="content-toolbar-actions">
     <ElementActionMenu
       :items="payload.actionMenu"
       :current-entry-type-id="form.typeId"
@@ -371,8 +701,13 @@
     />
   </LayoutSlot>
 
-  <!-- Where the legacy editor puts its spinner and checkmark. -->
-  <LayoutSlot v-if="autosave.status.value !== 'idle'" name="footer-meta">
+  <!-- Where the legacy editor puts its spinner and checkmark, or beside the
+    title when there's no footer. Keyed, as a layout slot's name is read once. -->
+  <LayoutSlot
+    v-if="autosave.status.value !== 'idle'"
+    :key="hideFooter ? 'header' : 'footer'"
+    :name="hideFooter ? 'content-toolbar-meta' : 'footer-meta'"
+  >
     <AutosaveMessage
       :status="autosave.status.value"
       :saved-at="autosave.savedAt.value"
@@ -383,7 +718,7 @@
   </LayoutSlot>
 
   <LayoutSlot
-    v-if="!payload.readOnly && canChooseRelease"
+    v-if="!workflowActionsOnly && !payload.readOnly && canChooseRelease"
     name="additional-buttons"
   >
     <ReleasePicker
@@ -404,145 +739,291 @@
       payload.mergeNotice ||
       payload.workflow.convertedToDraft ||
       workflowReviewLocked ||
-      payload.release
+      (awaitingUserApproval && !approvalNoticeDismissed) ||
+      payload.workflow.current?.status === 'withdrawn' ||
+      showReleaseNotice
     "
     name="content-notices"
   >
-    <div class="element-notices">
-      <craft-callout
-        v-if="payload.workflow.convertedToDraft && !workflowReviewLocked"
-        variant="warning"
-        icon="triangle-exclamation"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{
-          t(
-            'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
-          )
-        }}
-      </craft-callout>
-
-      <WorkflowEditLockCallout
-        v-if="workflowReviewLocked"
-        class="mb-4"
-        @start-editing="startEditing"
-      />
-
-      <ReleaseCallout
-        v-if="payload.release"
-        :release="payload.release"
-        :can-edit="!payload.readOnly"
-        :editing="!releaseDraftLocked"
-        @start-editing="startEditing"
-        class="mb-4"
-      />
-
-      <craft-callout
-        v-if="activity.isStale.value"
-        variant="warning"
-        icon="triangle-exclamation"
-        class="mb-4"
-        appearance="fill"
-        rounded="none"
-      >
-        {{ staleMessage }}
-
-        <craft-button
-          slot="action"
-          type="button"
-          variant="outline"
-          size="small"
-          @click="reload"
-          inherit
+    <Teleport
+      :to="livePreviewNoticesTarget"
+      :disabled="!contentInPreview"
+      defer
+    >
+      <div class="element-notices">
+        <craft-callout
+          v-if="payload.workflow.convertedToDraft && !workflowReviewLocked"
+          variant="warning"
+          icon="triangle-exclamation"
+          rounded="none"
+          appearance="fill"
         >
-          {{ t('Reload') }}
-        </craft-button>
-      </craft-callout>
+          {{
+            t(
+              'Your changes are saved in a draft and won’t be published until the draft is approved and applied.'
+            )
+          }}
+          <craft-button
+            v-if="payload.workflow.current?.canSubmit"
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            inherit
+            @click="openWorkflowComment"
+          >
+            {{ payload.workflow.current.submitLabel }}
+          </craft-button>
+        </craft-callout>
 
-      <craft-callout
-        v-if="payload.readOnly"
-        variant="neutral"
-        rounded="none"
-        appearance="fill"
-        icon="lock"
-      >
-        {{ t('This is a read-only view.') }}
-      </craft-callout>
+        <WorkflowEditLock
+          v-if="workflowReviewLocked"
+          :payload="payload"
+          :update-payload="updatePayload"
+          @start-editing="startEditing"
+        />
 
-      <craft-callout
-        v-if="payload.notice"
-        variant="accent"
-        icon="edit"
-        class="mb-4"
-        rounded="none"
-        appearance="fill"
-      >
-        {{ payload.notice }}
-
-        <craft-button
-          v-if="payload.canDiscardDraft"
-          slot="action"
-          type="button"
-          variant="outline"
-          size="small"
-          @click="discardDraft"
-          inherit
+        <craft-callout
+          v-if="awaitingUserApproval && !approvalNoticeDismissed"
+          variant="info"
+          icon="clipboard-check"
+          rounded="none"
+          appearance="fill"
         >
-          {{ t('Discard changes') }}
-        </craft-button>
-      </craft-callout>
+          {{ t('This draft is waiting on your approval.') }}
+          <craft-button
+            slot="action"
+            type="button"
+            icon="xmark-large"
+            :aria-label="t('Dismiss')"
+            variant="plain"
+            size="small"
+            flush="inline-end"
+            inherit
+            @click="approvalNoticeDismissed = true"
+          ></craft-button>
+        </craft-callout>
 
-      <craft-callout
-        v-if="payload.mergeNotice"
-        variant="warning"
-        icon="triangle-exclamation"
-        class="mb-4"
-      >
-        {{ payload.mergeNotice }}
-      </craft-callout>
-    </div>
+        <craft-callout
+          v-if="payload.workflow.current?.status === 'withdrawn'"
+          variant="info"
+          icon="clipboard-list-check"
+          rounded="none"
+          appearance="fill"
+        >
+          {{
+            payload.workflow.current.canSubmit
+              ? t(
+                  'This draft was withdrawn from review. Resubmit it when your edits are ready.'
+                )
+              : t('This draft was withdrawn from review.')
+          }}
+          <craft-button
+            v-if="payload.workflow.current.canSubmit"
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            inherit
+            @click="detailsPanels?.select('workflow')"
+          >
+            {{ payload.workflow.current.submitLabel }}
+          </craft-button>
+        </craft-callout>
+
+        <ReleaseCallout
+          v-if="payload.release && showReleaseNotice"
+          :release="payload.release"
+          :locked="releaseDraftLocked"
+          :can-start-editing="!payload.readOnly && !workflowReviewLocked"
+          @start-editing="startEditing"
+          @dismiss="releaseNoticeDismissed = true"
+        />
+
+        <craft-callout
+          v-if="activity.isStale.value"
+          variant="warning"
+          icon="triangle-exclamation"
+          appearance="fill"
+          rounded="none"
+        >
+          {{ staleMessage }}
+
+          <craft-button
+            slot="action"
+            type="button"
+            variant="outline"
+            size="small"
+            @click="reload"
+            inherit
+          >
+            {{ t('Reload') }}
+          </craft-button>
+        </craft-callout>
+
+        <!-- A revision's notice already says why nothing is editable. -->
+        <craft-callout
+          v-if="payload.readOnly && !payload.notice"
+          variant="neutral"
+          rounded="none"
+          appearance="fill"
+          icon="lock"
+        >
+          {{ t('This is a read-only view.') }}
+        </craft-callout>
+
+        <craft-callout
+          v-if="payload.notice"
+          variant="accent"
+          icon="edit"
+          rounded="none"
+          appearance="fill"
+        >
+          {{ payload.notice }}
+
+          <!-- The callout's action slot lays out one item, so the buttons share it. -->
+          <div
+            v-if="
+              (payload.isProvisionalDraft && payload.compareChangesUrl) ||
+              payload.canDiscardDraft
+            "
+            slot="action"
+            class="flex flex-wrap gap-md"
+          >
+            <CpButtonLink
+              v-if="payload.isProvisionalDraft && payload.compareChangesUrl"
+              :href="payload.compareChangesUrl"
+              :variant="ButtonVariant.Outline"
+              size="small"
+              icon="code-compare"
+              inherit
+            >
+              {{ t('Compare changes') }}
+            </CpButtonLink>
+            <craft-button
+              v-if="payload.canDiscardDraft"
+              type="button"
+              variant="outline"
+              size="small"
+              @click="discardDraft"
+              inherit
+            >
+              {{ t('Discard changes') }}
+            </craft-button>
+          </div>
+        </craft-callout>
+
+        <craft-callout
+          v-if="payload.mergeNotice"
+          variant="warning"
+          icon="triangle-exclamation"
+          rounded="none"
+          appearance="fill"
+        >
+          {{ payload.mergeNotice }}
+        </craft-callout>
+      </div>
+    </Teleport>
   </LayoutSlot>
 
-  <div ref="content" class="py-lg">
-    <CpContainer>
-      <component
-        :is="formWrapper ?? 'div'"
-        v-bind="formWrapper ? {editor, region: 'content'} : {}"
-      >
-        <component
-          :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
-          v-if="uiPayload"
-        >
-          <UiRenderer
-            ref="renderer"
-            :payload="uiPayload"
-            :errors="errors"
-            :refresh="uiPayload.refreshable ? refreshLayout : undefined"
-            :modified="autosave.modified.value"
-            :disabled="editorLocked"
-            :sidebar-tab-outlets="sidebarTabOutlets"
-            @update:mutation="onMutation"
-          />
-        </component>
-      </component>
-
-      <slot :payload="payload" />
-    </CpContainer>
+  <!-- While Live Preview holds the content: seen only as it slides out. -->
+  <div
+    v-if="contentInPreview"
+    class="element-editor__loading"
+    :style="{blockSize: `${awayHeight}px`}"
+  >
+    <craft-spinner :label="t('Loading')"></craft-spinner>
   </div>
+  <Teleport :to="livePreviewTarget" :disabled="!contentInPreview" defer>
+    <div ref="content" :class="hasContentTabs ? 'pb-lg' : 'py-lg'">
+      <CpContainer>
+        <component
+          :is="formWrapper ?? 'div'"
+          v-bind="formWrapper ? {editor, region: 'content'} : {}"
+        >
+          <component
+            :is="hasUntabbedFields ? 'craft-field-group' : 'div'"
+            v-if="uiPayload"
+          >
+            <UiRenderer
+              ref="renderer"
+              :payload="uiPayload"
+              :errors="errors"
+              :refresh="uiPayload.refreshable ? refreshLayout : undefined"
+              :modified="autosave.modified.value"
+              :read-only="fieldsLocked"
+              :sidebar-tab-outlets="sidebarTabOutlets"
+              @update:mutation="onMutation"
+            />
+          </component>
+        </component>
 
-  <LayoutSlot
-    v-if="hasDetails || $slots['details-header']"
-    name="content-details"
+        <slot :payload="payload" />
+      </CpContainer>
+    </div>
+  </Teleport>
+
+  <LivePreview
+    v-if="canPreview"
+    ref="livePreviewPane"
+    :controller="livePreview"
+    :title="payload.title"
+    :standalone="payload.standalonePreview ?? null"
+    @save="editorLocked || primaryAction()"
+    @closed="previewButton?.focus()"
+  >
+    <!-- The standalone page has no other header to reach them from. -->
+    <template v-if="payload.standalonePreview" #actions>
+      <ElementActionMenu
+        :items="payload.actionMenu"
+        :current-entry-type-id="form.typeId"
+      />
+    </template>
+    <!-- The status a slideout's header shows beside its title. -->
+    <template #meta>
+      <craft-badge
+        v-if="payload.isProvisionalDraft"
+        fill="violet"
+        class="relative text-sm font-normal inline-flex"
+      >
+        <craft-icon name="pen-circle" slot="prefix"></craft-icon>
+        {{ t('Edited') }}
+      </craft-badge>
+      <DynamicHtmlRenderer
+        v-else-if="payload.statusLabelHtml"
+        :html="payload.statusLabelHtml"
+      />
+    </template>
+    <template #status>
+      <AutosaveMessage
+        v-if="autosave.status.value !== 'idle'"
+        :status="autosave.status.value"
+        :saved-at="autosave.savedAt.value"
+        :error="autosave.error.value"
+        :http-status="autosave.httpStatus.value"
+        @refresh="reload"
+      />
+    </template>
+    <!-- Left out while the editor is locked, as the page's Save button is. -->
+    <template v-if="!editorLocked" #footer>
+      <craft-button type="button" variant="primary" @click="primaryAction()">
+        {{ payload.editorActions.primary.label }}
+      </craft-button>
+    </template>
+  </LivePreview>
+
+  <!-- In Live Preview's editor while it holds the content. -->
+  <ScreenPanelsScope
+    :key="contentInPreview ? 'preview' : 'page'"
+    :panels="contentInPreview ? livePreviewPane?.panels : null"
   >
     <ElementDetailsPanels
+      v-if="hasDetails || $slots['details-header']"
       ref="detailsPanels"
       :payload="payload"
       :activity-timeline-version="activityTimelineVersion"
       :update-payload="updatePayload"
       :submit-action="submitAction"
-      :sync-location-hash="!isSlideout"
       :sidebar-tabs="sidebarTabs"
     >
       <template #sidebar-tab="{tab}">
@@ -573,7 +1054,7 @@
                   :payload="sidebarPayload"
                   :errors="sidebarErrors"
                   :modified="autosave.modified.value"
-                  :disabled="editorLocked"
+                  :read-only="fieldsLocked"
                   @update:mutation="onSidebarMutation"
                 />
               </craft-field-group>
@@ -582,11 +1063,24 @@
         </MetadataDetailsContent>
       </template>
     </ElementDetailsPanels>
-  </LayoutSlot>
+  </ScreenPanelsScope>
 </template>
 
 <style scoped lang="scss">
+  .element-editor__loading {
+    display: flex;
+    justify-content: center;
+
+    & craft-spinner {
+      position: sticky;
+      inset-block-start: calc(50% + var(--cp-header-height, 0px) / 2);
+      align-self: flex-start;
+      translate: 0 -50%;
+    }
+  }
+
   craft-callout {
-    --c-callout-padding-inline: calc(var(--cp-container-padding) - 4px);
+    --c-callout-padding-inline: calc(var(--cp-container-padding) - 1px);
+    --c-callout-icon-padding-inline: 0 var(--c-spacing-sm);
   }
 </style>

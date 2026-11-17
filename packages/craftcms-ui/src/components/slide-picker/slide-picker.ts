@@ -1,20 +1,36 @@
-import {html, LitElement, nothing, type PropertyValues} from 'lit';
+import {LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
-import {classMap} from 'lit/directives/class-map.js';
-import {ifDefined} from 'lit/directives/if-defined.js';
 import {FormAssociated} from '@src/mixins/FormAssociated';
-import {t} from '@src/utilities/translate';
+import {FormControl, formControlStyles} from '@src/mixins/FormControl';
+import {emitChange, emitInput} from '@src/utilities/form-events';
+import type CraftSlidePickerSlider from './slide-picker-slider.js';
+import './slide-picker-slider.js';
 import styles from './slide-picker.styles.js';
 
 /**
  * @summary Segmented slider control for selecting numeric values in fixed steps.
  * @since 1.0
  *
- * @attr {string} name - Field name. The control posts under this, like any
- * other input. Supplied by the `FormAssociated` mixin.
- * @attr {boolean} disabled - Whether the control responds to input. A disabled
- * control is left out of form submission. Supplied by the `FormAssociated`
- * mixin.
+ * The slider is a `craft-slide-picker-slider` in its `input` slot, so the
+ * label, help text and feedback — its own, or a surrounding
+ * `craft-field`'s — name and describe it the way they do any other control. A
+ * hidden input carries the value, so a picker with a `name` posts like any
+ * other field, including through `$form.serialize()` and Garnish's
+ * `getPostData()`, which only collect native inputs.
+ *
+ * Outside a field, `labelled-by` and `described-by` on the picker name and
+ * describe the slider after elements elsewhere, such as a table column
+ * heading.
+ *
+ * @attr value - The selected value.
+ * @attr labelled-by - Ids of elements elsewhere that label the control, such
+ *   as a table column heading.
+ * @attr described-by - Ids of elements elsewhere that describe the control.
+ *
+ * @slot label - The picker's label, as an alternative to the `label`
+ *   attribute.
+ * @slot help-text - Guidance shown below the label.
+ * @slot feedback - Validation messages.
  *
  * @fires input - Emitted on every alteration to the value.
  * @fires change - Emitted when an alteration to the value is committed by the
@@ -29,27 +45,23 @@ import styles from './slide-picker.styles.js';
  * to the hovered one, previewing a value. Defaults to
  * `--c-color-neutral-fill-normal`.
  */
-export default class CraftSlidePicker extends FormAssociated(LitElement) {
-  static override styles = [styles];
+export default class CraftSlidePicker extends FormAssociated(
+  FormControl(LitElement)
+) {
+  static override styles = [formControlStyles, styles];
 
+  /** The selected value. */
+  @property({type: Number}) value = 0;
   /** Lowest selectable value. */
   @property({type: Number}) min = 0;
   /** Highest selectable value. */
   @property({type: Number}) max = 100;
   /** Spacing between selectable values. */
   @property({type: Number}) step = 10;
-  /** The currently selected value. */
-  @property({type: Number}) value = 0;
-  /** Accessible name for the slider. */
-  @property() label = t('Number of Columns');
   /**
-   * Id of the element describing the control, applied as `aria-describedby`.
-   * `craft-field` supplies this for you.
-   */
-  @property({attribute: 'described-by'}) describedBy?: string;
-  /**
-   * Unit appended to the announced value — `columns`, `px`. Without one a
-   * bare number is all a screen reader gets.
+   * Unit announced after the value — `columns`, `px`, `%`. A unit that starts
+   * with a letter is separated from the value by a space; a symbol is not.
+   * Without one a bare number is all a screen reader gets.
    */
   @property({attribute: 'value-unit'}) valueUnit = '';
   /**
@@ -57,179 +69,97 @@ export default class CraftSlidePicker extends FormAssociated(LitElement) {
    * A property rather than an attribute, so bind it with `.valueLabel`.
    */
   @property({attribute: false}) valueLabel?: (value: number) => string;
-  /**
-   * Renders the current value without allowing it to be changed. Spelled the
-   * way HTML spells it, and the way the other controls do. A read-only control
-   * still posts its value; a `disabled` one does not.
-   */
-  @property({type: Boolean, reflect: true}) readonly = false;
 
-  /** Whether the control responds to input. */
-  get #editable(): boolean {
-    return !this.readonly && !this.disabled;
+  /** The value a form reset goes back to, read on first connect. */
+  #defaultValue?: number;
+
+  /** Adds the slider to the slot map. */
+  override get slots() {
+    return {
+      ...super.slots,
+      input: () => document.createElement('craft-slide-picker-slider'),
+    };
   }
 
-  override _formValue(): string | null {
-    return this.name ? String(this.value) : null;
+  get #slider(): CraftSlidePickerSlider | undefined {
+    return this._control as CraftSlidePickerSlider | undefined;
   }
 
-  override _restoreFormValue(value: string | null): void {
-    this.value = this.#normalize(Number(value ?? this.min));
+  override connectedCallback() {
+    super.connectedCallback();
+    this.#defaultValue ??= this.#normalize(this.value);
+    this.#slider?.addEventListener('input', this.#onSliderInput);
   }
 
-  protected override willUpdate(changed: PropertyValues<this>) {
-    super.willUpdate(changed);
-
-    if (
-      changed.has('min') ||
-      changed.has('max') ||
-      changed.has('step') ||
-      changed.has('value')
-    ) {
-      const normalized = this.#normalize(this.value);
-      if (normalized !== this.value) {
-        this.value = normalized;
-      }
-    }
+  override disconnectedCallback() {
+    this.#slider?.removeEventListener('input', this.#onSliderInput);
+    super.disconnectedCallback();
   }
 
-  #values(): number[] {
+  override _formValue(): string {
+    return String(this.value);
+  }
+
+  /** Restores the starting value when the owning form is reset. */
+  formResetCallback() {
+    this.value = this.#defaultValue ?? this.min;
+  }
+
+  // Every step is a commit, so `change` follows `input` immediately — what a
+  // radio group does, not what a range slider does.
+  #onSliderInput = (event: Event): void => {
+    event.stopPropagation();
+    this.value = Number((event.target as CraftSlidePickerSlider).value);
+    this._syncFormValue();
+    emitInput(this);
+    emitChange(this);
+  };
+
+  #normalize(value: unknown): number {
     const {min, max, step} = this;
-    if (step <= 0 || max < min) {
-      throw new Error('Invalid craft-slide-picker range configuration.');
-    }
-
-    const totalSteps = (max - min) / step;
-    if (!Number.isInteger(totalSteps)) {
-      throw new Error(
-        'Invalid craft-slide-picker step configuration for the provided range.'
-      );
-    }
-
-    return Array.from(
-      {length: totalSteps + 1},
-      (_, index) => min + index * step
-    );
-  }
-
-  #normalize(rawValue: number): number {
-    this.#values();
-    const {min, max, step} = this;
-    const clamped = Math.min(Math.max(rawValue, min), max);
+    const number = Number.isFinite(value) ? (value as number) : min;
+    const clamped = Math.min(Math.max(number, min), max);
     const snapped = min + Math.round((clamped - min) / step) * step;
     return Math.min(Math.max(snapped, min), max);
-  }
-
-  #isRtl(): boolean {
-    const dir =
-      (this.closest('[dir]') as HTMLElement | null)?.getAttribute('dir') ??
-      document.documentElement.getAttribute('dir');
-    return dir?.toLowerCase() === 'rtl';
   }
 
   #valueText(value: number): string {
     if (this.valueLabel) {
       return this.valueLabel(value);
     }
-    return this.valueUnit ? `${value}${this.valueUnit}` : `${value}`;
+    const unit = this.valueUnit.trim();
+    // A word gets a space ("3 columns"); a symbol doesn't ("100%").
+    const separator = /^\p{L}/u.test(unit) ? ' ' : '';
+    return unit ? `${value}${separator}${unit}` : `${value}`;
   }
 
-  #setValue(next: number, emit: boolean) {
-    const normalized = this.#normalize(next);
-    if (normalized === this.value) {
-      return;
-    }
+  protected override willUpdate(changed: PropertyValues<this>) {
+    super.willUpdate(changed);
 
-    this.value = normalized;
-
-    if (emit) {
-      // Every step is a commit, so `change` follows `input` immediately —
-      // what a radio group does, not what a range slider does.
-      this.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
-      this.dispatchEvent(new Event('change', {bubbles: true, composed: true}));
+    const normalized = this.#normalize(this.value);
+    if (normalized !== this.value) {
+      this.value = normalized;
     }
   }
 
-  #handleSegmentClick(value: number) {
-    if (!this.#editable) {
-      return;
-    }
-    this.#setValue(value, true);
-  }
+  override updated(changed: PropertyValues<this>) {
+    super.updated(changed);
 
-  #handleKeyDown(event: KeyboardEvent) {
-    if (!this.#editable) {
-      return;
-    }
-
-    const rtl = this.#isRtl();
-
-    switch (event.key) {
-      case 'ArrowUp':
-        this.#setValue(this.value + this.step, true);
-        event.preventDefault();
-        break;
-      case 'ArrowDown':
-        this.#setValue(this.value - this.step, true);
-        event.preventDefault();
-        break;
-      case 'ArrowRight':
-        this.#setValue(this.value + (rtl ? -this.step : this.step), true);
-        event.preventDefault();
-        break;
-      case 'ArrowLeft':
-        this.#setValue(this.value + (rtl ? this.step : -this.step), true);
-        event.preventDefault();
-        break;
-      case 'Home':
-        this.#setValue(this.min, true);
-        event.preventDefault();
-        break;
-      case 'End':
-        this.#setValue(this.max, true);
-        event.preventDefault();
-        break;
+    const slider = this.#slider;
+    if (slider) {
+      slider.min = this.min;
+      slider.max = this.max;
+      slider.step = this.step;
+      slider.value = String(this.value);
+      slider.readOnly = this.readOnly;
+      slider.disabled = this.disabled || this._formDisabled;
+      slider.valueText = (value) => this.#valueText(value);
     }
   }
 
-  override render() {
-    const values = this.#values();
-
-    return html`
-      <div
-        class="slide-picker"
-        role="slider"
-        tabindex=${this.#editable ? 0 : -1}
-        aria-label=${this.label}
-        aria-valuemin=${this.min}
-        aria-valuemax=${this.max}
-        aria-valuenow=${this.value}
-        aria-valuetext=${this.#valueText(this.value)}
-        aria-readonly=${this.readonly ? 'true' : 'false'}
-        aria-disabled=${this.disabled ? 'true' : 'false'}
-        aria-describedby=${ifDefined(this.describedBy)}
-        @keydown=${this.#handleKeyDown}
-      >
-        ${values.map((segmentValue) => {
-          const active = segmentValue <= this.value;
-          const lastActive = segmentValue === this.value;
-          return html`
-            <span
-              class=${classMap({
-                'slide-picker__segment': true,
-                'is-active': active,
-                'is-last-active': lastActive,
-              })}
-              role="presentation"
-              aria-hidden="true"
-              @click=${() => this.#handleSegmentClick(segmentValue)}
-              title=${this.#valueText(segmentValue)}
-              >${nothing}</span
-            >
-          `;
-        })}
-      </div>
-    `;
+  /** Focuses the slider, as a `craft-field` does when its label is clicked. */
+  override focus(options?: FocusOptions): void {
+    this.#slider?.focus(options);
   }
 }
 

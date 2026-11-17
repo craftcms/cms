@@ -9,6 +9,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\DependencyAwareCache\Dependency\Dependency;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Query\Expression;
 
 /**
  * @internal
@@ -42,7 +43,17 @@ trait CachesQueries
         $connection = $elementQuery->query->getConnection();
         $config = Json::encode($connection->getConfig());
 
-        return md5($sql.$method.$config.Json::encode($parameters));
+        // Expressions don't encode to JSON, so they're keyed by their SQL
+        $grammar = $elementQuery->query->getGrammar();
+        $normalize = function (mixed $value) use (&$normalize, $grammar): mixed {
+            return match (true) {
+                $value instanceof Expression => ['expression' => (string) $value->getValue($grammar)],
+                is_array($value) => array_map($normalize, $value),
+                default => $value,
+            };
+        };
+
+        return md5($sql.$method.$config.Json::encode($normalize($parameters)));
     }
 
     public function cache(int $duration = 3600, ?Dependency $dependency = null): static

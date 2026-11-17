@@ -6,9 +6,11 @@ namespace CraftCms\Cms\Mcp\Capabilities;
 
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\SensitiveValues;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Exception\ToolCallException;
 use Mcp\Schema\ToolAnnotations;
 
 /**
@@ -16,11 +18,14 @@ use Mcp\Schema\ToolAnnotations;
  */
 readonly class ProjectConfig
 {
-    public function __construct(private ProjectConfigService $projectConfig) {}
+    public function __construct(
+        private ProjectConfigService $projectConfig,
+        private SensitiveValues $sensitiveValues,
+    ) {}
 
     /** @return array{path: string|null, external: bool, value: mixed} */
     #[McpTool(
-        name: 'project-config.get',
+        name: 'project_config_get',
         description: 'Gets a loaded or external Craft CMS project config value by path. Omit the path to return the full config.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -32,13 +37,13 @@ readonly class ProjectConfig
         return [
             'path' => $path,
             'external' => $external,
-            'value' => is_array($value) ? ProjectConfigHelper::cleanupConfig($value) : $value,
+            'value' => $this->sensitiveValues->redact(is_array($value) ? ProjectConfigHelper::cleanupConfig($value) : $value, $path ?? ''),
         ];
     }
 
     /** @return array{status: array<string, mixed>} */
     #[McpTool(
-        name: 'project-config.status',
+        name: 'project_config_status',
         description: 'Returns Craft CMS project config status, including pending YAML changes and write issues.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -57,13 +62,13 @@ readonly class ProjectConfig
             'hadFileWriteIssues' => $this->projectConfig->getHadFileWriteIssues(),
             'schemaVersionsCompatible' => $this->projectConfig->getAreConfigSchemaVersionsCompatible($schemaIssues),
             'schemaIssues' => $schemaIssues,
-            'appliedChanges' => $this->projectConfig->getAppliedChanges(),
+            'appliedChanges' => $this->sensitiveValues->redact($this->projectConfig->getAppliedChanges()),
         ]];
     }
 
     /** @return array{invert: bool, diff: string} */
     #[McpTool(
-        name: 'project-config.diff',
+        name: 'project_config_diff',
         description: 'Returns a diff of pending Craft CMS project config YAML changes.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
@@ -72,14 +77,14 @@ readonly class ProjectConfig
     {
         return [
             'invert' => $invert,
-            'diff' => ProjectConfigHelper::diff($invert),
+            'diff' => $this->sensitiveValues->redactYaml(ProjectConfigHelper::diff($invert)),
         ];
     }
 
     /** @return array{applied: true, appliedChanges: list<array{added?: array<string, mixed>, removed?: array<string, mixed>, message?: string}>} */
     #[McpTool(
-        name: 'project-config.apply',
-        description: 'Applies external YAML to loaded project config and its database configuration. Read project-config.status and project-config.diff first to identify pending changes and schema compatibility. Applying can remove configuration and content; authorization must cover those effects. Inspect appliedChanges and read status again to confirm the requested changes were applied.',
+        name: 'project_config_apply',
+        description: 'Applies external YAML to loaded project config and its database configuration. Read project_config_status and project_config_diff first to identify pending changes and schema compatibility. Applying can remove configuration and content; authorization must cover those effects. Inspect appliedChanges and read status again to confirm the requested changes were applied.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]
@@ -89,14 +94,14 @@ readonly class ProjectConfig
 
         return [
             'applied' => true,
-            'appliedChanges' => $this->projectConfig->getAppliedChanges(),
+            'appliedChanges' => $this->sensitiveValues->redact($this->projectConfig->getAppliedChanges()),
         ];
     }
 
     /** @return array{written: true, forced: bool, hadFileWriteIssues: bool} */
     #[McpTool(
-        name: 'project-config.write',
-        description: 'Writes loaded project config to YAML files, overwriting external configuration. Read project-config.status and project-config.diff first to identify YAML changes that would be overwritten; authorization must cover that effect. Use apply instead when external YAML should update the database. Inspect hadFileWriteIssues and read status again to confirm the write.',
+        name: 'project_config_write',
+        description: 'Writes loaded project config to YAML files, overwriting external configuration. Read project_config_status and project_config_diff first to identify YAML changes that would be overwritten; authorization must cover that effect. Use apply instead when external YAML should update the database. Inspect hadFileWriteIssues and read status again to confirm the write.',
         annotations: new ToolAnnotations(destructiveHint: true),
     )]
     #[RequiresAdminChanges]
@@ -109,6 +114,24 @@ readonly class ProjectConfig
             'forced' => $force,
             'hadFileWriteIssues' => $this->projectConfig->getHadFileWriteIssues(),
         ];
+    }
+
+    /** @return array{rebuilt: true} */
+    #[McpTool(
+        name: 'project_config_rebuild',
+        description: 'Rebuilds the loaded project config from what’s stored in the database, as the Project Config utility does, and writes it to the YAML files when they’re written automatically. Use it when project config has fallen out of sync with the database.',
+        annotations: new ToolAnnotations(destructiveHint: true),
+    )]
+    #[RequiresAdmin]
+    public function rebuild(): array
+    {
+        if ($this->projectConfig->readOnly) {
+            throw new ToolCallException('Rebuilding the project config is not allowed while it’s in read-only mode.');
+        }
+
+        $this->projectConfig->rebuild();
+
+        return ['rebuilt' => true];
     }
 
     /**

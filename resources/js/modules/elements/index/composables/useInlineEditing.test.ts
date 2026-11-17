@@ -1,10 +1,23 @@
 import {ref} from 'vue';
-import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
+import {afterEach, describe, expect, it, vi, beforeEach} from 'vite-plus/test';
 import type {InlineAttributeUiHost} from '@/modules/ui/inline-attribute-ui-host';
 import {
   useInlineEditing,
   type InlineEditingSaveResult,
 } from './useInlineEditing';
+
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
 
 describe('useInlineEditing', () => {
   let container: HTMLElement | undefined;
@@ -38,15 +51,7 @@ describe('useInlineEditing', () => {
       errors: {},
     });
     const load = vi.fn(async () => {});
-    const displayNotice = vi.fn();
-    const displayError = vi.fn();
-    vi.stubGlobal('Craft', {
-      findDeltaData: vi.fn(
-        (_before: string, after: string) =>
-          `${after}&modifiedDeltaNames[]=inline%5Belement-11%5D`
-      ),
-      cp: {displayNotice, displayError},
-    });
+    vi.stubGlobal('Craft', {cp: {}});
     const state = useInlineEditing({
       container: ref(container),
       editableRows: [
@@ -70,20 +75,18 @@ describe('useInlineEditing', () => {
       save: saveInline,
       host,
       input: container.querySelector<HTMLInputElement>('input')!,
-      displayNotice,
     };
   }
 
   it('closes without a request when no inputs changed', async () => {
-    const {state, save, displayNotice} = setup();
+    const {state, save} = setup();
     await state.start();
-    window.Craft.findDeltaData = vi.fn(() => '');
 
     await state.save();
 
     expect(save).not.toHaveBeenCalled();
     expect(state.editingIds.value).toEqual([]);
-    expect(displayNotice).toHaveBeenCalledWith('No changes to save.');
+    expect(messages.showNotice).toHaveBeenCalledWith('No changes to save.');
   });
 
   it('keeps values and maps validation errors back to their form host', async () => {

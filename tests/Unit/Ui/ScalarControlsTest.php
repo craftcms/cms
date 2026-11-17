@@ -62,7 +62,7 @@ function scalarControlsUi(): Ui
             DateTime::make('datetime')->showTime()->showTimeZone()->minuteIncrement(15)->fullWidth(),
         ),
         Field::make('Time', Time::make('time')->step(60)),
-        Field::make('Color', Color::make('color')->presets(['#ff0000'])),
+        Field::make('Color', Color::make('color')),
         Field::make('Money',
             Money::make('price')->currency('EUR')->locale('nl_BE')->min(0),
         ),
@@ -130,6 +130,7 @@ it('serializes choice presentations', function () {
 it('serializes text input behavior', function () {
     expect(Text::make('name')
         ->autofocus()
+        ->selectOnFocus()
         ->autocomplete(false)
         ->autocorrect(false)
         ->autocapitalize(false)
@@ -137,6 +138,7 @@ it('serializes text input behavior', function () {
         ->dir('rtl')
         ->props())->toMatchArray([
             'autofocus' => true,
+            'selectOnFocus' => true,
             'autocomplete' => false,
             'autocorrect' => false,
             'autocapitalize' => false,
@@ -191,12 +193,12 @@ it('renders combobox options through the web component', function () {
     );
     $crawler = new Crawler(app(UiHtmlRenderer::class)->render($payload));
 
-    $combobox = $crawler->filter('craft-combobox[name="settings[path]"][model-value="@root"]');
+    $combobox = $crawler->filter('craft-combobox[name="settings[path]"][value="@root"]');
 
     expect($combobox)->toHaveCount(1)
         ->and($combobox->attr('limit'))->toBe('10')
         ->and($combobox->attr('clearable'))->not->toBeNull()
-        ->and($combobox->attr('requireoptionmatch'))->not->toBeNull()
+        ->and($combobox->attr('require-option-match'))->not->toBeNull()
         ->and($combobox->attr('show-all-on-empty'))->not->toBeNull()
         ->and($combobox->attr('dir'))->toBe('rtl')
         ->and(json_decode((string) $combobox->attr('options'), true))->toBe([
@@ -221,6 +223,27 @@ it('serializes and validates combobox behavior', function () {
             'dir' => 'rtl',
         ])
         ->and(fn () => Combobox::make('path')->limit(0))->toThrow(InvalidArgumentException::class);
+});
+
+it('allows selecting more combobox options than its limit lists', function () {
+    $control = Combobox::make('colors')
+        ->multiple()
+        ->requireOptionMatch()
+        ->limit(2)
+        ->options([
+            ['label' => 'Red', 'value' => 'red'],
+            ['label' => 'Green', 'value' => 'green'],
+            ['label' => 'Blue', 'value' => 'blue'],
+        ]);
+
+    expect($control->inputSchema())->toBe([
+        'type' => 'array',
+        'items' => ['oneOf' => [
+            ['const' => 'red', 'title' => 'Red'],
+            ['const' => 'green', 'title' => 'Green'],
+            ['const' => 'blue', 'title' => 'Blue'],
+        ]],
+    ]);
 });
 
 it('renders a create option in an ordinary combobox', function () {
@@ -257,7 +280,7 @@ it('renders single-choice buttons as radios, naming an icon-only option by its i
             ->presentation(ChoicePresentation::Buttons),
         'asc',
     );
-    $radios = $crawler->filter('craft-radio-group[buttons] craft-radio');
+    $radios = $crawler->filter('craft-radio-group[appearance="button-group"] craft-radio');
     $icon = $radios->eq(0)->filter('label[slot="label"] craft-icon');
 
     expect($radios)->toHaveCount(2)
@@ -314,7 +337,7 @@ it('renders choice presentations through CP components', function (ChoicePresent
     'select' => [ChoicePresentation::Select, false, 'craft-select', 'craft-select option', 3],
     'checkboxes' => [ChoicePresentation::Checkboxes, true, 'craft-checkbox-group', 'craft-checkbox'],
     'radios' => [ChoicePresentation::Radios, false, 'craft-radio-group', 'craft-radio'],
-    'buttons' => [ChoicePresentation::Buttons, false, 'craft-radio-group[buttons]', 'craft-radio'],
+    'buttons' => [ChoicePresentation::Buttons, false, 'craft-radio-group[appearance="button-group"]', 'craft-radio'],
     'multiple buttons' => [ChoicePresentation::Buttons, true, 'craft-button-group[multiple]', 'craft-button'],
 ]);
 
@@ -405,3 +428,19 @@ it('displays scalar and choice values without submitting them in non-editable mo
     'read-only' => ControlMode::ReadOnly,
     'disabled' => ControlMode::Disabled,
 ]);
+
+it('writes Color presets as hex colors, picking a bare one by its value', function () {
+    $control = Color::make('color')
+        ->presets(['FF0000', 'f00', '#00ff00ff', 'transparent', 'red', ''])
+        ->presetLabels(['FF0000' => 'Red'])
+        ->value('ff0000');
+    $payload = app(UiResolver::class)->resolve(Ui::make([Field::make('Color', $control)]), new UiContext(namespace: 'settings'));
+    $select = new Crawler(app(UiHtmlRenderer::class)->render($payload))->filter('craft-select-color');
+
+    expect($control->props())->toMatchArray([
+        'presets' => ['#ff0000', '#00ff00', 'transparent'],
+        'presetLabels' => ['#ff0000' => 'Red'],
+    ])
+        ->and($select->attr('colors'))->toBe('["#ff0000","#00ff00","transparent"]')
+        ->and($select->attr('value'))->toBe('#ff0000');
+});

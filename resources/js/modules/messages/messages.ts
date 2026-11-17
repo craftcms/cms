@@ -9,11 +9,11 @@
  *   the browser session, so a history visit or a reload doesn't replay it),
  * - hands a message with a `target` to the inline outlet registered under
  *   that name ({@link registerMessageOutlet}), and
- * - shows everything else in the default display, currently the legacy
- *   `Craft.CP.Notification` renderer, drawing into `<cp-messages>`.
+ * - shows everything else as a {@link Notification} in `<cp-messages>`.
  */
 
-import {t} from '@craftcms/ui';
+import {t} from '@craftcms/ui/utilities/translate';
+import {Notification} from './notification';
 
 export type MessageType = 'notice' | 'success' | 'error';
 
@@ -38,11 +38,15 @@ export interface CpMessage {
 
 export type MessageOutlet = (message: CpMessage) => void;
 
-interface LegacyNotification {
+/** A message shown in the default display. */
+export interface CpNotification {
   type: string;
   message: string;
   closing: boolean;
-  $container: {0?: Element} | null;
+  element: HTMLElement | null;
+  closeButton: HTMLElement | null;
+  close(): void;
+  on(event: string, handler: () => void): void;
 }
 
 type DisplayNotification = (
@@ -50,7 +54,7 @@ type DisplayNotification = (
   type: unknown,
   message?: string,
   settings?: MessageSettings
-) => LegacyNotification;
+) => unknown;
 
 const SEEN_STORAGE_KEY = 'Craft-messages.seen';
 const CARRY_STORAGE_KEY = 'Craft-messages.carry';
@@ -67,7 +71,7 @@ const DEFAULT_ICONS: Record<MessageType, [string, string]> = {
 const outlets = new Map<string, MessageOutlet[]>();
 const visible = new Set<{
   message: CpMessage;
-  instance: LegacyNotification;
+  instance: CpNotification;
   shownAt: number;
 }>();
 
@@ -116,12 +120,14 @@ function idOf(message: CpMessage): string | undefined {
   return message.id ?? message.settings?.id;
 }
 
-function isOnScreen(instance: LegacyNotification): boolean {
-  const element = instance.$container?.[0];
-  return !instance.closing && !!element && element.isConnected;
+function isOnScreen(instance: CpNotification): boolean {
+  // Still being built counts: it'll be on screen in a moment
+  return (
+    !instance.closing && (!instance.element || instance.element.isConnected)
+  );
 }
 
-function findVisibleDuplicate(message: CpMessage): LegacyNotification | null {
+function findVisibleDuplicate(message: CpMessage): CpNotification | null {
   for (const entry of visible) {
     if (!isOnScreen(entry.instance)) {
       visible.delete(entry);
@@ -139,54 +145,43 @@ function findVisibleDuplicate(message: CpMessage): LegacyNotification | null {
   return null;
 }
 
-function craftCp(): {displayNotification: DisplayNotification} | null {
-  return (
-    (window as {Craft?: {cp?: {displayNotification: DisplayNotification}}})
-      .Craft?.cp ?? null
-  );
-}
-
 /**
- * Shows a message in the default display, unless the same message is already on screen.
- * Returns the legacy message instance, for the callers of
- * `Craft.cp.display*()` that hold on to it.
+ * Shows a message in the default display, unless the same message is
+ * already on screen. Returns its notification, for callers that close it.
  */
-function renderDefault(message: CpMessage): LegacyNotification | null {
+function renderDefault(message: CpMessage): CpNotification | null {
   const duplicate = findVisibleDuplicate(message);
 
   if (duplicate) {
     return duplicate;
   }
 
-  const cp = craftCp();
-
-  if (!cp || !renderLegacy) {
-    return null;
-  }
-
   const [icon, iconLabel] = DEFAULT_ICONS[message.type] ?? DEFAULT_ICONS.notice;
-  const instance = renderLegacy.call(cp, message.type, message.message, {
+  const instance = new Notification(message.type, message.message, {
     icon,
     iconLabel: t(iconLabel),
     ...message.settings,
   });
 
   visible.add({message, instance, shownAt: Date.now()});
+  void instance.show();
 
   return instance;
 }
 
 /**
  * Shows a message: in its inline outlet when it names one that's on the page,
- * otherwise in the default display. A message with an `id` that has already been shown is
- * ignored.
+ * otherwise in the default display. A message with an `id` that has already
+ * been shown is ignored.
+ *
+ * Returns the notification when the message went to the default display.
  */
-export function showMessage(message: CpMessage): void {
+export function showMessage(message: CpMessage): CpNotification | null {
   const id = idOf(message);
 
   if (id) {
     if (hasSeen(id)) {
-      return;
+      return findVisibleDuplicate(message);
     }
 
     markSeen(id);
@@ -196,10 +191,37 @@ export function showMessage(message: CpMessage): void {
 
   if (handlers?.length) {
     handlers[handlers.length - 1]!(message);
-    return;
+    return null;
   }
 
-  renderDefault(message);
+  return renderDefault(message);
+}
+
+/** Shows a notice. Callers that close it later should handle a `null` result. */
+export function showNotice(
+  message: string,
+  settings?: MessageSettings
+): CpNotification | null {
+  return showMessage({type: 'notice', message, settings});
+}
+
+export function showSuccess(
+  message: string,
+  settings?: MessageSettings
+): CpNotification | null {
+  return showMessage({type: 'success', message, settings});
+}
+
+/** Shows an error, or a generic server error when there's no message. */
+export function showError(
+  message?: string | null,
+  settings?: MessageSettings
+): CpNotification | null {
+  return showMessage({
+    type: 'error',
+    message: message || t('A server error occurred.'),
+    settings,
+  });
 }
 
 /**
@@ -254,10 +276,39 @@ export function registerMessageOutlet(
   };
 }
 
+/** Notifications already wired to re-fire the legacy events, so repeats don't double up. */
+const legacyEventsWired = new WeakSet<CpNotification>();
+
+/**
+ * Re-fires the `displayNotification` and `notificationClose` events on
+ * `Craft.cp`, which plugins still listen for. The legacy renderer triggered
+ * them itself, and the shim below replaces it.
+ */
+function fireLegacyEvents(cp: unknown, notification: CpNotification): void {
+  const trigger = (cp as {trigger?: (name: string, data?: unknown) => void})
+    ?.trigger;
+
+  if (typeof trigger !== 'function' || legacyEventsWired.has(notification)) {
+    return;
+  }
+
+  legacyEventsWired.add(notification);
+
+  notification.on('show', () =>
+    trigger.call(cp, 'displayNotification', {
+      notificationType: notification.type,
+      message: notification.message,
+      notification,
+    })
+  );
+  notification.on('close', () => trigger.call(cp, 'notificationClose'));
+}
+
 /**
  * Routes `Craft.cp.displayNotification()` — and with it `displayNotice()`,
- * `displaySuccess()` and `displayError()`, which call it — through the
- * dedupe above, keeping the legacy renderer as the default display.
+ * `displaySuccess()` and `displayError()`, which call it — through
+ * {@link showMessage}. Only a prebuilt `Craft.CP.Notification` still goes to
+ * the legacy renderer.
  */
 export function installLegacyShim(): boolean {
   const CP = (
@@ -279,8 +330,6 @@ export function installLegacyShim(): boolean {
   proto.__messageShim = true;
 
   proto.displayNotification = function (type, text, settings) {
-    // A prebuilt `Craft.CP.Notification` instance (e.g. the copied-elements
-    // card) goes straight to the renderer.
     if (typeof type !== 'string') {
       return renderLegacy!.call(this, type, text, settings);
     }
@@ -294,28 +343,35 @@ export function installLegacyShim(): boolean {
 
     if (id) {
       if (hasSeen(id)) {
-        return findVisibleDuplicate(message) ?? stub(type, text);
+        const duplicate = findVisibleDuplicate(message) ?? stub(type, text);
+        fireLegacyEvents(this, duplicate);
+
+        return duplicate;
       }
 
       markSeen(id);
     }
 
-    return renderDefault(message) ?? stub(type, text);
+    const notification = renderDefault(message) ?? stub(type, text);
+    fireLegacyEvents(this, notification);
+
+    return notification;
   } as DisplayNotification;
 
   return true;
 }
 
 /** A stand-in for a skipped duplicate, so callers can still call `.on()`/`.close()`. */
-function stub(type: string, message = ''): LegacyNotification {
+function stub(type: string, message = ''): CpNotification {
   return {
     type,
     message,
     closing: true,
-    $container: null,
+    element: null,
+    closeButton: null,
     on() {},
     close() {},
-  } as LegacyNotification;
+  };
 }
 
 /**

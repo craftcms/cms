@@ -153,6 +153,8 @@ class EditElementController
             $viewModelClass = $element::editViewModelClass();
 
             $viewModel = new $viewModelClass($element, $this->request, $canSave, $mergeCanonicalChanges);
+            // Slideouts fetch the page without Inertia's router, so nothing would request the deferred tabs.
+            $viewModel->deferHiddenTabs(! $this->request->hasHeader('X-Craft-Container-Id'));
 
             event($event = new ElementEditorPayloadResolving(
                 $element,
@@ -168,7 +170,7 @@ class EditElementController
         $enabledForSite = $element->getEnabledForSite();
         $hasRoute = $element->getRoute() !== null;
 
-        $redirectUrl = $this->postEditRedirectUrl($element);
+        $redirectUrl = ElementHelper::postEditRedirectUrl($element);
 
         // Site statuses
         if ($canEditMultipleSites) {
@@ -201,8 +203,7 @@ class EditElementController
                 // if we're in a slideout, we don't want to add the .flex-grow to the header toolbar
                 // as it'll mess with the width available for the tabs
                 // see https://github.com/craftcms/cms/issues/17260
-                ($this->isSlideout() ? '' : Html::tag('div', attributes: ['class' => 'flex-grow'])).
-                Html::tag('div', attributes: ['class' => 'activity-container']),
+                $this->isSlideout() ? '' : Html::tag('div', attributes: ['class' => 'flex-grow']),
             )
             ->actionMenuItems(fn () => $this->actionMenuItems($element, $previewTargets))
             ->noticeHtml($notice)
@@ -616,12 +617,7 @@ class EditElementController
 
         $settings = $jsSettingsFn();
 
-        if ($this->request->inertia()) {
-            // The Vue slideout builds its own `Craft.ElementEditor`, but can't
-            // receive settings the jQuery way: that script looks the container
-            // up by id and runs before Vue has put the panel in the document.
-            $response->screenData(['elementEditorSettings' => $settings]);
-        } elseif ($this->isSlideout()) {
+        if ($this->isSlideout()) {
             HtmlStack::jsWithVars(fn ($settings) => <<<JS
 $('#$containerId').data('elementEditorSettings', $settings)
 JS, [
@@ -662,7 +658,7 @@ JS, [
         $components[] = $element->getSidebarHtml(! $canSave);
 
         if ($this->request->route()?->getActionName()) {
-            $components[] = app(ContentHtml::class)->metadataHtml($element->getMetadata());
+            $components[] = app(ContentHtml::class)->metadataHtml(...$element->getMetadataGroups());
         }
 
         return trim(implode("\n", $components));

@@ -7,6 +7,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Drafts;
 use CraftCms\Cms\Element\Elements;
@@ -37,7 +38,7 @@ use Laravel\Passport\Passport;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     $this->actor = User::query()->firstOrFail();
     actingAs($this->actor);
@@ -55,7 +56,7 @@ beforeEach(function (): void {
     )['element'];
 
     $this->callLifecycle = function (string $tool, array $arguments, ?User $actor = null): TestResponse {
-        Passport::actingAs($actor ?? $this->actor, ['mcp:use'], 'craft-mcp');
+        Passport::actingAs($actor ?? $this->actor, ['mcp:admin'], 'craft-mcp');
 
         return McpRequest::send($this, 'tools/call', ['name' => $tool, 'arguments' => $arguments]);
     };
@@ -77,7 +78,7 @@ beforeEach(function (): void {
 });
 
 it('returns live validation errors for proposed changes without persisting them', function (): void {
-    ($this->callLifecycle)('elements.validate', ['type' => 'entries',
+    ($this->callLifecycle)('elements_validate', ['type' => 'entries',
         'id' => $this->entry['id'],
         'attributes' => ['title' => str_repeat('x', 256)],
         'fields' => ['summary' => ''],
@@ -86,7 +87,7 @@ it('returns live validation errors for proposed changes without persisting them'
         ->assertJsonPath('result.structuredContent.scenario', 'live')
         ->assertJsonStructure(['result' => ['structuredContent' => ['errors' => ['title', 'summary']]]]);
 
-    ($this->callLifecycle)('elements.validate', ['type' => 'entries',
+    ($this->callLifecycle)('elements_validate', ['type' => 'entries',
         'uid' => $this->entry['uid'],
         'attributes' => ['title' => 'Proposed title'],
         'fields' => ['summary' => 'Proposed summary'],
@@ -100,18 +101,18 @@ it('returns live validation errors for proposed changes without persisting them'
 
 it('allows viewers to validate saved state but requires update permissions for proposals and restore', function (): void {
     $viewer = User::factory()->withPermissions([
-        'accessCp', 'useCraftMcp',
+        'accessCp',
         "viewEntries:{$this->section->uid}", "viewPeerEntries:{$this->section->uid}",
     ])->create(['admin' => false]);
 
-    ($this->callLifecycle)('elements.validate', ['type' => 'entries', 'id' => $this->entry['id']], $viewer)
+    ($this->callLifecycle)('elements_validate', ['type' => 'entries', 'id' => $this->entry['id']], $viewer)
         ->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.valid', true);
-    ($this->callLifecycle)('elements.validate', ['type' => 'entries',
+    ($this->callLifecycle)('elements_validate', ['type' => 'entries',
         'id' => $this->entry['id'], 'fields' => ['summary' => 'Unauthorized edit'],
     ], $viewer)->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'You are not authorized to save this entry.');
-    ($this->callLifecycle)('elements.restore', ['type' => 'entries', 'id' => $this->entry['id']], $viewer)
+    ($this->callLifecycle)('elements_restore', ['type' => 'entries', 'id' => $this->entry['id']], $viewer)
         ->assertOk()->assertJsonPath('result.isError', true);
     expect(Entry::find()->id($this->entry['id'])->one()->getFieldValue('summary'))->toBe('Original summary');
 });
@@ -127,22 +128,26 @@ it('restores discoverable deleted elements and leaves active elements unchanged 
         ])['element']['id'])->one(),
     };
     if ($element instanceof Asset) {
-        $element->keepFileOnDelete = true;
+        config()->set('filesystems.disks.lifecycle-trashed-assets', [
+            'driver' => 'local', 'root' => storage_path('framework/testing/lifecycle-trashed-assets'),
+        ]);
+        Storage::fake('lifecycle-trashed-assets');
+        Cms::config()->trashedAssetDisk('lifecycle-trashed-assets');
     }
 
     app(Elements::class)->deleteElement($element);
     Event::fake([ElementRestored::class]);
 
-    ($this->callLifecycle)('elements.list', [
+    ($this->callLifecycle)('elements_list', [
         'type' => $capability,
         'criteria' => ['id' => $element->id, 'trashed' => true, 'status' => null],
     ])->assertOk()->assertJsonPath('result.structuredContent.count', 1);
-    ($this->callLifecycle)('elements.restore', ['type' => $capability, 'uid' => $element->uid])
+    ($this->callLifecycle)('elements_restore', ['type' => $capability, 'uid' => $element->uid])
         ->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.restored', true);
     $restoredAt = DB::table(Table::ELEMENTS)->where('id', $element->id)->value('dateUpdated');
     $this->travel(1)->minutes();
-    ($this->callLifecycle)('elements.restore', ['type' => $capability, 'id' => $element->id])
+    ($this->callLifecycle)('elements_restore', ['type' => $capability, 'id' => $element->id])
         ->assertOk()->assertJsonPath('result.structuredContent.restored', false);
 
     expect(DB::table(Table::ELEMENTS)->where('id', $element->id)->value('dateDeleted'))->toBeNull()
@@ -163,7 +168,7 @@ it('duplicates canonical entries and saved drafts as independent content in the 
     if ($mode !== null) {
         $arguments['mode'] = $mode;
     }
-    $duplicate = ($this->callLifecycle)('elements.duplicate', ['type' => 'entries', ...$arguments])
+    $duplicate = ($this->callLifecycle)('elements_duplicate', ['type' => 'entries', ...$arguments])
         ->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.element.isDraft', $mode !== 'canonical')
         ->assertJsonPath('result.structuredContent.element.isUnpublishedDraft', $mode !== 'canonical')
@@ -184,16 +189,16 @@ it('duplicates canonical entries and saved drafts as independent content in the 
 
 it('lets creators duplicate as unpublished content without granting canonical duplication', function (): void {
     $creator = User::factory()->withPermissions([
-        'accessCp', 'useCraftMcp',
+        'accessCp',
         "viewEntries:{$this->section->uid}", "viewPeerEntries:{$this->section->uid}",
         "createEntries:{$this->section->uid}",
     ])->create(['admin' => false]);
 
-    ($this->callLifecycle)('elements.duplicate', ['type' => 'entries', 'id' => $this->entry['id']], $creator)
+    ($this->callLifecycle)('elements_duplicate', ['type' => 'entries', 'id' => $this->entry['id']], $creator)
         ->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.element.isUnpublishedDraft', true)
         ->assertJsonPath('result.structuredContent.element.draftCreatorId', $creator->id);
-    ($this->callLifecycle)('elements.duplicate', ['type' => 'entries',
+    ($this->callLifecycle)('elements_duplicate', ['type' => 'entries',
         'id' => $this->entry['id'], 'mode' => 'canonical',
     ], $creator)->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'You are not authorized to duplicate this element.');
@@ -203,19 +208,19 @@ it('validates saved drafts without exposing peer drafts to unauthorized viewers'
     $canonical = app(Elements::class)->getElementById($this->entry['id'], Entry::class);
     $draft = app(Drafts::class)->createDraft($canonical, $this->actor->id);
     $viewer = User::factory()->withPermissions([
-        'accessCp', 'useCraftMcp',
+        'accessCp',
         "viewEntries:{$this->section->uid}", "viewPeerEntries:{$this->section->uid}",
         "createEntries:{$this->section->uid}",
     ])->create(['admin' => false]);
 
-    ($this->callLifecycle)('elements.duplicate', ['type' => 'entries', 'id' => $canonical->id], $viewer)
+    ($this->callLifecycle)('elements_duplicate', ['type' => 'entries', 'id' => $canonical->id], $viewer)
         ->assertOk()->assertJsonPath('result.isError', false);
-    ($this->callLifecycle)('elements.validate', ['type' => 'entries', 'id' => $draft->id])
+    ($this->callLifecycle)('elements_validate', ['type' => 'entries', 'id' => $draft->id])
         ->assertOk()->assertJsonPath('result.structuredContent.valid', true);
-    ($this->callLifecycle)('elements.validate', ['type' => 'entries', 'id' => $draft->id], $viewer)
+    ($this->callLifecycle)('elements_validate', ['type' => 'entries', 'id' => $draft->id], $viewer)
         ->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Entry not found.');
-    ($this->callLifecycle)('elements.duplicate', ['type' => 'entries', 'id' => $draft->id], $viewer)
+    ($this->callLifecycle)('elements_duplicate', ['type' => 'entries', 'id' => $draft->id], $viewer)
         ->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Entry not found.');
 });
@@ -226,7 +231,7 @@ it('rejects revision and provisional-draft inputs for lifecycle tools', function
     $provisional = app(Drafts::class)->createDraft($source, $this->actor->id, provisional: true);
 
     foreach ([$revisionId, $provisional->id] as $id) {
-        ($this->callLifecycle)("elements.$tool", ['type' => 'entries', 'id' => $id])
+        ($this->callLifecycle)("elements_$tool", ['type' => 'entries', 'id' => $id])
             ->assertOk()->assertJsonPath('result.isError', true);
     }
 })->with(['validate', 'duplicate', 'restore']);
@@ -236,25 +241,25 @@ it('duplicates addresses without changing ownership and validates owner changes 
         'ownerId' => $this->actor->id, 'countryCode' => 'BE', 'title' => 'Home',
         'locality' => 'Brussels', 'postalCode' => '1000', 'addressLine1' => 'Example Street 1',
     ])['element'];
-    $duplicate = ($this->callLifecycle)('elements.duplicate', ['type' => 'addresses', 'id' => $address['id']])
+    $duplicate = ($this->callLifecycle)('elements_duplicate', ['type' => 'addresses', 'id' => $address['id']])
         ->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.element');
 
     expect($duplicate['id'])->not->toBe($address['id'])
         ->and(Address::find()->id($duplicate['id'])->one()->getOwnerId())->toBe($this->actor->id);
 
-    ($this->callLifecycle)('elements.validate', ['type' => 'addresses',
+    ($this->callLifecycle)('elements_validate', ['type' => 'addresses',
         'id' => $address['id'], 'attributes' => ['countryCode' => 'XX'],
     ])->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.valid', false)
         ->assertJsonStructure(['result' => ['structuredContent' => ['errors' => ['countryCode']]]]);
     expect(Address::find()->id($address['id'])->one()->countryCode)->toBe('BE');
 
-    $editor = User::factory()->withPermissions(['accessCp', 'useCraftMcp', 'viewUsers'])->create(['admin' => false]);
+    $editor = User::factory()->withPermissions(['accessCp', 'viewUsers'])->create(['admin' => false]);
     $ownAddress = app(ElementCapabilities::class)->create('addresses', [
         'ownerId' => $editor->id, 'countryCode' => 'BE', 'title' => 'Work',
         'locality' => 'Brussels', 'postalCode' => '1000', 'addressLine1' => 'Example Street 2',
     ])['element'];
-    ($this->callLifecycle)('elements.validate', ['type' => 'addresses',
+    ($this->callLifecycle)('elements_validate', ['type' => 'addresses',
         'id' => $ownAddress['id'], 'attributes' => ['ownerId' => $this->actor->id],
     ], $editor)->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'You are not authorized to save this address.');
@@ -263,18 +268,18 @@ it('duplicates addresses without changing ownership and validates owner changes 
 
 it('preserves user identity during uniqueness validation and enforces restricted attributes', function (): void {
     $other = User::factory()->create(['email' => 'other@example.test']);
-    ($this->callLifecycle)('elements.validate', ['type' => 'users',
+    ($this->callLifecycle)('elements_validate', ['type' => 'users',
         'id' => $this->actor->id, 'attributes' => ['email' => $this->actor->email],
     ])->assertOk()->assertJsonPath('result.structuredContent.valid', true);
-    ($this->callLifecycle)('elements.validate', ['type' => 'users',
+    ($this->callLifecycle)('elements_validate', ['type' => 'users',
         'id' => $this->actor->id, 'attributes' => ['email' => $other->email],
     ])->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.valid', false)
         ->assertJsonStructure(['result' => ['structuredContent' => ['errors' => ['email']]]]);
 
-    $editor = User::factory()->withPermissions(['accessCp', 'useCraftMcp', 'viewUsers', 'editUsers'])
+    $editor = User::factory()->withPermissions(['accessCp', 'viewUsers', 'editUsers'])
         ->create(['admin' => false]);
-    ($this->callLifecycle)('elements.validate', ['type' => 'users',
+    ($this->callLifecycle)('elements_validate', ['type' => 'users',
         'id' => $other->id, 'attributes' => ['admin' => true],
     ], $editor)->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'You are not authorized to set restricted user attributes: admin.');
@@ -283,28 +288,28 @@ it('preserves user identity during uniqueness validation and enforces restricted
 });
 
 it('rejects attributes outside the update schema before validating an element', function (): void {
-    ($this->callLifecycle)('elements.validate', ['type' => 'entries',
+    ($this->callLifecycle)('elements_validate', ['type' => 'entries',
         'id' => $this->entry['id'], 'attributes' => ['sectionId' => $this->section->id, 'id' => 999999],
     ])->assertOk()->assertJsonPath('result.isError', true)
-        ->assertJsonPath('result.content.0.text', 'Invalid attributes for entries: Additional object properties are not allowed: ["sectionId","id"]. Call elements.schema for the accepted attributes.');
+        ->assertJsonPath('result.content.0.text', 'Invalid attributes for entries: Object contains unexpected additional properties: `sectionId`, `id`. Call elements_schema for the accepted attributes.');
 });
 
 it('validates proposed asset attributes without moving files and still requires relocation permissions', function (): void {
     $asset = ($this->newAsset)();
-    ($this->callLifecycle)('elements.validate', ['type' => 'assets',
+    ($this->callLifecycle)('elements_validate', ['type' => 'assets',
         'id' => $asset->id, 'attributes' => ['alt' => 'Proposed description', 'filename' => 'proposed.txt'],
     ])->assertOk()->assertJsonPath('result.isError', false)
         ->assertJsonPath('result.structuredContent.valid', true);
 
     $volume = $asset->getVolume();
     $editor = User::factory()->withPermissions([
-        'accessCp', 'useCraftMcp', "viewAssets:$volume->uid", "viewPeerAssets:$volume->uid",
+        'accessCp', "viewAssets:$volume->uid", "viewPeerAssets:$volume->uid",
         "saveAssets:$volume->uid", "savePeerAssets:$volume->uid",
     ])->create(['admin' => false]);
-    ($this->callLifecycle)('elements.validate', ['type' => 'assets',
+    ($this->callLifecycle)('elements_validate', ['type' => 'assets',
         'id' => $asset->id, 'attributes' => ['alt' => 'Permitted edit'],
     ], $editor)->assertOk()->assertJsonPath('result.isError', false);
-    ($this->callLifecycle)('elements.validate', ['type' => 'assets',
+    ($this->callLifecycle)('elements_validate', ['type' => 'assets',
         'id' => $asset->id, 'attributes' => ['filename' => 'unauthorized.txt'],
     ], $editor)->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'You are not authorized to move this asset file.');
@@ -323,7 +328,7 @@ it('keeps duplicated nested entries in their existing owner field', function ():
         value: ['new1' => ['type' => 'block']],
     )->createElementWithFields()->element;
     $source = $owner->getFieldValue('blocks')->one();
-    $duplicate = ($this->callLifecycle)('elements.duplicate', ['type' => 'entries', 'id' => $source->id, 'mode' => 'canonical'])
+    $duplicate = ($this->callLifecycle)('elements_duplicate', ['type' => 'entries', 'id' => $source->id, 'mode' => 'canonical'])
         ->assertOk()->assertJsonPath('result.isError', false)->json('result.structuredContent.element');
 
     $saved = Entry::find()->id($duplicate['id'])->status(null)->one();
@@ -344,7 +349,7 @@ it('restores all supported site variants when loading the deleted entry in one s
     ])['element'];
     app(ElementCapabilities::class)->delete('entries', id: $entry['id']);
 
-    ($this->callLifecycle)('elements.restore', ['type' => 'entries', 'id' => $entry['id'], 'siteId' => $otherSite->id])
+    ($this->callLifecycle)('elements_restore', ['type' => 'entries', 'id' => $entry['id'], 'siteId' => $otherSite->id])
         ->assertOk()->assertJsonPath('result.structuredContent.restored', true);
 
     expect(Entry::find()->id($entry['id'])->siteId('*')->status(null)->all())->toHaveCount(2)
@@ -353,9 +358,9 @@ it('restores all supported site variants when loading the deleted entry in one s
 
 it('reports an asset restore failure when deletion removed its file', function (): void {
     $asset = ($this->newAsset)();
-    ($this->callLifecycle)('elements.delete', ['type' => 'assets', 'id' => $asset->id])
+    ($this->callLifecycle)('elements_delete', ['type' => 'assets', 'id' => $asset->id])
         ->assertOk()->assertJsonPath('result.structuredContent.deleted', true);
-    ($this->callLifecycle)('elements.restore', ['type' => 'assets', 'id' => $asset->id])
+    ($this->callLifecycle)('elements_restore', ['type' => 'assets', 'id' => $asset->id])
         ->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Element could not be restored.');
 
@@ -372,7 +377,7 @@ it('validates proposed nested content without saving or deleting nested entries'
     $source = $owner->getFieldValue('blocks')->one();
     $count = DB::table(Table::ENTRIES)->count();
 
-    ($this->callLifecycle)('elements.validate', ['type' => 'entries',
+    ($this->callLifecycle)('elements_validate', ['type' => 'entries',
         'id' => $owner->id,
         'attributes' => ['authorId' => $this->actor->id],
         'fields' => ['blocks' => [
@@ -383,7 +388,7 @@ it('validates proposed nested content without saving or deleting nested entries'
         ->assertJsonPath('result.structuredContent.valid', false)
         ->assertJsonStructure(['result' => ['structuredContent' => ['errors' => ['blocks']]]]);
 
-    ($this->callLifecycle)('elements.validate', ['type' => 'entries',
+    ($this->callLifecycle)('elements_validate', ['type' => 'entries',
         'id' => $owner->id,
         'attributes' => ['authorId' => $this->actor->id],
         'fields' => ['blocks' => [
@@ -408,7 +413,7 @@ it('leaves no draft or entry behind when duplication is rejected during saving',
         }
     });
 
-    ($this->callLifecycle)('elements.duplicate', ['type' => 'entries', 'id' => $this->entry['id']])
+    ($this->callLifecycle)('elements_duplicate', ['type' => 'entries', 'id' => $this->entry['id']])
         ->assertOk()->assertJsonPath('result.isError', true)
         ->assertJsonPath('result.content.0.text', 'Copy rejected.');
 

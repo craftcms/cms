@@ -93,6 +93,17 @@ class EntryType extends Component implements Actionable, Chippable, Colorable, C
     public function __construct(
         array|object $config = [],
     ) {
+        $config = (array) $config;
+
+        foreach (['title', 'slug'] as $attribute) {
+            if (is_string($config["{$attribute}TranslationMethod"] ?? null)) {
+                $config["{$attribute}TranslationMethod"] = TranslationMethod::fromStored(
+                    $config["{$attribute}TranslationMethod"],
+                    $config["{$attribute}TranslationKeyFormat"] ?? null,
+                );
+            }
+        }
+
         parent::__construct($config);
 
         if ($this->titleFormat === '') {

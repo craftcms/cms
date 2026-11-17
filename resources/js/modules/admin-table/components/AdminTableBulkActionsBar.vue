@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {computed, ref, useTemplateRef} from 'vue';
-  import {useEventListener} from '@vueuse/core';
   import {t} from '@craftcms/ui';
   import type {
     BulkAction,
@@ -13,8 +12,9 @@
     ActionItems,
   } from '@/common/types';
   import type {UiValues} from '@/modules/ui/types';
-  import Text from '@/common/components/Text.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import BulkActionsBarShell from '@/modules/elements/components/BulkActionsBarShell.vue';
+  import {useBulkActionSelection} from '@/modules/elements/composables/useBulkActionSelection';
 
   const props = withDefaults(
     defineProps<{
@@ -47,30 +47,19 @@
     (e: 'edit' | 'view', detail: BulkActionEventDetail): void;
   }>();
 
-  const selectedCount = computed(() => props.selectedIds.length);
-  const root = useTemplateRef<HTMLElement>('root');
+  const bar = useTemplateRef('bar');
 
-  /** Only meaningful for a real element index, where a selection can mix elements and asset-folder rows. */
-  const selectionType = computed<'elements' | 'folders' | 'mixed'>(() => {
-    const folderCount = props.selectedIds.filter((id) =>
-      String(id).startsWith('folder:')
-    ).length;
-
-    if (folderCount === 0) {
-      return 'elements';
-    }
-
-    return folderCount === selectedCount.value ? 'folders' : 'mixed';
-  });
-
-  function itemApplies(item: BulkActionItem): boolean {
-    return !item.appliesTo || item.appliesTo === selectionType.value;
-  }
+  const {selectedCount, appliesToSelection, onOwnedEvent, invokerFor} =
+    useBulkActionSelection({
+      selectedIds: () => props.selectedIds,
+      root: () => bar.value?.root,
+      elementType: () => props.elementType,
+    });
 
   // Merges the live selection (under `idsField`) and `actionContext` into the
   // item's own `action`, so `runAction()` handles the request/confirm/feedback
   // with no bespoke code here. `event` actions instead merge into the event
-  // detail for a client-side listener (e.g. `craft:copy-elements` below).
+  // detail for a client-side listener (e.g. `craft:copy-elements`).
   function resolveItem(item: BulkActionItem): ActionItemButton {
     const variant = item.variant ?? (item.destructive ? 'danger' : undefined);
 
@@ -157,7 +146,7 @@
       }
 
       if (entry.type === 'group') {
-        const items = entry.items.filter(itemApplies).map(resolveItem);
+        const items = entry.items.filter(appliesToSelection).map(resolveItem);
 
         return items.length
           ? [
@@ -170,103 +159,36 @@
           : [];
       }
 
-      return itemApplies(entry) ? [resolveItem(entry)] : [];
+      return appliesToSelection(entry) ? [resolveItem(entry)] : [];
     });
   }
 
   const menuActions = computed<ActionItems>(() => resolveList(props.actions));
-  const hasMenu = computed(() => menuActions.value.length > 0);
 
   const statusActions = computed<ActionItems>(() =>
     resolveList(props.statuses)
   );
   const hasStatusMenu = computed(() => statusActions.value.length > 0);
 
-  /**
-   * Copy mirrors Craft 5: the selection is handed to the legacy
-   * `Craft.cp.copyElements()`, which stores it in localStorage (for paste
-   * targets like nested element managers), shows the persistent "copied"
-   * notification, and broadcasts to other tabs. Nothing changes server-side,
-   * so no refresh/`performed` is emitted.
-   */
-  function onCopyElements(event: Event) {
-    if (!owns(event)) {
-      return;
-    }
-    const detail = event.detail ?? {};
-    const ids: ReadonlyArray<string | number> =
-      detail.elementIds ?? props.selectedIds;
-
-    Craft.cp?.copyElements?.(
-      ids.map((id) => ({
-        type: detail.elementType ?? props.elementType ?? '',
-        id,
-        siteId: Craft.siteId ?? null,
-      }))
-    );
-  }
-
-  function owns(event: Event): event is CustomEvent<{
-    trigger: HTMLElement;
-    elementIds?: ReadonlyArray<string | number>;
-    elementType?: string;
-  }> {
-    if (!(event instanceof CustomEvent)) {
-      return false;
-    }
-
-    const trigger = event.detail?.trigger;
-
-    return (
-      trigger instanceof HTMLElement && Boolean(root.value?.contains(trigger))
-    );
-  }
-
-  function onElementEvent(event: Event, type: 'edit' | 'view'): void {
-    if (!owns(event)) {
-      return;
-    }
-
+  function onElementEvent(
+    event: CustomEvent<{
+      trigger: HTMLElement;
+      elementIds?: ReadonlyArray<string | number>;
+      elementType?: string;
+    }>,
+    type: 'edit' | 'view'
+  ): void {
     const detail = {
       elementIds: event.detail?.elementIds ?? props.selectedIds,
       elementType: event.detail?.elementType ?? props.elementType ?? '',
-      trigger: eventTrigger(event),
+      trigger: invokerFor(event.detail.trigger),
     };
 
     emit(type, detail);
   }
 
-  function eventTrigger(
-    event: CustomEvent<{trigger: HTMLElement}>
-  ): HTMLElement {
-    const trigger = event.detail.trigger;
-    const menu = trigger.closest('craft-action-menu');
-
-    return menu?.querySelector<HTMLElement>('[slot="invoker"]') ?? trigger;
-  }
-
-  useEventListener(window, 'craft:copy-elements', onCopyElements);
-  useEventListener(window, 'craft:edit-element', (event) =>
-    onElementEvent(event, 'edit')
-  );
-  useEventListener(window, 'craft:view-element', (event) =>
-    onElementEvent(event, 'view')
-  );
-
-  /**
-   * `craft-action-item` bubbles `craft-state-change` through its lifecycle. A
-   * successful `http` action means the selection was acted on, so refresh the
-   * table + clear selection. (Other states drive the item's own spinner/feedback.)
-   */
-  function onChangeState(event: Event) {
-    if (!(event instanceof CustomEvent)) {
-      return;
-    }
-    const detail = event.detail;
-    if (detail?.state === 'success' && detail?.actionType === 'http') {
-      emit('performed');
-    }
-  }
+  onOwnedEvent('craft:edit-element', (event) => onElementEvent(event, 'edit'));
+  onOwnedEvent('craft:view-element', (event) => onElementEvent(event, 'view'));
 
   // One shared spinner across "Set status"'s items; scoped to that menu only —
   // `ActionMenu` has no declared emits, so an unscoped listener would also
@@ -286,30 +208,14 @@
 </script>
 
 <template>
-  <div
-    ref="root"
-    class="bulk-actions-bar"
-    v-if="selectedCount > 0"
-    @craft-state-change="onChangeState"
+  <BulkActionsBarShell
+    ref="bar"
+    :selected-count="selectedCount"
+    :actions="menuActions"
+    @performed="emit('performed')"
+    @clear="emit('clear')"
   >
-    <div class="bulk-actions-bar__selection">
-      <Text
-        as="span"
-        class="bulk-actions-bar__count"
-        template="{count, plural, =1{# selected} other{# selected}}"
-        :params="{count: selectedCount}"
-      />
-      <craft-button
-        type="button"
-        size="small"
-        variant="plain"
-        @click="emit('clear')"
-      >
-        {{ t('Clear selection') }}
-      </craft-button>
-    </div>
-
-    <div class="bulk-actions-bar__actions">
+    <template #status>
       <ActionMenu
         v-if="hasStatusMenu"
         :actions="statusActions"
@@ -320,7 +226,7 @@
           <craft-button
             type="button"
             size="small"
-            :loading="statusProcessing"
+            .loading="statusProcessing"
             v-bind="attributes"
           >
             {{ t('Set status') }}
@@ -328,43 +234,6 @@
           </craft-button>
         </template>
       </ActionMenu>
-
-      <ActionMenu v-if="hasMenu" :actions="menuActions">
-        <template #invoker="{attributes}">
-          <craft-button type="button" size="small" v-bind="attributes">
-            {{ t('Actions') }}
-            <craft-icon name="chevron-down" slot="suffix"></craft-icon>
-          </craft-button>
-        </template>
-      </ActionMenu>
-    </div>
-  </div>
+    </template>
+  </BulkActionsBarShell>
 </template>
-
-<style scoped lang="scss">
-  .bulk-actions-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--c-spacing-md);
-    flex-wrap: wrap;
-    width: 100%;
-  }
-
-  .bulk-actions-bar__selection {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-  }
-
-  .bulk-actions-bar__count {
-    font-weight: 600;
-  }
-
-  .bulk-actions-bar__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--c-spacing-sm);
-    flex-wrap: wrap;
-  }
-</style>

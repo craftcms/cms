@@ -116,6 +116,7 @@ it('compiles persisted entry layout intent into a UI payload', function () {
             'warning' => 'This appears publicly.',
             'required' => true,
             'layoutUid' => 'field-title',
+            'icon' => 'heading',
             'width' => 50,
         ])
         ->and($payload->nodes[0]->children[0]->control?->path)->toBe(['title'])
@@ -199,7 +200,7 @@ it('compiles custom fields and shared semantic layout content', function () {
         ->and($children[0]->control?->component)->toBe('craft:textarea')
         ->and($children[0]->control?->path)->toBe(['fields', 'body'])
         ->and($children[0]->control?->mode)->toBe(ControlMode::ReadOnly)
-        ->and($children[0]->props)->toMatchArray(['layoutUid' => 'layout-body', 'width' => 50])
+        ->and($children[0]->props)->toMatchArray(['layoutUid' => 'layout-body', 'width' => 50, 'icon' => 'i-cursor'])
         ->and(array_column(array_slice($children, 1), 'type'))->toBe([
             HeadingNode::class,
             Separator::class,

@@ -18,7 +18,7 @@ it('renders count badge when more than one element is provided', function () {
 
     expect($html)->toContain('inline-chips')
         ->and($html)->toContainTag('craft-button', ['type' => 'button', 'variant' => 'plain', 'size' => 'small'])
-        ->and($html)->toContain('Craft.cp.previewCountBadge')
+        ->and($html)->toContain('data-preview-count-badge="thumbs"')
         ->and($html)->toContain('data-other=')
         ->and($html)->toContain('+1');
 });

@@ -15,26 +15,30 @@ A change that needs any of these is a different pattern. Don't add a mode to `cr
 
 ### Semantics
 
-- [ ] The content carries `role="tooltip"`, and the invoker references it with `aria-describedby` (or `aria-labelledby` when `invoker-relation="label"`). Per WCAG 4.1.2 (Name, Role, Value). Lion's `OverlayController` sets both; not yet verified by a test.
-- [ ] The wiring follows a `for` change to a new invoker, and is removed from the old one. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
+- [x] The content carries `role="tooltip"`, and the invoker references it with `aria-describedby` (or `aria-labelledby` when `invoker-relation="label"`). Per WCAG 4.1.2 (Name, Role, Value). Both are added to any references the invoker already has. Verified by `gives its content the tooltip role and points the invoker at it`, `names the invoker instead with invoker-relation="label"` and `keeps the invoker's own description alongside its own` in `tooltip.test.ts`.
+- [x] The wiring follows a `for` change to a new invoker, and is removed from the old one. Per WCAG 4.1.2 (Name, Role, Value). Verified by `moves its wiring and click toggle to the new invoker when for changes` in `tooltip.browser.test.ts`.
 
 ### Keyboard and pointer
 
-- [x] Keyboard focus on the invoker shows the tooltip. Per WCAG 2.1.1 (Keyboard). Verified for an external `for` invoker by `stays open while the invoker has keyboard focus` in `tooltip.browser.test.ts`, and for a slotted invoker by `exposes translation help on keyboard focus and dismisses it with Escape` in `field.browser.test.ts`.
+- [x] Keyboard focus on the invoker shows the tooltip. Per WCAG 2.1.1 (Keyboard). Verified for an external `for` invoker by `stays open while the invoker has keyboard focus` in `tooltip.browser.test.ts`, and for a slotted invoker by `shows for a keyboard-focused slotted invoker and hides on Escape, keeping focus there` in `tooltip.browser.test.ts`.
 - [x] The tooltip stays shown while the invoker keeps keyboard focus, even when the pointer moves elsewhere. Per WCAG 1.4.13 (Content on Hover or Focus), persistent. Verified by `stays open while the invoker has keyboard focus` in `tooltip.browser.test.ts`.
-- [x] Focus from a pointer press doesn't hold the tooltip open: once the pointer leaves an invoker it clicked, the tooltip hides, as it would after a plain hover. Verified by `hides once the pointer leaves an invoker it was clicked on` in `tooltip.browser.test.ts`.
-- [x] Escape dismisses the tooltip while the invoker has focus, and focus stays on the invoker. Per WCAG 1.4.13 (Content on Hover or Focus), dismissible. Verified by `exposes translation help on keyboard focus and dismisses it with Escape` in `field.browser.test.ts`.
-- [ ] Escape dismisses a tooltip shown by hover alone, while focus is elsewhere. Per WCAG 1.4.13 (Content on Hover or Focus), dismissible. Known gap: Lion listens for Escape only on the invoker and the content, and `craft-tooltip` doesn't set `hidesOnOutsideEsc`, so a hovered tooltip can't be dismissed without moving the pointer.
+- [x] Pressing the invoker hides the tooltip until the pointer leaves, so it doesn't cover what the press opened, and focus from the press doesn't hold it open. Verified by `hides when its invoker is pressed, until the pointer leaves and comes back` in `tooltip.browser.test.ts`.
+- [x] A tap on a touch screen doesn't show the tooltip, which nothing but another tap elsewhere would hide. Verified by `stays hidden when its invoker is tapped` in `tooltip.browser.test.ts`.
+- [x] Escape dismisses the tooltip while the invoker has focus, and focus stays on the invoker. Per WCAG 1.4.13 (Content on Hover or Focus), dismissible. Verified by `shows for a keyboard-focused slotted invoker and hides on Escape, keeping focus there` in `tooltip.browser.test.ts`.
+- [x] A click that opens the tooltip leaves focus on its invoker, so Escape pressed next dismisses the tooltip. Per WCAG 2.1.1 (Keyboard) and 2.4.3 (Focus Order). Verified by `focuses its invoker when a click opens it, so Escape still starts there in Safari` in `tooltip.test.ts`.
+- [x] Escape that dismisses the tooltip doesn't also act on what contains it, such as a slideout or details panel that closes on Escape, so the user stays where they were. A closed tooltip leaves Escape to its container. Per WCAG 2.1.1 (Keyboard) and 2.4.3 (Focus Order). Verified by `claims the keydown on its invoker while open, so only the tooltip closes`, `claims the keydown in its content while open` and `leaves the keydown alone while closed, for whatever holds it` in `tooltip.test.ts`.
+- [ ] Escape dismisses a tooltip shown by hover alone, while focus is elsewhere. Per WCAG 1.4.13 (Content on Hover or Focus), dismissible. Known gap: the tooltip listens for Escape only on the invoker and the content, so a hovered tooltip can't be dismissed without moving the pointer.
 - [ ] The pointer can move from the invoker onto the tooltip without it hiding. Per WCAG 1.4.13 (Content on Hover or Focus), hoverable. Not yet verified, and likely a known gap: the hide delay is `0` and the tooltip sits 4px from the invoker, so the hide fires before the pointer can cross the gap.
-- [x] The tooltip doesn't show while its invoker is disabled. Verified by `does not show while the invoker is disabled` in `overlay-hover.test.ts`.
-- [ ] The tooltip doesn't take focus or move it when it shows or hides. Per WCAG 3.2.1 (On Focus). Lion's tooltip config sets no `elementToFocusAfterHide`; not yet verified by a test.
+- [x] The tooltip doesn't show while its invoker is disabled, unless the invoker stays focusable while disabled, so the tooltip can say why. Verified by `does not show while the invoker is disabled` and `shows while a disabled invoker stays focusable` in `overlay-hover.test.ts`.
+- [ ] The tooltip doesn't take focus or move it when it shows or hides. Per WCAG 3.2.1 (On Focus). The tooltip never moves focus itself; not yet verified by a test.
 
 ### Visual
 
 - [ ] The content text reaches 4.5:1 against its background, in the light and dark themes. Per WCAG 1.4.3 (Contrast (Minimum)). Not yet verified.
 - [ ] The tooltip's edge reaches 3:1 against the page surface it sits on, in the light and dark themes. Per WCAG 1.4.11 (Non-text Contrast). Not yet verified.
 - [ ] The tooltip keeps a visible edge in forced colors mode. Its 1px border should be forced to a system color while the shadow drops out. Not yet verified.
-- [ ] The tooltip stays within the viewport, and isn't clipped by a scrolling or transformed ancestor such as the slideout, at 320 CSS px wide and 400% zoom. Per WCAG 1.4.10 (Reflow). `viewportEscapingModifiers()` handles the ancestors; not yet verified by a test. Long content sizes to `max-content` with no maximum width.
+- [x] The tooltip shows in full beside its invoker, lifted into the top layer, so an ancestor that clips, scrolls or forms a containing block, such as a blurred sticky footer, doesn't cut it off. Per WCAG 1.4.10 (Reflow). Verified by `shows in full beside an invoker in a blurred backdrop that clips` in `tooltip.browser.test.ts`.
+- [ ] The tooltip stays within the viewport at 320 CSS px wide and 400% zoom. Per WCAG 1.4.10 (Reflow). Not yet verified by a test. Long content wraps at `--c-tooltip-max-width`, which defaults to `min(45ch, 100vw - 2rem)`.
 - [ ] The tooltip doesn't cover the focused invoker. Per WCAG 2.4.11 (Focus Not Obscured (Minimum)). Popper places it beside the invoker; not yet verified when it flips at a viewport edge.
 
 ### Motion

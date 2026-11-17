@@ -108,7 +108,7 @@ export interface DisclosureMenuItemConfig {
   disabled?: boolean;
   /** A Craft controller action (adds `formsubmit` + `data-action`). */
   action?: string;
-  /** An icon: a `data-icon` name string, an `Element`, or a (async) factory. */
+  /** An icon: an icon name (rendered as `craft-icon`), an `Element`, or a (async) factory. */
   icon?: string | Element | (() => Promise<Element> | Element);
   /** A color class applied alongside the icon. */
   iconColor?: string;
@@ -935,31 +935,29 @@ export class DisclosureMenu extends Base<DisclosureMenuSettings> {
       (el as HTMLAnchorElement).href = craftUrl(config.url ?? '');
     }
     if (config.icon) {
-      if (typeof config.icon === 'string') {
-        el.setAttribute('data-icon', config.icon);
-        if (config.iconColor) {
-          el.classList.add(config.iconColor);
+      const iconSource = config.icon;
+      void (async () => {
+        let icon: Element;
+        if (typeof iconSource === 'string') {
+          // Named icons render as the CP's SVG icons; the legacy `data-icon`
+          // glyph font is no longer loaded.
+          icon = document.createElement('craft-icon');
+          icon.setAttribute('name', iconSource);
+        } else if (iconSource instanceof Element) {
+          icon = iconSource;
+        } else if (typeof iconSource === 'function') {
+          icon = await iconSource();
+        } else {
+          throw 'Unsupported icon type';
         }
-      } else {
-        const iconSource = config.icon;
-        void (async () => {
-          let icon: Element;
-          if (iconSource instanceof Element) {
-            icon = iconSource;
-          } else if (typeof iconSource === 'function') {
-            icon = await iconSource();
-          } else {
-            throw 'Unsupported icon type';
-          }
-          const span = document.createElement('span');
-          span.className = 'icon';
-          if (config.iconColor) {
-            span.classList.add(config.iconColor);
-          }
-          span.append(icon);
-          el.prepend(span);
-        })();
-      }
+        const span = document.createElement('span');
+        span.className = 'icon';
+        if (config.iconColor) {
+          span.classList.add(config.iconColor);
+        }
+        span.append(icon);
+        el.prepend(span);
+      })();
     }
     if (config.action) {
       el.setAttribute('data-action', config.action);

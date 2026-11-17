@@ -53,7 +53,7 @@ boot-order–sensitive in ways a controller reference can't paper over:
 - **`getInputValue`.** `Group.init()` (in `grouped-entry-type-manager.ts`)
   assigns `select.getInputValue = (id) => ...` immediately after querying
   `container.querySelector('craft-component-select')` — which can run before
-  the select's own `ControllerElement` boot (a `requestAnimationFrame` retry)
+  the select's own `ControllerElement` boot (which waits for its markup)
   has resolved `:scope > ul` and constructed the controller. If the hook lived
   on the controller, that assignment would either throw (no instance yet) or
   silently target an instance that gets replaced. Instead the element owns a
@@ -106,11 +106,9 @@ escape hatch keeps booting plugin subclasses. See that file and `CpCompatAsset`.
 
 ## What deliberately stays jQuery / legacy seams
 
-`Craft.t`, `Craft.ui.icon`, `Craft.addActionsToChip` (with its jQuery
-`disclosureMenu()` fallback for old/plugin-rendered chip markup),
-`Craft.sendActionRequest`, `Craft.appendHeadHtml`/`appendBodyHtml`,
-`Craft.initUiElements`, `Craft.getActionUrl`, and `Craft.hasMousePointerEvents`
-— accessed via the page globals (`declare const Craft/$`). The chip
+`Craft.initUiElements`, accessed via the page global (`declare const Craft`),
+and `addActionsToChip()`'s jQuery `disclosureMenu()` fallback for
+old/plugin-rendered chip markup. The chip
 dblclick/taphold-to-edit shortcut and the create-button `activate` binding
 stay jQuery event wiring (`$(chip).on(...)`, `$createBtn.on('activate', ...)`).
 

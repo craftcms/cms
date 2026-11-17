@@ -1,0 +1,137 @@
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {actionClient} from '@craftcms/ui/utilities/api/actionClient';
+import {CpModal} from './cp-modal';
+
+const messages = vi.hoisted(() => ({
+  showError: vi.fn(),
+  showNotice: vi.fn(),
+  showSuccess: vi.fn(),
+}));
+vi.mock('@/modules/messages/messages', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...messages,
+}));
+beforeEach(() => {
+  Object.values(messages).forEach((fn) => fn.mockReset());
+});
+
+type Dialog = HTMLElement & {open: boolean; label: string};
+
+let request: ReturnType<typeof vi.spyOn>;
+
+function dialog(): Dialog {
+  return document.body.querySelector('craft-dialog') as Dialog;
+}
+
+function button(label: string): HTMLElement {
+  return [...dialog().querySelectorAll<HTMLElement>('craft-button')].find(
+    (btn) => btn.textContent === label
+  )!;
+}
+
+async function loaded(): Promise<void> {
+  await vi.waitFor(() => {
+    expect(dialog().querySelector('input[name="ns[newOwner]"]')).not.toBeNull();
+  });
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+}
+
+describe('CpModal', () => {
+  beforeEach(() => {
+    vi.stubGlobal('Craft', {
+      t: (_category: string, message: string) => message,
+      baseCpUrl: 'https://example.test/admin',
+      initUiElements: vi.fn(),
+      findDeltaData: (_initial: string, current: string) => current,
+      refreshComponentInstances: vi.fn(),
+    });
+    request = vi
+      .spyOn(actionClient, 'request')
+      .mockImplementation(async ({method}) =>
+        method === 'get'
+          ? {
+              data: {
+                namespace: 'ns',
+                submitButtonLabel: 'Reassign',
+                content: '<input name="ns[newOwner]" value="1">',
+              },
+            }
+          : {data: {message: 'Entries reassigned.'}}
+      );
+  });
+
+  afterEach(() => {
+    document.body.replaceChildren();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('loads the screen into a titled dialog, and submits it', async () => {
+    const onSubmit = vi.fn();
+    new CpModal('entries/reassign-modal', {
+      title: 'Reassign entries',
+      params: {oldUserIds: [5]},
+      onSubmit,
+    });
+    await loaded();
+
+    expect(dialog().label).toBe('Reassign entries');
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'get',
+        url: 'entries/reassign-modal',
+        params: {oldUserIds: [5]},
+      })
+    );
+
+    const save = button('Reassign');
+    expect(save.getAttribute('slot')).toBe('footer');
+    save.click();
+    await vi.waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+    expect(request).toHaveBeenLastCalledWith({
+      method: 'post',
+      url: 'https://example.test/admin',
+      data: 'ns%5BnewOwner%5D=1',
+      headers: {'X-Craft-Namespace': 'ns'},
+    });
+    expect(dialog().open).toBe(false);
+  });
+
+  it('submits spaces and plus signs as typed', async () => {
+    const onSubmit = vi.fn();
+    new CpModal('entries/reassign-modal', {onSubmit});
+    await loaded();
+
+    dialog().querySelector('input')!.value = 'Hello world + more';
+    button('Reassign').click();
+    await vi.waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+    const posted = request.mock.lastCall![0].data as string;
+    expect(new URLSearchParams(posted).get('ns[newOwner]')).toBe(
+      'Hello world + more'
+    );
+  });
+
+  it('asks before a dismissal discards changes', async () => {
+    const onCancel = vi.fn();
+    const confirm = vi.fn(() => false);
+    vi.stubGlobal('confirm', confirm);
+    new CpModal('entries/reassign-modal', {onCancel});
+    await loaded();
+
+    dialog().querySelector('input')!.value = '2';
+    const dismissal = new Event('craft-before-hide', {cancelable: true});
+    dialog().dispatchEvent(dismissal);
+
+    expect(dismissal.defaultPrevented).toBe(true);
+    expect(confirm).toHaveBeenCalled();
+    expect(dialog().open).toBe(true);
+
+    confirm.mockReturnValue(true);
+    button('Cancel').click();
+
+    expect(dialog().open).toBe(false);
+    expect(onCancel).toHaveBeenCalled();
+  });
+});

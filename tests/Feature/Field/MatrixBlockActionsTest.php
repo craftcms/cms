@@ -20,6 +20,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Ui\Controls\NestedElementBlocks;
 use CraftCms\Cms\User\Elements\User;
+use Illuminate\Support\Facades\Gate;
 
 use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
@@ -32,7 +33,7 @@ use function Pest\Laravel\actingAs;
  */
 
 /** @return array{0: EntryElement, 1: string} */
-function matrixActionsFixture(): array
+function matrixActionsFixture(array $settings = []): array
 {
     $innerField = Field::factory()->create([
         'name' => 'Inner Text',
@@ -52,7 +53,7 @@ function matrixActionsFixture(): array
         'name' => 'Actions Matrix',
         'handle' => 'actionsMatrix',
         'type' => Matrix::class,
-        'settings' => ['entryTypes' => [$blockType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS],
+        'settings' => ['entryTypes' => [$blockType->id], 'viewMode' => Matrix::VIEW_MODE_BLOCKS, ...$settings],
     ]);
 
     $entryModel = Entry::factory()
@@ -270,4 +271,24 @@ it('groups the field menu items by what they do', function () {
         'enable', '---',
         'copy',
     ]);
+});
+
+it('counts blocks afresh for Max Entries once the field has rendered', function () {
+    [$owner, $uid] = matrixActionsFixture(['maxEntries' => 2, 'viewMode' => Matrix::VIEW_MODE_CARDS]);
+    $block = fn () => entryQuery()->ownerId($owner->id)->status(null)->one();
+
+    expect(Gate::allows('duplicate', $block()))->toBeTrue();
+
+    app(Fields::class)->getFieldByHandle('actionsMatrix')->uiControl(new FieldContext(
+        path: 'actionsMatrix',
+        value: $owner->getFieldValue('actionsMatrix'),
+        element: $owner,
+    ));
+    $owner->setFieldValueFromRequest('actionsMatrix', [
+        'entries' => [$uid => ['type' => 'actionBlock'], 'new1' => ['type' => 'actionBlock', 'title' => 'Second']],
+        'sortOrder' => [$uid, 'new1'],
+    ]);
+    Elements::saveElement($owner);
+
+    expect(Gate::allows('duplicate', $block()))->toBeFalse();
 });

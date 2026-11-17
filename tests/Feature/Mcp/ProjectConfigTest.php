@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Mcp\Capabilities\ProjectConfig as ProjectConfigCapability;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Support\Json;
 
 it('reads and writes project config through MCP', function () {
     $projectConfig = app(ProjectConfig::class);
@@ -29,4 +30,23 @@ it('reads and writes project config through MCP', function () {
             'hadFileWriteIssues' => false,
             'schemaVersionsCompatible' => true,
         ]);
+});
+
+it('redacts credentials, including environment variable references', function () {
+    app(ProjectConfig::class)->set('plugins.mcpTest', [
+        'licenseKey' => 'ABCD-1234',
+        'settings' => ['apiKey' => 'sk_live_123', 'secretToken' => '$MCP_TEST_TOKEN', 'region' => 'us-east-1'],
+    ]);
+
+    $capability = app(ProjectConfigCapability::class);
+
+    expect($capability->get('plugins.mcpTest')['value'])->toEqualCanonicalizing([
+        'licenseKey' => '•••••••••',
+        'settings' => ['apiKey' => '•••••••••••', 'secretToken' => '•••••••••••••••', 'region' => 'us-east-1'],
+    ])
+        ->and($capability->get('plugins.mcpTest.settings.apiKey')['value'])->toBe('•••••••••••')
+        ->and(Json::encode($capability->status()['status']['appliedChanges']))
+        ->not->toContain('sk_live_123')
+        ->not->toContain('ABCD-1234')
+        ->not->toContain('MCP_TEST_TOKEN');
 });

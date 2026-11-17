@@ -1,0 +1,120 @@
+import type {ChipThumbSizeValue} from '@craftcms/ui';
+import type {ElementActionMenuItem} from '@/modules/elements/composables/useElementActionMenu';
+import type {UiProperties} from '../types';
+
+export type ElementPresentation = {
+  id: number;
+  label: string;
+  siteId?: number | string | null;
+  /**
+   * What the element itself permits, decided server-side. Absent for elements
+   * learned from the selector modal, which only reports the common six —
+   * those chips get the field's own actions until the next server render
+   * fills the rest in.
+   */
+  url?: string | null;
+  /** The element's control panel edit screen, if it has one. */
+  cpEditUrl?: string | null;
+  canEdit?: boolean;
+  canCopy?: boolean;
+  draftId?: number | null;
+  revisionId?: number | null;
+  /**
+   * The chip's status dot, already resolved to a fill and a label — which
+   * status definitions exist, and what they're called, is an element-type
+   * concern. `null` for types that don't show one.
+   */
+  status?: {fill: string; label: string; draft: boolean} | null;
+  /**
+   * The element's own action menu, as the server describes it — including the
+   * extras an element type adds (an asset's Preview file, Download, Show in
+   * folder, Open in Image Editor).
+   */
+  actions?: ElementActionMenuItem[];
+  /**
+   * View-mode extras, rendered server-side for the active mode only — the
+   * control asks for card parts in card modes and a thumbnail in thumbs mode,
+   * so a list field pays for neither.
+   */
+  cardAttributes?: Record<string, string | number | boolean | null | undefined>;
+  cardHeaderHtml?: string;
+  cardContentHtml?: string;
+  cardFooterHtml?: string;
+  thumbHtml?: string;
+  /** How deep the element sits in its structure; drawn when the field maintains hierarchy. */
+  level?: number | null;
+};
+
+/** Mirrors `ElementSelect::viewModes()`, itself a mirror of the field setting. */
+export type ElementSelectViewMode =
+  | 'list'
+  | 'list-inline'
+  | 'thumbs'
+  | 'cards'
+  | 'cards-grid';
+
+type ElementSelectElement =
+  | 'craft-element-select-input'
+  | 'craft-entry-select-input'
+  | 'craft-asset-select-input';
+
+export type ElementSelectProps = {
+  elementType: string;
+  customElement: ElementSelectElement;
+  elements: ElementPresentation[];
+  context: string;
+  sources: string[] | null;
+  criteria: UiProperties;
+  selectionCondition?: UiProperties;
+  /** The element the selection condition is evaluated against, such as the one being edited. */
+  referenceElement?: {
+    referenceElementId: number;
+    referenceElementOwnerId: number | null;
+    referenceElementSiteId: number | null;
+  };
+  /**
+   * Shows a search input that relates the elements it finds: those matching
+   * the field's one source's criteria, in the field's target site. Absent
+   * when the field's "Show the search input" setting is off, or it can't be
+   * shown.
+   */
+  search?: {criteria: UiProperties; siteId: number | null};
+  /**
+   * `EntrySelect` only: the handle of the section the search input can
+   * create entries in, when the user can publish in it.
+   */
+  createSection?: string | null;
+  /**
+   * Elements that can't be related, such as the one being edited and its
+   * owners when the field doesn't allow self relations.
+   */
+  disabledElementIds?: number[];
+  selectionLabel: string;
+  limit: number | null;
+  single?: boolean;
+  showSiteMenu: boolean;
+  viewMode: ElementSelectViewMode;
+  /**
+   * The thumbnail size, already resolved for the view mode — chips offer `sm`
+   * to `lg`, thumbnail tiles every size. Absent for card view modes.
+   */
+  thumbSize?: ChipThumbSizeValue | null;
+  /**
+   * Nests the selection by structure level. Choosing an element fills in its
+   * missing ancestors, and removing one removes its descendants.
+   */
+  maintainHierarchy?: boolean;
+  branchLimit?: number | null;
+  /** Lower-cased, for "Edit entry" / "Copy entry". */
+  elementDisplayName: string;
+  /** Lower-cased, for "2 entries selected". */
+  elementPluralDisplayName: string;
+  /** `AssetSelect` only; absent for every other element type. */
+  canUpload?: boolean;
+  /** What uploads are sent with: a `folderId`, or a `fieldId` with an `elementId` and `siteId`. */
+  uploadParams?: Record<string, number> | null;
+  showFolders?: boolean;
+  /** The source and folder path the selector modal opens in, such as the field's upload location. */
+  defaultSource?: string | null;
+  defaultSourcePath?: Array<Record<string, unknown>> | null;
+};

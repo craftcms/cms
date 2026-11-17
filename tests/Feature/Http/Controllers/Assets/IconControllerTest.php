@@ -32,3 +32,15 @@ it('returns SVG for unknown extension', function () {
         ->assertOk()
         ->assertHeader('Content-Type', 'image/svg+xml');
 });
+
+it('returns the dark icon for the dark theme', function () {
+    get(action(IconController::class, ['extension' => 'pdf', 'theme' => 'dark']))
+        ->assertOk()
+        ->assertSee('fill="#1a2231"', false)
+        ->assertSee('fill="#a6b2c2"', false);
+
+    get(action(IconController::class, ['extension' => 'pdf']))
+        ->assertOk()
+        ->assertDontSee('fill="#1a2231"', false)
+        ->assertSee('fill="#5c6982"', false);
+});

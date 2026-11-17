@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Mcp\AdminInstructions;
 use CraftCms\Cms\Mcp\Attributes\PublicMcp;
+use CraftCms\Cms\Mcp\Attributes\RequiresPermission;
 use CraftCms\Cms\Mcp\Public\Access;
 use CraftCms\Cms\Mcp\Public\ElementCriteria;
 use CraftCms\Cms\Mcp\Public\ElementQuery;
@@ -22,6 +23,7 @@ use CraftCms\Cms\User\Data\UserGroup;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Schema\ToolAnnotations;
+use Mcp\Server\RequestContext;
 
 /**
  * @since 6.0.0
@@ -30,7 +32,7 @@ readonly class Craft
 {
     private const array CriteriaSchema = [
         'type' => 'object',
-        'description' => 'ElementQuery criteria for the selected type. Use craft-context-get to discover supported criteria and public constraints.',
+        'description' => 'ElementQuery criteria for the selected type. Use craft_context_get to discover supported criteria and public constraints.',
         'additionalProperties' => true,
     ];
 
@@ -44,10 +46,11 @@ readonly class Craft
 
     /** @return array{version: string, edition: string, name: string, isInstalled: bool, siteCount: ?int, instructions: string} */
     #[McpTool(
-        name: 'info.get',
-        description: 'Returns Craft application information and full admin MCP instructions, including site and plugin guidance. Read these instructions before using other Craft capabilities.',
+        name: 'info_get',
+        description: 'Returns Craft application information and full MCP instructions, including site and plugin guidance. Read these instructions before using other Craft capabilities.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
+    #[RequiresPermission('accessCp')]
     public function info(): array
     {
         $isInstalled = Cms::isInstalled();
@@ -64,7 +67,7 @@ readonly class Craft
 
     /** @return array<string, mixed> */
     #[McpTool(
-        name: 'craft-context-get',
+        name: 'craft_context_get',
         title: 'Get the public Craft query context',
         description: 'Returns public Craft MCP query types, criteria, sites, sections, volumes, user groups, and element types.',
         annotations: new ToolAnnotations(readOnlyHint: true),
@@ -96,25 +99,26 @@ readonly class Craft
     }
 
     /**
-     * @param  array<string, mixed>  $criteria  Native Craft ElementQuery criteria. Use craft-context-get for supported values.
+     * @param  array<string, mixed>  $criteria  Native Craft ElementQuery criteria. Use craft_context_get for supported values.
      * @param  list<string>|null  $fields
      * @return array<string, mixed>
      */
     #[McpTool(
-        name: 'craft-query',
+        name: 'craft_query',
         title: 'Query approved public Craft content',
         description: 'Queries allowed public Craft element types using ElementQuery criteria.',
         annotations: new ToolAnnotations(readOnlyHint: true),
     )]
     #[PublicMcp]
     public function query(
+        RequestContext $context,
         string $type,
         #[Schema(definition: self::CriteriaSchema)]
         array $criteria = [],
         #[Schema(definition: ElementSerializer::FieldsSchema)]
         ?array $fields = [],
     ): array {
-        return $this->query->query($type, $criteria, $fields);
+        return $this->query->query($type, $criteria, ElementSerializer::fieldsArgument($context, $fields));
     }
 
     /** @return array<string, mixed> */

@@ -27,10 +27,15 @@ describe('attributes', function () {
         expect(Button::make()->inherit()->toHtml())->toContain('inherit');
     });
 
-    it('always renders an explicit type, since the web component defaults to submit', function () {
+    it('always renders an explicit type', function () {
         expect(Button::make()->toHtml())->toContain('type="button"');
 
         expect(Button::make()->type('submit')->toHtml())->toContain('type="submit"');
+    });
+
+    it('renders the form it acts on', function () {
+        expect(Button::make()->toHtml())->not->toContain('form=');
+        expect(Button::make()->type('submit')->form('settings')->toHtml())->toContain('form="settings"');
     });
 
     it('renders state attributes', function () {
@@ -46,6 +51,13 @@ describe('attributes', function () {
             ->toContain(' toggle')
             ->toContain('active="true"')
             ->and(Button::make()->toHtml())->not->toContain('toggle');
+    });
+
+    it('renders a shortcut as a key, or as JSON naming its modifiers', function () {
+        expect(Button::make()->shortcut('K')->toHtml())->toContain('shortcut="K"')
+            ->and(Button::make()->shortcut(['key' => 'S', 'shift' => true])->toHtml())
+            ->toContain('shortcut="{&quot;key&quot;:&quot;S&quot;,&quot;shift&quot;:true}"')
+            ->and(Button::make()->toHtml())->not->toContain('shortcut');
     });
 
     it('renders as a link with href, dropping the type', function () {

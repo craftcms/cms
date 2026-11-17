@@ -37,7 +37,10 @@ function docPages(): Array<{component: string; mdx: string; stories: string}> {
     const dir = join(COMPONENTS, component.name);
     const files = readdirSync(dir);
     const mdx = files.find((file) => file.endsWith('.mdx'));
-    const stories = files.find((file) => file.endsWith('.stories.ts'));
+    const stories = files.find(
+      (file) =>
+        file.endsWith('.stories.ts') && !file.endsWith('.edge-cases.stories.ts')
+    );
 
     if (mdx && stories) {
       pages.push({

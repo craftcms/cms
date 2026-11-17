@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\FieldLayout\LayoutElements;
 
+use CraftCms\Cms\Cp\FormFields;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\FieldLayout\FieldLayoutElementContext;
 use CraftCms\Cms\Support\Arr;
@@ -13,7 +14,6 @@ use CraftCms\Cms\Ui\Enums\ControlMode;
 use Override;
 
 use function CraftCms\Cms\currentUser;
-use function CraftCms\Cms\template;
 
 /**
  * @since 6.0.0
@@ -28,9 +28,8 @@ class TextField extends BaseNativeField
     /**
      * @var string|bool|null The input’s `autocomplete` attribute value.
      *
-     * This can be set to `true` (`"on"`), `false` ("off")`, or any other allowed `autocomplete` value.
-     *
-     * If this is explicitly set to `null`, the input won’t get an `autocomplete` attribute.
+     * This can be set to `true` (`"on"`), `false` (`"off"`), or any other allowed `autocomplete` value.
+     * `null` is treated as `false`.
      */
     public string|bool|null $autocomplete = false;
 
@@ -113,11 +112,23 @@ class TextField extends BaseNativeField
         return Arr::except(parent::fields(), ['value']);
     }
 
+    /**
+     * Subclasses set per-element `autocomplete` tokens, such as the current user’s `email`, through
+     * [[inputAttributes()]], and some of them require an element. Only its `autocomplete` value is passed on;
+     * the [[Text]] control has no API for other attributes, such as `data-lpignore`.
+     */
     #[Override]
     protected function uiControl(FieldLayoutElementContext $context): ?Control
     {
+        $static = $context->mode !== ControlMode::Editable || $context->ui->mode !== ControlMode::Editable;
+        $autocomplete = ($context->element ? $this->inputAttributes($context->element, $static)['autocomplete'] ?? null : null)
+            ?? $this->autocomplete;
+
         return Text::make($this->name ?? $this->attribute())
             ->inputType($this->inputType ?? 'text')
+            ->autocomplete($autocomplete ?? false)
+            ->autocorrect($this->autocorrect)
+            ->autocapitalize($this->autocapitalize)
             ->value($this->value($context->element))
             ->mode($this->disabled
                 ? ControlMode::Disabled
@@ -131,7 +142,7 @@ class TextField extends BaseNativeField
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return template('_includes/forms/text', [
+        return FormFields::textHtml([
             'type' => $this->inputType,
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,

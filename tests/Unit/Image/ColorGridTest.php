@@ -38,3 +38,28 @@ describe('interpolate', function () {
             ->and(array_last($row))->toBe('#00000000');
     });
 });
+
+describe('luminance', function () {
+    it('finds how light the darker and lighter parts of each region are', function () {
+        // The same image the browser sampler’s tests use, so the two stay in step
+        $pixels = [];
+
+        for ($y = 0; $y < 30; $y++) {
+            for ($x = 0; $x < 40; $x++) {
+                $pixels[] = [($x * 7 + $y * 13) % 256, ($x * $y) % 256, ($x + $y * 3) % 256, 1.0];
+            }
+        }
+
+        expect(ColorGrid::luminance($pixels, 40, 30, 4, 3))->toBe([
+            [[0.004, 0.084], [0.032, 0.299], [0.096, 0.457], [0.021, 0.512]],
+            [[0.072, 0.259], [0.036, 0.607], [0.024, 0.597], [0.11, 0.616]],
+            [[0.02, 0.485], [0.072, 0.651], [0.119, 0.659], [0.024, 0.598]],
+        ]);
+    });
+
+    it('leaves mostly transparent pixels out', function () {
+        $pixels = [[0, 0, 0, 1.0], [255, 255, 255, 0.4], [255, 255, 255, 0.4], [255, 255, 255, 0.4]];
+
+        expect(ColorGrid::luminance($pixels, 4, 1, 2, 1))->toBe([[[0.0, 0.0], null]]);
+    });
+});

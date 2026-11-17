@@ -31,6 +31,7 @@ const NARROW_THRESHOLD = 550;
  * declaratively in Storybook or by a consumer that only wants the chrome.
  *
  * @slot - The element index.
+ * @slot loading - Shown in place of the spinner while the index first loads.
  * @slot secondary-actions - Footer content pinned left.
  * @slot primary-actions - Footer buttons placed before Cancel and Select.
  * @csspart footer - The footer row.
@@ -129,6 +130,11 @@ export default class CraftElementSelectorModal extends CraftDialog {
           this.narrow = entry.contentRect.width < NARROW_THRESHOLD;
         }
       });
+
+      // A modal moved in the DOM reconnects without another first render.
+      if (this.hasUpdated) {
+        this.#observeSurface();
+      }
     }
   }
 
@@ -143,10 +149,10 @@ export default class CraftElementSelectorModal extends CraftDialog {
   protected override updated(changed: PropertyValues): void {
     super.updated(changed);
 
-    if (!this.opened || !this.hasIndex) {
+    if (!this.open || !this.hasIndex) {
       this.#unlockSize();
     } else if (
-      (changed.has('hasIndex') || changed.has('opened')) &&
+      (changed.has('hasIndex') || changed.has('open')) &&
       !this.hasAttribute('size-locked')
     ) {
       this.#queueSizeLock();
@@ -167,7 +173,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
         this.#sizeLockFrame = undefined;
         const surface = this.shadowRoot?.querySelector<HTMLElement>('.surface');
 
-        if (!this.opened || !this.hasIndex || !surface) {
+        if (!this.open || !this.hasIndex || !surface) {
           return;
         }
 
@@ -202,7 +208,7 @@ export default class CraftElementSelectorModal extends CraftDialog {
     const state = this.#binding.state;
 
     if (state) {
-      this.opened = state.open;
+      this.open = state.open;
       this.busy = state.busy;
       this.loading = state.loading;
       this.canSubmit = state.canSubmit;
@@ -217,7 +223,10 @@ export default class CraftElementSelectorModal extends CraftDialog {
 
   protected override firstUpdated(changed: PropertyValues): void {
     super.firstUpdated(changed);
+    this.#observeSurface();
+  }
 
+  #observeSurface(): void {
     const surface = this.shadowRoot?.querySelector('.surface');
 
     if (surface) {
@@ -255,7 +264,9 @@ export default class CraftElementSelectorModal extends CraftDialog {
     return html`
       <div class="body" part="body" ?inert=${this.busy}>
         ${this.loading && !this.hasIndex
-          ? html`<div class="loading"><craft-spinner></craft-spinner></div>`
+          ? html`<slot name="loading"
+              ><div class="loading"><craft-spinner></craft-spinner></div
+            ></slot>`
           : nothing}
         <slot></slot>
       </div>

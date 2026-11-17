@@ -38,5 +38,5 @@ it('can query for permissions', function (string $directName, string $groupName,
     expect(userQuery()->can($groupQuery)->count())->toBe(2);
 })->with([
     'legacy names' => ['foo', 'bar', 'foo', 'bar'],
-    'canonical names with case-insensitive queries' => ['accessCp', 'useCraftMcp', 'ACCESSCP', 'usecraftmcp'],
+    'canonical names with case-insensitive queries' => ['accessCp', 'viewUsers', 'ACCESSCP', 'viewusers'],
 ]);

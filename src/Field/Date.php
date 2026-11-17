@@ -9,7 +9,6 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\DateFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -18,9 +17,7 @@ use CraftCms\Cms\Gql\Directives\FormatDateTime;
 use CraftCms\Cms\Gql\GqlHelper as Gql;
 use CraftCms\Cms\Gql\Types\DateTime as DateTimeType;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Facades\DeltaRegistry;
 use CraftCms\Cms\Support\Facades\I18N;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Ui\Contracts\Control;
@@ -39,14 +36,13 @@ use Illuminate\Support\Facades\Date as DateFacade;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Date represents a Date/Time field.
  *
  * @since 6.0.0
  */
-class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Date extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -248,63 +244,6 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return sprintf('%s-date', parent::getInputId());
     }
 
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        /** @var DateTimeInterface|null $value */
-        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Cms::timezone();
-
-        if ($value === null) {
-            // Override the initial value being set to null by CustomField::inputHtml()
-            $initialValue = [];
-            if ($this->showDate) {
-                $initialValue['date'] = '';
-            }
-            if ($this->showTime) {
-                $initialValue['time'] = '';
-            }
-            $initialValue['timezone'] = $timezone;
-            DeltaRegistry::setInitialValue($this->handle, $initialValue);
-        }
-
-        $components = [];
-
-        $variables = [
-            'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-date"
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $value,
-            'timeZone' => $this->showTimeZone ? false : null,
-            'outputTzParam' => false,
-            'minuteIncrement' => $this->minuteIncrement,
-            'isDateTime' => $this->showTime,
-            'hasOuterContainer' => true,
-        ];
-
-        if ($this->showDate) {
-            $components[] = template('_includes/forms/date', $variables);
-        }
-
-        if ($this->showTime) {
-            $components[] = template('_includes/forms/time', $variables);
-        }
-
-        if ($this->showTimeZone) {
-            $components[] = template('_includes/forms/timeZone', [
-                'describedBy' => $this->describedBy,
-                'name' => "$this->handle[timezone]",
-                'value' => $timezone,
-                'offsetDate' => $value,
-            ]);
-        } else {
-            $components[] = Html::hiddenInput("$this->handle[timezone]", $timezone);
-        }
-
-        return Html::tag('div', implode("\n", $components), [
-            'class' => 'datetimewrapper',
-        ]);
-    }
-
     /** @return list<string> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
@@ -472,6 +411,10 @@ class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
     /** @return array<string, mixed> */
     public function getInputSchema(): array
     {
-        return ['type' => 'string', 'format' => 'date-time'];
+        // Any date the field can parse, rather than a strict format, which models and clients easily miss.
+        return [
+            'type' => 'string',
+            'description' => 'A date, or a date and time, such as 2026-11-22 or 2026-11-22T10:00:00+01:00. Include the UTC offset, or the time is read as UTC.',
+        ];
     }
 }

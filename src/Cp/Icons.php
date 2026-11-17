@@ -84,6 +84,18 @@ readonly class Icons
 
     private const array EARTH_ALIASES = ['world', 'earth'];
 
+    /**
+     * Custom icons drawn by mirroring another icon, mapped to the icon they mirror.
+     * `resources/js/bootstrap/icons.ts` lists them too.
+     */
+    private const array FLIPPED_ICONS = [
+        'list-flip' => 'list',
+        'list-tree-flip' => 'list-tree',
+        'share-flip' => 'share',
+        'sidebar-nav-flip' => 'sidebar-nav',
+        'sidebar-nav-flip-light' => 'sidebar-nav-light',
+    ];
+
     public static function resolveIconName(string $icon): string
     {
         if (isset(self::LEGACY_ICON_MAP[$icon])) {
@@ -153,8 +165,23 @@ readonly class Icons
 
         $icon = self::resolveIconName($icon);
 
+        if (isset(self::FLIPPED_ICONS[$icon])) {
+            $icon = self::FLIPPED_ICONS[$icon];
+            $attributes['style'] = ['scale' => '-1 1'];
+        }
+
         try {
-            if (preg_match('/^[\da-z\-]+$/', $icon)) {
+            if ($customIcon = IconSets::parse($icon)) {
+                [$setHandle, $name] = $customIcon;
+                $svg = app(IconSets::class)->getIconSetByHandle($setHandle)?->getSvg($name);
+
+                // Html::svg() treats anything without an <svg> tag as a file path
+                if ($svg === null || stripos($svg, '<svg') === false) {
+                    throw new InvalidArgumentException("Invalid custom icon: $icon");
+                }
+
+                $svg = Html::svg($svg, throwException: true);
+            } elseif (preg_match('/^[\da-z\-]+$/', $icon)) {
                 $path = self::resolveIconPath($icon);
 
                 if (! file_exists($path)) {

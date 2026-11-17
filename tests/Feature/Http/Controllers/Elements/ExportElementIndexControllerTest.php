@@ -145,6 +145,40 @@ it('keeps embedded exports scoped to the requested owner field', function () {
     expect($titles)->toBe(['First included', 'Second included']);
 });
 
+it('exports the trashed nested entries an embedded index lists', function () {
+    $nestedType = EntryType::factory()->withFieldLayout()->create(['hasTitleField' => true]);
+    $fixture = EntryModel::factory()
+        ->withField('matrixField', Matrix::class, ['entryTypes' => [$nestedType->id], 'viewMode' => Matrix::VIEW_MODE_INDEX])
+        ->createElementWithFields();
+    $owner = $fixture->element;
+    [$kept, $trashed] = ['uid:'.Str::uuid(), 'uid:'.Str::uuid()];
+    $owner->setFieldValueFromRequest('matrixField', [
+        'entries' => [
+            $kept => ['type' => $nestedType->handle, 'title' => 'Kept'],
+            $trashed => ['type' => $nestedType->handle, 'title' => 'Trashed'],
+        ],
+        'sortOrder' => [$kept, $trashed],
+    ]);
+    expect(Elements::saveElement($owner))->toBeTrue();
+    $owner = Entry::find()->id($owner->id)->one();
+    Elements::deleteElement($owner->getFieldValue('matrixField')->title('Trashed')->one());
+    $field = Fields::getFieldById($fixture->field('matrixField')->id);
+    $manager = $field->uiControl(new FieldContext(path: 'matrixField', element: $owner))->props()['manager'];
+
+    $response = ($this->export)([
+        ...$manager,
+        'context' => 'embeddedIndex',
+        'source' => '__IMP__',
+        'criteria' => ['status' => 'trashed'],
+        'type' => Raw::class,
+        'format' => 'json',
+    ])->assertOk();
+
+    $rows = json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+
+    expect(array_column($rows, 'title'))->toBe(['Trashed']);
+});
+
 it('returns download responses for each supported formattable format', function (string $format, string $contentType, string $exporterClass) {
     EntryModel::factory()->createElement(['title' => 'Export me']);
 

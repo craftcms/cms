@@ -46,10 +46,10 @@ it('allows guests to reach CP-prefixed legacy actions marked anonymous offline d
 
 it('keeps protected legacy actions unavailable to guests during maintenance', function(): void {
     app()->maintenanceMode()->activate([]);
-    $this->withoutExceptionHandling();
 
-    $this->get(action_url('test-plugin/protected'));
-})->throws(\craft\web\ServiceUnavailableHttpException::class);
+    $this->get(action_url('test-plugin/protected'))
+        ->assertServiceUnavailable();
+});
 
 it('keeps CP-prefixed protected legacy actions unavailable to guests during maintenance', function(): void {
     $this->withoutMiddleware(HandleInertiaRequests::class);

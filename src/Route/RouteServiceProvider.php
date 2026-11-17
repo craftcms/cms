@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Route;
 
 use CraftCms\Cms\Auth\DefaultRateLimit;
 use CraftCms\Cms\Auth\LoginRateLimiter;
+use CraftCms\Cms\Auth\OAuthServer\OAuthResources;
 use CraftCms\Cms\Auth\TwoFactorRateLimiter;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\AddLogContext;
@@ -22,17 +23,21 @@ use CraftCms\Cms\Http\Middleware\HandleInertiaRequests;
 use CraftCms\Cms\Http\Middleware\HandleTemplateRequest;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
 use CraftCms\Cms\Http\Middleware\PreventRequestsDuringMaintenance as CraftMaintenanceMiddleware;
+use CraftCms\Cms\Http\Middleware\PreventStaleDatabaseReads;
 use CraftCms\Cms\Http\Middleware\RenderBridgedScreen;
 use CraftCms\Cms\Http\Middleware\RequireConfirmedPassword;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\ResolveElementRoute;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\RunQueue;
+use CraftCms\Cms\Http\Middleware\SendBroadcasts;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\Middleware\ShowBrokenImage;
+use CraftCms\Cms\Http\Middleware\StartLazySession;
+use CraftCms\Cms\Http\Middleware\StartSessionWithoutPersistence;
+use CraftCms\Cms\Http\Middleware\TrackSessionActivity;
 use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\Http\Middleware\UseCraftAuthGuard;
-use CraftCms\Cms\Http\Middleware\UseWriteConnection;
 use CraftCms\Cms\Route\Data\Route;
 use CraftCms\Cms\Site\Events\SiteDeleted;
 use CraftCms\Cms\Support\Facades\ProjectConfig;
@@ -47,6 +52,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Router;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -62,15 +68,19 @@ class RouteServiceProvider extends ServiceProvider
     public function register(): void
     {
         CraftMaintenanceMiddleware::registerRouteMacro();
+        StartLazySession::registerRouteMacro();
 
         /**
          * These middleware must run before all others
          * as they rewrite the incoming request.
          */
         $kernel = $this->app->get(HttpKernel::class);
+        $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartSessionWithoutPersistence::class);
+        $kernel->addToMiddlewarePriorityAfter(StartSession::class, StartLazySession::class);
         $kernel->addToMiddlewarePriorityBefore(AuthenticatesRequests::class, UseCraftAuthGuard::class);
         $kernel->addToMiddlewarePriorityBefore(SubstituteBindings::class, ResolveSite::class);
         $kernel->addToMiddlewarePriorityAfter(SubstituteBindings::class, ResolveElementRoute::class);
+        $kernel->addToMiddlewarePriorityAfter([StartSession::class, StartSessionWithoutPersistence::class, StartLazySession::class], PreventStaleDatabaseReads::class);
         $globalMiddleware = array_map(
             fn (string $middleware): string => $middleware === LaravelMaintenanceMiddleware::class
                 ? CraftMaintenanceMiddleware::class
@@ -95,6 +105,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         Event::listen(RouteMatched::class, function (RouteMatched $event): void {
             MatchedElement::set(null);
+            StartLazySession::applyTo($event->route);
 
             if (Cms::isInstalled() && $event->request->isSiteRequest() && ! $event->request->isActionRequest() && ! Cms::config()->headlessMode) {
                 $event->route->middleware([ResolveSite::class, ResolveElementRoute::class]);
@@ -116,25 +127,21 @@ class RouteServiceProvider extends ServiceProvider
             $this->bootRequestForgeryExceptions();
         }
 
-        $this->app->booted(function () use ($routes, $router): void {
+        $this->app->booted(function (): void {
             // Project routes are registered at runtime so cached routes cannot retain stale project config.
             if (! Cms::isInstalled() || $this->app->runningConsoleCommand('route:cache')) {
                 return;
             }
 
-            $routes->getProjectConfigRoutes()->each(
-                fn (Route $route) => $router
-                    ->view($route->getUri(), $route->template)
-                    ->middleware(['craft', 'craft.web']),
-            );
+            $this->app->make(ProjectConfigRoutes::class)->register();
         });
 
-        Event::listen(SiteDeleted::class, function (SiteDeleted $event) use ($routes): void {
+        Event::listen(SiteDeleted::class, function (SiteDeleted $event): void {
             if (ProjectConfig::isApplyingExternalChanges()) {
                 return;
             }
 
-            $routes->handleDeletedSite($event);
+            $this->app->make(Routes::class)->handleDeletedSite($event);
         });
 
         RateLimiter::for('password-reset', function ($request) {
@@ -148,6 +155,11 @@ class RouteServiceProvider extends ServiceProvider
             // Throttle to prevent enumeration attacks
             return DefaultRateLimit::for($request) ?? Limit::none();
         });
+
+        RateLimiter::for(
+            OAuthResources::REGISTRATION_RATE_LIMITER,
+            fn (Request $request) => Limit::perHour(10)->by($request->ip() ?? 'unknown'),
+        );
 
         RateLimiter::for(
             LoginRateLimiter::NAME,
@@ -182,7 +194,7 @@ class RouteServiceProvider extends ServiceProvider
         }
 
         collect([
-            UseWriteConnection::class,
+            PreventStaleDatabaseReads::class,
             ForgetTriggerParameters::class,
             EnsureInstalled::class,
             AddLogContext::class,
@@ -190,6 +202,7 @@ class RouteServiceProvider extends ServiceProvider
             UpdateLocale::class,
             CheckForUpdates::class,
             Enforce2fa::class,
+            TrackSessionActivity::class,
             SetHeaders::class,
             ShowBrokenImage::class,
             CraftMaintenanceMiddleware::class,
@@ -201,6 +214,8 @@ class RouteServiceProvider extends ServiceProvider
             RequireCpRequest::class,
             AuthenticateCraftSession::class,
             CheckRequirements::class,
+            // Outside `HandleInertiaRequests`, so it sees what the page delivered.
+            SendBroadcasts::class,
             HandleInertiaRequests::class,
             EnforceLicenses::class,
             HandleTemplateRequest::class,

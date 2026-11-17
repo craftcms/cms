@@ -42,6 +42,7 @@ use craft\services\Fs;
 use craft\services\Gc;
 use craft\services\Globals;
 use craft\services\Gql;
+use craft\services\Icons;
 use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
@@ -75,7 +76,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Support\Facades\Log;
@@ -123,6 +124,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Globals $globals The globals service
  * @property-read Gql $gql The GraphQl service
  * @property-read I18N $i18n The internationalization (i18n) component
+ * @property-read Icons $icons The icons service
  * @property-read Images $images The images service (deprecated)
  * @property-read ImageTransforms $imageTransforms The image transforms service
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
@@ -421,6 +423,22 @@ trait ApplicationTrait
     }
 
     /**
+     * Runs the callbacks registered with [[onAfterRequest()]] so far, without triggering [[EVENT_AFTER_REQUEST]].
+     *
+     * @internal Queue workers call this after each job, as they run many before their own request ends.
+     */
+    public function runAfterRequestCallbacks(): void
+    {
+        $event = new Event();
+        $event->sender = $this;
+        $event->name = self::EVENT_AFTER_REQUEST;
+
+        while ($callback = array_shift($this->afterRequestCallbacks)) {
+            $callback($event);
+        }
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function trigger($name, ?Event $event = null)
@@ -448,7 +466,7 @@ trait ApplicationTrait
      */
     public function getIsMultiSite(bool $refresh = false, bool $withTrashed = false): bool
     {
-        DeprecatorFacade::log('Craft::$app->getIsMultiSite()', 'Craft::$app->getIsMultiSite() is deprecated. Use Sites::isMultiSite() or craft.sites.isMultiSite() instead.');
+        LegacyUsage::record('Craft::$app->getIsMultiSite()', 'Craft::$app->getIsMultiSite() is deprecated. Use Sites::isMultiSite() or craft.sites.isMultiSite() instead.');
 
         return \CraftCms\Cms\Support\Facades\Sites::isMultiSite($refresh, $withTrashed);
     }
@@ -588,7 +606,7 @@ trait ApplicationTrait
      */
     public function getIsLive(): bool
     {
-        DeprecatorFacade::log('Craft::$app->getIsLive()', 'Craft::$app->getIsLive() is deprecated. Use ! app()->isDownForMaintenance() instead.');
+        LegacyUsage::record('Craft::$app->getIsLive()', 'Craft::$app->getIsLive() is deprecated. Use ! app()->isDownForMaintenance() instead.');
 
         return !app()->isDownForMaintenance();
     }
@@ -975,7 +993,7 @@ trait ApplicationTrait
      */
     public function getFields(): Fields
     {
-        DeprecatorFacade::log('Craft::$app->fields', 'Craft::$app->fields is deprecated. Use app(Fields::class) or craft.fields instead.');
+        LegacyUsage::record('Craft::$app->fields', 'Craft::$app->fields is deprecated. Use app(Fields::class) or craft.fields instead.');
 
         return $this->get('fields');
     }
@@ -1001,7 +1019,7 @@ trait ApplicationTrait
      */
     public function getFormattingLocale(): \craft\i18n\Locale
     {
-        DeprecatorFacade::log('Craft::$app->getFormattingLocale()', 'Craft::$app->getFormattingLocale() is deprecated. Use I18N::getFormattingLocale() or craft.i18n.getFormattingLocale instead.');
+        LegacyUsage::record('Craft::$app->getFormattingLocale()', 'Craft::$app->getFormattingLocale() is deprecated. Use I18N::getFormattingLocale() or craft.i18n.getFormattingLocale instead.');
 
         return $this->get('formattingLocale');
     }
@@ -1044,6 +1062,19 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the icons service.
+     *
+     * @return Icons The icons service
+     *
+     * @since 5.12.0
+     * @deprecated in 6.0.0. Use {@see \CraftCms\Cms\Cp\IconSets} instead.
+     */
+    public function getIcons(): Icons
+    {
+        return $this->get('icons');
+    }
+
+    /**
      * Returns the images service.
      *
      * @return Images The images service
@@ -1062,7 +1093,7 @@ trait ApplicationTrait
      */
     public function getLocale(): \craft\i18n\Locale
     {
-        DeprecatorFacade::log('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() or craft.i18n.getLocale instead.');
+        LegacyUsage::record('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() or craft.i18n.getLocale instead.');
 
         return $this->get('locale');
     }
@@ -1192,7 +1223,7 @@ trait ApplicationTrait
      */
     public function getSites(): Sites
     {
-        DeprecatorFacade::log('Craft::$app->sites', 'Craft::$app->sites is deprecated. Use app(Sites::class), app(SiteGroups::class) or craft.sites / craft.siteGroups instead.');
+        LegacyUsage::record('Craft::$app->sites', 'Craft::$app->sites is deprecated. Use app(Sites::class), app(SiteGroups::class) or craft.sites / craft.siteGroups instead.');
 
         return $this->get('sites');
     }

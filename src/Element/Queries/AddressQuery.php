@@ -7,6 +7,8 @@ namespace CraftCms\Cms\Element\Queries;
 use CraftCms\Cms\Address\Addresses;
 use CraftCms\Cms\Address\Elements\Address;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Element\Enums\ElementQueryParamType;
+use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
 use CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements;
 use CraftCms\Cms\Element\Queries\Contracts\NestedElementQueryInterface;
 use CraftCms\Cms\Element\Queries\Exceptions\QueryAbortedException;
@@ -18,6 +20,8 @@ use Override;
 
 /**
  * @extends ElementQuery<Address>
+ *
+ * @implements NestedElementQueryInterface<Address>
  *
  * @since 6.0.0
  */
@@ -512,6 +516,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $countryCode
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ country codes.')]
     public function countryCode(array|string|null $value): self
     {
         $this->countryCode = $value;
@@ -551,6 +556,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $administrativeArea
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ administrative areas.')]
     public function administrativeArea(array|string|null $value): self
     {
         $this->administrativeArea = $value;
@@ -589,6 +595,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $locality
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ localities.')]
     public function locality(array|string|null $value): self
     {
         $this->locality = $value;
@@ -627,6 +634,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $dependentLocality
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ dependent localities.')]
     public function dependentLocality(array|string|null $value): self
     {
         $this->dependentLocality = $value;
@@ -665,6 +673,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $postalCode
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ postal codes.')]
     public function postalCode(array|string|null $value): self
     {
         $this->postalCode = $value;
@@ -703,6 +712,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $sortingCode
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ sorting codes.')]
     public function sortingCode(array|string|null $value): self
     {
         $this->sortingCode = $value;
@@ -741,6 +751,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $organization
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ organizations.')]
     public function organization(array|string|null $value): self
     {
         $this->organization = $value;
@@ -779,6 +790,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $organizationTaxId
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ organization tax IDs.')]
     public function organizationTaxId(array|string|null $value): self
     {
         $this->organizationTaxId = $value;
@@ -817,6 +829,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $addressLine1
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ first address lines.')]
     public function addressLine1(array|string|null $value): self
     {
         $this->addressLine1 = $value;
@@ -855,6 +868,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $addressLine2
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ second address lines.')]
     public function addressLine2(array|string|null $value): self
     {
         $this->addressLine2 = $value;
@@ -893,6 +907,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $addressLine3
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ third address lines.')]
     public function addressLine3(array|string|null $value): self
     {
         $this->addressLine3 = $value;
@@ -931,6 +946,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $fullName
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ full names.')]
     public function fullName(array|string|null $value): self
     {
         $this->fullName = $value;
@@ -969,6 +985,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $firstName
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ first names.')]
     public function firstName(array|string|null $value): self
     {
         $this->firstName = $value;
@@ -1007,6 +1024,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
      *
      * @uses $lastName
      */
+    #[ElementQueryParam(ElementQueryParamType::StringOrStrings, 'Narrows the query results based on the addresses’ last names.')]
     public function lastName(array|string|null $value): self
     {
         $this->lastName = $value;

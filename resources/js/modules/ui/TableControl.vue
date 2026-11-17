@@ -3,8 +3,9 @@
   import '@craftcms/ui/components/info-icon/info-icon';
   import '@craftcms/ui/components/reorder-button/reorder-button';
   import {t} from '@craftcms/ui/utilities/translate';
-  import {computed, inject, nextTick, onMounted, ref} from 'vue';
-  import {UiControlStructure, inputName} from './runtime';
+  import {computed, nextTick, onMounted, ref} from 'vue';
+  import {inputName} from './runtime';
+  import {useOptionalUiRenderer} from './renderer/context';
   import type {
     UiChange,
     UiChangeKind,
@@ -21,6 +22,7 @@
   import {useAutopopulation} from './table/useAutopopulation';
   import {useTableRows} from './table/useTableRows';
   import {useTableBehavior} from './table/useTableBehavior';
+  import {parseTsv} from './table/tsv';
   import type {TableControlProps, TableRow, TableValue} from './table/types';
 
   const props = defineProps<{
@@ -50,7 +52,7 @@
   }>();
   const host = ref<HTMLElement>();
   const status = ref('');
-  const structure = inject(UiControlStructure, undefined);
+  const structure = useOptionalUiRenderer()?.synchronizeStructure;
   const {rows, uis, keyed, externalValue, createRow, rowUi} =
     useTableRows(props);
   const {pending, errorsCleared, clearErrors} = useTableBehavior(
@@ -116,11 +118,33 @@
   const effectiveTouched = computed(
     () => props.touchedPaths ?? new Set<string>()
   );
+  const hiddenRows = computed(() => new Set(props.control.props.hiddenRows));
+  const headingColumn = computed(
+    () =>
+      columns.value.find(
+        ([, column]) => column.type === 'heading' && !column.html
+      )?.[0]
+  );
   const renderedRows = computed(() =>
-    rows.value.map((row, index) => ({
-      row,
-      fields: rowFields(rowUi(index)?.nodes ?? []),
-    }))
+    rows.value.map((row, index) => {
+      const fields = rowFields(rowUi(index)?.nodes ?? []);
+      const cells = new Map<string, UiNodePayload>();
+
+      for (const field of fields) {
+        const column = field.control?.path.at(-1);
+
+        if (column !== undefined && !cells.has(column)) {
+          cells.set(column, field);
+        }
+      }
+
+      const name =
+        headingColumn.value === undefined
+          ? ''
+          : String(row.value[headingColumn.value] ?? '').trim();
+
+      return {row, cells, name, hidden: hiddenRows.value.has(rowKey(index))};
+    })
   );
 
   onMounted(() => {
@@ -172,13 +196,6 @@
     });
   }
 
-  function fieldFor(
-    fields: UiNodePayload[],
-    column: string
-  ): UiNodePayload | undefined {
-    return fields.find((field) => field.control?.path.at(-1) === column);
-  }
-
   function disabledCell(row: TableRow, key: string): boolean {
     return columns.value.some(
       ([source, column]) =>
@@ -205,13 +222,17 @@
     )
       return;
 
+    setCell(row, key, value);
+    commit(kind, [...props.control.path, rowKey(index), key]);
+  }
+
+  function setCell(row: TableRow, key: string, value: UiValue): void {
     autopopulation.update(row.id, row.value, key, value, autopopulations.value);
     if (props.control.props.columns[key]?.radioMode && value) {
       for (const other of rows.value) {
         if (other.id !== row.id) other.value[key] = false;
       }
     }
-    commit(kind, [...props.control.path, rowKey(index), key]);
   }
 
   async function addRow(): Promise<void> {
@@ -309,33 +330,103 @@
     const control = cell.querySelector<HTMLElement>(cellFocusControls);
     if (!control) return;
     // Prefer the control's own input (e.g. a color picker's text input over its
-    // swatch), unless it's hidden, as with icon pickers.
-    const input = control.hasAttribute('hidden-input')
+    // swatch, or a combobox's textbox over its clear button), unless it's
+    // hidden, as with icon pickers. Some controls slot a wrapper around their input.
+    const slotted = control.hasAttribute('hidden-input')
       ? null
       : control.querySelector<HTMLElement>(':scope > [slot="input"]');
+    const input = slotted?.matches('input, textarea, select')
+      ? slotted
+      : slotted?.querySelector<HTMLElement>('input, textarea, select');
     (input && input.tabIndex >= 0
       ? input
       : firstFocusableWithin(control)
     )?.focus();
   }
 
+  const textTypes = [
+    'singleline',
+    'heading',
+    'multiline',
+    'number',
+    'email',
+    'url',
+  ];
+
+  /** Column types whose cells can't be typed into, so nothing pastes natively. */
+  const choiceTypes = ['checkbox', 'lightswitch', 'select'];
+
+  /**
+   * Column types that support each feature unless a column says otherwise.
+   * Pasted cells only go into column types that can tell whether the text
+   * fits (see `pastedValue()`), so dates, times, money, colors, and other
+   * structured values are left alone.
+   */
+  const featureTypes = {
+    enterNavigation: textTypes,
+    tsvPaste: [...textTypes, ...choiceTypes],
+  };
+
   function compatible(
     key: string,
     feature: 'tsvPaste' | 'enterNavigation'
   ): boolean {
     const column = props.control.props.columns[key];
+    if (column?.html) {
+      return false;
+    }
+
     return (
       column?.[feature] === true ||
       (column?.[feature] === undefined &&
-        [
-          'singleline',
-          'heading',
-          'multiline',
-          'number',
-          'email',
-          'url',
-        ].includes(column?.type ?? ''))
+        featureTypes[feature].includes(column?.type ?? ''))
     );
+  }
+
+  /**
+   * The value a pasted cell gives a column, or `undefined` when the column
+   * can't take it: number columns only take numbers a number input accepts,
+   * checkbox and lightswitch columns take yes/no words, and dropdown columns
+   * take an enabled option's value or label.
+   */
+  function pastedValue(
+    key: string,
+    field: UiNodePayload,
+    text: string
+  ): UiValue | undefined {
+    const trimmed = text.trim();
+    switch (props.control.props.columns[key]!.type) {
+      case 'number':
+        return trimmed === '' ||
+          (/^-?(\d+(\.\d+)?|\.\d+)(e[-+]?\d+)?$/i.test(trimmed) &&
+            Number.isFinite(Number(trimmed)))
+          ? trimmed
+          : undefined;
+      case 'checkbox':
+      case 'lightswitch': {
+        const word = trimmed.toLowerCase();
+        if (['true', 'yes', 'on', '1', 'x'].includes(word)) return true;
+        if (['false', 'no', 'off', '0', ''].includes(word)) return false;
+        return undefined;
+      }
+      case 'select': {
+        const options = (
+          (field.control?.props.options ?? []) as Array<{
+            label?: string;
+            value?: UiValue;
+            disabled?: boolean;
+          }>
+        ).filter((option) => !option.disabled);
+        return (
+          options.find((option) => String(option.value) === trimmed) ??
+          options.find(
+            (option) => option.label?.toLowerCase() === trimmed.toLowerCase()
+          )
+        )?.value;
+      }
+      default:
+        return text;
+    }
   }
 
   async function navigate(
@@ -390,13 +481,15 @@
       return;
 
     const text = event.clipboardData?.getData('text/plain');
-    if (!text || (!text.includes('\t') && !text.includes('\n'))) return;
+    if (
+      !text ||
+      (!text.includes('\t') &&
+        !text.includes('\n') &&
+        !choiceTypes.includes(props.control.props.columns[key]!.type))
+    )
+      return;
 
-    const values = text
-      .replace(/\r\n?/g, '\n')
-      .replace(/\n$/, '')
-      .split('\n')
-      .map((line) => line.split('\t'));
+    const values = parseTsv(text);
     const start = visibleColumns.value.findIndex(([column]) => column === key);
     event.preventDefault();
     clearErrors();
@@ -406,10 +499,9 @@
         appendRow();
       }
       const row = rows.value[index + offset]!;
-      for (const [cellIndex, value] of cells.entries()) {
+      for (const [cellIndex, cellText] of cells.entries()) {
         const column = visibleColumns.value[start + cellIndex]?.[0];
-        const field = fieldFor(
-          renderedRows.value[index + offset]!.fields,
+        const field = renderedRows.value[index + offset]!.cells.get(
           column ?? ''
         );
         if (
@@ -419,13 +511,8 @@
           !props.control.props.columns[column]?.static &&
           field?.control?.mode === 'editable'
         ) {
-          autopopulation.update(
-            row.id,
-            row.value,
-            column,
-            value,
-            autopopulations.value
-          );
+          const value = pastedValue(column, field, cellText);
+          if (value !== undefined) setCell(row, column, value);
         }
       }
     }
@@ -448,7 +535,7 @@
       :name="inputName(control.path)"
       value=""
     />
-    <div class="overflow-x-auto">
+    <div class="table-control__scroller overflow-x-auto">
       <table
         class="editable cp-table cp-table--editable cp-table--ruled w-full"
       >
@@ -491,17 +578,17 @@
         </thead>
         <tbody>
           <tr
-            v-for="({row, fields}, index) in renderedRows"
+            v-for="({row, cells, name, hidden}, index) in renderedRows"
             :key="row.id"
             :ref="
               (element) =>
                 setRowRef(element as HTMLTableRowElement | null, row.id)
             "
             :class="{
-              hidden: control.props.hiddenRows?.includes(rowKey(index)),
+              hidden,
               'row--dragging': getDragState(row.id).type === 'is-dragging',
             }"
-            :hidden="control.props.hiddenRows?.includes(rowKey(index))"
+            :hidden="hidden"
             :data-row-id="row.id"
           >
             <component
@@ -537,8 +624,8 @@
                 :value="row.value[rowIdField] ?? row.key"
               />
               <TableCell
-                v-if="fieldFor(fields, key)"
-                :node="fieldFor(fields, key)!"
+                v-if="cells.has(key)"
+                :node="cells.get(key)!"
                 :invalid="
                   Boolean(
                     !errorsCleared &&
@@ -547,10 +634,15 @@
                 "
                 :value="row.value[key]"
                 :label="
-                  t('{heading}, row {row}', {
-                    heading: column.heading ?? column.label ?? key,
-                    row: index + 1,
-                  })
+                  name
+                    ? t('{heading}, {name}', {
+                        heading: column.heading ?? column.label ?? key,
+                        name,
+                      })
+                    : t('{heading}, row {row}', {
+                        heading: column.heading ?? column.label ?? key,
+                        row: index + 1,
+                      })
                 "
                 :editable="
                   editable && !disabledCell(row, key) && !column.static
@@ -577,10 +669,10 @@
                 (editable &&
                   (control.props.allowReorder || control.props.allowDelete))
               "
-              class="thin"
+              class="thin row-actions"
             >
               <DropIndicator :edge="closestEdge(row.id)" contained />
-              <div class="flex items-center justify-end gap-2">
+              <div class="flex items-center justify-end gap-xs">
                 <slot
                   name="row-actions"
                   :row="row"
@@ -593,7 +685,11 @@
                     control.props.allowReorder &&
                     !control.props.staticRows
                   "
-                  :label="t('Reorder row {row}', {row: index + 1})"
+                  :label="
+                    name
+                      ? t('Reorder {name}', {name})
+                      : t('Reorder row {row}', {row: index + 1})
+                  "
                   :position="position(index)"
                   :ref="
                     (element: unknown) =>
@@ -609,7 +705,11 @@
                   variant="plain"
                   size="small"
                   .disabled="!canDelete"
-                  :aria-label="t('Delete row {row}', {row: index + 1})"
+                  :aria-label="
+                    name
+                      ? t('Delete {name}', {name})
+                      : t('Delete row {row}', {row: index + 1})
+                  "
                   @click="deleteRow(index)"
                 />
               </div>
@@ -634,7 +734,18 @@
 </template>
 
 <style scoped>
+  .table-control__scroller {
+    margin-inline: calc(var(--cp-scroll-bleed, 0px) * -1);
+    padding-inline: var(--cp-scroll-bleed, 0px);
+    scroll-padding-inline: var(--cp-scroll-bleed, 0px);
+  }
+
   .row--dragging {
     opacity: 0.4;
+  }
+
+  /* Row action buttons sit as close to the cell edge as the money input's clear button */
+  .row-actions {
+    padding-inline: var(--c-spacing-xs);
   }
 </style>

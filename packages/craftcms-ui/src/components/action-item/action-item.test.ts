@@ -1,4 +1,4 @@
-import {expect, test} from 'vite-plus/test';
+import {expect, test, vi} from 'vite-plus/test';
 import {html, render} from 'lit';
 
 import './action-item.js';
@@ -107,4 +107,91 @@ test('stops resetting its state once it is removed', async () => {
   );
 
   expect(states).toEqual(['success']);
+});
+
+test('announces its shortcut on its control', async () => {
+  vi.spyOn(navigator, 'platform', 'get').mockReturnValue('Win32');
+  const item = await mount(
+    html`<craft-action-item shortcut='{"key": "S", "shift": true}'>
+      Save and add another
+    </craft-action-item>`
+  );
+
+  expect(
+    item.shadowRoot
+      ?.querySelector('[part="control"]')
+      ?.getAttribute('aria-keyshortcuts')
+  ).toBe('Control+Shift+S');
+  vi.restoreAllMocks();
+});
+
+test('a link to another host opens in a new tab and says so', async () => {
+  const item = await mount(
+    html`<craft-action-item href="https://craftcms.com/"
+      >Craft CMS</craft-action-item
+    >`
+  );
+  const link = item.shadowRoot!.querySelector('a')!;
+
+  expect(link.getAttribute('target')).toBe('_blank');
+  expect(link.getAttribute('rel')).toBe('noopener');
+  expect(link.textContent).toContain('Opens in a new window');
+});
+
+test('a link to this host opens in the same tab', async () => {
+  const item = await mount(
+    html`<craft-action-item href="/admin/entries">Entries</craft-action-item>`
+  );
+  const link = item.shadowRoot!.querySelector('a')!;
+
+  expect(link.hasAttribute('target')).toBe(false);
+  expect(link.textContent).not.toContain('Opens in a new window');
+});
+
+test('exposes a disabled button or link item as disabled, and keeps it focusable', async () => {
+  for (const template of [
+    html`<craft-action-item disabled>Duplicate</craft-action-item>`,
+    html`<craft-action-item disabled href="/duplicate"
+      >Duplicate</craft-action-item
+    >`,
+  ]) {
+    const item = await mount(template);
+    const control =
+      item.shadowRoot!.querySelector<HTMLElement>('[part="control"]')!;
+
+    expect(control.getAttribute('aria-disabled')).toBe('true');
+    expect(control.hasAttribute('disabled')).toBe(false);
+    expect(control.tabIndex).toBe(0);
+  }
+});
+
+test('keeps a disabled item’s clicks from anything listening to it, and from following its link', async () => {
+  const heard = vi.fn();
+  const item = await mount(
+    html`<craft-action-item disabled href="/duplicate" @click=${heard}
+      >Duplicate</craft-action-item
+    >`
+  );
+  item.parentElement!.addEventListener('click', heard);
+  const control =
+    item.shadowRoot!.querySelector<HTMLElement>('[part="control"]')!;
+  const click = () => {
+    const event = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+    });
+    control.dispatchEvent(event);
+    return event;
+  };
+
+  expect(click().defaultPrevented).toBe(true);
+  expect(heard).not.toHaveBeenCalled();
+
+  (item as unknown as {disabled: boolean}).disabled = false;
+  await item.updateComplete;
+  const enabledClick = click();
+  enabledClick.preventDefault();
+
+  expect(heard).toHaveBeenCalledTimes(2);
 });

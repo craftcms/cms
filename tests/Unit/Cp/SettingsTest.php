@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Cp\Settings;
+use CraftCms\Cms\Support\CmsAssets;
+use CraftCms\Cms\Support\File;
 
 use function CraftCms\Cms\t;
 
@@ -71,4 +73,33 @@ it('resolves section labels for the current locale', function () {
     } finally {
         app()->setLocale($locale);
     }
+});
+
+it('lists sections that plugins register after Craft’s own', function () {
+    $settings = app(Settings::class);
+    $settings->registerSetting('Modules', 'module', fn () => ['label' => 'Module']);
+
+    expect(array_keys($settings->all()))->toBe([t('System'), t('Content'), t('Extend'), 'Modules']);
+
+    $settings->registerSetting('Plugins', 'plugin', fn () => ['label' => 'Plugin']);
+
+    expect(array_keys($settings->all()))->toBe([t('System'), t('Content'), t('Extend'), t('Plugins'), 'Modules']);
+});
+
+it('draws plain icon names in the light style when Craft ships one', function () {
+    $lightIcon = CmsAssets::resourcesPath('icons/light/settings-test-light.svg');
+    File::ensureDirectoryExists(dirname($lightIcon));
+    File::put($lightIcon, '<svg></svg>');
+    $this->beforeApplicationDestroyed(fn () => File::delete($lightIcon));
+
+    $settings = app(Settings::class);
+    $settings->registerSetting('Modules', 'light', fn () => ['label' => 'Light', 'iconName' => 'settings-test-light']);
+    $settings->registerSetting('Modules', 'solid', fn () => ['label' => 'Solid', 'iconName' => 'settings-test-solid']);
+    $settings->registerSetting('Modules', 'variant', fn () => ['label' => 'Variant', 'iconName' => 'solid/settings-test-light']);
+
+    expect(array_column($settings->all()['Modules'], 'iconName'))->toBe([
+        'light/settings-test-light',
+        'settings-test-solid',
+        'solid/settings-test-light',
+    ]);
 });

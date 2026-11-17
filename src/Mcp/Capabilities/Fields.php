@@ -10,6 +10,8 @@ use CraftCms\Cms\Field\Enums\TranslationMethod;
 use CraftCms\Cms\Field\Fields as FieldService;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdmin;
 use CraftCms\Cms\Mcp\Attributes\RequiresAdminChanges;
+use CraftCms\Cms\Mcp\SensitiveValues;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -26,7 +28,10 @@ use Mcp\Server\RequestContext;
  */
 readonly class Fields
 {
-    public function __construct(private FieldService $fields) {}
+    public function __construct(
+        private FieldService $fields,
+        private SensitiveValues $sensitiveValues,
+    ) {}
 
     /** @return array{count: int, fields: list<array<string, mixed>>} */
     #[RequiresAdmin]
@@ -61,8 +66,8 @@ readonly class Fields
     }
 
     /**
-     * @param  string  $type  Registered field class name, such as CraftCms\Cms\Field\PlainText.
-     * @param  array<string, mixed>  $settings  Type-specific field settings.
+     * @param  string  $type  A field class from component_types_list with kind: field.
+     * @param  array<string, mixed>  $settings  Settings matching component_types_get for the field type.
      * @return array{field: array<string, mixed>}
      */
     #[RequiresAdminChanges]
@@ -89,7 +94,7 @@ readonly class Fields
             'searchable' => $searchable,
             'translationMethod' => $translationMethod,
             'translationKeyFormat' => $translationKeyFormat,
-            'settings' => $settings,
+            'settings' => $this->sensitiveValues->restore(ProjectConfigHelper::unpackAssociativeArrays($settings), []),
         ]);
 
         return ['field' => $this->save($field)];
@@ -141,7 +146,7 @@ readonly class Fields
         ], $request->arguments);
 
         if (array_key_exists('settings', $request->arguments)) {
-            $attributes = [...array_replace($field->getSettings(), $settings), ...$attributes];
+            $attributes = [...array_replace($field->getSettings(), $this->sensitiveValues->restore(ProjectConfigHelper::unpackAssociativeArrays($settings), $field->getSettings())), ...$attributes];
         }
 
         Typecast::configure($field, $attributes);
@@ -236,6 +241,10 @@ readonly class Fields
     private function serialize(FieldInterface $field): array
     {
         $config = $this->fields->createFieldConfig($field);
+
+        if (isset($config['settings'])) {
+            $config['settings'] = $this->sensitiveValues->redact($config['settings']);
+        }
 
         return [
             'id' => $field->getId(),

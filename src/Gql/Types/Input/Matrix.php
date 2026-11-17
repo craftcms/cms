@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Gql\Types\Input;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Gql\GqlEntityRegistry;
+use CraftCms\Cms\Gql\GqlHelper;
 use CraftCms\Cms\Gql\Types\QueryArgument;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Error\UserError;
@@ -45,6 +46,7 @@ class Matrix extends InputObjectType
                                             'id' => [
                                                 'name' => 'id',
                                                 'type' => Type::id(),
+                                                'description' => 'The ID or UUID of an existing entry in this field to update, or a unique key of your choice for a new entry. `sortOrder` refers to the entry by this ID or key. New entries without one are `new:1`, `new:2`, etc.',
                                             ],
                                         ];
 
@@ -57,7 +59,7 @@ class Matrix extends InputObjectType
                                         }
 
                                         // Get the field input types
-                                        foreach ($entryType->getCustomFields() as $field) {
+                                        foreach (GqlHelper::filterMutableFields($entryType->getCustomFields()) as $field) {
                                             /** @var Field $field */
                                             $entryTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
                                         }
@@ -76,12 +78,12 @@ class Matrix extends InputObjectType
                     'sortOrder' => [
                         'name' => 'sortOrder',
                         'type' => Type::listOf(QueryArgument::getType()),
-                        'description' => 'The entries the field should contain, in order: IDs of existing entries, and `new:1`, `new:2`, etc. for entries without an ID, numbered in the order they appear in `entries`. Omitted entries are removed. Required when adding entries.',
+                        'description' => 'The entries the field should contain, in order: IDs of existing entries, and `new:1`, `new:2`, etc. for entries without an ID, numbered in the order they appear in `entries`. Entries it omits are removed. Required when adding entries. Without it, existing entries are kept in their order, and only the entries in `entries` change.',
                     ],
                     'entries' => [
                         'name' => 'entries',
                         'type' => Type::listOf($entryContainerInputType),
-                        'description' => 'Entry data. Include `id` to update an existing entry.',
+                        'description' => 'Entry data. Include `id` to update an existing entry; only the values given change.',
                     ],
                 ];
             },
@@ -104,11 +106,12 @@ class Matrix extends InputObjectType
                     $type = array_key_first($entry);
                     $entry = reset($entry);
                     $entryId = Arr::pull($entry, 'id') ?? sprintf('new:%s', $entryCounter++);
-                    $title = Arr::pull($entry, 'title');
+                    // Only given titles are set, so updating an entry’s fields keeps its title.
+                    $title = array_key_exists('title', $entry) ? ['title' => Arr::pull($entry, 'title')] : [];
 
                     $preparedEntries[$entryId] = [
                         'type' => $type,
-                        'title' => $title,
+                        ...$title,
                         'fields' => $entry,
                     ];
                 }

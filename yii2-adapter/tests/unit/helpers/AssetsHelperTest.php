@@ -225,6 +225,8 @@ class AssetsHelperTest extends TestCase
             ['Filename', 'filename'],
             ['File name is with chars', 'file.name_is-with chars'],
             ['File name is with chars', 'file.name_is-with chars!@#$%^&*()'],
+            ['Long' . str_repeat(' long', 50), str_repeat('long-', 60)],
+            ['É' . str_repeat('é', 254), str_repeat('é', 300)],
         ];
     }
 

@@ -42,6 +42,8 @@ describe('useNestedElementsQuery', () => {
       elementType: 'Entry',
       elementDisplayName: 'Entry',
       elementPluralDisplayName: 'Entries',
+      elementLowerDisplayName: 'entry',
+      elementPluralLowerDisplayName: 'entries',
       canHaveDrafts: true,
       title: 'Entries',
       page: null,
@@ -110,7 +112,7 @@ describe('useNestedElementsQuery', () => {
       initial?: NestedContentIndexData;
     } = {}
   ) {
-    vi.stubGlobal('Craft', {systemUid: 'test', pageTrigger: 'p'});
+    vi.stubGlobal('Craft', {systemUid: 'test'});
     const initial = options.initial ?? payload();
     const props = reactive({
       viewMode: 'index',
@@ -158,9 +160,9 @@ describe('useNestedElementsQuery', () => {
     localStorage.setItem(
       'Craft-test.nestedentries.field:articles',
       JSON.stringify({
-        mode: 'table',
         sources: {
           __IMP__: {
+            mode: 'table',
             visible: ['postDate'],
             sort: [{field: 'sortOrder', direction: 'asc'}],
           },
@@ -181,9 +183,9 @@ describe('useNestedElementsQuery', () => {
     localStorage.setItem(
       'Craft-test.nestedentries.field:articles',
       JSON.stringify({
-        mode: 'cards',
         sources: {
           __IMP__: {
+            mode: 'cards',
             visible: ['dateUpdated'],
             sort: [{field: 'postDate', direction: 'desc'}],
           },
@@ -229,7 +231,7 @@ describe('useNestedElementsQuery', () => {
   it('falls back to the first server-provided mode when a persisted mode is unavailable', async () => {
     localStorage.setItem(
       'Craft-test.nestedentries.field:articles',
-      JSON.stringify({mode: 'table'})
+      JSON.stringify({sources: {__IMP__: {mode: 'table'}}})
     );
     const initial = payload({
       viewState: {mode: 'cards'},

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import {formatDate} from '@craftcms/ui/utilities/format';
   import {t} from '@craftcms/ui/utilities/translate';
   import {Disclosure, DisclosureButton, DisclosurePanel} from '@headlessui/vue';
   import {computed} from 'vue';
@@ -9,18 +10,6 @@
     critical?: boolean;
     notes?: string | null;
   }>();
-
-  // Format date for display
-  function formatDate(date: string | null): string {
-    if (!date) {
-      return '';
-    }
-    return new Date(date).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  }
 
   // Determine if release should auto-expand
   const shouldAutoExpand = computed(() => {
@@ -55,12 +44,13 @@
       <DisclosureButton v-if="hasNotes" class="release-trigger">
         <craft-icon
           :name="open ? 'chevron-down' : 'chevron-right'"
-          style="font-size: 0.8em"
         ></craft-icon>
         <div class="release-info">
           <strong class="release-version">{{ version }}</strong>
           <span v-if="critical" class="release-badge">{{ t('Critical') }}</span>
-          <span v-if="date" class="release-date">{{ formatDate(date) }}</span>
+          <span v-if="date" class="release-date">{{
+            formatDate(date, {dateStyle: 'medium'})
+          }}</span>
         </div>
       </DisclosureButton>
 
@@ -69,7 +59,9 @@
         <div class="release-info">
           <strong class="release-version">{{ version }}</strong>
           <span v-if="critical" class="release-badge">{{ t('Critical') }}</span>
-          <span v-if="date" class="release-date">{{ formatDate(date) }}</span>
+          <span v-if="date" class="release-date">{{
+            formatDate(date, {dateStyle: 'medium'})
+          }}</span>
         </div>
       </div>
 

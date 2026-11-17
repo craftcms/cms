@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
-use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
 use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Events\SetAssetFilename;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
@@ -31,6 +31,7 @@ use InvalidArgumentException;
 use Throwable;
 use Twig\Error\RuntimeError;
 
+use function CraftCms\Cms\currentUserElement;
 use function CraftCms\Cms\renderObjectTemplate;
 
 /**
@@ -39,6 +40,25 @@ use function CraftCms\Cms\renderObjectTemplate;
 class AssetsHelper
 {
     public const string INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
+
+    /**
+     * The most characters a file’s preview text keeps, which is more than its icon shows.
+     *
+     * @see previewText()
+     *
+     * @internal
+     */
+    public const int PREVIEW_TEXT_LENGTH = 1000;
+
+    /**
+     * How many bytes to read from the start of a file for its preview text: enough for
+     * {@see PREVIEW_TEXT_LENGTH} characters of up to four bytes each.
+     *
+     * @see previewText()
+     *
+     * @internal
+     */
+    public const int PREVIEW_TEXT_SOURCE_LENGTH = self::PREVIEW_TEXT_LENGTH * 4;
 
     /**
      * Get a temporary file path.
@@ -223,8 +243,8 @@ class AssetsHelper
     {
         $title = mb_ucfirst(implode(' ', Str::toWords($filename, false, true)));
 
-        if (strlen($title) > 255) {
-            return rtrim(substr($title, 255), ' ');
+        if (mb_strlen($title) > 255) {
+            return rtrim(mb_substr($title, 0, 255), ' ');
         }
 
         return $title;
@@ -482,9 +502,16 @@ class AssetsHelper
     }
 
     /**
-     * Returns the SVG contents for an asset icon with a given extension.
+     * Returns the SVG contents for an asset icon with a given extension, in
+     * the light or dark variant for the control panel theme that's showing,
+     * unless `$dark` says which.
+     *
+     * The paper is laid out in percentages of the icon's box, while its corner
+     * radius, outline and shadow are in pixels, so they look the same at any
+     * size. The outline's outer corners match the image thumbnails and chips
+     * around it, through `--c-thumbnail-image-radius`.
      */
-    public static function iconSvg(string $extension): string
+    public static function iconSvg(string $extension, ?bool $dark = null): string
     {
         if (! preg_match('/^\w+$/', $extension)) {
             throw new InvalidArgumentException("$extension isn’t a valid file extension.");
@@ -496,26 +523,239 @@ class AssetsHelper
             return $path;
         }
 
-        $svg = file_get_contents(Aliases::get('@resources/public/images/thumbs/file.svg'));
+        $dark ??= Theme::resolveFor(currentUserElement()) === Theme::Dark;
+        $radius = 'var(--c-thumbnail-image-radius, 4px)';
+        $shapeRadius = "max(0px, calc($radius - 1px))";
+        $ringRadius = "max(0px, calc($radius - 0.5px))";
+        $paper = ['x' => '14.5%', 'y' => '4%', 'width' => '71%', 'height' => '92%', 'rx' => 4];
+
+        $paperNode = Html::tag('rect', '', [
+            ...$paper,
+            'fill' => $dark ? '#1a2231' : '#fff',
+            'style' => sprintf(
+                'rx: %s; %sfilter: drop-shadow(0 1px 1.5px rgb(0 0 0 / %s))',
+                $shapeRadius, $dark ? 'fill: var(--c-color-black-fill-quiet, #1a2231); ' : '', $dark ? '0.6' : '0.18',
+            ),
+        ]);
+        $ringNode = Html::tag('rect', '', [
+            ...$paper,
+            'fill' => 'none',
+            'stroke' => $dark ? '#fff' : '#000',
+            'stroke-opacity' => $dark ? 0.25 : 0.18,
+            'style' => sprintf(
+                'x: calc(14.5%% - 0.5px); y: calc(4%% - 0.5px); width: calc(71%% + 1px); height: calc(92%% + 1px); rx: %s',
+                $ringRadius,
+            ),
+        ]);
 
         $extLength = strlen($extension);
 
         [$textSize, $extension] = match (true) {
-            $extLength <= 3 => ['19', $extension],
-            $extLength === 4 => ['16', $extension],
-            default => ['15', substr($extension, 0, 3).'…']
+            $extLength <= 3 => ['24', $extension],
+            $extLength === 4 => ['20', $extension],
+            default => ['18', substr($extension, 0, 3).'…']
         };
 
-        $textNode = Html::tag('text', strtoupper($extension), [
+        $quietText = $dark ? '#a6b2c2' : '#5c6982';
+        $textNode = Html::tag('svg', Html::tag('text', strtoupper($extension), [
             'x' => 50,
-            'y' => 73,
+            'y' => 82,
             'text-anchor' => 'middle',
-            'font-family' => 'sans-serif',
-            'fill' => 'hsl(210, 10%, 47%)',
+            'font-family' => 'system-ui, sans-serif',
+            'font-weight' => 600,
+            'fill' => $quietText,
             'font-size' => $textSize,
+            'style' => "fill: var(--c-text-quiet, $quietText)",
+        ]), ['viewBox' => '0 0 100 100']);
+
+        return Html::tag('svg', $paperNode.$ringNode.$textNode, [
+            'xmlns' => 'http://www.w3.org/2000/svg',
+            'width' => '100%',
+            'height' => '100%',
+            'overflow' => 'visible',
+        ]);
+    }
+
+    /**
+     * Returns the start of a text file’s contents, up to {@see PREVIEW_TEXT_LENGTH} characters, for
+     * {@see Asset::$previewText}. It’s an empty string if there’s nothing to show, which still marks the file as read.
+     *
+     * @param  string  $contents  The start of the file, such as its first {@see PREVIEW_TEXT_SOURCE_LENGTH} bytes.
+     *
+     * @internal
+     */
+    public static function previewText(string $contents): string
+    {
+        $text = mb_scrub(mb_strcut($contents, 0, self::PREVIEW_TEXT_SOURCE_LENGTH, 'UTF-8'), 'UTF-8');
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        // Control characters other than line breaks and tabs have nothing to show
+        $text = (string) preg_replace('/[^\P{C}\n\t]/u', '', $text);
+
+        return rtrim(mb_substr($text, 0, self::PREVIEW_TEXT_LENGTH));
+    }
+
+    /**
+     * Returns the SVG contents for a closer look at a text file than its icon gives: the top of the page, zoomed in
+     * and cut off at the bottom, with the file’s preview text wrapping across it and fading toward the cut. It has no extension label, and fills a 240×160 box.
+     *
+     * Like {@see iconSvg()}, it comes in a light or dark variant for the control panel theme that’s showing, unless
+     * `$dark` says which.
+     *
+     * @internal
+     */
+    public static function previewTextSvg(string $previewText, ?bool $dark = null): string
+    {
+        $dark ??= Theme::resolveFor(currentUserElement()) === Theme::Dark;
+        $quietText = $dark ? '#a6b2c2' : '#5c6982';
+        // The page runs past the bottom of the box, so its bottom edge is never seen
+        $page = ['x' => 12, 'y' => 12, 'width' => 216, 'height' => 300, 'rx' => 6];
+
+        $paperNode = Html::tag('rect', '', [
+            ...$page,
+            'fill' => $dark ? '#1a2231' : '#fff',
+            'style' => sprintf(
+                '%sfilter: drop-shadow(0 2px 3px rgb(0 0 0 / %s))',
+                $dark ? 'fill: var(--c-color-black-fill-quiet, #1a2231); ' : '', $dark ? '0.6' : '0.18',
+            ),
+        ]);
+        $ringNode = Html::tag('rect', '', [
+            'x' => 11.5,
+            'y' => 11.5,
+            'width' => 217,
+            'height' => 301,
+            'rx' => 6.5,
+            'fill' => 'none',
+            'stroke' => $dark ? '#fff' : '#000',
+            'stroke-opacity' => $dark ? 0.25 : 0.18,
         ]);
 
-        return Html::appendToTag($svg, $textNode);
+        $fade = 'linear-gradient(#000 50%, rgb(0 0 0 / 30%))';
+        // Exactly this many lines fill the text area, so it's cut off between two lines rather than through one. It
+        // stops a little above the bottom of the box, leaving a gap below the last line.
+        $lines = 11;
+        $textHeight = 131;
+        $lineHeight = $textHeight / $lines;
+        $textNode = Html::tag('foreignObject', Html::tag('div', Html::encode($previewText), [
+            'xmlns' => 'http://www.w3.org/1999/xhtml',
+            'style' => [
+                'height' => '100%',
+                'overflow' => 'hidden',
+                'margin' => 0,
+                'font-family' => 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+                'font-size' => sprintf('%.2fpx', $lineHeight / 1.3),
+                'line-height' => sprintf('%.4fpx', $lineHeight),
+                'white-space' => 'pre-wrap',
+                'overflow-wrap' => 'anywhere',
+                'tab-size' => 4,
+                'color' => "var(--c-text-quiet, $quietText)",
+                '-webkit-mask-image' => $fade,
+                'mask-image' => $fade,
+            ],
+        ]), [
+            'x' => 26,
+            'y' => 26,
+            'width' => 188,
+            'height' => $textHeight,
+        ]);
+
+        return Html::tag('svg', $paperNode.$ringNode.$textNode, [
+            'xmlns' => 'http://www.w3.org/2000/svg',
+            'viewBox' => '0 0 240 160',
+            'width' => '100%',
+            'height' => '100%',
+            'overflow' => 'visible',
+            // Only the bottom is cut off, so the shadow still shows on the other sides
+            'style' => 'clip-path: inset(-20px -20px 0 -20px)',
+        ]);
+    }
+
+    /**
+     * Returns the SVG contents for a folder icon, in the light or dark variant
+     * for the control panel theme that's showing, unless `$dark` says which.
+     *
+     * Like {@see self::iconSvg()}, it's laid out in percentages of the icon's
+     * box, with its corners, shadow and (in the dark variant) outline in
+     * pixels.
+     */
+    public static function folderIconSvg(?bool $dark = null): string
+    {
+        $dark ??= Theme::resolveFor(currentUserElement()) === Theme::Dark;
+        $radius = 'var(--c-thumbnail-image-radius, 4px)';
+        $shapeRadius = "max(0px, calc($radius - 1px))";
+        $ringRadius = "max(0px, calc($radius - 0.5px))";
+        $back = ['x' => '8%', 'y' => '20%', 'width' => '84%', 'height' => '66%', 'rx' => 4];
+        $tab = ['x' => '8%', 'y' => '13%', 'width' => '36%', 'height' => '13%', 'rx' => 3];
+        $tabTop = 'min(13%, calc(20% - 2.25px))';
+        $tabStyle = "y: $tabTop; height: calc(26% - $tabTop); rx: $shapeRadius";
+        $backColor = $dark ? '#172560' : '#5b96f6';
+
+        $outlineNodes = '';
+        if ($dark) {
+            $ringNodes = Html::tag('g', implode('', [
+                Html::tag('rect', '', [
+                    ...$tab,
+                    'style' => "x: calc(8% - 0.5px); y: calc($tabTop - 0.5px); width: calc(36% + 1px); height: calc(26% - $tabTop + 1px); rx: $ringRadius",
+                ]),
+                Html::tag('rect', '', [
+                    ...$back,
+                    'style' => sprintf(
+                        'x: calc(8%% - 0.5px); y: calc(20%% - 0.5px); width: calc(84%% + 1px); height: calc(66%% + 1px); rx: %s',
+                        $ringRadius,
+                    ),
+                ]),
+            ]), [
+                'fill' => 'none',
+                'stroke' => '#fff',
+                'opacity' => 0.25,
+            ]);
+            $seamCoverNodes = Html::tag('g', implode('', [
+                Html::tag('rect', '', [...$tab, 'style' => $tabStyle]),
+                Html::tag('rect', '', [
+                    'x' => '8%',
+                    'y' => '20%',
+                    'width' => '37%',
+                    'height' => '7%',
+                    'style' => 'width: calc(36% + 2px); height: min(calc(6% + 2px), 10%)',
+                ]),
+            ]), ['fill' => $backColor]);
+            $outlineNodes = $ringNodes.$seamCoverNodes;
+        }
+        $backNodes = Html::tag('g', implode('', [
+            Html::tag('rect', '', [...$tab, 'style' => $tabStyle]),
+            Html::tag('rect', '', [...$back, 'style' => "rx: $shapeRadius"]),
+        ]), [
+            'fill' => $backColor,
+            'style' => sprintf('filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / %s))', $dark ? '0.6' : '0.18'),
+        ]);
+        $frontNode = Html::tag('rect', '', [
+            'x' => '8%',
+            'y' => '30%',
+            'width' => '84%',
+            'height' => '56%',
+            'rx' => 4,
+            'fill' => $dark ? '#1b2f8c' : '#8ab5f8',
+            'style' => sprintf(
+                'rx: %s; filter: drop-shadow(0 -0.5px 1px rgb(0 0 0 / %s))',
+                $shapeRadius, $dark ? '0.35' : '0.15',
+            ),
+        ]);
+
+        $frontEdgeNode = Html::tag('rect', '', [
+            'x' => '12%',
+            'y' => '30%',
+            'width' => '76%',
+            'height' => 1,
+            'fill' => '#fff',
+            'fill-opacity' => $dark ? 0.2 : 0.6,
+            'style' => sprintf('x: calc(8%% + %1$s); width: calc(84%% - 2 * %1$s)', $shapeRadius),
+        ]);
+
+        return Html::tag('svg', $backNodes.$frontNode.$frontEdgeNode.$outlineNodes, [
+            'xmlns' => 'http://www.w3.org/2000/svg',
+            'width' => '100%',
+            'height' => '100%',
+            'overflow' => 'visible',
+        ]);
     }
 
     /**

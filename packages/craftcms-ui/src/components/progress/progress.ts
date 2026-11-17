@@ -1,5 +1,5 @@
 import type {PropertyValues} from 'lit';
-import {css, html, LitElement} from 'lit';
+import {css, html, LitElement, nothing} from 'lit';
 import {property} from 'lit/decorators.js';
 
 /**
@@ -78,6 +78,7 @@ export default class CraftProgress extends LitElement {
 
   #arcEndPos: number = 0;
   #animationId: number | null = null;
+  #arcAnimation: {targetEndPos: number; callback?: () => void} | null = null;
 
   #indeterminateRotation: number = 0;
   #indeterminateAnimationId: number | null = null;
@@ -90,11 +91,27 @@ export default class CraftProgress extends LitElement {
     this.#prefersReducedMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
     ).matches;
+
+    if (this.hasUpdated) {
+      this.#resumeAnimations();
+    }
   }
 
   override disconnectedCallback(): void {
-    super.disconnectedCallback();
     this.#cancelAnimations();
+    super.disconnectedCallback();
+  }
+
+  /** Restarts the animations that disconnecting canceled. */
+  #resumeAnimations(): void {
+    if (this.progress < 0) {
+      if (this.#indeterminateAnimationId === null) {
+        this.#startIndeterminateAnimation();
+      }
+    } else if (this.#arcAnimation) {
+      const {targetEndPos, callback} = this.#arcAnimation;
+      this.#animateArc(targetEndPos, callback);
+    }
   }
 
   protected override firstUpdated(): void {
@@ -235,6 +252,7 @@ export default class CraftProgress extends LitElement {
 
   #animateArc(targetEndPos: number, callback?: () => void): void {
     this.#cancelAnimations();
+    this.#arcAnimation = {targetEndPos, callback};
 
     const startTime = performance.now();
     const duration = 500;
@@ -252,6 +270,7 @@ export default class CraftProgress extends LitElement {
         this.#animationId = requestAnimationFrame(animate);
       } else {
         this.#animationId = null;
+        this.#arcAnimation = null;
         callback?.();
       }
     };
@@ -321,7 +340,7 @@ export default class CraftProgress extends LitElement {
       <canvas
         part="canvas"
         role="progressbar"
-        aria-valuenow=${ariaValueNow ?? ''}
+        aria-valuenow=${ariaValueNow ?? nothing}
         aria-valuemin="0"
         aria-valuemax="100"
         aria-label=${this.label}

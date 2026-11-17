@@ -7,7 +7,6 @@ namespace CraftCms\Cms\Field;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Field\Conditions\EmptyFieldConditionRule;
-use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InputSchemaFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
@@ -25,19 +24,19 @@ use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Validation\Rules\TimeRule;
 use DateTimeInterface;
+use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\Date;
 use Override;
 
 use function CraftCms\Cms\t;
-use function CraftCms\Cms\template;
 
 /**
  * Date represents a Time field.
  *
  * @since 6.0.0
  */
-class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
+class Time extends Field implements InlineEditableFieldInterface, InputSchemaFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
     #[Override]
     public static function displayName(): string
@@ -148,20 +147,6 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
         return sprintf('%s-time', parent::getInputId());
     }
 
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        return template('_includes/forms/time', [
-            'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
-            'describedBy' => $this->describedBy,
-            'name' => $this->handle,
-            'value' => $value,
-            'minTime' => DateTimeHelper::timeToSeconds($this->min),
-            'maxTime' => DateTimeHelper::timeToSeconds($this->max),
-            'minuteIncrement' => $this->minuteIncrement,
-        ]);
-    }
-
     /** @return list<TimeRule> */
     #[Override]
     public function getElementRules(ElementInterface $element): array
@@ -252,12 +237,28 @@ class Time extends Field implements CrossSiteCopyableFieldInterface, InlineEdita
             'name' => $this->handle,
             'type' => DateTimeType::getType(),
             'description' => $this->instructions,
+            // MCP passes values nested in other fields’ input to normalizeValue() as given, so it describes them as the
+            // times of day that method parses, rather than as the `DateTime` type’s date-time strings.
+            'inputSchema' => $this->getInputSchema(),
+            // That schema accepts any string, so a time this field can’t parse is rejected rather than clearing it.
+            // GraphQL parses values into `DateTime` objects before this is called.
+            'normalizeValue' => function (mixed $value): mixed {
+                if (is_string($value) && $value !== '' && $this->normalizeValue($value, null) === null) {
+                    throw new UserError(sprintf('%s: The value couldn’t be parsed.', $this->handle));
+                }
+
+                return $value;
+            },
         ];
     }
 
     /** @return array<string, mixed> */
     public function getInputSchema(): array
     {
-        return ['type' => 'string', 'format' => 'date-time'];
+        // Any time the field can parse, rather than a strict format, which models and clients easily miss.
+        return [
+            'type' => 'string',
+            'description' => 'A time of day, such as 14:30 or 2:30 PM.',
+        ];
     }
 }

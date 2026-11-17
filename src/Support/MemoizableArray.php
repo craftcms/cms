@@ -61,6 +61,16 @@ class MemoizableArray implements Countable, IteratorAggregate
     }
 
     /**
+     * Returns the items as they were given, before they're normalized.
+     *
+     * @return array<mixed>
+     */
+    public function raw(): array
+    {
+        return $this->elements;
+    }
+
+    /**
      * @return Collection<array-key, T>
      */
     public function collect(): Collection

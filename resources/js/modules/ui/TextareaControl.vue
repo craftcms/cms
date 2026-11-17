@@ -4,21 +4,18 @@
   import '@craftcms/ui/components/text-expander/text-expander';
   import {useId} from 'vue';
   import type {UiControlPayload} from './types';
-  import {
-    ignoreModelValueInitialization,
-    inputName,
-    serverErrorValidators,
-  } from './runtime';
+  import {inputName} from './runtime';
 
   type TextareaControlProps = {
     rows?: number;
     maxLength?: number;
     placeholder?: string;
     monospace?: boolean;
+    singleLine?: boolean;
     textExpanderTriggers?: TextExpanderTriggers;
   };
 
-  defineProps<{
+  const props = defineProps<{
     control: UiControlPayload<TextareaControlProps>;
     value: unknown;
     label?: string;
@@ -31,29 +28,51 @@
     (event: 'update:value', value: string, kind: 'typing'): void;
   }>();
 
-  const onModelValueChanged = ignoreModelValueInitialization((event) => {
-    if (!(event.target instanceof CraftTextarea)) {
+  /** Single-line values wrap, but can't contain line breaks. */
+  function onBeforeInput(event: InputEvent): void {
+    if (
+      props.control.props.singleLine &&
+      ['insertLineBreak', 'insertParagraph'].includes(event.inputType)
+    ) {
+      event.preventDefault();
+    }
+  }
+
+  function onInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    if (!props.control.props.singleLine || !/[\r\n]/.test(textarea.value)) {
+      return;
+    }
+
+    const caret = textarea.selectionStart;
+    textarea.value = textarea.value.replace(/\r\n?|\n/g, ' ');
+    textarea.setSelectionRange(caret, caret);
+  }
+
+  function onValueInput(event: Event): void {
+    const textarea = event.currentTarget;
+    if (!(textarea instanceof CraftTextarea)) {
       throw new TypeError('Expected a textarea event target.');
     }
 
-    emit('update:value', String(event.target.modelValue ?? ''), 'typing');
-  });
+    emit('update:value', textarea.value, 'typing');
+  }
 </script>
 
 <template>
   <craft-textarea
     v-bind="$attrs"
     :name="editable ? inputName(control.path) : ''"
-    .modelValue="String(value ?? '')"
+    .value="String(value ?? '')"
     :rows="control.props.rows ?? 2"
     :maxlength="control.props.maxLength"
     :placeholder="control.props.placeholder"
-    :monospace="control.props.monospace"
+    .monospace="control.props.monospace === true"
     :required="editable && required"
     :readonly="control.mode === 'readOnly'"
-    :disabled="control.mode === 'disabled'"
-    .validators="serverErrorValidators(invalid)"
-    @model-value-changed="onModelValueChanged"
+    .disabled="control.mode === 'disabled'"
+    :invalid="invalid"
+    @input="onValueInput"
   >
     <textarea
       :id="inputId"
@@ -67,6 +86,8 @@
       :readonly="control.mode === 'readOnly'"
       :disabled="control.mode === 'disabled'"
       :aria-invalid="invalid ? 'true' : undefined"
+      @beforeinput="onBeforeInput"
+      @input="onInput"
     ></textarea>
   </craft-textarea>
   <craft-text-expander
