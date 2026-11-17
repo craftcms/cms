@@ -263,6 +263,7 @@ it('sets no-cache headers for responses that contain the CSRF token', function (
 })->with([
     'csrfInput() before expires' => '{{ csrfInput() }}{% expires in 1 hour %}',
     'csrf_token() before expires' => '<meta name="csrf-token" content="{{ csrf_token() }}">{% expires in 1 hour %}',
+    'token in a header' => '{% header "X-CSRF-Token: " ~ csrf_token() %}{% expires in 1 hour %}',
 ]);
 
 it('keeps cache headers for responses without the CSRF token', function () {

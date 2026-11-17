@@ -78,6 +78,11 @@ class SetHeaders
     /**
      * Whether the response contains the session’s CSRF token, which no cache may store, as it’s only valid for
      * this visitor’s session.
+     *
+     * The body and headers are checked, but not cookies, which already keep shared caches from storing the response.
+     * Streamed bodies aren’t checked, as they’re only sent after this middleware, so streamed responses keep the
+     * cache headers they were given. Neither are the bodies of HEAD responses, which are emptied before this
+     * middleware runs, so a HEAD response can have cache headers that the GET response for the same page doesn’t.
      */
     private function containsCsrfToken(Request $request, SymfonyResponse $response): bool
     {
