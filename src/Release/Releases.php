@@ -309,7 +309,9 @@ class Releases
 
         return DB::transaction(function () use ($release, $publishAt, $actor): Release {
             $release = $this->lockRelease($release->id);
-            $this->ensureMutable($release);
+            if (! $release->status->canTransitionTo(ReleaseStatus::Scheduled)) {
+                throw new ReleaseException(t('Scheduled and completed releases cannot be changed.'));
+            }
             $items = $this->lockReleaseDrafts($release);
             if (! $actor->can('publishReleases')) {
                 throw new ReleaseException(t('You are not allowed to schedule releases.'), Response::HTTP_FORBIDDEN);
@@ -322,10 +324,9 @@ class Releases
                 throw new ReleaseException(t('The release is not ready to be scheduled.'));
             }
 
-            $release->update([
+            $release->transitionTo(ReleaseStatus::Scheduled, [
                 'publishedAt' => $publishAt,
                 'scheduledById' => $actor->getCraftUserId(),
-                'status' => ReleaseStatus::Scheduled,
                 'lastError' => null,
             ]);
 
@@ -339,14 +340,13 @@ class Releases
 
         return DB::transaction(function () use ($release): Release {
             $release = $this->lockRelease($release->id);
-            if ($release->status !== ReleaseStatus::Scheduled) {
+            if (! $release->status->canTransitionTo(ReleaseStatus::Draft)) {
                 throw new ReleaseException(t('Only scheduled releases can be unscheduled.'));
             }
 
-            $release->update([
+            $release->transitionTo(ReleaseStatus::Draft, [
                 'publishedAt' => null,
                 'scheduledById' => null,
-                'status' => ReleaseStatus::Draft,
                 'lastError' => null,
             ]);
 
@@ -437,15 +437,11 @@ class Releases
     {
         [$publishedRelease, $failedRelease, $publicationFailure] = DB::transaction(function () use ($release, $scheduledExecution, $actor): array {
             $release = $this->lockRelease($release->id);
-            $allowedStatuses = $scheduledExecution
-                ? [ReleaseStatus::Scheduled]
-                : [ReleaseStatus::Draft, ReleaseStatus::Scheduled, ReleaseStatus::Failed];
+            if ($scheduledExecution && $release->status !== ReleaseStatus::Scheduled) {
+                throw new ReleaseNotDue(t('The release is no longer scheduled.'));
+            }
 
-            if (! in_array($release->status, $allowedStatuses, true)) {
-                if ($scheduledExecution) {
-                    throw new ReleaseNotDue(t('The release is no longer scheduled.'));
-                }
-
+            if (! $release->status->canTransitionTo(ReleaseStatus::Publishing)) {
                 throw new ReleaseException(t('This release cannot be published in its current state.'));
             }
 
@@ -477,8 +473,7 @@ class Releases
                 }
 
                 $release->refresh();
-                $release->update([
-                    'status' => ReleaseStatus::Failed,
+                $release->transitionTo(ReleaseStatus::Failed, [
                     'lastError' => $exception->getMessage(),
                     'publishAttempts' => $release->publishAttempts + 1,
                 ]);
@@ -511,8 +506,7 @@ class Releases
             throw new ReleaseException(t('The release has no drafts.'));
         }
 
-        $release->update([
-            'status' => ReleaseStatus::Publishing,
+        $release->transitionTo(ReleaseStatus::Publishing, [
             'lastError' => null,
             'publishAttempts' => $release->publishAttempts + 1,
         ]);
@@ -544,8 +538,7 @@ class Releases
             }
         });
 
-        $release->update([
-            'status' => ReleaseStatus::Published,
+        $release->transitionTo(ReleaseStatus::Published, [
             'publishedAt' => now(),
             'lastError' => null,
         ]);
@@ -830,9 +823,11 @@ class Releases
     /** Returns a scheduled release to a draft once it has no drafts left to publish. */
     private function unscheduleIfEmpty(Release $release): void
     {
+        // Deleting a draft can already have unscheduled the release through withElementDeletion()
+        $release->refresh();
+
         if ($release->status === ReleaseStatus::Scheduled && ! $release->items()->exists()) {
-            $release->update([
-                'status' => ReleaseStatus::Draft,
+            $release->transitionTo(ReleaseStatus::Draft, [
                 'publishedAt' => null,
                 'scheduledById' => null,
                 'lastError' => null,
