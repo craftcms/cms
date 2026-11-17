@@ -27,6 +27,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
@@ -347,4 +348,63 @@ it('checks related elements for all cells with a fixed number of queries', funct
     $queryCount(1);
 
     expect($queryCount(3))->toBe($queryCount(1));
+});
+
+it('serializes relation cells set to queries with other criteria by their results', function () {
+    $kept = EntryModel::factory()->createElement();
+    $filteredOut = EntryModel::factory()->createElement();
+    $field = relationTable();
+    expect($kept->sectionId)->not->toBe($filteredOut->sectionId);
+
+    $value = $field->normalizeValue([['col1' => Entry::find()->id([$kept->id, $filteredOut->id])->sectionId($kept->sectionId)]], null);
+
+    expect($field->serializeValueForDb($value, new Entry))->toBe([['col1' => [$kept->id]]]);
+});
+
+it('leaves relation cells to relation replacement when references are replaced', function () {
+    $oldTarget = EntryModel::factory()->createElement();
+    $newTarget = EntryModel::factory()->createElement();
+    $source = EntryModel::factory()
+        ->withField('mixed', Table::class, [
+            'columns' => [
+                'col1' => ['heading' => 'Link', 'handle' => 'link', 'type' => 'link', 'types' => ['entry']],
+                'col2' => ['heading' => 'Entries', 'handle' => 'entries', 'type' => 'entries'],
+            ],
+        ], value: [['col1' => ['type' => 'entry', 'value' => "{entry:$oldTarget->id@$oldTarget->siteId:url}"], 'col2' => [$oldTarget->id]]])
+        ->createElementWithFields()
+        ->element;
+    /** @var Table $field */
+    $field = $source->getFieldLayout()->getFieldByHandle('mixed');
+
+    expect($field->replaceReferences($source, [$oldTarget->id], $newTarget->id))->toBeTrue();
+
+    $value = $source->getFieldValue('mixed');
+    expect($value[0]['link']->getElement()->id)->toBe($newTarget->id)
+        ->and($value[0]['entries']->ids())->toBe([$oldTarget->id]);
+});
+
+it('draws the table editor’s relation cells with a fixed number of queries', function () {
+    $targets = array_map(fn (int $i) => EntryModel::factory()->createElement(['title' => "Target $i"]), range(1, 3));
+    $field = relationTable();
+
+    $resolve = function (int $rows) use ($field, $targets): array {
+        $value = $field->normalizeValue(array_map(fn (Entry $target) => ['col1' => [$target->id]], array_slice($targets, 0, $rows)), null);
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $payload = Json::encode(app(UiResolver::class)->resolve(Ui::make([
+            UiField::make('Related', $field->uiControl(new FieldContext('related', value: $value))),
+        ]), new UiContext));
+        DB::disableQueryLog();
+
+        return [count(DB::getQueryLog()), $payload];
+    };
+
+    // Once to warm up memoized lookups, such as the number of sites
+    $resolve(1);
+    [$oneRowQueries] = $resolve(1);
+    [$threeRowQueries, $payload] = $resolve(3);
+
+    expect($threeRowQueries)->toBe($oneRowQueries)
+        ->and($payload)->toContain('Target 1', 'Target 2', 'Target 3');
 });

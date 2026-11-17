@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Gql\ArgumentManager;
 use CraftCms\Cms\Gql\ElementQueryConditionBuilder;
 use CraftCms\Cms\Ui\Contracts\Control;
+use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -49,6 +50,9 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
 
     /** @var WeakMap<ElementQueryInterface, array{list<int>, list<int>}>|null Each loaded query’s IDs, and those of them that exist */
     private static ?WeakMap $existingIds = null;
+
+    /** @var WeakMap<ElementQueryInterface, true>|null The queries cells normalized their IDs to, which only filter by them */
+    private static ?WeakMap $idQueries = null;
 
     /**
      * Returns the relation field type whose settings, editor, and GraphQL type the cells use.
@@ -125,8 +129,11 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
     #[Override]
     public function uiControl(TableCellContext $context): Control
     {
-        // With the element, so it can’t be related to itself, as with relation fields
-        return $this->field()->uiControl(new FieldContext($context->path, $this->normalizeValue($context->value), $context->element));
+        // With the element, so it can’t be related to itself, as with relation fields. The value is serialized
+        // here, where the table checked its cells together, rather than by the field, cell by cell.
+        $control = $this->field()->uiControl(new FieldContext($context->path, element: $context->element));
+
+        return $control instanceof ElementSelect ? $control->value($this->serializeValue($context->value)) : $control;
     }
 
     /**
@@ -157,7 +164,24 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
             $query->limit($this->maxRelations);
         }
 
+        self::$idQueries ??= new WeakMap;
+        self::$idQueries[$query] = true;
+
         return $query;
+    }
+
+    /**
+     * Returns a copy of a normalized cell value that queries the related elements in another site.
+     */
+    public function inSite(ElementQueryInterface $query, int $siteId): ElementQueryInterface
+    {
+        $clone = (clone $query)->siteId($siteId);
+
+        if (isset(self::$idQueries[$query])) {
+            self::$idQueries[$clone] = true;
+        }
+
+        return $clone;
     }
 
     /**
@@ -172,6 +196,10 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
 
         // Checked along with the table’s other cells, unless the query’s IDs changed since
         $ids = self::idList($query);
+        if ($ids === []) {
+            return [];
+        }
+
         if ($ids !== null && isset(self::$existingIds[$query]) && self::$existingIds[$query][0] === $ids) {
             return self::$existingIds[$query][1];
         }
@@ -327,12 +355,17 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
     }
 
     /**
-     * Returns the IDs a query was normalized from, if it’s limited to a list of them.
+     * Returns the IDs a cell normalized a query from, or `null` for queries set some other way, which may filter
+     * the elements further.
      *
      * @return list<int>|null
      */
     private static function idList(ElementQueryInterface $query): ?array
     {
+        if (! isset(self::$idQueries[$query])) {
+            return null;
+        }
+
         $ids = $query->id;
 
         return is_array($ids) && array_is_list($ids) && array_all($ids, fn (mixed $id): bool => is_int($id)) ? $ids : null;

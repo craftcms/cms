@@ -124,6 +124,13 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
         $missing = $this->hasMissingCellTypes();
         $value = $this->controlValues(is_array($context->value) ? $context->value : [], false);
 
+        // Each column draws its cells’ elements from one query, rather than one per cell
+        foreach ($columns as $colId => $column) {
+            if ($column['control'] instanceof ElementSelect) {
+                $column['control']->loadElements(array_column($value, $colId));
+            }
+        }
+
         $control = TableControl::make($context->path)
             ->columns($columns)
             ->defaultValues($this->controlValues([$this->defaultRowValues])[0])
@@ -159,6 +166,10 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
     {
         if ($this->hasMissingCellTypes()) {
             return $rows;
+        }
+
+        if (! $normalize) {
+            $this->loadRelationCellIds($rows);
         }
 
         $cells = array_map($this->cellType(...), $this->columns);
@@ -675,8 +686,8 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
         if ($element !== null && $element::isLocalized()) {
             foreach ($value as &$row) {
                 foreach ($cells as $colId => $cell) {
-                    if ($row[$colId] instanceof ElementQueryInterface && $row[$colId]->siteId !== $element->siteId) {
-                        $row[$colId] = (clone $row[$colId])->siteId($element->siteId);
+                    if ($cell instanceof BaseRelationCell && $row[$colId] instanceof ElementQueryInterface && $row[$colId]->siteId !== $element->siteId) {
+                        $row[$colId] = $cell->inSite($row[$colId], $element->siteId);
                     }
                 }
             }
@@ -820,7 +831,7 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
         }
 
         $targetIds = [];
-        foreach ($this->elementAwareCells() as $colId => $cell) {
+        foreach ($this->referenceCells() as $colId => $cell) {
             foreach ($value as $row) {
                 array_push($targetIds, ...$cell->referenceTargetIds($row[$colId] ?? null));
             }
@@ -831,7 +842,7 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
 
     public function replaceReferences(ElementInterface $element, array $oldTargetIds, int $newTargetId): bool
     {
-        return $this->replaceCellReferences($element, $this->elementAwareCells(), $oldTargetIds, $newTargetId);
+        return $this->replaceCellReferences($element, $this->referenceCells(), $oldTargetIds, $newTargetId);
     }
 
     /**
@@ -934,12 +945,17 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
         );
     }
 
-    /** @return array<string, ElementAwareTableCellInterface> */
-    private function elementAwareCells(): array
+    /**
+     * Returns the cells whose element references are tracked as field references. Relation cells are tracked as
+     * relations instead, and replaced along with them.
+     *
+     * @return array<string, ElementAwareTableCellInterface>
+     */
+    private function referenceCells(): array
     {
         return array_filter(
             array_map($this->cellType(...), $this->columns),
-            fn (TableCellInterface $cell): bool => $cell instanceof ElementAwareTableCellInterface,
+            fn (TableCellInterface $cell): bool => $cell instanceof ElementAwareTableCellInterface && ! $cell instanceof BaseRelationCell,
         );
     }
 
