@@ -139,8 +139,8 @@ class Mailer extends \yii\symfonymailer\Mailer
                     if ($messageSite) {
                         Sites::setCurrentSite($messageSite);
                         // Reset Twig so any global sets and singles get reloaded for the new site.
-                        $twig = Twig::get();
-                        Twig::set(Twig::create());
+                        $twig = Twig::get(TemplateMode::Site);
+                        Twig::set(Twig::create(), TemplateMode::Site);
                     }
                 }
             }
@@ -213,7 +213,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             TemplateMode::set($originalTemplateMode);
 
             if ($twig) {
-                Twig::set($twig);
+                Twig::set($twig, TemplateMode::Site);
             }
         }
     }

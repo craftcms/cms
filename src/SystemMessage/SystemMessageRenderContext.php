@@ -37,8 +37,8 @@ readonly class SystemMessageRenderContext
                     if ($messageSite) {
                         $this->sites->setCurrentSite($messageSite);
                         // Reset Twig so any global sets and singles get reloaded for the new site.
-                        $twig = $this->twig->get();
-                        $this->twig->set($this->twig->create());
+                        $twig = $this->twig->get(TemplateMode::Site);
+                        $this->twig->set($this->twig->create(), TemplateMode::Site);
                     }
                 }
             }
@@ -56,7 +56,7 @@ readonly class SystemMessageRenderContext
             TemplateMode::set($originalTemplateMode);
 
             if ($twig) {
-                $this->twig->set($twig);
+                $this->twig->set($twig, TemplateMode::Site);
             }
         }
     }
