@@ -14,6 +14,7 @@ use craft\elements\User;
 use craft\events\RegisterComponentTypesEvent;
 use craft\services\Dashboard;
 use craft\test\TestCase;
+use craft\web\TemplateResponseBehavior;
 use craft\widgets\MissingWidget;
 use craft\widgets\MyDrafts;
 use yii\base\Event;
@@ -95,6 +96,23 @@ class DashboardControllerTest extends TestCase
         $this->saveWidgetSettings($widgetId);
     }
 
+    public function testIndexSkipsRestrictedWidgets(): void
+    {
+        $this->setUser(true);
+        $dashboard = Craft::$app->getDashboard();
+        $dashboard->saveWidget($dashboard->createWidget(RestrictedWidget::class));
+        $dashboard->saveWidget($dashboard->createWidget(MyDrafts::class));
+
+        $adminTypes = $this->indexWidgetTypes();
+        self::assertContains(RestrictedWidget::class, $adminTypes);
+        self::assertContains(MyDrafts::class, $adminTypes);
+
+        $this->setUser(false);
+        $userTypes = $this->indexWidgetTypes();
+        self::assertNotContains(RestrictedWidget::class, $userTypes);
+        self::assertContains(MyDrafts::class, $userTypes);
+    }
+
     public function testIsWidgetTypeAvailable(): void
     {
         $this->setUser(false);
@@ -123,6 +141,14 @@ class DashboardControllerTest extends TestCase
     {
         $this->prepareRequest(['type' => $type]);
         return $this->controller()->actionCreateWidget();
+    }
+
+    private function indexWidgetTypes(): array
+    {
+        Craft::$app->getRequest()->setIsCpRequest(true);
+        $response = $this->controller()->actionIndex();
+        $widgets = $response->getBehavior(TemplateResponseBehavior::NAME)->variables['widgets'];
+        return array_column($widgets, 'type');
     }
 
     private function saveWidgetSettings(int $widgetId)
