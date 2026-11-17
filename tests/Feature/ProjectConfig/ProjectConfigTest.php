@@ -17,6 +17,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -194,6 +195,25 @@ it('reloads a cached key after another process changes the config or the key is 
     expect($projectConfig->get('system.name'))->toBe('After')
         ->and($projectConfig->get()['system']['name'])->toBe('After');
 })->with(['config changed' => false, 'key evicted' => true]);
+
+it('reads the cache index once per request', function () {
+    $projectConfig = app(ProjectConfig::class);
+    DB::table(Table::PROJECTCONFIG)->insert(['path' => 'laterRoot.value', 'value' => '"Later"']);
+    Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+    $projectConfig->reset();
+    $projectConfig->get('system.name');
+    $projectConfig->reset();
+    $indexReads = 0;
+    Event::listen(CacheHit::class, function (CacheHit $event) use (&$indexReads) {
+        if ($event->key === ProjectConfig::STORED_CACHE_KEY) {
+            $indexReads++;
+        }
+    });
+
+    expect($projectConfig->get('system.name'))->not->toBeNull()
+        ->and($projectConfig->get('laterRoot.value'))->toBe('Later')
+        ->and($indexReads)->toBe(1);
+});
 
 it('rebuilds the cache once, with the stored config version, when another process changed it mid-request', function () {
     $projectConfig = app(ProjectConfig::class);

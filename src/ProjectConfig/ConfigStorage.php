@@ -37,6 +37,12 @@ class ConfigStorage
      */
     private ?string $rebuiltVersion = null;
 
+    /**
+     * @var array{version: string, roots: list<string>}|null The cached index this request already checked, so later reads
+     *                                                       only fetch the keys they need.
+     */
+    private ?array $index = null;
+
     public function dependency(): CallbackDependency
     {
         return new CallbackDependency(static fn () => Info::fetch()->configVersion);
@@ -92,13 +98,20 @@ class ConfigStorage
         }
 
         $version = $this->rebuiltVersion ?? Info::fetch()->configVersion;
-        $entries = Cache::many([ProjectConfig::STORED_CACHE_KEY, ...array_map($this->rootCacheKey(...), $roots)]);
-        $index = $entries[ProjectConfig::STORED_CACHE_KEY];
+        // A root missing from the checked index may have been added by another process, so check the cached index again.
+        $index = ($this->index['version'] ?? null) === $version && array_diff($roots, $this->index['roots']) === []
+            ? $this->index
+            : null;
+        $keys = array_map($this->rootCacheKey(...), $roots);
+        $entries = Cache::many($index === null ? [ProjectConfig::STORED_CACHE_KEY, ...$keys] : $keys);
+        $index ??= $entries[ProjectConfig::STORED_CACHE_KEY];
         $data = [];
 
         if (($index['version'] ?? null) !== $version) {
             return array_intersect_key($this->rebuildCache($cacheDuration), array_flip($roots));
         }
+
+        $this->index = $index;
 
         foreach (array_intersect($roots, $index['roots']) as $root) {
             $entry = $entries[$this->rootCacheKey($root)] ?? null;
@@ -146,7 +159,8 @@ class ConfigStorage
 
         $data = ProjectConfigHelper::cleanupConfig($data);
         $roots = array_map(strval(...), array_keys($data));
-        $entries = [ProjectConfig::STORED_CACHE_KEY => ['version' => $version, 'roots' => $roots]];
+        $this->index = ['version' => $version, 'roots' => $roots];
+        $entries = [ProjectConfig::STORED_CACHE_KEY => $this->index];
 
         foreach ($roots as $root) {
             $entries[$this->rootCacheKey($root)] = ['version' => $version, 'value' => $data[$root]];
@@ -168,11 +182,12 @@ class ConfigStorage
     }
 
     /**
-     * Forgets the config version this request rebuilt the cache with.
+     * Forgets the config version this request rebuilt the cache with, and the index it checked.
      */
     public function reset(): void
     {
         $this->rebuiltVersion = null;
+        $this->index = null;
     }
 
     private function rootCacheKey(string $root): string
