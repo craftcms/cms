@@ -391,7 +391,7 @@ class ElementRelationParamFilter
                         if ($relCriteria['sourceSite']) {
                             $subQuery->where(function (Builder $query) use ($relCriteria, $sourcesAlias) {
                                 $query->whereNull("$sourcesAlias.sourceSiteId")
-                                    ->orWhere("$sourcesAlias.sourceSiteId", $relCriteria['sourceSite']);
+                                    ->orWhereIn("$sourcesAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
                             });
                         }
 
@@ -416,7 +416,7 @@ class ElementRelationParamFilter
                         if ($relCriteria['sourceSite']) {
                             $subQuery->where(function (Builder $query) use ($relCriteria, $nestedElementTargetsAlias) {
                                 $query->whereNull("$nestedElementTargetsAlias.sourceSiteId")
-                                    ->orWhere("$nestedElementTargetsAlias.sourceSiteId", $relCriteria['sourceSite']);
+                                    ->orWhereIn("$nestedElementTargetsAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
                             });
                         }
 
@@ -460,7 +460,7 @@ class ElementRelationParamFilter
             if ($relCriteria['sourceSite']) {
                 $subQuery->where(function (Builder $query) use ($relCriteria, $relTableAlias) {
                     $query->whereNull("$relTableAlias.sourceSiteId")
-                        ->orWhere("$relTableAlias.sourceSiteId", $relCriteria['sourceSite']);
+                        ->orWhereIn("$relTableAlias.sourceSiteId", Arr::wrap($relCriteria['sourceSite']));
                 });
             }
 
