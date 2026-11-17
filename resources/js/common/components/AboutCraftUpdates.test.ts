@@ -129,6 +129,46 @@ it('checks when shown, if the updates weren’t fetched lately', async () => {
 
   respond({data: {total: 2, dateFetched: '2026-11-16T12:00:00Z'}});
   await vi.waitFor(() => expect(row()).toContain('2 updates available'));
+  expect(announced()).toBe('2 updates available');
+});
+
+it('stops announcing a check’s result once it’s been read', async () => {
+  vi.useFakeTimers({now: new Date('2026-11-16T12:00:00Z')});
+  state.post.mockResolvedValue({
+    data: {total: 0, dateFetched: '2026-11-16T12:00:00Z'},
+  });
+  mount({cached: true, total: 0, dateFetched: '2026-11-15T12:00:00Z'});
+
+  checkButton().dispatchEvent(new MouseEvent('click', {bubbles: true}));
+  await vi.waitFor(() => expect(checkButton().loading).toBe(false));
+  await nextTick();
+  expect(announced()).toBe('Up to date');
+
+  await vi.advanceTimersByTimeAsync(5000);
+
+  // The row still says so, for anyone browsing it
+  expect(announced()).toBe('');
+  expect(row()).toContain('Up to date');
+});
+
+it('announces a second check with the same result again', async () => {
+  vi.useFakeTimers({now: new Date('2026-11-16T12:00:00Z')});
+  let respond!: (value: unknown) => void;
+  state.post.mockImplementation(
+    () => new Promise((resolve) => (respond = resolve))
+  );
+  mount({cached: true, total: 0, dateFetched: '2026-11-15T12:00:00Z'});
+
+  for (let i = 0; i < 2; i++) {
+    checkButton().dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    await nextTick();
+    expect(announced()).toBe('Checking for updates…');
+
+    respond({data: {total: 0, dateFetched: '2026-11-16T12:00:00Z'}});
+    await vi.waitFor(() => expect(announced()).toBe('Up to date'));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(announced()).toBe('');
+  }
 });
 
 it('says it couldn’t fetch the updates, when there’s no result to show', async () => {
