@@ -38,6 +38,7 @@ class AssetsTest extends TestCase
         $volume->createDirectory('Uploads/separate/inside');
         $volume->createDirectory('uploads/separate');
         $volume->createDirectory('Ⱥ/moved');
+        $volume->createDirectory('Straße/moved');
 
         $folder = $this->storeFolder(1000, 'Uploads/');
         $folderIds = [
@@ -48,13 +49,15 @@ class AssetsTest extends TestCase
             'separate' => $separateId = $this->storeFolder($folder, 'uploads/separate/'),
             'inside' => $this->storeFolder($separateId, 'Uploads/separate/inside/'),
             'recordOnly' => $this->storeFolder($folder, 'Uploads/record-only/'),
-            // `Ⱥ` and `ⱥ` differ in byte length
+            // `Ⱥ` and `ⱥ` differ in byte length, and `ß` and `SS` in character count
             'unicodeMoved' => $this->storeFolder($unicodeFolder = $this->storeFolder(1000, 'Ⱥ/'), 'ⱥ/moved/'),
+            'foldedMoved' => $this->storeFolder($foldedFolder = $this->storeFolder(1000, 'Straße/'), 'STRASSE/moved/'),
         ];
 
         try {
             $assets->renameFolderById($folder, 'Renamed');
             $assets->renameFolderById($unicodeFolder, 'Unicode');
+            $assets->renameFolderById($foldedFolder, 'Folded');
 
             $paths = (new Query())
                 ->select(['path', 'id'])
@@ -72,6 +75,7 @@ class AssetsTest extends TestCase
                 'inside' => 'Renamed/separate/inside/',
                 'recordOnly' => 'Renamed/record-only/',
                 'unicodeMoved' => 'Unicode/moved/',
+                'foldedMoved' => 'Folded/moved/',
             ], array_map(fn(int $id) => array_search($id, $paths), $folderIds));
         } finally {
             FileHelper::removeDirectory($fsPath);

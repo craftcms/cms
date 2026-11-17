@@ -318,9 +318,9 @@ class Assets extends Component
 
             foreach ($childFolders as $childFolder) {
                 $oldChildPath = $childFolder->path;
-                // Compare characters rather than bytes, since case variants can differ in byte length
-                $oldPrefix = mb_substr($oldChildPath, 0, mb_strlen($oldFolderPath));
-                if (mb_strtolower($oldPrefix) !== mb_strtolower($oldFolderPath)) {
+                // Take the prefix by path segment, since case variants can differ in length
+                $oldPrefix = implode('/', array_slice(explode('/', $oldChildPath), 0, substr_count($oldFolderPath, '/'))) . '/';
+                if (mb_convert_case($oldPrefix, MB_CASE_FOLD) !== mb_convert_case($oldFolderPath, MB_CASE_FOLD)) {
                     continue;
                 }
 
