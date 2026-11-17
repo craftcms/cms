@@ -134,7 +134,9 @@ class ArrayTwigExtension extends AbstractExtension
         $array = self::sandboxItems($isSandboxed, $array);
 
         if ($isSandboxed && ! $key instanceof Closure) {
+            // Lazy, so rows after the first match aren't read
             $match = collect($array)
+                ->lazy()
                 ->map(self::sandboxKey($env, true, $key, 'firstWhere'))
                 ->map(fn (mixed $value) => ['value' => $value])
                 ->where('value', $strict ? '===' : '==', $value)
@@ -159,6 +161,11 @@ class ArrayTwigExtension extends AbstractExtension
         $value = self::sandboxKey($env, $isSandboxed, $value, 'column');
         $key = self::sandboxKey($env, $isSandboxed, $key, 'column');
 
+        if ($isSandboxed && $key instanceof Closure) {
+            // Arr::pluck() casts objects to strings to use them as keys
+            $key = self::checkToString($env, $key);
+        }
+
         if ($array instanceof Traversable) {
             $array = iterator_to_array($array);
         }
@@ -172,7 +179,9 @@ class ArrayTwigExtension extends AbstractExtension
         $array = self::sandboxItems($isSandboxed, $array);
 
         if ($isSandboxed && ! $key instanceof Closure) {
+            // Lazy, so rows after the first match aren't read
             return collect($array)
+                ->lazy()
                 ->map(self::sandboxKey($env, true, $key, 'contains'))
                 ->map(fn (mixed $value) => ['value' => $value])
                 ->contains('value', $strict ? '===' : '==', $value);
@@ -370,7 +379,7 @@ class ArrayTwigExtension extends AbstractExtension
                 if ($prop instanceof Closure) {
                     $comparison[0] = fn (array $a, array $b) => $prop($a['item'], $b['item']);
                 } else {
-                    $readers[$i] = self::sandboxKey($env, true, $prop, 'multisort') ?? fn (mixed $item) => $item;
+                    $readers[$i] = self::checkToString($env, self::sandboxKey($env, true, $prop, 'multisort') ?? fn (mixed $item) => $item);
                     $comparison[0] = "values.$i";
                 }
 
@@ -384,9 +393,30 @@ class ArrayTwigExtension extends AbstractExtension
                 ->all();
         }
 
+        $key = self::sandboxKey($env, $isSandboxed, $key, 'multisort');
+
+        if ($isSandboxed && $key instanceof Closure) {
+            $key = self::checkToString($env, $key);
+        }
+
         return collect($array)
-            ->sortBy(self::sandboxKey($env, $isSandboxed, $key, 'multisort'), collect($sortFlag)->sum(), $direction === SORT_DESC)
+            ->sortBy($key, collect($sortFlag)->sum(), $direction === SORT_DESC)
             ->all();
+    }
+
+    /**
+     * Wraps a key reader whose results may be cast to strings, such as for sorting or as array keys, so objects it
+     * returns must be allowed to be cast to strings in the sandbox.
+     */
+    private static function checkToString(TwigEnvironment $env, Closure $read): Closure
+    {
+        $sandbox = $env->getExtension(SandboxExtension::class);
+
+        return function (mixed ...$args) use ($read, $sandbox): mixed {
+            $value = $read(...$args);
+
+            return is_object($value) ? $sandbox->ensureToStringAllowed($value) : $value;
+        };
     }
 
     /**

@@ -10,6 +10,7 @@ use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
 use Twig\Error\Error as TwigError;
 use Twig\Error\RuntimeError;
+use Twig\Extension\SandboxExtension;
 
 class ArrayTwigExtensionTestStaticTarget
 {
@@ -227,6 +228,8 @@ describe('ArrayTwigExtension', function () {
             'multisort with a disallowed property' => ["{{ [inner, inner]|multisort('secret')|length }}"],
             'column with a disallowed ArrayAccess offset' => ["{{ [arrayAccess]|column('secret')|first }}"],
             'group with an arrow function returning an object that can’t be a string' => ['{{ [1]|group(i => stringable)|keys|first }}'],
+            'column with an index that can’t be a string' => ['{{ [1]|column(v => 1, v => stringable)|keys|first }}'],
+            'multisort with a sort key that can’t be a string' => ['{{ [1, 2]|multisort(v => stringable, 4, 2)|length }}'],
         ])->throws(TwigError::class);
 
         // group used to render property names as object templates in the site template mode’s environment
@@ -236,6 +239,24 @@ describe('ArrayTwigExtension', function () {
             'disallowed property' => ["{{ [inner]|group('secret')|keys|first }}"],
             'Twig tag' => ["{{ [inner]|group('x}{{ object.secret }}{x')|keys|first }}"],
         ])->throws(TwigError::class);
+
+        it('stops reading rows after firstWhere and contains find a match', function () {
+            // Reading the disallowed property on the row after the match would throw
+            $rows = [['enabled' => true], $this->variables['inner']];
+
+            expect(app(TemplateManager::class)->renderSandboxedString("{{ rows|contains('enabled', true) ? 'y' : 'n' }}", ['rows' => $rows]))->toBe('y');
+
+            // firstWhere isn’t in the default sandbox allowlist, so call it directly with the sandbox enabled
+            $twig = app(Twig::class)->get(TemplateMode::Site);
+            $checker = $twig->getExtension(SandboxExtension::class)->getChecker();
+            $checker->setSandboxed(true);
+
+            try {
+                expect($twig->getExtension(ArrayTwigExtension::class)->firstWhereFilter($twig, true, $rows, 'enabled'))->toBe(['enabled' => true]);
+            } finally {
+                $checker->setSandboxed(false);
+            }
+        });
 
         it('never calls callable arrays passed to multisort', function () {
             // Collection::sortBy() would call this, but in the sandbox each item is read as a key name instead
