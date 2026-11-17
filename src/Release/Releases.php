@@ -435,7 +435,37 @@ class Releases
 
     private function publishRelease(Release $release, bool $scheduledExecution, ?CraftUser $actor = null): Release
     {
-        [$publishedRelease, $failedRelease, $publicationFailure] = DB::transaction(function () use ($release, $scheduledExecution, $actor): array {
+        try {
+            [$publishedRelease, $failedRelease, $publicationFailure] = $this->publishReleaseInTransaction($release, $scheduledExecution, $actor);
+        } catch (Throwable $exception) {
+            $this->failStrandedPublication($release->id, $exception);
+
+            throw $exception;
+        }
+
+        if ($publicationFailure instanceof Throwable) {
+            $this->notifyPublicationFailure($failedRelease, $publicationFailure);
+
+            throw $publicationFailure;
+        }
+
+        try {
+            event(new ReleasePublished($publishedRelease));
+        } catch (Throwable $exception) {
+            report($exception);
+        }
+
+        return $publishedRelease;
+    }
+
+    /**
+     * Publishes the release inside a transaction. If a draft fails to publish, the release moves to Failed.
+     *
+     * @return array{Release|null, Release|null, Throwable|null} the published release, or the failed release and its error
+     */
+    private function publishReleaseInTransaction(Release $release, bool $scheduledExecution, ?CraftUser $actor): array
+    {
+        return DB::transaction(function () use ($release, $scheduledExecution, $actor): array {
             $release = $this->lockRelease($release->id);
             if ($scheduledExecution && $release->status !== ReleaseStatus::Scheduled) {
                 throw new ReleaseNotDue(t('The release is no longer scheduled.'));
@@ -481,20 +511,32 @@ class Releases
                 return [null, $release->refresh(), $exception];
             }
         }, 3);
+    }
 
-        if ($publicationFailure instanceof Throwable) {
-            $this->notifyPublicationFailure($failedRelease, $publicationFailure);
+    /**
+     * Moves a release that's still publishing to Failed after its publication threw.
+     *
+     * Publishing is normally set and resolved in one transaction, so it's never committed. When something commits
+     * the transaction early, such as a MySQL statement with an implicit commit, the release would otherwise stay
+     * Publishing, and nothing can publish, schedule or delete a release in that status.
+     */
+    private function failStrandedPublication(int $releaseId, Throwable $exception): void
+    {
+        $release = Release::query()->find($releaseId);
 
-            throw $publicationFailure;
+        if ($release?->status !== ReleaseStatus::Publishing) {
+            return;
         }
 
         try {
-            event(new ReleasePublished($publishedRelease));
-        } catch (Throwable $exception) {
-            report($exception);
+            $release->transitionTo(ReleaseStatus::Failed, ['lastError' => $exception->getMessage()]);
+        } catch (Throwable $transitionException) {
+            report($transitionException);
+
+            return;
         }
 
-        return $publishedRelease;
+        $this->notifyPublicationFailure($release, $exception);
     }
 
     /** @param Collection<int, ReleaseItem> $items */
