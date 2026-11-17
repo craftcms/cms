@@ -975,7 +975,7 @@ class Plugins
         $pluginInfo = $this->getStoredPluginInfo($handle);
 
         // Get the plugin if it's enabled
-        $plugin = $this->getPlugin($handle);
+        $plugin = $this->enabledPlugin($handle);
 
         $info = array_merge([
             'developer' => null,
@@ -995,7 +995,7 @@ class Plugins
         }
 
         $info['isInstalled'] = $installed = $pluginInfo !== null;
-        $info['isEnabled'] = $plugin !== null;
+        $info['isEnabled'] = $this->isPluginEnabled($handle);
         $info['isForceDisabled'] = $this->isPluginForceDisabled($handle);
         $info['private'] = str_starts_with($handle, '_');
         $info['moduleId'] = $handle;

@@ -82,7 +82,7 @@ it('does not change the loaded plugin collection after enablement changes', func
         ->and($plugins->getPlugin('c-disabled'))->toBeNull();
 });
 
-it('disables or uninstalls a plugin enabled earlier in the same request', function (string $operation) {
+it('treats a plugin enabled earlier in the same request as enabled', function (string $operation) {
     $plugins = app(Plugins::class);
 
     configureLifecyclePlugins($plugins, [
@@ -91,6 +91,9 @@ it('disables or uninstalls a plugin enabled earlier in the same request', functi
 
     $plugins->loadPlugins();
     $plugins->enablePlugin('c-disabled');
+
+    expect($plugins->getPluginInfo('c-disabled')['isEnabled'])->toBeTrue();
+
     $plugins->$operation('c-disabled');
 
     expect($plugins->isPluginEnabled('c-disabled'))->toBeFalse()
