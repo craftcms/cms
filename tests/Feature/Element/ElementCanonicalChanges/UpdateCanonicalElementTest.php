@@ -69,7 +69,7 @@ it('throws when the derivative entry type is no longer allowed in its section', 
     expect($state->duplicateCall)->toBeNull();
 });
 
-it('prepares duplicate attributes and defers canonical change tracking updates for drafts', function () {
+it('prepares duplicate attributes and writes canonical change tracking for drafts once the transaction commits', function () {
     $result = EntryModel::factory()
         ->withField('testField', PlainText::class)
         ->createElementWithFields(save: false);
@@ -166,6 +166,14 @@ it('prepares duplicate attributes and defers canonical change tracking updates f
 
     [$action, $state] = createActionSpy($updatedCanonical);
 
+    DB::beginTransaction();
+    $action->updateCanonicalElement($draft, ['custom' => 'value']);
+    DB::rollBack();
+
+    expect(DB::table(Table::CHANGEDATTRIBUTES)->where('elementId', $canonical->id)->count())->toBe(0)
+        ->and(DB::table(Table::CHANGEDFIELDS)->where('elementId', $canonical->id)->count())->toBe(0);
+
+    DB::beginTransaction();
     expect($action->updateCanonicalElement($draft, ['custom' => 'value']))->toBe($updatedCanonical);
 
     expect($state->duplicateCall)->not->toBeNull();
@@ -198,7 +206,7 @@ it('prepares duplicate attributes and defers canonical change tracking updates f
     expect(DB::table(Table::CHANGEDATTRIBUTES)->where('elementId', $canonical->id)->count())->toBe(0)
         ->and(DB::table(Table::CHANGEDFIELDS)->where('elementId', $canonical->id)->count())->toBe(0);
 
-    app()->terminate();
+    DB::commit();
 
     expect(DB::table(Table::CHANGEDATTRIBUTES)
         ->where('elementId', $canonical->id)
