@@ -231,15 +231,6 @@ it('isolates facade state across long-lived request scopes', function () {
     $this->get('/test-response-headers?value=second')->assertHeader('X-Test', 'second');
 });
 
-it('sets no-cache headers for token requests', function () {
-    $this->responseHeaders->setCache(3600);
-    Context::addHidden(HandleTokenRequest::HAD_TOKEN_KEY, true);
-
-    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
-
-    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
-});
-
 it('sets no-cache headers for site token requests', function () {
     $this->responseHeaders->setCache(3600);
     Context::addHidden(ResolveSite::HAD_SITE_TOKEN_KEY, true);

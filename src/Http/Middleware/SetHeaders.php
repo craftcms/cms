@@ -36,7 +36,6 @@ class SetHeaders
             $request->isCpRequest() ||
             $request->isActionRequest() ||
             $hasPreviewParam ||
-            $request->getHadToken() ||
             Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true ||
             $this->responseHeaders->noCache
         ) {

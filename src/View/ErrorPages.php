@@ -57,13 +57,18 @@ readonly class ErrorPages
             return null;
         }
 
-        // Laravel renders these itself after the renderable callbacks.
-        if ($e instanceof HttpResponseException || $e instanceof AuthenticationException || $e instanceof ValidationException) {
+        // Laravel sends the exception’s own response, which keeps the headers queued before it, such as for `{% redirect %}`.
+        if ($e instanceof HttpResponseException) {
             return null;
         }
 
         // Headers queued for the response that failed don’t apply to the error response.
         $this->responseHeaders->reset();
+
+        // Laravel renders these itself after the renderable callbacks.
+        if ($e instanceof AuthenticationException || $e instanceof ValidationException) {
+            return null;
+        }
 
         if ($e instanceof HttpExceptionInterface && $e->getStatusCode() === 404) {
             if ($redirect = $this->redirect($request)) {
@@ -111,6 +116,7 @@ readonly class ErrorPages
             }
 
             report($renderException);
+            $this->responseHeaders->reset();
 
             return null;
         }

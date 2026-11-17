@@ -11,8 +11,10 @@ use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Users;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 
 use function Pest\Laravel\actingAs;
 
@@ -111,6 +113,36 @@ it('drops cache headers queued before an exception', function (bool $debug) {
     'debug mode off' => false,
     'debug mode on' => true,
 ]);
+
+it('drops cache headers queued before Laravel renders an exception', function (Throwable $e) {
+    Route::middleware(['web', 'craft', 'craft.web'])->get('throws', function () use ($e) {
+        ResponseHeaders::setCache(3600);
+
+        throw $e;
+    });
+
+    $response = $this->get('/throws');
+
+    expect($response->baseResponse->headers->hasCacheControlDirective('public'))->toBeFalse()
+        ->and($response->baseResponse->getMaxAge())->toBeNull();
+})->with([
+    'authentication' => fn () => new AuthenticationException(redirectTo: '/login'),
+    'validation' => fn () => ValidationException::withMessages(['email' => 'Invalid']),
+]);
+
+it('drops cache headers queued by an error template that fails', function () {
+    config(['app.debug' => false]);
+    File::ensureDirectoryExists("{$this->tempDir}/errors");
+    File::put("{$this->tempDir}/errors/500.twig", '{% expires in 1 hour %}{% exit 500 %}');
+
+    Route::middleware(['web', 'craft', 'craft.web'])
+        ->get('throws', fn () => throw new RuntimeException('Boom'));
+
+    $response = $this->get('/throws')->assertInternalServerError();
+
+    expect($response->baseResponse->headers->hasCacheControlDirective('public'))->toBeFalse()
+        ->and($response->baseResponse->getMaxAge())->toBeNull();
+});
 
 it('shows exception details to admins who chose to see them outside debug mode', function () {
     config(['app.debug' => false]);

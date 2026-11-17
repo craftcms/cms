@@ -10,8 +10,8 @@ use CraftCms\Cms\Http\PreviewRequestPreparer;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Context;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @since 6.0.0
@@ -66,11 +66,7 @@ readonly class HandleTokenRequest
             );
             app()->instance('request', $previewRequest);
 
-            $response = $next($previewRequest);
-
-            return $response instanceof Response
-                ? $response->setNoCacheHeaders()
-                : $response;
+            return $this->preventCaching($next($previewRequest));
         }
 
         $newRequest = $request->duplicateWithUri((string) $tokenRoute[0], $tokenRoute[1] ?? []);
@@ -79,7 +75,23 @@ readonly class HandleTokenRequest
         $newRequest->attributes->set(ResolveSite::REQUEST_PATH_ATTRIBUTE, $request->decodedPath());
         app()->instance('request', $newRequest);
 
-        return $next($newRequest);
+        return $this->preventCaching($next($newRequest));
+    }
+
+    /**
+     * Keeps browsers and shared caches from storing a token’s response, which they could otherwise serve for the
+     * URL without the token, such as when the token was sent in a header. Applied here rather than in
+     * {@see SetHeaders}, as token routes can be outside the `craft` middleware group.
+     */
+    private function preventCaching(mixed $response): mixed
+    {
+        if ($response instanceof Response) {
+            $response->headers->set('Expires', '0');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        }
+
+        return $response;
     }
 
     private function isPreviewRoute(string $route): bool
