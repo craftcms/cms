@@ -159,6 +159,15 @@ class ProjectConfig
     ];
 
     /**
+     * Top-level keys that control panel requests read, which are loaded with [[BOOT_ROOTS]] on those requests.
+     */
+    private const array CP_ROOTS = [
+        self::PATH_AI,
+        self::PATH_CP_NAV,
+        self::PATH_ELEMENT_SOURCES,
+    ];
+
+    /**
      * @var bool Whether project config changes should be written to YAML files automatically.
      *
      * If set to `false`, you can manually write out project config YAML files using the `craft:project-config/write` command.
@@ -365,7 +374,9 @@ class ProjectConfig
             $root = ProjectConfigHelper::pathSegments($path)[0];
 
             if (! array_key_exists($root, $this->roots)) {
-                $roots = $this->roots === [] ? array_values(array_unique([...self::BOOT_ROOTS, $root])) : [$root];
+                $roots = $this->roots === []
+                    ? array_values(array_unique([...self::BOOT_ROOTS, ...(request()->isCpRequest() ? self::CP_ROOTS : []), $root]))
+                    : [$root];
                 $values = $this->storage->readRoots($roots, $this->cacheDuration);
 
                 foreach ($roots as $loadedRoot) {
