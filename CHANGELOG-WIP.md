@@ -286,7 +286,7 @@
 
 ### System
 - Removed the bundled Composer executable. Package installation, updates, and removal now require Composer 2.2.0 or later in the server’s `PATH`, and are disabled when it’s unavailable.
-- Removed the `CRAFT_EPHEMERAL` environment setting and `craft\helpers\App::isEphemeral()`. Temporary files now follow Laravel’s storage path; project config writes and asset publishing use their normal behavior regardless of storage persistence.
+- Craft no longer changes its behavior based on the `CRAFT_EPHEMERAL` environment variable. Temporary files now follow Laravel’s storage path, and automatic project config YAML writes, asset publishing, and the Asset Indexes utility’s “Cache remote images” option no longer depend on it. `craft\helpers\App::isEphemeral()` is deprecated. ([#20547](https://github.com/craftcms/cms/pull/20547))
 - The database table prefix is now set with the `DB_PREFIX` environment variable. When `craftcms/yii2-adapter` is installed, Craft 5’s `CRAFT_DB_TABLE_PREFIX` and `DB_TABLE_PREFIX` environment variables are still applied, with a trailing underscore. ([#20192](https://github.com/craftcms/cms/pull/20192))
 - Replaced `pixelandtonic/imagine` with `intervention/image` for image manipulation.
 - Image assets now store color data sampled from their file when it’s uploaded, replaced, or indexed, including the image’s dominant color, a grid of the average colors of its regions, its main colors and how much of the image each covers, and how light its regions are. Control panel uploads sample it in the browser. ([#19740](https://github.com/craftcms/cms/pull/19740), [#19750](https://github.com/craftcms/cms/pull/19750), [#20103](https://github.com/craftcms/cms/pull/20103))
