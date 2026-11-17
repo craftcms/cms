@@ -31,6 +31,12 @@ use Throwable;
  */
 class ConfigStorage
 {
+    /**
+     * @var string|null The config version this request last rebuilt the cache with, which is newer than the request's
+     *                  own version when another process changed the config mid-request.
+     */
+    private ?string $rebuiltVersion = null;
+
     public function dependency(): CallbackDependency
     {
         return new CallbackDependency(static fn () => Info::fetch()->configVersion);
@@ -50,7 +56,7 @@ class ConfigStorage
             return [];
         }
 
-        $version = Info::fetch()->configVersion;
+        $version = $this->rebuiltVersion ?? Info::fetch()->configVersion;
         $index = Cache::get(ProjectConfig::STORED_CACHE_KEY);
 
         if (($index['version'] ?? null) !== $version) {
@@ -85,7 +91,7 @@ class ConfigStorage
             return [];
         }
 
-        $version = Info::fetch()->configVersion;
+        $version = $this->rebuiltVersion ?? Info::fetch()->configVersion;
         $entries = Cache::many([ProjectConfig::STORED_CACHE_KEY, ...array_map($this->rootCacheKey(...), $roots)]);
         $index = $entries[ProjectConfig::STORED_CACHE_KEY];
         $data = [];
@@ -113,7 +119,7 @@ class ConfigStorage
         // Another process may have changed the config since this request loaded its version, so stamp the entries
         // with the stored version. It's read before the rows: if a change lands in between, the entries get the
         // older version and are rebuilt by the next reader, rather than storing old rows under the new version.
-        $version = DB::table(Table::INFO)->value('configVersion');
+        $version = $this->rebuiltVersion = DB::table(Table::INFO)->value('configVersion');
         $data = [];
 
         // Paths only need parent-before-child ordering, not locale-aware sorting.
@@ -159,6 +165,14 @@ class ConfigStorage
         }
 
         return $data;
+    }
+
+    /**
+     * Forgets the config version this request rebuilt the cache with.
+     */
+    public function reset(): void
+    {
+        $this->rebuiltVersion = null;
     }
 
     private function rootCacheKey(string $root): string
