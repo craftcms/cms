@@ -258,12 +258,22 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
     }
   }
 
+  /** Whether it's in a closed menu's pane, rather than showing. */
   #inClosedMenu(): boolean {
     const menu = this.closest<HTMLElement & {open?: boolean}>(
       'craft-action-menu'
     );
+    if (!menu || menu.open) {
+      return false;
+    }
 
-    return !!menu && !menu.open;
+    // The invoker shows while the menu is closed.
+    let menuChild: Element = this;
+    while (menuChild.parentElement !== menu) {
+      menuChild = menuChild.parentElement!;
+    }
+
+    return menuChild.slot !== 'invoker';
   }
 
   /** Lets a first render that's waiting for its closed menu go ahead. */

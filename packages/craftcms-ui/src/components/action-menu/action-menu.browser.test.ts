@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, it, vi} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import {contrast} from '../../../test/contrast';
 import type CraftButton from '../button/button.js';
@@ -246,6 +246,34 @@ it('renders its items when it opens before the browser has been idle', async () 
   } finally {
     vi.unstubAllGlobals();
   }
+});
+
+describe('before the browser has been idle', () => {
+  beforeEach(() => {
+    vi.stubGlobal('requestIdleCallback', () => 0);
+    vi.stubGlobal('cancelIdleCallback', () => {});
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('opens from an action item invoker', async () => {
+    await renderMenu(`
+      <craft-action-menu>
+        <craft-action-item slot="invoker">Open</craft-action-item>
+        <div slot="content">
+          <craft-action-item>Duplicate</craft-action-item>
+        </div>
+      </craft-action-menu>
+    `);
+
+    await userEvent.click(page.getByRole('button', {name: 'Open'}));
+
+    await expect
+      .element(page.getByRole('button', {name: 'Duplicate'}))
+      .toBeVisible();
+  });
 });
 
 it('renders only the items still in the page, at idle unless they show', async () => {
