@@ -504,8 +504,7 @@ class ContentBlock extends Field implements
             if (count($sameSiteElements) > 1) {
                 $query = ContentBlockElement::find()
                     ->fieldId($this->id)
-                    ->ownerId(array_map(fn(ElementInterface $e) => $e->id, $sameSiteElements))
-                    ->siteId($element->siteId)
+                    ->owner($sameSiteElements)
                     ->indexBy('ownerId');
 
                 // If the owner element is a revision, allow revision content blocks to be returned as
@@ -522,9 +521,6 @@ class ContentBlock extends Field implements
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
-                    if ($contentBlock) {
-                        $this->setOwnerOnContentBlockElement($e, $contentBlock);
-                    }
                     $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan([
                         'handle' => $handle,
                     ]));
