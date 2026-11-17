@@ -10,9 +10,12 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Query;
+use DateTimeInterface;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Prunable;
 use Override;
+use RuntimeException;
 
 use function CraftCms\Cms\t;
 
@@ -70,13 +73,38 @@ class JobProgress extends BaseModel
     }
 
     /**
+     * Limits the query to jobs whose delay had passed by the given time, so a worker could pick them up.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    #[Scope]
+    protected function availableBy(Builder $query, DateTimeInterface $time): Builder
+    {
+        $driver = $query->getModel()->getConnection()->getDriverName();
+        $availableAt = match ($driver) {
+            'mysql', 'mariadb' => 'UNIX_TIMESTAMP(dateCreated) + COALESCE(delay, 0)',
+            'pgsql' => 'EXTRACT(EPOCH FROM "dateCreated") + COALESCE(delay, 0)',
+            'sqlite' => 'CAST(strftime(\'%s\', dateCreated) AS INTEGER) + COALESCE(delay, 0)',
+            default => throw new RuntimeException("Unsupported database driver: $driver"),
+        };
+
+        return $query->whereRaw("$availableAt <= ?", [$time->getTimestamp()]);
+    }
+
+    /**
      * @return Builder<static>
      */
     public function prunable(): Builder
     {
+        $cutoff = now()->subDays(7);
+
         return static::query()
-            // Cancelled jobs may still be delayed or reserved on an external queue.
-            ->where('status', '!=', JobStatus::Cancelled->value)
-            ->where('dateCreated', '<', Query::prepareDateForDb(now()->subDays(7)));
+            ->where('dateCreated', '<', Query::prepareDateForDb($cutoff))
+            // Cancellation markers stop delayed jobs that a worker hasn't picked up yet,
+            // so keep them until a week after the job's delay ran out.
+            ->where(fn (Builder $query) => $query
+                ->where('status', '!=', JobStatus::Cancelled->value)
+                ->orWhere(fn (Builder $query) => $query->availableBy($cutoff)));
     }
 }

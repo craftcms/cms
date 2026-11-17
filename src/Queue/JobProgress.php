@@ -33,7 +33,7 @@ readonly class JobProgress
         $this->upsertJob($uid, $status, [
             'progress' => 0,
             'description' => $description,
-            'delay' => $delay,
+            'delay' => $status === JobStatus::Delayed ? $delay : null,
             'error' => null,
             'dateFailed' => null,
             'dateCompleted' => null,
@@ -215,9 +215,18 @@ readonly class JobProgress
         return new Claim('status', JobStatus::Reserved, JobStatus::Pending, ttl: is_numeric($retryAfter) ? (int) $retryAfter : 360);
     }
 
+    /**
+     * Returns whether any job is waiting for a worker, including delayed jobs whose delay has passed.
+     */
     public function hasPendingJobs(): bool
     {
-        return JobProgressModel::query()->where('status', JobStatus::Pending)->exists();
+        return JobProgressModel::query()
+            ->where(fn (Builder $query) => $query
+                ->where('status', JobStatus::Pending)
+                ->orWhere(fn (Builder $query) => $query
+                    ->where('status', JobStatus::Delayed)
+                    ->availableBy(now())))
+            ->exists();
     }
 
     public function delete(string $uid): void
