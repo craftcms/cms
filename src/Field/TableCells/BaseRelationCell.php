@@ -9,6 +9,7 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
+use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\ElementAwareTableCellInterface;
 use CraftCms\Cms\Field\FieldContext;
@@ -51,7 +52,7 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
     /** @var WeakMap<ElementQueryInterface, array{list<int>, list<int>}>|null Each loaded query’s IDs, and those of them that exist */
     private static ?WeakMap $existingIds = null;
 
-    /** @var WeakMap<ElementQueryInterface, array<string, mixed>>|null The queries cells normalized their IDs to, with their criteria then */
+    /** @var WeakMap<ElementQueryInterface, list<mixed>>|null The queries cells normalized their IDs to, with their {@see state()} then */
     private static ?WeakMap $idQueries = null;
 
     /**
@@ -165,7 +166,7 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
         }
 
         self::$idQueries ??= new WeakMap;
-        self::$idQueries[$query] = $query->getCriteria();
+        self::$idQueries[$query] = self::state($query);
 
         return $query;
     }
@@ -178,7 +179,7 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
         $clone = (clone $query)->siteId($siteId);
 
         if (self::idList($query) !== null) {
-            self::$idQueries[$clone] = $clone->getCriteria();
+            self::$idQueries[$clone] = self::state($clone);
         }
 
         return $clone;
@@ -355,6 +356,23 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
     }
 
     /**
+     * Returns what a query filters by: its params, and the clauses added to its query builder.
+     *
+     * @return list<mixed>
+     */
+    private static function state(ElementQueryInterface $query): array
+    {
+        $state = [$query->getCriteria()];
+
+        if ($query instanceof ElementQuery) {
+            $builder = $query->getQuery();
+            array_push($state, $builder->wheres, $builder->joins, $builder->havings, $builder->groups, $builder->unions, $builder->beforeQueryCallbacks);
+        }
+
+        return $state;
+    }
+
+    /**
      * Returns the IDs a cell normalized a query from, or `null` for queries set some other way or given other
      * criteria since, which may filter the elements further.
      *
@@ -362,7 +380,7 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
      */
     private static function idList(ElementQueryInterface $query): ?array
     {
-        if (! isset(self::$idQueries[$query]) || self::$idQueries[$query] !== $query->getCriteria()) {
+        if (! isset(self::$idQueries[$query]) || self::$idQueries[$query] !== self::state($query)) {
             return null;
         }
 

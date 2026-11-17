@@ -350,21 +350,23 @@ it('checks related elements for all cells with a fixed number of queries', funct
     expect($queryCount(3))->toBe($queryCount(1));
 });
 
-it('serializes relation cells whose queries have other criteria by their results', function (bool $addedAfterNormalizing) {
+it('serializes relation cells whose queries have other criteria by their results', function (?string $addedAfterNormalizing) {
     $kept = EntryModel::factory()->createElement();
     $filteredOut = EntryModel::factory()->createElement();
     $field = relationTable();
     expect($kept->sectionId)->not->toBe($filteredOut->sectionId);
 
-    if ($addedAfterNormalizing) {
+    if ($addedAfterNormalizing !== null) {
         $value = $field->normalizeValue([['col1' => [$kept->id, $filteredOut->id]]], null);
-        $value[0]['entries']->sectionId($kept->sectionId);
+        $addedAfterNormalizing === 'param'
+            ? $value[0]['entries']->sectionId($kept->sectionId)
+            : $value[0]['entries']->where('entries.sectionId', $kept->sectionId);
     } else {
         $value = $field->normalizeValue([['col1' => Entry::find()->id([$kept->id, $filteredOut->id])->sectionId($kept->sectionId)]], null);
     }
 
     expect($field->serializeValueForDb($value, new Entry))->toBe([['col1' => [$kept->id]]]);
-})->with(['set to a query' => false, 'added after normalizing' => true]);
+})->with(['set to a query' => null, 'param added after normalizing' => 'param', 'where clause added after normalizing' => 'where']);
 
 it('leaves relation cells to relation replacement when references are replaced', function () {
     $oldTarget = EntryModel::factory()->createElement();
