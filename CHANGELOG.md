@@ -73,6 +73,9 @@
 - Plugins can now add actions for the folder on screen to the assets index, in a menu beside “Upload files”, and to asset selection modals, beside “Upload files”, via `CraftCms\Cms\Asset\Events\FolderActionsResolving`. “Upload files” is now the last button in the assets index’s toolbar, after “Export”. ([#20689](https://github.com/craftcms/cms/issues/20689), [#20692](https://github.com/craftcms/cms/pull/20692))
 - Added the `--c-nav-item-color` CSS custom property to `craft-nav-item`, which sets its label’s color while it isn’t hovered or current. ([#20663](https://github.com/craftcms/cms/pull/20663))
 - Added the `--c-field-group-gap` CSS custom property to `craft-field-group`, which sets the space between its rows of fields. It defaults to `--c-spacing-lg`, and the main content pane of full-page screens sets it to 24px.
+- Added the `--c-textarea-spacing-block` CSS custom property to `craft-textarea`, which sets its block padding. Set it rather than the textarea’s own padding, so `rows` and `max-rows` still fit whole lines. ([#20403](https://github.com/craftcms/cms/pull/20403))
+- `craft-action-item`s within a closed `craft-action-menu` now render when the browser is idle, or when the menu opens, whichever comes first. Until then they don’t reflect `variant` or `active` as attributes. ([#20403](https://github.com/craftcms/cms/pull/20403))
+- Added `whenIdle()` and `cancelIdle()` to `@craftcms/ui/utilities/idle`. ([#20403](https://github.com/craftcms/cms/pull/20403))
 - `craft-icon` now defaults to the `--c-size-icon-sm` token (12px), rather than `0.8em` of the surrounding text, and small `craft-button`s give their icons `--c-size-icon-xs`. Set `--c-icon-size` to another `--c-size-icon-*` token alongside text that’s bigger or smaller than usual.
 - Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::getCondition()` and `setCondition()`, replacing `$siteId` and `$section`.
 - Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::$customTitle`.
@@ -85,6 +88,7 @@
 - Removed `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController` and the `dashboard/send-support-request` action.
 - The `updates/check` action’s response now includes `dateFetched`, when the updates were last fetched.
 - Improved the performance of control panel requests, particularly the fields index, the entries index, and field edit screens, and reduced the size of their responses. ([#20704](https://github.com/craftcms/cms/pull/20704))
+- Improved the performance of element editors, particularly entries with many Matrix blocks. Textareas are sized with CSS where the browser supports it, and work that doesn’t change what’s first shown, such as rendering the items of closed action menus, now waits until the browser is idle. ([#20403](https://github.com/craftcms/cms/pull/20403))
 - Improved the performance of element queries that use `unique()` on PostgreSQL. ([#20675](https://github.com/craftcms/cms/pull/20675))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where Matrix fields’ “Create Button Label” setting wasn’t applied in Blocks view mode. ([#20750](https://github.com/craftcms/cms/pull/20750))
