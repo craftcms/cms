@@ -67,24 +67,13 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
      */
     public static function forDefinition(EmbeddedElementIndex $index): self
     {
-        $currentRequest = request();
-        $source = $index->sourceSettings();
-        $request = ElementIndexRequest::create('/', 'POST', [
+        $defaultViewMode = $index->sourceSettings()->defaultViewMode;
+        $request = self::internalRequest([
             'elementType' => $index->elementType(),
-            'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
             'source' => ElementIndexSourceSettings::NESTED_KEY,
-            'viewMode' => $source->defaultViewMode,
-            'viewState' => ['mode' => $source->defaultViewMode],
-        ], server: array_filter([
-            'HTTP_USER_AGENT' => $currentRequest->userAgent(),
-        ]));
-        $request->setContainer(app())->setRedirector(app(Redirector::class));
-        $request->setUserResolver($currentRequest->getUserResolver());
-        $request->setRouteResolver($currentRequest->getRouteResolver());
-
-        if ($currentRequest->hasSession()) {
-            $request->setLaravelSession($currentRequest->session());
-        }
+            'viewMode' => $defaultViewMode,
+            'viewState' => ['mode' => $defaultViewMode],
+        ]);
 
         return new self($index->elementType(), $request, new EmbeddedElementIndexScope($index));
     }
@@ -101,11 +90,9 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
         string $attribute,
         array $config,
     ): self {
-        $currentRequest = request();
-        $request = ElementIndexRequest::create('/', 'POST', [
+        $request = self::internalRequest([
             'elementType' => $elementType,
-            'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
-            'source' => '__IMP__',
+            'source' => ElementIndexSourceSettings::NESTED_KEY,
             'ownerElementType' => $owner::class,
             'ownerId' => $owner->id,
             'ownerSiteId' => $owner->siteId,
@@ -114,6 +101,24 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
             'viewState' => [
                 'mode' => $config['defaultViewMode'],
             ],
+        ]);
+
+        $scope = new EmbeddedNestedElementScope($request, $owner);
+
+        return new self($elementType, $request, $scope, $config);
+    }
+
+    /**
+     * Creates an embedded index request that carries the current request's user, session and route.
+     *
+     * @param  array<string, mixed>  $params
+     */
+    private static function internalRequest(array $params): ElementIndexRequest
+    {
+        $currentRequest = request();
+        $request = ElementIndexRequest::create('/', 'POST', [
+            'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+            ...$params,
         ], server: array_filter([
             'HTTP_USER_AGENT' => $currentRequest->userAgent(),
         ]));
@@ -125,9 +130,7 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
             $request->setLaravelSession($currentRequest->session());
         }
 
-        $scope = new EmbeddedNestedElementScope($request, $owner);
-
-        return new self($elementType, $request, $scope, $config);
+        return $request;
     }
 
     /** @return array<string, mixed> */

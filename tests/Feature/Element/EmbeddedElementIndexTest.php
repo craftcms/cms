@@ -8,6 +8,7 @@ use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Http\Controllers\Elements\ElementIndex\ElementIndexController;
 use CraftCms\Cms\Http\ViewModels\EmbeddedIndexViewModel;
+use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\User\Models\User as UserModel;
 
@@ -59,6 +60,22 @@ it('keeps the definition criteria when the request posts its own', function () {
     expect(collect($payload['data'])->pluck('id')->all())->toBe([$entries[0]->id]);
 });
 
+it('applies a status in the definition criteria', function () {
+    $entries = EntryModel::factory()->count(2)->create();
+    $disabled = Entry::find()->id($entries[1]->id)->one();
+    $disabled->enabled = false;
+    Elements::saveElement($disabled);
+
+    $index = EmbeddedElementIndex::make(Entry::class)
+        ->criteria(['id' => [$entries[0]->id, $entries[1]->id], 'status' => 'disabled']);
+
+    $payload = ($this->postEmbedded)(['embeddedIndexToken' => $index->token()])
+        ->assertOk()
+        ->json();
+
+    expect(collect($payload['data'])->pluck('id')->all())->toBe([$entries[1]->id]);
+});
+
 it('rejects tokens that are tampered with, for another element type, or for another user', function () {
     $index = EmbeddedElementIndex::make(Entry::class);
 
@@ -85,7 +102,8 @@ it('builds the initial payload without a request or owner', function () {
 
     expect($payload['data'])->toHaveCount(1)
         ->and($payload['pagination']['total'])->toBeGreaterThanOrEqual(2)
-        ->and($payload['reorderable'])->toBeFalse();
+        ->and($payload['reorderable'])->toBeFalse()
+        ->and($payload['sort'])->toBe([['field' => 'dateCreated', 'direction' => 'desc']]);
 });
 
 it('resolves a Ui control carrying the token and initial payload', function () {

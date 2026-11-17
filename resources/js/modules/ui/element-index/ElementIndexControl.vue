@@ -55,7 +55,7 @@
 
   const model = useDetachedElementIndex<NestedContentIndexData>({
     initial,
-    storageKey: `embeddedindex.${storageKey ?? token.slice(0, 32)}`,
+    storageKey: `embeddedindex.${storageKey ?? elementType}`,
     readOnly: true,
     multiSelect: false,
     filterContext: (payload) => ({

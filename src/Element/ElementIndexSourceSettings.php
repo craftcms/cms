@@ -137,12 +137,9 @@ readonly class ElementIndexSourceSettings
                 'field' => $config['defaultSort'][0],
                 'direction' => ($config['defaultSort'][1] ?? 'asc') === 'desc' ? 'desc' : 'asc',
             ]]
-            : ($nested
-                ? [['field' => 'sortOrder', 'direction' => 'asc']]
-                : array_slice(array_map(
-                    fn (array $option): array => ['field' => $option['value'], 'direction' => $option['defaultDir']],
-                    array_values($sortOptions),
-                ), 0, 1));
+            : [$nested
+                ? ['field' => 'sortOrder', 'direction' => 'asc']
+                : ['field' => 'dateCreated', 'direction' => 'desc']];
         $static = (bool) ($config['static'] ?? false);
 
         return new self(
@@ -152,6 +149,8 @@ readonly class ElementIndexSourceSettings
                 'key' => self::NESTED_KEY,
                 'label' => t('All elements'),
                 'hasThumbs' => $elementType::hasThumbs(),
+                // The index query falls back to the source's `status` criteria when no status is picked
+                ...($nested ? [] : ['criteria' => $criteria]),
             ],
             siteId: (int) ($criteria['siteId'] ?? Sites::getCurrentSite()->id),
             viewModes: array_values(array_filter(
