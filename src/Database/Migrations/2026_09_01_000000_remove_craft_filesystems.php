@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -45,6 +46,7 @@ return new class extends Migration
                 $missingDisks,
             ));
             $suggestions = Str::indent($suggestions, '        ');
+            $publishCommand = app(TerminalCommands::class)->artisan('config:publish filesystems --no-interaction');
 
             throw new RuntimeException(<<<MESSAGE
                 The Craft Filesystem concept has been removed.
@@ -53,7 +55,7 @@ return new class extends Migration
 
                 If config/filesystems.php does not exist, publish it first:
 
-                    php artisan config:publish filesystems --no-interaction
+                    $publishCommand
 
                 Add these entries to its `disks` array:
 

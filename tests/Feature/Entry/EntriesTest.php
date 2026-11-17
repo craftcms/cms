@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Events\ElementCachesInvalidated;
+use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry as EntryElement;
 use CraftCms\Cms\Entry\Entries;
 use CraftCms\Cms\Entry\Events\EntryMovedToSection;
@@ -275,6 +276,32 @@ it('preserves lazily loaded authors across reads and saves', function (string $g
     expect(DB::table(Table::ENTRIES_AUTHORS)->where('entryId', $entry->id)
         ->orderBy('sortOrder')->pluck('authorId')->all())->toBe($expectedIds);
 })->with(['getAuthors', 'getAuthor', 'getAuthorIds', 'getAuthorId']);
+
+it('loads authors for a clone of an entry from a multi-result query', function () {
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->create([
+        'type' => SectionType::Channel,
+        'minAuthors' => 1,
+    ]);
+    $author = User::factory()->create();
+    $otherAuthor = User::factory()->create();
+    $entry = Entry::factory()->forSection($section)->forEntryType($entryType)
+        ->hasAttached($author, ['sortOrder' => 1], 'authors')
+        ->createElement();
+    $otherEntry = Entry::factory()->forSection($section)->forEntryType($entryType)
+        ->hasAttached($otherAuthor, ['sortOrder' => 1], 'authors')
+        ->createElement();
+    [$entry] = EntryElement::find()->id([$entry->id, $otherEntry->id])->fixedOrder()->status(null)->all();
+
+    $clone = clone $entry;
+
+    expect($clone->getAuthorIds())->toBe([$author->id]);
+
+    $clone->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+    $clone->validate(['authorIds']);
+
+    expect($clone->errors()->has('authorIds'))->toBeFalse();
+});
 
 it('keeps a single entry’s expiry date when saving it', function () {
     $section = Section::factory()->create(['type' => SectionType::Single]);

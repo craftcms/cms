@@ -57,7 +57,7 @@
     .loading="form.processing"
     v-bind="$attrs"
   >
-    <craft-icon name="play" slot="prefix" style="font-size: 0.7em"></craft-icon>
+    <craft-icon name="play" slot="prefix"></craft-icon>
     {{ t('Retry') }}
   </craft-button>
 </template>

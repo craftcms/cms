@@ -370,6 +370,32 @@ it('grows to the room above its invoker when it opens upward', async () => {
   expect(footer.bottom).toBeLessThanOrEqual(window.innerHeight);
 });
 
+it('flips to the side with more room when its content grows after it opens', async () => {
+  document.body.innerHTML = `
+    <div style="position: fixed; inset-block-end: 90px; inset-inline-start: 8px">
+      <craft-popover>
+        <craft-button slot="invoker" type="button">Add</craft-button>
+        <div slot="content-body"></div>
+      </craft-popover>
+    </div>`;
+  const popover = document.querySelector<CraftPopover>('craft-popover')!;
+  const invoker = popover.querySelector('craft-button')!;
+  const content = popover.querySelector<HTMLElement>('[slot="content-body"]')!;
+  await popover.updateComplete;
+  const pane = popover.shadowRoot!.querySelector('.popover-pane')!;
+  await popover.show();
+  await expect
+    .poll(() => pane.getBoundingClientRect().top)
+    .toBeGreaterThanOrEqual(invoker.getBoundingClientRect().bottom);
+
+  content.style.blockSize = '300px';
+
+  await expect
+    .poll(() => pane.getBoundingClientRect().bottom)
+    .toBeLessThanOrEqual(invoker.getBoundingClientRect().top);
+  expect(pane.scrollHeight).toBe(pane.clientHeight);
+});
+
 it('keeps to an explicit --popover-max-block-size', async () => {
   const {pane} = await openTallPopover(
     'padding: 8px',

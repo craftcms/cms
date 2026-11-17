@@ -186,6 +186,7 @@ final class LegacyActionMenuItems
         }
 
         $behavior = match (true) {
+            is_array($item['action'] ?? null) => $this->actionBehavior($item['action']),
             isset($item['url']) => [
                 'type' => 'link',
                 'href' => Url::url((string) $item['url']),
@@ -215,6 +216,33 @@ final class LegacyActionMenuItems
             'destructive' => ($item['destructive'] ?? false) ?: null,
             'showInChips' => isset($item['showInChips']) ? (bool) $item['showInChips'] : null,
             'behavior' => $behavior,
+        ], fn($value) => $value !== null);
+    }
+
+    /**
+     * The behavior for a Craft 6 `action` descriptor (see {@see MenuHtml::disclosureMenu()}), if it has one.
+     *
+     * @param array<string, mixed> $action
+     * @return array<string, mixed>|null
+     */
+    private function actionBehavior(array $action): ?array
+    {
+        if (($action['type'] ?? null) !== 'event' || !is_string($action['name'] ?? null)) {
+            return null;
+        }
+
+        // Core's own items wrap a descriptor behavior this way for server-rendered menus.
+        if ($action['name'] === 'craft:element-action') {
+            $behavior = $action['detail']['behavior'] ?? null;
+
+            return is_array($behavior) ? $behavior : null;
+        }
+
+        return array_filter([
+            'type' => 'event',
+            'name' => $action['name'],
+            'detail' => is_array($action['detail'] ?? null) ? $action['detail'] : null,
+            'confirm' => $action['confirm'] ?? null,
         ], fn($value) => $value !== null);
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
 use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout;
 use CraftCms\Cms\Site\Models\Site;
@@ -130,3 +131,37 @@ test('AND relation IDs retain field and source site restrictions', function (str
         ->and(entryQuery()->id($candidates->modelKeys())->notRelatedTo($criteria)->ids())
         ->toEqualCanonicalizing(array_values(array_diff($candidates->modelKeys(), $expected)));
 })->with(['sourceElement', 'targetElement', 'element'])->with([false, true]);
+
+test('relations stored for any of the queried sites match', function (bool $allSites) {
+    $relationField = Field::factory()->create(['type' => Entries::class]);
+    $matrixField = Field::factory()->create(['type' => Matrix::class]);
+    Fields::refreshFields();
+
+    $site = Site::first();
+    $otherSite = Site::factory()->create();
+    [$source, $target, $owner, $nestedTarget] = EntryModel::factory(4)->create();
+    $nested = EntryModel::factory()->create([
+        'primaryOwnerId' => $owner->id,
+        'fieldId' => $matrixField->id,
+    ]);
+
+    // Both relations are stored for the second site only, so they match only when every queried site is checked
+    foreach ([[$source, $target], [$nested, $nestedTarget]] as [$relationSource, $relationTarget]) {
+        DB::table(Table::RELATIONS)->insert([
+            'fieldId' => $relationField->id,
+            'sourceId' => $relationSource->id,
+            'sourceSiteId' => $otherSite->id,
+            'targetId' => $relationTarget->id,
+            'sortOrder' => 1,
+            'dateCreated' => now(),
+            'dateUpdated' => now(),
+            'uid' => (string) str()->uuid(),
+        ]);
+    }
+
+    $query = fn () => entryQuery()->siteId($allSites ? '*' : [$site->id, $otherSite->id]);
+
+    expect($query()->relatedTo($target->id)->ids())->toBe([$source->id])
+        ->and($query()->relatedTo(['sourceElement' => $owner->id, 'field' => $matrixField->id])->ids())->toBe([$nestedTarget->id])
+        ->and($query()->relatedTo(['targetElement' => $nestedTarget->id, 'field' => $matrixField->id])->ids())->toBe([$owner->id]);
+})->with([false, true]);

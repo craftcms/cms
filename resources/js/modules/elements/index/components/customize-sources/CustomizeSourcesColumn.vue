@@ -88,11 +88,9 @@
     min-width: 200px;
     min-height: 0;
     border-inline-end: 1px solid var(--c-color-border-quiet);
-    padding-inline: var(--_padding-inline);
   }
 
   .cs-column__header {
-    margin-inline: calc(var(--_padding-inline) * -1);
     padding-inline: var(--_padding-inline);
     padding-block: var(--c-spacing-md);
     border-block-end: 1px solid var(--c-color-border-quiet);
@@ -109,21 +107,16 @@
     }
   }
 
-  // Scrolling clips on every side, which would cut off the focus rings of the
-  // controls at its edges. The block padding leaves room above and below; at
-  // the sides it's padded in and taken back out with a matching negative
-  // margin, so the content doesn't move.
+  // Runs from edge to edge of the column, so its scrollbar sits against the
+  // column's border, and pads its content in from there. The padding also
+  // leaves room for the focus rings of the controls at its edges, which
+  // scrolling would otherwise clip.
   .cs-column__body {
-    --_ring-room: calc(
-      var(--c-focus-outline-width) + max(var(--c-focus-outline-offset), 0px)
-    );
-
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     padding-block: var(--_padding-inline);
-    padding-inline: var(--_ring-room);
-    margin-inline: calc(var(--_ring-room) * -1);
+    padding-inline: var(--_padding-inline);
   }
 
   .cs-column__heading {

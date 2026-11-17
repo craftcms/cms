@@ -269,16 +269,14 @@
   overflow: clip;
 }
 
-/* The owner's icon, shown when it's the first thumb source, fills its
-   thumbnail box as the SVG in an element's icon thumbnail does. */
+/* The owner's icon, shown when it's the first thumb source, is sized within
+   its thumbnail box as the SVG in an element's icon thumbnail is. */
 .cvd-preview .icon-thumb {
   container-type: size;
 }
 
 .cvd-preview .icon-thumb > craft-icon {
-  --c-icon-size: 100cqmin;
-  inline-size: 100%;
-  block-size: 100%;
+  --c-icon-size: 55cqmin;
 }
 
 :is(.cvd-thumbnail, .cvd-chip-thumbnail) > img {

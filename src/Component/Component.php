@@ -23,6 +23,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use ReflectionMethod;
 use RuntimeException;
 use Throwable;
 use Yiisoft\Arrays\ArrayableInterface;
@@ -66,6 +67,13 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
      */
     protected static $macros = [];
 
+    /**
+     * The result of [[fields()]], by class and by the names of the object’s initialized properties.
+     *
+     * @var array<class-string, array<string, array<string, string|callable>>>
+     */
+    private static array $fieldsByShape = [];
+
     /** @param array<string, mixed>|object $config */
     public function __construct(array|object $config = [])
     {
@@ -105,12 +113,28 @@ abstract class Component implements Arrayable, ArrayableInterface, ArrayAccess, 
         return true;
     }
 
-    /** @return array<string, string|callable> */
+    /**
+     * The fields only depend on the class and on which of the object’s properties are initialized, so they’re built
+     * once for each, unless a subclass overrides [[formatDateFields()]]. Building them reads every public property,
+     * which runs property hooks such as `$ruleset`’s.
+     *
+     * @return array<string, string|callable>
+     */
     public function fields(): array
     {
-        $fields = Arr::except($this->traitFields(), ['ruleset']);
+        $shape = implode(',', array_keys(get_mangled_object_vars($this)));
 
-        return $this->formatDateFields($fields);
+        if (isset(self::$fieldsByShape[static::class][$shape])) {
+            return self::$fieldsByShape[static::class][$shape];
+        }
+
+        $fields = $this->formatDateFields(Arr::except($this->traitFields(), ['ruleset']));
+
+        if (new ReflectionMethod($this, 'formatDateFields')->class === self::class) {
+            self::$fieldsByShape[static::class][$shape] = $fields;
+        }
+
+        return $fields;
     }
 
     /**

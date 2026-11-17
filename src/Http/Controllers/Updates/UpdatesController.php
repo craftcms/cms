@@ -52,7 +52,8 @@ readonly class UpdatesController
     {
         $updateData = $request->input('updates');
 
-        $updates = $this->updates->cacheUpdates(UpdatesData::fromArray($updateData));
+        // Fetched by the browser just now
+        $updates = $this->updates->cacheUpdates(UpdatesData::fromArray($updateData, now()));
 
         return $this->updatesResponse($updates, $request->boolean('includeDetails'));
     }
@@ -69,6 +70,7 @@ readonly class UpdatesController
         $res = [
             'total' => $updates->getTotal(),
             'critical' => $updates->hasCritical(),
+            'dateFetched' => ($updates->dateFetched ?? null)?->format(DATE_ATOM),
             'allowUpdates' => $allowUpdates,
             'allowPurchases' => $allowPurchases,
         ];

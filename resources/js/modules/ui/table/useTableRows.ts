@@ -1,4 +1,5 @@
 import {computed, ref, watch} from 'vue';
+import {uuid} from '@/common/craft/strings';
 import {canonical, pathsMatch} from '../runtime';
 import type {UiControlPayload, UiValues, NestedUiPayload} from '../types';
 import {bindUiScope} from '../uiScope';
@@ -56,7 +57,7 @@ export function useTableRows(props: {
       }
     }
 
-    return {id: crypto.randomUUID(), key, value: {...value}};
+    return {id: uuid(), key, value: {...value}};
   }
 
   function reconcile(value: TableValue): void {

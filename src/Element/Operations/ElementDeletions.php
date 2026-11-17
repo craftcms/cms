@@ -29,6 +29,7 @@ use CraftCms\Cms\Element\Exceptions\UnsupportedSiteException;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Field\Table as TableField;
 use CraftCms\Cms\Release\Releases;
 use CraftCms\Cms\Search\Jobs\FindAndReplace;
 use CraftCms\Cms\Search\Search;
@@ -117,6 +118,8 @@ readonly class ElementDeletions
                                 }
 
                                 $element->setFieldValue($field->handle, $value);
+                            } elseif ($field instanceof TableField) {
+                                $field->replaceRelations($element, [$mergedElement->id], $prevailingElement->id);
                             }
                         }
 

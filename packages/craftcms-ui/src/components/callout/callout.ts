@@ -238,7 +238,6 @@ export default class CraftCallout extends Paddable(LitElement, {
                   ${this.resolvedIcon
                     ? html`<craft-icon
                         name="${this.resolvedIcon}"
-                        style="font-size: 0.9em"
                       ></craft-icon>`
                     : nothing}
                 </slot>

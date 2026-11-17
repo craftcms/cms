@@ -15,6 +15,7 @@ use CraftCms\Cms\Validation\ValidatableRules;
 use CraftCms\RulesetValidation\Concerns\HasRuleset;
 use Illuminate\Support\MessageBag;
 use Illuminate\Validation\Validator;
+use ReflectionProperty;
 
 trait Validates
 {
@@ -27,6 +28,20 @@ trait Validates
         set(MessageBag $value) {
             $this->_errors = $value;
         }
+    }
+
+    /**
+     * Gives the clone its own ruleset, bound to the clone and in the same scenario.
+     */
+    public function __clone()
+    {
+        if (! new ReflectionProperty($this, 'ruleset')->isInitialized($this) || ! $this->ruleset) {
+            return;
+        }
+
+        $ruleset = $this->ruleset;
+        $this->ruleset = app()->make($ruleset::class, ['subject' => $this])
+            ->useScenario($ruleset->getScenario());
     }
 
     public function getFirstErrors(): array
@@ -86,10 +101,7 @@ trait Validates
         }
 
         $ruleset = $this->ruleset ?: app()->make(ValidatableRules::class, ['subject' => $this]);
-
-        if (! is_null($attributeNames)) {
-            $ruleset->only($attributeNames);
-        }
+        $ruleset->only($attributeNames);
 
         if ($throw) {
             $ruleset->validate();

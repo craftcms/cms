@@ -17,12 +17,19 @@ use function CraftCms\Cms\t;
  * Renders the element index for the element type named by the route's `elementType` default.
  *
  * A `newElementRoute` default names the route that creates a new element
- * ({@see NewElementController}), which the index links to.
+ * ({@see NewElementController}), which the index links to. Set the
+ * `newElementExternal` default to `true` when that route leads outside the
+ * control panel, so the link opens in a new tab.
  *
  * ```php
  * Route::get('customers', ElementTypeIndexController::class)
  *     ->defaults('elementType', Customer::class)
  *     ->defaults('newElementRoute', 'customers.new');
+ *
+ * Route::get('orders', ElementTypeIndexController::class)
+ *     ->defaults('elementType', Order::class)
+ *     ->defaults('newElementRoute', 'orders.new-in-external-app')
+ *     ->defaults('newElementExternal', true);
  * ```
  *
  * @since 6.0.0
@@ -40,7 +47,7 @@ readonly class ElementTypeIndexController
         return Inertia::render('elements/Index', [$viewModel])
             ->with([
                 'indexUrl' => $request->url(),
-                'newElement' => $this->newElement($elementType, $request->route('newElementRoute')),
+                'newElement' => $this->newElement($elementType, $request->route('newElementRoute'), (bool) $request->route('newElementExternal')),
             ]);
     }
 
@@ -48,9 +55,9 @@ readonly class ElementTypeIndexController
      * The button for creating an element, when the index has a route for it and the user may create one.
      *
      * @param  class-string<ElementInterface>  $elementType
-     * @return array{label: string, href: string}|null
+     * @return array{label: string, href: string, external: bool}|null
      */
-    private function newElement(string $elementType, mixed $routeName): ?array
+    private function newElement(string $elementType, mixed $routeName, bool $external): ?array
     {
         if (! is_string($routeName) || Gate::denies('save', new $elementType)) {
             return null;
@@ -59,6 +66,7 @@ readonly class ElementTypeIndexController
         return [
             'label' => t('New {type}', ['type' => $elementType::lowerDisplayName()]),
             'href' => route($routeName),
+            'external' => $external,
         ];
     }
 }

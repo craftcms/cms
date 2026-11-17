@@ -34,14 +34,16 @@ export const Default: Story = {};
  * Icons inherit `currentColor` and are sized in `em`, so they take the color
  * and size of the text around them rather than needing either set.
  */
-export const InheritsText: Story = {
+export const SizeAndColor: Story = {
   parameters: {controls: {disable: true}},
   render: () => html`
     <div style="display: flex; flex-direction: column; gap: 0.75rem">
       <p style="margin: 0">
         Default size <craft-icon name="star"></craft-icon>
       </p>
-      <p style="margin: 0; font-size: 1.5rem">
+      <p
+        style="margin: 0; font-size: 1.5rem; --c-icon-size: var(--c-size-icon-lg)"
+      >
         Larger text <craft-icon name="star"></craft-icon>
       </p>
       <p style="margin: 0; color: var(--c-color-danger-on-normal)">

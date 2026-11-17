@@ -1,6 +1,7 @@
 import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import type CraftChip from './chip.js';
 import './chip.js';
+import '../thumbnail/thumbnail.js';
 
 async function createChip(
   attrs: Record<string, string> = {},
@@ -150,6 +151,27 @@ describe('craft-chip light DOM changes', () => {
     await settle(element);
 
     expect(element.shadowRoot?.querySelector('.cp-chip__body')).not.toBeNull();
+  });
+});
+
+describe('craft-chip rounded', () => {
+  it('crops its thumbnail while rounded, so it fills a circle, and restores its mode after', async () => {
+    const element = await createChip(
+      {rounded: '', 'show-thumb': ''},
+      '<div slot="thumbnail"><craft-thumbnail mode="fit"></craft-thumbnail></div>Label'
+    );
+    const thumbnail = element.querySelector(
+      'craft-thumbnail'
+    ) as HTMLElement & {
+      mode: string;
+    };
+
+    expect(thumbnail.mode).toBe('crop');
+
+    element.rounded = false;
+    await element.updateComplete;
+
+    expect(thumbnail.mode).toBe('fit');
   });
 });
 

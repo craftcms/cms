@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
@@ -34,7 +35,7 @@ class SetupController extends Controller
      */
     public function actionPhpSessionTable(): int
     {
-        $this->stdout('Running this command is deprecated, run `php craft make:session-table` instead.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout('Running this command is deprecated, run `' . app(TerminalCommands::class)->artisan('make:session-table') . '` instead.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
 
         if (Schema::hasTable(Table::PHPSESSIONS)) {
             $this->stdout("The `phpsessions` table already exists.\n", Console::FG_YELLOW);
@@ -87,7 +88,7 @@ class SetupController extends Controller
      */
     public function actionDbCacheTable(): int
     {
-        $this->stdout('Running this command is deprecated, run `php craft make:cache-table` instead.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout('Running this command is deprecated, run `' . app(TerminalCommands::class)->artisan('make:cache-table') . '` instead.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
 
         if (Schema::hasTable(Table::CACHE)) {
             $this->stdout('The `cache` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);

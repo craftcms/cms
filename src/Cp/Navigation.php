@@ -64,7 +64,11 @@ readonly class Navigation
      */
     public function getItems(): array
     {
-        return $this->applySelection($this->applyBadgeCounts($this->getTree()));
+        $collapsed = [];
+        $pageHrefs = [];
+        $tree = $this->customizedTree($collapsed, $pageHrefs);
+
+        return $this->applySelection($this->applyBadgeCounts($tree), $pageHrefs);
     }
 
     /**
@@ -120,9 +124,162 @@ readonly class Navigation
      */
     public function getTree(): array
     {
-        $user = currentUser();
+        $collapsed = [];
 
-        return $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user);
+        return $this->customizedTree($collapsed);
+    }
+
+    /**
+     * The nav as the current user has it laid out, with entry pages that are
+     * left with one source linking straight to it.
+     *
+     * Pages are collapsed after the customizations are applied, so the
+     * source's own customizations, such as a new name or a move to another
+     * page, still apply, and a page is only collapsed if it ends up with one
+     * source.
+     *
+     * @param  array<array-key, string>  $collapsed  Set to the collapsed sources' ids, mapped to their pages' ids
+     * @param  array<string, string>  $pageHrefs  Set to the collapsed pages' own URLs, by their ids
+     * @return NavItem[]
+     */
+    private function customizedTree(array &$collapsed, array &$pageHrefs = []): array
+    {
+        $user = currentUser();
+        $tree = $this->navCustomizer->apply($this->buildTree(), $this->customNavigations->navigationFor($user), $user);
+
+        if (! $this->listsSources(Entry::class)) {
+            return $tree;
+        }
+
+        $pageIds = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION)
+            ->mapWithKeys(fn (string $page) => [$this->pageItemId($page) => true])
+            ->all();
+
+        return $this->collapseSingleSourcePages($tree, $pageIds, $collapsed, $pageHrefs);
+    }
+
+    /**
+     * Lists entry pages the nav didn't have before beside the pages they were
+     * added before or after, in the default and user group navigations that
+     * were saved with an order for those pages. Items an order doesn't list
+     * follow the ones it does, so new pages would otherwise end up after them.
+     *
+     * A new page goes after the closest page before it that a navigation
+     * lists, or else before the closest page after it.
+     *
+     * @param  list<string>  $oldPages  The entry pages the nav had before
+     */
+    public function placeAddedEntryPages(array $oldPages): void
+    {
+        $ids = $this->elementSources->getPages(Entry::class, ElementSources::CONTEXT_NAVIGATION)
+            ->map($this->pageItemId(...))
+            ->values()
+            ->all();
+
+        // Without pages, entries had one page, at `content/entries`.
+        $newIds = array_values(array_diff($ids, array_map($this->pageItemId(...), $oldPages ?: ['Entries'])));
+
+        if ($newIds === []) {
+            return;
+        }
+
+        $default = $this->customNavigations->getDefault();
+        $placed = $this->placeBeside($default, $ids, $newIds, []);
+
+        if ($placed !== $default) {
+            $this->customNavigations->saveDefault($placed);
+        }
+
+        foreach ($this->customNavigations->getGroupNavigations() as $navigation) {
+            $nav = $this->placeBeside($navigation['nav'], $ids, $newIds, $placed['items'] ?? []);
+
+            if ($nav !== $navigation['nav']) {
+                $this->customNavigations->saveGroupNavigation($navigation['userGroup'], $nav);
+            }
+        }
+    }
+
+    /**
+     * Adds items to a customization's order beside their siblings.
+     *
+     * New items are placed until none are left that can be, so one beside
+     * another new item gets placed once that one is.
+     *
+     * @param  array<mixed>  $nav
+     * @param  list<string>  $ids  The sibling items' ids, in order
+     * @param  list<string>  $newIds  The ids of the items to add
+     * @param  array<mixed>  $baseItems  The items of the customization `$nav` is layered over
+     * @return array<mixed>
+     */
+    private function placeBeside(array $nav, array $ids, array $newIds, array $baseItems): array
+    {
+        if (! is_array($nav['order'] ?? null)) {
+            return $nav;
+        }
+
+        do {
+            $placedAny = false;
+
+            foreach ($newIds as $id) {
+                if ($this->orderParent($nav['order'], $id) !== null) {
+                    continue;
+                }
+
+                $index = (int) array_search($id, $ids, true);
+                $anchors = [
+                    ...array_map(fn (string $before) => [$before, 1], array_reverse(array_slice($ids, 0, $index))),
+                    ...array_map(fn (string $after) => [$after, 0], array_slice($ids, $index + 1)),
+                ];
+
+                foreach ($anchors as [$anchor, $offset]) {
+                    // Only the order of the parent the anchor ends up in, which
+                    // the navigation it's layered over can set.
+                    $parent = $nav['items'][$anchor]['parent'] ?? $baseItems[$anchor]['parent'] ?? 'nav-group-content';
+
+                    if (! is_array($nav['order'][$parent] ?? null) || ! in_array($anchor, $nav['order'][$parent], true)) {
+                        continue;
+                    }
+
+                    array_splice($nav['order'][$parent], (int) array_search($anchor, $nav['order'][$parent], true) + $offset, 0, [$id]);
+
+                    if ($parent === ($baseItems[$id]['parent'] ?? 'nav-group-content')) {
+                        unset($nav['items'][$id]['parent']);
+                    } else {
+                        $nav['items'][$id]['parent'] = $parent;
+                    }
+
+                    $nav['items'] = array_filter($nav['items'] ?? []);
+
+                    if ($nav['items'] === []) {
+                        unset($nav['items']);
+                    }
+
+                    $placedAny = true;
+
+                    break;
+                }
+            }
+        } while ($placedAny);
+
+        return $nav;
+    }
+
+    /**
+     * The parent whose order lists an item.
+     *
+     * @param  array<mixed>  $order
+     */
+    private function orderParent(array $order, string $id): ?string
+    {
+        $parent = array_find_key($order, fn (mixed $ids) => is_array($ids) && in_array($id, $ids, true));
+
+        return $parent === null ? null : (string) $parent;
+    }
+
+    /** An entry page's nav item id. */
+    private function pageItemId(string $page): string
+    {
+        return $this->itemId(sprintf('content/%s', ElementSources::pageSlug($page)));
     }
 
     /**
@@ -191,11 +348,26 @@ readonly class Navigation
     public function getSourceBadgeCounts(): array
     {
         $siteId = $this->navSiteId();
-
-        return array_map(
+        $counts = array_map(
             fn (array $badge): int => $badge['elementType']::sourceBadgeCount($badge['source'], $siteId),
             $this->sourceBadges(),
         );
+
+        if ($counts === []) {
+            return $counts;
+        }
+
+        // A page that links straight to its one source shows that source's count.
+        $collapsed = [];
+        $this->customizedTree($collapsed);
+
+        foreach ($collapsed as $sourceId => $pageId) {
+            if (isset($counts[$sourceId])) {
+                $counts[$pageId] = $counts[$sourceId];
+            }
+        }
+
+        return $counts;
     }
 
     /**
@@ -308,8 +480,7 @@ readonly class Navigation
                             Entry::class,
                             sprintf('content/%s', ElementSources::pageSlug($page)),
                             $page,
-                        ))
-                    )
+                        )))
                 );
             } else {
                 $contentItems->add(new NavItem()
@@ -561,6 +732,67 @@ readonly class Navigation
                     $item->subnav !== [],
             ),
         );
+    }
+
+    /**
+     * A page with only one source has nothing to choose between, so its item
+     * links straight to that source, with no subnav, and takes its badge. A
+     * heading over the source doesn't count as a choice either.
+     *
+     * The page keeps its own id, so the trail and anything else that refers
+     * to it still find it.
+     *
+     * @param  NavItem[]  $items
+     * @param  array<string, bool>  $pageIds  The entry pages' item ids
+     * @param  array<array-key, string>  $collapsed  Collapsed sources' ids, mapped to their pages' ids
+     * @param  array<string, string>  $pageHrefs  Collapsed pages' own URLs, by their ids
+     * @return NavItem[]
+     */
+    private function collapseSingleSourcePages(array $items, array $pageIds, array &$collapsed, array &$pageHrefs): array
+    {
+        foreach ($items as $item) {
+            if (! is_array($item->subnav)) {
+                continue;
+            }
+
+            if (! isset($pageIds[$item->id])) {
+                $item->subnav = $this->collapseSingleSourcePages($item->subnav, $pageIds, $collapsed, $pageHrefs);
+
+                continue;
+            }
+
+            $leaves = [];
+            $collect = function (array $children) use (&$collect, &$leaves): void {
+                foreach ($children as $child) {
+                    if ($child->group) {
+                        $collect(is_array($child->subnav) ? $child->subnav : []);
+                    } else {
+                        $leaves[] = $child;
+                    }
+                }
+            };
+            $collect($item->subnav);
+
+            if (count($leaves) !== 1) {
+                continue;
+            }
+
+            $source = $leaves[0];
+
+            if ($item->id !== null && $item->href !== null) {
+                $pageHrefs[$item->id] = $item->href;
+            }
+
+            $item->href($source->href)->subnav(false);
+            $item->badgeCount = $source->badgeCount;
+            $item->badgeLabel = $source->badgeLabel;
+
+            if ($source->id !== null && $item->id !== null) {
+                $collapsed[$source->id] = $item->id;
+            }
+        }
+
+        return $items;
     }
 
     /**
@@ -898,9 +1130,10 @@ readonly class Navigation
      * Marks the trail to the most specific matching item.
      *
      * @param  NavItem[]  $items
+     * @param  array<string, string>  $pageHrefs  Collapsed pages' own URLs, by their ids, which they match as well as their sources'
      * @return NavItem[]
      */
-    private function applySelection(array $items): array
+    private function applySelection(array $items, array $pageHrefs = []): array
     {
         $path = $this->request->craftPath();
 
@@ -914,6 +1147,7 @@ readonly class Navigation
         $findBest = function (array $items) use (
             &$findBest,
             $path,
+            $pageHrefs,
             &$best,
             &$bestLength,
             &$bestQuerySize,
@@ -923,23 +1157,22 @@ readonly class Navigation
                     $findBest($item->subnav);
                 }
 
-                $itemPath = $this->navItemPath((string) $item->href);
-                parse_str(
-                    (string) parse_url((string) $item->href, PHP_URL_QUERY),
-                    $params,
-                );
-                $querySize = count($params);
+                foreach (array_filter([$item->href, $pageHrefs[$item->id] ?? null]) as $href) {
+                    $itemPath = $this->navItemPath($href);
+                    parse_str((string) parse_url($href, PHP_URL_QUERY), $params);
+                    $querySize = count($params);
 
-                if (
-                    $this->pathMatches($path, $itemPath) &&
-                    $this->queryMatches((string) $item->href) &&
-                    ($bestLength < strlen($itemPath) ||
-                        ($bestLength === strlen($itemPath) &&
-                            $querySize > $bestQuerySize))
-                ) {
-                    $best = $item;
-                    $bestLength = strlen($itemPath);
-                    $bestQuerySize = $querySize;
+                    if (
+                        $this->pathMatches($path, $itemPath) &&
+                        $this->queryMatches($href) &&
+                        ($bestLength < strlen($itemPath) ||
+                            ($bestLength === strlen($itemPath) &&
+                                $querySize > $bestQuerySize))
+                    ) {
+                        $best = $item;
+                        $bestLength = strlen($itemPath);
+                        $bestQuerySize = $querySize;
+                    }
                 }
             }
         };

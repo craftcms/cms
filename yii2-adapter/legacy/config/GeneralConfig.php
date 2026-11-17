@@ -1486,7 +1486,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * In the event that the key is compromised, a new secure key can be generated with the command:
      *
      * ```sh
-     * php craft setup/security-key
+     * php artisan key:generate
      * ```
      *
      * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.

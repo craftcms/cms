@@ -14,12 +14,15 @@ use Illuminate\Http\Request;
  *
  * Commands use the local development environment’s wrappers when Craft runs in one:
  *
- * - [DDEV](https://ddev.com): `ddev craft` and `ddev composer`.
+ * - [DDEV](https://ddev.com): `ddev artisan` and `ddev composer`.
  * - [Laravel Valet](https://laravel.com/docs/valet), for sites isolated to a PHP version with `valet isolate`:
- *   `valet php craft` and `valet composer`, which run the site’s PHP version. Other Valet sites use the PHP version
+ *   `valet php artisan` and `valet composer`, which run the site’s PHP version. Other Valet sites use the PHP version
  *   that’s on the `PATH`, so they get the plain commands.
  *
- * Otherwise they use `php craft` and `composer`.
+ * Otherwise they use `php artisan` and `composer`.
+ *
+ * Craft commands get their full `craft:` name, such as `php artisan craft:update:info`, since only the `craft` executable
+ * resolves Craft commands without it.
  *
  * @since 6.0.0
  */
@@ -44,14 +47,33 @@ class TerminalCommands
      * Returns a Craft console command.
      *
      * ```php
-     * $terminalCommands->craft('passport:keys'); // php craft passport:keys, or ddev craft passport:keys on DDEV
+     * $terminalCommands->craft('update:info'); // php artisan craft:update:info, or ddev artisan craft:update:info on DDEV
      * ```
      *
-     * @param  string  $command  The command and its arguments, without the `craft` executable
+     * @param  string  $command  The command and its arguments, without the `craft:` prefix, such as
+     *                           `project-config:apply --force`
      */
     public function craft(string $command): string
     {
-        return "{$this->craftExecutable()} $command";
+        return $this->artisan("craft:$command");
+    }
+
+    /**
+     * Returns an Artisan command that isn’t a Craft command, such as one from Laravel or a package.
+     *
+     * ```php
+     * $terminalCommands->artisan('passport:keys'); // php artisan passport:keys, or ddev artisan passport:keys on DDEV
+     * ```
+     *
+     * @param  string  $command  The command and its arguments, without the `artisan` executable
+     */
+    public function artisan(string $command): string
+    {
+        return match ($this->environment()) {
+            'ddev' => "ddev artisan $command",
+            'valet' => "valet php artisan $command",
+            default => "php artisan $command",
+        };
     }
 
     /**
@@ -66,18 +88,6 @@ class TerminalCommands
     public function composer(string $command): string
     {
         return "{$this->composerExecutable()} $command";
-    }
-
-    /**
-     * Returns how the `craft` executable is run, such as `php craft`.
-     */
-    public function craftExecutable(): string
-    {
-        return match ($this->environment()) {
-            'ddev' => 'ddev craft',
-            'valet' => 'valet php craft',
-            default => 'php craft',
-        };
     }
 
     /**

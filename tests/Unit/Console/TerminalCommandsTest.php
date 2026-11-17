@@ -22,21 +22,23 @@ afterEach(function () {
 it('uses the plain commands outside of local development environments', function () {
     $commands = app(TerminalCommands::class);
 
-    expect($commands->craft('passport:keys'))->toBe('php craft passport:keys')
+    expect($commands->craft('update:info'))->toBe('php artisan craft:update:info')
+        ->and($commands->artisan('passport:keys'))->toBe('php artisan passport:keys')
         ->and($commands->composer('install'))->toBe('composer install')
         ->and($commands->environment())->toBeNull();
 });
 
-it('uses DDEV’s wrappers in DDEV projects', function (string $value, ?string $environment, string $craft, string $composer) {
+it('uses DDEV’s wrappers in DDEV projects', function (string $value, ?string $environment, string $craft, string $artisan, string $composer) {
     $_SERVER['IS_DDEV_PROJECT'] = $value;
     $commands = app(TerminalCommands::class);
 
     expect($commands->environment())->toBe($environment)
-        ->and($commands->craft('passport:keys'))->toBe("$craft passport:keys")
-        ->and($commands->composer('install'))->toBe("$composer install");
+        ->and($commands->craft('update:info'))->toBe($craft)
+        ->and($commands->artisan('passport:keys'))->toBe($artisan)
+        ->and($commands->composer('install'))->toBe($composer);
 })->with([
-    'true' => ['true', 'ddev', 'ddev craft', 'ddev composer'],
-    'false' => ['false', null, 'php craft', 'composer'],
+    'true' => ['true', 'ddev', 'ddev artisan craft:update:info', 'ddev artisan passport:keys', 'ddev composer install'],
+    'false' => ['false', null, 'php artisan craft:update:info', 'php artisan passport:keys', 'composer install'],
 ]);
 
 it('uses Valet’s wrappers for Valet sites isolated to a PHP version', function () {
@@ -51,20 +53,23 @@ it('uses Valet’s wrappers for Valet sites isolated to a PHP version', function
     $commandsFor = function (string $host) use ($commands): array {
         app()->instance('request', Request::create("https://$host/"));
 
-        return [$commands->craft('update all'), $commands->composer('install')];
+        return [$commands->craft('update all'), $commands->artisan('passport:keys'), $commands->composer('install')];
     };
 
     try {
-        expect($commandsFor('isolated.test'))->toBe(['valet php craft update all', 'valet composer install'])
-            ->and($commandsFor('www.isolated.test'))->toBe(['valet php craft update all', 'valet composer install'])
-            ->and($commandsFor('a.b.isolated.test'))->toBe(['valet php craft update all', 'valet composer install'])
-            ->and($commandsFor('v1.api.isolated.test'))->toBe(['php craft update all', 'composer install'])
-            ->and($commandsFor('secure.test'))->toBe(['php craft update all', 'composer install'])
-            ->and($commandsFor('unconfigured.test'))->toBe(['php craft update all', 'composer install']);
+        $isolated = ['valet php artisan craft:update all', 'valet php artisan passport:keys', 'valet composer install'];
+        $plain = ['php artisan craft:update all', 'php artisan passport:keys', 'composer install'];
+
+        expect($commandsFor('isolated.test'))->toBe($isolated)
+            ->and($commandsFor('www.isolated.test'))->toBe($isolated)
+            ->and($commandsFor('a.b.isolated.test'))->toBe($isolated)
+            ->and($commandsFor('v1.api.isolated.test'))->toBe($plain)
+            ->and($commandsFor('secure.test'))->toBe($plain)
+            ->and($commandsFor('unconfigured.test'))->toBe($plain);
 
         // DDEV wins, since a DDEV project could also be linked in Valet
         $_SERVER['IS_DDEV_PROJECT'] = 'true';
-        expect($commandsFor('isolated.test'))->toBe(['ddev craft update all', 'ddev composer install']);
+        expect($commandsFor('isolated.test'))->toBe(['ddev artisan craft:update all', 'ddev artisan passport:keys', 'ddev composer install']);
     } finally {
         File::deleteDirectory($home);
     }

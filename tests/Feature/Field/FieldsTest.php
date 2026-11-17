@@ -664,6 +664,30 @@ it('returns laravel-style pagination metadata for table data', function () {
         ->and($pagination['next_page_url'])->toBeNull();
 });
 
+it('counts each saved layout that includes a field once in table data', function () {
+    $fieldModel = FieldModel::factory()->create(['type' => PlainText::class]);
+    $unusedFieldModel = FieldModel::factory()->create(['type' => PlainText::class]);
+    $element = fn (FieldModel $field, ?string $handle = null) => [
+        'type' => CustomFieldElement::class,
+        'uid' => Str::uuid()->toString(),
+        'fieldUid' => $field->uid,
+        'handle' => $handle,
+    ];
+    $config = fn (array ...$tabs) => ['tabs' => array_map(fn (array $elements) => ['name' => 'Tab', 'elements' => $elements], $tabs)];
+
+    // Twice in one layout, once in a layout without a provider, and once in a deleted layout
+    FieldLayoutModel::factory()->create(['config' => $config([$element($fieldModel)], [$element($fieldModel, 'again')])]);
+    FieldLayoutModel::factory()->create(['type' => AssetElement::class, 'config' => $config([$element($fieldModel)])]);
+    FieldLayoutModel::factory()->create(['config' => $config([$element($fieldModel), $element($unusedFieldModel)])])->delete();
+    $this->fields->refreshFields();
+
+    [, $tableData] = $this->fields->getTableData(1, 100, null);
+    $usages = array_column($tableData, 'usages', 'id');
+
+    expect($usages[$fieldModel->id])->toBe('2 layouts')
+        ->and($usages[$unusedFieldModel->id])->toBeNull();
+});
+
 test('field layouts', function () {
     $field = FieldModel::factory()->create([
         'name' => 'Plain Text',

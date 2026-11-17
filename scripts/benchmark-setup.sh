@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 #
-# Builds the isolated workbench that the phpbench benchmarks in tests/Benchmark run against.
+# Builds the isolated workbench that the Tally benchmarks in tests/Benchmark run against.
 #
-# It copies Testbench's Laravel skeleton to .phpbench/laravel (or CRAFT_BENCHMARK_PATH), so the benchmarks get their
+# It copies Testbench's Laravel skeleton to .benchmarks/laravel (or CRAFT_BENCHMARK_PATH), so the benchmarks get their
 # own database, project config, storage and asset files and never touch the dev workbench. It then seeds the
 # workbench content plus ScaleSeeder's structure, without its entries, assets and users (SCALE=0): most control
 # panel costs grow with sections, fields, entry types and permissions rather than with element counts.
 #
-# Usage: scripts/benchmark-setup.sh, then vendor/bin/phpbench run --report=aggregate
+# Usage: scripts/benchmark-setup.sh, then vendor/bin/tally run
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-BENCH_PATH="${CRAFT_BENCHMARK_PATH:-$PWD/.phpbench/laravel}"
+BENCH_PATH="${CRAFT_BENCHMARK_PATH:-$PWD/.benchmarks/laravel}"
 SKELETON=vendor/orchestra/testbench-core/laravel
 
-rm -rf "$BENCH_PATH" .phpbench/opcache
-mkdir -p "$BENCH_PATH" .phpbench/opcache
+rm -rf "$BENCH_PATH" .benchmarks/opcache
+mkdir -p "$BENCH_PATH" .benchmarks/opcache
 
 # Everything but the dev workbench's state: its .env, databases, project config, assets, logs and caches
 for path in app artisan bootstrap config lang migrations public resources routes server.php composer.json; do
