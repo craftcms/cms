@@ -66,6 +66,7 @@
 - Updates widgets now show whether updates are available with an icon, say when they last checked, and check again from a button beside their title.
 - Dashboard widgets’ settings now load when they’re opened, rather than with the dashboard.
 - Saved element conditions, such as custom sources’ and Recent Entries widgets’ criteria, now load faster on sites with many custom fields. Their rules are checked without loading every field layout, unless they’re rules for fields.
+- Element index tables now right-align Number, Money, and Range field columns, and assets’ File Size, Image Width, and Image Height columns, along with their headers, so the digits of their values line up. Number fields with the “None” preview format, which suit years and codes, stay left-aligned. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - Added the `cpIconPath` and `cpLogoPath` config settings, which set the control panel’s icon and the login page’s logo from files on the server. SVG files are rendered inline, so they can adapt to the selected light or dark theme, such as with the `light-dark()` CSS function. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Deprecated the `cpIconUrl` and `cpLogoUrl` config settings. `cpIconPath` and `cpLogoPath` should be used instead. ([#20647](https://github.com/craftcms/cms/issues/20647))
 - Front-end form submissions without a CSRF token are now accepted from browsers that don’t send a `Sec-Fetch-Site` header, when their `Origin` header matches the site’s scheme and host, such as on plain-HTTP local dev sites like `http://my-site.test`. ([#20429](https://github.com/craftcms/cms/pull/20429))
@@ -105,6 +106,7 @@
 - Added `CraftCms\Cms\User\Elements\User::isLocked()` and `CraftCms\Cms\User\Validation\UserRules::unique()`. ([#20794](https://github.com/craftcms/cms/pull/20794))
 - Added `CraftCms\Cms\Update\Maintenance::startUpdate()` and `finishUpdate()`. `finishUpdate()` only turns off maintenance mode if `startUpdate()` turned it on. ([#20797](https://github.com/craftcms/cms/pull/20797))
 - Added `CraftCms\Cms\Twig\Twig::with()` and `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`. ([#20798](https://github.com/craftcms/cms/pull/20798))
+- Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - Fixed an error that occurred when batched queue jobs, such as resaving or propagating elements, queued their next batch on non-sync queues. ([#20791](https://github.com/craftcms/cms/issues/20791), [#20812](https://github.com/craftcms/cms/pull/20812))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where Matrix fields’ “Create Button Label” setting wasn’t applied in Blocks view mode. ([#20750](https://github.com/craftcms/cms/pull/20750))

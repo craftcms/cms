@@ -22,7 +22,7 @@ readonly class ElementIndexSourceSettings
      * @param  array<string, mixed>|null  $source
      * @param  list<array<string, mixed>>  $viewModes
      * @param  list<array{label: string, value: string, defaultDir: string, fixedDir?: string}>  $sortOptions
-     * @param  list<array{label: string, value: string}>  $tableColumns
+     * @param  list<array{label: string, value: string, align: 'start'|'end'}>  $tableColumns
      * @param  list<string>  $defaultTableColumns
      * @param  list<array{field: string, direction: string}>  $defaultSort
      * @param  list<FieldLayout>|null  $fieldLayouts
@@ -125,7 +125,11 @@ readonly class ElementIndexSourceSettings
             tableColumns: $indexState
                 ->tableColumns($elementType)
                 ->merge(ElementSources::getTableAttributesForFieldLayouts(collect($fieldLayouts)))
-                ->map(fn (array $column, string $key): array => ['label' => $column['label'], 'value' => $key])
+                ->map(fn (array $column, string $key): array => [
+                    'label' => $column['label'],
+                    'value' => $key,
+                    'align' => $column['align'] ?? 'start',
+                ])
                 ->values()
                 ->all(),
             defaultTableColumns: $defaultTableColumns,
