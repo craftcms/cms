@@ -35,9 +35,14 @@
     padding: var(--c-spacing-sm);
     border-radius: var(--c-radius-md);
 
+    /* Blue, unless a container gives it a color of its own with
+       --about-craft-tint-fill, -on and -icon, such as a tinted card's */
     &[data-tone='accent'] {
-      background-color: var(--c-color-accent-fill-quiet);
-      color: var(--c-color-accent-on-quiet);
+      background-color: var(
+        --about-craft-tint-fill,
+        var(--c-color-accent-fill-quiet)
+      );
+      color: var(--about-craft-tint-on, var(--c-color-accent-on-quiet));
     }
   }
 
@@ -51,9 +56,9 @@
     block-size: 1lh;
   }
 
-  /* Kept blue on the blue fill */
+  /* Matching its fill, rather than the card's color */
   [data-tone='accent'] > .about-craft-row__icon {
-    color: var(--c-color-accent-fill-loud);
+    color: var(--about-craft-tint-icon, var(--c-color-accent-fill-loud));
   }
 
   /* An icon is a quarter wider than its glyph, centered in it, so its glyph

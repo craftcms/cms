@@ -139,7 +139,10 @@
   .about-craft__section:has(.about-craft-row[data-tone='accent']) {
     /* Below the line above it, rather than tinting it */
     background-clip: padding-box;
-    background-color: var(--c-color-accent-fill-quiet);
+    background-color: var(
+      --about-craft-tint-fill,
+      var(--c-color-accent-fill-quiet)
+    );
     /* The space below it, which the next section would otherwise leave above its line */
     padding-block-end: calc(var(--c-spacing-lg) - var(--c-spacing-sm));
 

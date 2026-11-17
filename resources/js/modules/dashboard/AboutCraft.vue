@@ -33,4 +33,19 @@
       calc(var(--c-spacing) * 6)
     );
   }
+
+  /* A tinted card's color stands in for the blue that highlights available
+     updates. Its own fill is the quiet one, more transparent, so this still
+     stands out. */
+  craft-card[data-color]:not(
+      [data-color='white'],
+      [data-color='gray'],
+      [data-color='slate'],
+      [data-color='black']
+    )
+    .about-craft-widget {
+    --about-craft-tint-fill: var(--c-color-fill-quiet);
+    --about-craft-tint-on: var(--c-color-on-quiet);
+    --about-craft-tint-icon: var(--c-color-fill-loud);
+  }
 </style>
