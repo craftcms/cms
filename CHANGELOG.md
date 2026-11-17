@@ -186,6 +186,7 @@
 - Fixed a bug where settings that update as they’re changed, such as dashboard widgets’ settings, sometimes didn’t update after a change.
 - Fixed a bug where screen readers announced the “Confirm your identity” modal as a dialog nested within another dialog. ([#20590](https://github.com/craftcms/cms/pull/20590))
 - Fixed a bug where typing a negative amount over a selected negative amount in a money input dropped the minus sign. ([#20064](https://github.com/craftcms/cms/pull/20064))
+- Fixed a bug where queue workers switched to the site template mode after their first loop, so control panel templates couldn’t be found. ([#20741](https://github.com/craftcms/cms/issues/20741), [#20757](https://github.com/craftcms/cms/pull/20757))
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
 
 ## 6.0.0-beta.1 - 2026-11-10
