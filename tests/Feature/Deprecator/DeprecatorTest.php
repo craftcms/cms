@@ -10,6 +10,9 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
 use CraftCms\Cms\View\TemplateManager;
 use CraftCms\Cms\View\TemplateMode;
+use Illuminate\Contracts\Queue\Job;
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
@@ -25,6 +28,18 @@ beforeEach(function () {
 
 it('has a working facade', function () {
     expect(DeprecatorFacade::getTotalLogs())->toBe(0);
+});
+
+it('stores logs when a queued job finishes, but not a sync one', function () {
+    $this->deprecator->log('foo', 'A deprecation message');
+
+    event(new JobProcessed('sync', new SyncJob(app(), '{}', 'sync', 'default')));
+
+    expect(DeprecationError::count())->toBe(0);
+
+    event(new JobProcessed('database', Mockery::mock(Job::class, ['getQueue' => 'default', 'payload' => []])));
+
+    expect(DeprecationError::count())->toBe(1);
 });
 
 it('can log deprecations to the log', function () {

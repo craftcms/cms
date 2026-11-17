@@ -278,6 +278,25 @@ it('skips completed and in-progress entries when getting next entry', function (
     expect($second->uri)->toBe('images/photo.jpg');
 });
 
+it('reclaims entries abandoned while processing', function () {
+    $volume = createIndexerTestVolume();
+    $volumeData = resolveIndexerVolumeData($volume);
+    $session = $this->indexer->createIndexingSession([$volumeData]);
+    $this->indexer->storeIndexList(createIndexerTestListings(), $session->id, $volumeData);
+    $first = $this->indexer->getNextIndexEntry($session);
+    $this->indexer->transitionIndexEntry($first->id, AssetIndexStatus::Processing);
+
+    $this->travel(299)->seconds();
+    expect($this->indexer->getNextIndexEntry($session)->id)->not->toBe($first->id);
+
+    $this->travel(2)->seconds();
+    $reclaimed = $this->indexer->getNextIndexEntry($session);
+    expect($reclaimed->id)->toBe($first->id)
+        ->and($reclaimed->claim())->toBeTrue()
+        ->and($reclaimed->status)->toBe(AssetIndexStatus::Processing)
+        ->and($reclaimed->claim())->toBeFalse();
+});
+
 it('rejects a second claim for the same entry', function () {
     $volume = createIndexerTestVolume();
     $volumeData = resolveIndexerVolumeData($volume);

@@ -103,6 +103,14 @@ test('apply-yaml-changes', function () {
         ->assertSee('dashboard'); // return url
 });
 
+test('apply-yaml-changes with force restores forceUpdate afterward', function () {
+    postJson(action([ConfigSyncController::class, 'applyYamlChanges']), [
+        'data' => Crypt::encrypt(Json::encode(['force' => true])),
+    ])->assertOk();
+
+    expect(app(ProjectConfig::class)->forceUpdate)->toBeFalse();
+});
+
 test('regenerate-yaml', function () {
     postJson(action([ConfigSyncController::class, 'regenerateYaml']), [
         'data' => $this->hashedData,

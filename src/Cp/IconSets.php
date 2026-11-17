@@ -86,7 +86,7 @@ class IconSets
     }
 
     /**
-     * Defers a callback until the icon sets are first read, for registration that
+     * Defers a callback until the icon sets are next read, for registration that
      * needs request state. It runs once.
      *
      * @param  Closure(self): void  $callback
@@ -113,12 +113,14 @@ class IconSets
                     self::CUSTOM => new DirectoryIconSet(self::CUSTOM, t('Custom'), $customIconPath),
                 ] + $this->iconSets;
             }
+        }
 
-            foreach ($this->deferred as $callback) {
-                $callback($this);
-            }
+        // Also runs callbacks deferred after the first read
+        $callbacks = $this->deferred;
+        $this->deferred = [];
 
-            $this->deferred = [];
+        foreach ($callbacks as $callback) {
+            $callback($this);
         }
 
         return $this->iconSets;

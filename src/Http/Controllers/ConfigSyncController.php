@@ -62,6 +62,8 @@ class ConfigSyncController extends BaseUpdaterController
      */
     public function applyYamlChanges(): Response
     {
+        $forceUpdate = $this->projectConfig->forceUpdate;
+
         if (! empty($this->data['force'])) {
             $this->projectConfig->forceUpdate = true;
         }
@@ -76,6 +78,8 @@ class ConfigSyncController extends BaseUpdaterController
                     $this->actionOption(t('Try again'), self::ACTION_RETRY, ['submit' => true]),
                 ],
             ]);
+        } finally {
+            $this->projectConfig->forceUpdate = $forceUpdate;
         }
 
         return $this->sendFinished();

@@ -795,6 +795,7 @@ class Install extends Migration
             $table->integer('elementId');
             $table->integer('siteId');
             $table->boolean('reserved')->default(false);
+            $table->dateTime('dateReserved')->nullable();
         });
 
         $logger?->subLabel('searchindexqueue_fields');

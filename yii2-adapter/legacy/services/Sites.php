@@ -34,7 +34,6 @@ use CraftCms\Cms\Site\Events\SiteSaving;
 use CraftCms\Cms\Site\Events\SitesReordered;
 use CraftCms\Cms\Site\Events\SitesReordering;
 use CraftCms\Cms\Site\Exceptions\SiteNotFoundException;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\SiteGroups;
 use CraftCms\Cms\Support\Facades\Sites as SitesFacade;
 use Illuminate\Support\Facades\Event;
@@ -155,9 +154,7 @@ class Sites extends Component
      */
     public function getAllGroups(): array
     {
-        return SiteGroups::getAllGroups()
-            ->map(fn(SiteGroup $group) => self::siteGroupToLegacySiteGroup($group))
-            ->all();
+        return SiteGroups::getAllGroups()->all();
     }
 
     /**
@@ -168,13 +165,7 @@ class Sites extends Component
      */
     public function getGroupById(int $groupId): ?SiteGroup
     {
-        $group = SiteGroups::getGroupById($groupId);
-
-        if (!$group) {
-            return null;
-        }
-
-        return self::siteGroupToLegacySiteGroup($group);
+        return SiteGroups::getGroupById($groupId);
     }
 
     /**
@@ -187,13 +178,7 @@ class Sites extends Component
      */
     public function getGroupByUid(string $uid): ?SiteGroup
     {
-        $group = SiteGroups::getGroupByUid($uid);
-
-        if (!$group) {
-            return null;
-        }
-
-        return self::siteGroupToLegacySiteGroup($group);
+        return SiteGroups::getGroupByUid($uid);
     }
 
     /**
@@ -205,8 +190,6 @@ class Sites extends Component
      */
     public function saveGroup(LegacySiteGroup $group, bool $runValidation = true): bool
     {
-        $group = new SiteGroup($group->toArray());
-
         return SiteGroups::saveGroup($group, $runValidation);
     }
 
@@ -272,9 +255,7 @@ class Sites extends Component
      */
     public function getSiteByUid(string $uid, ?bool $withDisabled = null): Site
     {
-        $site = SitesFacade::getSiteByUid($uid, $withDisabled);
-
-        return self::siteToLegacySite($site);
+        return SitesFacade::getSiteByUid($uid, $withDisabled);
     }
 
     /**
@@ -298,7 +279,7 @@ class Sites extends Component
      */
     public function getCurrentSite(): Site
     {
-        return self::siteToLegacySite(SitesFacade::getCurrentSite());
+        return SitesFacade::getCurrentSite();
     }
 
     /**
@@ -308,10 +289,6 @@ class Sites extends Component
      */
     public function setCurrentSite(mixed $site): void
     {
-        if ($site instanceof LegacySite) {
-            $site = $site->id;
-        }
-
         SitesFacade::setCurrentSite($site);
     }
 
@@ -325,7 +302,7 @@ class Sites extends Component
      */
     public function getPrimarySite(): Site
     {
-        return self::siteToLegacySite(SitesFacade::getPrimarySite());
+        return SitesFacade::getPrimarySite();
     }
 
     /**
@@ -346,9 +323,7 @@ class Sites extends Component
      */
     public function getAllSites(?bool $withDisabled = null): array
     {
-        return SitesFacade::getAllSites($withDisabled)
-            ->map(fn(Site $site) => self::siteToLegacySite($site))
-            ->all();
+        return SitesFacade::getAllSites($withDisabled)->all();
     }
 
     /**
@@ -358,9 +333,7 @@ class Sites extends Component
      */
     public function getEditableSites(): array
     {
-        return SitesFacade::getEditableSites()
-            ->map(fn(Site $site) => self::siteToLegacySite($site))
-            ->all();
+        return SitesFacade::getEditableSites()->all();
     }
 
     /**
@@ -371,9 +344,7 @@ class Sites extends Component
      */
     public function getSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
-        return SitesFacade::getSitesByGroupId($groupId, $withDisabled)
-            ->map(fn(Site $site) => self::siteToLegacySite($site))
-            ->all();
+        return SitesFacade::getSitesByGroupId($groupId, $withDisabled)->all();
     }
 
     /**
@@ -386,9 +357,7 @@ class Sites extends Component
      */
     public function getEditableSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
-        return SitesFacade::getEditableSitesByGroupId($groupId, $withDisabled)
-            ->map(fn(Site $site) => self::siteToLegacySite($site))
-            ->all();
+        return SitesFacade::getEditableSitesByGroupId($groupId, $withDisabled)->all();
     }
 
     /**
@@ -412,13 +381,7 @@ class Sites extends Component
      */
     public function getSiteById(int $siteId, ?bool $withDisabled = null): ?LegacySite
     {
-        $site = SitesFacade::getSiteById($siteId, $withDisabled);
-
-        if (!$site) {
-            return null;
-        }
-
-        return self::siteToLegacySite($site);
+        return SitesFacade::getSiteById($siteId, $withDisabled);
     }
 
     /**
@@ -426,13 +389,7 @@ class Sites extends Component
      */
     public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?LegacySite
     {
-        $site = SitesFacade::getSiteByHandle($siteHandle, $withDisabled);
-
-        if (!$site) {
-            return null;
-        }
-
-        return self::siteToLegacySite($site);
+        return SitesFacade::getSiteByHandle($siteHandle, $withDisabled);
     }
 
     /**
@@ -445,9 +402,7 @@ class Sites extends Component
      */
     public function getSitesByLanguage(string $language, ?bool $withDisabled = null): array
     {
-        return SitesFacade::getSitesByLanguage($language, $withDisabled)
-            ->map(fn(Site $site) => self::siteToLegacySite($site))
-            ->all();
+        return SitesFacade::getSitesByLanguage($language, $withDisabled)->all();
     }
 
     /**
@@ -472,8 +427,6 @@ class Sites extends Component
      */
     public function saveSite(LegacySite $site, bool $runValidation = true): bool
     {
-        $site = new Site($site->toArray());
-
         return SitesFacade::saveSite($site, $runValidation);
     }
 
@@ -584,18 +537,18 @@ class Sites extends Component
         Event::listen(SiteGroupSaving::class, function(SiteGroupSaving $event) {
             if (self::component()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE_GROUP)) {
                 self::component()->trigger(self::EVENT_BEFORE_SAVE_SITE_GROUP, $yiiEvent = new SiteGroupEvent([
-                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
+                    'group' => $event->siteGroup,
                     'isNew' => $event->isNew,
                 ]));
 
-                $event->siteGroup = new SiteGroup($yiiEvent->group->toArray());
+                $event->siteGroup = $yiiEvent->group;
             }
         });
 
         Event::listen(SavedSiteGroup::class, function(SavedSiteGroup $event) {
             if (self::component()->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
                 self::component()->trigger(self::EVENT_AFTER_SAVE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
+                    'group' => $event->siteGroup,
                     'isNew' => $event->isNew,
                 ]));
             }
@@ -604,7 +557,7 @@ class Sites extends Component
         Event::listen(SiteGroupDeletionApplying::class, function(SiteGroupDeletionApplying $event) {
             if (self::component()->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
                 self::component()->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new SiteGroupEvent([
-                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
+                    'group' => $event->siteGroup,
                 ]));
             }
         });
@@ -612,7 +565,7 @@ class Sites extends Component
         Event::listen(SiteGroupDeleting::class, function(SiteGroupDeleting $event) {
             if (self::component()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE_GROUP)) {
                 self::component()->trigger(self::EVENT_BEFORE_DELETE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
+                    'group' => $event->siteGroup,
                 ]));
             }
         });
@@ -620,7 +573,7 @@ class Sites extends Component
         Event::listen(DeletedSiteGroup::class, function(DeletedSiteGroup $event) {
             if (self::component()->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE_GROUP)) {
                 self::component()->trigger(self::EVENT_AFTER_DELETE_SITE_GROUP, new SiteGroupEvent([
-                    'group' => self::siteGroupToLegacySiteGroup($event->siteGroup),
+                    'group' => $event->siteGroup,
                 ]));
             }
         });
@@ -628,19 +581,19 @@ class Sites extends Component
         Event::listen(SiteSaving::class, function(SiteSaving $event) {
             if (self::component()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE)) {
                 self::component()->trigger(self::EVENT_BEFORE_SAVE_SITE, $yiiEvent = new SiteEvent([
-                    'site' => self::siteToLegacySite($event->site),
+                    'site' => $event->site,
                     'isNew' => $event->isNew,
                     'oldPrimarySiteId' => $event->oldPrimarySiteId,
                 ]));
 
-                $event->site = new Site($yiiEvent->site->toArray());
+                $event->site = $yiiEvent->site;
             }
         });
 
         Event::listen(SiteSaved::class, function(SiteSaved $event) {
             if (self::component()->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE)) {
                 self::component()->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
-                    'site' => self::siteToLegacySite($event->site),
+                    'site' => $event->site,
                     'isNew' => $event->isNew,
                     'oldPrimarySiteId' => $event->oldPrimarySiteId,
                 ]));
@@ -666,11 +619,11 @@ class Sites extends Component
         Event::listen(SiteDeleting::class, function(SiteDeleting $event) {
             if (self::component()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE)) {
                 self::component()->trigger(self::EVENT_BEFORE_DELETE_SITE, $yiiEvent = new DeleteSiteEvent([
-                    'site' => self::siteToLegacySite($event->site),
+                    'site' => $event->site,
                     'transferContentTo' => $event->transferContentTo,
                 ]));
 
-                $event->site = new Site($yiiEvent->site->toArray());
+                $event->site = $yiiEvent->site;
                 $event->transferContentTo = $yiiEvent->transferContentTo;
                 $event->isValid = $yiiEvent->isValid;
             }
@@ -679,7 +632,7 @@ class Sites extends Component
         Event::listen(SiteDeletionApplying::class, function(SiteDeletionApplying $event) {
             if (self::component()->hasEventHandlers(self::EVENT_BEFORE_APPLY_SITE_DELETE)) {
                 self::component()->trigger(self::EVENT_BEFORE_APPLY_SITE_DELETE, new DeleteSiteEvent([
-                    'site' => self::siteToLegacySite($event->site),
+                    'site' => $event->site,
                 ]));
             }
         });
@@ -687,7 +640,7 @@ class Sites extends Component
         Event::listen(SiteDeleted::class, function(SiteDeleted $event) {
             if (self::component()->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {
                 self::component()->trigger(self::EVENT_AFTER_DELETE_SITE, new DeleteSiteEvent([
-                    'site' => self::siteToLegacySite($event->site),
+                    'site' => $event->site,
                 ]));
             }
         });
@@ -695,27 +648,9 @@ class Sites extends Component
         Event::listen(PrimarySiteChanged::class, function(PrimarySiteChanged $event) {
             if (self::component()->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {
                 self::component()->trigger(self::EVENT_AFTER_CHANGE_PRIMARY_SITE, new SiteEvent([
-                    'site' => self::siteToLegacySite($event->site),
+                    'site' => $event->site,
                 ]));
             }
         });
-    }
-
-    private static function siteGroupToLegacySiteGroup(SiteGroup $siteGroup): LegacySiteGroup
-    {
-        return new LegacySiteGroup(Arr::except($siteGroup->toArray(), ['rawName']));
-    }
-
-    private static function siteToLegacySite(Site $site): LegacySite
-    {
-        return new LegacySite(Arr::except($site->toArray(), [
-            'nameRaw',
-            'uiLabel',
-            'languageRaw',
-            'locale',
-            'baseUrlRaw',
-            'enabledRaw',
-            'group',
-        ]));
     }
 }
