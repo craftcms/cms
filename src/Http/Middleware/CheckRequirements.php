@@ -34,9 +34,7 @@ readonly class CheckRequirements
             return $next($request);
         }
 
-        $cachedBasePath = Cache::get('basePath');
-
-        if ($cachedBasePath || $cachedBasePath === base_path()) {
+        if (Cache::get('basePath') === base_path()) {
             return $next($request);
         }
 
@@ -45,8 +43,8 @@ readonly class CheckRequirements
         $reqCheck->checkCraft();
 
         if ($reqCheck->result['summary']['errors'] === 0) {
-            // Cache the base path.
-            Cache::put('basePath', base_path(), $this->generalConfig->cacheDuration);
+            // Cache the base path. A `cacheDuration` of 0 caches it indefinitely.
+            Cache::put('basePath', base_path(), $this->generalConfig->cacheDuration ?: null);
 
             return $next($request);
         }

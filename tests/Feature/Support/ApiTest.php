@@ -41,6 +41,19 @@ it('can process response headers', function () {
     expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
 });
 
+it('applies the license info from a response to the request that received it', function () {
+    expect(Edition::canTest())->toBeTrue()
+        ->and($this->license->info())->toBeNull();
+
+    $this->api->processResponseHeaders([
+        'X-Craft-Allow-Trials' => '0',
+        'X-Craft-License-Info' => 'craft:1;pro;valid',
+    ]);
+
+    expect(Edition::canTest())->toBeFalse()
+        ->and($this->license->info()['craft'] ?? null)->toMatchArray(['id' => '1', 'edition' => 'pro', 'status' => 'valid']);
+});
+
 it('can get license info', function () {
     Http::fake([
         Api::craftApiEndpoint().'/cms-licenses?include=' => Http::response([

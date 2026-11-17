@@ -43,9 +43,29 @@ class Updates
         private readonly ProjectConfig $projectConfig,
     ) {}
 
+    /**
+     * Returns whether update info is cached, and loads it if so.
+     *
+     * @phpstan-assert-if-true !null $this->updates
+     */
     public function isUpdateInfoCached(): bool
     {
-        return isset($this->updates) || Cache::has(self::class);
+        if (! isset($this->updates) && ($cached = Cache::get(self::class)) instanceof UpdatesData) {
+            $this->updates = $cached;
+        }
+
+        return isset($this->updates);
+    }
+
+    /**
+     * Forgets the update info and pending Craft update this instance loaded, so the next call checks them again.
+     * Long-lived processes call it between requests, since the cached info can expire, and another process can
+     * refresh it or run migrations.
+     */
+    public function reset(): void
+    {
+        $this->updates = null;
+        $this->isCraftUpdatePending = null;
     }
 
     /**
@@ -76,14 +96,8 @@ class Updates
 
     public function getUpdates(bool $refresh = false): UpdatesData
     {
-        if (! $refresh) {
-            if (isset($this->updates)) {
-                return $this->updates;
-            }
-
-            if ($cached = Cache::get(self::class)) {
-                return $this->updates = $cached;
-            }
+        if (! $refresh && $this->isUpdateInfoCached()) {
+            return $this->updates;
         }
 
         try {
@@ -311,8 +325,7 @@ class Updates
 
         $this->isCraftUpdatePending = null;
 
-        // Clear the license info cache
-        Cache::forget(License::CACHE_KEY_LICENSE_INFO);
+        app(License::class)->forgetInfo();
 
         return true;
     }

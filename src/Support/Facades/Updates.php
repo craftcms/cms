@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static bool isUpdateInfoCached()
+ * @method static void reset()
  * @method static int totalAvailableUpdates(bool $check = false)
  * @method static bool isCriticalUpdateAvailable(bool $check = false)
  * @method static \CraftCms\Cms\Update\Data\Updates getUpdates(bool $refresh = false)

@@ -19,6 +19,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -268,7 +269,8 @@ class Api
         $duration = now()->addYear();
         if (isset($headers['x-craft-allow-trials'])) {
             $cacheKey = sprintf('editionTestableDomain@%s', request()->host());
-            $this->cache->put($cacheKey, (int) reset($headers['x-craft-allow-trials']), $duration);
+            // Through the memoized cache, which Edition::canTest() reads
+            Cache::memo()->put($cacheKey, (int) reset($headers['x-craft-allow-trials']), $duration);
         }
 
         // did we just get a new license key?
@@ -313,7 +315,7 @@ class Api
 
         // license info
         if (isset($headers['x-craft-license-info'])) {
-            $oldLicenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
+            $oldLicenseInfo = $this->license->info() ?? [];
             $licenseInfo = [];
             $allCombinedInfo = array_filter(explode(',', reset($headers['x-craft-license-info'])));
             foreach ($allCombinedInfo as $combinedInfo) {
@@ -361,7 +363,7 @@ class Api
                 ];
             }
 
-            $this->cache->put(License::CACHE_KEY_LICENSE_INFO, $licenseInfo, $duration);
+            $this->license->putInfo($licenseInfo, $duration);
             if ($this->app->runningInConsole()) {
                 $this->cache->forget(License::CACHE_KEY_LICENSE_INFO_HOST);
             } else {

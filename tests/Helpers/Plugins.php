@@ -8,7 +8,6 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Tests\TestClasses\TestPlugin\src\TestPlugin;
-use Illuminate\Support\Facades\Cache;
 
 function loadTestPlugin(): void
 {
@@ -55,9 +54,10 @@ function loadTestPlugin(): void
         ],
     ]);
 
-    Cache::put(License::CACHE_KEY_LICENSE_INFO, array_replace(Cache::get(License::CACHE_KEY_LICENSE_INFO, []), [
+    $license = app(License::class);
+    $license->putInfo(array_replace($license->info() ?? [], [
         'plugin-test-plugin' => ['id' => null, 'edition' => 'pro', 'status' => LicenseKeyStatus::Trial->value],
-    ]));
+    ]), now()->addYear());
 
     $reflectionClass->getProperty('pluginsLoaded')->setValue($plugins, true);
 }

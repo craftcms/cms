@@ -18,6 +18,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Route\ProjectConfigRoutes;
 use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Support\Template;
+use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\View\TemplateMode;
 use CraftCms\Cms\View\TemplateRoots;
 use Illuminate\Contracts\Foundation\Application;
@@ -70,5 +71,10 @@ class PrepareCraftForNextOperation
         $app->make(ImageTransforms::class)->reset();
         Cms::setDefaultTimezone();
         $app->make(ProjectConfigRoutes::class)->refresh();
+
+        // The cached update info may have expired, or another process may have refreshed it.
+        if ($app->resolved(Updates::class)) {
+            $app->make(Updates::class)->reset();
+        }
     }
 }

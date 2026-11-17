@@ -63,7 +63,6 @@ use CraftCms\Cms\User\Events\UserUnsuspending;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Notifications\ActivationNotification;
 use CraftCms\Cms\User\Validation\UserRules;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -354,17 +353,11 @@ class Users
         $changes = UserAccountTransition::RemoveCredentials->changes($userModel);
         $userModel->forceFill($changes);
 
-        $indexAttributesChanged = $userModel->haveIndexAttributesChanged();
-
         if (! $userModel->save()) {
             throw new InvalidElementException($user);
         }
 
         $this->applyUserChanges($user, $changes);
-
-        if ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
-        }
     }
 
     /**
@@ -542,12 +535,8 @@ class Users
             $changes['lastLoginAttemptIp'] = request()->ip();
         }
 
-        $indexAttributesChanged = $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes);
+        $this->saveUserChanges($user, UserModel::findOrFail($user->id), $changes);
         $this->applyUserChanges($user, $changes);
-
-        if ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
-        }
     }
 
     /**
@@ -561,7 +550,7 @@ class Users
         $this->unlockIfCooldownEnded($user);
 
         // Lock the row while counting, so parallel failed attempts can't each read the same count
-        [$changes, $alreadyLocked, $indexAttributesChanged] = DB::transaction(function () use ($user): array {
+        [$changes, $alreadyLocked] = DB::transaction(function () use ($user): array {
             $userModel = UserModel::query()->lockForUpdate()->findOrFail($user->id);
             $now = now('UTC');
             $changes = ['lastInvalidLoginDate' => $now];
@@ -586,17 +575,15 @@ class Users
                 }
             }
 
-            return [$changes, $alreadyLocked, $this->saveUserChanges($user, $userModel, $changes)];
+            $this->saveUserChanges($user, $userModel, $changes);
+
+            return [$changes, $alreadyLocked];
         });
 
         $this->applyUserChanges($user, $changes);
 
         if (! $alreadyLocked && $user->locked) {
             event(new UserLocked($user));
-        }
-
-        if ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
         }
     }
 
@@ -620,14 +607,10 @@ class Users
         $this->validateUserChanges($user, $changes);
         $changes += $this->emailVerificationChanges($user);
 
-        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, $userModel, $changes));
+        DB::transaction(fn () => $this->saveUserChanges($user, $userModel, $changes));
         $this->applyUserChanges($user, $changes);
 
         event(new UserActivated($user));
-
-        if ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
-        }
     }
 
     /**
@@ -646,13 +629,9 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $indexAttributesChanged = $this->transitionUser($user, UserAccountTransition::Deactivate);
+        $this->transitionUser($user, UserAccountTransition::Deactivate);
 
         event(new UserDeactivated($user));
-
-        if ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
-        }
     }
 
     /**
@@ -667,14 +646,12 @@ class Users
         $userModel = UserModel::findOrFail($user->id);
         $changes = $this->emailVerificationChanges($user);
         $this->ensureCredentialsAvailable($user, $changes);
-        $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
+        $this->saveUserChanges($user, $userModel, $changes);
         $this->applyUserChanges($user, $changes);
 
         // If the user status is pending, let's activate them.
         if ($userModel->pending) {
             $this->activateUser($user);
-        } elseif ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
         }
     }
 
@@ -704,13 +681,9 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $indexAttributesChanged = $this->transitionUser($user, UserAccountTransition::Unlock);
+        $this->transitionUser($user, UserAccountTransition::Unlock);
 
         event(new UserUnlocked($user));
-
-        if ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
-        }
     }
 
     /**
@@ -728,7 +701,7 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $indexAttributesChanged = $this->transitionUser($user, UserAccountTransition::Suspend);
+        $this->transitionUser($user, UserAccountTransition::Suspend);
 
         // Destroy all sessions for this user
         DB::table(Table::SESSIONS)
@@ -736,10 +709,6 @@ class Users
             ->delete();
 
         event(new UserSuspended($user));
-
-        if ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
-        }
     }
 
     /**
@@ -754,17 +723,13 @@ class Users
 
     /**
      * Saves a transition's changes to the user's row and element.
-     *
-     * @return bool whether any attributes shown in element indexes changed
      */
-    private function transitionUser(User $user, UserAccountTransition $transition): bool
+    private function transitionUser(User $user, UserAccountTransition $transition): void
     {
         $userModel = UserModel::findOrFail($user->id);
         $changes = $transition->changes($userModel);
-        $indexAttributesChanged = DB::transaction(fn () => $this->saveUserChanges($user, $userModel, $changes));
+        DB::transaction(fn () => $this->saveUserChanges($user, $userModel, $changes));
         $this->applyUserChanges($user, $changes);
-
-        return $indexAttributesChanged;
     }
 
     /** @param array<string, mixed> $changes */
@@ -788,17 +753,14 @@ class Users
     }
 
     /** @param array<string, mixed> $changes */
-    private function saveUserChanges(User $user, UserModel $model, array $changes): bool
+    private function saveUserChanges(User $user, UserModel $model, array $changes): void
     {
         $model->forceFill($changes);
-        $indexAttributesChanged = $model->haveIndexAttributesChanged();
 
         if (! $model->save()) {
             $user->errors()->add('user', t('Couldn’t save user.'));
             throw new InvalidElementException($user);
         }
-
-        return $indexAttributesChanged;
     }
 
     /** @param array<string, mixed> $changes */
@@ -904,13 +866,9 @@ class Users
             throw new InvalidElementException($user);
         }
 
-        $indexAttributesChanged = $this->transitionUser($user, UserAccountTransition::Unsuspend);
+        $this->transitionUser($user, UserAccountTransition::Unsuspend);
 
         event(new UserUnsuspended($user));
-
-        if ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
-        }
     }
 
     /**
@@ -984,12 +942,8 @@ class Users
         $broker = Password::broker(Cms::config()->getAuthPasswordBroker());
         $token = $broker->createToken($user);
 
-        $indexAttributesChanged = $this->saveUserChanges($user, $userModel, $changes);
+        $this->saveUserChanges($user, $userModel, $changes);
         $this->applyUserChanges($user, $changes);
-
-        if ($indexAttributesChanged) {
-            $this->invalidateIndexCaches();
-        }
 
         return $token;
     }
@@ -1117,8 +1071,6 @@ class Users
             removedGroupIds: $removedGroupIds,
             newGroupIds: $newGroupIds,
         ));
-
-        $this->invalidateIndexCaches();
 
         return true;
     }
@@ -1330,10 +1282,5 @@ class Users
         $maxUsers = $this->getMaxUsers(Edition::get());
 
         return ! $maxUsers || $maxUsers > User::find()->status(null)->count();
-    }
-
-    private function invalidateIndexCaches(): void
-    {
-        TagDependency::invalidate(sprintf('element-index-query::%s', User::class));
     }
 }

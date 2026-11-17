@@ -54,6 +54,8 @@ it('can check if update info is cached', function () {
 
     Cache::forget(Updates::class);
 
+    $this->updates->reset();
+
     expect($this->updates->isUpdateInfoCached())->toBe(false);
 
     $this->updates->cacheUpdates(new UpdatesData);

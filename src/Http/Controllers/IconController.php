@@ -105,8 +105,8 @@ readonly class IconController
         // Craft 5 cached for its own picker.
         $cacheKey = sprintf('icon-picker-options-icons%s', $freeOnly ? ':free' : '');
 
-        if (! $searchTerms && DependencyCache::has($cacheKey)) {
-            return DependencyCache::get($cacheKey);
+        if (! $searchTerms && ($cached = DependencyCache::get($cacheKey)) !== null) {
+            return $cached;
         }
 
         $indexPath = CmsAssets::resourcesPath('icons/index.php');

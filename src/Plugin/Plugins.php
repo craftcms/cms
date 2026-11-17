@@ -37,7 +37,6 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
@@ -118,7 +117,6 @@ class Plugins
 
     /** @param array<string, array<string, mixed>>|null $composerPlugins */
     public function __construct(
-        private readonly Repository $cache,
         private readonly Application $app,
         Filesystem $files,
         GeneralConfig $generalConfig,
@@ -245,8 +243,7 @@ class Plugins
         }
 
         if ($anyVersionsChanged) {
-            // Clear the license info cache
-            $this->cache->forget(License::CACHE_KEY_LICENSE_INFO);
+            app(License::class)->forgetInfo();
         }
 
         $this->plugins = $plugins;
@@ -842,8 +839,7 @@ class Plugins
             message: "Update plugin schema version for “{$plugin->handle}”",
         );
 
-        // Clear the license info cache
-        $this->cache->forget(License::CACHE_KEY_LICENSE_INFO);
+        app(License::class)->forgetInfo();
     }
 
     /**
@@ -1220,8 +1216,7 @@ class Plugins
             }
         }
 
-        // Clear the license info cache
-        $this->cache->forget(License::CACHE_KEY_LICENSE_INFO);
+        app(License::class)->forgetInfo();
 
         return true;
     }
@@ -1271,8 +1266,7 @@ class Plugins
     /** @return (LicenseInfo&array{status: string})|null */
     private function getPluginLicenseInfo(string $handle): ?array
     {
-        /** @var array<string, LicenseInfo> $licenseInfo */
-        $licenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
+        $licenseInfo = app(License::class)->info() ?? [];
         $info = $licenseInfo[Str::start($handle, 'plugin-')] ?? null;
 
         if ($info !== null && $info['status'] instanceof LicenseKeyStatus) {

@@ -24,7 +24,6 @@ use CraftCms\Cms\View\LegacyReadyShim;
 use CraftCms\Cms\View\LegacyScreenFragments;
 use DateTimeInterface;
 use Deprecated;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use Stringable;
@@ -128,7 +127,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return ! is_null(Cache::get(License::CACHE_KEY_LICENSE_INFO));
+        return app(License::class)->info() !== null;
     }
 
     /**

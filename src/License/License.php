@@ -21,6 +21,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\Elements\User;
+use DateTimeInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 
@@ -81,6 +82,38 @@ readonly class License
     }
 
     /**
+     * Returns the license info from the last Craft API response, indexed by `craft` and `plugin-{handle}`, or `null`
+     * if none is cached.
+     *
+     * It's memoized for the request, as each control panel request checks it several times, so write it with
+     * {@see putInfo()} and {@see forgetInfo()}.
+     *
+     * @return array<string, LicenseInfo>|null
+     */
+    public function info(): ?array
+    {
+        return Cache::memo()->get(self::CACHE_KEY_LICENSE_INFO);
+    }
+
+    /**
+     * Caches the license info from a Craft API response.
+     *
+     * @param  array<string, LicenseInfo>  $info
+     */
+    public function putInfo(array $info, DateTimeInterface $expiry): void
+    {
+        Cache::memo()->put(self::CACHE_KEY_LICENSE_INFO, $info, $expiry);
+    }
+
+    /**
+     * Clears the cached license info, such as after Craft or a plugin is updated.
+     */
+    public function forgetInfo(): void
+    {
+        Cache::memo()->forget(self::CACHE_KEY_LICENSE_INFO);
+    }
+
+    /**
      * Returns the license_shun cookie name.
      */
     public function shunCookieName(): string
@@ -133,21 +166,20 @@ readonly class License
             'wrong_edition',
         ];
 
-        $isInfoCached = Cache::has(self::CACHE_KEY_LICENSE_INFO) && app(Updates::class)->isUpdateInfoCached();
+        $allLicenseInfo = $this->info();
 
-        if (! $isInfoCached) {
+        if ($allLicenseInfo === null || ! app(Updates::class)->isUpdateInfoCached()) {
             if (! $fetch) {
                 return [];
             }
 
             app(Updates::class)->getUpdates(true);
+            $allLicenseInfo = $this->info();
         }
 
         $issues = [];
 
-        $allLicenseInfo = Cache::get(self::CACHE_KEY_LICENSE_INFO, []);
-
-        foreach ($allLicenseInfo as $handle => $licenseInfo) {
+        foreach ($allLicenseInfo ?? [] as $handle => $licenseInfo) {
             $licenseData = $this->getLicenseData($handle, $licenseInfo);
 
             if (! $licenseData) {

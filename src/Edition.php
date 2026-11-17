@@ -64,7 +64,7 @@ enum Edition: int implements Arrayable
      */
     public static function getLicensed(): ?self
     {
-        $licenseInfo = Cache::get(License::CACHE_KEY_LICENSE_INFO, []);
+        $licenseInfo = app(License::class)->info();
 
         if (! isset($licenseInfo['craft']['edition'])) {
             return null;
@@ -114,7 +114,8 @@ enum Edition: int implements Arrayable
 
         $cacheKey = sprintf('editionTestableDomain@%s', Request::host());
 
-        return (bool) Cache::get($cacheKey, true);
+        // Checked more than once per control panel request, so it's memoized for the request
+        return (bool) Cache::memo()->get($cacheKey, true);
     }
 
     public static function canUpgrade(): bool

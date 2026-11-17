@@ -729,9 +729,9 @@ it('reads refreshed plugin license metadata after production hydration', functio
     Cache::put('editionTestableDomain@'.request()->host(), $canTest);
 
     foreach ([['valid', 'standard', []], ['invalid', null, ['invalid']], ['trial', 'standard', ['required']], ['mismatched', 'pro', ['wrong_edition', 'mismatched']], ['astray', 'standard', ['astray']], ['valid', 'pro', ['wrong_edition']], ['unknown', null, []]] as [$status, $edition, $issues]) {
-        Cache::put(License::CACHE_KEY_LICENSE_INFO, [
+        app(License::class)->putInfo([
             'plugin-test-plugin' => ['id' => 123, 'edition' => $edition, 'status' => $status],
-        ]);
+        ], now()->addDay());
         $issues = $canTest ? array_values(array_diff($issues, ['wrong_edition', 'required'])) : $issues;
         $info = $this->plugins->getPluginInfo('test-plugin');
 

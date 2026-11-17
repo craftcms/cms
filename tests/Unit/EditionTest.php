@@ -82,11 +82,13 @@ it('reports capabilities from the receiver', function (Edition $edition, Edition
 it('can get the current licensed edition', function () {
     expect(Edition::getLicensed())->toBeNull();
 
-    Cache::put(License::CACHE_KEY_LICENSE_INFO, [
+    app(License::class)->putInfo([
         'craft' => [
+            'id' => 1,
             'edition' => 'team',
+            'status' => 'valid',
         ],
-    ]);
+    ], now()->addDay());
 
     expect(Edition::getLicensed())->toBe(Edition::Team);
 });
@@ -120,11 +122,11 @@ it('can determine if the edition can be tested', function () {
 
     expect(Edition::canTest())->toBeTrue();
 
-    Cache::put($cacheKey, null);
+    Cache::memo()->put($cacheKey, null);
 
     expect(Edition::canTest())->toBeTrue();
 
-    Cache::put($cacheKey, false);
+    Cache::memo()->put($cacheKey, false);
 
     expect(Edition::canTest())->toBeFalse();
 

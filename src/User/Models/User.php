@@ -103,24 +103,6 @@ class User extends BaseModel implements CraftUser, OAuthenticatable
 
     protected function setUidAttribute(?string $value): void {}
 
-    public function haveIndexAttributesChanged(): bool
-    {
-        return $this->isDirty([
-            'username',
-            'fullName',
-            'firstName',
-            'lastName',
-            'email',
-            'admin',
-            'active',
-            'pending',
-            'locked',
-            'suspended',
-            'lastLoginDate',
-            'photoId',
-        ]);
-    }
-
     #[Override]
     protected function newBaseQueryBuilder(): Builder
     {
