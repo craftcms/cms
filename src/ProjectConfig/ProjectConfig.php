@@ -305,6 +305,7 @@ class ProjectConfig
         $this->roots = [];
         $this->external = null;
         $this->original = null;
+        $this->storage->reset();
         $this->changes = [];
         $this->persistedChanges = 0;
         $this->loggedChanges = 0;

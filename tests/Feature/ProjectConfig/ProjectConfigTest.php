@@ -195,7 +195,7 @@ it('reloads a cached key after another process changes the config or the key is 
         ->and($projectConfig->get()['system']['name'])->toBe('After');
 })->with(['config changed' => false, 'key evicted' => true]);
 
-it('stamps a rebuilt cache with the stored config version when another process changed it mid-request', function () {
+it('rebuilds the cache once, with the stored config version, when another process changed it mid-request', function () {
     $projectConfig = app(ProjectConfig::class);
     Cache::forget(ProjectConfig::STORED_CACHE_KEY);
     $projectConfig->reset();
@@ -203,11 +203,22 @@ it('stamps a rebuilt cache with the stored config version when another process c
 
     // Another process saves a change, so this request's config version is now out of date.
     $newVersion = Str::random(12);
-    DB::table(Table::PROJECTCONFIG)->insert(['path' => 'laterRoot.value', 'value' => '"New"']);
+    DB::table(Table::PROJECTCONFIG)->insert([
+        ['path' => 'laterRoot.value', 'value' => '"New"'],
+        ['path' => 'otherRoot.value', 'value' => '"Other"'],
+    ]);
     DB::table(Table::INFO)->update(['configVersion' => $newVersion]);
     Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+    $rebuilds = 0;
+    DB::listen(function ($query) use (&$rebuilds) {
+        if (str_contains($query->sql, Table::PROJECTCONFIG)) {
+            $rebuilds++;
+        }
+    });
 
     expect($projectConfig->get('laterRoot.value'))->toBe('New')
+        ->and($projectConfig->get('otherRoot.value'))->toBe('Other')
+        ->and($rebuilds)->toBe(1)
         ->and(Cache::get(ProjectConfig::STORED_CACHE_KEY)['version'])->toBe($newVersion);
 });
 
