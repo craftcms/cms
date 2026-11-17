@@ -339,7 +339,7 @@ class ImageTransformHelper
     public static function storeLocalSource(string $source, string $destination = ''): void
     {
         if (! $destination) {
-            $source = $destination;
+            $destination = $source;
         }
 
         $maxCachedImageSize = Cms::config()->maxCachedCloudImageSize;

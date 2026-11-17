@@ -19,6 +19,7 @@ use CraftCms\Cms\Field\ContentBlock;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Exceptions\FieldNotFoundException;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -912,6 +913,7 @@ class ElementSources
                                 // The handle was overridden, so it gets its own table attribute
                                 $attributes["fieldInstance:$layoutElement->uid"] = [
                                     'label' => t($layoutElement->label(), category: 'site'),
+                                    'align' => $field instanceof Field ? $field->tableAttributeAlignment() : 'start',
                                 ];
                             }
                         }
@@ -933,6 +935,7 @@ class ElementSources
             $labels = array_unique(array_map(fn (CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
             $attributes["field:$field->uid"] = [
                 'label' => count($labels) === 1 ? $labels[0] : t($field->name, category: 'site'),
+                'align' => $field instanceof Field ? $field->tableAttributeAlignment() : 'start',
             ];
         }
 

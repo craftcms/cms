@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Support\Facades\HtmlStack;
+use CraftCms\Cms\View\CacheCollectors\DependencyCollector;
 use CraftCms\Cms\View\TemplateManager;
+use Twig\Error\RuntimeError;
 
 beforeEach(function () {
     $this->manager = app(TemplateManager::class);
@@ -46,4 +49,22 @@ it('caches global content keyed by its template location', function () {
 
     expect(trim((string) $result1))->toBe('Hello')
         ->and(trim((string) $result2))->toBe('Hello');
+});
+
+it('closes its cache frame when the body throws', function () {
+    $boom = new class
+    {
+        public function go(): string
+        {
+            throw new RuntimeException('Boom');
+        }
+    };
+
+    expect(fn () => $this->manager->renderString('{% cache globally %}{{ boom.go() }}{% endcache %}', ['boom' => $boom]))
+        ->toThrow(RuntimeError::class);
+
+    HtmlStack::html('<p>registered after</p>');
+
+    expect(app(DependencyCollector::class)->isCollecting())->toBeFalse()
+        ->and(HtmlStack::bodyHtml())->toContain('<p>registered after</p>');
 });

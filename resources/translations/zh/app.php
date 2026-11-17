@@ -1294,6 +1294,7 @@ return [
     'Composer was unable to install the updates.' => '编辑器无法安装更新。',
     'Composer was unable to remove the plugin.' => '编辑器无法删除插件。',
     'Composer was unable to revert the updates.' => '编辑器无法恢复更新。',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => '已压缩',
     'Condition {num, number}' => '条件 {num, number}',
     'Configure the category group’s site-specific settings.' => '配置分类群组基于站点的特别设置。',

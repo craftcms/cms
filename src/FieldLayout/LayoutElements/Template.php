@@ -132,23 +132,19 @@ class Template extends BaseUiElement
                 ->width($this->width);
         }
 
-        $templateMode = TemplateMode::get();
-        TemplateMode::set(TemplateMode::Site);
-        $twig = Twig::get();
-        Twig::set(self::twig());
-
         try {
-            $fragment = HtmlStack::capture(fn (): string => trim(template($this->template, [
-                'element' => $context->element,
-                'static' => true,
-            ], templateMode: TemplateMode::from($this->templateMode))));
+            $fragment = TemplateMode::with(TemplateMode::Site, fn () => Twig::with(
+                self::twig(),
+                TemplateMode::Site,
+                fn () => HtmlStack::capture(fn (): string => trim(template($this->template, [
+                    'element' => $context->element,
+                    'static' => true,
+                ], templateMode: TemplateMode::from($this->templateMode)))),
+            ));
         } catch (Throwable $exception) {
             return Callout::make($this->uid, $exception->getMessage())
                 ->variant('danger')
                 ->width($this->width);
-        } finally {
-            Twig::set($twig);
-            TemplateMode::set($templateMode);
         }
 
         if ($fragment->html === '') {

@@ -823,6 +823,20 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
     }
 
     /**
+     * Returns how the field's column should be aligned in element index tables.
+     *
+     * Fields whose values are quantities, such as amounts, counts and measurements, return `end`, so the digits
+     * of their values line up and can be compared down the column. Everything else, including numeric codes,
+     * reads like text and returns `start`.
+     *
+     * @return 'start'|'end'
+     */
+    public function tableAttributeAlignment(): string
+    {
+        return 'start';
+    }
+
+    /**
      * @see SortableFieldInterface::getSortOption()
      */
     /** @return array{label:string, orderBy:string|Expression|null, attribute:string} */
