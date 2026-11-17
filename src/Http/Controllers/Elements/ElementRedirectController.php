@@ -42,9 +42,11 @@ readonly class ElementRedirectController
             return $element;
         }
 
+        abort_if(is_null($element), 404, 'No element was identified by the request.');
+
         $url = $element->getCpEditUrl();
 
-        abort_if(! $url, 500, 'The element doesn’t have an edit page.');
+        abort_if(! $url, 404, 'The element doesn’t have an edit page.');
 
         $editUrl = Url::removeParam(Url::cpUrl('edit'), 'site');
 

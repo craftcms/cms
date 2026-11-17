@@ -15,6 +15,7 @@ use CraftCms\Cms\Mcp\Events\ElementSerializing;
 use CraftCms\Cms\Mcp\McpActor;
 use CraftCms\Cms\Mcp\McpOutputContext;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
 use Illuminate\Support\Facades\Gate;
 use Mcp\Exception\ToolCallException;
@@ -138,6 +139,13 @@ class ElementSerializer
         array $nestedPaths,
     ): array {
         $data ??= ['type' => $element::class, ...$element->toArray($element->attributes())];
+
+        // MCP clients have no page to resolve a root-relative URL against, such as the URL of an asset in a volume whose
+        // URL is `/uploads`
+        if (is_string($data['url'] ?? null)) {
+            $data['url'] = Url::absoluteUrl($data['url'], $element->getSite()->getBaseUrl());
+        }
+
         $serializeNested ??= $this->defaultNestedSerializer($public);
         $requested = $fields !== null ? $this->parsePaths($fields) : null;
         $nested = $this->parsePaths($nestedPaths);

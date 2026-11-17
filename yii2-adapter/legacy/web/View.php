@@ -1992,7 +1992,13 @@ class View extends \yii\web\View
      */
     protected function renderHeadHtml(): string
     {
-        return $this->registry()->headHtml(clear: false);
+        $html = $this->registry()->headHtml(clear: false);
+
+        if (!empty($this->title)) {
+            $html = '<title>' . e($this->title) . '</title>' . $html;
+        }
+
+        return $html;
     }
 
     /**

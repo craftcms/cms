@@ -17,6 +17,20 @@ use Laravel\Ai\Streaming\Protocols\AgentUserInteractionProtocol;
  */
 class AssistantStreamProtocol extends AgentUserInteractionProtocol
 {
+    /**
+     * Marks the results of tool calls that failed as errors, which TanStack AI’s client reads from `state`, as
+     * {@see Transcript} does when the conversation is shown again.
+     *
+     * @return array<string, mixed>
+     */
+    #[\Override]
+    protected function toolResultPart(ToolResult $event): array
+    {
+        $part = parent::toolResultPart($event);
+
+        return ! $event->successful && ! $event->denied ? [...$part, 'state' => 'output-error'] : $part;
+    }
+
     #[\Override]
     protected function toolResultContent(ToolResult $event): string
     {

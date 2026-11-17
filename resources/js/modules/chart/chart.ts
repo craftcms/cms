@@ -267,6 +267,21 @@ export class Area extends BaseChart {
     margin: {top: 25, right: 5, bottom: 25, left: 0},
     plots: true,
     tips: true,
+    /** Whether to label the axes with ticks. */
+    ticks: true,
+    /** The line's width, in pixels. */
+    lineWidth: 3,
+    /** `smooth` curves the line through the points, rather than joining them with straight segments. */
+    curve: 'linear',
+    /** `gradient` fades the area from the line down to transparent, rather than filling it evenly. */
+    fill: 'solid',
+    /** Fades the line and area out toward the chart's sides, in pixels; 0 for none. */
+    fadeEdges: 0,
+    /**
+     * Returns a tooltip's text, given the value's date and number, in place
+     * of the formatted date and value on two lines. `null` for the default.
+     */
+    tipText: null,
     xAxis: {
       gridlines: false,
       showAxis: true,
@@ -326,7 +341,10 @@ export class Area extends BaseChart {
       .attr('transform', `translate(${svg.translateX},${svg.translateY})`);
 
     // Draw elements
-    this.drawTicks();
+    if (this.settings.ticks) {
+      this.drawTicks();
+    }
+
     this.drawAxes();
     this.drawChart();
     this.drawTipTriggers();
@@ -445,37 +463,109 @@ export class Area extends BaseChart {
         );
     }
 
+    // Monotone, so the curve never dips below zero or overshoots a point
+    const curve =
+      this.settings.curve === 'smooth' ? d3.curveMonotoneX : d3.curveLinear;
+
     // Line
     const line = d3
       .line()
+      .curve(curve)
       .x((d: any) => x(d[0]))
       .y((d: any) => y(d[1]));
 
-    this.drawingArea
-      .append('g')
-      .attr('class', 'chart-line')
+    const lineGroup = this.drawingArea.append('g').attr('class', 'chart-line');
+    lineGroup
       .append('path')
       .datum(this.dataTable.rows)
       .style('fill', 'none')
       .style('stroke', this.settings.colors[0])
-      .style('stroke-width', '3px')
+      .style('stroke-width', `${this.settings.lineWidth}px`)
       .attr('d', line);
 
     // Area
     const area = d3
       .area()
+      .curve(curve)
       .x((d: any) => x(d[0]))
       .y0(this.height)
       .y1((d: any) => y(d[1]));
 
-    this.drawingArea
-      .append('g')
-      .attr('class', 'chart-area')
+    const areaGroup = this.drawingArea.append('g').attr('class', 'chart-area');
+    const areaPath = areaGroup
       .append('path')
       .datum(this.dataTable.rows)
-      .style('fill', this.settings.colors[0])
-      .style('fill-opacity', '0.3')
       .attr('d', area);
+
+    if (this.settings.fill === 'gradient') {
+      const id = `cp-chart-fill-${++gradientCount}`;
+      const gradient = this.svg
+        .append('defs')
+        .append('linearGradient')
+        .attr('id', id)
+        .attr('x1', 0)
+        .attr('y1', 0)
+        .attr('x2', 0)
+        .attr('y2', 1);
+
+      for (const [offset, opacity] of [
+        [0, 0.12],
+        [1, 0],
+      ]) {
+        gradient
+          .append('stop')
+          .attr('offset', offset)
+          .style('stop-color', this.settings.colors[0])
+          .style('stop-opacity', opacity);
+      }
+
+      areaPath.style('fill', `url(#${id})`);
+    } else {
+      areaPath
+        .style('fill', this.settings.colors[0])
+        .style('fill-opacity', '0.3');
+    }
+
+    if (this.settings.fadeEdges > 0 && this.width > 0) {
+      const maskId = `cp-chart-fade-${++gradientCount}`;
+      const fade = Math.min(0.5, this.settings.fadeEdges / this.width);
+      const defs = this.svg.append('defs');
+      const gradient = defs
+        .append('linearGradient')
+        .attr('id', `${maskId}-gradient`);
+
+      for (const [offset, opacity] of [
+        [0, 0],
+        [fade, 1],
+        [1 - fade, 1],
+        [1, 0],
+      ]) {
+        gradient
+          .append('stop')
+          .attr('offset', offset)
+          .attr('stop-color', 'white')
+          .attr('stop-opacity', opacity);
+      }
+
+      // Tall enough for the line's stroke above and below the plot
+      defs
+        .append('mask')
+        .attr('id', maskId)
+        .attr('maskUnits', 'userSpaceOnUse')
+        .attr('x', 0)
+        .attr('y', -this.height)
+        .attr('width', this.width)
+        .attr('height', this.height * 3)
+        .append('rect')
+        .attr('x', 0)
+        .attr('y', -this.height)
+        .attr('width', this.width)
+        .attr('height', this.height * 3)
+        .attr('fill', `url(#${maskId}-gradient)`);
+
+      lineGroup.attr('mask', `url(#${maskId})`);
+      areaGroup.attr('mask', `url(#${maskId})`);
+    }
 
     // Plots
     if (this.settings.plots) {
@@ -491,6 +581,15 @@ export class Area extends BaseChart {
         .attr('r', 4)
         .attr('cx', (d: any) => x(d[0]))
         .attr('cy', (d: any) => y(d[1]));
+    } else if (this.settings.tips) {
+      // Without plots, a single one marks the hovered value
+      this.drawingArea
+        .append('circle')
+        .attr('class', 'hover-plot')
+        .attr('r', 4)
+        .style('fill', this.settings.colors[0])
+        .style('pointer-events', 'none')
+        .style('display', 'none');
     }
   }
 
@@ -506,11 +605,12 @@ export class Area extends BaseChart {
     // Define xAxisTickInterval
     const chartMargin = this.getChartMargin();
     const tickSizeOuter = 6;
+    // Without an x axis, the drawing's width is what its domain path spans
+    const domainLength =
+      this.drawingArea.select('.x path.domain').node()?.getTotalLength() ??
+      this.width + tickSizeOuter * 2;
     const length =
-      this.drawingArea.select('.x path.domain').node().getTotalLength() -
-      chartMargin.left -
-      chartMargin.right -
-      tickSizeOuter * 2;
+      domainLength - chartMargin.left - chartMargin.right - tickSizeOuter * 2;
     const xAxisTickInterval = length / (this.dataTable.rows.length - 1);
 
     // Tip trigger width
@@ -542,16 +642,29 @@ export class Area extends BaseChart {
 
         // Expand plot
         this.drawingArea.select('.plot-' + index).attr('r', 5);
+        this.drawingArea
+          .select('.hover-plot')
+          .attr('cx', x(dataValue[0]))
+          .attr('cy', y(dataValue[1]))
+          .style('display', null);
 
         // Set tip content
         const content = document.createElement('div');
-        const xValue = document.createElement('div');
-        xValue.className = 'x-value';
-        xValue.innerHTML = this.getXFormatter()(dataValue[0]);
-        const yValue = document.createElement('div');
-        yValue.className = 'y-value';
-        yValue.innerHTML = this.getYFormatter()(dataValue[1]);
-        content.append(xValue, yValue);
+
+        if (typeof this.settings.tipText === 'function') {
+          content.textContent = this.settings.tipText(
+            dataValue[0],
+            dataValue[1]
+          );
+        } else {
+          const xValue = document.createElement('div');
+          xValue.className = 'x-value';
+          xValue.innerHTML = this.getXFormatter()(dataValue[0]);
+          const yValue = document.createElement('div');
+          yValue.className = 'y-value';
+          yValue.innerHTML = this.getYFormatter()(dataValue[1]);
+          content.append(xValue, yValue);
+        }
 
         this.tip.setContent(content);
 
@@ -562,8 +675,18 @@ export class Area extends BaseChart {
         this.tip.show();
 
         const offset = 24;
-        const top = y(dataValue[1]) + offset;
+        let top = y(dataValue[1]) + offset;
         let left;
+
+        // Above the value instead, when there isn't room for it below. Its
+        // whole height, padding and border included, has to fit.
+        const tipHeight = (this.tip.tip as HTMLElement).offsetHeight;
+        if (top + tipHeight > contentSize(this.chart!).height) {
+          top = Math.max(
+            0,
+            y(dataValue[1]) + margin.top - tipHeight - offset / 2
+          );
+        }
 
         if (this.orientation !== 'rtl') {
           left = x(dataValue[0]) + margin.left + offset;
@@ -592,6 +715,7 @@ export class Area extends BaseChart {
 
         // Unexpand Plot
         this.drawingArea.select('.plot-' + index).attr('r', 4);
+        this.drawingArea.select('.hover-plot').style('display', 'none');
 
         // Hide tip
         this.tip.hide();
@@ -600,6 +724,10 @@ export class Area extends BaseChart {
 
   getChartMargin(): any {
     const margin = this.settings.margin;
+
+    if (!this.settings.ticks) {
+      return margin;
+    }
 
     // Estimate the max width of y ticks and set it as the left margin
     const values = this.getYTickValues();
@@ -693,6 +821,9 @@ export class Area extends BaseChart {
     return [0, maxValue];
   }
 }
+
+/** Numbers the gradient fills, so each chart's ID is unique on the page. */
+let gradientCount = 0;
 
 /** The formatter sentinel (legacy `$.noop`) — a no-op used as the default. */
 function NOOP(): void {}

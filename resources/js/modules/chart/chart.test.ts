@@ -81,3 +81,71 @@ it('stops redrawing on window resize once destroyed, leaving other charts be', (
   expect(resizes[0]).toHaveBeenCalledOnce();
   expect(resizes[1]).not.toHaveBeenCalled();
 });
+
+it('draws only the line and area without axes, still with a tooltip trigger per value', () => {
+  const container = document.createElement('div');
+  document.body.append(container);
+  const chart = new Area(container, {orientation: 'ltr'});
+
+  chart.draw(new DataTable(data()), {
+    orientation: 'ltr',
+    ticks: false,
+    plots: false,
+    xAxis: {showAxis: false},
+    yAxis: {gridlines: false},
+    fadeEdges: 16,
+  });
+
+  expect(container.querySelector('.chart-line path')).not.toBeNull();
+  // The line and area fade out toward the sides
+  const mask = container.querySelector('.chart-line')!.getAttribute('mask');
+  expect(mask).toMatch(/^url\(#.+\)$/);
+  expect(container.querySelector('.chart-area')!.getAttribute('mask')).toBe(
+    mask
+  );
+  expect(
+    container.querySelectorAll(
+      '.ticks-axis, .axis, .grid-line, circle:not(.hover-plot)'
+    )
+  ).toHaveLength(0);
+  expect(container.querySelectorAll('.tip-trigger')).toHaveLength(2);
+});
+
+it('marks the hovered value with a plot when it draws none of its own', () => {
+  const container = document.createElement('div');
+  document.body.append(container);
+  const chart = new Area(container, {orientation: 'ltr'});
+  chart.draw(new DataTable(data()), {orientation: 'ltr', plots: false});
+  const marker = container.querySelector<SVGCircleElement>('.hover-plot')!;
+  const [first, second] = container.querySelectorAll('.tip-trigger');
+
+  expect(marker.style.display).toBe('none');
+
+  second!.dispatchEvent(new MouseEvent('mouseover'));
+  expect(marker.style.display).toBe('');
+  const secondX = marker.getAttribute('cx');
+  first!.dispatchEvent(new MouseEvent('mouseover'));
+  expect(marker.getAttribute('cx')).not.toBe(secondX);
+
+  first!.dispatchEvent(new MouseEvent('mouseout'));
+  expect(marker.style.display).toBe('none');
+});
+
+it('writes tooltips as text with the given function', () => {
+  const container = document.createElement('div');
+  document.body.append(container);
+  const chart = new Area(container, {orientation: 'ltr'});
+  chart.draw(new DataTable(data()), {
+    orientation: 'ltr',
+    tipText: (date: Date, value: number) =>
+      `<b>${date.getDate()}</b>: ${value}`,
+  });
+
+  container
+    .querySelectorAll('.tip-trigger')[1]!
+    .dispatchEvent(new MouseEvent('mouseover'));
+
+  const tip = container.querySelector('.tooltip')!;
+  expect(tip.textContent).toBe('<b>2</b>: 5');
+  expect(tip.querySelector('b')).toBeNull();
+});

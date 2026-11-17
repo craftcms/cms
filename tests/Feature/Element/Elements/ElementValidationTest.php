@@ -100,6 +100,35 @@ describe('Title validation', function () {
     });
 });
 
+describe('Repeated validation', function () {
+    test('validate() checks every attribute against current values after an earlier validation', function (?array $earlierNames) {
+        $entry = EntryModel::factory()->createElement();
+        $entry->validate($earlierNames);
+        $entry->title = '';
+
+        expect($entry->validate())->toBeFalse()
+            ->and($entry->errors()->has('title'))->toBeTrue();
+    })->with([
+        'after validating other attributes' => [['slug']],
+        'after validating all attributes' => [null],
+    ]);
+
+    test('a clone validates its own values in its original’s scenario', function () {
+        $original = EntryModel::factory()->createElement();
+        $original->ruleset->useScenario(ElementRules::SCENARIO_LIVE);
+        $original->validate();
+
+        $clone = clone $original;
+        $clone->title = '';
+        $clone->validate();
+        $original->validate();
+
+        expect($clone->errors()->has('title'))->toBeTrue()
+            ->and($clone->ruleset->getScenario())->toBe(ElementRules::SCENARIO_LIVE)
+            ->and($original->errors()->has('title'))->toBeFalse();
+    });
+});
+
 describe('Slug validation', function () {
     test('slug accepts valid characters', function () {
         $entry = EntryModel::factory()->createElement();

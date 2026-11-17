@@ -11,11 +11,11 @@ use craft\console\Controller;
 use craft\helpers\Console;
 
 /**
- * DEPRECATED. Use `db/restore` instead.
+ * DEPRECATED. Use `db:restore` instead.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.29
- * @deprecated in 3.6.0. Use the `db/restore` command instead.
+ * @deprecated in 3.6.0. Use the `db:restore` command instead.
  */
 class RestoreController extends Controller
 {
@@ -25,7 +25,7 @@ class RestoreController extends Controller
     public $defaultAction = 'db';
 
     /**
-     * DEPRECATED. Use `db/restore` instead.
+     * DEPRECATED. Use `db:restore` instead.
      *
      * @param string|null $path The path to the database backup file.
      * @return int

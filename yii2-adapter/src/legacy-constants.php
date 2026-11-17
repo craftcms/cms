@@ -13,6 +13,7 @@ class_alias(CraftCms\Yii2Adapter\Asset\Concerns\LegacyConstants::class, CraftCms
 class_alias(CraftCms\Yii2Adapter\Condition\Concerns\LegacyConstants::class, CraftCms\Cms\Condition\Concerns\LegacyConstants::class);
 class_alias(CraftCms\Yii2Adapter\Element\Concerns\LegacyConstants::class, CraftCms\Cms\Element\Concerns\LegacyConstants::class);
 class_alias(CraftCms\Yii2Adapter\Element\Concerns\LegacyNestedElementManager::class, CraftCms\Cms\Element\Concerns\LegacyNestedElementManager::class);
+class_alias(CraftCms\Yii2Adapter\Element\Queries\Concerns\LegacyConstants::class, CraftCms\Cms\Element\Queries\Concerns\LegacyConstants::class);
 class_alias(CraftCms\Yii2Adapter\Entry\Concerns\LegacyConstants::class, CraftCms\Cms\Entry\Concerns\LegacyConstants::class);
 class_alias(CraftCms\Yii2Adapter\Field\Concerns\LegacyFieldConstants::class, CraftCms\Cms\Field\Concerns\LegacyFieldConstants::class);
 class_alias(CraftCms\Yii2Adapter\Field\Elements\Concerns\LegacyConstants::class, CraftCms\Cms\Field\Elements\Concerns\LegacyConstants::class);

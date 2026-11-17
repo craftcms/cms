@@ -18,27 +18,37 @@ class ExcludeCsrfValidationForLegacyController
 
         $route = $this->resolveRoute($request);
 
-        if ($route === '') {
-            return $next($request);
+        if ($route !== '') {
+            $this->csrfExemptController($route)?->registerCsrfValidationExclusion();
         }
 
+        return $next($request);
+    }
+
+    /**
+     * Returns whether the legacy controller action for a route disables CSRF validation,
+     * either on the controller or from its `beforeAction()`.
+     */
+    public function disablesCsrfValidation(string $route): bool
+    {
+        return $this->csrfExemptController($route) !== null;
+    }
+
+    private function csrfExemptController(string $route): ?Controller
+    {
         $result = Craft::$app?->createController($route);
         $controller = is_array($result) ? $result[0] : null;
         $actionId = is_array($result) ? $result[1] : null;
 
         if (!$controller instanceof Controller) {
-            return $next($request);
+            return null;
         }
 
         if ($controller->enableCsrfValidation) {
             $this->prepareControllerAction($controller, $actionId);
         }
 
-        if (!$controller->enableCsrfValidation) {
-            $controller->registerCsrfValidationExclusion();
-        }
-
-        return $next($request);
+        return $controller->enableCsrfValidation ? null : $controller;
     }
 
     private function resolveRoute(Request $request): string

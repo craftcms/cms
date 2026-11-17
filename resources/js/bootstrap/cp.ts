@@ -1,4 +1,9 @@
-import {createInertiaApp, router, usePage} from '@inertiajs/vue3';
+import {
+  createInertiaApp,
+  http as inertiaHttp,
+  router,
+  usePage,
+} from '@inertiajs/vue3';
 import type {Page} from '@inertiajs/core';
 import {handleControlPanelLinks} from '@/common/inertia-links';
 import {observeExternalLinks} from '@craftcms/ui/utilities/external-links';
@@ -6,7 +11,11 @@ import type {DefineComponent} from 'vue';
 import {setTranslations, t} from '@craftcms/ui/utilities/translate';
 import {http} from '@craftcms/ui/utilities/api/http';
 import {setUrlDefaults} from '@/wayfinder';
-import {inertiaPageRegistry, resolveInertiaPage} from './inertia-pages.js';
+import {
+  inertiaPageRegistry,
+  preloadInertiaPage,
+  resolveInertiaPage,
+} from './inertia-pages.js';
 import AppLayout from '@/common/layouts/AppLayout.vue';
 import {registerSlideoutGlobals} from '@/common/slideouts';
 import {useAnnouncer} from '@/common/composables/useAnnouncer';
@@ -16,6 +25,7 @@ import {installClipboard} from '@/modules/elements/clipboard';
 import {installElementInstanceRefresh} from '@/modules/elements/element-instances';
 import {installFieldValueClipboard} from '@/modules/ui/copiedFieldValue';
 import {installAnnouncer} from '@/common/announcer';
+import {installNavigationProgress} from '@/modules/navigation/progress';
 import {observeFieldToggles} from '@/modules/field-toggle/observe';
 import {answerElevatedSessionRequests} from '@/modules/auth/elevated-session';
 import {
@@ -191,6 +201,14 @@ const Cp = {
     setUpInertiaMessages();
     relayPageBroadcasts();
 
+    // A prefetched page's component loads with its response, rather than once
+    // its link is clicked.
+    inertiaHttp.onResponse((response) => {
+      preloadInertiaPage(response);
+
+      return response;
+    });
+
     await createInertiaApp({
       page,
       resolve: async (name) => {
@@ -200,6 +218,8 @@ const Cp = {
         return page as DefineComponent;
       },
       layout: defaultPageLayout,
+      // Replaced by installNavigationProgress(), installed below.
+      progress: false,
       title: (title) => `${title} - ${this.$config.get('systemName')}`,
       withApp(app) {
         installCpApp(app);
@@ -210,6 +230,7 @@ const Cp = {
     handleControlPanelLinks();
     observeExternalLinks();
     handleAccessibleRouting();
+    installNavigationProgress();
     registerSlideoutGlobals();
     registerSubmitShortcut();
 
@@ -255,9 +276,12 @@ function handleAccessibleRouting() {
     if (pathname === previousPathname) return;
     previousPathname = pathname;
 
-    const routeFocusAnchor: HTMLElement | null =
-      document.getElementById('route-focus-anchor');
-    routeFocusAnchor?.focus();
+    // A frame later, once the new page has finished rendering: focusing makes
+    // the browser lay the page out, and a layout taken while the page is
+    // still being built is thrown away and done again.
+    requestAnimationFrame(() =>
+      document.getElementById('route-focus-anchor')?.focus()
+    );
 
     if (!props.title) return;
 

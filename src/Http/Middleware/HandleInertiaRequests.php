@@ -9,6 +9,7 @@ use CraftCms\Cms\Ai\Tasks\Assistant;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Cp\Cp;
+use CraftCms\Cms\Cp\Data\NavItem;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Cp\Icons;
 use CraftCms\Cms\Cp\Navigation;
@@ -24,6 +25,7 @@ use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use CraftCms\Cms\User\EditUserScreens;
@@ -38,6 +40,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 use Inertia\Inertia;
 use Inertia\Middleware;
+use Inertia\OnceProp;
 use Inertia\Support\Header;
 use Override;
 
@@ -240,7 +243,8 @@ class HandleInertiaRequests extends Middleware
                     'id' => $currentUser->id,
                     'username' => $currentUser->username,
                     'email' => $currentUser->email,
-                    'name' => $currentUser->name,
+                    // Not `->name`, which would load the user's field layout to check that `name` isn't a field
+                    'name' => $currentUser->getName(),
                     'thumbHtml' => $currentUser->getThumbHtml(30),
                     // The colors of the user’s default photo, which their own messages and comments are tinted with.
                     'photoColors' => $currentUser->photoColors(),
@@ -269,10 +273,7 @@ class HandleInertiaRequests extends Middleware
                 'baseCpUrl' => cp_url(),
                 'actionUrl' => action_url(),
                 'baseApiUrl' => Api::craftApiEndpoint(),
-                // Rebuild on each visit so plugins and nav listeners can
-                // respond to the current request. Keep the updater independent
-                // of tables or columns that pending migrations may add.
-                'nav' => fn (): array => $updatePending ? [] : $nav->getTree(),
+                'nav' => $this->navProp($nav, $updatePending),
                 // The site switcher that leads the breadcrumbs. Per-request
                 // rather than `once`, since its links point at whichever page
                 // you're currently on.
@@ -282,5 +283,18 @@ class HandleInertiaRequests extends Middleware
                     : (object) $nav->getBadgeCounts(),
             ],
         ];
+    }
+
+    /**
+     * The nav tree, rebuilt on each visit so plugins and nav listeners can respond to the current request, but sent
+     * only when it differs from the tree the client holds: the once prop's key is a hash of the tree, so a client that
+     * names it in `X-Inertia-Except-Once-Props` keeps its copy, and gets the new tree as soon as anything in it changes.
+     */
+    private function navProp(Navigation $nav, bool $updatePending): OnceProp
+    {
+        // Keep the updater independent of tables or columns that pending migrations may add.
+        $tree = $updatePending ? [] : array_map(fn (NavItem $item): array => $item->toArray(), $nav->getTree());
+
+        return Inertia::once(fn (): array => $tree)->as('craft.nav.'.md5(Json::encode($tree)));
     }
 }

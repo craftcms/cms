@@ -872,7 +872,7 @@ export class EditableTable extends Base<EditableTableSettings> {
         }
 
         if (col.textExpanderTriggers && textExpanderTarget) {
-          textExpanderTarget.id = `editable-table-input-${crypto.randomUUID()}`;
+          textExpanderTarget.id = `editable-table-input-${uuid()}`;
           textExpanderTarget.setAttribute('aria-label', col.heading ?? colId);
           const expander = document.createElement(
             'craft-text-expander'

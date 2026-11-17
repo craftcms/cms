@@ -10,7 +10,8 @@ export default css`
     gap: var(--c-spacing-sm);
     cursor: pointer;
     padding-block: 0;
-    padding-inline: var(--c-input-spacing-inline);
+    padding-inline: var(--c-input-spacing-inline)
+      calc(var(--c-input-spacing-inline) - var(--_input-border-width));
     font: inherit;
     overflow: clip;
   }
@@ -99,6 +100,5 @@ export default css`
 
   .indicator {
     flex: 0 0 auto;
-    font-size: 0.8em;
   }
 `;

@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Entry\Commands;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Console\TerminalCommands;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Entry\Data\EntryType;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -272,11 +273,12 @@ class MergeEntryTypesCommand extends Command implements PromptsForMissingInput
 
         $this->components->success(sprintf(<<<'EOD'
             Entry types merged. Commit <options=bold>`%s`</>
-            and your project config changes, and run <options=bold>`craft up`</> on other environments
+            and your project config changes, and run <options=bold>`%s`</> on other environments
             for the changes to take effect.
             EOD,
 
-            Str::after($migrationPath, base_path('/'))
+            Str::after($migrationPath, base_path('/')),
+            app(TerminalCommands::class)->craft('up'),
         ));
 
         return self::SUCCESS;

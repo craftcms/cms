@@ -61,6 +61,20 @@ export default css`
       var(--c-input-spacing-inline);
   }
 
+  :host([multiple]) .indicator {
+    padding-inline-end: calc(
+      var(--c-input-spacing-inline) - var(--c-spacing-xs) -
+        var(--_input-border-width)
+    );
+  }
+
+  :host([multiple]) .clear {
+    inset-inline-end: calc(
+      var(--c-input-spacing-inline) * 1.5 + 1em - var(--c-spacing-xs) -
+        var(--_input-border-width)
+    );
+  }
+
   :host(:not([disabled], [readonly])) .indicator {
     cursor: text;
   }
@@ -120,8 +134,27 @@ export default css`
     min-width: 0;
   }
 
+  :host([multiple]) {
+    --_textbox-min-width: 3rem;
+  }
+
+  :host([multiple][clearable]) {
+    --_textbox-min-width: calc(3rem + var(--c-size-control-sm));
+  }
+
   :host([multiple]) .combobox__textbox {
-    min-width: 8rem;
+    min-width: var(--_textbox-min-width);
+  }
+
+  @supports (field-sizing: content) {
+    :host([multiple]) .combobox__textbox {
+      min-width: auto;
+    }
+
+    :host([multiple]) ::slotted(.form-control) {
+      field-sizing: content;
+      min-width: var(--_textbox-min-width);
+    }
   }
 
   :host([multiple]) ::slotted(.form-control) {

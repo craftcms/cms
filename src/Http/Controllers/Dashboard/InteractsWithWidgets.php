@@ -51,8 +51,6 @@ trait InteractsWithWidgets
             return false;
         }
 
-        $settingsUi = $this->getWidgetSettingsUi($widget, "widget{$widget->id}-settings");
-
         return new WidgetData(
             id: $widget->id,
             type: $widget->getType(),
@@ -66,7 +64,7 @@ trait InteractsWithWidgets
             component: $component,
             data: $data,
             fragment: $fragment,
-            settingsUi: $settingsUi,
+            hasSettings: $this->widgetHasSettings($widget),
         );
     }
 
@@ -76,6 +74,17 @@ trait InteractsWithWidgets
         $label = $widget->getDisplayName();
 
         return $icon ? Icons::svg($icon, $label) : Icons::fallbackSvg($label);
+    }
+
+    /**
+     * Returns whether a widget has settings, without resolving their UI.
+     *
+     * Resolving it can be costly, as with a condition builder's rules, so the dashboard loads it once the settings
+     * are opened.
+     */
+    protected function widgetHasSettings(WidgetInterface $widget): bool
+    {
+        return $widget->settingsUi(new UiContext(namespace: "widget{$widget->id}-settings")) !== null;
     }
 
     protected function getWidgetSettingsUi(WidgetInterface $widget, string $namespace): ?UiPayload

@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Queries\AddressQuery;
 use CraftCms\Cms\Element\Queries\ContentBlockQuery;
 use CraftCms\Cms\Element\Queries\ElementQuery;
 use CraftCms\Cms\Element\Queries\EntryQuery;
+use CraftCms\Cms\Element\Queries\Events\ElementQueryPrepared;
+use CraftCms\Cms\Element\Queries\Events\ElementQueryPreparing;
 use CraftCms\Cms\Element\Queries\Exceptions\ElementNotFoundException;
 use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -31,6 +33,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Tpetry\QueryExpressions\Language\Alias;
 
 it('preserves select expressions bindings and mapped aliases across element types', function (Closure $factory) {
@@ -126,6 +129,35 @@ it('keeps its own conditions when the query has a top-level orWhere', function (
         ->ids();
 
     expect($ids)->toBe([$live->id]);
+});
+
+it('scopes every execution, count, and pagination total to element query preparation listeners’ conditions', function () {
+    $allowed = EntryModel::factory()->create();
+    $allowedToo = EntryModel::factory()->for($allowed->section)->create();
+    $excluded = EntryModel::factory()->for($allowed->section)->create();
+    $hidden = EntryModel::factory()->create();
+
+    Event::listen(function (ElementQueryPreparing $event) use ($allowed) {
+        if ($event->query instanceof EntryQuery) {
+            $event->query->where(fn (EntryQuery $query) => $query->sectionId($allowed->sectionId));
+        }
+    });
+
+    Event::listen(function (ElementQueryPrepared $event) use ($excluded) {
+        if ($event->query instanceof EntryQuery) {
+            $event->query->where('id', '!=', $excluded->id);
+        }
+    });
+
+    $query = entryQuery()->where('elements.id', $hidden->id)->orWhere('elements.id', $allowed->id);
+
+    expect($query->ids())->toBe([$allowed->id])
+        ->and($query->count())->toBe(1)
+        ->and(entryQuery()->orderBy('elements.id')->ids())->toBe([$allowed->id, $allowedToo->id])
+        ->and(entryQuery()->getCountForPagination())->toBe(2)
+        ->and(entryQuery()->paginate(1)->total())->toBe(2)
+        ->and(entryQuery()->id([$hidden->id, $excluded->id])->exists())->toBeFalse()
+        ->and(entryQuery()->whereIn('elements.id', entryQuery()->select('elements.id'))->count())->toBe(2);
 });
 
 it('compares bound dates in UTC', function () {

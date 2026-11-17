@@ -379,7 +379,7 @@
     align-items: center;
     gap: var(--c-spacing-md);
     min-height: var(--cp-footer-height);
-    padding-block: var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--cp-container-padding);
   }
 </style>

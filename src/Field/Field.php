@@ -837,7 +837,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
         // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
         // see https://github.com/craftcms/cms/issues/15609
-        if (DB::isMysql() && is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT) {
+        if (is_string($dbType) && Query::parseColumnType($dbType) === Query::TYPE_TEXT && DB::isMysql()) {
             $orderBy = new Cast($orderBy, 'CHAR(255)');
         }
 
@@ -992,8 +992,10 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
             ]);
         }
 
+        // Resolving the default connection through the facade adds up over every field instance of a source
+        $db = DB::connection();
         $castType = null;
-        if (DB::isMysql()) {
+        if ($db->isMysql()) {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
             $castType = match (Query::parseColumnType($dbType)) {
@@ -1018,7 +1020,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
 
         // PostgreSQL extracts JSON values as text, so numeric field types need explicit casts.
         // see https://github.com/craftcms/cms/issues/15828, https://github.com/craftcms/cms/issues/15973
-        if (DB::getDriverName() === 'pgsql') {
+        if ($db->getDriverName() === 'pgsql') {
             $castType = match (Query::parseColumnType($dbType)) {
                 Query::TYPE_DECIMAL => 'DECIMAL',
                 Query::TYPE_TINYINT,
@@ -1032,7 +1034,7 @@ abstract class Field extends Component implements Actionable, FieldInterface, Ic
         }
 
         // JSON extraction has no type affinity on SQLite, even for numeric values.
-        if (DB::getDriverName() === 'sqlite' && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
+        if ($db->getDriverName() === 'sqlite' && (Query::isNumericColumnType($dbType) || $dbType === Query::TYPE_BOOLEAN)) {
             $castType = 'NUMERIC';
         }
 

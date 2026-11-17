@@ -421,3 +421,36 @@ it('marks the field invalid while it is invalid', async () => {
   await select.updateComplete;
   expect(field.hasAttribute('aria-invalid')).toBe(false);
 });
+
+it('lines its chevron up with a select’s', async () => {
+  await import('../select/select.js');
+  document.body.innerHTML = `
+    <div style="width: 20rem">
+      <craft-select><select slot="input"><option>All</option></select></craft-select>
+      <craft-select-rich label="Status">
+        <craft-option .value="all" selected>All</craft-option>
+        <craft-option .value="live">Live</craft-option>
+      </craft-select-rich>
+    </div>`;
+  const select = document.querySelector<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-select')!;
+  const rich = document.querySelector<CraftSelectRich>('craft-select-rich')!;
+  await Promise.all([select.updateComplete, rich.updateComplete]);
+  const invoker = rich.querySelector<
+    HTMLElement & {updateComplete: Promise<unknown>}
+  >('craft-select-invoker')!;
+  await expect
+    .poll(() => invoker.shadowRoot?.querySelector('.indicator'))
+    .toBeTruthy();
+
+  const chevronEnd = (indicator: Element) =>
+    Math.round(
+      indicator.getBoundingClientRect().right -
+        parseFloat(getComputedStyle(indicator).paddingInlineEnd)
+    );
+
+  expect(chevronEnd(invoker.shadowRoot!.querySelector('.indicator')!)).toBe(
+    chevronEnd(select.shadowRoot!.querySelector('.indicator')!)
+  );
+});

@@ -240,7 +240,7 @@ it('shows the removal steps once nothing depends on the adapter', function(): vo
 
     expect($html)
         ->toContain('Your project no longer depends on the Yii2 adapter.')
-        ->toContain('php craft yii2-adapter:cleanup')
+        ->toContain('php artisan craft:yii2-adapter:cleanup')
         ->toContain('composer remove craftcms/yii2-adapter');
 
     $this->artisan('craft:yii2-adapter:cleanup')->assertSuccessful();

@@ -11,6 +11,8 @@ use CraftCms\Cms\Element\Events\ElementSourceSortOptionsResolving;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Section\Enums\SectionType;
+use CraftCms\Cms\Section\Models\Section;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
@@ -67,6 +69,17 @@ it('can find nested source configs by key path', function () {
         'type' => ElementSources::TYPE_CUSTOM,
         'keyPath' => 'custom:parent/custom:child',
     ]);
+});
+
+it('puts sources that aren’t saved on the first page with an enabled source', function () {
+    $channel = Section::factory()->create(['type' => SectionType::Channel]);
+    app(ProjectConfig::class)->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, Entry::class), [
+        ['type' => ElementSources::TYPE_HEADING, 'heading' => 'Archive', 'page' => 'Archive'],
+        ['type' => ElementSources::TYPE_CUSTOM, 'key' => 'custom:archive', 'label' => 'Archive', 'page' => 'Archive', 'disabled' => true],
+        ['type' => ElementSources::TYPE_NATIVE, 'key' => '*', 'page' => 'Entries'],
+    ]);
+
+    expect($this->elementSources->findSource(Entry::class, "section:$channel->uid")['page'] ?? null)->toBe('Entries');
 });
 
 it('limits sources to their page when the first source is disabled', function () {

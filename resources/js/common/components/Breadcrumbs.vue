@@ -72,16 +72,19 @@
         :label="t('Actions')"
       >
         <!-- Its own invoker rather than the default one: a crumb's switcher
-          sits beside text, so it's smaller and isn't pulled flush against the
-          label. `small` rather than `xsmall`: it sits beside the next crumb's
-          link, and `xsmall`'s hit area reaches past its box, into whatever is
+          sits beside text, so it's smaller, flush against the separator after
+          it, and pulled up to its label without overlapping it (see below).
+          `small` rather than `xsmall`: it sits beside the next crumb's link,
+          and `xsmall`'s hit area reaches past its box, into whatever is
           beside it. `small` is a real 24×24 box. -->
         <template #invoker="{label, attributes}">
           <craft-button
             v-bind="attributes"
+            class="breadcrumbs__switcher"
             type="button"
             variant="plain"
             size="small"
+            flush="inline-end"
             icon="chevron-down"
             :aria-label="label"
             inherit
@@ -93,7 +96,17 @@
 </template>
 
 <style scoped lang="scss">
+  craft-breadcrumbs {
+    --c-icon-size: var(--c-size-icon-xs);
+  }
+
   craft-breadcrumb-item > .cp-link:hover {
     text-decoration: underline;
+  }
+
+  /* Takes back the crumb's gap before its suffix, so the target meets the
+     label without overlapping it (WCAG 2.5.8). */
+  .breadcrumbs__switcher {
+    margin-inline-start: calc(var(--c-spacing-sm) * -1);
   }
 </style>

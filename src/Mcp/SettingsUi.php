@@ -98,7 +98,7 @@ readonly class SettingsUi
             Tab::make('mcp-authenticated', t('Authenticated'), [
                 ...($this->tokens->hasKeys() ? [] : [
                     Callout::make('mcp-oauth-keys-warning', t('MCP clients can’t sign in until Craft has OAuth signing keys.').' '.t('Run {command}, or set the {privateKey} and {publicKey} environment variables to PEM-encoded keys.', [
-                        'command' => '`'.$this->terminalCommands->craft('passport:keys').'`',
+                        'command' => '`'.$this->terminalCommands->artisan('passport:keys').'`',
                         'privateKey' => '`PASSPORT_PRIVATE_KEY`',
                         'publicKey' => '`PASSPORT_PUBLIC_KEY`',
                     ]))->variant('warning'),

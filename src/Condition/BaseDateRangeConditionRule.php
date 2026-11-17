@@ -141,8 +141,8 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 
         if ($this->rangeType === DateRangeType::Range->value) {
             array_push($nodes,
-                Field::make(t('From'), DateTime::make('startDate')->value($this->dateControlValue($this->getStartDate()))),
-                Field::make(t('To'), DateTime::make('endDate')->value($this->dateControlValue($this->getEndDate()))),
+                Field::make(t('From'), DateTime::make('startDate')->fullWidth()->value($this->dateControlValue($this->getStartDate()))),
+                Field::make(t('To'), DateTime::make('endDate')->fullWidth()->value($this->dateControlValue($this->getEndDate()))),
             );
         } elseif (in_array($this->rangeType, [DateRangeType::Before->value, DateRangeType::After->value], true)) {
             array_push($nodes,

@@ -92,9 +92,9 @@
     "@storybook/addon-a11y": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-themes": "catalog:",
-    "@storybook/addon-vitest": "^10.6.0",
-    "@storybook/web-components": "^10.6.0",
-    "@storybook/web-components-vite": "^10.6.0",
+    "@storybook/addon-vitest": "^10.6.6",
+    "@storybook/web-components": "^10.6.6",
+    "@storybook/web-components-vite": "^10.6.6",
     "@total-typescript/tsconfig": "catalog:",
     "@types/humanize-duration": "^3.27.4",
     "@types/jquery": "^4.0.0",
@@ -128,7 +128,7 @@
     "vitest": "4.1.10"
   },
   "dependencies": {
-    "@chromatic-com/storybook": "^5.3.1",
+    "@chromatic-com/storybook": "^5.6.0",
     "@formatjs/intl-durationformat": "^0.10.8",
     "@github/combobox-nav": "^3.0.2",
     "@github/relative-time-element": "^5.0.0",

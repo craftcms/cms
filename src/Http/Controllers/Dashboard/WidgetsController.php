@@ -114,27 +114,48 @@ readonly class WidgetsController
         return $this->saveAndReturnWidget($widget);
     }
 
+    /**
+     * Returns a widget's settings UI: a saved widget's, with its saved settings, or a widget type's, with the given
+     * settings.
+     *
+     * The dashboard loads it when a widget's settings are opened, and again when a reactive setting changes.
+     */
     public function refreshSettings(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'type' => ['required', 'string'],
+            'widgetId' => [
+                'nullable',
+                'integer',
+                Rule::exists('widgets', 'id')->where('userId', $request->craftUser()?->getCraftUserId()),
+            ],
+            'type' => ['required_without:widgetId', 'nullable', 'string'],
             'settings' => ['nullable', 'array'],
             'namespace' => ['required', 'string'],
         ]);
-        $type = (string) $data['type'];
 
-        // Settings are refreshed for new and existing widgets alike, so ignore whether the user already has one
-        if (! $this->dashboard->isWidgetTypeAvailable($type)) {
-            throw ValidationException::withMessages([
-                'type' => 'Invalid widget type.',
+        if (isset($data['widgetId'])) {
+            $widget = $this->dashboard->getWidgetById((int) $data['widgetId']);
+
+            if (! $this->canUseWidget($widget)) {
+                throw ValidationException::withMessages([
+                    'type' => 'Invalid widget type.',
+                ]);
+            }
+        } else {
+            $type = (string) $data['type'];
+
+            if (! $this->dashboard->isWidgetTypeAvailable($type)) {
+                throw ValidationException::withMessages([
+                    'type' => 'Invalid widget type.',
+                ]);
+            }
+
+            /** @var class-string<WidgetInterface> $type */
+            $widget = $this->dashboard->createWidget([
+                'type' => $type,
+                'settings' => $data['settings'] ?? [],
             ]);
         }
-
-        /** @var class-string<WidgetInterface> $type */
-        $widget = $this->dashboard->createWidget([
-            'type' => $type,
-            'settings' => $data['settings'] ?? [],
-        ]);
 
         return new JsonResponse([
             'ui' => $this->getWidgetSettingsUi($widget, $data['namespace']),

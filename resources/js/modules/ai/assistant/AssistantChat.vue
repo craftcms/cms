@@ -623,12 +623,13 @@
       return t('Denied {tool}', {tool});
     }
 
-    if (part.output !== undefined) {
-      return own ? own.done(part.output) : t('Used {tool}', {tool});
-    }
-
+    // Before the output, as failed calls have their error as their output.
     if (part.state === 'error') {
       return t('Didn’t finish using {tool}', {tool});
+    }
+
+    if (part.output !== undefined) {
+      return own ? own.done(part.output) : t('Used {tool}', {tool});
     }
 
     if (
@@ -792,13 +793,14 @@
                   <craft-chip
                     :icon="item.status ? undefined : item.icon"
                     :show-status="!!item.status || undefined"
-                    size="auto"
+                    size="xsmall"
+                    rounded
                   >
                     <AssistantChipStatus
                       v-if="item.status"
                       :status="item.status"
                     />
-                    {{ item.label }}
+                    <span>{{ item.label }}</span>
                   </craft-chip>
                 </li>
               </ul>
@@ -987,6 +989,8 @@
             <craft-chip
               :icon="item.status() ? undefined : item.icon"
               :show-status="!!item.status() || undefined"
+              size="xsmall"
+              rounded
             >
               <AssistantChipStatus
                 v-if="item.status()"
@@ -997,12 +1001,13 @@
                 :editor="elementContextEditor(item)!"
                 :label="item.label"
               />
-              <template v-else>{{ item.label }}</template>
+              <span v-else>{{ item.label }}</span>
               <craft-button
                 slot="suffix"
+                class="assistant-chat__remove-context"
                 type="button"
                 icon
-                size="small"
+                size="xsmall"
                 variant="plain"
                 flush="inline-start"
                 @click="assistantApi.removeContext(item.ref)"
@@ -1211,10 +1216,6 @@
     color: var(--c-text-quiet);
   }
 
-  .assistant-chat__icon craft-icon {
-    font-size: var(--c-text-base);
-  }
-
   .assistant-chat__reply {
     display: flex;
     flex-direction: column;
@@ -1363,11 +1364,29 @@
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: var(--c-spacing-xs);
+    /* In a prompt's bubble, which sizes it to its content, it'd otherwise be
+       as wide as its longest chip's label. */
+    max-inline-size: 100%;
 
     & > li {
       min-inline-size: 0;
       max-inline-size: 100%;
     }
+  }
+
+  /* Square, and as tall as the context picker beside it (a line of the
+     chip's text, plus a border taken back the same way), and round in the
+     rounded chip. Pulled into the chip's end padding, so its hover fill is
+     as far from the chip's end as from its top and bottom. */
+  .assistant-chat__remove-context {
+    --_size: calc(1lh + 2px);
+
+    font-size: inherit;
+    inline-size: var(--_size);
+    block-size: var(--_size);
+    margin-block: -1px;
+    margin-inline-end: -2px;
+    border-radius: var(--c-radius-full);
   }
 
   .assistant-chat__card > .assistant-chat__chips {

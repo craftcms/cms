@@ -1,4 +1,5 @@
 import {actionClient, ConfigService} from '@craftcms/ui';
+import {uuid} from '@/common/craft/strings';
 import type {ActionMenuItemButton} from '@craftcms/ui/components/action-menu/action-menu.types';
 import {
   createApp,
@@ -19,8 +20,9 @@ import {
 import type {ConnectionAdapter} from '@tanstack/ai-vue';
 import {assistantApi} from '@/bootstrap/assistant';
 import {broadcast} from '@/common/craft/broadcast';
+import {createScreenPanels} from '@/common/composables/screenPanels';
 import {useElementPresentations} from '@/modules/elements/element-presentations';
-import {AssistantRequestError} from './assistant';
+import {AssistantRequestError, registerAssistantScreen} from './assistant';
 import {registerAssistantEditor} from './context';
 import AssistantChat from './AssistantChat.vue';
 
@@ -73,7 +75,7 @@ describe('AssistantChat', () => {
     });
     container = document.createElement('div');
     document.body.append(container);
-    app = createApp(AssistantChat, {threadId: crypto.randomUUID()});
+    app = createApp(AssistantChat, {threadId: uuid()});
     app.mount(container);
     await flush();
   });
@@ -128,7 +130,7 @@ describe('AssistantChat', () => {
     for (const resume of resumes) {
       const run = chat.connection.connect([], undefined, undefined, {
         threadId: 'thread-1',
-        runId: crypto.randomUUID(),
+        runId: uuid(),
         ...(resume ? {resume} : {}),
       } as never);
 
@@ -192,7 +194,7 @@ describe('AssistantChat', () => {
     press(await type('Is it shipped?'));
     await flush();
     app.unmount();
-    app = createApp(AssistantChat, {threadId: crypto.randomUUID()});
+    app = createApp(AssistantChat, {threadId: uuid()});
     app.mount(container);
     await flush();
 
@@ -236,6 +238,31 @@ describe('AssistantChat', () => {
     expect((await requests())[0]!.forwardedProps.context).toEqual([pointer]);
 
     close();
+  });
+
+  it('names no element while an editor it can’t work with is in front of the open one', async () => {
+    onTestFinished(
+      registerAssistantEditor({
+        id: 'page',
+        params: () => ({
+          elementType: ENTRY,
+          elementId: 42,
+          draftId: null,
+          siteId: 1,
+          ownerId: null,
+          fieldId: null,
+          canonicalId: 42,
+        }),
+        label: () => 'Lighthouses',
+        scope: () => ['editor'],
+        values: () => ({}),
+        container: () => null,
+      })
+    );
+    onTestFinished(registerAssistantScreen(() => createScreenPanels(), false));
+    await flush();
+
+    expect((await requests())[0]!.forwardedProps.context).toEqual([]);
   });
 
   it('shows the server’s message when a request fails', async () => {
@@ -995,6 +1022,14 @@ describe('AssistantChat', () => {
             arguments: '{}',
             state: 'error',
           },
+          {
+            type: 'tool-call',
+            id: 'call_2',
+            name: 'show_elements',
+            arguments: '{}',
+            state: 'error',
+            output: 'The tool call failed: Boom',
+          },
         ],
       },
     ];
@@ -1003,5 +1038,9 @@ describe('AssistantChat', () => {
     expect(container.textContent).toContain(
       'Didn’t finish using elements_update'
     );
+    expect(container.textContent).toContain(
+      'Didn’t finish using show_elements'
+    );
+    expect(container.textContent).not.toContain('Showed elements');
   });
 });

@@ -35,11 +35,31 @@ test('filename', function (mixed $param, int $expectedCount) {
     ['not *filename*', 0],
 ]);
 
-test('kind', function () {
+test('kind', function (mixed $param, int $expectedCount) {
     Asset::factory()->create(['kind' => 'image', 'filename' => 'file.jpg']);
     Asset::factory()->create(['kind' => 'unknown', 'filename' => 'file.jpg']);
     Asset::factory()->create(['kind' => 'audio', 'filename' => 'file.mp3']);
+    Asset::factory()->create(['kind' => 'unknown', 'filename' => 'file.xyz']);
 
-    expect(assetQuery()->count())->toBe(3);
-    expect(assetQuery()->kind('image')->count())->toBe(2);
+    expect(assetQuery()->kind($param)->count())->toBe($expectedCount);
+})->with([
+    ['image', 2],
+    ['image, audio', 3],
+    ['not image', 2],
+    [['not', 'image', 'audio'], 1],
+    ['and image, audio', 0],
+    [['and', 'image'], 2],
+]);
+
+test('kind keeps escaped commas in a kind', function () {
+    Asset::factory()->create(['kind' => 'drawing,cad', 'filename' => 'file.dwg']);
+
+    expect(assetQuery()->kind('drawing\,cad')->count())->toBe(1);
+});
+
+test('kind matches extensions that several kinds share', function () {
+    Asset::factory()->create(['kind' => 'unknown', 'filename' => 'file.ogg']);
+    Asset::factory()->create(['kind' => 'audio', 'filename' => 'file.mp3']);
+
+    expect(assetQuery()->kind('and audio, video')->count())->toBe(1);
 });
