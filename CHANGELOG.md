@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added the “About Craft CMS” dashboard widget, which shows Craft’s version and edition, any trials of Craft or plugins that are installed with a link to buy them, and, for users who can update Craft, whether updates are available. It replaces the Updates widget, including on existing dashboards, and admins get it at the end of theirs. The command palette’s new “About Craft CMS” action shows the same.
 - Config settings that hold config objects, such as `mcp` and `anchors`, can now have their individual settings set with `CRAFT_{SETTING}_{NESTED_SETTING}` environment variables, such as `CRAFT_MCP_INSTRUCTIONS`. They override the same settings from whole-object variables such as `CRAFT_MCP`. ([#20783](https://github.com/craftcms/cms/pull/20783))
 - Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs, so the field layout and card appearance no longer sit below the general settings. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
 - Added `CraftCms\Cms\Ui\Nodes\Outlet` and `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`. ([#20658](https://github.com/craftcms/cms/pull/20658))
@@ -68,7 +69,6 @@
 - New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day in the widget’s color, which gets taller as the widget gets wider.
 - Craft Support widgets are now a list of links to the documentation, Knowledge Base, Craft Support, GitHub bug reports and feature requests, Discord, and Craft Partners, plus an “Ask AI” button when the AI assistant is available. Support requests are now sent from craftcms.com/contact, rather than a form in the widget.
 - Quick Post widgets now show a large button in their entry type’s icon and color, and are titled “New {Section} Entry” by default.
-- Updates widgets now show whether updates are available with an icon, say when they last checked, and check again from a button beside their title.
 - Dashboard widgets’ settings now load when they’re opened, rather than with the dashboard.
 - Saved element conditions, such as custom sources’ and Recent Entries widgets’ criteria, now load faster on sites with many custom fields. Their rules are checked without loading every field layout, unless they’re rules for fields.
 - Requests now read only the parts of the project config they use from the cache, rather than the whole config, which cuts cache traffic on sites with a networked cache such as Redis or Valkey. After a project config change, only one request rewrites the cached config. ([#20809](https://github.com/craftcms/cms/pull/20809))
