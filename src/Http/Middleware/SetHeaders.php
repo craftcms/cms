@@ -39,10 +39,10 @@ class SetHeaders
             Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true ||
             $this->responseHeaders->noCache
         ) {
-            $this->setNoCacheHeaders($response);
+            $response->headers->add(ResponseHeaders::NO_CACHE_HEADERS);
         } elseif ($this->responseHeaders->duration !== null) {
             if ($this->responseHeaders->duration <= 0) {
-                $this->setNoCacheHeaders($response);
+                $response->headers->add(ResponseHeaders::NO_CACHE_HEADERS);
             } else {
                 $response->headers->set('Pragma', 'cache', $this->responseHeaders->replace);
                 $response
@@ -82,13 +82,6 @@ class SetHeaders
         $this->setPoweredByHeader($response);
 
         return $response;
-    }
-
-    private function setNoCacheHeaders(SymfonyResponse $response): void
-    {
-        $response->headers->set('Expires', '0');
-        $response->headers->set('Pragma', 'no-cache');
-        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     private function setPoweredByHeader(SymfonyResponse $response): void

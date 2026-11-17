@@ -6,10 +6,10 @@ namespace CraftCms\Cms\View;
 
 use Closure;
 use CraftCms\Cms\Cms;
-use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Route\Events\Redirecting;
 use CraftCms\Cms\Route\RedirectRule;
 use CraftCms\Cms\Site\Sites;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Template;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Auth\AuthenticationException;
@@ -48,7 +48,6 @@ readonly class ErrorPages
     public function __construct(
         private TemplateResolver $templateResolver,
         private Sites $sites,
-        private ResponseHeaders $responseHeaders,
     ) {}
 
     public function render(Throwable $e, Request $request, Handler $handler): ?Response
@@ -63,7 +62,7 @@ readonly class ErrorPages
         }
 
         // Headers queued for the response that failed don’t apply to the error response.
-        $this->responseHeaders->reset();
+        ResponseHeaders::reset();
 
         // Laravel renders these itself after the renderable callbacks.
         if ($e instanceof AuthenticationException || $e instanceof ValidationException) {
@@ -116,7 +115,7 @@ readonly class ErrorPages
             }
 
             report($renderException);
-            $this->responseHeaders->reset();
+            ResponseHeaders::reset();
 
             return null;
         }

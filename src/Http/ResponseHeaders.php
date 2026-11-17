@@ -12,6 +12,15 @@ use Illuminate\Container\Attributes\Scoped;
 #[Scoped]
 class ResponseHeaders
 {
+    /**
+     * The headers that keep browsers and shared caches from storing a response.
+     */
+    public const array NO_CACHE_HEADERS = [
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Pragma' => 'no-cache',
+        'Expires' => '0',
+    ];
+
     public private(set) bool $noCache = false;
 
     public private(set) ?int $duration = null;

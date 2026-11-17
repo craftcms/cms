@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
-use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\ResponseHeaders as ResponseHeaderAccumulator;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
+use CraftCms\Cms\Support\Facades\Sites;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
@@ -232,10 +232,15 @@ it('isolates facade state across long-lived request scopes', function () {
 });
 
 it('sets no-cache headers for site token requests', function () {
-    $this->responseHeaders->setCache(3600);
-    Context::addHidden(ResolveSite::HAD_SITE_TOKEN_KEY, true);
+    Route::middleware(['web', 'craft', 'craft.web'])->get('site-token-page', function () {
+        ResponseHeaders::setCache(3600);
 
-    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+        return 'page';
+    });
+
+    $response = $this->get('/site-token-page?'.http_build_query([
+        Cms::config()->siteToken => Crypt::encrypt((string) Sites::getPrimarySite()->id),
+    ]))->assertOk();
 
     expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
 });

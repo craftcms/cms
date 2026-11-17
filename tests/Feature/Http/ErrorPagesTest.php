@@ -107,8 +107,7 @@ it('drops cache headers queued before an exception', function (bool $debug) {
         ->assertInternalServerError()
         ->assertHeaderMissing('X-Test');
 
-    expect($response->baseResponse->headers->hasCacheControlDirective('public'))->toBeFalse()
-        ->and($response->baseResponse->getMaxAge())->toBeNull();
+    expect($response->headers->get('Cache-Control'))->toBe('no-cache, private');
 })->with([
     'debug mode off' => false,
     'debug mode on' => true,
@@ -123,8 +122,7 @@ it('drops cache headers queued before Laravel renders an exception', function (T
 
     $response = $this->get('/throws');
 
-    expect($response->baseResponse->headers->hasCacheControlDirective('public'))->toBeFalse()
-        ->and($response->baseResponse->getMaxAge())->toBeNull();
+    expect($response->headers->get('Cache-Control'))->toBe('no-cache, private');
 })->with([
     'authentication' => fn () => new AuthenticationException(redirectTo: '/login'),
     'validation' => fn () => ValidationException::withMessages(['email' => 'Invalid']),
@@ -140,8 +138,7 @@ it('drops cache headers queued by an error template that fails', function () {
 
     $response = $this->get('/throws')->assertInternalServerError();
 
-    expect($response->baseResponse->headers->hasCacheControlDirective('public'))->toBeFalse()
-        ->and($response->baseResponse->getMaxAge())->toBeNull();
+    expect($response->headers->get('Cache-Control'))->toBe('no-cache, private');
 });
 
 it('shows exception details to admins who chose to see them outside debug mode', function () {
