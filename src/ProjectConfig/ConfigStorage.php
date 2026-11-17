@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use Exception;
+use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -145,8 +146,14 @@ class ConfigStorage
             $entries[$this->rootCacheKey($root)] = ['version' => $version, 'value' => $data[$root]];
         }
 
-        // A TTL lets stores write every entry in one batch; a null TTL writes them one at a time.
-        Cache::putMany($entries, $cacheDuration ?? ProjectConfig::CACHE_DURATION);
+        // Every request that misses needs the data, but only one needs to write it. The lock isn't released,
+        // so requests that missed while it was being written don't write it again.
+        $store = Cache::getStore();
+
+        if (! $store instanceof LockProvider || $store->lock(ProjectConfig::STORED_CACHE_KEY.':rebuild:'.$version, 10)->get()) {
+            // A TTL lets stores write every entry in one batch; a null TTL writes them one at a time.
+            Cache::putMany($entries, $cacheDuration ?? ProjectConfig::CACHE_DURATION);
+        }
 
         return $data;
     }

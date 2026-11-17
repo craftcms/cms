@@ -211,6 +211,17 @@ it('stamps a rebuilt cache with the stored config version when another process c
         ->and(Cache::get(ProjectConfig::STORED_CACHE_KEY)['version'])->toBe($newVersion);
 });
 
+it('leaves rebuilding the cache to the process that holds the rebuild lock', function () {
+    $projectConfig = app(ProjectConfig::class);
+    DB::table(Table::PROJECTCONFIG)->upsert([['path' => 'system.name', 'value' => '"Rebuilt"']], ['path'], ['value']);
+    Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+    Cache::lock(ProjectConfig::STORED_CACHE_KEY.':rebuild:'.Info::fetch()->configVersion, 10)->get();
+    $projectConfig->reset();
+
+    expect($projectConfig->get('system.name'))->toBe('Rebuilt')
+        ->and(Cache::get(ProjectConfig::STORED_CACHE_KEY))->toBeNull();
+});
+
 it('replays forced external changes against the original config', function (bool $changed) {
     $original = ['value' => 'old'];
     $incoming = ['value' => $changed ? 'new' : 'old'];
