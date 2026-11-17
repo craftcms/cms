@@ -27,10 +27,15 @@ it('accepts token-less requests whose Origin matches the host when Sec-Fetch-Sit
         ->assertOk();
 })->with(['default mode' => false, 'origin-only mode' => true]);
 
-it('rejects token-less requests without a same-origin Origin', function (array $headers) {
+it('rejects token-less requests without a same-origin Origin', function (bool $originOnly, int $status, array $headers) {
+    PreventRequestForgery::useOriginOnly($originOnly);
+
     call('POST', 'https://localhost/forgery-check', server: $headers)
-        ->assertStatus(419);
+        ->assertStatus($status);
 })->with([
+    'default mode' => [false, 419],
+    'origin-only mode' => [true, 403],
+])->with([
     'no Origin' => [[]],
     'other host' => [['HTTP_ORIGIN' => 'https://evil.test']],
     'other scheme' => [['HTTP_ORIGIN' => 'http://localhost']],
