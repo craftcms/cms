@@ -32,6 +32,21 @@ enum JobStatus: int implements JsonSerializable
         };
     }
 
+    /**
+     * Whether a job can move from this status to the given one.
+     *
+     * Jobs only become pending or delayed when they're queued or retried, which starts them over
+     * from any status, so neither is a transition target.
+     */
+    public function canTransitionTo(self $status): bool
+    {
+        return match ($this) {
+            self::Pending, self::Delayed, self::Reserved => in_array($status, [self::Reserved, self::Done, self::Failed, self::Cancelled], true),
+            self::Failed => $status === self::Cancelled,
+            self::Done, self::Cancelled => false,
+        };
+    }
+
     public static function tryFromName(?string $name = null): ?self
     {
         if (! $name) {

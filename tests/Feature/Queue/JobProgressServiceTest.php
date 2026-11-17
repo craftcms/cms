@@ -446,6 +446,23 @@ it('keeps cancellation hidden and immune to later writes', function () {
     expect($this->service->getProgress($uid)?->status)->toBe(JobStatus::Pending);
 });
 
+it('ignores worker events that arrive after a job finished', function (string $finish, JobStatus $status) {
+    $uid = "late-events-$finish";
+    $this->service->queued($uid, 'Job');
+    $this->service->processing($uid);
+    $finish === 'completed' ? $this->service->completed($uid) : $this->service->failed($uid, error: 'Boom');
+
+    $this->service->failed($uid, error: 'Late failure');
+    $this->service->completed($uid);
+    $this->service->processing($uid);
+    $this->service->setProgress($uid, 'Late progress', 75);
+
+    expect(JobProgressModel::find($uid)->status)->toBe($status);
+})->with([
+    'completed' => ['completed', JobStatus::Done],
+    'failed' => ['failed', JobStatus::Failed],
+]);
+
 it('can check if a job exists', function () {
     $uid = 'existing-job';
 

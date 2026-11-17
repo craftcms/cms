@@ -38,7 +38,7 @@ readonly class JobProgress
             'dateFailed' => null,
             'dateCompleted' => null,
             'progressLabel' => null,
-        ], reactivate: true);
+        ], restart: true);
     }
 
     public function processing(string $uid): void
@@ -230,12 +230,7 @@ readonly class JobProgress
     public function clear(): void
     {
         JobProgressModel::query()
-            ->whereIn('status', [
-                JobStatus::Pending->value,
-                JobStatus::Reserved->value,
-                JobStatus::Delayed->value,
-                JobStatus::Failed->value,
-            ])
+            ->whereIn('status', $this->statusesThatCanTransitionTo(JobStatus::Cancelled))
             ->update(['status' => JobStatus::Cancelled->value]);
 
         $queueNames = array_unique([Cms::config()->queueName, Cms::config()->lowPriorityQueueName]);
@@ -276,7 +271,7 @@ readonly class JobProgress
     {
         JobProgressModel::query()
             ->where('uid', $uid)
-            ->where('status', '!=', JobStatus::Cancelled->value)
+            ->whereIn('status', $this->statusesThatCanTransitionTo($status))
             ->update([
                 'status' => $status->value,
                 'dateUpdated' => Query::prepareDateForDb(now()),
@@ -303,7 +298,21 @@ readonly class JobProgress
     }
 
     /**
+     * @return list<int>
+     */
+    private function statusesThatCanTransitionTo(JobStatus $status): array
+    {
+        return array_values(array_map(
+            fn (JobStatus $from): int => $from->value,
+            array_filter(JobStatus::cases(), fn (JobStatus $from): bool => $from->canTransitionTo($status)),
+        ));
+    }
+
+    /**
      * Upserts a job entry.
+     *
+     * An existing entry only changes when its status can transition to the given one,
+     * unless `$restart` is set because the job was queued or retried.
      *
      * @param  array<string, mixed>  $attributes
      */
@@ -311,7 +320,7 @@ readonly class JobProgress
         string $uid,
         JobStatus $status,
         array $attributes = [],
-        bool $reactivate = false,
+        bool $restart = false,
     ): void {
         $query = JobProgressModel::query();
         $connection = DB::connection($query->getModel()->getConnectionName());
@@ -319,17 +328,17 @@ readonly class JobProgress
         $table = $grammar->wrapTable($query->getModel()->getTable());
         $updates = [...array_keys($attributes), 'dateUpdated', 'status'];
 
-        if (! $reactivate) {
-            $updates = array_combine($updates, array_map(function (string $column) use ($connection, $grammar, $table): Expression {
+        if (! $restart) {
+            $fromStatuses = implode(', ', $this->statusesThatCanTransitionTo($status));
+            $updates = array_combine($updates, array_map(function (string $column) use ($connection, $grammar, $table, $fromStatuses): Expression {
                 $column = $grammar->wrap($column);
                 $incoming = match ($connection->getDriverName()) {
                     'mysql', 'mariadb' => $connection->getConfig('use_upsert_alias') ? "laravel_upsert_alias.$column" : "VALUES($column)",
                     'pgsql', 'sqlite' => "excluded.$column",
                     default => throw new RuntimeException('Unsupported database driver: '.$connection->getDriverName()),
                 };
-                $cancelled = JobStatus::Cancelled->value;
 
-                return DB::raw("CASE WHEN $table.status = $cancelled THEN $table.$column ELSE $incoming END");
+                return DB::raw("CASE WHEN $table.status IN ($fromStatuses) THEN $incoming ELSE $table.$column END");
             }, $updates));
         }
 
