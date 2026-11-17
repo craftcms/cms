@@ -15,11 +15,15 @@
   import AboutCraftRow from './AboutCraftRow.vue';
 
   const props = defineProps<{updates: AboutCraftUpdates}>();
+  const emit = defineEmits<{
+    /** A check fetched the updates, along with Craft's license info. */
+    checked: [];
+  }>();
 
   const total = ref(props.updates.total);
   const dateFetched = ref(props.updates.dateFetched ?? null);
   /** Whether the updates have been fetched, so there's a result to show. */
-  const known = ref(props.updates.cached);
+  const known = ref(isResult(props.updates));
   const checking = ref(false);
   const error = ref('');
   /**
@@ -28,7 +32,21 @@
    */
   const announcement = ref('');
   const checkButton = useTemplateRef<HTMLElement>('checkButton');
-  const goButton = useTemplateRef<HTMLElement>('goButton');
+  const goButton = useTemplateRef<
+    HTMLElement & {updateComplete?: Promise<unknown>}
+  >('goButton');
+
+  /**
+   * Whether updates were fetched: a failed request for them is cached too,
+   * with no fetch date, and isn't a result to show.
+   */
+  function isResult(
+    updates: Pick<AboutCraftUpdates, 'dateFetched'> & {
+      cached?: boolean;
+    }
+  ): boolean {
+    return updates.cached !== false && !!updates.dateFetched;
+  }
 
   async function check(forceRefresh = true) {
     if (checking.value) return;
@@ -42,20 +60,25 @@
         forceRefresh,
       });
 
+      // Left out when the updates couldn't be fetched, which keeps the last
+      // result rather than claiming it's up to date.
+      if (!isResult(data)) {
+        throw new Error('The updates couldn’t be fetched.');
+      }
+
       total.value = data.total;
-      // Left out when the updates couldn't be fetched
-      dateFetched.value = data.dateFetched ?? null;
+      dateFetched.value = data.dateFetched;
       // Read before the result shows: with updates, the button goes away.
       const hadFocus = isFocused(checkButton.value);
       known.value = true;
       announcement.value = total.value ? availableLabel.value : t('Up to date');
 
       if (total.value && hadFocus) {
-        await nextTick();
-        goButton.value?.focus();
+        await focusGoButton();
       }
       // The nav's badge counts the updates too.
       router.reload({only: ['craft']});
+      emit('checked');
     } catch {
       error.value = t('Unable to fetch updates at this time.');
       // With no result to show, the row says so instead of an alert.
@@ -69,13 +92,24 @@
     return !!element && element.contains(document.activeElement);
   }
 
+  /**
+   * Focuses “Go to Updates”. As a link, the button doesn't take focus
+   * itself, so its anchor does, once it's rendered.
+   */
+  async function focusGoButton() {
+    await nextTick();
+    const button = goButton.value;
+    await button?.updateComplete;
+    (button?.shadowRoot?.querySelector<HTMLElement>('a') ?? button)?.focus();
+  }
+
   // The palette view gets the updates after it shows, so they're followed.
   watch(
     () => props.updates,
     (updates) => {
       total.value = updates.total;
       dateFetched.value = updates.dateFetched ?? null;
-      known.value = updates.cached;
+      known.value = isResult(updates);
 
       if (!updates.cached) void check(false);
     },
