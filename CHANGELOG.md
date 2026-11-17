@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-- Fixed a [high-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
 - Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs, so the field layout and card appearance no longer sit below the general settings. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
 - Added `CraftCms\Cms\Ui\Nodes\Outlet` and `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`. ([#20658](https://github.com/craftcms/cms/pull/20658))
 - Removed the bundled Composer executable. Package installation, updates, and removal now require Composer 2.2.0 or later in the server’s `PATH`, and are disabled when it’s unavailable.
@@ -103,6 +102,7 @@
 - Deprecated `CraftCms\Cms\Image\CraftAssetTransformDriver::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT`. `CraftCms\Cms\Asset\AssetTransformers::withImmediateTransforms()` and `IMMEDIATE_TRANSFORMS_CONTEXT` should be used instead. ([#20588](https://github.com/craftcms/cms/issues/20588), [#20594](https://github.com/craftcms/cms/pull/20594))
 - Fixed a bug where element selector modals showed structure elements at the same level as their parents in the “Display in a structured table” view mode. ([#20664](https://github.com/craftcms/cms/pull/20664))
 - Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) SSRF vulnerability. (GHSA-53c3-ggrg-m3hg)
+- Fixed a [moderate-severity](https://github.com/craftcms/cms/security/policy#severity--remediation) RCE vulnerability.
 
 ## 6.0.0-beta.1 - 2026-11-10
 
