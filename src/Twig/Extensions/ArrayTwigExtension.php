@@ -17,6 +17,7 @@ use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
+use Twig\Extension\SandboxExtension;
 use Twig\Sandbox\SecurityError;
 use Twig\Source;
 use Twig\TwigFilter;
@@ -39,7 +40,7 @@ class ArrayTwigExtension extends AbstractExtension
             new TwigFilter('filter', $this->filterFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('firstWhere', $this->firstWhereFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('flatten', Arr::flatten(...)),
-            new TwigFilter('group', $this->groupFilter(...), ['needs_is_sandboxed' => true]),
+            new TwigFilter('group', $this->groupFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('indexOf', $this->indexOfFilter(...)),
             new TwigFilter('intersect', 'array_intersect'),
             new TwigFilter('map', $this->mapFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
@@ -265,9 +266,15 @@ class ArrayTwigExtension extends AbstractExtension
      *
      * @throws RuntimeError
      */
-    public function groupFilter(bool $isSandboxed, iterable $arr, callable|string $arrow): array
+    public function groupFilter(TwigEnvironment $env, bool $isSandboxed, iterable $arr, callable|string $arrow): array
     {
         $groups = [];
+
+        if (is_string($arrow) && $isSandboxed) {
+            // Read the property like other array filters’ keys, rather than rendering it as an object template, which
+            // would use the site template mode’s Twig environment, even when a sandboxed control panel template is rendering
+            $arrow = self::sandboxKey($env, true, $arrow, 'group');
+        }
 
         if (is_string($arrow)) {
             // No need to call checkArrow() here since strings are always interpreted as nested fields,
@@ -281,8 +288,13 @@ class ArrayTwigExtension extends AbstractExtension
             CoreExtension::checkArrow($isSandboxed, $arrow, 'group', 'filter');
 
             foreach ($arr as $key => $item) {
-                $groupKey = (string) $arrow($item, $key);
-                $groups[$groupKey][] = $item;
+                $groupKey = $arrow($item, $key);
+
+                if ($isSandboxed && is_object($groupKey)) {
+                    $env->getExtension(SandboxExtension::class)->ensureToStringAllowed($groupKey);
+                }
+
+                $groups[(string) $groupKey][] = $item;
             }
         }
 

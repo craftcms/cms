@@ -168,8 +168,8 @@ it('doesn’t let allowed filters and functions expose object data the sandbox d
         }
 
         if (is_iterable($value) && $depth < 5) {
-            foreach ($value as $item) {
-                if ($leak = $findLeak($item, $depth + 1)) {
+            foreach ($value as $k => $item) {
+                if ($leak = $findLeak($k) ?? $findLeak($item, $depth + 1)) {
                     return $leak;
                 }
             }

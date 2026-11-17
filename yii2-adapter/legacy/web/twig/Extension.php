@@ -137,7 +137,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $array = ArrayTwigExtension::sandboxItems($isSandboxed, $array);
         $key = ArrayTwigExtension::sandboxKey($env, $isSandboxed, $key, 'index');
-        $groups = array_map(fn($group) => ArrayTwigExtension::sandboxKey($env, $isSandboxed, $group, 'index'), (array) $groups);
+        $groups = array_map(fn($group) => ArrayTwigExtension::sandboxKey($env, $isSandboxed, $group, 'index'), (array) ArrayTwigExtension::sandboxItems($isSandboxed, $groups));
 
         return ArrayHelper::index($array, $key, $groups);
     }

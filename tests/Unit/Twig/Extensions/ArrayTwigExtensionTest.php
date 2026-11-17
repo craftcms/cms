@@ -6,6 +6,7 @@ use CraftCms\Cms\Twig\Extensions\ArrayTwigExtension;
 use CraftCms\Cms\Twig\Twig;
 use CraftCms\Cms\View\PageLifecycle;
 use CraftCms\Cms\View\TemplateManager;
+use CraftCms\Cms\View\TemplateMode;
 use Illuminate\Support\Collection;
 use Twig\Error\Error as TwigError;
 use Twig\Error\RuntimeError;
@@ -76,7 +77,7 @@ describe('ArrayTwigExtension', function () {
 
             $array = [['status' => 'live'], ['status' => 'draft'], ['status' => 'live']];
 
-            expect($extension->groupFilter(false, $array, 'status'))->toBe([
+            expect($extension->groupFilter($this->env, false, $array, 'status'))->toBe([
                 'live' => [['status' => 'live'], ['status' => 'live']],
                 'draft' => [['status' => 'draft']],
             ]);
@@ -87,7 +88,7 @@ describe('ArrayTwigExtension', function () {
 
             $array = [1, 2, 3, 4];
 
-            expect($extension->groupFilter(true, $array, fn (int $v) => $v % 2 === 0 ? 'even' : 'odd'))->toBe([
+            expect($extension->groupFilter($this->env, true, $array, fn (int $v) => $v % 2 === 0 ? 'even' : 'odd'))->toBe([
                 'odd' => [1, 3],
                 'even' => [2, 4],
             ]);
@@ -97,7 +98,7 @@ describe('ArrayTwigExtension', function () {
             $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
 
             // a first-class callable (`...`) is itself a Closure, so use an array callable to get a genuinely non-Closure callable
-            $extension->groupFilter(true, [1, 2], [$extension, 'indexOfFilter']);
+            $extension->groupFilter($this->env, true, [1, 2], [$extension, 'indexOfFilter']);
         })->throws(RuntimeError::class);
     });
 
@@ -196,7 +197,14 @@ describe('ArrayTwigExtension', function () {
 
                 public function offsetUnset(mixed $offset): void {}
             };
-            $this->variables = ['outer' => $outer, 'inner' => $inner, 'target' => $this->target, 'arrayAccess' => $arrayAccess];
+            $stringable = new class
+            {
+                public function __toString(): string
+                {
+                    return 'shh';
+                }
+            };
+            $this->variables = ['outer' => $outer, 'inner' => $inner, 'target' => $this->target, 'arrayAccess' => $arrayAccess, 'stringable' => $stringable];
             ArrayTwigExtensionTestStaticTarget::$calls = 0;
         });
 
@@ -218,6 +226,15 @@ describe('ArrayTwigExtension', function () {
             'contains with a disallowed property' => ["{{ [inner]|contains('secret', 'shh') ? 'y' : 'n' }}"],
             'multisort with a disallowed property' => ["{{ [inner, inner]|multisort('secret')|length }}"],
             'column with a disallowed ArrayAccess offset' => ["{{ [arrayAccess]|column('secret')|first }}"],
+            'group with an arrow function returning an object that can’t be a string' => ['{{ [1]|group(i => stringable)|keys|first }}'],
+        ])->throws(TwigError::class);
+
+        // group used to render property names as object templates in the site template mode’s environment
+        it('keeps group in the sandbox in control panel templates', function (string $template) {
+            app(TemplateManager::class)->renderSandboxedString($template, $this->variables, TemplateMode::Cp);
+        })->with([
+            'disallowed property' => ["{{ [inner]|group('secret')|keys|first }}"],
+            'Twig tag' => ["{{ [inner]|group('x}{{ object.secret }}{x')|keys|first }}"],
         ])->throws(TwigError::class);
 
         it('never calls callable arrays passed to multisort', function () {
@@ -237,9 +254,11 @@ describe('ArrayTwigExtension', function () {
                 '{{ [{a: 1}, {a: 2}]|where(i => i.a == 2)|length }}',
                 "{{ [{a: 1}]|contains('a', 1) ? 'y' : 'n' }}",
                 "{{ [[1, 2], [3, 4]]|column(1)|join(',') }}",
+                "{{ [{a: 'x'}, {a: 'y'}, {a: 'x'}]|group('a')|keys|join(',') }}",
             ]));
 
-            expect($result)->toBe('x,y|1,2|1|1|y|2,4');
+            expect($result)->toBe('x,y|1,2|1|1|y|2,4|x,y');
+            expect(app(TemplateManager::class)->renderSandboxedString("{{ [{a: 'x'}]|group('a')|keys|first }}", templateMode: TemplateMode::Cp))->toBe('x');
         });
 
         it('still allows offset reads on Twig’s array-like classes', function () {
