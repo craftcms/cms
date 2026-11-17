@@ -153,9 +153,7 @@ class ImageTransformer
                 try {
                     $this->generateTransform($index, $asset, $transformer);
                 } catch (Exception $e) {
-                    $index->inProgress = false;
-                    $index->fileExists = false;
-                    $index->error = true;
+                    $index->markFailed();
                     $this->storeTransformIndexData($index);
 
                     throw new ImageTransformException(t('Failed to generate transform with id of {id}.', [
@@ -163,8 +161,7 @@ class ImageTransformer
                     ]), previous: $e);
                 }
 
-                $index->inProgress = false;
-                $index->fileExists = true;
+                $index->markGenerated();
                 $this->storeTransformIndexData($index);
             }
         }
@@ -658,7 +655,7 @@ class ImageTransformer
             return false;
         }
 
-        $index->inProgress = true;
+        $index->markGenerating();
 
         return true;
     }

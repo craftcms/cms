@@ -595,6 +595,23 @@ it('queues abandoned in-progress transforms for generation', function () {
     expect($this->transformer->getPendingTransformIndexIds())->toContain($index->id);
 });
 
+it('queues a transform that failed once again after its file is lost', function () {
+    Queue::fake();
+    $asset = ($this->createImageAsset)();
+    $asset->getVolume()->sourceDisk()->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'));
+    $index = $this->transformer->getTransformIndex($asset, new ImageTransform(['width' => 100]));
+    $index->error = true;
+    $this->transformer->storeTransformIndexData($index);
+
+    $this->transformer->getTransformUrlForIndex($asset, $index, true);
+
+    $index = $this->transformer->getTransformIndexModelById($index->id);
+    $index->fileExists = false;
+    $this->transformer->storeTransformIndexData($index);
+
+    expect($this->transformer->getPendingTransformIndexIds())->toContain($index->id);
+});
+
 it('stores transform creation and update times in UTC', function (string $timeZone) {
     Cms::config()->timezone($timeZone);
     Cms::setDefaultTimezone();
