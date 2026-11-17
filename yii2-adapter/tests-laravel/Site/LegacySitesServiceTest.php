@@ -55,7 +55,7 @@ test('saveGroup() sets the id on the passed group', function() {
 
 test('setCurrentSite() keeps the passed site object', function() {
     $service = Craft::$app->getSites();
-    $site = $service->getPrimarySite();
+    $site = clone $service->getPrimarySite();
     $site->setBaseUrl('https://modified.test');
 
     $service->setCurrentSite($site);
