@@ -33,7 +33,7 @@ it('opens the entry type menu and creates the chosen type', async () => {
   app.mount(container);
 
   await page.getByRole('button', {name: 'New block'}).click();
-  await page.getByRole('button', {name: 'Add Type 7'}).click();
+  await page.getByRole('button', {name: 'Type 7', exact: true}).click();
 
   await vi.waitFor(() =>
     expect(onCreate).toHaveBeenCalledWith(

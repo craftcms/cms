@@ -91,7 +91,7 @@
       type: 'group',
       ...(group === '' ? {} : {heading: group}),
       items: choices.map((choice) => ({
-        label: t('Add {type}', {type: choice.label}),
+        label: choice.label,
         icon: choice.icon ?? 'plus',
         iconColor: choice.color ?? undefined,
         disabled: props.disabled,
