@@ -45,6 +45,12 @@
 
   const settings = ref(props.widget.id < 0);
   const container = ref<HTMLElement>();
+  const front = ref<HTMLElement>();
+  /**
+   * The widget's height when its settings opened. Its settings face is at
+   * least as tall, so widgets below it don't move when they're shorter.
+   */
+  const frontHeight = shallowRef<number>();
 
   useResizeObserver(container, () => emit('resize'));
   const settingsButton = ref<HTMLElement>();
@@ -72,6 +78,7 @@
         {widgetId: props.widget.id},
         `widget${props.widget.id}-settings`
       );
+      frontHeight.value = front.value?.offsetHeight;
       settings.value = true;
     } catch {
       messages.error(t('Couldn’t load widget settings.'));
@@ -161,7 +168,7 @@
     :data-title="widget.title"
   >
     <Transition name="widget-front">
-      <div v-show="!settings" class="front" :inert="settings">
+      <div v-show="!settings" ref="front" class="front" :inert="settings">
         <component
           v-if="ready && widget.id > 0 && widget.component"
           :is="widget.component"
@@ -233,33 +240,42 @@
       @after-leave="finishSettingsLeave"
       @before-leave="(element) => element.setAttribute('inert', '')"
     >
-      <div v-if="settings" class="settings-face">
+      <div
+        v-if="settings"
+        class="settings-face"
+        :style="{minBlockSize: frontHeight ? `${frontHeight}px` : undefined}"
+      >
         <craft-card :data-color="widget.color ?? undefined">
-          <!-- The same header band as the widget's front. -->
-          <div class="widget-header">
-            <div class="widget-heading">
-              <h2 class="widget-title cp-h3">
-                {{ t('{type} Settings', {type: widget.name}) }}
-              </h2>
+          <div class="settings-body">
+            <!-- The same header band as the widget's front. -->
+            <div class="widget-header">
+              <div class="widget-heading">
+                <h2 class="widget-title cp-h3">
+                  {{ t('{type} Settings', {type: widget.name}) }}
+                </h2>
+              </div>
+              <div
+                v-if="settingsWidget.settingsUi"
+                class="widget-header-actions"
+              >
+                <craft-button
+                  type="button"
+                  icon="xmark-large"
+                  variant="plain"
+                  flush="inline-end block"
+                  :aria-label="t('Cancel')"
+                  .disabled="settingsSending"
+                  @click="closeSettings"
+                ></craft-button>
+              </div>
             </div>
-            <div v-if="settingsWidget.settingsUi" class="widget-header-actions">
-              <craft-button
-                type="button"
-                icon="xmark-large"
-                variant="plain"
-                flush="inline-end block"
-                :aria-label="t('Cancel')"
-                .disabled="settingsSending"
-                @click="closeSettings"
-              ></craft-button>
-            </div>
+            <WidgetSettings
+              v-model:sending="settingsSending"
+              :widget="settingsWidget"
+              @saved="saved"
+              @cancel="closeSettings"
+            />
           </div>
-          <WidgetSettings
-            v-model:sending="settingsSending"
-            :widget="settingsWidget"
-            @saved="saved"
-            @cancel="closeSettings"
-          />
         </craft-card>
       </div>
     </Transition>
@@ -308,6 +324,26 @@
   craft-card {
     display: block;
     position: relative;
+  }
+
+  .settings-face,
+  .settings-face > craft-card::part(base) {
+    display: grid;
+  }
+
+  .settings-face > craft-card::part(body) {
+    display: grid;
+    grid-template-areas: 'main';
+  }
+
+  .settings-body {
+    display: flex;
+    flex-direction: column;
+    block-size: 100%;
+  }
+
+  .settings-body > :deep(form) {
+    flex: 1;
   }
 
   /* The title row the widget's component renders at the top of its card's
