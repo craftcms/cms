@@ -2489,20 +2489,24 @@ class GeneralConfig extends BaseConfig
     public string|null|false|Closure $restoreCommand = null;
 
     /**
-     * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
+     * @var bool|null Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
      *
-     * ::: code
-     * ```php Static Config
-     * ->revAssetUrls(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_REV_ASSET_URLS=true
-     * ```
+     * ::: warning
+     * This setting is deprecated. Set `rev_urls` on disks in `config/filesystems.php` instead, which takes precedence
+     * over it.
      * :::
+     *
+     * ```php config/filesystems.php
+     * 's3' => [
+     *     'driver' => 's3',
+     *     // ...
+     *     'rev_urls' => true,
+     * ],
+     * ```
      *
      * @group Assets
      */
-    public bool $revAssetUrls = false;
+    public ?bool $revAssetUrls = null;
 
     /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
@@ -5869,15 +5873,12 @@ class GeneralConfig extends BaseConfig
     /**
      * Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
      *
-     * ```php
-     * ->revAssetUrls(true)
-     * ```
-     *
      * @group Assets
      *
+     * @deprecated in 6.0.0. The `rev_urls` key on disks in `config/filesystems.php` should be used instead.
      * @see $revAssetUrls
      */
-    public function revAssetUrls(bool $value = true): self
+    public function revAssetUrls(?bool $value = true): self
     {
         $this->revAssetUrls = $value;
 

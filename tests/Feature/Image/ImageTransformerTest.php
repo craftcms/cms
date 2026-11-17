@@ -483,13 +483,13 @@ it('does not reuse a transform result older than the source Asset', function () 
     expect($disk->get($transformPath))->not->toBe($originalTransform);
 });
 
-it('includes the source revision in transform URL identity', function () {
+it('includes the source revision in transform URL identity, even when the disk doesn’t rev URLs', function () {
     $asset = ($this->createImageAsset)();
     $asset->getVolume()->sourceDisk()->put(
         $asset->getPath(),
         file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/background.jpg'),
     );
-    Cms::config()->revAssetUrls(false);
+    config()->set('filesystems.disks.test-disk.rev_urls', false);
 
     $transformers = app(AssetTransformers::class);
     $firstUrl = $transformers->withImmediateTransforms(

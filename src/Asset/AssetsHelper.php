@@ -13,8 +13,10 @@ use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementHelper;
+use CraftCms\Cms\Filesystem\DiskConfig;
 use CraftCms\Cms\Filesystem\Exceptions\FilesystemException;
 use CraftCms\Cms\Filesystem\Exceptions\InvalidSubpathException;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Folders;
 use CraftCms\Cms\Support\Facades\Path;
 use CraftCms\Cms\Support\File;
@@ -96,11 +98,38 @@ class AssetsHelper
         $path = implode('/', array_map(rawurlencode(...), $pathParts));
         $url = $volume->sourceDisk()->url($path);
 
-        if (Cms::config()->revAssetUrls) {
+        if (self::revsUrls($volume)) {
             return self::revUrl($url, $asset, $dateUpdated);
         }
 
         return $url;
+    }
+
+    /**
+     * Returns whether a volume’s file URLs get revision params: its disk’s `rev_urls` key, else the deprecated
+     * `revAssetUrls` setting.
+     */
+    private static function revsUrls(Volume $volume): bool
+    {
+        $disk = $volume->getResolvedFsTarget();
+        $revUrls = $disk !== null ? DiskConfig::get($disk, 'rev_urls') : null;
+
+        if (is_bool($revUrls)) {
+            return $revUrls;
+        }
+
+        $revAssetUrls = Cms::config()->revAssetUrls;
+
+        if ($revAssetUrls === null) {
+            return false;
+        }
+
+        once(fn () => Deprecator::log(
+            'revAssetUrls',
+            'The `revAssetUrls` config setting has been deprecated. Set `rev_urls` on disks in `config/filesystems.php` instead.',
+        ));
+
+        return $revAssetUrls;
     }
 
     /**

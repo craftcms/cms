@@ -16,6 +16,7 @@ use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\Models\VolumeFolder as VolumeFolderModel;
 use CraftCms\Cms\Asset\PreviewHandlers\Text;
 use CraftCms\Cms\Asset\Validation\AssetRules;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Cp\Enums\Theme;
 use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Queries\AssetQuery;
@@ -25,6 +26,7 @@ use CraftCms\Cms\Image\Enums\ImageTransformMode;
 use CraftCms\Cms\Image\Events\AssetTransformsInvalidating;
 use CraftCms\Cms\Shared\Exceptions\NotSupportedException;
 use CraftCms\Cms\Support\Facades\Assets as AssetsFacade;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Images as ImagesFacade;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
@@ -75,6 +77,37 @@ it('can get total assets', function () {
     ]);
 
     expect($this->assets->getTotalAssets())->toBe(3);
+});
+
+it('revs original file URLs when the disk’s rev_urls key or the deprecated revAssetUrls setting turns it on', function () {
+    config()->set('filesystems.disks.test-disk.url', 'https://cdn.test/assets');
+    config()->set('filesystems.disks.scoped-disk', ['driver' => 'scoped', 'disk' => 'test-disk', 'prefix' => 'blog']);
+    $assets = collect(['test-disk', 'scoped-disk'])->mapWithKeys(function (string $disk) {
+        $volume = Volume::factory()->create(['fs' => $disk, 'hasUrls' => true]);
+        $folder = VolumeFolderModel::factory()->create(['volumeId' => $volume->id]);
+
+        return [$disk => AssetModel::factory()->createElement([
+            'volumeId' => $volume->id,
+            'folderId' => $folder->id,
+            'filename' => 'photo.jpg',
+            'dateModified' => now(),
+        ])];
+    });
+    $urlFor = fn (string $disk) => $assets[$disk]->getUrl();
+
+    expect($urlFor('test-disk'))->toBe('https://cdn.test/assets/photo.jpg')
+        ->and(array_column(Deprecator::getRequestLogs(), 'key'))->not->toContain('revAssetUrls');
+
+    Cms::config()->revAssetUrls(true);
+    expect($urlFor('test-disk'))->toMatch('#^https://cdn\.test/assets/photo\.jpg\?v=\d+$#')
+        ->and(array_column(Deprecator::getRequestLogs(), 'key'))->toContain('revAssetUrls');
+
+    config()->set('filesystems.disks.test-disk.rev_urls', false);
+    expect($urlFor('scoped-disk'))->toBe('https://cdn.test/assets/blog/photo.jpg');
+
+    Cms::config()->revAssetUrls(null);
+    config()->set('filesystems.disks.test-disk.rev_urls', true);
+    expect($urlFor('scoped-disk'))->toMatch('#^https://cdn\.test/assets/blog/photo\.jpg\?v=\d+$#');
 });
 
 it('resolves thumbnail dimensions for table and card sizes', function (?int $width, ?int $height, int $size, array $expected) {

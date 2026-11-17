@@ -15,6 +15,7 @@ use CraftCms\Cms\Asset\Elements\Asset;
 use CraftCms\Cms\Asset\Exceptions\AssetTransformDriverNotFoundException;
 use CraftCms\Cms\Asset\Exceptions\ImageTransformException;
 use CraftCms\Cms\Asset\Exceptions\InvalidAssetTransformException;
+use CraftCms\Cms\Filesystem\DiskConfig;
 use CraftCms\Cms\Image\CraftAssetTransformDriver;
 use CraftCms\Cms\Image\Data\ImageTransform;
 use CraftCms\Cms\Image\Enums\ImageTransformFormat;
@@ -51,8 +52,6 @@ class AssetTransformers extends Manager
 {
     /** @internal Hidden context key holding the caller’s immediate generation preference. */
     public const string IMMEDIATE_TRANSFORMS_CONTEXT = self::class.'.immediateTransforms';
-
-    private const int MAX_SCOPED_DEPTH = 8;
 
     /** @var array<string, non-empty-list<string|Stringable>> */
     private readonly array $parameterRules;
@@ -155,7 +154,7 @@ class AssetTransformers extends Manager
      */
     public function forDisk(?string $disk): AssetTransformer
     {
-        $config = $disk !== null ? $this->diskTransformerConfig($disk) : null;
+        $config = $disk !== null ? DiskConfig::get($disk, 'asset_transformer') : null;
 
         if ($config === null) {
             return new AssetTransformer('craft');
@@ -170,7 +169,7 @@ class AssetTransformers extends Manager
      */
     public function configForDisk(string $disk): mixed
     {
-        return $this->diskTransformerConfig($disk);
+        return DiskConfig::get($disk, 'asset_transformer');
     }
 
     public function transform(
@@ -299,32 +298,6 @@ class AssetTransformers extends Manager
     protected function createCraftDriver(): AssetTransformDriver
     {
         return $this->container->make(CraftAssetTransformDriver::class);
-    }
-
-    /**
-     * Returns a disk’s `asset_transformer` value. A scoped disk without one follows the disk it wraps.
-     *
-     * Disks are read from the `disks` array rather than with dot notation, so disk names can contain dots.
-     *
-     * @param  string|array<string, mixed>  $disk  A disk name, or a scoped disk’s inline `disk` config.
-     */
-    private function diskTransformerConfig(string|array $disk, int $depth = 0): mixed
-    {
-        $config = is_string($disk) ? ($this->config->get('filesystems.disks')[$disk] ?? null) : $disk;
-
-        if (! is_array($config) || $depth > self::MAX_SCOPED_DEPTH) {
-            return null;
-        }
-
-        if (array_key_exists('asset_transformer', $config)) {
-            return $config['asset_transformer'];
-        }
-
-        $wrapped = $config['disk'] ?? null;
-
-        return ($config['driver'] ?? null) === 'scoped' && (is_string($wrapped) || is_array($wrapped))
-            ? $this->diskTransformerConfig($wrapped, $depth + 1)
-            : null;
     }
 
     private function forAsset(Asset $asset): AssetTransformer
