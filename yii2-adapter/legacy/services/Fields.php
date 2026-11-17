@@ -38,6 +38,7 @@ use CraftCms\Yii2Adapter\Event\TypeRegistryCompatibility;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
+use ReflectionClass;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -544,7 +545,7 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type, bool $create = true): ?FieldLayout
     {
-        return app(\CraftCms\Cms\Field\Fields::class)->getLayoutByType($type, $create);
+        return app(\CraftCms\Cms\Field\Fields::class)->getLayoutByType(self::elementType($type), $create);
     }
 
     /**
@@ -557,7 +558,7 @@ class Fields extends Component
      */
     public function getLayoutsByType(string $type): array
     {
-        return app(\CraftCms\Cms\Field\Fields::class)->getLayoutsByType($type)->all();
+        return app(\CraftCms\Cms\Field\Fields::class)->getLayoutsByType(self::elementType($type))->all();
     }
 
     /**
@@ -650,7 +651,7 @@ class Fields extends Component
      */
     public function deleteLayoutsByType(string $type): bool
     {
-        return app(\CraftCms\Cms\Field\Fields::class)->deleteLayoutsByType($type);
+        return app(\CraftCms\Cms\Field\Fields::class)->deleteLayoutsByType(self::elementType($type));
     }
 
     /**
@@ -730,6 +731,17 @@ class Fields extends Component
     {
         /** @var self */
         return Craft::$app->get('fields');
+    }
+
+    /**
+     * Resolves a legacy alias, such as `craft\elements\User`, to the class name that field layouts are stored with.
+     *
+     * @param  class-string<ElementInterface>  $type
+     * @return class-string<ElementInterface>
+     */
+    private static function elementType(string $type): string
+    {
+        return class_exists($type) ? new ReflectionClass($type)->getName() : $type;
     }
 
     public static function registerEvents(): void
