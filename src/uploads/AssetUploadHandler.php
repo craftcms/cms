@@ -23,6 +23,7 @@ use craft\models\VolumeFolder;
 use DateTime;
 use Throwable;
 use yii\web\BadRequestHttpException;
+use yii\web\ConflictHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
@@ -41,8 +42,9 @@ use yii\web\NotFoundHttpException;
  * [[\craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD]] handler’s approval, unless they go to the guest’s own temporary
  * upload folder.
  *
- * Files are moved into place within their volume’s filesystem, so they aren’t downloaded, unless Craft would clean
- * them (see <config5:sanitizeCpImageUploads>), the field has a selection condition, or they replace an asset’s file.
+ * Files are moved into place within their volume’s filesystem, so they aren’t downloaded, unless they’re SVGs, Craft
+ * would clean them (see <config5:sanitizeCpImageUploads>), the field has a selection condition, or they replace an
+ * asset’s file.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.13.0
@@ -136,7 +138,7 @@ class AssetUploadHandler implements UploadHandlerInterface
             $selectionCondition->referenceElement = $element;
         }
 
-        if ($selectionCondition || $this->shouldClean($upload->filename)) {
+        if ($selectionCondition || $this->needsLocalCopy($upload->filename)) {
             return $this->uploadLocally($upload, $folder, $selectionCondition, $params['siteId'] ?? null);
         }
 
@@ -147,6 +149,24 @@ class AssetUploadHandler implements UploadHandlerInterface
      * Creates an asset around the uploaded file, after moving it into the folder within its filesystem.
      */
     private function uploadInPlace(StagedUpload $upload, VolumeFolder $folder, ?int $siteId): array
+    {
+        // Other uploads to the folder could pick the same available filename, and moving a file overwrites any file
+        // already there, so only one upload at a time picks a name and moves its file into the folder
+        $mutex = Craft::$app->getMutex();
+        $lockName = "craft-upload-folder:$folder->id";
+
+        if (!$mutex->acquire($lockName, 15)) {
+            throw new ConflictHttpException('Another upload is saving to this folder. Try again.');
+        }
+
+        try {
+            return $this->moveIntoPlace($upload, $folder, $siteId);
+        } finally {
+            $mutex->release($lockName);
+        }
+    }
+
+    private function moveIntoPlace(StagedUpload $upload, VolumeFolder $folder, ?int $siteId): array
     {
         $filename = Assets::prepareAssetName($upload->filename);
         $suggestedFilename = Craft::$app->getAssets()->getNameReplacementInFolder($filename, $folder->id);
@@ -320,14 +340,19 @@ class AssetUploadHandler implements UploadHandlerInterface
     }
 
     /**
-     * Whether Craft would clean the file when saving it, which needs a local copy.
+     * Whether the file must be saved from a local copy: Craft cleans it, or reads its dimensions from the whole file.
      */
-    private function shouldClean(string $filename): bool
+    private function needsLocalCopy(string $filename): bool
     {
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        // Same condition as Asset::afterSave(), which also covers SVG sanitizing
-        return (Image::canManipulateAsImage($extension) || $extension === 'svg') && (
+        // SVGs always need a local copy, since their dimensions can only be read from the whole file
+        if ($extension === 'svg') {
+            return true;
+        }
+
+        // Same condition as Asset::afterSave()
+        return Image::canManipulateAsImage($extension) && (
             !Craft::$app->getRequest()->getIsCpRequest() ||
             Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
         );

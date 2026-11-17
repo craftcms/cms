@@ -108,13 +108,31 @@ export class FileUpload {
       this._throwIfCanceled();
 
       if (!this._transferred) {
-        await this._transfer(this._session.transport);
+        try {
+          await this._transfer(this._session.transport);
+        } catch (error) {
+          // Craft's transfer URL only accepts one file, so a conflict means an
+          // earlier attempt's file arrived after all. Completing checks it.
+          if (error.status !== 409) {
+            throw error;
+          }
+        }
         this._transferred = true;
       }
 
       this._throwIfCanceled();
       this._setState('completing');
-      this._result = {value: await this._post(this._session.urls.complete)};
+
+      try {
+        this._result = {value: await this._post(this._session.urls.complete)};
+      } catch (error) {
+        // Craft deletes files it rejects, such as one of the wrong size, and
+        // reports files that never arrived, so retries send the file again
+        if (error.status === 400) {
+          this._transferred = false;
+        }
+        throw error;
+      }
       this._setState('completed');
 
       return this._result.value;
