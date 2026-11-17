@@ -115,18 +115,29 @@ class UploadsTest extends TestCase
         self::assertFileDoesNotExist($path);
     }
 
-    public function testImageDimensionsAreReadPastLargeMetadata(): void
+    public function testImageDimensionsAndAltTextAreReadPastLargeMetadata(): void
     {
         Craft::$app->getRequest()->setIsCpRequest(true);
         Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads = false;
 
-        // A JPEG whose size frame comes after 120 KB of metadata, like a photo with a large EXIF block
+        // A JPEG whose XMP and size frame come after an IPTC caption and 120 KB of other metadata, like a photo with a
+        // large EXIF block. XMP alt text takes precedence over the caption that comes before it.
         $image = imagecreatetruecolor(37, 23);
         ob_start();
         imagejpeg($image);
         $jpeg = ob_get_clean();
         $segment = "\xFF\xE1" . pack('n', 60002) . str_repeat("\0", 60000);
-        $jpeg = substr($jpeg, 0, 2) . $segment . $segment . substr($jpeg, 2);
+        $caption = 'IPTC caption';
+        $iptc = "Photoshop 3.0\x008BIM\x04\x04\0\0" . pack('N', 5 + strlen($caption)) . "\x1C\x02\x78" . pack('n', strlen($caption)) . $caption;
+        $xmp = "http://ns.adobe.com/xap/1.0/\0" . '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+            . '<rdf:Description xmlns:Iptc4xmpCore="http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/"><Iptc4xmpCore:AltTextAccessibility>'
+            . '<rdf:Alt><rdf:li xml:lang="x-default">Café at dusk</rdf:li></rdf:Alt>'
+            . '</Iptc4xmpCore:AltTextAccessibility></rdf:Description></rdf:RDF></x:xmpmeta>';
+        $jpeg = substr($jpeg, 0, 2)
+            . "\xFF\xED" . pack('n', strlen($iptc) + 2) . $iptc
+            . $segment . $segment
+            . "\xFF\xE1" . pack('n', strlen($xmp) + 2) . $xmp
+            . substr($jpeg, 2);
 
         try {
             $upload = $this->start('logo.jpg', strlen($jpeg));
@@ -141,6 +152,7 @@ class UploadsTest extends TestCase
         self::assertSame($jpeg, file_get_contents("$this->root/{$asset->getPath()}"), 'The image must be moved into place, not cleaned.');
         self::assertFileDoesNotExist($this->root . '/' . Uploads::STAGING_FOLDER . "/{$upload['id']}", 'The staged file must be moved, not copied.');
         self::assertSame([37, 23], [$asset->width, $asset->height]);
+        self::assertSame('Café at dusk', $asset->alt);
     }
 
     public function testFilenameConflictsKeepBothFiles(): void

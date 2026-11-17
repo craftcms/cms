@@ -19,6 +19,7 @@ use craft\helpers\ConfigHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\models\VolumeFolder;
 use DateTime;
@@ -47,8 +48,8 @@ use yii\web\ServerErrorHttpException;
  * Files are moved into place within their volume’s filesystem, so they aren’t downloaded, unless they’re SVGs, Craft
  * would clean them (see <config5:sanitizeCpImageUploads>), the field has a selection condition, an
  * [[Asset::EVENT_BEFORE_HANDLE_FILE]] handler is registered, or they replace an asset’s file. Those are saved from a
- * local copy, the way the `assets/upload` action saves them. Images moved into place get their dimensions from the
- * start of the file, but not alt text from their metadata.
+ * local copy, the way the `assets/upload` action saves them. Images moved into place get their dimensions, and
+ * JPEGs their alt text from XMP or IPTC metadata, from the start of the file.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.13.0
@@ -203,15 +204,17 @@ class AssetUploadHandler implements UploadHandlerInterface
 
         if ($asset->kind === Asset::KIND_IMAGE) {
             // Read only as much of the file as the dimensions need, rather than downloading it
-            $stream = $upload->fs->getFileStream($path);
-            try {
-                $dimensions = Image::imageSizeByStream($stream);
-                if ($dimensions) {
-                    [$asset->width, $asset->height] = $dimensions;
+            $dimensions = $this->readStart($upload, $path, fn($stream) => Image::imageSizeByStream($stream));
+            if ($dimensions) {
+                [$asset->width, $asset->height] = $dimensions;
+            }
+
+            // A JPEG’s metadata comes before its image data, so its alt text can be read from the start of the file too
+            if (FileHelper::getMimeTypeByExtension($path) === 'image/jpeg') {
+                $alt = $this->readStart($upload, $path, fn($stream) => Image::altTextByStream($stream));
+                if ($alt !== null) {
+                    $asset->alt = StringHelper::convertToUtf8($alt);
                 }
-            } catch (Throwable) {
-            } finally {
-                fclose($stream);
             }
         }
 
@@ -236,6 +239,31 @@ class AssetUploadHandler implements UploadHandlerInterface
         }
 
         return $this->result($asset, $folder);
+    }
+
+    /**
+     * Passes a stream of the file to the callback, which reads only what it needs, and returns its result, or `null`
+     * if the file can’t be read.
+     *
+     * @template T
+     * @param callable(resource): T $read
+     * @return T|null
+     */
+    private function readStart(StagedUpload $upload, string $path, callable $read): mixed
+    {
+        try {
+            $stream = $upload->fs->getFileStream($path);
+        } catch (Throwable) {
+            return null;
+        }
+
+        try {
+            return $read($stream);
+        } catch (Throwable) {
+            return null;
+        } finally {
+            fclose($stream);
+        }
     }
 
     /**
