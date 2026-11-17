@@ -222,6 +222,20 @@ it('leaves rebuilding the cache to the process that holds the rebuild lock', fun
         ->and(Cache::get(ProjectConfig::STORED_CACHE_KEY))->toBeNull();
 });
 
+it('rewrites the cache once it expires, even when its lifetime is shorter than the rebuild lock', function () {
+    $projectConfig = app(ProjectConfig::class);
+    $projectConfig->cacheDuration = 2;
+    Info::fetch()->update(['configVersion' => Str::random(12)]);
+    $projectConfig->reset();
+    $projectConfig->get('system.name');
+
+    $this->travel(3)->seconds();
+    $projectConfig->reset();
+    $projectConfig->get('system.name');
+
+    expect(Cache::get(ProjectConfig::STORED_CACHE_KEY))->not->toBeNull();
+});
+
 it('replays forced external changes against the original config', function (bool $changed) {
     $original = ['value' => 'old'];
     $incoming = ['value' => $changed ? 'new' : 'old'];

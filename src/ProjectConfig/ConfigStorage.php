@@ -146,13 +146,16 @@ class ConfigStorage
             $entries[$this->rootCacheKey($root)] = ['version' => $version, 'value' => $data[$root]];
         }
 
+        // A TTL lets stores write every entry in one batch; a null TTL writes them one at a time.
+        $ttl = $cacheDuration ?? ProjectConfig::CACHE_DURATION;
+
         // Every request that misses needs the data, but only one needs to write it. The lock isn't released,
-        // so requests that missed while it was being written don't write it again.
+        // so requests that missed while it was being written don't write it again. It never outlives the
+        // entries, so expired entries can always be written again.
         $store = Cache::getStore();
 
-        if (! $store instanceof LockProvider || $store->lock(ProjectConfig::STORED_CACHE_KEY.':rebuild:'.$version, 10)->get()) {
-            // A TTL lets stores write every entry in one batch; a null TTL writes them one at a time.
-            Cache::putMany($entries, $cacheDuration ?? ProjectConfig::CACHE_DURATION);
+        if ($ttl > 0 && (! $store instanceof LockProvider || $store->lock(ProjectConfig::STORED_CACHE_KEY.':rebuild:'.$version, min(10, $ttl))->get())) {
+            Cache::putMany($entries, $ttl);
         }
 
         return $data;
