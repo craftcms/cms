@@ -289,6 +289,7 @@ describe('query and encoding helpers', function () {
         'path-relative, base with a path' => ['https://example.com/fr/uploads/a.png', 'uploads/a.png', 'https://example.com/fr/'],
         'protocol-relative' => ['http://cdn.example.com/a.png', '//cdn.example.com/a.png', 'http://example.com/'],
         'query and fragment' => ['https://example.com/a.png?v=2#top', '/a.png?v=2#top', 'https://example.com/'],
+        'unencoded characters' => ['https://example.com/uploads/caf%C3%A9%20au%20lait.png', '/uploads/café au lait.png', 'https://example.com/'],
         'already absolute' => ['https://cdn.example.com/a.png', 'https://cdn.example.com/a.png', 'https://example.com/'],
         'relative base' => ['/a.png', '/a.png', '/fr/'],
     ]);

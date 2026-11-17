@@ -98,7 +98,7 @@ it('returns absolute transform URLs for volumes with root-relative URLs', functi
     ]);
     $asset = Asset::factory()->createElement([
         'volumeId' => Volume::factory()->create(['fs' => 'transform-relative', 'hasUrls' => true])->id,
-        'filename' => 'source.png',
+        'filename' => 'café.png',
     ]);
     Storage::disk('transform-relative')->put($asset->getPath(), file_get_contents(dirname(__DIR__, 2).'/_data/assets/files/google.png'));
 

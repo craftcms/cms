@@ -12,8 +12,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Support\Uri;
-use Uri\InvalidUriException;
-use Uri\Rfc3986\Uri as Rfc3986Uri;
+use Uri\WhatWg\Url as WhatWgUrl;
 
 /**
  * @since 6.0.0
@@ -69,11 +68,9 @@ class Url extends \Illuminate\Support\Facades\URL
             return $url;
         }
 
-        try {
-            return new Rfc3986Uri($url, new Rfc3986Uri($baseUrl))->toString();
-        } catch (InvalidUriException) {
-            return $url;
-        }
+        $base = WhatWgUrl::parse($baseUrl);
+
+        return ($base ? WhatWgUrl::parse($url, $base)?->toAsciiString() : null) ?? $url;
     }
 
     /**
