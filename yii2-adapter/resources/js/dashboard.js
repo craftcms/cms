@@ -54,7 +54,9 @@
       null,
       () => {},
       context.widget.settings,
-      context.widget.settingsUi
+      // The dashboard loads the settings UI when it opens them; the legacy
+      // API only needs to know there are settings, to show their button.
+      context.widget.settingsUi ?? (context.widget.hasSettings || null)
     );
     api.removeListener(api.$settingsBtn, 'click');
     api.showSettings = context.showSettings;

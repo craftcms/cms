@@ -134,6 +134,13 @@ it('names each block for when it is folded up', function () {
         ->toBe('Block');
 });
 
+it('labels the add button with the field’s create button label', function () {
+    [$owner] = matrixActionsFixture(['createButtonLabel' => 'Add a section']);
+    $control = matrixActionsControl($owner);
+
+    expect($control->props($control->getValue())['addLabel'])->toBe('Add a section');
+});
+
 it('builds a menu for each block', function () {
     [$owner, $uid] = matrixActionsFixture();
     $labels = matrixActionLabels(matrixActionsControl($owner), $uid);

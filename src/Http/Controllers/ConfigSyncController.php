@@ -15,7 +15,6 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Override;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,23 +47,6 @@ class ConfigSyncController extends BaseUpdaterController
         private readonly ProjectConfig $projectConfig,
     ) {
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
-    }
-
-    /**
-     * Renders the Config Sync page via Inertia.
-     */
-    #[Override]
-    public function index(): Response
-    {
-        $this->data = $this->initialData();
-        $state = $this->realInitialState();
-        $state['data'] = $this->hashedData();
-
-        return Inertia::render('updater/Index', [
-            'title' => $this->pageTitle(),
-            'initialState' => $this->clientState($state),
-            'returnUrl' => $this->returnUrl(),
-        ])->toResponse($this->request);
     }
 
     /**

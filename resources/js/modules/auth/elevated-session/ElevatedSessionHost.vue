@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import {ConfigService} from '@craftcms/ui';
-  import {releaseFocusWithin, trapFocusWithin} from '@craftcms/garnish';
   import {t} from '@craftcms/ui/utilities/translate';
   import {nextTick, onBeforeUnmount, useTemplateRef, watch} from 'vue';
   import HtmlFragmentRenderer from '@/common/components/HtmlFragmentRenderer.vue';
@@ -11,7 +10,6 @@
 
   const {state} = elevatedSessionManager;
   let previouslyFocused: HTMLElement | null = null;
-  let dialog: Element | null = null;
   const loginForm = useTemplateRef<CraftLoginForm | null>('loginForm');
 
   watch(
@@ -25,10 +23,6 @@
         await nextTick();
         loginForm.value?.focus();
       } else {
-        if (dialog) {
-          releaseFocusWithin(dialog);
-          dialog = null;
-        }
         previouslyFocused?.focus();
         previouslyFocused = null;
       }
@@ -51,11 +45,6 @@
       elevatedSessionManager.cancel();
     }
   }
-
-  function opened(element: Element): void {
-    dialog = element;
-    trapFocusWithin(element);
-  }
 </script>
 
 <template>
@@ -64,20 +53,13 @@
     :label="t('Confirm your identity.')"
     width="sm"
     @close="close"
-    @opened="opened"
   >
-    <craft-pane
-      data-elevated-session-dialog
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="elevated-session-title"
-      aria-describedby="elevated-session-description"
-    >
+    <craft-pane data-elevated-session-dialog>
       <div class="grid gap-2 mb-3">
-        <h1 id="elevated-session-title" class="m-0!">
+        <h1 class="m-0!">
           {{ t('Confirm your identity.') }}
         </h1>
-        <div id="elevated-session-description" class="text-md">
+        <div class="text-md">
           {{ t('You must reverify your identity before proceeding.') }}
         </div>
       </div>

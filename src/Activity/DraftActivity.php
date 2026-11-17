@@ -15,12 +15,10 @@ use CraftCms\Cms\Element\Events\DraftCreated;
 use CraftCms\Cms\Element\Events\ElementPersisted;
 use CraftCms\Cms\Element\Events\ElementSaving;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
 use CraftCms\Cms\Support\Facades\Activities;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Facades\Structures;
 use Illuminate\Container\Attributes\Singleton;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use WeakMap;
@@ -148,11 +146,7 @@ readonly class DraftActivity
         }
 
         $site = Sites::getSiteById($event->canonical->siteId);
-        $release = Context::getHidden(ReleaseDraftPublished::ContextRelease);
-
-        Activities::record($release === null
-            ? new DraftAppliedActivityEvent(subject: $event->canonical, site: $site)
-            : new ReleaseDraftPublished(subject: $event->canonical, site: $site, release: $release));
+        Activities::record(new DraftAppliedActivityEvent(subject: $event->canonical, site: $site));
     }
 
     /** @return array<class-string, string> */

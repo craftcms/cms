@@ -32,3 +32,11 @@ export function useWidgetColor(): ComputedRef<string | undefined> {
     computed(() => 'gray')
   );
 }
+
+/** Colors that leave a widget untinted, like having no color at all. */
+const NEUTRAL_COLORS = ['white', 'gray', 'slate', 'black'];
+
+/** Whether a widget's color tints it, rather than leaving it neutral. */
+export function isTintedColor(color: string | null | undefined): boolean {
+  return !!color && !NEUTRAL_COLORS.includes(color);
+}

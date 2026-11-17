@@ -72,7 +72,7 @@ readonly class DashboardController
                 'name' => $widget->getDisplayName(),
                 'maxColspan' => $widget->getMaxColspan(),
                 'selectable' => true,
-                'settingsUi' => $this->getWidgetSettingsUi($widget, '__NAMESPACE__'),
+                'hasSettings' => $this->widgetHasSettings($widget),
             ]);
         }
 
@@ -82,7 +82,7 @@ readonly class DashboardController
                     'iconSvg' => $this->getWidgetIconSvg($widget),
                     'name' => $widget->getDisplayName(),
                     'maxColspan' => $widget->getMaxColspan(),
-                    'settingsUi' => null,
+                    'hasSettings' => false,
                     'selectable' => false,
                 ]);
             }

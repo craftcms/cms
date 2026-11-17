@@ -35,6 +35,7 @@
 - Content within black cards, chips, and badges, such as buttons, badges, and links, is now styled as in the dark theme.
 - Card view designers now preview users with a sample user’s name, default avatar, and active status.
 - The control panel now warns users a couple of minutes before their session expires, with options to stay signed in or sign out, and lets them sign back in without leaving the page once it has. ([#20086](https://github.com/craftcms/cms/pull/20086))
+- Control panel error pages are now standalone pages with their own styles, so they still draw when the control panel’s assets can’t load. Front-end errors use them too when the site has no error template of its own, without the link to the control panel’s Dashboard. ([#19931](https://github.com/craftcms/cms/pull/19931))
 - The global nav now groups Entries and Assets under a “Content” heading, and Users, GraphQL, Utilities, Settings, and Plugin Store under an “Administration” heading. ([#19903](https://github.com/craftcms/cms/pull/19903))
 - The Plugin Store is now part of the control panel rather than a standalone app, with the store’s categories in the secondary nav, plugin pages whose Overview, Reviews, Editions, and Changelog tabs each have their own URL, and a cart that opens in a dialog from the store’s toolbar.
 - Plugins in the Plugin Store whose latest compatible release requires or suggests `craftcms/yii2-adapter` now show a “Requires the Yii2 adapter” notice, and installing them also installs the adapter, unless `composer.json` already requires it.
@@ -54,6 +55,17 @@
 - Dashboard widgets, such as Recent Entries and My Drafts, now update when elements are saved, in the same browser tab or another one. ([#20485](https://github.com/craftcms/cms/pull/20485))
 - Dashboard widgets can now be given a color, like entry types, from the dashboard’s Widget Settings menu. Widgets are gray unless given another color, now drawn like gray cards elsewhere in the control panel, with a filled header bar, and “No color” draws a widget with no fill of its own, like an uncolored element card.
 - Dashboard widget titles now line up with the widgets’ content.
+- Dashboard widgets’ titles now sit above a hairline at the top of each widget, and widget settings have their Save and Cancel buttons in a footer.
+- Recent Entries widgets now have an “Entry Criteria” setting, like custom entry sources, in place of their “Site” and “Section” settings. Existing widgets’ site and section selections carry over as criteria rules.
+- Recent Entries widgets now have a “Widget Title” setting, and show each entry’s thumbnail, when it was created, its section, and its authors’ avatars.
+- My Drafts widgets now show each draft’s thumbnail, section, and draft name, and leave out drafts in sections the user can no longer view.
+- Double-clicking an entry’s thumbnail in a Recent Entries or My Drafts widget now opens the entry in a slideout.
+- Feed widgets, such as Craft News, now show each item’s summary and image.
+- New Users widgets now show the total number of new users in their date range, above a sparkline of new users per day, which gets taller as the widget gets wider.
+- Craft Support widgets are now a list of links to the documentation, Knowledge Base, Craft Support, GitHub bug reports and feature requests, Discord, and Craft Partners, plus an “Ask AI” button when the AI assistant is available. Support requests are now sent from craftcms.com/contact, rather than a form in the widget.
+- Quick Post widgets now show a large button in their entry type’s icon and color, and are titled “New {Section} Entry” by default.
+- Updates widgets now say when they last checked for updates.
+- Fields in slideouts, the details pane, and dashboard widget settings are now 16px apart, rather than 24px. Fields in the main content pane of full-page forms are still 24px apart.
 - Fixed a bug where Dashboard widgets spanning multiple columns ended a few pixels before the right edge of the last column they spanned.
 - Fixed a bug where date pickers within slideouts could open far away from their inputs at some browser zoom and display scaling levels. ([#20399](https://github.com/craftcms/cms/issues/20399))
 
@@ -141,6 +153,7 @@
 
 ### Conditions
 - Added support for nested condition groups. ([#19587](https://github.com/craftcms/cms/pull/19587))
+- Saved element conditions, such as custom sources’ and Recent Entries widgets’ criteria, now load faster on sites with many custom fields. Their rules are checked without loading every field layout, unless they’re rules for fields.
 
 ### Fields & Field Layouts
 - Added sidebar field layout tabs, whose fields are shown in element edit forms’ details sidebar. ([#20005](https://github.com/craftcms/cms/pull/20005))
@@ -150,6 +163,7 @@
 - Added a “Default Row Values” setting to Table fields. ([#3621](https://github.com/craftcms/cms/issues/3621))
 - Table field columns are now configured with cell settings forms rather than JSON option inputs.
 - Table fields now have a “Link” column type, with the same settings as Link fields. Link cells return `CraftCms\Cms\Field\Data\LinkData` objects, and Table fields now track the elements they link to. ([#16009](https://github.com/craftcms/cms/discussions/16009), [#19998](https://github.com/craftcms/cms/pull/19998))
+- Table fields now have “Entries”, “Assets”, and “Users” column types, with the same selection settings as the corresponding relation fields. Relation cells return element queries, and their relations are stored like relation fields’, so `relatedTo` finds them, element merges update them, and replacing a deleted element replaces it in them. ([#19343](https://github.com/craftcms/cms/discussions/19343))
 - Table field column settings now open in a slideout. ([#19998](https://github.com/craftcms/cms/pull/19998))
 - Table fields’ Lightswitch, Checkbox, and Dropdown columns now take values pasted from a spreadsheet, and spreadsheet cells containing line breaks or tabs are pasted into a single cell.
 - Table cell validation errors now name the column. ([#19998](https://github.com/craftcms/cms/pull/19998))
@@ -248,7 +262,7 @@
 - Added the `defaultRateLimit` and `defaultRateLimitDuration` config settings, which configure the rate limits for login, password reset, and two-step verification requests. ([#20054](https://github.com/craftcms/cms/pull/20054))
 - Environment variable and alias settings fields now show suggestions after typing `$` or `@`.
 - Terminal commands shown in the control panel and console output for the current environment now run Craft commands through Artisan with their full `craft:` names, such as `php artisan craft:update:info`, and use the local development environment’s wrappers: `ddev artisan` and `ddev composer` in DDEV, and `valet php artisan` and `valet composer` for Laravel Valet sites isolated to a PHP version. This includes the Plugin Store’s installation instructions, which no longer have separate “Shell” and “DDEV” tabs, and the OAuth signing key instructions on the **Settings** → **MCP** and **My Account** → **Tokens** screens. ([#20492](https://github.com/craftcms/cms/pull/20492), [#20677](https://github.com/craftcms/cms/pull/20677), [#20700](https://github.com/craftcms/cms/pull/20700), [#20702](https://github.com/craftcms/cms/pull/20702))
-- The “Assets” settings nav item is now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
+- The “Assets” and “Addresses” settings nav items are now listed under “Content”, and “Globals”, “Categories”, and “Tags” are now listed under a new “Deprecated” heading, if those concepts are supported for the project. ([#19670](https://github.com/craftcms/cms/pull/19670))
 - The System Messages utility now shows each message in a card, and edits messages in a slideout with a Markdown editor. Typing `{{` in a message’s subject or body suggests the Twig variables it can use. ([#19946](https://github.com/craftcms/cms/pull/19946))
 - Removed the `isSystemLive` config setting. Laravel maintenance mode should be used instead. With the Yii adapter installed, the deprecated `craft:on` and `craft:off` commands still work, and run `up` and `down`.
 - Removed the `allowedGraphqlOrigins`, `disableGraphqlTransformDirective`, `enableBasicHttpAuth`, `enableTwigSandbox`, `omitScriptNameInUrls`, `pathParam`, `permissionsPolicyHeader`, `previewIframeResizerOptions`, `purgeStaleUserSessionDuration`, `requireMatchingUserAgentForSession`, `requireUserAgentAndIpForSession`, `useFileLocks`, `useIframeResizer`, and `usePathInfo` config settings, which no longer have any effect.
@@ -380,6 +394,7 @@
 - Plugins can no longer register custom Craft filesystem types. Filesystem types registered through `craft\base\Fs` remain supported for legacy plugins via the Yii adapter. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - The `list-flip`, `list-tree-flip`, `share-flip`, `sidebar-nav-flip`, and `sidebar-nav-flip-light` icons are now drawn by mirroring the `list`, `list-tree`, `share`, `sidebar-nav`, and `sidebar-nav-light` icons, so paths to them, such as the deprecated `@appicons/listrtl.svg` alias, no longer point to a file. They still show when referenced by name. ([#20520](https://github.com/craftcms/cms/pull/20520))
 - `Garnish.uiLayerManager.registerShortcut()` now accepts `description` and `group` keys on its shortcut definition, which list the shortcut in the command palette’s “Keyboard shortcuts” view. ([#20263](https://github.com/craftcms/cms/pull/20263))
+- Element type indexes shown with `CraftCms\Cms\Http\Controllers\Elements\ElementTypeIndexController` can now open their “New” button’s route in a new tab, with an external link icon, by setting the `newElementExternal` route default to `true`, for elements that are created outside the control panel. ([#20735](https://github.com/craftcms/cms/pull/20735))
 
 ##### Added
 - The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
@@ -665,12 +680,15 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 #### Dashboard & Widgets
 
 - Added `CraftCms\Cms\Dashboard\Contracts\WidgetInterface::$color`, `CraftCms\Cms\Dashboard\Dashboard::changeWidgetColor()`, and the `dashboard/change-widget-color` action.
+- Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::getCondition()` and `setCondition()`, replacing `$siteId` and `$section`.
+- Added `CraftCms\Cms\Dashboard\Widgets\RecentEntries::$customTitle`.
+- Removed the `dashboard/send-support-request` action.
+- Added `EntryList`, `AvatarStack`, `TileContent`, `WidgetTile`, `SparklineStat`, `WidgetHeaderActions`, `useWidgetHeader()`, `useWidgetColor()`, and `isTintedColor()` to `@craftcms/cp`, for building plugins’ dashboard widgets from the same pieces as Craft’s own.
 
 ##### Controllers
 - Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:
   - `CraftCms\Cms\Http\Controllers\Dashboard\DashboardController`
   - `CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController`
-  - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController`
   - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController`
 
 ##### Deprecations
@@ -924,6 +942,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - Renamed `<craft-callout>`’s `title` property to `label`, and `CraftCms\Cms\Cp\Components\Callout::title()` to `label()`, so the title no longer adds a native tooltip. The `title` slot is unchanged.
 - Added `CraftCms\Cms\Cp\CommandPalette\CommandPaletteItem`, `PageRegistry`, `ActionRegistry`, and `SearchProviderRegistry`, which plugins can use to add pages, actions, and search providers to the command palette, and `CraftCms\Cms\Cp\CommandPalette\Contracts\SearchProvider` and `CraftCms\Cms\Cp\CommandPalette\SearchProviders\ElementSearchProvider`, for searching custom content or element types. ([#20081](https://github.com/craftcms/cms/pull/20081))
 - Added `CommandPalette` to the `@craftcms/cp` import-map module, with `open()`, `close()`, `registerActions()`, `registerProvider()`, and `registerView()` methods, for opening the command palette and adding page actions, client-side search providers, and views to it. A page’s own action menus are listed as command palette actions when they’re within an element with a `data-command-palette-actions` attribute. ([#20081](https://github.com/craftcms/cms/pull/20081))
+- Added `ReadOnlyElementIndex` to the `@craftcms/cp` import-map module, for embedding an element index in a plugin’s screens, such as a list of a customer’s orders. It takes `elementType`, `criteria`, and optional `source` and `storageKey` props, and links each element to its edit page rather than selecting it. The `element-selector-modals/body` action now accepts `readOnly` for this. ([#20516](https://github.com/craftcms/cms/pull/20516))
 - Added a renderer-neutral control panel UI system with shared PHP and Vue rendering, extensible Nodes and Controls, nested and refreshable scopes, changed-only submission, and integration with configurable component settings, fields, and field layouts. ([#19384](https://github.com/craftcms/cms/pull/19384))
 - Removed the `assets/upload` and `assets/replace-file` multipart endpoints and legacy uploader events and overrides, in favor of upload sessions. ([#19604](https://github.com/craftcms/cms/pull/19604))
 - Removed HTMX from the control panel. Plugins that rely on it should bundle it themselves. ([#19836](https://github.com/craftcms/cms/pull/19836))
@@ -941,6 +960,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - `Craft.PreviewFileModal` and `Craft.CpModal` are now built on `<craft-dialog>` rather than `Garnish.Modal`. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Removed `Craft.AuthManager`, `Craft.cp.authManager`, and `Craft.UserPhotoInput`. `craft\web\assets\userphoto\UserPhotoAsset` is now deprecated and does nothing. ([#20085](https://github.com/craftcms/cms/pull/20085))
 - Removed the `users/login-modal` action and the `_special/login-modal` template, and the `assets/image-editor` action now returns the image editor dialog’s settings, rather than the editor’s HTML. ([#20085](https://github.com/craftcms/cms/pull/20085))
+- Removed the `400`, `403`, `404`, `500`, `503`, `error`, `_special/emailtaken`, `_special/licensing-issues`, `_special/login`, and `_special/updater` control panel templates. Control panel error pages are now rendered from a Blade view, and the other pages with Inertia. ([#19931](https://github.com/craftcms/cms/pull/19931))
 - The `elements/recent-activity` and `queue/get-job-info` actions no longer extend the session, and the `dontExtendSession` parameter is no longer used. ([#20086](https://github.com/craftcms/cms/pull/20086))
 - The control panel no longer loads the `XRegExp` library by default. Plugins that require it can register `craft\web\assets\xregexp\XregexpAsset`. ([#19621](https://github.com/craftcms/cms/pull/19621))
 - The global `axios` is now only loaded in the control panel when `craftcms/yii2-adapter` is installed. `Craft.sendActionRequest()` or `actionClient` from `@craftcms/ui` should be used instead.
@@ -975,7 +995,7 @@ Craft 6 now uses [Laravel's authorization system](https://laravel.com/docs/12.x/
 - `Craft.ElementEditor` and `Craft.ElementEditorSlideout` are now provided by the Yii2 adapter. Core’s element editors, slideouts included, all use the Vue editor.
 - `Craft.CP` and `Craft.cp` are now provided by the Yii2 adapter. Control panel messages, the element clipboard and screen reader announcements no longer use them. `showNotice()`, `showSuccess()`, `showError()`, `copyElements()` and `announce()` are exported from `@craftcms/cp`.
 - The legacy `Craft` helpers (`Craft.t()`, `Craft.sendActionRequest()`, `Craft.getUrl()`, `Craft.initUiElements()` and the rest of `Craft.js`), its jQuery plugins (`$.fn.disclosureMenu()`, `$.fn.menubtn()`, `$.fn.formsubmit()`…) and `Craft.queue` are now provided by the Yii2 adapter. Core uses `@craftcms/cp` and `@craftcms/ui` modules instead.
-- Removed the `Craft.FocalPoint` and `Craft.Updater` control panel JavaScript classes. The image preview and the updater now start themselves from their markup.
+- Removed the `Craft.FocalPoint` and `Craft.Updater` control panel JavaScript classes. The image preview now starts itself from its markup, and the updater is an Inertia page.
 - `craft\web\assets\focalpoint\FocalPointAsset` now does nothing.
 - Added `AuthChallengeForm`, `AssetSelectorController`, `ElementSelectorController`, `Uploads`, `createElementSelectorModal`, `highlighter`, and `registerElementSelectorController` to the `@craftcms/cp` import-map module. Control panel plugin code should import them from there; they’re no longer `Craft.*` globals, except `Craft.createElementSelectorModal` and `Craft.highlighter`, which the Yii2 adapter still provides.
 - Added `t()`, `escapeHtml()`, `appendHeadHtml()`, `appendBodyHtml()`, `appendElementHtml()`, `actionClient`, `http`, `getUrl()`, `getCpUrl()`, `getActionUrl()`, `cpConfig()`, `openSlideout()`, `createElementEditor()`, `addActionsToChip()`, `loadElementThumbs()`, `openAssetImageEditor()`, and `Uploader` to the `@craftcms/cp` import-map module, replacing the `Craft.*` globals of the same names. Importing them from there keeps a plugin bundle on the control panel’s own instances rather than bundling second copies.
