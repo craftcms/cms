@@ -109,6 +109,7 @@
 - Added `CraftCms\Cms\Twig\Twig::with()` and `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`. ([#20798](https://github.com/craftcms/cms/pull/20798))
 - Added `CraftCms\Cms\Field\Field::tableAttributeAlignment()`, and element types’ table attributes can now set `align` to `end` to right-align their element index columns. ([#20782](https://github.com/craftcms/cms/pull/20782))
 - `CraftCms\Cms\Element\Queries\Concerns\QueriesNestedElements::owner()` now accepts an array of owner elements. ([#20806](https://github.com/craftcms/cms/pull/20806))
+- The Yii2 Loose Ends utility now lists a cache component configured in `config/craft/app.php`, such as `yii\redis\Cache`, while Craft’s own caches and locks still use Laravel’s `file` cache store.
 - Fixed an error that occurred when batched queue jobs, such as resaving or propagating elements, queued their next batch on non-sync queues. ([#20791](https://github.com/craftcms/cms/issues/20791), [#20812](https://github.com/craftcms/cms/pull/20812))
 - Fixed a bug where Matrix fields’ “New entry” button did nothing in Blocks view mode when the entry types were listed in a menu. The menu now lists the entry types by name, as in Craft 5. ([#20750](https://github.com/craftcms/cms/pull/20750))
 - Fixed a bug where Matrix fields’ “Create Button Label” setting wasn’t applied in Blocks view mode. ([#20750](https://github.com/craftcms/cms/pull/20750))
