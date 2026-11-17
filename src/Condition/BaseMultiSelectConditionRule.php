@@ -170,7 +170,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      *
      * A “not” or “has a value” rule becomes the IDs it leaves in, rather than a param value for the query to parse.
      *
-     * @param  string  $table  The table that holds the selectable rows.
+     * @param  string  $table  The table that holds the selectable rows, which must have a `dateDeleted` column.
      * @param  callable  $normalizeValue  Method that returns the row ID for a selected value.
      * @return int[]|null
      */
@@ -184,6 +184,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
 
         return DB::table($table)
             ->whereNumericParam('id', $value)
+            ->whereNull('dateDeleted')
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->all();

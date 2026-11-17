@@ -419,6 +419,13 @@ describe('VolumeConditionRule', function () {
 
         expect($query->count())->toBe(1)
             ->and($query->one()->volumeId)->toBe($volume2->id);
+
+        $rule->values = app(Volumes::class)->getAllVolumes()->pluck('uid')->all();
+
+        $query = Asset::find()->volumeId([$volume1->id, $volume2->id]);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->count())->toBe(0);
     });
 });
 

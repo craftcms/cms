@@ -22,6 +22,7 @@ use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
 use CraftCms\Cms\Support\Facades\Elements;
+use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User as UserModel;
 use CraftCms\Cms\User\Models\UserGroup as UserGroupModel;
@@ -106,17 +107,21 @@ describe('SectionConditionRule', function () {
             'news' => Section::factory()->create(['type' => SectionType::Channel]),
             'blog' => Section::factory()->create(['type' => SectionType::Channel]),
             'pages' => Section::factory()->create(['type' => SectionType::Channel]),
+            'trashed' => Section::factory()->create(['type' => SectionType::Channel]),
         ];
-        Sections::refreshSections();
 
         $ids = array_map(fn (Section $section) => EntryModel::factory()->forSection($section)->create()->id, $sections);
+
+        DB::table(Table::SECTIONS)->where('id', $sections['trashed']->id)->update(['dateDeleted' => now()]);
+        DB::table(Table::ELEMENTS)->where('id', $ids['trashed'])->update(['dateDeleted' => now()]);
+        Sections::refreshSections();
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(SectionConditionRule::class);
         $rule->operator = $operator;
         $rule->values = [$sections['news']->uid, $sections['blog']->uid];
 
-        $query = Entry::find()->id(array_values($ids));
+        $query = Entry::find()->id(array_values($ids))->trashed(null);
         $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->ids())->toEqualCanonicalizing(array_values(array_intersect_key($ids, array_flip($expected))));
@@ -125,6 +130,18 @@ describe('SectionConditionRule', function () {
         'not in' => ['ni', ['pages']],
         'not empty' => ['notempty', ['news', 'blog', 'pages']],
     ]);
+
+    it('doesn’t match sectionless entries, which its query leaves out', function () {
+        $section = Section::factory()->create(['type' => SectionType::Channel]);
+        Sections::refreshSections();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(SectionConditionRule::class);
+        $rule->operator = 'ni';
+        $rule->values = [$section->uid];
+
+        expect($rule->matchElement(new Entry))->toBeFalse();
+    });
 });
 
 describe('SectionTypeConditionRule', function () {
@@ -268,6 +285,13 @@ describe('TypeConditionRule', function () {
         $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
         expect($query->ids())->toBe([$entry2->id]);
+
+        $rule->values = EntryTypes::getAllEntryTypes()->pluck('uid')->all();
+
+        $query = Entry::find()->id([$entry1->id, $entry2->id]);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->ids())->toBe([]);
     });
 });
 

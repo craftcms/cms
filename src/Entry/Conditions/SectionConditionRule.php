@@ -79,11 +79,14 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
 
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Entry $element */
-        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            return $element->getSection() !== null;
+        if ($this->operator !== self::OPERATOR_NOT_EMPTY && $this->getValues() === []) {
+            return true;
         }
 
-        return $this->matchValue($element->getSection()?->uid);
+        /** @var Entry $element */
+        $section = $element->getSection();
+
+        // The query only lists entries in sections, so sectionless entries, such as nested ones, don't match.
+        return $section !== null && $this->matchValue($section->uid);
     }
 }

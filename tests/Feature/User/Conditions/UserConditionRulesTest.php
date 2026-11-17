@@ -337,15 +337,25 @@ describe('AffiliatedSiteConditionRule', function () {
 
         $primaryUser = UserModel::factory()->create(['affiliatedSiteId' => $primarySite->id]);
         $otherUser = UserModel::factory()->create(['affiliatedSiteId' => $otherSite->id]);
+        $unaffiliatedUser = UserModel::factory()->create(['affiliatedSiteId' => null]);
+        $userIds = [$primaryUser->id, $otherUser->id, $unaffiliatedUser->id];
 
         $condition = new UserCondition(User::class);
         $rule = $condition->createConditionRule(AffiliatedSiteConditionRule::class);
         $rule->operator = 'ni';
         $rule->values = [$primarySite->uid];
 
-        $query = User::find()->id([$primaryUser->id, $otherUser->id]);
+        $query = User::find()->id($userIds);
         $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
-        expect($query->ids())->toBe([$otherUser->id]);
+        expect($query->ids())->toEqualCanonicalizing([$otherUser->id, $unaffiliatedUser->id])
+            ->and($rule->matchElement($unaffiliatedUser->asElement()))->toBeTrue();
+
+        $rule->values = [$primarySite->uid, $otherSite->uid];
+
+        $query = User::find()->id($userIds);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->ids())->toBe([$unaffiliatedUser->id]);
     });
 });
