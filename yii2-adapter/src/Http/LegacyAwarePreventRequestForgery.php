@@ -7,11 +7,13 @@ namespace CraftCms\Yii2Adapter\Http;
 use Craft;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Elements;
+use CraftCms\Cms\Http\Middleware\PreventRequestForgery;
 use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Site\Sites;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\Exceptions\OriginMismatchException;
 use Illuminate\Http\Request;
 use Illuminate\Pipeline\Pipeline;
+use Override;
 use Throwable;
 
 /**
@@ -23,10 +25,25 @@ use Throwable;
  * {@see \craft\web\Controller::registerCsrfValidationExclusion()} excludes. The opt-out is
  * checked for the current request only, once the origin and token checks have failed, so
  * requests with a valid token don’t resolve the legacy route twice, and no path is excluded
- * for other requests or sites.
+ * for other requests or sites. In origin-only mode, the origin check rejects the request before
+ * tokens are checked, so the opt-out is checked there instead.
  */
 class LegacyAwarePreventRequestForgery extends PreventRequestForgery
 {
+    #[Override]
+    protected function hasValidOrigin($request): bool
+    {
+        try {
+            return parent::hasValidOrigin($request);
+        } catch (OriginMismatchException $e) {
+            if ($this->legacySiteRouteDisablesCsrfValidation($request)) {
+                return true;
+            }
+
+            throw $e;
+        }
+    }
+
     protected function tokensMatch($request)
     {
         return parent::tokensMatch($request) || $this->legacySiteRouteDisablesCsrfValidation($request);

@@ -181,3 +181,14 @@ test('interleaved downloads keep each others staging files', function () {
     expect($tempPaths[0])->not->toBe($tempPaths[1]);
     expect(is_file($tempPaths[0]))->toBeFalse();
 });
+
+test('storeLocalSource resizes the source in place when no destination is given', function () {
+    $path = Path::temp('store-local-source-in-place.png');
+    $this->beforeApplicationDestroyed(fn () => File::delete($path));
+    imagepng(imagecreatetruecolor(200, 100), $path);
+    Cms::config()->maxCachedCloudImageSize = 50;
+
+    ImageTransformHelper::storeLocalSource($path);
+
+    expect(getimagesize($path))->toMatchArray([0 => 50, 1 => 25]);
+});

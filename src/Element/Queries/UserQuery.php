@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries;
 
 use Closure;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Expressions\OrderByPlaceholderExpression;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Queries\Concerns\FormatsResults;
@@ -129,7 +130,7 @@ class UserQuery extends ElementQuery
      * | `'pending'` | with accounts that are still pending activation.
      * | `'credentialed'` | with either active or pending accounts.
      * | `'suspended'` | with suspended accounts.
-     * | `'locked'` | with locked accounts (regardless of whether they’re active or suspended).
+     * | `'locked'` | with locked accounts whose cooldown hasn’t ended (regardless of whether they’re active or suspended).
      * | `['active', 'suspended']` | with active or suspended accounts.
      * | `['not', 'active', 'suspended']` | without active or suspended accounts.
      *
@@ -173,7 +174,14 @@ class UserQuery extends ElementQuery
                     ->orWhereBool('users.pending', true);
             }),
             User::STATUS_SUSPENDED => fn (Builder $query) => $query->whereBool('users.suspended', true),
-            User::STATUS_LOCKED => fn (Builder $query) => $query->whereBool('users.locked', true),
+            User::STATUS_LOCKED => function (Builder $query) {
+                $query->whereBool('users.locked', true);
+
+                // Users whose cooldown has ended aren't locked anymore
+                if ($cooldownDuration = Cms::config()->cooldownDuration) {
+                    $query->where('users.lockoutDate', '>', now()->subSeconds($cooldownDuration));
+                }
+            },
             default => parent::statusCondition($status),
         };
     }

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Queue\JobProgress;
 use CraftCms\Cms\Tests\Feature\Queue\TestClasses\TestBatchedJob;
+use Illuminate\Queue\Jobs\DatabaseJob;
+use Illuminate\Queue\Jobs\DatabaseJobRecord;
+use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Queue;
 
 it('has default batch size of 100', function () {
@@ -188,6 +191,28 @@ it('clones job for next batch with incremented batchIndex', function () {
     $job->handle();
 
     Queue::assertPushed(TestBatchedJob::class, fn ($pushedJob) => $pushedJob !== $job
+        && $pushedJob->batchIndex === 1
+        && $pushedJob->itemOffset === 2);
+});
+
+it('queues the next batch without the running queue job', function () {
+    $job = new TestBatchedJob(range(1, 5));
+    $job->batchSize = 2;
+    $job->setJob(new DatabaseJob(app(), app(QueueManager::class)->connection('database'), new DatabaseJobRecord((object) [
+        'id' => 1,
+        'queue' => 'default',
+        'attempts' => 1,
+        'reserved_at' => time(),
+        'available_at' => time(),
+        'created_at' => time(),
+        'payload' => '{}',
+    ]), 'database', 'default'));
+
+    Queue::fake()->serializeAndRestore();
+
+    $job->handle();
+
+    Queue::assertPushed(TestBatchedJob::class, fn (TestBatchedJob $pushedJob) => $pushedJob->job === null
         && $pushedJob->batchIndex === 1
         && $pushedJob->itemOffset === 2);
 });

@@ -42,11 +42,7 @@ class TwigCacheCommand extends Command
         $this->callSilent('craft:twig:clear');
 
         foreach (TemplateMode::cases() as $mode) {
-            TemplateMode::set($mode);
-
-            $templateRoots = $mode->templateRoots();
-
-            collect($templateRoots)
+            TemplateMode::with($mode, fn () => collect($mode->templateRoots())
                 ->put('', [$mode->templatesPath()])
                 ->each(function ($paths, $root) use ($mode, $twig) {
                     $prefix = $this->output->isVeryVerbose() ? '<fg=yellow;options=bold>DIR</> ' : '';
@@ -62,7 +58,7 @@ class TwigCacheCommand extends Command
 
                         $this->compileTemplates($twig, $mode, $root, $files);
                     }
-                });
+                }));
         }
 
         $this->newLine();

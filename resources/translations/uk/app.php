@@ -1294,6 +1294,7 @@ return [
     'Composer was unable to install the updates.' => 'Composer не вдалося встановити оновлення.',
     'Composer was unable to remove the plugin.' => 'Composer не вдалося видалити плагін.',
     'Composer was unable to revert the updates.' => 'Composer не вдалося скасувати оновлення.',
+    'Composer {version} or later must be installed and available in the PATH environment variable.' => 'Composer {version} or later must be installed and available in the PATH environment variable.',
     'Compressed' => 'Стиснутий',
     'Condition {num, number}' => 'Умова {num, number}',
     'Configure the category group’s site-specific settings.' => 'Налаштуйте параметри групи категорій для конкретного сайту.',
