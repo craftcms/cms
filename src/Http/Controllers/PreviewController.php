@@ -88,7 +88,7 @@ readonly class PreviewController
     private function reusePreviewToken(RouteTokens $tokens, string $token, array $route): string|false
     {
         try {
-            return Cache::lock("token:$token")->block(5, function () use ($tokens, $token, $route) {
+            return Cache::lock("token:$token", 10)->block(5, function () use ($tokens, $token, $route) {
                 $existing = RouteTokenModel::where('token', $token)->first();
 
                 if (! $existing) {

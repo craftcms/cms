@@ -64,7 +64,7 @@ readonly class Revisions
         }
 
         $lockKey = 'revision:'.$canonical->id;
-        $mutex = Cache::lock($lockKey);
+        $mutex = Cache::lock($lockKey, 30);
         $mutex->block(3);
 
         $num = Arr::pull($newAttributes, 'revisionNum');

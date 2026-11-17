@@ -211,6 +211,25 @@ describe('indexElementAttributes', function () {
         expect($keywords)->toContain('custom keywords');
     });
 
+    test('indexes the element again after a failed index', function () {
+        $entry = createIndexedEntry('Original Title');
+        $entry->element->siteSettings->first()->update(['title' => 'Updated Title']);
+        $element = Elements::getElementById($entry->id);
+
+        Event::listen(KeywordsIndexing::class, fn () => throw new RuntimeException('Indexing failed'));
+
+        expect(fn () => Search::indexElementAttributes($element))->toThrow(RuntimeException::class);
+
+        Event::forget(KeywordsIndexing::class);
+        Search::indexElementAttributes($element);
+
+        expect(DB::table(Table::SEARCHINDEX)
+            ->where('elementId', $entry->id)
+            ->where('attribute', 'title')
+            ->value('keywords')
+        )->toContain('updated title');
+    });
+
     test('indexes with specific field handles', function () {
         $entry = createIndexedEntry('Test Entry');
 

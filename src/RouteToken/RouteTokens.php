@@ -144,7 +144,7 @@ class RouteTokens
         $this->deleteExpiredTokens();
 
         try {
-            return Cache::lock("token:$token")->block(5, function () use ($token) {
+            return Cache::lock("token:$token", 10)->block(5, function () use ($token) {
                 $result = RouteToken::where('token', $token)->first();
 
                 if (! $result) {
