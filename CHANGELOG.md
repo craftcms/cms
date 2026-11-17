@@ -211,6 +211,7 @@
 - Fixed an error that occurred after running pending migrations from the control panel on MySQL, which restored the database backup even though the migrations had succeeded. ([#20784](https://github.com/craftcms/cms/pull/20784))
 - Fixed a bug where installing or uninstalling a plugin, or running migrations, on MySQL left the database connection reporting an open transaction, so later transactions in the same request only created savepoints and `afterCommit` callbacks never ran. ([#20784](https://github.com/craftcms/cms/pull/20784))
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
+- Fixed a bug where `CraftCms\Cms\Image\ImageTransformHelper::storeLocalSource()` and `craft\helpers\ImageTransforms::storeLocalSource()` didn’t do anything when no destination was passed, rather than resizing the source file in place. ([#20775](https://github.com/craftcms/cms/pull/20775))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
