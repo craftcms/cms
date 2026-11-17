@@ -6,15 +6,16 @@
    *
    * Each source's settings are a UI payload built by
    * `ElementSourcesController::show()` and namespaced at `sources.<key>`, so a
-   * UiRenderer per source produces exactly the shape `store()` reads back.
+   * SourceSettings per source produces exactly the shape `store()` reads back.
    */
   import {computed, nextTick, ref, shallowRef, watch} from 'vue';
   import {actionClient, t} from '@craftcms/ui';
   import ElementSourcesController from '@actions/Elements/ElementSourcesController';
+  import {fetchSourceUi} from './fetchSourceUi';
+  import SourceSettings from './SourceSettings.vue';
   import ModalForm from '@/common/components/ModalForm.vue';
-  import UiRenderer from '@/modules/ui/UiRenderer.vue';
   import type {UiChange, UiPayload} from '@/modules/ui/types';
-  import {pathsMatch, valueAt, visitControls} from '@/modules/ui/runtime';
+  import {valueAt} from '@/modules/ui/runtime';
   import {useAnnouncer} from '@/common/composables/useAnnouncer';
   import ActionMenu from '@/common/components/ActionMenu.vue';
   import type {ActionItem} from '@/common/types';
@@ -25,6 +26,7 @@
     focusElement,
     useSourceScreens,
   } from '@/modules/elements/index/composables/useSourceScreens';
+  import CustomizeSourcesBody from './CustomizeSourcesBody.vue';
   import CustomizeSourcesColumn from './CustomizeSourcesColumn.vue';
   import CustomSourceList from './CustomSourceList.vue';
   import PageSettingsModal from './PageSettingsModal.vue';
@@ -35,7 +37,7 @@
     type SourcesResponse,
     type SourceType,
   } from './types';
-  import {showError} from '@/modules/messages/messages';
+  import {showError, showNotice} from '@/modules/messages/messages';
 
   const props = defineProps<{
     isActive: boolean;
@@ -44,6 +46,11 @@
     page?: string | null;
     /** The index's current source, so the matching one starts selected. */
     sourceKey?: string | null;
+    /**
+     * Starts with a new custom source taken from these settings, selected,
+     * with the parts in `edited` marked as changed from the index's source.
+     */
+    newSource?: {settings: Record<string, unknown>; edited?: string[]} | null;
   }>();
 
   const emit = defineEmits<{
@@ -86,7 +93,8 @@
   const failedUiKey = shallowRef<string | null>(null);
   const renderers = new Map<string, Renderer>();
 
-  const body = ref<HTMLElement | null>(null);
+  const bodyFrame = ref<InstanceType<typeof CustomizeSourcesBody>>();
+  const body = computed(() => bodyFrame.value?.el ?? null);
   const settingsPane = ref<HTMLElement | null>(null);
 
   const {screen, rowElement, focusRow, showScreen} = useSourceScreens(body);
@@ -172,7 +180,11 @@
       resetPages(data);
       selectedPage.value = initialPage();
       loaded.value = true;
-      void select(initialSource());
+      if (props.newSource) {
+        void addNew(props.newSource);
+      } else {
+        void select(initialSource());
+      }
     } catch (error: any) {
       showError(error?.response?.data?.message);
     } finally {
@@ -219,7 +231,7 @@
 
       let ui: UiPayload;
       try {
-        ui = await fetchUi(source.key, source.type);
+        ui = await fetchSourceUi(props.elementType, source.key, source.type);
       } catch (error: any) {
         failedUiKey.value = source.key;
         showError(error?.response?.data?.message);
@@ -242,19 +254,6 @@
     source.mounted = true;
   }
 
-  async function fetchUi(
-    sourceKey: string,
-    type: SourceType
-  ): Promise<UiPayload> {
-    const {data} = await actionClient.post(ElementSourcesController.ui().url, {
-      elementType: props.elementType,
-      sourceKey,
-      type,
-    });
-
-    return data.ui;
-  }
-
   function setRenderer(key: string, el: unknown): void {
     if (el) {
       renderers.set(key, el as Renderer);
@@ -263,11 +262,7 @@
     }
   }
 
-  /**
-   * Keeps the sidebar label in step with the label/heading control, and — as the
-   * legacy modal did — starts a newly chosen sort attribute in its own default
-   * direction.
-   */
+  /** Keeps the sidebar label in step with the label/heading control. */
   function onChange(
     source: SourceRow,
     change: UiChange,
@@ -278,62 +273,6 @@
     if (leaf === 'label' || leaf === 'heading') {
       source.label = String(valueAt(values, change.path) ?? '');
     }
-
-    if (leaf === 'attr' && change.path.at(-2) === 'defaultSort' && source.key) {
-      const dir = defaultSortDir(
-        source,
-        change.path,
-        valueAt(values, change.path)
-      );
-
-      if (dir)
-        renderers
-          .get(source.key)
-          ?.setValue([...change.path.slice(0, -1), 'dir'], dir);
-    }
-  }
-
-  /** The default direction the server gave the sort attribute option `attr`. */
-  function defaultSortDir(
-    source: SourceRow,
-    path: string[],
-    attr: unknown
-  ): string | null {
-    let dir: string | null = null;
-
-    visitControls(source.ui?.nodes ?? [], (control) => {
-      if (!pathsMatch(control.path, path)) return;
-
-      const options = (control.props.options ?? []) as Array<{
-        value: unknown;
-        defaultDir?: string;
-      }>;
-      dir = options.find((option) => option.value === attr)?.defaultDir ?? null;
-    });
-
-    return dir;
-  }
-
-  async function refresh(
-    source: SourceRow,
-    values: UiPayload['values'],
-    scope: string[] = []
-  ): Promise<UiPayload> {
-    const {data} = await actionClient.post(ElementSourcesController.ui().url, {
-      elementType: props.elementType,
-      sourceKey: source.key,
-      type: source.type,
-      // `values` is already relative to `scope`, unlike currentValues().
-      settings: values,
-      scope,
-    });
-
-    if (!data.ui) {
-      throw new Error('The source did not return a UI payload.');
-    }
-
-    // Server-rendered controls register their assets on every render.
-    return data.ui;
   }
 
   async function add(type: 'heading' | 'custom'): Promise<void> {
@@ -357,6 +296,44 @@
     rowElement('sources', key)?.scrollIntoView({block: 'nearest'});
     await selecting;
     await nextTick();
+    focusFirstInput();
+  }
+
+  /** Adds a custom source holding an index's settings, ready to name. */
+  async function addNew(
+    from: NonNullable<typeof props.newSource>
+  ): Promise<void> {
+    const key = `custom:${uuid()}`;
+    const row: SourceRow = {
+      key,
+      type: 'custom',
+      label: '',
+      handle: null,
+      page: selectedPage.value ?? '',
+      ui: null,
+      params: {edited: from.edited ?? []},
+      mounted: false,
+    };
+
+    try {
+      row.ui = await fetchSourceUi(
+        props.elementType,
+        key,
+        'custom',
+        {...from.settings, visibility: 'me'},
+        [],
+        row.params
+      );
+    } catch (error: any) {
+      showError(error?.response?.data?.message);
+      return;
+    }
+
+    sources.value.push(row);
+    void showScreen('settings');
+    await select(key);
+    await nextTick();
+    rowElement('sources', key)?.scrollIntoView({block: 'nearest'});
     focusFirstInput();
   }
 
@@ -489,11 +466,24 @@
     // Enter submits even while Save is disabled.
     if (saving.value || !loaded.value) return;
 
-    const saveable = sources.value.filter((source) => source.key);
+    // Sources kept to yourself aren't project config, so store() never
+    // sees them.
+    const isPersonal = (source: SourceRow) =>
+      source.type === 'custom' && settingsFor(source).visibility === 'me';
+    const personal = sources.value.filter(
+      (source) => source.key && isPersonal(source)
+    );
+    const saveable = sources.value.filter(
+      (source) => source.key && !isPersonal(source)
+    );
+
     saving.value = true;
     errors.value = {};
 
-    const landing = landingSource();
+    const landingKey = landingSource();
+    const landing = personal.some((source) => source.key === landingKey)
+      ? null
+      : landingKey;
 
     try {
       const {data} = await actionClient.post<{redirect?: string}>(
@@ -522,6 +512,15 @@
             : {}),
         }
       );
+
+      // Personal sources aren't built yet.
+      for (const source of personal) {
+        showNotice(
+          t('Prototype: would save “{name}” to your own views.', {
+            name: source.label,
+          })
+        );
+      }
 
       // The index's sources, columns and view modes all come from what just
       // changed, so the index starts over from the server.
@@ -621,11 +620,12 @@
     width="5xl"
     height="40rem"
     resizable
+    fill
     @close="emit('close')"
     @submit="save"
   >
-    <div ref="body" class="cs-body">
-      <craft-spinner v-if="loading" class="cs-spinner" />
+    <CustomizeSourcesBody ref="bodyFrame">
+      <craft-spinner v-if="loading" />
 
       <template v-else>
         <CustomizeSourcesColumn
@@ -721,15 +721,14 @@
                 v-if="source.mounted && source.ui && source.key"
                 v-show="source.key === selectedKey"
               >
-                <UiRenderer
+                <SourceSettings
                   :ref="(el) => setRenderer(source.key!, el)"
+                  :element-type="elementType"
+                  :source-key="source.key"
+                  :type="source.type"
                   :payload="source.ui"
+                  :params="source.params"
                   :errors="errors[source.key!] ?? []"
-                  :refresh="
-                    source.ui.refreshable
-                      ? (values, scope) => refresh(source, values, scope)
-                      : undefined
-                  "
                   @change="(change, values) => onChange(source, change, values)"
                 />
               </craft-field-group>
@@ -739,7 +738,7 @@
           </div>
         </CustomizeSourcesColumn>
       </template>
-    </div>
+    </CustomizeSourcesBody>
 
     <PageSettingsModal
       :is-active="pageModalActive"
@@ -750,42 +749,3 @@
     />
   </ModalForm>
 </template>
-
-<style scoped lang="scss">
-  // Fills the modal and holds the columns to its height, so each scrolls on its
-  // own. Not wrapping: a wrapping row is as tall as its tallest column, which
-  // would stretch past the modal instead of scrolling — and the narrow layout
-  // shows one column at a time rather than stacking them.
-  .cs-body {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: stretch;
-    container-type: inline-size;
-    flex: 1 1 0;
-    min-height: 0;
-  }
-
-  .cs-spinner {
-    margin: auto;
-  }
-
-  // Global, since these are Modal's and ModalForm's; `:has()` keeps them to this modal.
-  :global(.content:has(> form > craft-pane > div.cs-body)) {
-    overflow-y: hidden;
-  }
-
-  :global(form:has(> craft-pane > div.cs-body)),
-  :global(craft-pane:has(> div.cs-body)),
-  :global(craft-pane:has(> div.cs-body)::part(base)) {
-    flex: 1 1 0;
-    min-height: 0;
-  }
-
-  :global(craft-pane:has(> div.cs-body)::part(body)) {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 0;
-    min-height: 0;
-    padding: 0;
-  }
-</style>
