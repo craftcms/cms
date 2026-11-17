@@ -10,7 +10,9 @@ import {cdp, page, userEvent} from 'vite-plus/test/browser';
 import {contrast, loadTokens} from '../../../test/contrast';
 import type CraftCombobox from '../combobox/combobox.js';
 import '../combobox/combobox.js';
+import '../chip/chip.js';
 import '../icon/icon.js';
+import '../indicator/indicator.js';
 import './option.js';
 import '../../styles/cp.css';
 
@@ -221,6 +223,37 @@ describe('visual', () => {
       ).toBeGreaterThanOrEqual(3);
     });
   });
+
+  it.each(['light', 'dark'])(
+    'keeps a chip’s label and status dot visible on a highlighted option, in the %s theme',
+    async (theme) => {
+      document.body.innerHTML = `
+        <div data-theme="${theme}" role="listbox" aria-label="Entries">
+          <craft-option active>
+            <craft-chip appearance="plain">
+              <craft-indicator slot="status" fill="teal"></craft-indicator>
+              <div>Poster archive</div>
+            </craft-chip>
+          </craft-option>
+        </div>`;
+      const option = document.querySelector<HTMLElement>('craft-option')!;
+      const indicator = option.querySelector<
+        HTMLElement & {updateComplete: Promise<unknown>}
+      >('craft-indicator')!;
+      await indicator.updateComplete;
+      await settle();
+      const fill = getComputedStyle(option).backgroundColor;
+      const dot =
+        indicator.shadowRoot!.querySelector<HTMLElement>('.indicator')!;
+
+      expect(
+        contrast(getComputedStyle(option.querySelector('div')!).color, fill)
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrast(getComputedStyle(dot).borderTopColor, fill)
+      ).toBeGreaterThanOrEqual(3);
+    }
+  );
 
   it('keeps the highlighted and selected options visible in forced colors mode', async () => {
     await cdp().send('Emulation.setEmulatedMedia', {
