@@ -45,8 +45,20 @@ class AssetManager extends \yii\web\AssetManager
      */
     public function init(): void
     {
-        FileHelper::createDirectory(Aliases::get($this->basePath), $this->dirMode);
+        $basePath = Aliases::get($this->basePath);
         parent::init();
+        // Yii resolves basePath with realpath(), which is false until publish() creates the directory
+        $this->basePath = $this->basePath ?: FileHelper::normalizePath($basePath);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function publish($path, $options = []): array
+    {
+        FileHelper::createDirectory($this->basePath, $this->dirMode);
+
+        return parent::publish($path, $options);
     }
 
     /**
