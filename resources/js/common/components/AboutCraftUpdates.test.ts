@@ -27,10 +27,10 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
-function mount(updates: AboutCraftUpdates) {
+function mount(updates: AboutCraftUpdates, onChecked?: () => void) {
   host = document.createElement('div');
   document.body.append(host);
-  app = createApp({render: () => h(Updates, {updates})});
+  app = createApp({render: () => h(Updates, {updates, onChecked})});
   app.mount(host);
 }
 
@@ -90,9 +90,12 @@ it('checks again from its button, keeping the last result until it ends', async 
   expect(announced()).toBe('1 update available');
   // With updates to go to, the button gives way to their link, and its focus
   // goes there too
-  const go = host.querySelector('.about-craft-updates__go');
+  const go = host.querySelector('.about-craft-updates__go')!;
   expect(checkButton()).toBeNull();
-  await vi.waitFor(() => expect(document.activeElement).toBe(go));
+  // As a link, the button's anchor takes focus, not the button itself.
+  await vi.waitFor(() =>
+    expect(go.shadowRoot!.activeElement).toBe(go.shadowRoot!.querySelector('a'))
+  );
 });
 
 it('keeps its button while up to date, so focus stays on it', async () => {
@@ -139,15 +142,40 @@ it('says it couldn’t fetch the updates, when there’s no result to show', asy
   expect(announced()).toBe('Unable to fetch updates at this time.');
 });
 
-it('says nothing about when it checked, when the updates couldn’t be fetched', async () => {
+it('says it couldn’t fetch the updates when that’s all there is to show', () => {
+  // A failed request is cached too, with no fetch date.
+  mount({cached: true, total: 0, dateFetched: null});
+
+  expect(row()).toContain('Unable to fetch updates at this time.');
+  expect(row()).not.toContain('Up to date');
+  expect(state.post).not.toHaveBeenCalled();
+});
+
+it('says it couldn’t check again, keeping the last result, when the server couldn’t fetch the updates', async () => {
   vi.useFakeTimers({now: new Date('2026-11-16T12:00:00Z')});
-  // The server answers without a fetch date when its request for updates fails.
   state.post.mockResolvedValue({data: {total: 0, dateFetched: null}});
-  mount({cached: true, total: 0, dateFetched: '2026-11-15T12:00:00Z'});
+  const onChecked = vi.fn();
+  mount(
+    {cached: true, total: 0, dateFetched: '2026-11-15T12:00:00Z'},
+    onChecked
+  );
 
   checkButton().dispatchEvent(new MouseEvent('click', {bubbles: true}));
   await vi.waitFor(() => expect(checkButton().loading).toBe(false));
   await nextTick();
 
-  expect(row()).not.toContain('Checked');
+  expect(row()).toContain('Up to date');
+  expect(row()).toContain('Checked yesterday');
+  expect(text('craft-callout')).toBe('Unable to fetch updates at this time.');
+  expect(onChecked).not.toHaveBeenCalled();
+});
+
+it('says when it has checked, so the trials can be fetched again with the license info', async () => {
+  state.post.mockResolvedValue({
+    data: {total: 0, dateFetched: '2026-11-16T12:00:00Z'},
+  });
+  const onChecked = vi.fn();
+  mount({cached: false, total: 0, dateFetched: null}, onChecked);
+
+  await vi.waitFor(() => expect(onChecked).toHaveBeenCalledOnce());
 });

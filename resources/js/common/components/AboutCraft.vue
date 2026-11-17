@@ -5,15 +5,40 @@
    * available, as the “About Craft CMS” dashboard widget and command palette
    * view show them.
    */
-  import {t} from '@craftcms/ui';
+  import {actionClient, t} from '@craftcms/ui';
+  import {ref, watch} from 'vue';
+  import AboutCraftController from '@actions/App/AboutCraftController';
   import type {AboutCraftInfo} from './about-craft';
   import AboutCraftRow from './AboutCraftRow.vue';
   import AboutCraftUpdates from './AboutCraftUpdates.vue';
   import CraftCmsMark from './CraftCmsMark.vue';
 
-  defineProps<{
+  const props = defineProps<{
     info: AboutCraftInfo;
   }>();
+
+  /**
+   * The trials, which are only known while Craft's license info is cached.
+   * That's fetched along with the updates, so they're fetched again after
+   * the updates are checked.
+   */
+  const trial = ref(props.info.trial);
+
+  watch(
+    () => props.info.trial,
+    (value) => (trial.value = value)
+  );
+
+  async function refreshTrial() {
+    try {
+      const {data} = await actionClient.get<AboutCraftInfo>(
+        AboutCraftController.url()
+      );
+      trial.value = data.trial;
+    } catch {
+      // The trials stay as they were.
+    }
+  }
 </script>
 
 <template>
@@ -35,12 +60,12 @@
       </div>
     </div>
     <div v-if="info.updates" class="about-craft__section">
-      <AboutCraftUpdates :updates="info.updates" />
+      <AboutCraftUpdates :updates="info.updates" @checked="refreshTrial" />
     </div>
-    <div v-if="info.trial" class="about-craft__section">
+    <div v-if="trial" class="about-craft__section">
       <AboutCraftRow class="about-craft__trial">
         <template #icon><craft-icon name="flask"></craft-icon></template>
-        <span class="about-craft-row__title">{{ info.trial.message }}</span>
+        <span class="about-craft-row__title">{{ trial.message }}</span>
         <template #action>
           <!-- Leads off-site, so it opens in a new tab, and says so -->
           <craft-button
@@ -49,7 +74,7 @@
             flush="inline block"
             icon="circle-right"
             icon-position="suffix"
-            :href="info.trial.cartUrl"
+            :href="trial.cartUrl"
             class="about-craft-row__link about-craft__buy"
             >{{ t('Buy now') }}</craft-button
           >
