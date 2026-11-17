@@ -2,23 +2,30 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table as DbTable;
 use CraftCms\Cms\Element\Jobs\ReplaceRelations;
 use CraftCms\Cms\Element\Operations\ElementDeletions;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\Entry\Models\Entry as EntryModel;
+use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Field\FieldContext;
 use CraftCms\Cms\Field\Table;
 use CraftCms\Cms\Field\TableCells\Entries as EntriesCell;
 use CraftCms\Cms\Field\TableCells\TableCellContext;
 use CraftCms\Cms\Field\TableCellTypes;
+use CraftCms\Cms\Gql\Data\GqlSchema;
+use CraftCms\Cms\Gql\Gql;
 use CraftCms\Cms\Gql\Types\TableRow;
+use CraftCms\Cms\Section\Models\Section;
+use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
 use CraftCms\Cms\Ui\UiResolver;
+use CraftCms\Cms\User\Models\User as UserModel;
 use Illuminate\Support\Facades\DB;
 
 function relationTable(array $column = []): Table
@@ -157,9 +164,14 @@ it('finds elements related through table cells with relatedTo, scoped to the tab
         ->and(Entry::find()->relatedTo(['sourceElement' => $source->id, 'field' => 'related'])->ids())->toBe([$target]);
 });
 
-it('replaces related elements in table cells when relations are replaced', function () {
+it('replaces related elements in table cells when relations are replaced', function (bool $oldTargetDeleted) {
     [$oldTarget, $newTarget, $other] = EntryModel::factory(3)->create()->pluck('id')->all();
     $source = relationTableSource([['col1' => [$oldTarget, $other]], ['col1' => [$other]]]);
+
+    // The queued job usually runs after the old target is deleted
+    if ($oldTargetDeleted) {
+        expect(Elements::deleteElementById($oldTarget))->toBeTrue();
+    }
 
     dispatch_sync(new ReplaceRelations(
         sourceElementType: Entry::class,
@@ -174,7 +186,7 @@ it('replaces related elements in table cells when relations are replaced', funct
     expect($stored[0]['entries']->ids())->toBe([$newTarget, $other])
         ->and($stored[1]['entries']->ids())->toBe([$other])
         ->and(array_column(storedRelations($source), 1))->toBe([$newTarget, $other]);
-});
+})->with(['existing old target' => false, 'deleted old target' => true]);
 
 it('points table cells at the prevailing element when elements are merged', function () {
     $merged = EntryModel::factory()->createElement();
@@ -189,4 +201,67 @@ it('points table cells at the prevailing element when elements are merged', func
     expect($stored[0]['entries']->ids())->toBe([$prevailing->id, $other->id])
         ->and($stored[1]['entries']->ids())->toBe([$prevailing->id])
         ->and(array_column(storedRelations($source), 1))->toBe([$prevailing->id, $other->id]);
+});
+
+/**
+ * Returns an entry in the primary site and a second site, with its title translated in the second.
+ *
+ * @return array{Site, Entry}
+ */
+function translatedRelationTarget(): array
+{
+    $site = Site::factory()->create();
+    $entryType = EntryType::factory()->create();
+    $section = Section::factory()->withEntryTypes($entryType)->withSites($site)->create();
+    $target = EntryModel::factory()->forSection($section)->forEntryType($entryType)->createElement(['title' => 'Hello']);
+    expect(Elements::saveElement($target))->toBeTrue();
+
+    $translated = Entry::find()->id($target->id)->siteId($site->id)->status(null)->one();
+    $translated->title = 'Bonjour';
+    expect(Elements::saveElement($translated))->toBeTrue();
+
+    return [$site, $target];
+}
+
+it('queries propagated relation cells in the receiving element’s site, without changing the source value', function () {
+    [$site, $target] = translatedRelationTarget();
+    $source = EntryModel::factory()->createElement();
+    $owner = clone $source;
+    $owner->siteId = $site->id;
+    $field = relationTable();
+
+    $original = $field->normalizeValue([['col1' => [$target->id]]], $source);
+    $propagated = $field->normalizeValue($original, $owner);
+
+    expect($propagated[0]['entries']->siteId)->toBe($site->id)
+        ->and($propagated[0]['col1'])->toBe($propagated[0]['entries'])
+        ->and($propagated[0]['entries']->one()->title)->toBe('Bonjour')
+        ->and($original[0]['entries']->siteId)->toBe($source->siteId)
+        ->and($original[0]['entries']->one()->title)->toBe('Hello');
+});
+
+it('indexes relation cells with the related elements’ titles in the element’s site', function () {
+    [$site, $target] = translatedRelationTarget();
+    $owner = EntryModel::factory()->createElement();
+    $owner->siteId = $site->id;
+    $field = relationTable();
+
+    $value = $field->normalizeValue([['col1' => [$target->id]]], $owner);
+
+    expect($field->cellType($field->columns['col1'])->searchKeywords($value[0]['entries']))->toBe('Bonjour');
+});
+
+it('caps related elements in GraphQL at maxGraphqlResults', function () {
+    $users = array_map(fn () => UserModel::factory()->createElement(), range(1, 3));
+    $field = new Table([
+        'handle' => 'related',
+        'columns' => ['col1' => ['heading' => 'Users', 'handle' => 'users', 'type' => 'users']],
+    ]);
+    app(Gql::class)->setActiveSchema(new GqlSchema(['scope' => ['usergroups.everyone:read']]));
+    Cms::config()->maxGraphqlResults = 2;
+
+    $value = $field->normalizeValue([['col1' => array_map(fn ($user) => $user->id, $users)]], null);
+
+    expect(array_map(fn ($user) => $user->id, $field->cellType($field->columns['col1'])->gqlValue($value[0]['users'])))
+        ->toBe([$users[0]->id, $users[1]->id]);
 });

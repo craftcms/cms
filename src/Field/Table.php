@@ -668,13 +668,17 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
         // Before localizing, which loads the linked elements
         LinkElementLoader::attach($cellValues);
 
-        // Query related elements in the element’s site, as relation fields do
+        // Query related elements in the element’s site, as relation fields do. Values propagated
+        // from another site share their queries with it, so those are cloned before they’re changed.
         if ($element !== null && $element::isLocalized()) {
-            foreach ($cellValues as $cellValue) {
-                if ($cellValue instanceof ElementQueryInterface && $cellValue->siteId === null) {
-                    $cellValue->siteId($element->siteId);
+            foreach ($value as &$row) {
+                foreach ($cells as $colId => $cell) {
+                    if ($row[$colId] instanceof ElementQueryInterface && $row[$colId]->siteId !== $element->siteId) {
+                        $row[$colId] = (clone $row[$colId])->siteId($element->siteId);
+                    }
                 }
             }
+            unset($row);
         }
 
         if ($element && $this->isPropagatingAcrossTranslations($element)) {

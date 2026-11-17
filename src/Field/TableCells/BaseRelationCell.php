@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Field\TableCells;
 
 use Closure;
+use CraftCms\Cms\Cms;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -221,6 +222,12 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
             $query->$param($value);
         }
 
+        // Capped as element resolvers cap their queries
+        $maxGraphqlResults = Cms::config()->maxGraphqlResults;
+        if ($maxGraphqlResults > 0) {
+            $query->limit($query->getLimit() === null ? $maxGraphqlResults : min($maxGraphqlResults, (int) $query->getLimit()));
+        }
+
         return $query->all();
     }
 
@@ -268,7 +275,8 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
             return null;
         }
 
-        $ids = $this->serializeValue($value);
+        // Without querying, so targets that were deleted are still replaced
+        $ids = $this->relationTargetIds($value);
         if (array_intersect($ids, $oldTargetIds) === []) {
             return null;
         }
@@ -308,12 +316,19 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
      */
     private function all(ElementQueryInterface $query): ElementQueryInterface
     {
-        return (clone $query)
+        $all = (clone $query)
             ->drafts(null)
             ->status(null)
             ->site('*')
             ->unique()
             ->limit(null)
             ->eagerly(false);
+
+        // Prefer the query’s site over the current one
+        if ($query->siteId !== null) {
+            $all->preferSites([$query->siteId]);
+        }
+
+        return $all;
     }
 }
