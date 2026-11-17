@@ -83,7 +83,7 @@ class MigrateController
                 }
             }
 
-            DB::commit();
+            DB::commitSchemaChanges();
         } catch (Throwable $e) {
             DB::rollBack();
 
