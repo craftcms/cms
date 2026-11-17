@@ -147,8 +147,9 @@ class DashboardControllerTest extends TestCase
     {
         Craft::$app->getRequest()->setIsCpRequest(true);
         $response = $this->controller()->actionIndex();
-        $widgets = $response->getBehavior(TemplateResponseBehavior::NAME)->variables['widgets'];
-        return array_column($widgets, 'type');
+        /** @var TemplateResponseBehavior $behavior */
+        $behavior = $response->getBehavior(TemplateResponseBehavior::NAME);
+        return array_column($behavior->variables['widgets'], 'type');
     }
 
     private function saveWidgetSettings(int $widgetId)
