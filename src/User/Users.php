@@ -274,7 +274,7 @@ class Users
      */
     public function sendActivationEmail(User $user, ?string $recipient = null): bool
     {
-        $user->notify(new ActivationNotification($this->setVerificationCodeOnUser($user), $recipient));
+        $user->notify(new ActivationNotification($this->setVerificationCodeOnUser($user), $user, $recipient));
 
         return true;
     }

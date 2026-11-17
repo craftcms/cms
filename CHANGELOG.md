@@ -189,6 +189,7 @@
 - Fixed a bug where typing a negative amount over a selected negative amount in a money input dropped the minus sign. ([#20064](https://github.com/craftcms/cms/pull/20064))
 - Fixed a bug where queue workers switched to the site template mode after their first loop, so control panel templates couldn’t be found. ([#20741](https://github.com/craftcms/cms/issues/20741), [#20757](https://github.com/craftcms/cms/pull/20757))
 - Fixed a bug where Link fields’ references to elements were no longer tracked after upgrading from Craft 5, so linked elements could be deleted without warning. ([#20749](https://github.com/craftcms/cms/issues/20749), [#20760](https://github.com/craftcms/cms/pull/20760))
+- Fixed a bug where password reset, account activation, and email verification emails sent from the front end linked to the primary site and were written in its language, rather than the site they were sent from, and linked users with control panel access to the control panel. ([#20743](https://github.com/craftcms/cms/issues/20743), [#20763](https://github.com/craftcms/cms/pull/20763))
 - Console messages that ask you to run a command, such as the tips shown by `craft:setup:welcome`, `craft:setup`, `craft:fields:merge`, `craft:fields:auto-merge`, `craft:entry-types:merge`, and `craft:entrify:*`, now show the command as it should be run for the current environment, such as `php artisan craft:resave:all` or `ddev artisan craft:resave:all`, rather than `php craft`. ([#20702](https://github.com/craftcms/cms/pull/20702))
 
 ## 6.0.0-beta.1 - 2026-11-10
