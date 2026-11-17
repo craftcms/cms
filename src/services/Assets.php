@@ -318,13 +318,14 @@ class Assets extends Component
 
             foreach ($childFolders as $childFolder) {
                 $oldChildPath = $childFolder->path;
-                $oldPrefix = substr($oldChildPath, 0, strlen($oldFolderPath));
+                // Compare characters rather than bytes, since case variants can differ in byte length
+                $oldPrefix = mb_substr($oldChildPath, 0, mb_strlen($oldFolderPath));
                 if (mb_strtolower($oldPrefix) !== mb_strtolower($oldFolderPath)) {
                     continue;
                 }
 
                 // Keep the rest of the path as stored, so it still matches the directories below the renamed one
-                $newChildPath = $newFolderPath . substr($oldChildPath, strlen($oldFolderPath));
+                $newChildPath = $newFolderPath . substr($oldChildPath, strlen($oldPrefix));
 
                 // If the prefix differs in case, the directory only moved along with the renamed one on case-insensitive storage
                 if (
