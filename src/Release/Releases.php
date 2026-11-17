@@ -14,7 +14,7 @@ use CraftCms\Cms\Element\Elements;
 use CraftCms\Cms\Element\Models\Draft;
 use CraftCms\Cms\Element\Validation\ElementRules;
 use CraftCms\Cms\Entry\Elements\Entry;
-use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
+use CraftCms\Cms\Release\Activity\ReleaseOperation;
 use CraftCms\Cms\Release\Data\ReleaseReadiness;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
@@ -38,7 +38,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Database\ConcurrencyErrorDetector;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -518,32 +517,32 @@ class Releases
             'publishAttempts' => $release->publishAttempts + 1,
         ]);
 
-        foreach ($items as $item) {
-            if ($item->draftId === null) {
-                throw new ReleaseException(t('The draft no longer exists.'));
-            }
+        // Group all activity from publishing the release, including structure moves
+        ReleaseOperation::for($release)->scope(function () use ($items): void {
+            foreach ($items as $item) {
+                if ($item->draftId === null) {
+                    throw new ReleaseException(t('The draft no longer exists.'));
+                }
 
-            $draft = $this->freshDraft((int) $item->draftId);
-            if (! $draft::trackChanges() && ElementHelper::isOutdated($draft)) {
-                throw new ReleaseException(t('The live element changed after this draft was prepared.'));
-            }
+                $draft = $this->freshDraft((int) $item->draftId);
+                if (! $draft::trackChanges() && ElementHelper::isOutdated($draft)) {
+                    throw new ReleaseException(t('The live element changed after this draft was prepared.'));
+                }
 
-            if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
-                app(Elements::class)->mergeCanonicalChanges($draft);
-            }
+                if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
+                    app(Elements::class)->mergeCanonicalChanges($draft);
+                }
 
-            $this->ensureReadyWorkflow($draft, true);
-            $item->update(['draftId' => null]);
-            $canonical = Context::scope(
-                fn (): ElementInterface => $this->validateAndApplyDraft($draft),
-                hidden: [ReleaseDraftPublished::ContextRelease => ['id' => $release->id, 'name' => $release->name]],
-            );
-            $item->update([
-                'draftId' => null,
-                'publishedElementId' => $canonical->id,
-                'publishedAt' => now(),
-            ]);
-        }
+                $this->ensureReadyWorkflow($draft, true);
+                $item->update(['draftId' => null]);
+                $canonical = $this->validateAndApplyDraft($draft);
+                $item->update([
+                    'draftId' => null,
+                    'publishedElementId' => $canonical->id,
+                    'publishedAt' => now(),
+                ]);
+            }
+        });
 
         $release->update([
             'status' => ReleaseStatus::Published,

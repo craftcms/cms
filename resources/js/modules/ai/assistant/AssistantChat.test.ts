@@ -1022,6 +1022,14 @@ describe('AssistantChat', () => {
             arguments: '{}',
             state: 'error',
           },
+          {
+            type: 'tool-call',
+            id: 'call_2',
+            name: 'show_elements',
+            arguments: '{}',
+            state: 'error',
+            output: 'The tool call failed: Boom',
+          },
         ],
       },
     ];
@@ -1030,5 +1038,9 @@ describe('AssistantChat', () => {
     expect(container.textContent).toContain(
       'Didn’t finish using elements_update'
     );
+    expect(container.textContent).toContain(
+      'Didn’t finish using show_elements'
+    );
+    expect(container.textContent).not.toContain('Showed elements');
   });
 });

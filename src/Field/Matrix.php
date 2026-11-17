@@ -653,6 +653,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, ElementContain
             ->uis($uis)
             ->siteName($this->localizedSiteName($context->element))
             ->siteId($context->element?->siteId)
+            ->addLabel($this->createButtonLabel())
             ->minEntries($this->minEntries)
             ->maxEntries($this->maxEntries)
             ->value(['entries' => $values, 'sortOrder' => $sortOrder]);

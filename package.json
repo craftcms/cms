@@ -57,7 +57,7 @@
     "@storybook/addon-a11y": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-themes": "catalog:",
-    "@storybook/vue3-vite": "^10.6.0",
+    "@storybook/vue3-vite": "^10.6.6",
     "@tailwindcss/node": "^4.2.4",
     "@tailwindcss/oxide": "^4.2.4",
     "@tailwindcss/vite": "^4.2.4",

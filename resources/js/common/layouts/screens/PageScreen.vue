@@ -772,6 +772,9 @@ Content: the secondary nav, content, and details panes
     /* The field layout's tabs sit a little further from the first field
        here than in slideouts. See UiNodeList.vue. */
     --cp-content-tabs-gap: calc(var(--c-spacing-lg) + var(--c-spacing-md));
+    /* Fields here are further apart than elsewhere, such as in slideouts,
+       the details pane and the content sidebar. */
+    --c-field-group-gap: calc(var(--c-spacing) * 6);
   }
 
   /* The main column's gutters grow with it: 16px up to 400px, 32px at

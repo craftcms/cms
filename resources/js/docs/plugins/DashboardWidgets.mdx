@@ -1,0 +1,86 @@
+import {Meta} from '@storybook/addon-docs/blocks';
+
+<Meta title="Plugins/Dashboard Widgets" />
+
+# Dashboard Widgets
+
+A dashboard widget can draw itself with a Vue component of the plugin's own,
+built from the same pieces as Craft's widgets.
+
+## On the server
+
+Name the component in the widget's `component()` method, and pass it data from
+`props()`:
+
+```php
+use CraftCms\Cms\Dashboard\Widgets\Widget;
+
+class TicketSales extends Widget
+{
+    public function component(): ?string
+    {
+        return 'my-plugin:ticket-sales';
+    }
+
+    public function props(): array
+    {
+        return ['eventName' => $this->eventName()];
+    }
+}
+```
+
+## On the page
+
+Register the component under that name. It receives the widget's `props()` as
+`data`, and the widget itself as `widget`. Draw a card in the widget's color,
+and render the `header` slot at its top, where the dashboard draws the
+widget's title and settings button:
+
+```vue
+<script setup lang="ts">
+  import {registerComponent, useWidgetColor} from '@craftcms/cp';
+
+  defineProps<{data: {eventName: string}}>();
+  const color = useWidgetColor();
+</script>
+
+<template>
+  <craft-card :data-color="color">
+    <slot name="header" />
+    <div class="body">…</div>
+  </craft-card>
+</template>
+```
+
+```ts
+registerComponent('my-plugin:ticket-sales', () => import('./TicketSales.vue'));
+```
+
+## Building blocks
+
+| Export                | What it's for                                                                                                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useWidgetColor()`    | The widget's color, for its card's `data-color`.                                                                                                                                        |
+| `isTintedColor()`     | Whether a color tints the widget. White, gray, slate, and black don't, and leave room for colors of the widget's content, such as an entry type's.                                      |
+| `EntryList`           | A list of entries, each with a thumbnail and its title linked to its editor, plus `details` and `aside` slots. Double-clicking a thumbnail opens the entry in a slideout.               |
+| `AvatarStack`         | Overlapping avatars, each named in a tooltip, such as an entry's authors.                                                                                                               |
+| `TileContent`         | A centered icon, label, and quieter description, for a status message.                                                                                                                  |
+| `WidgetTile`          | A large button with `TileContent`, in a color you give it unless the widget is tinted.                                                                                                  |
+| `SparklineStat`       | A figure, such as “264 new members”, with an `AreaChart` sparkline of it below, edge to edge. See [Charts](?path=/docs/plugins-charts--docs) for the chart's data.                      |
+| `WidgetHeaderActions` | Renders its buttons in the widget's header, before the settings button.                                                                                                                 |
+| `useWidgetHeader()`   | `{ownTitle: true}` leaves the widget's title out, for a widget that shows its own, such as `SparklineStat`'s figure. Give that title the `titleId` it returns, as the widget's heading. |
+
+A button in `WidgetHeaderActions` is a plain icon button, named for what it
+does:
+
+```vue
+<WidgetHeaderActions>
+  <craft-button
+    type="button"
+    icon="arrows-rotate"
+    variant="plain"
+    :aria-label="t('Refresh')"
+    @click="refresh"
+  ></craft-button>
+</WidgetHeaderActions>
+```

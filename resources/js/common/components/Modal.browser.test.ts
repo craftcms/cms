@@ -144,7 +144,7 @@ it('dismisses only the nested dialog and preserves non-dismissible forms and key
     .click();
   await expect.element(parent).toBeVisible();
   await expect.element(confirmationDialog).not.toBeInTheDocument();
-  expect(getComputedStyle(document.body).overflow).toBe('hidden');
+  expect(parent.element().matches(':modal')).toBe(true);
   dismissible.value = false;
   await userEvent.keyboard('{Escape}');
   await expect.element(parent).toBeVisible();

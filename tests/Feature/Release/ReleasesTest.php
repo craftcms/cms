@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Activity\Activities;
+use CraftCms\Cms\Activity\ActivityTimelinePresenter;
 use CraftCms\Cms\Activity\Data\ActivitySubject;
+use CraftCms\Cms\Activity\EventTypes\DraftApplied;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Drafts;
@@ -18,7 +20,6 @@ use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
 use CraftCms\Cms\FieldLayout\Models\FieldLayout as FieldLayoutModel;
-use CraftCms\Cms\Release\Activity\ReleaseDraftPublished;
 use CraftCms\Cms\Release\Enums\ReleaseStatus;
 use CraftCms\Cms\Release\Events\ReleasePublished;
 use CraftCms\Cms\Release\Exceptions\ReleaseException;
@@ -592,11 +593,14 @@ it('records release publication in the activity of each published entry', functi
         ->subject(ActivitySubject::fromElement($canonical))
         ->sole();
 
-    expect($event->eventType)->toBe(ReleaseDraftPublished::class)
-        ->and(app(Activities::class)->format($event)->toHtml())->toBe(sprintf(
-            'Published with the <a href="%s">Launch &lt;day&gt;</a> release',
-            route('craft.cp.releases.show', $release),
-        ));
+    $presented = app(ActivityTimelinePresenter::class)->events(collect([$event]), $this->actor)->sole();
+
+    expect($event->eventType)->toBe(DraftApplied::class)
+        ->and($event->operationId)->toBe("release:$release->id")
+        ->and($presented['operation'])->toBe([
+            'label' => 'Launch <day>',
+            'url' => route('craft.cp.releases.show', $release),
+        ]);
 });
 
 it('requires release publication permission even when a manager can publish the member', function () {
