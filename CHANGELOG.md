@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-- Fixed a bug where `craft\helpers\ImageTransforms::storeLocalSource()` didn’t do anything when no destination was passed, rather than resizing the source file in place.
 - Fixed a bug where the stdio MCP server (`mcp/serve`) didn’t see project config changes made by other processes, such as in the control panel or via the CLI, and rejected all project config changes after them until it was restarted. ([#20597](https://github.com/craftcms/cms/pull/20597))
 - Fixed a bug where the search inputs of Assets fields restricted to a single location without subfolders found files in the location’s subfolders, which were then moved into the location when the element was saved.
 - Fixed a bug where stroke-based icons, such as Lucide icons in custom icon sets, were shown as filled shapes in the control panel. ([#20613](https://github.com/craftcms/cms/issues/20613))
@@ -16,6 +15,7 @@
 - Fixed a bug where Preview never loaded for users who could view an entry but not save it. ([#20572](https://github.com/craftcms/cms/issues/20572))
 - Fixed a bug where the “Save and send activation email” button on users’ Permissions screens didn’t send activation emails for users without the “Administrate users” permission. ([#20566](https://github.com/craftcms/cms/issues/20566))
 - Fixed a bug where project config handlers for a path weren’t called when a value nested within it was set before the path existed. ([#20717](https://github.com/craftcms/cms/pull/20717))
+- Fixed a bug where `craft\helpers\ImageTransforms::storeLocalSource()` didn’t do anything when no destination was passed, rather than resizing the source file in place. ([#20775](https://github.com/craftcms/cms/pull/20775))
 - Updated the built-in composer.phar to 2.11.2. Composer no longer falls back to cloning a package’s source when its zip download fails, so updates and plugin installs that relied on that, such as for private VCS repositories without a GitHub token, now fail instead. ([#20742](https://github.com/craftcms/cms/pull/20742))
 
 ## 5.12.1 - 2026-11-10
