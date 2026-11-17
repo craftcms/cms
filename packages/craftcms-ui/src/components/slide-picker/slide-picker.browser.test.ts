@@ -362,14 +362,16 @@ it('tells selected and empty segments apart, divides selected ones, and shows th
 
 it('scales its segments with the text size', async () => {
   const picker = await render('', 50);
+  // The first segment adds a fixed 1px border on each side, which doesn't scale.
+  const border = 2;
   const before = segments(picker)[0]!.getBoundingClientRect();
 
   document.documentElement.style.fontSize = '200%';
   try {
     const after = segments(picker)[0]!.getBoundingClientRect();
 
-    expect(after.width).toBeCloseTo(before.width * 2, 0);
-    expect(after.height).toBeCloseTo(before.height * 2, 0);
+    expect(after.width - border).toBeCloseTo((before.width - border) * 2, 0);
+    expect(after.height - border).toBeCloseTo((before.height - border) * 2, 0);
   } finally {
     document.documentElement.style.fontSize = '';
   }
