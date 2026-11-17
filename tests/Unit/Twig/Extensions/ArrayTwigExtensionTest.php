@@ -56,8 +56,8 @@ describe('ArrayTwigExtension', function () {
         $extension = new ArrayTwigExtension($this->pageLifecycle, $this->env);
 
         expect($extension->indexOfFilter('hello', 'll'))->toBe(2);
-        expect($extension->withoutKeyFilter(['a' => 1, 'b' => 2], 'a'))->toBe(['b' => 2]);
-        expect($extension->collectFunction([1, 2, 3]))->toBeInstanceOf(Collection::class);
+        expect($extension->withoutKeyFilter(false, ['a' => 1, 'b' => 2], 'a'))->toBe(['b' => 2]);
+        expect($extension->collectFunction(false, [1, 2, 3]))->toBeInstanceOf(Collection::class);
     });
 
     it('supports map/filter pipeline helpers', function () {
@@ -214,12 +214,20 @@ describe('ArrayTwigExtension', function () {
             'where with a callable array' => ["{{ ['x']|where([target, 'boom'])|length }}"],
             'contains with a callable array' => ["{{ ['x']|contains([target, 'boom']) ? 'y' : 'n' }}"],
             'multisort with a callable array' => ["{{ ['x', 'y']|multisort([target, 'boom'])|length }}"],
-            'multisort with a static callable array' => ["{{ ['x', 'y']|multisort(['ArrayTwigExtensionTestStaticTarget', 'boom'])|length }}"],
             'where with a disallowed property' => ["{{ [inner]|where('secret', 'shh')|length }}"],
             'contains with a disallowed property' => ["{{ [inner]|contains('secret', 'shh') ? 'y' : 'n' }}"],
             'multisort with a disallowed property' => ["{{ [inner, inner]|multisort('secret')|length }}"],
             'column with a disallowed ArrayAccess offset' => ["{{ [arrayAccess]|column('secret')|first }}"],
         ])->throws(TwigError::class);
+
+        it('never calls callable arrays passed to multisort', function () {
+            // Collection::sortBy() would call this, but in the sandbox each item is read as a key name instead
+            app(TemplateManager::class)->renderSandboxedString(
+                "{{ ['x', 'y']|multisort(['ArrayTwigExtensionTestStaticTarget', 'boom'])|length }}",
+            );
+
+            expect(ArrayTwigExtensionTestStaticTarget::$calls)->toBe(0);
+        });
 
         it('still allows string keys, integer keys, and arrow functions', function () {
             $result = app(TemplateManager::class)->renderSandboxedString(implode('|', [

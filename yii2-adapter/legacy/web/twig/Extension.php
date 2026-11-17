@@ -113,7 +113,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterByValueFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false, bool $keepKeys = true): array
     {
-        $array = ArrayTwigExtension::checkKeysInSandbox($env, $isSandboxed, $array, [$key], 'filterByValue');
+        $array = ArrayTwigExtension::sandboxItems($isSandboxed, $array);
+        $key = ArrayTwigExtension::sandboxKey($env, $isSandboxed, $key, 'filterByValue');
 
         return ArrayHelper::where($array, $key, $value, $strict, $keepKeys);
     }
@@ -123,7 +124,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function firstWhereFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
     {
-        $array = ArrayTwigExtension::checkKeysInSandbox($env, $isSandboxed, $array, [$key], 'firstWhere');
+        $array = ArrayTwigExtension::sandboxItems($isSandboxed, $array);
+        $key = ArrayTwigExtension::sandboxKey($env, $isSandboxed, $key, 'firstWhere');
 
         return ArrayHelper::firstWhere($array, $key, $value, $strict);
     }
@@ -133,8 +135,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function indexFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, mixed $key, mixed $groups = []): array
     {
-        $groups = (array) $groups;
-        $array = ArrayTwigExtension::checkKeysInSandbox($env, $isSandboxed, $array, [$key, ...$groups], 'index');
+        $array = ArrayTwigExtension::sandboxItems($isSandboxed, $array);
+        $key = ArrayTwigExtension::sandboxKey($env, $isSandboxed, $key, 'index');
+        $groups = array_map(fn($group) => ArrayTwigExtension::sandboxKey($env, $isSandboxed, $group, 'index'), (array) $groups);
 
         return ArrayHelper::index($array, $key, $groups);
     }

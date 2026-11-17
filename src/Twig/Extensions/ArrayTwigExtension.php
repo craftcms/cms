@@ -8,6 +8,7 @@ use Closure;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Template;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Override;
@@ -16,8 +17,8 @@ use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
-use Twig\Extension\SandboxExtension;
 use Twig\Sandbox\SecurityError;
+use Twig\Source;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 
@@ -51,8 +52,8 @@ class ArrayTwigExtension extends AbstractExtension
             new TwigFilter('unshift', $this->unshiftFilter(...)),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('where', $this->whereFilter(...), ['needs_environment' => true, 'needs_is_sandboxed' => true]),
-            new TwigFilter('without', $this->withoutFilter(...)),
-            new TwigFilter('withoutKey', $this->withoutKeyFilter(...)),
+            new TwigFilter('without', $this->withoutFilter(...), ['needs_is_sandboxed' => true]),
+            new TwigFilter('withoutKey', $this->withoutKeyFilter(...), ['needs_is_sandboxed' => true]),
         ];
     }
 
@@ -60,7 +61,7 @@ class ArrayTwigExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('collect', $this->collectFunction(...)),
+            new TwigFunction('collect', $this->collectFunction(...), ['needs_is_sandboxed' => true]),
             new TwigFunction('combine', 'array_combine'),
             new TwigFunction('shuffle', $this->shuffleFunction(...)),
         ];
@@ -129,7 +130,18 @@ class ArrayTwigExtension extends AbstractExtension
     /** @param iterable<array-key, mixed> $array */
     public function firstWhereFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
     {
-        $array = self::checkKeysInSandbox($env, $isSandboxed, $array, [$key], 'firstWhere');
+        $array = self::sandboxItems($isSandboxed, $array);
+
+        if ($isSandboxed && ! $key instanceof Closure) {
+            $match = collect($array)
+                ->map(self::sandboxKey($env, true, $key, 'firstWhere'))
+                ->map(fn (mixed $value) => ['value' => $value])
+                ->where('value', $strict ? '===' : '==', $value)
+                ->keys()
+                ->first();
+
+            return $match === null ? null : $array[$match];
+        }
 
         return collect($array)->firstWhere($key, $strict ? '===' : '==', $value);
     }
@@ -142,7 +154,9 @@ class ArrayTwigExtension extends AbstractExtension
      */
     public function columnFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, mixed $value, mixed $key = null): array
     {
-        $array = self::checkKeysInSandbox($env, $isSandboxed, $array, [$value, $key], 'column');
+        $array = self::sandboxItems($isSandboxed, $array);
+        $value = self::sandboxKey($env, $isSandboxed, $value, 'column');
+        $key = self::sandboxKey($env, $isSandboxed, $key, 'column');
 
         if ($array instanceof Traversable) {
             $array = iterator_to_array($array);
@@ -154,7 +168,14 @@ class ArrayTwigExtension extends AbstractExtension
     /** @param iterable<array-key, mixed> $array */
     public function containsFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
     {
-        $array = self::checkKeysInSandbox($env, $isSandboxed, $array, [$key], 'contains');
+        $array = self::sandboxItems($isSandboxed, $array);
+
+        if ($isSandboxed && ! $key instanceof Closure) {
+            return collect($array)
+                ->map(self::sandboxKey($env, true, $key, 'contains'))
+                ->map(fn (mixed $value) => ['value' => $value])
+                ->contains('value', $strict ? '===' : '==', $value);
+        }
 
         return Arr::contains($array, $key, $value, $strict);
     }
@@ -168,88 +189,74 @@ class ArrayTwigExtension extends AbstractExtension
      */
     public function whereFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false, bool $keepKeys = true): array
     {
-        $array = self::checkKeysInSandbox($env, $isSandboxed, $array, [$key], 'where');
+        $array = self::sandboxItems($isSandboxed, $array);
 
-        $filtered = collect($array)->where($key, $strict ? '===' : '==', $value);
+        if ($isSandboxed && ! $key instanceof Closure) {
+            $matches = collect($array)
+                ->map(self::sandboxKey($env, true, $key, 'where'))
+                ->map(fn (mixed $value) => ['value' => $value])
+                ->where('value', $strict ? '===' : '==', $value);
+            $filtered = collect($array)->intersectByKeys($matches);
+        } else {
+            $filtered = collect($array)->where($key, $strict ? '===' : '==', $value);
+        }
 
         return $keepKeys ? $filtered->all() : $filtered->values()->all();
     }
 
     /**
-     * Ensures that the keys passed to an array filter in a sandboxed environment can only access what the
-     * template could access directly.
+     * Returns the items a filter or function should work with in a sandboxed environment.
      *
-     * Each key must be a string or integer that doesn’t contain any `.`, `[`, or `]` characters, or an arrow
-     * function (which the sandbox checks on its own). Object elements of `$array` must allow access to each key
-     * the same way they would if the template had accessed it directly, e.g. `element.name`. If `$array` is a single
-     * non-traversable object, it’s treated as a single element.
+     * Converting an object to an array, or iterating over a non-traversable object, would expose all of its
+     * properties without any sandbox checks, including protected and private ones. So in a sandboxed environment,
+     * traversable objects are converted with their own iterator, and other objects are treated as a single item.
      *
-     * Returns `$array`, converted to an array if it was an object, so it can be safely iterated (again).
-     *
-     * @param  array<array-key, mixed>  $keys
-     * @return ($array is iterable ? iterable<array-key, mixed> : mixed)
-     *
-     * @throws RuntimeError if a key isn’t allowed in a sandboxed environment
-     * @throws SecurityError if an element is an object and a key isn’t an allowed property/method in a sandboxed environment
+     * @return ($value is iterable<array-key, mixed> ? iterable<array-key, mixed> : mixed)
      *
      * @internal
      */
-    public static function checkKeysInSandbox(TwigEnvironment $env, bool $isSandboxed, mixed $array, array $keys, string $filterName): mixed
+    public static function sandboxItems(bool $isSandboxed, mixed $value): mixed
     {
-        if (! $isSandboxed) {
-            return $array;
+        if (! $isSandboxed || ! is_object($value)) {
+            return $value;
         }
 
-        $names = [];
-        foreach ($keys as $key) {
-            if ($key === null || $key instanceof Closure) {
-                continue;
-            }
+        return $value instanceof Traversable ? iterator_to_array($value) : [$value];
+    }
 
-            // Arrays would be treated as nested key paths, and other callables would be called directly
-            if (! is_string($key) && ! is_int($key)) {
-                throw new RuntimeError(sprintf('Keys passed to the "%s" filter must be strings, integers, or arrow functions in sandbox mode.', $filterName));
-            }
-
-            $key = (string) $key;
-            foreach (['.', '[', ']'] as $char) {
-                if (str_contains($key, $char)) {
-                    throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "%s" characters in sandbox mode.', $filterName, $char));
-                }
-            }
-
-            $names[] = $key;
+    /**
+     * Returns the key a filter should read from each item in a sandboxed environment.
+     *
+     * Rather than letting array helpers read the key themselves, string and integer keys are replaced with an arrow
+     * function that reads them with Twig’s attribute lookup, so each read gets the same sandbox checks it would get
+     * if the template had accessed it directly, e.g. `item.key`. Arrow functions and `null` are returned as-is, and
+     * anything else (such as key paths or callables) is rejected.
+     *
+     * @return ($key is null ? null : ($isSandboxed is true ? Closure(mixed): mixed : mixed))
+     *
+     * @throws RuntimeError if the key isn’t allowed in a sandboxed environment
+     *
+     * @internal
+     */
+    public static function sandboxKey(TwigEnvironment $env, bool $isSandboxed, mixed $key, string $filterName): mixed
+    {
+        if (! $isSandboxed || $key === null || $key instanceof Closure) {
+            return $key;
         }
 
-        if ($array instanceof Traversable) {
-            $array = iterator_to_array($array);
-        } elseif (is_object($array)) {
-            // $array is a single object rather than a list of rows, so iterating over it would mean enumerating
-            // its public properties without any sandbox checks. Treat it as a single row instead.
-            $array = [$array];
+        if (! is_string($key) && ! is_int($key)) {
+            throw new RuntimeError(sprintf('Keys passed to the "%s" filter must be strings, integers, or arrow functions in sandbox mode.', $filterName));
         }
 
-        if (! empty($names) && is_iterable($array)) {
-            /** @var SandboxExtension $sandbox */
-            $sandbox = $env->getExtension(SandboxExtension::class);
-            foreach ($array as $element) {
-                if (is_object($element)) {
-                    foreach ($names as $name) {
-                        // Twig allows offset reads on its own array-like classes without any sandbox checks
-                        if (
-                            in_array($element::class, CoreExtension::ARRAY_LIKE_CLASSES, true) &&
-                            $element->offsetExists($name)
-                        ) {
-                            continue;
-                        }
-
-                        $sandbox->checkPropertyAllowed($element, $name);
-                    }
-                }
+        foreach (['.', '[', ']'] as $char) {
+            if (str_contains((string) $key, $char)) {
+                throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "%s" characters in sandbox mode.', $filterName, $char));
             }
         }
 
-        return $array;
+        $source = new Source('', "$filterName filter");
+
+        return fn (mixed $item) => Template::attribute($env, $source, $item, $key, ignoreStrictCheck: true, sandboxed: true);
     }
 
     /**
@@ -335,18 +342,38 @@ class ArrayTwigExtension extends AbstractExtension
      */
     public function multisortFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
     {
-        // Collection::sortBy() calls callable arrays, such as `['SomeClass', 'someMethod']`, rather than treating them as
-        // a list of keys, so don't let checkKeysInSandbox() validate their items as if they were keys
-        if ($isSandboxed && is_array($key) && is_callable($key)) {
-            throw new RuntimeError('Keys passed to the "multisort" filter must be strings, integers, or arrow functions in sandbox mode.');
-        }
-
-        $array = self::checkKeysInSandbox($env, $isSandboxed, $array, is_array($key) ? $key : [$key], 'multisort');
-
+        $array = self::sandboxItems($isSandboxed, $array);
         $array = array_merge($array);
 
+        if ($isSandboxed && is_array($key)) {
+            // Collection::sortBy() would read each key itself, and call callable arrays like `['SomeClass', 'someMethod']`,
+            // so read each key up front and sort by the values that were read instead
+            $readers = [];
+            $comparisons = [];
+
+            foreach (array_values($key) as $i => $comparison) {
+                $comparison = Arr::wrap($comparison);
+                $prop = $comparison[0] ?? null;
+
+                if ($prop instanceof Closure) {
+                    $comparison[0] = fn (array $a, array $b) => $prop($a['item'], $b['item']);
+                } else {
+                    $readers[$i] = self::sandboxKey($env, true, $prop, 'multisort') ?? fn (mixed $item) => $item;
+                    $comparison[0] = "values.$i";
+                }
+
+                $comparisons[] = $comparison;
+            }
+
+            return collect($array)
+                ->map(fn (mixed $item) => ['item' => $item, 'values' => array_map(fn (Closure $read) => $read($item), $readers)])
+                ->sortBy($comparisons, collect($sortFlag)->sum())
+                ->map(fn (array $row) => $row['item'])
+                ->all();
+        }
+
         return collect($array)
-            ->sortBy($key, collect($sortFlag)->sum(), $direction === SORT_DESC)
+            ->sortBy(self::sandboxKey($env, $isSandboxed, $key, 'multisort'), collect($sortFlag)->sum(), $direction === SORT_DESC)
             ->all();
     }
 
@@ -373,8 +400,9 @@ class ArrayTwigExtension extends AbstractExtension
     }
 
     /** @return array<array-key, mixed> */
-    public function withoutFilter(mixed $arr, mixed $exclude, bool $strict = false): array
+    public function withoutFilter(bool $isSandboxed, mixed $arr, mixed $exclude, bool $strict = false): array
     {
+        $arr = self::sandboxItems($isSandboxed, $arr);
         $items = is_null($arr) || is_scalar($arr) || $arr instanceof \UnitEnum
             ? Arr::wrap($arr)
             : Arr::from($arr);
@@ -388,9 +416,9 @@ class ArrayTwigExtension extends AbstractExtension
      * @param  array<array-key, string>|string  $key
      * @return array<array-key, mixed>
      */
-    public function withoutKeyFilter(mixed $arr, array|string $key): array
+    public function withoutKeyFilter(bool $isSandboxed, mixed $arr, array|string $key): array
     {
-        $arr = (array) $arr;
+        $arr = (array) self::sandboxItems($isSandboxed, $arr);
 
         if (! is_array($key)) {
             $key = [$key];
@@ -404,8 +432,9 @@ class ArrayTwigExtension extends AbstractExtension
     }
 
     /** @return Collection<array-key, mixed> */
-    public function collectFunction(mixed $var): Collection
+    public function collectFunction(bool $isSandboxed, mixed $var): Collection
     {
+        $var = self::sandboxItems($isSandboxed, $var);
         $items = is_null($var) || is_scalar($var) || $var instanceof \UnitEnum
             ? Arr::wrap($var)
             : Arr::from($var);
