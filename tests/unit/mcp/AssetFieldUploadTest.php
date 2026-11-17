@@ -160,18 +160,18 @@ class AssetFieldUploadTest extends TestCase
         }
 
         self::assertFalse($rewritten['isError'] ?? true, json_encode($rewritten));
-        self::assertSame("/craft/nl/$general->actionTrigger/mcp/upload", parse_url($rewritten['structuredContent']['upload_url'], PHP_URL_PATH));
+        self::assertSame("/craft/nl/$general->actionTrigger/uploads/transfer", parse_url($rewritten['structuredContent']['upload_url'], PHP_URL_PATH));
         self::assertFalse($upload['isError'] ?? true, json_encode($upload));
         $upload = $upload['structuredContent'];
         // The scheme follows useSslOnTokenizedUrls
         self::assertSame(['example.test', '/craft/index.php'], [parse_url($upload['upload_url'], PHP_URL_HOST), parse_url($upload['upload_url'], PHP_URL_PATH)]);
         parse_str((string)parse_url($upload['upload_url'], PHP_URL_QUERY), $query);
         $token = $query[$general->tokenParam];
-        self::assertSame(['mcp/upload', ['uploadId' => $upload['upload_id']]], Craft::$app->getTokens()->getTokenRoute($token));
+        self::assertSame(['uploads/transfer', ['uploadId' => $upload['upload_id']]], Craft::$app->getTokens()->getTokenRoute($token));
 
         $uploads = Craft::$app->get('mcp')->getCapabilityContainer()->get(AssetUploads::class);
         $stream = fopen($this->file, 'rb');
-        $uploads->receiveUpload($upload['upload_id'], $stream);
+        Craft::$app->getUploads()->transfer($upload['upload_id'], $stream);
         fclose($stream);
 
         $contents = $uploads->consumeFile(['upload_id' => $upload['upload_id']], 'uploaded.png', static fn(string $path): string => file_get_contents($path));
@@ -190,23 +190,18 @@ class AssetFieldUploadTest extends TestCase
         $general->tempAssetUploadFs = 'mcpUploadTest';
 
         try {
-            // Reserving an upload deletes those left unclaimed for a day
-            FileHelper::writeToFile("$sharedPath/mcp-uploads/stale", 'stale');
-            touch("$sharedPath/mcp-uploads/stale", time() - 86401);
-
             Craft::$app->setRuntimePath("$runtimePath/mcp-server-a");
             $upload = (new AssetUploads())->createUpload(Craft::$app->getUser()->getIdentity(), 'https://example.test/mcp');
-            self::assertFileDoesNotExist("$sharedPath/mcp-uploads/stale");
 
             Craft::$app->setRuntimePath("$runtimePath/mcp-server-b");
             $stream = fopen($this->file, 'rb');
-            self::assertSame(filesize($this->file), (new AssetUploads())->receiveUpload($upload['upload_id'], $stream));
+            self::assertSame(filesize($this->file), Craft::$app->getUploads()->transfer($upload['upload_id'], $stream));
             fclose($stream);
 
             Craft::$app->setRuntimePath("$runtimePath/mcp-server-c");
             $stream = fopen($this->file, 'rb');
             try {
-                (new AssetUploads())->receiveUpload($upload['upload_id'], $stream);
+                Craft::$app->getUploads()->transfer($upload['upload_id'], $stream);
                 self::fail('Each upload URL must only accept one file.');
             } catch (ConflictHttpException) {
             } finally {
@@ -215,7 +210,7 @@ class AssetFieldUploadTest extends TestCase
 
             $contents = (new AssetUploads())->consumeFile(['upload_id' => $upload['upload_id']], 'uploaded.png', static fn(string $path): string => file_get_contents($path));
             self::assertSame(file_get_contents($this->file), $contents);
-            self::assertSame([], FileHelper::findFiles("$sharedPath/mcp-uploads"), 'Claimed uploads must be deleted.');
+            self::assertSame([], FileHelper::findFiles("$sharedPath/_upload-sessions"), 'Claimed uploads must be deleted.');
         } finally {
             Craft::$app->setRuntimePath($runtimePath);
             $general->tempAssetUploadFs = null;

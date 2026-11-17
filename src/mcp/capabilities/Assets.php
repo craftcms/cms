@@ -307,16 +307,16 @@ readonly class Assets
     }
 
     /**
-     * @return array{upload_id: string, upload_url: string, method: string, expires_at: string, max_size: int}
+     * @return array{upload_id: string, upload_url: string, method: string, headers: object, expires_at: string, max_size: int}
      */
     #[McpTool(
         name: 'assets_upload_url',
-        description: 'Gets a single-use URL for uploading a local or large file. Send the raw file bytes as the body of a PUT request to upload_url before expires_at (for example, curl -T ./photo.jpg "<upload_url>"), then pass {"upload_id": "...", "file_name": "photo.jpg"} as the file for assets_create or assets_replace. The file name is required, since it can’t be derived from the upload. Requires permission to save assets in at least one volume.',
+        description: 'Gets a single-use URL for uploading a local or large file. Send the raw file bytes as the body of a PUT request to upload_url before expires_at, with every header in headers (for example, curl -T ./photo.jpg -H "<name>: <value>" "<upload_url>"), then pass {"upload_id": "...", "file_name": "photo.jpg"} as the file for assets_create or assets_replace. The file name is required, since it can’t be derived from the upload. Pass size, the file’s size in bytes, when you know it; the URL then only accepts a file of that size. Requires permission to save assets in at least one volume.',
     )]
-    public function uploadUrl(): array
+    public function uploadUrl(?int $size = null): array
     {
         if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-            return $this->mcpAssetUploads->createUpload($this->actor->user(), $this->settings->url($this->settings->route));
+            return $this->mcpAssetUploads->createUpload($this->actor->user(), $this->settings->url($this->settings->route), $size);
         }
 
         // Console URLs are built without a host or the site's subdirectory, so the stdio server uses the site's base
@@ -331,9 +331,9 @@ readonly class Assets
         }
 
         $general = Craft::$app->getConfig()->getGeneral();
-        $path = $general->omitScriptNameInUrls ? "$general->actionTrigger/mcp/upload" : 'index.php';
+        $path = $general->omitScriptNameInUrls ? "$general->actionTrigger/uploads/transfer" : 'index.php';
 
-        return $this->mcpAssetUploads->createUpload($this->actor->user(), rtrim($baseUrl, '/') . "/$path");
+        return $this->mcpAssetUploads->createUpload($this->actor->user(), rtrim($baseUrl, '/') . "/$path", $size);
     }
 
     /**

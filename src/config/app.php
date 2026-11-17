@@ -4,7 +4,7 @@ return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
     'version' => '5.12.1',
-    'schemaVersion' => '5.13.0.0',
+    'schemaVersion' => '5.13.0.1',
     'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -149,6 +149,9 @@ return [
         ],
         'updates' => [
             'class' => craft\services\Updates::class,
+        ],
+        'uploads' => [
+            'class' => craft\services\Uploads::class,
         ],
         'urlManager' => [
             'class' => craft\web\UrlManager::class,
