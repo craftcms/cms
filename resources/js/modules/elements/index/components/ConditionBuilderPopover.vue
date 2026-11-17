@@ -193,9 +193,11 @@
           @click="emit('close')"
         ></craft-button>
         <craft-spinner v-if="http.processing || !builder"></craft-spinner>
+        <!-- The whole condition fills the pane, its own group supplying the padding. -->
         <ConditionBuilder
           v-else
           ref="editor"
+          :slot="scope === 'all' ? 'body' : undefined"
           :class="`condition-popover__builder--${scope}`"
           :payload="builder"
           :autofocus="scope !== 'all'"
