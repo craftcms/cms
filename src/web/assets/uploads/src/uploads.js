@@ -10,14 +10,20 @@ window.Craft.Uploads = {FileUpload, UploadError, defaults};
  *
  * The attribute’s value is a JSON object of upload parameters, such as
  * `{"fieldId": 12}` or `{"folderId": 3}`. The form waits for uploads to finish
- * before it submits.
+ * before it submits, and resetting the form discards them.
  *
  * The input dispatches `uploadprogress`, `uploadcomplete` and `uploaderror`
  * events, with details in `event.detail`.
  */
 const selector = 'input[type=file][data-upload-session]';
 const hiddenSelector = 'input[type=hidden][data-upload-session-for]';
+
+/** Each file input’s uploads. A new selection or a reset bumps `selection`, so older uploads stop affecting it. */
+const inputStates = new WeakMap();
+/** Each form’s pending uploads. */
 const pending = new WeakMap();
+/** Forms waiting for their uploads before they submit. */
+const waiting = new WeakSet();
 
 document.addEventListener('change', (event) => {
   if (
@@ -31,20 +37,42 @@ document.addEventListener('change', (event) => {
 document.addEventListener(
   'submit',
   (event) => {
-    const uploads = pending.get(event.target);
-    if (!uploads?.size) {
+    const form = event.target;
+    if (!pending.get(form)?.size) {
       return;
     }
 
     // Submit once the uploads are done; each one reports its own errors
     event.preventDefault();
     event.stopImmediatePropagation();
-    Promise.allSettled([...uploads]).then(() => {
-      event.target.requestSubmit(event.submitter);
+
+    // Repeated clicks while waiting don't queue more submissions
+    if (waiting.has(form)) {
+      return;
+    }
+
+    waiting.add(form);
+    const submitter =
+      event.submitter?.form === form ? event.submitter : undefined;
+
+    settle(form).then(() => {
+      waiting.delete(form);
+      form.requestSubmit(submitter?.isConnected ? submitter : undefined);
     });
   },
   true
 );
+
+document.addEventListener('reset', (event) => {
+  // `elements` includes controls outside the form that name it with a `form` attribute
+  for (const element of [...event.target.elements]) {
+    if (element.matches(hiddenSelector)) {
+      element.remove();
+    } else if (element.matches(selector)) {
+      resetInput(element);
+    }
+  }
+});
 
 function uploadInput(input) {
   const files = [...input.files];
@@ -52,14 +80,27 @@ function uploadInput(input) {
     return;
   }
 
-  // The file input keeps its name, so its files are never posted with the form
+  // The file input loses its name, so its files are never posted with the form
   input.dataset.uploadSessionName ??= input.name;
   input.removeAttribute('name');
   const name = input.dataset.uploadSessionName;
 
-  if (!input.multiple) {
-    removeHiddenInputs(input);
+  // The input is cleared below, so `required` is checked against the uploads instead
+  if (input.required) {
+    input.dataset.uploadSessionRequired = '';
   }
+
+  const state = inputState(input);
+
+  if (!input.multiple) {
+    // A new file replaces the previous one, uploaded or not
+    discardUploads(state);
+    hiddenInputs(input).forEach((hidden) => hidden.remove());
+  }
+
+  const selection = state.selection;
+  const isCurrent = () => state.selection === selection;
+  state.error = '';
 
   let parameters = {};
   try {
@@ -68,55 +109,105 @@ function uploadInput(input) {
     console.warn('data-upload-session must be a JSON object.', input);
   }
 
-  input.setCustomValidity('');
-
   // Add the hidden inputs up front, so asset IDs keep the order files were chosen in
-  let last = input;
-  while (last.nextElementSibling?.matches(hiddenSelector)) {
-    last = last.nextElementSibling;
-  }
+  let last = hiddenInputs(input).at(-1) ?? input;
 
   for (const file of files) {
     const hidden = document.createElement('input');
     hidden.type = 'hidden';
     hidden.dataset.uploadSessionFor = '';
+    if (input.hasAttribute('form')) {
+      hidden.setAttribute('form', input.getAttribute('form'));
+    }
     last.after(hidden);
     last = hidden;
 
     const upload = new FileUpload(file, {
       parameters,
       onProgress: (loaded, total) => {
-        dispatch(input, 'uploadprogress', {file, loaded, total});
+        if (isCurrent()) {
+          dispatch(input, 'uploadprogress', {file, loaded, total});
+        }
       },
     });
+    state.uploads.add(upload);
 
     const promise = upload
       .upload()
-      .then((result) => {
-        hidden.name = name;
-        hidden.value = result.assetId;
-        dispatch(input, 'uploadcomplete', {file, result});
-      })
-      .catch((error) => {
-        hidden.remove();
-        input.setCustomValidity(error.message);
-        dispatch(input, 'uploaderror', {file, error});
-        throw error;
+      .then(
+        (result) => {
+          if (isCurrent()) {
+            hidden.name = name;
+            hidden.value = result.assetId;
+            dispatch(input, 'uploadcomplete', {file, result});
+          }
+        },
+        (error) => {
+          hidden.remove();
+          if (isCurrent()) {
+            state.error = error.message;
+            dispatch(input, 'uploaderror', {file, error});
+          }
+        }
+      )
+      .finally(() => {
+        state.uploads.delete(upload);
+        if (isCurrent()) {
+          updateValidity(input);
+        }
       });
 
     track(input.form, promise);
   }
 
   input.value = '';
+  updateValidity(input);
 }
 
-function removeHiddenInputs(input) {
+function resetInput(input) {
+  discardUploads(inputState(input));
+  input.setCustomValidity('');
+  if (input.dataset.uploadSessionRequired !== undefined) {
+    input.required = true;
+  }
+}
+
+/**
+ * Shows the latest upload error, and requires a file only while there are no
+ * uploads, finished or not.
+ */
+function updateValidity(input) {
+  input.setCustomValidity(inputState(input).error);
+  if (input.dataset.uploadSessionRequired !== undefined) {
+    input.required = !hiddenInputs(input).length;
+  }
+}
+
+function inputState(input) {
+  if (!inputStates.has(input)) {
+    inputStates.set(input, {selection: 0, uploads: new Set(), error: ''});
+  }
+  return inputStates.get(input);
+}
+
+function discardUploads(state) {
+  state.selection++;
+  state.error = '';
+  for (const upload of state.uploads) {
+    // Uploads that are already saving can't be canceled; their assets are left unused
+    upload.cancel().catch(() => {});
+  }
+  state.uploads.clear();
+}
+
+function hiddenInputs(input) {
+  const inputs = [];
   let next = input.nextElementSibling;
   while (next?.matches(hiddenSelector)) {
-    const hidden = next;
+    inputs.push(next);
     next = next.nextElementSibling;
-    hidden.remove();
   }
+  return inputs;
 }
 
 function track(form, promise) {
@@ -129,9 +220,16 @@ function track(form, promise) {
   }
 
   const uploads = pending.get(form);
-  const settled = promise.catch(() => {});
-  uploads.add(settled);
-  settled.then(() => uploads.delete(settled));
+  uploads.add(promise);
+  promise.finally(() => uploads.delete(promise));
+}
+
+/** Waits for the form’s uploads, including any started while waiting. */
+async function settle(form) {
+  const uploads = pending.get(form);
+  while (uploads?.size) {
+    await Promise.allSettled([...uploads]);
+  }
 }
 
 function dispatch(input, name, detail) {
