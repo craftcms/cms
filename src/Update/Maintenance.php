@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\Event;
 #[Singleton]
 readonly class Maintenance
 {
+    /**
+     * The payload key that marks maintenance mode as turned on by an update.
+     */
+    private const string UPDATE_KEY = 'craftUpdate';
+
     public function __construct(
         private MaintenanceMode $maintenanceMode,
         private ProjectConfig $projectConfig,
@@ -49,6 +54,8 @@ readonly class Maintenance
         if ($enabled) {
             $currentPayload = $active ? $this->maintenanceMode->data() : [];
             $payload = $currentPayload;
+            // Turning it on here keeps it on after a running update finishes
+            unset($payload[self::UPDATE_KEY]);
 
             if ($retryDuration === null) {
                 unset($payload['retry']);
@@ -75,5 +82,26 @@ readonly class Maintenance
 
         $this->maintenanceMode->deactivate();
         Event::dispatch(new MaintenanceModeDisabled);
+    }
+
+    /**
+     * Turns maintenance mode on for an update. If it’s already on, it stays as it is.
+     */
+    public function startUpdate(): void
+    {
+        if (! $this->maintenanceMode->active()) {
+            $this->maintenanceMode->activate([self::UPDATE_KEY => true]);
+        }
+    }
+
+    /**
+     * Turns maintenance mode off if an update turned it on. Maintenance mode an admin turned on
+     * stays on.
+     */
+    public function finishUpdate(): void
+    {
+        if ($this->maintenanceMode->active() && ($this->maintenanceMode->data()[self::UPDATE_KEY] ?? false)) {
+            $this->maintenanceMode->deactivate();
+        }
     }
 }

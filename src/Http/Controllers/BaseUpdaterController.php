@@ -11,6 +11,7 @@ use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Update\Data\UpdaterState;
+use CraftCms\Cms\Update\Maintenance;
 use CraftCms\Cms\Update\Updates;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Encryption\Encrypter;
@@ -233,8 +234,7 @@ abstract class BaseUpdaterController
 
     public function finish(): Response
     {
-        // Disable maintenance mode
-        app()->maintenanceMode()->deactivate();
+        app(Maintenance::class)->finishUpdate();
 
         return $this->send([
             'finished' => true,

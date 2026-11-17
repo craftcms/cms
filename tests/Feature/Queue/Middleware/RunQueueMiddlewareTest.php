@@ -44,7 +44,7 @@ it('does not inject script for ajax requests', function () {
 
 it('does not inject script for non-HTML responses', function () {
     $this->generalConfig->runQueueAutomatically(true);
-    $this->progressService->allows('getActive')->andReturn(collect());
+    $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(1);
 
     $request = Request::create('/');
@@ -58,9 +58,7 @@ it('does not inject script for non-HTML responses', function () {
 
 it('does not inject script when jobs are already running', function () {
     $this->generalConfig->runQueueAutomatically(true);
-    $this->progressService->allows('getActive')->andReturn(collect([
-        ['uid' => 'test-123', 'description' => 'Test job', 'progress' => 50, 'progressLabel' => null],
-    ]));
+    $this->progressService->allows('hasReservedJobs')->andReturn(true);
 
     $request = Request::create('/');
     $response = new Response('<html><body>Test</body></html>');
@@ -73,7 +71,7 @@ it('does not inject script when jobs are already running', function () {
 
 it('does not inject script when queue is empty', function () {
     $this->generalConfig->runQueueAutomatically(true);
-    $this->progressService->allows('getActive')->andReturn(collect());
+    $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(0);
 
     $request = Request::create('/');
@@ -87,7 +85,7 @@ it('does not inject script when queue is empty', function () {
 
 it('injects queue runner script for HTML responses with waiting jobs', function () {
     $this->generalConfig->runQueueAutomatically(true);
-    $this->progressService->allows('getActive')->andReturn(collect());
+    $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(5);
 
     $request = Request::create('/');
@@ -102,9 +100,23 @@ it('injects queue runner script for HTML responses with waiting jobs', function 
         ->toContain('queue\\/run'); // Slashes are escaped in JSON
 });
 
+it('injects queue runner script when earlier jobs failed or are waiting', function () {
+    $this->generalConfig->runQueueAutomatically(true);
+    $progress = app(JobProgress::class);
+    $progress->failed('failed-job', 'Failed job', 'Boom');
+    $progress->queued('pending-job', 'Pending job');
+    $this->queue->allows('size')->andReturn(1);
+    $middleware = new RunQueue($this->queue, $progress);
+
+    $response = new Response('<html><body>Test</body></html>');
+    $response->headers->set('Content-Type', 'text/html');
+
+    expect($middleware->handle(Request::create('/'), fn () => $response)->getContent())->toContain('<script');
+});
+
 it('injects script before closing body tag', function () {
     $this->generalConfig->runQueueAutomatically(true);
-    $this->progressService->allows('getActive')->andReturn(collect());
+    $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(1);
 
     $request = Request::create('/');
@@ -122,7 +134,7 @@ it('injects script before closing body tag', function () {
 
 it('appends script if no closing body tag exists', function () {
     $this->generalConfig->runQueueAutomatically(true);
-    $this->progressService->allows('getActive')->andReturn(collect());
+    $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(1);
 
     $request = Request::create('/');
@@ -138,7 +150,7 @@ it('appends script if no closing body tag exists', function () {
 
 it('handles xhtml content type', function () {
     $this->generalConfig->runQueueAutomatically(true);
-    $this->progressService->allows('getActive')->andReturn(collect());
+    $this->progressService->allows('hasReservedJobs')->andReturn(false);
     $this->queue->allows('size')->andReturn(1);
 
     $request = Request::create('/');

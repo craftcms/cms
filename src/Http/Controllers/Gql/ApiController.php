@@ -16,6 +16,7 @@ use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Site\Sites as SiteSites;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\User\Elements\User as UserElement;
 use CraftCms\Cms\User\Models\User as OAuthUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
@@ -262,7 +263,12 @@ readonly class ApiController extends GqlController
 
         $resource = $this->oauthResources->get('graphql');
 
-        if (! $user instanceof OAuthUser || ! $resource || ! array_any($resource->scopes(), $user->tokenCan(...))) {
+        if (
+            ! $user instanceof OAuthUser ||
+            $user->asElement()->getStatus() !== UserElement::STATUS_ACTIVE ||
+            ! $resource ||
+            ! array_any($resource->scopes(), $user->tokenCan(...))
+        ) {
             throw new HttpException(401, 'Invalid access token.', headers: [
                 'WWW-Authenticate' => $resource?->challenge('invalid_token') ?? 'Bearer error="invalid_token"',
             ]);
