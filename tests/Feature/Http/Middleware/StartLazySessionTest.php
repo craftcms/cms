@@ -177,6 +177,17 @@ it('prevents caching responses that save or refresh the session', function () {
         ->toBe('must-revalidate, no-cache, no-store, private');
 });
 
+it('prevents caching responses that save the session on routes without Craft’s middleware', function () {
+    Route::middleware('web')->withLazySession()->get('web-writes', function () {
+        session()->flash('notice', 'Saved');
+
+        return response('written')->setPublic()->setMaxAge(3600);
+    });
+
+    expect(get('/web-writes')->assertCookie(config('session.cookie'))->headers->get('Cache-Control'))
+        ->toBe('must-revalidate, no-cache, no-store, private');
+});
+
 it('reports why a lazy session was saved', function () {
     Event::fake([LazySessionSaved::class]);
     config(['app.debug' => true]);

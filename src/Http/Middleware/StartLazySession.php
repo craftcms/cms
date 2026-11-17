@@ -123,10 +123,7 @@ readonly class StartLazySession
         }
 
         if ($request->cookies->get($config['cookie']) !== null) {
-            $response = $startSession->handle($request, $next, ...$parameters);
-            ResponseHeaders::noCache();
-
-            return $response;
+            return $this->preventCaching($startSession->handle($request, $next, ...$parameters));
         }
 
         $session = $this->manager->driver();
@@ -158,12 +155,31 @@ readonly class StartLazySession
 
         if ($regenerated || $keys !== [] || $token !== null) {
             $bufferedHandler->flush();
-            ResponseHeaders::noCache();
+            $this->preventCaching($response);
             $this->report($request, $response, $keys, $regenerated, $token);
         } elseif ($response instanceof Response) {
             // `StartSession` and `PreventRequestForgery` add these to every response.
             $response->headers->removeCookie($config['cookie'], $config['path'], $config['domain']);
             $response->headers->removeCookie('XSRF-TOKEN', $config['path'], $config['domain']);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Keeps browsers and shared caches from storing a response that saves or refreshes the session.
+     *
+     * The headers are set on the response, for routes without {@see SetHeaders}, and queued, so they also replace
+     * cache headers the page queued for {@see SetHeaders} to apply afterward.
+     */
+    private function preventCaching(mixed $response): mixed
+    {
+        ResponseHeaders::noCache();
+
+        if ($response instanceof Response) {
+            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', '0');
         }
 
         return $response;
