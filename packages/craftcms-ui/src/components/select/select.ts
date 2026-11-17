@@ -38,11 +38,7 @@ export default class CraftSelect extends NativeField(LitElement) {
     return html`
       <div class="input-group__input">
         <slot name="input"></slot>
-        <craft-icon
-          class="indicator"
-          name="chevron-down"
-          style="font-size: 0.8em"
-        ></craft-icon>
+        <craft-icon class="indicator" name="chevron-down"></craft-icon>
       </div>
     `;
   }

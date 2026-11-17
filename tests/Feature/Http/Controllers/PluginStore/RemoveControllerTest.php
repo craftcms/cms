@@ -109,6 +109,16 @@ test('composer-remove', function () {
     ]);
 });
 
+test('missing Composer prevents the removal workflow from starting', function () {
+    $this->partialMock(Composer::class)->shouldReceive('getIsAvailable')->andReturnFalse();
+
+    postJson(action([RemoveController::class, 'index']), [
+        'packageName' => 'craftcms/test-plugin',
+    ])->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        ->where('initialState.error', 'Composer 2.2.0 or later must be installed and available in the PATH environment variable.')
+        ->missing('initialState.nextUrl'));
+});
+
 test('finish', function () {
     postJson(action([RemoveController::class, 'finish']), [
         'data' => $this->hashedData,

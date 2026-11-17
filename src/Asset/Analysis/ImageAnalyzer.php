@@ -23,7 +23,6 @@ use CraftCms\Cms\Support\File;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
-use Laravel\Ai\Responses\StructuredAgentResponse;
 use Throwable;
 
 /**
@@ -252,7 +251,7 @@ class ImageAnalyzer
                     continue;
                 }
 
-                $data = $response instanceof StructuredAgentResponse ? $response->toArray() : [];
+                $data = $response->toArray();
 
                 foreach ($group as $property => $task) {
                     if (is_array($data[$property] ?? null)) {

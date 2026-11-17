@@ -69,7 +69,7 @@ async function mountSidebar(
     props: {
       craft: {
         maintenanceMode: false,
-        system: {name: 'Craft CMS', icon: null},
+        system: {name: 'Craft CMS', icon: null, logo: null},
         site: null,
         app: {version: '6.0.0', edition: {name: 'Pro'}},
         general: {cpTrigger: 'admin'},

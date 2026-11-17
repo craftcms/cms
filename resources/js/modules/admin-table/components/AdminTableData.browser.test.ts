@@ -761,6 +761,78 @@ it('restores existing status, sorting, and column preferences while keeping the 
   expect(host.querySelectorAll('tbody craft-reorder-button')).toHaveLength(2);
 });
 
+it('keeps the actions column out of the view menu and after every other column', async () => {
+  localStorage.setItem(
+    `Craft-admin-table-test.adminTable.${window.location.pathname}.settings-table.columns`,
+    '{"visible":["actions","count"],"hidden":[]}'
+  );
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name'},
+      {key: 'count', label: 'Count'},
+    ],
+    deletable: true,
+    deleteUrl: '/settings/delete',
+    columnsToggleable: true,
+  });
+  await nextTick();
+
+  expect(
+    Array.from(host.querySelectorAll('thead th'), (th) =>
+      th.textContent?.trim()
+    ).filter(Boolean)
+  ).toEqual(['Name', 'Count', 'Actions']);
+  expect(
+    host
+      .querySelector<HTMLElement & {options: Array<{value: string}>}>(
+        'craft-checkbox-select'
+      )!
+      .options.map((option) => option.value)
+  ).toEqual(['name', 'count']);
+});
+
+it('offers “Use defaults” once the columns or sort change, and restores both', async () => {
+  const host = mountNode({
+    columns: [
+      {key: 'name', label: 'Name', sortable: true},
+      {key: 'count', label: 'Count'},
+    ],
+    deletable: true,
+    deleteUrl: '/settings/delete',
+    columnsToggleable: true,
+  });
+  await nextTick();
+  const headers = () =>
+    Array.from(host.querySelectorAll('thead th'), (th) =>
+      th.textContent?.trim()
+    ).filter(Boolean);
+  const useDefaults = () =>
+    Array.from(host.querySelectorAll<HTMLElement>('craft-button')).find(
+      (button) => button.textContent?.trim() === 'Use defaults'
+    );
+  expect(useDefaults()).toBeUndefined();
+
+  const select = host.querySelector<HTMLElement & {value: string[]}>(
+    'craft-checkbox-select'
+  )!;
+  select.value = ['name'];
+  select.dispatchEvent(new Event('change'));
+  await nextTick();
+  expect(headers()).toEqual(['Name', 'Actions']);
+  useDefaults()!.click();
+  await nextTick();
+  expect(headers()).toEqual(['Name', 'Count', 'Actions']);
+  expect(useDefaults()).toBeUndefined();
+
+  host.querySelector<HTMLButtonElement>('thead th button')!.click();
+  await nextTick();
+  expect(rowNames(host)).toEqual(['Alpha', 'Beta']);
+  useDefaults()!.click();
+  await nextTick();
+  expect(rowNames(host)).toEqual(['Beta', 'Alpha']);
+  expect(useDefaults()).toBeUndefined();
+});
+
 it('loads the requested page and returns to page one when the page size changes', async () => {
   const loadRows = vi.fn(async (request: AdminTableRequest) =>
     result(`Page ${request.page}`, request.page)

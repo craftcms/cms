@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import {useMessages} from '@/modules/messages/useMessages';
-  import {computed, ref, watch} from 'vue';
+  import {computed, ref, useId, watch} from 'vue';
   import {useHttp} from '@inertiajs/vue3';
   import '@craftcms/ui/components/field-group/field-group';
   import {t} from '@craftcms/ui';
@@ -21,6 +21,8 @@
     saved: [widget: DashboardWidget | false];
     cancel: [];
   }>();
+
+  const formId = useId();
 
   const renderer = ref<InstanceType<typeof UiRenderer>>();
   const form = useHttp<Record<string, never>, {info: DashboardWidget | false}>(
@@ -89,7 +91,7 @@
 </script>
 
 <template>
-  <form @submit.prevent="save">
+  <form :id="formId" @submit.prevent="save">
     <craft-field-group>
       <UiRenderer
         v-if="widget.settingsUi"
@@ -111,20 +113,47 @@
         >
       </ul></craft-callout
     >
-    <div class="flex gap-2 mt-4">
-      <craft-button
-        type="submit"
-        variant="primary"
-        .loading="form.processing"
-        .disabled="form.processing"
-        >{{ t('Save') }}</craft-button
-      >
-      <craft-button
-        type="button"
-        .disabled="form.processing"
-        @click="emit('cancel')"
-        >{{ t('Cancel') }}</craft-button
-      >
-    </div>
   </form>
+  <div class="widget-settings-footer">
+    <craft-button
+      type="submit"
+      :form="formId"
+      variant="primary"
+      .loading="form.processing"
+      .disabled="form.processing"
+      >{{ t('Save') }}</craft-button
+    >
+    <craft-button
+      type="button"
+      .disabled="form.processing"
+      @click="emit('cancel')"
+      >{{ t('Cancel') }}</craft-button
+    >
+  </div>
 </template>
+
+<style scoped>
+  /* A footer band across the bottom of the card, with a hairline above,
+     like the header band at its top (see Widget.vue). It reaches past the
+     card body's padding (see card.styles.ts) to the card's edges, and is a
+     footer bar's height, 46px. */
+  .widget-settings-footer {
+    --_card-padding: clamp(
+      var(--c-spacing-lg),
+      2cqi + var(--c-spacing-md),
+      calc(var(--c-spacing) * 6)
+    );
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--c-spacing-md);
+    box-sizing: border-box;
+    min-block-size: calc(46rem / 16 + 1px);
+    margin-block: var(--_card-padding) calc(var(--_card-padding) * -1);
+    margin-inline: calc(var(--_card-padding) * -1);
+    padding-block: var(--c-spacing-sm);
+    padding-inline: var(--_card-padding);
+    border-block-start: 1px solid
+      var(--c-color-border-quiet, var(--c-color-neutral-border-quiet));
+  }
+</style>

@@ -7,6 +7,7 @@ import {
 } from '@craftcms/ui';
 import type CraftElementSelectorModal from '@craftcms/ui/components/element-selector-modal/element-selector-modal';
 import type {App} from 'vue';
+import {resolveElement} from '@/common/utils/dom';
 
 /**
  * Settings the presentation layer consumes, which the core neither needs nor
@@ -19,6 +20,13 @@ import type {App} from 'vue';
 export interface ElementSelectorModalPresentationOptions {
   /** Where to put focus when the modal closes. */
   triggerElement?: HTMLElement | (() => HTMLElement | null) | null;
+  /**
+   * Called as the modal closes to hand off to something that can still choose
+   * for it, such as a new entry's slideout, with a promise that settles once
+   * that's done. `onSelect` can be called until then, so an opener that put
+   * itself away for the modal, such as a link popover, should stay that way.
+   */
+  onHandoff?: (settled: Promise<void>) => void;
   /** Legacy Garnish setting, accepted and ignored. */
   closeOtherModals?: boolean;
 }
@@ -40,7 +48,11 @@ export interface ElementSelectorModalHandle {
   setBusy(busy: boolean): void;
 }
 
-const PRESENTATION_KEYS = ['triggerElement', 'closeOtherModals'] as const;
+const PRESENTATION_KEYS = [
+  'triggerElement',
+  'onHandoff',
+  'closeOtherModals',
+] as const;
 
 function splitSettings(settings: ElementSelectorModalSettings) {
   const presentation: ElementSelectorModalPresentationOptions = {};
@@ -56,10 +68,18 @@ function splitSettings(settings: ElementSelectorModalSettings) {
   return {core: core as Partial<ElementSelectorOptions>, presentation};
 }
 
+/**
+ * The trigger as an element. The Yii2 adapter's inputs hand over a jQuery
+ * collection, which the slideout store can't look up a panel from.
+ */
 function resolveFocusTarget(
   target: ElementSelectorModalPresentationOptions['triggerElement']
 ): HTMLElement | null {
-  return (typeof target === 'function' ? target() : target) ?? null;
+  return resolveElement(
+    (typeof target === 'function' ? target() : target) as Parameters<
+      typeof resolveElement
+    >[0]
+  );
 }
 
 /**
@@ -111,6 +131,7 @@ export async function createElementSelectorModal(
   const app: App = createApp(ElementSelectorModal, {
     controller,
     returnFocus: () => resolveFocusTarget(presentation.triggerElement),
+    onHandoff: presentation.onHandoff,
   });
 
   // The index renders server HTML through `DynamicHtmlRenderer`, which compiles

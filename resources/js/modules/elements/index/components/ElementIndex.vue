@@ -39,6 +39,7 @@
   import type {SourcesLanding} from '@/modules/elements/index/composables/useCustomizeSources';
   import ExportModal from '@/modules/elements/index/components/ExportModal.vue';
   import ActionMenu from '@/common/components/ActionMenu.vue';
+  import type {ActionItems} from '@/common/types';
   import type {CraftData} from '@/common/composables/useCraftData';
   import {showNotice} from '@/modules/messages/messages';
   import {useInlineEditing} from '@/modules/elements/index/composables/useInlineEditing';
@@ -68,6 +69,8 @@
       offersSelectAll?: boolean;
       itemBehavior?: ElementIndexItemBehavior;
       showSites?: boolean;
+      /** Whether rows can be selected. */
+      selectable?: boolean;
       enableAdjustPageSize?: boolean;
       withBottomBorder?: boolean;
       /**
@@ -80,9 +83,15 @@
       quickEdit?: ElementIndexQuickEdit;
       /** Shows how the index differs from its source, and offers to save it. */
       offersSaveView?: boolean;
+      /**
+       * Items for a menu beside the `primary-action` slot's button, which only
+       * gets one when there are any.
+       */
+      menuActions?: ActionItems;
     }>(),
     {
       contained: false,
+      selectable: true,
       footerActive: false,
       offersSelectAll: false,
       enableAdjustPageSize: false,
@@ -179,7 +188,9 @@
       !selection.readOnly.value &&
       editableRows.value.length > 0
   );
-  const selectable = computed(() => !isInlineEditing.value);
+  const rowsSelectable = computed(
+    () => props.selectable && !isInlineEditing.value
+  );
   /** Single-select lists get no select-all checkbox. */
   const multiSelect = computed(
     () => props.view.table.options.enableMultiRowSelection !== false
@@ -526,7 +537,8 @@
             isInlineEditing ||
             moreActions.length ||
             $slots['toolbar-actions'] ||
-            $slots['toolbar-actions-after']
+            $slots['toolbar-actions-after'] ||
+            $slots['primary-action']
           "
           #actions
         >
@@ -565,6 +577,25 @@
               :flush="false"
             />
             <slot name="toolbar-actions-after" :element-index="elementIndex" />
+            <!-- The main action comes last, with a menu beside it for anything else. -->
+            <craft-button-group
+              v-if="$slots['primary-action'] && menuActions?.length"
+            >
+              <slot name="primary-action" :element-index="elementIndex" />
+              <ActionMenu icon="chevron-down" :actions="menuActions">
+                <template #invoker="{label}">
+                  <craft-button
+                    slot="invoker"
+                    :variant="ButtonVariant.Primary"
+                    type="button"
+                    icon
+                  >
+                    <craft-icon name="chevron-down" :label="label"></craft-icon>
+                  </craft-button>
+                </template>
+              </ActionMenu>
+            </craft-button-group>
+            <slot v-else name="primary-action" :element-index="elementIndex" />
           </div>
         </template>
         <template #search-options v-if="$slots['search-options']">
@@ -687,7 +718,7 @@
           :selection="selection.selection"
           :read-only="selection.readOnly.value"
           :data="data"
-          :selectable="selectable"
+          :selectable="rowsSelectable"
           :select-all="multiSelect"
           :loading="loading"
           :placeholders="placeholderCount(8)"
@@ -716,7 +747,7 @@
           :selection="selection.selection"
           :read-only="selection.readOnly.value"
           :data="data"
-          :selectable="selectable"
+          :selectable="rowsSelectable"
           :select-all="multiSelect"
           :loading="loading"
           :item-behavior="itemBehavior"
@@ -739,7 +770,7 @@
           v-else
           :table="table"
           :selection="selection"
-          :selectable="selectable"
+          :selectable="rowsSelectable"
           :loading="loading"
           :placeholder-rows="placeholderCount(5)"
           :spacing="TableSpacing.Spacious"
@@ -750,7 +781,7 @@
             !isInlineEditing &&
             !pending &&
             !loading &&
-            structure !== undefined &&
+            elementIndex.structure != null &&
             mode === 'structure'
           "
           :is-row-collapsed="structureView.isCollapsed"
@@ -933,7 +964,7 @@
     display: flex;
     align-items: center;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
     background-color: var(--c-surface-default);
   }
 

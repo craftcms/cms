@@ -1,11 +1,28 @@
 <script setup lang="ts">
-  import {onBeforeUnmount, ref} from 'vue';
+  import {computed, onBeforeUnmount, ref} from 'vue';
   import {actionClient, t} from '@craftcms/ui';
   import CreateEntryController from '@actions/Entries/CreateEntryController';
   import {useSlideoutOpener} from '@/common/slideouts';
   import type {DashboardWidget} from './types';
+  import WidgetTile from './WidgetTile.vue';
+  import {useWidgetColor} from './useWidgetColor';
+
+  const color = useWidgetColor();
 
   const props = defineProps<{widget: DashboardWidget}>();
+
+  /**
+   * The entry type the widget creates, whose icon and color its tile takes
+   * (the color only while the widget isn't tinted). The tile doesn't name
+   * it: the widget's title names the section.
+   */
+  const entryType = computed(
+    () =>
+      props.widget.data?.entryType as
+        | {icon: string | null; color: string | null}
+        | undefined
+  );
+
   const creating = ref(false);
   const error = ref('');
   const {open} = useSlideoutOpener();
@@ -48,20 +65,18 @@
 </script>
 
 <template>
-  <craft-card data-color="gray">
+  <craft-card :data-color="color">
     <slot name="header" />
     <div class="body">
       <p v-if="widget.data?.message">{{ widget.data.message }}</p>
-      <craft-button
+      <WidgetTile
         v-else
-        type="button"
-        icon="plus"
-        class="w-full"
-        .loading="creating"
-        .disabled="creating"
+        :icon="entryType?.icon || 'newspaper'"
+        :label="t('Create entry')"
+        :color="entryType?.color"
+        :loading="creating"
         @click="create"
-        >{{ t('Create entry') }}</craft-button
-      >
+      />
       <craft-callout v-if="error" variant="danger" role="alert">{{
         error
       }}</craft-callout>

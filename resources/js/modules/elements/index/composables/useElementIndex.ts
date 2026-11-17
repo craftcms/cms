@@ -127,6 +127,11 @@ interface UseElementIndexOptions {
     context: {elementIndex: ReturnType<typeof useContentIndexData>}
   ) => ComputedRef<Array<ColumnDef<CraftTableFeatures, ElementIndexRow>>>;
   structure?: boolean;
+  /**
+   * Whether selecting a structure row also selects its descendants. Defaults
+   * to `structure`.
+   */
+  selectDescendants?: boolean;
   readOnly?: MaybeRefOrGetter<boolean>;
   /** `silent` reloads without the loading state, keeping the rows on screen. */
   refresh: (options?: {silent?: boolean}) => Promise<boolean>;
@@ -287,6 +292,8 @@ export function useElementIndex(options: UseElementIndexOptions) {
     visitor,
     () => mode.value
   );
+  const selectDescendants =
+    options.selectDescendants ?? options.structure ?? false;
   const data = computed(() =>
     options.data
       ? options.data(elementIndex.data ?? [], mode.value, elementIndex)
@@ -323,7 +330,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
       rowSelection.value = selectRows(rows);
     }
 
-    if (options.structure && structureView.isStructure.value) {
+    if (selectDescendants && structureView.isStructure.value) {
       rowSelection.value = selectDescendantsOfSelected(
         rowSelection.value,
         rows
@@ -373,7 +380,7 @@ export function useElementIndex(options: UseElementIndexOptions) {
       const next =
         typeof updater === 'function' ? updater(rowSelection.value) : updater;
       rowSelection.value =
-        options.structure && structureView.isStructure.value
+        selectDescendants && structureView.isStructure.value
           ? cascadeStructureSelection(rowSelection.value, next, data.value)
           : next;
 

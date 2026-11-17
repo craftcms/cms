@@ -19,7 +19,12 @@
 
   const props = withDefaults(
     defineProps<{
-      statusOptions?: Array<{label: string; value: string; icon?: string}>;
+      statusOptions?: Array<{
+        label: string;
+        value: string;
+        icon?: string;
+        color?: string;
+      }>;
       viewModes?: Array<ViewMode>;
       columnOptions: Array<CheckboxOption>;
       /** The thumbnail sizes the active view mode offers. */
@@ -75,6 +80,10 @@
 
   function statusOptionIcon(value: string | number): string | undefined {
     return props.statusOptions?.find((option) => option.value === value)?.icon;
+  }
+
+  function statusOptionColor(value: string | number): string | undefined {
+    return props.statusOptions?.find((option) => option.value === value)?.color;
   }
 
   const siteOptions = computed(() =>
@@ -164,7 +173,12 @@
               ></craft-icon>
               {{ option.label }}
             </span>
-            <ElementStatus v-else :label="option.label" :value="option.value" />
+            <ElementStatus
+              v-else
+              :label="option.label"
+              :value="option.value"
+              :color="statusOptionColor(option.value)"
+            />
           </template>
         </CraftSelectRich>
       </div>

@@ -10,7 +10,6 @@ import {
   type AssetController,
   type AssetReferenceElement,
 } from './behaviors/assets';
-import {registerLinkPasteBehavior} from './behaviors/link-paste';
 import {
   createLinkPopoverController,
   type LinkPopoverController,
@@ -254,7 +253,6 @@ class MarkdownField extends LitElement {
       () => this.linkPopoverController?.destroy(),
       ...(charCounterCleanup ? [charCounterCleanup] : []),
       replaceMarkdownGuideButton(editor),
-      registerLinkPasteBehavior(editor, previewController),
       registerShortcutBehavior(editor, previewController),
       skipSelectionRedraws(editor),
       renderInPlace(editor.preview),
@@ -290,12 +288,17 @@ class MarkdownField extends LitElement {
       // editor and measures it on every keystroke, which lays out the whole
       // page twice per character.
       autoResize: false,
+      // Follows the control panel's writing direction, as it did before
+      // OverType had its own `dir` option, which defaults to left to right.
+      dir: 'auto',
       fontFamily: 'var(--markdown-field-font-family)',
       // Set on the editor's layers, so `--markdown-field-font-size` on an ancestor can change it.
       fontSize: 'var(--markdown-field-font-size, var(--c-text-base))',
       lineHeight: 'var(--c-leading-normal)',
       padding: 'var(--c-spacing-md) var(--c-input-spacing-inline)',
+      labels: {toolbar: t('Formatting toolbar')},
       placeholder: this.placeholder ?? '',
+      proportional: this.proportional,
       showStats: this.showStats,
       statsFormatter: this.statsFormatter,
       smartLists: true,

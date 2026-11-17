@@ -109,7 +109,7 @@ Several focus helpers depended on jQuery-UI's `:focusable` / `:focusable:visible
 
 This matcher underpins focus traps and modal accessibility, so it carries a heavy test budget. One testing wrinkle: happy-dom has no layout, so `offsetWidth`/`offsetHeight` are always 0; tests stub `getClientRects` to assert focusability. Real browsers need no such stub.
 
-The focus helpers built on the matcher (`focusIsInside`, `firstFocusableElement`, `getKeyboardFocusableElements`, `trapFocusWithin` / `releaseFocusWithin`, `setFocusWithin`, `getFocusedElement`) are reimplemented natively. `setFocusWithin` preserves the `.field:visible` heuristic (cms#15245) verbatim. `trapFocusWithin`/`releaseFocusWithin` use the matcher together with a `focus-trap` namespace on the `DomListenerRegistry`.
+The focus helpers built on the matcher (`focusIsInside`, `firstFocusableElement`, `getKeyboardFocusableElements`, `trapFocusWithin` / `releaseFocusWithin`, `setFocusWithin`, `getFocusedElement`) are reimplemented natively. `setFocusWithin` preserves the `.field:visible` heuristic (cms#15245) verbatim. `trapFocusWithin` takes its first and last Tab stops from the keyboard-focusable elements in the order they render, including open shadow roots and slotted content, and decides whether to wrap from the control that has focus (`composedPath()[0]`). `releaseFocusWithin` removes it.
 
 ---
 

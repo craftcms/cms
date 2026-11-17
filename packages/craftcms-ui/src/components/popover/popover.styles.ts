@@ -22,7 +22,7 @@ export default css`
     border-radius: var(--c-radius-md);
     background-color: var(--c-surface-overlay);
     color: var(--c-text-default);
-    box-shadow: var(--c-shadow-sm);
+    box-shadow: var(--c-shadow-overlay);
     min-width: var(--popover-min-inline-size, calc(180rem / 16));
     max-width: var(--popover-max-inline-size, calc(320rem / 16));
     overflow: auto;

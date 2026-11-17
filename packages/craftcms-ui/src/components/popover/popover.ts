@@ -5,12 +5,14 @@ import {
   type Instance as PopperInstance,
   type Modifier,
   type Options as PopperOptions,
+  type State as PopperState,
   type VirtualElement,
 } from '@popperjs/core';
 import {swallowHeldEnterKeyup} from '@src/utilities/enter-keyup.js';
 import {isFocusable} from '@src/utilities/focus-return.js';
 import {focusStaysWithin} from '@src/utilities/focus-out.js';
 import {claimEscape, isEscapeClaimed} from '@src/utilities/overlay-escape.js';
+import {isOutsidePressClaimedWithin} from '@src/utilities/overlay-outside-press.js';
 import {announceOverlayState} from '@src/utilities/overlay-events.js';
 import {
   hideLayer,
@@ -34,6 +36,12 @@ import styles from './popover.styles.js';
  * overflowing and flip back.
  * Changing the cap changes the pane's height, which a `top` placement is
  * positioned by, so the popper updates once more when it does.
+ *
+ * Content that renders after the pane is placed, such as a menu's items, can
+ * outgrow a cap set for the side it was placed on. Popper would then measure
+ * the capped pane, which still fits there, and never flip it. So when the
+ * content is cut off and the other side has more room, the cap is raised to
+ * that room, and the pane, now overflowing this side, flips to the other.
  */
 const fitAvailableBlockSize: Partial<Modifier<'fitAvailableBlockSize', {}>> = {
   name: 'fitAvailableBlockSize',
@@ -54,6 +62,16 @@ const fitAvailableBlockSize: Partial<Modifier<'fitAvailableBlockSize', {}>> = {
     const style = state.elements.popper.style;
     const property = '--_popover-available-block-size';
     const previous = style.getPropertyValue(property);
+    const otherSide = roomOnOtherSide(state, side, viewport);
+    const pane = state.elements.popper.querySelector('.popover-pane');
+    const clipped = !!pane && pane.scrollHeight > pane.clientHeight;
+
+    if (viewport && clipped && otherSide > available) {
+      style.setProperty(property, `${otherSide}px`);
+      void instance.update();
+
+      return;
+    }
 
     if (!viewport || available <= 0) {
       style.removeProperty(property);
@@ -66,6 +84,35 @@ const fitAvailableBlockSize: Partial<Modifier<'fitAvailableBlockSize', {}>> = {
     }
   },
 };
+
+/**
+ * The room for the pane on the other side of its reference from the one it's
+ * placed on, at the same distance from it, for `top` and `bottom` placements.
+ */
+function roomOnOtherSide(
+  state: PopperState,
+  side: string | undefined,
+  viewport: number
+): number {
+  const reference = state.rects.reference;
+  const top = state.modifiersData.popperOffsets?.y ?? 0;
+
+  if (side === 'bottom') {
+    const gap = top - (reference.y + reference.height);
+
+    return Math.floor(reference.y - gap - VIEWPORT_MARGIN);
+  }
+
+  if (side === 'top') {
+    const gap = reference.y - (top + state.rects.popper.height);
+
+    return Math.floor(
+      viewport - VIEWPORT_MARGIN - (reference.y + reference.height + gap)
+    );
+  }
+
+  return 0;
+}
 
 /**
  * Keeps a `match-invoker-width` pane at least as wide as its reference after
@@ -196,6 +243,9 @@ export default class CraftPopover extends LitElement {
   /** Whether the pane is showing. Trails `open` until the update runs. */
   #shown = false;
 
+  /** Repositions the pane when its content changes size, such as when it renders after the pane is shown. */
+  #contentObserver: ResizeObserver | null = null;
+
   /**
    * Whether the pane was kept hidden for want of an anchor or invoker, and so
    * shows once one arrives if the popover is still open.
@@ -207,6 +257,9 @@ export default class CraftPopover extends LitElement {
   #pointerDownInside = false;
 
   #pointerUpInside = false;
+
+  /** The `pointerdown` that started the press in progress. */
+  #pressStart: PointerEvent | null = null;
 
   constructor() {
     super();
@@ -235,13 +288,25 @@ export default class CraftPopover extends LitElement {
 
     if (
       focusStaysWithin(event, this, this.invoker) ||
-      this.#controlsContent(event.relatedTarget)
+      this.#controlsContent(event.relatedTarget) ||
+      this.#pressClosedInside()
     ) {
       return;
     }
 
     this.#request(false);
   };
+
+  /**
+   * Whether an overlay in the content, such as a select's list, closed on the
+   * press in progress, which leaves the popover open.
+   */
+  #pressClosedInside(): boolean {
+    return (
+      this.#pressStart !== null &&
+      isOutsidePressClaimedWithin(this.#pressStart, this)
+    );
+  }
 
   /**
    * Focus leaving an invoker linked with `for` or `anchor` never reaches the
@@ -548,19 +613,31 @@ export default class CraftPopover extends LitElement {
     this.#pointerUpInside = true;
   };
 
+  #onDocumentPointerDown = (event: PointerEvent): void => {
+    this.#pressStart = event;
+  };
+
   /**
    * Closes on a click that both started and ended outside the content and the
-   * invoker. The document sees the mouseup first, in its capture phase, so the
-   * decision waits a task for the inside listeners to report.
+   * invoker, unless an overlay in the content, such as a select's list, closed
+   * on it instead. The document sees the mouseup first, in its capture phase,
+   * so the decision waits a task for the inside listeners to report.
    */
   #onDocumentPointerUp = (): void => {
+    const pressClosedInside = this.#pressClosedInside();
+
     setTimeout(() => {
-      if (!this.#pointerDownInside && !this.#pointerUpInside) {
+      if (
+        !this.#pointerDownInside &&
+        !this.#pointerUpInside &&
+        !pressClosedInside
+      ) {
         this.#request(false);
       }
 
       this.#pointerDownInside = false;
       this.#pointerUpInside = false;
+      this.#pressStart = null;
     });
   };
 
@@ -653,6 +730,30 @@ export default class CraftPopover extends LitElement {
     }
   }
 
+  /** Watches the elements slotted into the pane, which can grow once they render. */
+  #observeContent(): void {
+    this.#contentObserver?.disconnect();
+
+    const slots = this.#pane?.querySelectorAll('slot') ?? [];
+    const elements = [...slots].flatMap((slot) =>
+      slot.assignedElements({flatten: true})
+    );
+
+    if (!elements.length || typeof ResizeObserver === 'undefined') {
+      this.#contentObserver = null;
+
+      return;
+    }
+
+    this.#contentObserver = new ResizeObserver(() => {
+      void this.#popper?.update();
+    });
+
+    for (const element of elements) {
+      this.#contentObserver.observe(element);
+    }
+  }
+
   #showPane(): void {
     const layer = this.#layer;
     const wrapper = this.#wrapper;
@@ -673,11 +774,17 @@ export default class CraftPopover extends LitElement {
     this.#shown = true;
     this.#syncInvokerAria();
     this.#position();
+    this.#observeContent();
 
     this.#addPointerListeners(wrapper);
     if (this.#invoker) {
       this.#addPointerListeners(this.#invoker.node);
     }
+    document.documentElement.addEventListener(
+      'pointerdown',
+      this.#onDocumentPointerDown,
+      true
+    );
     document.documentElement.addEventListener(
       'mouseup',
       this.#onDocumentPointerUp,
@@ -700,6 +807,8 @@ export default class CraftPopover extends LitElement {
     swallowHeldEnterKeyup();
 
     hideLayer(layer);
+    this.#contentObserver?.disconnect();
+    this.#contentObserver = null;
     this.#popper?.destroy();
     this.#popper = null;
     this.#shown = false;
@@ -710,6 +819,11 @@ export default class CraftPopover extends LitElement {
       this.#removePointerListeners(this.#invoker.node);
     }
     document.documentElement.removeEventListener(
+      'pointerdown',
+      this.#onDocumentPointerDown,
+      true
+    );
+    document.documentElement.removeEventListener(
       'mouseup',
       this.#onDocumentPointerUp,
       true
@@ -717,6 +831,7 @@ export default class CraftPopover extends LitElement {
     window.removeEventListener('blur', this.#onWindowBlur);
     this.#pointerDownInside = false;
     this.#pointerUpInside = false;
+    this.#pressStart = null;
 
     if (focusWasInContent) {
       this.#returnFocus();

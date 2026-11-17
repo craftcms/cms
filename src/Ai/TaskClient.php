@@ -17,6 +17,7 @@ use CraftCms\Cms\Ai\Jobs\InvokeTaskAgent;
 use Laravel\Ai\Approvals\Decisions;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\AgentInput;
+use Laravel\Ai\Contracts\HasStructuredOutput;
 use Laravel\Ai\Messages\UserMessage;
 use Laravel\Ai\PendingResponses\PendingAudioGeneration;
 use Laravel\Ai\PendingResponses\PendingClassification;
@@ -33,6 +34,7 @@ use Laravel\Ai\Responses\QueuedAgentResponse;
 use Laravel\Ai\Responses\RerankingResponse;
 use Laravel\Ai\Responses\StreamableAgentResponse;
 use Laravel\Ai\Responses\StreamedAgentResponse;
+use Laravel\Ai\Responses\StructuredAgentResponse;
 use Laravel\Ai\Responses\TranscriptionResponse;
 use LogicException;
 use Throwable;
@@ -66,6 +68,7 @@ readonly class TaskClient
 
     /**
      * @param  list<mixed>  $attachments
+     * @return ($agent is HasStructuredOutput ? StructuredAgentResponse : AgentResponse)
      *
      * @throws AiUnavailableException
      */

@@ -1,5 +1,12 @@
 import {computed, createApp, h, nextTick, reactive, ref, type Slots} from 'vue';
-import {afterEach, beforeEach, expect, it, vi} from 'vite-plus/test';
+import {
+  afterEach,
+  beforeEach,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from 'vite-plus/test';
 import type {Table} from '@tanstack/vue-table';
 import {
   type CraftTableFeatures,
@@ -151,7 +158,8 @@ async function mountPage(
     },
   ],
   mode = 'table',
-  elementIndex: Record<string, unknown> = {}
+  elementIndex: Record<string, unknown> = {},
+  slots: Record<string, () => unknown> = {}
 ) {
   const viewState = reactive({mode});
   const elementTable = useCraftTable({
@@ -238,10 +246,14 @@ async function mountPage(
 
   const app = createApp({
     render: () =>
-      h(ElementIndexPage, {
-        route: {url: () => '/admin/entries'} as never,
-        ...props,
-      }),
+      h(
+        ElementIndexPage,
+        {
+          route: {url: () => '/admin/entries'} as never,
+          ...props,
+        },
+        slots
+      ),
   });
 
   app.config.compilerOptions.isCustomElement = (tag) => tag.includes('-');
@@ -346,6 +358,67 @@ it('offers inline editing and export on page tables', async () => {
     container.querySelector('craft-button-group[name="tableMode"]')
   ).not.toBeNull();
   expect(container.textContent).toContain('Export');
+});
+
+it('puts the primary action last, with a menu beside it only for extra actions', async () => {
+  // `craft-button-group` calls attachInternals(), which happy-dom doesn't implement.
+  const attachInternals = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    'attachInternals'
+  );
+  Object.defineProperty(HTMLElement.prototype, 'attachInternals', {
+    configurable: true,
+    value: () => ({setFormValue: vi.fn()}),
+  });
+  onTestFinished(() => {
+    if (attachInternals) {
+      Object.defineProperty(
+        HTMLElement.prototype,
+        'attachInternals',
+        attachInternals
+      );
+    } else {
+      delete (HTMLElement.prototype as Partial<HTMLElement>).attachInternals;
+    }
+  });
+
+  const upload = {'primary-action': () => h('craft-button', 'Upload files')};
+  let container = await mountPage(
+    {
+      menuActions: [
+        {label: 'Generate image', action: {type: 'event', name: 'x'}},
+      ],
+    },
+    undefined,
+    'table',
+    {},
+    upload
+  );
+  // Not the View/Edit switch, which is a button group too.
+  const group = container.querySelector(
+    'craft-button-group:not([name="tableMode"])'
+  )!;
+
+  expect(group.parentElement?.lastElementChild).toBe(group);
+  expect(group.firstElementChild?.textContent).toBe('Upload files');
+  expect(
+    [...group.querySelectorAll('craft-action-item')].map((item) =>
+      item.textContent?.trim()
+    )
+  ).toEqual(['Generate image']);
+  expect(group.textContent).not.toContain('Export');
+
+  teardown?.();
+  container = await mountPage({}, undefined, 'table', {}, upload);
+
+  const uploadButton = [...container.querySelectorAll('craft-button')].find(
+    (button) => button.textContent === 'Upload files'
+  )!;
+
+  expect(
+    container.querySelector('craft-button-group:not([name="tableMode"])')
+  ).toBeNull();
+  expect(uploadButton.parentElement?.lastElementChild).toBe(uploadButton);
 });
 
 it('hides inline editing outside table mode', async () => {

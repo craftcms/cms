@@ -280,10 +280,10 @@ readonly class ElementSourceUi
         $current = $part === 'view';
         [$sort, $direction] = $this->sortFields($elementType, $source, $values, $current);
         $view = [
+            $mark($this->viewModeField($elementType, $source, $current), 'viewMode'),
             $mark($sort, 'sort'),
             $direction,
             $mark($this->tableAttributesField($elementType, $source, $isNew, $current), 'columns'),
-            $mark($this->viewModeField($elementType, $source, $current), 'viewMode'),
         ];
 
         // Just the filters, or just how they're shown, for an index's settings.

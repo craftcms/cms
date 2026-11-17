@@ -394,10 +394,10 @@ class LooseEndsChecks
         if (Edition::isAtLeast(Edition::Pro)) {
             $rebrand = app(Rebrand::class);
 
-            foreach (['icon' => 'cpIconUrl', 'logo' => 'cpLogoUrl'] as $type => $setting) {
+            foreach (['icon' => 'cpIconPath', 'logo' => 'cpLogoPath'] as $type => $setting) {
                 $image = $type === 'icon' ? $rebrand->getIcon() : $rebrand->getLogo();
 
-                if ($image !== null && Cms::config()->$setting === $image->getUrl()) {
+                if ($image !== null && Cms::config()->$setting === $image->getPath()) {
                     $findings[] = $this->finding(
                         "layout.rebrand-$type",
                         Section::Config,

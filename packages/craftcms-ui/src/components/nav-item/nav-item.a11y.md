@@ -58,3 +58,4 @@ Used inside `craft-nav-list`; see [`nav-list.a11y.md`](../nav-list/nav-list.a11y
 - 2.4.4 (Link Purpose (In Context)): use `href` for anything that goes somewhere, and `button` only for actions. See [Accessibility](./NavItem.mdx#accessibility).
 - 1.3.1 (Info and Relationships): set `current` and `active` to match the page. See [Accessibility](./NavItem.mdx#accessibility).
 - 1.4.11 (Non-text Contrast): keep a `--c-nav-item-icon-color` at 3:1 against the nav's background. See [Accessibility](./NavItem.mdx#accessibility).
+- 2.5.8 (Target Size (Minimum)): keep `--c-nav-item-size` at 24px or more. See [Accessibility](./NavItem.mdx#accessibility).

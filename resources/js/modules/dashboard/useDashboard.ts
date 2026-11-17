@@ -22,9 +22,11 @@ import {
   deleteMethod,
   reorder as reorderWidgets,
   updateColspan,
+  updateColor,
 } from '@actions/Dashboard/WidgetsController';
 import type {DashboardWidget, WidgetType} from './types';
 import {widgetName} from './widgetName';
+import {loadSettingsUi} from './settingsUi';
 
 export function useDashboard(props: {
   widgets: DashboardWidget[];
@@ -205,8 +207,23 @@ export function useDashboard(props: {
   async function add(type: string) {
     const info = props.widgetTypes[type]!;
 
-    if (info.settingsUi) {
+    if (info.hasSettings) {
+      if (busy.value) return;
+
+      // Shown with its settings open, once they've loaded.
+      busy.value = true;
       const id = nextId--;
+      let settingsUi;
+
+      try {
+        settingsUi = await loadSettingsUi({type}, `newwidget${-id}-settings`);
+      } catch {
+        messages.error(t('Couldn’t load widget settings.'));
+        return;
+      } finally {
+        busy.value = false;
+      }
+
       widgets.value = [
         ...widgets.value,
         {
@@ -217,13 +234,10 @@ export function useDashboard(props: {
           subtitle: null,
           colspan: 1,
           maxColspan: info.maxColspan ?? 4,
+          color: 'gray',
           settings: {},
-          settingsUi: JSON.parse(
-            JSON.stringify(info.settingsUi).replaceAll(
-              '__NAMESPACE__',
-              `newwidget${-id}-settings`
-            )
-          ),
+          hasSettings: true,
+          settingsUi,
           component: null,
           data: null,
           fragment: {html: '', headHtml: '', bodyHtml: ''},
@@ -274,6 +288,7 @@ export function useDashboard(props: {
       const {data} = await actionClient.post(store.url(), {
         type: deleted.value.type,
         settings: deleted.value.settings,
+        color: deleted.value.color,
       });
 
       if (data.info) widgets.value = [...widgets.value, data.info];
@@ -293,15 +308,18 @@ export function useDashboard(props: {
     order.splice(to, 0, order.splice(from, 1)[0]!);
     busy.value = true;
 
+    // Shown in the new order while it saves, as soon as it's dropped, and
+    // back in the old one if saving fails.
+    const previous = widgets.value;
+    widgets.value = [
+      ...order,
+      ...widgets.value.filter((widget) => widget.id < 0),
+    ];
+
     try {
       await actionClient.post(reorderWidgets.url(), {
         ids: JSON.stringify(order.map((widget) => widget.id)),
       });
-
-      widgets.value = [
-        ...order,
-        ...widgets.value.filter((widget) => widget.id < 0),
-      ];
 
       const moved = order[to]!;
       announce(
@@ -311,6 +329,7 @@ export function useDashboard(props: {
         })
       );
     } catch {
+      widgets.value = previous;
       messages.error(t('Couldn’t reorder widgets.'));
     } finally {
       busy.value = false;
@@ -335,6 +354,34 @@ export function useDashboard(props: {
     }
   }
 
+  /** Gives a widget a color, or none with `null`. */
+  async function recolor(
+    widget: DashboardWidget,
+    color: CraftCms.Cms.Shared.Enums.Color | null
+  ) {
+    if (busy.value) return;
+
+    busy.value = true;
+
+    // Shown while it saves, so a failed save changes the color back,
+    // and with it the color select, which keeps whatever was picked.
+    const show = (value: CraftCms.Cms.Shared.Enums.Color | null) => {
+      widgets.value = widgets.value.map((current) =>
+        current.id === widget.id ? {...current, color: value} : current
+      );
+    };
+    show(color);
+
+    try {
+      await actionClient.post(updateColor.url(), {id: widget.id, color});
+    } catch {
+      show(widget.color);
+      messages.error(t('Couldn’t save widget.'));
+    } finally {
+      busy.value = false;
+    }
+  }
+
   return {
     widgets,
     savedWidgets,
@@ -351,6 +398,7 @@ export function useDashboard(props: {
     undo,
     reorder,
     resize,
+    recolor,
     refreshGrid,
     settingsToggled,
   };

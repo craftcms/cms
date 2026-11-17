@@ -12,4 +12,19 @@ export default css`
   :host {
     display: block;
   }
+
+  :host([swatch-only]) {
+    display: inline-block;
+    width: auto;
+  }
+
+  :host([swatch-only]) .input-group__input ::slotted(.form-control) {
+    flex: none;
+  }
+
+  @media (forced-colors: active) {
+    :host([swatch-only]) {
+      --_swatch-only-edge: CanvasText;
+    }
+  }
 `;

@@ -60,7 +60,7 @@
       class="assistant-context-picker__invoker"
       type="button"
       variant="plain"
-      size="small"
+      size="xsmall"
       flush
       icon="chevron-down"
       icon-position="suffix"
@@ -88,9 +88,15 @@
 </template>
 
 <style scoped>
+  /* Shrinks to truncate its label when the chip's short of room. Not capped
+     at 100%: it's flush, so its box is wider than the room it takes up. */
   .assistant-context-picker__invoker {
     min-inline-size: 0;
-    max-inline-size: 100%;
+    /* The chip's own text size, which an xsmall button would otherwise scale
+       down, and no taller than a line of it: its border is taken back, so the
+       chip is as tall as one with a plain label. */
+    font-size: inherit;
+    margin-block: -1px;
 
     &::part(content) {
       min-inline-size: 0;

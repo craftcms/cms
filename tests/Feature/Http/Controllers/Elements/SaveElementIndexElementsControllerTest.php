@@ -294,6 +294,10 @@ it('rejects embedded inline edits through an unscoped relation query', function 
 it('accepts embedded inline edits through a generic owner-scoped nested query', function () {
     $owner = UserModel::factory()->createElement();
     $address = AddressModel::factory()->withOwnedElement($owner, 1)->createElement([
+        'countryCode' => 'US',
+        'administrativeArea' => 'OR',
+        'locality' => 'Portland',
+        'postalCode' => '97201',
         'addressLine1' => 'Before save',
     ]);
     $manager = User::find()->id($owner->id)->one()->getAddressManager()->getIndexData($owner);

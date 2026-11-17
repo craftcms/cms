@@ -157,6 +157,7 @@ class Install extends Migration
             $table->string('subjectId')->nullable();
             $table->unsignedBigInteger('siteId')->nullable();
             $table->unsignedBigInteger('rootEventId')->nullable();
+            $table->string('operationId')->nullable();
             $table->jsonb('payload');
             $table->dateTime('occurredAt');
         });
@@ -794,6 +795,7 @@ class Install extends Migration
             $table->integer('elementId');
             $table->integer('siteId');
             $table->boolean('reserved')->default(false);
+            $table->dateTime('dateReserved')->nullable();
         });
 
         $logger?->subLabel('searchindexqueue_fields');
@@ -1074,6 +1076,7 @@ class Install extends Migration
             $table->string('type');
             $table->unsignedSmallInteger('sortOrder')->nullable();
             $table->tinyInteger('colspan')->nullable();
+            $table->string('color')->nullable()->default('gray');
             $table->jsonb('settings')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -1100,6 +1103,7 @@ class Install extends Migration
         Schema::createIndex(Table::ACTIVITYEVENTS, ['subjectType', 'subjectId', 'siteId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['occurredAt', 'id']);
         Schema::createIndex(Table::ACTIVITYEVENTS, ['rootEventId', 'occurredAt', 'id']);
+        Schema::createIndex(Table::ACTIVITYEVENTS, ['operationId', 'occurredAt', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'status', 'id']);
         Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);

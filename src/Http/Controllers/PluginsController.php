@@ -11,6 +11,7 @@ use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Plugin\PluginSettingsUi;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Url;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\currentUser;
 use function CraftCms\Cms\t;
 
 /**
@@ -51,6 +53,9 @@ readonly class PluginsController
             ])
             ->inertiaPage('settings/Plugins', [
                 'pluginInfo' => fn () => $info,
+                'composerUnavailableReason' => fn () => $this->generalConfig->allowUpdates && $this->generalConfig->allowAdminChanges && currentUser()?->can('performUpdates')
+                    ? app(Composer::class)->getUnavailableReason(forUi: true)
+                    : null,
             ]);
     }
 

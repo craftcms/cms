@@ -878,16 +878,16 @@
         },
         {
             "name": "craftcms/laravel-ruleset-validation",
-            "version": "1.1.0",
+            "version": "1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/laravel-ruleset-validation.git",
-                "reference": "5fd54f4643f4746d6ac662bbec13aa225f62edfb"
+                "reference": "ed8b5502745b6e63f78ee8f9e36c7ddeecc48415"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/laravel-ruleset-validation/zipball/5fd54f4643f4746d6ac662bbec13aa225f62edfb",
-                "reference": "5fd54f4643f4746d6ac662bbec13aa225f62edfb",
+                "url": "https://api.github.com/repos/craftcms/laravel-ruleset-validation/zipball/ed8b5502745b6e63f78ee8f9e36c7ddeecc48415",
+                "reference": "ed8b5502745b6e63f78ee8f9e36c7ddeecc48415",
                 "shasum": ""
             },
             "require": {
@@ -936,9 +936,9 @@
             ],
             "support": {
                 "issues": "https://github.com/craftcms/laravel-ruleset-validation/issues",
-                "source": "https://github.com/craftcms/laravel-ruleset-validation/tree/1.1.0"
+                "source": "https://github.com/craftcms/laravel-ruleset-validation/tree/1.1.1"
             },
-            "time": "2026-04-22T11:01:37+00:00"
+            "time": "2026-11-14T15:40:03+00:00"
         },
         {
             "name": "craftcms/plugin-installer",

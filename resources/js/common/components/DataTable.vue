@@ -21,7 +21,6 @@
     useTemplateRef,
     watch,
   } from 'vue';
-  import type {NestedReorderDirection} from '@craftcms/ui';
   import type {TableRowSelection} from '@/common/composables/useTableRowSelection';
   import {useReorderableRows} from '@/common/composables/useReorderableRows';
   import {
@@ -82,6 +81,11 @@
        * line of text.
        */
       placeholderRows?: number;
+      /**
+       * Whether columns follow their `meta.align`. Turn it off while the cells
+       * hold inputs, which keep their own layout.
+       */
+      alignColumns?: boolean;
     }>(),
 
     {
@@ -95,6 +99,7 @@
       appearance: TableAppearance.Plain,
       emptyRow: true,
       placeholderRows: 0,
+      alignColumns: true,
     }
   );
 
@@ -210,6 +215,23 @@
 
   function resolveMetaClasses(value: HTMLAttributes['class']) {
     return value;
+  }
+
+  /** Whether a column's header and cells align to the end. */
+  function isEndAligned(column: Column<CraftTableFeatures, TData>) {
+    return props.alignColumns && column.columnDef.meta?.align === 'end';
+  }
+
+  /**
+   * The sort icon a column's header shows: both arrows while it isn't
+   * sorted, or the direction it's sorted in.
+   */
+  function sortIconName(column: Column<CraftTableFeatures, TData>) {
+    const sorted = column.getIsSorted();
+    if (sorted === 'asc' || sorted === 'desc') {
+      return sorted;
+    }
+    return column.getCanSort() ? 'arrow-up-arrow-down' : null;
   }
 
   // Re-sorting reloads the index's data, and `loading` swaps the whole
@@ -454,7 +476,7 @@
           </th>
           <template v-if="!readOnly && reorderable">
             <th class="cell cell--header">
-              <span class="sr-only">Reorder</span>
+              <span class="sr-only">{{ t('Reorder') }}</span>
             </th>
           </template>
           <th
@@ -467,6 +489,7 @@
                 'cp-table-cell': true,
                 'cp-table-cell--header': true,
                 'cursor-pointer select-none': header.column.getCanSort(),
+                'cp-table-cell--align-end': isEndAligned(header.column),
               },
               resolveMetaClasses(header.column.columnDef.meta?.columnClass),
               resolveMetaClasses(header.column.columnDef.meta?.headerClass),
@@ -476,7 +499,10 @@
           >
             <div
               class="flex gap-sm items-center [.text-center>&]:justify-center"
-              :class="{'sr-only': header.column.columnDef.meta?.headerSrOnly}"
+              :class="{
+                'sr-only': header.column.columnDef.meta?.headerSrOnly,
+                'justify-end': isEndAligned(header.column),
+              }"
             >
               <ColumnHeaderTitle
                 :is-sortable="header.column.getCanSort()"
@@ -484,24 +510,25 @@
                 :sort-instructions-id="columnSortInstructionId"
                 @sort-column="header.column.getToggleSortingHandler()?.($event)"
               >
-                <FlexRender
+                <!-- In an end-aligned column the icon leads, so the label ends
+                     on the same edge as the values below it. -->
+                <template
+                  v-if="
+                    isEndAligned(header.column) && sortIconName(header.column)
+                  "
+                  ><craft-icon :name="sortIconName(header.column)"></craft-icon
+                  >&nbsp;</template
+                ><FlexRender
                   v-if="!header.isPlaceholder"
                   :header="header"
-                /><template v-if="header.column.getCanSort()">&nbsp;</template
-                ><craft-icon
+                /><template
                   v-if="
-                    header.column.getCanSort() && !header.column.getIsSorted()
+                    !isEndAligned(header.column) && sortIconName(header.column)
                   "
-                  name="arrow-up-arrow-down"
-                ></craft-icon>
-                <craft-icon
-                  v-else-if="header.column.getIsSorted() === 'asc'"
-                  name="asc"
-                ></craft-icon>
-                <craft-icon
-                  v-else-if="header.column.getIsSorted() === 'desc'"
-                  name="desc"
-                ></craft-icon>
+                  >&nbsp;<craft-icon
+                    :name="sortIconName(header.column)"
+                  ></craft-icon
+                ></template>
               </ColumnHeaderTitle>
 
               <template v-if="header.column.columnDef.meta?.headerTip">
@@ -536,6 +563,7 @@
               :class="[
                 'cp-table-cell',
                 `cp-table-cell--${column.id}`,
+                {'cp-table-cell--align-end': isEndAligned(column)},
                 resolveMetaClasses(column.columnDef.meta?.columnClass),
                 resolveMetaClasses(column.columnDef.meta?.cellClass),
               ]"
@@ -633,6 +661,7 @@
                   'cp-table-cell': true,
                   [`cp-table-cell--${cell.column.id}`]: true,
                   'cp-table-cell--wrap': cell.column.columnDef.meta?.wrap,
+                  'cp-table-cell--align-end': isEndAligned(cell.column),
                   'border-b-0': hideBottomBorder(rowIdx),
                 },
                 resolveMetaClasses(cell.column.columnDef.meta?.columnClass),
@@ -675,6 +704,16 @@
   }
   :deep(.cp-table-cell--wrap) {
     white-space: normal;
+  }
+  // Quantities line up on their last digit. The wider end padding keeps a
+  // value from running into a start-aligned column after it; the last
+  // column keeps the table's own edge padding.
+  :deep(.cp-table-cell.cp-table-cell--align-end) {
+    text-align: end;
+
+    &:not(:last-child) {
+      padding-inline-end: calc(var(--c-spacing) * 5);
+    }
   }
   :deep(.cp-table-cell) {
     width: min-content;

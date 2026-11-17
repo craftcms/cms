@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CraftCms\Cms\Asset;
 
+use CraftCms\Cms\Activity\OperationTypes\VolumeOperation;
 use CraftCms\Cms\Asset\Data\FolderCriteria;
 use CraftCms\Cms\Asset\Data\Volume;
 use CraftCms\Cms\Asset\Data\VolumeFolder;
@@ -305,17 +306,43 @@ class Folders
 
         $volume = $folder->getVolume();
 
-        $this->renameDirectoryOnDisk($volume, rtrim((string) $folder->path, '/'), rtrim($newFolderPath, '/'));
-        $descendantFolders = $this->getAllDescendantFolders($folder);
-
-        foreach ($descendantFolders as $descendantFolder) {
-            $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFolderPath, (string) $descendantFolder->path);
-            $this->storeFolderModel($descendantFolder);
-        }
+        $oldFolderPath = (string) $folder->path;
+        $this->renameDirectoryOnDisk($volume, rtrim($oldFolderPath, '/'), rtrim($newFolderPath, '/'));
 
         $folder->name = $newName;
         $folder->path = $newFolderPath;
         $this->storeFolderModel($folder);
+
+        // Find the subfolders by parent ID, since their paths can differ in case from the renamed folder’s
+        $disk = $volume->sourceDisk();
+        $parentIds = [$folder->id];
+        while ($parentIds) {
+            $childFolders = $this->findFolders(['parentId' => $parentIds]);
+            $parentIds = $childFolders->map(fn (VolumeFolder $childFolder) => $childFolder->id)->values()->all();
+
+            foreach ($childFolders as $childFolder) {
+                $oldChildPath = (string) $childFolder->path;
+                // Take the prefix by path segment, since case variants can differ in length
+                $oldPrefix = implode('/', array_slice(explode('/', $oldChildPath), 0, substr_count($oldFolderPath, '/'))).'/';
+                if (mb_convert_case($oldPrefix, MB_CASE_FOLD) !== mb_convert_case($oldFolderPath, MB_CASE_FOLD)) {
+                    continue;
+                }
+
+                // Keep the rest of the path as stored, so it still matches the directories below the renamed one
+                $newChildPath = $newFolderPath.substr($oldChildPath, strlen($oldPrefix));
+
+                // If the prefix differs in case, the directory only moved along with the renamed one on case-insensitive storage
+                if (
+                    $oldPrefix !== $oldFolderPath &&
+                    (! $disk->directoryExists(rtrim($newChildPath, '/')) || $disk->directoryExists(rtrim($oldChildPath, '/')))
+                ) {
+                    continue;
+                }
+
+                $childFolder->path = $newChildPath;
+                $this->storeFolderModel($childFolder);
+            }
+        }
 
         return $newName;
     }
@@ -327,6 +354,7 @@ class Folders
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
         $allFolderIds = [];
+        $folders = [];
 
         foreach ((array) $folderIds as $folderId) {
             $folder = $this->getFolderById((int) $folderId);
@@ -335,6 +363,7 @@ class Folders
                 continue;
             }
 
+            $folders[] = $folder;
             $allFolderIds[] = $folder->id;
             $descendants = $this->getAllDescendantFolders($folder, withParent: false);
             array_push($allFolderIds, ...array_map(fn (VolumeFolder $folder) => $folder->id, $descendants));
@@ -349,7 +378,7 @@ class Folders
             }
         }
 
-        Asset::find()
+        $deleteAssets = fn () => Asset::find()
             ->folderId($allFolderIds)
             ->site('*')
             ->unique()
@@ -358,6 +387,18 @@ class Folders
                 $asset->keepFileOnDelete = ! $deleteDir;
                 Elements::deleteElement($asset, true);
             });
+
+        // The control panel deletes folders from one volume at a time. Temporary upload folders have no volume.
+        $volumeId = $folders[0]->volumeId ?? null;
+
+        if ($volumeId === null) {
+            $deleteAssets();
+        } else {
+            VolumeOperation::for(
+                $volumeId,
+                implode(', ', array_map(fn (VolumeFolder $folder): string => (string) $folder->name, $folders)),
+            )->scope($deleteAssets);
+        }
 
         VolumeFolderModel::whereIn('id', $allFolderIds)->delete();
         $this->reset();

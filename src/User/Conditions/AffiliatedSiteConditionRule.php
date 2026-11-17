@@ -10,7 +10,6 @@ use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
-use CraftCms\Cms\Element\Queries\UserQuery;
 use CraftCms\Cms\Site\Data\Site;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\User\Elements\User;
@@ -49,7 +48,16 @@ class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implement
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        UserQuery::applyAffiliatedSiteId($query, $this->paramValue(fn ($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
+        $siteIds = $this->paramValue(fn ($uid) => Sites::getSiteByUid($uid, true)->id ?? null);
+
+        if ($siteIds === null) {
+            return;
+        }
+
+        // Users without an affiliated site aren't affiliated with the excluded sites either.
+        $query->where(fn (Builder $query) => $query
+            ->whereNumericParam('users.affiliatedSiteId', $siteIds)
+            ->when($this->operator === self::OPERATOR_NOT_IN, fn (Builder $query) => $query->orWhereNull('users.affiliatedSiteId')));
     }
 
     public function matchElement(ElementInterface $element): bool

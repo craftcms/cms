@@ -83,7 +83,7 @@
         : t('Export “{source}”', {source: sourceLabel ?? ''})
     "
     :submit-label="t('Export')"
-    width="30rem"
+    width="md"
     @close="emit('close')"
     @submit="submit"
   >

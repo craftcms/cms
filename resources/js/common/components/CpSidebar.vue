@@ -188,8 +188,10 @@
   }
 
   .cp-sidebar :deep(craft-nav-item) {
+    --c-nav-item-size: var(--cp-rail-item-size);
     --c-icon-size: calc(12rem / 16);
     --c-nav-item-icon-color: var(--cp-chrome-icon-color);
+    --c-nav-item-color: var(--cp-chrome-text-color);
   }
 
   .cp-sidebar__header {
@@ -202,10 +204,9 @@
   .cp-sidebar__body {
     padding-block: var(--c-spacing-md);
     /* Centers the first item on the content's header bar, which starts below
-       the body's border and the content's top space. */
+       the body's border. */
     padding-block-start: calc(
-      var(--cp-body-border-width) + var(--cp-content-block-start) +
-        var(--cp-header-touch-target-offset)
+      var(--cp-body-border-width) + var(--cp-header-touch-target-offset)
     );
     padding-inline: var(--c-spacing-md);
     flex: 1 1 auto;
@@ -224,9 +225,9 @@
     display: grid;
     align-items: center;
     margin-block-start: auto;
-    padding-block: var(--c-spacing-md);
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-md);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
     position: sticky;
     z-index: 1;
     border-block-start: 1px solid transparent;

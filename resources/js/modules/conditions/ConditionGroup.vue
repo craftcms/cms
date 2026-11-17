@@ -62,7 +62,7 @@
     >
       <div
         slot="title"
-        class="condition-group__operator flex items-center gap-2 font-normal"
+        class="condition-group__operator flex items-center gap-md font-normal"
       >
         <span>{{ t('Where') }}</span>
         <craft-select :label="t('Group Operator')" label-sr-only small>
@@ -85,11 +85,12 @@
         icon="xmark-large"
         variant="danger-plain"
         size="small"
+        flush="inline-end"
         :aria-label="t('Remove group')"
         @click="removeGroup"
       />
 
-      <div class="min-w-0 flex flex-col gap-2">
+      <div class="condition-group__rules min-w-0 flex flex-col">
         <template v-for="(child, index) in group.rules" :key="child.id">
           <ConditionGroup
             v-if="child.kind === 'group'"
@@ -101,7 +102,7 @@
 
         <div
           v-if="editor.editable()"
-          class="condition-group__add flex flex-wrap items-center gap-2"
+          class="condition-group__add flex flex-wrap items-center gap-md"
         >
           <TypePicker
             :types="editor.payload().ruleTypes"
@@ -137,6 +138,11 @@
 </template>
 
 <style scoped>
+  /* The same space as between Matrix blocks. */
+  .condition-group__rules {
+    gap: calc(var(--c-spacing) * 3);
+  }
+
   .condition-group__operator :deep(craft-select) {
     width: auto;
   }

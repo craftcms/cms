@@ -10,7 +10,8 @@ export default css`
     gap: var(--c-spacing-sm);
     cursor: pointer;
     padding-block: 0;
-    padding-inline: var(--c-input-spacing-inline);
+    padding-inline: var(--c-input-spacing-inline)
+      calc(var(--c-input-spacing-inline) - var(--_input-border-width));
     font: inherit;
     overflow: clip;
   }
@@ -46,6 +47,45 @@ export default css`
     color: inherit;
   }
 
+  :host([plain]) {
+    justify-content: center;
+    inline-size: var(--c-input-height, var(--c-size-control-md));
+    padding-inline: 0;
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  :host([plain]:focus-visible:not([disabled])) {
+    outline-offset: calc(var(--c-focus-outline-width) * -1);
+  }
+
+  :host([plain]:hover),
+  :host([plain][aria-expanded='true']) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-neutral-fill-quiet),
+      var(--c-color-mix-hover)
+    );
+  }
+
+  :host([plain]:active) {
+    background-color: color-mix(
+      in oklab,
+      var(--c-color-neutral-fill-quiet),
+      var(--c-color-mix-active)
+    );
+  }
+
+  :host([plain][disabled]) {
+    background-color: transparent;
+  }
+
+  :host([plain]) #content-wrapper {
+    display: flex;
+    flex: none;
+  }
+
   #content-wrapper {
     position: relative;
     pointer-events: none;
@@ -60,6 +100,5 @@ export default css`
 
   .indicator {
     flex: 0 0 auto;
-    font-size: 0.8em;
   }
 `;

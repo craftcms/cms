@@ -320,10 +320,12 @@
           :columns-toggleable="columnsToggleable"
           :view-column-options="managed.viewColumnOptions.value"
           :view-sort-options="managed.viewSortOptions.value"
+          :view-customized="managed.viewCustomized.value"
           :create-label="createLabel"
           :create-url="createUrl"
           :create-menu-items="createMenuItems"
           @reorder-columns="managed.onColumnsReorder"
+          @use-default-view="managed.resetView"
         />
       </slot>
     </div>
@@ -427,7 +429,7 @@
     display: flex;
     align-items: center;
     border-block-start: 1px solid var(--c-color-neutral-border-quiet);
-    min-height: var(--cp-footer-height);
+    min-height: calc(var(--cp-footer-height) + 1px);
     background-color: var(--c-surface-default);
   }
 </style>

@@ -105,7 +105,12 @@ export function useAdminTable<TData extends Record<string, any>>(
       const key =
         column.id ??
         ('accessorKey' in column ? String(column.accessorKey) : undefined);
-      return key && typeof column.header === 'string' && column.header
+      // Columns that can't be hidden, such as row actions, stay out of the
+      // View menu and after the columns it orders.
+      return key &&
+        column.enableHiding !== false &&
+        typeof column.header === 'string' &&
+        column.header
         ? [{key, label: column.header, sortable: !!column.enableSorting}]
         : [];
     })
@@ -113,6 +118,11 @@ export function useAdminTable<TData extends Record<string, any>>(
   const pinnedColumn = computed(() => viewColumns.value[0]);
   const toggleableKeys = computed(() =>
     viewColumns.value.slice(1).map((column) => column.key)
+  );
+  const defaultVisibleColumns = computed(() =>
+    toggleableKeys.value.filter(
+      (key) => !options.hiddenColumnsByDefault.includes(key)
+    )
   );
   const storedColumns = preference<{
     visible: string[];
@@ -127,10 +137,12 @@ export function useAdminTable<TData extends Record<string, any>>(
     ...(initialColumns?.visible ?? []).filter((key) =>
       toggleableKeys.value.includes(key)
     ),
-    ...toggleableKeys.value.filter(
-      (key) => !known.has(key) && !options.hiddenColumnsByDefault.includes(key)
-    ),
+    ...defaultVisibleColumns.value.filter((key) => !known.has(key)),
   ]);
+
+  function sameKeys(a: string[], b: string[]): boolean {
+    return a.length === b.length && a.every((key, index) => key === b[index]);
+  }
 
   function saveVisibleColumns(visible: string[]): void {
     visibleColumns.value = visible;
@@ -151,10 +163,7 @@ export function useAdminTable<TData extends Record<string, any>>(
             !visibleColumns.value.includes(key)
         ),
       ];
-      if (
-        next.length !== visibleColumns.value.length ||
-        next.some((key, index) => key !== visibleColumns.value[index])
-      ) {
+      if (!sameKeys(next, visibleColumns.value)) {
         saveVisibleColumns(next);
       }
     },
@@ -236,6 +245,19 @@ export function useAdminTable<TData extends Record<string, any>>(
         ]);
     },
   });
+  const viewCustomized = computed(
+    () =>
+      sorting.value.length > 0 ||
+      !sameKeys(visibleColumns.value, defaultVisibleColumns.value)
+  );
+
+  /** Returns the View menu's sort and columns to their defaults. */
+  function resetView(): void {
+    visibleColumns.value = defaultVisibleColumns.value;
+    storedColumns.value = null;
+    if (sorting.value.length > 0) onSortingChange([]);
+  }
+
   const orderingDisabled = computed(
     () =>
       !!search.value ||
@@ -509,6 +531,8 @@ export function useAdminTable<TData extends Record<string, any>>(
     viewSortOptions,
     viewSortField,
     viewSortDirection,
+    viewCustomized,
+    resetView,
     onColumnsReorder,
     refresh,
     removeRows,

@@ -30,6 +30,24 @@ test('editable/savable returns 0 when having no access', function (string $metho
     'savable',
 ]);
 
+test('editable/savable returns the sections a user has full access to', function (string $method, array $permissions) {
+    Edition::set(Edition::Pro);
+
+    $entry = EntryModel::factory()->create();
+    EntryModel::factory()->create();
+
+    Sections::refreshSections();
+
+    actingAs(CraftCms\Cms\User\Models\User::factory()
+        ->withPermissions(array_map(fn (string $permission) => "$permission:{$entry->section->uid}", $permissions))
+        ->createElement());
+
+    expect(entryQuery()->$method()->ids())->toBe([$entry->id]);
+})->with([
+    ['editable', ['viewEntries', 'viewPeerEntries']],
+    ['savable', ['viewEntries', 'viewPeerEntries', 'saveEntries', 'savePeerEntries']],
+]);
+
 test('status', function () {
     EntryModel::factory()->create();
     EntryModel::factory()->pending()->create();

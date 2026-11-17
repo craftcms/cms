@@ -11,6 +11,7 @@
     watch,
   } from 'vue';
   import {useEventListener} from '@vueuse/core';
+  import {uuid} from '@/common/craft/strings';
   import {actionClient, t} from '@craftcms/ui';
   import ConditionsController from '@actions/ConditionsController';
   import {useFetch} from '@/common/composables/useFetch';
@@ -100,7 +101,7 @@
       parent.rules.push(
         shallowReactive({
           kind: 'group',
-          id: crypto.randomUUID(),
+          id: uuid(),
           operator: 'and',
           rules: shallowReactive([]),
         })
@@ -206,7 +207,7 @@
     function group(config: GroupConfig): GroupDraft {
       return shallowReactive({
         kind: 'group',
-        id: crypto.randomUUID(),
+        id: uuid(),
         operator: config.operator,
         rules: shallowReactive(
           config.rules.map((rule) => {

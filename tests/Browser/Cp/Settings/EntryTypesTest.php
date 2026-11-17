@@ -76,6 +76,7 @@ it('builds a field layout with a new tab', function () {
         ->create(['name' => 'Article', 'handle' => 'article']);
 
     $page = visitCp("settings/entry-types/$entryType->id")
+        ->click('#main >> role=tab[name="Content"]')
         ->click('#main .fld-tab >> role=button[name="Add"]')
         ->click('.fld-library .fld-field[data-attribute="body"]')
         ->click('.fld-library .fld-field[data-attribute="summary"]')

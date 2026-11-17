@@ -746,8 +746,37 @@ export default class CraftTextExpander extends LitElement {
     this.#inputRange.setStartOffset(position);
     this.#inputRange.setEndOffset(position);
     this.#caretRect = this.#inputRange.getBoundingClientRect();
+    this.popoverElement.placement = this.#placementFor(this.#caretRect);
     this.popoverElement.reposition();
     return true;
+  }
+
+  /**
+   * Below the caret, unless there isn't room there for the list at its
+   * tallest and there's more room above. Judged by the list's full height
+   * rather than its current one, so it doesn't open below while it's loading
+   * or short and then grow into a cramped space, with plenty of room above,
+   * and keeps to one side as the matches change.
+   */
+  #placementFor(caret: DOMRect): 'bottom-start' | 'top-start' {
+    const view = this.ownerDocument.documentElement.clientHeight;
+    const listbox = this.querySelector<HTMLElement>('[slot="listbox"]');
+    const popup = this.renderRoot.querySelector<HTMLElement>(
+      '.text-expander__popup'
+    );
+    const listHeight = listbox
+      ? parseFloat(getComputedStyle(listbox).maxHeight) || 0
+      : 0;
+    const padding = popup
+      ? parseFloat(getComputedStyle(popup).paddingTop) +
+        parseFloat(getComputedStyle(popup).paddingBottom)
+      : 0;
+    const below = view - caret.bottom;
+    const above = caret.top;
+
+    return below < listHeight + padding && above > below
+      ? 'top-start'
+      : 'bottom-start';
   }
 
   #close(): void {

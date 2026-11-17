@@ -79,6 +79,13 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     private array $heldSideEffects = [];
 
     /**
+     * @var bool Whether CSRF values should be injected via JavaScript for greater cache-ability.
+     *
+     * @deprecated in 6.0.0. It no longer has any effect. Front-end forms don’t need CSRF inputs.
+     */
+    public bool $asyncCsrfInputs = false;
+
+    /**
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
      * in Settings → General.
      *
@@ -792,6 +799,29 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     }
 
     /**
+     * Whether CSRF values should be injected via JavaScript for greater cache-ability.
+     *
+     * ```php
+     * ->asyncCsrfInputs(true)
+     * ```
+     *
+     * @group Security
+     *
+     * @see $asyncCsrfInputs
+     * @since 5.1.0
+     * @deprecated in 6.0.0. It no longer has any effect. Front-end forms don’t need CSRF inputs.
+     */
+    #[Deprecated(message: 'in 6.0.0. It no longer has any effect. Front-end forms don’t need CSRF inputs.')]
+    public function asyncCsrfInputs(bool $value = true): self
+    {
+        $this->deprecate('asyncCsrfInputs', 'It no longer has any effect. Front-end forms don’t need CSRF inputs.');
+
+        $this->asyncCsrfInputs = $value;
+
+        return $this;
+    }
+
+    /**
      * The Ajax origins that should be allowed to access the GraphQL API, if enabled.
      *
      * If this is set to an array, then `graphql/api` requests will only include the current request’s [[\yii\web\Request::getOrigin()|origin]]
@@ -1486,7 +1516,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      * In the event that the key is compromised, a new secure key can be generated with the command:
      *
      * ```sh
-     * php craft setup/security-key
+     * php artisan key:generate
      * ```
      *
      * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.

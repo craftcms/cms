@@ -9,6 +9,8 @@ export interface FieldLayoutDesignerSettings extends GarnishBaseSettings {
   customizableTabs: boolean;
   customizableUi: boolean;
   withCardViewDesigner: boolean;
+  /** The outlet the card view designer moves to, in a tab of its own. */
+  cardViewDesignerOutlet?: string | null;
   alwaysShowThumbAlignmentBtns: boolean;
   readOnly: boolean;
 }

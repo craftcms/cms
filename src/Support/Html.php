@@ -6,13 +6,12 @@ namespace CraftCms\Cms\Support;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Asset\Elements\Asset;
-use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\Middleware\PreventRequestForgery;
 use CraftCms\Cms\Image\SvgAllowedAttributes;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Facades\HtmlStack;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Security;
-use CraftCms\Cms\View\TemplateMode;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
 use Exception;
@@ -207,28 +206,19 @@ class Html
     /**
      * Generates a hidden CSRF input tag.
      *
-     * @param  array<string, mixed>  $options  The tag options in terms of name-value pairs. These will be rendered as
-     *                                         the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     *                                         If a value is null, the corresponding attribute will not be rendered.
-     *                                         See [[renderTagAttributes()]] for details on how attributes are being rendered.
-     * @return string The generated hidden input tag
+     * Printing the token saves the visitor’s session and marks the response `no-cache`. Forms posted from
+     * the same origin don’t need one, as `PreventRequestForgery` accepts them by their `Sec-Fetch-Site` or `Origin` header.
+     * Nothing is printed when `PreventRequestForgery::useOriginOnly()` is enabled, as tokens are never checked then.
      */
-    public static function csrfInput(array $options = []): string
+    public static function csrfInput(): string
     {
-        $async = Arr::pull($options, 'async')
-            ?? (request()->isSiteRequest() && Cms::config()->asyncCsrfInputs);
-
-        if (! $async) {
-            ResponseHeaders::noCache();
-
-            return (string) csrf_field();
+        if (PreventRequestForgery::checksOriginOnly()) {
+            return '';
         }
 
-        HtmlStack::html(template('_special/async-csrf-input', [
-            'url' => Url::actionUrl('users/session-info'),
-        ], templateMode: TemplateMode::Cp));
+        ResponseHeaders::noCache();
 
-        return self::tag('craft-csrf-input');
+        return (string) csrf_field();
     }
 
     /**
@@ -1109,25 +1099,29 @@ class Html
             }, $html) ?? '';
         }
 
-        // CSS selectors
+        // CSS selectors. Only the text before each `{` is a selector (or an at-rule prelude), so declaration values,
+        // such as `light-dark(#000,#fff)` or a URL's host name, are left alone. `url(#id)` references were handled above.
         $html = preg_replace_callback(
             '/(<style\b[^>]*>)(.*?)(<\/style>)/is',
-            function (array $match) use ($namespace, $withClasses, $ids) {
-                $html = preg_replace_callback(
-                    "/(?<![\w'\"])#([^'\"\s]*)(?=[,\\s\\{])/",
-                    function (array $match) use ($namespace, $ids): string {
-                        if (isset($ids[$match[1]])) {
-                            return '#'.$namespace.'-'.$match[1];
-                        }
+            fn (array $match) => $match[1].preg_replace_callback(
+                '/[^{};]+(?:\{|$)/',
+                function (array $selector) use ($namespace, $withClasses, $ids): string {
+                    $selector = preg_replace_callback(
+                        "/(?<![\w'\"])#([^\s'\",{}.:\[\]>+~#();]+)(?=[\s,{.:\[>+~)])/",
+                        fn (array $match): string => isset($ids[$match[1]]) ? '#'.$namespace.'-'.$match[1] : $match[0],
+                        $selector[0],
+                    ) ?? $selector[0];
 
-                        return $match[0];
-                    }, $match[2]);
-                if ($withClasses) {
-                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $match[2]);
-                }
+                    if ($withClasses) {
+                        $selector = preg_replace("/(?<!['\"])\\.((?:--|-?[a-zA-Z_])[\\w\\-]*)(?=[\\s,{.:\\[>+~)])/", ".$namespace-$1", $selector) ?? $selector;
+                    }
 
-                return $match[1].$html.$match[3];
-            }, $html) ?? '';
+                    return $selector;
+                },
+                $match[2],
+            ).$match[3],
+            $html,
+        ) ?? '';
     }
 
     /**

@@ -490,14 +490,24 @@ export class Grid extends Base<GridSettings> {
     return this.colPctWidth * colspan;
   }
 
+  /**
+   * How much an item falls short of its columns' share of the container: the
+   * gutters outside it, spread across the columns. One spanning every column
+   * loses nothing, and one spanning a single column loses `colGutterDrop`.
+   */
+  getItemWidthDrop(colspan: number): number {
+    const totalCols = this.totalCols ?? 1;
+    return (this.settings!.gutter * (totalCols - colspan)) / totalCols;
+  }
+
   getItemWidthCss(colspan: number): string {
-    return `calc(${this.getItemWidth(colspan)}% - ${this.colGutterDrop}px)`;
+    return `calc(${this.getItemWidth(colspan)}% - ${this.getItemWidthDrop(colspan)}px)`;
   }
 
   getItemWidthInPx(colspan: number): number {
     return (
       (this.getItemWidth(colspan) / 100) * contentSize(this.container!).width -
-      this.colGutterDrop
+      this.getItemWidthDrop(colspan)
     );
   }
 

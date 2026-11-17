@@ -44,6 +44,8 @@ export interface ActivityEvent {
   actor: ActivityTarget;
   impersonator: ActivityTarget | null;
   origin?: string | null;
+  /** The larger process the event was part of, such as an import run. */
+  operation?: {label: string; url: string | null} | null;
   source: {label: string};
   description: {text: string | null; html: string | null};
   changes: ActivityChange[];

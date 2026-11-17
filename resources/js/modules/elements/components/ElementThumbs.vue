@@ -22,7 +22,7 @@
     // A tile with no `url` can still link its label, e.g. an asset folder's.
     labelUrl?: string | null;
     labelLinkAttributes?: Record<string, unknown>;
-    thumbHtml?: string;
+    thumbHtml?: string | null;
     label: string;
     /** A Craft color name, such as an entry's type color. */
     color?: string | null;

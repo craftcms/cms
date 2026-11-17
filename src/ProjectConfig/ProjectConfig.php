@@ -491,6 +491,10 @@ class ProjectConfig
 
             $newValue = $this->get($path, $this->isApplyingExternalChanges);
 
+            if ($newValue === null && $child->newValue !== null) {
+                $newValue = [];
+            }
+
             if (is_array($newValue)) {
                 // The containing value may be stale; merge the child's new value before processing it.
                 $relative = array_slice(ProjectConfigHelper::pathSegments($child->path), count(ProjectConfigHelper::pathSegments($path)));

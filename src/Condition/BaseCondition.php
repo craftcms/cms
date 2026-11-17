@@ -82,6 +82,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     private ?array $_selectableConditionRules = null;
 
+    /**
+     * @var list<string|array{class: string}>|null The selectable condition rule types, once {@see ConditionRulesResolving} handlers have modified them.
+     *
+     * @see selectableConditionRuleTypes()
+     */
+    private ?array $_selectableConditionRuleTypes = null;
+
     /** @param  array<string, mixed>  $config */
     public function __construct(array $config = [])
     {
@@ -110,24 +117,51 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
     final public function getSelectableConditionRules(): array
     {
-        if (! isset($this->_selectableConditionRules)) {
-            $rules = $this->selectableConditionRules();
-
-            event($event = new ConditionRulesResolving(
-                condition: $this,
-                conditionRules: $rules,
-            ));
-
-            $rules = $event->conditionRules;
-
-            $this->_selectableConditionRules = Collection::make($rules)
-                ->keyBy(fn ($type) => is_string($type) ? $type : Json::encode($type))
-                ->map(fn ($type) => $this->createConditionRule($type))
-                ->filter(fn (ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
-                ->all();
-        }
+        $this->_selectableConditionRules ??= Collection::make($this->selectableConditionRuleTypes())
+            ->keyBy(fn ($type) => is_string($type) ? $type : Json::encode($type))
+            ->map(fn ($type) => $this->createConditionRule($type))
+            ->filter(fn (ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
+            ->all();
 
         return $this->_selectableConditionRules;
+    }
+
+    /**
+     * Returns the selectable rule types, as {@see selectableConditionRules()} defines them and
+     * {@see ConditionRulesResolving} handlers modify them.
+     *
+     * @return list<string|array{class: string}>
+     */
+    private function selectableConditionRuleTypes(): array
+    {
+        return $this->_selectableConditionRuleTypes ??= $this->resolveSelectableConditionRuleTypes();
+    }
+
+    /**
+     * Resolves the selectable rule types, without caching them.
+     *
+     * @return list<string|array{class: string}>
+     */
+    protected function resolveSelectableConditionRuleTypes(): array
+    {
+        event($event = new ConditionRulesResolving(
+            condition: $this,
+            conditionRules: $this->selectableConditionRules(),
+        ));
+
+        return array_values($event->conditionRules);
+    }
+
+    /**
+     * Returns the selectable rule types that a rule must be among to be valid.
+     *
+     * Conditions can leave out types that can't apply to the rule, when resolving them all is costly.
+     *
+     * @return list<string|array{class: string}>
+     */
+    protected function selectableConditionRuleTypesFor(ConditionRuleInterface $rule): array
+    {
+        return $this->selectableConditionRuleTypes();
     }
 
     /**
@@ -214,6 +248,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         // Clear out our cache of selectable condition rules, in case any additional rules will depend on which
         // rules are already configured.
         $this->_selectableConditionRules = null;
+        $this->_selectableConditionRuleTypes = null;
 
         return $group;
     }
@@ -230,6 +265,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         // Clear caches
         $this->_selectableConditionRules = null;
+        $this->_selectableConditionRuleTypes = null;
     }
 
     /**
@@ -242,6 +278,18 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
 
         $ruleClass = $rule::class;
+
+        // A rule whose class is among the selectable types' is valid without creating every selectable rule, which
+        // can be costly, with one for each custom field in the condition's field layouts. Selectability only depends
+        // on a rule's class. Anything else is checked against the selectable rules themselves.
+        $typeClasses = array_map(
+            fn (string|array $type): string => is_string($type) ? $type : ($type['class'] ?? ''),
+            $this->selectableConditionRuleTypesFor($rule),
+        );
+
+        if (in_array($ruleClass, $typeClasses, true) && $this->isConditionRuleSelectable($rule)) {
+            return true;
+        }
 
         return array_any($this->getSelectableConditionRules(), fn ($selectableRule) => $ruleClass === $selectableRule::class);
     }

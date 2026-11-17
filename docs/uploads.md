@@ -199,4 +199,4 @@ The `assets/upload` and `assets/replace-file` multipart endpoints have been remo
 
 After a filename conflict, use `assets/resolve-upload-conflict` to replace an existing asset or unindexed file with the already-uploaded asset. Supply `sourceAssetId` and either `assetId` or `targetFilename`. This endpoint does not receive file bytes.
 
-The `users/upload-user-photo` endpoint now starts a JSON upload session instead of accepting multipart `photo` data. Existing user-save form payloads remain supported separately. Craft 6 branding uses `cpIconUrl` and `cpLogoUrl`; the removed rebrand upload endpoints are not restored.
+The `users/upload-user-photo` endpoint now starts a JSON upload session instead of accepting multipart `photo` data. Existing user-save form payloads remain supported separately. Craft 6 branding uses `cpIconPath` and `cpLogoPath`; the removed rebrand upload endpoints are not restored.
