@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Asset\Models\Asset as AssetModel;
+use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\ElementCollection;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -12,7 +14,9 @@ use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Mcp\McpOutputContext;
+use CraftCms\Cms\Mcp\Public\ElementSerializer as PublicElementSerializer;
 use CraftCms\Cms\Mcp\Serializers\ElementSerializer;
+use CraftCms\Cms\Support\Facades\Sites;
 
 /**
  * @param  list<FieldInterface>  $fields
@@ -71,6 +75,18 @@ class McpOutputTestField extends PlainText implements McpOutputFieldInterface
         return $value instanceof ElementCollection ? $value : ['value' => $value, 'public' => $context->public, 'requested' => $context->requested];
     }
 }
+
+it('makes root-relative element URLs absolute, such as those of assets in a volume with a relative URL', function (): void {
+    config()->set('filesystems.disks.mcp-relative', ['driver' => 'local', 'root' => storage_path('mcp-relative'), 'url' => '/uploads']);
+    $asset = AssetModel::factory()->createElement([
+        'volumeId' => Volume::factory()->create(['fs' => 'mcp-relative', 'hasUrls' => true])->id,
+    ]);
+    $expected = rtrim((string) Sites::getPrimarySite()->getBaseUrl(), '/').$asset->getUrl();
+
+    expect($asset->getUrl())->toStartWith('/uploads/')
+        ->and(app(ElementSerializer::class)->serialize($asset)['url'])->toBe($expected)
+        ->and(app(PublicElementSerializer::class)->serialize($asset)['url'])->toBe($expected);
+});
 
 it('lets fields control their MCP output', function (): void {
     $element = mcpSerializerEntry(

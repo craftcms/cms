@@ -329,16 +329,23 @@ function secondaryNav(): Target[] {
   });
 }
 
+/** Content that's only there for screen readers. */
+const VISUALLY_HIDDEN = '.sr-only, .visually-hidden';
+
 /**
  * The page's headings below its title, which names the page rather than a
  * part of it. The details sidebar's headings are left out: each just repeats
- * its panel's name, which is listed already.
+ * its panel's name, which is listed already. So are visually hidden ones:
+ * there's nothing on screen to search for, or to show once one is chosen.
  */
 function headings(): Target[] {
   return [
     ...document.querySelectorAll<HTMLElement>('main :is(h2, h3, h4, h5, h6)'),
   ]
-    .filter((heading) => !heading.closest('.details-panels'))
+    .filter(
+      (heading) =>
+        !heading.closest('.details-panels') && !heading.closest(VISUALLY_HIDDEN)
+    )
     .map((heading) => ({
       label: text(heading),
       description: trail(heading) || t('Heading'),
