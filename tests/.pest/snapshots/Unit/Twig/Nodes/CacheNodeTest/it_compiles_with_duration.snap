@@ -12,8 +12,19 @@ if ($cacheBody__v0 === null) {
     if (!$ignoreCache__v0) {
         $cacheService->startTemplateCache(true, false);
     }
+    $obLevel__v0 = ob_get_level();
     ob_start();
-    yield "cached content";
+    try {
+        yield "cached content";
+    } catch (\Throwable $e__v0) {
+        while (ob_get_level() > $obLevel__v0) {
+            ob_end_clean();
+        }
+        if (!$ignoreCache__v0) {
+            $cacheService->abortTemplateCache(false);
+        }
+        throw $e__v0;
+    }
     $cacheBody__v0 = ob_get_clean();
     if (!$ignoreCache__v0) {
         $cacheService->endTemplateCache($cacheKey__v0, false, null, now()->add((int) (1), 'hours'), $cacheBody__v0, true);
