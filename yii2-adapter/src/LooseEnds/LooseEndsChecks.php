@@ -35,6 +35,7 @@ use ReflectionProperty;
 use Throwable;
 use yii\base\Component;
 use yii\base\Event;
+use yii\caching\FileCache;
 
 use function CraftCms\Cms\t;
 
@@ -223,6 +224,45 @@ class LooseEndsChecks
                 detail: implode(', ', array_keys($appConfig)),
                 file: is_file("$configPath/app.php") ? "$configPath/app.php" : null,
             );
+
+            // A Craft 5 cache component only reaches `Craft::$app->cache`; Craft's own caches and locks use Laravel's store,
+            // which is the adapter's `file` default until something sets another one. `app.php` can set the component
+            // for every request, or only for web or console requests. A `FileCache` in its default location matches
+            // Laravel's `file` store, but one with its own `cachePath`, such as a shared mount, doesn't.
+            $yiiCache = $class = null;
+
+            foreach ([$appConfig, $appConfig['web'] ?? [], $appConfig['console'] ?? []] as $config) {
+                $cache = $config['components']['cache'] ?? null;
+                $cacheClass = is_string($cache) ? $cache : (is_array($cache) ? ($cache['class'] ?? $cache['__class'] ?? null) : null);
+                $isDefaultFileCache = is_string($cacheClass) &&
+                    is_a($cacheClass, FileCache::class, true) &&
+                    !isset($cache['cachePath']);
+
+                if ($cache !== null && !$isDefaultFileCache) {
+                    [$yiiCache, $class] = [$cache, $cacheClass];
+
+                    break;
+                }
+            }
+
+            if (
+                $yiiCache !== null &&
+                !file_exists(config_path('cache.php')) &&
+                !Env::get('CACHE_STORE') &&
+                Config::get('cache.default') === 'file'
+            ) {
+                $findings[] = $this->finding(
+                    'config.yii-cache',
+                    Section::Config,
+                    Severity::Breaks,
+                    t('`config/craft/app.php` configures a Yii cache component, which Craft’s own caching doesn’t use.', category: 'yii2-adapter'),
+                    t('Configure the matching Laravel cache store, such as with `CACHE_STORE=redis`, or in `config/cache.php`. Until then, Craft’s own caches and locks use the “{store}” store, while `Craft::$app->cache` uses the Yii component.', [
+                        'store' => Config::get('cache.default'),
+                    ], 'yii2-adapter'),
+                    detail: is_string($class) ? "`$class`" : null,
+                    file: is_file("$configPath/app.php") ? "$configPath/app.php" : null,
+                );
+            }
         }
 
         if (function_exists('craft_modify_app_config')) {

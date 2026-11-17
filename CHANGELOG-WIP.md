@@ -269,6 +269,7 @@
 - Removed the `isSystemLive` config setting. Laravel maintenance mode should be used instead. With the Yii adapter installed, the deprecated `craft:on` and `craft:off` commands still work, and run `up` and `down`.
 - Removed the `allowedGraphqlOrigins`, `disableGraphqlTransformDirective`, `enableBasicHttpAuth`, `enableTwigSandbox`, `omitScriptNameInUrls`, `pathParam`, `permissionsPolicyHeader`, `previewIframeResizerOptions`, `purgeStaleUserSessionDuration`, `requireMatchingUserAgentForSession`, `requireUserAgentAndIpForSession`, `useFileLocks`, `useIframeResizer`, and `usePathInfo` config settings, which no longer have any effect.
 - Craft 5 config settings that were deprecated or removed are still accepted when the Yii adapter is installed, including from array-based general configs and environment variables, and are listed in the Yii2 Loose Ends utility when they’re set.
+- With the Yii adapter installed, a cache component configured in `config/craft/app.php`, such as `yii\redis\Cache`, only applies to `Craft::$app->cache`. Craft’s own caches and locks use Laravel’s cache store, which the adapter sets to `file` unless `CACHE_STORE` or `config/cache.php` is set, and the Yii2 Loose Ends utility lists the component until one of them is.
 
 ### Development
 
