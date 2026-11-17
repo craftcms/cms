@@ -35,11 +35,11 @@ The button is a plain `craft-button` until it's hovered. Set `flush` to pull its
 
 ## Accessibility
 
-The button shows no text, so its tooltip is its visible label. The tooltip shows the value, and the button's name starts with it, so voice control users can say what they see.
+The button shows no text, so its tooltip is its visible label. The tooltip shows the value, and the button's name is exactly that, so voice control users can say what they see.
 
 - **Set `slider-label`.** It's shown only in the popover, below the slider, and names that slider. It doesn't change the button or its tooltip, which always show the value.
-- **Set `item-label` to the name of the item the button sizes**, such as the item's name on every row of a list: the button is named "3 columns News". Keep it in step with the item's name.
-- **Set `value-unit` or `valueLabel`** whenever the number alone doesn't say what it counts, since the value starts the button's name and is all its tooltip shows: "50% width", not "50", and "3 columns", not "3".
+- **Set `item-label` to the name of the item the button sizes**, such as the item's name on every row of a list. It describes the button, so a screen reader says "3 columns, button, News", and buttons on several items are told apart. Keep it in step with the item's name.
+- **Set `value-unit` or `valueLabel`** whenever the number alone doesn't say what it counts, since the value is the button's name and all its tooltip shows: "50% width", not "50", and "3 columns", not "3".
 
 ## Properties
 

@@ -1,5 +1,8 @@
 import {css} from 'lit';
-import {segmentDividerStyles} from './segment-divider.styles.js';
+import {
+  activeSegmentDividerForcedColorsStyles,
+  segmentDividerStyles,
+} from './segment-divider.styles.js';
 
 export default css`
   :host {
@@ -35,7 +38,6 @@ export default css`
 
   .slide-picker__segment {
     position: relative;
-    /* Border-box with the borders added back, so the preview's 2px edge doesn't resize it. */
     box-sizing: border-box;
     inline-size: calc(var(--_segment-width) + 1px);
     block-size: calc(var(--_segment-height) + 2px);
@@ -116,11 +118,8 @@ export default css`
       border-color: Highlight;
     }
 
-    /* Forced colors would recolor the divider to vanish on Highlight. */
     .slide-picker__segment.is-active:not(.is-last-active)::after {
-      forced-color-adjust: none;
-      --_divider-edge: Highlight;
-      --_divider: Canvas;
+      ${activeSegmentDividerForcedColorsStyles}
     }
 
     .slide-picker.is-previewing .slide-picker__segment {

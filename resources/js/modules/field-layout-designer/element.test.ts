@@ -1,4 +1,8 @@
 import '@craftcms/ui';
+import {
+  computeAccessibleDescription,
+  computeAccessibleName,
+} from 'dom-accessibility-api';
 import {afterEach, expect, it, vi} from 'vite-plus/test';
 import type CraftSlidePickerButton from '@craftcms/ui/components/slide-picker-button/slide-picker-button';
 import {Element} from './element';
@@ -11,7 +15,7 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-it('names the width button after the field it sizes', () => {
+it('names the width button by its width, describes it by the field it sizes, and names its slider Width', async () => {
   window.Craft = Object.assign(Object.create(null), {
     t: (_category: string, message: string) => message,
   });
@@ -32,6 +36,16 @@ it('names the width button after the field it sizes', () => {
   const button = container.querySelector(
     'craft-slide-picker-button'
   ) as CraftSlidePickerButton;
-  expect(button.itemLabel).toBe('Body');
-  expect(button.sliderLabel).toBe('Width');
+  await button.updateComplete;
+  // The tooltip names the button once it has set up.
+  await new Promise((resolve) => setTimeout(resolve));
+  const invoker =
+    button.shadowRoot!.querySelector<HTMLElement>('craft-button')!;
+  const slider = button.shadowRoot!.querySelector<HTMLElement>(
+    'craft-slide-picker-slider'
+  )!;
+
+  expect(computeAccessibleName(invoker)).toBe('50% width');
+  expect(computeAccessibleDescription(invoker)).toBe('Body');
+  expect(computeAccessibleName(slider)).toBe('Width');
 });

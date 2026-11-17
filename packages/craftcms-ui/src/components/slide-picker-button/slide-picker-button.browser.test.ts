@@ -41,20 +41,25 @@ it.each([
   {
     attributes:
       'slider-label="Columns" item-label="Recent Entries" value-unit="columns" value="3"',
-    name: '3 columns Recent Entries',
+    name: '3 columns',
+    description: 'Recent Entries',
   },
   {
     attributes: 'slider-label="Width" value-unit="% width" value="50"',
     name: '50% width',
+    description: '',
   },
 ])(
-  'names the button by the value its tooltip shows, then the item it sizes: $name',
-  async ({attributes, name}) => {
+  'names the button by the value its tooltip shows, and describes it by the item it sizes: $name',
+  async ({attributes, name, description}) => {
     await render(
       `<craft-slide-picker-button min="1" max="100" step="1" ${attributes}></craft-slide-picker-button>`
     );
 
     await expect.element(page.getByRole('button')).toHaveAccessibleName(name);
+    await expect
+      .element(page.getByRole('button'))
+      .toHaveAccessibleDescription(description);
   }
 );
 
@@ -67,10 +72,10 @@ it('names the button with valueLabel', async () => {
 
   await expect
     .element(page.getByRole('button'))
-    .toHaveAccessibleName('1 column Recent Entries');
+    .toHaveAccessibleName('1 column');
 });
 
-it('shows the start of the button’s name in its tooltip, without also describing the button', async () => {
+it('names the button by exactly its tooltip’s text, without the tooltip also describing it', async () => {
   await render(
     `<craft-slide-picker-button slider-label="Columns" item-label="Recent Entries" value-unit="columns" min="1" max="4" step="1" value="3"></craft-slide-picker-button>`
   );
@@ -82,10 +87,10 @@ it('shows the start of the button’s name in its tooltip, without also describi
     .toHaveTextContent('3 columns');
   await expect
     .element(page.getByRole('button'))
-    .toHaveAccessibleName('3 columns Recent Entries');
+    .toHaveAccessibleName('3 columns');
   await expect
     .element(page.getByRole('button'))
-    .toHaveAccessibleDescription('');
+    .toHaveAccessibleDescription('Recent Entries');
 });
 
 it('names the popover’s slider by the label below it', async () => {
@@ -103,7 +108,7 @@ it('names the popover’s slider by the label below it', async () => {
 
 it('opens with Enter, sets the value from the slider and returns focus on Escape', async () => {
   const button = await render(
-    `<craft-slide-picker-button slider-label="Width" value-unit="%" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
+    `<craft-slide-picker-button slider-label="Width" item-label="Body" value-unit="% width" min="25" max="100" step="25" value="50"></craft-slide-picker-button>`
   );
   const events: string[] = [];
   button.addEventListener('input', () => events.push(`input ${button.value}`));
@@ -121,7 +126,7 @@ it('opens with Enter, sets the value from the slider and returns focus on Escape
   expect(events).toEqual(['input 100', 'change 100']);
   await expect
     .element(page.getByRole('button'))
-    .toHaveAccessibleName('100% Width');
+    .toHaveAccessibleName('100% width');
 
   await userEvent.keyboard('{Escape}');
   await expect.poll(() => slider(button).checkVisibility()).toBe(false);

@@ -1,4 +1,4 @@
-import {html, LitElement, type PropertyValues} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -21,10 +21,11 @@ import '../tooltip/tooltip.js';
  * count or a field layout element's width, where full-size segments don't
  * fit. The button is the target, so the segments drawn in it can stay small.
  *
- * The button shows no text, so its tooltip, the value, is its visible label.
- * Its name is that value followed by `item-label`, the name of the item it
- * sizes, such as "3 columns Recent Entries". `slider-label` is shown only in
- * the popover, below its slide picker, and names that slide picker.
+ * The button shows no text, so its tooltip, the value, is its visible label
+ * and its name: "3 columns". `item-label`, the name of the item it sizes,
+ * describes it, so buttons on several items are told apart. `slider-label` is
+ * shown only in the popover, below its slide picker, and names that slide
+ * picker.
  *
  * @attr name - Field name. The button posts its value under it, like any
  * other input.
@@ -54,9 +55,10 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
    */
   @property({attribute: 'slider-label'}) sliderLabel = '';
   /**
-   * The name of the item the button sizes, such as a widget's title. Follows
-   * the value in the button's name, so the buttons on several items are told
-   * apart: "3 columns Recent Entries". Keep it in step with the item's name.
+   * The name of the item the button sizes, such as a widget's title. It
+   * describes the button, so the buttons on several items are told apart:
+   * "3 columns", described by "Recent Entries". Keep it in step with the
+   * item's name.
    */
   @property({attribute: 'item-label'}) itemLabel = '';
   /** The selected value. */
@@ -142,7 +144,7 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
           variant="plain"
           size="small"
           flush=${ifDefined(this.flush)}
-          aria-labelledby="value item-label"
+          aria-describedby=${this.itemLabel ? 'item-label' : nothing}
         >
           <span class="segments" aria-hidden="true">
             ${steps.map(
@@ -176,9 +178,9 @@ export default class CraftSlidePickerButton extends FormAssociated(LitElement) {
         </div>
       </craft-popover>
       <span id="item-label" hidden>${this.itemLabel}</span>
-      <craft-tooltip for="invoker" invoker-relation="label">
-        <span slot="content" id="value">${valueText}</span>
-      </craft-tooltip>
+      <craft-tooltip for="invoker" invoker-relation="label"
+        >${valueText}</craft-tooltip
+      >
     `;
   }
 }

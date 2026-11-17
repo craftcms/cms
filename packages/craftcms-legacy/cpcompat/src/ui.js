@@ -655,15 +655,12 @@ Craft.ui = {
       config.describedBy = this.getDescribedByValue(config);
     }
 
-    // The field's label names the picker, so it doesn't get one of its own.
-    // A button's internals can't reference the field's label, so the label
-    // labels its popover's slider and follows the value in its name, as its
-    // `itemLabel`: "50% Width". Use a unit that doesn't repeat the label.
+    // A field gets a full-size picker, which the field's label names, so it
+    // doesn't get one of its own. Slide picker buttons are for dense rows,
+    // such as dashboard widgets and field layout elements, not fields.
     return this.createField(
       this.createSlidePicker(
-        config.button
-          ? $.extend({}, config, {itemLabel: config.label})
-          : $.extend({}, config, {label: null})
+        $.extend({}, config, {label: null, button: false})
       ),
       config
     ).addClass('slidepicker-field');

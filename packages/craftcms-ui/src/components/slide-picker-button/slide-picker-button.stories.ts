@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/web-components-vite';
 import {html, nothing} from 'lit';
-import {ifDefined} from 'lit/directives/if-defined.js';
+import {ref} from 'lit/directives/ref.js';
 import {getStorybookHelpers} from '@wc-toolkit/storybook-helpers';
 import './slide-picker-button.js';
 import {withAccessibilityTree} from '../../../test/slide-picker-button-accessibility-tree';
@@ -29,6 +29,36 @@ const argTypes = Object.fromEntries(
     isDuplicate(name) ? {...argType, table: {disable: true}} : argType,
   ])
 ) as typeof helperArgTypes;
+
+/** The args the manifest lists as the button's attributes. */
+const attributeNames = Object.entries(helperArgTypes)
+  .filter(([, argType]) => argType.table?.category === 'attributes')
+  .map(([name]) => name);
+
+/**
+ * Sets each attribute arg on the button, leaving out empty ones, so a new
+ * attribute needs no change here.
+ */
+function attributesFrom(values: Record<string, unknown>) {
+  return ref((element) => {
+    if (!element) {
+      return;
+    }
+    for (const name of attributeNames) {
+      const value = values[name];
+      if (
+        value === undefined ||
+        value === null ||
+        value === false ||
+        value === ''
+      ) {
+        element.removeAttribute(name);
+      } else {
+        element.setAttribute(name, value === true ? '' : String(value));
+      }
+    }
+  });
+}
 
 const columns = (value: number) =>
   `${value} ${value === 1 ? 'column' : 'columns'}`;
@@ -75,7 +105,7 @@ type Story = StoryObj<Args>;
 
 /**
  * Shows each item's name beside its button, as a field layout or Widget
- * Settings does, then each button's name, role and state. The output is
+ * Settings does, then each button's name, role, state and description. The output is
  * hidden from screen readers, which hear the buttons themselves.
  *
  * Each button is rendered here rather than with the helpers' `template()`,
@@ -103,17 +133,7 @@ function items(storyArgs: Args) {
           >
             <span style="flex: 1;">${name}</span>
             <craft-slide-picker-button
-              slider-label=${ifDefined(buttonArgs['slider-label'] as string)}
-              item-label=${name}
-              value-unit=${ifDefined(buttonArgs['value-unit'] as string)}
-              name=${ifDefined((buttonArgs.name as string) || undefined)}
-              flush=${ifDefined(buttonArgs.flush as string)}
-              min=${ifDefined(buttonArgs.min as number)}
-              max=${ifDefined(buttonArgs.max as number)}
-              step=${ifDefined(buttonArgs.step as number)}
-              value=${ifDefined(buttonArgs.value as number)}
-              ?readonly=${Boolean(buttonArgs.readonly)}
-              ?disabled=${Boolean(buttonArgs.disabled)}
+              ${attributesFrom({...buttonArgs, 'item-label': name})}
               .valueLabel=${valueLabel ?? nothing}
             ></craft-slide-picker-button>
           </li>
@@ -125,8 +145,8 @@ function items(storyArgs: Args) {
 
 /**
  * A field's width in a field layout. The tooltip shows the value, "50% width",
- * and `item-label` adds the field's name beside it, so the button is named
- * "50% width Body". `slider-label`, "Width", shows only in the popover, below
+ * which is also the button's name, and `item-label` describes it by the field
+ * beside it, "Body". `slider-label`, "Width", shows only in the popover, below
  * the slider.
  */
 export const Default: Story = {
@@ -142,9 +162,9 @@ export const Default: Story = {
 };
 
 /**
- * Two fields at the same width show the same tooltip, "50% width".
- * `item-label` tells their buttons apart: "50% width Body" and "50% width
- * Summary".
+ * Two fields at the same width show the same tooltip and name, "50% width".
+ * `item-label` tells their buttons apart by describing each one: "Body" and
+ * "Summary".
  */
 export const ItemLabel: Story = {
   args: {

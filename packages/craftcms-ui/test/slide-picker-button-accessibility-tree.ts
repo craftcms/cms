@@ -1,11 +1,14 @@
 import {html} from 'lit';
 import {ref} from 'lit/directives/ref.js';
-import {computeAccessibleName} from 'dom-accessibility-api';
+import {
+  computeAccessibleDescription,
+  computeAccessibleName,
+} from 'dom-accessibility-api';
 import type CraftSlidePickerButton from '../src/components/slide-picker-button/slide-picker-button.js';
 
 /**
- * A slide picker button's name, role and state, as the accessibility tree
- * exposes them and a screen reader reads them on focus.
+ * A slide picker button's name, role, state and description, as the
+ * accessibility tree exposes them and a screen reader reads them on focus.
  */
 function accessibilityTree(picker: CraftSlidePickerButton): string {
   const button = picker.shadowRoot?.querySelector<HTMLElement>('craft-button');
@@ -15,7 +18,12 @@ function accessibilityTree(picker: CraftSlidePickerButton): string {
   const expanded = button.getAttribute('aria-expanded');
   const state =
     expanded === 'true' ? 'expanded' : expanded === 'false' ? 'collapsed' : '';
-  return [computeAccessibleName(button), 'button', state]
+  return [
+    computeAccessibleName(button),
+    'button',
+    state,
+    computeAccessibleDescription(button),
+  ]
     .filter(Boolean)
     .join(', ');
 }
@@ -48,7 +56,11 @@ function watch(element?: Element): void {
           subtree: true,
           childList: true,
           characterData: true,
-          attributeFilter: ['aria-expanded', 'aria-labelledby'],
+          attributeFilter: [
+            'aria-expanded',
+            'aria-labelledby',
+            'aria-describedby',
+          ],
         });
       }
     }
@@ -68,9 +80,9 @@ function watch(element?: Element): void {
 }
 
 /**
- * Shows `content`, then the name, role and state of each slide picker button
- * in it, kept up to date. The output is hidden from screen readers, which hear
- * the buttons themselves.
+ * Shows `content`, then the name, role, state and description of each slide
+ * picker button in it, kept up to date. The output is hidden from screen
+ * readers, which hear the buttons themselves.
  */
 export function withAccessibilityTree(content: unknown) {
   return html`

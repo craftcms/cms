@@ -14,11 +14,11 @@ export interface SlidePickerConfig {
    * Builds a `<craft-slide-picker-button>` instead: a small button that opens
    * a full-size picker in a popover, for a picker in a dense row. `label` names
    * the popover's picker. The button is named by its value, as `valueUnit`
-   * or `valueLabel` formats it, then by `itemLabel`, and ignores
+   * or `valueLabel` formats it, and described by `itemLabel`. It ignores
    * `labelledBy` and `describedBy`.
    */
   button?: boolean;
-  /** The name of the item a `button` sizes, such as a widget's title. */
+  /** The name of the item a `button` sizes, such as a widget's title, which describes it. */
   itemLabel?: string;
   labelledBy?: string;
   describedBy?: string;

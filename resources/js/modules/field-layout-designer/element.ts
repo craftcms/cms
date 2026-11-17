@@ -96,8 +96,9 @@ export class Element extends Base {
     if (this.hasCustomWidth) {
       const widthSlider = document.createElement('craft-slide-picker-button');
       widthSlider.sliderLabel = t('Width');
-      // Tells the width buttons apart: "50% width Body". Settings that rename
-      // the field rebuild the element, which runs this again.
+      // Describes the width button by its field, "Body", to tell the width
+      // buttons apart. Settings that rename the field rebuild the element,
+      // which runs this again.
       widthSlider.itemLabel = this.getLabel() ?? '';
       widthSlider.valueLabel = (num) => t('{num}% width', {num});
       widthSlider.setAttribute('min', '25');

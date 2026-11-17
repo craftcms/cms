@@ -1,5 +1,8 @@
 import {css} from 'lit';
-import {segmentDividerStyles} from '../slide-picker/segment-divider.styles.js';
+import {
+  activeSegmentDividerForcedColorsStyles,
+  segmentDividerStyles,
+} from '../slide-picker/segment-divider.styles.js';
 
 export default css`
   :host {
@@ -110,8 +113,7 @@ export default css`
     }
 
     .segment.is-active:not(:last-child, .is-last-active)::after {
-      --_divider-edge: Highlight;
-      --_divider: Canvas;
+      ${activeSegmentDividerForcedColorsStyles}
     }
   }
 `;
