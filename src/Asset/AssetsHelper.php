@@ -109,7 +109,7 @@ class AssetsHelper
      * Returns whether a volume’s file URLs get revision params: its disk’s `rev_urls` key, else the deprecated
      * `revAssetUrls` setting.
      */
-    private static function revsUrls(Volume $volume): bool
+    public static function revsUrls(Volume $volume): bool
     {
         $disk = $volume->getResolvedFsTarget();
         $revUrls = $disk !== null ? DiskConfig::get($disk, 'rev_urls') : null;
