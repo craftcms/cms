@@ -81,7 +81,7 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
     /**
      * @var bool Whether CSRF values should be injected via JavaScript for greater cache-ability.
      *
-     * @deprecated in 6.0.0. Front-end forms don’t need CSRF inputs, as POST requests with a `Sec-Fetch-Site: same-origin` header are accepted without one.
+     * @deprecated in 6.0.0. It no longer has any effect. Front-end forms don’t need CSRF inputs.
      */
     public bool $asyncCsrfInputs = false;
 
@@ -809,11 +809,12 @@ class GeneralConfig extends \CraftCms\Cms\Config\GeneralConfig
      *
      * @see $asyncCsrfInputs
      * @since 5.1.0
+     * @deprecated in 6.0.0. It no longer has any effect. Front-end forms don’t need CSRF inputs.
      */
-    #[Deprecated(message: 'in 6.0.0. This setting no longer has any effect.')]
+    #[Deprecated(message: 'in 6.0.0. It no longer has any effect. Front-end forms don’t need CSRF inputs.')]
     public function asyncCsrfInputs(bool $value = true): self
     {
-        $this->deprecate('asyncCsrfInputs', 'It no longer has any effect, as front-end forms don’t need CSRF inputs.');
+        $this->deprecate('asyncCsrfInputs', 'It no longer has any effect. Front-end forms don’t need CSRF inputs.');
 
         $this->asyncCsrfInputs = $value;
 
