@@ -676,6 +676,7 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 - Deprecated `craft\mutex\Mutex`
 - Deprecated `craft\mutex\MutexTrait`
 - Deprecated `Craft::$app->getMutex()`
+- Added `CraftCms\Cms\Database\Claim`, which lets one worker at a time claim a database row. Another worker can take over a claim once it’s older than the claim’s TTL. ([#20792](https://github.com/craftcms/cms/pull/20792))
 
 #### Components
 - Deprecated `craft\base\ComponentInterface`. `CraftCms\Cms\Component\Contracts\ComponentInterface` should be used instead.
@@ -1455,6 +1456,7 @@ Moved the following controllers:
 - Deprecated `craft\web\View::resolveTemplate()`. `CraftCms\Cms\View\TemplateResolver::resolveTemplate()` should be used instead.
 - Deprecated `craft\web\twig\TemplateLoader`. `CraftCms\Cms\Twig\TemplateLoader` should be used instead.
 - Deprecated `craft\web\twig\TemplateLoaderException`. `CraftCms\Cms\Twig\Exceptions\TemplateLoaderException` should be used instead.
+- Added `CraftCms\Cms\Twig\Twig::with()`, which runs a callback with a Twig environment set for a template mode and restores the previous one afterward. ([#20798](https://github.com/craftcms/cms/pull/20798))
 
 ##### Events
 - Added `CraftCms\Cms\Twig\Events\TwigCreated`, dispatched when a Twig environment is created.
@@ -1507,6 +1509,8 @@ Moved the following controllers:
 - Deprecated `craft\services\UserPermissions`. `CraftCms\Cms\User\UserPermissions` should be used instead.
 - Deprecated `craft\events\DefineEditUserScreensEvent`. `CraftCms\Cms\User\Events\EditUserScreensResolving` should be used instead.
 - Added `CraftCms\Cms\User\UserPermissions::actingAsGroup()`, which runs a callback with the current user’s permissions replaced by a user group’s. ([#20247](https://github.com/craftcms/cms/pull/20247))
+- Added `CraftCms\Cms\User\Enums\UserAccountTransition`, which lists the ways a user account can change and the `users` columns each one writes. ([#20794](https://github.com/craftcms/cms/pull/20794))
+- Added `CraftCms\Cms\User\Elements\User::isLocked()` and `CraftCms\Cms\User\Validation\UserRules::unique()`. ([#20794](https://github.com/craftcms/cms/pull/20794))
 
 #### View
 - Added `CraftCms\Cms\View\TwigEngine`.
@@ -1580,3 +1584,4 @@ Moved the following controllers:
 - Deprecated `craft\web\View::setIsDeltaRegistrationActive()`. `CraftCms\Cms\View\DeltaRegistry::setActive()` should be used instead.
 - Deprecated `craft\web\View::hook()`. `CraftCms\Cms\View\TemplateHooks::register()` should be used instead.
 - Deprecated `craft\web\View::invokeHook()`. `CraftCms\Cms\View\TemplateHooks::invoke()` should be used instead.
+- Added `CraftCms\Cms\View\TemplateCaches::abortTemplateCache()`, which closes a cache started with `startTemplateCache()` without storing it, such as when a `{% cache %}` tag’s body throws. ([#20798](https://github.com/craftcms/cms/pull/20798))
