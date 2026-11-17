@@ -93,9 +93,9 @@ use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
-use Twig\Extension\SandboxExtension;
 use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\Sandbox\SecurityError;
+use Twig\Source;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
@@ -308,11 +308,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('unshift', [$this, 'unshiftFilter']),
             new TwigFilter('upper', [$this, 'upperFilter']),
+            new TwigFilter('url_encode', [$this, 'urlEncodeFilter'], ['needs_is_sandboxed' => true]),
             new TwigFilter('values', 'array_values'),
             new TwigFilter('where', [$this, 'whereFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('widont', [$this, 'widontFilter'], ['is_safe' => ['html']]),
-            new TwigFilter('without', [$this, 'withoutFilter']),
-            new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
+            new TwigFilter('without', [$this, 'withoutFilter'], ['needs_is_sandboxed' => true]),
+            new TwigFilter('withoutKey', [$this, 'withoutKeyFilter'], ['needs_is_sandboxed' => true]),
         ];
     }
 
@@ -525,78 +526,58 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * Ensures that the keys passed to an array filter in a sandboxed environment can only access what the
-     * template could access directly.
+     * Returns the items a filter or function should work with in a sandboxed environment.
      *
-     * Each key must be a string or integer that doesn’t contain any `.`, `[`, or `]` characters, or an arrow
-     * function (which the sandbox checks on its own). Object elements of `$array` must allow access to each key
-     * the same way they would if the template had accessed it directly, e.g. `element.name`. If `$array` is a single
-     * non-traversable object, it’s treated as a single element.
+     * Converting an object to an array, or iterating over a non-traversable object, would expose all of its
+     * properties without any sandbox checks, including protected and private ones. So in a sandboxed environment,
+     * traversable objects are converted with their own iterator, and other objects are treated as a single item.
+     *
+     * @param bool $isSandboxed
+     * @param mixed $value
+     * @return mixed
+     */
+    private function sandboxItems(bool $isSandboxed, mixed $value): mixed
+    {
+        if (!$isSandboxed || !is_object($value)) {
+            return $value;
+        }
+
+        return $value instanceof Traversable ? iterator_to_array($value) : [$value];
+    }
+
+    /**
+     * Returns the key a filter should read from each item in a sandboxed environment.
+     *
+     * Rather than letting array helpers read the key themselves, string and integer keys are replaced with an arrow
+     * function that reads them with Twig’s own attribute lookup, so each read gets the same sandbox checks it would
+     * get if the template had accessed it directly, e.g. `item.key`. Arrow functions and `null` are returned as-is,
+     * and anything else (such as key paths or callables) is rejected.
      *
      * @param TwigEnvironment $env
      * @param bool $isSandboxed
-     * @param mixed $array
-     * @param array $keys
+     * @param mixed $key
      * @param string $filterName
-     * @return mixed `$array`, converted to an array if it was an object, so it can be safely iterated (again)
-     * @throws RuntimeError if a key isn’t allowed in a sandboxed environment
-     * @throws SecurityError if an element is an object and a key isn’t an allowed property/method in a sandboxed environment
+     * @return mixed
+     * @throws RuntimeError if the key isn’t allowed in a sandboxed environment
      */
-    private function checkKeysInSandbox(TwigEnvironment $env, bool $isSandboxed, mixed $array, array $keys, string $filterName): mixed
+    private function sandboxKey(TwigEnvironment $env, bool $isSandboxed, mixed $key, string $filterName): mixed
     {
-        if (!$isSandboxed) {
-            return $array;
+        if (!$isSandboxed || $key === null || $key instanceof Closure) {
+            return $key;
         }
 
-        $names = [];
-        foreach ($keys as $key) {
-            if ($key === null || $key instanceof Closure) {
-                continue;
-            }
-
-            // Arrays would be treated as nested key paths, and other callables would be called directly
-            if (!is_string($key) && !is_int($key)) {
-                throw new RuntimeError(sprintf('Keys passed to the "%s" filter must be strings, integers, or arrow functions in sandbox mode.', $filterName));
-            }
-
-            $key = (string)$key;
-            foreach (['.', '[', ']'] as $char) {
-                if (str_contains($key, $char)) {
-                    throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "%s" characters in sandbox mode.', $filterName, $char));
-                }
-            }
-
-            $names[] = $key;
+        if (!is_string($key) && !is_int($key)) {
+            throw new RuntimeError(sprintf('Keys passed to the "%s" filter must be strings, integers, or arrow functions in sandbox mode.', $filterName));
         }
 
-        if ($array instanceof Traversable) {
-            $array = iterator_to_array($array);
-        } elseif (is_object($array)) {
-            // $array is a single object rather than a list of rows, so iterating over it would mean enumerating
-            // its public properties without any sandbox checks. Treat it as a single row instead.
-            $array = [$array];
-        }
-
-        if (!empty($names) && is_iterable($array)) {
-            $sandbox = $env->getExtension(SandboxExtension::class);
-            foreach ($array as $element) {
-                if (is_object($element)) {
-                    foreach ($names as $name) {
-                        // Twig allows offset reads on its own array-like classes without any sandbox checks
-                        if (
-                            in_array($element::class, CoreExtension::ARRAY_LIKE_CLASSES, true) &&
-                            $element->offsetExists($name)
-                        ) {
-                            continue;
-                        }
-
-                        $sandbox->checkPropertyAllowed($element, $name);
-                    }
-                }
+        foreach (['.', '[', ']'] as $char) {
+            if (str_contains((string)$key, $char)) {
+                throw new RuntimeError(sprintf('The key name passed to the "%s" filter must not contain any "%s" characters in sandbox mode.', $filterName, $char));
             }
         }
 
-        return $array;
+        $source = new Source('', "$filterName filter");
+        return fn(mixed $item) => TemplateHelper::attribute($env, $source, $item, $key, ignoreStrictCheck: true, sandboxed: true);
     }
 
     /**
@@ -610,7 +591,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function columnFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $name, bool $keepKeys = true): array
     {
-        $array = $this->checkKeysInSandbox($env, $isSandboxed, $array, [$name], 'column');
+        $array = $this->sandboxItems($isSandboxed, $array);
+        $name = $this->sandboxKey($env, $isSandboxed, $name, 'column');
         return ArrayHelper::getColumn($array, $name, $keepKeys);
     }
 
@@ -625,7 +607,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function containsFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false): bool
     {
-        $array = $this->checkKeysInSandbox($env, $isSandboxed, $array, [$key], 'contains');
+        $array = $this->sandboxItems($isSandboxed, $array);
+        $key = $this->sandboxKey($env, $isSandboxed, $key, 'contains');
         return ArrayHelper::contains($array, $key, $value, $strict);
     }
 
@@ -640,7 +623,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function firstWhereFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false): mixed
     {
-        $array = $this->checkKeysInSandbox($env, $isSandboxed, $array, [$key], 'firstWhere');
+        $array = $this->sandboxItems($isSandboxed, $array);
+        $key = $this->sandboxKey($env, $isSandboxed, $key, 'firstWhere');
         return ArrayHelper::firstWhere($array, $key, $value, $strict);
     }
 
@@ -899,7 +883,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function whereFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false, bool $keepKeys = true): array
     {
-        $array = $this->checkKeysInSandbox($env, $isSandboxed, $array, [$key], 'where');
+        $array = $this->sandboxItems($isSandboxed, $array);
+        $key = $this->sandboxKey($env, $isSandboxed, $key, 'where');
         return ArrayHelper::where($array, $key, $value, $strict, $keepKeys);
     }
 
@@ -918,14 +903,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Returns an array without certain values.
      *
+     * @param bool $isSandboxed
      * @param mixed $arr
      * @param mixed $exclude
      * @param bool $strict
      * @return array
      */
-    public function withoutFilter(mixed $arr, mixed $exclude, bool $strict = false): array
+    public function withoutFilter(bool $isSandboxed, mixed $arr, mixed $exclude, bool $strict = false): array
     {
-        $arr = (array)$arr;
+        $arr = (array)$this->sandboxItems($isSandboxed, $arr);
 
         if (!is_array($exclude)) {
             $exclude = [$exclude];
@@ -941,14 +927,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Returns an array without a certain key.
      *
+     * @param bool $isSandboxed
      * @param mixed $arr
      * @param string|string[] $key
      * @return array
      * @since 3.2.0
      */
-    public function withoutKeyFilter(mixed $arr, array|string $key): array
+    public function withoutKeyFilter(bool $isSandboxed, mixed $arr, array|string $key): array
     {
-        $arr = (array)$arr;
+        $arr = (array)$this->sandboxItems($isSandboxed, $arr);
 
         if (!is_array($key)) {
             $key = [$key];
@@ -1084,6 +1071,29 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function upperFilter(?string $string, ?string $language = null): string
     {
         return StringHelper::toUpperCase($string ?? '', $language);
+    }
+
+    /**
+     * URL-encodes a string, or an array as a query string.
+     *
+     * @param bool $isSandboxed
+     * @param mixed $url
+     * @return string
+     * @throws RuntimeError if an array contains objects in a sandboxed environment
+     * @since 5.12.2
+     */
+    public function urlEncodeFilter(bool $isSandboxed, mixed $url): string
+    {
+        // http_build_query() encodes objects’ public properties without any sandbox checks
+        if ($isSandboxed && is_array($url)) {
+            array_walk_recursive($url, function($value) {
+                if (is_object($value)) {
+                    throw new RuntimeError('Arrays passed to the "url_encode" filter must not contain objects in sandbox mode.');
+                }
+            });
+        }
+
+        return CoreExtension::urlencode($url);
     }
 
     /**
@@ -1421,7 +1431,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterByValueFilter(TwigEnvironment $env, bool $isSandboxed, iterable $array, callable|string $key, mixed $value = true, bool $strict = false, bool $keepKeys = true): array
     {
-        $array = $this->checkKeysInSandbox($env, $isSandboxed, $array, [$key], 'filterByValue');
+        $array = $this->sandboxItems($isSandboxed, $array);
+        $key = $this->sandboxKey($env, $isSandboxed, $key, 'filterByValue');
         return ArrayHelper::where($array, $key, $value, $strict, $keepKeys);
     }
 
@@ -1499,8 +1510,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function indexFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $key, mixed $groups = []): array
     {
-        $groups = (array)$groups;
-        $array = $this->checkKeysInSandbox($env, $isSandboxed, $array, [$key, ...$groups], 'index');
+        $array = $this->sandboxItems($isSandboxed, $array);
+        $key = $this->sandboxKey($env, $isSandboxed, $key, 'index');
+        $groups = array_map(fn($group) => $this->sandboxKey($env, $isSandboxed, $group, 'index'), (array)$groups);
 
         return ArrayHelper::index($array, $key, $groups);
     }
@@ -1662,7 +1674,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function multisortFilter(TwigEnvironment $env, bool $isSandboxed, mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
     {
-        $array = $this->checkKeysInSandbox($env, $isSandboxed, $array, is_array($key) ? $key : [$key], 'multisort');
+        $array = $this->sandboxItems($isSandboxed, $array);
+        $key = is_array($key)
+            ? array_map(fn($k) => $this->sandboxKey($env, $isSandboxed, $k, 'multisort'), $key)
+            : $this->sandboxKey($env, $isSandboxed, $key, 'multisort');
 
         // Prevent multisort() from modifying the original array
         $array = array_merge($array);
@@ -1681,7 +1696,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ceil', 'ceil'),
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
-            new TwigFunction('collect', [$this, 'collectFunction']),
+            new TwigFunction('collect', [$this, 'collectFunction'], ['needs_is_sandboxed' => true]),
             new TwigFunction('combine', 'array_combine'),
             new TwigFunction('configure', [Craft::class, 'configure']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
@@ -1759,13 +1774,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Returns a new collection.
      *
+     * @param bool $isSandboxed
      * @param mixed $var
      * @return Collection
      * @since 4.0.0
      */
-    public function collectFunction(mixed $var): Collection
+    public function collectFunction(bool $isSandboxed, mixed $var): Collection
     {
-        $collection = Collection::make($var);
+        $collection = Collection::make($this->sandboxItems($isSandboxed, $var));
 
         // If all the items are elements, return an ElementCollection instead
         if ($collection->isNotEmpty() && $collection->doesntContain(fn($item) => !$item instanceof ElementInterface)) {
