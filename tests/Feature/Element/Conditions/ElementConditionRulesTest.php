@@ -581,6 +581,21 @@ describe('SiteGroupConditionRule', function () {
 
         expect($query->count())->toBeGreaterThan(0);
     });
+
+    it('modifyQuery excludes entries in sites of the selected site groups', function () {
+        createEntryWithAttributes();
+        $groupUid = Sites::getPrimarySite()->getGroup()->uid;
+
+        [, $rule] = createElementRule(SiteGroupConditionRule::class, [
+            'operator' => 'ni',
+            'values' => [$groupUid],
+        ]);
+
+        $query = Entry::find();
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->count())->toBe(0);
+    });
 });
 
 describe('HasDescendantsRule', function () {

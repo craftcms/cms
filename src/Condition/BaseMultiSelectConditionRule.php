@@ -10,6 +10,7 @@ use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Ui\Contracts\Node;
 use CraftCms\Cms\Ui\Controls\Combobox;
 use CraftCms\Cms\Ui\Nodes\Field;
+use Illuminate\Support\Facades\DB;
 use Override;
 use RuntimeException;
 
@@ -162,6 +163,30 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
             self::OPERATOR_NOT_IN => array_merge(['not'], $values),
             default => throw new RuntimeException("Invalid operator: $this->operator"),
         };
+    }
+
+    /**
+     * Returns the IDs of the rows in a table that the rule selects, for query methods that only accept a list of IDs.
+     *
+     * A “not” or “has a value” rule becomes the IDs it leaves in, rather than a param value for the query to parse.
+     *
+     * @param  string  $table  The table that holds the selectable rows.
+     * @param  callable  $normalizeValue  Method that returns the row ID for a selected value.
+     * @return int[]|null
+     */
+    protected function paramIds(string $table, callable $normalizeValue): ?array
+    {
+        $value = $this->paramValue($normalizeValue);
+
+        if ($value === null) {
+            return null;
+        }
+
+        return DB::table($table)
+            ->whereNumericParam('id', $value)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
     }
 
     /**

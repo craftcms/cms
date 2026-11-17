@@ -101,20 +101,30 @@ describe('SectionConditionRule', function () {
         expect($rule->matchElement($element))->toBeTrue();
     });
 
-    it('modifies query with not_empty operator', function () {
-        $section = Section::factory()->create(['type' => SectionType::Channel]);
+    it('modifies the query', function (string $operator, array $expected) {
+        $sections = [
+            'news' => Section::factory()->create(['type' => SectionType::Channel]),
+            'blog' => Section::factory()->create(['type' => SectionType::Channel]),
+            'pages' => Section::factory()->create(['type' => SectionType::Channel]),
+        ];
         Sections::refreshSections();
-        EntryModel::factory()->forSection($section)->create();
+
+        $ids = array_map(fn (Section $section) => EntryModel::factory()->forSection($section)->create()->id, $sections);
 
         $condition = new EntryCondition(Entry::class);
         $rule = $condition->createConditionRule(SectionConditionRule::class);
-        $rule->operator = 'notempty';
+        $rule->operator = $operator;
+        $rule->values = [$sections['news']->uid, $sections['blog']->uid];
 
-        $query = Entry::find();
+        $query = Entry::find()->id(array_values($ids));
         $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
 
-        expect($query->count())->toBeGreaterThanOrEqual(1);
-    });
+        expect($query->ids())->toEqualCanonicalizing(array_values(array_intersect_key($ids, array_flip($expected))));
+    })->with([
+        'in' => ['in', ['news', 'blog']],
+        'not in' => ['ni', ['pages']],
+        'not empty' => ['notempty', ['news', 'blog', 'pages']],
+    ]);
 });
 
 describe('SectionTypeConditionRule', function () {
@@ -238,6 +248,26 @@ describe('TypeConditionRule', function () {
 
         expect($results)->toHaveCount(1);
         expect($results[0]->id)->toBe($entry1->id);
+    });
+
+    it('filters query to entries without the selected entry types', function () {
+        $entryType1 = EntryType::factory()->create();
+        $entryType2 = EntryType::factory()->create();
+
+        $section = Section::factory()->withEntryTypes($entryType1, $entryType2)->create(['type' => SectionType::Channel]);
+
+        $entry1 = EntryModel::factory()->forSection($section)->forEntryType($entryType1)->create();
+        $entry2 = EntryModel::factory()->forSection($section)->forEntryType($entryType2)->create();
+
+        $condition = new EntryCondition(Entry::class);
+        $rule = $condition->createConditionRule(TypeConditionRule::class);
+        $rule->operator = 'ni';
+        $rule->values = [$entryType1->uid];
+
+        $query = Entry::find()->id([$entry1->id, $entry2->id]);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->ids())->toBe([$entry2->id]);
     });
 });
 

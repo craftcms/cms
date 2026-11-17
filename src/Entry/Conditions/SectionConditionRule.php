@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
@@ -73,13 +74,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            $sectionIds = Sections::getAllSectionIds()->values()->all();
-        } else {
-            $sectionIds = $this->paramValue(fn ($uid) => Sections::getSectionByUid($uid)->id ?? null);
-        }
-
-        EntryQuery::applySectionId($query, $sectionIds, $elementQuery);
+        EntryQuery::applySectionId($query, $this->paramIds(Table::SECTIONS, fn ($uid) => Sections::getSectionByUid($uid)->id ?? null), $elementQuery);
     }
 
     public function matchElement(ElementInterface $element): bool

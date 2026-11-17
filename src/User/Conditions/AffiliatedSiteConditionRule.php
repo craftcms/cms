@@ -6,6 +6,7 @@ namespace CraftCms\Cms\User\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
@@ -49,7 +50,7 @@ class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implement
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        UserQuery::applyAffiliatedSiteId($query, $this->paramValue(fn ($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
+        UserQuery::applyAffiliatedSiteId($query, $this->paramIds(Table::SITES, fn ($uid) => Sites::getSiteByUid($uid, true)->id ?? null));
     }
 
     public function matchElement(ElementInterface $element): bool

@@ -398,6 +398,28 @@ describe('VolumeConditionRule', function () {
         expect($query->count())->toBe(1)
             ->and($query->one()->volumeId)->toBe($volume1->id);
     });
+
+    it('modifyQuery excludes assets in the selected volumes', function () {
+        $volume1 = Volume::factory()->create(['fs' => 'test-disk']);
+        $volume2 = Volume::factory()->create(['fs' => 'test-disk']);
+        $folder1 = VolumeFolderModel::factory()->create(['volumeId' => $volume1->id]);
+        $folder2 = VolumeFolderModel::factory()->create(['volumeId' => $volume2->id]);
+        AssetModel::factory()->create(['volumeId' => $volume1->id, 'folderId' => $folder1->id]);
+        AssetModel::factory()->create(['volumeId' => $volume2->id, 'folderId' => $folder2->id]);
+
+        app()->forgetInstance(Volumes::class);
+
+        $condition = new AssetCondition(Asset::class);
+        $rule = $condition->createConditionRule(VolumeConditionRule::class);
+        $rule->operator = 'ni';
+        $rule->values = [$volume1->uid];
+
+        $query = Asset::find()->volumeId([$volume1->id, $volume2->id]);
+        $query->where(fn (Builder $builder) => $rule->modifyQuery($builder, $query));
+
+        expect($query->count())->toBe(1)
+            ->and($query->one()->volumeId)->toBe($volume2->id);
+    });
 });
 
 describe('WidthConditionRule', function () {
