@@ -199,7 +199,7 @@ it('reloads a cached key after another process changes the config or the key is 
 it('reads the cache index once per request', function () {
     $projectConfig = app(ProjectConfig::class);
     DB::table(Table::PROJECTCONFIG)->insert(['path' => 'laterRoot.value', 'value' => '"Later"']);
-    Cache::forget(ProjectConfig::STORED_CACHE_KEY);
+    Info::fetch()->update(['configVersion' => Str::random(12)]);
     $projectConfig->reset();
     $projectConfig->get('system.name');
     $projectConfig->reset();
