@@ -31,16 +31,21 @@ class AssetsTest extends TestCase
         $fsPath = Craft::$app->getPath()->getTempPath() . '/assets-test-' . StringHelper::randomString(6);
         $volume->setFs(new Local(['handle' => 'assetsTest', 'path' => $fsPath]));
 
-        // The temp directory is case-sensitive. `uploads/moved/` lives inside `Uploads/`, as it would on
-        // case-insensitive storage, while `uploads/separate/` is a separate directory.
+        // `uploads/moved/` lives inside `Uploads/`, as it would on case-insensitive storage, while
+        // `uploads/separate/` is a separate directory on case-sensitive storage
         $volume->createDirectory('Uploads/moved/nested');
+        $volume->createDirectory('Uploads/photos/trip');
+        $volume->createDirectory('Uploads/separate/inside');
         $volume->createDirectory('uploads/separate');
 
         $folder = $this->storeFolder(1000, 'Uploads/');
         $folderIds = [
             'moved' => $movedId = $this->storeFolder($folder, 'uploads/moved/'),
             'nested' => $this->storeFolder($movedId, 'uploads/moved/nested/'),
-            'separate' => $this->storeFolder($folder, 'uploads/separate/'),
+            'photos' => $photosId = $this->storeFolder($folder, 'Uploads/Photos/'),
+            'trip' => $this->storeFolder($photosId, 'Uploads/photos/trip/'),
+            'separate' => $separateId = $this->storeFolder($folder, 'uploads/separate/'),
+            'inside' => $this->storeFolder($separateId, 'Uploads/separate/inside/'),
             'recordOnly' => $this->storeFolder($folder, 'Uploads/record-only/'),
         ];
 
@@ -56,7 +61,11 @@ class AssetsTest extends TestCase
             self::assertSame([
                 'moved' => 'Renamed/moved/',
                 'nested' => 'Renamed/moved/nested/',
-                'separate' => 'uploads/separate/',
+                'photos' => 'Renamed/Photos/',
+                'trip' => 'Renamed/photos/trip/',
+                // On case-insensitive storage, `uploads/separate` was inside `Uploads` and moved along with it
+                'separate' => $volume->directoryExists('uploads/separate') ? 'uploads/separate/' : 'Renamed/separate/',
+                'inside' => 'Renamed/separate/inside/',
                 'recordOnly' => 'Renamed/record-only/',
             ], array_map(fn(int $id) => array_search($id, $paths), $folderIds));
         } finally {

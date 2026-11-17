@@ -310,17 +310,25 @@ class Assets extends Component
         $folder->path = $newFolderPath;
         $this->storeFolderRecord($folder);
 
-        // Walk the subfolders by parent ID, since a subfolder's path can differ in case from its parent's
-        $parentFolders = [[$folder, $oldFolderPath]];
-        while ($parentFolders) {
-            [$parentFolder, $oldParentPath] = array_shift($parentFolders);
-            foreach ($this->findFolders(['parentId' => $parentFolder->id]) as $childFolder) {
-                $oldChildPath = $childFolder->path;
-                $newChildPath = $parentFolder->path . basename($oldChildPath) . '/';
+        // Find the subfolders by parent ID, since their paths can differ in case from the renamed folder's
+        $parentIds = [$folder->id];
+        while ($parentIds) {
+            $childFolders = $this->findFolders(['parentId' => $parentIds]);
+            $parentIds = array_keys($childFolders);
 
-                // If the path differs in case, its directory only moved along with the parent's on case-insensitive storage
+            foreach ($childFolders as $childFolder) {
+                $oldChildPath = $childFolder->path;
+                $oldPrefix = substr($oldChildPath, 0, strlen($oldFolderPath));
+                if (mb_strtolower($oldPrefix) !== mb_strtolower($oldFolderPath)) {
+                    continue;
+                }
+
+                // Keep the rest of the path as stored, so it still matches the directories below the renamed one
+                $newChildPath = $newFolderPath . substr($oldChildPath, strlen($oldFolderPath));
+
+                // If the prefix differs in case, the directory only moved along with the renamed one on case-insensitive storage
                 if (
-                    !str_starts_with($oldChildPath, $oldParentPath) &&
+                    $oldPrefix !== $oldFolderPath &&
                     (!$volume->directoryExists(rtrim($newChildPath, '/')) || $volume->directoryExists(rtrim($oldChildPath, '/')))
                 ) {
                     continue;
@@ -328,7 +336,6 @@ class Assets extends Component
 
                 $childFolder->path = $newChildPath;
                 $this->storeFolderRecord($childFolder);
-                $parentFolders[] = [$childFolder, $oldChildPath];
             }
         }
 
