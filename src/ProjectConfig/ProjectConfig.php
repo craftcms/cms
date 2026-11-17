@@ -116,6 +116,8 @@ class ProjectConfig
 
     public const string PATH_IMAGE_TRANSFORMS = 'imageTransforms';
 
+    public const string PATH_MCP = 'mcp';
+
     public const string PATH_META = 'meta';
 
     public const string PATH_META_NAMES = self::PATH_META.'.__names__';
@@ -149,7 +151,7 @@ class ProjectConfig
      */
     private const array BOOT_ROOTS = [
         self::PATH_DATE_MODIFIED,
-        'mcp',
+        self::PATH_MCP,
         self::PATH_PLUGINS,
         self::PATH_ROUTES,
         self::PATH_SYSTEM,

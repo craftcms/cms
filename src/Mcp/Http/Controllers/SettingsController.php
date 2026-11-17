@@ -74,7 +74,7 @@ readonly class SettingsController
             return $this->screen($settings);
         }
 
-        $this->projectConfig->set('mcp', $settings->toArray(), 'Update MCP settings.');
+        $this->projectConfig->set(ProjectConfig::PATH_MCP, $settings->toArray(), 'Update MCP settings.');
 
         return $this->asSuccess(t('MCP settings saved.'));
     }
