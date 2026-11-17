@@ -235,7 +235,8 @@ Stdio activity events are labeled with the `MCP` origin, as HTTP ones are.
 
 - Capabilities are discovered once, when the session starts. Restart the client's server after changing the user's permissions or admin status.
 - Each message is handled in a fresh request scope, as each job in a queue worker is. Singleton services, such as those for fields, entry types, volumes, and project config, keep what they loaded for the life of the process. Restart the client's server after changing the content model elsewhere, such as in the control panel.
-- Capabilities marked with `#[RequiresHttp]`, such as `assets_upload_prepare`, are not offered. Use file references with `assets_create` and `assets_replace` instead.
+- Capabilities marked with `#[RequiresHttp]` are not offered.
+- `assets_upload_prepare` returns upload URLs under the action trigger on `APP_URL`, which must be the site's absolute URL, so clients can upload files the server can't read, such as files on the host of a container it runs in. Each upload comes with its own token, in `upload.authorization.token`, which clients send as a bearer token and which only authorizes that upload.
 - The server writes only protocol messages to stdout. PHP errors go to stderr. Keep log channels that write to stdout disabled when running it.
 
 ## The public server

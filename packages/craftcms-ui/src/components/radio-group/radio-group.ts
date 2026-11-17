@@ -1,9 +1,8 @@
-import {LionRadioGroup} from '@lion/ui/radio-group.js';
 import {inputStyles} from '@src/styles/form.styles';
-import {SsrChoiceGroupMixin} from '@src/mixins/SsrChoiceGroupMixin';
-import {css, html, type PropertyValues} from 'lit';
+import {ChoiceGroup} from '@src/mixins/ChoiceGroup';
+import {formControlStyles} from '@src/mixins/FormControl';
+import {css, html, LitElement, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
-import {HasLabel} from '@src/mixins/HasLabel';
 
 export type RadioGroupAppearance =
   | 'buttons'
@@ -15,8 +14,8 @@ export type RadioGroupAppearance =
  * @summary A group of radios sharing one name, for a choice where exactly one
  * option may be selected.
  *
- * The group owns the name and the value, so its `modelValue` is the value of
- * whichever radio is checked. Use `craft-checkbox-group` when more than one
+ * The group owns the name, and its `value` is the value of whichever radio
+ * is checked, or empty when none is. Use `craft-checkbox-group` when more than one
  * option may be chosen.
  *
  * A group rendered by the server adopts the name already on its inputs, so the
@@ -43,10 +42,17 @@ export type RadioGroupAppearance =
  * @slot label - The group's label.
  * @slot help-text - Guidance shown below the label.
  * @slot feedback - Validation messages for the group as a whole.
+ *
+ * @fires {Event} input - When the user selects an option.
+ * @fires {Event} change - When the user selects an option.
  */
-export default class CraftRadioGroup extends HasLabel(
-  SsrChoiceGroupMixin(LionRadioGroup, 'radio')
-) {
+export default class CraftRadioGroup extends ChoiceGroup(LitElement, {
+  choice: 'craft-radio',
+  multiple: false,
+}) {
+  /** The value of the checked radio, or empty when none is. Setting it checks that radio. */
+  declare value: string;
+
   /**
    * How the options are shown, instead of a stacked list: as separate
    * `buttons` or `cards`, or joined in a `button-group` or `card-group`.
@@ -87,26 +93,14 @@ export default class CraftRadioGroup extends HasLabel(
     this._resizeObserver.disconnect();
   }
 
-  /** Registers a radio with the group. Called by Lion as radios connect. */
-  override addFormElement(child: unknown, indexToInsertAt?: number) {
-    super.addFormElement(
-      child as Parameters<LionRadioGroup['addFormElement']>[0],
-      indexToInsertAt as number
-    );
-    if (child instanceof HTMLElement) {
-      this._resizeObserver.observe(child);
+  protected override _onChoicesChanged() {
+    this._resizeObserver.disconnect();
+    const probe = this.shadowRoot?.querySelector('.fit-probe');
+    if (probe) {
+      this._resizeObserver.observe(probe);
     }
-    this._syncButtons();
-    this._fitRow();
-  }
-
-  /** Unregisters a radio from the group. Called by Lion as radios disconnect. */
-  override removeFormElement(child: unknown) {
-    super.removeFormElement(
-      child as Parameters<LionRadioGroup['removeFormElement']>[0]
-    );
-    if (child instanceof HTMLElement) {
-      this._resizeObserver.unobserve(child);
+    for (const radio of this.choices) {
+      this._resizeObserver.observe(radio as unknown as HTMLElement);
     }
     this._syncButtons();
     this._fitRow();
@@ -133,7 +127,7 @@ export default class CraftRadioGroup extends HasLabel(
     const joined =
       (appearance === 'button-group' || appearance === 'card-group') &&
       !this._wrapped;
-    const radios = Array.from(this.formElements) as HTMLElement[];
+    const radios = this.choices as unknown as HTMLElement[];
 
     this.style.setProperty('--_card-count', String(radios.length));
 
@@ -162,7 +156,7 @@ export default class CraftRadioGroup extends HasLabel(
     const appearance = this.appearance;
 
     if (appearance === 'button-group' || appearance === 'card-group') {
-      const radios = Array.from(this.formElements) as HTMLElement[];
+      const radios = this.choices as unknown as HTMLElement[];
       const rowWidth = radios.reduce(
         (width, radio) =>
           width +
@@ -171,7 +165,12 @@ export default class CraftRadioGroup extends HasLabel(
             : radio.getBoundingClientRect().width),
         -(radios.length - 1)
       );
-      wrapped = this.clientWidth < rowWidth;
+      // Compare fractional widths. `clientWidth` rounds, and in a container
+      // that sizes to its content the group is exactly as wide as its joined
+      // row, so rounding down would wrap it, widen it, and unwrap it again.
+      const probe = this.shadowRoot?.querySelector('.fit-probe');
+      const width = (probe ?? this).getBoundingClientRect().width;
+      wrapped = width + 0.5 < rowWidth;
     }
 
     if (wrapped !== this._wrapped) {
@@ -183,7 +182,7 @@ export default class CraftRadioGroup extends HasLabel(
 
   static override get styles() {
     return [
-      ...super.styles,
+      formControlStyles,
       inputStyles,
       css`
         .fit-probe {

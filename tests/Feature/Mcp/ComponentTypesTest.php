@@ -22,7 +22,7 @@ use Illuminate\Testing\TestResponse;
 use Laravel\Passport\Passport;
 
 beforeEach(function (): void {
-    $key = openssl_pkey_new(['private_key_bits' => 2048]);
+    $key = passportKey();
     config()->set('passport.public_key', openssl_pkey_get_details($key)['key']);
     Passport::actingAs(User::query()->firstOrFail(), ['mcp:admin'], 'craft-mcp');
 
@@ -56,8 +56,8 @@ it('describes field types and asset transform drivers', function (): void {
     expect($fieldTypes)->toContain(PlainText::class)
         ->and($plainText['multiline'])->toMatchArray(['type' => 'boolean', 'default' => false])
         ->and(array_column($plainText['uiMode']['oneOf'], 'const'))->toBe(['normal', 'enlarged'])
-        ->and($driver['settingsSchema']['properties']['hasUrls']['type'])->toBe('boolean')
-        ->and($driver)->toHaveKey('parametersSchema');
+        ->and($driver)->toHaveKey('parametersSchema')
+        ->and($driver)->not->toHaveKey('settingsSchema');
 
     ($this->call)('component_types_get', ['kind' => 'field', 'type' => 'Nope'])
         ->assertJsonPath('result.isError', true)

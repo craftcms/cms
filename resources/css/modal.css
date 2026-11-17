@@ -174,6 +174,13 @@ toggles its `display` inline.
   border-radius: var(--c-radius-lg);
 }
 
+/* An image fills the dialog, which is sized to it, so square it off rather
+   than clip the image's corners. */
+.previewmodal:has(.asset-image-preview)::part(surface),
+.previewmodal-content:has(.asset-image-preview) {
+  border-radius: 0;
+}
+
 .previewmodal-content:focus-visible {
   outline-offset: calc(-1 * var(--c-focus-outline-width));
 }

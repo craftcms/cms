@@ -41,6 +41,16 @@ class Template
     /** @var array<string, mixed> */
     protected static array $_fallbacks = [];
 
+    /**
+     * Forgets the preloaded fallback variables, such as singles, so a long-lived worker doesn't keep them between requests.
+     *
+     * @internal
+     */
+    public static function forgetFallbacks(): void
+    {
+        self::$_fallbacks = [];
+    }
+
     /** @param array<string, mixed> $context */
     public static function resolveVariable(string $name, array $context, bool $strict, int $lineno = -1, ?Source $source = null): mixed
     {
@@ -214,13 +224,14 @@ class Template
         HtmlStack::js($js, $position, $key);
     }
 
-    public static function script(string $script, int|Position $position = Position::BodyEnd): void
+    /** @param array<string, mixed> $options */
+    public static function script(string $script, int|Position $position = Position::BodyEnd, array $options = []): void
     {
         if (is_int($position)) {
             $position = Position::from($position);
         }
 
-        HtmlStack::script($script, $position);
+        HtmlStack::script($script, $position, $options);
     }
 
     /**

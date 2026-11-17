@@ -29,6 +29,7 @@ export abstract class ControllerElement<
   T extends Controller,
 > extends HTMLElement {
   #instance: T | null = null;
+  #rootObserver: MutationObserver | null = null;
 
   /** CSS selector for the server-rendered child the controller wraps. */
   protected abstract readonly rootSelector: string;
@@ -54,8 +55,9 @@ export abstract class ControllerElement<
   /**
    * Construct the controller once {@link rootSelector} resolves. The markup may
    * not be parsed yet when the element upgrades (initial HTML parse vs. an
-   * AJAX/Inertia-injected fragment), so retry on the next frame until it is —
-   * bailing if the element is disconnected meanwhile.
+   * AJAX/Inertia-injected fragment), so watch this element's subtree and retry
+   * when it changes. The watch ends on boot or disconnect, and costs nothing
+   * while the subtree is idle, even when the root never arrives.
    */
   #boot(): void {
     if (this.#instance || !this.isConnected) {
@@ -64,10 +66,12 @@ export abstract class ControllerElement<
 
     const root = this.querySelector<HTMLElement>(this.rootSelector);
     if (!root) {
-      requestAnimationFrame(() => this.#boot());
+      this.#rootObserver ??= new MutationObserver(() => this.#boot());
+      this.#rootObserver.observe(this, {childList: true, subtree: true});
       return;
     }
 
+    this.#rootObserver?.disconnect();
     this.#instance = this.create(root);
     this.#bridgeEvents(this.#instance);
     this.booted();
@@ -99,6 +103,7 @@ export abstract class ControllerElement<
    * controller when the element is back in the document by then.
    */
   disconnectedCallback(): void {
+    this.#rootObserver?.disconnect();
     queueMicrotask(() => {
       if (this.#instance && !this.isConnected) {
         this.#instance.destroy();

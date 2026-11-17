@@ -263,6 +263,45 @@ const colorSelect: UiValueAcceptor = (control, {value}) => {
 };
 
 /**
+ * `value`'s hex digits as the server's `ColorRule::normalizeColor()` stores
+ * them: lowercase, with shorthand expanded and a fully opaque alpha channel
+ * dropped. `null` when it isn't a hex color.
+ */
+function normalizedHex(value: unknown): string | null {
+  const hex =
+    typeof value === 'string'
+      ? /^#?([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(value)?.[1]
+      : undefined;
+
+  if (!hex) {
+    return null;
+  }
+
+  const full = (
+    hex.length <= 4 ? hex.replace(/./g, '$&$&') : hex
+  ).toLowerCase();
+
+  return full.endsWith('ff') && full.length === 8 ? full.slice(0, 6) : full;
+}
+
+/**
+ * `value` as `ColorRule::normalizeColor()` stores it: its hex digits, or
+ * `transparent`. `null` when it's neither.
+ */
+function normalizedColor(value: unknown): string | null {
+  return typeof value === 'string' && value.toLowerCase() === 'transparent'
+    ? 'transparent'
+    : normalizedHex(value);
+}
+
+/** Whether two values are the same color, however each is written. */
+export function sameColor(a: unknown, b: unknown): boolean {
+  const color = normalizedColor(a);
+
+  return color !== null && color === normalizedColor(b);
+}
+
+/**
  * Whether `value` is a hex color, translucent only where `alpha` allows it,
  * as the server's `ColorRule` checks it.
  */
@@ -271,23 +310,25 @@ function fitsColor(value: UiValue, alpha: unknown): boolean {
     return true;
   }
 
-  const hex =
-    typeof value === 'string'
-      ? /^#?([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(value)?.[1]
-      : undefined;
+  const hex = normalizedHex(value);
 
-  if (!hex) {
-    return false;
-  }
-
-  // Shorthand colors are expanded, and a fully opaque alpha channel dropped.
-  const full = hex.length <= 4 ? [...hex].map((c) => c + c).join('') : hex;
-
-  return full.length === 6 || Boolean(alpha) || /ff$/i.test(full);
+  return hex !== null && (hex.length === 6 || Boolean(alpha));
 }
 
-const color: UiValueAcceptor = (control, {value}) =>
-  fitsColor(value, propsOf(control).alpha);
+/**
+ * Takes a preset, or another color where custom colors are allowed, as the
+ * Color field's own validation does.
+ */
+const color: UiValueAcceptor = (control, {value}) => {
+  const {presets, alpha, custom} = propsOf(control);
+
+  return (
+    isBlank(value) ||
+    (Array.isArray(presets) &&
+      presets.some((preset) => sameColor(preset, value))) ||
+    (custom !== false && fitsColor(value, alpha))
+  );
+};
 
 const elementSelect: UiValueAcceptor = (control, {value}) => {
   const {limit, single} = propsOf(control);

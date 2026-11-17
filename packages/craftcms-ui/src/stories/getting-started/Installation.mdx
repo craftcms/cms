@@ -28,10 +28,10 @@ echo Button::make()
 
 ## Outside the control panel
 
-Install the package and its two peers:
+Install the package and its peer, Lit:
 
 ```sh
-npm install @craftcms/ui lit @lion/ui
+npm install @craftcms/ui lit
 ```
 
 Import a component for its side effect — importing registers the custom element, so the tag works from that point on:
@@ -74,11 +74,7 @@ Custom elements pass straight through Vue's compiler as long as it knows not to 
 Bind rich values as properties with `.prop`, and listen for events with `@`:
 
 ```vue
-<craft-select-rich
-  :label="label"
-  .options="options"
-  @model-value-changed="onChange"
-/>
+<craft-combobox :label="label" .options="options" @change="onChange" />
 ```
 
 Typed wrappers are generated for the whole library if you would rather have Vue's own prop and event checking:

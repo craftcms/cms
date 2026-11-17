@@ -30,6 +30,7 @@ use Mcp\Capability\Discovery\SchemaValidator;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\ToolAnnotations;
 use Mcp\Server\RequestContext;
+use stdClass;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
@@ -225,10 +226,10 @@ readonly class Drafts
     ): array {
         $draft = $this->recordDraft($draftId, $siteId);
         $adapter = $this->draftAdapter($draft);
-        $errors = $this->schemaValidator->validateAgainstJsonSchema($attributes, $adapter->schema()['updateAttributes']);
+        $errors = $this->schemaValidator->validateAgainstJsonSchema($attributes ?: new stdClass, $adapter->schema()['updateAttributes']);
 
         if ($errors !== []) {
-            throw new ToolCallException('Invalid draft attributes: '.$errors[0]['message'].'. Call elements_schema for accepted updateAttributes.');
+            throw new ToolCallException('Invalid draft attributes: '.rtrim($errors[0]['message'], '.').'. Call elements_schema for accepted updateAttributes.');
         }
 
         return ['draft' => $adapter->update($draft, $attributes, $fields, $this->actor->user())['element']];

@@ -190,7 +190,7 @@ export default class CraftInputMoney extends CraftInput {
   }
 
   #input(): MaskedInput | undefined {
-    return this._inputNode as MaskedInput | undefined;
+    return this._control as MaskedInput | undefined;
   }
 
   #applyMask() {
@@ -200,9 +200,10 @@ export default class CraftInputMoney extends CraftInput {
       return;
     }
 
-    const value = String(this.modelValue ?? '');
+    const value = this.value;
     const format = this.#format;
     input.inputmask?.remove();
+    input.addEventListener('keydown', this.#replaceSelectedSign, true);
     // Seed the value before masking. `setValue()` afterwards would dispatch a
     // real `input` event, which the form layer reads as typing.
     input.value = value;
@@ -219,12 +220,39 @@ export default class CraftInputMoney extends CraftInput {
     }).mask(input);
   }
 
+  /**
+   * Inputmask treats `-` as a sign toggle and runs it before the selection is
+   * replaced, so typing `-` over a selected negative value removes the sign
+   * instead of keeping it. Clearing the selection first makes it a plain
+   * insert.
+   */
+  #replaceSelectedSign = (event: KeyboardEvent) => {
+    const input = event.target as HTMLInputElement;
+    const {value, selectionStart, selectionEnd} = input;
+
+    if (
+      event.key !== '-' ||
+      input.readOnly ||
+      input.disabled ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey ||
+      selectionStart !== 0 ||
+      !selectionEnd ||
+      !value.startsWith('-')
+    ) {
+      return;
+    }
+
+    input.value = value.slice(selectionEnd);
+    input.setSelectionRange(0, 0);
+  };
+
   #hasValue(): boolean {
-    return this.modelValue !== '' && this.modelValue != null;
+    return this.value !== '';
   }
 
   #clear = () => {
-    this.modelValue = '';
     this.value = '';
     this.#input()?.inputmask?.setValue('');
     this.#input()?.focus();
@@ -256,7 +284,7 @@ export default class CraftInputMoney extends CraftInput {
         @mousedown=${(event: Event) => event.preventDefault()}
         @click=${this.#clear}
       >
-        <craft-icon name="xmark-large" style="font-size: 0.8em"></craft-icon>
+        <craft-icon name="xmark-large"></craft-icon>
       </craft-button>
     </div>`;
   }

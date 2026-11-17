@@ -427,12 +427,17 @@ import './dashboard.scss';
       this.$front = this.$container.children('.front');
       const $pane = this.$front.children('.pane, craft-pane, craft-card');
 
-      this.$settingsBtn = $pane.children(
-        '.icon.settings, .widget-settings-button'
-      );
-      this.$heading = $pane.children('.widget-heading');
+      // The control panel's widgets group their heading and settings button
+      // in a header.
+      const $header = $pane.add($pane.children('.widget-header'));
+      this.$settingsBtn = $header
+        .children('.icon.settings')
+        .add(
+          $header.find('> .widget-header-actions > .widget-settings-button')
+        );
+      this.$heading = $header.children('.widget-heading');
       this.$title = this.$heading.find('> h2');
-      this.$subtitle = this.$heading.find('> h5');
+      this.$subtitle = this.$heading.find('> h5, > .widget-subtitle');
       this.$bodyContainer = $pane.children('.body');
 
       this.setSettings(settingsHtml, initSettingsFn, settingsUi);
@@ -757,7 +762,7 @@ import './dashboard.scss';
       this.colspanPicker = document.createElement('craft-slide-picker');
       this.colspanPicker.min = 1;
       this.colspanPicker.step = 1;
-      this.colspanPicker.modelValue = this.getColspan();
+      this.colspanPicker.value = this.getColspan();
       this.colspanPicker.label = Craft.t('app', 'Number of columns');
       this.colspanPicker.labelSrOnly = true;
       this.colspanPicker.valueLabel = (colspan) => {
@@ -774,15 +779,15 @@ import './dashboard.scss';
       const refreshColspanPicker = () => {
         const maxCols = window.dashboard.grid.totalCols;
         this.colspanPicker.max = maxCols;
-        if (this.colspanPicker.modelValue > maxCols) {
-          this.colspanPicker.modelValue = maxCols;
+        if (this.colspanPicker.value > maxCols) {
+          this.colspanPicker.value = maxCols;
         }
       };
 
       refreshColspanPicker();
 
       this.colspanPicker.addEventListener('change', () => {
-        const colspan = this.colspanPicker.modelValue;
+        const colspan = this.colspanPicker.value;
 
         // Update the widget and grid
         this.setColspan(colspan);

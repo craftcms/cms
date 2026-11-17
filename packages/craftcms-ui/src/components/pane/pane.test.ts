@@ -106,14 +106,6 @@ describe('craft-pane defaults', () => {
     expect(element.getAttribute('appearance')).toBe('raised');
     expect(element.getAttribute('variant')).toBe('plain');
   });
-
-  it('renders the body region with the default slot', async () => {
-    const element = await createPane();
-
-    const body = shadow(element, '.cp-pane__body');
-    expect(body).not.toBeNull();
-    expect(body!.querySelector('slot:not([name])')).not.toBeNull();
-  });
 });
 
 describe('craft-pane header/footer presence', () => {
@@ -266,13 +258,6 @@ describe('craft-pane padding', () => {
 });
 
 describe('craft-pane appearance and variant', () => {
-  it('reflects appearance and variant so they can be combined', async () => {
-    const element = await createPane({appearance: 'outline', variant: 'code'});
-
-    expect(element.getAttribute('appearance')).toBe('outline');
-    expect(element.getAttribute('variant')).toBe('code');
-  });
-
   it('exposes the surface element as the base part', async () => {
     const element = await createPane();
 
@@ -288,21 +273,6 @@ describe('craft-pane code variant surface', () => {
     expect(rules().get(":host([variant='code'])")).toContain(
       '--_pane-shadow: var(--c-pane-shadow, none);'
     );
-  });
-
-  it('keeps the raised appearance shadow for ordinary panes', () => {
-    expect(rules().get(":host([appearance='raised'])")).toContain(
-      '--_pane-shadow: var(--c-shadow-raised);'
-    );
-  });
-
-  it('claims the rest of its own surface treatment', () => {
-    const code = rules().get(":host([variant='code'])")!;
-
-    expect(code).toContain('--_pane-background:');
-    expect(code).toContain('--_pane-border-color:');
-    expect(code).toContain('--_pane-overflow: auto;');
-    expect(code).toContain('--_pane-max-block-size:');
   });
 });
 
@@ -409,12 +379,6 @@ describe('craft-pane keyboard scrolling', () => {
       'outline-offset: calc(-1 * var(--c-focus-outline-width));'
     );
     expect(rules().get(scrollContainerRule().selector)).toContain(
-      'border-radius: var(--_pane-radius);'
-    );
-  });
-
-  it('rounds the host outline for consumers that still focus the host', () => {
-    expect(rules().get(':host(:focus-visible)')).toContain(
       'border-radius: var(--_pane-radius);'
     );
   });

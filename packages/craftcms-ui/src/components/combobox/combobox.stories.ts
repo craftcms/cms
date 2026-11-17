@@ -81,11 +81,11 @@ export const Multiple: Story = {
     html`<craft-combobox
       label="Countries"
       name="countries"
-      multiple-choice
+      multiple
       clearable
       show-all-on-empty
       .options=${countries}
-      .modelValue=${['us', 'ca']}
+      .value=${['us', 'ca']}
     ></craft-combobox>`,
 };
 

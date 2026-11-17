@@ -132,6 +132,256 @@ Legacy compat styles
     }
   }
 
+  .status {
+    --_legacy-status-border: var(--_legacy-status-fill);
+    display: inline-block;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    width: var(--c-size-icon-xs);
+    aspect-ratio: 1;
+    vertical-align: middle;
+    border: 1px solid
+      var(--_legacy-status-border, var(--c-color-neutral-border-loud));
+    border-radius: var(--c-radius-full);
+    background: var(--_legacy-status-fill, transparent);
+  }
+
+  .status.red {
+    --_legacy-status-fill: var(--c-color-red-fill-loud);
+  }
+
+  .status.orange {
+    --_legacy-status-fill: var(--c-color-orange-fill-loud);
+  }
+
+  .status.amber {
+    --_legacy-status-fill: var(--c-color-amber-fill-loud);
+  }
+
+  .status.yellow {
+    --_legacy-status-fill: var(--c-color-yellow-fill-loud);
+  }
+
+  .status.lime {
+    --_legacy-status-fill: var(--c-color-lime-fill-loud);
+  }
+
+  .status.green {
+    --_legacy-status-fill: var(--c-color-green-fill-loud);
+  }
+
+  .status.emerald {
+    --_legacy-status-fill: var(--c-color-emerald-fill-loud);
+  }
+
+  .status.teal {
+    --_legacy-status-fill: var(--c-color-teal-fill-loud);
+  }
+
+  .status.cyan {
+    --_legacy-status-fill: var(--c-color-cyan-fill-loud);
+  }
+
+  .status.sky {
+    --_legacy-status-fill: var(--c-color-sky-fill-loud);
+  }
+
+  .status.blue {
+    --_legacy-status-fill: var(--c-color-blue-fill-loud);
+  }
+
+  .status.indigo {
+    --_legacy-status-fill: var(--c-color-indigo-fill-loud);
+  }
+
+  .status.violet {
+    --_legacy-status-fill: var(--c-color-violet-fill-loud);
+  }
+
+  .status.purple {
+    --_legacy-status-fill: var(--c-color-purple-fill-loud);
+  }
+
+  .status.fuchsia {
+    --_legacy-status-fill: var(--c-color-fuchsia-fill-loud);
+  }
+
+  .status.pink {
+    --_legacy-status-fill: var(--c-color-pink-fill-loud);
+  }
+
+  .status.rose {
+    --_legacy-status-fill: var(--c-color-rose-fill-loud);
+  }
+
+  .status.gray {
+    --_legacy-status-fill: var(--c-color-gray-fill-loud);
+  }
+
+  .status.slate {
+    --_legacy-status-fill: var(--c-color-slate-fill-loud);
+  }
+
+  .status.black {
+    --_legacy-status-fill: var(--c-color-black-fill-loud);
+  }
+
+  .status.white {
+    --_legacy-status-fill: var(--c-color-white-fill-loud);
+  }
+
+  .status.grey {
+    --_legacy-status-fill: var(--c-color-gray-fill-loud);
+  }
+
+  .status.light {
+    --_legacy-status-fill: var(--c-color-gray-fill-normal);
+  }
+
+  .status.white {
+    --_legacy-status-border: var(--c-indicator-white-ring);
+  }
+
+  .status.warning {
+    --_legacy-status-fill: var(--c-color-warning-fill-loud);
+  }
+
+  .status:is(.on, .live, .active, .enabled) {
+    --_legacy-status-fill: var(--c-status-enabled-fill);
+    --_legacy-status-border: var(--c-status-enabled-border);
+  }
+
+  .status.pending {
+    --_legacy-status-fill: var(--c-status-pending-fill);
+    --_legacy-status-border: var(--c-status-pending-border);
+  }
+
+  .status:is(.off, .suspended, .expired) {
+    --_legacy-status-fill: var(--c-status-expired-fill);
+    --_legacy-status-border: var(--c-status-expired-border);
+  }
+
+  .status:is(.disabled, .inactive) {
+    --_legacy-status-fill: var(--c-status-disabled-fill);
+    --_legacy-status-border: var(--c-status-disabled-border);
+  }
+
+  .status.all {
+    --_legacy-status-fill: linear-gradient(
+      60deg,
+      var(--c-color-blue-fill-loud),
+      var(--c-color-red-fill-loud)
+    );
+    --_legacy-status-border: transparent;
+  }
+
+  .go::after {
+    content: '→' / '';
+    padding-inline-start: var(--c-spacing-xs);
+  }
+
+  .go:dir(rtl)::after {
+    content: '←' / '';
+  }
+
+  .go:empty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+    vertical-align: middle;
+    text-decoration: none;
+
+    &::after {
+      padding-inline-start: 0;
+    }
+  }
+
+  .btngroup {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+
+    .btn:focus-visible {
+      z-index: 1;
+    }
+
+    .btn:not(:last-child, .btngroup-btn-last) {
+      margin-inline-end: 1px;
+      border-start-end-radius: 0;
+      border-end-end-radius: 0;
+    }
+
+    .btn:not(:first-child, .btngroup-btn-first) {
+      border-start-start-radius: 0;
+      border-end-start-radius: 0;
+    }
+  }
+
+  .menubtn:not(.action-btn)::after,
+  .pagination .page-link::after {
+    content: '';
+    display: block;
+    flex: none;
+    width: 0.4375rem;
+    height: 0.4375rem;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+  }
+
+  .menubtn:not(.action-btn)::after {
+    transform: translateY(-2px) rotate(45deg);
+  }
+
+  .pagination {
+    align-items: center;
+    gap: var(--c-spacing-md);
+    margin-block-start: var(--c-spacing-lg);
+
+    nav {
+      gap: var(--c-spacing-xs);
+    }
+  }
+
+  .pagination .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--c-size-control-md);
+    height: var(--c-size-control-md);
+    border: 1px solid var(--c-color-neutral-border-normal);
+    border-radius: var(--c-radius-md);
+    color: var(--c-text-default);
+    background: transparent;
+
+    &:hover:not(.disabled) {
+      background-color: var(--c-color-neutral-fill-quiet);
+    }
+
+    &:focus-visible {
+      outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
+      outline-offset: var(--c-focus-outline-offset);
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+      color: var(--c-text-quiet);
+      border-color: var(--c-color-neutral-border-quiet);
+    }
+  }
+
+  .pagination .prev-page::after,
+  .pagination .next-page:dir(rtl)::after {
+    transform: translateX(1px) rotate(135deg);
+  }
+
+  .pagination .next-page::after,
+  .pagination .prev-page:dir(rtl)::after {
+    transform: translateX(-1px) rotate(-45deg);
+  }
+
   .btn:focus-visible,
   .text:focus-visible {
     outline: var(--c-focus-outline-width) solid var(--c-color-focus-outline);
@@ -151,13 +401,16 @@ Legacy compat styles
     }
   }
 
-  table.data {
-    width: 100%;
+  th {
+    text-align: start;
   }
 
   /* Tables — any legacy `table.data`.
      Ported from the legacy stylesheet onto current tokens, because the vars it
-     used (`--gray-050`, `--light-text-color`, `--padding`) aren't loaded here. */
+     used (`--gray-050`, `--light-text-color`, `--padding`) aren't loaded here,
+     and lined up with `.cp-table` so a bridged screen's table reads like the
+     rest of the CP: text against the start edge, cells flush against each
+     other, a header on the table's own surface, and a rule under each row. */
 
   /* The legacy rule also carried negative margins to bleed the table out of a
      pane's padding. There's no such pane in this shell — `CpContainer` owns the
@@ -166,39 +419,66 @@ Legacy compat styles
     overflow-x: auto;
   }
 
+  table.data {
+    width: 100%;
+    text-align: start;
+    /* The default 2px spacing shows the page between the cells, which reads as
+       a grid of boxes rather than rows. */
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
   table.data td,
   table.data th {
     box-sizing: border-box;
+    /* `th` would otherwise centre, which is the one thing the port dropped from
+       the legacy sheet's own `thead th` rule. */
+    text-align: start;
+    padding-block: var(--c-spacing-sm);
     padding-inline: var(--c-spacing-md);
     position: relative;
   }
 
-  table.data th {
-    font-weight: 700;
+  /* A rule under every row but the table's last. */
+  table.data :is(thead, tbody, tfoot):not(:last-child) tr > :is(th, td),
+  table.data
+    :is(thead, tbody, tfoot):last-child
+    tr:not(:last-child)
+    > :is(th, td) {
+    border-block-end: 1px solid var(--c-table-border-color);
   }
 
   table.data thead td,
   table.data thead th {
-    background-color: var(--c-color-neutral-fill-quiet);
+    /* The extra pixel is the row's own rule, so the header matches the height
+       `.cp-table` gives its own. */
+    height: calc(var(--c-size-header) + 1px);
+    background-color: var(--c-surface-default);
     cursor: default;
-    padding-block: var(--c-spacing-sm);
+    font-weight: 700;
     vertical-align: middle;
     white-space: nowrap;
     width: auto;
   }
 
-  table.data thead:first-child tr:first-child th:first-child {
-    border-start-start-radius: var(--c-radius-sm);
-  }
-
-  table.data thead:first-child tr:first-child th:last-child {
-    border-start-end-radius: var(--c-radius-sm);
-  }
-
   table.data tbody td,
   table.data tbody th {
+    /* A floor, not a cap: a row with more in it still grows. */
+    height: var(--c-size-control-md);
     max-width: 33vw;
-    padding-block: var(--c-spacing-sm);
+  }
+
+  /* A step below the column headers' weight, as in `.cp-table`. */
+  table.data tbody th {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  /* Shrink-to-content columns — action buttons, checkboxes. Legacy markup marks
+     them up this way and the port never carried the rule across. */
+  table.data th.thin,
+  table.data td.thin {
+    width: 0.01%;
+    white-space: nowrap;
   }
 
   table.data tbody tr:not(.disabled):hover td,
@@ -211,15 +491,6 @@ Legacy compat styles
   table.data tbody tr:not(.disabled):focus {
     position: relative;
     z-index: 1;
-  }
-
-  /* Transparent on purpose, as in the legacy sheet: it reserves the row's
-     border box so selecting a row can colour it without shifting the layout. */
-  table.data thead + tbody tr td,
-  table.data thead + tbody tr th,
-  table.data tr + tr td,
-  table.data tr + tr th {
-    border-block-start: 1px solid transparent;
   }
 
   /* Narrow viewports: legacy JS adds `.collapsed`, and each cell's `data-title`

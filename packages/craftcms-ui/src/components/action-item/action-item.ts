@@ -191,6 +191,22 @@ export default class CraftActionItem extends HasShortcut(LitElement) {
   }
 
   /**
+   * Focuses the item's own button or link. `delegatesFocus` alone does this in
+   * Chromium, but Firefox won't focus a host that has no box, and this one is
+   * `display: contents`.
+   */
+  override focus(options?: FocusOptions) {
+    const control =
+      this.shadowRoot?.querySelector<HTMLElement>('[part="control"]');
+
+    if (control) {
+      control.focus(options);
+    } else {
+      super.focus(options);
+    }
+  }
+
+  /**
    * Stops a disabled item's clicks before anything listening to it hears them.
    * Its button or link is only `aria-disabled`, which doesn't stop them.
    */

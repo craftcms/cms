@@ -7,7 +7,6 @@ namespace CraftCms\Yii2Adapter\Mail;
 use craft\helpers\MailerHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Mail\MailManager;
@@ -66,14 +65,6 @@ readonly class LegacyTransportCompatibility
     private function createTransport(string $type, ?array $settings): TransportInterface
     {
         $adapter = MailerHelper::createTransportAdapter($type, $settings);
-
-        Deprecator::log(
-            "mailTransportAdapter:$type",
-            sprintf(
-                'Email is sent through the “%s” transport adapter saved in the project config. Configure a Laravel mailer in `config/mail.php` and set `MAIL_MAILER` instead.',
-                $adapter::displayName(),
-            ),
-        );
 
         $transport = $adapter->defineTransport();
 

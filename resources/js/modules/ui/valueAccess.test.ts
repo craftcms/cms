@@ -177,6 +177,29 @@ describe('acceptsValue', () => {
     expect(takes(date, {date: '', time: ''})).toBe(true);
   });
 
+  it('takes only palette colors where custom colors aren’t allowed', () => {
+    const presets = ['#e5422b', '#2563eb80', 'transparent'];
+    const paletteOnly = control('craft:color', {presets, custom: false});
+    const custom = control('craft:color', {presets});
+
+    expect(takes(paletteOnly, '#E5422B')).toBe(true);
+    expect(takes(paletteOnly, 'e5422bff')).toBe(true);
+    expect(takes(paletteOnly, '#2563eb80')).toBe(true);
+    expect(takes(paletteOnly, 'transparent')).toBe(true);
+    expect(takes(paletteOnly, '')).toBe(true);
+    expect(takes(paletteOnly, '#e5422c')).toBe(false);
+    expect(takes(paletteOnly, '#2563eb')).toBe(false);
+    expect(
+      takes(
+        control('craft:color', {presets: ['#e5422b'], custom: false}),
+        'transparent'
+      )
+    ).toBe(false);
+    expect(takes(custom, '#e5422c')).toBe(true);
+    expect(takes(custom, '#2563eb80')).toBe(true);
+    expect(takes(custom, '#e5422c80')).toBe(false);
+  });
+
   it('keeps relations within their limit', () => {
     expect(takes(control('craft:element-select', {limit: 1}), [7])).toBe(true);
     expect(takes(control('craft:element-select', {limit: 1}), [7, 9])).toBe(

@@ -21,7 +21,7 @@ describe('showCopyTextPrompt', () => {
     const field = dialog.querySelector('craft-input-copy');
     expect(field?.label).toBe('Full URL');
     expect(field?.labelSrOnly).toBe(true);
-    expect(field?.modelValue).toBe('https://x');
+    expect(field?.value).toBe('https://x');
     expect(field?.inputSize).toBe(25);
   });
 
@@ -39,7 +39,7 @@ describe('showCopyTextPrompt', () => {
     expect(field?.monospace).toBe(true);
     expect(field?.readOnly).toBe(true);
     expect(Number(field?.rows)).toBe(10);
-    expect(field?.modelValue).toBe('{"a":1}');
+    expect(field?.value).toBe('{"a":1}');
 
     const copyButton = dialog.querySelector('craft-copy-button');
     expect(copyButton?.slot).toBe('footer');

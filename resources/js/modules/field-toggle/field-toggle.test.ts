@@ -5,14 +5,14 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
-/** A stand-in for `craft-combobox`: the value lives on `modelValue`. */
+/** A stand-in for `craft-combobox`. */
 function combobox(
   value: string,
   options: unknown[] = [],
   attrs: Record<string, string> = {}
 ): HTMLElement {
   const el = document.createElement('craft-combobox');
-  Object.assign(el, {modelValue: value, options, value: 'the label'});
+  Object.assign(el, {value, options});
   for (const [name, attrValue] of Object.entries(attrs)) {
     el.setAttribute(name, attrValue);
   }
@@ -37,7 +37,7 @@ describe('a combobox toggle', () => {
     expect(new FieldToggle(toggle).getType()).toBe('booleanMenu');
   });
 
-  it('takes its value from modelValue, not the textbox', () => {
+  it('takes its value from the combobox', () => {
     const toggle = combobox('chosen-value', [], {
       'data-target-prefix': '#pane-',
     });
@@ -73,6 +73,23 @@ describe('a combobox toggle', () => {
         })
       ).getToggleVal()
     ).toBe(true);
+  });
+});
+
+describe('a color select toggle', () => {
+  it('takes its value from the value attribute until the select upgrades', () => {
+    const toggle = document.createElement('craft-select-color');
+    toggle.setAttribute('value', '__custom__');
+    toggle.setAttribute('data-target-prefix', '#pane-');
+    document.body.append(toggle);
+    const fieldToggle = new FieldToggle(toggle);
+
+    expect(fieldToggle.getType()).toBe('select');
+    expect(fieldToggle.getToggleVal()).toBe('__custom__');
+
+    Object.assign(toggle, {value: '#e5422b'});
+
+    expect(fieldToggle.getToggleVal()).toBe('-e5422b');
   });
 });
 

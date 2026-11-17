@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
+use CraftCms\Cms\Asset\Events\FolderActionsResolving;
 use CraftCms\Cms\Asset\Events\ThumbUrlResolving;
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
@@ -162,7 +163,7 @@ it('preserves custom thumbnail URLs without resolving the configured transformer
         'width' => 800,
         'height' => 400,
     ]);
-    Cms::config()->defaultAssetTransformer('missing');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'missing');
     $requests = [];
     Event::listen(ThumbUrlResolving::class, function (ThumbUrlResolving $event) use (&$requests): void {
         $requests[] = [$event->asset->id, $event->width, $event->height];
@@ -186,7 +187,7 @@ it('preserves thumbnail overrides on asset subclasses', function () {
         'width' => 800,
         'height' => 400,
     ]);
-    Cms::config()->defaultAssetTransformer('missing');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'missing');
     Event::listen(QueryForTableAttributePreparing::class, function (QueryForTableAttributePreparing $event): void {
         if ($event->elementType === AssetElement::class) {
             $event->query->elementType = CustomThumbnailIndexAsset::class;
@@ -446,6 +447,30 @@ it('offers descendant search after redirecting to the implicitly selected defaul
         ->assertOk()
         ->assertJsonPath('props.source.key', "volume:{$volumeModel->uid}")
         ->assertJsonPath('props.canSearchSubfolders', true);
+});
+
+it('lets plugins add buttons for the folder on screen', function () {
+    $volumeModel = Volume::factory()->create([
+        'fs' => 'test-disk',
+        'handle' => 'testvolume',
+    ]);
+    $folder = Folders::ensureFolderByFullPathAndVolume('parent', Volumes::getVolumeById($volumeModel->id));
+
+    Event::listen(function (FolderActionsResolving $event) {
+        $event->actions[] = [
+            'label' => "Generate in {$event->folder->name} ({$event->context})",
+            'action' => ['type' => 'event', 'name' => 'my-plugin:generate', 'detail' => ['folderId' => $event->folder->id]],
+        ];
+    });
+
+    get(route('craft.cp.assets.index', ['defaultSource' => 'testvolume/parent']))
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page): AssertableInertia => $page
+            ->has('folderActions', 1)
+            ->where('folderActions.0.label', 'Generate in parent (index)')
+            ->where('folderActions.0.action.detail.folderId', $folder->id)
+            ->where('breadcrumbs.1.items', fn ($items): bool => ! $items->contains('label', 'Generate in parent (index)'))
+        );
 });
 
 it('provides folder actions separately from element actions', function () {

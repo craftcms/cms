@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Events\ElementMetadataResolving;
 use CraftCms\Cms\Element\Events\ElementMetaFieldsHtmlResolving;
 use CraftCms\Cms\Element\Events\ElementSidebarHtmlResolving;
 use CraftCms\Cms\Element\FieldChangeComparisons;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Http\ViewModels\ElementEditViewModel;
@@ -211,47 +212,6 @@ trait HasControlPanelUI
     {
         $items = [];
 
-        // Validate
-        if (
-            ! $this->getIsRevision() &&
-            ! request()->headers->has('X-Craft-Container-Id') &&
-            app()->resolved(ElementRequest::class) &&
-            app(ElementRequest::class)->element === $this
-        ) {
-            $validateId = sprintf('action-validate-%s', mt_rand());
-            $items[] = [
-                'id' => $validateId,
-                'icon' => 'circle-check',
-                'label' => t('Validate {type}', [
-                    'type' => static::lowerDisplayName(),
-                ]),
-            ];
-
-            HtmlStack::jsWithVars(fn ($id, $elementId) => <<<JS
-(() => {
-  const btn = $('#' + $id);
-  btn.on('activate', () => {
-    const elementId = $elementId;
-    const form = Craft.createForm()
-      .addClass('hidden')
-      .append(Craft.getCsrfInput())
-      .appendTo(Garnish.\$bod);
-
-    Craft.submitForm(form, {
-      action: 'elements/validate',
-      retainScroll: true,
-      params: {
-        elementId,
-      },
-    });
-  });
-})();
-JS, [
-                InputNamespace::namespaceId($validateId),
-                $this->id,
-            ]);
-        }
-
         // View
         if ($url = $this->getUrl()) {
             $viewId = sprintf('action-view-%s', mt_rand());
@@ -319,6 +279,47 @@ JS, [
             }
         }
 
+        // Validate
+        if (
+            ! $this->getIsRevision() &&
+            ! request()->headers->has('X-Craft-Container-Id') &&
+            app()->resolved(ElementRequest::class) &&
+            app(ElementRequest::class)->element === $this
+        ) {
+            $validateId = sprintf('action-validate-%s', mt_rand());
+            $items[] = [
+                'id' => $validateId,
+                'icon' => 'circle-check',
+                'label' => t('Validate {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ];
+
+            HtmlStack::jsWithVars(fn ($id, $elementId) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  btn.on('activate', () => {
+    const elementId = $elementId;
+    const form = Craft.createForm()
+      .addClass('hidden')
+      .append(Craft.getCsrfInput())
+      .appendTo(Garnish.\$bod);
+
+    Craft.submitForm(form, {
+      action: 'elements/validate',
+      retainScroll: true,
+      params: {
+        elementId,
+      },
+    });
+  });
+})();
+JS, [
+                InputNamespace::namespaceId($validateId),
+                $this->id,
+            ]);
+        }
+
         return $items;
     }
 
@@ -347,18 +348,6 @@ JS, [
         $redirectUrl = ElementHelper::postEditRedirectUrl($this);
         $sourceId = $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id;
 
-        if (! $this->getIsRevision()) {
-            $items[] = [
-                'label' => t('Validate {type}', ['type' => static::lowerDisplayName()]),
-                'icon' => 'circle-check',
-                'behavior' => [
-                    'type' => 'submit',
-                    'actionUrl' => Url::actionUrl('elements/validate'),
-                    'params' => ['elementId' => $this->id],
-                ],
-            ];
-        }
-
         if ($url = $this->getUrl()) {
             $items[] = [
                 'label' => t('View in a new tab'),
@@ -381,6 +370,18 @@ JS, [
                         'revisionId' => $this->revisionId,
                         'siteId' => $this->siteId,
                     ]],
+                ],
+            ];
+        }
+
+        if (! $this->getIsRevision()) {
+            $items[] = [
+                'label' => t('Validate {type}', ['type' => static::lowerDisplayName()]),
+                'icon' => 'circle-check',
+                'behavior' => [
+                    'type' => 'submit',
+                    'actionUrl' => Url::actionUrl('elements/validate'),
+                    'params' => ['elementId' => $this->id],
                 ],
             ];
         }
@@ -1007,13 +1008,24 @@ JS, [
      * A Ui matches errors to Controls by path, so an attribute validated
      * under one name but posted under another — an asset's `newLocation` versus
      * its `newFilename` field — needs remapping here, or its messages never
-     * reach the field that produced them.
+     * reach the field that produced them. Custom fields rekey the errors they
+     * added themselves; see {@see FieldInterface::uiErrors()}.
      *
      * @return array<string, list<string>>
      */
     public function uiErrors(): array
     {
-        return $this->errors()->getMessages();
+        $errors = $this->errors()->getMessages();
+
+        if ($errors === []) {
+            return $errors;
+        }
+
+        foreach ($this->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+            $errors = $field->uiErrors($this, $errors);
+        }
+
+        return $errors;
     }
 
     /**
@@ -1421,7 +1433,7 @@ JS, [
                     $element = $this->getCanonical(true);
                     $revision = $element->getCurrentRevision();
                 }
-                if (! isset($revision)) {
+                if (! isset($revision) || ($revision->revisionNotes ?? '') === '') {
                     return false;
                 }
 

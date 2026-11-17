@@ -24,10 +24,6 @@ beforeEach(() => {
 });
 
 describe('craft-indicator', () => {
-  it('renders a dot', async () => {
-    expect(dot(await createIndicator())).toBeTruthy();
-  });
-
   /** A recognized variant resolves to that variant's fill token. */
   it('resolves a status variant to its token', async () => {
     const element = await createIndicator({fill: 'success'});

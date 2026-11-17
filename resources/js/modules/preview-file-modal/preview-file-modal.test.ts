@@ -37,6 +37,11 @@ async function settle(): Promise<void> {
   for (let i = 0; i < 4; i++) {
     await Promise.resolve();
   }
+  // Text previews load the syntax highlighter before they finish.
+  await vi.dynamicImportSettled();
+  for (let i = 0; i < 4; i++) {
+    await Promise.resolve();
+  }
 }
 
 /** Makes preview content report more height than fits, as a long file's does. */

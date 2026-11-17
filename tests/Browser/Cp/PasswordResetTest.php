@@ -27,7 +27,7 @@ it('resets a forgotten password', function () {
     visit(parse_url($link, PHP_URL_PATH).'?'.parse_url($link, PHP_URL_QUERY))
         ->type('role=textbox[name="Choose a new password"]', 'a-fresh-start-2026')
         ->click('role=button[name="Set Password"]')
-        ->assertPathIsNot('/set-password');
+        ->assertPathIs('/');
 
     expect(Hash::check('a-fresh-start-2026', $user->fresh()->password))->toBeTrue();
 

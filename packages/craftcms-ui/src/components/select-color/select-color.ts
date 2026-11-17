@@ -1,10 +1,10 @@
 import {html, nothing, render, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {colors as paletteColors} from '@src/constants/colors';
-import {HostAriaReferences} from '@src/mixins/HostAriaReferences';
 import {t} from '@src/utilities/translate';
 import CraftSelectRich from '../select-rich/select-rich.js';
 import styles from './select-color.styles.js';
+import type CraftOption from '../option/option.js';
 import '../option/option.js';
 
 /**
@@ -14,20 +14,25 @@ function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+/** Whether a color is a hex value rather than a palette color's name. */
+function isHex(color: string): boolean {
+  return color.startsWith('#');
+}
+
 /**
  * @summary A color picker: a rich select whose options are the colors from
- * `constants/colors` (or {@link CraftSelectColor.colors}, when narrowed), with
- * an optional "transparent" option.
+ * `constants/colors` (or {@link CraftSelectColor.colors}, when narrowed, which
+ * can also list hex colors), with optional "transparent" and "Custom…" options.
  *
  * Everything else, including the label, help text, validation and the way a
  * surrounding `craft-field` names it, comes from {@link CraftSelectRich}.
  * Outside a field, `labelled-by` and `described-by` on the host name and
- * describe the button after elements elsewhere, such as a table column
- * heading.
+ * describe the field after elements elsewhere, such as a table column
+ * heading. No color is selected until one is given.
  *
  * @since 1.0
  *
- * @attr model-value - The selected color.
+ * @attr value - The selected color.
  * @attr labelled-by - Ids of elements elsewhere that label the control, such
  *   as a table column heading.
  * @attr described-by - Ids of elements elsewhere that describe the control.
@@ -35,25 +40,17 @@ function titleCase(value: string): string {
  * @fires input - Emitted when a color is picked.
  * @fires change - Emitted when a color is picked. Picking is a commit, so it
  *   follows each `input`.
- * @fires model-value-changed - The selected color changed.
- *
- * `model-value-changed` is Lion's own protocol name, not one this package
- * chose, and it is kept because Lion's form system dispatches and listens for
- * it. Prefer the native events above: they are the contract this package
- * supports, and they carry the component as `event.target`.
  *
  * @cssproperty [--c-select-color-swatch-edge=rgb(0 0 0 / 15%)] - Edge of the
  *   no-color swatch, which would otherwise blend into a dark surface. The dark
  *   theme lightens it.
  * @cssproperty [--c-select-color-swatch-ring=transparent] - Ring around every
  *   swatch. The dark theme sets a faint one.
+ * @cssproperty [--c-select-color-swatch-checker=rgb(0 0 0 / 15%)] - Checkers
+ *   of the no-color swatch. The dark theme lightens them.
  */
-export default class CraftSelectColor extends HostAriaReferences(
-  CraftSelectRich
-) {
-  static override get styles() {
-    return [...super.styles, styles];
-  }
+export default class CraftSelectColor extends CraftSelectRich {
+  static override styles = [...CraftSelectRich.styles, styles];
 
   /**
    * When enabled, a blank option (labeled {@link blankLabel}) is prepended
@@ -69,37 +66,74 @@ export default class CraftSelectColor extends HostAriaReferences(
   blankLabel: string | null = null;
 
   /**
-   * Offered colors, in order. Defaults to the shared palette.
+   * When enabled, a "Custom…" option is appended to the list of colors, for
+   * a color that isn't one of them. Its value is `__custom__`, and whoever
+   * offers it takes the color itself, such as with a `craft-input-color`.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'allow-custom'})
+  allowCustom = false;
+
+  /**
+   * Shows the selected color as its swatch alone, on a field drawn like a
+   * plain button. The color's name stays in the field for assistive
+   * technology, and the options keep their names.
+   */
+  @property({type: Boolean, reflect: true, attribute: 'swatch-only'})
+  swatchOnly = false;
+
+  /**
+   * Offered colors, in order: palette color names, or hex colors such as
+   * `#e5422b`. Defaults to the shared palette.
    */
   @property({type: Array})
   colors: string[] = [...paletteColors];
 
-  /** Marks the control as required. */
-  @property({type: Boolean, reflect: true})
-  required = false;
+  /**
+   * Names for the offered colors, by color. A palette color without one is
+   * named after itself (`red` is "Red"), and a hex color by its value.
+   */
+  @property({type: Object})
+  labels: Record<string, string> = {};
+
+  /** The options this component rendered. */
+  #renderedOptions: Element[] = [];
 
   /**
    * Renders a color swatch for the given color value. The special `__blank__`
-   * value (the "Transparent" option) reuses the checkerboard treatment so it
-   * reads as "no color". Other swatches match the header of a card in that
-   * color, fill and border alike.
+   * value (the "Transparent" option) and a `transparent` color reuse the
+   * checkerboard treatment so they read as "no color". Hex colors fill their
+   * swatch. Other swatches match the header of a card in that color, fill and
+   * border alike.
    *
    * Structural styling is applied inline (rather than via the component's
-   * scoped stylesheet) so the rendered node stays self-contained when Lion's
-   * `LionSelectInvoker` clones the selected option's child nodes into the
-   * invoker's shadow root, where this component's class rules don't apply.
-   * The CSS custom properties referenced here are inherited through the shadow
-   * boundary, so they still resolve in the invoker.
+   * scoped stylesheet) so the rendered node stays self-contained when the
+   * rich select copies the selected option's content into its field, where
+   * this component's class rules don't apply.
+   *
+   * `edge` replaces the swatch's edge color.
    */
-  protected _swatchTemplate(color: string) {
-    const isTransparent = color === '__blank__';
+  protected _swatchTemplate(
+    color: string,
+    edge: string = this._swatchBorder(color)
+  ) {
+    // The "Custom…" option has no color of its own, so it keeps the swatch's
+    // space only, lining its name up with the others.
+    if (color === '__custom__') {
+      return html`<span
+        class="select-color__swatch"
+        style="flex:0 0 auto;inline-size:1rem;block-size:1rem;"
+        aria-hidden="true"
+      ></span>`;
+    }
+
+    const isTransparent = color === '__blank__' || color === 'transparent';
     // Every swatch casts a slight shadow and has an edge in its card header's
     // border color (see --c-select-color-swatch-edge for no color's). The dark
     // theme rings them too (see --c-select-color-swatch-ring).
     const shadows = [
       '0 0 0 1px var(--c-select-color-swatch-ring, transparent)',
       '0 1px 1px rgb(0 0 0 / 20%)',
-      `inset 0 0 0 1px ${this._swatchBorder(color)}`,
+      `inset 0 0 0 1px ${edge}`,
     ];
 
     const base =
@@ -107,24 +141,30 @@ export default class CraftSelectColor extends HostAriaReferences(
       'border-radius:var(--c-radius-full);' +
       `box-shadow:${shadows.join(', ')};`;
 
+    // Translucent checkers tint whatever's behind them, so they stand out
+    // from any fill, including the neutral one.
+    const checker = 'var(--c-select-color-swatch-checker, rgb(0 0 0 / 15%))';
     const transparent =
       'background:' +
-      'linear-gradient(45deg, var(--c-color-neutral-fill-quiet) 25%, transparent 25%),' +
-      'linear-gradient(-45deg, var(--c-color-neutral-fill-quiet) 25%, transparent 25%),' +
-      'linear-gradient(45deg, transparent 75%, var(--c-color-neutral-fill-quiet) 75%),' +
-      'linear-gradient(-45deg, transparent 75%, var(--c-color-neutral-fill-quiet) 75%);' +
+      `linear-gradient(45deg, ${checker} 25%, transparent 25%),` +
+      `linear-gradient(-45deg, ${checker} 25%, transparent 25%),` +
+      `linear-gradient(45deg, transparent 75%, ${checker} 75%),` +
+      `linear-gradient(-45deg, transparent 75%, ${checker} 75%);` +
       'background-position:0 0, 0 0.25rem, 0.25rem -0.25rem, -0.25rem 0;' +
       'background-size:0.5rem 0.5rem;';
 
     // White cards take the white surface rather than white's own fill.
-    const fill =
-      color === 'white'
+    const fill = isHex(color)
+      ? color
+      : color === 'white'
         ? 'var(--c-surface-white)'
         : `var(--c-color-${color}-fill-quiet)`;
 
     const style = isTransparent
       ? base + transparent
-      : base + `background-color:${fill};`;
+      : color === ''
+        ? base
+        : base + `background-color:${fill};`;
 
     return html`<span
       class="select-color__swatch"
@@ -135,9 +175,14 @@ export default class CraftSelectColor extends HostAriaReferences(
 
   /**
    * The border color of a card header in the given color, mirroring the
-   * card's own exceptions for black and white.
+   * card's own exceptions for black and white. A hex color, `transparent` or
+   * no color (`''`), which have no card, take the no-color swatch's edge.
    */
   protected _swatchBorder(color: string): string {
+    if (isHex(color) || color === 'transparent' || color === '') {
+      return this._swatchBorder('__blank__');
+    }
+
     switch (color) {
       case '__blank__':
         return 'var(--c-select-color-swatch-edge, rgb(0 0 0 / 15%))';
@@ -152,11 +197,11 @@ export default class CraftSelectColor extends HostAriaReferences(
 
   /**
    * Builds a single `<craft-option>` for a color value. The wrapper's flex
-   * layout is applied inline so it survives being cloned into the invoker's
-   * shadow root alongside the swatch (see `_swatchTemplate`).
+   * layout is applied inline so it survives being copied into the field
+   * alongside the swatch (see `_swatchTemplate`).
    */
   protected _optionTemplate(color: string, label: string) {
-    return html`<craft-option .choiceValue=${color}>
+    return html`<craft-option .value=${color}>
       <span
         class="select-color__option"
         style="display:flex;align-items:center;gap:var(--c-spacing-sm);"
@@ -169,63 +214,86 @@ export default class CraftSelectColor extends HostAriaReferences(
     </craft-option>`;
   }
 
+  protected override get _selectsFirstOption(): boolean {
+    return false;
+  }
+
+  protected override get _plainInvoker(): boolean {
+    return this.swatchOnly;
+  }
+
   /**
-   * The rich select only adopts a `model-value` once its options exist, so the
-   * attribute is applied as a property, which waits for them.
+   * With `swatch-only`, the field shows the selected color's swatch, which
+   * keeps its color in forced colors mode since it's all the field shows, and
+   * names the color in screen-reader-only text. With no color, or "Custom…",
+   * the swatch is an empty ring. Its edge is what shows where the field is,
+   * so it takes a neutral border color that stands out from the tinted
+   * surfaces around it.
    */
-  static override get observedAttributes() {
-    return [...super.observedAttributes, 'model-value'];
-  }
-
-  override attributeChangedCallback(
-    name: string,
-    old: string | null,
-    value: string | null
-  ) {
-    if (name === 'model-value') {
-      this.modelValue = value ?? '';
-      return;
+  protected override _selectedTemplate(
+    option: CraftOption | undefined
+  ): unknown {
+    if (!this.swatchOnly) {
+      return super._selectedTemplate(option);
     }
-    super.attributeChangedCallback(name, old, value);
-  }
 
-  constructor() {
-    super();
-    /** No color is picked until one is asked for. */
-    this.hasNoDefaultSelected = true;
+    const color = option?.value === '__custom__' ? '' : (option?.value ?? '');
+
+    return html`<span style="display:flex;forced-color-adjust:none;"
+        >${this._swatchTemplate(
+          color,
+          'var(--_swatch-only-edge, var(--c-color-neutral-border-normal))'
+        )}</span
+      ><span class="sr-only">${option?.textContent?.trim() ?? ''}</span>`;
   }
 
   override connectedCallback() {
-    super.connectedCallback();
+    // Rendered first, so the rich select finds them as it connects.
     this.#renderOptions();
+    super.connectedCallback();
   }
 
   override updated(changed: PropertyValues<this>) {
     super.updated(changed);
 
+    // Rendering the options also redraws the field, which `swatch-only` changes.
     if (
       changed.has('colors') ||
+      changed.has('labels') ||
       changed.has('allowTransparent') ||
-      changed.has('blankLabel')
+      changed.has('blankLabel') ||
+      changed.has('allowCustom') ||
+      changed.has('swatchOnly')
     ) {
       this.#renderOptions();
     }
   }
 
-  /** Renders the options into the listbox, as `craft-combobox` does. */
+  /**
+   * Renders the options as the host's children. Each render goes through a
+   * fresh container, since the host's own render part belongs to its slots.
+   */
   #renderOptions() {
-    if (!this._listboxNode) {
-      return;
-    }
-
+    const container = document.createElement('div');
     render(
       html`${this.allowTransparent
         ? this._optionTemplate('__blank__', this.blankLabel ?? t('Transparent'))
         : nothing}${this.colors.map((color) =>
-        this._optionTemplate(color, t(titleCase(color)))
-      )}`,
-      this._listboxNode
+        this._optionTemplate(
+          color,
+          this.labels[color] ?? (isHex(color) ? color : t(titleCase(color)))
+        )
+      )}${this.allowCustom
+        ? this._optionTemplate('__custom__', t('Custom…'))
+        : nothing}`,
+      container
     );
+
+    for (const option of this.#renderedOptions) {
+      option.remove();
+    }
+    this.#renderedOptions = [...container.children];
+    this.append(...this.#renderedOptions);
   }
 }
 

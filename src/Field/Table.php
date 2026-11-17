@@ -23,7 +23,6 @@ use CraftCms\Cms\Gql\Types\Generators\TableRowType;
 use CraftCms\Cms\Gql\Types\TableRow;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\DateTimeHelper;
-use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Query;
 use CraftCms\Cms\Support\Str;
@@ -38,7 +37,6 @@ use CraftCms\Cms\Ui\Nodes\Field as UiField;
 use CraftCms\Cms\Ui\Nodes\Group;
 use CraftCms\Cms\Ui\Ui;
 use CraftCms\Cms\Ui\UiContext;
-use CraftCms\Cms\Ui\UiResolver;
 use CraftCms\Cms\Validation\Rules\HandleRule;
 use DateTimeInterface;
 use GraphQL\Type\Definition\InputObjectType;
@@ -476,43 +474,6 @@ class Table extends Field implements DefaultableFieldInterface, InputSchemaField
     public function getDefaultValue(): ?array
     {
         return $this->defaults;
-    }
-
-    #[Override]
-    protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
-    {
-        if ($this->columns === []) {
-            return '';
-        }
-
-        $errors = array_filter(
-            $element?->errors()->getMessages() ?? [],
-            fn (string $attribute): bool => $attribute === $this->handle || str_starts_with($attribute, "$this->handle."),
-            ARRAY_FILTER_USE_KEY,
-        );
-        $context = new UiContext(errors: $errors);
-        $control = $this->uiControl(new FieldContext(
-            path: $this->handle,
-            value: $value,
-            element: $element,
-            ui: $context,
-            inline: $inline,
-        ));
-        $payload = app(UiResolver::class)->resolve(
-            Ui::make([UiField::make()->control($control)]),
-            $context,
-        );
-
-        return Html::tag('craft-table-ui', '', [
-            'id' => $this->getInputId(),
-            'name' => $this->handle,
-            'role' => 'group',
-            'aria' => [
-                'labelledby' => $this->getLabelId(),
-                'describedby' => $this->describedBy,
-            ],
-            'data-payload' => Json::encode($payload),
-        ]);
     }
 
     /** @return list<Closure> */

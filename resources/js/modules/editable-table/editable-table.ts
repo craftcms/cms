@@ -760,7 +760,7 @@ export class EditableTable extends Base<EditableTableSettings> {
             money.name = `${name}[value]`;
             money.label = col.heading ?? colId;
             money.setAttribute('label-sr-only', '');
-            money.modelValue = moneyValue === null ? '' : String(moneyValue);
+            money.value = moneyValue === null ? '' : String(moneyValue);
             money.currency = col.currency ?? 'USD';
             money.locale = String(moneyLocale);
             if (col.decimals !== undefined) money.decimals = col.decimals;
@@ -835,7 +835,7 @@ export class EditableTable extends Base<EditableTableSettings> {
                         }
                 )
               : [];
-            combobox.modelValue = String(value ?? '');
+            combobox.value = String(value ?? '');
             combobox.showAllOnEmpty = true;
             combobox.setAttribute('label-sr-only', '');
             $cell.append(combobox);
@@ -872,7 +872,7 @@ export class EditableTable extends Base<EditableTableSettings> {
         }
 
         if (col.textExpanderTriggers && textExpanderTarget) {
-          textExpanderTarget.id = `editable-table-input-${crypto.randomUUID()}`;
+          textExpanderTarget.id = `editable-table-input-${uuid()}`;
           textExpanderTarget.setAttribute('aria-label', col.heading ?? colId);
           const expander = document.createElement(
             'craft-text-expander'

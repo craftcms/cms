@@ -5,7 +5,85 @@ import '../../../css/legacy.css';
 
 afterEach(() => {
   document.body.classList.remove('cp-legacy-screen');
+  document.documentElement.removeAttribute('dir');
   document.body.innerHTML = '';
+});
+
+it('draws legacy indicators, arrows and table headers', async () => {
+  await page.viewport(1024, 720);
+  document.body.classList.add('cp-legacy-screen');
+  document.body.innerHTML = `
+    <main style="padding: 24px">
+      <table class="data">
+        <thead><tr><th scope="col">Request</th><th scope="col">Status</th></tr></thead>
+        <tbody><tr>
+          <th scope="row">POST example.com</th>
+          <td>
+            <span class="status green"></span>
+            <span class="status red"></span>
+            <span class="status"></span>
+            <a href="#edit" class="go" title="Edit"></a>
+            <a href="#more" class="go">More</a>
+          </td>
+        </tr></tbody>
+      </table>
+      <div class="btngroup">
+        <button type="submit" class="btn submit">Save</button>
+        <button type="button" class="btn submit menubtn" aria-label="More actions"></button>
+      </div>
+      <div class="flex pagination">
+        <nav class="flex" aria-label="Pagination">
+          <button class="page-link prev-page disabled" aria-label="Previous Page" disabled></button>
+          <a class="page-link next-page" href="#next" aria-label="Next Page"></a>
+        </nav>
+      </div>
+    </main>`;
+
+  const after = (selector: string) =>
+    getComputedStyle(document.querySelector(selector)!, '::after');
+  const box = (selector: string) =>
+    document.querySelector(selector)!.getBoundingClientRect();
+
+  for (const header of document.querySelectorAll('th')) {
+    expect(getComputedStyle(header).textAlign).toBe('start');
+  }
+
+  expect(box('.status.green').width).toBeGreaterThan(0);
+  expect(box('.status.green').height).toBe(box('.status.green').width);
+  const green = getComputedStyle(document.querySelector('.status.green')!);
+  const red = getComputedStyle(document.querySelector('.status.red')!);
+  expect(green.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+  expect(green.backgroundColor).not.toBe(red.backgroundColor);
+  expect(
+    getComputedStyle(document.querySelector('.status:not(.green, .red)')!)
+      .borderTopStyle
+  ).toBe('solid');
+
+  expect(box('.go[title]').width).toBeGreaterThanOrEqual(24);
+  expect(box('.go[title]').height).toBeGreaterThanOrEqual(24);
+  expect(after('.go[title]').content).not.toBe('none');
+  expect(after('.go:not([title])').content).not.toBe('none');
+
+  expect(box('.menubtn').top).toBe(box('.btngroup .submit:not(.menubtn)').top);
+  expect(parseFloat(after('.menubtn').width)).toBeGreaterThan(0);
+  expect(after('.menubtn').borderRightStyle).toBe('solid');
+
+  for (const link of ['.prev-page', '.next-page']) {
+    expect(box(link).width).toBeGreaterThanOrEqual(24);
+    expect(box(link).height).toBeGreaterThanOrEqual(24);
+    expect(parseFloat(after(link).width)).toBeGreaterThan(0);
+  }
+  const prevLtr = after('.prev-page').transform;
+  const nextLtr = after('.next-page').transform;
+  expect(prevLtr).not.toBe(nextLtr);
+
+  document.documentElement.dir = 'rtl';
+  expect(after('.prev-page').transform).toBe(nextLtr);
+  expect(after('.next-page').transform).toBe(prevLtr);
+
+  document.body.classList.remove('cp-legacy-screen');
+  expect(box('.status.green').width).toBe(0);
+  expect(after('.menubtn').borderRightStyle).toBe('none');
 });
 
 it('styles legacy plugin controls at desktop and narrow widths without leaking to modern screens', async () => {
@@ -74,4 +152,50 @@ it('styles legacy plugin controls at desktop and narrow widths without leaking t
   document.body.classList.remove('cp-legacy-screen');
   expect(input.getBoundingClientRect().width).toBeLessThan(272);
   expect(getComputedStyle(primary).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+});
+
+it('lines a legacy table up with a modern one', async () => {
+  document.body.classList.add('cp-legacy-screen');
+  document.body.innerHTML = `
+    <table class="data">
+      <thead><tr><th scope="col">Name</th><th scope="col">Status</th><th class="thin"></th></tr></thead>
+      <tbody>
+        <tr><th scope="row">First</th><td>Enabled</td><td class="thin"><button type="button">Run</button></td></tr>
+        <tr><th scope="row">Second</th><td>Disabled</td><td class="thin"><button type="button">Run</button></td></tr>
+      </tbody>
+    </table>`;
+
+  const table = document.querySelector<HTMLTableElement>('table.data')!;
+  const header = table.querySelector<HTMLTableCellElement>('thead th')!;
+  const rowHeader = table.querySelector<HTMLTableCellElement>('tbody th')!;
+  const rows = table.querySelectorAll<HTMLTableRowElement>('tbody tr');
+  const firstRow = rows[0]!;
+  const lastRow = rows[rows.length - 1]!;
+
+  // Everything reads from the start edge — a `th` would centre on its own.
+  for (const cell of table.querySelectorAll('th, td')) {
+    expect(getComputedStyle(cell).textAlign).toBe('start');
+  }
+
+  // Cells sit flush, so the page doesn't show between them as a grid.
+  expect(getComputedStyle(table).borderSpacing).toBe('0px');
+
+  // One rule per row, and none under the last one.
+  const rule = getComputedStyle(firstRow.cells[0]!);
+  expect(parseFloat(rule.borderBlockEndWidth)).toBe(1);
+  expect(rule.borderBlockEndColor).not.toBe('rgba(0, 0, 0, 0)');
+  expect(
+    parseFloat(getComputedStyle(lastRow.cells[0]!).borderBlockEndWidth)
+  ).toBe(0);
+
+  // A row header is set apart by weight, a step below the column header's.
+  const rowWeight = Number(getComputedStyle(rowHeader).fontWeight);
+  expect(rowWeight).toBeGreaterThan(400);
+  expect(rowWeight).toBeLessThan(Number(getComputedStyle(header).fontWeight));
+
+  // `.thin` columns shrink to their content instead of taking an even share.
+  await page.viewport(1024, 720);
+  expect(firstRow.cells[2]!.getBoundingClientRect().width).toBeLessThan(
+    firstRow.cells[1]!.getBoundingClientRect().width
+  );
 });

@@ -602,7 +602,9 @@ abstract class ContentIndexViewModel extends ViewModel
         );
         $current = $choices->first(fn (array $option): bool => $option['selected']);
 
-        if ($current === null) {
+        // A page with one source has nothing to choose between, and the page
+        // crumb already names it, so a crumb for the source would repeat it.
+        if ($current === null || ($this->elementType::multiPageSources() && $choices->count() === 1)) {
             return $crumbs;
         }
 
@@ -1161,7 +1163,8 @@ abstract class ContentIndexViewModel extends ViewModel
             // through to a visible source rather than list a hidden one.
             if (
                 $resolved[0] !== null &&
-                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $siteId))
+                ($resolved[1] === null || ElementSources::sourceIsAvailableForSite($resolved[1], $siteId)) &&
+                $this->allowsSource($resolved[0])
             ) {
                 return $resolved;
             }
@@ -1174,10 +1177,20 @@ abstract class ContentIndexViewModel extends ViewModel
         $sources = array_filter($this->sourceCandidates($siteId), fn (array $source): bool => isset($source['key'])
             && ($source['type'] ?? null) !== ElementSources::TYPE_HEADING
             && ! ($source['disabled'] ?? false));
-        $source = ($requestedSource === null ? array_find($sources, fn (array $source): bool => $source['key'] === '*') : null)
+        // A nested source, such as an asset subfolder, is requested by its own key, which only the listed sources
+        // can resolve to its full key path.
+        $source = array_find($sources, fn (array $source): bool => $source['key'] === ($requestedSource ?? '*'))
             ?? array_first($sources);
 
         return [$source['keyPath'] ?? $source['key'] ?? null, $source];
+    }
+
+    /**
+     * Whether a requested source key can be opened, for indexes that only allow some of their sources.
+     */
+    protected function allowsSource(string $sourceKey): bool
+    {
+        return true;
     }
 
     /** @return list<array<string, mixed>> */
@@ -1325,6 +1338,9 @@ abstract class ContentIndexViewModel extends ViewModel
                 ? $this->request->collapsedElementIds()
                 : [],
         )['query'];
+
+        // Applied on top of the filters, which the user can change, so they can't widen what's selectable
+        $this->request->selectionCondition()?->modifyQuery($query);
 
         // Ahead of the source's own criteria, which shouldn't get to override
         // the site the user picked (the legacy index drops `criteria.siteId`
@@ -1661,7 +1677,7 @@ abstract class ContentIndexViewModel extends ViewModel
         return array_map(fn (ElementInterface $element) => [
             'id' => $this->rowId($element),
             ...$this->baseRowData($element),
-            'url' => static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL && ! $element->trashed
+            'url' => $this->linksToElements() && ! $element->trashed
                 ? $this->editUrl($element)
                 : null,
             'thumbHtml' => $element->getThumbHtml($this->thumbSize()->pixels() ?? ElementHtml::CHIP_THUMB_SIZE, ImageTransformMode::Fit),
@@ -1741,14 +1757,17 @@ abstract class ContentIndexViewModel extends ViewModel
     private function baseRowData(ElementInterface $element, ?ElementHtml $elementHtml = null): array
     {
         $elementHtml ??= app(ElementHtml::class);
+        $capabilities = [
+            ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
+            ...$this->extraCapabilities($element),
+        ];
 
         return [
             'label' => $element->getUiLabel(),
             ...$this->elementUrls($element),
-            'capabilities' => [
-                ...$elementHtml->elementCapabilities($element, static::RENDER_CONTEXT),
-                ...$this->extraCapabilities($element),
-            ],
+            'capabilities' => $capabilities,
+            // So Compare is only offered for two elements with the same field layout.
+            ...($capabilities['comparable'] ? ['fieldLayoutId' => $element->getFieldLayout()?->id] : []),
             ...$this->extraRowData($element),
         ];
     }
@@ -1783,6 +1802,15 @@ abstract class ContentIndexViewModel extends ViewModel
                     ->all(),
             ] : []),
         ];
+    }
+
+    /**
+     * Whether titles and thumbnails link to their elements. A modal's don't,
+     * since a click there selects.
+     */
+    protected function linksToElements(): bool
+    {
+        return static::RENDER_CONTEXT !== ElementSources::CONTEXT_MODAL;
     }
 
     protected function editUrl(ElementInterface $element): ?string

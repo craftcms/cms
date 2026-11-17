@@ -117,7 +117,7 @@ it('keeps focus on the invoker after a move is chosen with Enter', async () => {
   await openMenu(button);
   await chooseMoveDown(button);
 
-  expect(menuOf(button).opened).toBe(false);
+  expect(menuOf(button).open).toBe(false);
   expect(button.shadowRoot!.activeElement).toBe(invokerOf(button));
 });
 
@@ -159,7 +159,7 @@ it('keeps focus on the invoker when its list disables the chosen move', async ()
   await openMenu(button);
   await chooseMoveDown(button);
 
-  expect(menuOf(button).opened).toBe(false);
+  expect(menuOf(button).open).toBe(false);
   expect(button.shadowRoot!.activeElement).toBe(invokerOf(button));
 });
 
@@ -175,7 +175,7 @@ it('returns focus to the invoker when Escape closes the menu', async () => {
   await userEvent.keyboard('{Escape}');
   await menuOf(button).updateComplete;
 
-  expect(menuOf(button).opened).toBe(false);
+  expect(menuOf(button).open).toBe(false);
   expect(button.shadowRoot!.activeElement).toBe(invokerOf(button));
 });
 
@@ -254,7 +254,7 @@ it.each([
     const button = await renderButton(
       `<craft-reorder-button position="${position}"></craft-reorder-button>`
     );
-    menuOf(button).opened = true;
+    menuOf(button).open = true;
     await menuOf(button).updateComplete;
 
     await vi.waitFor(
@@ -279,7 +279,7 @@ it.each([
     const button = await renderButton(
       `<craft-reorder-button orientation="${orientation}"></craft-reorder-button>`
     );
-    menuOf(button).opened = true;
+    menuOf(button).open = true;
     await menuOf(button).updateComplete;
 
     await vi.waitFor(
@@ -321,7 +321,7 @@ it.each([
   expect(button.shadowRoot!.activeElement).toBe(invokerOf(button));
 
   await userEvent.keyboard(press);
-  await expect.poll(() => menuOf(button).opened).toBe(true);
+  await expect.poll(() => menuOf(button).open).toBe(true);
 });
 
 it('is skipped by Tab when disabled', async () => {

@@ -105,7 +105,7 @@ class ImageTransform extends Component
     }
 
     /** @return array<string, mixed> */
-    public function getParameters(?string $transformerUid = null): array
+    public function getParameters(?string $driver = null): array
     {
         $parameters = [];
 
@@ -118,7 +118,7 @@ class ImageTransform extends Component
         return [
             ...$parameters,
             ...$this->inlineParameters,
-            ...($transformerUid !== null ? ($this->parameters[$transformerUid] ?? []) : []),
+            ...($driver !== null ? ($this->parameters[$driver] ?? []) : []),
         ];
     }
 
@@ -135,9 +135,9 @@ class ImageTransform extends Component
     }
 
     /** @return array<string, mixed> */
-    public function getParametersForTransformer(string $uid): array
+    public function getParametersForDriver(string $driver): array
     {
-        return $this->parameters[$uid] ?? [];
+        return $this->parameters[$driver] ?? [];
     }
 
     /** @return array<string,mixed> */

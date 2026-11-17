@@ -1,7 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/vue3-vite';
 import {createColumnHelper} from '@tanstack/vue-table';
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
 import DataTable from './DataTable.vue';
+import {useTableRowSelection} from '@/common/composables/useTableRowSelection';
 import {
   type CraftTableFeatures,
   useCraftTable,
@@ -44,8 +45,12 @@ const meta = {
         component:
           'The table every CP listing renders through. It draws headers, ' +
           'rows, sort buttons, drag-to-reorder and the loading/empty states ' +
-          'from a TanStack table instance, and leaves selection, pagination ' +
-          'and chrome to wrappers like `AdminTable` and `ElementTable`.',
+          'from a TanStack table instance, and leaves pagination and chrome ' +
+          'to wrappers like `AdminTable` and `ElementTable`. Pass a ' +
+          '`useTableRowSelection` result as `selection` for checkboxes.\n\n' +
+          'Most plugin tables want `AdminTable`. Reach for `DataTable` when ' +
+          'a page needs its own toolbar or footer around the rows: ' +
+          "`import {DataTable, useCraftTable, useTableRowSelection} from '@craftcms/cp';`",
       },
     },
   },
@@ -109,6 +114,31 @@ export const Reorderable: Story = {
       return {args, table, onReorder};
     },
     template: '<DataTable v-bind="args" :table="table" @reorder="onReorder" />',
+  }),
+};
+
+/**
+ * With a `selection`, rows get checkboxes. Clicking a row toggles it, and
+ * Shift-click selects a range.
+ */
+export const SelectableRows: Story = {
+  render: (args) => ({
+    components: {DataTable},
+    setup() {
+      const table = createSampleTable();
+      const selection = useTableRowSelection(table, {
+        selectable: true,
+        readOnly: false,
+      });
+      const selectedCount = computed(() => selection.selectedIds.value.length);
+      return {args, table, selection, selectedCount};
+    },
+    template: `
+      <div class="grid gap-2">
+        <DataTable v-bind="args" :table="table" :selection="selection" />
+        <p>{{ selectedCount }} selected</p>
+      </div>
+    `,
   }),
 };
 

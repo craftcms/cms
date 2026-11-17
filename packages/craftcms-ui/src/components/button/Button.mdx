@@ -77,7 +77,7 @@ The offset follows the button's size, and an icon-only button aligns its icon ra
 - Say what a `danger` button does in its label ("Delete entry"), so the color only reinforces it.
 - Anything that goes to a URL is a link: set `href` rather than navigating from a click handler.
 - A `shortcut` is hidden from screen readers and announced with `aria-keyshortcuts` on the button instead, unless you set your own. The button doesn't bind the key, so bind it yourself.
-- `xsmall` buttons keep a 24px hit area that reaches past their visible box. Leave room between them and other targets.
+- Use `xsmall` only where nothing else can come within 12px of the button's center, now or if the layout around it changes, such as a button standing on its own. Its 24px hit area reaches past its visible box, so a neighbor in that space has its clicks taken by the button, which is worse than a small target. Beside a link, a button or a field, use `small` or larger, which is a real 24×24 box that the layout makes room for. Automated checks such as axe measure only the visible box, so they report every `xsmall` button, whether or not it overlaps anything.
 - For an on/off setting, use `craft-switch`. A `toggle` button only reports the state it's asked to change to, so whoever owns `active` must update it.
 
 ## Properties

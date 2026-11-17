@@ -137,6 +137,7 @@ export class FieldToggle extends Base {
     switch (nodeName) {
       // A combobox stands in for the select a legacy screen used to render.
       case 'CRAFT-COMBOBOX':
+      case 'CRAFT-SELECT-COLOR':
       case 'SELECT':
         return this.toggle!.hasAttribute('data-boolean-menu')
           ? 'booleanMenu'
@@ -197,19 +198,18 @@ export class FieldToggle extends Base {
     return this.normalizeToggleVal(this.#toggleValue());
   }
 
-  /**
-   * The toggle's value, whichever control it is.
-   *
-   * A combobox keeps the chosen value on `modelValue`; its `value` is what the
-   * textbox is showing, which is the label.
-   */
+  /** The toggle's value, whichever control it is. */
   #toggleValue(): string | null {
     const toggle = this.toggle;
 
-    if (toggle?.nodeName === 'CRAFT-COMBOBOX') {
-      const model = (toggle as unknown as {modelValue?: unknown}).modelValue;
+    if (
+      toggle?.nodeName === 'CRAFT-COMBOBOX' ||
+      toggle?.nodeName === 'CRAFT-SELECT-COLOR'
+    ) {
+      const value = (toggle as unknown as {value?: unknown}).value;
 
-      return typeof model === 'string' ? model : null;
+      // Before the element upgrades, its value is still only the attribute.
+      return typeof value === 'string' ? value : toggle.getAttribute('value');
     }
 
     return toggle instanceof HTMLInputElement ||

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Elements\User;
 use Inertia\Testing\AssertableInertia;
 
@@ -22,8 +21,9 @@ beforeEach(function () {
 /**
  * Utility pages used to drain the whole HtmlStack into their own Inertia page
  * props, which also swallowed the global CP asset bundle that
- * HandleInertiaRequests registers for every CP request. That left the root
- * template without the `window.Craft` config the Inertia app boots from.
+ * HandleInertiaRequests registers for every CP request. Its assets belong in
+ * the root template, which takes the `window.Craft` config from the page data
+ * rather than repeating it.
  */
 it('leaves the global CP asset bundle in the root template', function (string $id) {
     $html = get("/{$this->cpTrigger}/utilities/{$id}")
@@ -37,10 +37,9 @@ it('leaves the global CP asset bundle in the root template', function (string $i
         ->not->toContain('legacy/jquery/dist/jquery.js')
         ->not->toContain('legacy/cpcompat/dist/craft.js');
 
-    // …while the `window.Craft` config is head JS. It has to land in the root
-    // template's <head>, ahead of the module scripts that boot the Inertia CP.
-    expect(Str::between($html, '<head>', '</head>'))
-        ->toContain('window.Craft = Object.assign');
+    // …and the config reaches the page once, as the `craft.general` prop.
+    expect($html)->not->toContain('window.Craft = Object.assign')
+        ->and(substr_count($html, '"asciiCharMap":'))->toBe(1);
 })->with(['system-report', 'php-info', 'deprecation-errors']);
 
 it('keeps a utility’s own assets on the page props', function () {

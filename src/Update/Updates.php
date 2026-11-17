@@ -88,7 +88,7 @@ class Updates
         }
 
         try {
-            $updatesData = UpdatesData::fromArray($this->api->getUpdates());
+            $updatesData = UpdatesData::fromArray($this->api->getUpdates(), now());
         } catch (Throwable $e) {
             Log::warning("Couldn't get updates: {$e->getMessage()}", [__METHOD__]);
 

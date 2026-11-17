@@ -14,10 +14,10 @@ use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use CraftCms\Cms\Component\Exceptions\MissingComponentException;
-use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Facades\Security;
 use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\User\Elements\User;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 use yii\base\Event;
 use yii\base\Model;
 use function CraftCms\Cms\t;
@@ -217,7 +217,7 @@ class MailerHelper
 
     private static function _warnIgnoredTransports(): void
     {
-        Deprecator::log(
+        LegacyUsage::record(
             'MailerHelper::EVENT_REGISTER_MAILER_TRANSPORTS',
             'Custom mailer transport adapters are ignored. Configure Laravel mail drivers instead.',
         );

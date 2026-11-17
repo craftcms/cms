@@ -17,7 +17,14 @@ afterEach(() => {
 });
 
 function widget(id: number, title: string): DashboardWidget {
-  return {id, title, name: title, colspan: 1, maxColspan: 2} as DashboardWidget;
+  return {
+    id,
+    title,
+    name: title,
+    colspan: 1,
+    maxColspan: 2,
+    color: 'gray',
+  } as DashboardWidget;
 }
 
 async function mountManager() {
@@ -35,6 +42,7 @@ async function mountManager() {
         widgets: widgets.value,
         columns: 2,
         busy: busy.value,
+        colors: ['red', 'gray'],
         opened: opened.value,
         'onUpdate:opened': (value: boolean) => (opened.value = value),
         async onReorder(from: number, to: number) {
@@ -88,7 +96,7 @@ it.each([
 
     button.shadowRoot!.querySelector<HTMLElement>('craft-button')!.focus();
     await userEvent.keyboard('{Enter}');
-    await vi.waitFor(() => expect(menuOf(button).opened).toBe(true));
+    await vi.waitFor(() => expect(menuOf(button).open).toBe(true));
     button
       .shadowRoot!.querySelector<HTMLElement>(`[data-action="${action}"]`)!
       .focus();
@@ -148,7 +156,7 @@ it('closes with one Escape after a widget is moved', async () => {
 
   feed.shadowRoot!.querySelector<HTMLElement>('craft-button')!.focus();
   await userEvent.keyboard('{Enter}');
-  await vi.waitFor(() => expect(menuOf(feed).opened).toBe(true));
+  await vi.waitFor(() => expect(menuOf(feed).open).toBe(true));
   feed
     .shadowRoot!.querySelector<HTMLElement>('[data-action="moveDown"]')!
     .focus();
@@ -157,6 +165,6 @@ it('closes with one Escape after a widget is moved', async () => {
   await vi.waitFor(() => expect(renderedTitles()).toEqual(['Updates', 'Feed']));
   await userEvent.keyboard('{Escape}');
 
-  await vi.waitFor(() => expect(popover.opened).toBe(false));
+  await vi.waitFor(() => expect(popover.open).toBe(false));
   expect(document.activeElement).toBe(gear);
 });

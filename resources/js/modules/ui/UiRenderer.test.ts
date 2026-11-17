@@ -103,6 +103,18 @@ interface SelectedElement {
   siteId?: number;
 }
 
+/** Sets a checkbox or switch the way a user would, ending with its `change`. */
+function toggleChoice(
+  choice: Element & {checked: boolean},
+  checked: boolean
+): void {
+  choice.checked = checked;
+  required(
+    choice.querySelector('[slot="input"]'),
+    'Expected the choice control.'
+  ).dispatchEvent(new Event('change', {bubbles: true}));
+}
+
 function required<T>(value: T | null | undefined, message: string): T {
   if (value === null || value === undefined) {
     throw new Error(message);
@@ -359,7 +371,7 @@ vi.mock('../editable-table', () => ({
 
           const combobox = document.createElement('craft-combobox');
           combobox.name = `${baseName}[${rowId}][${key}]`;
-          combobox.modelValue = stringValue;
+          combobox.value = stringValue;
           cell.append(combobox);
           continue;
         }
@@ -406,6 +418,7 @@ describe('UiRenderer', () => {
   let currentPayload: Ref<UiPayload>;
   let renderer: {
     advanceBaseline: () => void;
+    setSubmitting: (submitting: boolean) => void;
     currentValues: () => UiPayload['values'];
     resetValues: (payload?: UiPayload) => void;
     setValue: (path: string[], value: UiValue, kind?: UiChange['kind']) => void;
@@ -1130,11 +1143,11 @@ describe('UiRenderer', () => {
     app.unmount();
     await mount(status);
 
-    const combobox = container.querySelector<
-      HTMLElement & {modelValue: string}
-    >('craft-combobox')!;
+    const combobox = container.querySelector<HTMLElement & {value: string}>(
+      'craft-combobox'
+    )!;
     await vi.waitFor(() => {
-      expect(combobox.modelValue).toBe('1');
+      expect(combobox.value).toBe('1');
       expect(combobox.querySelector('input')?.value).toBe('Online');
     });
   });
@@ -1861,6 +1874,131 @@ describe('UiRenderer', () => {
     outlet.remove();
   });
 
+  it('keeps each form’s nodes in its own outlets when two share a name', async () => {
+    app.unmount();
+    const formPayload = (uid: string): UiPayload => ({
+      scope: [],
+      refreshable: false,
+      nodes: [
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Outlet',
+          component: 'craft:outlet',
+          props: {name: 'cards'},
+          uid: `${uid}-outlet`,
+        },
+        {
+          type: 'CraftCms\\Cms\\Ui\\Nodes\\Group',
+          component: 'craft:group',
+          props: {outlet: 'cards'},
+          uid: `${uid}-group`,
+          children: [],
+        },
+      ],
+      values: {},
+      errors: [],
+      globalErrors: [],
+    });
+    app = createApp({
+      render: () =>
+        ['page', 'slideout'].map((uid) =>
+          h('div', {id: uid}, [h(UiRenderer, {payload: formPayload(uid)})])
+        ),
+    });
+    const components = createCpComponentRegistry();
+    registerUiComponents(components);
+    components.install(app);
+    app.mount(container);
+    await nextTick();
+    await nextTick();
+
+    for (const uid of ['page', 'slideout']) {
+      expect(
+        container.querySelector(
+          `[data-ui-node="${uid}-outlet"] [data-ui-node="${uid}-group"]`
+        )
+      ).not.toBeNull();
+    }
+  });
+
+  const resolvedCardError = {
+    path: ['layout'],
+    messages: ['Invalid card attribute.'],
+    source: ['layout', 'cardView', '0'],
+  };
+  const savedCardError = {
+    path: ['layout', 'cardView', '0'],
+    messages: ['Invalid card attribute.'],
+  };
+
+  const savedGeneratedFieldError = {
+    path: ['layout', 'generatedFields', 'uid-1', 'handle'],
+    messages: ['Handle is already in use.'],
+  };
+
+  it.each([
+    {withOutlet: true, error: resolvedCardError, flagged: ['Appearance']},
+    {withOutlet: true, error: savedCardError, flagged: ['Appearance']},
+    {withOutlet: true, error: savedGeneratedFieldError, flagged: ['Content']},
+    {withOutlet: false, error: resolvedCardError, flagged: ['Content']},
+  ])(
+    'flags the tab of the outlet a control shows an error in (outlet: $withOutlet, path: $error.path)',
+    async ({withOutlet, error, flagged}) => {
+      app.unmount();
+      await mount({
+        scope: [],
+        refreshable: false,
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+            component: 'craft:tab',
+            props: {label: 'Content'},
+            uid: 'content',
+            children: [
+              {
+                type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+                component: 'craft:field',
+                props: {label: 'Layout'},
+                control: {
+                  type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+                  component: 'craft:text',
+                  props: {errorOutlets: {cards: ['cardView']}},
+                  path: ['layout'],
+                  mode: 'editable',
+                  deltaGroup: ['layout'],
+                },
+              },
+            ],
+          },
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+            component: 'craft:tab',
+            props: {label: 'Appearance'},
+            uid: 'appearance',
+            children: withOutlet
+              ? [
+                  {
+                    type: 'CraftCms\\Cms\\Ui\\Nodes\\Outlet',
+                    component: 'craft:outlet',
+                    props: {name: 'cards'},
+                    uid: 'cards',
+                  },
+                ]
+              : [],
+          },
+        ],
+        values: {layout: ''},
+        errors: [error],
+        globalErrors: [],
+      });
+
+      expect(
+        [...container.querySelectorAll('craft-tab')]
+          .filter((tab) => tab.querySelector('craft-icon[slot="suffix"]'))
+          .map((tab) => tab.textContent?.trim())
+      ).toEqual(flagged);
+    }
+  );
+
   it('renders FieldLayout tabs and semantic content', async () => {
     vi.stubGlobal('requestIdleCallback', vi.fn());
     app.unmount();
@@ -2104,7 +2242,7 @@ describe('UiRenderer', () => {
     );
     const heading = tab?.querySelector('[data-ui-node="heading"]');
     expect(heading?.querySelector('h3')?.textContent).toBe('Details');
-    expect(heading?.querySelector('h3')?.classList).toContain('my-0');
+    expect(heading?.querySelector('h3')?.classList).toContain('cp-h3');
     expect(heading?.querySelector('p')?.textContent).toBe('Supporting copy.');
     expect(heading?.querySelector('p')?.classList).toContain('my-0');
     expect(heading?.classList).toContain('gap-1');
@@ -2453,13 +2591,11 @@ describe('UiRenderer', () => {
     await mount(refreshable, {refresh});
 
     const combobox = required(
-      container.querySelector<HTMLElement & {modelValue: string}>(
-        'craft-combobox'
-      ),
+      container.querySelector<HTMLElement & {value: string}>('craft-combobox'),
       'Expected the UI mode combobox.'
     );
     await vi.waitFor(() => {
-      expect(combobox.modelValue).toBe('enlarged');
+      expect(combobox.value).toBe('enlarged');
       expect(container.querySelectorAll('craft-option')).toHaveLength(2);
     });
     await new Promise((resolve) => setTimeout(resolve));
@@ -2478,7 +2614,7 @@ describe('UiRenderer', () => {
     ]);
   });
 
-  it('uses the combobox change source instead of event timing', async () => {
+  it('reports input on the combobox as typing', async () => {
     const onChange = vi.fn();
     app.unmount();
     const refreshable = clonePayload();
@@ -2495,20 +2631,13 @@ describe('UiRenderer', () => {
     await mount(refreshable, {onChange});
 
     const combobox = required(
-      container.querySelector<HTMLElement & {modelValue: string}>(
-        'craft-combobox'
-      ),
+      container.querySelector<HTMLElement & {value: string}>('craft-combobox'),
       'Expected the UI mode combobox.'
     );
     onChange.mockClear();
-    combobox.modelValue = 'custom';
+    combobox.value = 'custom';
     await Promise.resolve();
-    combobox.dispatchEvent(
-      new CustomEvent('model-value-changed', {
-        bubbles: true,
-        detail: {changeSource: 'input'},
-      })
-    );
+    combobox.dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
 
     expect(onChange).toHaveBeenCalledWith(
@@ -2567,10 +2696,7 @@ describe('UiRenderer', () => {
         ),
         'Expected the action lightswitch.'
       );
-      lightswitch.checked = true;
-      lightswitch.dispatchEvent(
-        new CustomEvent('model-value-changed', {bubbles: true})
-      );
+      toggleChoice(lightswitch, true);
       await nextTick();
 
       expect(refresh).toHaveBeenCalledTimes(expectedRefreshes);
@@ -2787,14 +2913,51 @@ describe('UiRenderer', () => {
       container.querySelector('craft-switch'),
       'Expected the lightswitch control.'
     );
-    lightswitch.checked = false;
-    lightswitch.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    toggleChoice(lightswitch, false);
     await nextTick();
 
     expect(refresh).toHaveBeenCalledOnce();
     vi.useRealTimers();
+  });
+
+  it('applies an in-flight refresh when its value is reported again before it answers', async () => {
+    let completeRefresh: (payload: UiPayload) => void = () => {};
+    const refresh = vi.fn(
+      () =>
+        new Promise<UiPayload>((resolve) => {
+          completeRefresh = resolve;
+        })
+    );
+    app.unmount();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    required(
+      required(refreshable.nodes[3], 'Expected the behavior field group.')
+        .children?.[0],
+      'Expected the code field node.'
+    ).control!.reactive = true;
+    await mount(refreshable, {refresh});
+
+    const lightswitch = required(
+      container.querySelector('craft-switch'),
+      'Expected the lightswitch control.'
+    );
+    toggleChoice(lightswitch, false);
+    await nextTick();
+    toggleChoice(lightswitch, false);
+    await nextTick();
+
+    const refreshed = clonePayload();
+    required(
+      refreshed.nodes[1],
+      'Expected the placeholder field node.'
+    ).props.label = 'Updated presentation';
+    completeRefresh(refreshed);
+    await Promise.resolve();
+    await nextTick();
+
+    expect(refresh).toHaveBeenCalledOnce();
+    expect(container.textContent).toContain('Updated presentation');
   });
 
   it('ignores stale refreshes and retains the last valid presentation on failure', async () => {
@@ -3033,6 +3196,214 @@ describe('UiRenderer', () => {
         .closest('[data-ui-touched]')
         ?.getAttribute('data-ui-touched')
     ).not.toBe('true');
+  });
+
+  /**
+   * What a save wrote can differ from what was sent, as when applying a draft
+   * replaces the nested entries created in it, and the payload its response
+   * renders is the record of it. Edits made while it was out are still unsaved.
+   */
+  it('takes the values a successful submission’s response rendered', async () => {
+    let mutation: UiPayload['values'] = {};
+    app.unmount();
+    await mount(clonePayload(), {
+      onMutation: (value) => (mutation = value),
+    });
+
+    const placeholder = () =>
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[placeholder]"]'
+      )!;
+    placeholder().value = 'Sent';
+    placeholder().dispatchEvent(new Event('input', {bubbles: true}));
+    await nextTick();
+
+    renderer.setSubmitting(true);
+    const mode = container.querySelector<HTMLSelectElement>(
+      'select[name="settings[uiMode]"]'
+    )!;
+    mode.value = 'normal';
+    mode.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    const response = clonePayload();
+    Object.assign(response.values.settings as UiValues, {
+      placeholder: 'Saved',
+    });
+    currentPayload.value = response;
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    expect(placeholder().value).toBe('Saved');
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {placeholder: 'Saved', uiMode: 'normal'},
+    });
+    expect(mutation).toHaveProperty('settings.uiMode', 'normal');
+
+    // What the server saved is the baseline now.
+    mode.value = 'enlarged';
+    mode.dispatchEvent(new Event('change', {bubbles: true}));
+    await nextTick();
+
+    expect(mutation).toEqual({});
+  });
+
+  /**
+   * Applying a draft replaces the nested entries created in it, so the blocks
+   * the save sent come back under new UIDs, in the order they were sent.
+   */
+  it('keeps edits made during a save on the blocks that replaced theirs', async () => {
+    let mutation: UiPayload['values'] = {};
+    app.unmount();
+    await mount(matrixPayload(['draft-a', 'draft-b'], ['A', 'B']), {
+      onMutation: (value) => (mutation = value),
+    });
+
+    renderer.setSubmitting(true);
+    // Moved and edited while the save is out.
+    renderer.setValue(['settings', 'matrix'], {
+      entries: {
+        'draft-a': {type: 'text', heading: 'A, edited'},
+        'draft-b': {type: 'text', heading: 'B'},
+      },
+      sortOrder: ['draft-b', 'draft-a'],
+    });
+    await nextTick();
+
+    const response = matrixPayload(['saved-a', 'saved-b'], ['A', 'B']);
+    // What the server added to a block saved, which the client never held.
+    Object.assign(
+      (
+        ((response.values.settings as UiValues).matrix as UiValues)
+          .entries as UiValues
+      )['saved-a'] as UiValues,
+      {body: 'Server default'}
+    );
+    currentPayload.value = response;
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {
+        matrix: {
+          entries: {
+            'saved-a': {heading: 'A, edited', body: 'Server default'},
+            'saved-b': {heading: 'B'},
+          },
+          sortOrder: ['saved-b', 'saved-a'],
+        },
+      },
+    });
+    expect(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[matrix][entries][saved-a][heading]"]'
+      )?.value
+    ).toBe('A, edited');
+    expect(mutation).toHaveProperty('settings.matrix.sortOrder', [
+      'saved-b',
+      'saved-a',
+    ]);
+  });
+
+  it('still marks an edit made in a replaced block during a save as unsaved', async () => {
+    app.unmount();
+    await mount(matrixPayload(['draft-a'], ['A']));
+
+    renderer.setSubmitting(true);
+    renderer.setValue(
+      ['settings', 'matrix', 'entries', 'draft-a', 'heading'],
+      'A, edited'
+    );
+    await nextTick();
+
+    currentPayload.value = matrixPayload(['saved-a'], ['A']);
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    expect(
+      container
+        .querySelector('[name="settings[matrix]"]')
+        ?.closest('craft-field')
+        ?.getAttribute('status')
+    ).toBe('modified');
+  });
+
+  /**
+   * A save's response holds back the tabs that don't show as the page loads,
+   * so a Matrix field on one of them is settled once the tab arrives.
+   */
+  it('settles a deferred tab’s fields once the tab arrives after a save', async () => {
+    const tabbed = (uids: string[], deferred: boolean): UiPayload => {
+      const matrix = matrixPayload(
+        uids,
+        uids.map(() => 'Heading')
+      );
+
+      return {
+        ...matrix,
+        values: deferred ? {} : matrix.values,
+        nodes: [
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+            component: 'craft:tab',
+            uid: 'first-tab',
+            props: {label: 'First'},
+            children: [],
+          },
+          {
+            type: 'CraftCms\\Cms\\Ui\\Nodes\\Tab',
+            component: 'craft:tab',
+            uid: 'matrix-tab',
+            props: deferred
+              ? {label: 'Blocks', deferred: true}
+              : {label: 'Blocks'},
+            children: deferred ? [] : matrix.nodes,
+          },
+        ] as UiPayload['nodes'],
+      };
+    };
+    const mutations: UiPayload['values'][] = [];
+    app.unmount();
+    await mount(tabbed(['draft-a'], false), {
+      onMutation: (value) => mutations.push(value),
+    });
+
+    renderer.setSubmitting(true);
+    currentPayload.value = tabbed(['saved-a'], true);
+    await nextTick();
+    renderer.advanceBaseline();
+    renderer.setSubmitting(false);
+    await nextTick();
+
+    // Another save goes out before the tab arrives, and fails.
+    renderer.setSubmitting(true);
+    renderer.setSubmitting(false);
+
+    mutations.length = 0;
+    currentPayload.value = tabbed(['saved-a'], false);
+    await nextTick();
+    await nextTick();
+
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {matrix: {sortOrder: ['saved-a']}},
+    });
+    expect(
+      Object.keys(
+        ((renderer.currentValues().settings as UiValues).matrix as UiValues)
+          .entries as UiValues
+      )
+    ).toEqual(['saved-a']);
+    // Not even for a moment, as any change would arm autosave.
+    expect(mutations.length).toBeGreaterThan(0);
+    expect(mutations.every((value) => Object.keys(value).length === 0)).toBe(
+      true
+    );
   });
 
   it('renders an updated control definition without changing the host’s payload', async () => {
@@ -3503,7 +3874,7 @@ describe('UiRenderer', () => {
 
     expect(switchElement.indeterminate).toBe(true);
     expect(switchElement.size).toBe('small');
-    expect(switchElement.checkedValue).toBe('yes');
+    expect(switchElement.value).toBe('yes');
     expect(switchElement.indeterminateValue).toBe('maybe');
     expect(switchElement.onLabel).toBe('On');
     expect(switchElement.offLabel).toBe('Off');
@@ -3627,7 +3998,7 @@ describe('UiRenderer', () => {
         },
       ],
       ['craft:time', 'Time', 'time', {inputType: 'time', step: 60}, '14:30'],
-      ['craft:color', 'Color', 'color', {presets: ['#ff0000']}, 'ff0000'],
+      ['craft:color', 'Color', 'color', {presets: []}, 'ff0000'],
       [
         'craft:money',
         'Money',
@@ -3773,10 +4144,10 @@ describe('UiRenderer', () => {
     money.dispatchEvent(new Event('input', {bubbles: true}));
 
     const color = container.querySelector('craft-input-color')!;
-    color.modelValue = '00ff00';
-    color.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    color.value = '00ff00';
+    color
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     expect(new FormData(form).getAll('settings[tags][]')).toEqual(['b']);
     expect(Object.fromEntries(new FormData(form))).toMatchObject({
@@ -3820,7 +4191,7 @@ describe('UiRenderer', () => {
       expect(
         container.querySelector<HTMLInputElement>('input[type="time"]')?.value
       ).toBe('14:30');
-      expect(container.querySelector('craft-input-color')?.modelValue).toBe(
+      expect(container.querySelector('craft-input-color')?.value).toBe(
         'ff0000'
       );
     }
@@ -3851,6 +4222,16 @@ describe('UiRenderer', () => {
           ],
           showLabelField: true,
           advancedFields: ['title'],
+          assetSources: ['volume:images'],
+          assetCondition: {class: 'AssetCondition'},
+          assetReferenceElement: {
+            referenceElementId: 12,
+            referenceElementOwnerId: null,
+            referenceElementSiteId: 2,
+          },
+          assetAnyUploader: true,
+          uploadFolderId: 7,
+          uploadSiteId: 2,
         },
         '<script>alert(1)</script> **Safe**',
       ],
@@ -4012,6 +4393,12 @@ describe('UiRenderer', () => {
           linkTypes: unknown[];
           showLinkLabelField: boolean;
           linkAdvancedFields: string[];
+          assetSources: string[];
+          assetCondition: Record<string, unknown> | null;
+          assetReferenceElement: Record<string, unknown> | null;
+          assetAnyUploader: boolean;
+          uploadFolderId: number | null;
+          uploadSiteId: number | string;
         }
       >('craft-markdown-field')
     ).toMatchObject({
@@ -4026,6 +4413,16 @@ describe('UiRenderer', () => {
       ],
       showLinkLabelField: true,
       linkAdvancedFields: ['title'],
+      assetSources: ['volume:images'],
+      assetCondition: {class: 'AssetCondition'},
+      assetReferenceElement: {
+        referenceElementId: 12,
+        referenceElementOwnerId: null,
+        referenceElementSiteId: 2,
+      },
+      assetAnyUploader: true,
+      uploadFolderId: 7,
+      uploadSiteId: 2,
     });
     expect(container.innerHTML).not.toContain('<script>alert(1)</script>');
     expect(
@@ -4132,15 +4529,15 @@ describe('UiRenderer', () => {
       },
     });
     const addressLine = required(
-      container.querySelector<HTMLElement & {modelValue: string}>(
+      container.querySelector<HTMLElement & {value: string}>(
         'craft-input[name="settings[address][addressLine1]"]'
       ),
       'Expected the address line input.'
     );
-    addressLine.modelValue = 'Changed address';
-    addressLine.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    addressLine.value = 'Changed address';
+    addressLine
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await nextTick();
     expect(renderer.currentValues()).toMatchObject({
       settings: {address: {addressLine1: 'Changed address'}},
@@ -4182,12 +4579,12 @@ describe('UiRenderer', () => {
         data: {fieldDefinitions: selectLocalityFields},
       });
     const administrativeArea = container.querySelector<
-      HTMLElement & {modelValue: string}
+      HTMLElement & {value: string}
     >('craft-select[name="settings[address][administrativeArea]"]')!;
-    administrativeArea.modelValue = 'BE-WBR';
-    administrativeArea.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    administrativeArea.value = 'BE-WBR';
+    administrativeArea
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
     expect(request).toHaveBeenCalledWith('addresses/fields', {
       namespace: 'settings[address]',
@@ -4198,10 +4595,10 @@ describe('UiRenderer', () => {
       settings: {address: {locality: 'Antwerp'}},
     });
 
-    administrativeArea.modelValue = 'BE-VAN';
-    administrativeArea.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true})
-    );
+    administrativeArea.value = 'BE-VAN';
+    administrativeArea
+      .querySelector('input, textarea, select')!
+      .dispatchEvent(new Event('input', {bubbles: true}));
     await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
     await vi.waitFor(() =>
       expect(renderer.currentValues()).toMatchObject({
@@ -4241,9 +4638,9 @@ describe('UiRenderer', () => {
         ).toBe(true)
       );
       expect(
-        container.querySelector<HTMLElement & {modelValue: unknown}>(
+        container.querySelector<HTMLElement & {value: unknown}>(
           '.address-fields craft-input'
-        )?.modelValue
+        )?.value
       ).toBe('Museumstraat 1');
 
       const refreshed = structuredClone(nonEditable);
@@ -4596,19 +4993,9 @@ describe('UiRenderer', () => {
     await mount(emptyMoney, {onMutation: (value) => (mutation = value)});
     await nextTick();
 
-    // The control announces itself once as it's populated. happy-dom won't
-    // bootstrap the underlying form control far enough to fire that on its own,
-    // so raise it exactly as the browser does — the field is still empty, and
-    // the announcement is not marked as coming from a person.
-    const control = required(
+    required(
       container.querySelector('craft-input-money'),
       'Expected the money control.'
-    );
-    control.dispatchEvent(
-      new CustomEvent('model-value-changed', {
-        bubbles: true,
-        detail: {isTriggeredByUser: false},
-      })
     );
     await nextTick();
 
@@ -4752,22 +5139,22 @@ describe('UiRenderer', () => {
       ).querySelectorAll<
         HTMLElement & {
           checked: boolean;
-          choiceValue: string;
+          value: string;
           disabled: boolean;
         }
       >('craft-checkbox'),
     ];
-    expect(checkboxes.map((checkbox) => checkbox.choiceValue)).toEqual([
+    expect(checkboxes.map((checkbox) => checkbox.value)).toEqual([
       'viewEntries',
       'editEntries',
       'deleteEntries',
     ]);
     const edit = required(
-      checkboxes.find((checkbox) => checkbox.choiceValue === 'editEntries'),
+      checkboxes.find((checkbox) => checkbox.value === 'editEntries'),
       'Expected the edit entries permission.'
     );
     const inherited = required(
-      checkboxes.find((checkbox) => checkbox.choiceValue === 'deleteEntries'),
+      checkboxes.find((checkbox) => checkbox.value === 'deleteEntries'),
       'Expected the delete entries permission.'
     );
 
@@ -4777,10 +5164,7 @@ describe('UiRenderer', () => {
       'viewEntries',
     ]);
 
-    edit.checked = true;
-    edit.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
-    );
+    toggleChoice(edit, true);
     await nextTick();
 
     expect(renderer.currentValues()).toEqual({
@@ -5051,10 +5435,78 @@ describe('UiRenderer', () => {
     );
     components.install(app);
     app.mount(container);
+    // The lazily registered controls render once their chunks load.
+    await vi.dynamicImportSettled();
     await nextTick();
     renderer = rendererRef.value;
   }
 });
+
+/**
+ * A form with one Matrix field showing its blocks, whose UIDs are `uids`, each
+ * with a Heading field.
+ */
+function matrixPayload(uids: string[], headings: string[]): UiPayload {
+  const field = (uid: string): UiPayload['nodes'][number] => ({
+    type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+    component: 'craft:field',
+    props: {label: 'Heading', instructions: null, required: false},
+    control: {
+      type: 'CraftCms\\Cms\\Ui\\Controls\\Text',
+      component: 'craft:text',
+      props: {inputType: 'text'},
+      path: ['settings', 'matrix', 'entries', uid, 'heading'],
+      mode: 'editable',
+      deltaGroup: ['settings', 'matrix'],
+      uis: [],
+    } as UiControlPayload,
+  });
+
+  return {
+    ...clonePayload(),
+    refreshable: false,
+    values: {
+      settings: {
+        matrix: {
+          entries: Object.fromEntries(
+            uids.map((uid, index) => [
+              uid,
+              {type: 'text', heading: headings[index]!},
+            ])
+          ),
+          sortOrder: uids,
+        },
+      },
+    },
+    nodes: [
+      {
+        type: 'CraftCms\\Cms\\Ui\\Nodes\\Field',
+        component: 'craft:field',
+        props: {label: 'Content', instructions: null, required: false},
+        control: {
+          type: 'CraftCms\\Cms\\Ui\\Controls\\NestedElementBlocks',
+          component: 'craft:nested-element-blocks',
+          props: {
+            entryTypes: [{value: 'text', label: 'Text'}],
+            addLabel: 'Add an entry',
+            minEntries: null,
+            maxEntries: null,
+          },
+          path: ['settings', 'matrix'],
+          mode: 'editable',
+          deltaGroup: ['settings', 'matrix'],
+          nestsUis: true,
+          uis: uids.map((uid) => ({
+            scope: ['settings', 'matrix', 'entries', uid],
+            refreshable: false,
+            nodes: [field(uid)],
+          })),
+        } as UiControlPayload,
+      },
+    ],
+    errors: [],
+  };
+}
 
 function choiceFieldsPayload(
   props: Record<string, UiPayload['nodes'][number]['props']> = {}

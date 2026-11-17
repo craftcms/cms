@@ -3,11 +3,11 @@ import {afterEach, describe, expect, it, vi} from 'vite-plus/test';
 import ColorSelectControl from './ColorSelectControl.vue';
 import type {UiControlPayload} from './types';
 
-// The real element renders a `craft-select-rich`, whose Lion internals need
-// layout happy-dom doesn't provide, so a bare element stands in for it.
+// A bare element stands in for the real one, so the test can raise its
+// events directly.
 vi.mock('@craftcms/ui/components/select-color/select-color', () => {
   class CraftSelectColor extends HTMLElement {
-    modelValue: string | null = null;
+    value: string | null = null;
     colors: string[] = [];
   }
   customElements.define('craft-select-color', CraftSelectColor);
@@ -24,7 +24,7 @@ describe('ColorSelectControl', () => {
     container?.remove();
   });
 
-  async function mount(value: string, onUpdate = vi.fn()) {
+  async function mount(value: string, onUpdate = vi.fn(), required = false) {
     const control: UiControlPayload<{
       allowTransparent: boolean;
       blankLabel: string;
@@ -50,28 +50,27 @@ describe('ColorSelectControl', () => {
           value,
           editable: true,
           invalid: false,
-          required: false,
+          required,
           'onUpdate:value': onUpdate,
         }),
     });
     app.mount(container);
     await nextTick();
 
-    return container.querySelector('craft-select-color') as HTMLElement & {
-      modelValue: string | null;
+    return container.querySelector(
+      'craft-select-color'
+    ) as unknown as HTMLElement & {
+      value: string | null;
       colors: string[];
       allowTransparent: boolean;
+      required?: boolean;
     };
   }
 
-  function pick(
-    select: HTMLElement & {modelValue: string | null},
-    modelValue: string
-  ) {
-    select.modelValue = modelValue;
-    select.dispatchEvent(
-      new CustomEvent('model-value-changed', {bubbles: true, composed: true})
-    );
+  function pick(select: HTMLElement & {value: string | null}, value: string) {
+    select.value = value;
+    select.dispatchEvent(new Event('input', {bubbles: true, composed: true}));
+    select.dispatchEvent(new Event('change', {bubbles: true, composed: true}));
   }
 
   it('offers the control’s colors and selects "no color" for an empty value', async () => {
@@ -80,7 +79,7 @@ describe('ColorSelectControl', () => {
     expect(select.colors).toEqual(['red', 'blue']);
     expect(select.allowTransparent).toBe(true);
     expect(select.getAttribute('blank-label')).toBe('No color');
-    expect(select.modelValue).toBe('__blank__');
+    expect(select.value).toBe('__blank__');
     expect(select.getAttribute('name')).toBe('color');
   });
 
@@ -93,5 +92,11 @@ describe('ColorSelectControl', () => {
 
     pick(select, '__blank__');
     expect(onUpdate).toHaveBeenLastCalledWith('', 'discrete');
+  });
+
+  it('marks the select required when the field is', async () => {
+    const select = await mount('red', vi.fn(), true);
+
+    expect(select.required).toBe(true);
   });
 });

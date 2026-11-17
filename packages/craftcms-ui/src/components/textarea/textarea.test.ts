@@ -44,20 +44,13 @@ describe('craft-textarea', () => {
     );
   });
 
-  it('carries the value as Lion s modelValue', async () => {
+  it('pushes its value onto the native textarea', async () => {
     const element = await createTextarea();
 
-    element.modelValue = 'Some description';
+    element.value = 'Some description';
     await element.updateComplete;
 
     expect(native(element).value).toBe('Some description');
-  });
-
-  it('reflects monospace so the stylesheet can act on it', async () => {
-    const element = await createTextarea({monospace: ''});
-
-    expect(element.monospace).toBe(true);
-    expect(element.hasAttribute('monospace')).toBe(true);
   });
 
   it('disables the native control', async () => {

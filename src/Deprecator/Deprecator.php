@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Deprecator;
 
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
-use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Template;
@@ -14,9 +13,10 @@ use CraftCms\Cms\Twig\TwigExceptionMapper;
 use CraftCms\Cms\View\TemplateResolver;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Log;
 use Throwable;
-use Twig\Extension\AbstractExtension;
+use Twig\Extension\CoreExtension;
 use Twig\Template as TwigTemplate;
 
 /**
@@ -160,94 +160,62 @@ class Deprecator
     /**
      * Returns the file and line number that should be associated with the error.
      *
-     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results leading up to [[log()]]
+     * That's where the deprecated code was called from: a template line, or else a PHP file and line.
+     * Wrappers that forward to [[log()]] can pass their own backtrace and forward the result as `$file` and `$line`.
+     *
+     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results whose first frame is the logging call
      * @return array{0: string, 1: ?int} [file, line]
      */
-    private function findOrigin(array $traces): array
+    public function findOrigin(array $traces): array
     {
-        // Should we be treating this as a template deprecation log?
-        if (empty($traces[2]['class']) && isset($traces[2]['function']) && $traces[2]['function'] === 'twig_get_attribute') {
-            // came through twig_get_attribute()
-            $templateTrace = 3;
-        } elseif ($this->isTemplateAttributeCall($traces, 4)) {
-            // came through Template::attribute()
-            $templateTrace = 4;
-        } elseif ($this->isTemplateAttributeCall($traces, 2)) {
-            // special case for "deprecated" date functions the Template helper pretends still exist
-            $templateTrace = 2;
-        } elseif (
-            isset($traces[1]['class'], $traces[1]['function']) &&
-            is_a($traces[1]['class'], ElementQueryInterface::class, true) &&
-            $traces[1]['function'] === 'getIterator'
+        // Frame 0 is the logging call; skip the facade that forwarded it, if any
+        $t = 1;
+        while (
+            isset($traces[$t]['class'], $traces[$t]['function']) &&
+            $traces[$t]['function'] === '__callStatic' &&
+            is_a($traces[$t]['class'], Facade::class, true)
         ) {
-            // looping through element queries
-            if (isset($traces[4]['function']) && $traces[4]['function'] === 'twig_array_batch') {
-                // |batch filter
-                $templateTrace = 4;
-            } else {
-                $templateTrace = 1;
-            }
-        } elseif (
-            isset($traces[1]['class'], $traces[1]['function']) &&
-            is_a($traces[1]['class'], AbstractExtension::class, true) &&
-            in_array($traces[1]['function'], [
-                'getCsrfInput',
-                'getFootHtml',
-                'getHeadHtml',
-                'groupFilter',
-                'roundFunction',
-                'svgFunction',
-                'ucwordsFilter',
-            ], true)
-        ) {
-            // deprecated function
-            $templateTrace = 1;
+            $t++;
         }
 
-        if (isset($templateTrace)) {
-            $templateCodeLine = $traces[$templateTrace]['line'] ?? null;
-            $template = $traces[$templateTrace + 1]['object'] ?? null;
-
-            if ($template instanceof TwigTemplate) {
-                $templateName = $template->getTemplateName();
-                $file = app(TemplateResolver::class)->resolve($templateName) ?: $templateName;
-                $line = $this->findTemplateLine($template, $templateCodeLine);
-
-                return [$file, $line];
-            }
+        // Logged from top-level code, outside any function: that code is the origin
+        if (! isset($traces[$t]) || in_array($traces[$t]['function'] ?? null, ['include', 'include_once', 'require', 'require_once'], true)) {
+            $t--;
         }
 
-        // Did this go through ::__get()?
-        if (isset($traces[2]['class'], $traces[2]['function']) && $traces[2]['function'] === '__get') {
-            $t = 3;
-        } else {
-            $t = 1;
+        // $traces[$t] is now the deprecated code. Skip the frames that dispatched the call to it on behalf of the actual caller,
+        // including calls made by PHP itself, such as array_map() callbacks, which have no file.
+        while (isset($traces[$t + 1]) && (! isset($traces[$t]['file']) || $this->isDispatchFrame($traces[$t + 1]))) {
+            $t++;
         }
 
         $file = $traces[$t]['file'] ?? '';
         $line = $traces[$t]['line'] ?? null;
+        $template = $traces[$t + 1]['object'] ?? null;
+
+        if ($template instanceof TwigTemplate) {
+            $templateName = $template->getTemplateName();
+            $file = app(TemplateResolver::class)->resolve($templateName) ?: $templateName;
+            $line = $this->findTemplateLine($template, $line);
+        }
 
         return [$file, $line];
     }
 
     /**
-     * Returns whether the given trace is a call to [[Template::attribute()]]
+     * Returns whether the given trace is a magic method or Twig attribute lookup that called the next frame on someone else's behalf.
      *
-     * @param  list<array<string, mixed>>  $traces  debug_backtrace() results leading up to [[log()]]
-     * @param  int  $index  The trace index to check
+     * @param  array<string, mixed>  $trace
      */
-    private function isTemplateAttributeCall(array $traces, int $index): bool
+    private function isDispatchFrame(array $trace): bool
     {
-        if (! isset($traces[$index])) {
-            return false;
-        }
-
-        $t = $traces[$index];
+        $class = $trace['class'] ?? null;
+        $function = $trace['function'] ?? null;
 
         return
-            isset($t['class'], $t['function']) &&
-            $t['class'] === Template::class &&
-            $t['function'] === 'attribute';
+            in_array($function, ['__get', '__set', '__call', '__callStatic'], true) ||
+            ($class === CoreExtension::class && $function === 'getAttribute') ||
+            ($class === Template::class && $function === 'attribute');
     }
 
     /**
@@ -295,8 +263,8 @@ class Deprecator
             return null;
         }
 
-        // getDebugInfo() goes upward, so the first code line that's <= the trace line will be the match
-        return array_find($template->getDebugInfo(), fn ($codeLine) => $codeLine <= $actualCodeLine);
+        // getDebugInfo() maps compiled code lines to template lines, going upward, so the first code line that's <= the trace line will be the match
+        return array_find($template->getDebugInfo(), fn ($templateLine, $codeLine) => $codeLine <= $actualCodeLine);
     }
 
     /**

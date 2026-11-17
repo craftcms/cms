@@ -26,6 +26,7 @@
     contextMenu?: string | null;
     actionButton?: string | null;
     actionMenu?: string | null;
+    fullPageForm?: boolean;
     additionalButtons?: string | null;
     sidebar?: string | null;
     bodyClass?: Array<string> | string | null;
@@ -50,6 +51,11 @@
 
   const fragment = (html?: string | null) =>
     html ? {html, headHtml: '', bodyHtml: ''} : null;
+
+  /** Whether the screen's own save controls belong in the content footer. */
+  const savesFromFooter = computed(
+    () => Boolean(props.fullPageForm) && Boolean(props.actionButton)
+  );
 
   /**
    * Screens whose behavior is driven from JS — the element editor, notably —
@@ -236,9 +242,23 @@
     />
   </LayoutSlot>
 
-  <LayoutSlot v-if="actionButton || actionMenu" name="content-actions">
+  <!-- A full-page form's `actionButton` is the screen's own save controls:
+       Craft 5 drew them in the header, and this shell draws save controls in
+       the content footer, so they go there and stand in for the shell's. -->
+  <LayoutSlot v-if="savesFromFooter" name="primary-action">
     <HtmlFragmentRenderer
-      v-if="actionButton"
+      class="flex flex-wrap items-center gap-md"
+      :fragment="fragment(actionButton)"
+      @ready="fragmentReady"
+    />
+  </LayoutSlot>
+
+  <LayoutSlot
+    v-if="(actionButton && !savesFromFooter) || actionMenu"
+    name="content-actions"
+  >
+    <HtmlFragmentRenderer
+      v-if="actionButton && !savesFromFooter"
       class="flex flex-wrap items-center gap-md"
       :fragment="fragment(actionButton)"
       @ready="fragmentReady"

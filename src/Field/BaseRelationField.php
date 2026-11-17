@@ -266,16 +266,20 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     #[Override]
     public function uiControl(FieldContext $context): Control
     {
-        $sources = $this->allowMultipleSources ? $this->sources : $this->source;
-        $sources = $sources === '*' ? null : $sources;
+        $sources = $this->getInputSources($context->element);
+        $sources = $sources === '*' || $sources === [null] ? null : $sources;
         $sources = is_string($sources) ? [$sources] : $sources;
         $value = $context->value === null
             ? []
             : $this->serializeValue($context->value, $context->element);
+        $searchCriteria = $this->searchCriteria($context->element);
 
         return $this->selectControl($context)
             ->elementType(static::elementType())
             ->sources($sources)
+            ->criteria($this->getInputSelectionCriteria())
+            ->selectionCondition($this->getSelectionCondition())
+            ->referenceElement($context->element)
             ->selectionLabel($this->selectionLabel ?? static::defaultSelectionLabel())
             ->limit($this->maxRelations)
             ->showSiteMenu($this->showSiteMenu)
@@ -284,6 +288,8 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
             ->thumbSize($this->thumbSize)
             ->maintainHierarchy($this->maintainHierarchy)
             ->branchLimit($this->branchLimit)
+            ->search($searchCriteria, $searchCriteria !== null ? $this->targetSiteId($context->element) : null)
+            ->disabledElementIds($this->disabledElementIds($context->element))
             // Which elements can be selected can depend on the field’s settings, such as its selectable element
             // condition, so values are only copied between instances of this field.
             ->valueScope($this->uid ?? static::class)
@@ -1677,7 +1683,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
     {
         return Collection::make($this->availableSources())
             ->map(fn ($s) => [
-                'label' => $s['label'],
+                'label' => $s['label'] ?? '',
                 'value' => $s['key'],
                 'data' => [
                     'structure-id' => $s['structureId'] ?? null,
@@ -1752,26 +1758,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
         $selectionCriteria = $this->getInputSelectionCriteria();
         $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
-        $disabledElementIds = [];
-
-        if (! $this->allowSelfRelations && $element) {
-            if ($element->id) {
-                $disabledElementIds[] = $element->getCanonicalId();
-            }
-            if ($element instanceof NestedElementInterface) {
-                $el = $element;
-                do {
-                    try {
-                        $el = $el->getOwner();
-                        if ($el) {
-                            $disabledElementIds[] = $el->getCanonicalId();
-                        }
-                    } catch (RuntimeException) {
-                        break;
-                    }
-                } while ($el instanceof NestedElementInterface);
-            }
-        }
+        $disabledElementIds = $this->disabledElementIds($element);
 
         $selectionCondition = $this->getSelectionCondition();
         if ($selectionCondition instanceof ElementCondition) {
@@ -1779,14 +1766,7 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
         }
 
         $sources = $this->getInputSources($element);
-        $searchCriteria = null;
-
-        if ($this->showSearchInput($element)) {
-            $source = ElementSources::findSource($elementType, reset($sources), ElementSources::CONTEXT_FIELD);
-            if (! empty($source['criteria'])) {
-                $searchCriteria = $source['criteria'];
-            }
-        }
+        $searchCriteria = $this->searchCriteria($element);
 
         $targetSiteId = $this->_targetSiteId();
 
@@ -1822,6 +1802,62 @@ abstract class BaseRelationField extends Field implements EagerLoadingFieldInter
                 'defaultSiteId' => $targetSiteId ?? $element->siteId ?? null,
             ],
         ];
+    }
+
+    /**
+     * Returns the IDs of elements the field can’t relate to `$element`: the element itself and its owners, unless
+     * self relations are allowed.
+     *
+     * @return list<int>
+     */
+    protected function disabledElementIds(?ElementInterface $element): array
+    {
+        $disabledElementIds = [];
+
+        if (! $this->allowSelfRelations && $element) {
+            if ($element->id) {
+                $disabledElementIds[] = $element->getCanonicalId();
+            }
+            if ($element instanceof NestedElementInterface) {
+                $el = $element;
+                do {
+                    try {
+                        $el = $el->getOwner();
+                        if ($el) {
+                            $disabledElementIds[] = $el->getCanonicalId();
+                        }
+                    } catch (RuntimeException) {
+                        break;
+                    }
+                } while ($el instanceof NestedElementInterface);
+            }
+        }
+
+        return $disabledElementIds;
+    }
+
+    /**
+     * Returns the criteria the search input finds elements with: its one source’s, with the field’s selection criteria
+     * over them as the selector modal applies them, or `null` when it isn’t shown.
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function searchCriteria(?ElementInterface $element): ?array
+    {
+        if (! $this->showSearchInput($element)) {
+            return null;
+        }
+
+        $sources = $this->getInputSources($element);
+        $sourceKey = is_array($sources) ? reset($sources) : $sources;
+
+        if (! is_string($sourceKey)) {
+            return null;
+        }
+
+        $source = ElementSources::findSource(static::elementType(), $sourceKey, ElementSources::CONTEXT_FIELD);
+
+        return empty($source['criteria']) ? null : [...$source['criteria'], ...$this->getInputSelectionCriteria()];
     }
 
     /**

@@ -234,14 +234,22 @@ abstract class BaseField extends FieldLayoutElement
             'data-color' => $indicator['iconColor'] ?? null,
         ]), $this->selectorIndicators()));
 
+        // Indicators sit beside the label, or on their own row when there isn't one.
+        if ($indicatorHtml) {
+            $indicatorHtml = Html::tag('div', $indicatorHtml, [
+                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'shrink-0', 'gap-1'],
+            ]);
+        }
+
         if ($label !== null) {
             $label = Html::encode($label);
             $innerHtml .= Html::tag('div',
                 Html::tag('h4', $label, [
                     'title' => $label,
-                ]), [
+                ]).$indicatorHtml, [
                     'class' => 'fld-element-label',
                 ]);
+            $indicatorHtml = '';
         }
 
         $innerHtml .=
@@ -254,11 +262,7 @@ abstract class BaseField extends FieldLayoutElement
             ]).
             Html::endTag('div'); // .fld-attribute
 
-        if ($indicatorHtml) {
-            $innerHtml .= Html::tag('div', $indicatorHtml, [
-                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-1', 'mt-1'],
-            ]);
-        }
+        $innerHtml .= $indicatorHtml;
 
         $html = Html::tag('div', $innerHtml, [
             'class' => ['field-name'],

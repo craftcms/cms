@@ -27,12 +27,16 @@
         href: UsersController.edit['/{cpTrigger?}/myaccount']().url,
         label: t('Profile'),
       },
-      {
-        href: PermissionsController.index[
-          '/{cpTrigger?}/myaccount/permissions'
-        ]().url,
-        label: t('Permissions'),
-      },
+      ...(currentUser.value?.showPermissions
+        ? [
+            {
+              href: PermissionsController.index[
+                '/{cpTrigger?}/myaccount/permissions'
+              ]().url,
+              label: t('Permissions'),
+            },
+          ]
+        : []),
       {
         href: PreferencesController.index().url,
         label: t('Preferences'),

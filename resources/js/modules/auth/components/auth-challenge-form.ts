@@ -120,10 +120,16 @@ export abstract class CraftAuthChallengeForm extends LitElement {
    */
   protected abstract get endpoint(): string;
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  // ── Focus ──────────────────────────────────────────────────────────────────
 
-  override firstUpdated() {
-    this._input?.focus();
+  /**
+   * Focuses the code input. The form never focuses itself: whoever shows it
+   * decides. The login challenge does, where the form is all there is to fill
+   * in; a setup slideout leaves it to its own opening focus, which keeps
+   * focus on the heading when instructions come first.
+   */
+  override focus(options?: FocusOptions): void {
+    this._input?.focus(options);
   }
 
   // ── Event handlers ─────────────────────────────────────────────────────────

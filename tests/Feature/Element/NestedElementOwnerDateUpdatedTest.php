@@ -18,7 +18,6 @@ use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Facades\Sections;
 use CraftCms\Cms\User\Models\User;
-use Illuminate\Support\Sleep;
 
 use function Pest\Laravel\actingAs;
 
@@ -157,7 +156,7 @@ it('bumps every ancestor’s dateUpdated when a doubly-nested Matrix block is sa
 
     // Make sure the upcoming edit gets a distinct (later) `dateUpdated` timestamp, since timestamps
     // are only stored with second precision.
-    Sleep::sleep(1);
+    $this->travel(1)->seconds();
 
     // 3. Edit the *innermost* block directly and save only that element — exactly as if it were
     // edited via its own nested-entry edit page, without resaving the Page or the outer block.
@@ -220,7 +219,7 @@ it('leaves the owner’s dateUpdated alone when an unpublished nested draft is s
     $owner = EntryElement::find()->id($ownerModel->id)->status(null)->one();
     $originalOwnerDateUpdated = $owner->dateUpdated->getTimestamp();
 
-    Sleep::sleep(1);
+    $this->travel(1)->seconds();
 
     $block = new EntryElement([
         'fieldId' => $matrixField->id,

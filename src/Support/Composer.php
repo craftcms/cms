@@ -6,13 +6,16 @@ namespace CraftCms\Cms\Support;
 
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Facades\Path;
-use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Support\Facades\Cache;
+use RuntimeException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 
+use function CraftCms\Cms\t;
 use function Illuminate\Filesystem\join_paths;
 
 /**
@@ -20,14 +23,70 @@ use function Illuminate\Filesystem\join_paths;
  *
  * @since 6.0.0
  */
-#[Singleton]
+#[Scoped]
 class Composer
 {
+    public const string MIN_VERSION = '2.2.0';
+
+    private ?bool $isAvailable = null;
+
+    private ?string $executable = null;
+
     public function __construct(
         public string $composerRepoUrl = 'https://composer.craftcms.com',
         /** @var int The maximum number of composer.json and composer.lock backups to store in storage/composer-backups/ */
         public int $maxBackups = 50,
     ) {}
+
+    /**
+     * Returns a short-lived display capability. Package operations must use getIsAvailable() instead.
+     */
+    public function getIsAvailableForUi(): bool
+    {
+        $key = self::class.':availability:'.hash('sha256', implode('|', [
+            self::MIN_VERSION,
+            gethostname() ?: '',
+            PHP_BINARY,
+            getenv('PATH') ?: '',
+        ]));
+
+        return Cache::remember($key, 60, fn (): bool => $this->getIsAvailable());
+    }
+
+    public function getIsAvailable(): bool
+    {
+        if ($this->isAvailable !== null) {
+            return $this->isAvailable;
+        }
+
+        $this->isAvailable = false;
+
+        try {
+            $this->executable = new ExecutableFinder()->find('composer');
+
+            if ($this->executable === null) {
+                return false;
+            }
+
+            $process = new Process([$this->executable, '--version', '--no-ansi', '--no-interaction', '--no-plugins', '--no-scripts']);
+            $process->setTimeout(10)->run();
+
+            return $this->isAvailable = $process->isSuccessful() &&
+                preg_match('/^Composer(?: version)? (\d+\.\d+\.\d+(?:-[\w.-]+)?)/m', $process->getOutput(), $matches) &&
+                version_compare($matches[1], self::MIN_VERSION, '>=');
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    public function getUnavailableReason(bool $forUi = false): ?string
+    {
+        $available = $forUi ? $this->getIsAvailableForUi() : $this->getIsAvailable();
+
+        return $available ? null : t('Composer {version} or later must be installed and available in the PATH environment variable.', [
+            'version' => self::MIN_VERSION,
+        ]);
+    }
 
     /**
      * Returns the path to composer.json.
@@ -94,6 +153,10 @@ class Composer
      */
     public function install(?array $requirements = null, ?callable $callback = null): void
     {
+        if ($reason = $this->getUnavailableReason()) {
+            throw new RuntimeException($reason);
+        }
+
         if ($requirements !== null) {
             $this->backupComposerFiles();
         }
@@ -138,6 +201,10 @@ class Composer
      */
     public function uninstall(array $packages, ?callable $callback = null): void
     {
+        if ($reason = $this->getUnavailableReason()) {
+            throw new RuntimeException($reason);
+        }
+
         $this->backupComposerFiles();
 
         $packages = array_map(strtolower(...), $packages);
@@ -170,41 +237,16 @@ class Composer
      */
     private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
-        $composerPath = new ExecutableFinder()->find('composer');
-        $pharPath = '';
-
-        if (! $composerPath) {
-            $runtimePath = Path::runtime();
-
-            // Copy composer.phar into the runtime folder
-            $pharPath = join_paths($runtimePath, 'composer.phar');
-            copy(Aliases::get('@lib/composer.phar'), $pharPath);
-
-            $homePath = join_paths($runtimePath, 'composer');
-            File::ensureDirectoryExists($homePath);
-        }
-
-        $command = array_merge([
-            PHP::executable() ?? 'php',
-            $composerPath ?? $pharPath,
-        ], $command, [
+        $command = array_merge([$this->executable], $command, [
             '--working-dir',
             dirname($jsonPath),
             '--no-ansi',
             '--no-interaction',
         ]);
 
-        try {
-            new Process($command, null, array_filter([
-                'COMPOSER_HOME' => $homePath ?? null,
-            ]))
-                ->setTimeout(null)
-                ->mustRun($callback);
-        } finally {
-            if ($pharPath && File::exists($pharPath)) {
-                File::delete($pharPath);
-            }
-        }
+        new Process($command)
+            ->setTimeout(null)
+            ->mustRun($callback);
 
         // Invalidate opcache
         if (function_exists('opcache_reset')) {

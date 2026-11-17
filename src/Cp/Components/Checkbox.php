@@ -17,8 +17,8 @@ use function CraftCms\Cms\t;
 
 /**
  * PHP counterpart to the `<craft-checkbox>` web component. The native input
- * and label render in the light DOM (the web component is a Lion styling
- * shell), so input namespacing, form posting and legacy JS hooks
+ * and label render in the light DOM (the web component is a styling shell),
+ * so input namespacing, form posting and legacy JS hooks
  * (Craft.FieldToggle) keep working.
  *
  *     Checkbox::make()

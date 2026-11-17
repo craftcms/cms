@@ -70,6 +70,14 @@ export function useUiRefresh(options: {
     const serialized = options.fingerprint(snapshot, scope);
 
     if (serialized === lastValues.get(key)) {
+      // A request already in flight for these values answers this change too,
+      // so it shouldn't be dropped as stale.
+      const inFlight = active.get(key);
+
+      if (inFlight) {
+        versions.set(key, inFlight.version);
+      }
+
       return;
     }
 

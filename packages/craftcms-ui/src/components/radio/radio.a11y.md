@@ -2,7 +2,7 @@
 
 Used inside `craft-radio-group`; see `radio-group.a11y.md` for the pattern.
 
-The radio renders a native `<input type="radio">` in the light DOM, with Lion's custom graphic hidden, so the browser draws the control and supplies its role, state and keyboard behavior.
+The radio renders a native `<input type="radio">` in the light DOM, so the browser draws the control and supplies its role, state and keyboard behavior.
 
 ## Requirements
 

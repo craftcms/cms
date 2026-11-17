@@ -1,4 +1,3 @@
-import {DisabledWithTabIndexMixin} from '@lion/ui/core.js';
 import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
 import {classMap} from 'lit/directives/class-map.js';
@@ -12,14 +11,12 @@ import styles from './slide-picker-slider.styles.js';
  * `craft-slide-picker`, which supplies all three and drives this.
  *
  * Like a native input, it holds its value as a string and fires `input` when a
- * person changes it, which is what Lion's field listens for.
+ * person changes it, which is what the picker listens for.
  *
  * @fires input - A person changed the value. Doesn't bubble; the picker
  *   announces the change from its own element.
  */
-export default class CraftSlidePickerSlider extends DisabledWithTabIndexMixin(
-  LitElement
-) {
+export default class CraftSlidePickerSlider extends LitElement {
   static override styles = [styles];
 
   /** Lowest selectable value. */
@@ -30,6 +27,8 @@ export default class CraftSlidePickerSlider extends DisabledWithTabIndexMixin(
   @property({type: Number}) step = 10;
   /** The selected value, as a string, the way a native input holds it. */
   @property() value = '';
+  /** Takes the slider out of the tab order and stops it changing. */
+  @property({type: Boolean, reflect: true}) disabled = false;
   /** Shows the value without letting it be changed. */
   @property({type: Boolean, reflect: true, attribute: 'readonly'})
   readOnly = false;
@@ -120,6 +119,10 @@ export default class CraftSlidePickerSlider extends DisabledWithTabIndexMixin(
     this.setAttribute('aria-valuetext', this.valueText(this.#number));
     this.setAttribute('aria-readonly', String(this.readOnly));
     this.setAttribute('aria-disabled', String(this.disabled));
+
+    if (changed.has('disabled')) {
+      this.tabIndex = this.disabled ? -1 : 0;
+    }
   }
 
   override render() {

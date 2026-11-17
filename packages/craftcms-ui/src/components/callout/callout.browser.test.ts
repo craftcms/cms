@@ -63,6 +63,16 @@ it.each([
     </craft-callout>`,
     'title',
   ],
+  [
+    'a slotted heading larger than the body',
+    `<craft-callout icon="info" style="inline-size: 12rem">
+      <h2 slot="title" style="margin: 0; font-size: 1.5em; line-height: 1.2">
+        Your draft was withdrawn
+      </h2>
+      Resubmit it when your edits are ready.
+    </craft-callout>`,
+    'heading',
+  ],
 ])(
   'centers its icon on the first line of %s',
   async (_case, markup, firstLine) => {
@@ -76,7 +86,9 @@ it.each([
     const text =
       firstLine === 'title'
         ? callout.shadowRoot!.querySelector('.callout__title')!
-        : callout.firstChild!;
+        : firstLine === 'heading'
+          ? callout.querySelector('h2')!
+          : callout.firstChild!;
 
     expect(
       Math.abs((icon.top + icon.bottom) / 2 - firstLineCenter(text))

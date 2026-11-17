@@ -110,7 +110,7 @@
     <craft-dialog
       :label="t('Your session is about to expire')"
       no-close
-      .opened="state.phase === 'warning'"
+      .open="state.phase === 'warning'"
       @craft-before-hide="onBeforeHide"
     >
       <p class="m-0">

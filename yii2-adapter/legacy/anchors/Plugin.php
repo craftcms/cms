@@ -8,7 +8,7 @@
 
 namespace craft\anchors;
 
-use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Yii2Adapter\LooseEnds\LegacyUsage;
 
 /**
  * Stands in for the Anchors plugin, which is part of Craft now.
@@ -31,7 +31,7 @@ class Plugin
 
     public static function getInstance(): self
     {
-        Deprecator::log(__METHOD__, '`craft\anchors\Plugin` has been deprecated. The Anchors plugin is part of Craft now, so use `CraftCms\Cms\Support\Facades\Anchors` instead.');
+        LegacyUsage::record(__METHOD__, '`craft\anchors\Plugin` has been deprecated. The Anchors plugin is part of Craft now, so use `CraftCms\Cms\Support\Facades\Anchors` instead.');
 
         return self::$instance ??= new self();
     }

@@ -1,6 +1,6 @@
 # `craft-checkbox-group` accessibility
 
-Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/) pattern for a set of checkboxes: a `role="group"` container named by a visible label. Each box follows `checkbox.a11y.md`. Lion's `FormGroupMixin` wires the group's label, help text and feedback to the host. `HasLabel` only reflects a `has-label` attribute for spacing; see `input.a11y.md`. Inside `craft-field`, the field draws the label and instructions; see `field.a11y.md`.
+Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/) pattern for a set of checkboxes: a `role="group"` container named by a visible label. Each box follows `checkbox.a11y.md`. The `ChoiceGroup` mixin wires the group's label, help text and feedback to the host. Inside `craft-field`, the field draws the label and instructions; see `field.a11y.md`.
 
 **Not for:**
 
@@ -12,15 +12,15 @@ Follows the WAI-ARIA APG [Checkbox](https://www.w3.org/WAI/ARIA/apg/patterns/che
 
 ### Semantics
 
-- [ ] The host has `role="group"`, named by its label through `aria-labelledby`. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Not yet verified.
-- [ ] `disabled` disables every checkbox in the group, including ones added later. Per WCAG 4.1.2 (Name, Role, Value). Not yet verified.
-- [x] A server-rendered group adopts the `name` on its inputs instead of stripping it, so the boxes keep posting as one field. Per WCAG 4.1.2 (Name, Role, Value). Verified by `adopts the group name from the slotted inputs instead of wiping theirs` and `aggregates SSR checked state into the group modelValue` in `checkbox-group.test.ts`.
+- [x] The host has `role="group"`, named by its label through `aria-labelledby`. Per WCAG 1.3.1 (Info and Relationships) and 4.1.2 (Name, Role, Value). Verified by `is a group named by its label and described by its help text` in `checkbox-group.test.ts`.
+- [x] `disabled` disables every checkbox in the group, including ones added later. Per WCAG 4.1.2 (Name, Role, Value). Verified by `disables every checkbox, including ones added later` in `checkbox-group.test.ts`.
+- [x] A server-rendered group adopts the `name` on its inputs instead of stripping it, so the boxes keep posting as one field. Per WCAG 4.1.2 (Name, Role, Value). Verified by `adopts the group name from the slotted inputs instead of wiping theirs` and `aggregates SSR checked state into the group value` in `checkbox-group.test.ts`.
 
 ### Forms and validation
 
-- [ ] Help text, from the `help-text` slot, is referenced by the host's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions). Not yet verified.
-- [ ] A `Required` validator ("choose at least one") marks the group as required. Per WCAG 3.3.2 (Labels or Instructions). Known gap: Lion sets `aria-required` only on inputs and compatible roles, and `group` isn't one, so the requirement isn't exposed programmatically.
-- [ ] While a group-level error is shown, the host carries `aria-invalid="true"`, and the message in the `feedback` slot is referenced by its `aria-describedby`. Per WCAG 3.3.1 (Error Identification). Not yet verified.
+- [x] Help text, from the `help-text` attribute or slot, is referenced by the host's `aria-describedby`. Per WCAG 1.3.1 (Info and Relationships) and 3.3.2 (Labels or Instructions). Verified by `is a group named by its label and described by its help text` in `checkbox-group.test.ts`.
+- [ ] `required` ("choose at least one") marks the group as required. Per WCAG 3.3.2 (Labels or Instructions). Known gap: `aria-required` isn't allowed on `role="group"`, so the requirement isn't exposed programmatically; the label has to say it.
+- [ ] While a group-level error is shown (`invalid`), the host carries `aria-invalid="true"`, and the message in the `feedback` slot is referenced by its `aria-describedby`. Per WCAG 3.3.1 (Error Identification). Not yet verified.
 - [ ] Group-level errors are announced when they appear, through the `feedback` slot's live region. Per WCAG 4.1.3 (Status Messages). Not yet verified.
 
 ### Keyboard and focus

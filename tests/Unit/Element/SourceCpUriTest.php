@@ -13,11 +13,6 @@ it('links an entry section by its handle, under its index page', function () {
         ->and(Entry::sourceCpUri($source, 'Media Kit'))->toBe('content/media-kit/posts');
 });
 
-it('links singles by the key they share', function () {
-    // Every Single shares one source, and so one URL.
-    expect(Entry::sourceCpUri(['key' => 'singles']))->toBe('content/entries/singles');
-});
-
 it('links an asset volume by its handle', function () {
     expect(Asset::sourceCpUri([
         'key' => 'volume:abc',

@@ -21,6 +21,7 @@ use CraftCms\Cms\Element\Concerns\NestedElement;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionInterface;
 use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\Element;
+use CraftCms\Cms\Element\Enums\ElementActionContext;
 use CraftCms\Cms\Element\Enums\ElementPropertyType;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Queries\AddressQuery;
@@ -29,6 +30,7 @@ use CraftCms\Cms\Gql\Attributes\Gql;
 use CraftCms\Cms\Http\Requests\ElementRequest;
 use CraftCms\Cms\Shared\Concerns\HasNames;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\Twig\Attributes\AllowedInSandbox;
 use CraftCms\Cms\User\Elements\User;
 use CraftCms\RulesetValidation\Attributes\Ruleset;
@@ -402,6 +404,29 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         return $owner instanceof User && $owner->getIsCurrent();
     }
 
+    /**
+     * @return list<array<string, mixed>>
+     */
+    #[Override]
+    protected function extraActionMenuDescriptors(
+        ElementActionContext $context = ElementActionContext::Editor,
+    ): array {
+        if (empty($this->fieldId) || ! currentUser()?->isAdmin() || ! Cms::config()->allowAdminChanges) {
+            return [];
+        }
+
+        return [
+            [
+                'label' => t('Field settings'),
+                'icon' => 'gear',
+                'behavior' => [
+                    'type' => 'slideout',
+                    'url' => Url::cpUrl("settings/fields/edit/$this->fieldId"),
+                ],
+            ],
+        ];
+    }
+
     /** @return list<array<string, mixed>> */
     #[Override]
     protected function safeActionMenuItems(): array
@@ -670,6 +695,12 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     /**
      * The address UI control posts its fields under `address`.
      *
+     * When the country changes, an administrative area that isn’t one of the new country’s is dropped. Autofill
+     * can post a new country along with an administrative area chosen from the previous country’s list, and
+     * keeping it would add it to the new country’s options, where autofill selects it again. An unrecognized
+     * administrative area is kept when the country doesn’t change or is cleared, or when neither country lists it.
+     * Surrounding whitespace is ignored when matching, as `AddressRules` trims it during validation.
+     *
      * @param  array<string,mixed>  $values
      */
     #[Override]
@@ -678,6 +709,26 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         if (isset($values['address']) && is_array($values['address'])) {
             $values = [...$values['address'], ...$values];
             unset($values['address']);
+        }
+
+        $previousCountryCode = $this->countryCode ?? null;
+        $countryCode = $values['countryCode'] ?? null;
+        if (
+            is_string($countryCode) && $countryCode !== '' &&
+            is_string($values['administrativeArea'] ?? null) &&
+            $countryCode !== $previousCountryCode
+        ) {
+            $subdivisions = app(Addresses::class)->getSubdivisionRepository();
+            $administrativeAreas = $subdivisions->getList([$countryCode]);
+            $previousAdministrativeAreas = $previousCountryCode ? $subdivisions->getList([$previousCountryCode]) : [];
+            $value = trim($values['administrativeArea']);
+
+            if (
+                ! isset($administrativeAreas[$value]) &&
+                ($administrativeAreas !== [] || isset($previousAdministrativeAreas[$value]))
+            ) {
+                $values['administrativeArea'] = null;
+            }
         }
 
         parent::setAttributesFromRequest($values);

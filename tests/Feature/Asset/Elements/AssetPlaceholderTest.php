@@ -8,7 +8,6 @@ use CraftCms\Cms\Asset\Enums\FileKind;
 use CraftCms\Cms\Asset\Models\Asset as AssetModel;
 use CraftCms\Cms\Asset\Models\Volume;
 use CraftCms\Cms\Asset\PreviewHandlers\Image;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Image\Data\ImageColors;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Tests\TestClasses\Asset\ControlPanelAssetTransformDriver;
@@ -99,7 +98,7 @@ describe('as a background', function () {
             'root' => storage_path('framework/testing/asset-placeholder-test/test-disk'),
         ]);
         new ControlPanelAssetTransformDriver()->register();
-        Cms::config()->defaultAssetTransformer('test');
+        config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
         $this->asset = AssetModel::factory()->createElement([
             'volumeId' => Volume::factory()->create(['fs' => 'test-disk'])->id,
             'kind' => FileKind::Image->value,

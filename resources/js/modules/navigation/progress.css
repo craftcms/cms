@@ -1,0 +1,28 @@
+/* See progress.ts. Above slideouts, modals, and the global header. */
+.cp-navigation-progress {
+  position: fixed;
+  inset-block: 0 auto;
+  inset-inline: 0;
+  z-index: 2147483647;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.cp-navigation-progress__fill {
+  height: 100%;
+  background-color: var(--c-color-accent-fill-loud);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.cp-navigation-progress__fill:dir(rtl) {
+  transform-origin: right;
+}
+
+@media (forced-colors: active) {
+  .cp-navigation-progress__fill {
+    background-color: Highlight;
+  }
+}

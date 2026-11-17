@@ -212,16 +212,13 @@ readonly class SchemasController extends GqlController
                 ]),
                 'warning' => t('Can be exploited to reveal sensitive content by information disclosure attacks.'),
             ],
-        ];
-
-        if (! config('craft.general.disableGraphqlTransformDirective')) {
-            $optionalPermissions['directive:transform'] = [
+            'directive:transform' => [
                 'label' => t('{name} directive', [
                     'name' => '@transform',
                 ]),
                 'warning' => t('Can be exploited by DoS attacks.'),
-            ];
-        }
+            ],
+        ];
 
         return $this->permissionGroups($schemaComponents['queries'])
             ->merge($this->permissionGroups($schemaComponents['mutations']))

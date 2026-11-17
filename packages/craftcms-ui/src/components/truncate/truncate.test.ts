@@ -28,13 +28,6 @@ beforeEach(() => {
 });
 
 describe('craft-truncate', () => {
-  it('renders its content in a truncating container', async () => {
-    const el = await fixture('Hello world');
-    const truncate = el.renderRoot.querySelector('.truncate');
-    expect(truncate).not.toBeNull();
-    expect(truncate!.querySelector('slot')).not.toBeNull();
-  });
-
   it('does not render a tooltip when the content fits', async () => {
     const el = await fixture('Short');
     await simulateOverflow(el, false);

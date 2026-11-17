@@ -7,6 +7,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Facades\Path;
+use CraftCms\Cms\Support\File;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +72,26 @@ it('creates the migration table with its track column when there is none', funct
         ->assertSuccessful();
 
     expect(Schema::hasColumn(Table::MIGRATIONS, 'track'))->toBeTrue();
+});
+
+it('excludes content migrations with the deprecated noContent flag', function () {
+    File::ensureDirectoryExists(database_path('migrations'));
+    $migration = database_path('migrations/2026_01_01_000000_content_migration.php');
+    File::put($migration, '<?php return new class extends Illuminate\Database\Migrations\Migration {};');
+
+    try {
+        artisan('craft:migrate:all', ['--track' => 'content'])
+            ->expectsOutputToContain('Total 1 new content migration to be applied:')
+            ->expectsConfirmation('Apply the above migration?', 'no')
+            ->assertSuccessful();
+
+        artisan('craft:migrate:all', ['--noContent' => true])
+            ->doesntExpectOutputToContain('content migration')
+            ->expectsOutputToContain('No new migrations found.')
+            ->assertSuccessful();
+    } finally {
+        File::delete($migration);
+    }
 });
 
 it('runs additional migrators', function () {

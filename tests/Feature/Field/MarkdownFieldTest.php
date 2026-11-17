@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\Conditions\AssetCondition;
 use CraftCms\Cms\Asset\Conditions\ViewableConditionRule;
 use CraftCms\Cms\Asset\Elements\Asset as AssetElement;
 use CraftCms\Cms\Asset\Models\Volume;
+use CraftCms\Cms\Asset\Models\VolumeFolder;
 use CraftCms\Cms\Asset\Volumes as VolumesService;
 use CraftCms\Cms\Element\Conditions\ElementCondition;
 use CraftCms\Cms\Entry\Elements\Entry;
@@ -21,6 +22,7 @@ use CraftCms\Cms\Markdown\Markdown as MarkdownService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\HtmlSanitizers;
 use CraftCms\Cms\Support\Facades\Volumes;
+use CraftCms\Cms\User\Elements\User;
 use CraftCms\Cms\View\TemplateManager;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\NameNode;
@@ -35,6 +37,8 @@ use GraphQL\Type\Schema;
 use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizer;
 use Symfony\Component\HtmlSanitizer\HtmlSanitizerConfig;
+
+use function Pest\Laravel\actingAs;
 
 function markdownFieldResolveInfo(string $fieldName): ResolveInfo
 {
@@ -397,15 +401,10 @@ it('validates and applies asset selector volume settings', function () {
         'showUnpermittedVolumes' => true,
     ]);
 
-    $assetSourceKeys = fn (): array => $this->assetSourceKeys();
-    $assetSelectionCriteria = fn (): array => $this->assetSelectionCriteria();
-
     $field->validate();
 
     expect($field->errors()->toArray())->toBe([])
-        ->and(Arr::pluck($field->volumeOptions(), 'value'))->toContain($volume->uid)
-        ->and($assetSourceKeys->call($field))->toBe(["volume:$volume->uid"])
-        ->and($assetSelectionCriteria->call($field))->toBe(['uploaderId' => null]);
+        ->and(Arr::pluck($field->volumeOptions(), 'value'))->toContain($volume->uid);
 
     $invalidField = new MarkdownField([
         'name' => 'Body',
@@ -415,6 +414,35 @@ it('validates and applies asset selector volume settings', function () {
 
     expect($invalidField->validate())->toBeFalse()
         ->and($invalidField->errors()->has('availableVolumes'))->toBeTrue();
+});
+
+it('passes its asset settings to the editor control', function () {
+    actingAs(User::findOne());
+    $selectableVolume = Volume::factory()->create(['fs' => 'test-disk']);
+    $uploadVolume = Volume::factory()->create(['fs' => 'test-disk']);
+    $uploadFolder = VolumeFolder::factory()->create(['volumeId' => $uploadVolume->id, 'path' => '']);
+    app()->forgetInstance(VolumesService::class);
+
+    $field = new MarkdownField([
+        'name' => 'Body',
+        'handle' => 'body',
+        'availableVolumes' => [$selectableVolume->uid],
+        'uploadVolume' => $uploadVolume->uid,
+    ]);
+    $element = EntryModel::factory()->createElement();
+
+    $props = $field->uiControl(new FieldContext('body', element: $element))->props();
+
+    expect($props['assetSources'])->toBe(["volume:$selectableVolume->uid"])
+        ->and($props['assetCondition']['conditionRules']['rules'][0]['class'])->toBe(ViewableConditionRule::class)
+        ->and($props['assetAnyUploader'])->toBeTrue()
+        ->and($props['uploadFolderId'])->toBe($uploadFolder->id)
+        ->and($props['uploadSiteId'])->toBe($element->siteId)
+        ->and($props['assetReferenceElement'])->toBe([
+            'referenceElementId' => $element->id,
+            'referenceElementOwnerId' => null,
+            'referenceElementSiteId' => $element->siteId,
+        ]);
 });
 
 it('gives new Markdown fields a default “Viewable” asset selection condition', function () {
@@ -452,7 +480,7 @@ it('respects an explicit asset selection condition', function () {
         ->and($rules[0]->value)->toBeFalse();
 });
 
-it('warns and resolves no asset sources when no volumes exist', function () {
+it('accepts the asset toolbar button when no volumes exist', function () {
     Volumes::shouldReceive('getAllVolumes')
         ->andReturn(collect());
     Volumes::shouldReceive('getAllVolumeIds')
@@ -463,10 +491,8 @@ it('warns and resolves no asset sources when no volumes exist', function () {
         'handle' => 'body',
         'toolbarButtons' => [MarkdownField::TOOLBAR_ASSET],
     ]);
-    $assetSourceKeys = fn (): array => $this->assetSourceKeys();
 
-    expect($assetSourceKeys->call($field))->toBe([])
-        ->and($field->validate())->toBeTrue();
+    expect($field->validate())->toBeTrue();
 });
 
 it('normalizes values without trimming markdown-significant whitespace', function () {

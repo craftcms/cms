@@ -4,7 +4,7 @@ import {property} from 'lit/decorators.js';
 import {t} from '@src/utilities/translate';
 
 /**
- * @summary A selected value in a `multiple-choice` `craft-combobox`, shown
+ * @summary A selected value in a `multiple` `craft-combobox`, shown
  * before the textbox. A removable token is a button that removes it.
  *
  * The button is named by its label and described by a hidden "Remove", so

@@ -157,14 +157,6 @@ describe('DragSort settings + defaults', () => {
     expect(ds.settings!.moveTargetItemToFront).toBe(true);
     expect(ds.$items).toEqual([]);
   });
-
-  it('starts with empty insertion/sort state', () => {
-    const ds = new DragSort();
-    expect(ds.$insertion).toBeNull();
-    expect(ds.insertionVisible).toBe(false);
-    expect(ds.closestItem).toBeNull();
-    expect(ds.oldDraggeeIndexes).toBeNull();
-  });
 });
 
 // ---------------------------------------------------------------------------

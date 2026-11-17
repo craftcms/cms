@@ -111,6 +111,20 @@ readonly class ElementIndexState
                 }
             }
 
+            // Otherwise put it before the first source listed after it that made it in, so an Assets field's
+            // restricted subfolder stays ahead of Temporary Uploads
+            if (! $inserted) {
+                $laterKeys = array_flip(array_slice($restrictTo, (int) $pos + 1));
+
+                foreach ($sources as $i => $otherSource) {
+                    if (isset($otherSource['key']) && isset($laterKeys[$otherSource['key']])) {
+                        array_splice($sources, $i, 0, [$source]);
+                        $inserted = true;
+                        break;
+                    }
+                }
+            }
+
             if (! $inserted) {
                 $sources[] = $source;
             }

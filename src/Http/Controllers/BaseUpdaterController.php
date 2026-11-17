@@ -16,6 +16,7 @@ use CraftCms\Cms\View\LegacyAssets\InternalAssetRegistry;
 use CraftCms\Cms\View\LegacyAssets\UpdaterAsset;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Contracts\View\View;
+use Illuminate\Encryption\Encrypter;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,12 @@ abstract class BaseUpdaterController
 
     protected bool $usesStepUrls = true;
 
+    /**
+     * Whether the request’s data was encrypted with the app key rather than the updater key.
+     * Responses are encrypted the same way, so the update can finish (or revert) whichever Craft version handles the next step.
+     */
+    protected bool $legacyData = false;
+
     public function __construct(
         protected Request $request,
         protected GeneralConfig $generalConfig,
@@ -66,15 +73,38 @@ abstract class BaseUpdaterController
             return;
         }
 
+        $data = $this->request->input('data', '');
+
         try {
-            $data = Crypt::decrypt($this->request->input('data', ''));
+            $data = $this->dataEncrypter()->decrypt($data);
         } catch (DecryptException) {
+            // Data encrypted with the app key, by a Craft version that predates updater keys.
+            // Self-updates hit this once: Composer runs in the old process, and the next step runs on new code.
+            try {
+                $data = Crypt::decrypt($data);
+                $this->legacyData = true;
+            } catch (DecryptException) {
+                throw ValidationException::withMessages([
+                    'data' => t('Invalid data.'),
+                ]);
+            }
+        }
+
+        if (! is_string($data)) {
             throw ValidationException::withMessages([
                 'data' => t('Invalid data.'),
             ]);
         }
 
         $this->data = Json::decode($data);
+
+        // Anything can be encrypted with the app key, so don't let legacy data reach Composer anonymously
+        if (
+            $this->legacyData &&
+            in_array($this->request->route()->getActionMethod(), ['composerInstall', 'composerRemove'], true)
+        ) {
+            $this->requirePerformUpdates();
+        }
     }
 
     public function index(): Response|View
@@ -95,7 +125,14 @@ abstract class BaseUpdaterController
 
     public function precheck(): Response
     {
-        $postState = $this->data['postPrecheckState'];
+        $postState = $this->data['postPrecheckState'] ?? null;
+
+        // Only set when there was something to do, so data without it can't have come from a precheck
+        if (! is_array($postState)) {
+            throw ValidationException::withMessages([
+                'data' => t('Invalid data.'),
+            ]);
+        }
 
         if (PHP::testIniSet()) {
             return $this->send($postState);
@@ -144,6 +181,10 @@ abstract class BaseUpdaterController
 
     public function composerInstall(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState(self::ACTION_COMPOSER_INSTALL));
+        }
+
         $output = '';
 
         try {
@@ -172,6 +213,10 @@ abstract class BaseUpdaterController
 
     public function composerRemove(): Response
     {
+        if (! $this->composer->getIsAvailable()) {
+            return $this->send($this->noComposerState(self::ACTION_COMPOSER_REMOVE));
+        }
+
         $packages = [$this->data['packageName']];
         $output = '';
 
@@ -233,6 +278,13 @@ abstract class BaseUpdaterController
     {
         $state = $this->initialState($force);
 
+        if (
+            in_array($state['nextAction'] ?? null, [self::ACTION_COMPOSER_INSTALL, self::ACTION_COMPOSER_REMOVE], true) &&
+            ! $this->composer->getIsAvailable()
+        ) {
+            return $this->noComposerState();
+        }
+
         // If there's nothing to do here, then no precheck is needed
         if (! isset($state['nextAction'])) {
             return $state;
@@ -275,6 +327,17 @@ abstract class BaseUpdaterController
      * Returns the return URL that should be passed with a finished state.
      */
     abstract protected function returnUrl(): string;
+
+    /** @return array<string, mixed> */
+    protected function noComposerState(string $retryAction = self::ACTION_RECHECK_COMPOSER): array
+    {
+        return [
+            'error' => $this->composer->getUnavailableReason(),
+            'options' => [
+                $this->actionOption(t('Try again'), $retryAction, ['submit' => true]),
+            ],
+        ];
+    }
 
     /**
      * Ensures that composer.json can be found.
@@ -553,9 +616,36 @@ abstract class BaseUpdaterController
     /**
      * Returns the hashed data for JS.
      */
-    private function hashedData(): string
+    protected function hashedData(): string
     {
-        return Crypt::encrypt(Json::encode($this->data));
+        $data = Json::encode($this->data);
+
+        return $this->legacyData ? Crypt::encrypt($data) : $this->dataEncrypter()->encrypt($data);
+    }
+
+    /**
+     * Aborts with a 403 unless the current user can perform updates.
+     */
+    protected function requirePerformUpdates(): void
+    {
+        abort_unless($this->request->craftUser()?->can('performUpdates'), 403, 'You do not have permission to perform updates.');
+    }
+
+    /**
+     * Returns the encrypter for updater data.
+     *
+     * Its key is derived from the app key and this controller’s class, so values encrypted with
+     * the app key elsewhere (e.g. via the `|hash` filter) can’t be passed off as updater data,
+     * and updater data from one controller can’t be replayed to another.
+     */
+    private function dataEncrypter(): Encrypter
+    {
+        $appKey = app(Encrypter::class)->getKey();
+
+        return new Encrypter(
+            hash_hkdf('sha256', $appKey, strlen($appKey), 'craft-updater:'.static::class),
+            config('app.cipher'),
+        );
     }
 
     /**

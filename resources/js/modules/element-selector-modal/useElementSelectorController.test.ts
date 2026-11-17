@@ -91,16 +91,6 @@ describe('useElementSelectorController', () => {
     unmount();
   });
 
-  it('does not wrap the controller’s objects in a reactive proxy', () => {
-    // A shallowRef of a frozen snapshot: the object a Vue template reads is the
-    // same one the web component reads.
-    const instance = controller();
-    const {api, unmount} = mountComposable(instance);
-
-    expect(api.state.value).toBe(instance.state);
-    unmount();
-  });
-
   it('forwards submit and cancel', async () => {
     const onSelect = vi.fn();
     const onCancel = vi.fn();

@@ -6,6 +6,7 @@
    * save controls and details column go.
    */
   import {cpBreakpoints} from '@/common/composables/useCpBreakpoints';
+  import {uuid} from '@/common/craft/strings';
   import {ButtonVariant, t} from '@craftcms/ui';
   import {
     computed,
@@ -52,6 +53,8 @@
     registerAssistantEditor,
     type AssistantEditor,
   } from '@/modules/ai/assistant/context';
+  import {registerAssistantScreen} from '@/modules/ai/assistant/assistant';
+  import {useScreenPanels} from '@/common/composables/screenPanels';
   import LivePreview from '@/modules/elements/live-preview/LivePreview.vue';
   import {useLivePreview} from '@/modules/elements/live-preview/useLivePreview';
   import {getActivePreview} from '@/modules/elements/live-preview/previews';
@@ -132,7 +135,7 @@
 
   if (assistantParams) {
     const assistantEditor: AssistantEditor = {
-      id: crypto.randomUUID(),
+      id: uuid(),
       params: () => payload.aiAssistant ?? assistantParams,
       label: () => payload.title,
       scope: () => uiPayload.value?.scope ?? [],
@@ -241,6 +244,16 @@
    * such as requesting review, is left.
    */
   const workflowActionsOnly = slideout?.workflowActionsOnly ?? false;
+
+  /**
+   * Whether the footer has nothing to offer: with only workflow actions
+   * allowed, there's no Cancel, so it's empty unless one of them is available.
+   */
+  const hideFooter = computed(
+    () =>
+      workflowActionsOnly &&
+      (editorLocked.value || !payload.editorActions.primary.panelId)
+  );
 
   const saveButtons = computed(() =>
     payload.editorActions.buttons.map((action) => ({
@@ -369,6 +382,19 @@
     () =>
       Boolean(livePreviewPane.value?.holdsEditor) &&
       Boolean(livePreviewTarget.value)
+  );
+
+  // The AI assistant's panel goes in the screen the editor is shown in, such
+  // as a slideout, and in Live Preview's pane while it holds the content.
+  const screenPanels = useScreenPanels();
+  onBeforeUnmount(
+    registerAssistantScreen(
+      () =>
+        contentInPreview.value
+          ? (livePreviewPane.value?.panels ?? null)
+          : screenPanels,
+      Boolean(assistantParams)
+    )
   );
   // The content's height, kept while it's away so the page doesn't collapse
   // and lose its scroll position. Read before the content moves.
@@ -574,6 +600,7 @@
       editorLocked.value ||
       (workflowActionsOnly && !payload.editorActions.primary.panelId),
     handlesReadOnly: true,
+    hideFooter: hideFooter.value,
     submitButtonLabel: payload.editorActions.primary.label,
     // The element supplies its own full set of alternate saves — including its
     // own "Save and continue editing" — so the layout's default would duplicate.
@@ -637,7 +664,7 @@
       :key="button.label"
       type="button"
       :variant="button.variant ?? 'outline'"
-      @click="dispatchBehavior(button.behavior)"
+      @click="dispatchBehavior(button.behavior, false, $event)"
     >
       <craft-icon
         v-if="button.icon"
@@ -674,8 +701,13 @@
     />
   </LayoutSlot>
 
-  <!-- Where the legacy editor puts its spinner and checkmark. -->
-  <LayoutSlot v-if="autosave.status.value !== 'idle'" name="footer-meta">
+  <!-- Where the legacy editor puts its spinner and checkmark, or beside the
+    title when there's no footer. Keyed, as a layout slot's name is read once. -->
+  <LayoutSlot
+    v-if="autosave.status.value !== 'idle'"
+    :key="hideFooter ? 'header' : 'footer'"
+    :name="hideFooter ? 'content-toolbar-meta' : 'footer-meta'"
+  >
     <AutosaveMessage
       :status="autosave.status.value"
       :saved-at="autosave.savedAt.value"
@@ -723,7 +755,6 @@
           v-if="payload.workflow.convertedToDraft && !workflowReviewLocked"
           variant="warning"
           icon="triangle-exclamation"
-          class="mb-4"
           rounded="none"
           appearance="fill"
         >
@@ -756,7 +787,6 @@
           v-if="awaitingUserApproval && !approvalNoticeDismissed"
           variant="info"
           icon="clipboard-check"
-          class="mb-4"
           rounded="none"
           appearance="fill"
         >
@@ -778,7 +808,6 @@
           v-if="payload.workflow.current?.status === 'withdrawn'"
           variant="info"
           icon="clipboard-list-check"
-          class="mb-4"
           rounded="none"
           appearance="fill"
         >
@@ -807,7 +836,6 @@
           :release="payload.release"
           :locked="releaseDraftLocked"
           :can-start-editing="!payload.readOnly && !workflowReviewLocked"
-          class="mb-4"
           @start-editing="startEditing"
           @dismiss="releaseNoticeDismissed = true"
         />
@@ -816,7 +844,6 @@
           v-if="activity.isStale.value"
           variant="warning"
           icon="triangle-exclamation"
-          class="mb-4"
           appearance="fill"
           rounded="none"
         >
@@ -849,7 +876,6 @@
           v-if="payload.notice"
           variant="accent"
           icon="edit"
-          class="mb-4"
           rounded="none"
           appearance="fill"
         >
@@ -891,7 +917,6 @@
           v-if="payload.mergeNotice"
           variant="warning"
           icon="triangle-exclamation"
-          class="mb-4"
           rounded="none"
           appearance="fill"
         >

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Models\Asset;
 use CraftCms\Cms\Asset\Models\Volume;
-use CraftCms\Cms\Cms;
 use CraftCms\Cms\Field\Models\Field;
 use CraftCms\Cms\FieldLayout\FieldLayoutTab;
 use CraftCms\Cms\FieldLayout\LayoutElements\CustomField;
@@ -23,7 +22,7 @@ beforeEach(function () {
     ]);
     $this->driver = new ControlPanelAssetTransformDriver;
     $this->driver->register();
-    Cms::config()->defaultAssetTransformer('test');
+    config()->set('filesystems.disks.test-disk.asset_transformer', 'test');
     $this->user = User::factory()->createElement();
     $volume = Volume::factory()->create(['fs' => 'test-disk']);
     $this->user->setPhoto(Asset::factory()->createElement(['volumeId' => $volume->id, 'width' => 800, 'height' => 400]));

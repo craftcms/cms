@@ -1,7 +1,7 @@
 import styles from './option.styles.js';
-import {LionOption} from '@lion/ui/listbox.js';
-import {html, nothing} from 'lit';
+import {html, LitElement, nothing, type PropertyValues} from 'lit';
 import {property} from 'lit/decorators.js';
+import {uniqueId} from '@src/utilities/unique-id';
 import '../icon/icon.js';
 
 /**
@@ -16,19 +16,20 @@ import '../icon/icon.js';
  * option rather than the viewport, so the same list reads sensibly in a narrow
  * slideout and a wide page.
  *
+ * The listbox that holds the option decides what a click on it does; the
+ * option only carries its state.
+ *
  * @slot - The option's label and any markup that goes with it.
  * @slot suffix - Trailing content, shown after the label and hint.
  *
- * @attr {string} choice-value - The value the option selects, as a plain
- *   string. Use it in server-rendered markup.
+ * @fires craft-selected-change - `selected` changed. Bubbles, so the listbox
+ *   around the option hears it.
  *
  * @cssproperty --c-option-wide-threshold - Width, in pixels, past which the
  *   option switches to its wide layout. Defaults to `640`.
  */
-export default class CraftOption extends LionOption {
-  static override get styles() {
-    return [...LionOption.styles, styles];
-  }
+export default class CraftOption extends LitElement {
+  static override styles = styles;
 
   /**
    * One observer shared by every option. Sizes arrive after layout, so
@@ -45,6 +46,36 @@ export default class CraftOption extends LionOption {
     }
   });
 
+  /** The value the option selects. */
+  @property()
+  value = '';
+
+  #selected = false;
+
+  /** Whether the option is selected. */
+  @property({type: Boolean, reflect: true})
+  get selected(): boolean {
+    return this.#selected;
+  }
+
+  set selected(selected: boolean) {
+    const old = this.#selected;
+    this.#selected = selected;
+    this.requestUpdate('selected', old);
+
+    if (old !== selected) {
+      this.dispatchEvent(new Event('craft-selected-change', {bubbles: true}));
+    }
+  }
+
+  /** Whether the option is the listbox's active descendant. */
+  @property({type: Boolean, reflect: true})
+  active = false;
+
+  /** Whether the option can't be selected. */
+  @property({type: Boolean, reflect: true})
+  disabled = false;
+
   /**
    * Secondary text shown after the label — a handle, a count, a short
    * qualifier. Rendered quieter than the label rather than as part of it.
@@ -53,26 +84,6 @@ export default class CraftOption extends LionOption {
   hint?: string | null = null;
 
   #cachedWideThreshold?: number;
-
-  static override get observedAttributes() {
-    return [...super.observedAttributes, 'choice-value'];
-  }
-
-  /**
-   * `choiceValue` parses its attribute as JSON, which server-rendered markup
-   * can't rely on, so `choice-value` sets it as a plain string.
-   */
-  override attributeChangedCallback(
-    name: string,
-    oldValue: string | null,
-    value: string | null
-  ) {
-    super.attributeChangedCallback(name, oldValue, value);
-
-    if (name === 'choice-value' && value !== null) {
-      this.choiceValue = value;
-    }
-  }
 
   #wideThreshold(): number {
     this.#cachedWideThreshold ??= parseInt(
@@ -86,12 +97,24 @@ export default class CraftOption extends LionOption {
 
   override connectedCallback() {
     super.connectedCallback();
+    this.setAttribute('role', 'option');
+    this.id ||= uniqueId('option');
     CraftOption.#wideObserver.observe(this);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     CraftOption.#wideObserver.unobserve(this);
+  }
+
+  protected override willUpdate(changed: PropertyValues) {
+    if (changed.has('selected')) {
+      this.setAttribute('aria-selected', String(this.selected));
+    }
+
+    if (changed.has('disabled')) {
+      this.setAttribute('aria-disabled', String(this.disabled));
+    }
   }
 
   override render() {
@@ -101,7 +124,7 @@ export default class CraftOption extends LionOption {
         ${this.hint ? html`<span class="hint">${this.hint}</span>` : nothing}
         <slot name="suffix"></slot>
       </div>
-      ${this.checked
+      ${this.selected
         ? html`<craft-icon class="check" name="check"></craft-icon>`
         : nothing}
     `;

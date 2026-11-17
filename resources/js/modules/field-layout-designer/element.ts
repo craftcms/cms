@@ -100,14 +100,14 @@ export class Element extends Base {
       widthSlider.setAttribute('min', '25');
       widthSlider.setAttribute('max', '100');
       widthSlider.setAttribute('step', '25');
-      widthSlider.setAttribute('model-value', `${this.config.width || 100}`);
+      widthSlider.setAttribute('value', `${this.config.width || 100}`);
 
       if (this.tab.designer.settings!.readOnly) {
         widthSlider.setAttribute('readonly', '');
       }
 
       widthSlider.addEventListener('change', () => {
-        const width = widthSlider.modelValue;
+        const width = widthSlider.value;
         this.updateConfig((config: any) => {
           config.width = width;
           return config;
