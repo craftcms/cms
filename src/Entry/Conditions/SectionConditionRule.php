@@ -6,6 +6,7 @@ namespace CraftCms\Cms\Entry\Conditions;
 
 use CraftCms\Cms\Condition\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Condition\Contracts\ConditionInterface;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\Contracts\ElementQueryConditionRuleInterface;
 use CraftCms\Cms\Element\Conditions\HintableConditionRuleTrait;
@@ -73,22 +74,25 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            $sectionIds = Sections::getAllSectionIds()->values()->all();
-        } else {
-            $sectionIds = $this->paramValue(fn ($uid) => Sections::getSectionByUid($uid)->id ?? null);
-        }
+        $sectionIds = $this->paramIds(Table::SECTIONS, fn ($uid) => Sections::getSectionByUid($uid)->id ?? null);
 
-        EntryQuery::applySectionId($query, $sectionIds, $elementQuery);
+        // Unlike EntryQuery::applySectionId(), this leaves the query’s structure settings alone,
+        // since other rules in an “or” group can match entries in other sections.
+        if ($sectionIds !== null) {
+            $query->whereIn('entries.sectionId', $sectionIds);
+        }
     }
 
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Entry $element */
-        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            return $element->getSection() !== null;
+        if ($this->operator !== self::OPERATOR_NOT_EMPTY && $this->getValues() === []) {
+            return true;
         }
 
-        return $this->matchValue($element->getSection()?->uid);
+        /** @var Entry $element */
+        $section = $element->getSection();
+
+        // The query only lists entries in sections, so sectionless entries, such as nested ones, don't match.
+        return $section !== null && $this->matchValue($section->uid);
     }
 }

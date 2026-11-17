@@ -66,7 +66,9 @@ class SectionTypeConditionRule extends BaseMultiSelectConditionRule implements E
             ->values()
             ->all();
 
-        EntryQuery::applySectionId($query, $sectionIds, $elementQuery);
+        // Unlike EntryQuery::applySectionId(), this leaves the query’s structure settings alone,
+        // since other rules in an “or” group can match entries in other sections.
+        $query->whereIn('entries.sectionId', $sectionIds);
     }
 
     public function matchElement(ElementInterface $element): bool

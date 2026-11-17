@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Update\Updates;
 use Exception;
 use Illuminate\Support\Uri;
+use Uri\WhatWg\Url as WhatWgUrl;
 
 /**
  * @since 6.0.0
@@ -52,6 +53,24 @@ class Url extends \Illuminate\Support\Facades\URL
     public static function isRootRelativeUrl(string $url): bool
     {
         return str_starts_with($url, '/') && ! static::isProtocolRelativeUrl($url);
+    }
+
+    /**
+     * Resolves a relative URL, such as `/uploads/a.png` or `//cdn.example.com/a.png`, against a base URL, as a browser
+     * would. The base URL defaults to the current site’s base URL. The URL is returned as it is when it’s already
+     * absolute, when the base URL isn’t absolute, or when either can’t be parsed.
+     */
+    public static function absoluteUrl(string $url, ?string $baseUrl = null): string
+    {
+        $baseUrl ??= static::baseSiteUrl();
+
+        if (static::isAbsoluteUrl($url) || ! static::isAbsoluteUrl($baseUrl)) {
+            return $url;
+        }
+
+        $base = WhatWgUrl::parse($baseUrl);
+
+        return ($base ? WhatWgUrl::parse($url, $base)?->toAsciiString() : null) ?? $url;
     }
 
     /**

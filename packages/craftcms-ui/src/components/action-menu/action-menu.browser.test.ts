@@ -1,7 +1,8 @@
-import {beforeEach, describe, expect, it} from 'vite-plus/test';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vite-plus/test';
 import {page, userEvent} from 'vite-plus/test/browser';
 import {contrast} from '../../../test/contrast';
 import type CraftButton from '../button/button.js';
+import type CraftActionItem from '../action-item/action-item.js';
 import type CraftActionMenu from './action-menu.js';
 import './action-menu.js';
 import '../action-item/action-item.js';
@@ -216,6 +217,145 @@ it.each([
     await expect.poll(focusedText).toBe('Two');
   }
 );
+
+it('renders its items when it opens before the browser has been idle', async () => {
+  // Items in a closed menu wait for the browser to be idle before rendering.
+  vi.stubGlobal('requestIdleCallback', () => 0);
+  vi.stubGlobal('cancelIdleCallback', () => {});
+
+  try {
+    const menu = await renderMenu(`
+      <craft-action-menu>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <craft-action-item>Duplicate</craft-action-item>
+          <craft-action-item href="#settings">Settings</craft-action-item>
+        </div>
+      </craft-action-menu>
+    `);
+    const invoker = menu.querySelector<CraftButton>('craft-button')!;
+    await invoker.updateComplete;
+    invoker.focus();
+
+    await userEvent.keyboard('{Enter}');
+
+    await expect.poll(focusedText).toBe('Duplicate');
+    await expect
+      .element(page.getByRole('link', {name: 'Settings'}))
+      .toBeVisible();
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
+
+describe('before the browser has been idle', () => {
+  beforeEach(() => {
+    vi.stubGlobal('requestIdleCallback', () => 0);
+    vi.stubGlobal('cancelIdleCallback', () => {});
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('opens from an action item invoker', async () => {
+    await renderMenu(`
+      <craft-action-menu>
+        <craft-action-item slot="invoker">Open</craft-action-item>
+        <div slot="content">
+          <craft-action-item>Duplicate</craft-action-item>
+        </div>
+      </craft-action-menu>
+    `);
+
+    await userEvent.click(page.getByRole('button', {name: 'Open'}));
+
+    await expect
+      .element(page.getByRole('button', {name: 'Duplicate'}))
+      .toBeVisible();
+  });
+
+  it('renders the items in its body and footer when it opens', async () => {
+    await renderMenu(`
+      <craft-action-menu>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content-body">
+          <craft-action-item>In the body</craft-action-item>
+        </div>
+        <craft-action-item slot="content-footer">In the footer</craft-action-item>
+      </craft-action-menu>
+    `);
+
+    await userEvent.click(page.getByRole('button', {name: 'Open'}));
+
+    await expect
+      .element(page.getByRole('button', {name: 'In the body'}))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', {name: 'In the footer'}))
+      .toBeVisible();
+  });
+});
+
+it('renders only the items still in the page, at idle unless they show', async () => {
+  const idleCallbacks = new Map<number, IdleRequestCallback>();
+  let nextHandle = 1;
+  vi.stubGlobal('requestIdleCallback', (callback: IdleRequestCallback) => {
+    idleCallbacks.set(nextHandle, callback);
+    return nextHandle++;
+  });
+  vi.stubGlobal('cancelIdleCallback', (handle: number) =>
+    idleCallbacks.delete(handle)
+  );
+  const runIdleCallbacks = () => {
+    const callbacks = [...idleCallbacks.values()];
+    idleCallbacks.clear();
+    callbacks.forEach((callback) =>
+      callback({didTimeout: false, timeRemaining: () => 50})
+    );
+  };
+
+  try {
+    const menu = await renderMenu(`
+      <craft-action-menu>
+        <craft-button slot="invoker" type="button">Open</craft-button>
+        <div slot="content">
+          <craft-action-item>Kept</craft-action-item>
+          <craft-action-item>Removed</craft-action-item>
+        </div>
+      </craft-action-menu>
+    `);
+    const [kept, removed] =
+      menu.querySelectorAll<CraftActionItem>('craft-action-item');
+    await Promise.resolve();
+
+    removed!.remove();
+    runIdleCallbacks();
+
+    await kept!.updateComplete;
+    expect(kept!.hasUpdated).toBe(true);
+    expect(removed!.hasUpdated).toBe(false);
+
+    menu.querySelector('[slot="content"]')!.append(removed!);
+    runIdleCallbacks();
+
+    await removed!.updateComplete;
+    expect(removed!.hasUpdated).toBe(true);
+
+    // One moved out of the menu shows, so it renders without waiting for idle.
+    const moved = document.createElement('craft-action-item');
+    moved.textContent = 'Moved';
+    menu.querySelector('[slot="content"]')!.append(moved);
+    await Promise.resolve();
+    document.body.append(moved);
+
+    await expect
+      .element(page.getByRole('button', {name: 'Moved'}))
+      .toBeVisible();
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
 
 it('moves focus to the search field when a searchable menu opens', async () => {
   await renderMenu(`

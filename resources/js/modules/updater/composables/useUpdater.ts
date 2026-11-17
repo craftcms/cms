@@ -90,25 +90,26 @@ export function useUpdater(initialState: UpdaterState): UseUpdaterReturn {
   }
 
   /**
-   * Handle user clicking an option button
+   * Handle user clicking an option button. An option is the state to move
+   * to: a step to run next, or a finished state that leaves the updater.
    */
   function handleOptionClick(option: UpdaterOption): void {
-    // If option has a nextUrl, execute it
+    // If the option includes data, use it
+    if (option.data) {
+      state.value.data = option.data;
+    }
+
+    state.value = {
+      ...state.value,
+      status: option.status ?? state.value.status,
+      error: option.error,
+      errorDetails: option.errorDetails,
+      options: option.options,
+      finished: option.finished,
+      returnUrl: option.returnUrl ?? state.value.returnUrl,
+    };
+
     if (option.nextUrl) {
-      // Clear error state and show new status
-      state.value.error = undefined;
-      state.value.errorDetails = undefined;
-      state.value.options = undefined;
-
-      if (option.status) {
-        state.value.status = option.status;
-      }
-
-      // If the option includes data, use it
-      if (option.data) {
-        state.value.data = option.data;
-      }
-
       executeAction(option.nextUrl);
     }
   }
