@@ -122,10 +122,13 @@ class McpServersCest
         $this->settings(['enabled' => true, 'route' => "/$general->cpTrigger/mcp", 'authorizationRoute' => "/$general->cpTrigger/mcp"]);
 
         // Upload URLs use the authenticated server's endpoint, and their token routes them to the upload action,
-        // which rejects this unreserved upload rather than the request 404ing
+        // which rejects this unreserved upload with a JSON error, even though upload clients like curl don't ask for
+        // JSON, rather than with a control panel page
         $token = Craft::$app->getTokens()->createToken(['mcp/upload', ['uploadId' => StringHelper::UUID()]]);
+        $I->haveHttpHeader('Accept', '*/*');
         $I->sendAjaxPostRequest("/$general->cpTrigger/mcp?$general->tokenParam=$token");
-        $I->seeResponseCodeIs(400);
+        $I->seeResponseCodeIs(404);
+        $I->assertStringContainsString('This upload URL is not valid', json_decode($I->grabPageSource(), true)['error']);
     }
 
     public function testSiteEndpointsDoNotRequireControlPanelAccess(FunctionalTester $I): void
@@ -231,6 +234,33 @@ class McpServersCest
             $I->assertSame('https://cp.example.com/index.php/backoffice/mcp/auth', Craft::$app->getOAuth()->resource('mcp'));
             $general->usePathInfo = false;
             $I->assertSame('https://cp.example.com/index.php?p=backoffice/mcp/auth', Craft::$app->getOAuth()->resource('mcp'));
+        } finally {
+            Craft::configure($general, $original);
+        }
+    }
+
+    public function testControlPanelEndpointsAreOnlyInTheControlPanel(FunctionalTester $I): void
+    {
+        $general = Craft::$app->getConfig()->getGeneral();
+        $original = ['baseCpUrl' => $general->baseCpUrl];
+        $this->settings(['enabled' => true, 'route' => "/$general->cpTrigger/mcp", 'authorizationRoute' => "/$general->cpTrigger/mcp/auth"]);
+        $I->haveHttpHeader('Authorization', 'Bearer ' . $this->token($this->user([])));
+
+        // Action URLs are site requests, which don't require control panel access
+        $I->sendAjaxPostRequest('/actions/mcp/authenticated');
+        $I->seeResponseCodeIs(404);
+
+        $general->baseCpUrl = 'https://cp.example.com';
+
+        try {
+            // On the site's domain, paths beginning with the trigger are site requests too
+            $I->sendAjaxPostRequest("/$general->cpTrigger/mcp/auth");
+            $I->seeResponseCodeIs(404);
+
+            $I->haveServerParameter('HTTP_HOST', 'cp.example.com');
+            $I->haveServerParameter('HTTPS', 'on');
+            $I->sendAjaxPostRequest("/$general->cpTrigger/mcp/auth");
+            $I->seeResponseCodeIs(403);
         } finally {
             Craft::configure($general, $original);
         }

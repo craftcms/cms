@@ -876,12 +876,21 @@ class AppController extends Controller
                 throw new BadRequestHttpException('Missing component ID');
             }
 
+            if (!is_string($componentType) || !is_subclass_of($componentType, Chippable::class) || !is_callable([$componentType, 'get'])) {
+                throw new BadRequestHttpException('Invalid component type');
+            }
+
             $component = $componentType::get($id);
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
-                    if (!empty($config['overrides'])) {
+                    // Only the name, handle, and description can be overridden (e.g. for entry types in Matrix fields)
+                    $overrides = is_array($config['overrides'] ?? null) ? array_filter(
+                        array_intersect_key($config['overrides'], array_flip(['name', 'handle', 'description'])),
+                        fn($value) => is_string($value),
+                    ) : [];
+                    if (!empty($overrides)) {
                         $component = clone $component;
-                        Craft::configure($component, Component::cleanseConfig($config['overrides']));
+                        Craft::configure($component, $overrides);
                     }
                     $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
                 }

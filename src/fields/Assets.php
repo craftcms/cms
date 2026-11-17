@@ -797,8 +797,8 @@ class Assets extends BaseRelationField
             }
         }
 
-        if (isset($variables['searchCriteria'])) {
-            // Include subfolders in the inline search results
+        if (isset($variables['searchCriteria']) && (!$this->restrictLocation || $this->allowSubfolders)) {
+            // Include subfolders in the inline search results, if the field allows them
             $variables['searchCriteria']['includeSubfolders'] = true;
         }
 

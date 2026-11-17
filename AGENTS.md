@@ -60,6 +60,10 @@ eligibility by the actual effect, not filenames alone. Code, dependencies,
 executable configuration, workflows, and behavior-changing generated artifacts
 are not eligible.
 
+Only add it when no other unpushed commits on the branch have significant
+changes. GitHub skips CI for a whole push when its head commit carries the
+marker, so it would also skip the commits beneath it.
+
 Skip markers can leave required checks pending and do not establish green CI.
 Never use them to evade required checks, merged-result verification, or merge
 queues. The merge safeguards below still apply.

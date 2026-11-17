@@ -4,6 +4,7 @@ namespace crafttests\unit\mcp;
 
 use Craft;
 use craft\mcp\AssetUploads;
+use craft\mutex\NullMutex;
 use CraftCms\UrlValidator\UrlValidator;
 use Mcp\Exception\ToolCallException;
 use PHPUnit\Framework\TestCase;
@@ -81,6 +82,26 @@ class AssetUploadsTestApplication extends Application
                 return (object)['allowedFileExtensions' => ['jpg'], 'maxUploadFileSize' => 1024];
             }
         };
+    }
+
+    public function getAssets(): object
+    {
+        return new class() {
+            public function getTempAssetUploadFs(): object
+            {
+                return new class() {
+                    public function fileExists(): bool
+                    {
+                        return false;
+                    }
+                };
+            }
+        };
+    }
+
+    public function getMutex(): NullMutex
+    {
+        return new NullMutex();
     }
 
     public function getPath(): object
