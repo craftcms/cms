@@ -16,6 +16,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Routing\RouteRegistrar;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Session\SessionManager;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -155,7 +156,7 @@ readonly class StartLazySession
         if ($regenerated || $keys !== [] || $tokenLocation !== null) {
             $bufferedHandler->flush();
             $this->preventCaching($response);
-            $this->report($request, $response, $keys, $regenerated, $tokenLocation);
+            $this->report($request, $keys, $regenerated, $tokenLocation);
         } elseif ($response instanceof Response) {
             // `StartSession` and `PreventRequestForgery` add these to every response.
             $response->headers->removeCookie($config['cookie'], $config['path'], $config['domain']);
@@ -289,24 +290,22 @@ readonly class StartLazySession
     }
 
     /**
-     * Reports why the session was saved, as it keeps shared caches from storing the response.
-     *
-     * In debug mode, the reason is also sent in an `X-Craft-Session-Saved` header.
+     * Reports why the session was saved, as it keeps shared caches from storing the response, with an event and a
+     * debug-level log entry. The entry names the request's path, but not its query string, which can hold one-time
+     * codes.
      *
      * @param  list<string>  $keys
      */
-    private function report(Request $request, mixed $response, array $keys, bool $regenerated, ?string $tokenLocation): void
+    private function report(Request $request, array $keys, bool $regenerated, ?string $tokenLocation): void
     {
         event(new LazySessionSaved($request, $keys, $regenerated, $tokenLocation));
 
-        if (! $response instanceof Response || ! app()->hasDebugModeEnabled()) {
-            return;
-        }
-
-        $response->headers->set('X-Craft-Session-Saved', implode('; ', array_filter([
+        $reason = implode('; ', array_filter([
             $keys !== [] ? 'keys='.implode(',', $keys) : null,
             $regenerated ? 'regenerated' : null,
             $tokenLocation !== null ? "token=$tokenLocation" : null,
-        ])));
+        ]));
+
+        Log::debug("Saved a new session for {$request->getPathInfo()} ($reason).");
     }
 }

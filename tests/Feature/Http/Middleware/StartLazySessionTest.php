@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -205,11 +206,13 @@ it('prevents caching responses that save the session on routes without Craft’s
 
 it('reports why a lazy session was saved', function () {
     Event::fake([LazySessionSaved::class]);
-    config(['app.debug' => true]);
+    Log::spy();
 
-    get('/writes')->assertHeader('X-Craft-Session-Saved', 'keys=_flash,notice');
-    get('/form')->assertHeader('X-Craft-Session-Saved', 'token=body');
+    get('/writes?code=secret');
+    get('/form');
 
     Event::assertDispatched(fn (LazySessionSaved $event) => $event->keys === ['_flash', 'notice'] && $event->tokenLocation === null);
     Event::assertDispatched(fn (LazySessionSaved $event) => $event->keys === [] && $event->tokenLocation === 'body');
+    Log::shouldHaveReceived('debug')->with('Saved a new session for /writes (keys=_flash,notice).')->once();
+    Log::shouldHaveReceived('debug')->with('Saved a new session for /form (token=body).')->once();
 });
