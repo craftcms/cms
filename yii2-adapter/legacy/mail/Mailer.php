@@ -178,7 +178,7 @@ class Mailer extends \yii\symfonymailer\Mailer
 
                 $message->language = $rendered->language;
                 $message->setSubject($rendered->subject);
-                $message->setTextBody(view('mail.system-message-text', $formatted->viewData)->render());
+                $message->setTextBody(view('c::mail.system-message-text', $formatted->viewData)->render());
                 $message->setHtmlBody($formatted->htmlBody);
             }
 
