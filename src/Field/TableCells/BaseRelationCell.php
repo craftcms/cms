@@ -51,7 +51,7 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
     /** @var WeakMap<ElementQueryInterface, array{list<int>, list<int>}>|null Each loaded query’s IDs, and those of them that exist */
     private static ?WeakMap $existingIds = null;
 
-    /** @var WeakMap<ElementQueryInterface, true>|null The queries cells normalized their IDs to, which only filter by them */
+    /** @var WeakMap<ElementQueryInterface, array<string, mixed>>|null The queries cells normalized their IDs to, with their criteria then */
     private static ?WeakMap $idQueries = null;
 
     /**
@@ -165,7 +165,7 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
         }
 
         self::$idQueries ??= new WeakMap;
-        self::$idQueries[$query] = true;
+        self::$idQueries[$query] = $query->getCriteria();
 
         return $query;
     }
@@ -177,8 +177,8 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
     {
         $clone = (clone $query)->siteId($siteId);
 
-        if (isset(self::$idQueries[$query])) {
-            self::$idQueries[$clone] = true;
+        if (self::idList($query) !== null) {
+            self::$idQueries[$clone] = $clone->getCriteria();
         }
 
         return $clone;
@@ -355,14 +355,14 @@ abstract class BaseRelationCell extends TableCell implements ElementAwareTableCe
     }
 
     /**
-     * Returns the IDs a cell normalized a query from, or `null` for queries set some other way, which may filter
-     * the elements further.
+     * Returns the IDs a cell normalized a query from, or `null` for queries set some other way or given other
+     * criteria since, which may filter the elements further.
      *
      * @return list<int>|null
      */
     private static function idList(ElementQueryInterface $query): ?array
     {
-        if (! isset(self::$idQueries[$query])) {
+        if (! isset(self::$idQueries[$query]) || self::$idQueries[$query] !== $query->getCriteria()) {
             return null;
         }
 
