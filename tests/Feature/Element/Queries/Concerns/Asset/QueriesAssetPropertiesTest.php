@@ -35,11 +35,16 @@ test('filename', function (mixed $param, int $expectedCount) {
     ['not *filename*', 0],
 ]);
 
-test('kind', function () {
+test('kind', function (mixed $param, int $expectedCount) {
     Asset::factory()->create(['kind' => 'image', 'filename' => 'file.jpg']);
     Asset::factory()->create(['kind' => 'unknown', 'filename' => 'file.jpg']);
     Asset::factory()->create(['kind' => 'audio', 'filename' => 'file.mp3']);
+    Asset::factory()->create(['kind' => 'unknown', 'filename' => 'file.xyz']);
 
-    expect(assetQuery()->count())->toBe(3);
-    expect(assetQuery()->kind('image')->count())->toBe(2);
-});
+    expect(assetQuery()->kind($param)->count())->toBe($expectedCount);
+})->with([
+    ['image', 2],
+    ['image, audio', 3],
+    ['not image', 2],
+    [['not', 'image', 'audio'], 1],
+]);

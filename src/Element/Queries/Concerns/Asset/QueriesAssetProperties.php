@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Element\Queries\Concerns\Asset;
 
 use CraftCms\Cms\Asset\AssetsHelper;
+use CraftCms\Cms\Database\QueryParam;
 use CraftCms\Cms\Element\Enums\ElementQueryParamType;
 use CraftCms\Cms\Element\Queries\AssetQuery;
 use CraftCms\Cms\Element\Queries\Attributes\ElementQueryParam;
@@ -113,18 +114,24 @@ trait QueriesAssetProperties
             return;
         }
 
-        $query->where(function (Builder $query) use ($value) {
+        $param = QueryParam::parse($value);
+        $kinds = AssetsHelper::getFileKinds();
+
+        $query->where(function (Builder $query) use ($value, $param, $kinds) {
             $query->whereParam('assets.kind', $value);
 
-            $kinds = AssetsHelper::getFileKinds();
-
-            foreach ((array) $value as $kind) {
+            foreach ($param->values as $kind) {
                 if (! isset($kinds[$kind])) {
                     continue;
                 }
 
+                // Files with the kind’s extensions count as that kind too, so excluding the kind excludes them as well.
                 foreach ($kinds[$kind]['extensions'] as $extension) {
-                    $query->orWhereLike('assets.filename', "%.$extension");
+                    if ($param->operator === QueryParam::NOT) {
+                        $query->whereNotLike('assets.filename', "%.$extension");
+                    } else {
+                        $query->orWhereLike('assets.filename', "%.$extension");
+                    }
                 }
             }
         });
