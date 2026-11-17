@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Config settings that hold config objects, such as `mcp` and `anchors`, can now have their individual settings set with `CRAFT_{SETTING}_{NESTED_SETTING}` environment variables, such as `CRAFT_MCP_INSTRUCTIONS`. They override the same settings from whole-object variables such as `CRAFT_MCP`. ([#20783](https://github.com/craftcms/cms/pull/20783))
 - Entry type and volume settings pages now have “Settings”, “Content”, and “Appearance” tabs, so the field layout and card appearance no longer sit below the general settings. ([#20214](https://github.com/craftcms/cms/discussions/20214), [#20658](https://github.com/craftcms/cms/pull/20658))
 - Added `CraftCms\Cms\Ui\Nodes\Outlet` and `CraftCms\Cms\Ui\Controls\FieldLayoutDesigner::cardViewDesignerOutlet()`. ([#20658](https://github.com/craftcms/cms/pull/20658))
 - Added `CraftCms\Cms\Element\Queries\Events\ElementQueryPreparing` and `ElementQueryPrepared`, which are dispatched each time an element query is prepared to run, before and after its params are applied, so modules can scope every query of an element type, including its counts and pagination. ([#20705](https://github.com/craftcms/cms/issues/20705), [#20722](https://github.com/craftcms/cms/pull/20722))
