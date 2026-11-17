@@ -1988,10 +1988,18 @@ class ProjectConfig extends Component
                 }
 
                 $segments = is_string($path) ? ProjectConfigHelper::pathSegments($path) : $path;
-                $root = (string)reset($segments);
-                $roots = [$root => ($this->loadRoot)($root)];
+                $value = ($this->loadRoot)((string)array_shift($segments));
 
-                return ProjectConfigHelper::traverseDataArray($roots, $segments);
+                // Traversed by value, as traverseDataArray() would copy the shared arrays it descends by reference
+                foreach ($segments as $segment) {
+                    if (!is_array($value)) {
+                        return null;
+                    }
+
+                    $value = $value[$segment] ?? null;
+                }
+
+                return $value;
             }
 
             public function export(): array
