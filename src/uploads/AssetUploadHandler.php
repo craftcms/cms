@@ -18,6 +18,7 @@ use craft\helpers\Assets;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Image;
 use craft\i18n\Formatter;
 use craft\models\VolumeFolder;
 use DateTime;
@@ -43,9 +44,11 @@ use yii\web\ServerErrorHttpException;
  * Guests can only upload, and only to a folder or an Assets field without an element. Every guest upload needs an
  * [[\craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD]] handler’s approval.
  *
- * Files are moved into place within their volume’s filesystem, so they aren’t downloaded, unless they’re images
- * (including SVGs), the field has a selection condition, an [[Asset::EVENT_BEFORE_HANDLE_FILE]] handler is registered,
- * or they replace an asset’s file. Those are saved from a local copy, the way the `assets/upload` action saves them.
+ * Files are moved into place within their volume’s filesystem, so they aren’t downloaded, unless they’re SVGs, Craft
+ * would clean them (see <config5:sanitizeCpImageUploads>), the field has a selection condition, an
+ * [[Asset::EVENT_BEFORE_HANDLE_FILE]] handler is registered, or they replace an asset’s file. Those are saved from a
+ * local copy, the way the `assets/upload` action saves them. Images moved into place get their dimensions from the
+ * start of the file, but not alt text from their metadata.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.13.0
@@ -141,10 +144,10 @@ class AssetUploadHandler implements UploadHandlerInterface
 
         if (
             $selectionCondition ||
-            Assets::getFileKindByExtension($upload->filename) === Asset::KIND_IMAGE ||
+            $this->craftWouldClean($upload->filename) ||
             Event::hasHandlers(Asset::class, Asset::EVENT_BEFORE_HANDLE_FILE)
         ) {
-            // Images are cleaned, and their dimensions and alt text are read, from a local file; handlers expect one too
+            // Craft cleans images from a local file, and handlers expect one too
             return $this->uploadLocally($upload, $folder, $selectionCondition, $params['siteId'] ?? null);
         }
 
@@ -197,6 +200,20 @@ class AssetUploadHandler implements UploadHandlerInterface
         $asset->uploaderId = Craft::$app->getUser()->getId();
         $asset->title = Assets::filename2Title(pathinfo($filename, PATHINFO_FILENAME));
         $this->setSite($asset, $siteId);
+
+        if ($asset->kind === Asset::KIND_IMAGE) {
+            // Read only as much of the file as the dimensions need, rather than downloading it
+            $stream = $upload->fs->getFileStream($path);
+            try {
+                $dimensions = Image::imageSizeByStream($stream);
+                if ($dimensions) {
+                    [$asset->width, $asset->height] = $dimensions;
+                }
+            } catch (Throwable) {
+            } finally {
+                fclose($stream);
+            }
+        }
 
         // The file is already in place, so save the asset the way indexing does
         $asset->setScenario(Asset::SCENARIO_INDEX);
@@ -342,6 +359,25 @@ class AssetUploadHandler implements UploadHandlerInterface
             'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->getFs()->hasUrls) ? $conflictingAsset->getUrl() : null,
             'url' => $url,
         ];
+    }
+
+    /**
+     * Whether Craft would clean the file when saving it, which needs a local copy.
+     */
+    private function craftWouldClean(string $filename): bool
+    {
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        // SVGs are always saved locally too, since their dimensions can only be read from the whole file
+        if ($extension === 'svg') {
+            return true;
+        }
+
+        // Same condition as Asset::afterSave()
+        return Image::canManipulateAsImage($extension) && (
+            !Craft::$app->getRequest()->getIsCpRequest() ||
+            Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
+        );
     }
 
     private function localCopy(StagedUpload $upload): string
