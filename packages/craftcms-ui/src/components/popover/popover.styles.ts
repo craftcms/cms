@@ -23,8 +23,8 @@ export default css`
     background-color: var(--c-surface-overlay);
     color: var(--c-text-default);
     box-shadow: var(--c-shadow-sm);
-    min-width: calc(180rem / 16);
-    max-width: calc(320rem / 16);
+    min-width: var(--popover-min-inline-size, calc(180rem / 16));
+    max-width: var(--popover-max-inline-size, calc(320rem / 16));
     overflow: auto;
     overscroll-behavior: contain;
     --_fitted-block-size: var(--_popover-available-block-size, 40vh);

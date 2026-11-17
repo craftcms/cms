@@ -122,6 +122,10 @@ const matchReferenceWidth: Partial<Modifier<'matchReferenceWidth', {}>> = {
  * @fires craft-after-show - The overlay has opened and its update has settled.
  * @fires craft-hide - The overlay is closing. Fires as the state flips.
  * @fires craft-after-hide - The overlay has closed and its update has settled.
+ *
+ * @cssproperty --popover-min-inline-size - The pane's minimum width.
+ * @cssproperty --popover-max-inline-size - The pane's maximum width.
+ * @cssproperty --popover-max-block-size - The pane's maximum height.
  */
 export default class CraftPopover extends LitElement {
   // `hostStyles` for its box-sizing reset, which a shadow root doesn't inherit

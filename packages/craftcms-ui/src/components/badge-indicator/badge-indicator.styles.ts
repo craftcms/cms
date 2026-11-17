@@ -39,6 +39,20 @@ export default css`
     padding-inline: calc(4rem / 16);
   }
 
+  .badge-indicator--small {
+    --badge-size: calc(6rem / 16);
+  }
+
+  .badge-indicator--small.badge-indicator--with-number {
+    --badge-size: var(--c-size-icon-xs);
+    padding-block: calc(1rem / 16);
+    padding-inline: calc(3rem / 16);
+  }
+
+  .badge-indicator--small .number {
+    font-size: calc(8rem / 16);
+  }
+
   .number {
     /* A block, so the trim applies; centers the digits on their cap height
        rather than on a line box that includes descender space. */
