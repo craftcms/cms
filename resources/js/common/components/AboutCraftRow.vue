@@ -38,11 +38,17 @@
     /* Blue, unless a container gives it a color of its own with
        --about-craft-tint-fill, -on and -icon, such as a tinted card's */
     &[data-tone='accent'] {
-      background-color: var(
+      --c-color-fill-quiet: var(
         --about-craft-tint-fill,
         var(--c-color-accent-fill-quiet)
       );
-      color: var(--about-craft-tint-on, var(--c-color-accent-on-quiet));
+      --c-color-on-quiet: var(
+        --about-craft-tint-on,
+        var(--c-color-accent-on-quiet)
+      );
+      --c-text-link: var(--c-color-on-quiet);
+      background-color: var(--c-color-fill-quiet);
+      color: var(--c-color-on-quiet);
     }
   }
 
@@ -104,6 +110,17 @@
     /* Its icon centered under the refresh button's, which is that much
        smaller. Moved rather than margined, which would undo its flush. */
     translate: calc((var(--c-size-icon-md) - var(--c-size-icon-sm)) / 2) 0;
+  }
+
+  /* The button's hover fill is made for on-quiet text, not the link color. */
+  :slotted(.about-craft-row__link:active) {
+    color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+  }
+
+  @media (hover: hover) {
+    :slotted(.about-craft-row__link:hover) {
+      color: var(--c-color-on-quiet, var(--c-color-neutral-on-quiet));
+    }
   }
 
   [data-tone='accent'] :slotted(.about-craft-row__detail) {
