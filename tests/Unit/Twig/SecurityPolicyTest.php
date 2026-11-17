@@ -56,6 +56,12 @@ class SandboxSecretsTarget
     {
         return 'SECRET_GETTER';
     }
+
+    // Reads $priv without exposing it, so static analysis keeps the property
+    public function privLength(): int
+    {
+        return strlen($this->priv);
+    }
 }
 
 class AllowedSandboxPropertyTarget
@@ -141,7 +147,9 @@ it('doesn’t let allowed filters and functions expose object data the sandbox d
     $obj = new SandboxSecretsTarget;
     $secrets = ['pub' => 'SECRET_PUB', 'prot' => 'SECRET_PROT', 'priv' => 'SECRET_PRIV', 'secret' => 'SECRET_GETTER'];
     $inputs = [$obj, [$obj], ['k' => $obj], ['data' => ['k' => $obj]]];
-    $argSets = [[], ['pub'], ['prot'], ['priv'], ['secret'], ['inner'], ['inner.x'], [['inner', 'x']], [[['inner', 'x']]], [null, ['inner']], [[$obj, 'getSecret']], [['SandboxSecretsTarget', 'getSecret']], [$obj]];
+    // A variable method name keeps [$obj, $method] a callable array instead of a Closure
+    $method = 'getSecret';
+    $argSets = [[], ['pub'], ['prot'], ['priv'], ['secret'], ['inner'], ['inner.x'], [['inner', 'x']], [[['inner', 'x']]], [null, ['inner']], [[$obj, $method]], [['SandboxSecretsTarget', 'getSecret']], [$obj]];
 
     // Returns a description of any secret or new object within the result
     $findLeak = function (mixed $value, int $depth = 0) use (&$findLeak, $obj): ?string {
@@ -170,11 +178,11 @@ it('doesn’t let allowed filters and functions expose object data the sandbox d
         return null;
     };
     $fingerprint = function (mixed $value) use (&$fingerprint): string {
-        return match (true) {
-            is_object($value) => 'object#'.spl_object_id($value),
-            is_array($value) => '['.implode(',', array_map(fn ($k) => "$k:".$fingerprint($value[$k]), array_keys($value))).']',
-            default => var_export($value, true),
-        };
+        if (is_array($value)) {
+            return '['.implode(',', array_map(fn ($k) => "$k:".$fingerprint($value[$k]), array_keys($value))).']';
+        }
+
+        return is_object($value) ? 'object#'.spl_object_id($value) : var_export($value, true);
     };
 
     $failures = [];
