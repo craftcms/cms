@@ -10,10 +10,13 @@ use CraftCms\Cms\Element\Contracts\NestedElementInterface;
 use CraftCms\Cms\Element\ElementIndexes;
 use CraftCms\Cms\Element\ElementIndexSourceSettings;
 use CraftCms\Cms\Element\ElementSources;
+use CraftCms\Cms\Element\EmbeddedElementIndex;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Element\NestedElementManager;
 use CraftCms\Cms\Entry\Elements\Entry;
 use CraftCms\Cms\FieldLayout\FieldLayout;
+use CraftCms\Cms\Http\Contracts\EmbeddedIndexScope;
+use CraftCms\Cms\Http\EmbeddedElementIndexScope;
 use CraftCms\Cms\Http\EmbeddedNestedElementScope;
 use CraftCms\Cms\Http\Requests\ElementIndexRequest;
 use CraftCms\Cms\Support\Facades\HtmlStack;
@@ -29,7 +32,7 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
 
     private ?int $unfilteredTotal = null;
 
-    private readonly EmbeddedNestedElementScope $scope;
+    private readonly EmbeddedIndexScope $scope;
 
     private readonly ElementIndexSourceSettings $indexSource;
 
@@ -40,13 +43,50 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
     public function __construct(
         string $elementType,
         ElementIndexRequest $request,
-        ?EmbeddedNestedElementScope $scope = null,
+        ?EmbeddedIndexScope $scope = null,
         ?array $config = null,
     ) {
         $this->scope = $scope ?? new EmbeddedNestedElementScope($request);
         $this->indexSource = $this->scope->indexSource($elementType, $config);
 
         parent::__construct($elementType, $request);
+    }
+
+    /**
+     * Builds an embedded index for a request that carries an {@see EmbeddedElementIndex} token.
+     */
+    public static function forToken(ElementIndexRequest $request): self
+    {
+        $scope = EmbeddedElementIndexScope::fromToken((string) $request->input('embeddedIndexToken'));
+
+        return new self($request->elementType(), $request, $scope);
+    }
+
+    /**
+     * Builds an embedded index for an {@see EmbeddedElementIndex} without making an HTTP request.
+     */
+    public static function forDefinition(EmbeddedElementIndex $index): self
+    {
+        $currentRequest = request();
+        $source = $index->sourceSettings();
+        $request = ElementIndexRequest::create('/', 'POST', [
+            'elementType' => $index->elementType(),
+            'context' => ElementSources::CONTEXT_EMBEDDED_INDEX,
+            'source' => ElementIndexSourceSettings::NESTED_KEY,
+            'viewMode' => $source->defaultViewMode,
+            'viewState' => ['mode' => $source->defaultViewMode],
+        ], server: array_filter([
+            'HTTP_USER_AGENT' => $currentRequest->userAgent(),
+        ]));
+        $request->setContainer(app())->setRedirector(app(Redirector::class));
+        $request->setUserResolver($currentRequest->getUserResolver());
+        $request->setRouteResolver($currentRequest->getRouteResolver());
+
+        if ($currentRequest->hasSession()) {
+            $request->setLaravelSession($currentRequest->session());
+        }
+
+        return new self($index->elementType(), $request, new EmbeddedElementIndexScope($index));
     }
 
     /**
@@ -197,8 +237,12 @@ class EmbeddedIndexViewModel extends ContentIndexViewModel
     #[Override]
     protected function editUrl(ElementInterface $element): ?string
     {
-        if (! $element instanceof NestedElementInterface || $element->trashed) {
+        if ($element->trashed) {
             return null;
+        }
+
+        if (! $element instanceof NestedElementInterface) {
+            return parent::editUrl($element);
         }
 
         return NestedElementManager::elementEditUrl(

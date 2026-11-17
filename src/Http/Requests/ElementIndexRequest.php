@@ -47,6 +47,14 @@ class ElementIndexRequest extends FormRequest
         return $this->input('context', ElementSources::CONTEXT_INDEX);
     }
 
+    /**
+     * Returns whether the request is for an embedded index that lists elements by fixed criteria rather than by owner.
+     */
+    public function hasEmbeddedIndexToken(): bool
+    {
+        return $this->filled('embeddedIndexToken');
+    }
+
     public function isAdministrative(?string $context = null): bool
     {
         return in_array($context ?? $this->context(), [ElementSources::CONTEXT_INDEX, ElementSources::CONTEXT_EMBEDDED_INDEX, 'embedded-index']);

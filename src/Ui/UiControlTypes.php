@@ -18,6 +18,7 @@ use CraftCms\Cms\Ui\Controls\ConditionBuilder;
 use CraftCms\Cms\Ui\Controls\ContentBlock;
 use CraftCms\Cms\Ui\Controls\Date;
 use CraftCms\Cms\Ui\Controls\DateTime;
+use CraftCms\Cms\Ui\Controls\ElementIndex;
 use CraftCms\Cms\Ui\Controls\ElementSelect;
 use CraftCms\Cms\Ui\Controls\ElementSites;
 use CraftCms\Cms\Ui\Controls\EntryTypeSelect;
@@ -71,6 +72,7 @@ class UiControlTypes extends TypeRegistry
         ContentBlock::class,
         Date::class,
         DateTime::class,
+        ElementIndex::class,
         ElementSelect::class,
         ElementSites::class,
         EntryTypeSelect::class,

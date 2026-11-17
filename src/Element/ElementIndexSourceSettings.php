@@ -8,6 +8,7 @@ use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Enums\ElementIndexViewMode;
 use CraftCms\Cms\FieldLayout\FieldLayout;
 use CraftCms\Cms\Support\Facades\ElementSources;
+use CraftCms\Cms\Support\Facades\Sites;
 
 use function CraftCms\Cms\t;
 
@@ -67,6 +68,35 @@ readonly class ElementIndexSourceSettings
         array $criteria,
         array $config,
     ): self {
+        return self::fromConfig($elementType, $owner, $attribute, $criteria, $config);
+    }
+
+    /**
+     * Builds the settings for a read-only embedded index that lists elements matching fixed criteria,
+     * without an owner element.
+     *
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $criteria
+     * @param  array<string, mixed>  $config
+     */
+    public static function forCriteria(string $elementType, array $criteria, array $config): self
+    {
+        return self::fromConfig($elementType, null, null, $criteria, [...$config, 'static' => true]);
+    }
+
+    /**
+     * @param  class-string<ElementInterface>  $elementType
+     * @param  array<string, mixed>  $criteria
+     * @param  array<string, mixed>  $config
+     */
+    private static function fromConfig(
+        string $elementType,
+        ?ElementInterface $owner,
+        ?string $attribute,
+        array $criteria,
+        array $config,
+    ): self {
+        $nested = $owner !== null;
         $fieldLayouts = array_values(array_filter(
             $config['fieldLayouts'] ?? [],
             fn (mixed $layout): bool => $layout instanceof FieldLayout,
@@ -87,12 +117,14 @@ readonly class ElementIndexSourceSettings
         }
 
         $sourceSortOptions = [
-            'sortOrder' => [
-                'label' => t('Order'),
-                'attribute' => 'sortOrder',
-                'defaultDir' => 'asc',
-                'fixedDir' => 'asc',
-            ],
+            ...($nested ? [
+                'sortOrder' => [
+                    'label' => t('Order'),
+                    'attribute' => 'sortOrder',
+                    'defaultDir' => 'asc',
+                    'fixedDir' => 'asc',
+                ],
+            ] : []),
             ...ElementSources::getSourceSortOptions($elementType, self::NESTED_KEY, $fieldLayouts)->all(),
         ];
 
@@ -105,7 +137,12 @@ readonly class ElementIndexSourceSettings
                 'field' => $config['defaultSort'][0],
                 'direction' => ($config['defaultSort'][1] ?? 'asc') === 'desc' ? 'desc' : 'asc',
             ]]
-            : [['field' => 'sortOrder', 'direction' => 'asc']];
+            : ($nested
+                ? [['field' => 'sortOrder', 'direction' => 'asc']]
+                : array_slice(array_map(
+                    fn (array $option): array => ['field' => $option['value'], 'direction' => $option['defaultDir']],
+                    array_values($sortOptions),
+                ), 0, 1));
         $static = (bool) ($config['static'] ?? false);
 
         return new self(
@@ -116,7 +153,7 @@ readonly class ElementIndexSourceSettings
                 'label' => t('All elements'),
                 'hasThumbs' => $elementType::hasThumbs(),
             ],
-            siteId: (int) $criteria['siteId'],
+            siteId: (int) ($criteria['siteId'] ?? Sites::getCurrentSite()->id),
             viewModes: array_values(array_filter(
                 $elementType::indexViewModes(),
                 fn (array $mode): bool => $allowedViewModes === [] || in_array($mode['mode'], $allowedViewModes, true),
@@ -130,12 +167,12 @@ readonly class ElementIndexSourceSettings
                 ->all(),
             defaultTableColumns: $defaultTableColumns,
             defaultSort: $defaultSort,
-            defaultViewMode: (string) ($config['defaultViewMode'] ?? ElementIndexViewMode::Cards->value),
+            defaultViewMode: (string) ($config['defaultViewMode'] ?? ($nested ? ElementIndexViewMode::Cards : ElementIndexViewMode::Table)->value),
             pageSize: max(1, (int) ($config['pageSize'] ?? 50)),
             showHeaderColumn: (bool) ($config['showHeaderColumn'] ?? true),
             fieldLayouts: $fieldLayouts,
             actionsEnabled: ! $static,
-            preserveQueryOrderFor: ['sortOrder'],
+            preserveQueryOrderFor: $nested ? ['sortOrder'] : [],
             owner: $owner,
             attribute: $attribute,
             criteria: $criteria,

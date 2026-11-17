@@ -57,6 +57,7 @@ const lazyControls = {
   FieldLayoutDesignerControl: () => import('./FieldLayoutDesignerControl.vue'),
   NestedElementBlocksControl: () =>
     import('./nested-elements/NestedElementBlocksControl.vue'),
+  ElementIndexControl: () => import('./element-index/ElementIndexControl.vue'),
   NestedElementsControl: () =>
     import('./nested-elements/NestedElementsControl.vue'),
 };
@@ -137,5 +138,6 @@ export function registerUiComponents(
     'craft:nested-elements',
     lazyControls.NestedElementsControl
   );
+  components.register('craft:element-index', lazyControls.ElementIndexControl);
   components.register('craft:content-block', ContentBlockControl);
 }
