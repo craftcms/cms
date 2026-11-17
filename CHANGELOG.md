@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an error that occurred when changing a password from the **My Account** → **Password** screen. ([#20585](https://github.com/craftcms/cms/pull/20585))
+- Fixed a bug where screen readers announced the “Confirm your identity” modal as a dialog nested within another dialog. ([#20590](https://github.com/craftcms/cms/pull/20590))
 
 ## 6.0.0-beta.1 - 2026-11-10
 
