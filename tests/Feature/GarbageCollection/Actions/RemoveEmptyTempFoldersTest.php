@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use CraftCms\Cms\Ai\Assistant\Uploads\AssistantUploadHandler;
 use CraftCms\Cms\Asset\AssetUploads;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Filesystem\Models\UploadSession;
@@ -31,7 +32,7 @@ it('removes empty temp folders', function () {
     expect(DB::table(Table::VOLUMEFOLDERS))->count()->toBe(1);
 });
 
-it('preserves temporary folders targeted by active asset uploads', function () {
+it('preserves temporary folders targeted by active uploads', function (string $handler) {
     $parentId = DB::table(Table::VOLUMEFOLDERS)->insertGetId([
         'name' => 'parent',
         'path' => 'parent',
@@ -48,7 +49,7 @@ it('preserves temporary folders targeted by active asset uploads', function () {
     UploadSession::create([
         'id' => fake()->uuid(),
         'owner' => 'user:1',
-        'handler' => AssetUploads::class,
+        'handler' => $handler,
         'uploader' => 'tus',
         'disk' => 'uploads',
         'filename' => 'example.txt',
@@ -81,4 +82,4 @@ it('preserves temporary folders targeted by active asset uploads', function () {
 
     expect(DB::table(Table::VOLUMEFOLDERS)->where('id', $folderId)->exists())->toBeTrue()
         ->and(DB::table(Table::VOLUMEFOLDERS)->where('id', $expiredFolderId)->exists())->toBeFalse();
-});
+})->with(['asset uploads' => [AssetUploads::class], 'Ask AI uploads' => [AssistantUploadHandler::class]]);

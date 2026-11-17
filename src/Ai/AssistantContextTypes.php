@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Ai;
 
 use CraftCms\Cms\Ai\Assistant\Content\ElementContextType;
+use CraftCms\Cms\Ai\Assistant\Uploads\UploadContextType;
 use CraftCms\Cms\Ai\Contracts\AssistantContextTypeInterface;
 use CraftCms\Cms\Ai\Data\AssistantContext;
 use CraftCms\Cms\Component\TypeRegistry;
@@ -31,9 +32,9 @@ class AssistantContextTypes extends TypeRegistry
 {
     protected const string CONTRACT = AssistantContextTypeInterface::class;
 
-    protected const array DEFAULT_TYPES = [ElementContextType::class];
+    protected const array DEFAULT_TYPES = [ElementContextType::class, UploadContextType::class];
 
-    protected const array PROTECTED_TYPES = [ElementContextType::class];
+    protected const array PROTECTED_TYPES = [ElementContextType::class, UploadContextType::class];
 
     /**
      * Resolves the items in a message’s context with their context types, leaving out items of unknown types.
