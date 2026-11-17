@@ -190,8 +190,14 @@ class AppServiceProvider extends ServiceProvider
         SessionStore::mixin(new SessionMixin);
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
+            if ($replace) {
+                ResponseHeaders::setNoCacheHeaders($this);
+
+                return $this;
+            }
+
             foreach (ResponseHeaders::NO_CACHE_HEADERS as $name => $value) {
-                $this->header($name, $value, $replace);
+                $this->header($name, $value, false);
             }
 
             return $this;

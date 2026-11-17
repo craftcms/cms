@@ -30,6 +30,30 @@ class ResponseHeaders
         'Expires' => '0',
     ];
 
+    /**
+     * Cache headers aimed at shared caches only, which CDNs read in place of `Cache-Control`.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc9213
+     */
+    private const array TARGETED_CACHE_HEADERS = [
+        'CDN-Cache-Control',
+        'Cloudflare-CDN-Cache-Control',
+        'Surrogate-Control',
+    ];
+
+    /**
+     * Keeps browsers and shared caches from storing the response, replacing its cache headers, including ones
+     * aimed at CDNs, such as `CDN-Cache-Control`.
+     */
+    public static function setNoCacheHeaders(Response $response): void
+    {
+        $response->headers->add(self::NO_CACHE_HEADERS);
+
+        foreach (self::TARGETED_CACHE_HEADERS as $name) {
+            $response->headers->remove($name);
+        }
+    }
+
     /** @var list<Closure(Response): mixed> */
     private array $queue = [];
 
@@ -52,7 +76,7 @@ class ResponseHeaders
      */
     public function noCache(): void
     {
-        $this->queue[] = fn (Response $response) => $response->headers->add(self::NO_CACHE_HEADERS);
+        $this->queue[] = self::setNoCacheHeaders(...);
     }
 
     /**

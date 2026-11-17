@@ -91,6 +91,19 @@ it('sets no-cache headers for action requests', function () {
     expect($response->headers->has('Cache-Control'))->toBeTrue();
 });
 
+it('removes CDN cache headers when setting no-cache headers', function () {
+    $this->responseHeaders->add('CDN-Cache-Control', 'max-age=3600');
+    $this->responseHeaders->add('Cloudflare-CDN-Cache-Control', 'max-age=3600');
+    $this->responseHeaders->add('Surrogate-Control', 'max-age=3600');
+
+    $response = $this->middleware->handle(Request::create('/'.Cms::config()->actionTrigger.'/test'), fn () => new Response);
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private')
+        ->and($response->headers->has('CDN-Cache-Control'))->toBeFalse()
+        ->and($response->headers->has('Cloudflare-CDN-Cache-Control'))->toBeFalse()
+        ->and($response->headers->has('Surrogate-Control'))->toBeFalse();
+});
+
 it('sets X-Robots-Tag header when disallowRobots is true', function () {
     $this->generalConfig->disallowRobots();
 

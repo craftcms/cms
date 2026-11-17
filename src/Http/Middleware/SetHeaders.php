@@ -67,7 +67,7 @@ class SetHeaders
             Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true ||
             $this->containsCsrfToken($request, $response)
         ) {
-            $response->headers->add(ResponseHeaders::NO_CACHE_HEADERS);
+            ResponseHeaders::setNoCacheHeaders($response);
         }
 
         $this->setPoweredByHeader($response);

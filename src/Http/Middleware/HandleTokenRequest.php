@@ -87,7 +87,7 @@ readonly class HandleTokenRequest
     private function preventCaching(mixed $response): mixed
     {
         if ($response instanceof Response) {
-            $response->headers->add(ResponseHeaders::NO_CACHE_HEADERS);
+            ResponseHeaders::setNoCacheHeaders($response);
         }
 
         return $response;
