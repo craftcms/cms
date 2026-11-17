@@ -63,6 +63,16 @@ enum TemplateMode: string
         return self::get() === $mode;
     }
 
+    /**
+     * Switches to a template mode while the callback runs, then switches back.
+     *
+     * Use `set()` only for a switch that should last for the rest of the request.
+     *
+     * @template TReturn
+     *
+     * @param  callable(): TReturn  $callback
+     * @return TReturn
+     */
     public static function with(self $mode, callable $callback): mixed
     {
         $original = self::get();
