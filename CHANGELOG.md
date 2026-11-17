@@ -181,6 +181,7 @@
 - Fixed a bug where `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET`, `EVENT_AFTER_REPLACE_ASSET`, `EVENT_DEFINE_THUMB_URL`, and `EVENT_REGISTER_PREVIEW_HANDLER` handlers weren’t called, with the Yii adapter installed. ([#20746](https://github.com/craftcms/cms/issues/20746), [#20759](https://github.com/craftcms/cms/pull/20759))
 - Fixed a bug where a clone of an entry fetched by a query that returned more than one entry had no authors, so validating it failed when its section required authors. ([#20724](https://github.com/craftcms/cms/issues/20724), [#20732](https://github.com/craftcms/cms/pull/20732))
 - Fixed a bug where a clone of an element fetched by a query that returned more than one element got a new, empty value for its Content Block fields. ([#20732](https://github.com/craftcms/cms/pull/20732))
+- Fixed a bug where element queries with `relatedTo` and more than one site, such as `site('*')`, only matched relations stored for the first site, including relations within Matrix fields. ([#20747](https://github.com/craftcms/cms/issues/20747), [#20758](https://github.com/craftcms/cms/pull/20758))
 - Fixed a bug where input placeholder text in colored cards, such as colored dashboard widgets’ settings, wasn’t tinted to match the card.
 - Fixed a bug where settings that update as they’re changed, such as dashboard widgets’ settings, sometimes didn’t update after a change.
 - Fixed a bug where screen readers announced the “Confirm your identity” modal as a dialog nested within another dialog. ([#20590](https://github.com/craftcms/cms/pull/20590))
