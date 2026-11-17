@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
 import {cdp, page, userEvent} from 'vite-plus/test/browser';
 import {contrast} from '../../../test/contrast';
+import {movePointerAway} from '../../../test/pointer';
 import type CraftSlidePickerButton from './slide-picker-button.js';
 import './slide-picker-button.js';
 import '../../styles/cp.css';
@@ -11,6 +12,7 @@ beforeEach(() => {
 
 afterEach(async () => {
   await cdp().send('Emulation.setEmulatedMedia', {features: []});
+  await movePointerAway();
 });
 
 async function render(markup: string): Promise<CraftSlidePickerButton> {
@@ -174,21 +176,21 @@ it('keeps the popover’s slider from changing while read-only', async () => {
 
 it('disables the button when disabled, or inside a disabled fieldset, and enables it again', async () => {
   await render(
-    `<fieldset><craft-slide-picker-button slider-label="Width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></fieldset><craft-slide-picker-button slider-label="Height" min="25" max="100" step="25" value="50" disabled></craft-slide-picker-button>`
+    `<fieldset><craft-slide-picker-button slider-label="Width" value-unit="% width" min="25" max="100" step="25" value="50"></craft-slide-picker-button></fieldset><craft-slide-picker-button slider-label="Height" value-unit="% height" min="25" max="100" step="25" value="50" disabled></craft-slide-picker-button>`
   );
   const fieldset = document.querySelector('fieldset')!;
 
   await expect
-    .element(page.getByRole('button', {name: '50 Width'}))
+    .element(page.getByRole('button', {name: '50% width'}))
     .toBeEnabled();
   await expect
-    .element(page.getByRole('button', {name: '50 Height'}))
+    .element(page.getByRole('button', {name: '50% height'}))
     .toBeDisabled();
 
   fieldset.disabled = true;
 
   await expect
-    .element(page.getByRole('button', {name: '50 Width'}))
+    .element(page.getByRole('button', {name: '50% width'}))
     .toBeDisabled();
 
   const height = document.querySelectorAll<CraftSlidePickerButton>(
@@ -198,10 +200,10 @@ it('disables the button when disabled, or inside a disabled fieldset, and enable
   fieldset.disabled = false;
 
   await expect
-    .element(page.getByRole('button', {name: '50 Height'}))
+    .element(page.getByRole('button', {name: '50% height'}))
     .toBeEnabled();
   await expect
-    .element(page.getByRole('button', {name: '50 Width'}))
+    .element(page.getByRole('button', {name: '50% width'}))
     .toBeEnabled();
 });
 

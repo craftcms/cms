@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, expect, it} from 'vite-plus/test';
 import {contrast} from '../../../test/contrast';
+import {movePointerAway} from '../../../test/pointer';
 import type CraftSlidePicker from './slide-picker.js';
 import './slide-picker.js';
 
@@ -10,6 +11,7 @@ beforeEach(() => {
 afterEach(async () => {
   const {cdp} = await import('vite-plus/test/browser');
   await cdp().send('Emulation.setEmulatedMedia', {features: []});
+  await movePointerAway();
 });
 
 async function render(
