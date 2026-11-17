@@ -438,7 +438,7 @@ class AuthMethods
             case User::STATUS_SUSPENDED:
                 return AuthError::AccountSuspended;
             case User::STATUS_ACTIVE:
-                if ($user->locked) {
+                if ($user->isLocked()) {
                     // Let them know how much time they have to wait (if any) before their account is unlocked.
                     if ($this->generalConfig->cooldownDuration) {
                         return AuthError::AccountCooldown;
@@ -547,7 +547,7 @@ class AuthMethods
         $this->users->handleInvalidLogin($user);
 
         // Was that one bad password/2fa code/passkey too many?
-        if ($user->locked && ! $this->generalConfig->preventUserEnumeration) {
+        if ($user->isLocked() && ! $this->generalConfig->preventUserEnumeration) {
             // Will set the authError to either AccountCooldown or AccountLocked
             $this->authError = $this->getAuthError($user);
         } else {

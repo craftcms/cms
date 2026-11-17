@@ -529,6 +529,8 @@ class Users
      */
     public function handleValidLogin(User $user): void
     {
+        $this->unlockIfCooldownEnded($user);
+
         $changes = [
             'lastLoginDate' => now('UTC')->toDateTime(),
             'invalidLoginWindowStart' => null,
@@ -554,6 +556,9 @@ class Users
      */
     public function handleInvalidLogin(User $user): void
     {
+        // Clear an expired lockout first, so failed logins count from zero again
+        $this->unlockIfCooldownEnded($user);
+
         // Lock the row while counting, so parallel failed attempts can't each read the same count
         [$changes, $alreadyLocked, $indexAttributesChanged] = DB::transaction(function () use ($user): array {
             $userModel = UserModel::query()->lockForUpdate()->findOrFail($user->id);
@@ -732,6 +737,16 @@ class Users
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
+        }
+    }
+
+    /**
+     * Clears a lockout whose cooldown has ended. `unlockUser()` fires the unlock events.
+     */
+    private function unlockIfCooldownEnded(User $user): void
+    {
+        if ($user->locked && ! $user->isLocked()) {
+            $this->unlockUser($user);
         }
     }
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use CraftCms\Cms\Asset\Exceptions\ImageException;
+use CraftCms\Cms\Auth\AuthMethods;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
@@ -549,6 +550,40 @@ test('handleValidLogin clears values', function () {
     expect($user->invalidLoginWindowStart)->toBeNull();
     expect($user->invalidLoginCount)->toBeNull();
 });
+
+test('an expired lockout counts as unlocked until the next login attempt clears it', function (string $attempt) {
+    Event::fake([UserUnlocked::class, UserLocked::class]);
+    Cms::config()->cooldownDuration = 300;
+    Cms::config()->maxInvalidLogins = 2;
+    $user = UserModel::factory()->active()->createElement();
+    UserModel::whereKey($user->id)->update(['locked' => true, 'lockoutDate' => now('UTC')->subMinutes(10)]);
+
+    // Loading the user doesn't write the unlock
+    $user = $this->users->getUserById($user->id);
+
+    expect($user->isLocked())->toBeFalse()
+        ->and(app(AuthMethods::class)->getAuthError($user))->toBeNull()
+        ->and(UserModel::findOrFail($user->id)->locked)->toBeTrue();
+    Event::assertNotDispatched(UserUnlocked::class);
+
+    if ($attempt === 'valid') {
+        $this->users->handleValidLogin($user);
+
+        expect(UserModel::findOrFail($user->id))
+            ->locked->toBeFalse()
+            ->lockoutDate->toBeNull();
+    } else {
+        // The old lockout doesn't count, so it takes the full limit to lock them again
+        $this->users->handleInvalidLogin($user);
+        expect(UserModel::findOrFail($user->id))->locked->toBeFalse()->invalidLoginCount->toBe(1);
+
+        $this->users->handleInvalidLogin($user);
+        expect($user->isLocked())->toBeTrue();
+        Event::assertDispatchedOnce(UserLocked::class);
+    }
+
+    Event::assertDispatchedOnce(UserUnlocked::class);
+})->with(['valid', 'invalid']);
 
 test('setVerificationCodeOnUser creates a valid broker token', function () {
     $user = UserModel::factory()->createElement();
