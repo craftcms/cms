@@ -7,7 +7,14 @@
    */
   import {router} from '@inertiajs/vue3';
   import {useNow} from '@vueuse/core';
-  import {computed, nextTick, ref, useTemplateRef, watch} from 'vue';
+  import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    ref,
+    useTemplateRef,
+    watch,
+  } from 'vue';
   import {actionClient, formattingLocale, t} from '@craftcms/ui';
   import {check as checkUpdates} from '@actions/Updates/UpdatesController';
   import {show} from '@actions/Utilities/UtilitiesController';
@@ -27,10 +34,21 @@
   const checking = ref(false);
   const error = ref('');
   /**
-   * Told to screen readers as a check starts and ends. The row keeps showing
+   * Told to screen readers as a check starts and ends, including the one when
+   * it's shown, which runs at most every few minutes. The row keeps showing
    * the last result while it checks, so it doesn't jump, and doesn't change.
+   * Cleared once it's been read, so browsing the row doesn't hear it again.
    */
   const announcement = ref('');
+  let clearTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function announce(message: string) {
+    clearTimeout(clearTimer);
+    announcement.value = message;
+    clearTimer = setTimeout(() => (announcement.value = ''), 5000);
+  }
+
+  onBeforeUnmount(() => clearTimeout(clearTimer));
   const checkButton = useTemplateRef<HTMLElement>('checkButton');
   const goButton = useTemplateRef<
     HTMLElement & {updateComplete?: Promise<unknown>}
@@ -53,7 +71,7 @@
 
     checking.value = true;
     error.value = '';
-    announcement.value = t('Checking for updates…');
+    announce(t('Checking for updates…'));
 
     try {
       const {data} = await actionClient.post(checkUpdates.url(), {
@@ -71,7 +89,7 @@
       // Read before the result shows: with updates, the button goes away.
       const hadFocus = isFocused(checkButton.value);
       known.value = true;
-      announcement.value = total.value ? availableLabel.value : t('Up to date');
+      announce(total.value ? availableLabel.value : t('Up to date'));
 
       if (total.value && hadFocus) {
         await focusGoButton();
@@ -82,7 +100,12 @@
     } catch {
       error.value = t('Unable to fetch updates at this time.');
       // With no result to show, the row says so instead of an alert.
-      announcement.value = known.value ? '' : error.value;
+      if (!known.value) {
+        announce(error.value);
+      } else {
+        clearTimeout(clearTimer);
+        announcement.value = '';
+      }
     } finally {
       checking.value = false;
     }
