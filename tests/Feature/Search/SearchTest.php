@@ -21,6 +21,7 @@ use CraftCms\Cms\Site\Models\Site;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\Search;
 use CraftCms\Cms\Support\Facades\Sites;
+use CraftCms\Cms\Support\Query;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -583,7 +584,7 @@ describe('indexElementIfQueued', function () {
         )->toBeFalse();
     });
 
-    test('does not process already reserved jobs', function () {
+    test('processes reserved jobs only once their worker abandoned them', function (?int $reservedSecondsAgo, bool $indexed) {
         $entry = EntryModel::factory()->create();
         $siteId = Sites::getCurrentSite()->id;
 
@@ -591,6 +592,7 @@ describe('indexElementIfQueued', function () {
             'elementId' => $entry->id,
             'siteId' => $siteId,
             'reserved' => true,
+            'dateReserved' => $reservedSecondsAgo === null ? null : Query::prepareDateForDb(now()->subSeconds($reservedSecondsAgo)),
         ]);
 
         Search::indexElementIfQueued($entry->id, $siteId, Entry::class);
@@ -598,8 +600,12 @@ describe('indexElementIfQueued', function () {
         expect(DB::table(Table::SEARCHINDEX)
             ->where('elementId', $entry->id)
             ->exists()
-        )->toBeFalse();
-    });
+        )->toBe($indexed);
+    })->with([
+        'reserved just now' => [10, false],
+        'reserved over 5 minutes ago' => [301, true],
+        'reserved before reservations were dated' => [null, true],
+    ]);
 });
 
 describe('deleteOrphanedIndexes', function () {

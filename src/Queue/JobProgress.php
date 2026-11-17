@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Queue;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Claim;
 use CraftCms\Cms\Queue\Enums\JobStatus;
 use CraftCms\Cms\Queue\Models\JobProgress as JobProgressModel;
 use CraftCms\Cms\Support\Query;
@@ -196,9 +197,22 @@ readonly class JobProgress
         return $this->getByStatus(JobStatus::Failed);
     }
 
+    /**
+     * Returns whether a worker is running a job.
+     *
+     * Jobs reserved for longer than the queue's `retry_after` don't count. Their worker died
+     * without reporting back, and the queue gives those jobs to another worker.
+     */
     public function hasReservedJobs(): bool
     {
-        return JobProgressModel::query()->where('status', JobStatus::Reserved)->exists();
+        return $this->reservedClaim()->whereClaimed(JobProgressModel::query())->exists();
+    }
+
+    private function reservedClaim(): Claim
+    {
+        $retryAfter = config(sprintf('queue.connections.%s.retry_after', config('queue.default')));
+
+        return new Claim('status', JobStatus::Reserved, JobStatus::Pending, ttl: is_numeric($retryAfter) ? (int) $retryAfter : 360);
     }
 
     public function hasPendingJobs(): bool

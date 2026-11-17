@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Image\Data;
 
 use CraftCms\Cms\Component\Component;
+use CraftCms\Cms\Image\ImageTransformer;
 use CraftCms\Cms\Image\ImageTransformHelper;
 use DateTimeInterface;
 
@@ -50,11 +51,11 @@ class ImageTransformIndex extends Component
     {
         parent::__construct($config);
 
-        // Reset inProgress if stale (30+ seconds)
+        // Reset inProgress if the request generating the transform abandoned it
         if (
             $this->inProgress
             && $this->dateUpdated
-            && now()->diffInSeconds($this->dateUpdated, true) > 30
+            && ImageTransformer::inProgressClaim()->isAbandoned($this->dateUpdated)
         ) {
             $this->inProgress = false;
         }

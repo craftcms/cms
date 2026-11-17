@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CraftCms\Cms\Search;
 
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Database\Claim;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Contracts\ElementInterface;
 use CraftCms\Cms\Element\Queries\Contracts\ElementQueryInterface;
@@ -259,7 +260,7 @@ class Search
         }
 
         try {
-            if (! DB::table(Table::SEARCHINDEXQUEUE)->where('id', $jobId)->update(['reserved' => true])) {
+            if (! $this->indexJobClaim()->claim(DB::table(Table::SEARCHINDEXQUEUE)->where('id', $jobId))) {
                 return;
             }
         } finally {
@@ -302,23 +303,27 @@ class Search
 
     private function pendingIndexJobId(int $elementId, int $siteId): ?int
     {
-        return DB::table(Table::SEARCHINDEXQUEUE)
+        return $this->indexJobClaim()->whereClaimable(DB::table(Table::SEARCHINDEXQUEUE))
             ->where([
                 'elementId' => $elementId,
                 'siteId' => $siteId,
-                'reserved' => false,
             ])
             ->value('id');
     }
 
     private function isIndexJobPending(int $jobId): bool
     {
-        /** @var ?object{reserved: bool} $job */
-        $job = DB::table(Table::SEARCHINDEXQUEUE)
-            ->select('reserved')
-            ->find($jobId);
+        return $this->indexJobClaim()->whereClaimable(DB::table(Table::SEARCHINDEXQUEUE))
+            ->where('id', $jobId)
+            ->exists();
+    }
 
-        return $job !== null && ! $job->reserved;
+    /**
+     * Index jobs reserved for more than 5 minutes count as abandoned, so another job can index the element.
+     */
+    private function indexJobClaim(): Claim
+    {
+        return new Claim('reserved', true, false, ttl: 300, timestampColumn: 'dateReserved');
     }
 
     public function shouldCallSearchElements(ElementQueryInterface $elementQuery): bool

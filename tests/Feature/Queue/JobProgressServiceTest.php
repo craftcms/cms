@@ -42,6 +42,23 @@ it('checks reserved and pending job presence without hydrating the backlog', fun
         ->and($retrieved)->toBe(0);
 });
 
+it('does not count jobs reserved for longer than the queue\'s retry_after', function () {
+    config()->set('queue.default', 'database');
+    config()->set('queue.connections.database.retry_after', 600);
+
+    $this->service->processing('reserved-job');
+    expect($this->service->hasReservedJobs())->toBeTrue();
+
+    $this->travel(599)->seconds();
+    expect($this->service->hasReservedJobs())->toBeTrue();
+
+    $this->travel(2)->seconds();
+    expect($this->service->hasReservedJobs())->toBeFalse();
+
+    $this->service->setProgress('reserved-job', 'Still running', 50);
+    expect($this->service->hasReservedJobs())->toBeTrue();
+});
+
 it('shares queue status while loading only the displayed job', function () {
     $this->service->queued('pending-one', 'First pending job');
     $this->service->queued('pending-two', 'Second pending job');
