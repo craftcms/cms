@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Site\Models\Site;
+use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use CraftCms\Cms\Support\Facades\Sites;
 use CraftCms\Cms\Support\Url;
 use CraftCms\Cms\User\Elements\User;
@@ -89,6 +90,27 @@ it('renders site error templates for exceptions outside debug mode', function ()
         ->assertInternalServerError()
         ->assertJson(['message' => 'Server Error']);
 });
+
+it('drops cache headers queued before an exception', function (bool $debug) {
+    config(['app.debug' => $debug]);
+
+    Route::middleware(['web', 'craft', 'craft.web'])->get('throws', function () {
+        ResponseHeaders::setCache(3600);
+        ResponseHeaders::add('X-Test', 'value');
+
+        throw new RuntimeException('Boom');
+    });
+
+    $response = $this->get('/throws')
+        ->assertInternalServerError()
+        ->assertHeaderMissing('X-Test');
+
+    expect($response->baseResponse->headers->hasCacheControlDirective('public'))->toBeFalse()
+        ->and($response->baseResponse->getMaxAge())->toBeNull();
+})->with([
+    'debug mode off' => false,
+    'debug mode on' => true,
+]);
 
 it('shows exception details to admins who chose to see them outside debug mode', function () {
     config(['app.debug' => false]);

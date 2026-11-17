@@ -40,4 +40,15 @@ class ResponseHeaders
             'replace' => $replace,
         ];
     }
+
+    /**
+     * Forgets everything queued so far, such as when an exception replaces the response it was queued for.
+     */
+    public function reset(): void
+    {
+        $this->noCache = false;
+        $this->duration = null;
+        $this->replace = true;
+        $this->headers = [];
+    }
 }

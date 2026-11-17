@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 use CraftCms\Cms\Cms;
 use CraftCms\Cms\Http\Middleware\HandleTokenRequest;
+use CraftCms\Cms\Http\Middleware\ResolveSite;
 use CraftCms\Cms\Http\Middleware\SetHeaders;
 use CraftCms\Cms\Http\ResponseHeaders as ResponseHeaderAccumulator;
 use CraftCms\Cms\Support\Facades\ResponseHeaders;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
@@ -227,4 +229,22 @@ it('isolates facade state across long-lived request scopes', function () {
     app()->forgetScopedInstances();
 
     $this->get('/test-response-headers?value=second')->assertHeader('X-Test', 'second');
+});
+
+it('sets no-cache headers for token requests', function () {
+    $this->responseHeaders->setCache(3600);
+    Context::addHidden(HandleTokenRequest::HAD_TOKEN_KEY, true);
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
+});
+
+it('sets no-cache headers for site token requests', function () {
+    $this->responseHeaders->setCache(3600);
+    Context::addHidden(ResolveSite::HAD_SITE_TOKEN_KEY, true);
+
+    $response = $this->middleware->handle(Request::create('/'), fn () => new Response);
+
+    expect($response->headers->get('Cache-Control'))->toBe('must-revalidate, no-cache, no-store, private');
 });

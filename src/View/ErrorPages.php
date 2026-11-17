@@ -6,6 +6,7 @@ namespace CraftCms\Cms\View;
 
 use Closure;
 use CraftCms\Cms\Cms;
+use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Route\Events\Redirecting;
 use CraftCms\Cms\Route\RedirectRule;
 use CraftCms\Cms\Site\Sites;
@@ -47,6 +48,7 @@ readonly class ErrorPages
     public function __construct(
         private TemplateResolver $templateResolver,
         private Sites $sites,
+        private ResponseHeaders $responseHeaders,
     ) {}
 
     public function render(Throwable $e, Request $request, Handler $handler): ?Response
@@ -59,6 +61,9 @@ readonly class ErrorPages
         if ($e instanceof HttpResponseException || $e instanceof AuthenticationException || $e instanceof ValidationException) {
             return null;
         }
+
+        // Headers queued for the response that failed don’t apply to the error response.
+        $this->responseHeaders->reset();
 
         if ($e instanceof HttpExceptionInterface && $e->getStatusCode() === 404) {
             if ($redirect = $this->redirect($request)) {

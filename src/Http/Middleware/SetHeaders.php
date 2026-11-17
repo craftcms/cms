@@ -9,6 +9,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\Auth\LoginController;
 use CraftCms\Cms\Http\ResponseHeaders;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
@@ -31,7 +32,14 @@ class SetHeaders
 
         $hasPreviewParam = $request->previewParam() !== null;
 
-        if ($request->isCpRequest() || $request->isActionRequest() || $hasPreviewParam || $this->responseHeaders->noCache) {
+        if (
+            $request->isCpRequest() ||
+            $request->isActionRequest() ||
+            $hasPreviewParam ||
+            $request->getHadToken() ||
+            Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true ||
+            $this->responseHeaders->noCache
+        ) {
             $this->setNoCacheHeaders($response);
         } elseif ($this->responseHeaders->duration !== null) {
             if ($this->responseHeaders->duration <= 0) {
