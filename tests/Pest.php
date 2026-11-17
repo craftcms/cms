@@ -230,6 +230,19 @@ function assertNoJavaScriptErrors(AwaitableWebpage $page): AwaitableWebpage
         JS, []);
 }
 
+/**
+ * Asserts axe finds no serious or critical accessibility issues on the page. Links in running text are told apart
+ * from it by color alone unless the user turns on the “Underline links” preference, so axe's `link-in-text-block`
+ * rule is off, as it is in Storybook.
+ */
+function assertNoAccessibilityIssues(AwaitableWebpage $page): AwaitableWebpage
+{
+    $page->script((string) file_get_contents(InstalledVersions::getInstallPath('pestphp/pest-plugin-browser').'/resources/js/axe.min.js'));
+    $page->script("axe.configure({rules: [{id: 'link-in-text-block', enabled: false}]})");
+
+    return $page->assertNoAccessibilityIssues();
+}
+
 function swapUrlRequest(string $uri, string $method = 'GET', array $parameters = []): void
 {
     app()->instance('request', Request::create($uri, $method, $parameters));

@@ -227,6 +227,29 @@ describe('craft-field aria-describedby wiring', () => {
     }
   });
 
+  it('describes a nested form control by its help text only once there is some', async () => {
+    const element = await createField(
+      {label: 'My field'},
+      '<craft-input slot="input"></craft-input>'
+    );
+    const nestedControl = element.querySelector('craft-input')!;
+    await nestedControl.updateComplete;
+    const nativeInput = nestedControl.querySelector('input')!;
+    const fieldHelpText = element.querySelector<HTMLElement>(
+      ':scope > [slot="help-text"]'
+    )!;
+
+    expect(nativeInput.getAttribute('aria-describedby') ?? '').toBe('');
+
+    element.helpText = 'Some instructions';
+    await element.updateComplete;
+    await nestedControl.updateComplete;
+
+    expect(
+      nativeInput.getAttribute('aria-describedby')?.split(/\s+/)
+    ).toContain(fieldHelpText.id);
+  });
+
   it('renders tip and warning content inside callouts', async () => {
     const element = await createField(
       {label: 'My field'},

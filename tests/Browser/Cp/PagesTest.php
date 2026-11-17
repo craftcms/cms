@@ -12,8 +12,9 @@ beforeEach(function () {
 });
 
 it('renders control panel pages', function (string $path, string $heading) {
-    assertNoJavaScriptErrors(visitCp($path))
-        ->assertSeeIn('#main h1', $heading);
+    assertNoAccessibilityIssues(
+        assertNoJavaScriptErrors(visitCp($path))->assertSeeIn('#main h1', $heading),
+    );
 })->with([
     'dashboard' => ['dashboard', 'Dashboard'],
     'entries' => ['content/entries', 'All entries'],
