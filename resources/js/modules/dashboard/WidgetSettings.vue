@@ -3,7 +3,8 @@
   import {computed, ref, watch} from 'vue';
   import {useHttp} from '@inertiajs/vue3';
   import '@craftcms/ui/components/field-group/field-group';
-  import {actionClient, t} from '@craftcms/ui';
+  import {t} from '@craftcms/ui';
+  import {fetchUiPayload} from '@/modules/ui/fetchUiPayload';
   import {
     store,
     update,
@@ -51,16 +52,17 @@
     values: UiPayload['values'],
     scope: string[] = []
   ): Promise<UiPayload> {
-    const {data} = await actionClient.post(refreshSettings.url(), {
-      type: props.widget.type,
-      settings: values,
-      namespace: scope.join('.'),
-    });
-    if (!data.ui) {
-      throw new Error('The widget did not return a UI payload.');
-    }
+    const {ui} = await fetchUiPayload(
+      refreshSettings.url(),
+      {
+        type: props.widget.type,
+        settings: values,
+        namespace: scope.join('.'),
+      },
+      'The widget did not return a UI payload.'
+    );
 
-    return data.ui;
+    return ui;
   }
 
   async function save() {

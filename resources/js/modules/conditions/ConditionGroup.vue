@@ -99,7 +99,10 @@
           <ConditionRule v-else :rule="child" @remove="remove(index)" />
         </template>
 
-        <div v-if="editor.editable()" class="flex flex-wrap items-center gap-2">
+        <div
+          v-if="editor.editable()"
+          class="condition-group__add flex flex-wrap items-center gap-2"
+        >
           <TypePicker
             :types="editor.payload().ruleTypes"
             :label="editor.payload().addRuleLabel"

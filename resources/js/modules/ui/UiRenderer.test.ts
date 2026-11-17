@@ -2930,6 +2930,44 @@ describe('UiRenderer', () => {
     vi.useRealTimers();
   });
 
+  it('takes the server’s value for a control whose kind of value changed on refresh', async () => {
+    vi.useFakeTimers();
+    const refreshable = clonePayload();
+    Object.assign(refreshable, {refreshable: true});
+    required(
+      refreshable.nodes[1],
+      'Expected the placeholder field node.'
+    ).control!.reactive = true;
+    const refreshed = clonePayload();
+    Object.assign(refreshed, {refreshable: true});
+    required(
+      refreshed.nodes[1],
+      'Expected the placeholder field node.'
+    ).control!.valueScope = 'other-kind';
+    (refreshed.values.settings as Record<string, UiValue>).placeholder =
+      'From the server';
+    const refresh = vi.fn(async () => refreshed);
+    app.unmount();
+    await mount(refreshable, {refresh});
+
+    const placeholder = required(
+      container.querySelector<HTMLInputElement>(
+        'input[name="settings[placeholder]"]'
+      ),
+      'Expected the placeholder input.'
+    );
+    placeholder.value = 'Typed';
+    placeholder.dispatchEvent(new Event('input', {bubbles: true}));
+    await vi.advanceTimersByTimeAsync(1000);
+    await nextTick();
+
+    expect(refresh).toHaveBeenCalled();
+    expect(renderer.currentValues()).toMatchObject({
+      settings: {placeholder: 'From the server'},
+    });
+    vi.useRealTimers();
+  });
+
   it('retains removed values without including them in submissions', async () => {
     let mutation: UiPayload['values'] = {};
     app.unmount();

@@ -96,7 +96,7 @@ it('assigns named slots', function (string $method, string $slot) {
     'body' => ['body', 'body'],
     'footer' => ['footer', 'footer'],
     'footer content' => ['footerContent', 'footer-content'],
-    'feedback' => ['feedback', 'feedback'],
+    'footer start' => ['footerStart', 'footer-start'],
     'actions' => ['actions', 'actions'],
     'primary action' => ['primaryAction', 'primary-action'],
     'secondary action' => ['secondaryAction', 'secondary-action'],

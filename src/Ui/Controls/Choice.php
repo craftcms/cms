@@ -35,7 +35,7 @@ class Choice extends Control implements ReadableValueControl, WritableValueContr
     /** The token {@see self::allOption()} posts by default. */
     public const string ALL_VALUE = '*';
 
-    /** @var list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, thumbnail?: array{src?: string, svg?: string, width?: int, height?: int, aspectRatio?: string}}> */
+    /** @var list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, description?: string, thumbnail?: array{src?: string, svg?: string, width?: int, height?: int, aspectRatio?: string}}> */
     private array $options = [];
 
     private bool $multiple = false;
@@ -95,7 +95,7 @@ class Choice extends Control implements ReadableValueControl, WritableValueContr
      * `icon` and `color` are shown before a checkbox or radio label: the icon tinted
      * with the color, or a color swatch when there's no icon.
      *
-     * @param  list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, group?: string|null, thumbnail?: array{src?: string, svg?: string, width?: int, height?: int, aspectRatio?: string}}>  $options
+     * @param  list<array{label: string, labelHtml?: string, icon?: string, color?: string, custom?: bool, value: bool|float|int|string, disabled?: bool, description?: string, group?: string|null, thumbnail?: array{src?: string, svg?: string, width?: int, height?: int, aspectRatio?: string}}>  $options
      */
     public function options(array $options): static
     {

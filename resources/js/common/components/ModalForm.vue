@@ -47,8 +47,9 @@
     :max-height="maxHeight"
     :resizable="resizable"
     :dismissible="dismissible"
+    :fill="fill"
   >
-    <form @submit.prevent="submitHandler">
+    <form :class="{fill}" @submit.prevent="submitHandler">
       <!--
         `craft-pane` uses native slots, which can't be filled by a `v-for` over
         `$slots` the way Vue slots could — a native `slot=` assignment has to
@@ -95,8 +96,8 @@
         >
           <slot name="footer-content"></slot>
         </div>
-        <div v-if="$slots.feedback" slot="feedback" class="contents">
-          <slot name="feedback"></slot>
+        <div v-if="$slots['footer-start']" slot="footer-start" class="contents">
+          <slot name="footer-start"></slot>
         </div>
         <div v-if="$slots.actions" slot="actions" class="contents">
           <slot name="actions"></slot>
@@ -178,5 +179,27 @@
 
   craft-pane::part(body) {
     flex: 1 0 auto;
+  }
+
+  /* Filling, the body takes the modal's height rather than its content's, and
+     whatever it holds scrolls on its own. */
+  .fill,
+  .fill > craft-pane,
+  .fill > craft-pane::part(base) {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .fill > craft-pane::part(body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 0;
+  }
+
+  /* Lines up with the header rather than the page. */
+  .fill > craft-pane::part(footer) {
+    padding-inline: var(--c-pane-padding, var(--c-spacing-lg));
   }
 </style>

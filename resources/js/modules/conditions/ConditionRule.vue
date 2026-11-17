@@ -121,7 +121,12 @@
         <craft-button
           v-if="editor.editable()"
           type="button"
-          class="ms-auto self-center"
+          class="condition-rule__remove ms-auto self-start"
+          style="
+            margin-block-start: calc(
+              (var(--c-size-control-md) - var(--c-size-control-sm)) / 2
+            );
+          "
           icon="xmark-large"
           variant="danger-plain"
           size="small"

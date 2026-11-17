@@ -26,6 +26,7 @@
     type RulePayload,
   } from './types';
   import ConditionGroup from './ConditionGroup.vue';
+  import {isGroup} from './conditionTree';
 
   const props = withDefaults(
     defineProps<{
@@ -199,10 +200,6 @@
     });
 
     return response?.valid === true && submitted === canonical(value.value);
-  }
-
-  function isGroup(config: GroupConfig | RuleConfig): config is GroupConfig {
-    return typeof config.class !== 'string' && Array.isArray(config.rules);
   }
 
   function createDraft(payload: BuilderPayload): GroupDraft {

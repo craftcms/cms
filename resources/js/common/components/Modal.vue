@@ -43,6 +43,8 @@
      * keyboard whose first keystrokes have to reach it. Closing still fades.
      */
     instant?: boolean;
+    /** Stops it scrolling, for content that fills it and scrolls its own regions. */
+    fill?: boolean;
   }
 
   const emit = defineEmits<{
@@ -223,7 +225,7 @@
       <div class="cp-modal">
         <div
           ref="content"
-          :class="{content: true, [widthClass]: true}"
+          :class="{content: true, 'content--fill': fill, [widthClass]: true}"
           :style="[contentStyle, resizer.style.value]"
         >
           <slot></slot>
@@ -260,6 +262,10 @@
      from painting over the modal's chrome, such as the resize handle. Nothing
      can escape this box visually anyway; it scrolls. */
     isolation: isolate;
+  }
+
+  .content--fill {
+    overflow-y: hidden;
   }
 
   .content > :slotted(craft-pane),
