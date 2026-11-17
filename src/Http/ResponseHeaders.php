@@ -21,10 +21,17 @@ use Symfony\Component\HttpFoundation\Response;
 #[Scoped]
 class ResponseHeaders
 {
+    /**
+     * The headers that keep browsers and shared caches from storing a response.
+     */
+    public const array NO_CACHE_HEADERS = [
+        'Cache-Control' => 'no-cache, no-store, must-revalidate',
+        'Pragma' => 'no-cache',
+        'Expires' => '0',
+    ];
+
     /** @var list<Closure(Response): mixed> */
     private array $queue = [];
-
-    private ?CacheControl $cacheControl = null;
 
     /**
      * Returns the response’s cache directives, set with the same methods as Symfony’s `Response`.
@@ -35,7 +42,7 @@ class ResponseHeaders
      */
     public function cacheControl(): CacheControl
     {
-        return $this->cacheControl ??= new CacheControl(function (Closure $callback): void {
+        return new CacheControl(function (Closure $callback): void {
             $this->queue[] = $callback;
         });
     }
@@ -45,11 +52,7 @@ class ResponseHeaders
      */
     public function noCache(): void
     {
-        $this->queue[] = function (Response $response): void {
-            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
-            $response->headers->set('Pragma', 'no-cache');
-            $response->headers->set('Expires', '0');
-        };
+        $this->queue[] = fn (Response $response) => $response->headers->add(self::NO_CACHE_HEADERS);
     }
 
     /**
@@ -79,6 +82,8 @@ class ResponseHeaders
 
     /**
      * Applies everything queued to the response, in the order it was queued.
+     *
+     * @internal
      */
     public function applyTo(Response $response): void
     {
@@ -89,6 +94,8 @@ class ResponseHeaders
 
     /**
      * Forgets everything queued so far, such as when an exception replaces the response it was queued for.
+     *
+     * @internal
      */
     public function reset(): void
     {

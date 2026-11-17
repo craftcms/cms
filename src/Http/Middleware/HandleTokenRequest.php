@@ -7,6 +7,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\PreviewRequestPreparer;
+use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Http\Routing\ActionRoute;
 use CraftCms\Cms\RouteToken\RouteTokens;
 use Illuminate\Http\Request;
@@ -86,9 +87,7 @@ readonly class HandleTokenRequest
     private function preventCaching(mixed $response): mixed
     {
         if ($response instanceof Response) {
-            $response->headers->set('Expires', '0');
-            $response->headers->set('Pragma', 'no-cache');
-            $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            $response->headers->add(ResponseHeaders::NO_CACHE_HEADERS);
         }
 
         return $response;

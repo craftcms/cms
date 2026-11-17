@@ -12,7 +12,6 @@ use Override;
  * @method static void noCache()
  * @method static void setCache(int $duration = 31536000)
  * @method static void add(string $header, string $value, bool $replace = true)
- * @method static void applyTo(\Symfony\Component\HttpFoundation\Response $response)
  * @method static void reset()
  *
  * @see \CraftCms\Cms\Http\ResponseHeaders

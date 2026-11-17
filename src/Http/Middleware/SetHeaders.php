@@ -16,9 +16,6 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Applies the headers queued with {@see ResponseHeaders}, followed by the headers Craft sends for control panel,
  * action, preview, and site token requests.
  *
- * It runs before `StartSession` in the middleware priority list, outside the session middleware, so the no-cache
- * headers {@see StartLazySession} queues for a saved session are applied after everything the page queued.
- *
  * @since 6.0.0
  */
 class SetHeaders
@@ -69,19 +66,12 @@ class SetHeaders
             $hasPreviewParam ||
             Context::getHidden(ResolveSite::HAD_SITE_TOKEN_KEY) === true
         ) {
-            $this->setNoCacheHeaders($response);
+            $response->headers->add(ResponseHeaders::NO_CACHE_HEADERS);
         }
 
         $this->setPoweredByHeader($response);
 
         return $response;
-    }
-
-    private function setNoCacheHeaders(SymfonyResponse $response): void
-    {
-        $response->headers->set('Expires', '0');
-        $response->headers->set('Pragma', 'no-cache');
-        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     private function setPoweredByHeader(SymfonyResponse $response): void

@@ -14,6 +14,7 @@ use CraftCms\Cms\GarbageCollection\GarbageCollection;
 use CraftCms\Cms\Http\Listeners\PrepareCraftForNextOperation;
 use CraftCms\Cms\Http\Mixins\RequestMixin;
 use CraftCms\Cms\Http\Mixins\SessionMixin;
+use CraftCms\Cms\Http\ResponseHeaders;
 use CraftCms\Cms\Support\CmsAssets;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Updates;
@@ -189,9 +190,9 @@ class AppServiceProvider extends ServiceProvider
         SessionStore::mixin(new SessionMixin);
 
         Response::macro('setNoCacheHeaders', function (bool $replace = true) {
-            $this->header('Expires', '0', $replace);
-            $this->header('Pragma', 'no-cache', $replace);
-            $this->header('Cache-Control', 'no-cache, no-store, must-revalidate', $replace);
+            foreach (ResponseHeaders::NO_CACHE_HEADERS as $name => $value) {
+                $this->header($name, $value, $replace);
+            }
 
             return $this;
         });
