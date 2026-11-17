@@ -138,7 +138,8 @@ class UploadsTest extends TestCase
         }
 
         $asset = Asset::find()->id($result['assetId'])->one();
-        self::assertSame($jpeg, file_get_contents("$this->root/{$asset->getPath()}"), 'The image must not be cleaned.');
+        self::assertSame($jpeg, file_get_contents("$this->root/{$asset->getPath()}"), 'The image must be moved into place, not cleaned.');
+        self::assertFileDoesNotExist($this->root . '/' . Uploads::STAGING_FOLDER . "/{$upload['id']}", 'The staged file must be moved, not copied.');
         self::assertSame([37, 23], [$asset->width, $asset->height]);
     }
 
