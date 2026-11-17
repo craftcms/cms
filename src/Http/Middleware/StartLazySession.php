@@ -250,8 +250,7 @@ readonly class StartLazySession
     /**
      * Returns where the session's CSRF token was put in the response, which only works if the session is saved:
      * `body`, `header`, or `cookie`. Streamed responses are assumed to contain it in their body, as it can't be checked.
-     */
-    /**
+     *
      * @return 'body'|'header'|'cookie'|null
      */
     private function findTokenLocation(mixed $response, mixed $token): ?string
