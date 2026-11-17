@@ -392,6 +392,7 @@
 - Plugins can no longer register custom Craft filesystem types. Filesystem types registered through `craft\base\Fs` remain supported for legacy plugins via the Yii adapter. ([#19650](https://github.com/craftcms/cms/pull/19650))
 - The `list-flip`, `list-tree-flip`, `share-flip`, `sidebar-nav-flip`, and `sidebar-nav-flip-light` icons are now drawn by mirroring the `list`, `list-tree`, `share`, `sidebar-nav`, and `sidebar-nav-light` icons, so paths to them, such as the deprecated `@appicons/listrtl.svg` alias, no longer point to a file. They still show when referenced by name. ([#20520](https://github.com/craftcms/cms/pull/20520))
 - `Garnish.uiLayerManager.registerShortcut()` now accepts `description` and `group` keys on its shortcut definition, which list the shortcut in the command palette’s “Keyboard shortcuts” view. ([#20263](https://github.com/craftcms/cms/pull/20263))
+- Element type indexes shown with `CraftCms\Cms\Http\Controllers\Elements\ElementTypeIndexController` can now open their “New” button’s route in a new tab, with an external link icon, by setting the `newElementExternal` route default to `true`, for elements that are created outside the control panel. ([#20735](https://github.com/craftcms/cms/pull/20735))
 
 ##### Added
 - The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
