@@ -962,7 +962,7 @@ class ExtensionTest extends TestCase
      *
      * @dataProvider sandboxedArrayFilterKeyDataProvider
      */
-    public function testSandboxedArrayFiltersCheckKeys(string $template): void
+    public function testSandboxedArrayFiltersCheckKeys(string $template, string $templateMode = View::TEMPLATE_MODE_SITE): void
     {
         Craft::$app->getConfig()->getGeneral()->enableTwigSandbox = true;
         $obj = new stdClass();
@@ -988,8 +988,15 @@ class ExtensionTest extends TestCase
             }
         };
 
+        $stringable = new class() {
+            public function __toString(): string
+            {
+                return 'shh';
+            }
+        };
+
         self::expectException(TwigError::class);
-        $this->view->renderSandboxedString($template, ['obj' => $obj, 'arrayAccess' => $arrayAccess]);
+        $this->view->renderSandboxedString($template, ['obj' => $obj, 'arrayAccess' => $arrayAccess, 'stringable' => $stringable], $templateMode);
     }
 
     public static function sandboxedArrayFilterKeyDataProvider(): array
@@ -997,6 +1004,7 @@ class ExtensionTest extends TestCase
         return [
             'index with a key path' => ["{{ [craft]|index(['app', 'config', 'general', 'securityKey'])|keys|first }}"],
             'index with a group path' => ["{{ [craft]|index(null, [['app', 'config', 'general', 'securityKey']])|keys|first }}"],
+            'index with an object as its groups' => ["{{ [{shh: 'hit'}]|index(null, obj)|keys|first }}"],
             'column with a key path' => ["{{ [craft]|column(['app', 'config', 'general', 'securityKey'])|first }}"],
             'multisort with a key path' => ["{{ [craft]|multisort([['app', 'config', 'general', 'securityKey']])|length }}"],
             'index with a disallowed property' => ["{{ [obj]|index('secret')|keys|first }}"],
@@ -1004,6 +1012,10 @@ class ExtensionTest extends TestCase
             'contains with a disallowed property' => ["{{ [obj]|contains('secret', 'shh') }}"],
             'multisort with a disallowed property' => ["{{ [obj]|multisort('secret')|length }}"],
             'column with a disallowed ArrayAccess offset' => ["{{ [arrayAccess]|column('secret')|first }}"],
+            // group used to render property names as object templates in the site template mode’s environment
+            'group with a disallowed property in a control panel template' => ["{{ [obj]|group('secret')|keys|first }}", View::TEMPLATE_MODE_CP],
+            'group with an arrow function returning an object that can’t be a string' => ["{{ [1]|group(i => stringable)|keys|first }}"],
+            'group with a Twig tag in a control panel template' => ["{{ [{x: 1}]|group('x}{{ craft.app.config.general.securityKey }}{x')|keys|first }}", View::TEMPLATE_MODE_CP],
         ];
     }
 
@@ -1059,8 +1071,8 @@ class ExtensionTest extends TestCase
                 }
             }
             if (is_iterable($value) && $depth < 5) {
-                foreach ($value as $item) {
-                    if ($leak = $findLeak($item, $depth + 1)) {
+                foreach ($value as $k => $item) {
+                    if ($leak = $findLeak($k) ?? $findLeak($item, $depth + 1)) {
                         return $leak;
                     }
                 }
@@ -1141,12 +1153,14 @@ class ExtensionTest extends TestCase
             ['obj' => $obj],
         ));
 
-        self::assertSame('x,y|1,2|1|2,4', $this->view->renderSandboxedString(implode('|', [
+        self::assertSame('x,y|1,2|1|2,4|x,y', $this->view->renderSandboxedString(implode('|', [
             "{{ [{a: 'x'}, {a: 'y'}]|index('a')|keys|join(',') }}",
             "{{ [{a: 2}, {a: 1}]|multisort('a')|column('a')|join(',') }}",
             "{{ [{a: 1}, {a: 2}]|where(i => i.a, 2)|length }}",
             "{{ [[1, 2], [3, 4]]|column(1)|join(',') }}",
+            "{{ [{a: 'x'}, {a: 'y'}, {a: 'x'}]|group('a')|keys|join(',') }}",
         ])));
+        self::assertSame('x', $this->view->renderSandboxedString("{{ [{a: 'x'}]|group('a')|keys|first }}", templateMode: View::TEMPLATE_MODE_CP));
 
         // Twig allows offset reads on its array-like classes, e.g. `row[0]`
         self::assertSame('7,8|1|7', $this->view->renderSandboxedString(implode('|', [

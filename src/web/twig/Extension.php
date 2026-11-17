@@ -93,6 +93,7 @@ use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\Extension\SandboxExtension;
 use Twig\Node\Expression\Filter\DefaultFilter;
 use Twig\Sandbox\SecurityError;
 use Twig\Source;
@@ -255,7 +256,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filterByValue', [$this, 'filterByValueFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true, 'deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
             new TwigFilter('firstWhere', [$this, 'firstWhereFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
-            new TwigFilter('group', [$this, 'groupFilter'], ['needs_is_sandboxed' => true]),
+            new TwigFilter('group', [$this, 'groupFilter'], ['needs_environment' => true, 'needs_is_sandboxed' => true]),
             new TwigFilter('hash', [$this, 'hashFilter']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
             new TwigFilter('id', [Html::class, 'id']),
@@ -1439,15 +1440,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Groups an array by the results of an arrow function, or value of a property.
      *
+     * @param TwigEnvironment $env
      * @param bool $isSandboxed
      * @param iterable $arr
      * @param callable|string $arrow The arrow function or property name that determines the group the item should be grouped in
      * @return array[] The grouped items
      * @throws RuntimeError if $arr is not of type array or Traversable
      */
-    public function groupFilter(bool $isSandboxed, iterable $arr, callable|string $arrow): array
+    public function groupFilter(TwigEnvironment $env, bool $isSandboxed, iterable $arr, callable|string $arrow): array
     {
         $groups = [];
+
+        if (is_string($arrow) && $isSandboxed) {
+            // Read the property like other array filters’ keys, rather than rendering it as an object template, which
+            // would use the site template mode’s Twig environment, even when a sandboxed control panel template is rendering
+            $arrow = $this->sandboxKey($env, true, $arrow, 'group');
+        }
 
         if (is_string($arrow)) {
             // No need to call checkArrow() here since strings are always interpreted as nested fields,
@@ -1461,8 +1469,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
         } else {
             CoreExtension::checkArrow($isSandboxed, $arrow, 'group', 'filter');
             foreach ($arr as $key => $item) {
-                $groupKey = (string)$arrow($item, $key);
-                $groups[$groupKey][] = $item;
+                $groupKey = $arrow($item, $key);
+                if ($isSandboxed && is_object($groupKey)) {
+                    $env->getExtension(SandboxExtension::class)->ensureToStringAllowed($groupKey);
+                }
+                $groups[(string)$groupKey][] = $item;
             }
         }
 
@@ -1512,7 +1523,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $array = $this->sandboxItems($isSandboxed, $array);
         $key = $this->sandboxKey($env, $isSandboxed, $key, 'index');
-        $groups = array_map(fn($group) => $this->sandboxKey($env, $isSandboxed, $group, 'index'), (array)$groups);
+        $groups = array_map(fn($group) => $this->sandboxKey($env, $isSandboxed, $group, 'index'), (array)$this->sandboxItems($isSandboxed, $groups));
 
         return ArrayHelper::index($array, $key, $groups);
     }
