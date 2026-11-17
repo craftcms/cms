@@ -48,4 +48,12 @@ test('kind', function (mixed $param, int $expectedCount) {
     ['not image', 2],
     [['not', 'image', 'audio'], 1],
     ['and image, audio', 0],
+    [['and', 'image'], 2],
 ]);
+
+test('kind matches extensions that several kinds share', function () {
+    Asset::factory()->create(['kind' => 'unknown', 'filename' => 'file.ogg']);
+    Asset::factory()->create(['kind' => 'audio', 'filename' => 'file.mp3']);
+
+    expect(assetQuery()->kind('and audio, video')->count())->toBe(1);
+});

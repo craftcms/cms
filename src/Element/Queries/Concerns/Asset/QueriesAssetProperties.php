@@ -117,27 +117,30 @@ trait QueriesAssetProperties
         $param = QueryParam::parse($value);
         $kinds = AssetsHelper::getFileKinds();
 
-        $query->where(function (Builder $query) use ($value, $param, $kinds) {
-            $query->whereParam('assets.kind', $value);
+        // Files with a kind’s extensions count as that kind too, so excluding the kind excludes them as well.
+        if ($param->operator === QueryParam::NOT) {
+            $query->where(function (Builder $query) use ($value, $param, $kinds) {
+                $query->whereParam('assets.kind', $value);
 
-            // A file has only one kind, so files can't match “and” by their extensions.
-            if ($param->operator === QueryParam::AND) {
-                return;
-            }
-
-            foreach ($param->values as $kind) {
-                if (! isset($kinds[$kind])) {
-                    continue;
-                }
-
-                // Files with the kind’s extensions count as that kind too, so excluding the kind excludes them as well.
-                foreach ($kinds[$kind]['extensions'] as $extension) {
-                    if ($param->operator === QueryParam::NOT) {
+                foreach ($param->values as $kind) {
+                    foreach ($kinds[$kind]['extensions'] ?? [] as $extension) {
                         $query->whereNotLike('assets.filename', "%.$extension");
-                    } else {
-                        $query->orWhereLike('assets.filename', "%.$extension");
                     }
                 }
+            });
+
+            return;
+        }
+
+        $query->where(function (Builder $query) use ($param, $kinds) {
+            foreach ($param->values as $kind) {
+                $query->where(function (Builder $query) use ($kind, $kinds) {
+                    $query->whereParam('assets.kind', $kind);
+
+                    foreach ($kinds[$kind]['extensions'] ?? [] as $extension) {
+                        $query->orWhereLike('assets.filename', "%.$extension");
+                    }
+                }, boolean: $param->operator);
             }
         });
     }

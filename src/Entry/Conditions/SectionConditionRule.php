@@ -74,7 +74,13 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
 
     public function modifyQuery(Builder $query, ElementQueryInterface $elementQuery): void
     {
-        EntryQuery::applySectionId($query, $this->paramIds(Table::SECTIONS, fn ($uid) => Sections::getSectionByUid($uid)->id ?? null), $elementQuery);
+        $sectionIds = $this->paramIds(Table::SECTIONS, fn ($uid) => Sections::getSectionByUid($uid)->id ?? null);
+
+        // Unlike EntryQuery::applySectionId(), this leaves the query’s structure settings alone,
+        // since other rules in an “or” group can match entries in other sections.
+        if ($sectionIds !== null) {
+            $query->whereIn('entries.sectionId', $sectionIds);
+        }
     }
 
     public function matchElement(ElementInterface $element): bool

@@ -21,6 +21,7 @@ use CraftCms\Cms\Entry\Models\EntryType;
 use CraftCms\Cms\Section\Enums\SectionType;
 use CraftCms\Cms\Section\Models\Section;
 use CraftCms\Cms\Shared\Enums\DateRangeType;
+use CraftCms\Cms\Structure\Models\Structure;
 use CraftCms\Cms\Support\Facades\Elements;
 use CraftCms\Cms\Support\Facades\EntryTypes;
 use CraftCms\Cms\Support\Facades\Sections;
@@ -143,6 +144,35 @@ describe('SectionConditionRule', function () {
         expect($rule->matchElement(new Entry))->toBeFalse();
     });
 });
+
+it('leaves the query’s structure settings alone, since other rules in an “or” group can match other sections', function (string $ruleClass, Closure $values) {
+    $structure = Section::factory()->create([
+        'type' => SectionType::Structure,
+        'structureId' => Structure::factory()->create()->id,
+    ]);
+    $channel = Section::factory()->create(['type' => SectionType::Channel]);
+    Sections::refreshSections();
+
+    $structureEntry = EntryModel::factory()->forSection($structure)->create();
+    $channelEntry = EntryModel::factory()->forSection($channel)->create();
+
+    $rule = new EntryCondition(Entry::class)->createConditionRule($ruleClass);
+    $rule->operator = 'in';
+    $rule->values = $values($structure);
+
+    $query = Entry::find()->id([$structureEntry->id, $channelEntry->id]);
+    $query->where(fn (Builder $builder) => $builder
+        ->orWhere(fn (Builder $builder) => $rule->modifyQuery($builder, $query))
+        ->orWhere('elements.id', $channelEntry->id));
+
+    $entries = collect($query->all())->keyBy('id');
+
+    expect($entries->keys()->all())->toEqualCanonicalizing([$structureEntry->id, $channelEntry->id])
+        ->and($entries[$channelEntry->id]->structureId)->toBeNull();
+})->with([
+    'section' => [SectionConditionRule::class, fn (Section $structure) => [$structure->uid]],
+    'section type' => [SectionTypeConditionRule::class, fn () => [SectionType::Structure->value]],
+]);
 
 describe('SectionTypeConditionRule', function () {
     beforeEach(function () {
