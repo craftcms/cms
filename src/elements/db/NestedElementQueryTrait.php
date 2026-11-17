@@ -49,11 +49,11 @@ trait NestedElementQueryTrait
     public mixed $ownerId = null;
 
     /**
-     * @var ElementInterface|null The owner element specified by [[owner()]].
+     * @var ElementInterface[]|null The owner elements specified by [[owner()]] or [[primaryOwner()]], indexed by their IDs.
      * @used-by owner()
      * @used-by primaryOwner()
      */
-    private ?ElementInterface $_owner = null;
+    private ?array $_owners = null;
 
     /**
      * @var bool|null Whether the owner elements can be drafts.
@@ -129,7 +129,7 @@ trait NestedElementQueryTrait
     public function primaryOwnerId(mixed $value): static
     {
         $this->primaryOwnerId = $value;
-        $this->_owner = null;
+        $this->_owners = null;
         return $this;
     }
 
@@ -141,7 +141,7 @@ trait NestedElementQueryTrait
     public function primaryOwner(ElementInterface $primaryOwner): static
     {
         $this->primaryOwnerId = [$primaryOwner->id];
-        $this->_owner = $primaryOwner;
+        $this->_owners = [$primaryOwner->id => $primaryOwner];
         if ($this->elementType::isLocalized()) {
             $this->siteId = $primaryOwner->siteId;
         }
@@ -156,21 +156,31 @@ trait NestedElementQueryTrait
     public function ownerId(mixed $value): static
     {
         $this->ownerId = $value;
-        $this->_owner = null;
+        $this->_owners = null;
         return $this;
     }
 
     /**
      * @inheritdoc
+     *
+     * An array of owner elements can be passed as well. Each resulting {element} will have its owner
+     * set to the matching element.
+     *
+     * @param ElementInterface|ElementInterface[] $owner The owner element(s)
      * @uses $ownerId
      * @since 5.0.0
      */
-    public function owner(ElementInterface $owner): static
+    public function owner(ElementInterface|array $owner): static
     {
-        $this->ownerId = [$owner->id];
-        $this->_owner = $owner;
+        $owners = is_array($owner) ? $owner : [$owner];
+        $this->_owners = [];
+        foreach ($owners as $o) {
+            $this->_owners[$o->id] = $o;
+        }
+        $this->ownerId = array_keys($this->_owners);
         if ($this->elementType::isLocalized()) {
-            $this->siteId = $owner->siteId;
+            $siteIds = array_values(array_unique(array_map(fn(ElementInterface $o) => $o->siteId, $owners)));
+            $this->siteId = count($siteIds) === 1 ? $siteIds[0] : $siteIds;
         }
         return $this;
     }
@@ -355,11 +365,17 @@ trait NestedElementQueryTrait
      */
     public function createElement(array $row): ElementInterface
     {
-        if (isset($this->_owner)) {
-            $row['owner'] = $this->_owner;
+        if (!empty($this->_owners)) {
+            $owner = count($this->_owners) === 1
+                ? reset($this->_owners)
+                : ($this->_owners[$row['ownerId'] ?? null] ?? null);
 
-            if (isset($row['primaryOwnerId']) && $row['primaryOwnerId'] == $this->_owner->id) {
-                $row['primaryOwner'] = $this->_owner;
+            if ($owner) {
+                $row['owner'] = $owner;
+
+                if (isset($row['primaryOwnerId']) && $row['primaryOwnerId'] == $owner->id) {
+                    $row['primaryOwner'] = $owner;
+                }
             }
         }
 
