@@ -2,10 +2,10 @@ import {beforeEach, describe, expect, it} from 'vite-plus/test';
 import {userEvent} from 'vite-plus/test/browser/context';
 import '@craftcms/ui/components/input-money/input-money';
 
-async function createInputMoney(modelValue: string) {
+async function createInputMoney(value: string) {
   const element = document.createElement('craft-input-money');
   element.label = 'Amount';
-  element.modelValue = modelValue;
+  element.value = value;
   document.body.append(element);
   await element.updateComplete;
 
