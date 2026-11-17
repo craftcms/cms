@@ -121,6 +121,7 @@ class Gc extends Component
         $this->_deleteStaleElementActivity();
         $this->_deleteStaleBulkOpData();
         $this->_deleteStaleOAuthData();
+        $this->_deleteExpiredUploads();
 
         // elements should always go first
         $this->hardDeleteElements();
@@ -463,6 +464,13 @@ class Gc extends Component
     /**
      * Deletes expired and revoked OAuth credentials, and registered clients that can no longer be used.
      */
+    private function _deleteExpiredUploads(): void
+    {
+        $this->_stdout('    > deleting expired uploads ... ');
+        Craft::$app->getUploads()->deleteExpiredUploads();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
     private function _deleteStaleOAuthData(): void
     {
         $this->_stdout('    > deleting stale OAuth data ... ');

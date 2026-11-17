@@ -11,6 +11,12 @@
 - Terminal commands shown in the control panel and console output for the current environment now use `ddev craft` and `ddev composer` when Craft is running in DDEV, including the Plugin Store’s installation instructions and the OAuth signing key instructions on the **Settings** → **MCP** and **My Account** → **Tokens** screens. The Plugin Store no longer shows separate “Shell” and “DDEV” tabs. ([#20487](https://github.com/craftcms/cms/pull/20487))
 - Commands suggested by the `entrify/*`, `entry-types/merge`, `fields/merge`, `fields/auto-merge`, `setup`, `setup/welcome`, and `update` console commands now use `ddev craft` when Craft is running in DDEV, and `php craft` otherwise. ([#20702](https://github.com/craftcms/cms/pull/20702))
 
+### Assets
+
+- Assets can now be uploaded straight to filesystems that accept direct uploads, such as Craft Cloud’s, so files don’t pass through Craft’s request handling or its request size limits. Uploads are started with the `uploads/start` action, sent to the returned URL, and completed with `uploads/complete`.
+- The `assets_upload_url` MCP tool now accepts an optional `size` argument, and returns `headers` that must be sent with the upload. Its upload URLs send files straight to the temporary asset upload filesystem when it accepts direct uploads.
+- Guests can upload assets when a `craft\services\Uploads::EVENT_AUTHORIZE_UPLOAD` event handler allows them. Starting a guest upload is rate-limited per the `defaultRateLimit` config setting.
+
 ### Development
 
 - Added the `craftCommand()` Twig function. ([#20487](https://github.com/craftcms/cms/pull/20487))
@@ -23,6 +29,16 @@
 - Added `craft\helpers\App::craftCommand()`. ([#20487](https://github.com/craftcms/cms/pull/20487))
 - Added `craft\helpers\App::isDdev()`. ([#20487](https://github.com/craftcms/cms/pull/20487))
 - Added `craft\helpers\ElementHelper::getProvisionalDraftUser()`. ([#20587](https://github.com/craftcms/cms/issues/20587))
+- Added `craft\base\ApplicationTrait::getUploads()`.
+- Added `craft\base\TemporaryUploadUrlInterface`.
+- Added `craft\controllers\UploadsController`.
+- Added `craft\events\AuthorizeUploadEvent`.
+- Added `craft\services\Uploads`.
+- Added `craft\uploads\AssetUploadHandler`.
+- Added `craft\uploads\StagedUpload`.
+- Added `craft\uploads\TemporaryUploadHandler`.
+- Added `craft\uploads\UploadHandlerInterface`.
+- Removed the `mcp/upload` action. MCP upload URLs now use `uploads/transfer`.
 
 ### Performance
 
